@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.hardtoken;
 
 import java.io.UnsupportedEncodingException;
@@ -33,40 +33,105 @@ import se.anatom.ejbca.hardtoken.hardtokenprofiles.SwedishEIDProfile;
  * <pre>
  *  id (Primary key)
  *  name (of the hard token profile)
- *  updatecount, help counter incremented each profile update used to check if a profile proxy class should update its data 
+ *  updatecount, help counter incremented each profile update used to check if a profile proxy class should update its data
  *  hardtokenprofile (Data saved concerning the hard token profile)
  * </pre>
  *
- * @version $Id: HardTokenProfileDataBean.java,v 1.4 2004-04-16 07:38:56 anatom Exp $
- **/
-
+ *
+ * @ejb.bean
+ *	 xxxgenerate="false"
+ *   description="This enterprise bean entity represents a hard token profile with accompanying data"
+ *   display-name="HardTokenProfileDataEB"
+ *   name="HardTokenProfileData"
+ *   jndi-name="HardTokenProfileData"
+ *   local-jndi-name="HardTokenProfileDataLocal"
+ *   view-type="local"
+ *   type="CMP"
+ *   reentrant="false"
+ *   cmp-version="2.x"
+ *   transaction-type="Container"
+ *   schema="HardTokenProfileDataBean"
+ *
+ * @ejb.permission role-name="InternalUser"
+ *
+ * @ejb.pk generate="false"
+ *   class="java.lang.Integer"
+ *
+ * @ejb.home
+ *   generate="local"
+ *   local-extends="javax.ejb.EJBLocalHome"
+ *   local-class="se.anatom.ejbca.hardtoken.HardTokenProfileDataLocalHome"
+ *
+ * @ejb.interface
+ *   generate="local"
+ *   local-extends="javax.ejb.EJBLocalObject"
+ *   local-class="se.anatom.ejbca.hardtoken.HardTokenProfileDataLocal"
+ *
+ * @ejb.finder
+ *   description="findByName"
+ *   signature="se.anatom.ejbca.hardtoken.HardTokenProfileDataLocal findByName(java.lang.String)"
+ *   query="SELECT DISTINCT OBJECT(a) from HardTokenProfileDataBean a WHERE a.name=?1"
+ *
+ */
 public abstract class HardTokenProfileDataBean extends BaseEntityBean {
 
     private static Logger log = Logger.getLogger(HardTokenProfileDataBean.class);
-    
+
     private HardTokenProfile profile = null;
 
+	/**
+     * @ejb.pk-field
+	 * @ejb.persistence
+     * @ejb.interface-method view-type="local"
+     */
     public abstract Integer getId();
+
+	/**
+	 * @ejb.persistence
+	 */
     public abstract void setId(Integer id);
 
+    /**
+     * @ejb.persistence
+     * @ejb.interface-method view-type="local"
+     */
     public abstract String getName();
-    public abstract void setName(String name);
-    
-	public abstract int getUpdateCounter();
-	public abstract void setUpdateCounter(int updatecounter);
-      
 
+    /**
+     * @ejb.persistence
+     * @ejb.interface-method view-type="local"
+     */
+    public abstract void setName(String name);
+
+    /**
+     * @ejb.persistence
+     * @ejb.interface-method view-type="local"
+     */
+	public abstract int getUpdateCounter();
+
+    /**
+     * @ejb.persistence
+     */
+	public abstract void setUpdateCounter(int updatecounter);
+
+    /**
+     * @ejb.persistence
+     */
     public abstract String getData();
+
+    /**
+     * @ejb.persistence
+     */
     public abstract void setData(String data);
-    
-    
-   
-    /** 
+
+
+
+    /**
      * Method that returns the hard token profile data and updates it if nessesary.
-     */    
-    
-    public HardTokenProfile getHardTokenProfile(){		
-		        
+     * @ejb.interface-method view-type="local"
+     */
+    public HardTokenProfile getHardTokenProfile(){
+
   	  if(profile == null){
 	    java.beans.XMLDecoder decoder;
 		try {
@@ -78,45 +143,46 @@ public abstract class HardTokenProfileDataBean extends BaseEntityBean {
 		}
 		HashMap data = (HashMap) decoder.readObject();
 		decoder.close();
-             
+
 		switch (((Integer) (data.get(HardTokenProfile.TYPE))).intValue()) {
 		  case SwedishEIDProfile.TYPE_SWEDISHEID :
 		    profile = new SwedishEIDProfile();
 		    break;
 		  case EnhancedEIDProfile.TYPE_ENHANCEDEID:
-		    profile =  new EnhancedEIDProfile();      
-		    break;  		  
+		    profile =  new EnhancedEIDProfile();
+		    break;
 		}
-		  
-		profile.loadData(data);		  
-	  }	
-		                 
-		return profile;                          
+
+		profile.loadData(data);
+	  }
+
+		return profile;
     }
-    
-    /** 
+
+    /**
      * Method that saves the hard token profile data to database.
-     */    
+     * @ejb.interface-method view-type="local"
+     */
     public void setHardTokenProfile(HardTokenProfile hardtokenprofile){
 		java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-       
+
 		java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
 		encoder.writeObject(hardtokenprofile.saveData());
 		encoder.close();
-		       
+
 		try {
             if (log.isDebugEnabled()) {
-                log.debug("Profiledata: \n" + baos.toString("UTF8"));                
+                log.debug("Profiledata: \n" + baos.toString("UTF8"));
             }
 			setData(baos.toString("UTF8"));
 		} catch (UnsupportedEncodingException e) {
           throw new EJBException(e);
 		}
-       
-		this.profile = hardtokenprofile;    	       
-        setUpdateCounter(getUpdateCounter() +1);          
+
+		this.profile = hardtokenprofile;
+        setUpdateCounter(getUpdateCounter() +1);
     }
-    
+
 
     //
     // Fields required by Container
@@ -128,22 +194,21 @@ public abstract class HardTokenProfileDataBean extends BaseEntityBean {
     public void ejbPassivate() {
         this.profile = null;
     }
-    
+
 
     /**
      * Entity Bean holding data of a ahrd token issuer.
      *
      * @return null
-     *
-     **/
-
+     * @ejb.create-method view-type="local"
+	 */
     public Integer ejbCreate(Integer id, String name, HardTokenProfile profile) throws CreateException {
         setId(id);
         setName(name);
-        this.setUpdateCounter(0); 
-        if(profile != null)           
+        this.setUpdateCounter(0);
+        if(profile != null)
           setHardTokenProfile(profile);
-        
+
         log.debug("Created Hard Token Profile "+ name );
         return id;
     }

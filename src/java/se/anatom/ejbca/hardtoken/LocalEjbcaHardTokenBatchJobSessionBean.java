@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.hardtoken;
 
 import java.sql.Connection;
@@ -38,7 +38,69 @@ import se.anatom.ejbca.ra.UserDataLocalHome;
 /**
  * Remote interface for bean used by hardtoken batchprograms to retrieve users to generate from EJBCA RA.
  *
- * @version $Id: LocalEjbcaHardTokenBatchJobSessionBean.java,v 1.17 2004-05-19 07:00:59 anatom Exp $
+ * @ejb.bean
+ *   description="Session bean handling userdata queue for hard token issuers"
+ *   display-name="HardTokenBatchJobSessionSB"
+ *   name="HardTokenBatchJobSession"
+ *   jndi-name="HardTokenBatchJobSession"
+ *   local-jndi-name="HardTokenBatchJobSessionLocal"
+ *   view-type="both"
+ *   type="Stateless"
+ *   transaction-type="Container"
+ *
+ * @ejb.transaction type="Supports"
+ *
+ * @ejb.permission role-name="InternalUser"
+ *
+ * @ejb.env-entry
+ *   description="The JDBC datasource to be used"
+ *   name="Datasource"
+ *   type="java.lang.String"
+ *   value="java:/DefaultDS"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The User entity bean"
+ *   view-type="local"
+ *   ejb-name="UserDataLocal"
+ *   type="Entity"
+ *   home="se.anatom.ejbca.ra.UserDataLocalHome"
+ *   business="se.anatom.ejbca.ra.UserDataLocal"
+ *   link="UserData"
+ *
+ * @todo FIXME it is a copy if ejb-jar.xml and the type is entity while it is a session bean
+ * @ejb.ejb-external-ref
+ *   description="The Certificate Store session bean"
+ *   view-type="local"
+ *   ejb-name="The hard token session bean"
+ *   type="Entity"
+ *   home="se.anatom.ejbca.hardtoken.IHardTokenSessionLocalHome"
+ *   business="se.anatom.ejbca.hardtoken.IHardTokenSessionLocal"
+ *   link="HardTokenSession"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The log session bean"
+ *   view-type="local"
+ *   ejb-name="LogSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.log.ILogSessionLocalHome"
+ *   business="se.anatom.ejbca.log.ILogSessionLocal"
+ *   link="LogSession"
+ *
+ * @ejb.home
+ *   extends="javax.ejb.EJBHome"
+ *   local-extends="javax.ejb.EJBLocalHome"
+ *   local-class="se.anatom.ejbca.hardtoken.IHardTokenBatchJobSessionLocalHome"
+ *   remote-class="se.anatom.ejbca.hardtoken.IHardTokenBatchJobSessionHome"
+ *
+ * @ejb.interface
+ *   extends="javax.ejb.EJBObject"
+ *   local-extends="javax.ejb.EJBLocalObject"
+ *   local-class="se.anatom.ejbca.hardtoken.IHardTokenBatchJobSessionLocal"
+ *   remote-class="se.anatom.ejbca.hardtoken.IHardTokenBatchJobSessionRemote"
+ *
+ * @jonas.bean
+ *   ejb-name="HardTokenSession"
+ *
  */
 public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
 
@@ -56,9 +118,9 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
 
     /** The remote interface of  log session bean */
     private ILogSessionLocal logsession = null;
-    
 
-    
+
+
     /**
      * Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
@@ -128,37 +190,36 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      *
      * @return The next user to generate or NULL if there are no users i queue.
      * @throws EJBException if a communication or other error occurs.
+     * @ejb.interface-method view-type="both"
      */
-
-
     public UserAdminData getNextHardTokenToGenerate(Admin admin, String alias) throws UnavailableTokenException{
       debug(">getNextHardTokenToGenerate()");
       debug("alias " + alias);
       UserAdminData returnval=null;
       int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, alias);
-  
-      debug("issuerid " + issuerid);      
-      
+
+      debug("issuerid " + issuerid);
+
       if(issuerid != IHardTokenSessionLocal.NO_ISSUER){
         Connection con = null;
         ResultSet rs = null;
         PreparedStatement ps = null;
-        
+
         try{
            // Construct SQL query.
         	debug("HERE");
-            con = getConnection();            
+            con = getConnection();
             ps = con.prepareStatement("select " + USERDATA_COL + " from UserData where hardTokenIssuerId=? and tokenType>? and (status=? or status=?)" );
             ps.setInt(1,issuerid);
             ps.setInt(2,SecConst.TOKEN_SOFT);
             ps.setInt(3,UserDataLocal.STATUS_NEW);
             ps.setInt(4,UserDataLocal.STATUS_KEYRECOVERY);
-            
+
             // Execute query.
-            rs = ps.executeQuery();      
-                                                
+            rs = ps.executeQuery();
+
             // Assemble result.
-            
+
            if(rs.next()){
               returnval = new UserAdminData(rs.getString(1), rs.getString(2), rs.getInt(14), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getInt(6)
                                                , rs.getInt(10), rs.getInt(11)
@@ -184,7 +245,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
            }
         }
       }
-      
+
       debug("<getNextHardTokenToGenerate()");
       return returnval;
     }// getNextHardTokenToGenerate
@@ -198,8 +259,8 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      *
      * @return A Collection of users to generate or NULL if there are no users i queue.
      * @throws EJBException if a communication or other error occurs.
+     * @ejb.interface-method view-type="both"
      */
-
     public Collection getNextHardTokensToGenerate(Admin admin, String alias) throws UnavailableTokenException{
       debug(">getNextHardTokensToGenerate()");
       ArrayList returnval = new ArrayList();
@@ -232,7 +293,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
           getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Error when retrieving next tokens for issuer with alias: " + alias);
           throw new EJBException(e);
         }finally{
-           try{           	
+           try{
              if(rs != null) rs.close();
              if(ps != null) ps.close();
              if(con!= null) con.close();
@@ -259,9 +320,8 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      *
      * @return The next token to generate or NULL if the given user doesn't exist in queue.
      * @throws EJBException if a communication or other error occurs.
+     * @ejb.interface-method view-type="both"
      */
-
-
     public UserAdminData getNextHardTokenToGenerateInQueue(Admin admin, String alias, int index) throws UnavailableTokenException{
       debug(">getNextHardTokenToGenerateInQueue()");
       UserAdminData returnval=null;
@@ -279,7 +339,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
             ps.setInt(2,SecConst.TOKEN_SOFT);
             ps.setInt(3,UserDataLocal.STATUS_NEW);
             ps.setInt(4,UserDataLocal.STATUS_KEYRECOVERY);
-            
+
             // Assemble result.
            if(rs.relative(index)){
               returnval = new UserAdminData(rs.getString(1), rs.getString(2), rs.getInt(14), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getInt(6)
@@ -296,7 +356,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
           getLogSession().log(admin, admin.getCAId(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKEN_USERDATASENT,"Error when retrieving next token for issuer with alias: " + alias);
           throw new EJBException(e);
         }finally{
-           try{           	 
+           try{
              if(rs != null) rs.close();
              if(ps != null) ps.close();
              if(con!= null) con.close();
@@ -318,9 +378,8 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      *
      * @return the number of users to generate.
      * @throws EJBException if a communication or other error occurs.
+     * @ejb.interface-method view-type="both"
      */
-
-
     public int getNumberOfHardTokensToGenerate(Admin admin, String alias){
       debug(">getNumberOfHardTokensToGenerate()");
       int count = 0;
@@ -366,6 +425,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      *
      * @param hardtokenissuerid the id of hard token issuer to look for.
      * @return true if hardtokenissuerid exists in userdatabase.
+     * @ejb.interface-method view-type="both"
      */
     public boolean checkForHardTokenIssuerId(Admin admin, int hardtokenissuerid){
         debug(">checkForHardTokenIssuerId(id: " + hardtokenissuerid + ")");

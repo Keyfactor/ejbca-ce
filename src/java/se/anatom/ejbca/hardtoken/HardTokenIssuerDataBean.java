@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.hardtoken;
 
 import java.util.HashMap;
@@ -28,68 +28,131 @@ import se.anatom.ejbca.BaseEntityBean;
  * <pre>
  *  id (Primary key)
  *  alias (of the hard token issuer)
- *  admingroupid (Integer pointing to administrator group associated to this issuer) 
+ *  admingroupid (Integer pointing to administrator group associated to this issuer)
  *  hardtokenissuer (Data saved concerning the hard token issuer)
  * </pre>
  *
- * @version $Id: HardTokenIssuerDataBean.java,v 1.9 2004-04-16 07:38:56 anatom Exp $
- **/
-
+ * @ejb.bean
+ *	 xxxgenerate="false"
+ *   description="This enterprise bean entity represents a hard token issuer with accompanying data"
+ *   display-name="HardTokenIssuerDataEB"
+ *   name="HardTokenIssuerData"
+ *   jndi-name="HardTokenIssuerData"
+ *   local-jndi-name="HardTokenIssuerDataLocal"
+ *   view-type="local"
+ *   type="CMP"
+ *   reentrant="false"
+ *   cmp-version="2.x"
+ *   transaction-type="Container"
+ *   schema="HardTokenIssuerDataBean"
+ *
+ * @ejb.permission
+ *   role-name="InternalUser"
+ *
+ * @ejb.pk generate="false"
+ *   class="java.lang.Integer"
+ *
+ * @ejb.home
+ *   generate="local"
+ *   local-extends="javax.ejb.EJBLocalHome"
+ *   local-class="se.anatom.ejbca.hardtoken.HardTokenIssuerDataLocalHome"
+ *
+ * @ejb.interface
+ *   generate="local"
+ *   local-extends="javax.ejb.EJBLocalObject"
+ *   local-class="se.anatom.ejbca.hardtoken.HardTokenIssuerDataLocal"
+ *
+ * @ejb.finder
+ *   description="findByAlias"
+ *   signature="se.anatom.ejbca.hardtoken.HardTokenIssuerDataLocal findByAlias(java.lang.String)"
+ *   query="SELECT DISTINCT OBJECT(a) from HardTokenIssuerDataBean a WHERE a.alias=?1"
+ */
 public abstract class HardTokenIssuerDataBean extends BaseEntityBean {
-
-
 
     private static Logger log = Logger.getLogger(HardTokenIssuerDataBean.class);
 
+	/**
+     * @ejb.pk-field
+	 * @ejb.persistence
+     * @ejb.create-method view-type="local"
+     */
     public abstract Integer getId();
+
+    /**
+     * @ejb.persistence
+     */
     public abstract void setId(Integer id);
 
+    /**
+     * @ejb.persistence
+     * @ejb.create-method view-type="local"
+     */
     public abstract String getAlias();
+
+    /**
+     * @ejb.persistence
+     * @ejb.create-method view-type="local"
+     */
     public abstract void setAlias(String alias);
-    
+
+    /**
+     * @ejb.persistence
+     * @ejb.create-method view-type="local"
+     */
     public abstract int getAdminGroupId();
+
+    /**
+     * @ejb.persistence
+     * @ejb.create-method view-type="local"
+     */
     public abstract void setAdminGroupId(int groupid);
 
+    /**
+     * @ejb.persistence
+     */
     public abstract HashMap getData();
+
+    /**
+     * @ejb.persistence
+     */
     public abstract void setData(HashMap data);
-    
-       
-    /** 
+
+
+    /**
      * Method that returns the hard token issuer data and updates it if nessesary.
-     */    
-    
+     * @ejb.create-method view-type="local"
+     */
     public HardTokenIssuer getHardTokenIssuer(){
       HardTokenIssuer returnval = new HardTokenIssuer();
       returnval.loadData((Object) getData());
-      return returnval;              
+      return returnval;
     }
-    
-    /** 
+
+    /**
      * Method that saves the hard token issuer data to database.
-     */    
+     * @ejb.create-method view-type="local"
+     */
     public void setHardTokenIssuer(HardTokenIssuer hardtokenissuer){
-       setData((HashMap) hardtokenissuer.saveData());          
+       setData((HashMap) hardtokenissuer.saveData());
     }
-    
+
 
     //
     // Fields required by Container
     //
 
-
     /**
      * Entity Bean holding data of a ahrd token issuer.
      *
      * @return null
-     *
-     **/
-
+     * @ejb.create-method view-type="local"
+	 */
     public Integer ejbCreate(Integer id, String alias, int admingroupid,  HardTokenIssuer issuerdata) throws CreateException {
         setId(id);
         setAlias(alias);
         setAdminGroupId(admingroupid);
         setHardTokenIssuer(issuerdata);
-        
+
         log.debug("Created Hard Token Issuer "+ alias );
         return id;
     }

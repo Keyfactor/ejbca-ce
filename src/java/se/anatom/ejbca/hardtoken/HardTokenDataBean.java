@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.hardtoken;
 
 import javax.ejb.CreateException;
@@ -37,7 +37,41 @@ import se.anatom.ejbca.util.StringTools;
  *  data (Data saved concerning the hard token)
  * </pre>
  *
- * @version $Id: HardTokenDataBean.java,v 1.10 2004-04-16 07:38:56 anatom Exp $
+ *
+ * @ejb.bean
+ *	 xxxxgenerate="false"
+ *   description="This enterprise bean entity represents a hard token with accompanying data"
+ *   display-name="HardTokenDataEB"
+ *   name="HardTokenData"
+ *   jndi-name="HardTokenData"
+ *   local-jndi-name="HardTokenDataLocal"
+ *   view-type="local"
+ *   type="CMP"
+ *   reentrant="false"
+ *   cmp-version="2.x"
+ *   transaction-type="Container"
+ *   schema="HardTokenDataBean"
+ *
+ * @ejb.permission role-name="InternalUser"
+ *
+ * @ejb.pk generate="false"
+ *   class="java.lang.String"
+ *
+ * @ejb.home
+ *   generate="local"
+ *   local-extends="javax.ejb.EJBLocalHome"
+ *   local-class="se.anatom.ejbca.hardtoken.HardTokenDataLocalHome"
+ *
+ * @ejb.interface
+ *   generate="local"
+ *   local-extends="javax.ejb.EJBLocalObject"
+ *   local-class="se.anatom.ejbca.hardtoken.HardTokenDataLocal"
+ *
+ * @ejb.finder
+ *   description="findByUsername"
+ *   signature="Collection findByUsername(java.lang.String)"
+ *   query="SELECT DISTINCT OBJECT(a) from HardTokenDataBean a WHERE a.username=?1"
+ *
  */
 public abstract class HardTokenDataBean extends BaseEntityBean {
 
@@ -45,36 +79,104 @@ public abstract class HardTokenDataBean extends BaseEntityBean {
 
     private static Logger log = Logger.getLogger(HardTokenIssuerDataBean.class);
 
+    /**
+     * @ejb.pk-field
+     * @ejb.persistence
+     * @ejb.interface-method view-type="local"
+     */
     public abstract String getTokenSN();
+
+    /**
+     * @ejb.persistence
+     */
     public abstract void setTokenSN(String tokensn);
 
+    /**
+     * @ejb.persistence
+     * @ejb.interface-method view-type="local"
+     */
     public abstract String getUsername();
-    /** username must be called 'striped' using StringTools.strip()
-    * @see se.anatom.ejbca.util.StringTools
-    */
+
+    /**
+     * username must be called 'striped' using StringTools.strip()
+     * @see se.anatom.ejbca.util.StringTools
+     * @ejb.persistence
+     * @ejb.interface-method view-type="local"
+     */
     public abstract void setUsername(String username);
 
+    /**
+     * @ejb.persistence
+     */
     public abstract long getCTime();
+
+    /**
+     * @ejb.persistence
+     */
     public abstract void setCTime(long createtime);
 
+    /**
+     * @ejb.persistence
+     */
     public abstract long getMTime();
+
+    /**
+     * @ejb.persistence
+     */
     public abstract void setMTime(long modifytime);
 
+    /**
+     * @ejb.persistence
+     * @ejb.interface-method view-type="local"
+     */
     public abstract int getTokenType();
+
+    /**
+     * @ejb.persistence
+     * @ejb.interface-method view-type="local"
+     */
     public abstract void setTokenType(int tokentype);
-    
+
+    /**
+     * @ejb.persistence
+     * @ejb.interface-method view-type="local"
+     */
     public abstract String getSignificantIssuerDN();
+
+    /**
+     * @ejb.persistence
+     * @ejb.interface-method view-type="local"
+     */
     public abstract void setSignificantIssuerDN(String significantissuerdn);
-    
+
+    /**
+     * @ejb.persistence
+     */
     public abstract HashMap getData();
+
+    /**
+     * @ejb.persistence
+     */
     public abstract void setData(HashMap data);
 
+    /**
+     * @ejb.interface-method view-type="local"
+     */
     public Date getCreateTime(){ return new Date(getCTime()); }
 
+    /**
+     * @ejb.interface-method view-type="local"
+     */
     public void setCreateTime(Date createtime){ setCTime(createtime.getTime()); }
 
+    /**
+     * @ejb.interface-method view-type="local"
+     */
     public Date getModifyTime(){ return new Date(getMTime()); }
 
+    /**
+     * @ejb.interface-method view-type="local"
+     */
     public void setModifyTime(Date modifytime){ setMTime(modifytime.getTime()); }
 
     /**
@@ -92,7 +194,7 @@ public abstract class HardTokenDataBean extends BaseEntityBean {
       	     break;
           case SecConst.TOKEN_ENHANCEDEID :
       	     returnval = new EnhancedEIDHardToken();
-      	     break;      	
+      	     break;
           case SecConst.TOKEN_EID :    // Left for backward compability
              returnval = new EIDHardToken();
              break;
@@ -122,9 +224,8 @@ public abstract class HardTokenDataBean extends BaseEntityBean {
      * Entity Bean holding data of a ahrd token issuer.
      *
      * @return null
-     *
-     **/
-
+     * @ejb.create-method view-type="local"
+	 */
     public String ejbCreate(String tokensn, String username, Date createtime, Date modifytime, int tokentype, String significantissuerdn, HardToken tokendata) throws CreateException {
         setTokenSN(tokensn);
         setUsername(StringTools.strip(username));
