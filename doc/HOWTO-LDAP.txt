@@ -160,7 +160,7 @@ reuirement to use SSL connection to the LDAP server
 below how to configure OpenLDAp for SSL.
 
 Note: When fetching certificates from LDAP with Mozilla for example with URL:
-ldap://10.89.57.166/dc=bigcorp,dc=com??sub?(cn=MyName)?(objectclass=*)
+ldap://<ldap-server-host>/dc=bigcorp,dc=com??sub?(cn=MyName)?(objectclass=*)
 To get a checkbox at the fetched certificate, the CA certificate must be installed in the Windows truststore,
 not only in Mozillas.
 
