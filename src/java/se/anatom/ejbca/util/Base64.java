@@ -18,7 +18,7 @@ import java.io.ByteArrayOutputStream;
  *
  * Copyright (c) 2000 The Legion Of The Bouncy Castle (http://www.bouncycastle.org)
  *
- * @version	$Id: Base64.java,v 1.1.1.1 2001-11-15 14:58:18 anatom Exp $
+ * @version	$Id: Base64.java,v 1.2 2002-05-15 07:10:18 anatom Exp $
  *
  */
 public class Base64
@@ -52,8 +52,8 @@ public class Base64
         /**
 	 * encode the input data producong a base 64 encoded byte array.
 	 *
-         * @params data the data to be encoded
-         * @params splitlines whether the output lines will be split by '\n' (64 byte rows) or not.
+         * @param data the data to be encoded
+         * @param splitlines whether the output lines will be split by '\n' (64 byte rows) or not.
 	 * @return a byte array containing the base 64 encoded data.
 	 */
 	public static byte[] encode(byte[] data, boolean splitlines)

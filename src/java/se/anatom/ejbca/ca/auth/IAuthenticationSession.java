@@ -9,7 +9,7 @@ import se.anatom.ejbca.ca.exception.AuthLoginException;
 
 /** Interface used for authenticating entities when issuing their certificates.
  *
- * @version $Id: IAuthenticationSession.java,v 1.3 2002-03-22 11:21:49 anatom Exp $
+ * @version $Id: IAuthenticationSession.java,v 1.4 2002-05-15 07:10:18 anatom Exp $
  */
 public interface IAuthenticationSession {
 
@@ -23,7 +23,7 @@ public interface IAuthenticationSession {
     * @throws ObjectNotFoundException if the user does not exist.
     * @throws AuthStatusException If the users status is incorrect.
     * @throws AuthLoginException If the password is incorrect.
-    * @EJBException if a communication or other error occurs.
+    * @throws EJBException if a communication or other error occurs.
     */
     public UserAuthData authenticateUser(String username, String password) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException;
 

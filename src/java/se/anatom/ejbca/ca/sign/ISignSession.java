@@ -17,7 +17,7 @@ import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 /**
  * Creates certificates.
  *
- * @version $Id: ISignSession.java,v 1.4 2002-05-09 18:15:30 anatom Exp $
+ * @version $Id: ISignSession.java,v 1.5 2002-05-15 07:10:18 anatom Exp $
  */
 public interface ISignSession {
 
@@ -49,7 +49,7 @@ public interface ISignSession {
 
    /**
     * Requests for a certificate to be created for the passed public key with the passed key usage.
-    * The method queries the user database for authorization of the user. CAs are only allowed to have 
+    * The method queries the user database for authorization of the user. CAs are only allowed to have
     * certificateSign and CRLSign set.
     *
     * @param username unique username within the instance.
@@ -77,18 +77,42 @@ public interface ISignSession {
     * @throws EJBException if a communication or other error occurs.
     */
     public Certificate createCertificate(String username, String password, PublicKey pk, boolean[] keyusage) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException;
-    
-    /**
-    * Requests for a certificate of the specified type to be created for the passed public key.
-    * The method queries the user database for authorization of the user. 
+
+   /**
+    * Requests for a certificate to be created for the passed public key with the passed key usage.
+    * The method queries the user database for authorization of the user. CAs are only allowed to have
+    * certificateSign and CRLSign set.
     *
     * @param username unique username within the instance.
     * @param password password for the user.
     * @param pk the public key to be put in the created certificate.
-    * @param certType integer type of certificate taken from SecConst.CERT_TYPE_XXX.
-    * the type SecConst.CERT_TYPE_ENCRYPTION gives keyUsage keyEncipherment, dataEncipherment.
-    * the type SecConst.CERT_TYPE_SIGNATURE gives keyUsage digitalSignature, non-repudiation.
+    * @param keyusage integer with bit mask describing desired keys usage. Bit mask is packed in in integer using constants from CertificateData.
+    * ex. int keyusage = CertificateData.digitalSignature | CertificateData.nonRepudiation; gives digitalSignature and nonRepudiation.
+    * ex. int keyusage = CertificateData.keyCertSign | CertificateData.cRLSign; gives keyCertSign and cRLSign
+    *
+    * @see se.anatom.ejbca.ca.store.CertificateData
+    *
+    * @return The newly created certificate or null.
+    * @throws ObjectNotFoundException if the user does not exist.
+    * @throws AuthStatusException If the users status is incorrect.
+    * @throws AuthLoginException If the password is incorrect.
+    * @throws EJBException if a communication or other error occurs.
+    */
+    public Certificate createCertificate(String username, String password, PublicKey pk, int keyusage) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException;
+
+    /**
+    * Requests for a certificate of the specified type to be created for the passed public key.
+    * The method queries the user database for authorization of the user.
+    *
+    * @param username unique username within the instance.
+    * @param password password for the user.
+    * @param certType integer type of certificate taken from CertificateData.CERT_TYPE_XXX.
+    * the type CertificateData.CERT_TYPE_ENCRYPTION gives keyUsage keyEncipherment, dataEncipherment.
+    * the type CertificateData.CERT_TYPE_SIGNATURE gives keyUsage digitalSignature, non-repudiation.
     * all other CERT_TYPES gives the default keyUsage digitalSignature, keyEncipherment
+    * @param pk the public key to be put in the created certificate.
+    *
+    * @see se.anatom.ejbca.ca.store.CertificateData
     *
     * @return The newly created certificate or null.
     * @throws ObjectNotFoundException if the user does not exist.
@@ -96,7 +120,7 @@ public interface ISignSession {
     * @throws AuthLoginException If the password is incorrect.
     * @throws EJBException if a communication or other error occurs.
      */
-    public Certificate createCertificate(String username, String password, PublicKey pk, int certType) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException;
+    public Certificate createCertificate(String username, String password, int certType, PublicKey pk) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException;
 
    /**
     * Requests for a certificate to be created for the passed public key wrapped in a self-signed certificate.
@@ -134,6 +158,28 @@ public interface ISignSession {
     * @throws EJBException if a communication or other error occurs.
     */
     public Certificate createCertificate(String username, String password, byte[] pkcs10req) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException;
+
+   /**
+    * Requests for a certificate to be created for the passed public key wrapped in a PKCS10 certification request.
+    * Verification of the signature (proof-of-possesion) on the request is performed, and an exception thrown if verification fails.
+    * The method queries the user database for authorization of the user.
+    *
+    * @param username unique username within the instance.
+    * @param password password for the user.
+    * @param req a PKCS10 Certification Request in DER format, containing the public key to be put in the created certificate. Currently no additional parameters in the PKCS10 request is considered!
+    * @param keyusage integer with bit mask describing desired keys usage. Bit mask is packed in in integer using contants from CertificateData.
+    * ex. int keyusage = CertificateData.digitalSignature | CertificateData.nonRepudiation; gives digitalSignature and nonRepudiation.
+    * ex. int keyusage = CertificateData.keyCertSign | CertificateData.cRLSign; gives keyCertSign and cRLSign
+    *
+    * @see se.anatom.ejbca.ca.store.CertificateData
+    *
+    * @return The newly created certificate or null.
+    * @throws ObjectNotFoundException if the user does not exist.
+    * @throws AuthStatusException If the users status is incorrect.
+    * @throws AuthLoginException If the password is incorrect.
+    * @throws EJBException if a communication or other error occurs.
+    */
+    public Certificate createCertificate(String username, String password, byte[] pkcs10req, int keyUsage) throws RemoteException, ObjectNotFoundException, AuthStatusException, AuthLoginException, SignRequestException, SignRequestSignatureException;
 
    /**
     * Requests for a CRL to be created with the passed (revoked) certificates.

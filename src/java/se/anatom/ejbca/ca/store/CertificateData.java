@@ -13,13 +13,40 @@ import java.rmi.RemoteException;
 public interface CertificateData extends javax.ejb.EJBObject {
 
     // Constants for Status of certificate
-    public static int CERT_UNASSIGNED =      0;     // Certificate doesn't belong to anyone
-    public static int CERT_INACTIVE =        10;    // Assigned, but not yet active
-    public static int CERT_ACTIVE =          20;    // Certificate is active and assigned
-    public static int CERT_TEMP_REVOKED =    30;    // Certificate is temporarily blocked (reversible)
-    public static int CERT_REVOKED =         40;    // Certificate is permanently blocked (terminated)
-    public static int CERT_EXPIRED =         50;    // Certificate is expired
-    public static int CERT_ARCHIVED =        60;   // Certificate is expired and kept for archive purpose
+    /** Certificate doesn't belong to anyone */
+    public static int CERT_UNASSIGNED =      0;
+    /** Assigned, but not yet active */
+    public static int CERT_INACTIVE =        10;
+    /** Certificate is active and assigned */
+    public static int CERT_ACTIVE =          20;
+    /** Certificate is temporarily blocked (reversible) */
+    public static int CERT_TEMP_REVOKED =    30;
+    /** Certificate is permanently blocked (terminated) */
+    public static int CERT_REVOKED =         40;
+    /** Certificate is expired */
+    public static int CERT_EXPIRED =         50;
+    /** Certificate is expired and kept for archive purpose */
+    public static int CERT_ARCHIVED =        60;
+
+    // Certificate types used to create certificates
+    /** Certificate used for encryption. */
+    public static final int CERT_TYPE_ENCRYPTION    = 0x1;
+    /** Certificate used for digital signatures. */
+    public static final int CERT_TYPE_SIGNATURE     = 0x2;
+    /** Certificate used for both encryption and signatures. */
+    public static final int CERT_TYPE_ENCSIGN       = 0x3;
+
+	// Constants used to contruct KeyUsage
+	/** @see se.anatom.ejbca.ca.sign.ISignSession */
+    public static final int        digitalSignature = (1 << 7);
+    public static final int        nonRepudiation   = (1 << 6);
+    public static final int        keyEncipherment  = (1 << 5);
+    public static final int        dataEncipherment = (1 << 4);
+    public static final int        keyAgreement     = (1 << 3);
+    public static final int        keyCertSign      = (1 << 2);
+    public static final int        cRLSign          = (1 << 1);
+    public static final int        encipherOnly     = (1 << 0);
+    public static final int        decipherOnly     = (1 << 15);
 
     // public methods
     public Certificate getCertificate() throws RemoteException;

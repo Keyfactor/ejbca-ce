@@ -36,13 +36,13 @@ import se.anatom.ejbca.util.*;
  * <li>password - password for the above user.
  * </ul>
  *
- * @version: $Id: HttpGetCert.java,v 1.3 2001-12-12 14:22:20 anatom Exp $
+ * @version $Id: HttpGetCert.java,v 1.4 2002-05-15 07:10:18 anatom Exp $
  *
  */
 public class HttpGetCert {
-    
+
     private static Category cat = Category.getInstance(HttpGetCert.class.getName());
-    
+
     private X509Certificate webcert = null;
 
     /**
@@ -50,7 +50,7 @@ public class HttpGetCert {
      */
     public HttpGetCert() throws java.io.IOException {
         cat.debug(">HttpGetCert:");
-        
+
         // Use for SSL connections
         /*
         System.setProperty("java.protocol.handler.pkgs","com.sun.net.ssl.internal.www.protocol");
@@ -58,7 +58,7 @@ public class HttpGetCert {
         */
         cat.debug("<HttpGetCert:");
     } // HttpGetCert
-    
+
     /**
      * Sets the CA certificate used to verify the web server's certificate. We only support a single self-signed CA certificate here.
      *
@@ -75,10 +75,10 @@ public class HttpGetCert {
         if ( CertTools.isSelfSigned( webcert ) )
             throw new IllegalArgumentException("Webcert certificate is not self signed (not a root CA certificate).");
         cat.debug("<setSSLTrustedServerCert:");
-        
+
     } // setSSLTrustedServerCert
-    */    
-    
+    */
+
     /**
      * Creates a SSLSocketFactory to communicate with the server using HTTPS.
      * @throws IllegalArgumentException if webcert is not set.
@@ -92,18 +92,18 @@ public class HttpGetCert {
         KeyManagerFactory kmf = KeyManagerFactory.getInstance( "SunX509" );
         String proxyHost = null;
         String proxyPort = null;
-        
+
         // if we are behind a proxy, there must be set
         if (proxyHost != null)
             System.setProperty("https.proxyHost", proxyHost);
         if (proxyPort != null)
             System.setProperty("https.proxyPort", proxyPort);
-        
+
         if (webcert == null)
             throw new IllegalArgumentException("Server certificate must be set for SSL communication");
-                
+
         // If we must use client certificates here, we should read some certs and keys and create a keystore to put in the KeyManagerFactory
- 
+
         // Make a truststore to verify the server
         KeyStore trustks = KeyStore.getInstance( "jks" );
         trustks.load( null, new String("foo123").toCharArray() );
@@ -112,12 +112,12 @@ public class HttpGetCert {
         tmf.init( trustks );
 
         ctx.init( null, tmf.getTrustManagers(), null );
-        
+
         cat.debug( "<getSSLFactory" );
         return ctx.getSocketFactory();
     }
     */
-    
+
     /**
      * Creates a URLConnection either HTTP or HTTPS.
      * @param URL the URL (http:// or https://
@@ -134,7 +134,7 @@ public class HttpGetCert {
         */
         return con;
     }
-    
+
     /**
      * Sends a certificate request (PKCS10) to the CA and receives the reply.
      *
@@ -152,15 +152,15 @@ public class HttpGetCert {
         cat.debug(">sendHttpReq: request=" + request.toString() + ", username=" + username + ", password=" + password);
         if (requestUrl == null)
             throw new IllegalArgumentException("requesturl can not be  null.");
-        
+
         cat.debug("Sending request to: " + requestUrl);
-        
+
         URL url = new URL(requestUrl);
         HttpURLConnection con = (HttpURLConnection)getUrlConnection(url);
         // we are going to do a POST
         con.setDoOutput(true);
         con.setRequestMethod("POST");
-        
+
         // POST it
         PrintWriter out = new PrintWriter(con.getOutputStream());
         out.println("pkcs10req=" + URLEncoder.encode(request) +
@@ -168,10 +168,10 @@ public class HttpGetCert {
         "&password=" + URLEncoder.encode(password) +
         "&submit=Submit+Query");
         out.close();
-        
+
         // Read the reqponse
         BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-        String inputLine;        
+        String inputLine;
         while ((inputLine = in.readLine()) != null) {
             System.out.println(inputLine);
         }
@@ -179,12 +179,12 @@ public class HttpGetCert {
             cat.debug("Received certificate reply.");
         else
             throw new Exception("Error sending PKCS10-request.");
-        
+
         // We are done, disconnect
         con.disconnect();
-        
+
         cat.debug("<sendHttpReq:");
-        
+
     } // sendHttpReq
 
     public static void main(String args[])  throws Exception {
@@ -211,7 +211,7 @@ public class HttpGetCert {
         bos1.close();
         System.out.println("CertificationRequest generated:");
         System.out.println(new String(bos1.toByteArray()));
-        
+
         // Now send the request
         System.out.println("Trying to send request...");
         HttpGetCert getter = new HttpGetCert();
