@@ -20,7 +20,7 @@ import se.anatom.ejbca.log.LogEntry;
  * the username is returned as DN.
  * Useful for demo purposes to give out certificates to anyone.
  *
- * @version $Id: NullAuthenticationSessionBean.java,v 1.10 2003-01-12 17:16:31 anatom Exp $
+ * @version $Id: NullAuthenticationSessionBean.java,v 1.11 2003-03-13 12:15:11 scop Exp $
  */
 public class NullAuthenticationSessionBean extends BaseSessionBean {
 
@@ -54,14 +54,16 @@ public class NullAuthenticationSessionBean extends BaseSessionBean {
             // Does the username contain a DN?
             String dn = CertTools.stringToBCDNString(username);
             if ( (dn != null) && (dn.length()>0) ){
-                String email = CertTools.getPartFromDN(dn, "EmailAddress");
+                String email = CertTools.getEmailFromDN(dn);
                 try{
                   logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_USERAUTHENTICATION,"NULL-Authenticated user");
                 }catch(RemoteException re){
                   throw new EJBException(re);
                 }
+                String altName =
+                  (email == null) ? null : "rfc822Name=" + email;
                 // Use default certificate profile 0
-                UserAuthData ret = new UserAuthData(username, dn, null, email, SecConst.USER_ENDUSER, 0);
+                UserAuthData ret = new UserAuthData(username, dn, altName, email, SecConst.USER_ENDUSER, SecConst.PROFILE_NO_CERTIFICATEPROFILE);
                 debug("<authenticateUser("+username+", hiddenpwd)");
                 return ret;
             } else {
