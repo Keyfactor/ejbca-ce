@@ -394,6 +394,8 @@ certificate. If email address is set to 'null', no email is put in certificates.
 Quote the DN (") so it is treated as one argument.
 * deluser - removes a user from the database, any issued certificates
 remain  active and present in the database.
+* setpwd - set a new password for a user. The password is stored as a hash in 
+the database.
 * setclearpwd - set a clear text
 password for a user, needed to generate  certificates batch-wise.
 * setuserstatus - sets status of a user, users can only apply for certificates
