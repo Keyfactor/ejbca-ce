@@ -65,7 +65,7 @@ import se.anatom.ejbca.log.Admin;
  * relative.<br>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.33 2003-04-20 09:48:23 herrvendil Exp $
+ * @version $Id: CertReqServlet.java,v 1.34 2003-04-21 12:59:02 herrvendil Exp $
  */
 public class CertReqServlet extends HttpServlet {
 
@@ -120,7 +120,7 @@ public class CertReqServlet extends HttpServlet {
             int keylength          = 1024;
            
             String classid         = "clsid:127698e4-e730-4e5c-a2b1-21490a70c8a1\" CODEBASE=\"/CertControl/xenroll.cab#Version=5,131,3659,0";
-            if(request.getParameter("classid")!=null)
+            if(request.getParameter("classid")!=null && !request.getParameter("classid").equals(""))
               classid= request.getParameter("classid");   
 
             if(keylengthstring != null)
