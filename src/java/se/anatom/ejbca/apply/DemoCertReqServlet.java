@@ -91,7 +91,7 @@ import se.anatom.ejbca.ra.UserAdminData;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.33 2004-04-16 07:38:58 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.34 2004-04-18 16:01:55 anatom Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
@@ -266,11 +266,7 @@ public class DemoCertReqServlet extends HttpServlet {
 
     int caid = DEFAULT_DEMOCAID;
     if ((tmp=request.getParameter("ca")) != null) {
-         // TODO
-        /*        cProfileId = storesession.getCertificateProfileId(admin, request.getParameter("certificateprofile"));
-        if (cProfileId == 0) {
-            throw new ServletException("No such certificate profile: " + tmp);
-        } */
+         // TODO: get requested CA to sign with
     }    
     newuser.setCAId(caid);
     

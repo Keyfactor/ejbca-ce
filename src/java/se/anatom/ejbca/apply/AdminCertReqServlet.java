@@ -111,7 +111,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * 
  *
  * @author Ville Skyttä
- * @version $Id: AdminCertReqServlet.java,v 1.15 2004-04-16 07:38:58 anatom Exp $
+ * @version $Id: AdminCertReqServlet.java,v 1.16 2004-04-18 16:01:55 anatom Exp $
  */
 public class AdminCertReqServlet extends HttpServlet {
   private final static Logger log = Logger.getLogger(AdminCertReqServlet.class);
@@ -247,15 +247,7 @@ public class AdminCertReqServlet extends HttpServlet {
 
     int caid = 0;
     if ((tmp = request.getParameter("ca")) != null) {
-      // TODO  
-      /*CAInterfaceBean cabean = get
-       (request);
-      int reqId = cabean.getCertificateProfileId(tmp);
-      if (reqId == 0) {
-        throw new ServletException("No such certificate profile: " + tmp);
-      } else {
-        cProfileId = reqId;
-      }*/
+        // TODO: get requested CA to sign with
     }
     newuser.setCAId(caid);
     
