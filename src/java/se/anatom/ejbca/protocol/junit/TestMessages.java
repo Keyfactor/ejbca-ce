@@ -11,10 +11,11 @@ import se.anatom.ejbca.protocol.ScepRequestMessage;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.KeyTools;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 import junit.framework.*;
 
-/** Tests signing session.
+/**
+ * Tests signing session.
  *
  * @version $Id: TestSignSession.java,v 1.13 2002/10/17 15:24:47 anatom Exp $
  */
@@ -135,13 +136,13 @@ public class TestMessages extends TestCase {
     private PrivateKey privateKey = null;
     private X509Certificate caCert = null;
     
-    static Category cat = Category.getInstance( TestMessages.class.getName() );
+    private static Logger log = Logger.getLogger(TestMessages.class);
 
     public TestMessages(String name) {
         super(name);
     }
     protected void setUp() throws Exception {
-        cat.debug(">setUp()");
+        log.debug(">setUp()");
         // Install BouncyCastle provider
         Provider BCJce = new org.bouncycastle.jce.provider.BouncyCastleProvider();
         int result = Security.addProvider(BCJce);
@@ -154,25 +155,24 @@ public class TestMessages extends TestCase {
         char[] pkPass = null;
         privateKey = (PrivateKey)keyStore.getKey(privateKeyAlias, pkPass);
         if (privateKey == null) {
-            cat.error("Cannot load key with alias '"+privateKeyAlias+"' from keystore.");
+            log.error("Cannot load key with alias '"+privateKeyAlias+"' from keystore.");
             throw new Exception("Cannot load key with alias '"+privateKeyAlias+"' from keystore.");
         }
         Certificate[] certchain = KeyTools.getCertChain(keyStore, privateKeyAlias);
         caCert = (X509Certificate)certchain[0];
-        cat.debug("<setUp()");
+        log.debug("<setUp()");
     }
     protected void tearDown() throws Exception {
     }
 
     public void test01TestOpenScep() throws Exception {
-        cat.debug(">test01TestOpenScep()");
+        log.debug(">test01TestOpenScep()");
         ScepRequestMessage msg = new ScepRequestMessage(openscep);
         if (msg.requireKeyInfo()) {
             msg.setKeyInfo(caCert, privateKey);
         }
         boolean ret = msg.verify();
         assertTrue("Failed to verify SCEP message.", ret);
-        cat.debug("<test01TestOpenScep()");
+        log.debug("<test01TestOpenScep()");
     }
 }
-

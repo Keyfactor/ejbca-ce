@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.bouncycastle.asn1.*;
 import org.bouncycastle.jce.netscape.NetscapeCertRequest;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
@@ -21,7 +21,7 @@ import se.anatom.ejbca.util.FileTools;
 
 public class RequestHelper {
 
-    static private Category cat = Category.getInstance( RequestHelper.class.getName() );
+    private static Logger log = Logger.getLogger(RequestHelper.class);
 
     private Admin administrator;
     private ServletDebug debug;
@@ -53,12 +53,12 @@ public class RequestHelper {
             nscr.setChallenge("challenge");
             if (nscr.verify("challenge") == false)
                 throw new SignRequestSignatureException("Invalid signature in NetscapeCertRequest, popo-verification failed.");
-            cat.debug("POPO verification succesful");
+            log.debug("POPO verification successful");
             X509Certificate cert = (X509Certificate) signsession.createCertificate(administrator, username, password, nscr.getPublicKey());
             //Certificate[] chain = ss.getCertificateChain();
 
             byte[] pkcs7 = signsession.createPKCS7(administrator, cert);
-            cat.debug("Created certificate (PKCS7) for "+ username);
+            log.debug("Created certificate (PKCS7) for "+ username);
             debug.print("<h4>Generated certificate:</h4>");
             debug.printInsertLineBreaks(cert.toString().getBytes());
             return pkcs7;
@@ -112,7 +112,7 @@ public class RequestHelper {
         }
         cert = (X509Certificate) signsession.createCertificate(administrator, username, password, new PKCS10RequestMessage(buffer));
         byte[] pkcs7 = signsession.createPKCS7(administrator, cert);
-        cat.debug("Created certificate (PKCS7) for " + username);
+        log.debug("Created certificate (PKCS7) for " + username);
         debug.print("<h4>Generated certificate:</h4>");
         debug.printInsertLineBreaks(cert.toString().getBytes());
         return Base64.encode(pkcs7);
@@ -154,8 +154,8 @@ public class RequestHelper {
                 RequestHelper.ieCertFormat(b64cert, ps);
         }
         ps.close();
-        cat.debug("Sent reply to IE client");
-        cat.debug(new String(b64cert));
+        log.debug("Sent reply to IE client");
+        log.debug(new String(b64cert));
     }
 
     static public void sendNewCertToNSClient(byte[] certs, HttpServletResponse out)
@@ -165,8 +165,8 @@ public class RequestHelper {
         out.setContentLength(certs.length);
         // Print the certificate
         out.getOutputStream().write(certs);
-        cat.debug("Sent reply to NS client");
-        cat.debug(new String(Base64.encode(certs)));
+        log.debug("Sent reply to NS client");
+        log.debug(new String(Base64.encode(certs)));
     }
     static public void sendNewB64Cert(byte[] b64cert, HttpServletResponse out)
         throws Exception {
@@ -182,8 +182,8 @@ public class RequestHelper {
         os.write(b64cert);
         os.write(end.getBytes());
         out.flushBuffer();
-        cat.debug("Sent reply to client");
-        cat.debug(new String(b64cert));
+        log.debug("Sent reply to client");
+        log.debug(new String(b64cert));
     }
 
 }

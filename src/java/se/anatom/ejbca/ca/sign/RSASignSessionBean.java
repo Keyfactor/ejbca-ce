@@ -1,4 +1,3 @@
-
 package se.anatom.ejbca.ca.sign;
 
 import java.rmi.*;
@@ -47,7 +46,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.67 2003-01-24 09:04:02 scop Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.68 2003-02-12 11:23:16 scop Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -237,7 +236,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                     certProfileId = SecConst.CERTPROFILE_FIXED_ENDUSER;
                     certProfile = certificateStore.getCertificateProfile(admin, certProfileId);
                 }
-                cat.debug("Using certificate profile with id "+certProfileId);
+                log.debug("Using certificate profile with id "+certProfileId);
                 int keyLength;
                 try {
                   keyLength = ((RSAPublicKey)pk).getModulus().bitLength();
@@ -247,11 +246,11 @@ public class RSASignSessionBean extends BaseSessionBean {
                                         pk.getClass().getName() +
                                         "), only RSA keys are supported.");
                 }
-                cat.debug("Keylength = "+keyLength); // bitBength() will return 1 less bit if BigInt i negative
+                log.debug("Keylength = "+keyLength); // bitBength() will return 1 less bit if BigInt i negative
                 if ( (keyLength < (certProfile.getMinimumAvailableBitLength()-1))
                     || (keyLength > (certProfile.getMaximumAvailableBitLength())) ) {
                         String msg = "Illegal key length "+keyLength;
-                        cat.error(msg);
+                        log.error(msg);
                         throw new IllegalKeyException(msg);
                     }
                 X509Certificate cert = makeBCCertificate(data, caSubjectName, pk, keyusage, certProfile);
@@ -675,6 +674,3 @@ public class RSASignSessionBean extends BaseSessionBean {
         return (X509CRL)crl;
     } // makeBCCRL
 } //RSASignSessionBean
-
-
-

@@ -10,13 +10,14 @@ import se.anatom.ejbca.util.*;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.log.Admin;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 import junit.framework.*;
 
 
-/** Tests Publishers.
+/**
+ * Tests Publishers.
  *
- * @version $Id: TestPublisher.java,v 1.12 2003-01-19 09:40:10 herrvendil Exp $
+ * @version $Id: TestPublisher.java,v 1.13 2003-02-12 11:23:17 scop Exp $
  */
 public class TestPublisher extends TestCase {
 
@@ -68,7 +69,7 @@ public class TestPublisher extends TestCase {
     +"0EGU/RgM3AWhyTAps66tdyipRavKmH6MMrN4ypW/qbhsd4o8JE9pxxn9zsQaNxYZ"
     +"SNbXM2/YxkdoRSjkrbb9DUdCmCR/kEA=").getBytes());
 
-    static Category cat = Category.getInstance( TestPublisher.class.getName() );
+    private static Logger log = Logger.getLogger(TestPublisher.class);
     private static Context ctx;
     private static IPublisherSessionRemote pub;
 
@@ -76,66 +77,64 @@ public class TestPublisher extends TestCase {
         super(name);
     }
     protected void setUp() throws Exception {
-        cat.debug(">setUp()");
+        log.debug(">setUp()");
         ctx = getInitialContext();
         Object obj = ctx.lookup("LDAPPublisherSession");
         IPublisherSessionHome home = (IPublisherSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IPublisherSessionHome.class);
         pub = home.create();
-        cat.debug("<setUp()");
+        log.debug("<setUp()");
     }
     protected void tearDown() throws Exception {
     }
     private Context getInitialContext() throws NamingException {
-        cat.debug(">getInitialContext");
+        log.debug(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        cat.debug("<getInitialContext");
+        log.debug("<getInitialContext");
         return ctx;
     }
 
     public void test01AddCertificate() throws Exception {
-        cat.debug(">test01AddCertificate()");
+        log.debug(">test01AddCertificate()");
         X509Certificate cert = CertTools.getCertfromByteArray(testcert);
         boolean ret = pub.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), cert, "test01", null, CertificateData.CERT_ACTIVE, SecConst.USER_ENDUSER);
         assertTrue("Storing certificate failed", ret);
-        cat.debug("<test01AddCertificate()");
+        log.debug("<test01AddCertificate()");
     }
     public void test02AddCertAgain() throws Exception {
-        cat.debug(">test02AddCertAgain()");
+        log.debug(">test02AddCertAgain()");
         X509Certificate cert = CertTools.getCertfromByteArray(testcert);
         boolean ret = pub.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), cert, "test02",  null, CertificateData.CERT_ACTIVE, SecConst.USER_ENDUSER);
         assertTrue("Storing certificate failed", ret);
-        cat.debug("<test02AddCertAgain()");
+        log.debug("<test02AddCertAgain()");
     }
 
     public void test03StoreCRL() throws Exception {
-        cat.debug(">test03StoreCRL()");
+        log.debug(">test03StoreCRL()");
         boolean ret = pub.storeCRL(new Admin(Admin.TYPE_INTERNALUSER), testcrl, null, 1);
         assertTrue("Storing CRL failed", ret);
-        cat.debug("<test03StoreCRL()");
+        log.debug("<test03StoreCRL()");
     }
 
     public void test04StoreCRLAgain() throws Exception {
-        cat.debug(">test04StoreCRLAgain()");
+        log.debug(">test04StoreCRLAgain()");
         boolean ret = pub.storeCRL(new Admin(Admin.TYPE_INTERNALUSER), testcrl, null, 1);
         assertTrue("Storing CRL failed", ret);
-        cat.debug("<test04StoreCRLAgain()");
+        log.debug("<test04StoreCRLAgain()");
     }
 
     public void test05AddCACert() throws Exception {
-        cat.debug(">test05AddCACert()");
+        log.debug(">test05AddCACert()");
         X509Certificate cacert = CertTools.getCertfromByteArray(testcacert);
         boolean ret = pub.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), cacert, "test05", null, CertificateData.CERT_ACTIVE, SecConst.CERTTYPE_CA);
         assertTrue("Storing certificate failed", ret);
-        cat.debug("<test05AddCACert()");
+        log.debug("<test05AddCACert()");
     }
     public void test06AddCACertAgain() throws Exception {
-        cat.debug(">test06AddCACertAgain()");
+        log.debug(">test06AddCACertAgain()");
         X509Certificate cacert = CertTools.getCertfromByteArray(testcacert);
         boolean ret = pub.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), cacert,"test06", null, CertificateData.CERT_ACTIVE, SecConst.CERTTYPE_CA);
         assertTrue("Storing certificate failed", ret);
-        cat.debug("<test06AddCACertAgain()");
+        log.debug("<test06AddCACertAgain()");
     }
 
 }
-
-

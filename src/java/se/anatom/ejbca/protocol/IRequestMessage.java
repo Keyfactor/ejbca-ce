@@ -10,7 +10,7 @@ import java.security.cert.X509Certificate;
 /** Base interface for request messages sent to the CA.
 * Implementors of this interface must also implement Serializable if they are to be sent to any EJB bussiness methods.
 *
-* @version  $Id: IRequestMessage.java,v 1.2 2003-01-29 16:15:59 anatom Exp $
+* @version  $Id: IRequestMessage.java,v 1.3 2003-02-12 11:23:18 scop Exp $
 */
 public interface  IRequestMessage {
 
@@ -23,7 +23,7 @@ public interface  IRequestMessage {
     public PublicKey getRequestPublicKey() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException;
     /** Verifies signatures, popo etc on the request message.
      * If verification fails the request should be considered invalid.
-     * @return True if verification was succesful, false if it failed.
+     * @return True if verification was successful, false if it failed.
      * @throws InvalidKeyException If the key used for verification is invalid.
      * @throws NoSuchProviderException if there is an error with the Provider.
      * @throws NoSuchAlgorithmException if the signature on the request is done with an unhandled algorithm.

@@ -4,11 +4,12 @@ import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import java.util.HashMap;
 import java.util.Date;
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 import se.anatom.ejbca.hardtoken.hardtokentypes.*;
 import se.anatom.ejbca.SecConst;
 
-/** Entity bean should not be used directly, use though Session beans.
+/**
+ * Entity bean should not be used directly, use though Session beans.
  *
  * Entity Bean representing a hard token in the ra.
  * Information stored:
@@ -20,16 +21,15 @@ import se.anatom.ejbca.SecConst;
  *  tokendata (Data saved concerning the hard token)
  * </pre>
  *
- * @version $Id: HardTokenDataBean.java,v 1.1 2003-02-06 15:35:46 herrvendil Exp $
- **/
-
+ * @version $Id: HardTokenDataBean.java,v 1.2 2003-02-12 11:23:17 scop Exp $
+ */
 public abstract class HardTokenDataBean implements javax.ejb.EntityBean {
 
 
 
-    private static Category log = Category.getInstance(HardTokenIssuerDataBean.class.getName() );
+    private static Logger log = Logger.getLogger(HardTokenIssuerDataBean.class);
 
-    protected EntityContext  ctx;
+    protected EntityContext ctx;
     public abstract String getTokenSN();
     public abstract void setTokenSN(String tokensn);
     
@@ -143,4 +143,3 @@ public abstract class HardTokenDataBean implements javax.ejb.EntityBean {
     }
 
 }
-

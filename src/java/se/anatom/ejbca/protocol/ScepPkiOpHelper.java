@@ -2,24 +2,25 @@ package se.anatom.ejbca.protocol;
 
 import java.io.IOException;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
 
-/** Helper class to handle SCEP (draft-nourse-scep-06.txt) requests.
-*
-* @version  $Id: ScepPkiOpHelper.java,v 1.5 2002-10-13 11:40:28 anatom Exp $
-*/
+/**
+ * Helper class to handle SCEP (draft-nourse-scep-06.txt) requests.
+ *
+ * @version  $Id: ScepPkiOpHelper.java,v 1.6 2003-02-12 11:23:18 scop Exp $
+ */
 public class ScepPkiOpHelper {
 
-    static private Category cat = Category.getInstance( ScepPkiOpHelper.class.getName() );
+    private static Logger log = Logger.getLogger(ScepPkiOpHelper.class);
 
     public ScepPkiOpHelper(byte[] msg) {
-        cat.debug(">ScepPkiOpHelper");
+        log.debug(">ScepPkiOpHelper");
         try {
             PKCS7RequestMessage req = new PKCS7RequestMessage(msg);
         } catch (IOException e) {
         }    
-        cat.debug("<ScepPkiOpHelper");
+        log.debug("<ScepPkiOpHelper");
     }
 
 }

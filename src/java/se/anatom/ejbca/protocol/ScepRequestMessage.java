@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.asn1.*;
@@ -29,15 +29,15 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.smime.SMIMECapability;
 import org.bouncycastle.asn1.cms.*;
 import org.bouncycastle.cms.*;
-import org.bouncycastle.cms.CMSException;
 
-/** Class to handle SCEP request messages sent to the CA.
+/**
+ * Class to handle SCEP request messages sent to the CA.
  *
-* @version  $Id: ScepRequestMessage.java,v 1.7 2003-01-22 09:06:12 scop Exp $
+ * @version  $Id: ScepRequestMessage.java,v 1.8 2003-02-12 11:23:18 scop Exp $
  */
 public class ScepRequestMessage implements IRequestMessage, Serializable {
 
-    static private Category cat = Category.getInstance( ScepRequestMessage.class.getName() );
+    private static Logger log = Logger.getLogger(ScepRequestMessage.class);
 
     private static String id_Verisign = "2.16.840.1.113733";
     private static String id_pki = id_Verisign + ".1";
@@ -95,14 +95,14 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
      * @throws IOException if the request can not be parsed.
      */
     public ScepRequestMessage(byte[] msg) throws IOException {
-        cat.debug(">ScepRequestMessage");
+        log.debug(">ScepRequestMessage");
         this.msg = msg;
         init();
-        cat.debug("<ScepRequestMessage");
+        log.debug("<ScepRequestMessage");
     }
 
     private void init() throws IOException {
-        cat.debug(">init");
+        log.debug(">init");
         //Provider BCJce = new org.bouncycastle.jce.provider.BouncyCastleProvider();
         //int result = Security.addProvider(BCJce);
         // Parse and verify the entegrity of the PKIOperation message PKCS#7
@@ -126,12 +126,12 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
                 while (attr.hasMoreElements()) {
                     Attribute a = new Attribute((ASN1Sequence)attr.nextElement());
                     //Attribute a = (Attribute)iter.next();
-                    cat.debug("Found attribute: "+a.getAttrType().getId());
+                    log.debug("Found attribute: "+a.getAttrType().getId());
                     if (a.getAttrType().getId().equals(id_messageType)) {
                         Enumeration values = a.getAttrValues().getObjects();
                         DERPrintableString str = DERPrintableString.getInstance(values.nextElement());
                         messageType = Integer.parseInt(str.getString());
-                        cat.debug("Messagetype = "+messageType);
+                        log.debug("Messagetype = "+messageType);
                         break; // we can olny handle one message type per message :-)
                     }
                 }
@@ -143,39 +143,39 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
                 ctoid = ci.getContentType().getId();
                 if (ctoid.equals(CMSObjectIdentifiers.data.getId())) {
                     DEROctetString content = (DEROctetString)ci.getContent();
-                    cat.debug("envelopedData is "+content.getOctets().length+" bytes.");
+                    log.debug("envelopedData is "+content.getOctets().length+" bytes.");
                     ASN1Sequence seq1 =(ASN1Sequence)new DERInputStream(new ByteArrayInputStream(content.getOctets())).readObject();
                     envEncData = new ContentInfo(seq1);
                     ctoid = envEncData.getContentType().getId();
                     if (ctoid.equals(CMSObjectIdentifiers.envelopedData.getId())) {
                         envData = new EnvelopedData((ASN1Sequence)envEncData.getContent());
                     } else {
-                        cat.error("EncapsulatedContentInfo does not contain PKCS7 envelopedData: "+ctoid);
+                        log.error("EncapsulatedContentInfo does not contain PKCS7 envelopedData: "+ctoid);
                         error = 2;
                     }
                 } else {
-                    cat.error("EncapsulatedContentInfo is not of type 'data': "+ctoid);
+                    log.error("EncapsulatedContentInfo is not of type 'data': "+ctoid);
                     error = 3;
                 }
 
             } else {
-                cat.error("This is not a certification request!");
+                log.error("This is not a certification request!");
                 error = 4;
             }
         } else {
-            cat.error("PKCSReq does not contain 'signedData': "+ctoid);
+            log.error("PKCSReq does not contain 'signedData': "+ctoid);
             error = 1;
         }
-        cat.debug("<init");
+        log.debug("<init");
     } // init
 
     private void decrypt() throws NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException, CMSException,
     NoSuchProviderException, BadPaddingException, InvalidAlgorithmParameterException, GeneralSecurityException, IOException {
-        cat.debug(">decrypt");
+        log.debug(">decrypt");
         // Now we are getting somewhere (pheew),
         // Now we just have to get the damn key...to decrypt the PKCS10
         if (envEncData == null) {
-            cat.error("No enveloped data to decrypt!");
+            log.error("No enveloped data to decrypt!");
             return;
         }
             CMSEnvelopedData ed = new CMSEnvelopedData(envEncData);
@@ -195,7 +195,7 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
             }
 /*
         if (envData == null) {
-            cat.error("No enveloped data to decrypt!");
+            log.error("No enveloped data to decrypt!");
             return;
         }
         Enumeration ris = envData.getRecipientInfos().getObjects();
@@ -207,20 +207,20 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
                 AlgorithmIdentifier keyEncAlg = AlgorithmIdentifier.getInstance(kti.getKeyEncryptionAlgorithm());
                 String id = keyEncAlg.getObjectId().getId();
                 if(id.equals(PKCSObjectIdentifiers.rsaEncryption.getId())) {
-                    cat.debug("Found key encrypted with RSA inside message.");
+                    log.debug("Found key encrypted with RSA inside message.");
                     //RecipientIdentifier rid = kti.getRecipientIdentifier();
                     DEREncodable rid = kti.getRecipientIdentifier().getId();
                     if (rid instanceof IssuerAndSerialNumber) {
-                        cat.debug("Issuer and serialnumer of recipient:");
-                        cat.debug("Issuer: "+((IssuerAndSerialNumber)rid).getName().toString());
-                        cat.debug("SerialNo: "+((IssuerAndSerialNumber)rid).getSerialNumber().getValue().toString());
-                        cat.debug("My key Issuer: "+cert.getIssuerDN().toString());
-                        cat.debug("My serialNo: "+cert.getSerialNumber().toString());
+                        log.debug("Issuer and serialnumer of recipient:");
+                        log.debug("Issuer: "+((IssuerAndSerialNumber)rid).getName().toString());
+                        log.debug("SerialNo: "+((IssuerAndSerialNumber)rid).getSerialNumber().getValue().toString());
+                        log.debug("My key Issuer: "+cert.getIssuerDN().toString());
+                        log.debug("My serialNo: "+cert.getSerialNumber().toString());
                     }
 
                     //boolean ok = checkKeys(cert.getPublicKey(), privateKey);
                     //if (!ok) {
-                    //    cat.error("Public and private keys do not match!");
+                    //    log.error("Public and private keys do not match!");
                     //    return;
                     //}
 
@@ -238,20 +238,20 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
 //                    Cipher cipher = Cipher.getInstance("RSA/2/PCKS1PADDING", "BC");
                     Cipher cipher = Cipher.getInstance(id, "BC");
                     cipher.init(Cipher.DECRYPT_MODE, privateKey);
-                    cat.info("blocksize="+cipher.getBlockSize());
-                    cat.info("keysize="+((RSAPrivateKey)privateKey).getPrivateExponent().bitLength());
+                    log.info("blocksize="+cipher.getBlockSize());
+                    log.info("keysize="+((RSAPrivateKey)privateKey).getPrivateExponent().bitLength());
                     byte[] encKey = kti.getEncryptedKey().getOctets();
-                    cat.info("Encrypted keybytes: "+encKey.length);
+                    log.info("Encrypted keybytes: "+encKey.length);
                     byte[] dekBytes = cipher.doFinal(encKey);
-                    cat.info("Decrypted keybytes: "+dekBytes.length);
+                    log.info("Decrypted keybytes: "+dekBytes.length);
                     byte[] cekBytes = unpad(dekBytes);
-                    cat.info("Unpadded keybytes: "+cekBytes.length);
+                    log.info("Unpadded keybytes: "+cekBytes.length);
                     AlgorithmIdentifier aid = envData.getEncryptedContentInfo().getContentEncryptionAlgorithm();
                     String alg = aid.getObjectId().getId();
-                    cat.info("Symm alg="+alg);
+                    log.info("Symm alg="+alg);
                     AlgorithmParameterSpec iv = getIv(alg, aid.getParameters());
                     SecretKey cek = getContentEncryptionKey(cekBytes, alg);
-                    cat.debug("Extracted secret key.");
+                    log.debug("Extracted secret key.");
                     byte[] enc = envData.getEncryptedContentInfo().getEncryptedContent().getOctets();
                     FileOutputStream fos1 = new FileOutputStream("C:\\pkcs10.enc");
                     fos1.write(enc);
@@ -259,13 +259,13 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
 
                     cipher = getCipher(alg);
                     if(iv == null) {
-                        cat.debug("IV is null.");
+                        log.debug("IV is null.");
                         cipher.init(Cipher.DECRYPT_MODE, cek);
                     } else {
-                        cat.debug("IV is NOT null.");
-                    cat.info("blocksize="+cipher.getBlockSize());
-                    cat.info("key alg="+cek.getAlgorithm());
-                    cat.info("enc key size="+cekBytes.length);
+                        log.debug("IV is NOT null.");
+                    log.info("blocksize="+cipher.getBlockSize());
+                    log.info("key alg="+cek.getAlgorithm());
+                    log.info("enc key size="+cekBytes.length);
                     cipher.init(Cipher.DECRYPT_MODE, cek, iv);
                     }
                     byte[] pkcs10Bytes = unpad(cipher.doFinal(enc));
@@ -276,22 +276,22 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
                     DERObject derobj = new DERInputStream(new ByteArrayInputStream(pkcs10Bytes)).readObject();
                     DERConstructedSequence seq = (DERConstructedSequence)derobj;
                     pkcs10 = new PKCS10CertificationRequest(seq);
-                    cat.debug("Succesfully extracted PKCS10.");
+                    log.debug("Successfully extracted PKCS10.");
                 } else {
-                    cat.error("Key not encrypted with RSA!");
+                    log.error("Key not encrypted with RSA!");
                     error = 4;
                 }
             } else {
-                cat.error("RecipientInfo is not KeyTransRecipientInfo!");
+                log.error("RecipientInfo is not KeyTransRecipientInfo!");
                 error = 5;
             }
         }
         */
-        cat.debug("<decrypt");
+        log.debug("<decrypt");
     } // decrypt
 
     public PublicKey getRequestPublicKey() {
-        cat.debug(">getRequestPublicKey()");
+        log.debug(">getRequestPublicKey()");
         PublicKey ret = null;
         try {
             if (envData == null) {
@@ -300,21 +300,21 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
             }
             ret = pkcs10.getPublicKey();
         } catch (IOException e) {
-            cat.error("PKCS7 not inited!");
+            log.error("PKCS7 not inited!");
             return null;
         } catch (GeneralSecurityException e) {
-            cat.error("Error in PKCS7:", e);
+            log.error("Error in PKCS7:", e);
             return null;
         } catch (CMSException e) {
-            cat.error("Error in PKCS7:", e);
+            log.error("Error in PKCS7:", e);
             return null;
         }
-        cat.debug("<getRequestPublicKey()");
+        log.debug("<getRequestPublicKey()");
         return ret;
     }
 
     public boolean verify() {
-        cat.debug(">verify()");
+        log.debug(">verify()");
         boolean ret = false;
         try {
             if (pkcs10 == null) {
@@ -323,16 +323,16 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
             }
             ret = pkcs10.verify();
         } catch (IOException e) {
-            cat.error("PKCS7 not inited!");
+            log.error("PKCS7 not inited!");
             return false;
         } catch (GeneralSecurityException e) {
-            cat.error("Error in PKCS7:", e);
+            log.error("Error in PKCS7:", e);
             return false;
         } catch (CMSException e) {
-            cat.error("Error in PKCS7:", e);
+            log.error("Error in PKCS7:", e);
             return false;
         }
-        cat.debug("<verify()");
+        log.debug("<verify()");
         return ret;
     }
 
@@ -357,7 +357,7 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
             Cipher cipher2 = Cipher.getInstance("RSA/ECB/PKCS1PADDING", "BC");
             cipher2.init(Cipher.DECRYPT_MODE, privK);
             byte[] out = cipher2.doFinal(textout);
-            cat.debug("out="+new String(out));
+            log.debug("out="+new String(out));
             return in.equals(new String(out));
         } catch (Exception e) {
             return false;
@@ -402,7 +402,7 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
         int  _padInt = 0x000000FF & _pad;
 
         if((_padInt < 1) || (_padInt > 8)) {
-            cat.info("Unpadded");
+            log.info("Unpadded");
             return _dec;
         }
 
@@ -416,13 +416,13 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
         }
 
         if(_padded) {
-            cat.info("Padded");
+            log.info("Padded");
 
             byte[] _buf = new byte[_dec.length - _padInt];
             System.arraycopy(_dec, 0, _buf, 0, _buf.length);
             return _buf;
         }
-        cat.info("Unpadded");
+        log.info("Unpadded");
 
         return _dec;
     }
@@ -431,11 +431,11 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
         throws CMSException
     {
         // get 3des parameter spec
-        cat.debug("alg="+alg);
+        log.debug("alg="+alg);
         if(alg.equals(SMIMECapability.dES_CBC.getId())) {
             ASN1OctetString iv = (ASN1OctetString)tmp;
             byte[] ivoct = iv.getOctets();
-            cat.info("IV length ="+ivoct.length);
+            log.info("IV length ="+ivoct.length);
 
             return new IvParameterSpec( ivoct );
         } else if(alg.equals(PKCSObjectIdentifiers.des_EDE3_CBC.getId())) {

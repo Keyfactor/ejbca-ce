@@ -3,7 +3,7 @@ package se.anatom.ejbca.hardtoken;
 import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 
-import org.apache.log4j.Category;
+import org.apache.log4j.Logger;
 
 /** Entity bean should not be used directly, use though Session beans.
  *
@@ -14,14 +14,13 @@ import org.apache.log4j.Category;
  *  tokensn 
  * </pre>
  *
- * @version $Id: HardTokenCertificateMapBean.java,v 1.3 2003-02-09 15:02:18 anatom Exp $
- **/
-
+ * @version $Id: HardTokenCertificateMapBean.java,v 1.4 2003-02-12 11:23:17 scop Exp $
+ */
 public abstract class HardTokenCertificateMapBean implements javax.ejb.EntityBean {
 
 
 
-    private static Category log = Category.getInstance(HardTokenIssuerDataBean.class.getName() );
+    private static Logger log = Logger.getLogger(HardTokenIssuerDataBean.class);
 
     protected EntityContext  ctx;  
     
@@ -85,4 +84,3 @@ public abstract class HardTokenCertificateMapBean implements javax.ejb.EntityBea
     }
 
 }
-

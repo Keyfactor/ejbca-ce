@@ -12,7 +12,7 @@ import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Hex;
 import se.anatom.ejbca.SecConst;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
 
 /** Entity bean should not be used directly, use though Session beans.
@@ -40,12 +40,11 @@ import org.apache.log4j.*;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.16 2003-01-29 16:15:59 anatom Exp $
- **/
-
+ * @version $Id: UserDataBean.java,v 1.17 2003-02-12 11:23:18 scop Exp $
+ */
 public abstract class UserDataBean implements javax.ejb.EntityBean {
 
-    private static Category log = Category.getInstance( UserDataBean.class.getName() );
+    private static Logger log = Logger.getLogger(UserDataBean.class);
     protected EntityContext  ctx;
 
 
@@ -298,4 +297,3 @@ public abstract class UserDataBean implements javax.ejb.EntityBean {
     }
 
 }
-

@@ -2,7 +2,7 @@ package se.anatom.ejbca.ra.authorization;
 
 import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
 
 /** Entity bean should not be used directly, use though Session beans.
@@ -14,11 +14,11 @@ import org.apache.log4j.*;
  * Access rule
  * </pre>
  *
- **/
-
+ * @version $Id: AccessRulesDataBean.java,v 1.4 2003-02-12 11:23:18 scop Exp $
+ */
 public abstract class AccessRulesDataBean implements javax.ejb.EntityBean {
 
-    private static Category log = Category.getInstance( AccessRulesDataBean.class.getName() );
+    private static Logger log = Logger.getLogger(AccessRulesDataBean.class);
     protected EntityContext  ctx;
 
     public abstract int getPK();
@@ -78,4 +78,3 @@ public abstract class AccessRulesDataBean implements javax.ejb.EntityBean {
     }
 
 }
-

@@ -19,7 +19,7 @@ import javax.naming.InitialContext;
 
 import se.anatom.ejbca.util.Base64;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
@@ -61,11 +61,11 @@ import se.anatom.ejbca.log.Admin;
  * relative.<br>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.26 2003-02-03 13:13:35 scop Exp $
+ * @version $Id: CertReqServlet.java,v 1.27 2003-02-12 11:23:14 scop Exp $
  */
 public class CertReqServlet extends HttpServlet {
 
-    static private Category cat = Category.getInstance( CertReqServlet.class.getName() );
+    private static Logger log = Logger.getLogger(CertReqServlet.class);
 
     private ISignSessionHome signsessionhome = null;
     private IUserAdminSessionHome userdatahome;
@@ -119,7 +119,7 @@ public class CertReqServlet extends HttpServlet {
             ISignSessionRemote signsession = signsessionhome.create();
             RequestHelper helper = new RequestHelper(administrator, debug);
 
-            cat.debug("Got request for " + username + "/" + password);
+            log.debug("Got request for " + username + "/" + password);
             debug.print("<h3>username: "+username+"</h3>");
 
             // Check user
@@ -148,7 +148,7 @@ public class CertReqServlet extends HttpServlet {
               // first check if it is a netcsape request,
               if (request.getParameter("keygen") != null) {
                   byte[] reqBytes=request.getParameter("keygen").getBytes();
-                  cat.debug("Received NS request:"+new String(reqBytes));
+                  log.debug("Received NS request:"+new String(reqBytes));
                   if (reqBytes != null) {
                       byte[] certs = helper.nsCertRequest(signsession, reqBytes, username, password);
                       RequestHelper.sendNewCertToNSClient(certs, response);
@@ -158,7 +158,7 @@ public class CertReqServlet extends HttpServlet {
                   byte[] reqBytes=request.getParameter("pkcs10").getBytes();
                   if (reqBytes == null)
                       reqBytes=request.getParameter("PKCS10").getBytes();
-                  cat.debug("Received IE request:"+new String(reqBytes));
+                  log.debug("Received IE request:"+new String(reqBytes));
                   if (reqBytes != null) {
                       byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password);
                       debug.ieCertFix(b64cert);
@@ -174,43 +174,43 @@ public class CertReqServlet extends HttpServlet {
               }
             }
         } catch (ObjectNotFoundException oe) {
-            cat.debug("Non existens username!");
+            log.debug("Non existent username!");
             debug.printMessage("Non existent username!");
             debug.printMessage("To generate a certificate a valid username and password must be entered.");
             debug.printDebugInfo();
             return;
         } catch (AuthStatusException ase) {
-            cat.debug("Wrong user status!");
+            log.debug("Wrong user status!");
             debug.printMessage("Wrong user status!");
             debug.printMessage("To generate a certificate for a user the user must have status new, failed or inprocess.");
             debug.printDebugInfo();
             return;
         } catch (AuthLoginException ale) {
-            cat.debug("Wrong password for user!");
+            log.debug("Wrong password for user!");
             debug.printMessage("Wrong username or password!");
             debug.printMessage("To generate a certificate a valid username and password must be entered.");
             debug.printDebugInfo();
             return;
         } catch (SignRequestException re) {
-            cat.debug("Invalid request!");
+            log.debug("Invalid request!");
             debug.printMessage("Invalid request!");
             debug.printMessage("Please supply a correct request.");
             debug.printDebugInfo();
             return;
         } catch (SignRequestSignatureException se) {
-            cat.debug("Invalid signature on certificate request!");
+            log.debug("Invalid signature on certificate request!");
             debug.printMessage("Invalid signature on certificate request!");
             debug.printMessage("Please supply a correctly signed request.");
             debug.printDebugInfo();
             return;
         } catch (java.lang.ArrayIndexOutOfBoundsException ae) {
-            cat.debug("Empty or invalid request received.");
+            log.debug("Empty or invalid request received.");
             debug.printMessage("Empty or invalid request!");
             debug.printMessage("Please supply a correct request.");
             debug.printDebugInfo();
             return;
         } catch (Exception e) {
-            cat.debug(e);
+            log.debug(e);
             debug.print("<h3>parameter name and values: </h3>");
             Enumeration paramNames=request.getParameterNames();
             while (paramNames.hasMoreElements()) {
@@ -224,12 +224,12 @@ public class CertReqServlet extends HttpServlet {
     } //doPost
 
     public void doGet(HttpServletRequest request,  HttpServletResponse response) throws java.io.IOException, ServletException {
-        cat.debug(">doGet()");
+        log.debug(">doGet()");
         response.setHeader("Allow", "POST");
         ServletDebug debug = new ServletDebug(request,response);
         debug.print("The certificate request servlet only handles POST method.");
         debug.printDebugInfo();
-        cat.debug("<doGet()");
+        log.debug("<doGet()");
     } // doGet
 
     private void sendP12Token(KeyStore ks, String username, String kspassword, HttpServletResponse out)

@@ -15,7 +15,7 @@ import se.anatom.ejbca.util.KeyTools;
 
 /** eceive certificate reply as result of certificate request.
  *
- * @version $Id: CaRecRepCommand.java,v 1.2 2002-04-13 18:40:15 anatom Exp $
+ * @version $Id: CaRecRepCommand.java,v 1.3 2003-02-12 11:23:14 scop Exp $
  */
 public class CaRecRepCommand extends BaseCaAdminCommand {
 
@@ -94,7 +94,7 @@ public class CaRecRepCommand extends BaseCaAdminCommand {
             KeyStore ks = KeyTools.createP12("privateKey", privKey, cert, rootcert);
             FileOutputStream os = new FileOutputStream(ksfile);
             ks.store(os, storepwd.toCharArray());
-            System.out.println("Keystore '"+ksfile+"' generated succefully.");
+            System.out.println("Keystore '"+ksfile+"' generated successfully.");
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

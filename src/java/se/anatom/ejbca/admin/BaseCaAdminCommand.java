@@ -27,7 +27,7 @@ import se.anatom.ejbca.log.Admin;
 
 /** Base for CA commands, contains comom functions for CA operations
  *
- * @version $Id: BaseCaAdminCommand.java,v 1.9 2003-01-27 13:46:50 scop Exp $
+ * @version $Id: BaseCaAdminCommand.java,v 1.10 2003-02-12 11:23:13 scop Exp $
  */
 public abstract class BaseCaAdminCommand extends BaseAdminCommand {
 
@@ -97,7 +97,7 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
         os1.write(Base64.encode(bOut.toByteArray()));
         os1.write("\n-----END CERTIFICATE REQUEST-----\n".getBytes());
         os1.close();
-        System.out.println("CertificationRequest '"+reqfile+"' generated succefully.");
+        System.out.println("CertificationRequest '"+reqfile+"' generated successfully.");
         debug("<makeCertRequest: dn='"+dn+"', reqfile='"+reqfile+"'.");
     } // makeCertRequest
 

@@ -11,7 +11,7 @@ import javax.servlet.http.*;
 import javax.rmi.PortableRemoteObject;
 import javax.naming.InitialContext;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
@@ -37,11 +37,11 @@ import se.anatom.ejbca.util.Base64;
 * 6. sign the reply data (PKCS#7) from the previous step
 * 7. output the result as a der encoded block on stdout
 * -----
-* @version  $Id: ScepServlet.java,v 1.6 2003-02-03 11:30:25 scop Exp $
+* @version  $Id: ScepServlet.java,v 1.7 2003-02-12 11:23:18 scop Exp $
 */
 public class ScepServlet extends HttpServlet {
 
-    static private Category cat = Category.getInstance( ScepServlet.class.getName() );
+    private static Logger log = Logger.getLogger(ScepServlet.class);
 
     private ISignSessionHome home = null;
 
@@ -62,13 +62,13 @@ public class ScepServlet extends HttpServlet {
     }
 
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        cat.debug(">doPost()");
+        log.debug(">doPost()");
         doGet(request, response);
-        cat.debug("<doPost()");
+        log.debug("<doPost()");
     } //doPost
 
     public void doGet(HttpServletRequest request,  HttpServletResponse response) throws java.io.IOException, ServletException {
-        cat.debug(">doGet()");
+        log.debug(">doGet()");
         Debug debug = new Debug(request, response);
         try {
             String operation = request.getParameter("operation");
@@ -80,9 +80,9 @@ public class ScepServlet extends HttpServlet {
                 return;
             }
             Admin administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
-            cat.debug("Got request '" + operation + "'");
+            log.debug("Got request '" + operation + "'");
             debug.print("<h3>Operation: " + operation + "</h3>");
-            cat.debug("Message: "+message);
+            log.debug("Message: "+message);
             ISignSessionRemote ss = home.create();
             if (operation.equals("PKIOperation")) {
                 byte[] scepmsg = Base64.decode(message.getBytes());
@@ -94,13 +94,13 @@ public class ScepServlet extends HttpServlet {
                 debug.printDebugInfo();
             }
         } catch (java.lang.ArrayIndexOutOfBoundsException ae) {
-            cat.debug("Empty or invalid request received.");
+            log.debug("Empty or invalid request received.");
             debug.printMessage("Empty or invalid request!");
             debug.printMessage("Please supply a correct request.");
             debug.printDebugInfo();
             return;
         } catch (Exception e) {
-            cat.debug(e);
+            log.debug(e);
             debug.print("<h3>parameter name and values: </h3>");
             Enumeration paramNames = request.getParameterNames();
             while (paramNames.hasMoreElements()) {
@@ -111,7 +111,7 @@ public class ScepServlet extends HttpServlet {
             debug.takeCareOfException(e);
             debug.printDebugInfo();
         }
-        cat.debug("<doGet()");
+        log.debug("<doGet()");
     } // doGet
 
     /**

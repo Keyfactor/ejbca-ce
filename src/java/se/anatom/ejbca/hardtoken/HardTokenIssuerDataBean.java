@@ -4,8 +4,7 @@ import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import java.util.HashMap;
 import java.math.BigInteger;
-import org.apache.log4j.*;
-import se.anatom.ejbca.hardtoken.HardTokenIssuer;
+import org.apache.log4j.Logger;
 
 /** Entity bean should not be used directly, use though Session beans.
  *
@@ -19,14 +18,14 @@ import se.anatom.ejbca.hardtoken.HardTokenIssuer;
  *  hardtokenissuer (Data saved concerning the hard token issuer)
  * </pre>
  *
- * @version $Id: HardTokenIssuerDataBean.java,v 1.1 2003-02-06 15:35:46 herrvendil Exp $
+ * @version $Id: HardTokenIssuerDataBean.java,v 1.2 2003-02-12 11:23:17 scop Exp $
  **/
 
 public abstract class HardTokenIssuerDataBean implements javax.ejb.EntityBean {
 
 
 
-    private static Category log = Category.getInstance(HardTokenIssuerDataBean.class.getName() );
+    private static Logger log = Logger.getLogger(HardTokenIssuerDataBean.class);
 
     protected EntityContext  ctx;
     public abstract Integer getId();
@@ -123,4 +122,3 @@ public abstract class HardTokenIssuerDataBean implements javax.ejb.EntityBean {
     }
 
 }
-

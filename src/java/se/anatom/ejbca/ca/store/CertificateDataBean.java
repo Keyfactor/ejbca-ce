@@ -6,7 +6,7 @@ import java.security.cert.*;
 import java.io.IOException;
 import java.util.Date;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.util.CertTools;
@@ -29,10 +29,12 @@ import se.anatom.ejbca.ca.crl.RevokedCertInfo;
  * Revocation date (revocationDate)
  * Revocation reason (revocationReason)
  * </pre>
- **/
+ *
+ * @version $Id: CertificateDataBean.java,v 1.14 2003-02-12 11:23:17 scop Exp $
+ */
 public abstract class CertificateDataBean implements javax.ejb.EntityBean {
 
-    private static Category cat = Category.getInstance( CertificateDataBean.class.getName() );
+    private static Logger log = Logger.getLogger(CertificateDataBean.class);
 
     protected EntityContext  ctx;
 
@@ -88,10 +90,10 @@ public abstract class CertificateDataBean implements javax.ejb.EntityBean {
         try {
             cert = CertTools.getCertfromByteArray(Base64.decode(getBase64Cert().getBytes()));
         } catch (IOException ioe) {
-            cat.error("Can't decode certificate.", ioe);
+            log.error("Can't decode certificate.", ioe);
             return null;
         } catch (CertificateException ce) {
-            cat.error("Can't decode certificate.", ce);
+            log.error("Can't decode certificate.", ce);
             return null;
         }
         return cert;
@@ -107,7 +109,7 @@ public abstract class CertificateDataBean implements javax.ejb.EntityBean {
             setIssuerDN(CertTools.stringToBCDNString(tmpcert.getIssuerDN().toString()));
             setSerialNumber(tmpcert.getSerialNumber().toString());
         } catch (CertificateEncodingException cee) {
-            cat.error("Can't extract DER encoded certificate information.", cee);
+            log.error("Can't extract DER encoded certificate information.", cee);
         }
     }
     public void setIssuer(String dn) {
@@ -152,13 +154,13 @@ public abstract class CertificateDataBean implements javax.ejb.EntityBean {
             String fp = CertTools.getFingerprintAsString(tmpcert);
             setFingerprint(fp);
         } catch (CertificateEncodingException cee) {
-            cat.error("Can't extract DER encoded certificate information.", cee);
+            log.error("Can't extract DER encoded certificate information.", cee);
             return null;
         }
         // Make sure names are always looking the same
         setSubjectDN(CertTools.stringToBCDNString(tmpcert.getSubjectDN().toString()));
         setIssuerDN(CertTools.stringToBCDNString(tmpcert.getIssuerDN().toString()));
-        cat.debug("Creating certdata, subject="+getSubjectDN()+", issuer="+getIssuerDN());
+        log.debug("Creating certdata, subject="+getSubjectDN()+", issuer="+getIssuerDN());
         setSerialNumber(tmpcert.getSerialNumber().toString());
         // Default values for status and type
         setStatus(CertificateData.CERT_UNASSIGNED);

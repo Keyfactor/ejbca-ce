@@ -12,7 +12,7 @@ import se.anatom.ejbca.util.CertTools;
 
 /** makeroot CA admin command, generates keys and creates a keystore (PKCS12) to be used by the CA
  *
- * @version $Id: CaMakeRootCommand.java,v 1.4 2002-10-22 08:54:26 anatom Exp $
+ * @version $Id: CaMakeRootCommand.java,v 1.5 2003-02-12 11:23:14 scop Exp $
  */
 public class CaMakeRootCommand extends BaseCaAdminCommand {
 
@@ -59,7 +59,7 @@ public class CaMakeRootCommand extends BaseCaAdminCommand {
                 } catch (Exception e) {
                     throw new ErrorAdminCommandException(e);
                 }
-                System.out.println("Keystore "+filename+" generated succefully.");
+                System.out.println("Keystore "+filename+" generated successfully.");
     } // exceute
 
 } //CaMakeRootCommand

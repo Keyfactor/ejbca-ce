@@ -9,7 +9,7 @@ import javax.naming.*;
 import javax.ejb.*;
 import java.security.cert.X509Certificate;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.log.ILogSessionRemote;
@@ -23,11 +23,11 @@ import se.anatom.ejbca.SecConst;
 /**
  * Remote interface for bean used by hardtoken batchprograms to retrieve users to generate from EJBCA RA. 
  *
- * @version $Id: LocalEjbcaHardTokenBatchJobSessionBean.java,v 1.2 2003-02-09 14:56:16 anatom Exp $
+ * @version $Id: LocalEjbcaHardTokenBatchJobSessionBean.java,v 1.3 2003-02-12 11:23:17 scop Exp $
  */
 public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
 
-    private static Category cat = Category.getInstance(LocalEjbcaHardTokenBatchJobSessionBean.class.getName());
+    private static Logger log = Logger.getLogger(LocalEjbcaHardTokenBatchJobSessionBean.class);
     
     /** Columns in the database used in select */
     private final String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearpassword, timeCreated, timeModified, endEntityprofileId, certificateProfileId, tokenType, hardTokenIssuerId";    

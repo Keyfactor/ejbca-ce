@@ -2,7 +2,7 @@ package se.anatom.ejbca.ra.authorization;
 
 import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
 
 /** Entity bean should not be used directly, use though Session beans.
@@ -15,12 +15,11 @@ import org.apache.log4j.*;
  *   matchvalue
  * </pre>
  *
- * @version $Id: AdminEntityDataBean.java,v 1.1 2002-10-24 20:06:48 herrvendil Exp $
- **/
-
+ * @version $Id: AdminEntityDataBean.java,v 1.2 2003-02-12 11:23:18 scop Exp $
+ */
 public abstract class AdminEntityDataBean implements javax.ejb.EntityBean {
 
-    private static Category log = Category.getInstance( AdminEntityDataBean.class.getName() );
+    private static Logger log = Logger.getLogger(AdminEntityDataBean.class);
     protected EntityContext  ctx;
 
     public abstract int          getPK();
@@ -90,4 +89,3 @@ public abstract class AdminEntityDataBean implements javax.ejb.EntityBean {
     }
 
 }
-

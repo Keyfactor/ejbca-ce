@@ -2,9 +2,10 @@ package se.anatom.ejbca.log;
 
 import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
-/** Entity bean should not be used directly, use though Session beans.
+/**
+ * Entity bean should not be used directly, use though Session beans.
  *
  * Entity Bean representing the log configuration data.
  * Information stored:
@@ -14,12 +15,12 @@ import org.apache.log4j.*;
  * logentryrownumber is the number of the last row number in the log entry database.
  * </pre>
  *
- **/
-
+ * @version $Id: LogConfigurationDataBean.java,v 1.3 2003-02-12 11:23:18 scop Exp $
+ */
 public abstract class LogConfigurationDataBean implements javax.ejb.EntityBean {
 
-    private static Category log = Category.getInstance( LogConfigurationDataBean.class.getName() );
-    protected EntityContext  ctx;
+    private static Logger log = Logger.getLogger(LogConfigurationDataBean.class);
+    protected EntityContext ctx;
 
     public abstract Integer getId();
     public abstract void setId(Integer id);
@@ -117,4 +118,3 @@ public abstract class LogConfigurationDataBean implements javax.ejb.EntityBean {
     }
 
 }
-

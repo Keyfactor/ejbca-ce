@@ -6,7 +6,7 @@ import java.security.cert.*;
 import java.io.IOException;
 import java.util.Date;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Base64;
@@ -23,12 +23,14 @@ import se.anatom.ejbca.util.Base64;
  * thisUpdate (thisUpdate)
  * nextUpdate (nextUpdate)
  * </pre>
- **/
+ *
+ * @version $Id: CRLDataBean.java,v 1.8 2003-02-12 11:23:17 scop Exp $
+ */
 public abstract class CRLDataBean implements javax.ejb.EntityBean {
 
-    private static Category cat = Category.getInstance( CRLDataBean.class.getName() );
+    private static Logger log = Logger.getLogger(CRLDataBean.class);
 
-    protected EntityContext  ctx;
+    protected EntityContext ctx;
 
     public abstract int getCRLNumber();
     public abstract void setCRLNumber(int cRLNumber);
@@ -60,13 +62,13 @@ public abstract class CRLDataBean implements javax.ejb.EntityBean {
             String b64Crl = getBase64Crl();
             crl = CertTools.getCRLfromByteArray(Base64.decode(b64Crl.getBytes()));
         } catch (IOException ioe) {
-            cat.error("Can't decode CRL.", ioe);
+            log.error("Can't decode CRL.", ioe);
             return null;
         } catch (CRLException ce) {
-            cat.error("Can't decode CRL.", ce);
+            log.error("Can't decode CRL.", ce);
             return null;
         } catch (CertificateException ce) {
-            cat.error("Can't generating CRL.", ce);
+            log.error("Can't generating CRL.", ce);
             return null;
         }
         return crl;
@@ -76,7 +78,7 @@ public abstract class CRLDataBean implements javax.ejb.EntityBean {
             String b64Crl = new String(Base64.encode((incrl).getEncoded()));
             setBase64Crl(b64Crl);
         } catch (CRLException ce) {
-            cat.error("Can't extract DER encoded CRL.", ce);
+            log.error("Can't extract DER encoded CRL.", ce);
         }
     }
     public void setIssuer(String dn) {
@@ -115,12 +117,12 @@ public abstract class CRLDataBean implements javax.ejb.EntityBean {
             setBase64Crl(b64Crl);
             setFingerprint(CertTools.getFingerprintAsString(incrl));
         } catch (CRLException ce) {
-            cat.error("Can't extract DER encoded CRL.", ce);
+            log.error("Can't extract DER encoded CRL.", ce);
             return null;
         }
         // Make sure names are always looking the same
         setIssuerDN(CertTools.stringToBCDNString(incrl.getIssuerDN().toString()));
-        cat.debug("Creating crldata, issuer="+getIssuerDN());
+        log.debug("Creating crldata, issuer="+getIssuerDN());
         // Default values for cafp
         setCAFingerprint(null);
         setCRLNumber(number);

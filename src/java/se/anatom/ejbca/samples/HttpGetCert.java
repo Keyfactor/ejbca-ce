@@ -13,7 +13,8 @@ import java.security.cert.*;
 import java.security.Provider;
 import java.security.Security;
 
-import org.apache.log4j.*;
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Logger;
 
 import org.bouncycastle.jce.*;
 import org.bouncycastle.asn1.*;
@@ -33,12 +34,12 @@ import se.anatom.ejbca.util.*;
  * <li>password - password for the above user.
  * </ul>
  *
- * @version $Id: HttpGetCert.java,v 1.6 2003-01-12 17:16:32 anatom Exp $
+ * @version $Id: HttpGetCert.java,v 1.7 2003-02-12 11:23:19 scop Exp $
  *
  */
 public class HttpGetCert {
 
-    private static Category cat = Category.getInstance(HttpGetCert.class.getName());
+    private static Logger log = Logger.getLogger(HttpGetCert.class);
 
     private X509Certificate webcert = null;
 
@@ -46,14 +47,14 @@ public class HttpGetCert {
      * Constructor
      */
     public HttpGetCert() throws java.io.IOException {
-        cat.debug(">HttpGetCert:");
+        log.debug(">HttpGetCert:");
 
         // Use for SSL connections
         /*
         System.setProperty("java.protocol.handler.pkgs","com.sun.net.ssl.internal.www.protocol");
         java.security.Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
         */
-        cat.debug("<HttpGetCert:");
+        log.debug("<HttpGetCert:");
     } // HttpGetCert
 
     /**
@@ -66,12 +67,12 @@ public class HttpGetCert {
         // Use for SSL connections
         /*
     public void setSSLTrustedServerCert(byte[] cert) throws java.security.cert.CertificateException {
-        cat.debug(">setSSLTrustedServerCert:");
+        log.debug(">setSSLTrustedServerCert:");
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
         webcert = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(cert));
         if ( CertTools.isSelfSigned( webcert ) )
             throw new IllegalArgumentException("Webcert certificate is not self signed (not a root CA certificate).");
-        cat.debug("<setSSLTrustedServerCert:");
+        log.debug("<setSSLTrustedServerCert:");
 
     } // setSSLTrustedServerCert
     */
@@ -84,7 +85,7 @@ public class HttpGetCert {
     // Use for SSL connections
     /*
     private SSLSocketFactory getSSLFactory() throws IllegalArgumentException, Exception {
-        cat.debug( ">getSSLFactory" );
+        log.debug( ">getSSLFactory" );
         SSLContext ctx = SSLContext.getInstance( "SSL" );
         KeyManagerFactory kmf = KeyManagerFactory.getInstance( "SunX509" );
         String proxyHost = null;
@@ -110,7 +111,7 @@ public class HttpGetCert {
 
         ctx.init( null, tmf.getTrustManagers(), null );
 
-        cat.debug( "<getSSLFactory" );
+        log.debug( "<getSSLFactory" );
         return ctx.getSocketFactory();
     }
     */
@@ -146,11 +147,11 @@ public class HttpGetCert {
      */
     public void sendHttpReq(String requestUrl, String request, String username, String password)
     throws Exception {
-        cat.debug(">sendHttpReq: request=" + request.toString() + ", username=" + username + ", password=" + password);
+        log.debug(">sendHttpReq: request=" + request.toString() + ", username=" + username + ", password=" + password);
         if (requestUrl == null)
             throw new IllegalArgumentException("requesturl can not be  null.");
 
-        cat.debug("Sending request to: " + requestUrl);
+        log.debug("Sending request to: " + requestUrl);
 
         URL url = new URL(requestUrl);
         HttpURLConnection con = (HttpURLConnection)getUrlConnection(url);
@@ -173,14 +174,14 @@ public class HttpGetCert {
             System.out.println(inputLine);
         }
         if (con.getResponseCode() == 200)
-            cat.debug("Received certificate reply.");
+            log.debug("Received certificate reply.");
         else
             throw new Exception("Error sending PKCS10-request.");
 
         // We are done, disconnect
         con.disconnect();
 
-        cat.debug("<sendHttpReq:");
+        log.debug("<sendHttpReq:");
 
     } // sendHttpReq
 

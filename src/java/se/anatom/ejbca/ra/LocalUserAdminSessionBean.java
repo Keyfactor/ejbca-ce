@@ -12,7 +12,6 @@ import java.math.BigInteger;
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.ra.GlobalConfiguration;
 import se.anatom.ejbca.ra.authorization.EndEntityProfileAuthorizationProxy;
 import se.anatom.ejbca.util.query.*;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
@@ -33,7 +32,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.37 2003-02-06 15:35:52 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.38 2003-02-12 11:23:18 scop Exp $
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean  {
 
@@ -478,7 +477,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         try{
           data = home.findBySubjectDN(dn);
         } catch( FinderException e) {
-            cat.debug("Cannot find user with DN='"+dn+"'");
+            log.debug("Cannot find user with DN='"+dn+"'");
         }
         if(globalconfiguration.getEnableEndEntityProfileLimitations()){
           // Check if administrator is authorized to view user.
@@ -510,7 +509,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         try{
           data = home.findBySubjectEmail(email);
         } catch( FinderException e) {
-            cat.debug("Cannot find user with Email='"+email+"'");
+            log.debug("Cannot find user with Email='"+email+"'");
         }
         if(globalconfiguration.getEnableEndEntityProfileLimitations()){
           // Check if administrator is authorized to view user.
@@ -542,7 +541,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
         try{
           data = home.findBySubjectDN(dn);
         } catch( FinderException e) {
-          cat.debug("Cannot find user with DN='"+dn+"'");
+          log.debug("Cannot find user with DN='"+dn+"'");
         }
 
 
@@ -847,4 +846,3 @@ public class LocalUserAdminSessionBean extends BaseSessionBean  {
    } // makeType
 
 } // LocalUserAdminSessionBean
-

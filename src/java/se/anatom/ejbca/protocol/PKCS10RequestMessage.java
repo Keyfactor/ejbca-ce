@@ -9,17 +9,18 @@ import java.security.PublicKey;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 
-/** Class to handle PKCS10 request messages sent to the CA.
+/**
+ * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.8 2003-02-09 15:02:17 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.9 2003-02-12 11:23:18 scop Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage, Serializable {
 
-    static private Category cat = Category.getInstance( PKCS10RequestMessage.class.getName() );
+    private static Logger log = Logger.getLogger(PKCS10RequestMessage.class);
 
     /** Raw form of the PKCS10 message
      */
@@ -33,10 +34,10 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
      * @throws IOException if the request can not be parsed.
      */
     public PKCS10RequestMessage(byte[] msg) {
-        cat.debug(">PKCS10RequestMessage");
+        log.debug(">PKCS10RequestMessage");
         this.msg = msg;
         init();
-        cat.debug("<PKCS10RequestMessage");
+        log.debug("<PKCS10RequestMessage");
     }
     private void init() {
         pkcs10 = new PKCS10CertificationRequest(msg);
@@ -46,7 +47,7 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
             if (pkcs10 == null)
                 init();
         } catch (IllegalArgumentException e) {
-            cat.error("PKCS10 not inited!");
+            log.error("PKCS10 not inited!");
             return null;
         }
         return pkcs10.getPublicKey();
@@ -58,27 +59,28 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     }
 
     public boolean verify() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
-        cat.debug(">verify()");
+        log.debug(">verify()");
         boolean ret = false;
         try {
             if (pkcs10 == null)
                 init();
             ret = pkcs10.verify();
         } catch (IllegalArgumentException e) {
-            cat.error("PKCS10 not inited!");
+            log.error("PKCS10 not inited!");
         } catch (InvalidKeyException e) {
-            cat.error("Error in PKCS10-request:", e);
+            log.error("Error in PKCS10-request:", e);
             throw e;
         } catch (SignatureException e) {
-            cat.error("Error in PKCS10-signature:", e);
+            log.error("Error in PKCS10-signature:", e);
         }
-        cat.debug("<verify()");
+        log.debug("<verify()");
         return ret;
     }
 
     public boolean requireKeyInfo() {
         return false;
-      }
+    }
+
     public void setKeyInfo(X509Certificate cert, PrivateKey key) {
     }
 

@@ -1,4 +1,3 @@
-
 package se.anatom.ejbca.util;
 
 import java.io.*;
@@ -22,17 +21,17 @@ import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.asn1.pkcs.*;
 import org.bouncycastle.jce.interfaces.*;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
 
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.13 2003-01-22 09:06:13 scop Exp $
+ * @version $Id: KeyTools.java,v 1.14 2003-02-12 11:23:19 scop Exp $
  */
 public class KeyTools {
 
-    private static Category cat = Category.getInstance(KeyTools.class.getName());
+    private static Logger log = Logger.getLogger(KeyTools.class);
 
     /** Prevent from creating new KeyTools object*/
     private KeyTools() {
@@ -45,14 +44,14 @@ public class KeyTools {
      */
     static public KeyPair genKeys(int keysize) throws NoSuchAlgorithmException, NoSuchProviderException {
 
-        cat.debug(">genKeys()");
+        log.debug(">genKeys()");
         KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA", "BC");
         keygen.initialize(keysize);
         KeyPair rsaKeys = keygen.generateKeyPair();
 
-        cat.debug("Generated " + rsaKeys.getPublic().getAlgorithm() + " keys with length " + ((RSAPrivateKey)rsaKeys.getPrivate()).getPrivateExponent().bitLength());
+        log.debug("Generated " + rsaKeys.getPublic().getAlgorithm() + " keys with length " + ((RSAPrivateKey)rsaKeys.getPrivate()).getPrivateExponent().bitLength());
 
-        cat.debug("<genKeys()");
+        log.debug("<genKeys()");
         return rsaKeys;
     } // genKeys
 
@@ -94,7 +93,7 @@ public class KeyTools {
      */
     static public KeyStore createP12(String alias, PrivateKey privKey, X509Certificate cert, Certificate[] cachain)
     throws Exception {
-        cat.debug(">createP12: alias=" + alias + ", privKey, cert=" + cert.getSubjectDN() + ", cachain.length=" + (cachain == null ? 0 : cachain.length) );
+        log.debug(">createP12: alias=" + alias + ", privKey, cert=" + cert.getSubjectDN() + ", cachain.length=" + (cachain == null ? 0 : cachain.length) );
 
         // Certificate chain, only max two levels deep unforturnately, this is a TODO:
         if (cert == null)
@@ -141,7 +140,7 @@ public class KeyTools {
         KeyStore store = KeyStore.getInstance("PKCS12", "BC");
         store.load(null, null);
         store.setKeyEntry(alias, pk, null, chain);
-        cat.debug(">createP12: alias=" + alias + ", privKey, cert=" + cert.getSubjectDN() + ", cachain.length=" + (cachain == null ? 0 : cachain.length));
+        log.debug(">createP12: alias=" + alias + ", privKey, cert=" + cert.getSubjectDN() + ", cachain.length=" + (cachain == null ? 0 : cachain.length));
 
         return store;
     } // createP12
@@ -160,7 +159,7 @@ public class KeyTools {
      */
     static public KeyStore createJKS(String alias, PrivateKey privKey, String password, X509Certificate cert, Certificate[] cachain)
     throws Exception {
-        cat.debug(">createJKS: alias=" + alias + ", privKey, cert=" + cert.getSubjectDN() + ", cachain.length=" + (cachain == null ? 0 : cachain.length) );
+        log.debug(">createJKS: alias=" + alias + ", privKey, cert=" + cert.getSubjectDN() + ", cachain.length=" + (cachain == null ? 0 : cachain.length) );
 
         String caAlias="cacert";
         // Certificate chain, only max two levels deep unforturnately, this is a TODO:
@@ -183,7 +182,7 @@ public class KeyTools {
             store.setCertificateEntry(caAlias, cachain[cachain.length-1]);
         }
         store.setKeyEntry(alias, privKey, password.toCharArray(), chain);
-        cat.debug(">createJKS: alias=" + alias + ", privKey, cert=" + cert.getSubjectDN() + ", cachain.length=" + (cachain == null ? 0 : cachain.length));
+        log.debug(">createJKS: alias=" + alias + ", privKey, cert=" + cert.getSubjectDN() + ", cachain.length=" + (cachain == null ? 0 : cachain.length));
 
         return store;
     } // createJKS
@@ -194,18 +193,18 @@ public class KeyTools {
      * @return array of Certificate, length of array is 0 if no certificates are found.
      */
     public static Certificate[] getCertChain(KeyStore keyStore, String privateKeyAlias) throws KeyStoreException {
-        cat.debug(">getCertChain: alias='"+privateKeyAlias+"'");
+        log.debug(">getCertChain: alias='"+privateKeyAlias+"'");
         Certificate[] certchain = keyStore.getCertificateChain(privateKeyAlias);
-        cat.debug("Certchain retrieved from alias '"+privateKeyAlias+"' has length "+certchain.length);
+        log.debug("Certchain retrieved from alias '"+privateKeyAlias+"' has length "+certchain.length);
         if (certchain.length < 1) {
-            cat.error("Cannot load certificate chain with alias '"+privateKeyAlias+"' from keystore.");
-            cat.debug("<getCertChain: alias='"+privateKeyAlias+"', retlength="+certchain.length);
+            log.error("Cannot load certificate chain with alias '"+privateKeyAlias+"' from keystore.");
+            log.debug("<getCertChain: alias='"+privateKeyAlias+"', retlength="+certchain.length);
             return certchain;
         } else if (certchain.length > 0) {
             if (CertTools.isSelfSigned((X509Certificate)certchain[certchain.length-1])) {
-                cat.debug("Issuer='"+((X509Certificate)certchain[certchain.length-1]).getIssuerDN()+"'.");
-                cat.debug("Subject='"+((X509Certificate)certchain[certchain.length-1]).getSubjectDN()+"'.");
-                cat.debug("<getCertChain: alias='"+privateKeyAlias+"', retlength="+certchain.length);
+                log.debug("Issuer='"+((X509Certificate)certchain[certchain.length-1]).getIssuerDN()+"'.");
+                log.debug("Subject='"+((X509Certificate)certchain[certchain.length-1]).getSubjectDN()+"'.");
+                log.debug("<getCertChain: alias='"+privateKeyAlias+"', retlength="+certchain.length);
                 return certchain;
             }
         }
@@ -224,9 +223,9 @@ public class KeyTools {
             if (chain1 == null) {
                 stop = true;
             } else {
-                cat.debug("Loaded certificate chain with length "+ chain1.length+" with alias '"+ialias+"'.");
+                log.debug("Loaded certificate chain with length "+ chain1.length+" with alias '"+ialias+"'.");
                 if (chain1.length == 0) {
-                    cat.error("No RootCA certificate found!");
+                    log.error("No RootCA certificate found!");
                     stop = true;
                 }
                 for (int j=0;j<chain1.length;j++) {
@@ -240,10 +239,10 @@ public class KeyTools {
         Certificate[] ret = new Certificate[array.size()];
         for (int i=0;i<ret.length;i++) {
             ret[i] = (X509Certificate)array.get(i);
-            cat.debug("Issuer='"+((X509Certificate)ret[i]).getIssuerDN()+"'.");
-            cat.debug("Subject='"+((X509Certificate)ret[i]).getSubjectDN()+"'.");
+            log.debug("Issuer='"+((X509Certificate)ret[i]).getIssuerDN()+"'.");
+            log.debug("Subject='"+((X509Certificate)ret[i]).getSubjectDN()+"'.");
         }
-        cat.debug("<getCertChain: alias='"+privateKeyAlias+"', retlength="+ret.length);
+        log.debug("<getCertChain: alias='"+privateKeyAlias+"', retlength="+ret.length);
         return ret;
     } // getCertChain
 

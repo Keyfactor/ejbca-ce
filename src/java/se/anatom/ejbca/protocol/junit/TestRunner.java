@@ -1,7 +1,7 @@
-
 package se.anatom.ejbca.protocol.junit;
 
-import org.apache.log4j.*;
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Logger;
 import junit.framework.*;
 
 /**
@@ -10,7 +10,7 @@ import junit.framework.*;
  */
 public class TestRunner extends Object {
 
-    static Category cat = Category.getInstance( TestRunner.class.getName() );
+    private static Logger log = Logger.getLogger(TestRunner.class);
 
     public static void main (String[] args) {
         BasicConfigurator.configure();
@@ -18,18 +18,17 @@ public class TestRunner extends Object {
     }
 
     private void cleanUp() {
-        cat.debug(">cleanUp()");
-        cat.debug("<cleanUp()");
+        log.debug(">cleanUp()");
+        log.debug("<cleanUp()");
     }
 
     public static Test suite ( ) {
-        cat.debug(">suite()");
+        log.debug(">suite()");
 
         TestSuite suite = new TestSuite();
         suite.addTest( new TestSuite( TestMessages.class ));
 
-        cat.debug("<suite()");
+        log.debug("<suite()");
         return suite;
     }
 }
-

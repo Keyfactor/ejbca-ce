@@ -13,7 +13,7 @@ import se.anatom.ejbca.util.KeyTools;
 
 /** Generates keys and creates a keystore (PKCS12) to be used by the CA.
  *
- * @version $Id: CaMakeReqCommand.java,v 1.3 2002-11-27 08:08:18 anatom Exp $
+ * @version $Id: CaMakeReqCommand.java,v 1.4 2003-02-12 11:23:13 scop Exp $
  */
 public class CaMakeReqCommand extends BaseCaAdminCommand {
 
@@ -61,7 +61,7 @@ public class CaMakeReqCommand extends BaseCaAdminCommand {
 
             FileOutputStream os = new FileOutputStream(ksfile);
             ks.store(os, storepwd.toCharArray());
-            System.out.println("Keystore '"+ksfile+"' generated succefully.");
+            System.out.println("Keystore '"+ksfile+"' generated successfully.");
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

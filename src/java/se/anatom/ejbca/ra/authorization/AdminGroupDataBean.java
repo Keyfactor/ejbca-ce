@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.Arrays;
 import java.util.Vector;
 import java.util.Iterator;
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
 
 /** Entity bean should not be used directly, use though Session beans.
@@ -23,12 +23,11 @@ import org.apache.log4j.*;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.3 2003-01-29 16:16:00 anatom Exp $
- **/
-
+ * @version $Id: AdminGroupDataBean.java,v 1.4 2003-02-12 11:23:18 scop Exp $
+ */
 public abstract class AdminGroupDataBean implements javax.ejb.EntityBean {
 
-    private static Category log = Category.getInstance(AdminGroupDataBean.class.getName() );
+    private static Logger log = Logger.getLogger(AdminGroupDataBean.class);
 
     protected EntityContext  ctx;
 

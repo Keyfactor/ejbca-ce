@@ -1,9 +1,6 @@
 package se.anatom.ejbca.batch.junit;
 
-
-import java.util.Random;
 import java.util.*;
-import java.lang.Integer;
 import java.io.File;
 
 import javax.naming.Context;
@@ -14,18 +11,18 @@ import se.anatom.ejbca.ra.*;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.log.Admin;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 import junit.framework.*;
 
 
 /** Tests the batch making of soft cards.
  *
- * @version $Id: TestBatchMakeP12.java,v 1.18 2003-01-12 17:16:34 anatom Exp $
+ * @version $Id: TestBatchMakeP12.java,v 1.19 2003-02-12 11:23:14 scop Exp $
  */
 
 public class TestBatchMakeP12 extends TestCase {
 
-    static Category cat = Category.getInstance( TestBatchMakeP12.class.getName() );
+    private static Logger log = Logger.getLogger(TestBatchMakeP12.class);
     private static Context ctx;
     private static IUserAdminSessionHome home;
     private static String username;
@@ -38,20 +35,20 @@ public class TestBatchMakeP12 extends TestCase {
     }
 
     protected void setUp() throws Exception {
-        cat.debug(">setUp()");
+        log.debug(">setUp()");
         ctx = getInitialContext();
         Object obj = ctx.lookup("UserAdminSession");
         home = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
-        cat.debug("<setUp()");
+        log.debug("<setUp()");
     }
 
     protected void tearDown() throws Exception {
     }
 
     private Context getInitialContext() throws NamingException {
-        cat.debug(">getInitialContext");
+        log.debug(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        cat.debug("<getInitialContext");
+        log.debug("<getInitialContext");
         return ctx;
     }
 
@@ -63,7 +60,7 @@ public class TestBatchMakeP12 extends TestCase {
             int randint = rand.nextInt(9);
             username += (new Integer(randint)).toString();
         }
-        cat.debug("Generated random username: username =" + username);
+        log.debug("Generated random username: username =" + username);
         return username;
     } // genRandomUserName
 
@@ -76,12 +73,12 @@ public class TestBatchMakeP12 extends TestCase {
             int randint = rand.nextInt(9);
             password += (new Integer(randint)).toString();
         }
-        cat.debug("Generated random pwd: password=" + password);
+        log.debug("Generated random pwd: password=" + password);
         return password;
     } // genRandomPwd
 
     public void test01CreateNewUsers() throws Exception {
-        cat.debug(">test01CreateNewUser()");
+        log.debug(">test01CreateNewUser()");
         IUserAdminSessionRemote data1=null;
         String username = genRandomUserName();
 
@@ -97,7 +94,7 @@ public class TestBatchMakeP12 extends TestCase {
           assertNotNull("Failed to create user "+username, o);
         }
 
-        cat.debug("created "+username+ ", pwd=foo123");
+        log.debug("created "+username+ ", pwd=foo123");
 
         String username1 = genRandomUserName();
         o = null;
@@ -110,19 +107,18 @@ public class TestBatchMakeP12 extends TestCase {
         }catch(Exception e){
           assertNotNull("Failed to create user "+username1, o);
         }
-        cat.debug("created "+username1+ ", pwd=foo123");
-        cat.debug("<test01CreateNewUsers()");
+        log.debug("created "+username1+ ", pwd=foo123");
+        log.debug("<test01CreateNewUsers()");
     }
 
     public void test02MakeP12() throws Exception {
-        cat.debug(">test02MakeP12()");
+        log.debug(">test02MakeP12()");
         BatchMakeP12 makep12 = new BatchMakeP12();
         File tmpfile = File.createTempFile("ejbca", "p12");
         //System.out.println("tempdir="+tmpfile.getParent());
         makep12.setMainStoreDir(tmpfile.getParent());
         makep12.createAllNew();
-        cat.debug("<test02MakeP12()");
+        log.debug("<test02MakeP12()");
     }
 
 }
-

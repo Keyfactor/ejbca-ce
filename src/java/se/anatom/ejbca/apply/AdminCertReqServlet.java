@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.log4j.Category;
+import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
@@ -78,11 +78,11 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * </dl>
  *
  * @author Ville Skyttä
- * @version $Id: AdminCertReqServlet.java,v 1.3 2003-02-03 09:46:07 scop Exp $
+ * @version $Id: AdminCertReqServlet.java,v 1.4 2003-02-12 11:23:14 scop Exp $
  */
 public class AdminCertReqServlet extends HttpServlet {
 
-  private final static Category cat = Category.getInstance(AdminCertReqServlet.class.getName());
+  private final static Logger log = Logger.getLogger(AdminCertReqServlet.class);
 
   private ISignSessionHome signhome = null;
 
@@ -264,7 +264,7 @@ public class AdminCertReqServlet extends HttpServlet {
       throw new ServletException(e);
     }
 
-    cat.debug("Created certificate (PKCS7) for " + username);
+    log.debug("Created certificate (PKCS7) for " + username);
 
     sendNewB64Cert(Base64.encode(pkcs7), response);
 
@@ -274,10 +274,10 @@ public class AdminCertReqServlet extends HttpServlet {
   public void doGet(HttpServletRequest request, HttpServletResponse response)
     throws IOException, ServletException
   {
-    cat.debug(">doGet()");
+    log.debug(">doGet()");
     response.setHeader("Allow", "POST");
     response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "The certificate request servlet only handles the POST method.");
-    cat.debug("<doGet()");
+    log.debug("<doGet()");
   } // doGet
 
 

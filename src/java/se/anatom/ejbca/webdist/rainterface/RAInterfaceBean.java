@@ -14,7 +14,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.math.BigInteger;
 
-import se.anatom.ejbca.ra.GlobalConfiguration;
 import se.anatom.ejbca.ra.*;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
@@ -37,17 +36,17 @@ import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.SecConst;
 
-import org.apache.log4j.Category;
+import org.apache.log4j.Logger;
 
 /**
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.22 2003-02-06 15:35:45 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.23 2003-02-12 11:23:21 scop Exp $
  */
 public class RAInterfaceBean {
 
-    private static Category cat = Category.getInstance(RAInterfaceBean.class.getName());
+    private static Logger log = Logger.getLogger(RAInterfaceBean.class);
 
     // Public constants.
     public static final int MAXIMUM_QUERY_ROWCOUNT = IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT;
@@ -62,7 +61,7 @@ public class RAInterfaceBean {
     }
     // Public methods.
     public void initialize(HttpServletRequest request) throws  Exception{
-      cat.debug(">initialize()");
+      log.debug(">initialize()");
 
       if(!initialized){
         if(request.getAttribute( "javax.servlet.request.X509Certificate" ) != null)
@@ -102,14 +101,14 @@ public class RAInterfaceBean {
         profilenameproxy = new EndEntityProfileNameProxy(administrator);
         initialized =true;
       } else {
-          cat.debug("=initialize(): already initialized");
+          log.debug("=initialize(): already initialized");
       }
-      cat.debug("<initialize()");
+      log.debug("<initialize()");
     }
 
     /* Adds a user to the database, the string array must be in format defined in class UserView. */
     public void addUser(UserView userdata) throws Exception{
-        cat.debug(">addUser()");
+        log.debug(">addUser()");
 
         if(userdata.getEndEntityProfileId() != 0){
            adminsession.addUser(administrator, userdata.getUsername(), userdata.getPassword(), userdata.getSubjectDN(), userdata.getSubjectAltName()
@@ -119,9 +118,9 @@ public class RAInterfaceBean {
            addedusermemory.addUser(userdata);
 
         } else {
-            cat.debug("=addUser(): profile id not set, user not created");
+            log.debug("=addUser(): profile id not set, user not created");
         }
-        cat.debug("<addUser()");
+        log.debug("<addUser()");
     }
 
     /* Removes a number of users from the database.
@@ -130,7 +129,7 @@ public class RAInterfaceBean {
      * @return false if administrator wasn't authorized to delete all of given users.
      * */
     public boolean deleteUsers(String[] usernames) throws Exception{
-      cat.debug(">deleteUsers()");
+      log.debug(">deleteUsers()");
       boolean success = true;
       for(int i=0; i < usernames.length; i++){
          try{
@@ -139,7 +138,7 @@ public class RAInterfaceBean {
            success = false;
          }
       }
-      cat.debug("<deleteUsers(): " + success);
+      log.debug("<deleteUsers(): " + success);
       return success;
     }
 
@@ -150,7 +149,7 @@ public class RAInterfaceBean {
      * @return false if administrator wasn't authorized to change all of the given users.
      * */
     public boolean setUserStatuses(String[] usernames, String status) throws Exception{
-      cat.debug(">setUserStatuses()");
+      log.debug(">setUserStatuses()");
       boolean success = true;
       int intstatus = 0;
       try{
@@ -163,7 +162,7 @@ public class RAInterfaceBean {
            success = false;
         }
       }
-      cat.debug("<setUserStatuses(): " + success);
+      log.debug("<setUserStatuses(): " + success);
       return success;
     }
 
@@ -174,7 +173,7 @@ public class RAInterfaceBean {
      * @return false if administrator wasn't authorized to revoke all of the given users.
      */
     public boolean revokeUsers(String[] usernames, int reason) throws  Exception{
-      cat.debug(">revokeUsers()");
+      log.debug(">revokeUsers()");
       boolean success = true;
       for(int i=0; i < usernames.length; i++){
         try{
@@ -183,7 +182,7 @@ public class RAInterfaceBean {
           success =false;
         }
       }
-      cat.debug("<revokeUsers(): " + success);
+      log.debug("<revokeUsers(): " + success);
       return success;
     }
 
@@ -194,20 +193,20 @@ public class RAInterfaceBean {
      * @return false if administrator wasn't authorized to revoke the given certificate.
      */
     public boolean revokeCert(BigInteger serno, String username, int reason) throws  Exception{
-      cat.debug(">revokeCert()");
+      log.debug(">revokeCert()");
       boolean success = true;
       try{
         adminsession.revokeCert(administrator, serno, username, reason);
       }catch( AuthorizationDeniedException e){
         success =false;
       }
-      cat.debug("<revokeCert(): " + success);
+      log.debug("<revokeCert(): " + success);
       return success;
     }
 
     /* Changes the userdata  */
     public void changeUserData(UserView userdata) throws Exception {
-        cat.debug(">changeUserData()");
+        log.debug(">changeUserData()");
         int profileid = userdata.getEndEntityProfileId();
         int certificatetypeid =userdata.getCertificateProfileId();
 
@@ -225,12 +224,12 @@ public class RAInterfaceBean {
              adminsession.setPassword(administrator, userdata.getUsername(), userdata.getPassword());
            }
          }
-         cat.debug("<changeUserData()");
+         log.debug("<changeUserData()");
     }
 
     /* Method to filter out a user by it's username */
     public UserView[] filterByUsername(String username) throws RemoteException, NamingException, FinderException, CreateException{
-       cat.debug(">filterByUserName()");
+       log.debug(">filterByUserName()");
        UserAdminData[] userarray = new UserAdminData[1];
        UserAdminData user = null;
        try{
@@ -244,13 +243,13 @@ public class RAInterfaceBean {
        }else{
          users.setUsers((UserAdminData[]) null);
        }
-       cat.debug("<filterByUserName()");
+       log.debug("<filterByUserName()");
        return users.getUsers(0,1);
     }
 
     /* Method used to check if user exists */
     public boolean userExist(String username) throws RemoteException, NamingException, FinderException, CreateException{
-       cat.debug(">userExist(" + username + ")");
+       log.debug(">userExist(" + username + ")");
        UserAdminData user =null;
        try{
          user = adminsession.findUser(administrator, username);
@@ -258,19 +257,19 @@ public class RAInterfaceBean {
        }
 
        boolean result = (user != null);
-       cat.debug("<userExist(" + username + "): " + result);
+       log.debug("<userExist(" + username + "): " + result);
        return result;
     }
 
     /* Method to retrieve a user from the database without inserting it into users data, used by 'viewuser.jsp' and page*/
     public UserView findUser(String username) throws RemoteException, NamingException, FinderException, CreateException, AuthorizationDeniedException{
-       cat.debug(">findUser(" + username + ")");
+       log.debug(">findUser(" + username + ")");
        UserAdminData user = adminsession.findUser(administrator, username);
         UserView userview = null;
         if (user != null) {
             userview = new UserView(user);
         }
-        cat.debug("<findUser(" + username + "): " + userview);
+        log.debug("<findUser(" + username + "): " + userview);
         return userview;
     }
     /* Method to retrieve a user from the database without inserting it into users data, used by 'edituser.jsp' and page*/

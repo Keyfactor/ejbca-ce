@@ -14,7 +14,7 @@ import javax.sql.DataSource;
 import javax.naming.*;
 import javax.ejb.*;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 import RegularExpression.RE;
 
 import se.anatom.ejbca.BaseSessionBean;
@@ -30,11 +30,11 @@ import se.anatom.ejbca.SecConst;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.20 2003-02-06 15:35:52 herrvendil Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.21 2003-02-12 11:23:19 scop Exp $
  */
 public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
-    private static Category cat = Category.getInstance(LocalRaAdminSessionBean.class.getName());
+    private static Logger log = Logger.getLogger(LocalRaAdminSessionBean.class);
 
     /** Var holding JNDI name of datasource */
     private String dataSource = "java:/DefaultDS";
@@ -474,9 +474,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     } // findFreeEndEntityProfileId
 
     /**
-     * Changes the admin preference in the database. Returns false if admin doesn't exists.
+     * Changes the admin preference in the database. Returns false if admin doesn't exist.
      */
-    private boolean updateAdminPreference(Admin admin, BigInteger serialnumber, AdminPreference adminpreference, boolean log){
+    private boolean updateAdminPreference(Admin admin, BigInteger serialnumber, AdminPreference adminpreference, boolean dolog){
        debug(">updateAdminPreference(serial : " + serialnumber + ")");
        boolean ret = false;
         try {
@@ -491,12 +491,12 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
                 AdminPreferencesDataLocal apdata3 = adminpreferenceshome.findByPrimaryKey(serialnumber.toString());
             }  catch (javax.ejb.FinderException fe) {
             }
-            if(log)
+            if (dolog)
               logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED,"Administrator preference changed.");
             ret = true;
         } catch (javax.ejb.FinderException fe) {
              ret=false;
-             if(log){
+             if (dolog){
                try{
                  logsession.log(admin, LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ADMINISTRATORPREFERENCECHANGED,"Administrator cannot be found i database.");
                }catch (RemoteException re) {}

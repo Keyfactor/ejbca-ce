@@ -1,4 +1,3 @@
-
 package se.anatom.ejbca;
 
 import javax.ejb.SessionBean;
@@ -7,19 +6,21 @@ import javax.ejb.EJBException;
 import javax.naming.*;
 import javax.rmi.PortableRemoteObject;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
 
-/** Base for Session Beans providing common features, new Session Beans 'extends' BaseSessionBean.
+/**
+ * Base for Session Beans providing common features, new Session Beans
+ * should extend this.
  *
- * @version $Id: BaseSessionBean.java,v 1.7 2003-01-12 17:16:27 anatom Exp $
+ * @version $Id: BaseSessionBean.java,v 1.8 2003-02-12 11:23:13 scop Exp $
  */
 public class BaseSessionBean implements SessionBean{
     
     /** Log4j instance for Base */
-    transient private static Category baseCat = Category.getInstance( BaseSessionBean.class.getName() );
+    transient private static Logger baseLog = Logger.getLogger(BaseSessionBean.class);
     /** Log4j instance for actual class */
-    transient public  Category    cat;
+    transient public Logger log;
     
     transient private SessionContext  ctx;
     /** Cached initial context to save JNDI lookups */
@@ -27,14 +28,14 @@ public class BaseSessionBean implements SessionBean{
     
     /** Initializes logging mechanism per instance */
     public BaseSessionBean() {
-        cat = Category.getInstance( this.getClass().getName() );
+        log = Logger.getLogger(this.getClass());
     }
     
     /** Logs a message with priority DEBUG
      * @param msg Message
      */
     public  void    debug( String msg ) {
-        cat.debug( msg );
+        log.debug( msg );
     }
     
     /** Logs a message and an exception with priority DEBUG
@@ -42,14 +43,14 @@ public class BaseSessionBean implements SessionBean{
      * @param t Exception
      */
     public  void    debug( String msg, Throwable t ) {
-        cat.debug( msg, t );
+        log.debug( msg, t );
     }
     
     /** Logs a message with priority INFO
      * @param msg Message
      */
     public  void    info( String msg ) {
-        cat.info( msg );
+        log.info( msg );
     }
     
     /** Logs a message and an exception with priority INFO
@@ -57,14 +58,14 @@ public class BaseSessionBean implements SessionBean{
      * @param t Exception
      */
     public  void    info( String msg, Throwable t  ) {
-        cat.info( msg, t );
+        log.info( msg, t );
     }
     
     /** Logs a message with priority WARN
      * @param msg Message
      */
     public  void    warn( String msg ) {
-        cat.warn( msg );
+        log.warn( msg );
     }
     
     /** Logs a message and an exception with priority WARN
@@ -72,14 +73,14 @@ public class BaseSessionBean implements SessionBean{
      * @param t Exception
      */
     public  void    warn( String msg, Throwable t  ) {
-        cat.warn( msg, t );
+        log.warn( msg, t );
     }
     
     /** Logs a message with priority ERROR
      * @param msg Message
      */
     public  void    error( String msg ) {
-        cat.error( msg );
+        log.error( msg );
     }
     
     /** Logs a message and an exception with priority ERROR
@@ -87,21 +88,21 @@ public class BaseSessionBean implements SessionBean{
      * @param t Exception
      */
     public  void    error( String msg, Throwable t  ) {
-        cat.error( msg, t );
+        log.error( msg, t );
     }
     
     /** Gets InitialContext
      *@return InitialContext
      */
     public InitialContext getInitialContext() {
-        baseCat.debug(">getInitialContext()");
+        baseLog.debug(">getInitialContext()");
         try {
             if( cacheCtx == null )
                 cacheCtx = new InitialContext();
-            baseCat.debug("<getInitialContext()");
+            baseLog.debug("<getInitialContext()");
             return  cacheCtx;
         } catch (NamingException e ) {
-            baseCat.error("Can't get InitialContext", e);
+            baseLog.error("Can't get InitialContext", e);
             throw new EJBException( e );
         }
     }
@@ -112,14 +113,14 @@ public class BaseSessionBean implements SessionBean{
      *@return Object that can be casted to 'type'.
      */
     public Object lookup( String jndiName, Class type ) {
-        baseCat.debug(">lookup("+jndiName+")");
+        baseLog.debug(">lookup("+jndiName+")");
         InitialContext ctx = getInitialContext();
         try {
             Object ret = PortableRemoteObject.narrow( ctx.lookup( jndiName ), type );
-            baseCat.debug("<lookup("+jndiName+")");
+            baseLog.debug("<lookup("+jndiName+")");
             return ret;
         } catch( NamingException e ) {
-            baseCat.debug("NamingException, can't lookup '"+jndiName+"'");
+            baseLog.debug("NamingException, can't lookup '"+jndiName+"'");
             throw new EJBException( e );
         }
         
@@ -129,20 +130,20 @@ public class BaseSessionBean implements SessionBean{
      *@return Object that can be casted to 'type'.
      */
     public Object lookup( String jndiName) {
-        baseCat.debug(">lookup("+jndiName+")");
+        baseLog.debug(">lookup("+jndiName+")");
         InitialContext ctx = getInitialContext();
         try {
             Object ret = ctx.lookup( jndiName );
-            baseCat.debug("<lookup("+jndiName+")");
+            baseLog.debug("<lookup("+jndiName+")");
             return ret;
         } catch( NamingException e ) {
-            baseCat.debug("NamingException, can't lookup '"+jndiName+"'");
+            baseLog.debug("NamingException, can't lookup '"+jndiName+"'");
             throw new EJBException( e );
         }
         
     }
     public void ejbActivate() throws javax.ejb.EJBException, java.rmi.RemoteException {
-      cat = Category.getInstance( this.getClass().getName() );  
+      log = Logger.getLogger(this.getClass());
     }
     
     public void ejbRemove() throws javax.ejb.EJBException, java.rmi.RemoteException {
@@ -161,4 +162,3 @@ public class BaseSessionBean implements SessionBean{
     }
     
 }
-

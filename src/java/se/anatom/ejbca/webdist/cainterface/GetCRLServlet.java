@@ -26,11 +26,11 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: GetCRLServlet.java,v 1.11 2003-02-03 13:54:36 scop Exp $
+ * @version $Id: GetCRLServlet.java,v 1.12 2003-02-12 11:23:21 scop Exp $
  */
 public class GetCRLServlet extends HttpServlet {
 
-    private static Logger log = Logger.getLogger(GetCRLServlet.class.getName() );
+    private static Logger log = Logger.getLogger(GetCRLServlet.class);
 
     private static final String COMMAND_PROPERTY_NAME = "cmd";
     private static final String COMMAND_CRL = "crl";

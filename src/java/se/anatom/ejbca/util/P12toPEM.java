@@ -13,19 +13,20 @@ import java.security.UnrecoverableKeyException;
 
 import org.bouncycastle.jce.provider.*;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 
 /**
  * P12toPEM is used to export PEM files from a single p12 file.
  * The class exports the user certificate, user private key in seperated files and the chain of sub ca and ca certifikate in a third file.
  * The PEM files will have the names <i>common name</i>.pem, <i>common name</i>Key.pem and <i>common name</i>CA.pem derived from the DN in user certificate.
  *
- * @version $Id: P12toPEM.java,v 1.5 2002-08-26 12:15:47 anatom Exp $
+ * @version $Id: P12toPEM.java,v 1.6 2003-02-12 11:23:19 scop Exp $
  */
 
 public class P12toPEM {
 
-    private static Category cat = Category.getInstance(P12toPEM.class.getName());
+    private static Logger log = Logger.getLogger(P12toPEM.class);
 
     String exportpath = "./p12/pem/";
     String p12File;
@@ -40,7 +41,7 @@ public class P12toPEM {
 
     public static void main(String args[]) {
 
-        org.apache.log4j.PropertyConfigurator.configure("log4j.properties");
+        PropertyConfigurator.configure("log4j.properties");
         // Bouncy Castle security provider
         Security.addProvider(new BouncyCastleProvider());
 
@@ -111,20 +112,20 @@ public class P12toPEM {
             o = e.nextElement();
             if(o instanceof String) {
                 if ( (ks.isKeyEntry((String) o)) && ((serverPrivKey = (PrivateKey)ks.getKey((String) o, password.toCharArray())) != null) ) {
-                    cat.debug("Aliases " + o + " is KeyEntry.");
+                    log.debug("Aliases " + o + " is KeyEntry.");
                     break;
                 }
             }
         }
 
-        cat.debug("Private key encode: " + serverPrivKey == null ? null : serverPrivKey.getFormat());
+        log.debug("Private key encode: " + serverPrivKey == null ? null : serverPrivKey.getFormat());
         byte privKeyEncoded[] = "".getBytes();
         if (serverPrivKey != null)
             privKeyEncoded = serverPrivKey.getEncoded();
 
         //Certificate chain[] = ks.getCertificateChain((String) o);
         Certificate chain[] = KeyTools.getCertChain(ks, (String) o);
-        cat.debug("Loaded certificate chain with length "+chain.length+" from keystore.");
+        log.debug("Loaded certificate chain with length "+chain.length+" from keystore.");
         X509Certificate userX509Certificate = (X509Certificate) chain[0];
 
         byte output[] = userX509Certificate.getEncoded();
@@ -137,7 +138,7 @@ public class P12toPEM {
         File tmpFile = new File(path, userFile + filetype);
         if(!overwrite)
             if(tmpFile.exists()) {
-                cat.error("File '"+tmpFile+"' already exists, don't overwrite.");
+                log.error("File '"+tmpFile+"' already exists, don't overwrite.");
                 return;
             }
         OutputStream out = new FileOutputStream(tmpFile);
@@ -152,7 +153,7 @@ public class P12toPEM {
         tmpFile = new File(path, userFile + "-Key" + filetype);
         if(!overwrite)
             if(tmpFile.exists()) {
-                cat.error("File '"+tmpFile+"' already exists, don't overwrite.");
+                log.error("File '"+tmpFile+"' already exists, don't overwrite.");
                 return;
             }
         out = new FileOutputStream(tmpFile);
@@ -167,11 +168,11 @@ public class P12toPEM {
         tmpFile = new File(path, userFile + "-CA" + filetype);
         if(!overwrite)
             if(tmpFile.exists()) {
-                cat.error("File '"+tmpFile+"' already exists, don't overwrite.");
+                log.error("File '"+tmpFile+"' already exists, don't overwrite.");
                 return;
             }
         if (CertTools.isSelfSigned(userX509Certificate)) {
-            cat.info("User certificate is selfsigned, this is a RootCA, no CA certificates written.");
+            log.info("User certificate is selfsigned, this is a RootCA, no CA certificates written.");
         } else {
             out = new FileOutputStream(tmpFile);
             for(int num = 1;num < chain.length;num++) {

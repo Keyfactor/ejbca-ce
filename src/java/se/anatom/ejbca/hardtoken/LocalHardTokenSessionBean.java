@@ -15,7 +15,7 @@ import javax.sql.DataSource;
 import javax.naming.*;
 import javax.ejb.*;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 import RegularExpression.RE;
 
 import se.anatom.ejbca.BaseSessionBean;
@@ -37,11 +37,11 @@ import se.anatom.ejbca.ra.IUserAdminSessionHome;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalHardTokenSessionBean.java,v 1.2 2003-02-09 14:56:16 anatom Exp $
+ * @version $Id: LocalHardTokenSessionBean.java,v 1.3 2003-02-12 11:23:17 scop Exp $
  */
 public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
-    private static Category cat = Category.getInstance(LocalHardTokenSessionBean.class.getName());
+    private static Logger log = Logger.getLogger(LocalHardTokenSessionBean.class);
     
     /** Var holding JNDI name of datasource */
     private String dataSource = "java:/DefaultDS";
@@ -847,4 +847,3 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     } // findFreeHardTokenIssuerId    
     
 } // LocalRaAdminSessionBean
-

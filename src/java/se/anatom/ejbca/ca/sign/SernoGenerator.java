@@ -4,16 +4,17 @@ import java.security.SecureRandom;
 import java.util.Date;
 import java.math.BigInteger;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
-/** Implements a serial number generator using SecureRandom, implementes the Singleton pattern.
+/**
+ * Implements a singleton serial number generator using SecureRandom.
  *
- * @version $Id: SernoGenerator.java,v 1.3 2002-09-05 09:14:26 anatom Exp $
+ * @version $Id: SernoGenerator.java,v 1.4 2003-02-12 11:23:16 scop Exp $
  */
 public class SernoGenerator implements ISernoGenerator {
 
     /** Log4j instance */
-    private static Category cat = Category.getInstance( SernoGenerator.class.getName() );
+    private static Logger log = Logger.getLogger(SernoGenerator.class);
     /* random generator */
     private SecureRandom random;
 
@@ -25,7 +26,7 @@ public class SernoGenerator implements ISernoGenerator {
    /** Creates a serialn number generator using SecureRandom
     */
     protected SernoGenerator() throws Exception {
-        cat.debug(">SernoGenerator()");
+        log.debug(">SernoGenerator()");
         // Init random number generator for random serialnumbers
         random = SecureRandom.getInstance("SHA1PRNG");
         // Using this seed we should get a different seed every time.
@@ -54,7 +55,7 @@ public class SernoGenerator implements ISernoGenerator {
         * <p> The class also gathers miscellaneous system information, some
         * machine dependent, some not. This information is then hashed together
         * with the 20 seed bytes. */
-        cat.debug("<SernoGenerator()");
+        log.debug("<SernoGenerator()");
     }
 
    /** Creates (if needed) the serial number generator and returns the object.
@@ -97,4 +98,3 @@ public class SernoGenerator implements ISernoGenerator {
     }
 
 }
-

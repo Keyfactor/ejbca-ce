@@ -13,7 +13,7 @@ import java.util.Date;
 import java.text.DateFormat;
 import java.rmi.RemoteException;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
@@ -32,11 +32,11 @@ import se.anatom.ejbca.ra.raadmin.AdminPreference;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.21 2003-02-06 15:35:46 herrvendil Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.22 2003-02-12 11:23:21 scop Exp $
  */
 public class EjbcaWebBean {
 
-    private static Category cat = Category.getInstance(EjbcaWebBean.class.getName());
+    private static Logger log = Logger.getLogger(EjbcaWebBean.class);
     
     // Public Constants.
     public static final int AUTHORIZED_RA_VIEW_RIGHTS        = 0;
@@ -54,6 +54,20 @@ public class EjbcaWebBean {
                                                              "/ra_functionallity/revoke_end_entity","/ra_functionallity/view_end_entity_history",
                                                              "/ra_functionallity/view_hardtoken","/ca_functionallity/view_certificate"};
     
+    // Private Fields.
+    private ILogSessionRemote              logsession; 
+    private AdminPreferenceDataHandler     adminspreferences;
+    private AdminPreference                currentadminpreference;
+    private GlobalConfiguration            globalconfiguration;
+    private GlobalConfigurationDataHandler globaldataconfigurationdatahandler;
+    private AuthorizationDataHandler       authorizedatahandler;
+    private WebLanguages                   weblanguages;
+    private WebLanguages                   adminsweblanguage;
+    private String                         usercommonname = "";
+    private BigInteger                     certificateserialnumber;
+    private X509Certificate[]              certificates;
+    private boolean                        initialized=false;
+    private Boolean[]                      raauthorized;
     
     /** Creates a new instance of EjbcaWebBean */
     public EjbcaWebBean() throws IOException, NamingException, CreateException,
@@ -97,7 +111,7 @@ public class EjbcaWebBean {
         authorizedatahandler.authenticate(certificates[0]); 
         
         // Check if certificate belongs to a RA Admin
-        cat.debug("Verifying authoirization of '"+userdn);
+        log.debug("Verifying authoirization of '"+userdn);
         
         // Check that user is administrator.
         adminsession.checkIfSubjectDNisAdmin(administrator, userdn);
@@ -453,21 +467,5 @@ public class EjbcaWebBean {
       adminsweblanguage = new WebLanguages( currentadminpreference.getPreferedLanguage()
                                           ,currentadminpreference.getSecondaryLanguage());        
     } // saveDefaultAdminPreference   
-
-    // Private Fields.
-    private ILogSessionRemote              logsession; 
-    private AdminPreferenceDataHandler     adminspreferences;
-    private AdminPreference                currentadminpreference;
-    private GlobalConfiguration            globalconfiguration;
-    private GlobalConfigurationDataHandler globaldataconfigurationdatahandler;
-    private AuthorizationDataHandler       authorizedatahandler;
-    private WebLanguages                   weblanguages;
-    private WebLanguages                   adminsweblanguage;
-    private String                         usercommonname = "";
-    private BigInteger                     certificateserialnumber;
-    private X509Certificate[]              certificates;
-    private boolean                        initialized=false;
-    private Boolean[]                      raauthorized;
-    
 
 }

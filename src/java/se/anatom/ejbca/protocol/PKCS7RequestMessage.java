@@ -5,15 +5,16 @@ import java.security.PublicKey;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
-/** Class to handle PKCS7 request messages sent to the CA.
+/**
+ * Class to handle PKCS7 request messages sent to the CA.
  *
-* @version  $Id: PKCS7RequestMessage.java,v 1.5 2003-01-12 17:24:01 anatom Exp $
+ * @version  $Id: PKCS7RequestMessage.java,v 1.6 2003-02-12 11:23:18 scop Exp $
  */
 public class PKCS7RequestMessage implements IRequestMessage, Serializable {
 
-    static private Category cat = Category.getInstance( PKCS7RequestMessage.class.getName() );
+    private static Logger log = Logger.getLogger(PKCS7RequestMessage.class);
 
     /** Raw form of the PKCS7 message
      */
@@ -25,10 +26,10 @@ public class PKCS7RequestMessage implements IRequestMessage, Serializable {
      * @throws IOException if the request can not be parsed.
      */
     public PKCS7RequestMessage(byte[] msg) throws IOException {
-        cat.debug(">PKCS7RequestMessage");
+        log.debug(">PKCS7RequestMessage");
         this.msg = msg;
         init();
-        cat.debug("<PKCS7RequestMessage");
+        log.debug("<PKCS7RequestMessage");
     }
 
     private void init() throws IOException {
@@ -37,14 +38,14 @@ public class PKCS7RequestMessage implements IRequestMessage, Serializable {
     }
 
     public PublicKey getRequestPublicKey() {
-        cat.debug(">getRequestPublicKey()");
-        cat.debug("<getRequestPublicKey()");
+        log.debug(">getRequestPublicKey()");
+        log.debug("<getRequestPublicKey()");
         return null;
     }
 
     public boolean verify() {
-        cat.debug(">verify()");
-        cat.debug("<verify()");
+        log.debug(">verify()");
+        log.debug("<verify()");
         return false;
     }
 

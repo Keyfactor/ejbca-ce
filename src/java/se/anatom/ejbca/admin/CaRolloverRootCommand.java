@@ -14,7 +14,7 @@ import se.anatom.ejbca.util.Hex;
 
 /** Creates a new root certificate with new validity, using the same key.
  *
- * @version $Id: CaRolloverRootCommand.java,v 1.3 2002-09-16 15:21:27 anatom Exp $
+ * @version $Id: CaRolloverRootCommand.java,v 1.4 2003-02-12 11:23:14 scop Exp $
  */
 public class CaRolloverRootCommand extends BaseCaAdminCommand {
 
@@ -74,7 +74,7 @@ public class CaRolloverRootCommand extends BaseCaAdminCommand {
             KeyStore ks = KeyTools.createP12(privKeyAlias, privateKey, newrootcert, cacert);
             FileOutputStream os = new FileOutputStream(filename);
             ks.store(os, storepwd.toCharArray());
-            System.out.println("Keystore "+filename+" generated succefully.");
+            System.out.println("Keystore "+filename+" generated successfully.");
             System.out.println("Please put keystore in correct location, restart application server and run 'ca init'.");
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);

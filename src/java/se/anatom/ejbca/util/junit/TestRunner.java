@@ -1,16 +1,16 @@
-
 package se.anatom.ejbca.util.junit;
 
-import org.apache.log4j.*;
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Logger;
 import junit.framework.*;
 
 /**
  *
- * @version $Id: TestRunner.java,v 1.2 2002-10-24 20:11:26 herrvendil Exp $
+ * @version $Id: TestRunner.java,v 1.3 2003-02-12 11:23:19 scop Exp $
  */
 public class TestRunner extends Object {
 
-    static Category cat = Category.getInstance( TestRunner.class.getName() );
+    private static Logger log = Logger.getLogger(TestRunner.class);
 
     public static void main (String[] args) {
         BasicConfigurator.configure();
@@ -18,18 +18,17 @@ public class TestRunner extends Object {
     }
 
     private void cleanUp() {
-        cat.debug(">cleanUp()");
-        cat.debug("<cleanUp()");
+        log.debug(">cleanUp()");
+        log.debug("<cleanUp()");
     }
 
     public static Test suite ( ) {
-        cat.debug(">suite()");
+        log.debug(">suite()");
 
         TestSuite suite = new TestSuite();
         suite.addTest( new TestSuite( TestCertTools.class ));
 
-        cat.debug("<suite()");
+        log.debug("<suite()");
         return suite;
     }
 }
-

@@ -4,17 +4,18 @@ import se.anatom.ejbca.ca.sign.*;
 import java.util.*;
 import java.math.BigInteger;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 import junit.framework.*;
 
 
-/** Tests generation of serial numbers.
+/**
+ * Tests generation of serial numbers.
  *
- * @version $Id: TestSernoGenerator.java,v 1.4 2003-01-12 17:16:27 anatom Exp $
+ * @version $Id: TestSernoGenerator.java,v 1.5 2003-02-12 11:23:16 scop Exp $
  */
 public class TestSernoGenerator extends TestCase {
 
-    static Category cat = Category.getInstance( TestSernoGenerator.class.getName() );
+    private static Logger log = Logger.getLogger(TestSernoGenerator.class);
 
     public TestSernoGenerator(String name) {
         super(name);
@@ -27,7 +28,7 @@ public class TestSernoGenerator extends TestCase {
     /* Generates many serial numbers...
     */
     public void test01GenerateSernos() throws Exception {
-        cat.debug(">test01GenerateSernos()");
+        log.debug(">test01GenerateSernos()");
         ISernoGenerator gen = SernoGenerator.instance();
         HashMap map = new HashMap(300000);
         String hex=null;
@@ -46,7 +47,6 @@ public class TestSernoGenerator extends TestCase {
             System.out.println("Reseeding: "+seed);
         }
         System.out.println("Map now contains "+map.size()+" serial numbers.");
-        cat.debug("<test01GenerateSernos()");
+        log.debug("<test01GenerateSernos()");
     }
 }
-

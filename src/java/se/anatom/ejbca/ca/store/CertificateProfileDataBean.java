@@ -2,7 +2,7 @@ package se.anatom.ejbca.ca.store;
 
 import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 import se.anatom.ejbca.ca.store.certificateprofiles.*;
 import java.util.HashMap;
 
@@ -17,13 +17,12 @@ import java.util.HashMap;
  * </pre>
  *
  * @version $Id: ProfileDataBean.java,v 1.4 2002/07/22 10:38:48 anatom Exp $
- **/
-
+ */
 public abstract class CertificateProfileDataBean implements javax.ejb.EntityBean {
 
 
 
-    private static Category log = Category.getInstance(CertificateProfileDataBean.class.getName() );
+    private static Logger log = Logger.getLogger(CertificateProfileDataBean.class);
 
 
     protected EntityContext  ctx;
@@ -109,4 +108,3 @@ public abstract class CertificateProfileDataBean implements javax.ejb.EntityBean
     }
 
 }
-

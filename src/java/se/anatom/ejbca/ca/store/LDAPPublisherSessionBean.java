@@ -1,4 +1,3 @@
-
 package se.anatom.ejbca.ca.store;
 
 import java.rmi.*;
@@ -47,7 +46,7 @@ import se.anatom.ejbca.log.LogEntry;
  * cACertificate
  * </pre>
  *
- * @version $Id: LDAPPublisherSessionBean.java,v 1.17 2003-01-25 18:56:12 scop Exp $
+ * @version $Id: LDAPPublisherSessionBean.java,v 1.18 2003-02-12 11:23:17 scop Exp $
  */
 public class LDAPPublisherSessionBean extends BaseSessionBean {
 
@@ -104,7 +103,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
      * @param chainfp Fingerprint (hex) of the CAs certificate.
      * @param number CRL number.
      *
-     * @return true if storage was succesful.
+     * @return true if storage was successful.
      * @throws EJBException if a communication or other error occurs.
      */
     public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number) {
@@ -221,7 +220,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
      * @param status Status of the certificate (from CertificateData).
      * @param type Type of certificate (from SecConst).
      *
-     * @return true if storage was succesful.
+     * @return true if storage was successful.
      * @throws EJBException if a communication or other error occurs.
      */
     public boolean storeCertificate(Admin admin, Certificate incert, String username, String cafp, int status, int type) {

@@ -19,7 +19,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Category;
+import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ra.*;
@@ -79,11 +79,11 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.15 2003-02-03 13:00:03 scop Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.16 2003-02-12 11:23:14 scop Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
-  private final static Category cat = Category.getInstance(DemoCertReqServlet.class.getName());
+  private final static Logger log = Logger.getLogger(DemoCertReqServlet.class);
 
   private ISignSessionHome signsessionhome = null;
   private IUserAdminSessionHome useradminsessionhome = null;
@@ -170,14 +170,14 @@ public class DemoCertReqServlet extends HttpServlet {
       int type = 0;
       if (request.getParameter("keygen") != null) {
           reqBytes=request.getParameter("keygen").getBytes();
-          cat.debug("Received NS request:"+new String(reqBytes));
+          log.debug("Received NS request:"+new String(reqBytes));
           if (reqBytes != null) {
               type = 1;
           }
       } else if (request.getParameter("pkcs10req") != null) {
           // if not netscape, check if it's IE
           reqBytes=request.getParameter("pkcs10req").getBytes();
-          cat.debug("Received IE request:"+new String(reqBytes));
+          log.debug("Received IE request:"+new String(reqBytes));
           if (reqBytes != null) {
               type = 2;
           }
@@ -197,14 +197,14 @@ public class DemoCertReqServlet extends HttpServlet {
     boolean check = checkUsername(admin,username, useradminsession);
     if (check == false) {
         String msg = "User '"+username+"' already exist.";
-        cat.error(msg);
+        log.error(msg);
         debug.printMessage(msg);
         debug.printDebugInfo();
         return;
     }
 
     String includeEmail = request.getParameter("includeemail");
-    cat.debug("includeEmail="+includeEmail);
+    log.debug("includeEmail="+includeEmail);
 
     UserView newuser = new UserView();
     newuser.setUsername(username);
@@ -274,32 +274,32 @@ public class DemoCertReqServlet extends HttpServlet {
     //  throw new ServletException(e);
     } catch (ObjectNotFoundException e) {
       // User not found
-      cat.error(e);
+      log.error(e);
       throw new ServletException(e);
     } catch (AuthStatusException e) {
       // Wrong user status, shouldn't really happen.  The user needs to have
       // status of NEW, FAILED or INPROCESS.
-      cat.error(e);
+      log.error(e);
       throw new ServletException(e);
     } catch (AuthLoginException e) {
       // Wrong username or password, hmm... wasn't the wrong username caught
       // in the objectnotfoundexception above... and this shouldn't happen.
-      cat.error(e);
+      log.error(e);
       throw new ServletException(e);
     } catch (IllegalKeyException e) {
       // Malformed key (?)
-      cat.error(e);
+      log.error(e);
       throw new ServletException(e);
     } catch (SignRequestException e) {
       // Invalid request
-      cat.error(e);
+      log.error(e);
       throw new ServletException(e);
     } catch (SignRequestSignatureException e) {
       // Invalid signature in certificate request
-      cat.error(e);
+      log.error(e);
       throw new ServletException(e);
     } catch (Exception e) {
-        cat.error(e);
+        log.error(e);
         throw new ServletException(e);
     }
   }
@@ -307,12 +307,12 @@ public class DemoCertReqServlet extends HttpServlet {
 
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException
   {
-    cat.debug(">doGet()");
+    log.debug(">doGet()");
     response.setHeader("Allow", "POST");
     ServletDebug debug = new ServletDebug(request,response);
     debug.print("The certificate request servlet only handles POST method.");
     debug.printDebugInfo();
-    cat.debug("<doGet()");
+    log.debug("<doGet()");
   } // doGet
 
 
@@ -329,8 +329,8 @@ private void sendNewCertToIEClient(byte[] b64cert, OutputStream out) throws Exce
             RequestHelper.ieCertFormat(b64cert, ps);
     }
     ps.close();
-    cat.info("Sent reply to IE client");
-    cat.debug(new String(b64cert));
+    log.info("Sent reply to IE client");
+    log.debug(new String(b64cert));
 }
 
 private void sendNewB64Cert(byte[] b64cert, HttpServletResponse out)

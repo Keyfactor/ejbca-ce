@@ -1,4 +1,3 @@
-
 Logging
 =======
 
@@ -69,7 +68,7 @@ EJBCA uses the Apache Log4J package for debug-logging. This means that any class
 that wants to do logging or console output MUST define:
 
 /** Log4j instance */
-private static Logger log = Logger.getLogger(<class>.class.getName());
+private static Logger log = Logger.getLogger(<class>.class);
 
 Logging is then done with:
 
@@ -137,14 +136,14 @@ CVS
 
 All files should have the below part in the initial class comment:
 
-@version $Id: DEVELOP,v 1.6 2002-10-14 07:43:23 anatom Exp $
+@version $Id: DEVELOP,v 1.7 2003-02-12 11:22:59 scop Exp $
 
 Example:
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
- * @version $Id: DEVELOP,v 1.6 2002-10-14 07:43:23 anatom Exp $
+ * @version $Id: DEVELOP,v 1.7 2003-02-12 11:22:59 scop Exp $
  */
 
 CA KeyStore architecture/creating a custom CA Keystore
@@ -205,6 +204,3 @@ This architecture gives us the choice of for example an SQL database aa
 CertificateStoreSession where we also publish certificates to an LDAP directory,
 or the LDAP directory as the primary CertificateStoreSession where we also
 publish certificates to a specific SQL database for a specific purpose.
-
-
-

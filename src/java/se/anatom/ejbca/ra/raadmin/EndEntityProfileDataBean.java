@@ -3,8 +3,7 @@ package se.anatom.ejbca.ra.raadmin;
 import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import java.util.HashMap;
-import org.apache.log4j.*;
-import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
+import org.apache.log4j.Logger;
 
 /** Entity bean should not be used directly, use though Session beans.
  *
@@ -16,14 +15,13 @@ import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
  * Profile data
  * </pre>
  *
- * @version $Id: EndEntityProfileDataBean.java,v 1.1 2002-10-24 20:09:32 herrvendil Exp $
- **/
-
+ * @version $Id: EndEntityProfileDataBean.java,v 1.2 2003-02-12 11:23:19 scop Exp $
+ */
 public abstract class EndEntityProfileDataBean implements javax.ejb.EntityBean {
 
 
 
-    private static Category log = Category.getInstance(EndEntityProfileDataBean.class.getName() );
+    private static Logger log = Logger.getLogger(EndEntityProfileDataBean.class);
 
 
     protected EntityContext  ctx;
@@ -107,4 +105,3 @@ public abstract class EndEntityProfileDataBean implements javax.ejb.EntityBean {
     }
 
 }
-

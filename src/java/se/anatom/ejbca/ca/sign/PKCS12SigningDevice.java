@@ -1,7 +1,5 @@
 package se.anatom.ejbca.ca.sign;
 
-
-
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.PrivateKey;
@@ -11,21 +9,19 @@ import java.util.Properties;
 import java.io.FileInputStream;
 import java.io.InputStream;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.KeyTools;
 
-
-/** Implements a signing device using PKCS12 keystore, implementes the Singleton pattern.
+/** Implements a singleton signing device using PKCS12 keystore.
  *
- * @version $Id: PKCS12SigningDevice.java,v 1.6 2002-10-16 13:50:10 anatom Exp $
+ * @version $Id: PKCS12SigningDevice.java,v 1.7 2003-02-12 11:23:16 scop Exp $
  */
-
 public class PKCS12SigningDevice implements ISigningDevice{
 
     /** Log4j instance for Base */
-    private static Category cat = Category.getInstance( PKCS12SigningDevice.class.getName() );
+    private static Logger log = Logger.getLogger(PKCS12SigningDevice.class);
 
     private PrivateKey privateKey;
     private X509Certificate rootCert;
@@ -42,54 +38,54 @@ public class PKCS12SigningDevice implements ISigningDevice{
     */
 
     protected PKCS12SigningDevice(Properties p) throws Exception {
-        cat.debug(">PKCS12SigningDevice()");
+        log.debug(">PKCS12SigningDevice()");
         // Get env variables and read in nessecary data
         KeyStore keyStore=KeyStore.getInstance("PKCS12", "BC");
         String keyStoreFile = p.getProperty("keyStore");
         if (keyStoreFile == null)
             throw new IllegalArgumentException("Missing keyStore property.");
-        cat.debug("keystore:" + keyStoreFile);
+        log.debug("keystore:" + keyStoreFile);
         InputStream is = new FileInputStream(keyStoreFile);
         String keyStorePass = p.getProperty("keyStorePass");
         if (keyStorePass == null)
             throw new IllegalArgumentException("Missing keyStorePass property.");
         //char[] keyStorePass = getPassword("java:comp/env/keyStorePass");
-        cat.debug("keystorepass: " + keyStorePass);
+        log.debug("keystorepass: " + keyStorePass);
         keyStore.load(is, keyStorePass.toCharArray());
         String privateKeyAlias= p.getProperty("privateKeyAlias");
         if (privateKeyAlias == null)
             throw new IllegalArgumentException("Missing privateKeyAlias property.");
-        cat.debug("privateKeyAlias: " + privateKeyAlias);
+        log.debug("privateKeyAlias: " + privateKeyAlias);
         String privateKeyPass = p.getProperty("privateKeyPass");
         char[] pkPass;
         if ((privateKeyPass).equals("null"))
             pkPass = null;
         else
             pkPass = privateKeyPass.toCharArray();
-        cat.debug("privateKeyPass: " + privateKeyPass);
+        log.debug("privateKeyPass: " + privateKeyPass);
         privateKey = (PrivateKey)keyStore.getKey(privateKeyAlias, pkPass);
         if (privateKey == null) {
-            cat.error("Cannot load key with alias '"+privateKeyAlias+"' from keystore '"+keyStoreFile+"'");
+            log.error("Cannot load key with alias '"+privateKeyAlias+"' from keystore '"+keyStoreFile+"'");
             throw new Exception("Cannot load key with alias '"+privateKeyAlias+"' from keystore '"+keyStoreFile+"'");
         }
         Certificate[] certchain = KeyTools.getCertChain(keyStore, privateKeyAlias);
         if (certchain.length < 1) {
-            cat.error("Cannot load certificate chain with alias '"+privateKeyAlias+"' from keystore '"+keyStoreFile+"'");
+            log.error("Cannot load certificate chain with alias '"+privateKeyAlias+"' from keystore '"+keyStoreFile+"'");
             throw new Exception("Cannot load certificate chain with alias '"+privateKeyAlias+"' from keystore '"+keyStoreFile+"'");
         }
         // We only support a ca hierarchy with depth 2.
         caCert = (X509Certificate)certchain[0];
-        cat.debug("cacertIssuer: " + caCert.getIssuerDN().toString());
-        cat.debug("cacertSubject: " + caCert.getSubjectDN().toString());
+        log.debug("cacertIssuer: " + caCert.getIssuerDN().toString());
+        log.debug("cacertSubject: " + caCert.getSubjectDN().toString());
 
         // root cert is last cert in chain
         rootCert = (X509Certificate)certchain[certchain.length-1];
-        cat.debug("rootcertIssuer: " + rootCert.getIssuerDN().toString());
-        cat.debug("rootcertSubject: " + rootCert.getSubjectDN().toString());
+        log.debug("rootcertIssuer: " + rootCert.getIssuerDN().toString());
+        log.debug("rootcertSubject: " + rootCert.getSubjectDN().toString());
         // is root cert selfsigned?
         if (!CertTools.isSelfSigned(rootCert))
             throw new Exception("Root certificate is not self signed!");
-        cat.debug("<PKCS12SigningDevice()");
+        log.debug("<PKCS12SigningDevice()");
     }
 
    /** Creates (if needed) the signing device and returns the object.
@@ -108,7 +104,7 @@ public class PKCS12SigningDevice implements ISigningDevice{
     * @return an array of Certificate
     */
     public Certificate[] getCertificateChain() {
-        cat.debug(">getCertificateChain()");
+        log.debug(">getCertificateChain()");
         // TODO: should support more than 2 levels of CAs
         Certificate[] chain;
         if (CertTools.isSelfSigned(caCert)) {
@@ -118,7 +114,7 @@ public class PKCS12SigningDevice implements ISigningDevice{
             chain[1] = rootCert;
         }
         chain[0] = caCert;
-        cat.debug("<getCertificateChain()");
+        log.debug("<getCertificateChain()");
         return chain;
     }
 
@@ -159,6 +155,4 @@ public class PKCS12SigningDevice implements ISigningDevice{
         return "BC";
     }
 
-
 }
-

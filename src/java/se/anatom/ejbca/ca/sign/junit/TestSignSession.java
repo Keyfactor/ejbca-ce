@@ -25,13 +25,14 @@ import se.anatom.ejbca.log.Admin;
 import org.bouncycastle.jce.*;
 import org.bouncycastle.asn1.*;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 import junit.framework.*;
 
 
-/** Tests signing session.
+/**
+ * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.19 2003-01-27 13:47:02 scop Exp $
+ * @version $Id: TestSignSession.java,v 1.20 2003-02-12 11:23:16 scop Exp $
  */
 public class TestSignSession extends TestCase {
 
@@ -121,7 +122,7 @@ public class TestSignSession extends TestCase {
     +"hkjOOAQDBQADLwAwLAIUQ+S2iFA1y7dfDWUCg7j1Nc8RW0oCFFhnDlU69xFRMeXXn1C/Oi+8pwrQ"
     ).getBytes());
 
-    static Category cat = Category.getInstance( TestSignSession.class.getName() );
+    private static Logger log = Logger.getLogger(TestSignSession.class);
     private static Context ctx;
     private static ISignSessionHome home;
     private static ISignSessionRemote remote;
@@ -132,7 +133,7 @@ public class TestSignSession extends TestCase {
         super(name);
     }
     protected void setUp() throws Exception {
-        cat.debug(">setUp()");
+        log.debug(">setUp()");
         // Install BouncyCastle provider
         Provider BCJce = new org.bouncycastle.jce.provider.BouncyCastleProvider();
         int result = Security.addProvider(BCJce);
@@ -145,14 +146,14 @@ public class TestSignSession extends TestCase {
         Object obj1 = ctx.lookup("UserData");
         userhome = (UserDataHome) javax.rmi.PortableRemoteObject.narrow(obj1, UserDataHome.class);
 
-        cat.debug("<setUp()");
+        log.debug("<setUp()");
     }
     protected void tearDown() throws Exception {
     }
     private Context getInitialContext() throws NamingException {
-        cat.debug(">getInitialContext");
+        log.debug(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        cat.debug("<getInitialContext");
+        log.debug("<getInitialContext");
         return ctx;
     }
     /**
@@ -166,17 +167,17 @@ public class TestSignSession extends TestCase {
     {
         KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA", "BC");
         keygen.initialize(512);
-        cat.debug("Generating keys, please wait...");
+        log.debug("Generating keys, please wait...");
         KeyPair rsaKeys = keygen.generateKeyPair();
 
-        cat.debug("Generated " + rsaKeys.getPrivate().getAlgorithm() + " keys with length" + ((RSAPrivateKey)rsaKeys.getPrivate()).getModulus().bitLength());
+        log.debug("Generated " + rsaKeys.getPrivate().getAlgorithm() + " keys with length" + ((RSAPrivateKey)rsaKeys.getPrivate()).getModulus().bitLength());
 
         return rsaKeys;
 
     } // getKeys
 
     public void test01CreateNewUser() throws Exception {
-        cat.debug(">test01CreateNewUser()");
+        log.debug(">test01CreateNewUser()");
         // Make user that we know...
         boolean userExists = false;
         try {
@@ -184,7 +185,7 @@ public class TestSignSession extends TestCase {
             assertNotNull("Failed to create user foo", createdata);
             createdata.setType(SecConst.USER_ENDUSER);
             createdata.setSubjectEmail("foo@anatom.se");
-            cat.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
+            log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
         } catch (RemoteException re) {
             if (re.detail instanceof DuplicateKeyException) {
                 userExists = true;
@@ -193,34 +194,34 @@ public class TestSignSession extends TestCase {
             userExists = true;
         }
         if (userExists) {
-            cat.debug("user foo already exists.");
+            log.debug("user foo already exists.");
             UserDataPK pk = new UserDataPK("foo");
             UserDataRemote data = userhome.findByPrimaryKey(pk);
             data.setStatus(UserDataRemote.STATUS_NEW);
-            cat.debug("Reset status to NEW");
+            log.debug("Reset status to NEW");
         }
-        cat.debug("<test01CreateNewUser()");
+        log.debug("<test01CreateNewUser()");
     }
 
     public void test02SignSession() throws Exception {
-        cat.debug(">test02SignSession()");
+        log.debug(">test02SignSession()");
         keys = genKeys();
         // user that we know exists...
         X509Certificate cert = (X509Certificate)remote.createCertificate(new Admin(Admin.TYPE_INTERNALUSER), "foo", "foo123", keys.getPublic());
         assertNotNull("Misslyckades skapa cert", cert);
-        cat.debug("Cert="+cert.toString());
+        log.debug("Cert="+cert.toString());
         //FileOutputStream fos = new FileOutputStream("testcert.crt");
         //fos.write(cert.getEncoded());
         //fos.close();
-        cat.debug("<test02SignSession()");
+        log.debug("<test02SignSession()");
     }
 
     public void test03TestBCPKCS10() throws Exception {
-        cat.debug(">test03TestBCPKCS10()");
+        log.debug(">test03TestBCPKCS10()");
         UserDataPK pk = new UserDataPK("foo");
         UserDataRemote data = userhome.findByPrimaryKey(pk);
         data.setStatus(UserDataRemote.STATUS_NEW);
-        cat.debug("Reset status of 'foo' to NEW");
+        log.debug("Reset status of 'foo' to NEW");
 
         // Create certificate request
         PKCS10CertificationRequest req = new PKCS10CertificationRequest(
@@ -233,47 +234,47 @@ public class TestSignSession extends TestCase {
         PKCS10CertificationRequest req2 =
           new PKCS10CertificationRequest(bOut.toByteArray());
         boolean verify = req2.verify();
-        cat.debug("Verify returned " + verify);
+        log.debug("Verify returned " + verify);
         if (verify == false) {
-            cat.debug("Aborting!");
+            log.debug("Aborting!");
             return;
         }
-        cat.debug("CertificationRequest generated succefully.");
+        log.debug("CertificationRequest generated successfully.");
         byte[] bcp10 = bOut.toByteArray();
         X509Certificate cert = (X509Certificate)remote.createCertificate(new Admin(Admin.TYPE_INTERNALUSER), "foo", "foo123", new PKCS10RequestMessage(bcp10));
         assertNotNull("Failed to create certificate", cert);
-        cat.debug("Cert="+cert.toString());
-        cat.debug("<test03TestBCPKCS10()");
+        log.debug("Cert="+cert.toString());
+        log.debug("<test03TestBCPKCS10()");
     }
     public void test04TestKeytoolPKCS10() throws Exception {
-        cat.debug(">test04TestKeytoolPKCS10()");
+        log.debug(">test04TestKeytoolPKCS10()");
         UserDataPK pk = new UserDataPK("foo");
         UserDataRemote data = userhome.findByPrimaryKey(pk);
         data.setStatus(UserDataRemote.STATUS_NEW);
-        cat.debug("Reset status of 'foo' to NEW");
+        log.debug("Reset status of 'foo' to NEW");
         X509Certificate cert = (X509Certificate)remote.createCertificate(new Admin(Admin.TYPE_INTERNALUSER), "foo", "foo123", new PKCS10RequestMessage(keytoolp10));
         assertNotNull("Failed to create certificate", cert);
-        cat.debug("Cert="+cert.toString());
-        cat.debug("<test04TestKeytoolPKCS10()");
+        log.debug("Cert="+cert.toString());
+        log.debug("<test04TestKeytoolPKCS10()");
     }
     public void test05TestIEPKCS10() throws Exception {
-        cat.debug(">test05TestIEPKCS10()");
+        log.debug(">test05TestIEPKCS10()");
         UserDataPK pk = new UserDataPK("foo");
         UserDataRemote data = userhome.findByPrimaryKey(pk);
         data.setStatus(UserDataRemote.STATUS_NEW);
-        cat.debug("Reset status of 'foo' to NEW");
+        log.debug("Reset status of 'foo' to NEW");
         X509Certificate cert = (X509Certificate)remote.createCertificate(new Admin(Admin.TYPE_INTERNALUSER),"foo", "foo123", new PKCS10RequestMessage(iep10));
         assertNotNull("Failed to create certificate", cert);
-        cat.debug("Cert="+cert.toString());
-        cat.debug("<test05TestIEPKCS10()");
+        log.debug("Cert="+cert.toString());
+        log.debug("<test05TestIEPKCS10()");
     }
 
     public void test06KeyUsage() throws Exception {
-        cat.debug(">test06KeyUsage()");
+        log.debug(">test06KeyUsage()");
         UserDataPK pk = new UserDataPK("foo");
         UserDataRemote data = userhome.findByPrimaryKey(pk);
         data.setStatus(UserDataRemote.STATUS_NEW);
-        cat.debug("Reset status of 'foo' to NEW");
+        log.debug("Reset status of 'foo' to NEW");
         // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
         boolean[] keyusage1 = new boolean[9];
         Arrays.fill(keyusage1, false);
@@ -283,7 +284,7 @@ public class TestSignSession extends TestCase {
         keyusage1[2] = true;
         X509Certificate cert = (X509Certificate)remote.createCertificate(new Admin(Admin.TYPE_INTERNALUSER), "foo", "foo123", keys.getPublic(), keyusage1);
         assertNotNull("Misslyckades skapa cert", cert);
-        cat.debug("Cert="+cert.toString());
+        log.debug("Cert="+cert.toString());
         boolean[] retKU = cert.getKeyUsage();
         assertTrue("Fel KeyUsage, digitalSignature finns ej!",retKU[0]);
         assertTrue("Fel KeyUsage, keyEncipherment finns ej!",retKU[2]);
@@ -292,7 +293,7 @@ public class TestSignSession extends TestCase {
         pk = new UserDataPK("foo");
         data = userhome.findByPrimaryKey(pk);
         data.setStatus(UserDataRemote.STATUS_NEW);
-        cat.debug("Reset status of 'foo' to NEW");
+        log.debug("Reset status of 'foo' to NEW");
         boolean[] keyusage2 = new boolean[9];
         Arrays.fill(keyusage2, false);
         // keyCertSign
@@ -306,18 +307,18 @@ public class TestSignSession extends TestCase {
         assertTrue("Fel KeyUsage, cRLSign finns ej!",retKU[6]);
         assertTrue("Fel KeyUsage, digitalSignature finns!",!retKU[0]);
 
-        cat.debug("Cert="+cert1.toString());
-        cat.debug("<test06KeyUsage()");
+        log.debug("Cert="+cert1.toString());
+        log.debug("<test06KeyUsage()");
     }
 
     public void test07DSAKey()
         throws Exception
     {
-        cat.debug(">test07DSAKey()");
+        log.debug(">test07DSAKey()");
         UserDataPK pk = new UserDataPK("foo");
         UserDataRemote data = userhome.findByPrimaryKey(pk);
         data.setStatus(UserDataRemote.STATUS_NEW);
-        cat.debug("Reset status of 'foo' to NEW");
+        log.debug("Reset status of 'foo' to NEW");
         try {
             X509Certificate cert = (X509Certificate)remote.createCertificate(new Admin(Admin.TYPE_INTERNALUSER),"foo", "foo123", new PKCS10RequestMessage(keytooldsa));
         } catch (Exception e) {
@@ -325,21 +326,20 @@ public class TestSignSession extends TestCase {
             assertTrue("Expected IllegalKeyException: " + e.toString(),
                        e instanceof IllegalKeyException);
         }
-        cat.debug("<test07DSAKey()");
+        log.debug("<test07DSAKey()");
     }
 
 /*
     public void test07TestOpenScep() throws Exception {
-        cat.debug(">test07TestOpenScep()");
+        log.debug(">test07TestOpenScep()");
         UserDataPK pk = new UserDataPK("foo");
         UserDataRemote data = userhome.findByPrimaryKey(pk);
         data.setStatus(UserDataRemote.STATUS_NEW);
-        cat.debug("Reset status of 'foo' to NEW");
+        log.debug("Reset status of 'foo' to NEW");
         X509Certificate cert = (X509Certificate)remote.createCertificate("foo", "foo123", new ScepRequestMessage(openscep));
         assertNotNull("Failed to create certificate", cert);
-        cat.debug("Cert="+cert.toString());
-        cat.debug("<test07TestOpenScep()");
+        log.debug("Cert="+cert.toString());
+        log.debug("<test07TestOpenScep()");
     }
 */
 }
-

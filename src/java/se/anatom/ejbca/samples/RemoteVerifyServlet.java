@@ -1,4 +1,3 @@
-
 package se.anatom.ejbca.samples;
 
 import javax.servlet.*;
@@ -7,7 +6,7 @@ import javax.servlet.http.*;
 import java.io.*;
 import java.util.*;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
 /**
  * Servlet to authenticate a user.
@@ -28,11 +27,11 @@ import org.apache.log4j.*;
  * followed by the information to use for this user's certificate.
  *
  * @author Original code by Peter Neemeth
- * @version $Id: RemoteVerifyServlet.java,v 1.2 2002-10-24 20:10:52 herrvendil Exp $
+ * @version $Id: RemoteVerifyServlet.java,v 1.3 2003-02-12 11:23:19 scop Exp $
  */
 public class RemoteVerifyServlet extends HttpServlet {
     
-    private static Category cat = Category.getInstance( RemoteVerifyServlet.class.getName() );
+    private static Logger log = Logger.getLogger(RemoteVerifyServlet.class);
     
     /** Status code for successful communication */
     public static final String MSG_OK = "200 OK";
@@ -164,7 +163,7 @@ public class RemoteVerifyServlet extends HttpServlet {
      * @param s What to log
      */
     protected void debugLog(final String s) {
-        cat.debug( s );
+        log.debug( s );
     }
     
     /**
@@ -172,7 +171,7 @@ public class RemoteVerifyServlet extends HttpServlet {
      * @param s What to log
      */
     protected void infoLog(final String s) {
-        cat.info( s );
+        log.info( s );
     }
     
     /**
@@ -180,7 +179,7 @@ public class RemoteVerifyServlet extends HttpServlet {
      * @param s What to log
      */
     protected void errorLog(final String s) {
-        cat.error( s );
+        log.error( s );
     }
     
     /**
@@ -188,7 +187,7 @@ public class RemoteVerifyServlet extends HttpServlet {
      * @param s What to log
      */
     protected void errorLog(final String s, java.lang.Exception e) {
-        cat.error( s, e );
+        log.error( s, e );
     }
     
     
@@ -434,7 +433,7 @@ public class RemoteVerifyServlet extends HttpServlet {
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         
-        cat = Category.getInstance( this.getClass().getName() );
+        log = Logger.getLogger(this.getClass());
         
         debugLog((new Date()).toString() + " RemoteVerify.init:");
         loadUserDB();

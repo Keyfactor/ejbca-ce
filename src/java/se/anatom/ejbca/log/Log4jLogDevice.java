@@ -2,20 +2,19 @@ package se.anatom.ejbca.log;
 
 import java.util.Properties;
 import java.security.cert.X509Certificate;
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 import java.util.Date;
 
 
-
-/** Implements a log device using Log4j, implementes the Singleton pattern.
+/**
+ * Implements a log device using Log4j, implementes the Singleton pattern.
  *
- * @version $Id: Log4jLogDevice.java,v 1.3 2002-12-10 07:46:01 herrvendil Exp $
+ * @version $Id: Log4jLogDevice.java,v 1.4 2003-02-12 11:23:18 scop Exp $
  */
-
 public class Log4jLogDevice implements ILogDevice, java.io.Serializable {
 
     /** Log4j instance for Base */
-    private static Category cat = Category.getInstance( Log4jLogDevice.class.getName() );
+    private static Logger log = Logger.getLogger(Log4jLogDevice.class);
 
 
    /**
@@ -73,12 +72,12 @@ public class Log4jLogDevice implements ILogDevice, java.io.Serializable {
                
        if(event < LogEntry.EVENT_ERROR_BOUNDRARY){
          // Do Log4j Informational logging.             
-         cat.info(time.toGMTString() + ", " + LogEntry.MODULETEXTS[module] +  ", " + LogEntry.EVENTNAMES_INFO[event] + ", Administrator : " + 
+         log.info(time.toGMTString() + ", " + LogEntry.MODULETEXTS[module] +  ", " + LogEntry.EVENTNAMES_INFO[event] + ", Administrator : " + 
                   admin + ", User : " + user + ", Certificate : " + cert + ", Comment : " + comment);  
        }
        else{
          // Do Log4j error logging.   
-         cat.error(time.toGMTString() + ", " + LogEntry.MODULETEXTS[module] + ", " + LogEntry.EVENTNAMES_ERROR[event - LogEntry.EVENT_ERROR_BOUNDRARY] + ", Administrator : " + 
+         log.error(time.toGMTString() + ", " + LogEntry.MODULETEXTS[module] + ", " + LogEntry.EVENTNAMES_ERROR[event - LogEntry.EVENT_ERROR_BOUNDRARY] + ", Administrator : " + 
                    admin + ", User : " + user + ", Certificate : " + cert + ", Comment : " + comment);  
        }    
     }
@@ -88,7 +87,6 @@ public class Log4jLogDevice implements ILogDevice, java.io.Serializable {
      */
     public void log(Admin admininfo, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception exception){
         log(admininfo, module, time, username, certificate, event, comment);
-        cat.error("Exception : ",exception); 
+        log.error("Exception : ",exception); 
     }
 }
-

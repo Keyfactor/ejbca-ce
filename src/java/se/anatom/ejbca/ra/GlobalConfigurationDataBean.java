@@ -3,9 +3,8 @@ package se.anatom.ejbca.ra;
 import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
 import java.util.HashMap;
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
-import se.anatom.ejbca.ra.GlobalConfiguration;
 
 /** Entity bean should not be used directly, use though Session beans.
  *
@@ -16,11 +15,11 @@ import se.anatom.ejbca.ra.GlobalConfiguration;
  * GlobalConfiguration
  * </pre>
  *
- **/
-
+ * @version $Id: GlobalConfigurationDataBean.java,v 1.4 2003-02-12 11:23:18 scop Exp $
+ */
 public abstract class GlobalConfigurationDataBean implements javax.ejb.EntityBean {
 
-    private static Category log = Category.getInstance( GlobalConfigurationDataBean.class.getName() );
+    private static Logger log = Logger.getLogger(GlobalConfigurationDataBean.class);
     protected EntityContext  ctx;
 
     public abstract String getConfigurationId();
@@ -101,4 +100,3 @@ public abstract class GlobalConfigurationDataBean implements javax.ejb.EntityBea
     }
 
 }
-

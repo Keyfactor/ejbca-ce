@@ -10,7 +10,7 @@ import javax.naming.InitialContext;
 
 import se.anatom.ejbca.util.Base64;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
@@ -28,12 +28,12 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CACertServlet.java,v 1.11 2003-02-03 13:41:26 scop Exp $
+ * @version $Id: CACertServlet.java,v 1.12 2003-02-12 11:23:21 scop Exp $
  *
  */
 public class CACertServlet extends HttpServlet {
 
-    static private Category cat = Category.getInstance(CACertServlet.class.getName() );
+    private static Logger log = Logger.getLogger(CACertServlet.class);
 
     private static final String COMMAND_PROPERTY_NAME = "cmd";
     private static final String COMMAND_NSCACERT = "nscacert";
@@ -59,13 +59,13 @@ public class CACertServlet extends HttpServlet {
 
     public void doPost(HttpServletRequest req, HttpServletResponse res)
         throws IOException, ServletException {
-        cat.debug(">doPost()");
+        log.debug(">doPost()");
         doGet(req, res);
-        cat.debug("<doPost()");
+        log.debug("<doPost()");
     } //doPost
 
     public void doGet(HttpServletRequest req,  HttpServletResponse res) throws java.io.IOException, ServletException {
-        cat.debug(">doGet()");
+        log.debug(">doGet()");
         // Check if authorized
         EjbcaWebBean ejbcawebbean= (se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean)
                                    req.getSession().getAttribute("ejbcawebbean");
@@ -105,7 +105,7 @@ public class CACertServlet extends HttpServlet {
                 if ( (chain.length-1-level) < 0 ) {
                     PrintStream ps = new PrintStream(res.getOutputStream());
                     ps.println("No CA certificate of level "+level+"exist.");
-                    cat.error("No CA certificate of level "+level+"exist.");
+                    log.error("No CA certificate of level "+level+"exist.");
                     return;
                 }
                 X509Certificate cacert = (X509Certificate)chain[chain.length-1-level];
@@ -114,13 +114,13 @@ public class CACertServlet extends HttpServlet {
                     res.setContentType("application/x-x509-ca-cert");
                     res.setContentLength(enccert.length);
                     res.getOutputStream().write(enccert);
-                    cat.debug("Sent CA cert to NS client, len="+enccert.length+".");
+                    log.debug("Sent CA cert to NS client, len="+enccert.length+".");
                 } else if (command.equalsIgnoreCase(COMMAND_IECACERT)) {
                     res.setHeader("Content-disposition", "attachment; filename=ca.crt");
                     res.setContentType("application/octet-stream");
                     res.setContentLength(enccert.length);
                     res.getOutputStream().write(enccert);
-                    cat.debug("Sent CA cert to IE client, len="+enccert.length+".");
+                    log.debug("Sent CA cert to IE client, len="+enccert.length+".");
                 } else if (command.equalsIgnoreCase(COMMAND_CACERT)) {
                     byte[] b64cert = Base64.encode(enccert);
                     String out = "-----BEGIN CERTIFICATE-----\n";
@@ -130,7 +130,7 @@ public class CACertServlet extends HttpServlet {
                     res.setContentType("application/octet-stream");
                     res.setContentLength(out.length());
                     res.getOutputStream().write(out.getBytes());
-                    cat.debug("Sent CA cert to client, len="+out.length()+".");
+                    log.debug("Sent CA cert to client, len="+out.length()+".");
                 } else {
                     res.setContentType("text/plain");
                     res.getOutputStream().println("Commands="+COMMAND_NSCACERT+" || "+COMMAND_IECACERT+" || "+COMMAND_CACERT);
@@ -140,8 +140,8 @@ public class CACertServlet extends HttpServlet {
                 PrintStream ps = new PrintStream(res.getOutputStream());
                 e.printStackTrace(ps);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting CA certificates.");
-                cat.error("Error getting CA certificates.");
-                cat.error(e);
+                log.error("Error getting CA certificates.");
+                log.error(e);
                 return;
             }
         }

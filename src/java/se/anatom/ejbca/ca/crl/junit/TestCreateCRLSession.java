@@ -11,17 +11,17 @@ import se.anatom.ejbca.util.*;
 import se.anatom.ejbca.*;
 import se.anatom.ejbca.log.Admin;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 import junit.framework.*;
 
 
 /** Tests CRL session (agentrunner and certificatesession).
  *
- * @version $Id: TestCreateCRLSession.java,v 1.7 2003-01-12 17:16:35 anatom Exp $
+ * @version $Id: TestCreateCRLSession.java,v 1.8 2003-02-12 11:23:15 scop Exp $
  */
 public class TestCreateCRLSession extends TestCase {
 
-    static Category cat = Category.getInstance( TestCreateCRLSession.class.getName() );
+    private static Logger log = Logger.getLogger(TestCreateCRLSession.class);
     private static Context ctx;
     private static IJobRunnerSessionHome  home;
     private static IJobRunnerSessionRemote remote;
@@ -32,7 +32,7 @@ public class TestCreateCRLSession extends TestCase {
         super(name);
     }
     protected void setUp() throws Exception {
-        cat.debug(">setUp()");
+        log.debug(">setUp()");
         ctx = getInitialContext();
         Object obj = ctx.lookup("CreateCRLSession");
         home = (IJobRunnerSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IJobRunnerSessionHome.class);
@@ -40,40 +40,40 @@ public class TestCreateCRLSession extends TestCase {
         Object obj1 = ctx.lookup("CertificateStoreSession");
         storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
         storeremote = storehome.create();
-        cat.debug("<setUp()");
+        log.debug("<setUp()");
     }
     protected void tearDown() throws Exception {
     }
     private Context getInitialContext() throws NamingException {
-        cat.debug(">getInitialContext");
+        log.debug(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        cat.debug("<getInitialContext");
+        log.debug("<getInitialContext");
         return ctx;
     }
 
     public void test01CreateNewCRL() throws Exception {
-        cat.debug(">test01CreateNewCRL()");
+        log.debug(">test01CreateNewCRL()");
         remote.run(new Admin(Admin.TYPE_INTERNALUSER));
-        cat.debug("<test01CreateNewCRL()");
+        log.debug("<test01CreateNewCRL()");
     }
     public void test02LastCRL() throws Exception {
-        cat.debug(">test02LastCRL()");
+        log.debug(">test02LastCRL()");
         // Get number of last CRL
         int number = storeremote.getLastCRLNumber(new Admin(Admin.TYPE_INTERNALUSER));
-        cat.debug("Last CRLNumber = "+number);
+        log.debug("Last CRLNumber = "+number);
         byte[] crl = storeremote.getLastCRL(new Admin(Admin.TYPE_INTERNALUSER));
         assertNotNull("Could not get CRL", crl);
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
         //FileOutputStream fos = new FileOutputStream("testcrl.der");
         //fos.write(crl);
         //fos.close();
-        cat.debug("<test02LastCRL()");
+        log.debug("<test02LastCRL()");
     }
     public void test03CheckNumberofRevokedCerts() throws Exception {
-        cat.debug(">test03CheckNumberofRevokedCerts()");
+        log.debug(">test03CheckNumberofRevokedCerts()");
         // Get number of last CRL
         Collection revfp = storeremote.listRevokedCertificates(new Admin(Admin.TYPE_INTERNALUSER));
-        cat.debug("Number of revoked certificates="+revfp.size());
+        log.debug("Number of revoked certificates="+revfp.size());
         byte[] crl = storeremote.getLastCRL(new Admin(Admin.TYPE_INTERNALUSER));
         assertNotNull("Could not get CRL", crl);
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
@@ -82,7 +82,7 @@ public class TestCreateCRLSession extends TestCase {
         if (revset != null)
             revsize = revset.size();
             assertEquals(revfp.size(), revsize);
-        cat.debug("<test03CheckNumberofRevokedCerts()");
+        log.debug("<test03CheckNumberofRevokedCerts()");
     }
 
 }

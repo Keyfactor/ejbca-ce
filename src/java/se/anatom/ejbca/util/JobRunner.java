@@ -1,4 +1,3 @@
-
 package se.anatom.ejbca.util;
 
 import java.util.*;
@@ -10,7 +9,8 @@ import javax.rmi.PortableRemoteObject;
 import se.anatom.ejbca.IJobRunnerSessionHome;
 import se.anatom.ejbca.log.Admin;
 
-import org.apache.log4j.*;
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Logger;
 
 /**
  *  JobRunner is used to run jobs implementing the IJobRunnerSession interface.
@@ -21,12 +21,12 @@ import org.apache.log4j.*;
  *    - credentials (the password is needed)
  *    - agent       (the JNDI-name of the agent session to start)
  *
- * @version $Id: JobRunner.java,v 1.3 2002-11-17 14:01:41 herrvendil Exp $
+ * @version $Id: JobRunner.java,v 1.4 2003-02-12 11:23:19 scop Exp $
  */
 
 public class JobRunner extends java.lang.Object {
 
-    static Category cat = Category.getInstance( JobRunner.class.getName() );
+    private static Logger log = Logger.getLogger(JobRunner.class);
 
     private static final String JNDI_PROVIDER    = "java.naming.provider.url";
     private static final String JNDI_PRINCIPAL   = "java.naming.security.principal";
@@ -64,8 +64,8 @@ IJobRunnerSessionHome.class );
         BasicConfigurator.configure();
 
         if ( (args.length != 4) && (args.length != 1) ){
-            cat.error( "Usage: JobRunner <providerurl> <username> <password> <jndiname>" );
-            cat.error( "Usage: JobRunner <jndiname>" );
+            log.error( "Usage: JobRunner <providerurl> <username> <password> <jndiname>" );
+            log.error( "Usage: JobRunner <jndiname>" );
             return;
         }
 
@@ -93,9 +93,7 @@ IJobRunnerSessionHome.class );
             }
         }
         catch (Exception e) {
-            cat.error( "Error running job " + job, e);
+            log.error( "Error running job " + job, e);
         }
     }
 }
-
-

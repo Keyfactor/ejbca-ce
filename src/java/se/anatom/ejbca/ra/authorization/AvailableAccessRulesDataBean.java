@@ -2,8 +2,7 @@ package se.anatom.ejbca.ra.authorization;
 
 import javax.ejb.EntityContext;
 import javax.ejb.CreateException;
-import org.apache.log4j.*;
-
+import org.apache.log4j.Logger;
 
 /** Entity bean should not be used directly, use though Session beans.
  *
@@ -13,11 +12,12 @@ import org.apache.log4j.*;
  * Name
  * </pre>
  *
- **/
+ * @version $Id: AvailableAccessRulesDataBean.java,v 1.2 2003-02-12 11:23:18 scop Exp $
+ */
 
 public abstract class AvailableAccessRulesDataBean implements javax.ejb.EntityBean {
 
-    private static Category log = Category.getInstance( AvailableAccessRulesDataBean.class.getName() );
+    private static Logger log = Logger.getLogger(AvailableAccessRulesDataBean.class);
     protected EntityContext  ctx;
 
     public abstract String getName();
@@ -68,4 +68,3 @@ public abstract class AvailableAccessRulesDataBean implements javax.ejb.EntityBe
     }
 
 }
-

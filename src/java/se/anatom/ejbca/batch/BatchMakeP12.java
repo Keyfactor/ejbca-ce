@@ -1,6 +1,5 @@
 package se.anatom.ejbca.batch;
 
-
 import java.security.Security;
 import java.security.cert.*;
 import java.security.KeyStore;
@@ -31,21 +30,19 @@ import se.anatom.ejbca.util.KeyTools;
 import se.anatom.ejbca.util.P12toPEM;
 import se.anatom.ejbca.SecConst;
 
-
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 
 /**
+ * This class generates keys and request certificates for all users with
+ * status NEW. The result is generated PKCS12-files.
  *
- * This class generates keys and request certificates for all users with status NEW. The result is generated PKCS12-files.
- *
- * @version $Id: BatchMakeP12.java,v 1.26 2003-01-12 17:16:29 anatom Exp $
- *
+ * @version $Id: BatchMakeP12.java,v 1.27 2003-02-12 11:23:14 scop Exp $
  */
-
 public class BatchMakeP12 {
 
     /** For logging */
-    private static Category cat = Category.getInstance(BatchMakeP12.class.getName());
+    private static Logger log = Logger.getLogger(BatchMakeP12.class);
 
     /** Where created P12-files are stored, default /<username>.p12 */
     private String mainStoreDir = "";
@@ -56,10 +53,10 @@ public class BatchMakeP12 {
     private Admin administrator;
 
     static public Context getInitialContext() throws NamingException{
-        cat.debug(">GetInitialContext");
+        log.debug(">GetInitialContext");
         // jndi.properties must exist in classpath
         Context ctx = new javax.naming.InitialContext();
-        cat.debug("<GetInitialContext");
+        log.debug("<GetInitialContext");
         return ctx;
     }
 
@@ -72,7 +69,7 @@ public class BatchMakeP12 {
      */
 
     public BatchMakeP12() throws javax.naming.NamingException, javax.ejb.CreateException, java.rmi.RemoteException, java.io.IOException {
-        cat.debug(">BatchMakeP12:");
+        log.debug(">BatchMakeP12:");
         administrator = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
 
         // Bouncy Castle security provider
@@ -84,7 +81,7 @@ public class BatchMakeP12 {
         Object obj1 = jndiContext.lookup("RSASignSession");
         signhome = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ISignSessionHome.class);
 
-        cat.debug("<BatchMakeP12:");
+        log.debug("<BatchMakeP12:");
     } // BatchMakeP12
 
     /**
@@ -95,11 +92,11 @@ public class BatchMakeP12 {
 
     private X509Certificate getCACertificate()
       throws Exception {
-        cat.debug(">getCACertificate()");
+        log.debug(">getCACertificate()");
         ISignSessionRemote ss = signhome.create();
         Certificate[] chain = ss.getCertificateChain(administrator);
         X509Certificate rootcert = (X509Certificate)chain[chain.length-1];
-        cat.debug("<getCACertificate()");
+        log.debug("<getCACertificate()");
         return rootcert;
     } // getCACertificate
 
@@ -110,10 +107,10 @@ public class BatchMakeP12 {
      */
     private Certificate[] getCACertChain()
       throws Exception {
-        cat.debug(">getCACertChain()");
+        log.debug(">getCACertChain()");
         ISignSessionRemote ss = signhome.create();
         Certificate[] chain = ss.getCertificateChain(administrator);
-        cat.debug("<getCACertChain()");
+        log.debug("<getCACertChain()");
         return chain;
     } // getCACertificate
 
@@ -133,7 +130,7 @@ public class BatchMakeP12 {
      * @exception IOException if directory to store keystore cannot be created
      */
     private void storeKeyStore(KeyStore ks, String username, String kspassword, boolean createJKS, boolean createPEM) throws IOException, KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException {
-        cat.debug(">storeKeyStore: ks=" + ks.toString() + ", username=" + username);
+        log.debug(">storeKeyStore: ks=" + ks.toString() + ", username=" + username);
 
         // Where to store it?
         if (mainStoreDir == null)
@@ -156,8 +153,8 @@ public class BatchMakeP12 {
             p12topem.createPEM();
         }
 
-        cat.debug("Keystore stored in " + keyStoreFilename);
-        cat.debug("<storeKeyStore: ks=" + ks.toString() + ", username=" + username);
+        log.debug("Keystore stored in " + keyStoreFilename);
+        log.debug("<storeKeyStore: ks=" + ks.toString() + ", username=" + username);
     } // storeKeyStore
 
 
@@ -176,7 +173,7 @@ public class BatchMakeP12 {
 
     private void createUser(String username, String password, KeyPair rsaKeys, boolean createJKS, boolean createPEM)
       throws Exception {
-        cat.debug(">createUser: username=" + username + ", hiddenpwd, keys=" + rsaKeys.toString());
+        log.debug(">createUser: username=" + username + ", hiddenpwd, keys=" + rsaKeys.toString());
 
         // Send the certificate request to the CA
         ISignSessionRemote ss = signhome.create();
@@ -213,8 +210,8 @@ public class BatchMakeP12 {
         else
             ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), cert, cachain);
         storeKeyStore(ks, username, password, createJKS, createPEM);
-        cat.info("Created Keystore for " + username+ ".");
-        cat.debug("<createUser: username=" + username + ", hiddenpwd, keys=" + rsaKeys.toString());
+        log.info("Created Keystore for " + username+ ".");
+        log.debug("<createUser: username=" + username + ", hiddenpwd, keys=" + rsaKeys.toString());
     } // createUser
 
     /**
@@ -237,10 +234,10 @@ public class BatchMakeP12 {
      */
 
     public void createAllNew() throws Exception {
-        cat.debug(">createAllNew:");
-        cat.info("Generating for all NEW.");
+        log.debug(">createAllNew:");
+        log.info("Generating for all NEW.");
         createAllWithStatus(UserDataLocal.STATUS_NEW);
-        cat.debug("<createAllNew:");
+        log.debug("<createAllNew:");
     } // createAllNew
 
     /**
@@ -250,10 +247,10 @@ public class BatchMakeP12 {
      */
 
     public void createAllFailed() throws Exception {
-        cat.debug(">createAllFailed:");
-        cat.info("Generating for all FAILED.");
+        log.debug(">createAllFailed:");
+        log.info("Generating for all FAILED.");
         createAllWithStatus(UserDataLocal.STATUS_FAILED);
-        cat.debug("<createAllFailed:");
+        log.debug("<createAllFailed:");
     } // createAllFailed
 
     /**
@@ -265,7 +262,7 @@ public class BatchMakeP12 {
      */
 
     public void createAllWithStatus(int status) throws Exception {
-        cat.debug(">createAllWithStatus: "+status);
+        log.debug(">createAllWithStatus: "+status);
 
         IUserAdminSessionRemote admin = adminhome.create();
 
@@ -286,8 +283,8 @@ public class BatchMakeP12 {
             UserAdminData data = (UserAdminData) it.next();
             if ((data.getPassword() != null) && (data.getPassword().length() > 0)) {
                 try {
-                    cat.info("Generating keys for " + data.getUsername());
-                    cat.info("Password:" + data.getPassword());
+                    log.info("Generating keys for " + data.getUsername());
+                    log.info("Password:" + data.getPassword());
                     // get users Token Type.
                     tokentype = data.getTokenType();
                     createP12 = tokentype == SecConst.TOKEN_SOFT_P12;
@@ -307,22 +304,22 @@ public class BatchMakeP12 {
                       successcount++;
                     }
                     else
-                      cat.info("Cannot batchmake browser generated token for user - " + data.getUsername());
+                      log.info("Cannot batchmake browser generated token for user - " + data.getUsername());
                 } catch (Exception e) {
                     // If things went wrong set status to FAILED
-                    cat.error("An error happened, setting status to FAILED.");
-                    cat.error(e.getMessage());
+                    log.error("An error happened, setting status to FAILED.");
+                    log.error(e.getMessage());
                     failedusers += ":" + data.getUsername();
                     failcount++;
                     admin.setUserStatus(administrator, data.getUsername(), UserDataLocal.STATUS_FAILED);
                 }
             } else
-                cat.debug("User '"+data.getUsername()+"' does not have clear text password.");
+                log.debug("User '"+data.getUsername()+"' does not have clear text password.");
         }
         if (failedusers != "")
             throw new Exception("BatchMakeP12 failed for " + failcount + " users (" + successcount + " succeeded) - " + failedusers);
-        cat.info(successcount + " new users generated successfully - " + successusers);
-        cat.debug("<createAllWithStatus: "+status);
+        log.info(successcount + " new users generated successfully - " + successusers);
+        log.debug("<createAllWithStatus: "+status);
     } // createAllWithStatus
 
     /**
@@ -333,7 +330,7 @@ public class BatchMakeP12 {
      */
 
     public void createUser(String username) throws Exception {
-        cat.debug(">createUser("+username+")");
+        log.debug(">createUser("+username+")");
         boolean createJKS = false;
         boolean createPEM = false;
         boolean createP12 = false;
@@ -351,7 +348,7 @@ public class BatchMakeP12 {
 
                 // Only generate supported tokens
                 if(createP12 || createPEM || createJKS){
-                  cat.info("Generating keys for " + data.getUsername());
+                  log.info("Generating keys for " + data.getUsername());
                   // Grab new user, set status to INPROCESS
                   admin.setUserStatus(administrator, data.getUsername(), UserDataLocal.STATUS_INPROCESS);
                   processUser(data, createJKS, createPEM);
@@ -359,30 +356,30 @@ public class BatchMakeP12 {
                   admin.setUserStatus(administrator, data.getUsername(), UserDataLocal.STATUS_GENERATED);
                   // Delete clear text password
                   admin.setClearTextPassword(administrator, data.getUsername(), null);
-                  cat.info("New user generated successfully - " + data.getUsername());
+                  log.info("New user generated successfully - " + data.getUsername());
                 }
                 else
-                  cat.info("Cannot batchmake browser generated token for user - " + data.getUsername());
+                  log.info("Cannot batchmake browser generated token for user - " + data.getUsername());
             } catch (Exception e) {
                 // If things went wrong set status to FAILED
-                cat.error("An error happened, setting status to FAILED.");
-                cat.error(e);
+                log.error("An error happened, setting status to FAILED.");
+                log.error(e);
                 admin.setUserStatus(administrator, data.getUsername(), UserDataLocal.STATUS_FAILED);
                 throw new Exception("BatchMakeP12 failed for '" + username+"'.");
             }
         }
         else {
-            cat.error("Unknown user, or clear text password is null: " + username);
+            log.error("Unknown user, or clear text password is null: " + username);
             throw new Exception("BatchMakeP12 failed for '" + username+"'.");
         }
-        cat.debug(">createUser("+username+")");
+        log.debug(">createUser("+username+")");
     } // doit
 
 
 
     public static void main(String[] args) {
         try {
-            org.apache.log4j.PropertyConfigurator.configure("log4j.properties");
+            PropertyConfigurator.configure("log4j.properties");
             BatchMakeP12 makep12 = new BatchMakeP12();
             // Create subdirectory 'p12' if it does not exist
             File dir = new File("./p12");
@@ -394,7 +391,7 @@ public class BatchMakeP12 {
                 System.exit(0);
             }
             if (args.length > 0) {
-               cat.info("Generating Token.");
+               log.info("Generating Token.");
                makep12.createUser(args[0]);
             } else {
                // Make P12 for all NEW users in local DB

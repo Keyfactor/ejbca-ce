@@ -2,18 +2,17 @@ package se.anatom.ejbca.util;
 
 import java.io.*;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
-import se.anatom.ejbca.util.Base64;
 
 /**
  * Tools to handle some common file operations.
  *
- * @version $Id: FileTools.java,v 1.2 2003-01-12 17:16:33 anatom Exp $
+ * @version $Id: FileTools.java,v 1.3 2003-02-12 11:23:19 scop Exp $
  */
 public class FileTools {
 
-    private static Category cat = Category.getInstance(FileTools.class.getName());
+    private static Logger log = Logger.getLogger(FileTools.class);
 
     /** Creates new FileTools */
     public FileTools() {
@@ -34,7 +33,7 @@ public class FileTools {
      */
     public static byte[] getBytesFromPEM(byte[] inbuf, String beginKey, String endKey)
     throws IOException {
-        cat.debug(">getBytesFromPEM");
+        log.debug(">getBytesFromPEM");
 
         ByteArrayInputStream instream = new ByteArrayInputStream(inbuf);
         BufferedReader bufRdr = new BufferedReader(new InputStreamReader(instream));
@@ -55,7 +54,7 @@ public class FileTools {
 
         byte[] bytes = Base64.decode(ostr.toByteArray());
 
-        cat.debug("<getBytesFromPEM");
+        log.debug("<getBytesFromPEM");
         return bytes;
     } // getBytesfromPEM
 
@@ -79,4 +78,3 @@ public class FileTools {
     } // readFiletoBuffer
 
 } // FileTools
-

@@ -12,7 +12,7 @@ import javax.ejb.*;
 import java.lang.reflect.Method;
 import java.security.cert.X509Certificate;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 import RegularExpression.RE;
 
 import se.anatom.ejbca.BaseSessionBean;
@@ -23,11 +23,11 @@ import se.anatom.ejbca.util.query.*;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalLogSessionBean.java,v 1.6 2003-01-12 17:16:31 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.7 2003-02-12 11:23:17 scop Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean  {
 
-    private static Category cat = Category.getInstance(LocalLogSessionBean.class.getName());
+    private static Logger log = Logger.getLogger(LocalLogSessionBean.class);
     
     public static final int MAXIMUM_QUERY_ROWCOUNT = 500;
 
@@ -281,4 +281,3 @@ public class LocalLogSessionBean extends BaseSessionBean  {
     } // saveLogConfiguration
     
 } // LocalLogSessionBean
-

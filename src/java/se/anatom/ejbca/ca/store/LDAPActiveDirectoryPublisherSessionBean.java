@@ -55,12 +55,12 @@ import org.apache.log4j.*;
  * cACertificate
  * </pre>
  *
- * @version $Id: LDAPActiveDirectoryPublisherSessionBean.java,v 1.8 2003-01-25 18:56:12 scop Exp $
+ * @version $Id: LDAPActiveDirectoryPublisherSessionBean.java,v 1.9 2003-02-12 11:23:17 scop Exp $
  */
 public class LDAPActiveDirectoryPublisherSessionBean
     extends BaseSessionBean {
 
-	private static Category cat = Category.getInstance( LDAPActiveDirectoryPublisherSessionBean.class.getName() );
+    private static Logger log = Logger.getLogger(LDAPActiveDirectoryPublisherSessionBean.class);
 
     private String ldapHost = "10.1.1.1";
     private int ldapPort = 389;

@@ -1,18 +1,17 @@
-
 package se.anatom.ejbca.admin;
 
 import javax.naming.*;
 
-import org.apache.log4j.*;
+import org.apache.log4j.Logger;
 
 /** Base for all AdminCommands, contains functions for getting initial context and logging
  *
- * @version $Id: BaseAdminCommand.java,v 1.5 2002-05-10 08:29:04 anatom Exp $
+ * @version $Id: BaseAdminCommand.java,v 1.6 2003-02-12 11:23:13 scop Exp $
  */
 public abstract class BaseAdminCommand implements IAdminCommand {
 
     /** Log4j instance for Base */
-    private static Logger baseLog = Logger.getLogger( BaseAdminCommand.class.getName() );
+    private static Logger baseLog = Logger.getLogger(BaseAdminCommand.class);
     /** Log4j instance for actual class */
     private Logger log;
 
@@ -24,7 +23,7 @@ public abstract class BaseAdminCommand implements IAdminCommand {
 
     /** Creates a new instance of BaseAdminCommand */
     public BaseAdminCommand(String[] args) {
-        log = Logger.getLogger( this.getClass().getName() );
+        log = Logger.getLogger(this.getClass());
         this.args = args;
     }
 

@@ -1,9 +1,11 @@
 package se.anatom.ejbca.admin;
 
+import org.apache.log4j.PropertyConfigurator;
+
 public class ca {
 
     public static void main(String [] args){
-        org.apache.log4j.PropertyConfigurator.configure("log4j.properties");
+        PropertyConfigurator.configure("log4j.properties");
         try {
             IAdminCommand cmd = CaAdminCommandFactory.getCommand(args);
             if (cmd != null) {
