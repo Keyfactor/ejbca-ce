@@ -1,5 +1,5 @@
 EJBCA FAQ
-$Id: FAQ,v 1.4 2001-11-29 13:30:58 anatom Exp $
+$Id: FAQ,v 1.5 2001-11-30 08:46:03 anatom Exp $
 ---------
 
 Q: Why are there two versions of all commands, i.e. 'ra.sh' and 'ra.cmd'.
@@ -92,6 +92,11 @@ Now you can take a look at your SUN keystore with:
 
 keytool -list -keystore myks.jks
 
+You can in theory use the same method with a BouncyCastle PKCS12 keystore by adding the following arguments
+to every command:
+
+-provider org.bouncycastle.jce.provider.BouncyCastleProvider -storetype PKCS12
+
 -----
 Q: What aliases do a EJBCA keystore contain?
 
@@ -103,3 +108,4 @@ If the CA is not a Root CA, i.e. the certificate in alias 'privateKey' is
 signed by another certificate, that CA certificate (Root certificate) is
 conatined in the alias with the same name as the CN part of the Root CAs DN,
 i.e. the CN part of the issuer DN from the certificate in 'privateKey'.
+

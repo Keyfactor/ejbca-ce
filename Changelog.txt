@@ -1,8 +1,8 @@
 
 1.0
 ---
-Fixed bug with not returning correct content-length to browser when
-returning PEM-certificates.
+Fixed bug with not returning correct content-length to browser when returning PEM-certificates.
+New version of BouncyCastle provider with minor PKCS12 fix.
 Updated docs.
 Added FAQ.
 
@@ -18,3 +18,4 @@ Creates p12-files during test in real temporary dir.
 1.0b1
 -----
 Initial release
+
