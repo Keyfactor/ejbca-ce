@@ -54,8 +54,11 @@ Database configuration files in JBoss (with Tomcat or Jetty) is located in the
 as DefaultDS. Current <database>-service.xml files can be obtained from
 jboss.org, provided here are snapshots that work for me.
 
-6. Edit standardjaws.xml. Change the default type-mapping to match the chosen
-database (see below).
+5. Remove the standard database driver, hsqldb-service.xml, from <jboss-home>
+/server/default/deploy.
+
+6. Edit standardjbosscmp-jdbc.xml and standardjaws.xml. Change the default type-
+mapping to match the chosen database (see below).
 
 7. DONE! Start JBoss. Run all tests with 'runtest.sh/cmd'.
    Use your favorite database graphic editor to look at the beautiful tables.
@@ -114,4 +117,7 @@ Type mapping:
 
      <datasource>java:/DefaultDS</datasource>
      <type-mapping>Oracle8</type-mapping>
+
+
+
 

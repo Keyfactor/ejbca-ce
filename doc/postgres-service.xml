@@ -17,9 +17,9 @@
     <application-policy name = "PostgresDbRealm">
        <authentication>
           <login-module code = "org.jboss.resource.security.ConfiguredIdentityLoginModule" flag = "required">
-             <module-option name = "principal">EJBCA</module-option>
-             <module-option name = "userName">EJBCA</module-option>
-             <module-option name = "password">EJBCA</module-option>
+             <module-option name = "principal">ejbca</module-option>
+             <module-option name = "userName">ejbca</module-option>
+             <module-option name = "password">ejbca</module-option>
              <module-option name = "managedConnectionFactoryName">jboss.jca:service=LocalTxCM,name=PostgresDS</module-option>
           </login-module>
        </authentication>
@@ -42,11 +42,11 @@
         
         <attribute name="ManagedConnectionFactoryProperties">
           <properties>
-            <config-property name="ConnectionURL" type="java.lang.String">jdbc:postgresql://127.0.0.1/EJBCA</config-property>
+            <config-property name="ConnectionURL" type="java.lang.String">jdbc:postgresql://localhost/ejbca</config-property>
             <config-property name="DriverClass" type="java.lang.String">org.postgresql.Driver</config-property>
             <!--set these only if you want only default logins, not through JAAS -->
-            <config-property name="UserName" type="java.lang.String">EJBCA</config-property>
-            <config-property name="Password" type="java.lang.String">EJBCA</config-property>
+            <config-property name="UserName" type="java.lang.String">ejbca</config-property>
+            <config-property name="Password" type="java.lang.String">ejbca</config-property>
           </properties>
 
         </attribute>
