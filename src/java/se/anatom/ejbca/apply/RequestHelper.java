@@ -312,7 +312,6 @@ public class RequestHelper {
         throws Exception {
         if (bytes.length == 0) {
             log.error("0 length can not be sent to client!");
-
             return;
         }
 
