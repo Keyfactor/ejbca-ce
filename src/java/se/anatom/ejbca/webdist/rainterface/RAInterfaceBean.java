@@ -44,7 +44,7 @@ import org.apache.log4j.Logger;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.26 2003-02-20 22:12:43 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.27 2003-02-26 12:01:21 herrvendil Exp $
  */
 public class RAInterfaceBean {
 
@@ -216,8 +216,8 @@ public class RAInterfaceBean {
         int certificatetypeid =userdata.getCertificateProfileId();
 
         addedusermemory.changeUser(userdata);
-        if(userdata.getPassword() != null && !userdata.getPassword().trim().equals(""))
-          userdata.setPassword(null);
+        if(userdata.getPassword() != null && userdata.getPassword().trim().equals(""))
+          userdata.setPassword(null); 
         
         adminsession.changeUser(administrator, userdata.getUsername(), userdata.getPassword(), userdata.getSubjectDN(), userdata.getSubjectAltName(),
                                 userdata.getEmail(),  userdata.getClearTextPassword(), userdata.getEndEntityProfileId(),
@@ -273,15 +273,16 @@ public class RAInterfaceBean {
     }
     /* Method to retrieve a user from the database without inserting it into users data, used by 'edituser.jsp' and page*/
     public UserView findUserForEdit(String username) throws RemoteException, NamingException, FinderException, CreateException, AuthorizationDeniedException{
-
+      UserView userview = null;
+      
        UserAdminData user = adminsession.findUser(administrator, username);
        if(globalconfiguration.getEnableEndEntityProfileLimitations())
          if(!profileauthproxy.getEndEntityProfileAuthorization(administrator, user.getEndEntityProfileId(),EndEntityProfileAuthorizationProxy.EDIT_RIGHTS, LogEntry.MODULE_ADMINWEB))
            throw new AuthorizationDeniedException("Not Authorized to edit user.");
 
-       UserView userview = new UserView(user);
+       if(user != null) 
+        userview = new UserView(user);
        return userview;
-
     }
 
     /* Method to find all users in database */

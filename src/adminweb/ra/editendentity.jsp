@@ -94,179 +94,181 @@
     username = request.getParameter(USER_PARAMETER);
     try{
       userdata = rabean.findUserForEdit(username);
-      notauthorized = false;
-      profileid=userdata.getEndEntityProfileId();
-      profile = rabean.getEndEntityProfile(profileid);
+      if(userdata != null){
+        notauthorized = false;
+        profileid=userdata.getEndEntityProfileId();
+        profile = rabean.getEndEntityProfile(profileid);
 
-      if( request.getParameter(ACTION) != null){
-        if( request.getParameter(ACTION).equals(ACTION_EDITUSER)){
-          if( request.getParameter(BUTTON_SAVE) != null ){
-            UserView newuser = new UserView();
+        if( request.getParameter(ACTION) != null){
+          if( request.getParameter(ACTION).equals(ACTION_EDITUSER)){
+            if( request.getParameter(BUTTON_SAVE) != null ){
+              UserView newuser = new UserView();
 
-           newuser.setEndEntityProfileId(profileid);
-           newuser.setUsername(username);
+             newuser.setEndEntityProfileId(profileid);
+             newuser.setUsername(username);
 
 
-           String value = request.getParameter(TEXTFIELD_PASSWORD);
-           if(value !=null){
-             value=value.trim(); 
-             if(!value.equals("")){
-               newuser.setPassword(value);         
-             }
-           }
-
-           value = request.getParameter(SELECT_PASSWORD);
-           if(value !=null){
-             if(!value.equals("")){
-               newuser.setPassword(value);
-             }
-           } 
-
-           value = request.getParameter(CHECKBOX_CLEARTEXTPASSWORD);
-           if(value !=null){
-             if(value.equals(CHECKBOX_VALUE)){
-               newuser.setClearTextPassword(true);          
-             }
-             else{
-                 newuser.setClearTextPassword(false);
-             }
-           }
-
-             value = request.getParameter(TEXTFIELD_EMAIL);
+             String value = request.getParameter(TEXTFIELD_PASSWORD);
              if(value !=null){
                value=value.trim(); 
                if(!value.equals("")){
-                 newuser.setEmail(value);
+                 newuser.setPassword(value);         
                }
              }
-             value = request.getParameter(SELECT_EMAIL);
+
+             value = request.getParameter(SELECT_PASSWORD);
              if(value !=null){
                if(!value.equals("")){
-                 newuser.setEmail(value);
+                 newuser.setPassword(value);
                }
              } 
 
-             String subjectdn = "";
-             int numberofsubjectdnfields = profile.getSubjectDNFieldOrderLength();
-             for(int i=0; i < numberofsubjectdnfields; i++){
-               value=null;
-               fielddata = profile.getSubjectDNFieldsInOrder(i); 
-               if(fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.OLDDNE)
-                 value = request.getParameter(TEXTFIELD_SUBJECTDN+i);
-               else{
-                 if(request.getParameter(CHECKBOX_SUBJECTDN+i)!=null)
-                   if(request.getParameter(CHECKBOX_SUBJECTDN+i).equals(CHECKBOX_VALUE))
-                     value = newuser.getEmail();
+             value = request.getParameter(CHECKBOX_CLEARTEXTPASSWORD);
+             if(value !=null){
+               if(value.equals(CHECKBOX_VALUE)){
+                 newuser.setClearTextPassword(true);          
                }
+               else{
+                   newuser.setClearTextPassword(false);
+               }
+             }
+
+               value = request.getParameter(TEXTFIELD_EMAIL);
                if(value !=null){
                  value=value.trim(); 
                  if(!value.equals("")){
-                   if(subjectdn.equals(""))
-                     subjectdn = DNFieldExtractor.SUBJECTDNFIELDS[profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE])] +value;
-                   else
-                     subjectdn += ", " + DNFieldExtractor.SUBJECTDNFIELDS[profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE])] +value;
+                   newuser.setEmail(value);
                  }
                }
-               value = request.getParameter(SELECT_SUBJECTDN+i);
+               value = request.getParameter(SELECT_EMAIL);
                if(value !=null){
                  if(!value.equals("")){
-                   if(subjectdn == null)
-                     subjectdn = DNFieldExtractor.SUBJECTDNFIELDS[profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE])] +value;
-                   else
-                     subjectdn += ", " + DNFieldExtractor.SUBJECTDNFIELDS[profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE])] +value;
+                   newuser.setEmail(value);
                  }
                } 
-             }
-             newuser.setSubjectDN(subjectdn);
 
-             String subjectaltname = "";
-             int numberofsubjectaltnamefields = profile.getSubjectAltNameFieldOrderLength();
-             for(int i=0; i < numberofsubjectaltnamefields; i++){
-               fielddata = profile.getSubjectAltNameFieldsInOrder(i); 
-
-               if(fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.RFC822NAME)
-                 value = request.getParameter(TEXTFIELD_SUBJECTALTNAME+i);
-               else{
+               String subjectdn = "";
+               int numberofsubjectdnfields = profile.getSubjectDNFieldOrderLength();
+               for(int i=0; i < numberofsubjectdnfields; i++){
                  value=null;
-                 if(request.getParameter(CHECKBOX_SUBJECTALTNAME+i)!=null)
-                   if(request.getParameter(CHECKBOX_SUBJECTALTNAME+i).equals(CHECKBOX_VALUE))
-                     value = newuser.getEmail();
+                 fielddata = profile.getSubjectDNFieldsInOrder(i); 
+                 if(fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.OLDDNE)
+                   value = request.getParameter(TEXTFIELD_SUBJECTDN+i);
+                 else{
+                   if(request.getParameter(CHECKBOX_SUBJECTDN+i)!=null)
+                     if(request.getParameter(CHECKBOX_SUBJECTDN+i).equals(CHECKBOX_VALUE))
+                       value = newuser.getEmail();
+                 }
+                 if(value !=null){
+                   value=value.trim(); 
+                   if(!value.equals("")){
+                     if(subjectdn.equals(""))
+                       subjectdn = DNFieldExtractor.SUBJECTDNFIELDS[profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE])] +value;
+                     else
+                       subjectdn += ", " + DNFieldExtractor.SUBJECTDNFIELDS[profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE])] +value;
+                   }
+                 }
+                 value = request.getParameter(SELECT_SUBJECTDN+i);
+                 if(value !=null){
+                   if(!value.equals("")){
+                     if(subjectdn == null)
+                       subjectdn = DNFieldExtractor.SUBJECTDNFIELDS[profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE])] +value;
+                     else
+                       subjectdn += ", " + DNFieldExtractor.SUBJECTDNFIELDS[profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE])] +value;
+                    }
+                 } 
                }
-               if(value !=null){
-                 value=value.trim(); 
-                 if(!value.equals("")){
-                   if(subjectaltname.equals(""))
-                     subjectaltname = DNFieldExtractor.SUBJECTALTNAME[profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]) - DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY] +value;
-                   else
-                     subjectaltname += ", " + DNFieldExtractor.SUBJECTALTNAME[profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]) - DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY] +value;   
+               newuser.setSubjectDN(subjectdn);
+
+               String subjectaltname = "";
+               int numberofsubjectaltnamefields = profile.getSubjectAltNameFieldOrderLength();
+               for(int i=0; i < numberofsubjectaltnamefields; i++){
+                 fielddata = profile.getSubjectAltNameFieldsInOrder(i); 
+
+                 if(fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.RFC822NAME)
+                   value = request.getParameter(TEXTFIELD_SUBJECTALTNAME+i);
+                 else{
+                   value=null;
+                   if(request.getParameter(CHECKBOX_SUBJECTALTNAME+i)!=null)
+                     if(request.getParameter(CHECKBOX_SUBJECTALTNAME+i).equals(CHECKBOX_VALUE))
+                       value = newuser.getEmail();
+                 }
+                 if(value !=null){
+                   value=value.trim(); 
+                   if(!value.equals("")){
+                     if(subjectaltname.equals(""))
+                       subjectaltname = DNFieldExtractor.SUBJECTALTNAME[profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]) - DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY] +value;
+                     else
+                       subjectaltname += ", " + DNFieldExtractor.SUBJECTALTNAME[profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]) - DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY] +value;   
+                   }
+                 }
+                 value = request.getParameter(SELECT_SUBJECTALTNAME+i);
+                 if(value !=null){
+                   if(!value.equals("")){
+                     if(subjectaltname == null)
+                       subjectaltname = DNFieldExtractor.SUBJECTALTNAME[profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]) - DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY] +value;
+                     else
+                       subjectaltname += ", " + DNFieldExtractor.SUBJECTALTNAME[profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE])- DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY] +value;
+                   }
                  }
                }
-               value = request.getParameter(SELECT_SUBJECTALTNAME+i);
+               newuser.setSubjectAltName(subjectaltname);
+
+
+               value = request.getParameter(CHECKBOX_ADMINISTRATOR);
                if(value !=null){
-                 if(!value.equals("")){
-                   if(subjectaltname == null)
-                     subjectaltname = DNFieldExtractor.SUBJECTALTNAME[profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]) - DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY] +value;
-                   else
-                     subjectaltname += ", " + DNFieldExtractor.SUBJECTALTNAME[profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE])- DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY] +value;
+                 if(value.equals(CHECKBOX_VALUE)){
+                   newuser.setAdministrator(true);   
+                 }
+                 else{
+                   newuser.setAdministrator(false);  
                  }
                }
+               value = request.getParameter(CHECKBOX_KEYRECOVERABLE);
+               if(value !=null){
+                 if(value.equals(CHECKBOX_VALUE)){
+                   newuser.setKeyRecoverable(true);                  
+                 }
+                 else{
+                   newuser.setKeyRecoverable(false);         
+                 }
+               }   
+               value = request.getParameter(CHECKBOX_SENDNOTIFICATION);
+               if(value !=null){
+                 if(value.equals(CHECKBOX_VALUE)){
+                   newuser.setSendNotification(true);                  
+                 }
+                 else{
+                   newuser.setSendNotification(false);         
+                 }
+               }   
+
+               value = request.getParameter(SELECT_CERTIFICATEPROFILE);
+               newuser.setCertificateProfileId(Integer.parseInt(value));   
+ 
+               value = request.getParameter(SELECT_TOKEN);
+               int tokentype = Integer.parseInt(value); 
+               newuser.setTokenType(Integer.parseInt(value));   
+
+               int hardtokenissuer = SecConst.NO_HARDTOKENISSUER;
+               if(tokentype > SecConst.TOKEN_SOFT){
+                 value = request.getParameter(SELECT_HARDTOKENISSUER);
+                 hardtokenissuer = Integer.parseInt(value);  
+               }
+               newuser.setHardTokenIssuerId(hardtokenissuer);   
+  
+              if(request.getParameter(SELECT_CHANGE_STATUS)!=null){
+                int newstatus = Integer.parseInt(request.getParameter(SELECT_CHANGE_STATUS));
+                if(newstatus == UserDataRemote.STATUS_NEW || newstatus == UserDataRemote.STATUS_GENERATED || newstatus == UserDataRemote.STATUS_HISTORICAL )
+                  newuser.setStatus(newstatus); 
+              }
+               // Send changes to database.
+               rabean.changeUserData(newuser);
+               endentitysaved = true;
+               userdata = newuser;
+  
              }
-             newuser.setSubjectAltName(subjectaltname);
-
-
-             value = request.getParameter(CHECKBOX_ADMINISTRATOR);
-             if(value !=null){
-               if(value.equals(CHECKBOX_VALUE)){
-                 newuser.setAdministrator(true);   
-               }
-               else{
-                 newuser.setAdministrator(false);  
-               }
-             }
-             value = request.getParameter(CHECKBOX_KEYRECOVERABLE);
-             if(value !=null){
-               if(value.equals(CHECKBOX_VALUE)){
-                 newuser.setKeyRecoverable(true);                  
-               }
-               else{
-                 newuser.setKeyRecoverable(false);         
-               }
-             }   
-             value = request.getParameter(CHECKBOX_SENDNOTIFICATION);
-             if(value !=null){
-               if(value.equals(CHECKBOX_VALUE)){
-                 newuser.setSendNotification(true);                  
-               }
-               else{
-                 newuser.setSendNotification(false);         
-               }
-             }   
-
-             value = request.getParameter(SELECT_CERTIFICATEPROFILE);
-             newuser.setCertificateProfileId(Integer.parseInt(value));   
-
-             value = request.getParameter(SELECT_TOKEN);
-             int tokentype = Integer.parseInt(value); 
-             newuser.setTokenType(Integer.parseInt(value));   
-
-             int hardtokenissuer = SecConst.NO_HARDTOKENISSUER;
-             if(tokentype > SecConst.TOKEN_SOFT){
-               value = request.getParameter(SELECT_HARDTOKENISSUER);
-               hardtokenissuer = Integer.parseInt(value);  
-             }
-             newuser.setHardTokenIssuerId(hardtokenissuer);   
-
-            if(request.getParameter(SELECT_CHANGE_STATUS)!=null){
-              int newstatus = Integer.parseInt(request.getParameter(SELECT_CHANGE_STATUS));
-              if(newstatus == UserDataRemote.STATUS_NEW || newstatus == UserDataRemote.STATUS_GENERATED || newstatus == UserDataRemote.STATUS_HISTORICAL )
-                newuser.setStatus(newstatus); 
-            }
-             // Send changes to database.
-             rabean.changeUserData(newuser);
-             endentitysaved = true;
-             userdata = newuser;
-
-           }
+          }
         }
       }
     } catch(AuthorizationDeniedException e){
@@ -328,7 +330,7 @@
   <script language=javascript>
    <!--
 
-<% if(profile != null){ %>
+<% if(profile != null && userdata != null){ %>
       var TRUE  = "<%= EndEntityProfile.TRUE %>";
       var FALSE = "<%= EndEntityProfile.FALSE %>";
 
@@ -898,7 +900,7 @@ function checkUseInBatch(){
         <%= ejbcawebbean.getText("STATUS") %> <br>
       </td>
       <td > 
-        <select name="<%=SELECT_CHANGE_STATUS %>" >
+        <select name="<%=SELECT_CHANGE_STATUS %>" tabindex="<%=tabindex++%>" >
          <option <%if(userdata.getStatus()== UserDataRemote.STATUS_NEW) out.write(" selected ");%> value='<%= UserDataRemote.STATUS_NEW %>'><%= ejbcawebbean.getText("STATUSNEW") %></option>
          <option <%if(userdata.getStatus()== UserDataRemote.STATUS_FAILED) out.write(" selected ");%> value='<%= UserDataRemote.STATUS_FAILED %>'><%= ejbcawebbean.getText("STATUSFAILED") %></option>  -->
          <option <%if(userdata.getStatus()== UserDataRemote.STATUS_INITIALIZED) out.write(" selected ");%> value='<%= UserDataRemote.STATUS_INITIALIZED %>'><%= ejbcawebbean.getText("STATUSINITIALIZED") %></option>  -->
