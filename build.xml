@@ -741,7 +741,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
 		<!-- Replace every occurence in the files of the Datasource -->
   		<input
 		    message="Type of database :"
-		    validargs="oracle,mssql,mysql,postgres,sapdb,hsqldb"
+		    validargs="oracle,mssql,mysql,postgres,sapdb,hsqldb,sybase"
 		    addproperty="ejbca.DB"
 		  />
 		<!-- Replace the jbosscmp xml description files by the correct ones -->
