@@ -1,11 +1,18 @@
 EJBCA FAQ
 =========
-$Id: FAQ,v 1.4 2002-02-06 19:42:43 anatom Exp $
+$Id: FAQ,v 1.5 2002-03-21 13:39:39 anatom Exp $
 ---------
+Q : What applications servers do EJBCA run on?
+
+A : As of version 1.3, EJBCA is tested in JBoss and Weblogic.
+
+-----
 Q : When using JDK 1.4.x i get a java.io.InvalidClassException?
 
-A : Since JDK 1.4 introduced incompatibilities during class serialization the PublicKey
-class used as parameter to some versions of the 'createCertificate' method can not be
+A : Since JDK 1.4 introduced incompatibilities during class serialization the
+PublicKey
+class used as parameter to some versions of the 'createCertificate' method can
+not be
 passed correctly.
 You must use JDK 1.4 on both server and client, then it works.
 
@@ -24,8 +31,10 @@ A : When using the LocalAuthenticationSession (default) all users have a STATUS.
 The status lifecycle beginns with NEW and ends with REVOKED. Only when the
  status is
 NEW, FAILED or INPROCESS is it possible to issue a certificate to a user. After
- a certificate has been issued, the status is set to GENERATED. This works like a
- one-time-password scheme. To issue a new certificate to the user his/her status must be
+ a certificate has been issued, the status is set to GENERATED. This works like
+ a
+ one-time-password scheme. To issue a new certificate to the user his/her status
+ must be
  reset to NEW, FAILED or INPROCESS.
 This can be done with:
 
@@ -37,7 +46,8 @@ Status '10' is NEW. Just enter 'ra.sh/cmd setuserstatus' to see a list of all
 -----
 Q : How do I manipulate keystores using Suns 'keytool'?
 
-A : EJBCA use PKCS12 format for the keystore because it is a standard, and I like
+A : EJBCA use PKCS12 format for the keystore because it is a standard, and I
+like
  standards.
 Normally keytool (e.g. sun) can read PKCS12 file but not write, so the
  BouncyCastle JCE is needed to handle PKCS12 keystores.
@@ -124,3 +134,18 @@ Q : Why does the first function in 'dist.html', fetching a users certificate
 A : You have specified a subject DN to which no certificates have been issued.
 
 -----
+Q : Is EJBCA compatible with another JCE apart from BouncyCastle (for
+example Cryptix)?
+
+A : No, this is beacaues only BouncyCastle contains classes to actually generate
+certificates and CRLs. Normal JCE only allows usage, not creation.
+
+-----
+Q : Where is logging performed and how do I control it?
+
+A : Logging is done using Log4j. Anything below DEBUG level is considered
+important information. Logging in JBoss is configured in 'log4j.properties' in
+the JBoss config directory.
+
+-----
+
