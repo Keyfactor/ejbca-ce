@@ -1,4 +1,4 @@
-$Id: README,v 1.120 2004-01-26 07:44:37 anatom Exp $
+$Id: README,v 1.121 2004-02-02 10:49:58 herrvendil Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -182,8 +182,9 @@ FOR THE IMPATIENT:
 
 1. Build and deploy everything with 'ant deploy'.
 2. Start JBoss, ejbca-ca.ear should be deployed.
-3. Create and initialize a root-CA with 'ca.sh/cmd init'.
-4. Setup the admin web-GUI with 'setup-adminweb.sh/cmd'.
+3. execute 'install.sh/cmd' in the ejbca directory.  The installation script
+ will use the default javacacerts password. If you have changeit it you should use
+ 'install.sh/cmd <javacacerts password>'.
 
 If you want to run a thorough test of your new CA, run the automated tests with 'runtest.sh/cmd'.
 
@@ -534,6 +535,13 @@ user.
 * keyrecover - recovers keys related to a specific certificate.
 * keyrecovernewest - recovers the latest keys for a user. 
 
+Other Configuration
+---------------------
+
+If you want to change the baseurl of the admin-web use the command:
+'setup setbaseurl <computername> <applicationpath>'
+Ex: ./setup.sh setbaseurl localhost ejbca
+
 Configuring databases
 ---------------------
 The session beans use direct database communication (from a
@@ -636,14 +644,11 @@ certificates from the specified CertificateProfile.
 
 INSTALLING WEB ADMIN-GUI
 =======================
+If you had problems using the install script you can set it up with an alternative script, otherwise
+this shouldn't be necessary.
 
 Automatic method (preferred)
 ----------------------------
-
-0. Edit the file 'src/adminweb/WEB-INF/web.xml'. Change BASEURL
-to reflect your hostname, to be able to use the adminpages from external
-machines, this must be a real hostname or ip-address.
-Run 'ant deploy' to install the changes.
 
 1. Run the script 'setup-adminweb.cmd/sh'
 2. Restart JBoss.
@@ -652,8 +657,8 @@ your browser and go to 'https://<hostname>:8443/ejbca
 
 Manual method (don't use, only provided as reference)
 -------------
-0. Edit the file 'src/adminweb/WEB-INF/web.xml'. Change BASEURL
-to reflect your
+0. Set the baseurl of the server with the command 'setup.sh/cmd setbaseurl <computername> <applicationpath>'
+Set the BASEURL to reflect your
 hostname, to be able to use the adminpages from external
 machines, this must be
 a real hostname or ip-address.

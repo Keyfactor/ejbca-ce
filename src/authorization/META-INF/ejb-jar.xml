@@ -29,10 +29,10 @@
         <env-entry-value>java:/DefaultDS</env-entry-value>
      </env-entry>
      <env-entry>
-        <description>Custom Available Access Rules</description>
+        <description>Custom Available Access Rules, use ';' to separate multiple accessrules</description>
         <env-entry-name>CustomAvailableAccessRules</env-entry-name>
         <env-entry-type>java.lang.String</env-entry-type>
-        <env-entry-value>/customtest</env-entry-value>
+        <env-entry-value></env-entry-value>
      </env-entry>     
      <ejb-local-ref>
         <description>The Log session bean</description>
