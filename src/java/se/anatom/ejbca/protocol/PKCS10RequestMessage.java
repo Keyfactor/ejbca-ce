@@ -42,7 +42,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.24 2004-07-23 09:58:28 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.25 2004-09-25 16:47:31 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     static final long serialVersionUID = 3597275157018205136L;
@@ -192,7 +192,17 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     public String getUsername() {
         if (username != null)
             return username;
-        return CertTools.getPartFromDN(getRequestDN(), "CN");
+        String name = CertTools.getPartFromDN(getRequestDN(), "CN");
+        // Special if the DN contains unstructiredAddress where it becomes: 
+        // CN=pix.primekey.se + 1.2.840.113549.1.9.2=pix.primekey.se
+        // We only want the CN and not the oid-part.
+        int index = name.indexOf(' ');
+        String ret = name; 
+        if (index > 0) {
+            ret = name.substring(0,index);        
+        }
+        log.debug("UserName='"+ret+"'");
+        return ret;
     }
 
     /**
