@@ -36,37 +36,125 @@ import se.anatom.ejbca.BaseEntityBean;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.5 2004-05-10 04:35:10 herrvendil Exp $
+ * @version $Id: CADataBean.java,v 1.6 2004-07-09 16:14:49 sbailliez Exp $
+ *
+ * @ejb.bean
+ *   description="This enterprise bean entity represents a publisher"
+ *   display-name="CADataEB"
+ *   name="CAData"
+ *   jndi-name="CAData"
+ *   local-jndi-name="CADataLocal"
+ *   view-type="local"
+ *   type="CMP"
+ *   reentrant="false"
+ *   cmp-version="2.x"
+ *   transaction-type="Container"
+ *   schema="CADataBean"
+ *
+ * @ejb.permission role-name="InternalUser"
+ *
+ * @ejb.pk generate="false"
+ *   class="java.lang.Integer"
+ *
+ * @ejb.home
+ *   generate="local"
+ *   local-extends="javax.ejb.EJBLocalHome"
+ *   local-class="se.anatom.ejbca.ca.caadmin.CADataLocalHome"
+ *
+ * @ejb.interface
+ *   generate="local"
+ *   local-extends="javax.ejb.EJBLocalObject"
+ *   local-class="se.anatom.ejbca.ca.caadmin.CADataLocal"
+ *
+ * @ejb.finder
+ *   description="findByName"
+ *   signature="se.anatom.ejbca.ca.caadmin.CADataLocal findByName(java.lang.String name)"
+ *   query="SELECT DISTINCT OBJECT(a) from CADataBean a WHERE a.name=?1"
+ *
+ * @ejb.finder
+ *   description="findAll"
+ *   signature="Collection findAll()"
+ *   query="SELECT DISTINCT OBJECT(a) from CADataBean a"
  */
 public abstract class CADataBean extends BaseEntityBean {
 
     private CA ca = null;
 
-    private static Logger log = Logger.getLogger(CADataBean.class);
+    private static final Logger log = Logger.getLogger(CADataBean.class);
 
+    /**
+     * @ejb.pk-field
+     * @ejb.persistence
+    */
     public abstract Integer getCAId();
+
+    /**
+     * @ejb.persistence
+     */
     public abstract void setCAId(Integer caid);
 
+    /**
+     * @ejb.persistence
+     * @ejb.interface-method
+     */
     public abstract String getName();
+
+    /**
+     * @ejb.persistence
+     * @ejb.interface-method
+     */
     public abstract void setName(String name);
 
+    /**
+     * @ejb.persistence
+     * @ejb.interface-method
+     */
     public abstract String getSubjectDN();
+
+    /**
+     * @ejb.persistence
+     */
     public abstract void setSubjectDN(String subjectdn);
     
+    /**
+     * @ejb.persistence
+     * @ejb.interface-method
+     */
     public abstract int getStatus();
-    public abstract void setStatus(int status);    
+
+    /**
+     * @ejb.persistence
+     * @ejb.interface-method
+     */
+    public abstract void setStatus(int status);
     
+    /**
+     * @ejb.persistence
+     * @ejb.interface-method
+     */
     public abstract long getExpireTime();
-    public abstract void setExpireTime(long expiretime);    
+
+    /**
+     * @ejb.persistence
+     * @ejb.interface-method
+     */
+    public abstract void setExpireTime(long expiretime);
     
+    /**
+     * @ejb.persistence
+     */
     public abstract String getData();
-    public abstract void setData(String data);    
+
+    /**
+     * @ejb.persistence
+     */
+    public abstract void setData(String data);
     
     
     /** 
      * Method that retrieves the CA from the database.
-     */    
-    
+     * @ejb.interface-method
+     */
     public CA getCA() throws java.io.UnsupportedEncodingException{
       if(ca == null){        
         java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
@@ -85,7 +173,8 @@ public abstract class CADataBean extends BaseEntityBean {
     
     /** 
      * Method that saves the CA to database.
-     */    
+     * @ejb.interface-method
+     */
     public void setCA(CA ca)  throws java.io.UnsupportedEncodingException{        
        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
        
@@ -113,14 +202,13 @@ public abstract class CADataBean extends BaseEntityBean {
 
     /**
      * Entity Bean holding data of a CA.
-     * @param subjectdn.
+     * @param subjectdn
      * @param name of CA
      * @param status initial status
-     * @param CA CA to store
+     * @param ca CA to store
      * @return caid
-     *
-     **/
-
+     * @ejb.create-method
+     */
     public Integer ejbCreate(String subjectdn, String name, int status, CA ca) throws CreateException, java.io.UnsupportedEncodingException {
                 
         setCAId(new Integer(subjectdn.hashCode()));

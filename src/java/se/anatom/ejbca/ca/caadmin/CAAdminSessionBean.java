@@ -87,7 +87,116 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.26 2004-06-15 16:42:29 sbailliez Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.27 2004-07-09 16:14:49 sbailliez Exp $
+ *
+ * @ejb.bean description="Session bean handling core CA function,signing certificates"
+ *   display-name="CAAdminSB"
+ *   name="CAAdminSession"
+ *   jndi-name="CAAdminSession"
+ *   local-jndi-name="CAAdminSessionLocal"
+ *   view-type="both"
+ *   type="Stateless"
+ *   transaction-type="Container"
+ *
+ * @ejb.transaction type="Required"
+ *
+ * @ejb.permission role-name="InternalUser"
+ *
+ * @ejb.env-entry description="JDBC datasource to be used"
+ *   name="DataSource"
+ *   type="java.lang.String"
+ *   value="java:/${datasource.jndi-name}"
+ *
+ * @ejb.env-entry description="Used internally to keystores in database"
+ *   name="keyStorePass"
+ *   type="java.lang.String"
+ *   value="foo123"
+  *
+ * @ejb.env-entry description="Used internally to store keys in keystore in database"
+ *   name="privateKeyPass"
+ *   type="java.lang.String"
+ *   value="null"
+ *
+ * @ejb.env-entry description="Password for OCSP keystores"
+ *   name="OCSPKeyStorePass"
+ *   type="java.lang.String"
+ *   value="foo123"
+ *
+ * @ejb.env-entry description="Password for OCSP keystores private key protection"
+ *   name="privateOCSPKeyPass"
+ *   type="java.lang.String"
+ *   value="foo123"
+ *
+ * @ejb.ejb-external-ref description="The CA entity bean"
+ *   view-type="local"
+ *   ejb-name="CADataLocal"
+ *   type="Entity"
+ *   home="se.anatom.ejbca.ca.caadmin.ICADataLocalHome"
+ *   business="se.anatom.ejbca.ca.caadmin.ICADataLocal"
+ *   link="CAData"
+ *
+ * @ejb.ejb-external-ref description="The log session bean"
+ *   view-type="local"
+ *   ejb-name="LogSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.log.ILogSessionLocalHome"
+ *   business="se.anatom.ejbca.log.ILogSessionLocal"
+ *   link="LogSession"
+ *
+ * @ejb.ejb-external-ref description="The Authorization Session Bean"
+ *   view-type="local"
+ *   ejb-name="AuthorizationSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome"
+ *   business="se.anatom.ejbca.authorization.IAuthorizationSessionLocal"
+ *   link="AuthorizationSession"
+ *
+ * @ejb.ejb-external-ref description="The Certificate store used to store and fetch certificates"
+ *   view-type="local"
+ *   ejb-name="CertificateStoreSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome"
+ *   business="se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal"
+ *   link="CertificateStoreSession"
+ *
+ * @ejb.ejb-external-ref description="The Sign Session Bean"
+ *   view-type="local"
+ *   ejb-name="SignSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.ca.sign.ISignSessionLocalHome"
+ *   business="se.anatom.ejbca.ca.store.ISignSessionLocal"
+ *   link="RSASignSession"
+ *
+ * @ejb.ejb-external-ref description="The CRL Create bean"
+ *   view-type="local"
+ *   ejb-name="CreateCRLSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.ca.crl.ICreateCRLSessionLocalHome"
+ *   business="se.anatom.ejbca.ca.crl.ICreateCRLSessionLocal"
+ *   link="CreateCRLSession"
+ *
+ * @ejb.ejb-external-ref description="The User Admin Session Bean"
+ *   view-type="local"
+ *   ejb-name="UserAdminSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.ra.IUserAdminSessionLocalHome"
+ *   business="se.anatom.ejbca.ra.IUserAdminStoreSessionLocal"
+ *   link="CertificateStoreSession"
+ *
+ * @ejb.home
+ *   extends="javax.ejb.EJBHome"
+ *   remote-class="se.anatom.ejbca.ca.caadmin.ICAAdminSessionHome"
+ *   local-extends="javax.ejb.EJBLocalHome"
+ *   local-class="se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome"
+ *
+ * @ejb.interface
+ *   extends="javax.ejb.EJBObject"
+ *   remote-class="se.anatom.ejbca.ca.caadmin.ICAAdminSessionRemote"
+ *   local-extends="javax.ejb.EJBLocalObject"
+ *   local-class="se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal"
+ *
+ * @ejb.security-identity
+ *   run-as="InternalUser"
  */
 public class CAAdminSessionBean extends BaseSessionBean {
 
@@ -232,7 +341,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
 
     /**
-     *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+     * @ejb.interface-method
      */
     public void createCA(Admin admin, CAInfo cainfo) throws CAExistsException, AuthorizationDeniedException, CATokenOfflineException, CATokenAuthenticationFailedException{
     	Collection certpublishers = null;
@@ -437,7 +546,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // createCA
 
     /**
-     *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+     * @ejb.interface-method
      */
     public void editCA(Admin admin, CAInfo cainfo) throws AuthorizationDeniedException{
         boolean ocsprenewcert = false;
@@ -487,7 +596,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // editCA
 
     /**
-     *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+     * @ejb.interface-method
      */
     public void removeCA(Admin admin, int caid) throws AuthorizationDeniedException{
         // check authorization
@@ -512,7 +621,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // removeCA
 
     /**
-     *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+     * @ejb.interface-method
      */
     public void renameCA(Admin admin, String oldname, String newname) throws CAExistsException, AuthorizationDeniedException{
         // Get CA from database
@@ -542,7 +651,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // renewCA
 
     /**
-     *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+     * @ejb.transaction type="Supports"
+     * @ejb.interface-method
      */
     public CAInfo getCAInfo(Admin admin, String name) {
         CAInfo cainfo = null;
@@ -567,7 +677,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // getCAInfo
 
     /**
-     *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+     * @ejb.transaction type="Supports"
+     * @ejb.interface-method
      */
     public CAInfo getCAInfo(Admin admin, int caid){
         CAInfo cainfo = null;
@@ -592,8 +703,10 @@ public class CAAdminSessionBean extends BaseSessionBean {
         return cainfo;
     } // getCAInfo
 
-
-
+    /**
+     * @ejb.transaction type="Supports"
+     * @ejb.interface-method
+     */
     public HashMap getCAIdToNameMap(Admin admin){
         HashMap returnval = new HashMap();
         try{
@@ -614,8 +727,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * "external" or "waiting for certificate response"
      *
      * @return a Collection (Integer) of available CA id's
+     * @ejb.transaction type="Supports"
+     * @ejb.interface-method
      */
-
     public Collection getAvailableCAs(Admin admin){
 		ArrayList returnval = new ArrayList();
 		try{
@@ -633,7 +747,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
 
     /**
-     *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+     * @ejb.interface-method
      */
     public IRequestMessage  makeRequest(Admin admin, int caid, Collection cachain, boolean setstatustowaiting) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
     	PKCS10RequestMessage returnval = null;
@@ -707,7 +821,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // makeRequest
 
     /**
-     *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+     * @ejb.interface-method
      */
     public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
     	// check authorization
@@ -808,7 +922,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // recieveResponse
 
     /**
-     *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+     * @ejb.interface-method
      */
     public IResponseMessage processRequest(Admin admin, CAInfo cainfo, IRequestMessage requestmessage)
     throws CAExistsException, CADoesntExistsException, AuthorizationDeniedException, CATokenOfflineException {
@@ -918,7 +1032,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // processRequest
 
     /**
-     *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+     * @ejb.interface-method
      */
     public void renewCA(Admin admin, int caid, IResponseMessage responsemessage)  throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
     	debug(">CAAdminSession, renewCA(), caid=" + caid);
@@ -1043,7 +1157,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // renewCA
 
     /**
-     *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+     * @ejb.interface-method
      */
     public void revokeCA(Admin admin, int caid, int reason)  throws CADoesntExistsException, AuthorizationDeniedException{
         // check authorization
@@ -1093,7 +1207,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // revokeCA
 
     /**
-     *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+     * @ejb.interface-method
      */
     public void upgradeFromOldCAKeyStore(Admin admin, String caname, byte[] p12file, char[] keystorepass,
                                          char[] privkeypass, String privatekeyalias){
@@ -1180,7 +1294,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // upgradeFromOldCAKeyStore
 
     /**
-     *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+     * @ejb.transaction type="Supports"
+     * @ejb.interface-method
      */
     public Collection getAllCACertificates(Admin admin){
       ArrayList returnval = new ArrayList();
@@ -1201,7 +1316,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // getAllCACertificates
 
     /**
-     *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+     * @ejb.interface-method
      */
     public void activateCAToken(Admin admin, int caid, String authorizationcode) throws AuthorizationDeniedException, CATokenAuthenticationFailedException, CATokenOfflineException{
        // Authorize, Check that admin is superadministrator.
@@ -1240,7 +1355,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     }
 
     /**
-     *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+     * @ejb.interface-method
      */
     public void deactivateCAToken(Admin admin, int caid) throws AuthorizationDeniedException, EjbcaException{
        // Authorize, Check that admin is superadministrator.
@@ -1281,7 +1396,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     }
 
     /**
-     *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+     * @ejb.interface-method
      */
     public boolean exitsCertificateProfileInCAs(Admin admin, int certificateprofileid){
       boolean returnval = false;
@@ -1300,7 +1415,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
 
     /**
-     *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+     * @ejb.interface-method
      */
     public boolean exitsPublisherInCAs(Admin admin, int publisherid){
       boolean returnval = false;

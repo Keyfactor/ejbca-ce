@@ -45,7 +45,7 @@ import se.anatom.ejbca.util.CertTools;
  * Username (username)
  * </pre>
  *
- * @version $Id: CertificateDataBean.java,v 1.25 2004-07-05 09:57:30 sbailliez Exp $
+ * @version $Id: CertificateDataBean.java,v 1.26 2004-07-09 16:18:52 sbailliez Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a certificate with accompanying data"
  * display-name="CertificateDataEB"
@@ -56,6 +56,8 @@ import se.anatom.ejbca.util.CertTools;
  * cmp-version="2.x"
  * transaction-type="Container"
  * schema="CertificateDataBean"
+ *
+ * @ejb.transaction type="Required"
  *
  * @ejb.permission role-name="InternalUser"
  *

@@ -38,7 +38,7 @@ import se.anatom.ejbca.util.CertTools;
  * nextUpdate (nextUpdate)
  * </pre>
  *
- * @version $Id: CRLDataBean.java,v 1.15 2004-07-05 09:57:30 sbailliez Exp $
+ * @version $Id: CRLDataBean.java,v 1.16 2004-07-09 16:20:10 sbailliez Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a CRL with accompanying data"
  * display-name="CRLDataEB"
@@ -49,6 +49,8 @@ import se.anatom.ejbca.util.CertTools;
  * cmp-version="2.x"
  * transaction-type="Container"
  * schema="CRLDataBean"
+ *
+ * @ejb.transaction type="Required"
  *
  * @ejb.permission role-name="InternalUser"
  *

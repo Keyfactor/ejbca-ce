@@ -49,7 +49,77 @@ import se.anatom.ejbca.log.LogEntry;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.21 2004-06-15 16:42:29 sbailliez Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.22 2004-07-09 16:16:18 sbailliez Exp $
+ * @ejb.bean
+ *   description="Session bean handling hard token data, both about hard tokens and hard token issuers."
+ *   display-name="CreateCRLSB"
+ *   name="CreateCRLSession"
+ *   jndi-name="CreateCRLSession"
+ *   local-jndi-name="CreateCRLSessionLocal"
+ *   view-type="both"
+ *   type="Stateless"
+ *   transaction-type="Container"
+ *
+ * @ejb.transaction type="Required"
+ *
+ * @ejb.permission role-name="InternalUser"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The log session bean"
+ *   view-type="local"
+ *   ejb-name="LogSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.log.ILogSessionLocalHome"
+ *   business="se.anatom.ejbca.log.ILogSessionLocal"
+ *   link="LogSession"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The Certificate entity bean used manipulate certificates"
+ *   view-type="local"
+ *   ejb-name="CertificateDataLocal"
+ *   type="Entity"
+ *   home="se.anatom.ejbca.ca.store.CertificateDataLocalHome"
+ *   business="se.anatom.ejbca.ca.store.CertificateDataLocal"
+ *   link="CertificateData"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The CA Admin Session"
+ *   view-type="local"
+ *   ejb-name="CAAdminSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome"
+ *   business="se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal"
+ *   link="CAAdminSession"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The Certificate Store session bean"
+ *   view-type="local"
+ *   ejb-name="CertificateStoreSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome"
+ *   business="se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal"
+ *   link="CertificateStoreSession"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The signing session used to create CRL"
+ *   view-type="local"
+ *   ejb-name="SignSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.ca.sign.ISignSessionLocalHome"
+ *   business="se.anatom.ejbca.ca.sign.ISignSessionLocal"
+ *   link="RSASignSession"
+ *
+ * @ejb.home
+ *   extends="javax.ejb.EJBHome"
+ *   local-extends="javax.ejb.EJBLocalHome"
+ *   local-class="se.anatom.ejbca.ca.crl.ICreateCRLSessionLocalHome"
+ *   remote-class="se.anatom.ejbca.ca.crl.ICreateCRLSessionHome"
+ *
+ * @ejb.interface
+ *   extends="javax.ejb.EJBObject"
+ *   local-extends="javax.ejb.EJBLocalObject"
+ *   local-class="se.anatom.ejbca.ca.crl.ICreateCRLSessionLocal"
+ *   remote-class="se.anatom.ejbca.ca.crl.ICreateCRLSessionRemote"
  */
 public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerSession {
 
@@ -101,6 +171,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
 	 * @param issuerdn ofof the ca
 	 *
 	 * @throws EJBException om ett kommunikations eller systemfel intr?ffar.
+     * @ejb.interface-method
 	 */
     public void run(Admin admin, String issuerdn)  {
         debug(">run()");
@@ -163,6 +234,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
      *
      * @return the number of crls created.
      * @throws EJBException om ett kommunikations eller systemfel intr?ffar.
+     * @ejb.interface-method 
      */
     public int createCRLs(Admin admin)  {
     	int createdcrls = 0;

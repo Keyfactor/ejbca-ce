@@ -89,30 +89,38 @@ import se.anatom.ejbca.util.Hex;
  *   view-type="both"
  *   type="Stateless"
  *   transaction-type="Container"
+ *
  * @ejb.transaction type="Required"
+ *
  * @ejb.permission role-name="InternalUser"
+ *
  * @ejb.env-entry description="Password for server keystore, comment out to prompt for pwd"
  *   name="keyStorePass"
  *   type="java.lang.String"
  *   value="foo123"
+ *
  * @ejb.env-entry description="Password for CA private key, only used for JKS-keystore. Leave as null for PKCS12-keystore, comment out to prompt"
  *   name="privateKeyPass"
  *   type="java.lang.String"
  *   value="null"
+ *
  * @ejb.env-entry description="Password for OCSP keystores"
  *   name="OCSPKeyStorePass"
  *   type="java.lang.String"
  *   value="foo123"
+ *
  * @ejb.env-entry description="Password for OCSP keystores private key protection"
  *   name="privateOCSPKeyPass"
  *   type="java.lang.String"
  *   value="foo123"
+ *
  * @ejb.env-entry description="Name of PRNG algorithm used for random source - refer to Appendix A in the
  * Java Cryptography Architecture API Specification And Reference for
  * information about standard PRNG algorithm names"
  *   name="randomAlgorithm"
  *   type="java.lang.String"
  *   value="SHA1PRNG"
+ *
  * @ejb.ejb-external-ref description="The CA entity bean"
  *   view-type="local"
  *   ejb-name="CADataLocal"
@@ -120,6 +128,7 @@ import se.anatom.ejbca.util.Hex;
  *   home="se.anatom.ejbca.ca.caadmin.ICADataLocalHome"
  *   business="se.anatom.ejbca.ca.caadmin.ICADataLocal"
  *   link="CAData"
+ *
  * @ejb.ejb-external-ref description="The log session bean"
  *   view-type="local"
  *   ejb-name="LogSessionLocal"
@@ -127,6 +136,7 @@ import se.anatom.ejbca.util.Hex;
  *   home="se.anatom.ejbca.log.ILogSessionLocalHome"
  *   business="se.anatom.ejbca.log.ILogSessionLocal"
  *   link="LogSession"
+ *
  * @ejb.ejb-external-ref description="The Certificate store used to store and fetch certificates"
  *   view-type="local"
  *   ejb-name="CertificateStoreSessionLocal"
@@ -134,6 +144,7 @@ import se.anatom.ejbca.util.Hex;
  *   home="se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome"
  *   business="se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal"
  *   link="CertificateStoreSession"
+ *
  * @ejb.ejb-external-ref description="The Authentication session used to authenticate users when issuing certificates.
  * Alter this to enable a custom made authentication session implementing the
  * IAuthenticationSessionLocal interface"
@@ -143,6 +154,7 @@ import se.anatom.ejbca.util.Hex;
  *   home="se.anatom.ejbca.ca.auth.IAuthenticationSessionLocalHome"
  *   business="se.anatom.ejbca.ca.auth.IAuthenticationSessionLocal"
  *   link="AuthenticationSession"
+ *
  * @ejb.ejb-external-ref description="Publishers are configured to store certificates and CRLs in additional places
  * from the main database. Publishers runs as local beans"
  *   view-type="local"
@@ -151,6 +163,18 @@ import se.anatom.ejbca.util.Hex;
  *   home="se.anatom.ejbca.ca.publisher.IPublisherSessionLocalHome"
  *   business="se.anatom.ejbca.ca.publisher.IPublisherSessionLocal"
  *   link="PublisherSession"
+ *
+ * @ejb.home
+ *   extends="javax.ejb.EJBHome"
+ *   remote-class="se.anatom.ejbca.ca.sign.ISignSessionHome"
+ *   local-extends="javax.ejb.EJBLocalHome"
+ *   local-class="se.anatom.ejbca.ca.sign.ISignSessionLocalHome"
+ *
+ * @ejb.interface
+ *   extends="javax.ejb.EJBObject"
+ *   remote-class="se.anatom.ejbca.ca.sign.ISignSessionRemote"
+ *   local-extends="javax.ejb.EJBLocalObject"
+ *   local-class="se.anatom.ejbca.ca.sign.ISignSessionHome"
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -240,6 +264,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @param caid  is the issuerdn.hashCode()
      * @return The certificate chain, never null.
      * @ejb.permission unchecked
+     * @ejb.transaction type="Supports"
      * @ejb.interface-method view-type="both"
      */
     public Collection getCertificateChain(Admin admin, int caid) {
