@@ -1,11 +1,12 @@
 1.3
 ---
 Configuration howto/support for Oracle.
-CA-certs now downloaded from webdist.
-Better documentation with architectural overview.
+Architectural overview in documentation.
 Better deployment scripts.
 Sample Linux firewall script.
-Minor, mostly cosmetic, architectural and GUI changes.
+Added demo accept-all authentication module, NullAuthenticationSession.
+CA-certs can now be downloaded from webdist.
+Lots of minor cosmetic, architectural and GUI changes.
 
 1.2
 ---
@@ -50,6 +51,7 @@ Creates p12-files during test in real temporary dir.
 1.0b1
 -----
 Initial release
+
 
 
 
