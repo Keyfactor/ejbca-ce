@@ -1,12 +1,11 @@
 package se.anatom.ejbca.util;
 
-import junit.framework.TestCase;
-
-import javax.ejb.EJBLocalHome;
-import javax.ejb.RemoveException;
-import javax.ejb.EJBException;
-import javax.ejb.FinderException;
 import java.util.HashMap;
+
+import javax.ejb.EJBException;
+import javax.ejb.EJBLocalHome;
+
+import junit.framework.TestCase;
 
 /**
  * Test for the SimpleSequenceGenerator.
@@ -29,12 +28,8 @@ public class TestSimpleSequenceGenerator extends TestCase {
     public void testUnableToFindFreeID() throws Exception {
         try {
             // use a map that always return non null to fake that it always find an existing id
-            HashMap map = new HashMap() {
-                public Object get(Object key) {
-                    return "dummy";
-                }
-            };
-            EJBLocalHome home = new TestLocalHome(map);
+            HashMap map = new DummyHashMap();
+            EJBLocalHome home = new DummyLocalHome(map);
             SimpleSequenceGenerator.getNextCount( home );
             fail("Should generate an EJBException when no free ID");
         } catch (EJBException e){
@@ -43,14 +38,14 @@ public class TestSimpleSequenceGenerator extends TestCase {
     }
 
     public void testAbletoFindFreeID() throws Exception {
-        EJBLocalHome home = new TestLocalHome(new HashMap()); // will throw a FindExceptionInternally == Free ID
+        EJBLocalHome home = new DummyLocalHome(new HashMap()); // will throw a FindExceptionInternally == Free ID
         Integer id = SimpleSequenceGenerator.getNextCount( home );
         assertNotNull(id);
     }
 
     public void testGenerateMultipleConsecutiveIDs() throws Exception {
         HashMap db = new HashMap();
-        EJBLocalHome home = new TestLocalHome(db);
+        EJBLocalHome home = new DummyLocalHome(db);
         for (int i = 0; i < IT; i++) {
             Integer id = SimpleSequenceGenerator.getNextCount( home );
             db.put(id, "dummy"); // simulate a database with stored ids
@@ -61,12 +56,8 @@ public class TestSimpleSequenceGenerator extends TestCase {
 
     public void testGenerateMultipleFailedConsecutiveIDs() throws Exception {
         // use a map that always return non null to fake that it always find an existing id
-        HashMap db = new HashMap() {
-            public Object get(Object key) {
-                return "dummy";
-            }
-        };
-        EJBLocalHome home = new TestLocalHome(db);
+        HashMap db = new DummyHashMap();
+        EJBLocalHome home = new DummyLocalHome(db);
         for (int i = 0; i < IT; i++) {
             try {
                 Integer id = SimpleSequenceGenerator.getNextCount( home );
@@ -75,33 +66,4 @@ public class TestSimpleSequenceGenerator extends TestCase {
             }
         }
     }
-
-    public void testInvalidFinderMethod() throws Exception {
-        EJBLocalHome home = new EJBLocalHome(){
-            public Object findByPrimaryKey(String pk) { return ""; }
-            public void remove(Object o) throws RemoveException, EJBException {}
-        };
-        try {
-            SimpleSequenceGenerator.getNextCount(home);
-            fail("Expected a wrapped NoSuchMethodException");
-        } catch (EJBException e){
-            assertNotNull(e.getCausedByException());
-            assertEquals(NoSuchMethodException.class, e.getCausedByException().getClass());
-        }
-    }
-
-    public static class TestLocalHome implements EJBLocalHome {
-        private HashMap map;
-        public TestLocalHome(HashMap map){
-            this.map = map;
-        }
-        public Object findByPrimaryKey(Integer pk) throws FinderException {
-            Object o = map.get(pk);
-            if (o == null) throw new FinderException("thrown on purpose to simulate non existing object");
-            return o;
-        }
-        public void remove(Object o) throws RemoveException, EJBException {
-        }
-    }
-
 }

@@ -188,7 +188,7 @@ database.password    = ${database.password}
     <!-- Compile java sources                                                -->
     <!-- =================================================================== -->
     <target name="compile" depends="run-xdoc">
-        <javac destdir="${build}" debug="on" includeantruntime="no">
+        <javac destdir="${build}" debug="on" includeantruntime="no" encoding="iso8859-1">
             <classpath refid="compile.classpath" />
             <exclude name="**/appserver/**" />
             <src path="${src.java}" />
@@ -383,7 +383,7 @@ database.password    = ${database.password}
             <pathelement location="${jboss.home}/lib/jboss-common.jar" />
             <pathelement location="${jboss.home}/lib/jboss-jmx.jar" />
         </path>
-        <javac srcdir="${src.java}" extdirs="${lib}" destdir="${build}" debug="on">
+        <javac srcdir="${src.java}" extdirs="${lib}" destdir="${build}" debug="on" encoding="iso8859-1">
             <exclude name="**/CVS/**" />
             <include name="**/appserver/**" />
             <!-- appserver specific files are built separtely-->
@@ -487,7 +487,7 @@ database.password    = ${database.password}
             <ejb-dd-copy todir="${@{name}.build.dir}" dir="${src}/@{name}" overwrite="true" />
 
             <!-- compile the module -->
-            <javac srcdir="${src.java}" classpathref="compile.classpath" destdir="${build}" debug="on" includeantruntime="no">
+            <javac srcdir="${src.java}" classpathref="compile.classpath" destdir="${build}" debug="on" includeantruntime="no" encoding="iso8859-1">
                 <include name="se/anatom/ejbca/@{name}/**" />
                 <classpath path="${build}" />
             </javac>
@@ -532,7 +532,7 @@ database.password    = ${database.password}
 
     <target name="test:compile" depends="compile" description="compile JUnit testcases">
         <mkdir dir="${test.dir}" />
-        <javac srcdir="${test.src.dir}" destdir="${test.dir}" debug="on" includeantruntime="no">
+        <javac srcdir="${test.src.dir}" destdir="${test.dir}" debug="on" includeantruntime="no" encoding="iso8859-1">
             <classpath refid="test.compile.classpath" />
         </javac>
         <!-- jndi.properties needs to be in the classpath -->
@@ -622,7 +622,7 @@ database.password    = ${database.password}
 			<classpath path="${jasper.classpath}"/>
 		</depend>
 		<javac srcdir="@{todir}/WEB-INF/jspc" destdir="@{todir}/WEB-INF/classes" debug="on"
-            includeantruntime="no">
+            includeantruntime="no" encoding="iso8859-1">
             <classpath path="${jasper.classpath}"/>
         </javac>
         </sequential>
