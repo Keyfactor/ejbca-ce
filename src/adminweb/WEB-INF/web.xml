@@ -133,18 +133,6 @@
     <env-entry-value>https</env-entry-value>
     <env-entry-type>java.lang.String</env-entry-type>
   </env-entry>
-  <env-entry>
-    <description>Use a predefiened organinzation prefix when searching for hard token serialnumbers.</description>
-    <env-entry-name>USEHARDTOKENPREFIX</env-entry-name>
-    <env-entry-value>true</env-entry-value>
-    <env-entry-type>java.lang.Boolean</env-entry-type>
-  </env-entry>    
-  <env-entry>
-    <description>Organizational code used in hard token serial numbers.</description>
-    <env-entry-name>ISSUERIDENTIFICATIONNUMBER</env-entry-name>
-    <env-entry-value>975250</env-entry-value>
-    <env-entry-type>java.lang.String</env-entry-type>
-  </env-entry>  
   <ejb-local-ref>
     <ejb-ref-name>SignSessionLocal</ejb-ref-name>
     <ejb-ref-type>Session</ejb-ref-type>
