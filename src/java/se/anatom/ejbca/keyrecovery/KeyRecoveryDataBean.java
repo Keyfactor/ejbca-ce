@@ -34,7 +34,7 @@ import java.math.BigInteger;
  *  keypair
  * </pre>
  *
- * @version $Id: KeyRecoveryDataBean.java,v 1.19 2005-02-11 13:12:17 anatom Exp $
+ * @version $Id: KeyRecoveryDataBean.java,v 1.20 2005-02-23 16:07:43 anatom Exp $
  *
  * @ejb.bean
  *   description="Stores key recovery data"
@@ -140,7 +140,7 @@ public abstract class KeyRecoveryDataBean extends BaseEntityBean {
     public abstract void setMarkedAsRecoverable(boolean markedasrecoverable);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence jdbc-type="LONGVARCHAR"
      */
     public abstract String getKeyData();
 

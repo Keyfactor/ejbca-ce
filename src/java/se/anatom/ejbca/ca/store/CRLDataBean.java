@@ -38,7 +38,7 @@ import se.anatom.ejbca.util.CertTools;
  * nextUpdate (nextUpdate)
  * </pre>
  *
- * @version $Id: CRLDataBean.java,v 1.19 2005-02-10 09:08:25 anatom Exp $
+ * @version $Id: CRLDataBean.java,v 1.20 2005-02-23 16:06:26 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a CRL with accompanying data"
  * display-name="CRLDataEB"
@@ -156,7 +156,7 @@ public abstract class CRLDataBean extends BaseEntityBean {
     public abstract void setNextUpdate(long nextUpdate);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence jdbc-type="LONGVARCHAR"
      * @ejb.interface-method
      */
     public abstract String getBase64Crl();

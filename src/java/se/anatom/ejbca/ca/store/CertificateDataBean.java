@@ -45,7 +45,7 @@ import se.anatom.ejbca.util.CertTools;
  * Username (username)
  * </pre>
  *
- * @version $Id: CertificateDataBean.java,v 1.29 2004-11-20 21:33:18 sbailliez Exp $
+ * @version $Id: CertificateDataBean.java,v 1.30 2005-02-23 16:06:36 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a certificate with accompanying data"
  * display-name="CertificateDataEB"
@@ -348,7 +348,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * certificate itself
      *
      * @return base64 encoded certificate
-     * @ejb.persistence
+     * @ejb.persistence jdbc-type="LONGVARCHAR"
      * @ejb.interface-method
      */
     public abstract String getBase64Cert();

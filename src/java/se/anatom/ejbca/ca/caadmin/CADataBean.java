@@ -37,7 +37,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.8 2004-11-20 23:50:45 sbailliez Exp $
+ * @version $Id: CADataBean.java,v 1.9 2005-02-23 16:07:44 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a publisher"
@@ -150,7 +150,7 @@ public abstract class CADataBean extends BaseEntityBean {
     public abstract void setExpireTime(long expiretime);
     
     /**
-     * @ejb.persistence
+     * @ejb.persistence jdbc-type="LONGVARCHAR"
      */
     public abstract String getData();
 

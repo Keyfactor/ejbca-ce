@@ -120,7 +120,7 @@ public abstract class PublisherDataBean extends BaseEntityBean {
     public abstract void setUpdateCounter(int updatecounter);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence jdbc-type="LONGVARCHAR"
      */
     public abstract String getData();
 

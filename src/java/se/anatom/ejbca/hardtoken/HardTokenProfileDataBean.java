@@ -126,7 +126,7 @@ public abstract class HardTokenProfileDataBean extends BaseEntityBean {
 	public abstract void setUpdateCounter(int updatecounter);
 
     /**
-     * @ejb.persistence jdbc-type="BLOB" sql-type="VARBINARY(1100000)"
+     * @ejb.persistence jdbc-type="LONGVARCHAR"
      */
     public abstract String getData();
 
