@@ -25,6 +25,7 @@ import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.Base64;
 
 import com.novell.ldap.LDAPAttribute;
 import com.novell.ldap.LDAPAttributeSet;
@@ -44,7 +45,7 @@ import com.novell.ldap.LDAPModificationSet;
  * Certificates for CERTTYPE_CA and CERTTYPE_ROOTCA are published as attribute cACertificate in
  * objectclass 'certificationAuthority'.<br>
  * CRLs are published as attribute 'certificateRevocationList' in objectclass
- * 'certificationAuthority'.
+ * 'certificationAuthority'. Objectclasses are configured in ejb-jar.xml.
  * </p>
  * 
  * <p>
@@ -52,6 +53,8 @@ import com.novell.ldap.LDAPModificationSet;
  * <pre>
  * DN
  * cn
+ * sn
+ * gn
  * ou
  * l
  * st
@@ -62,14 +65,16 @@ import com.novell.ldap.LDAPModificationSet;
  * </p>
  * 
  * <p>
- * In 'certificationAuthority' the only attributes set are:
+ * In 'certificationAuthority' the attributes set are:
  * <pre>
  * DN
  * cACertificate
+ * certficateRecovationList
+ * authorityRevocationList
  * </pre>
  * </p>
  *
- * @version $Id: LDAPPublisherSessionBean.java,v 1.26 2004-01-26 12:49:08 anatom Exp $
+ * @version $Id: LDAPPublisherSessionBean.java,v 1.27 2004-01-26 14:29:17 anatom Exp $
  */
 public class LDAPPublisherSessionBean extends BaseSessionBean {
     private String ldapHost = "localhost";
@@ -83,6 +88,8 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
     private String aRLAttribute = "authorityRevocationList;binary";
     private String userCertAttribute = "userCertificate;binary";
     private String cACertAttribute = "cACertificate;binary";
+    
+    private static byte[] fakecrl = null;
 
     /** The remote interface of the log session bean */
     private ILogSessionLocal logsession;
@@ -112,8 +119,10 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
         debug("userObjectclass=" + userObjectclass);
         debug("cAObjectclass=" + cAObjectclass);
         debug("<ejbCreate()");
-
+        
         try {
+            X509CRL crl = CertTools.getCRLfromByteArray(fakecrlbytes);
+            fakecrl = crl.getEncoded();
             ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) lookup("java:comp/env/ejb/LogSessionLocal",
                     ILogSessionLocalHome.class);
             logsession = logsessionhome.create();
@@ -284,10 +293,10 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
                 } else {
                     attributeSet.add(certAttr);
                     // Also create using the crlattribute, it may be required
-                    LDAPAttribute crlAttr = new LDAPAttribute(cRLAttribute, "null".getBytes());
+                    LDAPAttribute crlAttr = new LDAPAttribute(cRLAttribute, fakecrl);
                     attributeSet.add(crlAttr);
                     // Also create using the arlattribute, it may be required
-                    LDAPAttribute arlAttr = new LDAPAttribute(aRLAttribute, "null".getBytes());
+                    LDAPAttribute arlAttr = new LDAPAttribute(aRLAttribute, fakecrl);
                     attributeSet.add(arlAttr);
                     debug("Added (fake) attribute for CRL and ARL.");
                 }
@@ -652,4 +661,13 @@ public class LDAPPublisherSessionBean extends BaseSessionBean {
         }
         return modSet;
     } // getModificationSet
+    
+    private static byte[] fakecrlbytes = Base64.decode(
+    ("MIIBKDCBkgIBATANBgkqhkiG9w0BAQUFADAvMQ8wDQYDVQQDEwZUZXN0Q0ExDzAN"+
+    "BgNVBAoTBkFuYVRvbTELMAkGA1UEBhMCU0UXDTA0MDExMjE0MTQyMloXDTA0MDEx"+
+    "MzE0MTQyMlqgLzAtMB8GA1UdIwQYMBaAFK1tyidIzx1qpuj5OjHl/0Ro8xTDMAoG"+
+    "A1UdFAQDAgEBMA0GCSqGSIb3DQEBBQUAA4GBABBSCWRAX8xyWQSuZYqR9MC8t4/V"+
+    "Tp4xTGJeT1OPlCfuyeHyjUdvdjB/TjTgc4EOJ7eIF7aQU8Mp6AcUAKil/qBlrTYa"+
+    "EFVr0WDeh2Aglgm4klAFnoJjDWfjTP1NVFdN4GMizqAz/vdXOY3DaDmkwx24eaRw"+
+    "7SzqXca4gE7f1GTO").getBytes());
 }
