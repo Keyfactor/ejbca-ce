@@ -26,27 +26,35 @@ import javax.servlet.http.*;
 
 
 /**
- * Servlet implementing server side of the Simple Certificate Enrollment Protocol (SCEP) snip from
- * OpenSCEP ----- This processes does the following: 1. decode a PKCS#7 signed data message from
- * the standard input 2. extract the signed attributes from the the message, which indicate the
- * type of request 3. decrypt the enveloped data PKCS#7 inside 4. branch to different actions
- * depending on the type of the message: - PKCSReq - GetCertInitial - GetCert - GetCRL - v2
- * PKCSReq or Proxy request 5. envelop (PKCS#7) the reply data from the previous step 6. sign the
- * reply data (PKCS#7) from the previous step 7. output the result as a der encoded block on
- * stdout -----
+ * Servlet implementing server side of the Simple Certificate Enrollment Protocol (SCEP) 
+ * ----- 
+ * This processes does the following: 
+ * 1. decode a PKCS#7 signed data message from the standard input 
+ * 2. extract the signed attributes from the the message, which indicate the type of request 
+ * 3. decrypt the enveloped data PKCS#7 inside 
+ * 4. branch to different actions depending on the type of the message: 
+ * - PKCSReq 
+ * - GetCertInitial 
+ * - GetCert 
+ * - GetCRL 
+ * - v2PKCSReq or Proxy request 
+ * 5. envelop (PKCS#7) the reply data from the previous step 
+ * 6. sign the reply data (PKCS#7) from the previous step 
+ * 7. output the result as a der encoded block on stdout 
+ * -----
  *
- * @version $Id: ScepServlet.java,v 1.17 2003-06-26 11:43:24 anatom Exp $
+ * @version $Id: ScepServlet.java,v 1.18 2003-07-23 14:46:30 anatom Exp $
  */
 public class ScepServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(ScepServlet.class);
     private ISignSessionHome signhome = null;
 
     /**
-     * DOCUMENT ME!
+     * Inits the SCEP servlet
      *
-     * @param config DOCUMENT ME!
+     * @param config servlet configuration
      *
-     * @throws ServletException DOCUMENT ME!
+     * @throws ServletException on error during initialization
      */
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
@@ -66,30 +74,29 @@ public class ScepServlet extends HttpServlet {
     }
 
     /**
-     * DOCUMENT ME!
+     * Handles HTTP post
      *
-     * @param request DOCUMENT ME!
-     * @param response DOCUMENT ME!
+     * @param request java standard arg
+     * @param response java standard arg
      *
-     * @throws IOException DOCUMENT ME!
-     * @throws ServletException DOCUMENT ME!
+     * @throws IOException input/output error
+     * @throws ServletException if the post could not be handled
      */
     public void doPost(HttpServletRequest request, HttpServletResponse response)
         throws IOException, ServletException {
         log.debug(">doPost()");
         doGet(request, response);
         log.debug("<doPost()");
-    }
-     //doPost
+    } //doPost
 
     /**
-     * DOCUMENT ME!
+     * Handles HTTP get
      *
-     * @param request DOCUMENT ME!
-     * @param response DOCUMENT ME!
+     * @param request java standard arg
+     * @param response java standard arg
      *
-     * @throws java.io.IOException DOCUMENT ME!
-     * @throws ServletException DOCUMENT ME!
+     * @throws IOException input/output error
+     * @throws ServletException if the post could not be handled
      */
     public void doGet(HttpServletRequest request, HttpServletResponse response)
         throws java.io.IOException, ServletException {
@@ -117,18 +124,14 @@ public class ScepServlet extends HttpServlet {
                 ISignSessionRemote signsession = signhome.create();
                 ScepPkiOpHelper helper = new ScepPkiOpHelper(administrator, signsession);
 
-                // We are not ready yet, so lets deny all requests for now...
-                //response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "Not implemented");
                 // Read the message end get the cert, this also checksauthorization
                 byte[] reply = helper.scepCertRequest(scepmsg);
-
                 if (reply == null) {
                     response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                         "Fatal error processing Scep request");
 
                     return;
                 }
-
                 // Send back Scep response, PKCS#7 which contains the end entity's certificate (or failure)
                 RequestHelper.sendBinaryBytes(reply, response, "application/x-pki-message");
             } else if (operation.equals("GetCACert")) {
@@ -192,67 +195,6 @@ public class ScepServlet extends HttpServlet {
         }
 
         log.debug("<doGet()");
-    }
-     // doGet
+    } // doGet
 
-    /**
-     * Prints debug info back to browser client
-     */
-    private class Debug {
-        private final ByteArrayOutputStream buffer;
-        private final PrintStream printer;
-        private final HttpServletRequest request;
-        private final HttpServletResponse response;
-
-        Debug(HttpServletRequest request, HttpServletResponse response) {
-            buffer = new ByteArrayOutputStream();
-            printer = new PrintStream(buffer);
-            this.request = request;
-            this.response = response;
-        }
-
-        void printDebugInfo() throws IOException, ServletException {
-            request.setAttribute("ErrorMessage", new String(buffer.toByteArray()));
-            request.getRequestDispatcher("/error.jsp").forward(request, response);
-        }
-
-        void print(Object o) {
-            printer.println(o);
-        }
-
-        void printMessage(String msg) {
-            print("<p>" + msg);
-        }
-
-        void printInsertLineBreaks(byte[] bA) throws Exception {
-            BufferedReader br = new BufferedReader(new InputStreamReader(
-                        new ByteArrayInputStream(bA)));
-
-            while (true) {
-                String line = br.readLine();
-
-                if (line == null) {
-                    break;
-                }
-
-                print(line.toString() + "<br>");
-            }
-        }
-
-        void takeCareOfException(Throwable t) {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            t.printStackTrace(new PrintStream(baos));
-            print("<h4>Exception:</h4>");
-
-            try {
-                printInsertLineBreaks(baos.toByteArray());
-            } catch (Exception e) {
-                e.printStackTrace(printer);
-            }
-
-            request.setAttribute("Exception", "true");
-        }
-    }
-     // Debug
-}
- // ScepServlet
+} // ScepServlet
