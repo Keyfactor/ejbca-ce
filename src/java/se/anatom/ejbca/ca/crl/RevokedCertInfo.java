@@ -20,22 +20,22 @@ import java.util.Date;
  * Holds information about a revoked certificate. The information kept here is the
  * information that goes into a CRLEntry.
  *
- * @version $Id: RevokedCertInfo.java,v 1.7 2004-04-16 07:39:00 anatom Exp $
+ * @version $Id: RevokedCertInfo.java,v 1.8 2004-11-20 20:21:00 sbailliez Exp $
  **/
 public class RevokedCertInfo extends java.lang.Object implements java.io.Serializable {
     
     /** Constants defining different revokation reasons. */
-    public final static int NOT_REVOKED                            = -1;
-    public final static int REVOKATION_REASON_UNSPECIFIED          = 0;
-    public final static int REVOKATION_REASON_KEYCOMPROMISE        = 1;
-    public final static int REVOKATION_REASON_CACOMPROMISE         = 2;
-    public final static int REVOKATION_REASON_AFFILIATIONCHANGED   = 3;
-    public final static int REVOKATION_REASON_SUPERSEDED           = 4;
-    public final static int REVOKATION_REASON_CESSATIONOFOPERATION = 5;
-    public final static int REVOKATION_REASON_CERTIFICATEHOLD      = 6;      
-    public final static int REVOKATION_REASON_REMOVEFROMCRL        = 8;
-    public final static int REVOKATION_REASON_PRIVILEGESWITHDRAWN  = 9;
-    public final static int REVOKATION_REASON_AACOMPROMISE         = 10;
+    public static final int NOT_REVOKED                            = -1;
+    public static final int REVOKATION_REASON_UNSPECIFIED          = 0;
+    public static final int REVOKATION_REASON_KEYCOMPROMISE        = 1;
+    public static final int REVOKATION_REASON_CACOMPROMISE         = 2;
+    public static final int REVOKATION_REASON_AFFILIATIONCHANGED   = 3;
+    public static final int REVOKATION_REASON_SUPERSEDED           = 4;
+    public static final int REVOKATION_REASON_CESSATIONOFOPERATION = 5;
+    public static final int REVOKATION_REASON_CERTIFICATEHOLD      = 6;
+    public static final int REVOKATION_REASON_REMOVEFROMCRL        = 8;
+    public static final int REVOKATION_REASON_PRIVILEGESWITHDRAWN  = 9;
+    public static final int REVOKATION_REASON_AACOMPROMISE         = 10;
     
 
     private BigInteger  userCertificate;
