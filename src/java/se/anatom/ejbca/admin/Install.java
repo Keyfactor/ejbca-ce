@@ -25,7 +25,7 @@ import se.anatom.ejbca.webdist.webconfiguration.LanguageProperties;
 /** Class used as an install script of ejbca
  * 
  * @author philip
- * @version $Id: Install.java,v 1.20 2005-02-11 13:12:18 anatom Exp $
+ * @version $Id: Install.java,v 1.21 2005-02-13 11:27:44 anatom Exp $
  *
  * The main porpose of this program is to provide easy installment of EJBCA.
  */
@@ -59,7 +59,6 @@ public class Install extends BaseCommand {
 	private String servercertdn = "";
 	private String serverkeystorepasswd = "";
 	private String superadminpasswd = "";
-	private String javacacertspasswd = "";
 			
 	private Pattern nondigit = Pattern.compile("\\D");
 	private Pattern nondigitordot = Pattern.compile("[^0-9\\.]");

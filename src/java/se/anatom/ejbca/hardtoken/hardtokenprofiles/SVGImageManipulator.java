@@ -42,6 +42,7 @@ import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.print.PrintTranscoder;
 import org.apache.batik.util.XMLResourceDescriptor;
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -57,10 +58,14 @@ import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
  * It replaces all occurrenses of specified variables in the images 
  * with the corresponding userdata.
  *
- * @version $Id: SVGImageManipulator.java,v 1.7 2005-02-11 13:12:18 anatom Exp $
+ * @version $Id: SVGImageManipulator.java,v 1.8 2005-02-13 11:27:45 anatom Exp $
  */
 public class SVGImageManipulator {
-
+	/**
+	 * For logging
+	 */
+	private static final Logger log = Logger.getLogger(SVGImageManipulator.class);
+	
 	/**
      * Availabe vairables used to replace text in a printlayout
      * Variable text are case-insensitive.
@@ -288,12 +293,13 @@ public class SVGImageManipulator {
 
     // Private Methods
     private void insertImage(UserAdminData userdata) throws FileNotFoundException, IOException{
+    	log.debug(">insertImage("+userdata != null ? userdata.getUsername() : "null"+")");
     	int imgx = 0;
     	int imgy = 0;
     	int imgwidth = 0;
     	int imgheight = 0;
     	
-       String transform = null;
+    	String transform = null;
     	// Get image info from template
     	NodeList list = svgdoc.getDocumentElement().getElementsByTagName("rect");
     	int numberofelements = list.getLength();
@@ -301,39 +307,39 @@ public class SVGImageManipulator {
     		Node node = list.item(i);		  
     		if(node instanceof SVGRectElement){
     			SVGRectElement rectnode = (SVGRectElement) node;
-                if(rectnode.getId().equalsIgnoreCase("USERPICTURE")){
-                    transform = rectnode.getAttribute("transform");
-                    imgx = (int) rectnode.getX().getBaseVal().getValue();
-                    imgy = (int) rectnode.getY().getBaseVal().getValue();                    
-                    imgwidth = (int) rectnode.getWidth().getBaseVal().getValue();
-                    imgheight = (int) rectnode.getHeight().getBaseVal().getValue();
-           
-                }
-    		 }
-    	  }  
+    			if(rectnode.getId().equalsIgnoreCase("USERPICTURE")){
+    				transform = rectnode.getAttribute("transform");
+    				imgx = (int) rectnode.getX().getBaseVal().getValue();
+    				imgy = (int) rectnode.getY().getBaseVal().getValue();                    
+    				imgwidth = (int) rectnode.getWidth().getBaseVal().getValue();
+    				imgheight = (int) rectnode.getHeight().getBaseVal().getValue();
+    				
+    			}
+    		}
+    	}  
     	
     	if(imgwidth != 0 && imgheight != 0){    	
-    	// Special dravel for demo remove
-		// BufferedImage image = ImageIO.read(new FileInputStream("c:\\userpicture.jpg"));
-        // TODO: get image.
-        BufferedImage image = null;
-      	
-	      SVGOMImageElement imageelement = new SVGOMImageElement("", svgdoc); 
-	      SimpleImageHandler imagehandler = new SimpleImageHandler(new ImageHandlerBase64Encoder());
-		        				 		  
-	      SVGGeneratorContext svgcxt = SVGGeneratorContext.createDefault(svgdoc);
-            		        				 		  
-	      imagehandler.handleImage((RenderedImage) image, imageelement,  
-	                           imgx, imgy, 
-	                           imgwidth, imgheight, 
-	                           svgcxt);
-          
-          if(transform != null && !transform.equals(""))
-            imageelement.setAttribute("transform", transform); 
-           
-	    svgdoc.getRootElement().appendChild(imageelement);
+    		// Special dravel for demo remove
+    		// BufferedImage image = ImageIO.read(new FileInputStream("c:\\userpicture.jpg"));
+    		// TODO: get image.
+    		BufferedImage image = null;
+    		
+    		SVGOMImageElement imageelement = new SVGOMImageElement("", svgdoc); 
+    		SimpleImageHandler imagehandler = new SimpleImageHandler(new ImageHandlerBase64Encoder());
+    		
+    		SVGGeneratorContext svgcxt = SVGGeneratorContext.createDefault(svgdoc);
+    		
+    		imagehandler.handleImage((RenderedImage) image, imageelement,  
+    				imgx, imgy, 
+					imgwidth, imgheight, 
+					svgcxt);
+    		
+    		if(transform != null && !transform.equals(""))
+    			imageelement.setAttribute("transform", transform); 
+    		
+    		svgdoc.getRootElement().appendChild(imageelement);
     	}
-	    
+    	
     }
 
     // Private Variables

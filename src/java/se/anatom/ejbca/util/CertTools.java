@@ -30,7 +30,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.69 2005-02-11 14:14:20 anatom Exp $
+ * @version $Id: CertTools.java,v 1.70 2005-02-13 11:27:44 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -94,11 +94,13 @@ public class CertTools {
         "1.2.840.113549.1.9.8", "1.2.840.113549.1.9.2", "emailaddress", "e", "email", "uid", "cn", "sn", "serialnumber", "gn", "givenname",
         "initials", "surname", "t", "ou", "o", "l", "st", "dc", "c"
     };
+    /*
     private static final String[] dNObjectsReverse = {
         "c", "dc", "st", "l", "o", "ou", "t", "surname", "initials",
         "givenname", "gn", "serialnumber", "sn", "cn", "uid", "email", "e", "emailaddress", "1.2.840.113549.1.9.2", "1.2.840.113549.1.9.8"
     };
-    /** Change this if you want reverse order */
+    */
+    /** Uncomment above and change this if you want reverse order */
     private static final String[] dNObjects = dNObjectsForward;    
     
     

@@ -32,25 +32,17 @@ public class HardCATokenManager {
 
     private static ArrayList availablehardcatokens = new ArrayList();
 
-    private static boolean initialized = init(); 
-    
-
     /**
-     * Method used to register all plug-in classes to the manager.
+     * Static intialization block used to register all plug-in classes to the manager.
      * All new plug-ins should add a loadClass call with it's classpath to this method.
-     * 
-     * @return true when finished initializing.
      */
-	private static boolean init(){
-        loadClass("se.anatom.ejbca.ca.caadmin.hardcatokens.StaticRegistering");
-        loadClass("se.anatom.ejbca.ca.caadmin.hardcatokens.DummyHardCAToken");
-        loadClass("se.anatom.ejbca.ca.caadmin.hardcatokens.HardCATokenSample");
-    	return true;
+    static {
+    	loadClass("se.anatom.ejbca.ca.caadmin.hardcatokens.StaticRegistering");
+    	loadClass("se.anatom.ejbca.ca.caadmin.hardcatokens.DummyHardCAToken");
+    	loadClass("se.anatom.ejbca.ca.caadmin.hardcatokens.HardCATokenSample");
     }
 
-    
-	
-	/**
+    /**
 	 * Method loading a class in order to register itself to the manager.
 	 * Should be used from the init() method only.
 	 * 

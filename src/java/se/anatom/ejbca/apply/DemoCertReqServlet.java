@@ -86,7 +86,7 @@ import se.anatom.ejbca.util.StringTools;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.37 2005-02-11 13:12:28 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.38 2005-02-13 11:27:45 anatom Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
@@ -102,14 +102,11 @@ public class DemoCertReqServlet extends HttpServlet {
   
   private final static byte[] BEGIN_CERT =
     "-----BEGIN CERTIFICATE-----".getBytes();
-  private final static int BEGIN_CERT_LENGTH = BEGIN_CERT.length;
 
   private final static byte[] END_CERT =
     "-----END CERTIFICATE-----".getBytes();
-  private final static int END_CERT_LENGTH = END_CERT.length;
 
   private final static byte[] NL = "\n".getBytes();
-  private final static int NL_LENGTH = NL.length;
 
   public void init(ServletConfig config) throws ServletException
   {
@@ -261,7 +258,9 @@ public class DemoCertReqServlet extends HttpServlet {
 
     int caid = DEFAULT_DEMOCAID;
     if ((tmp=request.getParameter("ca")) != null) {
-         // TODO: get requested CA to sign with
+        // Do NOT get requested CA to sign with from form. 
+    	// For security reasons, if there are more than one CA in the system
+    	// we definataly want to hardwire the demo to the demo CA.
     }    
     newuser.setCAId(caid);
     

@@ -103,15 +103,12 @@ public class CRLCreateThread extends Thread
   
   
   /**
-   * Method calculating the time i milliseconds to the next Poll  
-   */
-  
+   * Method calculating the time in milliseconds to the next Poll  
+   */  
   private long getTimeToNextPoll(){      
       long nexttime = 0;
-  	  Calendar curcalendar = Calendar.getInstance();
       Calendar nextcalendar = Calendar.getInstance();
 
-      int modulus;
       switch(check){
            case CHECK_DAILY :
                nextcalendar.add(Calendar.DATE,1);

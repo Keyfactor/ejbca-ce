@@ -31,7 +31,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * Contains help methods used to parse a publisher jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditPublisherJSPHelper.java,v 1.5 2005-02-11 13:12:18 anatom Exp $
+ * @version $Id: EditPublisherJSPHelper.java,v 1.6 2005-02-13 11:27:45 anatom Exp $
  */
 public class EditPublisherJSPHelper {
 	
@@ -123,7 +123,6 @@ public class EditPublisherJSPHelper {
 	  String publisher = null;
 	  PublisherDataHandler handler  = cabean.getPublisherDataHandler();
       String action = null;
-      boolean buttoncancel = false;            
 
   	  action = request.getParameter(ACTION);
 	  if( action != null){

@@ -496,11 +496,12 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
             Iterator i = result.iterator();
             while (i.hasNext()) {
                 PublisherDataLocal next = (PublisherDataLocal) i.next();
-                BasePublisher publisher = next.getPublisher();
                 returnval.add(next.getId());
             }
         } catch (AuthorizationDeniedException e1) {
+        	log.debug("AuthorizationDeniedException: ", e1);
         } catch (FinderException fe) {
+        	log.error("FinderException looking for all publishers: ", fe);
         }
 
         // If ca admin return

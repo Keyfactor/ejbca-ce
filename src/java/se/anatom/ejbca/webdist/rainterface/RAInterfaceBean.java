@@ -60,7 +60,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.49 2005-02-11 13:12:30 anatom Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.50 2005-02-13 11:27:36 anatom Exp $
  */
 public class RAInterfaceBean {
 
@@ -737,18 +737,10 @@ public class RAInterfaceBean {
     public void setTemporaryEndEntityProfile(EndEntityProfile profile){
     	this.temporateendentityprofile = profile;
     }
-    
-    // Private methods.
-    private long pow( int x, int y ) {
-        long result=1;
-        for ( int i=0; i<y; i++ )
-            result *= x;
-        return result;
-    }
-    
-    
-    // Private fields.
 
+    //
+    // Private fields.
+    //
     private EndEntityProfileDataHandler    profiles;
 
     private InitialContext                                 jndicontext;

@@ -68,7 +68,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.88 2005-02-11 13:12:46 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.89 2005-02-13 11:27:45 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -351,7 +351,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
                 }
             }
             if ((type & SecConst.USER_SENDNOTIFICATION) != 0) {
-                sendNotification(admin, profile, username, newpassword, dn, subjectaltname, email, caid);
+                sendNotification(admin, profile, username, newpassword, dn, email, caid);
             }
             logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_INFO_ADDEDENDENTITY, "");
 
@@ -457,7 +457,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
 
             if ((type & SecConst.USER_SENDNOTIFICATION) != 0 && statuschanged && (status == UserDataLocal.STATUS_NEW || status == UserDataLocal.STATUS_KEYRECOVERY)) {
 
-                sendNotification(admin, profile, username, newpassword, dn, subjectaltname, email, caid);
+                sendNotification(admin, profile, username, newpassword, dn, email, caid);
             }
             if (statuschanged)
                 logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_INFO_CHANGEDENDENTITY, "New status: " + status);
@@ -1297,7 +1297,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
     } // checkForHardTokenProfileId
 
 
-    private void sendNotification(Admin admin, EndEntityProfile profile, String username, String password, String dn, String subjectaltname, String email, int caid) {
+    private void sendNotification(Admin admin, EndEntityProfile profile, String username, String password, String dn, String email, int caid) {
         debug(">sendNotification: user="+username+", email="+email);
         try {
             if (email == null) {
