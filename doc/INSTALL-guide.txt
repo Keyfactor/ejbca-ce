@@ -2,7 +2,7 @@
     originally contributed by <surd0007(at)yahoo.com.cn>
  
 (This install guide is a complement to the guide present in README).
-$Id: INSTALL-guide.txt,v 1.5 2004-08-25 13:51:19 anatom Exp $
+$Id: INSTALL-guide.txt,v 1.6 2004-08-31 10:10:32 anatom Exp $
 
  
  Softwares needed:
@@ -123,7 +123,7 @@ connect to mysql server.
  	#./run.sh   (pay attention to log info, ejbca should deploy without errors)
 
  	#cd /usr/j2ee/ejbca
- 	#./ca.sh init TestCA "C=CN,O=NISEC,CN=EJBCA" 2048 365 null
+ 	#./install.sh
  
  Configure LDAP
  	/usr/local/etc/openldap/slapd.conf as follows:
