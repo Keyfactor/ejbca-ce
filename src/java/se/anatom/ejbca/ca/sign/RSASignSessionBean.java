@@ -35,6 +35,10 @@ import se.anatom.ejbca.ca.caadmin.CA;
 import se.anatom.ejbca.ca.caadmin.CADataLocal;
 import se.anatom.ejbca.ca.caadmin.CADataLocalHome;
 import se.anatom.ejbca.ca.caadmin.CAToken;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceResponse;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.ca.exception.CADoesntExistsException;
@@ -62,7 +66,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Creates and isigns certificates.
  *
- * @version $Id: RSASignSessionBean.java,v 1.112 2003-11-14 14:59:57 herrvendil Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.113 2003-11-14 15:23:17 herrvendil Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
     
@@ -824,6 +828,29 @@ public class RSASignSessionBean extends BaseSessionBean {
         log.error("Invalid user type for user "+data.getUsername());
         throw new EJBException("Invalid user type for user "+data.getUsername());    
     } // createCertificate
+    
+	/** 
+	 * Method used to perform the extended service
+	 */
+	public ExtendedCAServiceResponse extendedService(Admin admin, int caid, ExtendedCAServiceRequest request) 
+	  throws IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CADoesntExistsException{
+
+		// Get CA that will process request
+		CADataLocal cadata = null; 		
+		ExtendedCAServiceResponse returnval = null;
+		try{			
+		  cadata = cadatahome.findByPrimaryKey(new Integer(caid));
+		  returnval = cadata.getCA().extendedService(request);			
+		}catch(javax.ejb.FinderException fe){			 
+			throw new CADoesntExistsException(fe);                   
+		}catch(UnsupportedEncodingException ue){
+			throw new EJBException(ue);
+		}
+
+
+		return returnval;
+	  		     
+	}
     
     public HashMap getPublisherIdToNameMap(Admin admin){
       return publisheridtonamemap;   

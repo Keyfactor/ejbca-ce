@@ -11,6 +11,10 @@ import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
 import java.security.PublicKey;
 
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceResponse;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.CADoesntExistsException;
@@ -24,7 +28,7 @@ import se.anatom.ejbca.log.Admin;
 /**
  * Creates certificates. Remote interface for EJB.
  *
- * @version $Id: ISignSessionRemote.java,v 1.23 2003-11-14 14:59:57 herrvendil Exp $
+ * @version $Id: ISignSessionRemote.java,v 1.24 2003-11-14 15:23:17 herrvendil Exp $
  */
 public interface ISignSessionRemote extends javax.ejb.EJBObject {
 	/**
@@ -286,6 +290,23 @@ public interface ISignSessionRemote extends javax.ejb.EJBObject {
 	 * @throws RemoteException if a communication or other error occurs.
 	 */
     public X509CRL createCRL(Admin admin, int caid, Vector certs) throws RemoteException;
+    
+    /**
+     * Method used to perform a extended CA Service, like OCSP CA Service.
+     * 
+     * 
+     * @param admin Information about the administrator or admin preforming the event. 
+     * @param caid the ca that should perform the service
+     * @param request a service request.
+     * @return A corresponding response.
+     * @throws IllegalExtendedCAServiceRequestException if the request was invalid.
+     * @throws ExtendedCAServiceNotActiveException thrown when the service for the given CA isn't activated
+     * @throws CADoesntExistsException The given caid doesn't exists.
+     */
+    
+	public ExtendedCAServiceResponse extendedService(Admin admin, int caid, ExtendedCAServiceRequest request) 
+	  throws IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CADoesntExistsException;
+    
     
    /**
     * Method that publishes the given CA certificate chain to the list of publishers.

@@ -9,6 +9,10 @@ import java.util.HashMap;
 
 import javax.ejb.ObjectNotFoundException;
 
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceResponse;
+import se.anatom.ejbca.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.ca.exception.CADoesntExistsException;
@@ -23,7 +27,7 @@ import se.anatom.ejbca.protocol.IResponseMessage;
  * Local interface for EJB, unforturnately this must be a copy of the remote interface except that
  * RemoteException is not thrown. Creates certificates.
  *
- * @version $Id: ISignSessionLocal.java,v 1.19 2003-11-14 14:59:57 herrvendil Exp $
+ * @version $Id: ISignSessionLocal.java,v 1.20 2003-11-14 15:23:17 herrvendil Exp $
  *
  * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
  */
@@ -105,6 +109,13 @@ public interface ISignSessionLocal extends javax.ejb.EJBLocalObject {
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
      */
     public X509CRL createCRL(Admin admin, int caid, Vector certs);
+
+	/**
+	 * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
+	 */
+    
+	public ExtendedCAServiceResponse extendedService(Admin admin, int caid, ExtendedCAServiceRequest request) 
+	  throws IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CADoesntExistsException;    
     
     /**
      * @see se.anatom.ejbca.ca.sign.ISignSessionRemote
@@ -112,5 +123,7 @@ public interface ISignSessionLocal extends javax.ejb.EJBLocalObject {
     public void publishCACertificate(Admin admin, Collection certificatechain, Collection publishers, int certtype);
 
     public HashMap getPublisherIdToNameMap(Admin admin);
+    
+    
 }
 
