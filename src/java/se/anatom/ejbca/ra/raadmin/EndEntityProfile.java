@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
+
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.util.UpgradeableDataHashMap;
 import se.anatom.ejbca.util.passgen.PasswordGeneratorFactory;
@@ -29,10 +31,11 @@ import se.anatom.ejbca.util.passgen.PasswordGeneratorFactory;
  * of ejbca web interface.
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.21 2004-05-13 09:03:47 herrvendil Exp $
+ * @version $Id: EndEntityProfile.java,v 1.22 2004-05-15 11:15:26 anatom Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
+    private static Logger log = Logger.getLogger(EndEntityProfile.class);
     public static final float LATEST_VERSION = 3;
 
     // Public constants
@@ -658,39 +661,38 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 
     /** Implemtation of UpgradableDataHashMap function upgrade. */
 
-    public void upgrade(){
-      if(LATEST_VERSION != getVersion()){
-        // New version of the class, upgrade
-        if(getVersion() < 1){
-          ArrayList numberarray = (ArrayList)   data.get(NUMBERARRAY);
-          while(numberarray.size() < 37){
-             numberarray.add(new Integer(0));
-          }
-          data.put(NUMBERARRAY,numberarray);
-        }
-       
-        if(getVersion() < 2){
-            ArrayList numberarray = (ArrayList)   data.get(NUMBERARRAY);
-            while(numberarray.size() < 39){
-               numberarray.add(new Integer(0));
+    public void upgrade() {
+        log.debug(">upgrade");
+        if(LATEST_VERSION != getVersion()){
+            log.info("upgrading entityprofile with version "+getVersion());
+            // New version of the class, upgrade
+            if(getVersion() < 1){
+                ArrayList numberarray = (ArrayList)   data.get(NUMBERARRAY);
+                while(numberarray.size() < 37){
+                   numberarray.add(new Integer(0));
+                }
+                data.put(NUMBERARRAY,numberarray);
+              }
+            if(getVersion() < 2){
+                ArrayList numberarray = (ArrayList)   data.get(NUMBERARRAY);
+                while(numberarray.size() < 39){
+                   numberarray.add(new Integer(0));
+                }
+                data.put(NUMBERARRAY,numberarray);
+                
+                addField(AVAILCAS);
+                addField(DEFAULTCA);
+                setRequired(AVAILCAS,0,true);
+                setRequired(DEFAULTCA,0,true);
             }
-            data.put(NUMBERARRAY,numberarray);
-        	
-            addField(AVAILCAS);
-            addField(DEFAULTCA);
-            setRequired(AVAILCAS,0,true);
-            setRequired(DEFAULTCA,0,true);
+            if(getVersion() < 3){
+                setNotificationSubject("");
+                setNotificationSender("");
+                setNotificationMessage("");
+            }                 
+            data.put(VERSION, new Float(LATEST_VERSION));
         }
-        
-        if(getVersion() < 3){
-            setNotificationSubject("");
-        	setNotificationSender("");
-        	setNotificationMessage("");
-        } 
-            
-        data.put(VERSION, new Float(LATEST_VERSION));
-
-      }
+        log.debug("<upgrade");
     }
 
     // Private Methods

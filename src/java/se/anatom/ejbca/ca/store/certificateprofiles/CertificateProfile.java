@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Collection;
 
+import org.apache.log4j.Logger;
+
 import se.anatom.ejbca.util.UpgradeableDataHashMap;
 import se.anatom.ejbca.SecConst;
 
@@ -26,9 +28,10 @@ import se.anatom.ejbca.SecConst;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.21 2004-04-16 07:38:59 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.22 2004-05-15 11:15:45 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
+    private static Logger log = Logger.getLogger(CertificateProfile.class);
     // Default Values
     public static final float LATEST_VERSION = 8;
 
@@ -425,35 +428,34 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     /** Implemtation of UpgradableDataHashMap function upgrade. */
 
     public void upgrade(){
-      if(LATEST_VERSION != getVersion()){
-        // New version of the class, upgrade
+        log.debug(">upgrade");
+        if(LATEST_VERSION != getVersion()){
+            // New version of the class, upgrade
+            log.info("upgrading certificateprofile with version "+getVersion());
 
-        data.put(VERSION, new Float(LATEST_VERSION));
-        if(data.get(ALLOWKEYUSAGEOVERRIDE) == null)
-          data.put(ALLOWKEYUSAGEOVERRIDE, Boolean.TRUE);
-        if(data.get(USEEXTENDEDKEYUSAGE) ==null)
-          data.put(USEEXTENDEDKEYUSAGE, Boolean.FALSE);
-        if(data.get(EXTENDEDKEYUSAGE) ==null)
-          data.put(EXTENDEDKEYUSAGE, new ArrayList());
-        if(data.get(EXTENDEDKEYUSAGECRITICAL) == null)
-          data.put(EXTENDEDKEYUSAGECRITICAL, Boolean.FALSE);
-        
-        if(data.get(AVAILABLECAS) == null){
-          ArrayList availablecas = new ArrayList();
-          availablecas.add(new Integer(ANYCA));
-          data.put(AVAILABLECAS, availablecas);
+            data.put(VERSION, new Float(LATEST_VERSION));
+            if(data.get(ALLOWKEYUSAGEOVERRIDE) == null)
+                data.put(ALLOWKEYUSAGEOVERRIDE, Boolean.TRUE);
+            if(data.get(USEEXTENDEDKEYUSAGE) ==null)
+                data.put(USEEXTENDEDKEYUSAGE, Boolean.FALSE);
+            if(data.get(EXTENDEDKEYUSAGE) ==null)
+                data.put(EXTENDEDKEYUSAGE, new ArrayList());
+            if(data.get(EXTENDEDKEYUSAGECRITICAL) == null)
+                data.put(EXTENDEDKEYUSAGECRITICAL, Boolean.FALSE);
+            if(data.get(AVAILABLECAS) == null){
+                ArrayList availablecas = new ArrayList();
+                availablecas.add(new Integer(ANYCA));
+                data.put(AVAILABLECAS, availablecas);
+            }
+            if(data.get(USEDPUBLISHERS) == null){
+                data.put(USEDPUBLISHERS, new ArrayList());   
+            }            
+            if(data.get(USEOCSPSERVICELOCATOR) == null){
+                setUseOCSPServiceLocator(false);            
+                setOCSPServiceLocatorURI("");
+            }
         }
-        
-        if(data.get(USEDPUBLISHERS) == null){
-          data.put(USEDPUBLISHERS, new ArrayList());   
-        }
-        
-		if(data.get(USEOCSPSERVICELOCATOR) == null){
-	      setUseOCSPServiceLocator(false);  		  
-		  setOCSPServiceLocatorURI("");
-	    }
-
-      }
+        log.debug("<upgrade");
     }
 
 }

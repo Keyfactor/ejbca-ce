@@ -29,8 +29,6 @@ import javax.ejb.FinderException;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import org.apache.log4j.Logger;
-
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.authorization.AuthorizationDeniedException;
@@ -45,11 +43,9 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.34 2004-04-16 07:38:41 anatom Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.35 2004-05-15 11:15:42 anatom Exp $
  */
 public class LocalRaAdminSessionBean extends BaseSessionBean  {
-
-    private static Logger log = Logger.getLogger(LocalRaAdminSessionBean.class);
 
     /** Var holding JNDI name of datasource */
     private String dataSource = "";
@@ -426,24 +422,31 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * Method creating a hashmap mapping profile id (Integer) to profile name (String).
      */    
     public HashMap getEndEntityProfileIdToNameMap(Admin admin){
-      HashMap returnval = new HashMap();
-      Collection result = null;
-      returnval.put(new Integer(SecConst.EMPTY_ENDENTITYPROFILE),EMPTY_ENDENTITYPROFILENAME);
-      try{
-        result = profiledatahome.findAll();
-        Iterator i = result.iterator();
-        while(i.hasNext()){
-          EndEntityProfileDataLocal next = (EndEntityProfileDataLocal) i.next();    
-          returnval.put(next.getId(),next.getProfileName());
+        debug(">getEndEntityProfileIdToNameMap");
+        HashMap returnval = new HashMap();
+        Collection result = null;
+        returnval.put(new Integer(SecConst.EMPTY_ENDENTITYPROFILE),EMPTY_ENDENTITYPROFILENAME);
+        try{
+            result = profiledatahome.findAll();
+            //debug("Found "+result.size()+ " end entity profiles.");
+            Iterator i = result.iterator();
+            while(i.hasNext()){
+                EndEntityProfileDataLocal next = (EndEntityProfileDataLocal) i.next();    
+                //debug("Added "+next.getId()+ ", "+next.getProfileName());
+                returnval.put(next.getId(),next.getProfileName());
+            }
+        }catch(Exception e) {
+            error("Error reading entity profiles: ", e);
         }
-      }catch(Exception e){}
-      return returnval;
-    } // getEndEntityProfileNames
+        debug(">getEndEntityProfileIdToNameMap");
+        return returnval;
+      } // getEndEntityProfileIdToNameMap
 
      /**
      * Finds a end entity profile by id.
      */
     public EndEntityProfile getEndEntityProfile(Admin admin, int id){
+        debug(">getEndEntityProfile(id)");
        EndEntityProfile returnval=null;
        try{
          if(id==SecConst.EMPTY_ENDENTITYPROFILE) { 
@@ -455,6 +458,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
        }catch(FinderException e){
            // Ignore so we'll return null
        }
+       debug("<getEndEntityProfile(id)");
        return returnval;
     } // getEndEntityProfile
 
@@ -462,17 +466,19 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
      * Finds a end entity profile by id.
      */
     public EndEntityProfile getEndEntityProfile(Admin admin, String profilename){
-       EndEntityProfile returnval=null;
-       try{
-         if(profilename.equals(EMPTY_ENDENTITYPROFILENAME)) {
-             returnval = new EndEntityProfile(true);
-         } else {
-             returnval = (profiledatahome.findByProfileName(profilename)).getProfile();
-         }
-       }catch(FinderException e){
-           // Ignore so we'll return null
-       }
-       return returnval;
+        debug(">getEndEntityProfile(profilename)");
+        EndEntityProfile returnval=null;
+        try{
+          if(profilename.equals(EMPTY_ENDENTITYPROFILENAME)) {
+              returnval = new EndEntityProfile(true);
+          } else {
+              returnval = (profiledatahome.findByProfileName(profilename)).getProfile();
+          }
+        }catch(FinderException e){
+            // Ignore so we'll return null
+        }
+        debug("<getEndEntityProfile(profilename)");
+        return returnval;
     } // getEndEntityProfile    
 
      /**
@@ -487,7 +493,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
       try{
         Integer id = (profiledatahome.findByProfileName(profilename)).getId();
         returnval = id.intValue();
-      }catch(FinderException e){}
+      }catch(FinderException e){
+          // Ignore so we'll return 0
+      }
 
       return returnval;
     } // getEndEntityrofileId

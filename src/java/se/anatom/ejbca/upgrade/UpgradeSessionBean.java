@@ -50,7 +50,7 @@ import se.anatom.ejbca.util.SqlExecutor;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.15 2004-05-13 17:21:35 anatom Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.16 2004-05-15 11:15:45 anatom Exp $
  */
 public class UpgradeSessionBean extends BaseSessionBean {
 
@@ -270,13 +270,15 @@ public class UpgradeSessionBean extends BaseSessionBean {
         Iterator iter = profileidtonamemap.keySet().iterator();
         while(iter.hasNext()){
         	int next = ((Integer) iter.next()).intValue();
+            debug("found entityprofile "+next);
         	// Only upgrade nonfixed profiles.
         	if(next > SecConst.EMPTY_ENDENTITYPROFILE){
         		EndEntityProfile profile = getRaAdminSession().getEndEntityProfile(admin,next);   
-        		profile.setValue(EndEntityProfile.DEFAULTCA,0,Integer.toString(caId));
-        		profile.setRequired(EndEntityProfile.DEFAULTCA,0,true);
-        		profile.setValue(EndEntityProfile.AVAILCAS,0,Integer.toString(caId));
-        		profile.setRequired(EndEntityProfile.AVAILCAS,0,true);
+//        		profile.setValue(EndEntityProfile.DEFAULTCA,0,Integer.toString(caId));
+//        		profile.setRequired(EndEntityProfile.DEFAULTCA,0,true);
+//        		profile.setValue(EndEntityProfile.AVAILCAS,0,Integer.toString(caId));
+//        		profile.setRequired(EndEntityProfile.AVAILCAS,0,true);
+                profile.upgrade();
         		getRaAdminSession().changeEndEntityProfile(admin,(String) profileidtonamemap.get(new Integer(next)),profile);
         	}
         }
