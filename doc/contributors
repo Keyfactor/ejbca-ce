@@ -32,3 +32,4 @@ Mike Jackson <mj(at)sci.fi>, Proper LDAP schema
 Stephane Bailliez <sbailliez(at)linagora.com>, patches all over, XDoclet
 Yannick Quenec'hdu <yquenechdu(at)linagora.com> french translation
 James A. Rome <jar(at)ornl.gov>, additional 'Use fields in DN' for publisher.
+Manuel Ruiz <mruiz(at)safa.es, make admin commands flexible and usable from within java-code.
