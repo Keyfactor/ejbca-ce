@@ -68,6 +68,7 @@ public class TestCertificateRetrival extends TestCase  {
     private String rootCaFp = null;
     private String subCaFp = null;
     private String endEntityFp = null;
+    private Admin admin;
     
     private static void dumpCertificates(Collection certs) {
         m_log.debug(">dumpCertificates()");
@@ -125,43 +126,43 @@ public class TestCertificateRetrival extends TestCase  {
         cert = CertTools.getCertfromByteArray(testrootcert);
         m_certs.add(cert);
         rootCaFp = CertTools.getFingerprintAsString(cert);
+        boolean stored = false;
         try {
-            store.findCertificateByFingerprint(adm, rootCaFp);
-        } catch (Exception e) {
-            store.storeCertificate(adm
+            if (store.findCertificateByFingerprint(adm, rootCaFp) == null) {
+                store.storeCertificate(adm
                                    , cert
                                    , "o=AnaTom,c=SE"
                                    , rootCaFp
                                    , CertificateData.CERT_ACTIVE
                                    , SecConst.CERTTYPE_ROOTCA);
-        }
-        cert = CertTools.getCertfromByteArray(testcacert);
-        m_certs.add(cert);
-        subCaFp = CertTools.getFingerprintAsString(cert);
-        try {
-            store.findCertificateByFingerprint(adm, subCaFp);                                               
-        } catch (Exception e) {
-            store.storeCertificate(adm
+            }
+            cert = CertTools.getCertfromByteArray(testcacert);
+            m_certs.add(cert);
+            subCaFp = CertTools.getFingerprintAsString(cert);
+            if (store.findCertificateByFingerprint(adm, subCaFp) == null) {                                               
+                store.storeCertificate(adm
                                    , cert
                                    , "o=AnaTom,c=SE"
                                    , subCaFp
                                    , CertificateData.CERT_ACTIVE
                                    , SecConst.CERTTYPE_SUBCA);
-        }
-        cert = CertTools.getCertfromByteArray(testcert);
-        m_certs.add(cert);
-        endEntityFp = CertTools.getFingerprintAsString(cert);
-        try {
-            store.findCertificateByFingerprint(adm, endEntityFp);
-        } catch (Exception e) {
-            store.storeCertificate(adm
+            }
+            cert = CertTools.getCertfromByteArray(testcert);
+            m_certs.add(cert);
+            endEntityFp = CertTools.getFingerprintAsString(cert);
+            if (store.findCertificateByFingerprint(adm, endEntityFp) == null) {
+                store.storeCertificate(adm
                                    , cert
                                    , "o=AnaTom,c=SE"
                                    , endEntityFp
                                    , CertificateData.CERT_ACTIVE
-                                   , SecConst.CERTTYPE_ENDENTITY);        
+                                   , SecConst.CERTTYPE_ENDENTITY);
+            }
+        } catch (Exception e) {
+            m_log.error("Error: ",e);
+            assertTrue("Error seting up tests: "+e.getMessage(),false);
         }
-
+        admin = new Admin(Admin.TYPE_INTERNALUSER);
         m_log.debug("<setUp()");
     }
 
@@ -184,7 +185,7 @@ public class TestCertificateRetrival extends TestCase  {
         ICertificateStoreSessionRemote store = m_storehome.create();
 
         // List all certificates to see
-        Collection certfps = store.findCertificatesByType(new Admin(Admin.TYPE_INTERNALUSER)
+        Collection certfps = store.findCertificatesByType(admin
                                                           , SecConst.CERTTYPE_SUBCA
                                                           , null);
         assertNotNull("failed to list certs", certfps);
@@ -212,7 +213,7 @@ public class TestCertificateRetrival extends TestCase  {
         ICertificateStoreSessionRemote store = m_storehome.create();
 
         // List all certificates to see
-        Collection certfps = store.findCertificatesByType(new Admin(Admin.TYPE_INTERNALUSER)
+        Collection certfps = store.findCertificatesByType(admin
                                                           , SecConst.CERTTYPE_ENDENTITY
                                                           , null);
         assertNotNull("failed to list certs", certfps);
@@ -231,7 +232,7 @@ public class TestCertificateRetrival extends TestCase  {
         ICertificateStoreSessionRemote store = m_storehome.create();
 
         // List all certificates to see
-        Collection certfps = store.findCertificatesByType(new Admin(Admin.TYPE_INTERNALUSER)
+        Collection certfps = store.findCertificatesByType(admin
                                                           , SecConst.CERTTYPE_ROOTCA
                                                           , null);
         assertNotNull("failed to list certs", certfps);
@@ -260,7 +261,7 @@ public class TestCertificateRetrival extends TestCase  {
         sernos = new Vector();
         sernos.add(subcacert.getSerialNumber());
         sernos.add(rootcacert.getSerialNumber());
-        certfps = store.findCertificatesByIssuerAndSernos(new Admin(Admin.TYPE_INTERNALUSER)
+        certfps = store.findCertificatesByIssuerAndSernos(admin
                                                          , rootcacert.getSubjectDN().getName()
                                                          , sernos);
         assertNotNull("failed to list certs", certfps);
@@ -272,7 +273,7 @@ public class TestCertificateRetrival extends TestCase  {
 
         sernos = new Vector();
         sernos.add(cert.getSerialNumber());
-        certfps = store.findCertificatesByIssuerAndSernos(new Admin(Admin.TYPE_INTERNALUSER)
+        certfps = store.findCertificatesByIssuerAndSernos(admin
                                                          , subcacert.getSubjectDN().getName()
                                                          , sernos);
         assertNotNull("failed to list certs", certfps);
@@ -292,7 +293,7 @@ public class TestCertificateRetrival extends TestCase  {
         ICertificateStoreSessionRemote store = m_storehome.create();
 
         // List all certificates to see
-        Collection certfps = store.findCertificatesByType(new Admin(Admin.TYPE_INTERNALUSER)
+        Collection certfps = store.findCertificatesByType(admin
                                                           , SecConst.CERTTYPE_ROOTCA + SecConst.CERTTYPE_SUBCA + SecConst.CERTTYPE_ENDENTITY
                                                           , null);
         assertNotNull("failed to list certs", certfps);
@@ -316,7 +317,7 @@ public class TestCertificateRetrival extends TestCase  {
         X509Certificate rootcacert = CertTools.getCertfromByteArray(testrootcert);
 
         // List all certificates to see
-        Collection certfps = store.findCertificatesByType(new Admin(Admin.TYPE_INTERNALUSER)
+        Collection certfps = store.findCertificatesByType(admin
                                                           , SecConst.CERTTYPE_SUBCA
                                                           , rootcacert.getSubjectDN().getName());
         assertNotNull("failed to list certs", certfps);
@@ -351,7 +352,7 @@ public class TestCertificateRetrival extends TestCase  {
         sernos.add(rootcacert.getSerialNumber());
         sernos.add(subcacert.getSerialNumber());
         
-        revstats = store.isRevoked(new Admin(Admin.TYPE_INTERNALUSER)
+        revstats = store.isRevoked(admin
                                    , rootcacert.getSubjectDN().getName()
                                    , sernos);
 

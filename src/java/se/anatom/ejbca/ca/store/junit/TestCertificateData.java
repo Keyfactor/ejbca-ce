@@ -18,7 +18,7 @@ import junit.framework.*;
 /**
  * Tests certificate store.
  *
- * @version $Id: TestCertificateData.java,v 1.22 2003-09-27 09:05:47 anatom Exp $
+ * @version $Id: TestCertificateData.java,v 1.23 2003-11-03 11:47:33 anatom Exp $
  */
 public class TestCertificateData extends TestCase {
 
@@ -139,8 +139,10 @@ public class TestCertificateData extends TestCase {
     public void test03listAndRevoke() throws Exception {
         log.debug(">test03listAndRevoke()");
         ICertificateStoreSessionRemote store = storehome.create();
+        String issuerDN=CertTools.getIssuerDN(cert);
+        String subjectDN=CertTools.getSubjectDN(cert);
         // List all certificates to see
-        Collection certfps = store.listAllCertificates(new Admin(Admin.TYPE_INTERNALUSER), "TODO");
+        Collection certfps = store.listAllCertificates(new Admin(Admin.TYPE_INTERNALUSER), issuerDN);
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
 
@@ -148,7 +150,7 @@ public class TestCertificateData extends TestCase {
         log.debug("List certs: " + size);
 
         // List all certificates for user foo, which we have created in TestSignSession
-        certfps = store.findCertificatesBySubjectAndIssuer(new Admin(Admin.TYPE_INTERNALUSER), "C=SE, O=AnaTom, CN=foo","TODO");
+        certfps = store.findCertificatesBySubjectAndIssuer(new Admin(Admin.TYPE_INTERNALUSER), subjectDN, issuerDN);
         assertTrue("something weird with size, all < foos", size >= certfps.size());
         log.debug("List certs for foo: " + certfps.size());
         revDate = new Date().getTime();
@@ -177,8 +179,10 @@ public class TestCertificateData extends TestCase {
         log.debug(">test04CheckRevoked()");
 
         ICertificateStoreSessionRemote store = storehome.create();
+        String issuerDN=CertTools.getIssuerDN(cert);
+        String subjectDN=CertTools.getSubjectDN(cert);
         // List all certificates for user foo, which we have created in TestSignSession
-        Collection certfps = store.findCertificatesBySubjectAndIssuer(new Admin(Admin.TYPE_INTERNALUSER), "C=SE, O=AnaTom, CN=foo","TODO");
+        Collection certfps = store.findCertificatesBySubjectAndIssuer(new Admin(Admin.TYPE_INTERNALUSER), subjectDN, issuerDN);
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
 
@@ -263,8 +267,7 @@ public class TestCertificateData extends TestCase {
         ICertificateStoreSessionRemote store = storehome.create();
         log.debug("1. Looking for cert with expireDate=" + findDate);
 
-        Collection certs = store.findCertificatesByExpireTime(new Admin(Admin.TYPE_INTERNALUSER),
-                findDate);
+        Collection certs = store.findCertificatesByExpireTime(new Admin(Admin.TYPE_INTERNALUSER), findDate);
         log.debug("findCertificatesByExpireTime returned " + certs.size() + " certs.");
         assertTrue("No certs should have expired before this date", certs.size() == 0);
         findDateSecs = data.getExpireDate() + 10000;
@@ -295,6 +298,7 @@ public class TestCertificateData extends TestCase {
     public void test07FindByIssuerAndSerno() throws Exception {
         log.debug(">test07FindByIssuerAndSerno()");
 
+        String issuerDN = CertTools.getIssuerDN(cert);
         CertificateDataPK pk = new CertificateDataPK();
         pk.fingerprint = CertTools.getFingerprintAsString(cert);
 
@@ -305,7 +309,7 @@ public class TestCertificateData extends TestCase {
             cert.getSerialNumber());
 
         ICertificateStoreSessionRemote store = storehome.create();
-        Certificate fcert = store.findCertificateByIssuerAndSerno(new Admin(Admin.TYPE_INTERNALUSER), CertTools.getIssuerDN(cert), cert.getSerialNumber());
+        Certificate fcert = store.findCertificateByIssuerAndSerno(new Admin(Admin.TYPE_INTERNALUSER), issuerDN, cert.getSerialNumber());
         assertNotNull("Cant find by issuer and serno", fcert);
 
         //log.debug(fcert.toString());

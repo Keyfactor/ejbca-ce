@@ -45,7 +45,7 @@ import se.anatom.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.57 2003-10-25 08:52:37 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.58 2003-11-03 11:47:28 anatom Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -156,8 +156,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             data1.setCAFingerprint(cafp);
             data1.setStatus(status);
             data1.setType(type);
-        }
-        catch (Exception e) {            
+        } catch (Exception e) {            
            getLogSession().log(admin, (X509Certificate) incert, LogEntry.MODULE_CA, new java.util.Date(), username, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE,"");
            throw new EJBException(e);
         }
@@ -205,23 +204,19 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     public Collection listAllCertificates(Admin admin, String issuerdn) {
         debug(">listAllCertificates()");
         Connection con = null;
-        PreparedStatement ps = null;;
+        PreparedStatement ps = null;
         ResultSet result = null;
-
+        String dn=CertTools.stringToBCDNString(StringTools.strip(issuerdn));
         try {
             con = getConnection();
             ps = con.prepareStatement("select fingerprint from CertificateData where issuerDN=? ORDER BY expireDate DESC");
-            ps.setString(1, issuerdn);
+            ps.setString(1, dn);
             result = ps.executeQuery();
-
             ArrayList vect = new ArrayList();
-
             while (result.next()) {
                 vect.add(result.getString(1));
             }
-
             debug("<listAllCertificates()");
-
             return vect;
         } catch (Exception e) {
             throw new EJBException(e);
@@ -248,8 +243,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         debug(">listRevokedCertificates()");
 
         Connection con = null;
-        PreparedStatement ps = null;;
+        PreparedStatement ps = null;
         ResultSet result = null;
+        String dn=CertTools.stringToBCDNString(StringTools.strip(issuerdn));
         try {
             // TODO:
             // This should only list a few thousend certificates at a time, in case there
@@ -257,32 +253,21 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             con = getConnection();
             ps = con.prepareStatement("select fingerprint from CertificateData where status=? and issuerDN=? ORDER BY expireDate DESC");
             ps.setInt(1, CertificateData.CERT_REVOKED);
-            ps.setString(2, issuerdn);
+            ps.setString(2, dn);
             result = ps.executeQuery();
             ArrayList vect = new ArrayList();
-
             while (result.next()) {
                 vect.add(result.getString(1));
             }
-
             debug("<listRevokedCertificates()");
-
             return vect;
         } catch (Exception e) {
             throw new EJBException(e);
         } finally {
             try {
-                if (result != null) {
-                    result.close();
-                }
-
-                if (ps != null) {
-                    ps.close();
-                }
-
-                if (con != null) {
-                    con.close();
-                }
+                if (result != null) result.close();
+                if (ps != null) ps.close();
+                if (con != null) con.close();
             } catch (SQLException se) {
                 error("Error cleaning up: ", se);
             }
@@ -664,14 +649,12 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             CertificateDataLocal res = certHome.findByPrimaryKey(new CertificateDataPK(fingerprint));
             ret = res.getCertificate();
             debug("<findCertificateByFingerprint()");
-            
-        }catch (FinderException fe){
+        } catch (FinderException fe) {
            // Return null;
-        }catch (Exception e) {
+        } catch (Exception e) {
             log.error("Error finding certificate with fp: "+fingerprint);            
             throw new EJBException(e);
         }
-        
 		return ret;
     } // findCertificateByFingerprint
 
@@ -774,12 +757,13 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 		ResultSet result = null;
 		try {
 			ArrayList vect;
+            // Status 20 = CertificateData.CERT_ACTIVE
 			StringBuffer stmt = new StringBuffer("SELECT DISTINCT fingerprint FROM CertificateData WHERE status = 20 AND ");
 			stmt.append(" type IN (");
 			stmt.append(ctypes.toString());
 			stmt.append(')');
 			if (null != issuerDN && issuerDN.length() > 0) {
-				String dn = CertTools.stringToBCDNString(issuerDN);
+				String dn = CertTools.stringToBCDNString(StringTools.strip(issuerDN));
 				if (log.isDebugEnabled()) {
 					debug("findCertificatesByType() : Looking for cert with (transformed)DN: " + dn);
 				}
@@ -929,7 +913,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 		
 		String bcdn = CertTools.stringToBCDNString(issuerdn);
      	
-     	final String firstsqlstatement = "UPDATE CertificateData SET status=?" +                                                 " WHERE issuerDN=? AND status = ? ";
+     	final String firstsqlstatement = "UPDATE CertificateData SET status=?" +
+                                                 " WHERE issuerDN=? AND status = ? ";
 		final String secondsqlstatement = "UPDATE CertificateData SET status=?, revocationDate=?, revocationReason=?" +
 												 " WHERE issuerDN=? AND status <> ?";
 												 
