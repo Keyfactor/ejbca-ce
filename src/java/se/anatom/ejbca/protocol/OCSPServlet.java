@@ -57,7 +57,7 @@ import se.anatom.ejbca.util.CertTools;
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.21 2004-01-02 15:34:35 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.22 2004-01-04 15:12:18 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
@@ -492,6 +492,7 @@ public class OCSPServlet extends HttpServlet {
          * We only support POST operation, so return
          * an appropriate HTTP error code to caller.
          */
+        response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "OCSP only supports POST");
         m_log.debug("<doGet()");
     } // doGet
 
