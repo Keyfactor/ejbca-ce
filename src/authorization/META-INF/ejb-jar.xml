@@ -175,7 +175,8 @@
       <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>AdminEntityDataBean</abstract-schema-name>
-      <cmp-field><field-name>pK</field-name></cmp-field>
+      <cmp-field><field-name>caId</field-name></cmp-field>
+       <cmp-field><field-name>adminGroupName</field-name></cmp-field>
       <cmp-field><field-name>matchWith</field-name></cmp-field>
       <cmp-field><field-name>matchType</field-name></cmp-field>
       <cmp-field><field-name>matchValue</field-name></cmp-field>
@@ -193,10 +194,9 @@
       <reentrant>False</reentrant>
       <cmp-version>2.x</cmp-version>
       <abstract-schema-name>AccessRulesDataBean</abstract-schema-name>
-      <cmp-field><field-name>pK</field-name></cmp-field>
-      <cmp-field><field-name>accessRule</field-name></cmp-field>
-      <cmp-field><field-name>rule</field-name></cmp-field>      
-      <cmp-field><field-name>isRecursive</field-name></cmp-field>
+      <cmp-field><field-name>adminGroupName</field-name></cmp-field>
+       <cmp-field><field-name>caId</field-name></cmp-field>
+      <cmp-field><field-name>accessRuleObject</field-name></cmp-field>
    </entity>
    <entity>
       <description>

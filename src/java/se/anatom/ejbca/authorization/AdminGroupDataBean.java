@@ -37,7 +37,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.8 2004-06-10 14:21:52 sbailliez Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.9 2004-07-23 12:58:42 sbailliez Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents an authorization usergroup"
@@ -68,8 +68,8 @@ import se.anatom.ejbca.BaseEntityBean;
  *
  * @ejb.finder
  *   description="findByGroupNameAndCAId"
- *   signature="java.util.Collection findByGroupNameAndCAId(java.lang.String name,  int id)"
- *   query="SELECT DISTINCT OBJECT(a) from AdminGroupDataBean a WHERE a.adminGroupName=?1 AND a.cAId=?2"
+ *   signature="se.anatom.ejbca.authorization.AdminGroupDataLocal findByGroupNameAndCAId(java.lang.String name,  int id)"
+ *   query="SELECT DISTINCT OBJECT(a) from AdminGroupDataBean a WHERE a.adminGroupName=?1 AND a.CAId=?2"
  *
  * @ejb.finder
  *   description="findAll"
@@ -246,12 +246,13 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
             AdminEntity adminentity = (AdminEntity) iter.next();
             try {
                 AdminEntityDataLocal data = createAdminEntity(adminentity);
-                AdminEntityPK datapk = new AdminEntityPK(getAdminGroupName(), getCAId(), adminentity.getMatchWith(), adminentity.getMatchType(), adminentity.getMatchValue());
+                AdminEntityPK datapk = createAdminEntityPK(getAdminGroupName(), getCAId(), adminentity.getMatchWith(), adminentity.getMatchType(), adminentity.getMatchValue());
 
                 Iterator i = getAdminEntities().iterator();
                 while (i.hasNext()) {
                     AdminEntityDataLocal ue = (AdminEntityDataLocal) i.next();
-                    AdminEntityPK uepk = new AdminEntityPK(getAdminGroupName(), getCAId(), ue.getMatchWith()
+                    // TODO use ue.getPrimaryKey() ?
+                    AdminEntityPK uepk = createAdminEntityPK(getAdminGroupName(), getCAId(), ue.getMatchWith()
                             , ue.getMatchType(), ue.getMatchValue());
                     if (uepk.equals(datapk)) {
                         getAdminEntities().remove(ue);
@@ -279,12 +280,13 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
 
         while (iter.hasNext()) {
             AdminEntity adminentity = (AdminEntity) iter.next();
-            AdminEntityPK datapk = new AdminEntityPK(getAdminGroupName(), getCAId(), adminentity.getMatchWith(), adminentity.getMatchType(), adminentity.getMatchValue());
+            AdminEntityPK datapk = createAdminEntityPK(getAdminGroupName(), getCAId(), adminentity.getMatchWith(), adminentity.getMatchType(), adminentity.getMatchValue());
 
             Iterator i = getAdminEntities().iterator();
             while (i.hasNext()) {
                 AdminEntityDataLocal ue = (AdminEntityDataLocal) i.next();
-                AdminEntityPK uepk = new AdminEntityPK(getAdminGroupName(), getCAId(), ue.getMatchWith(), ue.getMatchType(), ue.getMatchValue());
+                // TODO use ue.getPrimaryKey() ?
+                AdminEntityPK uepk = createAdminEntityPK(getAdminGroupName(), getCAId(), ue.getMatchWith(), ue.getMatchType(), ue.getMatchValue());
                 if (uepk.equals(datapk)) {
                     getAdminEntities().remove(ue);
                     try {
@@ -297,6 +299,18 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
             }
         }
     } // removeAdminEntities
+
+    // this method is to avoid matching arguments errors while generating the class
+    private AdminEntityPK createAdminEntityPK(String name, int id, int with, int type, String value){
+        AdminEntityPK pk = new AdminEntityPK();
+        pk.setAdminGroupName(name);
+        pk.setCaId(id);
+        pk.setMatchWith(with);
+        pk.setMatchType(type);
+        pk.setMatchValue(value);
+        return pk;
+    }
+
 
     /**
      * Returns the number of user entities in admingroup

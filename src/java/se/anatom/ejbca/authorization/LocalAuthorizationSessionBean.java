@@ -32,6 +32,7 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import se.anatom.ejbca.BaseSessionBean;
+import se.anatom.ejbca.util.JDBCUtil;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
@@ -47,7 +48,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.12 2004-06-10 14:13:40 sbailliez Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.13 2004-07-23 12:58:42 sbailliez Exp $
  *
  * @ejb.bean
  *   description="Session bean handling interface with ra authorization"
@@ -167,6 +168,11 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
  *
  */
 public class LocalAuthorizationSessionBean extends BaseSessionBean {
+
+    /**
+     * Constant indicating minimum time between updates. In milliseconds
+     */
+    public static final long MIN_TIME_BETWEEN_UPDATES = 60000*1;
 
     /** Var holding JNDI name of datasource */
     private String dataSource = "";
@@ -613,9 +619,6 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
     /**
      * Returns the total number of admingroups
-      *
-	  * @ejb.interface-method view-type="both"
-	  * @ejb.transaction type="Supports"
       */
     private Collection getAdminGroups(Admin admin){
       ArrayList returnval= new ArrayList();
@@ -892,13 +895,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
         }catch(Exception e){
           throw new EJBException(e);
         }finally{
-           try{
-             if(rs != null) rs.close();
-             if(ps != null) ps.close();
-             if(con!= null) con.close();
-           }catch(SQLException se){
-               error("Error when cleaning up: ", se);
-           }
+           JDBCUtil.close(con, ps, rs);
         }
     }
 
@@ -944,13 +941,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
         }catch(Exception e){
           throw new EJBException(e);
         }finally{
-           try{
-             if(rs != null) rs.close();
-             if(ps != null) ps.close();
-             if(con!= null) con.close();
-           }catch(SQLException se){
-               error("Error when cleaning up: ", se);
-           }
+           JDBCUtil.close(con, ps, rs);
         }
     }
 
@@ -982,13 +973,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
         }catch(Exception e){
           throw new EJBException(e);
         }finally{
-           try{
-             if(rs != null) rs.close();
-             if(ps != null) ps.close();
-             if(con!= null) con.close();
-           }catch(SQLException se){
-               error("Error when cleaning up: ", se);
-           }
+           JDBCUtil.close(con, ps, rs);
         }
     }
 
@@ -998,7 +983,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
     private AuthorizationTreeUpdateDataLocal getAuthorizationTreeUpdateData(){
      AuthorizationTreeUpdateDataLocal atu = null;
        try{
-          atu = authorizationtreeupdatehome.findByPrimaryKey(new Integer(AuthorizationTreeUpdateDataLocalHome.AUTHORIZATIONTREEUPDATEDATA));
+          atu = authorizationtreeupdatehome.findByPrimaryKey(AuthorizationTreeUpdateDataBean.AUTHORIZATIONTREEUPDATEDATA);
        }catch(FinderException e){
           try{
             atu = authorizationtreeupdatehome.create();
@@ -1019,7 +1004,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      */
 
     private boolean updateNeccessary(){
-       return getAuthorizationTreeUpdateData().updateNeccessary(this.authorizationtreeupdate) && lastupdatetime < ((new java.util.Date()).getTime() - IAuthorizationSessionRemote.MINTIMEBETWEENUPDATES);
+       return getAuthorizationTreeUpdateData().updateNeccessary(this.authorizationtreeupdate) && lastupdatetime < ((new java.util.Date()).getTime() - MIN_TIME_BETWEEN_UPDATES);
     } // updateNeccessary
 
     /**

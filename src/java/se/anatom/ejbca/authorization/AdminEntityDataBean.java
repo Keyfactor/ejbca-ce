@@ -55,12 +55,35 @@ import se.anatom.ejbca.BaseEntityBean;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="se.anatom.ejbca.authorization.AdminEntityDataLocal"
  *
+ * @todo Write migration script
  */
 public abstract class AdminEntityDataBean extends BaseEntityBean {
 
     private static Logger log = Logger.getLogger(AdminEntityDataBean.class);
 
-    public abstract int          getPK();
+    /**
+     * @ejb.persistence
+     * @ejb.pk-field
+     * @ejb.interface-method view-type="local"
+     */
+    public abstract String getAdminGroupName();
+
+    /**
+     * @ejb.persistence
+     */
+    public abstract void setAdminGroupName(String admingroupname);
+
+    /**
+     * @ejb.persistence
+     * @ejb.pk-field
+     * @ejb.interface-method view-type="local"
+     */
+    public abstract int getCaId();
+
+    /**
+     * @ejb.persistence
+     */
+    public abstract void setCaId(int caid);
 
 	/**
 	 * @ejb.persistence
@@ -82,11 +105,6 @@ public abstract class AdminEntityDataBean extends BaseEntityBean {
      * @ejb.pk-field
      */
     public abstract String       getMatchValue();
-
-    /**
-	 * @ejb.persistence
-	 */
-    public abstract void setPK(int pK);
 
     /**
 	 * @ejb.persistence
@@ -117,15 +135,14 @@ public abstract class AdminEntityDataBean extends BaseEntityBean {
      * @ejb.create-method
 	 */
     public AdminEntityPK ejbCreate(String admingroupname, int caid, int matchwith, int matchtype, String matchvalue) throws CreateException {
-
-        AdminEntityPK pk = new AdminEntityPK(admingroupname, caid, matchwith,matchtype,matchvalue);
-        setPK(pk.hashCode());
+        setAdminGroupName(admingroupname);
+        setCaId(caid);
         setMatchWith(matchwith);
         setMatchType(matchtype);
         setMatchValue(matchvalue);
 
         log.debug("Created admin entity "+ matchvalue);
-        return pk;
+        return null;
     }
 
     public void ejbPostCreate(String admingroupname, int caid, int matchwith, int matchtype, String matchvalue) {

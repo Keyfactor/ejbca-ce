@@ -58,33 +58,41 @@ import se.anatom.ejbca.BaseEntityBean;
  */
 public abstract class AuthorizationTreeUpdateDataBean extends BaseEntityBean
 {
-
-    private static Logger log = Logger.getLogger(AuthorizationTreeUpdateDataBean.class);
+    public static final Integer AUTHORIZATIONTREEUPDATEDATA = new Integer(1);
 
 	/**
      * @ejb.pk-field
+     * @ejb.persistence
      */
     public abstract Integer getPK();
 
+    /**
+     * @ejb.persistence
+     */
     public abstract void setPK(Integer pK);
 
 	/**
-     * @ejb.interface-method view-type="local"
+     * Method returning the newest authorizationtreeupdatenumber. Should be used after each
+     * time the authorization tree is built.
+     *
+     * @return the newest accessruleset number.
+     * @ejb.persistence
+     * @ejb.interface-method
      */
     public abstract int getAuthorizationTreeUpdateNumber();
 
+    /**
+     * @ejb.persistence
+     */
     public abstract void setAuthorizationTreeUpdateNumber(int authorizationtreeupdatenumber);
 
-
-
 	/**
-	 *
      * @ejb.create-method
 	 */
     public Integer ejbCreate() throws CreateException {
-      setPK(new Integer(AuthorizationTreeUpdateDataLocalHome.AUTHORIZATIONTREEUPDATEDATA));
+      setPK(AUTHORIZATIONTREEUPDATEDATA);
       setAuthorizationTreeUpdateNumber(0);
-      return new Integer(AuthorizationTreeUpdateDataLocalHome.AUTHORIZATIONTREEUPDATEDATA);
+      return null;
     }
 
     public void ejbPostCreate() {
@@ -92,8 +100,13 @@ public abstract class AuthorizationTreeUpdateDataBean extends BaseEntityBean
     }
 
      /**
-     * @see se.anatom.ejbca.authorization.AuthorizationTreeUpdateDataLocal
-     * @ejb.interface-method view-type="local"
+     * Method used check if a reconstruction of authorization tree is needed in the
+     * authorization beans. It is used to avoid desyncronisation of authorization structures
+     * in a distibuted environment.
+     *
+     * @param currentauthorizationtreeupdatenumber indicates which authorizationtreeupdatenumber is currently used.
+     * @return true if update is needed.
+     * @ejb.interface-method
      */
     public boolean updateNeccessary(int currentauthorizationtreeupdatenumber){
       return getAuthorizationTreeUpdateNumber() != currentauthorizationtreeupdatenumber;
@@ -101,8 +114,9 @@ public abstract class AuthorizationTreeUpdateDataBean extends BaseEntityBean
 
 
      /**
-     * @see se.anatom.ejbca.authorization.AuthorizationTreeUpdateDataLocal
-     * @ejb.interface-method view-type="local"
+     * Method incrementing the authorizationtreeupdatenumber and thereby signaling
+     * to other beans that they should reconstruct their accesstrees.
+     * @ejb.interface-method
      */
     public void incrementAuthorizationTreeUpdateNumber(){
       setAuthorizationTreeUpdateNumber(getAuthorizationTreeUpdateNumber() +1);

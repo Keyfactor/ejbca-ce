@@ -57,85 +57,63 @@ import se.anatom.ejbca.BaseEntityBean;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="se.anatom.ejbca.authorization.AccessRulesDataLocal"
  *
+ * @todo Write migration script
  */
 public abstract class AccessRulesDataBean extends BaseEntityBean
 {
 
     private static Logger log = Logger.getLogger(AccessRulesDataBean.class);
 
-	/**
-	 * @ejb.persistence
-	 */
-    public abstract int getPK();
+    /**
+     * @ejb.persistence
+     * @ejb.pk-field
+     * @ejb.interface-method view-type="local"
+     */
+    public abstract String getAdminGroupName();
 
-	/**
-	 * @ejb.persistence
-	 */
-	public abstract void setPK(int pK);
+    /**
+     * @ejb.persistence
+     */
+    public abstract void setAdminGroupName(String admingroupname);
+
+    /**
+     * @ejb.persistence
+     * @ejb.pk-field
+     * @ejb.interface-method view-type="local"
+     */
+    public abstract int getCaId();
+
+    /**
+     * @ejb.persistence
+     */
+    public abstract void setCaId(int caid);
 
 	/**
      * @ejb.pk-field
 	 * @ejb.persistence
-     * @ejb.interface-method view-type="local"
+     * @ejb.interface-method
 	 */
-    public abstract String getAccessRule();
+    public  abstract AccessRule getAccessRuleObject();
 
 	/**
 	 * @ejb.persistence
 	 */
-    public abstract void setAccessRule(String accessrule);
-
-	/**
-	 * @ejb.persistence
-	 */
-    public abstract int getRule();
-
-	/**
-	 * @ejb.persistence
-	 */
-    public abstract void setRule(int rule);
-
-	/**
-	 * @ejb.persistence
-	 */
-    public abstract boolean getIsRecursive();
-
-	/**
-	 * @ejb.persistence
-	 */
-    public abstract void setIsRecursive(boolean isrecursive);
+    public abstract void setAccessRuleObject(AccessRule accessrule);
 
 	/**
 	 *
      * @ejb.create-method
 	 */
     public AccessRulesPK ejbCreate(String admingroupname, int caid, AccessRule accessrule) throws CreateException {
-        AccessRulesPK pk = new AccessRulesPK(admingroupname, caid, accessrule);
-        setPK(pk.hashCode());
-        setAccessRule(accessrule.getAccessRule());
-        setRule(accessrule.getRule());
-        setIsRecursive(accessrule.isRecursive());
+        setAdminGroupName(admingroupname);
+        setCaId(caid);
+        setAccessRuleObject(accessrule);
         log.debug("Created accessrule : "+ accessrule.getAccessRule());
-        return pk;
+        return null;
     }
 
     public void ejbPostCreate(String admingroupname, int caid, AccessRule accessrule) {
         // Do nothing. Required method.
     }
 
-	/**
-     * @ejb.interface-method view-type="local"
-     */
-    public  AccessRule getAccessRuleObject(){
-      return new AccessRule(getAccessRule(), getRule(), getIsRecursive());
-    }
-
-	/**
-     * @ejb.interface-method view-type="local"
-     */
-    public void setAccessRuleObject(AccessRule accessrule){
-      setAccessRule(accessrule.getAccessRule());
-      setRule(accessrule.getRule());
-      setIsRecursive(accessrule.isRecursive());
-    }
 }
