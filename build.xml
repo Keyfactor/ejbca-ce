@@ -1,14 +1,16 @@
 <?xml version="1.0"?>
 <project name="ejbca" default="build" basedir=".">
+    <property name="ejbca.home" location="."/>
+    <property environment="env"/>
 
   <!-- Give user a chance to override without editing this file
        (and without typing -D each time it compiles it) -->
   <property file=".ejbca.properties"/>
   <property file="${user.home}/.ejbca.properties"/>
-  <property environment="env"/>
 
-  <property name="jboss.home" value="${env.JBOSS_HOME}"/>
-
+    <property name="jboss.home" value="${env.JBOSS_HOME}"/>
+    <import file="bin/jboss.xml"/>
+		
   <!-- set global properties for this build -->
   <property name="src" value="./src"/>
   <property name="javasrc" value="${src}/java"/>
@@ -18,6 +20,7 @@
   <property name="test.dir" value="${tmp}/junit"/>
   <property name="test.src.dir" location="${src}/test"/>
   <property name="dist"  value="./dist"/>
+  <property name="dist.dir" location="${dist}"/>
   <property name="apidoc" value="./doc/api"/>
 
   <property name="apply.src" value="${src}/publicweb/apply" />
@@ -64,8 +67,8 @@
 
   <!-- Jar with class files needed for administration, i.e. ca, ra, jobrunner -->
   <property name="adminjar.cli" value="${src}/cli" />
-  <property name="adminjar.build" value="${tmp}/adminjar" />
-  <property name="adminjar" value="./admin.jar" />
+  <property name="adminjar.build" value="${tmp}/admin.jar" />
+  <property name="adminjar" value="${dist}/admin.jar" />
 
   <property name="jar.classpath" value="lib/ejb-utils.jar"/>
 
@@ -115,7 +118,7 @@
   <!-- =================================================================== -->
   <!-- Create the time stamp and build directory -->
   <!-- =================================================================== -->
-  <target name="init" depends="jboss:init">
+  <target name="init" depends="j2ee:check">
       <echo>
 ---------- CONFIGURATION PROPERTIES ----------
 jboss.home           = ${jboss.home}
@@ -176,7 +179,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
         <copy file="${javasrc}/jndi.properties" todir="${test.dir}"/>
     </target>
 
-    <target name="test:run" depends="test:compile,jboss:assert-run" description="run JUnit testcases">
+    <target name="test:run" depends="test:compile,j2ee:assert-run" description="run JUnit testcases">
         <delete dir="${test.dir}/reports"/>
         <mkdir dir="${test.dir}/reports/html"/>
         <junit printsummary="yes" haltonfailure="no">
@@ -426,87 +429,31 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- Build admin jar                                                     -->
   <!-- =================================================================== -->
   <target name="admin.jar" depends="compile">
+		<!--javac srcdir="src/cli/src/main" destdir="${build}" debug="on" includeantruntime="no">
+		    <classpath refid="compile.classpath"/>
+		</javac-->
+
     <mkdir dir="${adminjar.build}"/>
          <copy todir="${adminjar.build}">
         <fileset dir="${adminjar.cli}">
             <include name="*.properties"/>
-       </fileset>
+      </fileset>
       </copy>
-     <copy todir="${adminjar.build}">
+      <copy todir="${adminjar.build}">
         <fileset dir="${build}">
-            <include name="se/anatom/ejbca/IJobRunner*.class"/>
-            <include name="se/anatom/ejbca/SecConst*.class"/>
-            <include name="se/anatom/ejbca/util/*.class"/>
-            <include name="se/anatom/ejbca/util/query/*.class"/>
-            <include name="se/anatom/ejbca/util/passgen/*.class"/>
-            <include name="se/anatom/ejbca/admin/*.class"/>
-            <include name="se/anatom/ejbca/batch/*.class"/>
-            <include name="se/anatom/ejbca/ca/caadmin/I*.class"/>
-            <include name="se/anatom/ejbca/ca/caadmin/*Info.class"/>
-            <include name="se/anatom/ejbca/ca/store/*Info.class"/>
-            <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
-            <include name="se/anatom/ejbca/ca/store/certificateprofiles/*.class"/>
-            <include name="se/anatom/ejbca/ca/publisher/IPublisher*.class"/>
-            <include name="se/anatom/ejbca/ca/sign/ISignSession*.class"/>
-            <include name="se/anatom/ejbca/ca/crl/RevokedCertInfo*.class"/>
-            <include name="se/anatom/ejbca/ca/crl/ICreateCRL*.class"/>
-            <include name="se/anatom/ejbca/ca/store/CertificateData*.class"/>
-            <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>
-            <include name="se/anatom/ejbca/ra/*.class"/>
-            <include name="se/anatom/ejbca/exception/**/*.class"/>
-            <include name="se/anatom/ejbca/ca/exception/**/*.class"/>
-            <include name="se/anatom/ejbca/ra/exception/**/*.class"/>
-            <include name="se/anatom/ejbca/ra/raadmin/AdminPreference.class"/>
-            <include name="se/anatom/ejbca/ra/raadmin/UserDoesntFullfillEndEntityProfile.class"/>
-            <include name="se/anatom/ejbca/ra/raadmin/IRaAdminSessionHome.class"/>
-            <include name="se/anatom/ejbca/ra/raadmin/IRaAdminSessionRemote.class"/>
-            <include name="se/anatom/ejbca/ra/raadmin/EndEntityProfile.class"/>
-            <include name="se/anatom/ejbca/ra/raadmin/GlobalConfiguration.class"/>
-            <include name="se/anatom/ejbca/ra/raadmin/EndEntityProfileExistsException.class"/>
-            <include name="se/anatom/ejbca/authorization/IAuthorizationSessionHome.class"/>
-            <include name="se/anatom/ejbca/authorization/IAuthorizationSessionRemote.class"/>
-            <include name="se/anatom/ejbca/authorization/AdminGroup.class"/>
-            <include name="se/anatom/ejbca/authorization/*Exception.class"/>
-            <include name="se/anatom/ejbca/authorization/UserEntity.class"/>
-            <include name="se/anatom/ejbca/authorization/AdminInformation.class"/>
-            <include name="se/anatom/ejbca/hardtoken/AvailableHardToken.class"/>
-            <include name="se/anatom/ejbca/hardtoken/IHardTokenSessionHome.class"/>
-            <include name="se/anatom/ejbca/hardtoken/IHardTokenSessionRemote.class"/>
-            <include name="se/anatom/ejbca/hardtoken/IHardTokenBatchJobSessionHome.class"/>
-            <include name="se/anatom/ejbca/hardtoken/IHardTokenBatchJobSessionRemote.class"/>
-            <include name="se/anatom/ejbca/hardtoken/HardTokenIssuer.class"/>
-            <include name="se/anatom/ejbca/hardtoken/HardTokenIssuerData.class"/>
-            <include name="se/anatom/ejbca/hardtoken/*Exception.class"/>
-            <include name="se/anatom/ejbca/hardtoken/hardtokentypes/*.class"/>
-            <include name="se/anatom/ejbca/hardtoken/hardtokenprofiles/*.class"/>
-            <include name="se/anatom/ejbca/hardtoken/HardTokenData.class"/>
-            <include name="se/anatom/ejbca/hardtoken/UnavailableTokenException.class"/>
-            <include name="se/anatom/ejbca/hardtoken/HardTokenExistsException.class"/>
-            <include name="se/anatom/ejbca/hardtoken/HardTokenDoesntExistsException.class"/>
-            <include name="se/anatom/ejbca/keyrecovery/IKeyRecoverySessionRemote.class"/>
-            <include name="se/anatom/ejbca/keyrecovery/IKeyRecoverySessionHome.class"/>
-            <include name="se/anatom/ejbca/keyrecovery/KeyRecoveryData.class"/>
-            <include name="se/anatom/ejbca/log/Admin.class"/>
-            <include name="se/anatom/ejbca/protocol/IResponseMessage.class"/>
-            <include name="se/anatom/ejbca/protocol/IRequestMessage.class"/>
-            <include name="se/anatom/ejbca/protocol/PKCS10RequestMessage.class"/>
-            <include name="se/anatom/ejbca/protocol/IResponseMessage.class"/>
-            <include name="se/anatom/ejbca/protocol/X509ResponseMessage.class"/>
-            <include name="se/anatom/ejbca/ra/raadmin/DNFieldExtractor.class"/>
-            <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/ExtendedCAServiceRequest.class"/>
-            <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/ExtendedCAServiceResponse.class"/>
-            <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/IllegalExtendedCAServiceRequestException.class"/>
-            <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/ExtendedCAServiceRequestException.class"/>
-            <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/ExtendedCAServiceNotActiveException.class"/>
-            <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/OCSPCAServiceInfo.class"/>
-            <include name="se/anatom/ejbca/ca/caadmin/extendedcaservices/ExtendedCAServiceInfo.class"/>
-            <include name="se/anatom/ejbca/upgrade/*.class"/>
+        	<include name="se/anatom/ejbca/client/**"/>
+            <include name="se/anatom/ejbca/admin/**"/>
+            <include name="se/anatom/ejbca/batch/**"/>
        </fileset>
       </copy>
     <!-- Jar the admin.jar package together -->
-    <jar basedir="${adminjar.build}" jarfile="${adminjar}"/>
+    <jar basedir="${adminjar.build}" jarfile="${adminjar}">
+	    <manifest>
+	        <attribute name="Class-Path" value="${jar.classpath}"/>
+	    </manifest>
+	</jar>    
   </target>
-
+	
   <!-- =================================================================== -->
   <!-- Build CA-ear                                                        -->
   <!-- =================================================================== -->
@@ -620,34 +567,10 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
         </javadoc>
   </target>
 
-   <target name="jboss:init" description="Check that jboss.home is correct">
-        <!--
-            we could have a dedicated jboss for ejbca, so give users a chance to override
-            otherwise, try to pick the one from environment if it exists
-            -->
-        <condition property="jboss.home" value="${env.JBOSS_HOME}">
-            <available file="${env.JBOSS_HOME}" type="dir"/>
-        </condition>
-        <fail message="Please set the property 'jboss.home' for this project" unless="jboss.home"/>
-        <available file="${jboss.home}/client/jboss-j2ee.jar" property="jboss.home.valid"/>
-        <fail message="'jboss.home' (${jboss.home}) does not seem to be a valid JBoss home directory" unless="jboss.home.valid"/>
-        <echo message="Using jboss.home : ${jboss.home}"/>
-   </target>
-
-  <!--
-    Assert that JBoss server is actually running on localhost:8080
-    -->
-  <target name="jboss:assert-run" description="Assert that JBoss server is running">
-        <waitfor maxwait="2" maxwaitunit="second" timeoutproperty="jboss.notrunning">
-            <http url="http://localhost:8080/web-console/"/>
-        </waitfor>
-        <fail message="Please execute JBoss server" if="jboss.notrunning"/>
-  </target>
-
   <!-- ========================================================================== -->
   <!-- Upgrades the database for a new version of ejbca                           -->
   <!-- ========================================================================== -->
-  <target name="upgrade" depends="admin.jar">
+  <target name="upgrade" depends="build">
         <!-- Get input -->
         <input
             message="Type of system:"
@@ -704,10 +627,10 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- ============================================================================= -->
   <!-- Batch generate certificates for users with clear text password and right type -->
   <!-- ============================================================================= -->
-  <target name="batch" depends="admin.jar">
+  <target name="batch" depends="build">
         <java classname="se.anatom.ejbca.batch.BatchMakeP12" fork="true">
             <classpath>
-                <pathelement location="${adminjar}"/>
+                <fileset dir="${dist}" includes="*.jar"/>
                 <fileset dir="${jboss.home}/client" includes="**/*.jar"/>
                 <fileset dir="${lib}" includes="**/*.jar"/>
             </classpath>
@@ -760,28 +683,21 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- =================================================================== -->
   <!--Deploy Jboss Specific Services                       -->
   <!-- =================================================================== -->
-  <target name="deployjbossservices" depends="jboss:assert-run,jbossservices, deploy">
+  <target name="deployjbossservices" depends="j2ee:assert-run,jbossservices, deploy">
     <copy file="${createcrlservicejar}" tofile="${jboss.home}/server/default/deploy/createcrlservice.jar" verbose="true"/>
   </target>
 
   <!-- ======================================================================= -->
   <!-- Deploy EJBCA ear to JBoss                                               -->
   <!-- ======================================================================= -->
-    <target name="deploy" depends="jboss:assert-run, ca.ear, admin.jar">
-        <property name="deploy.dir" location="${jboss.home}/server/default/deploy"/>
-        <copy todir="${deploy.dir}" overwrite="true">
-            <fileset dir="src/appserver/jboss" includes="ejbca-ds.xml"/>
-            <filterchain>
-                <expandproperties/>
-            </filterchain>
-        </copy>
-    <copy file="${caear}" tofile="${jboss.home}/server/default/deploy/ejbca-ca.ear" verbose="true"/>
-  </target>
+    <target name="deploy" depends="build">
+    	<antcall target="j2ee:deploy"/>
+  	</target>
 
   <!-- ======================================================================= -->
   <!-- Deploy ear without Admin Web-GUI to JBoss                               -->
   <!-- ======================================================================= -->
-  <target name="deploy_nora" depends="jboss:assert-run,canora.ear">
+  <target name="deploy_nora" depends="j2ee:assert-run,canora.ear">
     <copy file="${caearnora}" tofile="${jboss.home}/server/default/deploy/ejbca-canora.ear" verbose="true"/>
   </target>
 
@@ -912,4 +828,4 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
 
 
 
-</project>
+</project>                                                                                                     
