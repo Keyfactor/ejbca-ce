@@ -36,7 +36,6 @@ import se.anatom.ejbca.BaseEntityBean;
  * </pre>
  *
  * @ejb.bean
- *	 generate="true"
  *   description="This enterprise bean entity represents a publisher"
  *   display-name="PublisherDataEB"
  *   name="PublisherData"
