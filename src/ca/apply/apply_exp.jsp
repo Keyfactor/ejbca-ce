@@ -105,6 +105,11 @@ try  {
 %>
 <HR>
 <FORM NAME="CertReqForm" ACTION="certreq" ENCTYPE=x-www-form-encoded METHOD=POST>
+ 
+ <b>NOTE!</b> If you do not get a list of CSPs in the list below, you may have to upgrade Internet Explorer
+ with the new certificate enrollment control (see Microsoft support issue Q323172).
+ <br>Please perform a 'Windows Update'.
+ <hr>
  Please give your username and password, then click OK to fetch your certificate.<BR>
 
         Username: <input type=text size=10 name=user value="foo"><br>
