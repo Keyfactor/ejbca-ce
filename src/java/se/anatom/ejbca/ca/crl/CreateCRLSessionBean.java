@@ -1,27 +1,29 @@
 package se.anatom.ejbca.ca.crl;
 
 import java.math.BigInteger;
-import java.rmi.*;
+import java.rmi.RemoteException;
 import java.security.cert.X509CRL;
-import java.util.*;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Vector;
 
-import javax.ejb.*;
+import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.IJobRunnerSession;
+import se.anatom.ejbca.ca.caadmin.CAInfo;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome;
-import se.anatom.ejbca.ca.caadmin.CAInfo;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
-import se.anatom.ejbca.ca.store.CertificateDataLocalHome;
+import se.anatom.ejbca.ca.sign.ISignSessionLocal;
+import se.anatom.ejbca.ca.sign.ISignSessionLocalHome;
 import se.anatom.ejbca.ca.store.CertificateData;
 import se.anatom.ejbca.ca.store.CertificateDataLocal;
 import se.anatom.ejbca.ca.store.CertificateDataLocalHome;
 import se.anatom.ejbca.ca.store.CertificateDataPK;
-import se.anatom.ejbca.ca.crl.RevokedCertInfo;
-import se.anatom.ejbca.ca.sign.ISignSessionLocalHome;
-import se.anatom.ejbca.ca.sign.ISignSessionLocal;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
@@ -32,7 +34,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.15 2003-09-03 15:47:16 herrvendil Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.16 2003-09-03 16:11:59 herrvendil Exp $
  */
 public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerSession {
     
