@@ -1,0 +1,125 @@
+<project name="cli" default="ejbca:install" basedir="." xmlns:ejbca="ejbca">
+    <property name="ejbca.home" location=".."/>
+    <property name="jboss.home" location="${ejbca.home}/../../jboss-3.2.4"/>
+    <property file="${user.home}/.ejbca.properties"/>
+    <property file=".ejbca.properties"/>
+    <property file="${ejbca.home}/.ejbca.properties"/>
+
+    <property name="lib.dir" location="${ejbca.home}/lib"/>
+
+    <available file="${ejbca.home}/admin.jar" property="bootstrap.done"/>
+
+    <path id="classpath">
+         <!-- need to pickup jndi.properties and log4j.properties -->
+        <pathelement path="${ejbca.home}"/>
+        <pathelement path="${ejbca.home}/admin.jar"/>
+        <fileset dir="${lib.dir}">
+            <include name="ldap.jar"/>
+            <include name="log4j*.jar"/>
+            <include name="bcprov*.jar"/>
+        </fileset>
+        <fileset dir="${jboss.home}/client" includes="*.jar"/>
+    </path>
+
+<!--
+    This is a transcript of the install.sh content to avoid platform specific problems
+    Hopefully this will simplify maintenance and deployment but it needs more work.
+-->
+
+    <target name="ejbca:noprompt" unless="ejbca.prompt">
+        <property name="ca.name" value="AdminCA1"/>
+        <property name="ca.dn" value="CN=AdminCA1,O=PrimeKey Solutions AB,C=SE"/>
+        <property name="ca.keysize" value="512"/>
+        <property name="ca.validity" value="365"/>
+        <property name="ca.policy" value="null"/>
+        <property name="cacert.password" value="changeit"/>
+        <property name="server.dn" value="CN=localhost,O=PrimeKey Solutions AB,C=SE"/>
+        <property name="keystore.password" value="serverpwd"/>
+        <property name="hostname" value="localhost"/>
+		<property name="superadmin.password" value="primekey"/>
+    </target>
+
+    <target name="ejbca:prompt" if="ejbca.prompt">
+        <input message="Please enter the CA name (default: AdminCA1) ?" addproperty="ca.name" defaultvalue="AdminCA1"/>
+        <input message="Please enter the CA dn (default: CN=AdminCA1,O=PrimeKey Solutions AB,C=SE) ?" addproperty="ca.dn" defaultvalue="CN=AdminCA1,O=PrimeKey Solutions AB,C=SE"/>
+        <input message="Please enter the CA key size (eg. 1024) ?" addproperty="ca.keysize" defaultvalue="1024" />
+        <input message="Please enter the CA validity (in days, eg: 365) ?" addproperty="ca.validity" defaultvalue="365"/>
+        <input message="Please enter the CA policy id (default, no policy) ?" addproperty="ca.policy" defaultvalue="null"/>
+        <input message="Please enter the CA certificate password (default 'changeit') ?" addproperty="cacert.password" defaultvalue="changeitt"/>
+        <input message="Please enter the server hostname (default 'localhost') ?" addproperty="hostname" defaultvalue="localhost"/>
+        <input message="Please enter the server dn (default 'CN=localhost,O=PrimeKey Solutions AB,C=SE') ?" addproperty="server.dn" defaultvalue="CN=localhost,O=PrimeKey Solutions AB,C=SE"/>
+        <input message="Please enter the server keystore password (default: 'serverpwd') ?" addproperty="keystore.password" defaultvalue="serverpwd"/>
+        <input message="Please enter the superadmin password (default: 'primekey') ?" addproperty="superadmin.password" defaultvalue="primekey"/>
+    </target>
+
+    <target name="ejbca:bootstrap" unless="bootstrap.done" description="Bootstrap EJBCA application">
+        <ant dir="${ejbca.home}" target="deploy" />
+    </target>
+
+    <target name="ejbca:clean"  description="Cleanup EJBCA application">
+        <ant dir="${ejbca.home}" target="clean"/>
+    </target>
+
+    <target name="ejbca:init" depends="ejbca:bootstrap,ejbca:noprompt,ejbca:prompt">
+    </target>
+    
+    <target name="ejbca:install" depends="ejbca:init" description="Install">
+        <echo message="Initializing CA with ${ca.name} '${ca.dn}' ${ca.keysize} ${ca.validity} ${ca.policy} ..."/>
+        <ejbca:cli name="ca" arg='init ${ca.name} "${ca.dn}" ${ca.keysize} ${ca.validity} ${ca.policy}'/>
+        <antcall target="ejbca:adminweb"/>
+        <echo message="Creating root certificate in DER format..."/>
+        <ejbca:cli name="ca" arg='getrootcert ${ca.name} ${java.io.tmpdir}/rootca.der -der'/>
+        <ejbca:keytool arg="-v -alias EJBCA-CA -delete -keystore ${java.home}/lib/security/cacerts -storepass ${cacert.password}"/>
+        <ejbca:keytool arg="-v -alias EJBCA-CA -import -trustcacerts -file ${java.io.tmpdir}/rootca.der -keystore ${java.home}/lib/security/cacerts -storepass ${cacert.password} -noprompt"/>
+        <delete file="${java.io.tmpdir}/rootca.der"/>
+    </target>
+
+	<target name="ejbca:adminweb">
+		<ejbca:cli name="setup" arg="${hostname} ejbca"/>
+		
+		<ejbca:cli name="ra" arg='adduser tomcat ${keystore.password} "${server.dn}" null ${ca.name} null 1 JKS'/>
+		<ejbca:cli name="ra" arg="setclearpwd tomcat ${keystore.password}"/>
+		
+		<ejbca:cli name="ra" arg='adduser superadmin ${superadmin.password} "CN=SuperAdmin" null ${ca.name} null 65 P12'/>
+		<ejbca:cli name="ra" arg="setclearpwd superadmin ${superadmin.password}"/>
+		
+		<!--
+		this does not work for some reason, if I'm not forking the VM, I'm wondering
+		if it is not an issue with the Ant classloader
+		-->
+		<java fork="true" classname="se.anatom.ejbca.batch.BatchMakeP12" classpathref="classpath"/>
+
+		<!-- do some magic here to customize the tomcat/jetty configuration -->
+	</target>
+    
+	<target name="ejbca:cli" depends="ejbca:noprompt" description="Handy hook to run a command">
+		<ejbca:cli name="${cli.name}" arg="${cli.args}"/>
+	</target>
+
+    
+    <!--
+    ==============================================================================
+        macro definitions
+    ==============================================================================
+    -->
+    <macrodef name="cli" uri="ejbca">
+        <attribute name="name"/>
+        <attribute name="arg"/>
+        <sequential>
+        <echo message="@{name} @{arg}"/>
+        <java classname="se.anatom.ejbca.admin.@{name}" classpathref="classpath">
+            <arg line="@{arg}"/>
+        </java>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="keytool" uri="ejbca">
+        <attribute name="arg"/>
+        <sequential>
+        <exec executable="keytool">
+            <arg line="@{arg}"/>
+        </exec>
+        </sequential>
+    </macrodef>
+
+</project>
