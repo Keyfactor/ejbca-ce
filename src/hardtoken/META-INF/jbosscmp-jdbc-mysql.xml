@@ -2,9 +2,18 @@
 
 <jbosscmp-jdbc>
 
-<defaults>
-    <datasource>java:/DefaultDS</datasource>
-    <datasource-mapping>mySQL</datasource-mapping>
-</defaults>
+    <defaults>
+        <datasource>java:/DefaultDS</datasource>
+        <datasource-mapping>mySQL</datasource-mapping>
+    </defaults>
+
+    <entity>
+        <ejb-name>HardTokenProfileData</ejb-name>
+        <cmp-field>
+            <field-name>data</field-name>
+            <jdbc-type>LONGVARCHAR</jdbc-type>
+            <sql-type>TEXT</sql-type>
+        </cmp-field>
+    </entity>
 
 </jbosscmp-jdbc>

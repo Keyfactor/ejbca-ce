@@ -13,6 +13,7 @@
      the <entity> sections below if things don't work. -->
 
 <enterprise-beans>
+
     <entity>
         <ejb-name>CertificateData</ejb-name>
         <cmp-field>
@@ -30,6 +31,16 @@
             <sql-type>TEXT</sql-type>
         </cmp-field>
     </entity>
+
+    <entity>
+        <ejb-name>CAData</ejb-name>
+        <cmp-field>
+            <field-name>data</field-name>
+            <jdbc-type>LONGVARCHAR</jdbc-type>
+            <sql-type>TEXT</sql-type>
+        </cmp-field>
+    </entity>
+
 </enterprise-beans>
 
 </jbosscmp-jdbc>
