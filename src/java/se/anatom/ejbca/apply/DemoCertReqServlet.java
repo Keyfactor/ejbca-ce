@@ -6,6 +6,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.security.Provider;
 import java.security.Security;
@@ -63,7 +64,11 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * <dd>
  *   Password for the user (for EJBCA internal use only).  Optional,
  *   defaults to an empty string.
- *   TODO does this have anything to do with the returned cert?
+ * </dd>
+ * <dt>email</dt>
+ * <dd>
+ *   Email of the user for inclusion in subject alternative names.  Optional,
+ *   defaults to none.
  * </dd>
  * <dt>entityprofile</dt>
  * <dd>
@@ -77,8 +82,7 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * </dd>
  * </dl>
  *
- * @author Ville Skyttä
- * @version $Id: DemoCertReqServlet.java,v 1.1 2003-01-02 14:09:57 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.2 2003-01-09 16:22:27 anatom Exp $
  */
 public class DemoCertReqServlet
   extends HttpServlet {
@@ -186,12 +190,12 @@ public class DemoCertReqServlet
     newuser.setAdministrator(false);
     newuser.setKeyRecoverable(false);
 
-    String email = CertTools.getPartFromDN(dn, "E"); // BC says VeriSign
+    String email = request.getParameter("email");
     if (email == null) email = CertTools.getPartFromDN(dn, "EMAILADDRESS");
     // TODO: get values from subject altname, lookup email as well
-    // newuser.setSubjectAltName(...)
     if (email != null) {
       newuser.setEmail(email);
+      newuser.setSubjectAltName("email="+email);
     }
 
     int eProfileId = SecConst.EMPTY_ENDENTITYPROFILE;
@@ -227,35 +231,44 @@ public class DemoCertReqServlet
     try {
       X509Certificate cert =
         (X509Certificate) ss.createCertificate(admin, username, password, p10);
-      //pkcs7 = ss.createPKCS7(admin, cert);
-      pkcs7 = cert.getEncoded();
-    } catch (java.security.cert.CertificateEncodingException e) {
-      throw new ServletException(e);
+      pkcs7 = ss.createPKCS7(admin, cert);
+      //pkcs7 = cert.getEncoded();
+
+    //sendNewB64Cert(Base64.encode(pkcs7), response);
+    sendNewCertToIEClient(Base64.encode(pkcs7), response.getOutputStream());
+
+    //} catch (java.security.cert.CertificateEncodingException e) {
+    //  throw new ServletException(e);
     } catch (ObjectNotFoundException e) {
       // User not found
+      cat.error(e);
       throw new ServletException(e);
     } catch (AuthStatusException e) {
       // Wrong user status, shouldn't really happen.  The user needs to have
       // status of NEW, FAILED or INPROCESS.
+      cat.error(e);
       throw new ServletException(e);
     } catch (AuthLoginException e) {
       // Wrong username or password, hmm... wasn't the wrong username caught
       // in the objectnotfoundexception above... and this shouldn't happen.
+      cat.error(e);
       throw new ServletException(e);
     } catch (IllegalKeyException e) {
       // Malformed key (?)
+      cat.error(e);
       throw new ServletException(e);
     } catch (SignRequestException e) {
       // Invalid request
+      cat.error(e);
       throw new ServletException(e);
     } catch (SignRequestSignatureException e) {
       // Invalid signature in certificate request
+      cat.error(e);
       throw new ServletException(e);
+    } catch (Exception e) {
+        cat.error(e);
+        throw new ServletException(e);
     }
-
-
-    sendNewB64Cert(Base64.encode(pkcs7), response);
-
   }
 
 
@@ -270,7 +283,50 @@ public class DemoCertReqServlet
   } // doGet
 
 
-  private void sendNewB64Cert(byte[] b64cert, HttpServletResponse out)
+private void ieCertFormat(byte[] bA, PrintStream out) throws Exception {
+    BufferedReader br=new BufferedReader(
+        new InputStreamReader(new ByteArrayInputStream(bA)) );
+    int rowNr=0;
+    while ( true ){
+        String line=br.readLine();
+        if (line==null)
+            break;
+        if ( line.indexOf("END CERT")<0 ) {
+            if ( line.indexOf(" CERT")<0 ) {
+                if ( ++rowNr>1 )
+                    out.println(" & _ ");
+                else
+                    out.print("    cert = ");
+                out.print('\"'+line+'\"');
+            }
+        } else
+            break;
+    }
+    out.println();
+}
+
+private void sendNewCertToIEClient(byte[] b64cert, OutputStream out) throws Exception {
+    PrintStream ps = new PrintStream(out);
+    BufferedReader br = new BufferedReader(
+        new InputStreamReader(
+            getServletContext().getResourceAsStream(
+                getInitParameter("responseTemplate"))
+                ));
+    while ( true ){
+        String line=br.readLine();
+        if ( line==null )
+            break;
+        if ( line.indexOf("cert =")<0 )
+            ps.println(line);
+        else
+            ieCertFormat(b64cert, ps);
+    }
+    ps.close();
+    cat.info("Sent reply to IE client");
+    cat.debug(new String(b64cert));
+}
+
+private void sendNewB64Cert(byte[] b64cert, HttpServletResponse out)
     throws IOException
   {
     out.setContentType("application/octet-stream");
