@@ -42,6 +42,8 @@ rem JBoss 3.2.0
 if exist "%JBOSS_HOME%\server\default\deploy\jbossweb-jetty.sar\META-INF\jboss-service.xml" set SERVER_XML=jetty32.xml
 rem JBoss 3.2.2/3.2.3
 if exist "%JBOSS_HOME%\server\default\deploy\jbossweb-tomcat41.sar\META-INF\jboss-service.xml" set SERVER_XML=tomcat41-jboss32.xml
+rem JBoss 3.2.4/Tomcat5.0
+if exist "%JBOSS_HOME%\server\default\deploy\jbossweb-tomcat50.sar\server.xml" set SERVER_XML=tomcat50-jboss32.xml
 
 if %SERVER_XML% == UNKNOWN goto unknown_jboss
 
@@ -52,6 +54,7 @@ if exist "%JBOSS_HOME%\server\default\deploy\tomcat41-service.xml" copy tmp\%SER
 if exist "%JBOSS_HOME%\server\default\deploy\jbossweb.sar\META-INF\jboss-service.xml" copy tmp\%SERVER_XML% %JBOSS_HOME%\server\default\deploy\jbossweb.sar\META-INF\jboss-service.xml
 if exist "%JBOSS_HOME%\server\default\deploy\jbossweb-jetty.sar\META-INF\jboss-service.xml" copy tmp\%SERVER_XML% %JBOSS_HOME%\server\default\deploy\jbossweb-jetty.sar\META-INF\jboss-service.xml
 if exist "%JBOSS_HOME%\server\default\deploy\jbossweb-tomcat41.sar\META-INF\jboss-service.xml" copy tmp\%SERVER_XML% %JBOSS_HOME%\server\default\deploy\jbossweb-tomcat41.sar\META-INF\jboss-service.xml
+if exist "%JBOSS_HOME%\server\default\deploy\jbossweb-tomcat50.sar\server.xml" copy tmp\%SERVER_XML% %JBOSS_HOME%\server\default\deploy\jbossweb-tomcat50.sar\server.xml
 
 del tmp\%SERVER_XML%
 

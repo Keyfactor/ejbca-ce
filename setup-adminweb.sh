@@ -83,6 +83,10 @@ then
 elif [ -f $JBOSS_HOME/server/default/deploy/jbossweb-tomcat41.sar/META-INF/jboss-service.xml ]
 then
 	SERVER_XML=tomcat41-jboss32.xml
+# JBoss 3.2.4/Tomcat5.0
+elif [ -f $JBOSS_HOME/server/default/deploy/jbossweb-tomcat50.sar/server.xml ]
+then
+	SERVER_XML=tomcat50-jboss32.xml
 else
     echo !!!!!
     echo Unhandled version of JBoss, SSL support must be set up manually
@@ -106,6 +110,9 @@ then
 elif [ -f $JBOSS_HOME/server/default/deploy/jbossweb-tomcat41.sar/META-INF/jboss-service.xml ]
 then
 	cp tmp/$SERVER_XML $JBOSS_HOME/server/default/deploy/jbossweb-tomcat41.sar/META-INF/jboss-service.xml
+elif [ -f $JBOSS_HOME/server/default/deploy/jbossweb-tomcat50.sar/server.xml ]
+then
+	cp tmp/$SERVER_XML $JBOSS_HOME/server/default/deploy/jbossweb-tomcat50.sar/server.xml
 else
     echo !!!!!
     echo Unhandled version of JBoss, SSL support must be set up manually
