@@ -1,6 +1,7 @@
 package se.anatom.ejbca.protocol;
 
 import java.io.*;
+import java.math.BigInteger;
 
 import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
@@ -27,12 +28,13 @@ import org.bouncycastle.cms.*;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 
 import se.anatom.ejbca.util.Base64;
+import se.anatom.ejbca.util.CertTools;
 
 /**
  * Class to handle SCEP request messages sent to the CA. 
  * TODO: don't forget extensions, e.g. KeyUsage requested by end entity 
  *
- * @version $Id: ScepRequestMessage.java,v 1.31 2004-03-11 15:52:42 anatom Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.32 2004-03-14 16:21:36 anatom Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage, Serializable {
     private static Logger log = Logger.getLogger(ScepRequestMessage.class);
@@ -62,7 +64,10 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
      * GetCRL  (22)  -- Retrieve a CRL
      */
     private int messageType = 0;
-
+    public static int SCEP_TYPE_PKCSREQ = 19;
+    public static int SCEP_TYPE_GETCRL = 22;
+    public static int SCEP_TYPE_GETCERT = 21;
+    
     /**
      * SenderNonce in a request is used as recipientNonce when the server sends back a reply to the
      * client. This is base64 encoded bytes
@@ -97,6 +102,9 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
     /** Private key used for decryption. */
     private transient PrivateKey privateKey = null;
 
+    /** IssuerAndSerialNUmber for CRL request */
+    private transient IssuerAndSerialNumber issuerAndSerno = null;
+    
     /**
      * Constucts a new SCEP/PKCS7 message handler object.
      *
@@ -177,8 +185,9 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
             }
 
             // If this is a PKCSReq
-            if (messageType == 19) {
-                // Extract the contents, which is an encrypted PKCS10
+            if ( (messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) || (messageType == ScepRequestMessage.SCEP_TYPE_GETCRL) ) {
+                // Extract the contents, which is an encrypted PKCS10 if messageType == 19
+                // and an encrypted IssuerAndSerialNumber if messageType == 22
                 ci = sd.getEncapContentInfo();
                 ctoid = ci.getContentType().getId();
 
@@ -213,14 +222,6 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
                     log.error(errorText + ctoid);
                     error = 3;
                 }
-            } else if (messageType == 22) {
-                // TODO: Support the GetCRL (22) message type
-                log.error("Unsupported messagetype 'GetCRL' received");
-                error = 4;
-            } else if (messageType == 21) {
-                // TODO: Support the GetCert (21) message type
-                log.error("Unsupported messagetype 'GetCert' received");
-                error = 4;
             } else {
                 errorText = "This is not a certification request!";
                 log.error(errorText);
@@ -261,21 +262,25 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         RecipientInformationStore recipients = ed.getRecipientInfos();
         Collection c = recipients.getRecipients();
         Iterator it = c.iterator();
-        byte[] pkcs10Bytes = null;
+        byte[] decBytes = null;
 
         while (it.hasNext()) {
             RecipientInformation recipient = (RecipientInformation) it.next();
-            pkcs10Bytes = recipient.getContent(privateKey, "BC");
+            decBytes = recipient.getContent(privateKey, "BC");
             break;
         }
 
-        DERObject derobj = new DERInputStream(new ByteArrayInputStream(pkcs10Bytes)).readObject();
-        ASN1Sequence seq = (ASN1Sequence) derobj;
-        pkcs10 = new PKCS10CertificationRequest(seq);
+        DERObject derobj = new DERInputStream(new ByteArrayInputStream(decBytes)).readObject();
+        if (messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {            
+            ASN1Sequence seq = (ASN1Sequence)derobj;
+            pkcs10 = new PKCS10CertificationRequest(seq);
+        }
+        if (messageType == ScepRequestMessage.SCEP_TYPE_GETCRL) {
+            issuerAndSerno = IssuerAndSerialNumber.getInstance(derobj);
+        }
         log.debug("Successfully extracted PKCS10.");
         log.debug("<decrypt");
-    }
-     // decrypt
+    } // decrypt
 
     /**
      * Returns the public key from the certificattion request.
@@ -405,6 +410,56 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
     }
 
     /**
+     * Gets the issuer DN (of CA cert) from IssuerAndSerialNumber when this is a CRL request.
+     *
+     * @return issuerDN of CA issuing CRL.
+     */
+    public String getCRLIssuerDN() {
+        log.debug(">getCRLIssuerDN()");
+        String ret = null;
+        try {
+            if (issuerAndSerno == null) {
+                init();
+                decrypt();
+            }
+            ret = CertTools.stringToBCDNString(issuerAndSerno.getName().toString());
+        } catch (IOException e) {
+            log.error("PKCS7 not inited!");
+        } catch (GeneralSecurityException e) {
+            log.error("Error in PKCS7:", e);
+        } catch (CMSException e) {
+            log.error("Error in PKCS7:", e);
+        }
+        log.debug("<getCRLIssuerDN(): "+ret);
+        return ret;
+    }
+    
+    /**
+     * Gets the number (of CA cert) from IssuerAndSerialNumber when this is a CRL request.
+     *
+     * @return serial number of CA certificate for CA issuing CRL.
+     */
+    public BigInteger getCRLSerialNo() {
+        log.debug(">getCRLSerialNo()");
+        BigInteger ret = null;
+        try {
+            if (issuerAndSerno == null) {
+                init();
+                decrypt();
+            }
+            ret = issuerAndSerno.getSerialNumber().getValue();
+        } catch (IOException e) {
+            log.error("PKCS7 not inited!");
+        } catch (GeneralSecurityException e) {
+            log.error("Error in PKCS7:", e);
+        } catch (CMSException e) {
+            log.error("Error in PKCS7:", e);
+        }
+        log.debug("<getCRLSerialNo(): "+ret);
+        return ret;
+    }
+
+    /**
      * Returns the string representation of the subject DN from the certification request.
      *
      * @return subject DN from certification request.
@@ -497,6 +552,15 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
      */
     public byte[] getRequestKeyInfo() {
         return requestKeyInfo;
+    }
+    
+    /** Returns the type of SCEP message it is
+     * 
+     * @return value as defined by SCEP_TYPE_PKCSREQ, SCEP_TYPE_GETCRL, SCEP_TYPE_GETCERT  
+     */
+    public int getMessageType() {
+        return messageType;
+        
     }
     
     //

@@ -1,6 +1,7 @@
 package se.anatom.ejbca.protocol;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.cert.CertificateEncodingException;
 
@@ -24,7 +25,7 @@ import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 /**
  * Helper class to handle SCEP (draft-nourse-scep-06.txt) requests.
  *
- * @version  $Id: ScepPkiOpHelper.java,v 1.23 2004-03-11 15:52:42 anatom Exp $
+ * @version  $Id: ScepPkiOpHelper.java,v 1.24 2004-03-14 16:21:36 anatom Exp $
  */
 public class ScepPkiOpHelper {
     private static Logger log = Logger.getLogger(ScepPkiOpHelper.class);
@@ -66,12 +67,20 @@ public class ScepPkiOpHelper {
                 log.error("Error '" + reqmsg.getErrorNo() + "' receiving Scep request message.");
                 return null;
             }
-            // Get the certificate
-            IResponseMessage resp = signsession.createCertificate(admin, reqmsg, -1,
-                    Class.forName("se.anatom.ejbca.protocol.ScepResponseMessage"));
+            if (reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
+                // Get the certificate
+                IResponseMessage resp = signsession.createCertificate(admin, reqmsg, -1,
+                        Class.forName("se.anatom.ejbca.protocol.ScepResponseMessage"));
 
-            if (resp != null) {
-                ret = resp.getResponseMessage();
+                if (resp != null) {
+                    ret = resp.getResponseMessage();
+                }                
+            }
+            if (reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_GETCRL) {
+                // TODO: create the stupid encrypted CRL message, the below can actually only be made 
+                // at the CA, since CAs privvate key is needed to decrypt
+                String issuerDN = reqmsg.getCRLIssuerDN();
+                BigInteger serno = reqmsg.getCRLSerialNo();
             }
         } catch (IOException e) {
             log.error("Error receiving ScepMessage: ", e);
