@@ -63,6 +63,8 @@ automatically when JBoss is started.
 
 Set the environment variable JBOSS_HOME to the directory where JBoss's root is (/jboss). This is done so the deploy script will know where files are to be copied, they are copied to the $JBOSS_HOME/deploy directory.
 
+You can also build javadoc on all APIs used with 'ant javadoc'.
+
 CONFIGURE
 ---------
 
