@@ -385,8 +385,12 @@ public class ca {
                 String ksfilename = args[2];
                 String storepwd = args[3];
                 String reqfile = args[4];
-                // Get old root certificate
-                Certificate[] chain = getCertChain();
+                // Load keystore
+                KeyStore keyStore=KeyStore.getInstance("PKCS12", "BC");
+                InputStream is = new FileInputStream(ksfilename);
+                keyStore.load(is, storepwd.toCharArray());
+                // Get old certificate chain
+                Certificate[] chain = KeyTools.getCertChain(keyStore,privKeyAlias);
                 if (chain.length > 2) {
                     System.out.println("Certificate chain too long, this keystore was not generated with EJBCA?");
                     return;
@@ -398,15 +402,13 @@ public class ca {
                 }
                 X509Certificate cacert = null;
                 if (chain.length > 1)
-                    cacert = (X509Certificate)chain[chain.length-2];
+                    cacert = (X509Certificate)chain[0];
                 if (cacert == null) {
                     System.out.println("No subCA certificate found in keystore, this is not a subCA or keystore was not generated with EJBCA?");
                     return;
-                }                                    
+                }                 
+                System.out.println("Generating new certificate request for CA with DN='"+cacert.getSubjectDN().toString()+"'.");
                 // Get private key
-                KeyStore keyStore=KeyStore.getInstance("PKCS12", "BC");
-                InputStream is = new FileInputStream(ksfilename);
-                keyStore.load(is, storepwd.toCharArray());
                 PrivateKey privateKey = (PrivateKey)keyStore.getKey(privKeyAlias, privateKeyPass);
                 if (privateKey == null) {
                     System.out.println("No private key with alias '"+privKeyAlias+"' in keystore, this keystore was not generated with EJBCA?");
@@ -414,12 +416,10 @@ public class ca {
                 }                
                 // Make a KeyPair
                 KeyPair keyPair = new KeyPair(cacert.getPublicKey(), privateKey);
-                // Generate the new certificate request
-                makeCertRequest(cacert.getSubjectDN().toString(), keyPair, reqfile);
                 // verify that the old and new keyidentifieras are the same
                 X509Certificate newselfcert = CertTools.genSelfCert(cacert.getSubjectDN().toString(), validity, privateKey, cacert.getPublicKey(), true);
-                String oldKeyId = Hex.encode(CertTools.getAuthorityKeyId(rootcert));
-                String newKeyId = Hex.encode(CertTools.getAuthorityKeyId(newselfcert));
+                String oldKeyId = Hex.encode(CertTools.getSubjectKeyId(cacert));
+                String newKeyId = Hex.encode(CertTools.getSubjectKeyId(newselfcert));
                 System.out.println("Old key id: "+oldKeyId);
                 System.out.println("New key id: "+newKeyId);
                 if (oldKeyId.compareTo(newKeyId) != 0) {
@@ -427,6 +427,8 @@ public class ca {
                     System.out.println("Unable to rollover subCA.");
                     return;
                 }
+                // Generate the new certificate request
+                makeCertRequest(cacert.getSubjectDN().toString(), keyPair, reqfile);
                 
                 System.out.println("Submit certificare request to RootCA and when receiving reply run 'ca recrep'.");
             } else {

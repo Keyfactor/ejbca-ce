@@ -75,7 +75,7 @@
   <target name="compile" depends="init">
     <!-- Compile the java code from ${javasrc} into ${build} -->
     <!-- <javac srcdir="${javasrc}" extdirs="${lib}" destdir="${build}" debug="on"> -->
-    <javac srcdir="${javasrc}" extdirs="${lib}" destdir="${build}" debug="on">
+    <javac srcdir="${javasrc}" extdirs="${lib}" destdir="${build}" debug="off">
         <exclude name="**/CVS/**"/>
         <include name="**/*.java"/>
     </javac>

@@ -28,6 +28,7 @@ import se.anatom.ejbca.ca.store.CertificateData;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.KeyTools;
 import se.anatom.ejbca.util.Hex;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
@@ -41,7 +42,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.20 2002-03-25 09:27:21 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.21 2002-03-25 10:09:11 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean implements ISignSession {
 
@@ -122,37 +123,21 @@ public class RSASignSessionBean extends BaseSessionBean implements ISignSession 
                 error("Cannot load key with alias '"+privateKeyAlias+"' from keystore '"+keyStoreFile+"'");
                 throw new Exception("Cannot load key with alias '"+privateKeyAlias+"' from keystore '"+keyStoreFile+"'");
             }
-            Certificate[] certchain = keyStore.getCertificateChain(privateKeyAlias);
+            Certificate[] certchain = KeyTools.getCertChain(keyStore, privateKeyAlias);
             if (certchain.length < 1) {
                 error("Cannot load certificate chain with alias '"+privateKeyAlias+"' from keystore '"+keyStoreFile+"'");
                 throw new Exception("Cannot load certificate chain with alias '"+privateKeyAlias+"' from keystore '"+keyStoreFile+"'");
             }
             // We only support a ca hierarchy with depth 2.
-            // TODO:
             caCert = (X509Certificate)certchain[0];
             debug("cacertIssuer: " + caCert.getIssuerDN().toString());
             debug("cacertSubject: " + caCert.getSubjectDN().toString());
             caSubjectName = CertTools.stringToBcX509Name(caCert.getSubjectDN().toString());
-            // is there only one root cert?
-            if (CertTools.isSelfSigned(caCert))
-                rootCert = caCert;
-            else {
-                // is root cert in same chain as ca cert?
-                if (certchain.length > 1)
-                    rootCert = (X509Certificate)certchain[2];
-                else {
-                    String ialias = CertTools.getPartFromDN(caCert.getIssuerDN().toString(), "CN");
-                    Certificate[] chain1 = keyStore.getCertificateChain(ialias);
-                    debug("Loaded certificate chain with length "+ chain1.length+" with alias '"+ialias+"'.");
-                    if (chain1.length == 0) {
-                        error("No RootCA certificate found!");
-                        throw new Exception("No RootCA certificate found in keystore");
-                    }
-                    rootCert = (X509Certificate)chain1[0];
-                }
-            }
+            // root cert is last cert in chain
+            rootCert = (X509Certificate)certchain[certchain.length-1];
             debug("rootcertIssuer: " + rootCert.getIssuerDN().toString());
             debug("rootcertSubject: " + rootCert.getSubjectDN().toString());
+            // is root cert selfsigned?
             if (!CertTools.isSelfSigned(rootCert))
                 throw new EJBException("Root certificate is not self signed!");
 
