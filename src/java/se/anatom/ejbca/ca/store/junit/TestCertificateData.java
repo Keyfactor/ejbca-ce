@@ -24,7 +24,7 @@ import junit.framework.*;
 
 /** Tests certificate store.
  *
- * @version $Id: TestCertificateData.java,v 1.8 2002-05-23 09:00:13 anatom Exp $
+ * @version $Id: TestCertificateData.java,v 1.9 2002-05-26 14:26:00 anatom Exp $
  */
 public class TestCertificateData extends TestCase {
 
@@ -122,22 +122,21 @@ public class TestCertificateData extends TestCase {
     public void test03listAndRevoke() throws Exception {
         cat.debug(">test03listAndRevoke()");
         ICertificateStoreSessionRemote store = storehome.create();
-        String[] certfps = store.listAllCertificates();
+        Collection certfps = store.listAllCertificates();
         assertNotNull("failed to list certs", certfps);
-        assertTrue("failed to list certs", certfps.length != 0);
+        assertTrue("failed to list certs", certfps.size() != 0);
         cat.debug("List certs:");
-        for (int i=0;i< certfps.length;i++)
-            cat.debug(certfps[i]);
-
-        // Revoke all certs
-        for (int i=0; i<certfps.length;i++) {
-            CertificateDataPK revpk = new CertificateDataPK();
-            revpk.fingerprint = certfps[i];
+        Iterator iter = certfps.iterator();
+        while (iter.hasNext()) {
+            String fp = (String)iter.next();
+            cat.debug(fp);
+            // Revoke all certs
+            CertificateDataPK revpk = new CertificateDataPK(fp);
             CertificateData rev = home.findByPrimaryKey(revpk);
             if (rev.getStatus() != CertificateData.CERT_REVOKED) {
                 rev.setStatus(CertificateData.CERT_REVOKED);
                 rev.setRevocationDate(new Date());
-                cat.debug("Revoked cert "+certfps[i]);
+                cat.debug("Revoked cert "+fp);
             }
         }
         cat.debug("<test03listAndRevoke()");
@@ -145,16 +144,17 @@ public class TestCertificateData extends TestCase {
     public void test04CheckRevoked() throws Exception {
         cat.debug(">test04CheckRevoked()");
         ICertificateStoreSessionRemote store = storehome.create();
-        String[] certfps = store.listAllCertificates();
+        Collection certfps = store.listAllCertificates();
         assertNotNull("failed to list certs", certfps);
-        assertTrue("failed to list certs", certfps.length != 0);
+        assertTrue("failed to list certs", certfps.size() != 0);
         // Verify that all certs are revoked
-        for (int i=0; i<certfps.length;i++) {
-            CertificateDataPK revpk = new CertificateDataPK();
-            revpk.fingerprint = certfps[i];
+        Iterator iter = certfps.iterator();
+        while (iter.hasNext()) {
+            String fp = (String)iter.next();
+            CertificateDataPK revpk = new CertificateDataPK(fp);
             CertificateData rev = home.findByPrimaryKey(revpk);
             assertTrue(rev.getStatus() == CertificateData.CERT_REVOKED);
-            }
+        }
         cat.debug("<test04CheckRevoked()");
     }
     public void test05FindAgain() throws Exception {

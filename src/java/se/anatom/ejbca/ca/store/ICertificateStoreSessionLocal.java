@@ -12,7 +12,7 @@ import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown, see ICertificateStoreSession for docs.
  *
- * @version $Id: ICertificateStoreSessionLocal.java,v 1.1 2002-05-26 11:12:12 anatom Exp $
+ * @version $Id: ICertificateStoreSessionLocal.java,v 1.2 2002-05-26 14:25:59 anatom Exp $
  * @see se.anatom.ejbca.ca.store.ICertificateStoreSession
  */
 public interface ICertificateStoreSessionLocal extends javax.ejb.EJBLocalObject, IPublisherSessionLocal
@@ -20,7 +20,7 @@ public interface ICertificateStoreSessionLocal extends javax.ejb.EJBLocalObject,
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSession
      */ 
-    public String[] listAllCertificates();
+    public Collection listAllCertificates();
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSession
      */ 
