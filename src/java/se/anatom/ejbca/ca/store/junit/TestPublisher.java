@@ -17,7 +17,7 @@ import junit.framework.*;
 
 /** Tests Publishers.
  *
- * @version $Id: TestPublisher.java,v 1.7 2002-03-21 12:50:54 anatom Exp $
+ * @version $Id: TestPublisher.java,v 1.8 2002-06-04 14:37:11 anatom Exp $
  */
 public class TestPublisher extends TestCase {
 
@@ -71,7 +71,7 @@ public class TestPublisher extends TestCase {
 
     static Category cat = Category.getInstance( TestPublisher.class.getName() );
     private static Context ctx;
-    private static IPublisherSession pub;
+    private static IPublisherSessionRemote pub;
 
     public TestPublisher(String name) {
         super(name);

@@ -22,13 +22,13 @@ import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.IJobRunnerSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
-import se.anatom.ejbca.ca.store.ICertificateStoreSession;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Base64;
 
 /** Base for CA commands, contains comom functions for CA operations
  *
- * @version $Id: BaseCaAdminCommand.java,v 1.4 2002-06-04 14:12:01 anatom Exp $
+ * @version $Id: BaseCaAdminCommand.java,v 1.5 2002-06-04 14:42:04 anatom Exp $
  */
 public abstract class BaseCaAdminCommand extends BaseAdminCommand {
 
@@ -104,7 +104,7 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
         IJobRunnerSessionHome home  = (IJobRunnerSessionHome)javax.rmi.PortableRemoteObject.narrow( context.lookup("CreateCRLSession") , IJobRunnerSessionHome.class );
         home.create().run();
         ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class);
-        ICertificateStoreSession storeremote = storehome.create();
+        ICertificateStoreSessionRemote storeremote = storehome.create();
         int number = storeremote.getLastCRLNumber();
         System.out.println("CRL with number " + number+ " generated.");
         debug(">createCRL()");

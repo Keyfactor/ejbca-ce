@@ -21,9 +21,8 @@ import se.anatom.ejbca.ca.auth.IAuthenticationSessionLocal;
 import se.anatom.ejbca.ca.auth.UserAuthData;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
-import se.anatom.ejbca.ca.store.IPublisherSession;
-import se.anatom.ejbca.ca.store.IPublisherSessionHome;
-import se.anatom.ejbca.ca.store.IPublisherSession;
+import se.anatom.ejbca.ca.store.IPublisherSessionLocal;
+import se.anatom.ejbca.ca.store.IPublisherSessionLocalHome;
 import se.anatom.ejbca.ca.store.CertificateData;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.SecConst;
@@ -42,7 +41,7 @@ import org.bouncycastle.asn1.*;
 /**
  * Creates X509 certificates using RSA keys.
  *
- * @version $Id: RSASignSessionBean.java,v 1.30 2002-06-04 14:11:04 anatom Exp $
+ * @version $Id: RSASignSessionBean.java,v 1.31 2002-06-04 14:42:04 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -94,7 +93,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             try {
                 while (true) {
                     String jndiName = "PublisherSession" + i;
-                    IPublisherSessionHome pubHome = (IPublisherSessionHome) lookup(jndiName, IPublisherSessionHome.class);
+                    IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)lookup(jndiName);
                     publishers.add(pubHome);
                     info("Added publisher class '"+pubHome.getClass().getName()+"'");
                     i++;
@@ -285,8 +284,8 @@ public class RSASignSessionBean extends BaseSessionBean {
                 certificateStore.storeCertificate(cert, CertTools.getFingerprintAsString(caCert), CertificateData.CERT_ACTIVE, data.getType());
                 // Call authentication session and tell that we are finished with this user
                 for (int i=0;i<publishers.size();i++) {
-                    IPublisherSessionHome pubHome = (IPublisherSessionHome)publishers.get(i);
-                    IPublisherSession pub = pubHome.create();
+                    IPublisherSessionLocalHome pubHome = (IPublisherSessionLocalHome)publishers.get(i);
+                    IPublisherSessionLocal pub = pubHome.create();
                     pub.storeCertificate(cert, CertTools.getFingerprintAsString(caCert), CertificateData.CERT_ACTIVE, data.getType());
                 }
                 if (finishUser.booleanValue() == true)
@@ -422,7 +421,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             // Store CRL in the database
             certificateStore.storeCRL(crl.getEncoded(), CertTools.getFingerprintAsString(caCert), number);
             for (int i=0;i<publishers.size();i++) {
-                ((IPublisherSession)(publishers.get(i))).storeCRL(crl.getEncoded(), CertTools.getFingerprintAsString(caCert), number);
+                ((IPublisherSessionLocal)(publishers.get(i))).storeCRL(crl.getEncoded(), CertTools.getFingerprintAsString(caCert), number);
             }
         } catch (Exception e) {
             throw new EJBException(e.toString());

@@ -3,13 +3,11 @@ package se.anatom.ejbca.ca.store;
 
 import java.rmi.RemoteException;
 import javax.ejb.CreateException;
-import javax.ejb.EJBHome;
-
 
 /**
- * @version $Id: ICertificateStoreSessionHome.java,v 1.1.1.1 2001-11-15 14:58:16 anatom Exp $
+ * @version $Id: ICertificateStoreSessionHome.java,v 1.2 2002-06-04 14:37:07 anatom Exp $
  */
-public interface ICertificateStoreSessionHome extends EJBHome {
+public interface ICertificateStoreSessionHome extends javax.ejb.EJBHome {
 
     /**
      * Default create method. Maps to ejbCreate in implementation.

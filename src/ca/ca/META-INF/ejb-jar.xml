@@ -325,6 +325,8 @@
      <ejb-name>PublisherSession1</ejb-name>
      <home>se.anatom.ejbca.ca.store.IPublisherSessionHome</home>
      <remote>se.anatom.ejbca.ca.store.IPublisherSessionRemote</remote>
+     <local-home>se.anatom.ejbca.ca.store.IPublisherSessionLocalHome</local-home>
+     <local>se.anatom.ejbca.ca.store.IPublisherSessionLocal</local>
      <ejb-class>se.anatom.ejbca.ca.store.LDAPPublisherSessionBean</ejb-class>
      <session-type>Stateless</session-type>
      <transaction-type>Container</transaction-type>     

@@ -12,9 +12,9 @@ import java.security.cert.X509Certificate;
 
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
-import se.anatom.ejbca.ca.store.IPublisherSession;
+import se.anatom.ejbca.ca.store.IPublisherSessionRemote;
 import se.anatom.ejbca.ca.store.IPublisherSessionHome;
-import se.anatom.ejbca.ca.store.ICertificateStoreSession;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.CertificateData;
 import se.anatom.ejbca.SecConst;
@@ -22,12 +22,12 @@ import se.anatom.ejbca.util.CertTools;
 
 /** Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.2 2002-06-04 14:12:01 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.3 2002-06-04 14:42:04 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
     /** Pointer to main certificate store */
-    private static ICertificateStoreSession certificateStore = null;
+    private static ICertificateStoreSessionRemote certificateStore = null;
     /** A vector of publishers where certs and CRLs are stored */
     private static Vector publishers = null;
 
@@ -63,7 +63,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 }
                 // Call authentication session and tell that we are finished with this user
                 for (int i=0;i<publishers.size();i++) {
-                    ((IPublisherSession)(publishers.get(i))).storeCertificate(cert, cafingerprint, CertificateData.CERT_ACTIVE, type);
+                    ((IPublisherSessionRemote)(publishers.get(i))).storeCertificate(cert, cafingerprint, CertificateData.CERT_ACTIVE, type);
                 }
                 System.out.println("-Stored CA certificates in certificate store(s).");
             }
@@ -106,7 +106,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 while (true) {
                     String jndiName = "PublisherSession" + i;
                     IPublisherSessionHome pubhome = (IPublisherSessionHome)javax.rmi.PortableRemoteObject.narrow(context.lookup(jndiName), IPublisherSessionHome.class);
-                    IPublisherSession pub = pubhome.create();
+                    IPublisherSessionRemote pub = pubhome.create();
                     publishers.add(pub);
                     debug("Added publisher class '"+pub.getClass().getName()+"'");
                     i++;

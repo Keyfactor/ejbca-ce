@@ -16,7 +16,7 @@ import se.anatom.ejbca.util.Base64;
 
 import org.apache.log4j.*;
 
-import se.anatom.ejbca.ca.store.ICertificateStoreSession;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
@@ -40,7 +40,7 @@ import se.anatom.ejbca.util.CertTools;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.5 2002-05-23 09:00:13 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.6 2002-06-04 14:42:04 anatom Exp $
  *
  */
 public class CertDistServlet extends HttpServlet {
@@ -98,7 +98,7 @@ public class CertDistServlet extends HttpServlet {
             command = "";
         if (command.equalsIgnoreCase(COMMAND_CRL)) {
             try {
-                ICertificateStoreSession store = storehome.create();
+                ICertificateStoreSessionRemote store = storehome.create();
                 byte[] crl = store.getLastCRL();
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 String dn = x509crl.getIssuerDN().toString();
@@ -125,7 +125,7 @@ public class CertDistServlet extends HttpServlet {
             }
             try {
                 cat.debug("Looking for certificates for '"+dn+"'.");
-                ICertificateStoreSession store = storehome.create();
+                ICertificateStoreSessionRemote store = storehome.create();
                 Collection certcoll = store.findCertificatesBySubject(dn);
                 Certificate[] certs = (Certificate[])certcoll.toArray();
                 int latestcertno = -1;
@@ -260,7 +260,7 @@ public class CertDistServlet extends HttpServlet {
             }
             cat.debug("Looking for certificate for '"+dn+"' and serno='"+serno+"'.");
             try {
-                ICertificateStoreSession store = storehome.create();
+                ICertificateStoreSessionRemote store = storehome.create();
                 RevokedCertInfo revinfo = store.isRevoked(dn, new BigInteger(serno));
                 res.setContentType("text/html");
                 PrintWriter pout = new PrintWriter(res.getOutputStream());

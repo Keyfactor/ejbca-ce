@@ -21,11 +21,11 @@ import se.anatom.ejbca.util.*;
  * Stores certificates and CRL in an LDAP v3 directory.
  *
  * <p>LDAP schema required:<br>
- * Certificates for USER_ENDUSER, USER_RA, USER_RAADMIN, USER_CAADMIN are published 
+ * Certificates for USER_ENDUSER, USER_RA, USER_RAADMIN, USER_CAADMIN are published
  * as attribute 'userCertificate' in objectclass 'inetOrgPerson'.<br>
- * Certificates for USER_CA and USER_ROOTCA are published as attribute cACertificate in 
+ * Certificates for USER_CA and USER_ROOTCA are published as attribute cACertificate in
  * objectclass 'certificationAuthority'.<br>
- * CRLs are published as attribute 'certificateRevocationList' in objectclass 
+ * CRLs are published as attribute 'certificateRevocationList' in objectclass
  * 'certificationAuthority'.
  *
  * <p>In 'inetOrgPerson' the following attributes are set if present in the certificate:
@@ -45,11 +45,11 @@ import se.anatom.ejbca.util.*;
  * cACertificate
  * </pre>
  *
- * @version $Id: LDAPPublisherSessionBean.java,v 1.6 2002-01-08 11:25:24 anatom Exp $
+ * @version $Id: LDAPPublisherSessionBean.java,v 1.7 2002-06-04 14:37:07 anatom Exp $
  */
-public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublisherSession {
+public class LDAPPublisherSessionBean extends BaseSessionBean {
 
-    private String ldapHost       = "localhost";       
+    private String ldapHost       = "localhost";
     private int ldapPort          = LDAPConnection.DEFAULT_PORT;
     private String loginDN        = "cn=Admin,o=AnaTom,c=SE";
     private String loginPassword  = "foo123";
@@ -90,10 +90,10 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
      * @throws EJBException if a communication or other error occurs.
      */
     public boolean storeCRL(byte[] incrl, String cafp, int number) throws RemoteException {
-        
+
         int ldapVersion  = LDAPConnection.LDAP_V3;
         LDAPConnection lc = new LDAPConnection();
-        
+
         X509CRL crl;
         try {
             crl = CertTools.getCRLfromByteArray(incrl);
@@ -101,13 +101,13 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
             error("Error decoding input CRL: ",e);
             return false;
         }
-        
+
         // Extract the users DN from the cert.
         String dn = CertTools.stringToBCDNString(crl.getIssuerDN().toString());
 
         if (checkContainerName(dn) == false)
             return false;
-        
+
         // Check if the entry is already present, we will update it with the new certificate.
         LDAPEntry oldEntry = null;
         try {
@@ -147,7 +147,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
         }
         if (oldEntry == null)
             newEntry = new LDAPEntry( dn, attributeSet );
-        try {            
+        try {
             // connect to the server
             lc.connect( ldapHost, ldapPort );
             // authenticate to the server
@@ -167,10 +167,10 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
             error( "Error storing CRL in LDAP: ", e);
             return false;
         }
-        
-        return true;        
+
+        return true;
     } // storeCRL
-    
+
     /**
      * Publishes a certificate to LDAP. Creates entry if it does not exist.
      *
@@ -184,12 +184,12 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
      */
     public boolean storeCertificate(Certificate incert, String cafp, int status, int type) throws RemoteException {
 
-        int ldapVersion  = LDAPConnection.LDAP_V3;             
+        int ldapVersion  = LDAPConnection.LDAP_V3;
         LDAPConnection lc = new LDAPConnection();
 
         // Extract the users DN from the cert.
         String dn = CertTools.stringToBCDNString(((X509Certificate)incert).getSubjectDN().toString());
-        
+
         // Extract the users email from the cert.
         // First see if we have subjectAltNames extension
         String email = null;
@@ -218,12 +218,12 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
                 }
             } catch (IOException e) {
                 error("IOException when getting subjectAltNames extension.");
-            }            
+            }
         }
-        
+
         if (checkContainerName(dn) == false)
             return false;
-        
+
         // Check if the entry is already present, we will update it with the new certificate.
         LDAPEntry oldEntry = null;
         try {
@@ -247,8 +247,8 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
         LDAPEntry newEntry = null;
         LDAPModificationSet modSet = null;
         if ( ((type & SecConst.USER_ENDUSER) != 0) || ((type & SecConst.USER_CAADMIN) != 0) ||
-        ((type & SecConst.USER_RAADMIN) != 0) || ((type & SecConst.USER_RA) != 0) ) {            
-            
+        ((type & SecConst.USER_RAADMIN) != 0) || ((type & SecConst.USER_RA) != 0) ) {
+
             LDAPAttributeSet attributeSet = null;
             if (oldEntry != null) {
                 // TODO: Are we the correct type objectclass?
@@ -296,7 +296,7 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
             info("Certificate of type '"+type+"' will not be published.");
             return false;
         }
-        try {            
+        try {
             // connect to the server
             lc.connect( ldapHost, ldapPort );
             // authenticate to the server
@@ -316,11 +316,11 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
             error( "Error storing certificate in LDAP: ", e);
             return false;
         }
-        
+
         return true;
     } // storeCertificate
-    
-    private boolean checkContainerName(String dn) 
+
+    private boolean checkContainerName(String dn)
     {
         // Match users DN with 'containerName'?
         // Normalize string lo BC DN format to avoide different case in o, C etc.
@@ -332,14 +332,14 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
         }
         return true;
     } // checkContainerName
-    
+
     /** Creates an LDAPAttributeSet.
      * @param objectclass the objectclass the attribute set should be of.
      * @param dn dn of the LDAP entry.
      * @param extra if we should add extra attributes except the objectclass to the attributeset.
      * @return LDAPAtributeSet created...
      */
-    private LDAPAttributeSet getAttributeSet(String objectclass, String dn, boolean extra) 
+    private LDAPAttributeSet getAttributeSet(String objectclass, String dn, boolean extra)
     {
         LDAPAttributeSet attributeSet = new LDAPAttributeSet();
 
@@ -348,8 +348,8 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
          *   -- Specify the DN of the entry to be created
          *   -- Create an LDAPEntry object with the DN and the attribute set
          *   -- Call the LDAPConnection add method to add it to the directory
-         */           
-        attributeSet.add( new LDAPAttribute( "objectclass", objectclass ) );      
+         */
+        attributeSet.add( new LDAPAttribute( "objectclass", objectclass ) );
         if (extra) {
             String cn = CertTools.getPartFromDN(dn,"CN");
             if (cn!=null)
@@ -369,14 +369,14 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
         }
         return attributeSet;
     } // getAttributeSet
-    
+
     /** Creates an LDAPModificationSet.
      * @param objectclass the objectclass the attribute set should be of.
      * @param dn dn of the LDAP entry.
      * @param extra if we should add extra attributes except the objectclass to the modificationset.
      * @return LDAPModificationSet created...
      */
-    private LDAPModificationSet getModificationSet(LDAPEntry oldEntry, String dn, boolean extra) 
+    private LDAPModificationSet getModificationSet(LDAPEntry oldEntry, String dn, boolean extra)
     {
         LDAPModificationSet modSet = new LDAPModificationSet();
 
@@ -404,6 +404,6 @@ public class LDAPPublisherSessionBean extends BaseSessionBean implements IPublis
         }
         return modSet;
     }
-        
+
  // getModificationSet
 }
