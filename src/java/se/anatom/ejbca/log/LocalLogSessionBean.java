@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.log;
 
 import java.lang.reflect.Method;
@@ -58,7 +58,7 @@ import se.anatom.ejbca.util.query.Query;
  * @ejb.env-entry
  *   name="Datasource"
  *   type="java.lang.String"
- *   value="java:/DefaultDS"   
+ *   value="java:/DefaultDS"
  *
  * @ejb.env-entry
  *   description="String representing the log device factories to be used. The different device classes should be separated with semicolons (;)."
@@ -68,12 +68,12 @@ import se.anatom.ejbca.util.query.Query;
  *
  * @ejb.env-entry
  *   description="String representing the property file corresponding to each log device.
-                  The property files should be placed in the "/logdeviceproperties" subdirectory.
+                  The property files should be placed in the '/logdeviceproperties' subdirectory.
                   The filenames should be separated with semicolons (;)"
  *   name="logDevicePropertyFiles"
  *   type="java.lang.String"
  *   value="Log4j.properties"
- * 
+ *
  * @ejb.ejb-external-ref
  *   description="The Log Entry Data entity bean"
  *   view-type="local"
@@ -138,7 +138,7 @@ public class LocalLogSessionBean extends BaseSessionBean  {
      * @throws CreateException if bean instance can't be created
      */
     public void ejbCreate() {
-      try{  
+      try{
         debug(">ejbCreate()");
         dataSource = (String)lookup("java:comp/env/DataSource", java.lang.String.class);
         debug("DataSource=" + dataSource);
@@ -179,7 +179,7 @@ public class LocalLogSessionBean extends BaseSessionBean  {
         }
         debug("<ejbCreate()");
       }catch(Exception e){
-        throw new EJBException(e);   
+        throw new EJBException(e);
       }
     }
 
@@ -208,15 +208,15 @@ public class LocalLogSessionBean extends BaseSessionBean  {
     public void log(Admin admin, int caid, int module,  Date time, String username, X509Certificate certificate, int event, String comment){
       try{
         LogConfiguration logconfiguration = loadLogConfiguration(caid);
-        		
-          
+
+
         // Get logging configuration
         if(logconfiguration.logEvent(event)){
           if(logconfiguration.useLogDB()){
             try{
                // Log to the local database.
                if(certificate != null){
-                 String uniquecertificatesnr =certificate.getSerialNumber().toString(16) + "," + CertTools.getIssuerDN(certificate);   
+                 String uniquecertificatesnr =certificate.getSerialNumber().toString(16) + "," + CertTools.getIssuerDN(certificate);
                  logentryhome.create(this.getAndIncrementRowCount(), admin.getAdminType(), admin.getAdminData(), caid, module, time, username,
                                      uniquecertificatesnr, event, comment);
                }else
@@ -239,9 +239,9 @@ public class LocalLogSessionBean extends BaseSessionBean  {
       }
 
     } // log
-    
+
      /**
-     * Same as above but with the difference of CAid which is taken from the issuerdn of 
+     * Same as above but with the difference of CAid which is taken from the issuerdn of
      * given certificate.
 	 *
 	 * @ejb.interface-method view-type="both"
@@ -263,22 +263,22 @@ public class LocalLogSessionBean extends BaseSessionBean  {
 	 */
     public void log(Admin admin, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception exception){
       try{
-        LogConfiguration logconfiguration = loadLogConfiguration(caid);   
-         
-		
+        LogConfiguration logconfiguration = loadLogConfiguration(caid);
+
+
         // Get logging configuration
         if(logconfiguration.logEvent(event)){
           if(logconfiguration.useLogDB()){
             try{
                // Log to the local database.
                if(certificate != null){
-                 String uniquecertificatesnr = certificate.getSerialNumber().toString(16) + "," + certificate.getIssuerDN().toString();                      
+                 String uniquecertificatesnr = certificate.getSerialNumber().toString(16) + "," + certificate.getIssuerDN().toString();
                  logentryhome.create(this.getAndIncrementRowCount(), admin.getAdminType(), admin.getAdminData(), caid, module, time, username,
                                      uniquecertificatesnr, event, comment);
                }else
                  logentryhome.create(this.getAndIncrementRowCount(), admin.getAdminType(), admin.getAdminData(), caid, module, time, username,
                                      null, event, comment);
-            }catch(javax.ejb.DuplicateKeyException dke){	
+            }catch(javax.ejb.DuplicateKeyException dke){
               this.getAndIncrementRowCount();
             }
           }
@@ -294,17 +294,17 @@ public class LocalLogSessionBean extends BaseSessionBean  {
         throw new EJBException(e);
       }
     }
-    
+
      /**
-     * Same as above but with the difference of CAid which is taken from the issuerdn of 
+     * Same as above but with the difference of CAid which is taken from the issuerdn of
      * given certificate.
 	 *
 	 * @ejb.interface-method view-type="both"
 	 */
     public void log(Admin admin, X509Certificate caid, int module,  Date time, String username, X509Certificate certificate, int event, String comment, Exception exception){
       log(admin, CertTools.getIssuerDN(caid).hashCode(), module, time, username, certificate, event, comment, exception);
-    } // log    
-    
+    } // log
+
     /**
      * Method to execute a customized query on the log db data. The parameter query should be a legal Query object.
      *
@@ -328,21 +328,21 @@ public class LocalLogSessionBean extends BaseSessionBean  {
 
         if(capriviledges == null || capriviledges.equals(""))
           throw new IllegalQueryException();
-                 
-        
+
+
         // Check if query is legal.
         if(!query.isLegalQuery())
           throw new IllegalQueryException();
         try{
            // Construct SQL query.
             con = getConnection();
-            if(viewlogprivileges.equals("")){            
-                ps = con.prepareStatement("select " + LOGENTRYDATA_COL + " from LogEntryData where ( " + query.getQueryString() + 
-                                    ") and (" + capriviledges + ")");			                                         
-            }else{              	            
-              ps = con.prepareStatement("select " + LOGENTRYDATA_COL + " from LogEntryData where (" + query.getQueryString() + ") and (" 
+            if(viewlogprivileges.equals("")){
+                ps = con.prepareStatement("select " + LOGENTRYDATA_COL + " from LogEntryData where ( " + query.getQueryString() +
+                                    ") and (" + capriviledges + ")");
+            }else{
+              ps = con.prepareStatement("select " + LOGENTRYDATA_COL + " from LogEntryData where (" + query.getQueryString() + ") and ("
                                          + viewlogprivileges + ") and (" + capriviledges + ")");
-                                       
+
             }
             //ps.setFetchDirection(ResultSet.FETCH_REVERSE);
             ps.setFetchSize(MAXIMUM_QUERY_ROWCOUNT +1 );
@@ -354,7 +354,7 @@ public class LocalLogSessionBean extends BaseSessionBean  {
                                                , rs.getInt(8), rs.getString(9));
               returnval.add(data);
             }
-            debug("<query()");			
+            debug("<query()");
             return returnval;
 
         }catch(Exception e){
@@ -382,7 +382,7 @@ public class LocalLogSessionBean extends BaseSessionBean  {
     public LogConfiguration loadLogConfiguration(int caid){
         // Check if log configuration exists, else create one.
       LogConfiguration logconfiguration = null;
-      LogConfigurationDataLocal logconfigdata = null;  
+      LogConfigurationDataLocal logconfigdata = null;
       try{
 		logconfigdata = logconfigurationhome.findByPrimaryKey(new Integer(caid));
         logconfiguration = logconfigdata.loadLogConfiguration();
@@ -432,10 +432,10 @@ public class LocalLogSessionBean extends BaseSessionBean  {
 				 this.logconfigurationdata = logconfigurationhome.create(new Integer(0),logconfiguration);
 			   }catch(CreateException f){
 				 throw new EJBException(f);
-			   }			
+			   }
 		   }
 		}
-		
+
 		return this.logconfigurationdata.getAndIncrementRowCount();
 	}
 

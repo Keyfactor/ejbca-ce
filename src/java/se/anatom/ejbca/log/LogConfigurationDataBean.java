@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.log;
 
 import javax.ejb.CreateException;
@@ -29,15 +29,12 @@ import se.anatom.ejbca.BaseEntityBean;
  * logentryrownumber is the number of the last row number in the log entry database.
  * </pre>
  *
- * @version $Id: LogConfigurationDataBean.java,v 1.11 2004-06-03 09:22:45 anatom Exp $
+ * @version $Id: LogConfigurationDataBean.java,v 1.12 2004-06-10 12:32:38 sbailliez Exp $
  *
  * @ejb.bean
- *	 generate="true"
  *   description="This enterprise bean entity represents a Log Entry with accompanying data"
  *   display-name="LogConfigurationDataEB"
  *   name="LogConfigurationData"
- *   jndi-name="LogConfigurationData"
- *   local-jndi-name="LogConfigurationDataLocal"
  *   view-type="local"
  *   type="CMP"
  *   reentrant="false"
@@ -46,8 +43,9 @@ import se.anatom.ejbca.BaseEntityBean;
  *   schema="LogConfigurationDataBean"
  *
  * @ejb.permission role-name="InternalUser"
- *  
+ *
  * @ejb.pk
+ *   generate="false"
  *   class="java.lang.Integer"
  *
  * @ejb.home
@@ -136,9 +134,9 @@ public abstract class LogConfigurationDataBean extends BaseEntityBean {
      *
      * @ejb.interface-method view-type="local"
 	 */
-    public Integer getAndIncrementRowCount() {    	
-        int returnval = getLogEntryRowNumber();               
-        setLogEntryRowNumber(returnval + 1);		
+    public Integer getAndIncrementRowCount() {
+        int returnval = getLogEntryRowNumber();
+        setLogEntryRowNumber(returnval + 1);
 
         return new Integer(returnval);
     }

@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.log;
 
 import java.util.Date;
@@ -36,12 +36,9 @@ import se.anatom.ejbca.util.StringTools;
  * </pre>
  *
  * @ejb.bean
- *	 generate="true"
  *   description="This enterprise bean entity represents a Log Entry with accompanying data"
  *   display-name="LogEntryDataEB"
  *   name="LogEntryData"
- *   jndi-name="LogEntryData"
- *   local-jndi-name="LogEntryDataLocal"
  *   view-type="local"
  *   type="CMP"
  *   reentrant="false"
@@ -50,8 +47,9 @@ import se.anatom.ejbca.util.StringTools;
  *   schema="LogEntryDataBean"
  *
  * @ejb.permission role-name="InternalUser"
- *  
+ *
  * @ejb.pk
+ *   generate="false"
  *   class="java.lang.Integer"
  *
  * @ejb.home
@@ -100,7 +98,7 @@ public abstract class LogEntryDataBean extends BaseEntityBean {
 	 * @ejb.persistence
 	 */
     public abstract void setAdminData(String admindata);
-    
+
     // The id of the CA performing the event.
 	/**
 	 * @ejb.persistence
@@ -140,7 +138,7 @@ public abstract class LogEntryDataBean extends BaseEntityBean {
      * @ejb.interface-method view-type="local"
 	 */
     public abstract String getUsername();
- 
+
     /** username must be called 'striped' using StringTools.strip()
  	 * @ejb.persistence
 	 */
@@ -173,7 +171,7 @@ public abstract class LogEntryDataBean extends BaseEntityBean {
      * @ejb.interface-method view-type="local"
 	 */
     public abstract String getComment();
- 
+
  	/**
 	 * @ejb.persistence
 	 */
@@ -194,7 +192,7 @@ public abstract class LogEntryDataBean extends BaseEntityBean {
     public LogEntry getLogEntry(){
       return new LogEntry( getAdminType(), getAdminData(), getCaId(), getModule(), getTimeAsDate(), getUsername(), getCertificateSNR(), getEvent(), getComment());
     }
-    
+
     /**
 	 *
      * @ejb.create-method view-type="local"
@@ -209,7 +207,7 @@ public abstract class LogEntryDataBean extends BaseEntityBean {
         setUsername(StringTools.strip(username));
         setCertificateSNR(certificatesnr);
         setEvent(event);
-        setComment(comment);       
+        setComment(comment);
         return id;
     }
 
