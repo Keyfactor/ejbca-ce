@@ -5,7 +5,7 @@ package se.anatom.ejbca.exception;
  * non-crititcal application exceptions thay may be possible to handle: <code> try { . . . } catch
  * (EjbcaException e) { error(e.getMessage()); ... }</code>
  *
- * @version $Id: EjbcaException.java,v 1.5 2003-06-26 11:43:23 anatom Exp $
+ * @version $Id: EjbcaException.java,v 1.6 2003-08-22 09:16:38 anatom Exp $
  */
 public class EjbcaException extends Exception {
     /**
@@ -25,6 +25,6 @@ public class EjbcaException extends Exception {
      * @param exception exception to be embedded.
      */
     public EjbcaException(Exception exception) {
-        super(exception.toString());
+        super(exception);
     }
 }
