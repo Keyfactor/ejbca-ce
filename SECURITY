@@ -14,7 +14,7 @@ This is because the public end-user actions can be performed through the public 
 See http://www.jboss.org/online-manual/HTML/ch11s03.html for a list of ports used in JBOSS.
 See http://www.jboss.org/online-manual/HTML/ch13s84.html for information about security in JBOSS/EJB.
 See http://www.javaworld.com/javaworld/jw-08-2001/jw-0831-jaas_p.html for more examples about setting up role-permissions.
-See http://www.jboss.org/online-manual/HTML/ch14s12.html on how to set up SSL with JBOSS/Tomcat.
+See http://www.jboss.org/online-manual/HTML/ch13s12.html on how to set up SSL with JBOSS/Tomcat.
 
 For more advanced security configurations utilizing Bean permissions as defined below, security must be activated in JBoss. To activate security in JBoss see the JBoss manual at:
 http://www.jboss.org/online-manual/HTML/ch09.html
