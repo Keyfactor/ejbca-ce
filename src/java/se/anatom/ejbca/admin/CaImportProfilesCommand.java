@@ -18,7 +18,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 /**
  * Export profiles from the databse to XML-files.
  *
- * @version $Id: CaImportProfilesCommand.java,v 1.1 2003-08-20 09:50:11 anatom Exp $
+ * @version $Id: CaImportProfilesCommand.java,v 1.2 2003-08-20 09:57:05 anatom Exp $
  */
 public class CaImportProfilesCommand extends BaseCaAdminCommand {
     /**
@@ -82,7 +82,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                         System.out.println("Error: Filename not as expected (cert/entityprofile_<name>-<id>.xml).");
                     } else {
                         String profilename = infiles[i].getName().substring(index1+1,index2);
-                        System.out.println("Name:"+profilename);
+                        //System.out.println("Name:"+profilename);
                         //System.out.println("Id:"+infiles[i].getName().substring(index2+1,index3));
                         int profileid = Integer.parseInt(infiles[i].getName().substring(index2+1,index3));
                         // We don't add the fixed profiles, EJBCA handles those automagically
