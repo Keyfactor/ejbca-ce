@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.10 2005-03-08 08:45:54 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.11 2005-03-08 13:01:55 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -89,6 +89,14 @@ mail.from=ejbca-donotreply@domain.com
 
 # JavaMail debug info
 mail.debug=true
+
+# Default subject of notification messages sent from EJBCA
+mail.subject=Retrieve your certificate
+
+# Defines the default message of the notification. 
+# Use the values $Username, $Password, $CN, $O, $OU, $C, $DATE to indicate which texts 
+# that should be replaced (Case insensitive), $NL stands for newline.
+mail.message=Hello $CN$NL$NL This is a notification. $NL$NL Your username: $Username$NL password: $Password$NL$NL Your are NOT supposed to go and fetch your certificate, this is only a test.
 
 
 # ------------ Basic CA configuration ---------------------

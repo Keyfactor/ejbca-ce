@@ -68,7 +68,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.92 2005-03-07 09:37:49 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.93 2005-03-08 13:02:25 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -95,19 +95,19 @@ import se.anatom.ejbca.util.query.UserMatch;
  *   description="Defines de sender of the notification message"
  *   name="sender"
  *   type="java.lang.String"
- *   value="mail@nowhere.dom"
+ *   value="${mail.from}"
  *
  * @ejb.env-entry
  *   description="Defines the subject used in the notification message"
  *   name="subject"
  *   type="java.lang.String"
- *   value="Retrieve your certificate"
+ *   value="${mail.subject}"
  *
  * @ejb.env-entry
  *   description="Defines the actual message of the notification. Use the values $Username, $Password, $CN, $O, $OU, $C, $DATE to indicate which texts that should be replaced (Case insensitive), $NL stands for newline."
  *   name="message"
  *   type="java.lang.String"
- *   value="Hello $CN$NL$NL This is a notification. $NL$NL Your username: $Username$NL password: $Password$NL$NL Your are NOT supposed to go and fetch your certificate, this is only a test."
+ *   value="${mail.message}"
  *
  * @ejb.ejb-external-ref
  *   description="The Certificate Store session bean"

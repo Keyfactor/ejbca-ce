@@ -92,6 +92,9 @@
     <property name="database.driver" value="org.hsqldb.jdbcDriver" />
     <property name="database.username" value="sa" />
     <property name="database.password" value="" />
+    <property name="mail.from" value="ejbca-donotreply@domain.com" />
+    <property name="mail.subject" value="Retrieve your certificate" />
+    <property name="mail.message" value="Hello $CN$NL$NL This is a notification. $NL$NL Your username: $Username$NL password: $Password$NL$NL Your are NOT supposed to go and fetch your certificate, this is only a test." />
 
     <!-- =================================================================== -->
     <!-- Build ALL                                                           -->
@@ -112,6 +115,9 @@ database.url         = ${database.url}
 database.driver      = ${database.driver}
 database.username    = ${database.username}
 database.password    = ${database.password}
+mail.from            = ${mail.from}
+mail.subject         = ${mail.subject}
+mail.message         = ${mail.message}
       </echo>
         <!-- Create the time stamp -->
         <tstamp/>
