@@ -16,12 +16,31 @@ import se.anatom.ejbca.log.Admin;
  * Local interface for EJB, unforturnately this must be a copy of the remote interface except that
  * RemoteException is not thrown, see ICertificateStoreSessionRemote for docs.
  *
- * @version $Id: ICertificateStoreSessionLocal.java,v 1.22 2003-12-04 10:20:48 anatom Exp $
+ * @version $Id: ICertificateStoreSessionLocal.java,v 1.23 2004-03-07 12:09:50 herrvendil Exp $
  *
  * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
  */
-public interface ICertificateStoreSessionLocal extends javax.ejb.EJBLocalObject,
-    IPublisherSessionLocal {
+public interface ICertificateStoreSessionLocal extends javax.ejb.EJBLocalObject
+     {
+	
+	
+    /**
+     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
+     */
+    public boolean storeCertificate(Admin admin, Certificate incert, String username, String cafp,
+        int status, int type);
+
+    /**
+     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
+     */
+    public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number);
+
+    /**
+     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
+     */
+    public void revokeCertificate(Admin admin, Certificate cert, Collection publishers, int reason);    
+
+	
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
@@ -95,12 +114,12 @@ public interface ICertificateStoreSessionLocal extends javax.ejb.EJBLocalObject,
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public void setRevokeStatus(Admin admin, String username, int reason);
+    public void setRevokeStatus(Admin admin, String username, Collection publishers, int reason);
 
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */ 
-    public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, int reason);  
+    public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, Collection publishers, int reason);  
 
 	/**
 	 * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
@@ -201,7 +220,12 @@ public interface ICertificateStoreSessionLocal extends javax.ejb.EJBLocalObject,
     /**
      * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
      */
-    public boolean existsCAInCertificateProfiles(Admin admin, int caid);       
+    public boolean existsCAInCertificateProfiles(Admin admin, int caid);  
+
+    /**
+     * @see se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote
+     */
+    public boolean existsPublisherInCertificateProfiles(Admin admin, int publisherid);
 
 
 }

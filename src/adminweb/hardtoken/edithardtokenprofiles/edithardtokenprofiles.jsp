@@ -1,6 +1,7 @@
 <html>
 <%@page contentType="text/html"%>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.SecConst, se.anatom.ejbca.authorization.AuthorizationDeniedException,
+               se.anatom.ejbca.authorization.AvailableAccessRules,
                se.anatom.ejbca.webdist.hardtokeninterface.HardTokenInterfaceBean, se.anatom.ejbca.hardtoken.hardtokenprofiles.*, se.anatom.ejbca.webdist.hardtokeninterface.EditHardTokenProfileJSPHelper, 
                se.anatom.ejbca.hardtoken.HardTokenProfileExistsException"%>
 
@@ -14,7 +15,7 @@
   String includefile = "hardtokenprofilespage.jsp"; 
 
 
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/ca_functionality/edit_hardtoken_profiles"); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AvailableAccessRules.HARDTOKEN_EDITHARDTOKENPROFILES); 
                                             hardtokenbean.initialize(request, ejbcawebbean); 
                                             helper.initialize(request,ejbcawebbean, hardtokenbean);
   String THIS_FILENAME            =  globalconfiguration.getHardTokenPath()  + "/edithardtokenprofiles/edithardtokenprofiles.jsp";

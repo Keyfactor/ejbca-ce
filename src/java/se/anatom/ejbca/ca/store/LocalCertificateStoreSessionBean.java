@@ -29,6 +29,8 @@ import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.ca.exception.CertificateProfileExistsException;
+import se.anatom.ejbca.ca.publisher.IPublisherSessionLocal;
+import se.anatom.ejbca.ca.publisher.IPublisherSessionLocalHome;
 import se.anatom.ejbca.ca.store.certificateprofiles.*;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
@@ -42,7 +44,7 @@ import se.anatom.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.64 2004-01-02 15:33:15 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.65 2004-03-07 12:09:50 herrvendil Exp $
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
@@ -64,7 +66,10 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     /** The local interface of the authorization session bean */
     private IAuthorizationSessionLocal authorizationsession = null;
     
+    /** The local interface of the publisher session bean */
+    private IPublisherSessionLocal publishersession = null;
 
+    
     
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -121,7 +126,22 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         return authorizationsession;
     } //getAuthorizationSession    
     
-
+    /** Gets connection to publisher session bean
+     * @return Connection
+     */
+    private IPublisherSessionLocal getPublisherSession() {
+        if(publishersession == null){
+          try{
+            IPublisherSessionLocalHome publishersessionhome = (IPublisherSessionLocalHome) lookup("java:comp/env/ejb/PublisherSessionLocal",IPublisherSessionLocalHome.class);
+            publishersession = publishersessionhome.create();
+          }catch(Exception e){
+             throw new EJBException(e);
+          }
+        }
+        return publishersession;
+    } //getPublisherSession   
+    
+    
     /**
      * Implements ICertificateStoreSession::storeCertificate. Implements a mechanism that uses
      * Certificate Entity Bean.
@@ -836,16 +856,19 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      *
      * @param admin DOCUMENT ME!
      * @param username the username of user to revoke certificates.
+     * @param publishers and array of publiserids (Integer) of publishers to revoke the certificate in.  
      * @param reason reason the user is revoked from CRLData
      *
      * @see CRLData
      */
-    public void setRevokeStatus(Admin admin, String username, int reason) {
+    public void setRevokeStatus(Admin admin, String username, Collection publishers, int reason) {
        X509Certificate certificate = null;
        // Strip dangerous chars
        username = StringTools.strip(username);
        try{
          Collection certs = findCertificatesByUsername(admin, username);
+         
+
           // Revoke all certs
          if (!certs.isEmpty()) {
            Iterator j = certs.iterator();
@@ -858,7 +881,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
               rev.setStatus(CertificateData.CERT_REVOKED);
               rev.setRevocationDate(new Date());
               rev.setRevocationReason(reason);             
-              getLogSession().log(admin, certificate, LogEntry.MODULE_CA, new java.util.Date(), null, certificate, LogEntry.EVENT_INFO_REVOKEDCERT,("Reason :" + reason));
+              getLogSession().log(admin, certificate, LogEntry.MODULE_CA, new java.util.Date(), null, certificate, LogEntry.EVENT_INFO_REVOKEDCERT,("Reason :" + reason));             
+              // Revoke in all related publishers
+              if(publishers!= null){                                
+                  getPublisherSession().revokeCertificate(admin, publishers, certificate, reason);                 	                
+              }
               
             }
           }
@@ -876,14 +903,17 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      *
      * @param admin DOCUMENT ME!
      * @param serno the serial number of the certificate to revoke.
+     * @param publishers and array of publiserids (Integer) of publishers to revoke the certificate in.  
      * @param reason reason the user is revoked from CRLData
      *
      * @see CRLData
      */
-    public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, int reason) {
+    public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, Collection publishers, int reason) {
        X509Certificate certificate = null;
        try{
          certificate = (X509Certificate) this.findCertificateByIssuerAndSerno(admin, issuerdn, serno);
+         
+         
           // Revoke all certs
          if (certificate != null) {
              CertificateDataPK revpk = new CertificateDataPK();
@@ -895,6 +925,12 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
               rev.setRevocationReason(reason);
               
               getLogSession().log(admin, issuerdn.hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, certificate, LogEntry.EVENT_INFO_REVOKEDCERT,("Reason :" + reason));
+              
+              // Revoke in all related publishers
+              if(publishers!= null){                                
+                  getPublisherSession().revokeCertificate(admin, publishers, certificate, reason);                 	                
+              }
+
 
             }
          }
@@ -912,13 +948,14 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      *
      * @param admin DOCUMENT ME!
      * @param cert The DER coded Certificate that has been revoked.
+     * @param publishers and array of publiserids (Integer) of publishers to revoke the certificate in.  
      * @param reason DOCUMENT ME!
      *
      * @throws EJBException if a communication or other error occurs.
      */
-     public void revokeCertificate(Admin admin, Certificate cert, int reason) {
+     public void revokeCertificate(Admin admin, Certificate cert, Collection publishers, int reason) {
          if (cert instanceof X509Certificate) {
-             setRevokeStatus(admin, ((X509Certificate)cert).getIssuerDN().toString(), ((X509Certificate)cert).getSerialNumber(), reason);
+             setRevokeStatus(admin, ((X509Certificate)cert).getIssuerDN().toString(), ((X509Certificate)cert).getSerialNumber(), publishers, reason);
          }
      } //revokeCertificate
      
@@ -1732,7 +1769,33 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
       }catch(Exception e){}
 
       return exists;
-    } // existsCAInCertificateProfiles     
+    } // existsCAInCertificateProfiles
+    
+    /**
+     * Method to check if a Publisher exists in any of the certificate profiles. Used to avoid desyncronization of publisher data.
+     *
+     * @param publisherid the publisherid to search for.
+     * @return true if publisher exists in any of the certificate profiles.
+     */
+    public boolean existsPublisherInCertificateProfiles(Admin admin, int publisherid){
+      Iterator availablepublishers=null;
+      boolean exists = false;
+      try{
+        Collection result = certprofilehome.findAll();
+        Iterator i = result.iterator();
+        while(i.hasNext() && !exists){
+          availablepublishers = ((CertificateProfileDataLocal) i.next()).getCertificateProfile().getPublisherList().iterator();
+          while(availablepublishers.hasNext()){
+            if(((Integer) availablepublishers.next()).intValue() == publisherid){
+              exists=true;
+              break;
+            }
+          }
+        }
+      }catch(Exception e){}
+
+      return exists;
+    } // existsPublisherInCertificateProfiles
 
     // Private methods
 

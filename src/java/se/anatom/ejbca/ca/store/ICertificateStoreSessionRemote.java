@@ -20,11 +20,53 @@ import se.anatom.ejbca.log.Admin;
  * check for revocation etc. the CertificateStoreSession implements the interface
  * ICertificateStoreSession. Remote interface for EJB.
  *
- * @version $Id: ICertificateStoreSessionRemote.java,v 1.26 2003-12-04 10:20:49 anatom Exp $
+ * @version $Id: ICertificateStoreSessionRemote.java,v 1.27 2004-03-07 12:09:50 herrvendil Exp $
  */
-public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPublisherSessionRemote {
+public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject {
 
 
+    /**
+     * Stores a certificate.
+     *
+     * @param incert The certificate to be stored.
+     * @param chainfp Fingerprint (hex) of the CAs certificate.
+     * @param username username of end entity owning the certificate.
+     * @param status Status of the certificate (from CertificateData).
+     * @param type Type of certificate (from SecConst).
+     *
+     * @return true if storage was successful.
+     *
+     * @throws EJBException if a communication or other error occurs.
+     */
+    public boolean storeCertificate(Admin admin, Certificate incert, String username, String cafp,
+        int status, int type) throws RemoteException;
+
+    /**
+     * Stores a CRL
+     *
+     * @param incrl The DER coded CRL to be stored.
+     * @param chainfp Fingerprint (hex) of the CAs certificate.
+     * @param number CRL number.
+     *
+     * @return true if storage was successful.
+     *
+     * @throws EJBException if a communication or other error occurs.
+     */
+    public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number)
+        throws RemoteException;
+
+    /**
+     * Revokes a certificate (already revoked by the CA), in the database
+     *
+     * @param cert The DER coded Certificate that has been revoked.
+     * @param publishers and array of publiserids (Integer) of publishers to revoke the certificate in.  
+     *
+     * @throws EJBException if a communication or other error occurs.
+     */
+    public void revokeCertificate(Admin admin, Certificate cert, Collection publishers, int reason)
+        throws RemoteException;    
+    
+	
    /**
     * Lists fingerprint (primary key) of ALL certificates in the database.
     * NOTE: Caution should be taken with this method as execution may be very
@@ -229,12 +271,13 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
      *
      * @param admin Administrator performing the operation
      * @param username the username of user to revoke certificates.
+     * @param publishers and array of publiserids (Integer) of publishers to revoke the certificate in.  
      * @param reason the reason of the revokation. (One of the RevokedCertInfo.REVOKATION_REASON
      *        constants.)
      *
      * @throws RemoteException if a communication or other error occurs.
      */
-    public void setRevokeStatus(Admin admin, String username, int reason)
+    public void setRevokeStatus(Admin admin, String username, Collection publishers, int reason)
         throws RemoteException;
 
     /**
@@ -242,10 +285,11 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
      *
      * @param admin Administrator performing the operation
      * @param serno the serno of certificate to revoke.
+     * @param publishers and array of publiserids (Integer) of publishers to revoke the certificate in.  
      * @param reason the reason of the revokation. (One of the RevokedCertInfo.REVOKATION_REASON constants.)
      * @throws EJBException if a communication or other error occurs.
      */   
-    public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, int reason) throws RemoteException; 
+    public void setRevokeStatus(Admin admin, String issuerdn, BigInteger serno, Collection publishers, int reason) throws RemoteException; 
    
    
 	/**
@@ -454,4 +498,12 @@ public interface ICertificateStoreSessionRemote extends javax.ejb.EJBObject, IPu
      */
     public boolean existsCAInCertificateProfiles(Admin admin, int caid) throws RemoteException;    
  
+    /**
+     * Method to check if a Publisher exists in any of the certificate profiles. Used to avoid desyncronization of publisher data.
+     *
+     * @param publisherid the publisherid to search for.
+     * @return true if publisher exists in any of the certificate profiles.
+     */
+    public boolean existsPublisherInCertificateProfiles(Admin admin, int publisherid)throws RemoteException;    
+    
 }
