@@ -1,4 +1,9 @@
 
+1.0
+---
+Fixed bug with not returning correct content-length to browser when
+returning PEM-certificates.
+
 1.0b2
 -----
 New version of Bouncycastle JCE provider.
