@@ -54,7 +54,7 @@ import java.util.HashMap;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.27 2004-07-05 09:53:55 sbailliez Exp $
+ * @version $Id: UserDataBean.java,v 1.28 2004-07-05 15:28:36 sbailliez Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a Log Entry with accompanying data"
  * display-name="UserDataEB"
@@ -328,7 +328,6 @@ public abstract class UserDataBean extends BaseEntityBean {
      * Non-searchable information about a user. for future use.
      *
      * @ejb.persistence
-     * @ejb.interface-method
      */
     public abstract HashMap getExtendedInformationData();
 
@@ -336,7 +335,6 @@ public abstract class UserDataBean extends BaseEntityBean {
      * Non-searchable information about a user. for future use.
      *
      * @ejb.persistence
-     * @ejb.interface-method
      */
     public abstract void setExtendedInformationData(HashMap data);
 
@@ -435,6 +433,7 @@ public abstract class UserDataBean extends BaseEntityBean {
 
     /**
      * Non-searchable information about a user. for future use.
+     * @ejb.interface-method
      */
     public ExtendedInformation getExtendedInformation() {
         ExtendedInformation returnval = null;
@@ -447,6 +446,7 @@ public abstract class UserDataBean extends BaseEntityBean {
 
     /**
      * Non-searchable information about a user. for future use.
+     * @ejb.interface-method
      */
     public void setExtendedInformation(ExtendedInformation extendedinformation) {
         setExtendedInformationData((HashMap) extendedinformation.saveData());
