@@ -11,30 +11,30 @@
   <property name="dist"  value="./dist"/>
   <property name="apidoc" value="./doc/api"/>
   
-  <property name="apply.src" value="${src}/apply" />
-  <property name="apply.build" value="${tmp}/apply" />
+  <property name="apply.src" value="${src}/ca/apply" />
+  <property name="apply.build" value="${tmp}/ca/apply" />
   <property name="applyjar" value="${dist}/apply.war" />
   
-  <property name="webdist.src" value="${src}/webdist" />
-  <property name="webdist.build" value="${tmp}/webdist" />
+  <property name="webdist.src" value="${src}/ca/webdist" />
+  <property name="webdist.build" value="${tmp}/ca/webdist" />
   <property name="webdistjar" value="${dist}/webdist.war" />
 
-  <property name="sampleauth.src" value="${src}/sampleauth" />
-  <property name="sampleauth.build" value="${tmp}/sampleauth" />
+  <property name="sampleauth.src" value="${src}/ca/sampleauth" />
+  <property name="sampleauth.build" value="${tmp}/ca/sampleauth" />
   <property name="sampleauthjar" value="${dist}/sampleauth.war" />
 
-  <property name="ca.src" value="${src}/ca" />
-  <property name="ca.build" value="${tmp}/ca" />
+  <property name="ca.src" value="${src}/ca/ca" />
+  <property name="ca.build" value="${tmp}/ca/ca" />
   <property name="cajar" value="${dist}/ca.jar" />
 
   <property name="ra.src" value="${src}/ra" />
   <property name="ra.build" value="${tmp}/ra" />
   <property name="rajar" value="${dist}/ra.jar" />
 
-  <property name="caear.src" value="${src}/caear" />
-  <property name="caear.build" value="${tmp}/caear" />
-  <property name="caear.warbuild" value="${tmp}/caear/root" />
-  <property name="caear.earbuild" value="${tmp}/caear/ear" />
+  <property name="caear.src" value="${src}/ca/ear" />
+  <property name="caear.build" value="${tmp}/ca/ear" />
+  <property name="caear.warbuild" value="${tmp}/ca/ear/root" />
+  <property name="caear.earbuild" value="${tmp}/ca/ear/ear" />
   <property name="carootwar" value="${caear.earbuild}/caroot.war" />
   <property name="caear" value="${dist}/ejbca-ca.ear" />
 
