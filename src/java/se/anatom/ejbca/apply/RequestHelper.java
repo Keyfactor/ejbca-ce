@@ -20,16 +20,14 @@ import se.anatom.ejbca.protocol.PKCS10RequestMessage;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.FileTools;
 
-public class RequestHelper { 
- 
+public class RequestHelper {
+
     static private Category cat = Category.getInstance( RequestHelper.class.getName() );
 
     private Admin administrator;
     private ServletDebug debug;
-    private ISignSessionHome home;
-    
-    public RequestHelper(ISignSessionHome home, Admin administrator, ServletDebug debug) {
-        this.home = home;
+
+    public RequestHelper(Admin administrator, ServletDebug debug) {
         this.administrator = administrator;
         this.debug = debug;
     }
@@ -46,7 +44,7 @@ public class RequestHelper {
      * PublicKey's encoded-format has to be RSA X.509.
      * @return byte[] containing DER-encoded certificate.
      */
-    public byte[] nsCertRequest(byte[] reqBytes, String username, String password)
+    public byte[] nsCertRequest(ISignSessionRemote signsession, byte[] reqBytes, String username, String password)
         throws Exception {
             byte[] buffer = Base64.decode(reqBytes);
             DERInputStream  in = new DERInputStream(new ByteArrayInputStream(buffer));
@@ -57,11 +55,10 @@ public class RequestHelper {
             if (nscr.verify("challenge") == false)
                 throw new SignRequestSignatureException("Invalid signature in NetscapeCertRequest, popo-verification failed.");
             cat.debug("POPO verification succesful");
-            ISignSessionRemote ss = home.create();
-            X509Certificate cert = (X509Certificate) ss.createCertificate(administrator, username, password, nscr.getPublicKey());
+            X509Certificate cert = (X509Certificate) signsession.createCertificate(administrator, username, password, nscr.getPublicKey());
             //Certificate[] chain = ss.getCertificateChain();
 
-            byte[] pkcs7 = ss.createPKCS7(administrator, cert);
+            byte[] pkcs7 = signsession.createPKCS7(administrator, cert);
             cat.debug("Created certificate (PKCS7) for "+ username);
             debug.print("<h4>Generated certificate:</h4>");
             debug.printInsertLineBreaks(cert.toString().getBytes());
@@ -90,7 +87,7 @@ public class RequestHelper {
      *
      * PublicKey's encoded-format has to be RSA X.509.
      */
-    public byte[] pkcs10CertRequest(byte[] b64Encoded, String username, String password)
+    public byte[] pkcs10CertRequest(ISignSessionRemote signsession, byte[] b64Encoded, String username, String password)
         throws Exception {
         X509Certificate cert;
         byte[] buffer;
@@ -114,9 +111,8 @@ public class RequestHelper {
             cert = (X509Certificate) ss.createCertificate(administrator, username, password, new PKCS10RequestMessage(buffer));
             */
         }
-        ISignSessionRemote ss = home.create();
-        cert = (X509Certificate) ss.createCertificate(administrator, username, password, new PKCS10RequestMessage(buffer));
-        byte[] pkcs7 = ss.createPKCS7(administrator, cert);
+        cert = (X509Certificate) signsession.createCertificate(administrator, username, password, new PKCS10RequestMessage(buffer));
+        byte[] pkcs7 = signsession.createPKCS7(administrator, cert);
         cat.debug("Created certificate (PKCS7) for " + username);
         debug.print("<h4>Generated certificate:</h4>");
         debug.printInsertLineBreaks(cert.toString().getBytes());
@@ -142,7 +138,7 @@ public class RequestHelper {
                 break;
         }
         out.println();
-    }  
+    }
     static public void sendNewCertToIEClient(byte[] b64cert, OutputStream out, ServletContext sc, String responseTemplate)
         throws Exception {
         PrintStream ps = new PrintStream(out);
@@ -190,5 +186,5 @@ public class RequestHelper {
         cat.debug("Sent reply to client");
         cat.debug(new String(b64cert));
     }
-      
+
 }

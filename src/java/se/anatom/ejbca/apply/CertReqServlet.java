@@ -62,7 +62,7 @@ import se.anatom.ejbca.log.Admin;
  * relative.<br>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.24 2003-01-12 17:16:32 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.25 2003-01-23 09:40:14 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
 
@@ -70,19 +70,19 @@ public class CertReqServlet extends HttpServlet {
 
     private InitialContext ctx = null;
     private Admin administrator = null;
-    ISignSessionHome home = null;
+    ISignSessionHome signsessionhome = null;
     IUserAdminSessionHome userdatahome;
-    
-    private byte bagattributes[] = "Bag Attributes\n".getBytes();  
-    private byte friendlyname[] = "    friendlyName: ".getBytes();     
-    private byte subject[]  = "subject=/".getBytes();    
-    private byte issuer[]  = "issuer=/".getBytes();     
+
+    private byte bagattributes[] = "Bag Attributes\n".getBytes();
+    private byte friendlyname[] = "    friendlyName: ".getBytes();
+    private byte subject[]  = "subject=/".getBytes();
+    private byte issuer[]  = "issuer=/".getBytes();
     private byte beginCertificate[] = "-----BEGIN CERTIFICATE-----".getBytes();
     private byte endCertificate[] = "-----END CERTIFICATE-----".getBytes();
     private byte beginPrivateKey[] = "-----BEGIN PRIVATE KEY-----".getBytes();
     private byte endPrivateKey[] = "-----END PRIVATE KEY-----".getBytes();
     private byte NL[] = "\n".getBytes();
-    private byte boundrary[] = "outer".getBytes();    
+    private byte boundrary[] = "outer".getBytes();
 
     public void init(ServletConfig config) throws ServletException {
     super.init(config);
@@ -93,10 +93,10 @@ public class CertReqServlet extends HttpServlet {
 
             // Get EJB context and home interfaces
             ctx = new InitialContext();
-            home = (ISignSessionHome) PortableRemoteObject.narrow(
+            signsessionhome = (ISignSessionHome) PortableRemoteObject.narrow(
                       ctx.lookup("RSASignSession"), ISignSessionHome.class );
             userdatahome = (IUserAdminSessionHome) PortableRemoteObject.narrow(
-                             ctx.lookup("UserAdminSession"), IUserAdminSessionHome.class );            
+                             ctx.lookup("UserAdminSession"), IUserAdminSessionHome.class );
         } catch( Exception e ) {
             throw new ServletException(e);
         }
@@ -111,46 +111,48 @@ public class CertReqServlet extends HttpServlet {
             String password        = request.getParameter("password");
             String keylengthstring = request.getParameter("keylength");
             int keylength = 1024;
-            
+
             if(keylengthstring != null)
-              keylength = Integer.parseInt(keylengthstring);  
-            
+              keylength = Integer.parseInt(keylengthstring);
+
             administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
-            RequestHelper helper = new RequestHelper(home, administrator, debug);
-            
+
+            IUserAdminSessionRemote adminsession = userdatahome.create();
+            ISignSessionRemote signsession = signsessionhome.create();
+            RequestHelper helper = new RequestHelper(administrator, debug);
+
             cat.debug("Got request for " + username + "/" + password);
             debug.print("<h3>username: "+username+"</h3>");
-            
+
             // Check user
             int tokentype = SecConst.TOKEN_SOFT_BROWSERGEN;
-        
-            IUserAdminSessionRemote admin = userdatahome.create();
-            UserAdminData data = admin.findUser(administrator, username);
+
+            UserAdminData data = adminsession.findUser(administrator, username);
             if(data == null)
               throw new ObjectNotFoundException();
 
                 // get users Token Type.
-            tokentype = data.getTokenType();                        
+            tokentype = data.getTokenType();
             if(tokentype == SecConst.TOKEN_SOFT_P12){
-              KeyStore ks = generateToken(username, password, keylength, false);  
-              sendP12Token(ks, username, password, response);      
+              KeyStore ks = generateToken(username, password, keylength, false);
+              sendP12Token(ks, username, password, response);
             }
             if(tokentype == SecConst.TOKEN_SOFT_JKS){
-              KeyStore ks = generateToken(username, password, keylength, true);  
-              sendJKSToken(ks, username, password, response);                 
+              KeyStore ks = generateToken(username, password, keylength, true);
+              sendJKSToken(ks, username, password, response);
             }
             if(tokentype == SecConst.TOKEN_SOFT_PEM){
-              KeyStore ks = generateToken(username, password, keylength, false);  
-              sendPEMTokens(ks, username, password, response);                 
-            }            
+              KeyStore ks = generateToken(username, password, keylength, false);
+              sendPEMTokens(ks, username, password, response);
+            }
             if(tokentype == SecConst.TOKEN_SOFT_BROWSERGEN){
-            
+
               // first check if it is a netcsape request,
               if (request.getParameter("keygen") != null) {
                   byte[] reqBytes=request.getParameter("keygen").getBytes();
                   cat.debug("Received NS request:"+new String(reqBytes));
                   if (reqBytes != null) {
-                      byte[] certs = helper.nsCertRequest(reqBytes, username, password);
+                      byte[] certs = helper.nsCertRequest(signsession, reqBytes, username, password);
                       RequestHelper.sendNewCertToNSClient(certs, response);
                   }
               } else if ( (request.getParameter("pkcs10") != null) || (request.getParameter("PKCS10") != null) ) {
@@ -160,8 +162,7 @@ public class CertReqServlet extends HttpServlet {
                       reqBytes=request.getParameter("PKCS10").getBytes();
                   cat.debug("Received IE request:"+new String(reqBytes));
                   if (reqBytes != null) {
-                      byte[] b64cert=helper.pkcs10CertRequest(
-                          reqBytes, username, password);
+                      byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password);
                       debug.ieCertFix(b64cert);
                       RequestHelper.sendNewCertToIEClient(b64cert, response.getOutputStream(), getServletContext(), getInitParameter("responseTemplate"));
                   }
@@ -169,12 +170,11 @@ public class CertReqServlet extends HttpServlet {
                   // if not IE, check if it's manual request
                   byte[] reqBytes=request.getParameter("pkcs10req").getBytes();
                   if (reqBytes != null) {
-                      byte[] b64cert=helper.pkcs10CertRequest(
-                          reqBytes, username, password);
-					RequestHelper.sendNewB64Cert(b64cert, response);
+                      byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password);
+                    RequestHelper.sendNewB64Cert(b64cert, response);
                   }
               }
-            }  
+            }
         } catch (ObjectNotFoundException oe) {
             cat.debug("Non existens username!");
             debug.printMessage("Non existent username!");
@@ -232,39 +232,39 @@ public class CertReqServlet extends HttpServlet {
         debug.printDebugInfo();
         cat.debug("<doGet()");
     } // doGet
-    
+
     private void sendP12Token(KeyStore ks, String username, String kspassword, HttpServletResponse out)
-       throws Exception {              
-       ByteArrayOutputStream buffer = new ByteArrayOutputStream();       
-       ks.store(buffer,kspassword.toCharArray()); 
-           
+       throws Exception {
+       ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+       ks.store(buffer,kspassword.toCharArray());
+
        out.setContentType("application/x-pkcs12");
        out.setHeader("Content-disposition", "filename=" + username + ".p12");
        out.setContentLength(buffer.size());
        buffer.writeTo(out.getOutputStream());
-       out.flushBuffer(); 
+       out.flushBuffer();
        buffer.close();
     }
-    
+
     private void sendJKSToken(KeyStore ks, String username, String kspassword,HttpServletResponse out)
        throws Exception {
-       ByteArrayOutputStream buffer = new ByteArrayOutputStream();       
-       ks.store(buffer,kspassword.toCharArray()); 
-           
+       ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+       ks.store(buffer,kspassword.toCharArray());
+
        out.setContentType("application/octet-stream");
        out.setHeader("Content-disposition", "filename=" + username + ".jks");
        out.setContentLength(buffer.size());
        buffer.writeTo(out.getOutputStream());
-       out.flushBuffer(); 
+       out.flushBuffer();
        buffer.close();
     }
-    
+
     private void sendPEMTokens(KeyStore ks, String username, String kspassword,HttpServletResponse out)
        throws Exception {
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();  
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         RegularExpression.RE re  = new RegularExpression.RE(",",false);
         String alias = "";
-             
+
         // Find the key private key entry in the keystore
         Enumeration e = ks.aliases();
         Object o = null;
@@ -273,7 +273,7 @@ public class CertReqServlet extends HttpServlet {
             o = e.nextElement();
             if(o instanceof String) {
                 if ( (ks.isKeyEntry((String) o)) && ((serverPrivKey = (PrivateKey)ks.getKey((String) o, kspassword.toCharArray())) != null) ) {
-                    alias = (String) o;  
+                    alias = (String) o;
                     break;
                 }
             }
@@ -286,63 +286,63 @@ public class CertReqServlet extends HttpServlet {
         //Certificate chain[] = ks.getCertificateChain((String) o);
         Certificate chain[] = KeyTools.getCertChain(ks, (String) o);
         X509Certificate userX509Certificate = (X509Certificate) chain[0];
-        
+
         byte output[] = userX509Certificate.getEncoded();
         String sn = userX509Certificate.getSubjectDN().toString();
-        
+
         String subjectdnpem = re.replace(sn,"/");
-        String issuerdnpem = re.replace(userX509Certificate.getIssuerDN().toString(),"/");       
-        
+        String issuerdnpem = re.replace(userX509Certificate.getIssuerDN().toString(),"/");
+
         buffer.write(bagattributes);
         buffer.write(friendlyname);
-        buffer.write(alias.getBytes());      
-        buffer.write(NL);        
+        buffer.write(alias.getBytes());
+        buffer.write(NL);
         buffer.write(beginPrivateKey);
         buffer.write(NL);
         byte privKey[] = Base64.encode(privKeyEncoded);
         buffer.write(privKey);
         buffer.write(NL);
-        buffer.write(endPrivateKey);   
-        buffer.write(NL);  
+        buffer.write(endPrivateKey);
+        buffer.write(NL);
         buffer.write(bagattributes);
         buffer.write(friendlyname);
-        buffer.write(alias.getBytes());      
-        buffer.write(NL);        
+        buffer.write(alias.getBytes());
+        buffer.write(NL);
         buffer.write(subject);
         buffer.write(subjectdnpem.getBytes());
-        buffer.write(NL);        
-        buffer.write(issuer); 
+        buffer.write(NL);
+        buffer.write(issuer);
         buffer.write(issuerdnpem.getBytes());
-        buffer.write(NL);          
+        buffer.write(NL);
         buffer.write(beginCertificate);
         buffer.write(NL);
         byte userCertB64[] = Base64.encode(output);
         buffer.write(userCertB64);
         buffer.write(NL);
         buffer.write(endCertificate);
-        buffer.write(NL);        
- 
+        buffer.write(NL);
+
         if (CertTools.isSelfSigned(userX509Certificate)) {
         } else {
             for(int num = 1;num < chain.length;num++) {
                 X509Certificate tmpX509Cert = (X509Certificate) chain[num];
                 sn = tmpX509Cert.getSubjectDN().toString();
                 String cn = CertTools.getPartFromDN(sn, "CN");
-        
+
                 subjectdnpem = re.replace(sn,"/");
-                issuerdnpem = re.replace(tmpX509Cert.getIssuerDN().toString(),"/");   
-                
+                issuerdnpem = re.replace(tmpX509Cert.getIssuerDN().toString(),"/");
+
                 buffer.write(bagattributes);
                 buffer.write(friendlyname);
-                buffer.write(cn.getBytes());      
-                buffer.write(NL);        
+                buffer.write(cn.getBytes());
+                buffer.write(NL);
                 buffer.write(subject);
                 buffer.write(subjectdnpem.getBytes());
-                buffer.write(NL);        
-                buffer.write(issuer); 
+                buffer.write(NL);
+                buffer.write(issuer);
                 buffer.write(issuerdnpem.getBytes());
-                buffer.write(NL);                          
-                
+                buffer.write(NL);
+
                 byte tmpOutput[] = tmpX509Cert.getEncoded();
                 buffer.write(beginCertificate);
                 buffer.write(NL);
@@ -353,25 +353,25 @@ public class CertReqServlet extends HttpServlet {
                 buffer.write(NL);
             }
         }
-                         
-        out.setContentType("application/octet-stream");  
-        out.setHeader("Content-disposition", " attachment; filename=" + username + ".pem");        
-        buffer.writeTo(out.getOutputStream());
-        out.flushBuffer(); 
-        buffer.close();           
-    }
-   
 
-    
+        out.setContentType("application/octet-stream");
+        out.setHeader("Content-disposition", " attachment; filename=" + username + ".pem");
+        buffer.writeTo(out.getOutputStream());
+        out.flushBuffer();
+        buffer.close();
+    }
+
+
+
     private KeyStore generateToken(String username, String password, int keylength, boolean createJKS)
        throws Exception{
-         KeyPair rsaKeys = KeyTools.genKeys(keylength);   
-         ISignSessionRemote ss = home.create();
-         X509Certificate cert = (X509Certificate)ss.createCertificate(administrator, username, password, rsaKeys.getPublic());
+         KeyPair rsaKeys = KeyTools.genKeys(keylength);
+         ISignSessionRemote signsession = signsessionhome.create();
+         X509Certificate cert = (X509Certificate)signsession.createCertificate(administrator, username, password, rsaKeys.getPublic());
 
         // Make a certificate chain from the certificate and the CA-certificate
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
-        Certificate[] cachain = ss.getCertificateChain(administrator);
+        Certificate[] cachain = signsession.getCertificateChain(administrator);
         // Verify CA-certificate
         if (CertTools.isSelfSigned((X509Certificate)cachain[cachain.length-1])) {
             try {
@@ -398,8 +398,8 @@ public class CertReqServlet extends HttpServlet {
         if (createJKS)
             ks = KeyTools.createJKS(alias, rsaKeys.getPrivate(), password, cert, cachain);
         else
-            ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), cert, cachain);           
-           
+            ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), cert, cachain);
+
         return ks;
     }
 

@@ -74,17 +74,14 @@ import se.anatom.ejbca.webdist.rainterface.UserView;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.7 2003-01-16 11:44:46 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.8 2003-01-23 09:40:14 anatom Exp $
  */
-public class DemoCertReqServlet
-  extends HttpServlet {
+public class DemoCertReqServlet extends HttpServlet {
 
   private final static Category cat = Category.getInstance(DemoCertReqServlet.class.getName());
 
   private InitialContext ctx = null;
-  private ISignSessionHome home = null;
-  private ISignSessionRemote ss = null;
-  private IUserAdminSessionRemote adminsession = null;
+  private ISignSessionHome signsessionhome = null;
   private IUserAdminSessionHome adminsessionhome = null;
 
   private final static byte[] BEGIN_CERT =
@@ -98,8 +95,7 @@ public class DemoCertReqServlet
   private final static byte[] NL = "\n".getBytes();
   private final static int NL_LENGTH = NL.length;
 
-  public void init(ServletConfig config)
-    throws ServletException
+  public void init(ServletConfig config) throws ServletException
   {
     super.init(config);
     try {
@@ -109,10 +105,8 @@ public class DemoCertReqServlet
 
       // Get EJB context and home interfaces
       ctx = new InitialContext();
-      home = (ISignSessionHome) PortableRemoteObject
-        .narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class);
-      Object obj1 = ctx.lookup("UserAdminSession");
-      adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
+      signsessionhome = (ISignSessionHome) PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class);
+      adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("UserAdminSession"), IUserAdminSessionHome.class);
     } catch (Exception e) {
       throw new ServletException(e);
     }
@@ -146,15 +140,17 @@ public class DemoCertReqServlet
   {
     ServletDebug debug = new ServletDebug(request, response);
 
+    ISignSessionRemote signsession = null;
+    IUserAdminSessionRemote adminsession = null;
     try {
         adminsession = adminsessionhome.create();
-        ss = home.create();
+        signsession = signsessionhome.create();
     } catch (CreateException e) {
       throw new ServletException(e);
     }
 
      Admin admin = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
-     RequestHelper helper = new RequestHelper(home, admin, debug);
+     RequestHelper helper = new RequestHelper(admin, debug);
 
       String dn = null;
       dn = request.getParameter("user");
@@ -185,7 +181,7 @@ public class DemoCertReqServlet
     }
     // need null check here?
     // Before doing anything else, check if the user name is unique and ok.
-    boolean check = checkUsername(admin,username);
+    boolean check = checkUsername(admin,username, adminsession);
     if (check == false) {
         String msg = "User '"+username+"' already exist.";
         cat.error(msg);
@@ -245,11 +241,11 @@ public class DemoCertReqServlet
     byte[] pkcs7;
     try {
         if (type == 1) {
-              byte[] certs = helper.nsCertRequest(reqBytes, username, password);
+              byte[] certs = helper.nsCertRequest(signsession, reqBytes, username, password);
               RequestHelper.sendNewCertToNSClient(certs, response);
         }
         if (type == 2) {
-              byte[] b64cert=helper.pkcs10CertRequest(reqBytes, username, password);
+              byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password);
               debug.ieCertFix(b64cert);
               RequestHelper.sendNewCertToIEClient(b64cert, response.getOutputStream(), getServletContext(), getInitParameter("responseTemplate"));
         }
@@ -289,8 +285,7 @@ public class DemoCertReqServlet
   }
 
 
-  public void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws IOException, ServletException
+  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException
   {
     cat.debug(">doGet()");
     ServletDebug debug = new ServletDebug(request,response);
@@ -302,12 +297,8 @@ public class DemoCertReqServlet
 
 private void sendNewCertToIEClient(byte[] b64cert, OutputStream out) throws Exception {
     PrintStream ps = new PrintStream(out);
-    BufferedReader br = new BufferedReader(
-        new InputStreamReader(
-            getServletContext().getResourceAsStream(
-                getInitParameter("responseTemplate"))
-                ));
-    while ( true ){
+    BufferedReader br = new BufferedReader(new InputStreamReader(getServletContext().getResourceAsStream(getInitParameter("responseTemplate"))));
+    while ( true ) {
         String line=br.readLine();
         if ( line==null )
             break;
@@ -326,9 +317,7 @@ private void sendNewB64Cert(byte[] b64cert, HttpServletResponse out)
   {
     out.setContentType("application/octet-stream");
     out.setHeader("Content-disposition", " attachment; filename=cert.crt");
-    out.setContentLength(b64cert.length +
-                         BEGIN_CERT_LENGTH + END_CERT_LENGTH + (3 *NL_LENGTH));
-
+    out.setContentLength(b64cert.length +BEGIN_CERT_LENGTH + END_CERT_LENGTH + (3 *NL_LENGTH));
     ServletOutputStream os = out.getOutputStream();
     os.write(BEGIN_CERT);
     os.write(NL);
@@ -370,8 +359,7 @@ private void sendNewB64Cert(byte[] b64cert, HttpServletResponse out)
   /**
    * @return true if the username is ok (does not already exist), false otherwise
    */
-  private final boolean checkUsername(Admin admin, String username)
-    throws ServletException
+  private final boolean checkUsername(Admin admin, String username, IUserAdminSessionRemote adminsession) throws ServletException
   {
     if (username != null) username = username.trim();
     if (username == null || username.length() == 0) {
