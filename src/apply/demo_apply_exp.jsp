@@ -4,8 +4,6 @@
 <HTML>
 <HEAD>
 <TITLE>EJBCA IE Demo Certificate Enroll</TITLE>
-
- 
 <link rel="stylesheet" href="indexmall.css" type="text/css">
 <object
    classid="clsid:43F8F289-7A20-11D0-8F06-00C04FC295E1"
@@ -60,13 +58,12 @@
   </span><span class="titel"> IE Demo Certificate Enrollment</span> </strong> 
 </center>
 
-<HR>
-Welcome to certificate enrollment. <BR>
-If you haven't done so already, you must first install the CA certificate(s) in your browser.
-
-<P>Install CA certificates:
-
-<%
+<HR width="450">
+<div align="center">Welcome to the certificate enrollment. <BR>
+  If you haven't done so already, you must first install <br>
+  the CA certificate(s) in your browser. </div>
+<P align="center">Install CA certificates: 
+  <%
 try  {
     InitialContext ctx = new InitialContext();
     ISignSessionHome home = home = (ISignSessionHome) PortableRemoteObject.narrow(
@@ -87,30 +84,36 @@ try  {
     ex.printStackTrace();
 }                                             
 %>
-<HR>
+<HR align="center" width="550">
 <FORM NAME="CertReqForm" ACTION="/apply/certreq" ENCTYPE=x-www-form-encoded METHOD=POST>
-Certificates issued by this CA comes with absolutely NO WARRANTY whatsoever. 
-NO AUTHENTICATION is performed on the information entered below.
-<p>
-Please give your name, then click OK to fetch your certificate.<BR>
-<INPUT name=user type=hidden><br>
-<INPUT name=dn type=hidden value="C=SE,O=AnaTom,CN="><br>
-Common Name, e.g. Sven Svensson:<br>
-	<INPUT NAME=cn TYPE=text SIZE=30>
-  <p> Email (voluntary): 
-    <INPUT name=email TYPE=text size=20><p>
-
-    <P>Please choose the CSP you wish to use from the list below (the default is probably good):</P>
-    <SELECT NAME="CspProvider">
-    </SELECT></P>
-
-    <INPUT TYPE="hidden" NAME="pkcs10" VALUE="">
-
-<INPUT type="button" value="OK" name="GenReq">
-
+  <div align="center">PLEASE NOTE! Certificates issued by this CA comes with absolutely<br>
+    NO WARRANTY whatsoever. NO AUTHENTICATION is<br>
+    performed on the information entered below. </div>
+  <p align="center"> Please fill out the form, then click OK to fetch your certificate.<br>
+    <INPUT name=user type=hidden>
+    <br>
+    Full name, e.g. Sven Svensson: 
+    <INPUT NAME=cn TYPE=text SIZE=25 maxlength="60" class="input">
+  <p align="center"> E-mail (optional): 
+    <INPUT name=email TYPE=text size=25 maxlength="60" class="input">
+  
+  <p align="center">If necessary, choose the CSP you wish to use from the list 
+    below<br>
+    (we recommend the default for most users):<br>
+    <br>
+  <div align="center">
+    <p>
+      <SELECT NAME="CspProvider">
+      </SELECT>
+      <INPUT TYPE="hidden" NAME="pkcs10" VALUE="">
+    </p>
+    <p>
+      <INPUT type="button" value="OK" name="GenReq">
+    </p>
+  </div>
 </FORM>
-
-<SCRIPT LANGUAGE=VBS>
+<div align="center">
+  <SCRIPT LANGUAGE=VBS>
     Function CSR(keyflags)
        CSR = ""
        szName          = "CN=6AEK347fw8vWE424"
@@ -165,6 +168,6 @@ Common Name, e.g. Sven Svensson:<br>
        Exit Sub
     End Sub
 </SCRIPT>
-
+</div>
 </BODY>
 </HTML>

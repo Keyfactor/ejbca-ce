@@ -8,16 +8,15 @@
 
 <center>
   <strong><span class="E">E</span><span class="J">J</span><span class="B">B</span><span class="C">C</span><span class="A">A 
-  </span> <span class="titel">Mozilla Demo Certificate Enrollment</span></strong> 
+  </span></strong><span class="titel">Mozilla Demo Certificate Enrollment</span> 
 </center>
 
-<HR>
-Welcome to certificate enrollment. <BR>
-If you haven't done so already, you must first install the CA certificate(s) in your browser.
-
-<P>Install CA certificates:
-
-<%
+<HR width="450">
+<div align="center">Welcome to the Certificate Enrollment. <BR>
+  If you haven't done so already, you must first install<br>
+  the CA certificate(s) in your browser. </div>
+<P align="center">Install CA certificates: 
+  <%
 try  {
     InitialContext ctx = new InitialContext();
     ISignSessionHome home = home = (ISignSessionHome) PortableRemoteObject.narrow(
@@ -38,9 +37,10 @@ try  {
     ex.printStackTrace();
 }                                             
 %>
-<HR>
-
-<script language="javaScript">
+  <br>
+<HR align="center" width="600">
+<div align="center">
+  <script language="javaScript">
 //*** This function, triggered by clicking the fake Submit button, checks
 //*** for, and rejects, blank values in the name and email fields.
 
@@ -71,22 +71,24 @@ function validateForm() {
   }
 }
 </script>
+</div>
 <FORM name="demoreq" ACTION="/apply/certreq" ENCTYPE=x-www-form-encoded METHOD="POST">
-Certificates issued by this CA comes with absolutely NO WARRANTY whatsoever. 
-NO AUTHENTICATION is performed on the information entered below.
-<p>
-Please give your name, then click OK to fetch your certificate.<BR>
-
-<INPUT name=user type=hidden><br>
-<INPUT name=dn type=hidden value="C=SE,O=AnaTom,CN="><br>
-Common Name, e.g. Sven Svensson:<br>
-	<INPUT NAME=cn TYPE=text SIZE=30><p>
-Email (you may leave empty): <INPUT name=email TYPE=text size=20><p>
-Key length
-	<KEYGEN TYPE="hidden" NAME="keygen" VALUE="challenge">
-
-<input type="button" value="OK" onclick="validateForm()">
-
+  <div align="center">PLEASE NOTE! Certificates issued by this CA comes with absolutely<br>
+    NO WARRANTY whatsoever. NO AUTHENTICATION is <br>
+    performed on the information entered below. </div>
+  <p align="center"> Please enter your name, then click OK to fetch your certificate.
+<INPUT name=user type=hidden>
+    <br>
+    <INPUT name=dn type=hidden value="C=SE,O=AnaTom,CN=">
+    <br>
+    Full name, e.g. Sven Svensson: 
+    <INPUT NAME=cn TYPE=text SIZE=25 maxlength="60" class="input">
+  
+  <p align="center"> E-mail (optional): 
+    <INPUT name=email TYPE=text size=25 maxlength="60" class="input">
+  
+  <p align="center"> Key length <KEYGEN TYPE="hidden" NAME="keygen" VALUE="challenge"> 
+    <input type="button" value="OK" onclick="validateForm()">
 </FORM>
 
 <script language="JavaScript">

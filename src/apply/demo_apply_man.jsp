@@ -3,20 +3,20 @@
 <HTML>
 <HEAD>
 <TITLE>EJBCA Demo Certificate Enroll</TITLE>
+<link rel="stylesheet" href="indexmall.css" type="text/css">
 </HEAD>
 <BODY bgcolor="#ffffff" link="black" vlink="black" alink="black">
 <center>
-<FONT face=arial size="3"><strong>EJBCA Demo Certificate Enrollment
-</strong></FONT>
+  <FONT face=arial size="3"><strong><span class="E">E</span><span class="J">J</span><span class="B">B</span><span class="C">C</span><span class="A">A&nbsp;</span></strong></FONT> 
+  <span class="titel">Demo Certificate Enrollment </span> 
 </center>
 
 <HR>
-Welcome to certificate enrollment. <BR>
-If you haven't done so already, you should first fetch the CA certificate(s).
-
-<P>Fetch CA certificates:
-
-<%
+<div align="center">Welcome to certificate enrollment. <BR>
+  If you haven't done so already, you should<br>
+  first fetch the CA certificate(s). </div>
+<P align="center">Fetch CA certificates: 
+  <%
 try  {
     InitialContext ctx = new InitialContext();
     ISignSessionHome home = home = (ISignSessionHome) PortableRemoteObject.narrow(
@@ -37,9 +37,9 @@ try  {
     ex.printStackTrace();
 }                                             
 %>
-<hr>
-
-<script language="javaScript">
+<hr align="center">
+<div align="center">
+  <script language="javaScript">
 //*** This function, triggered by clicking the fake Submit button, checks
 //*** for, and rejects, blank values in the name and email fields.
 
@@ -70,35 +70,41 @@ function validateForm() {
   }
 }
 </script>
-
+</div>
 <FORM NAME="demoreq" ACTION="/apply/certreq" ENCTYPE=x-www-form-encoded METHOD=POST>
-Certificates issued by this CA comes with absolutely NO WARRANTY whatsoever. 
-NO AUTHENTICATION is performed on the information entered below.
-
-Please give your username and password, paste the PEM-formated PKCS10 certification request into the field below and
- click OK to fetch your certificate. 
-<p>
-A PEM-formatted request is a BASE64 encoded PKCS10 request between the two lines:<BR>
------BEGIN CERTIFICATE REQUEST-----<br>
------END CERTIFICATE REQUEST-----
-<p>
-
-<INPUT name=user type=hidden><br>
-<INPUT name=dn type=hidden value="C=SE,O=AnaTom,CN="><br>
-Common Name, e.g. Sven Svensson:<br>
-	<INPUT NAME=cn TYPE=text SIZE=30><p>
-Email (you may leave empty): <INPUT name=email TYPE=text size=20><p>
-		<textarea rows="15" cols="70" name=pkcs10req wrap="physical"></textarea>
-		<br>
-
-<input type="button" value="OK" onclick="validateForm()">
-
-<script language="JavaScript">
+  <div align="center"> 
+    <p>PLEASE NOTE! Certificates issued by this CA comes with absolutely<br>
+      NO WARRANTY whatsoever. NO AUTHENTICATION is<br>
+      performed on the information entered below.</p>
+    <p> Please give your username and password, paste the PEM-formatted<br>
+      PKCS10 certification request into the field below<br>
+      and click OK to fetch your certificate. </p>
+  </div>
+  <p align="center"> A PEM-formatted request is a BASE64 encoded PKCS10 request 
+    between the two lines:<BR>
+    -----BEGIN CERTIFICATE REQUEST-----<br>
+    -----END CERTIFICATE REQUEST----- 
+  <p align="center"> 
+    <INPUT name=user type=hidden>
+    <br>
+    <INPUT name=dn type=hidden value="C=SE,O=AnaTom,CN=">
+    <br>
+    Full name, e.g. Sven Svensson: 
+    <INPUT NAME=cn TYPE=text SIZE=25 maxlength="60" class="input">
+    <br>
+    E-mail (optional): 
+    <INPUT name=email TYPE=text size=25 maxlength="60" class="input">
+  
+  <p align="center"> 
+    <textarea rows="15" cols="70" name=pkcs10req wrap="physical"></textarea>
+    <br>
+    <br>
+    <input type="button" value="OK" onclick="validateForm()">
+    <script language="JavaScript">
 //-- This little script, executed after form has been rendered, 
   //-- puts the cursor into the userName field so it's ready when page opens.
   document.demoreq.cn.focus()
 </script>
-
 </FORM>
-</BODY>
+<p>&nbsp;</p></BODY>
 </HTML>
