@@ -10,7 +10,7 @@ import se.anatom.ejbca.ra.UserAdminData;
 
 /**
  *
- * @version $Id: IUserAdminSession.java,v 1.1.1.1 2001-11-15 14:58:17 anatom Exp $
+ * @version $Id: IUserAdminSession.java,v 1.2 2002-01-25 13:11:49 anatom Exp $
  */
 public interface IUserAdminSession {
 
@@ -50,7 +50,7 @@ public interface IUserAdminSession {
     * Sets a clear text password for a user.
     *
     * @param username the unique username.
-    * @param password the new password to be stored in clear text.
+    * @param password the new password to be stored in clear text. Setting password to 'null' effectively deletes any previous clear text password.
     *
     * @throws EJBException if a communication or other error occurs.
     */

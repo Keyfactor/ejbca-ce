@@ -41,7 +41,7 @@ import org.apache.log4j.*;
  *
  * This class generates keys and request certificates for all users with status NEW. The result is generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.6 2002-01-16 11:45:32 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.7 2002-01-25 13:11:49 anatom Exp $
  *
  */
 
@@ -244,6 +244,8 @@ public class BatchMakeP12 {
                     processUser(data);
                     // If all was OK , set status to GENERATED
                     admin.setUserStatus(data.getUsername(), UserData.STATUS_GENERATED);
+                    // Delete clear text password
+                    admin.setClearTextPassword(data.getUsername(), null);
                     successusers += ":" + data.getUsername();
                     successcount++;
                 } catch (Exception e) {
@@ -283,6 +285,8 @@ public class BatchMakeP12 {
                 processUser(data);
                 // If all was OK , set status to GENERATED
                 admin.setUserStatus(data.getUsername(), UserData.STATUS_GENERATED);
+                // Delete clear text password
+                admin.setClearTextPassword(data.getUsername(), null);
             } catch (Exception e) {
                 // If things went wrong set status to FAILED
                 cat.error("An error happened, setting status to FAILED.");
