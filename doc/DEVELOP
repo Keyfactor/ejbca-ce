@@ -77,17 +77,37 @@ CVS
 
 All files should have the below part in the initial class comment:
 
-@version $Id: DEVELOP,v 1.4 2002-07-16 12:26:40 anatom Exp $
+@version $Id: DEVELOP,v 1.5 2002-07-21 12:10:36 anatom Exp $
 
 Example:
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
- * @version $Id: DEVELOP,v 1.4 2002-07-16 12:26:40 anatom Exp $
+ * @version $Id: DEVELOP,v 1.5 2002-07-21 12:10:36 anatom Exp $
  */
 
+CA KeyStore architecture/creating a custom CA Keystore
+--------------------------------------------------------------------------
 
+The CA Keystore, where the CAs private key is stored and used is 
+defined by the interface se.anatom.ejbca.ca.sign.ISigningDevice.
+
+By creating a new custom class and simply editing the property 
+'signingDeviceFactory' to point at the custom factory class that creates an 
+instance of the custom SigningDevice class in a thread-safe way. 
+It is recommended, but not required, that the Signing device implements a Singleton.
+
+The SigningDeviceFactory class MUST contain the method:
+
+   /** Creates (if needed) the signing device and returns the object.
+    * @prop Arguments needed fo?r the eventual creation of the object
+    * @return An instance of the Signing device.
+    */
+    public synchronized ISigningDevice makeInstance(Properties prop) throws Exception {
+        return PKCS12SigningDevice.instance(prop);
+    }
+    
 CertificateStore/Publisher architecture
 ---------------------------------------
 
