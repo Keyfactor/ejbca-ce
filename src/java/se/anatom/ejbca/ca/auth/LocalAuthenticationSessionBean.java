@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.ca.auth;
 
 import java.util.Date;
@@ -34,7 +34,7 @@ import se.anatom.ejbca.ra.UserDataPK;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.26 2004-05-13 15:34:40 herrvendil Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.27 2004-06-10 14:19:04 sbailliez Exp $
  */
 public class LocalAuthenticationSessionBean extends BaseSessionBean {
     /** home interface to user entity bean */
@@ -55,7 +55,7 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
         userHome = (UserDataLocalHome)lookup("java:comp/env/ejb/UserDataLocal", UserDataLocalHome.class);
 
         try{
-          ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) lookup("java:comp/env/ejb/LogSessionLocal",ILogSessionLocalHome.class);
+          ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) lookup(ILogSessionLocalHome.COMP_NAME,ILogSessionLocalHome.class);
           logsession = logsessionhome.create();
         }catch(Exception e){
           throw new EJBException(e);
@@ -87,21 +87,21 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
             if ( (status == UserDataLocal.STATUS_NEW) || (status == UserDataLocal.STATUS_FAILED) || (status == UserDataLocal.STATUS_INPROCESS) || (status == UserDataLocal.STATUS_KEYRECOVERY)) {
                 debug("Trying to authenticate user: username="+data.getUsername()+", dn="+data.getSubjectDN()+", email="+data.getSubjectEmail()+", status="+data.getStatus()+", type="+data.getType());
                 if (data.comparePassword(password) == false)
-                {                  
-                  logsession.log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"Got request for user with invalid password: "+username);                  
+                {
+                  logsession.log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"Got request for user with invalid password: "+username);
                   throw new AuthLoginException("Wrong password for user.");
                 }
-                 
+
                 logsession.log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_USERAUTHENTICATION,"Authenticated user: "+username);
                 UserAuthData ret = new UserAuthData(data.getUsername(), data.getClearPassword(), data.getSubjectDN(), data.getCAId(), data.getSubjectAltName(), data.getSubjectEmail(), data.getType(), data.getCertificateProfileId(), data.getExtendedInformation());
                 debug("<authenticateUser("+username+", hiddenpwd)");
                 return ret;
-            } else {               
-                logsession.log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"Got request with status '"+status+"', NEW, FAILED or INPROCESS required: "+username);               
+            } else {
+                logsession.log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"Got request with status '"+status+"', NEW, FAILED or INPROCESS required: "+username);
                 throw new AuthStatusException("User "+username+" has status '"+status+"', NEW, FAILED or INPROCESS required.");
             }
-        } catch (ObjectNotFoundException oe) {            
-            logsession.log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"Got request for nonexisting user: "+username);            
+        } catch (ObjectNotFoundException oe) {
+            logsession.log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"Got request for nonexisting user: "+username);
             throw oe;
         } catch (AuthStatusException se) {
             throw se;
@@ -133,8 +133,8 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
             data.setTimeModified((new Date()).getTime());
             logsession.log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDENDENTITY,"Changed status to STATUS_GENERATED.");
             debug("<finishUser("+username+", hiddenpwd)");
-        } catch (ObjectNotFoundException oe) {            
-            logsession.log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"Got request for nonexisting user.");            
+        } catch (ObjectNotFoundException oe) {
+            logsession.log(admin, admin.getCAId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"Got request for nonexisting user.");
             throw oe;
         } catch (Exception e) {
             error("Unexpected error in finnishUser(): ", e);

@@ -21,9 +21,13 @@ import javax.ejb.EJBHome;
 /**
  * DOCUMENT ME!
  *
- * @version $Id: ILogSessionHome.java,v 1.6 2004-06-10 12:35:05 sbailliez Exp $
+ * @version $Id: ILogSessionHome.java,v 1.7 2004-06-10 14:18:08 sbailliez Exp $
  */
 public interface ILogSessionHome extends EJBHome {
+
+   public static final String COMP_NAME="java:comp/env/ejb/LogSession";
+   public static final String JNDI_NAME="LogSession";
+    
     /**
      * Default create method. Maps to ejbCreate in implementation.
      *

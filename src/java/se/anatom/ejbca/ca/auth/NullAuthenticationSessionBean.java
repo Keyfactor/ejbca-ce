@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.ca.auth;
 
 import java.rmi.*;
@@ -32,12 +32,12 @@ import se.anatom.ejbca.util.CertTools;
  * Approves all authentication requests that contain a DN as the username, password is ignored and
  * the username is returned as DN. Useful for demo purposes to give out certificates to anyone.
  *
- * @version $Id: NullAuthenticationSessionBean.java,v 1.18 2004-05-13 15:34:40 herrvendil Exp $
+ * @version $Id: NullAuthenticationSessionBean.java,v 1.19 2004-06-10 14:19:04 sbailliez Exp $
  */
 public class NullAuthenticationSessionBean extends BaseSessionBean {
     /** The remote interface of the log session bean */
     private ILogSessionRemote logsession;
-    
+
 
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -48,7 +48,7 @@ public class NullAuthenticationSessionBean extends BaseSessionBean {
         debug(">ejbCreate()");
 
         try {
-            ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",
+            ILogSessionHome logsessionhome = (ILogSessionHome) lookup(ILogSessionHome.COMP_NAME,
                     ILogSessionHome.class);
             logsession = logsessionhome.create();
         } catch (Exception e) {

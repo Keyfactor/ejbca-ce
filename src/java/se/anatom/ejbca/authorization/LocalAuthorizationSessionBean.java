@@ -47,7 +47,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.11 2004-06-08 13:17:48 sbailliez Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.12 2004-06-10 14:13:40 sbailliez Exp $
  *
  * @ejb.bean
  *   description="Session bean handling interface with ra authorization"
@@ -243,7 +243,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
     private ILogSessionLocal getLogSession() {
         if(logsession == null){
           try{
-            ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) lookup("java:comp/env/ejb/LogSessionLocal",ILogSessionLocalHome.class);
+            ILogSessionLocalHome logsessionhome = (ILogSessionLocalHome) lookup(ILogSessionLocalHome.COMP_NAME,ILogSessionLocalHome.class);
             logsession = logsessionhome.create();
           }catch(Exception e){
              throw new EJBException(e);

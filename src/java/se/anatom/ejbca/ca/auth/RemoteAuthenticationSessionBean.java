@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.ca.auth;
 
 import java.io.*;
@@ -33,7 +33,7 @@ import se.anatom.ejbca.log.LogEntry;
 /**
  * Authenticates users towards a remote user database, using HTTP-based protocol.
  *
- * @version $Id: RemoteAuthenticationSessionBean.java,v 1.13 2004-04-16 07:39:00 anatom Exp $
+ * @version $Id: RemoteAuthenticationSessionBean.java,v 1.14 2004-06-10 14:19:04 sbailliez Exp $
  */
 public class RemoteAuthenticationSessionBean extends BaseSessionBean {
     private static String REMOTE_PROTOCOL_VER = "1.0";
@@ -58,7 +58,7 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
         remoteurl = (String) lookup("java:comp/env/AuthURL", java.lang.String.class);
 
         try {
-            ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",
+            ILogSessionHome logsessionhome = (ILogSessionHome) lookup(ILogSessionHome.COMP_NAME,
                     ILogSessionHome.class);
             logsession = logsessionhome.create();
         } catch (Exception e) {
