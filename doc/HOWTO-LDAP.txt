@@ -5,7 +5,7 @@ CONFIGURING LDAP PUBLISHERS
 Note: Slighly old documentation, consider also checking INSTALL-guide.txt in the source package.
 
 A good free LDAP server can be found at http://www.openldap.org/
- 
+
 A Publisher is a session bean that implements the IPublishSession interface and
 is used to store certificates and CRLs for entities.
 EJBCA have support for endless number of publishers. Simply by deploying session
@@ -13,6 +13,8 @@ beans (PublisherSession1, PublisherSession2, ...) on the application server. The
 user of EJBCA can implement own publishers, but EJBCA already comes with  a
 publisher for LDAP.
 
+Configuring EJBCA
+-----------------
 To configure the publisher for LDAP:
 By default the LDAP publisher is not enabled. To deploy the LDAP Publisher
 session bean, uncomment the section for the session bean 'PublisherSession1' in
@@ -79,3 +81,61 @@ certificates are published. This objectclass must allow the attribute
 - cAObjectClass is the objectclass for the LDAP entries for CAs, where CA
 certificates and CRLs are published. This objectclass must allow the attributes
 'cACertificate;binary' and 'certificateRevocationList;binary'.
+
+Setting up certificate profiles
+-------------------------------
+To publish in LDAP you must create a Certificate profile in EJBCA that publishes 
+to LDAP. If the above is configured, the will be a section for 'Publishers' available
+when creating/editing a certificate profile. Choose this, and then when adding 
+end-entities, make sure they use the new certificate profile and voila, the certs will 
+be published.
+
+Configure OpenLDAP
+------------------
+The objectclass 'inetOrgPerson' is used by default to store certificates.
+
+Example:
+
+dn: cn=Mike Jackson,ou=people,dc=company,dc=com
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+objectclass: strongAuthenticationUser 
+cn: Mike Jackson
+sn: Jackson
+userCertificate;binary::
+
+To configure OpenLDAP (version 2.2.5) to include the 'inetOrgPerson' you must 
+add the following lines to slapd.conf:
+
+include         /usr/local/etc/openldap/schema/cosine.schema
+include         /usr/local/etc/openldap/schema/inetorgperson.schema
+
+Don't forget to add the top object by creating an LDIF file (org.ldif):
+---
+dn: o=AnaTom,c=SE
+objectclass: dcObject
+objectclass: organization
+o: AnaTom
+dc: AnaTom
+
+dn: cn=Admin,o=AnaTom,c=SE
+objectclass: organizationalRole
+cn: Admin
+---
+
+And using the command:
+ldapadd -x -D "cn=Admin,o=AnaTom,c=SE" -W -f org.ldif
+
+CAs are published in the form:
+
+dn: cn=ejbca,dc=jackson,dc=net
+objectClass: top
+objectClass: applicationProcess
+objectClass: certificationAuthority
+cn: ejbca
+cACertificate;binary:
+certificateRevocationList;binary:
+authorityRevocationList;binary: 
+
