@@ -15,6 +15,7 @@ package se.anatom.ejbca.ca.caadmin;
 
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
+import java.io.UnsupportedEncodingException;
 
 import javax.ejb.CreateException;
 
@@ -36,7 +37,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.6 2004-07-09 16:14:49 sbailliez Exp $
+ * @version $Id: CADataBean.java,v 1.7 2004-07-13 08:54:01 sbailliez Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a publisher"
@@ -50,6 +51,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *   cmp-version="2.x"
  *   transaction-type="Container"
  *   schema="CADataBean"
+ *   primkey-field="CAId"
  *
  * @ejb.permission role-name="InternalUser"
  *
@@ -85,6 +87,7 @@ public abstract class CADataBean extends BaseEntityBean {
     /**
      * @ejb.pk-field
      * @ejb.persistence
+     * @ejb.interface-method
     */
     public abstract Integer getCAId();
 
@@ -175,14 +178,17 @@ public abstract class CADataBean extends BaseEntityBean {
      * Method that saves the CA to database.
      * @ejb.interface-method
      */
-    public void setCA(CA ca)  throws java.io.UnsupportedEncodingException{        
+    public void setCA(CA ca)  {
        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
        
        java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
        encoder.writeObject(ca.saveData());
-       encoder.close();       
-       setData(baos.toString("UTF8"));
-       
+       encoder.close();
+        try {
+            setData(baos.toString("UTF8"));
+        } catch (UnsupportedEncodingException e){
+            throw (IllegalStateException)new IllegalStateException().initCause(e);
+        }
        this.ca = ca;
        ca.setOwner(this);
     }   
@@ -209,7 +215,7 @@ public abstract class CADataBean extends BaseEntityBean {
      * @return caid
      * @ejb.create-method
      */
-    public Integer ejbCreate(String subjectdn, String name, int status, CA ca) throws CreateException, java.io.UnsupportedEncodingException {
+    public Integer ejbCreate(String subjectdn, String name, int status, CA ca) throws CreateException {
                 
         setCAId(new Integer(subjectdn.hashCode()));
         setName(name);        
