@@ -19,7 +19,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 /**
  * Export profiles from the databse to XML-files.
  *
- * @version $Id: CaExportProfilesCommand.java,v 1.5 2003-10-12 13:14:32 anatom Exp $
+ * @version $Id: CaExportProfilesCommand.java,v 1.6 2003-10-12 13:31:48 anatom Exp $
  */
 public class CaExportProfilesCommand extends BaseCaAdminCommand {
     /**
@@ -83,7 +83,7 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
                         String outfile = outpath+"/certprofile_"+profilename+"-"+profileid+".xml";
                         System.out.println(outfile+".");
                         XMLEncoder encoder = new XMLEncoder(new  FileOutputStream(outfile));
-                        encoder.writeObject(profile);
+                        encoder.writeObject(profile.saveData());
                         encoder.close();
                     }
                 }
@@ -104,7 +104,7 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
                         String outfile = outpath+"/entityprofile_"+profilename+"-"+profileid+".xml";
                         System.out.println(outfile+".");
                         XMLEncoder encoder = new XMLEncoder(new  FileOutputStream(outfile));
-                        encoder.writeObject(profile);
+                        encoder.writeObject(profile.saveData());
                         encoder.close();
                     }
                 }
