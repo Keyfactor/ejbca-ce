@@ -16,7 +16,7 @@ import org.bouncycastle.jce.PKCS10CertificationRequest;
 
 /** Class to handle PKCS10 request messages sent to the CA.
  *
-* @version  $Id: PKCS10RequestMessage.java,v 1.2 2002-10-14 15:29:46 anatom Exp $
+ * @version  $Id: PKCS10RequestMessage.java,v 1.3 2002-12-17 08:38:28 anatom Exp $
  */
 public class PKCS10RequestMessage implements RequestMessage, Serializable {
 
@@ -54,6 +54,11 @@ public class PKCS10RequestMessage implements RequestMessage, Serializable {
         }
         return pkcs10.getPublicKey();
       }
+
+    public PKCS10CertificationRequest getCertificationRequest()
+    {
+        return pkcs10;
+    }
 
     public boolean verify() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
         cat.debug(">verify()");
