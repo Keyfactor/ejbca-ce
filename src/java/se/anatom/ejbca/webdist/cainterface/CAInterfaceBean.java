@@ -3,271 +3,239 @@ package se.anatom.ejbca.webdist.cainterface;
 import java.rmi.RemoteException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.TreeMap;
 
 import javax.ejb.CreateException;
-import javax.naming.*;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
 
 import se.anatom.ejbca.IJobRunnerSessionHome;
+import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
+import se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome;
+import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
+import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
-import se.anatom.ejbca.ca.sign.ISignSessionHome;
-import se.anatom.ejbca.ca.sign.ISignSessionRemote;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
+import se.anatom.ejbca.ca.sign.ISignSessionLocal;
+import se.anatom.ejbca.ca.sign.ISignSessionLocalHome;
+import se.anatom.ejbca.ca.store.CRLInfo;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
 import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.ra.IUserAdminSessionHome;
-import se.anatom.ejbca.ra.IUserAdminSessionRemote;
-import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
-import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
+import se.anatom.ejbca.ra.IUserAdminSessionLocal;
+import se.anatom.ejbca.ra.IUserAdminSessionLocalHome;
+import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
+import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.webdist.rainterface.CertificateView;
 import se.anatom.ejbca.webdist.rainterface.RevokedInfoView;
+import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
+import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
 
 
 /**
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
- * @author Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.16 2003-07-24 08:43:32 anatom Exp $
+ * @author  Philip Vendil
+ * @version $Id: CAInterfaceBean.java,v 1.17 2003-09-04 09:46:43 herrvendil Exp $
  */
-public class CAInterfaceBean {
-    /**
-     * Creates a new instance of CaInterfaceBean
-     */
+public class CAInterfaceBean   {
+
+
+    /** Creates a new instance of CaInterfaceBean */
     public CAInterfaceBean() {
     }
 
     // Public methods
-    public void initialize(HttpServletRequest request)
-        throws Exception {
-        if (!initialized) {
-            administrator = new Admin(((X509Certificate[]) request.getAttribute(
-                        "javax.servlet.request.X509Certificate"))[0]);
+    public void initialize(HttpServletRequest request, EjbcaWebBean ejbcawebbean) throws  Exception{
 
-            InitialContext jndicontext = new InitialContext();
-            Object obj1 = jndicontext.lookup("CertificateStoreSession");
-            certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1,
-                    ICertificateStoreSessionHome.class);
-            certificatesession = certificatesessionhome.create();
-
-            certificateprofiles = new CertificateProfileDataHandler(certificatesession,
-                    administrator);
-            initialized = true;
-        }
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     *
-     * @throws RemoteException DOCUMENT ME!
-     * @throws NamingException DOCUMENT ME!
-     * @throws CreateException DOCUMENT ME!
-     */
-    public CertificateView[] getCAInfo() throws RemoteException, NamingException, CreateException {
-        CertificateView[] returnval = null;
+      if(!initialized){
+        administrator = new Admin(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
         InitialContext jndicontext = new InitialContext();
-        ISignSessionHome home = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup(
-                    "RSASignSession"), ISignSessionHome.class);
-        ISignSessionRemote ss = home.create();
-        Certificate[] chain = ss.getCertificateChain(administrator);
+        Object obj1 = jndicontext.lookup("java:comp/env/CertificateStoreSessionLocal");
+        ICertificateStoreSessionLocalHome certificatesessionhome = (ICertificateStoreSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionLocalHome.class);
+        certificatesession = certificatesessionhome.create();
+        
+        obj1 = jndicontext.lookup("java:comp/env/CAAdminSessionLocal");
+        ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICAAdminSessionLocalHome.class);
+        caadminsession = caadminsessionhome.create();
+        
+        IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/AuthorizationSessionLocal"),
+                                                                                 IAuthorizationSessionLocalHome.class);
+        authorizationsession = authorizationsessionhome.create();
+        
+        obj1 = jndicontext.lookup("java:comp/env/UserAdminSessionLocal");
+        IUserAdminSessionLocalHome adminsessionhome = (IUserAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionLocalHome.class);
+        adminsession = adminsessionhome.create();
 
-        if (chain != null) {
-            returnval = new CertificateView[chain.length];
-
-            for (int i = 0; i < chain.length; i++) {
-                RevokedInfoView revokedinfo = null;
-                RevokedCertInfo revinfo = certificatesession.isRevoked(administrator,
-                        CertTools.getIssuerDN((X509Certificate) chain[i]),
-                        ((X509Certificate) chain[i]).getSerialNumber());
-
-                if (revinfo != null) {
-                    revokedinfo = new RevokedInfoView(revinfo);
-                }
-
-                returnval[i] = new CertificateView((X509Certificate) chain[i], revokedinfo, null);
-            }
-        }
-
-        return returnval;
+        IRaAdminSessionLocalHome raadminsessionhome = (IRaAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/RaAdminSessionLocal"),
+                                                                                 IRaAdminSessionLocalHome.class);
+        raadminsession = raadminsessionhome.create();               
+        
+        this.informationmemory = ejbcawebbean.getInformationMemory();
+          
+        certificateprofiles = new CertificateProfileDataHandler(administrator, certificatesession, authorizationsession, informationmemory);
+        cadatahandler = new CADataHandler(administrator, caadminsession, adminsession, raadminsession, certificatesession, authorizationsession, ejbcawebbean);        
+        initialized =true;
+      }
     }
 
+    public CertificateView[] getCACertificates(int caid) throws RemoteException, NamingException, CreateException {
+      CertificateView[] returnval = null;      
+      InitialContext jndicontext = new InitialContext();
+      ISignSessionLocalHome home = (ISignSessionLocalHome)javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/SignSessionLocal"), ISignSessionLocalHome.class );
+      ISignSessionLocal ss = home.create();
+      Collection chain = ss.getCertificateChain(administrator, caid);
+      
+      returnval = new CertificateView[chain.size()];
+      Iterator iter = chain.iterator();
+      int i=0;
+      while(iter.hasNext()){
+        Certificate next = (Certificate) iter.next();  
+        RevokedInfoView revokedinfo = null;
+        RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN((X509Certificate) next), ((X509Certificate) next).getSerialNumber());
+        if(revinfo != null)
+          revokedinfo = new RevokedInfoView(revinfo);
+        returnval[i] = new CertificateView((X509Certificate) next, revokedinfo,null);
+        i++;
+      }
+
+      return returnval;
+    }
+    
     /**
-     * DOCUMENT ME!
+     * Method that returns a HashMap connecting available CAIds (Integer) to CA Names (String).
      *
-     * @throws RemoteException DOCUMENT ME!
-     * @throws NamingException DOCUMENT ME!
-     * @throws CreateException DOCUMENT ME!
-     */
-    public void createCRL() throws RemoteException, NamingException, CreateException {
-        InitialContext jndicontext = new InitialContext();
-        IJobRunnerSessionHome home = (IJobRunnerSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup(
-                    "CreateCRLSession"), IJobRunnerSessionHome.class);
-        home.create().run(administrator);
+     */ 
+    
+    public HashMap getCAIdToNameMap(){
+      return informationmemory.getCAIdToNameMap();
+    } 
+    
+    public Collection getAuthorizedCAs(){
+      return informationmemory.getAuthorizedCAIds();
+    }  
+      
+      
+    public TreeMap getAuthorizedCertificateProfileNames() {
+      return informationmemory.getAuthorizedCertificateProfileNames();
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     *
-     * @throws RemoteException DOCUMENT ME!
-     */
-    public int getLastCRLNumber() throws RemoteException {
-        return certificatesession.getLastCRLNumber(administrator);
+    /** Returns the profile name from id proxied */
+    public String getCertificateProfileName(int profileid) throws RemoteException{
+      return this.informationmemory.getCertificateProfileNameProxy().getCertificateProfileName(profileid);
+    }
+    
+    public int getCertificateProfileId(String profilename){
+      return certificateprofiles.getCertificateProfileId(profilename);
     }
 
-    // Methods dealing with certificate types.
-    public String[] getCertificateProfileNames() throws RemoteException {
-        return certificateprofiles.getCertificateProfileNames();
+
+    public CertificateProfile getCertificateProfile(String name)  throws Exception{
+      return certificateprofiles.getCertificateProfile(name);
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param certificateprofilename DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     *
-     * @throws RemoteException DOCUMENT ME!
-     */
-    public int getCertificateProfileId(String certificateprofilename)
-        throws RemoteException {
-        return certificateprofiles.getCertificateProfileId(certificateprofilename);
+    public CertificateProfile getCertificateProfile(int id)  throws Exception{
+      return certificateprofiles.getCertificateProfile(id);
     }
 
-    /* Returns certificateprofiles as a CertificateProfiles object */
-    public CertificateProfileDataHandler getCertificateProfileDataHandler() {
-        return certificateprofiles;
+    public void addCertificateProfile(String name) throws Exception{
+       CertificateProfile profile = new CertificateProfile();
+       profile.setAvailableCAs(informationmemory.getAuthorizedCAIds());
+       
+       certificateprofiles.addCertificateProfile(name, profile);
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param name DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     *
-     * @throws RemoteException DOCUMENT ME!
-     */
-    public CertificateProfile getCertificateProfile(String name)
-        throws RemoteException {
-        return certificateprofiles.getCertificateProfile(name);
+   
+    public void changeCertificateProfile(String name, CertificateProfile profile) throws Exception {
+       certificateprofiles.changeCertificateProfile(name, profile);
     }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param name DOCUMENT ME!
-     *
-     * @throws CertificateProfileExistsException DOCUMENT ME!
-     * @throws RemoteException DOCUMENT ME!
-     */
-    public void addCertificateProfile(String name)
-        throws CertificateProfileExistsException, RemoteException {
-        certificateprofiles.addCertificateProfile(name, new CertificateProfile());
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param name DOCUMENT ME!
-     * @param certificateprofile DOCUMENT ME!
-     *
-     * @throws CertificateProfileExistsException DOCUMENT ME!
-     * @throws RemoteException DOCUMENT ME!
-     */
-    public void addCertificateProfile(String name, CertificateProfile certificateprofile)
-        throws CertificateProfileExistsException, RemoteException {
-        certificateprofiles.addCertificateProfile(name, certificateprofile);
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param name DOCUMENT ME!
-     * @param certificateprofile DOCUMENT ME!
-     *
-     * @throws CertificateProfileDoesntExistsException DOCUMENT ME!
-     * @throws RemoteException DOCUMENT ME!
-     */
-    public void changeCertificateProfile(String name, CertificateProfile certificateprofile)
-        throws CertificateProfileDoesntExistsException, RemoteException {
-        certificateprofiles.changeCertificateProfile(name, certificateprofile);
-    }
-
-    /**
-     * Returns false if certificate type is used by any user or in profiles.
-     *
-     * @param name DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public boolean removeCertificateProfile(String name)
-        throws Exception {
-        InitialContext jndicontext = new InitialContext();
-        Object obj1 = jndicontext.lookup("UserAdminSession");
-        IUserAdminSessionHome adminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1,
-                IUserAdminSessionHome.class);
-        IUserAdminSessionRemote adminsession = adminsessionhome.create();
-
-        obj1 = jndicontext.lookup("RaAdminSession");
-
-        IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup(
-                    "RaAdminSession"), IRaAdminSessionHome.class);
-        IRaAdminSessionRemote raadminsession = raadminsessionhome.create();
+    
+    /** Returns false if certificate type is used by any user or in profiles. */
+    public boolean removeCertificateProfile(String name) throws Exception{
 
         boolean certificateprofileused = false;
-        int certificateprofileid = certificatesession.getCertificateProfileId(administrator, name);
-
-        // Check if any users or profiles use the certificate id.
-        certificateprofileused = adminsession.checkForCertificateProfileId(administrator,
-                certificateprofileid) ||
-            raadminsession.existsCertificateProfileInEndEntityProfiles(administrator,
-                certificateprofileid);
-
-        if (!certificateprofileused) {
-            certificateprofiles.removeCertificateProfile(name);
+        int certificateprofileid = certificatesession.getCertificateProfileId(administrator, name);        
+        CertificateProfile certprofile = this.certificatesession.getCertificateProfile(administrator, name);
+        
+        if(certprofile.getType() == CertificateProfile.TYPE_ENDENTITY){
+          // Check if any users or profiles use the certificate id.
+          certificateprofileused = adminsession.checkForCertificateProfileId(administrator, certificateprofileid)
+                                || raadminsession.existsCertificateProfileInEndEntityProfiles(administrator, certificateprofileid);
+        }else{
+           certificateprofileused = caadminsession.exitsCertificateProfileInCAs(administrator, certificateprofileid);
+        }
+            
+          
+        if(!certificateprofileused){
+          certificateprofiles.removeCertificateProfile(name);
         }
 
         return !certificateprofileused;
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param oldname DOCUMENT ME!
-     * @param newname DOCUMENT ME!
-     *
-     * @throws CertificateProfileExistsException DOCUMENT ME!
-     * @throws RemoteException DOCUMENT ME!
-     */
-    public void renameCertificateProfile(String oldname, String newname)
-        throws CertificateProfileExistsException, RemoteException {
-        certificateprofiles.renameCertificateProfile(oldname, newname);
+    public void renameCertificateProfile(String oldname, String newname) throws Exception{
+       certificateprofiles.renameCertificateProfile(oldname, newname);
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param originalname DOCUMENT ME!
-     * @param newname DOCUMENT ME!
-     *
-     * @throws CertificateProfileExistsException DOCUMENT ME!
-     * @throws RemoteException DOCUMENT ME!
-     */
-    public void cloneCertificateProfile(String originalname, String newname)
-        throws CertificateProfileExistsException, RemoteException {
-        certificateprofiles.cloneCertificateProfile(originalname, newname);
+    public void cloneCertificateProfile(String originalname, String newname) throws Exception{
+      certificateprofiles.cloneCertificateProfile(originalname, newname);
+    }    
+      
+    public void createCRL(String issuerdn)  throws RemoteException, NamingException, CreateException  {      
+      InitialContext jndicontext = new InitialContext();
+      IJobRunnerSessionHome home  = (IJobRunnerSessionHome)javax.rmi.PortableRemoteObject.narrow( jndicontext.lookup("CreateCRLSession") , IJobRunnerSessionHome.class );
+      home.create().run(administrator, issuerdn);
     }
 
+    public int getLastCRLNumber(String  issuerdn) throws RemoteException   {
+      return certificatesession.getLastCRLNumber(administrator, issuerdn);      
+    }
+    
+    public CRLInfo getLastCRLInfo(String issuerdn) throws RemoteException{
+      return certificatesession.getLastCRLInfo(administrator,  issuerdn);          
+    }
+
+    /* Returns certificateprofiles as a CertificateProfiles object */
+    public CertificateProfileDataHandler getCertificateProfileDataHandler(){
+      return certificateprofiles;
+    }
+    
+    public HashMap getAvailablePublishers() throws NamingException, CreateException{
+      InitialContext jndicontext = new InitialContext();
+      ISignSessionLocalHome home = (ISignSessionLocalHome)javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("java:comp/env/SignSessionLocal"), ISignSessionLocalHome.class );
+      ISignSessionLocal ss = home.create(); 
+      
+      return ss.getPublisherIdToNameMap(administrator);
+    }
+    
+    public CADataHandler getCADataHandler(){
+      return cadatahandler;   
+    }
+    
+    public CAInfoView getCAInfo(String name) throws Exception{
+      return cadatahandler.getCAInfo(name);   
+    }
+
+    public CAInfoView getCAInfo(int caid) throws Exception{
+      return cadatahandler.getCAInfo(caid);   
+    }    
+    
     // Private methods
+
     // Private fields
-    private ICertificateStoreSessionRemote certificatesession;
-    private ICertificateStoreSessionHome certificatesessionhome;
-    private CertificateProfileDataHandler certificateprofiles;
-    private boolean initialized;
-    private Admin administrator;
+    private ICertificateStoreSessionLocal      certificatesession;
+    private ICAAdminSessionLocal               caadminsession;
+    private IAuthorizationSessionLocal         authorizationsession;
+    private IUserAdminSessionLocal             adminsession;
+    private IRaAdminSessionLocal               raadminsession;
+    private CertificateProfileDataHandler      certificateprofiles;
+    private CADataHandler                      cadatahandler;
+    private boolean                            initialized;
+    private Admin                              administrator;
+    private InformationMemory                  informationmemory;
 }

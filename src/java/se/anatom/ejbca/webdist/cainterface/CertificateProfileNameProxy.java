@@ -1,71 +1,50 @@
 package se.anatom.ejbca.webdist.cainterface;
 
-import java.rmi.RemoteException;
+
 import java.util.HashMap;
 
-import javax.naming.*;
-
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.log.Admin;
-
-
 /**
- * A class used to improve performance by proxying certificateprofile id to certificate name
- * mappings by minimizing the number of needed lockups over rmi.
- *
- * @version $Id: CertificateProfileNameProxy.java,v 1.5 2003-07-24 08:43:32 anatom Exp $
+ * A class used to improve performance by proxying certificateprofile id to certificate name mappings by minimizing the number of needed lockups over rmi.
+ * 
+ * @version $Id: CertificateProfileNameProxy.java,v 1.6 2003-09-04 09:46:43 herrvendil Exp $
  */
 public class CertificateProfileNameProxy {
-    /**
-     * Creates a new instance of ProfileNameProxy
-     *
-     * @param administrator administrator using this class
-     */
-    public CertificateProfileNameProxy(Admin administrator)
-        throws Exception {
-        // Get the RaAdminSession instance.
-        InitialContext jndicontext = new InitialContext();
-        Object obj1 = jndicontext.lookup("CertificateStoreSession");
-        ICertificateStoreSessionHome certificatestoresessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup(
-                    "CertificateStoreSession"), ICertificateStoreSessionHome.class);
-        certificatestoresession = certificatestoresessionhome.create();
-
-        certificateprofilenamestore = new HashMap();
-        this.admin = administrator;
+    
+    /** Creates a new instance of ProfileNameProxy */
+    public CertificateProfileNameProxy(Admin administrator, ICertificateStoreSessionLocal certificatestoresession){
+      this.certificatestoresession = certificatestoresession;
+      
+      certificateprofilenamestore = new HashMap(); 
+      this.admin= administrator;
+        
     }
-
+    
     /**
-     * Method that first tries to find certificateprofile name in local hashmap and if it doesn't
-     * exists looks it up over RMI.
+     * Method that first tries to find certificateprofile name in local hashmap and if it doesn't exists looks it up over RMI.
      *
      * @param certificateprofileid the certificateprofile id number to look up.
-     *
-     * @return the certificateprofilename or null if no certificateprofilename is relatied to the
-     *         given id
+     * @return the certificateprofilename or null if no certificateprofilename is relatied to the given id
      */
-    public String getCertificateProfileName(int certificateprofileid)
-        throws RemoteException {
-        String returnval = null;
-
-        // Check if name is in hashmap
-        returnval = (String) certificateprofilenamestore.get(new Integer(certificateprofileid));
-
-        if (returnval == null) {
-            // Retreive profilename over RMI
-            returnval = certificatestoresession.getCertificateProfileName(admin,
-                    certificateprofileid);
-
-            if (returnval != null) {
-                certificateprofilenamestore.put(new Integer(certificateprofileid), returnval);
-            }
-        }
-
-        return returnval;
+    public String getCertificateProfileName(int certificateprofileid)  {
+      String returnval = null;  
+      // Check if name is in hashmap
+      returnval = (String) certificateprofilenamestore.get(new Integer(certificateprofileid));
+      
+      if(returnval==null){
+        // Retreive profilename 
+        returnval = certificatestoresession.getCertificateProfileName(admin, certificateprofileid);
+        if(returnval != null)
+          certificateprofilenamestore.put(new Integer(certificateprofileid),returnval);
+      }    
+       
+      return returnval;
     }
-
+    
     // Private fields
-    private HashMap certificateprofilenamestore;
-    private ICertificateStoreSessionRemote certificatestoresession;
-    private Admin admin;
+    private HashMap                        certificateprofilenamestore;
+    private ICertificateStoreSessionLocal  certificatestoresession;
+    private Admin                          admin;
+
 }

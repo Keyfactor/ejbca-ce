@@ -3,98 +3,73 @@
  *
  * Created on den 18 april 2002, 15:47
  */
+
 package se.anatom.ejbca.webdist.rainterface;
 
 /**
- * A class specifying which field to sort the userdata by.
+ * A class specifying which field to sort the userdata by. 
  *
- * @author Philip Vendil
+ * @author  Philip Vendil
  */
 public class SortBy {
     // Public constants
-    // Constants used by userdata.
-    public static final int USERNAME = 0;
-    public static final int PASSWORD = 1;
-    public static final int COMMONNAME = 2;
-    public static final int SERIALNUMBER = 3;
-    public static final int TITLE = 4;
+      // Constants used by userdata.
+    public static final int USERNAME         = 0;
+    public static final int PASSWORD         = 1;
+    public static final int COMMONNAME       = 2;
+    public static final int SERIALNUMBER     = 3;  
+    public static final int TITLE            = 4;        
     public static final int ORGANIZATIONUNIT = 5;
-    public static final int ORGANIZATION = 6;
-    public static final int LOCALE = 7;
-    public static final int STATE = 8;
-    public static final int DOMAINCOMPONENT = 9;
-    public static final int COUNTRY = 10;
-    public static final int EMAIL = 11;
-    public static final int STATUS = 12;
-    public static final int TIMECREATED = 13;
-    public static final int TIMEMODIFIED = 14;
+    public static final int ORGANIZATION     = 6;
+    public static final int LOCALE           = 7;
+    public static final int STATE            = 8;
+    public static final int DOMAINCOMPONENT  = 9;      
+    public static final int COUNTRY          = 10;
+    public static final int EMAIL            = 11;
+    public static final int STATUS           = 12; 
+    public static final int TIMECREATED      = 13;     
+    public static final int TIMEMODIFIED     = 14;     
+    public static final int CA               = 15;    
+      // Constants used by logentrydata. 
 
-    // Constants used by logentrydata.
-    public static final int ADMINTYPE = 1;
-    public static final int ADMINDATA = 2;
-    public static final int MODULE = 3;
-    public static final int TIME = 4;
-    public static final int CERTIFICATE = 5;
-    public static final int EVENT = 6;
-    public static final int COMMENT = 7;
-    public static final int ACCENDING = 0;
-    public static final int DECENDING = 1;
+    public static final int ADMINTYPE        = 1;
+    public static final int ADMINDATA        = 2;
+    public static final int MODULE           = 4;
+    public static final int TIME             = 5;
+    public static final int CERTIFICATE      = 6;    
+    public static final int EVENT            = 7;     
+    public static final int COMMENT          = 8;     
+    
+    public static final int ACCENDING        = 0;
+    public static final int DECENDING        = 1;
 
-    /**
-     * Creates a new instance of SortBy
-     */
+    
+    /** Creates a new instance of SortBy */
     public SortBy() {
-        this.sortby = USERNAME;
-        this.sortorder = ACCENDING;
+      this.sortby=USERNAME;
+      this.sortorder=ACCENDING;
     }
-
-    /**
-     * Creates a new SortBy object.
-     *
-     * @param sortby DOCUMENT ME!
-     * @param sortorder DOCUMENT ME!
-     */
-    public SortBy(int sortby, int sortorder) {
-        this.sortby = sortby;
-        this.sortorder = sortorder;
+    
+    public SortBy(int sortby, int sortorder){
+      this.sortby=sortby;   
+      this.sortorder=sortorder;
     }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
+    
     public int getSortBy() {
-        return sortby;
+      return sortby;
     }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
+    
     public int getSortOrder() {
-        return sortorder;
+      return sortorder;
     }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param sortby DOCUMENT ME!
-     */
+    
     public void setSortBy(int sortby) {
-        this.sortby = sortby;
+       this.sortby=sortby;      
     }
 
-    /**
-     * DOCUMENT ME!
-     *
-     * @param sortorder DOCUMENT ME!
-     */
-    public void setSortOrder(int sortorder) {
-        this.sortorder = sortorder;
+    public void setSortOrder(int sortorder){
+      this.sortorder=sortorder;        
     }
-
     // Private fields.
     private int sortby;
     private int sortorder;

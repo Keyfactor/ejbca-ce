@@ -6,7 +6,6 @@
 package se.anatom.ejbca.webdist.rainterface;
 
 import java.io.Serializable;
-
 import java.util.Vector;
 
 
