@@ -65,15 +65,15 @@ import se.anatom.ejbca.log.Admin;
  * relative.<br>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.34 2003-04-21 12:59:02 herrvendil Exp $
+ * @version $Id: CertReqServlet.java,v 1.35 2003-06-04 20:04:40 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
 
     private static Logger log = Logger.getLogger(CertReqServlet.class);
 
     private ISignSessionHome signsessionhome = null;
-    private IUserAdminSessionHome userdatahome;
-    private IKeyRecoverySessionHome keyrecoveryhome;
+    private IUserAdminSessionHome useradminhome = null;
+    private IKeyRecoverySessionHome keyrecoveryhome = null;
 
 
 
@@ -99,7 +99,7 @@ public class CertReqServlet extends HttpServlet {
             InitialContext ctx = new InitialContext();
             signsessionhome = (ISignSessionHome) PortableRemoteObject.narrow(
                       ctx.lookup("RSASignSession"), ISignSessionHome.class );
-            userdatahome = (IUserAdminSessionHome) PortableRemoteObject.narrow(
+            useradminhome = (IUserAdminSessionHome) PortableRemoteObject.narrow(
                              ctx.lookup("UserAdminSession"), IUserAdminSessionHome.class );
             keyrecoveryhome = (IKeyRecoverySessionHome) PortableRemoteObject.narrow(
                              ctx.lookup("KeyRecoverySession"), IKeyRecoverySessionHome.class );
@@ -129,7 +129,7 @@ public class CertReqServlet extends HttpServlet {
             Admin administrator =
               new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
 
-            IUserAdminSessionRemote adminsession = userdatahome.create();
+            IUserAdminSessionRemote adminsession = useradminhome.create();
             ISignSessionRemote signsession = signsessionhome.create();
             RequestHelper helper = new RequestHelper(administrator, debug);
 
@@ -138,8 +138,6 @@ public class CertReqServlet extends HttpServlet {
 
             // Check user
             int tokentype = SecConst.TOKEN_SOFT_BROWSERGEN;
-
-
 
             usekeyrecovery = (adminsession.loadGlobalConfiguration(administrator)).getEnableKeyRecovery();
             UserAdminData data = adminsession.findUser(administrator, username);
