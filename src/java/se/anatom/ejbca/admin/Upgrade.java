@@ -27,7 +27,7 @@ import se.anatom.ejbca.upgrade.IUpgradeSessionHome;
 /**
  * Implements call to the upgrade function
  *
- * @version $Id: Upgrade.java,v 1.3 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: Upgrade.java,v 1.4 2004-04-16 08:17:25 anatom Exp $
  */
 public class Upgrade extends BaseCommand {
 
@@ -52,7 +52,10 @@ public class Upgrade extends BaseCommand {
      }
      try {
         IUpgradeSessionRemote upgradesession = getUpgradeSessionRemote();
-        upgradesession.upgrade(administrator);
+        String[] args = new String[2];
+        args[0] = database;
+        args[1] = datasource;
+        upgradesession.upgrade(administrator, args);
      } catch (Exception e) {
      	error("Can't upgrade: ", e);
      }

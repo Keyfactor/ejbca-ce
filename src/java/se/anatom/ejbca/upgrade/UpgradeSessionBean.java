@@ -13,6 +13,7 @@
  
 package se.anatom.ejbca.upgrade;
 
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -33,7 +34,7 @@ import se.anatom.ejbca.util.JDBCUtil;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.4 2004-04-16 07:39:02 anatom Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.5 2004-04-16 08:17:25 anatom Exp $
  */
 public class UpgradeSessionBean extends BaseSessionBean {
 
@@ -124,13 +125,26 @@ public class UpgradeSessionBean extends BaseSessionBean {
      * @return true or false if upgrade was done or not
      * @throws RemoteException
      */
-    public boolean upgrade(Admin admin) {
+    public boolean upgrade(Admin admin, String[] args) {
         debug(">upgrade("+admin.toString()+")");
+        String dbtype = null;
+        if (args.length > 0) {
+            dbtype = args[0];
+        }
+        if (args.length > 1) {
+        	dataSource = args[1];
+        }
         if (!preCheck()) {
         	info("preCheck failed, no upgrade performed.");
             return false;
         }
         info("Starting upgrade from ejbca2 to ejbca3.");
+        // Fetch the resource file
+        InputStream in = this.getClass().getResourceAsStream("/upgrade/21_30/21_30-upgrade-"+dbtype+".sql");
+        if (in == null) {
+        	error("Can not read resource for database type '"+dbtype+"'");
+        	return false;
+        }
         // TODO:
         debug(">upgrade()");
         return false;

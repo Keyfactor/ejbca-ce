@@ -19,16 +19,17 @@ import se.anatom.ejbca.log.Admin;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: IUpgradeSessionRemote.java,v 1.2 2004-04-16 07:39:02 anatom Exp $
+ * @version $Id: IUpgradeSessionRemote.java,v 1.3 2004-04-16 08:17:25 anatom Exp $
  */
 public interface IUpgradeSessionRemote extends javax.ejb.EJBObject {
 
     /** Upgrades the database
      * 
      * @param admin
+     * @param args argument to the upgrade function
      * @return true or false if upgrade was done or not
      * @throws RemoteException
      */
-    public boolean upgrade(Admin admin) throws RemoteException;
+    public boolean upgrade(Admin admin, String[] args) throws RemoteException;
 
 }

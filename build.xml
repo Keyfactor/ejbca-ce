@@ -245,12 +245,14 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
                 <include name="**/*"/>
                 <exclude name="keyStore/**"/>
         </fileset>
-    </copy>
-    <copy todir="${ca.build}">
         <fileset dir="${build}">
                 <include name="se/anatom/ejbca/**/*.class"/>
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
         </fileset>
+        <fileset dir="${src}">
+                <include name="upgrade/**/*.sql"/>
+        </fileset>
+
     </copy>
     
     <!-- Jar the ca.jar package together -->
