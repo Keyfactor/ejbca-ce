@@ -8,7 +8,7 @@ import org.apache.commons.lang.StringUtils;
 /**
  * This class implements some utility functions that are useful when handling Strings.
  *
- * @version $Id: StringTools.java,v 1.12 2003-12-01 12:18:46 anatom Exp $
+ * @version $Id: StringTools.java,v 1.13 2003-12-01 12:21:07 anatom Exp $
  */
 public class StringTools {
     private static Logger log = Logger.getLogger(StringTools.class);
@@ -49,13 +49,11 @@ public class StringTools {
                         for (int j = 0; j < allowedEscapeChars.length; j++) {
                             if (ret.charAt(index+1) == allowedEscapeChars[j]) {
                                 allowed = true;
-                                log.info("Did not replace at index "+index+1);
                             }
                         }
                         if (!allowed) {
                             StringUtils.overlay("abcdef", "zzzz", 2, 4);
                             ret = StringUtils.overlay(ret,"/",index,index+1);
-                            log.info("Did replace at index "+index);
                         }
                         index = ret.indexOf('\\',index+1);
                     }
@@ -64,7 +62,6 @@ public class StringTools {
                 }
             }
         }
-
         return ret;
     } // strip
 
