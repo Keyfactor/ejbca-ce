@@ -1,7 +1,10 @@
 <HTML>
-<HEAD><TITLE>EJBCA certificate/CRL retrieval.</TITLE></HEAD>
+<HEAD><TITLE>EJBCA certificate/CRL retrieval</TITLE></HEAD>
 <BODY bgcolor="#ffffff" link="black" vlink="black" alink="black">
-
+<h1>EJBCA certificate/CRL retrieval</h1>
+<p>A note on entering DNs below:<br>
+The order or case of element descriptors in the DN (C, O, CN, etc) is not important.<br>
+The case of elements themselves IS important, e.g. foo != FOO.
 <FORM ACTION="http://127.0.0.1:8080/webdist/certdist" ENCTYPE=x-www-form-encoded METHOD="GET">
 <P><HR>
 Give subject DN to fetch users latest certificate.<BR>
@@ -9,7 +12,8 @@ Give subject DN to fetch users latest certificate.<BR>
 	<INPUT TYPE="hidden" NAME="cmd" VALUE="lastcert">
 Subject DN
 	<INPUT NAME="subject" TYPE=text SIZE=30 VALUE="c=SE, O=AnaTom, CN=foo"><br>
-
+<p>If a <i>404-Not found</i> response is received it means that the subject does not have a certificate in the database.
+<p>
 <INPUT type="submit" value="OK">
 
 </FORM>
