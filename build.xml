@@ -39,6 +39,10 @@
   <property name="adminweb.build" value="${tmp}/adminweb.war" />
   <property name="adminwebjar" value="${dist}/adminweb.war" />  
 
+  <property name="demoweb.src" value="${src}/demoweb" />
+  <property name="demoweb.build" value="${tmp}/demoweb.war" />
+  <property name="demowebjar" value="${dist}/demoweb.war" />  
+
   <property name="caear.src" value="${src}/ca/ear" />
   <property name="caear.earsrc" value="${caear.src}/ear" />
   <property name="caear.warsrc" value="${src}/publicweb/root" />
@@ -284,6 +288,31 @@ ca.ear, canora.ear, ra.jar, adminweb.war, admin.jar, sampleauth.war">
     </copy>
     <copy todir="${adminweb.build}/WEB-INF/classes">
         <fileset dir="${build}">
+                <include name="se/anatom/ejbca/util/*.class"/>
+                <exclude name="se/anatom/ejbca/**/*Test*"/>
+        </fileset>
+    </copy>
+    <copy todir="${adminweb.build}/WEB-INF/lib">
+        <fileset dir="${lib}">
+                <include name="regexp1_0_0.jar"/>
+        </fileset>
+    </copy>     
+    <!-- Jar the adminweb.war package together -->
+    <jar basedir="${adminweb.build}" jarfile="${adminwebjar}"/>    
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Build demo web part                                              -->
+  <!-- =================================================================== -->
+  <target name="demoweb.war" depends="compile">
+    <mkdir    dir="${demoweb.build}"/>
+    <copy todir="${demoweb.build}">
+        <fileset dir="${demoweb.src}"> 
+                <include name="**/**"/>
+        </fileset>
+    </copy>
+    <copy todir="${demoweb.build}/WEB-INF/classes">
+        <fileset dir="${build}">
                 <include name="se/anatom/ejbca/webdist/**/*.class"/>
                 <include name="se/anatom/ejbca/ca/store/CertificateData*.class"/>                
                 <include name="se/anatom/ejbca/ca/store/ICertificateStore*.class"/>         
@@ -302,13 +331,13 @@ ca.ear, canora.ear, ra.jar, adminweb.war, admin.jar, sampleauth.war">
                 <exclude name="se/anatom/ejbca/**/*Test*"/>
         </fileset>
     </copy>
-    <copy todir="${adminweb.build}/WEB-INF/lib">
+    <copy todir="${demoweb.build}/WEB-INF/lib">
         <fileset dir="${lib}">
                 <include name="regexp1_0_0.jar"/>
         </fileset>
     </copy>     
-    <!-- Jar the webdist.war package together -->
-    <jar basedir="${adminweb.build}" jarfile="${adminwebjar}"/>    
+    <!-- Jar the demoweb.war package together -->
+    <jar basedir="${demoweb.build}" jarfile="${demowebjar}"/>    
   </target>
 
   <!-- =================================================================== -->
@@ -343,7 +372,7 @@ ca.ear, canora.ear, ra.jar, adminweb.war, admin.jar, sampleauth.war">
                 <include name="se/anatom/ejbca/ra/authorization/UserEntity.class"/>  
                 <include name="se/anatom/ejbca/ra/authorization/AdminInformation.class"/>      
                 <include name="se/anatom/ejbca/log/Admin.class"/>                                                                                                                                                                                                 
-                <include name="se/anatom/ejbca/protocol/RequestMessage.class"/>                                                                                                                                                                                                 
+                <include name="se/anatom/ejbca/protocol/IRequestMessage.class"/>                                                                                                                                                                                                 
                 <include name="se/anatom/ejbca/protocol/PKCS10RequestMessage.class"/>                                                                                                                                                                                                 
                 <exclude name="se/anatom/ejbca/**/*Test*"/> 
        </fileset>
