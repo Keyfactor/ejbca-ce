@@ -23,18 +23,18 @@ import se.anatom.ejbca.log.LogEntry;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.14 2002-10-24 20:01:38 herrvendil Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.15 2002-11-12 15:00:16 anatom Exp $
  */
 public class LocalAuthenticationSessionBean extends BaseSessionBean {
 
     /** home interface to user entity bean */
     private UserDataHome userHome = null;
-    
+
     /** The remote interface of the log session bean */
-    private ILogSessionRemote logsession;    
+    private ILogSessionRemote logsession;
     /** Var containing iformation about administrator using the bean.*/
     private Admin admin = null;
-    
+
     /**
      * Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
@@ -43,13 +43,13 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
         debug(">ejbCreate()");
         // Look up the UserDataLocal entity bean home interface
         userHome = (UserDataHome)lookup("java:comp/env/ejb/UserData", UserDataHome.class);
-        
+
         try{
-          this.admin = administrator;  
-          ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);       
+          this.admin = administrator;
+          ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);
           logsession = logsessionhome.create();
         }catch(Exception e){
-          throw new EJBException(e);   
+          throw new EJBException(e);
         }
         debug("<ejbCreate()");
     }
@@ -71,34 +71,34 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
                 if (data.comparePassword(password) == false)
                 {
                   try{
-                    logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"Got request for user with invalid password.");       
+                    logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"Got request for user with invalid password.");
                   }catch(RemoteException re){
-                    throw new EJBException(re);                
-                  }                    
+                    throw new EJBException(re);
+                  }
                   throw new AuthLoginException("Wrong password for user.");
                 }
                  try{
-                   logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_USERAUTHENTICATION,"Authenticated user.");       
+                   logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_USERAUTHENTICATION,"Authenticated user.");
                  }catch(RemoteException re){
-                   throw new EJBException(re);                
-                 } 
-                UserAuthData ret = new UserAuthData(data.getUsername(), data.getSubjectDN(), data.getSubjectEmail(), data.getType());
+                   throw new EJBException(re);
+                 }
+                UserAuthData ret = new UserAuthData(data.getUsername(), data.getSubjectDN(), data.getSubjectEmail(), data.getType(), data.getCertificateProfileId());
                 debug("<authenticateUser("+username+", hiddenpwd)");
                 return ret;
             } else {
                try{
-                 logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"Got request with status '"+status+"', NEW, FAILED or INPROCESS required.");       
+                 logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"Got request with status '"+status+"', NEW, FAILED or INPROCESS required.");
                }catch(RemoteException re){
-                 throw new EJBException(re);                
-               }                 
+                 throw new EJBException(re);
+               }
                 throw new AuthStatusException("User "+username+" has status '"+status+"', NEW, FAILED or INPROCESS required.");
             }
         } catch (ObjectNotFoundException oe) {
             try{
-               logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"Got request for nonexisting user.");       
+               logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"Got request for nonexisting user.");
             }catch(RemoteException re){
-               throw new EJBException(re);                
-            }             
+               throw new EJBException(re);
+            }
             throw oe;
         } catch (AuthStatusException se) {
             throw se;
@@ -121,14 +121,14 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
             UserDataRemote data = userHome.findByPrimaryKey(pk);
             data.setStatus(UserDataRemote.STATUS_GENERATED);
             data.setTimeModified((new Date()).getTime());
-            logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDENDENTITY,"Changed status to STATUS_GENERATED.");               
+            logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDENDENTITY,"Changed status to STATUS_GENERATED.");
             debug("<finishUser("+username+", hiddenpwd)");
         } catch (ObjectNotFoundException oe) {
             try{
-              logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"Got request for nonexisting user.");    
+              logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"Got request for nonexisting user.");
             }catch(RemoteException re){
-              throw new EJBException(re);                
-            }    
+              throw new EJBException(re);
+            }
             throw oe;
         } catch (Exception e) {
             throw new EJBException(e.toString());

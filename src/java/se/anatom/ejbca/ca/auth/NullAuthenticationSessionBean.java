@@ -22,15 +22,15 @@ import se.anatom.ejbca.log.LogEntry;
  * the username is returned as DN.
  * Useful for demo purposes to give out certificates to anyone.
  *
- * @version $Id: NullAuthenticationSessionBean.java,v 1.6 2002-09-17 09:19:44 herrvendil Exp $
+ * @version $Id: NullAuthenticationSessionBean.java,v 1.7 2002-11-12 15:00:19 anatom Exp $
  */
 public class NullAuthenticationSessionBean extends BaseSessionBean {
 
     /** The remote interface of the log session bean */
-    private ILogSessionRemote logsession;   
-    
+    private ILogSessionRemote logsession;
+
     /** Var containing iformation about administrator using the bean.*/
-    private Admin admin = null;    
+    private Admin admin = null;
     /**
      * Default create for SessionBean without any creation Arguments.
      * @throws CreateException if bean instance can't be created
@@ -38,12 +38,12 @@ public class NullAuthenticationSessionBean extends BaseSessionBean {
     public void ejbCreate (Admin administrator) throws CreateException {
         debug(">ejbCreate()");
         try{
-          this.admin = administrator;  
-          ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);       
+          this.admin = administrator;
+          ILogSessionHome logsessionhome = (ILogSessionHome) lookup("java:comp/env/ejb/LogSession",ILogSessionHome.class);
           logsession = logsessionhome.create();
         }catch(Exception e){
-          throw new EJBException(e);   
-        }    
+          throw new EJBException(e);
+        }
         debug("<ejbCreate()");
     }
 
@@ -61,19 +61,20 @@ public class NullAuthenticationSessionBean extends BaseSessionBean {
             if ( (dn != null) && (dn.length()>0) ){
                 String email = CertTools.getPartFromDN(dn, "EmailAddress");
                 try{
-                  logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_USERAUTHENTICATION,"NULL-Authenticated user");       
+                  logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_USERAUTHENTICATION,"NULL-Authenticated user");
                 }catch(RemoteException re){
-                  throw new EJBException(re);                
-                }                 
-                UserAuthData ret = new UserAuthData(username, dn, email, SecConst.USER_ENDUSER);
+                  throw new EJBException(re);
+                }
+                // Use default certificate profile 0
+                UserAuthData ret = new UserAuthData(username, dn, email, SecConst.USER_ENDUSER, 0);
                 debug("<authenticateUser("+username+", hiddenpwd)");
                 return ret;
             } else {
                 try{
-                  logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"User does not contain a DN.");       
+                  logsession.log(admin, LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"User does not contain a DN.");
                 }catch(RemoteException re){
-                  throw new EJBException(re);                
-                }                    
+                  throw new EJBException(re);
+                }
                 throw new AuthLoginException("User "+username+" does not contain a DN.");
             }
         } catch (AuthLoginException le) {
