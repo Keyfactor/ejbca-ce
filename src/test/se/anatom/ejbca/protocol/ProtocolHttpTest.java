@@ -54,9 +54,9 @@ import se.anatom.ejbca.ca.store.CertificateDataPK;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.ra.UserDataHome;
-import se.anatom.ejbca.ra.UserDataPK;
-import se.anatom.ejbca.ra.UserDataRemote;
+import se.anatom.ejbca.ra.IUserAdminSessionHome;
+import se.anatom.ejbca.ra.IUserAdminSessionRemote;
+import se.anatom.ejbca.ra.UserDataLocal;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
 
@@ -130,7 +130,7 @@ public class ProtocolHttpTest extends TestCase {
     private static ISignSessionHome home;
     private static ISignSessionRemote remote;
     private ICertificateStoreSessionHome storehome;
-    private static UserDataHome userhome;
+    private static IUserAdminSessionRemote usersession;
     private static int caid = 0;
     private static Admin admin;
     private static X509Certificate cacert = null;
@@ -186,8 +186,9 @@ public class ProtocolHttpTest extends TestCase {
         remote = home.create();
         Object obj2 = ctx.lookup("CertificateStoreSession");
         storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2, ICertificateStoreSessionHome.class);
-        obj = ctx.lookup("UserData");
-        userhome = (UserDataHome) javax.rmi.PortableRemoteObject.narrow(obj, UserDataHome.class);
+        obj = ctx.lookup("UserAdminSession");
+        IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
+        usersession = userhome.create();
 
         unknowncacert = CertTools.getCertfromByteArray(unknowncacertBytes);
         log.debug("<setUp()");
@@ -272,12 +273,7 @@ public class ProtocolHttpTest extends TestCase {
         // Make user that we know...
         boolean userExists = false;
         try {
-            UserDataRemote createdata = userhome.create("ocsptest", "foo123", "C=SE, O=AnaTom, CN=OCSPTest", caid);
-            assertNotNull("Failed to create user foo", createdata);
-            createdata.setType(SecConst.USER_ENDUSER);
-            createdata.setSubjectEmail("ocsptest@anatom.se");
-            createdata.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
-            createdata.setCertificateProfileId(SecConst.CERTPROFILE_FIXED_ENDUSER);
+            usersession.addUser(admin,"ocsptest","foo123","C=SE,O=AnaTom,CN=OCSPTest",null,"ocsptest@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
             log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
         } catch (RemoteException re) {
             if (re.detail instanceof DuplicateKeyException) {
@@ -289,10 +285,7 @@ public class ProtocolHttpTest extends TestCase {
 
         if (userExists) {
             log.debug("User ocsptest already exists.");
-
-            UserDataPK pk = new UserDataPK("ocsptest");
-            UserDataRemote data = userhome.findByPrimaryKey(pk);
-            data.setStatus(UserDataRemote.STATUS_NEW);
+            usersession.setUserStatus(admin,"ocsptest",UserDataLocal.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
         // Generate certificate for the new user
