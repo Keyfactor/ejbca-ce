@@ -5,6 +5,7 @@ import java.io.*;
 
 import java.security.cert.*;
 import java.security.spec.*;
+import java.security.interfaces.*;
 import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.KeyPairGenerator;
@@ -31,7 +32,7 @@ import se.anatom.ejbca.util.Hex;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.8 2002-07-26 09:26:39 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.9 2002-08-26 12:15:47 anatom Exp $
  */
 public class KeyTools {
 
@@ -53,7 +54,7 @@ public class KeyTools {
         keygen.initialize(keysize);
         KeyPair rsaKeys = keygen.generateKeyPair();
 
-        cat.debug("Generated " + rsaKeys.getPublic().getAlgorithm() + " keys with length " + ((RSAPublicKey)rsaKeys.getPublic()).getPublicExponent().bitLength());
+        cat.debug("Generated " + rsaKeys.getPublic().getAlgorithm() + " keys with length " + ((RSAPrivateKey)rsaKeys.getPrivate()).getPrivateExponent().bitLength());
 
         cat.debug("<genKeys()");
         return rsaKeys;
