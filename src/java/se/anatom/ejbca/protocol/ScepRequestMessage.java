@@ -21,20 +21,15 @@ import org.apache.log4j.Logger;
 
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.asn1.*;
-import org.bouncycastle.asn1.x509.X509Name;
-import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.cms.*;
 import org.bouncycastle.cms.*;
-
-import se.anatom.ejbca.util.Base64;
 
 /**
  * Class to handle SCEP request messages sent to the CA.
  *
- * @version  $Id: ScepRequestMessage.java,v 1.14 2003-06-05 13:08:31 anatom Exp $
+ * @version  $Id: ScepRequestMessage.java,v 1.15 2003-06-11 12:20:01 anatom Exp $
  */
-public class ScepRequestMessage implements IRequestMessage, Serializable {
+public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage, Serializable {
 
     private static Logger log = Logger.getLogger(ScepRequestMessage.class);
 
@@ -49,9 +44,9 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
     private static String id_transId = id_attributes + ".7";
     private static String id_extensionReq = id_attributes + ".8";
 
-    /** Raw form of the PKCS10 message
+    /** Raw form of the Scep message
      */
-    private byte[] msg;
+    private transient byte[] scepmsg;
 
     /** Signed data, the whole enchilada to to speak...
      */
@@ -69,9 +64,6 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
     /** Private key used for decryption.
      */
     private PrivateKey privateKey=null;
-    /** The contained pkcs10 request message
-     */
-    private transient PKCS10CertificationRequest pkcs10 = null;
 
     /** The messageType attribute specify the type of operation performed by the
      * transaction. This attribute is required in all PKI messages. Currently, the following message types are defined:
@@ -93,9 +85,9 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
      * @param msg The DER encoded PKCS7 request.
      * @throws IOException if the request can not be parsed.
      */
-    public ScepRequestMessage(byte[] msg) throws IOException {
+    public ScepRequestMessage(byte[] msg) throws IOException, InvalidKeyException, GeneralSecurityException, CMSException {
         log.debug(">ScepRequestMessage");
-        this.msg = msg;
+        this.scepmsg = msg;
         init();
         log.debug("<ScepRequestMessage");
     }
@@ -107,7 +99,7 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
         // Parse and verify the entegrity of the PKIOperation message PKCS#7
 
         /* If this would have been done using the newer CMS it would have made me so much happier... */
-        ASN1Sequence seq =(ASN1Sequence)new DERInputStream(new ByteArrayInputStream(msg)).readObject();
+        ASN1Sequence seq =(ASN1Sequence)new DERInputStream(new ByteArrayInputStream(scepmsg)).readObject();
         ContentInfo ci = new ContentInfo(seq);
         String ctoid = ci.getContentType().getId();
         if (ctoid.equals(CMSObjectIdentifiers.signedData.getId())) {
@@ -173,6 +165,10 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
         log.debug(">decrypt");
         // Now we are getting somewhere (pheew),
         // Now we just have to get the damn key...to decrypt the PKCS10
+        if (privateKey == null) {
+            log.error("Need private key to decrypt!");
+            return;
+        }
         if (envEncData == null) {
             log.error("No enveloped data to decrypt!");
             return;
@@ -188,17 +184,11 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
             RecipientInformation   recipient = (RecipientInformation)it.next();
             pkcs10Bytes = recipient.getContent(privateKey, "BC");
             break;
-        }
-            
-        // TODO: this is debug stuff...remove!
-        FileOutputStream fos = new FileOutputStream("pkcs10.txt");
-        fos.write(Base64.encode(pkcs10Bytes));
-        fos.close();
+        }            
         DERObject derobj = new DERInputStream(new ByteArrayInputStream(pkcs10Bytes)).readObject();
         ASN1Sequence seq = (ASN1Sequence)derobj;
         pkcs10 = new PKCS10CertificationRequest(seq);
         log.debug("Successfully extracted PKCS10.");
-        
         log.debug("<decrypt");
     } // decrypt
 
@@ -213,7 +203,7 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
                 init();
                 decrypt();
             }
-            ret = pkcs10.getPublicKey();
+            ret = super.getRequestPublicKey();
         } catch (IOException e) {
             log.error("PKCS7 not inited!");
             return null;
@@ -228,49 +218,6 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
         return ret;
     }
     
-    /** Returns the string representation of the subject DN from the certificattion request.
-    * @return subject DN from certification request.
-    */
-    public String getRequestDN() {
-        if (pkcs10 == null) 
-            return null;
-        String ret = null;
-        // Get subject name from request
-        CertificationRequestInfo info = pkcs10.getCertificationRequestInfo();
-        if (info != null) {
-            X509Name name = info.getSubject();
-            ret = name.toString();
-        }
-        return ret;
-    }
-    
-    /** Returns the challenge password from the certificattion request.
-    * @return challenge password from certification request.
-    */
-    public String getRequestPassword() {
-        if (pkcs10 == null) 
-            return null;
-        String ret = null;
-        // Get attributes
-        CertificationRequestInfo info = pkcs10.getCertificationRequestInfo();
-        AttributeTable attributes = new AttributeTable(info.getAttributes());
-        Attribute attr = attributes.get(PKCSObjectIdentifiers.pkcs_9_at_challengePassword);
-        ASN1Set values = attr.getAttrValues();
-        if (values.size() > 0) {
-            DERString str = null;
-            try {
-                str = DERPrintableString.getInstance((values.getObjectAt(0)));
-            } catch (IllegalArgumentException ie) {
-                // This was not printable string, should be utf8string then according to pkcs#9 v2.0
-                str = DERUTF8String.getInstance((values.getObjectAt(0)));
-            }
-            if (str != null) {
-                ret = str.getString();
-            }
-        } 
-        return ret;
-    }
-    
     public boolean verify() {
         log.debug(">verify()");
         boolean ret = false;
@@ -279,7 +226,7 @@ public class ScepRequestMessage implements IRequestMessage, Serializable {
                 init();
                 decrypt();
             }
-            ret = pkcs10.verify();
+            ret = super.verify();
         } catch (IOException e) {
             log.error("PKCS7 not inited!");
             return false;

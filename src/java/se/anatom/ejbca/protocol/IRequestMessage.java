@@ -10,10 +10,18 @@ import java.security.cert.X509Certificate;
 /** Base interface for request messages sent to the CA.
 * Implementors of this interface must also implement Serializable if they are to be sent to any EJB bussiness methods.
 *
-* @version  $Id: IRequestMessage.java,v 1.3 2003-02-12 11:23:18 scop Exp $
+* @version  $Id: IRequestMessage.java,v 1.4 2003-06-11 12:20:02 anatom Exp $
 */
 public interface  IRequestMessage {
 
+    /** Get the username used to request a certificate from EJBCA.
+     * @return The username from the certification request.
+     */
+    public String getUsername();
+    /** Get the password used to request a certificate from EJBCA.
+     * @return The password from the certification request.
+     */
+    public String getPassword();
     /** Get the public key from a certification request.
      * @return The public key from a certification request.
      * @throws InvalidKeyException If the key is invalid.

@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
 /**
  * Class to handle PKCS7 request messages sent to the CA.
  *
- * @version  $Id: PKCS7RequestMessage.java,v 1.6 2003-02-12 11:23:18 scop Exp $
+ * @version  $Id: PKCS7RequestMessage.java,v 1.7 2003-06-11 12:20:01 anatom Exp $
  */
 public class PKCS7RequestMessage implements IRequestMessage, Serializable {
 
@@ -34,7 +34,7 @@ public class PKCS7RequestMessage implements IRequestMessage, Serializable {
 
     private void init() throws IOException {
         // Parse and verify the entegrity of the PKCS#7 message
-        //TODO:
+        //TODO: make pkcs7 implementation
     }
 
     public PublicKey getRequestPublicKey() {
@@ -47,6 +47,13 @@ public class PKCS7RequestMessage implements IRequestMessage, Serializable {
         log.debug(">verify()");
         log.debug("<verify()");
         return false;
+    }
+    
+    public String getUsername() {
+        return null;
+    }
+    public String getPassword() {
+        return null;
     }
 
     public boolean requireKeyInfo() {
