@@ -188,27 +188,5 @@ public class TestMessages extends TestCase {
         assertTrue("Failed to verify SCEP message.", ret);
         log.debug("<test01TestOpenScep()");
     }
-    /** Tests scep message from OpenScep
-     * @throws Exception error
-     */
-    public void test02TestOpenScep() throws Exception {
-        log.debug(">test02TestOpenScep()");
-        ScepRequestMessage msg = new ScepRequestMessage(openscep);
-        // TODO: send message to server and see what happens
-        // (send crap message and get good error)
-        log.debug("<test02TestOpenScep()");
-    }
-    /** Tests ocsp message
-     * @throws Exception error
-     */
-    public void test03TestOcsp() throws Exception {
-        log.debug(">test03TestOcsp()");
-        // TODO: add user and create certificate with good status, 
-        // send message to server and get good response
-        // change status of cert to bad status
-        // send message and get bad status
-        // (send crap message and get good error)
-        log.debug("<test03TestOcsp()");
-    }
     
 }
