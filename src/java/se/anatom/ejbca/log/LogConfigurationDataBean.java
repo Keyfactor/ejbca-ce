@@ -16,7 +16,6 @@ package se.anatom.ejbca.log;
 import javax.ejb.CreateException;
 
 import org.apache.log4j.Logger;
-
 import se.anatom.ejbca.BaseEntityBean;
 
 
@@ -29,7 +28,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * logentryrownumber is the number of the last row number in the log entry database.
  * </pre>
  *
- * @version $Id: LogConfigurationDataBean.java,v 1.12 2004-06-10 12:32:38 sbailliez Exp $
+ * @version $Id: LogConfigurationDataBean.java,v 1.13 2004-06-10 12:35:05 sbailliez Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a Log Entry with accompanying data"
@@ -62,43 +61,43 @@ import se.anatom.ejbca.BaseEntityBean;
 public abstract class LogConfigurationDataBean extends BaseEntityBean {
     private static Logger log = Logger.getLogger(LogConfigurationDataBean.class);
 
-	/**
+    /**
      * @ejb.pk-field
-	 * @ejb.persistence
+     * @ejb.persistence
      * @ejb.interface-method view-type="local"
-	 */
+     */
     public abstract Integer getId();
 
-	/**
-	 * @ejb.persistence
-	 */
+    /**
+     * @ejb.persistence
+     */
     public abstract void setId(Integer id);
 
-	/**
-	 * @ejb.persistence
-	 */
+    /**
+     * @ejb.persistence
+     */
     public abstract LogConfiguration getLogConfiguration();
 
-	/**
-	 * @ejb.persistence
-	 */
+    /**
+     * @ejb.persistence
+     */
     public abstract void setLogConfiguration(LogConfiguration logConfiguration);
 
-	/**
-	 * @ejb.persistence
-	 */
+    /**
+     * @ejb.persistence
+     */
     public abstract int getLogEntryRowNumber();
 
-	/**
-	 * @ejb.persistence
-	 */
+    /**
+     * @ejb.persistence
+     */
     public abstract void setLogEntryRowNumber(int logEntryRowNumber);
 
     /**
      * DOCUMENT ME!
      *
      * @ejb.interface-method view-type="local"
-	 */
+     */
     public LogConfiguration loadLogConfiguration() {
         LogConfiguration logconfiguration = getLogConfiguration();
 
@@ -124,7 +123,7 @@ public abstract class LogConfigurationDataBean extends BaseEntityBean {
      * DOCUMENT ME!
      *
      * @ejb.interface-method view-type="local"
-	 */
+     */
     public void saveLogConfiguration(LogConfiguration logConfiguration) {
         setLogConfiguration(logConfiguration);
     }
@@ -133,7 +132,7 @@ public abstract class LogConfigurationDataBean extends BaseEntityBean {
      * DOCUMENT ME!
      *
      * @ejb.interface-method view-type="local"
-	 */
+     */
     public Integer getAndIncrementRowCount() {
         int returnval = getLogEntryRowNumber();
         setLogEntryRowNumber(returnval + 1);
@@ -149,14 +148,14 @@ public abstract class LogConfigurationDataBean extends BaseEntityBean {
      * Entity Bean holding data of log configuration. Create by sending in the id.
      *
      * @param id the unique id of logconfiguration (should always be 0).
-     * @param logconfiguration is the serialized representation of the log configuration.
+     * @param logConfiguration is the serialized representation of the log configuration.
      *
      * @return the given id
-	 *
+     *
      * @ejb.create-method view-type="local"
-	 */
+     */
     public Integer ejbCreate(Integer id, LogConfiguration logConfiguration)
-        throws CreateException {
+            throws CreateException {
         setId(id);
         setLogConfiguration(logConfiguration);
         setLogEntryRowNumber(0);
@@ -168,7 +167,7 @@ public abstract class LogConfigurationDataBean extends BaseEntityBean {
      * DOCUMENT ME!
      *
      * @param id DOCUMENT ME!
-     * @param logconfiguration DOCUMENT ME!
+     * @param logConfiguration DOCUMENT ME!
      */
     public void ejbPostCreate(Integer id, LogConfiguration logConfiguration) {
         // Do nothing. Required.

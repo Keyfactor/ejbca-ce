@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.log;
 
 
@@ -23,21 +23,19 @@ import se.anatom.ejbca.util.query.Query;
 
 /** Local interface for EJB, unforturnately this must be a copy of the remote interface except that RemoteException is not thrown, see ICertificateStoreSession for docs.
  *
- * @version $Id: ILogSessionLocal.java,v 1.8 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: ILogSessionLocal.java,v 1.9 2004-06-10 12:35:05 sbailliez Exp $
  * @see se.anatom.ejbca.log.ILogSessionRemote
  */
 
-public interface ILogSessionLocal extends javax.ejb.EJBLocalObject
+public interface ILogSessionLocal extends javax.ejb.EJBLocalObject {
 
-{
+    public static final int MAXIMUM_QUERY_ROWCOUNT = LocalLogSessionBean.MAXIMUM_QUERY_ROWCOUNT;
 
-  public static final int MAXIMUM_QUERY_ROWCOUNT = LocalLogSessionBean.MAXIMUM_QUERY_ROWCOUNT;
-
-   /**
+    /**
      * @see se.anatom.ejbca.log.ILogSessionRemote
      */
-  public static final int INTERNALCAID = ILogSessionRemote.INTERNALCAID;
-  
+    public static final int INTERNALCAID = ILogSessionRemote.INTERNALCAID;
+
     /**
      * @see se.anatom.ejbca.log.ILogSessionRemote
      */
@@ -45,9 +43,9 @@ public interface ILogSessionLocal extends javax.ejb.EJBLocalObject
 
     /**
      * @see se.anatom.ejbca.log.ILogSessionRemote
-     */    
-    public void log(Admin admin, X509Certificate caid, int module,  Date time, String username, X509Certificate certificate, int event, String comment);    
-    
+     */
+    public void log(Admin admin, X509Certificate caid, int module, Date time, String username, X509Certificate certificate, int event, String comment);
+
     /**
      * @see se.anatom.ejbca.log.ILogSessionRemote
      */
@@ -55,9 +53,9 @@ public interface ILogSessionLocal extends javax.ejb.EJBLocalObject
 
     /**
      * @see se.anatom.ejbca.log.ILogSessionRemote
-     */    
-    public void log(Admin admin, X509Certificate caid, int module,  Date time, String username, X509Certificate certificate, int event, String comment, Exception exception);    
-        
+     */
+    public void log(Admin admin, X509Certificate caid, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception exception);
+
     /**
      * @see se.anatom.ejbca.log.ILogSessionRemote
      */

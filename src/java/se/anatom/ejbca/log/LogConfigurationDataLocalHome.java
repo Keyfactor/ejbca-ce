@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.log;
 
 import javax.ejb.CreateException;
@@ -32,7 +32,7 @@ public interface LogConfigurationDataLocalHome extends javax.ejb.EJBLocalHome {
      * @throws CreateException DOCUMENT ME!
      */
     public LogConfigurationDataLocal create(Integer id, LogConfiguration logconfiguration)
-        throws CreateException;
+            throws CreateException;
 
     /**
      * DOCUMENT ME!
@@ -44,5 +44,5 @@ public interface LogConfigurationDataLocalHome extends javax.ejb.EJBLocalHome {
      * @throws FinderException DOCUMENT ME!
      */
     public LogConfigurationDataLocal findByPrimaryKey(Integer id)
-        throws FinderException;
+            throws FinderException;
 }

@@ -10,14 +10,15 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.log;
 
 import javax.ejb.CreateException;
+
 /**
  * DOCUMENT ME!
  *
- * @version $Id: ILogSessionLocalHome.java,v 1.5 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: ILogSessionLocalHome.java,v 1.6 2004-06-10 12:35:05 sbailliez Exp $
  */
 public interface ILogSessionLocalHome extends javax.ejb.EJBLocalHome {
 

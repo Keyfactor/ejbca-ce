@@ -14,7 +14,6 @@
 package se.anatom.ejbca.log;
 
 import java.util.Date;
-
 import javax.ejb.CreateException;
 
 import se.anatom.ejbca.BaseEntityBean;
@@ -65,138 +64,138 @@ import se.anatom.ejbca.util.StringTools;
  */
 public abstract class LogEntryDataBean extends BaseEntityBean {
 
-	/**
+    /**
      * @ejb.pk-field
-	 * @ejb.persistence
+     * @ejb.persistence
      * @ejb.interface-method view-type="local"
-	 */
+     */
     public abstract Integer getId();
 
-	/**
-	 * @ejb.persistence
-	 */
+    /**
+     * @ejb.persistence
+     */
     public abstract void setId(Integer id);
 
-	/**
-	 * @ejb.persistence
+    /**
+     * @ejb.persistence
      * @ejb.interface-method view-type="local"
-	 */
+     */
     public abstract int getAdminType();
 
-	/**
-	 * @ejb.persistence
-	 */
+    /**
+     * @ejb.persistence
+     */
     public abstract void setAdminType(int admintype);
 
-	/**
-	 * @ejb.persistence
+    /**
+     * @ejb.persistence
      * @ejb.interface-method view-type="local"
-	 */
+     */
     public abstract String getAdminData();
 
-	/**
-	 * @ejb.persistence
-	 */
+    /**
+     * @ejb.persistence
+     */
     public abstract void setAdminData(String admindata);
 
     // The id of the CA performing the event.
-	/**
-	 * @ejb.persistence
+    /**
+     * @ejb.persistence
      * @ejb.interface-method view-type="local"
-	 */
+     */
     public abstract int getCaId();
 
-	/**
-	 * @ejb.persistence
-	 */
+    /**
+     * @ejb.persistence
+     */
     public abstract void setCaId(int caid);
 
     // Indicates the module (CA,RA ...) using the logsession bean.
-	/**
-	 * @ejb.persistence
+    /**
+     * @ejb.persistence
      * @ejb.interface-method view-type="local"
-	 */
+     */
     public abstract int getModule();
 
-	/**
-	 * @ejb.persistence
-	 */
+    /**
+     * @ejb.persistence
+     */
     public abstract void setModule(int module);
 
-	/**
-	 * @ejb.persistence
-	 */
+    /**
+     * @ejb.persistence
+     */
     public abstract long getTime();
 
-	/**
-	 * @ejb.persistence
-	 */
+    /**
+     * @ejb.persistence
+     */
     public abstract void setTime(long time);
 
-	/**
-	 * @ejb.persistence
+    /**
+     * @ejb.persistence
      * @ejb.interface-method view-type="local"
-	 */
+     */
     public abstract String getUsername();
 
     /** username must be called 'striped' using StringTools.strip()
- 	 * @ejb.persistence
-	 */
+     * @ejb.persistence
+     */
     public abstract void setUsername(String username);
 
- 	/**
-	 * @ejb.persistence
+    /**
+     * @ejb.persistence
      * @ejb.interface-method view-type="local"
-	 */
+     */
     public abstract String getCertificateSNR();
 
- 	/**
-	 * @ejb.persistence
-	 */
+    /**
+     * @ejb.persistence
+     */
     public abstract void setCertificateSNR(String certificatesnr);
 
- 	/**
-	 * @ejb.persistence
+    /**
+     * @ejb.persistence
      * @ejb.interface-method view-type="local"
-	 */
+     */
     public abstract int getEvent();
 
- 	/**
-	 * @ejb.persistence
-	 */
+    /**
+     * @ejb.persistence
+     */
     public abstract void setEvent(int event);
 
- 	/**
-	 * @ejb.persistence
+    /**
+     * @ejb.persistence
      * @ejb.interface-method view-type="local"
-	 */
+     */
     public abstract String getComment();
 
- 	/**
-	 * @ejb.persistence
-	 */
+    /**
+     * @ejb.persistence
+     */
     public abstract void setComment(String comment);
 
-	/**
+    /**
      * @ejb.interface-method view-type="local"
-	 */
-    public Date getTimeAsDate(){
-      return new Date(getTime());
-    }
-
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @return DOCUMENT ME!
-	 */
-    public LogEntry getLogEntry(){
-      return new LogEntry( getAdminType(), getAdminData(), getCaId(), getModule(), getTimeAsDate(), getUsername(), getCertificateSNR(), getEvent(), getComment());
+     */
+    public Date getTimeAsDate() {
+        return new Date(getTime());
     }
 
     /**
-	 *
+     * DOCUMENT ME!
+     *
+     * @return DOCUMENT ME!
+     */
+    public LogEntry getLogEntry() {
+        return new LogEntry(getAdminType(), getAdminData(), getCaId(), getModule(), getTimeAsDate(), getUsername(), getCertificateSNR(), getEvent(), getComment());
+    }
+
+    /**
+     *
      * @ejb.create-method view-type="local"
-	 */
+     */
     public Integer ejbCreate(Integer id, int admintype, String admindata, int caid, int module, Date time, String username, String certificatesnr, int event, String comment) throws CreateException {
         setId(id);
         setAdminType(admintype);
@@ -211,21 +210,21 @@ public abstract class LogEntryDataBean extends BaseEntityBean {
         return id;
     }
 
-	/**
-	 * DOCUMENT ME!
-	 *
-	 * @param id DOCUMENT ME!
-	 * @param admintype DOCUMENT ME!
-	 * @param admindata DOCUMENT ME!
-	 * @param module DOCUMENT ME!
-	 * @param time DOCUMENT ME!
-	 * @param username DOCUMENT ME!
-	 * @param certificatesnr DOCUMENT ME!
-	 * @param event DOCUMENT ME!
-	 * @param comment DOCUMENT ME!
-	 */
+    /**
+     * DOCUMENT ME!
+     *
+     * @param id DOCUMENT ME!
+     * @param admintype DOCUMENT ME!
+     * @param admindata DOCUMENT ME!
+     * @param module DOCUMENT ME!
+     * @param time DOCUMENT ME!
+     * @param username DOCUMENT ME!
+     * @param certificatesnr DOCUMENT ME!
+     * @param event DOCUMENT ME!
+     * @param comment DOCUMENT ME!
+     */
     public void ejbPostCreate(Integer id, int admintype, String admindata, int caid, int module, Date time, String username, String certificatesnr, int event, String comment) {
-        // Do nothing. Required.
+// Do nothing. Required.
     }
 }
 

@@ -10,11 +10,10 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.log;
 
 import java.rmi.RemoteException;
-
 import javax.ejb.CreateException;
 import javax.ejb.EJBHome;
 
@@ -22,7 +21,7 @@ import javax.ejb.EJBHome;
 /**
  * DOCUMENT ME!
  *
- * @version $Id: ILogSessionHome.java,v 1.5 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: ILogSessionHome.java,v 1.6 2004-06-10 12:35:05 sbailliez Exp $
  */
 public interface ILogSessionHome extends EJBHome {
     /**
