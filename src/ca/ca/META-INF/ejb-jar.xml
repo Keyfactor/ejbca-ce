@@ -113,8 +113,8 @@
         </description>
         <ejb-ref-name>ejb/AuthenticationSessionLocal</ejb-ref-name>
         <ejb-ref-type>Session</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ca.store.IAuthenticationSessionLocalHome</local-home>
-        <local>se.anatom.ejbca.ca.store.IAuthenticationSessionLocal</local>
+        <local-home>se.anatom.ejbca.ca.auth.IAuthenticationSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.ca.auth.IAuthenticationSessionLocal</local>
         <ejb-link>AuthenticationSession</ejb-link>
      </ejb-local-ref>
 <!-- Uncomment to use LDAP publisher
@@ -131,9 +131,11 @@
      </ejb-local-ref>
 END LDAP Publisher -->
     <security-identity>
+        <description></description>
         <run-as>
+            <description></description>
             <role-name>InternalUser</role-name>
-    </run-as>
+        </run-as>
     </security-identity>
    </session>
 
@@ -166,7 +168,9 @@ END LDAP Publisher -->
      </ejb-ref>          
 
      <security-identity>
+        <description></description>
         <run-as>
+            <description></description>
             <role-name>InternalUser</role-name>
         </run-as>
      </security-identity>
@@ -193,7 +197,9 @@ END LDAP Publisher -->
      </env-entry>
 
     <security-identity>
+        <description></description>
         <run-as>
+            <description></description>
             <role-name>InternalUser</role-name>
         </run-as>
     </security-identity>
@@ -253,7 +259,9 @@ END LDAP Publisher -->
      
      
     <security-identity>
+        <description></description>
         <run-as>
+            <description></description>
             <role-name>InternalUser</role-name>
         </run-as>
     </security-identity>
@@ -302,8 +310,8 @@ END LDAP Publisher -->
         <description>The signing session used to create CRL</description>
         <ejb-ref-name>ejb/SignSessionLocal</ejb-ref-name>
         <ejb-ref-type>Session</ejb-ref-type>
-        <local-home>se.anatom.ejbca.ca.store.ISignSessionLocalHome</local-home>
-        <local>se.anatom.ejbca.ca.store.ISignSessionLocal</local>
+        <local-home>se.anatom.ejbca.ca.sign.ISignSessionLocalHome</local-home>
+        <local>se.anatom.ejbca.ca.sign.ISignSessionLocal</local>
         <ejb-link>RSASignSession</ejb-link>
      </ejb-local-ref>
 
