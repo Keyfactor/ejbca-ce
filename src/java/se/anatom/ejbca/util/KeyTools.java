@@ -26,7 +26,7 @@ import org.bouncycastle.jce.interfaces.*;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.19 2003-07-24 08:43:32 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.20 2003-08-20 10:18:37 anatom Exp $
  */
 public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);
@@ -177,7 +177,7 @@ public class KeyTools {
         KeyStore store = KeyStore.getInstance("PKCS12", "BC");
         store.load(null, null);
         store.setKeyEntry(alias, pk, null, chain);
-        log.debug(">createP12: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) +
+        log.debug("<createP12: alias=" + alias + ", privKey, cert=" + CertTools.getSubjectDN(cert) +
             ", cachain.length=" + ((cachain == null) ? 0 : cachain.length));
 
         return store;
