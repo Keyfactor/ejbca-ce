@@ -26,7 +26,12 @@
   <property name="ca.src" value="${src}/ca/ca" />
   <property name="ca.build" value="${tmp}/ca/ca.jar" />
   <property name="cajar" value="${dist}/ca.jar" />
-  <property name="ca.classpath" value="lib/bcmail-jdk14-119.jar lib/bcprov-jdk14-119.jar lib/log4j-1.2.7.jar lib/ldap.jar"/>
+  <property name="ca.classpath" value="lib/bcmail-jdk14-120.jar lib/bcprov-jdk14-120.jar lib/log4j-1.2.7.jar lib/ldap.jar"/>
+
+  <property name="status.src" value="${src}/publicweb/status"/>
+  <property name="status.build" value="${tmp}/publicweb/status.war"/>
+  <property name="statusjar" value="${dist}/status.war"/>
+  <property name="status.classpath" value="${ca.classpath} lib/commons-lang-1.0.jar lib/commons-collections.jar"/>
 
   <property name="log.src" value="${src}/log" />
   <property name="log.build" value="${tmp}/log.jar" />
@@ -47,7 +52,7 @@
   <property name="ra.src" value="${src}/ra" />
   <property name="ra.build" value="${tmp}/ra.jar" />
   <property name="rajar" value="${dist}/ra.jar" />
-  <property name="ra.classpath" value="lib/bcmail-jdk14-119.jar lib/bcprov-jdk14-119.jar lib/log4j-1.2.7.jar lib/ldap.jar"/>
+  <property name="ra.classpath" value="lib/bcmail-jdk14-120.jar lib/bcprov-jdk14-120.jar lib/log4j-1.2.7.jar lib/ldap.jar"/>
   
   <property name="adminweb.src" value="${src}/adminweb" />
   <property name="adminweb.build" value="${tmp}/adminweb.war" />
@@ -112,7 +117,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- =================================================================== -->
   <!-- Build ALL                                                           -->
   <!-- =================================================================== -->
-  <target name="build" depends="compile, apply.war, webdist.war, ca.jar, log.jar, authorization.jar,
+  <target name="build" depends="compile, apply.war, status.war, webdist.war, ca.jar, log.jar, authorization.jar,
   hardtoken.jar, keyrecovery.jar, ca.ear, canora.ear, ra.jar, adminweb.war, admin.jar, sampleauth.war">
   </target>
 
@@ -161,9 +166,32 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     <jar basedir="${apply.build}" jarfile="${applyjar}"/>    
   </target>
   
+    <!-- =================================================================== -->
+    <!-- Build status part                                                                                                                             -->
+    <!-- =================================================================== -->
+    <target name="status.war" depends="compile">
+        <mkdir dir="${status.build}"/>
+        <copy todir="${status.build}">
+            <fileset dir="${status.src}">
+                <include name="**/*"/>
+            </fileset>
+        </copy>
+        <copy todir="${status.build}/WEB-INF/classes">
+            <fileset dir="${build}">
+                <include name="se/anatom/ejbca/protocol/OCSPServlet.class"/>
+                <exclude name="se/anatom/ejbca/**/*Test*"/>
+            </fileset>
+        </copy>
+        <!-- Jar the status.war package together -->
+        <jar basedir="${status.build}" jarfile="${statusjar}">
+            <manifest>
+                <attribute name="Class-Path" value="${status.classpath}"/>
+            </manifest>
+        </jar>
+    </target>
+  
   <!-- =================================================================== -->
-  <!-- Build sampleauth part                                                   
- -->
+  <!-- Build sampleauth part                                               -->
   <!-- =================================================================== -->
   <target name="sampleauth.war" depends="compile">
     <mkdir    dir="${sampleauth.build}"/>
@@ -241,7 +269,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   </target>  
 
   <!-- =================================================================== -->
-  <!-- Build authorization part                                               -->
+  <!-- Build authorization part                                            -->
   <!-- =================================================================== -->
   <target name="authorization.jar" depends="compile">
     <mkdir dir="${authorization.build}"/>
@@ -524,7 +552,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- =================================================================== -->
   <!-- Build CA-ear                                                        -->
   <!-- =================================================================== -->
-  <target name="ca.ear" depends="apply.war, webdist.war, ca.jar, ra.jar, adminweb.war, log.jar, hardtoken.jar, keyrecovery.jar, authorization.jar">
+  <target name="ca.ear" depends="apply.war, status.war, webdist.war, ca.jar, ra.jar, adminweb.war, log.jar, hardtoken.jar, keyrecovery.jar, authorization.jar">
     <mkdir dir="${caear.build}"/>
     <copy todir="${caear.earbuild}">
         <fileset dir="${caear.earsrc}"> 
@@ -556,8 +584,8 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     </copy>
     <copy todir="${caear.earbuild}/lib">
         <fileset dir="${lib}">
-            <include name="bcmail-jdk14-119.jar"/>
-            <include name="bcprov-jdk14-119.jar"/>
+            <include name="bcmail-jdk14-120.jar"/>
+            <include name="bcprov-jdk14-120.jar"/>
             <include name="log4j-1.2.7.jar"/>
             <include name="ldap.jar"/>
         </fileset>
@@ -570,7 +598,7 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
   <!-- =================================================================== -->
   <!-- Build CA-ear without web-RA                                         -->
   <!-- =================================================================== -->
-  <target name="canora.ear" depends="apply.war, webdist.war, ca.jar, ra.jar, log.jar">
+  <target name="canora.ear" depends="apply.war, status.war, webdist.war, ca.jar, ra.jar, log.jar">
     <mkdir dir="${caearnora.build}"/>
     <copy todir="${caearnora.earbuild}">
         <fileset dir="${caear.earsrc}"> 
@@ -602,8 +630,8 @@ includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes"/>
     </copy>
     <copy todir="${caearnora.earbuild}/lib">
         <fileset dir="${lib}">
-            <include name="bcmail-jdk14-119.jar"/>
-            <include name="bcprov-jdk14-119.jar"/>
+            <include name="bcmail-jdk14-120.jar"/>
+            <include name="bcprov-jdk14-120.jar"/>
             <include name="log4j-1.2.7.jar"/>
             <include name="ldap.jar"/>
         </fileset>

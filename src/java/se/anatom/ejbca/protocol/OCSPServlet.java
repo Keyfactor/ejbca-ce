@@ -3,31 +3,41 @@ package se.anatom.ejbca.protocol;
 import java.io.*;
 
 import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.security.SignatureException;
+import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
 
 import javax.naming.InitialContext;
 import javax.rmi.PortableRemoteObject;
-import javax.servlet.*;
-import javax.servlet.http.*;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
+import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
+import org.bouncycastle.asn1.ocsp.RevokedInfo;
+import org.bouncycastle.asn1.x509.CRLReason;
+import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.ocsp.*;
 
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
+import se.anatom.ejbca.ca.exception.SignRequestException;
+import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.protocol.exception.MalformedRequestException;
 import se.anatom.ejbca.util.Hex;
 import se.anatom.ejbca.util.CertTools;
 
@@ -38,13 +48,13 @@ import org.apache.log4j.Logger;
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.2 2003-10-25 08:53:13 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.3 2003-10-26 15:13:53 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
     private static Logger m_log = Logger.getLogger(OCSPServlet.class);
 
-    private ICertificateStoreSessionRemote m_cssr;
+    private ICertificateStoreSessionLocal m_certStore;
     private Admin m_adm;
 
     private PrivateKey m_signkey;
@@ -58,7 +68,7 @@ public class OCSPServlet extends HttpServlet {
             Collection cl;
             Iterator iter;
             
-            return m_cssr.findCertificatesByType(m_adm, SecConst.CERTTYPE_SUBCA + SecConst.CERTTYPE_ROOTCA, null);
+            return m_certStore.findCertificatesByType(m_adm, SecConst.CERTTYPE_SUBCA + SecConst.CERTTYPE_ROOTCA, null);
         } catch (Exception e) {
             m_log.error("Unable to load CA certificates from CA store.", e);
             throw new IOException(e.toString());
@@ -145,10 +155,10 @@ public class OCSPServlet extends HttpServlet {
             String pkalias;
             
             InitialContext ctx = new InitialContext();
-            ICertificateStoreSessionHome castorehome = 
-              (ICertificateStoreSessionHome)PortableRemoteObject.narrow(ctx.lookup("CertificateStoreSession")
-                                                                        , ICertificateStoreSessionHome.class );
-            m_cssr = castorehome.create();
+            ICertificateStoreSessionLocalHome certStoreHome = 
+                (ICertificateStoreSessionLocalHome)PortableRemoteObject.narrow(ctx.lookup("java:comp/env/ejb/CertificateStoreSessionLocal"), ICertificateStoreSessionLocalHome.class);
+
+            m_certStore = certStoreHome.create();
             m_adm = new Admin(Admin.TYPE_INTERNALUSER);
 
             {
@@ -285,172 +295,167 @@ public class OCSPServlet extends HttpServlet {
     public void doPost(HttpServletRequest request, HttpServletResponse response) 
         throws IOException, ServletException {
         m_log.debug(">doPost()");
-// TODO: fixup with BC
+        try {
+            OCSPResp ocspresp = null;
+            BasicOCSPRespGenerator basicRes = null;
+            OCSPRespGenerator res = new OCSPRespGenerator();
+            try {
+                Collection cacerts;
+                X509Extension ext = null;
 
-//        try {
-//            Collection cacerts;
-//            X509Extension ext = null;
-//
-//            OCSPReq req = new OCSPReq(request.getInputStream());
-//
-//            cacerts = loadCertificates();
-//            
-//            if (m_log.isDebugEnabled()) {
-//                StringBuffer certInfo = new StringBuffer();
-//                Iterator iter = cacerts.iterator();
-//                while (iter.hasNext()) {
-//                    X509Certificate cert = (X509Certificate)iter.next();
-//                    certInfo.append(cert.getSubjectDN().getName());
-//                    certInfo.append(',');
-//                    certInfo.append(cert.getSerialNumber().toString());
-//                    certInfo.append('\n');
-//                }
-//                m_log.debug("Found the following CA certificates : \n" 
-//                            + certInfo.toString());
-//            }
-//
-//            BasicOCSPRespGenerator res = createOCSPResponse(req);
-//            
-//            /**
-//             * check the signature if contained in request.
-//             * if the request does not contain a signature
-//             * and the servlet is configured in the way 
-//             * the a signature is required we send back
-//             * 'sigRequired' response.
-//             */
-//            if (m_log.isDebugEnabled()) {
-//                m_log.debug("Incoming OCSP request is signed : " + req.isSigned());
-//            }
-//            if (!req.isSigned() && m_reqMustBeSigned) {
-//                m_log.info("OCSP request unsigned. Servlet enforces signing.");
-//                throw new OCSPSignRequiredException();
-//            }
-//            try {
-//                req.verify();
-//            } catch (SignatureException e) {
-//                m_log.info("Signature of incoming OCSPRequest is invalid.");
-//                throw new OCSPMalformedRequestException("Signature invalid.");
-//            }
-//            
-//            /**
-//             * FIXME: tmeckel
-//             * How to implement the list of allowed
-//             * OCSP clients which are allowed to talk?
-//             * 
-//             * check if requestor is allowed to talk
-//             * to the CA if not send back a 'unauthorized'
-//             * response
-//             */
-//            //throw new OCSPUnauthorizedException()
-//            if (req.singleRequestCount() <= 0) {
-//                m_log.error("The OCSP request does not contain any simpleRequest entities.");
-//                throw new OCSPMalformedRequestException();
-//            } else {
-//                Enumeration sreqs = req.singleRequests();
-//                while (sreqs.hasMoreElements()) {
-//                    OCSPSingleRequest sreq = (OCSPSingleRequest)sreqs.nextElement();
-//                    X509Certificate cacert = null;
-//                    X509Certificate cert = null;
-//                    OCSPCertificateID certId = sreq.getCertificateID();
-//                    RevokedCertInfo rci;
-//                    
-//                    try {
-//                        cacert = findCAByHash(certId, cacerts);
-//                    } catch (NoSuchAlgorithmException e) {
-//                        m_log.info("Unable to generate CA certificate hash.", e);    
-//                        cacert = null;
-//                        continue;
-//                    }
-//                    if (null == cacert) {
-//                        m_log.info("Unable to find CA certificate by hash.");
-//
-//                        OCSPSingleResponse sres = new OCSPSingleResponse(certId);
-//                        sres.setCertStatus(OCSPSingleResponse.CERTSTATUS_UNKNOWN);
-//                        res.addSingleResponse(sres);
-//                        continue;                    
-//                    }
-//
-//                    /*
-//                     * Implement logic according to
-//                     * chapter 2.7 in RFC2560
-//                     * 
-//                     * 2.7  CA Key Compromise
-//                     *    If an OCSP responder knows that a particular CA's private key has
-//                     *    been compromised, it MAY return the revoked state for all
-//                     *    certificates issued by that CA.
-//                     */
-//                    rci = m_cssr.isRevoked(m_adm
-//                                           , cacert.getIssuerDN().getName()
-//                                           , cacert.getSerialNumber());
-//                    if (null != rci 
-//                        && rci.getReason() == RevokedCertInfo.NOT_REVOKED) {
-//                        rci = null;
-//                    }
-//                    if (null == rci) {
-//                        rci = m_cssr.isRevoked(m_adm
-//                                               , cacert.getSubjectDN().getName()
-//                                               , certId.getCertificateSerial());
-//                        if (null == rci) {
-//                            m_log.info("Unable to find revocation information for certificate with serial '"
-//                                       + certId.getCertificateSerial() + "'"
-//                                       + " from issuer '" + cacert.getSubjectDN().getName() + "'");
-//                            OCSPSingleResponse sres = new OCSPSingleResponse(certId);
-//                            sres.setCertStatus(OCSPSingleResponse.CERTSTATUS_UNKNOWN);
-//                            res.addSingleResponse(sres);
-//                        } else {
-//                            OCSPSingleResponse sr = new OCSPSingleResponse(certId);
-//                            if (rci.getReason() != RevokedCertInfo.NOT_REVOKED) {
-//                                OCSPRevokedInfo ori = new OCSPRevokedInfo();
-//                                ori.setRevocationTime(rci.getRevocationDate());
-//                                ori.setRevocationReason(rci.getReason());
-//                                sr.setCertStatus(OCSPSingleResponse.CERTSTATUS_REVOKED);                        
-//                                sr.setRevocationInfo(ori);
-//                            } else {
-//                                sr.setCertStatus(OCSPSingleResponse.CERTSTATUS_GOOD);
-//                            }
-//                            if (m_log.isDebugEnabled()) {
-//                                m_log.info("Adding status information for certificate with serial '"
-//                                           + certId.getCertificateSerial() + "'"
-//                                           + " from issuer '" + cacert.getSubjectDN().getName() + "'");
-//                            }
-//                            res.addSingleResponse(sr);
-//                        }
-//                    } else {
-//                        OCSPSingleResponse sr = new OCSPSingleResponse(certId);
-//                        OCSPRevokedInfo ori = new OCSPRevokedInfo();
-//                        ori.setRevocationTime(rci.getRevocationDate());
-//                        ori.setRevocationReason(rci.getReason());
-//                        sr.setCertStatus(OCSPSingleResponse.CERTSTATUS_REVOKED); 
-//                        sr.setRevocationInfo(ori);                        
-//                    }
-//                }
-//                res.setStatus(OCSPResponse.SUCCESSFUL);
-//            }            
-//        } catch (OCSPException e) {
-//            m_log.info("OCSPException caught : " 
-//                       + e.getClass().getName()
-//                       + " ;Status = "
-//                       + e.getStatus());
-//            res = (OCSPBasicResponse)createOCSPResponse(req);
-//            res.setStatus(e.getStatus());
-//        } catch (Exception e) {
-//            m_log.error("Unable to handle OCSP request.", e);
-//            res = (OCSPBasicResponse)createOCSPResponse(req);
-//            res.setStatus(OCSPResponse.INTERNAL_ERROR);
-//            res = new OCSPBasicResponse();
-//        }
-//        try {
-//            res.sign(m_signkey, m_signcerts, "sha1withrsa");
-//        } catch (Exception e) {
-//            throw new ServletException("Unable to sign OCSP response."
-//                                       , e);
-//        }
-//        try {
-//            res.serializeTo(response.getOutputStream());
-//        } catch (ASN1DataFormatException e) {
-//            throw new ServletException("Unable to serialize OCSP response."
-//                                       , e);
-//        }
+                OCSPReq req = new OCSPReq(request.getInputStream());
+
+                cacerts = loadCertificates();
+            
+                if (m_log.isDebugEnabled()) {
+                    StringBuffer certInfo = new StringBuffer();
+                    Iterator iter = cacerts.iterator();
+                    while (iter.hasNext()) {
+                        X509Certificate cert = (X509Certificate)iter.next();
+                        certInfo.append(cert.getSubjectDN().getName());
+                        certInfo.append(',');
+                        certInfo.append(cert.getSerialNumber().toString());
+                        certInfo.append('\n');
+                    }
+                    m_log.debug("Found the following CA certificates : \n" 
+                                + certInfo.toString());
+                }
+
+                basicRes = createOCSPResponse(req);
+            
+                /**
+                 * check the signature if contained in request.
+                 * if the request does not contain a signature
+                 * and the servlet is configured in the way 
+                 * the a signature is required we send back
+                 * 'sigRequired' response.
+                 */
+                if (m_log.isDebugEnabled()) {
+                    m_log.debug("Incoming OCSP request is signed : " + req.isSigned());
+                }
+                if (m_reqMustBeSigned) {
+                    if (!req.isSigned()) {
+                        m_log.info("OCSP request unsigned. Servlet enforces signing.");
+                        throw new SignRequestException("OCSP request unsigned. Servlet enforces signing.");
+                    }                
+                    GeneralName requestor = req.getRequestorName();
+                    X509Certificate[] certs = req.getCerts("BC");
+                    PublicKey pk = null;
+                    // We must find a cert to verify the signature with...
+                    boolean verifyOK = false;
+                    for (int i=0;i<certs.length;i++) {
+                        if (req.verify(certs[i].getPublicKey(), "BC") == true) {
+                          verifyOK = true;  
+                          break;
+                        }
+                    }
+                    if (!verifyOK) {                    
+                        m_log.info("Signature of incoming OCSPRequest is invalid.");
+                        throw new SignRequestSignatureException("Signature invalid.");
+                    }
+                }
+            
+                /**
+                 * FIXME: tmeckel
+                 * How to implement the list of allowed
+                 * OCSP clients which are allowed to talk?
+                 * 
+                 * check if requestor is allowed to talk
+                 * to the CA if not send back a 'unauthorized'
+                 * response
+                 */
+                //throw new OCSPUnauthorizedException()
+                Req[] requests = req.getRequestList();
+                if (requests.length <= 0) {
+                    String msg = "The OCSP request does not contain any simpleRequest entities.";
+                    m_log.error(msg);
+                    throw new MalformedRequestException(msg);
+                } else {
+                    for (int i=0;i<requests.length;i++) {
+                        X509Certificate cacert = null;
+                        X509Certificate cert = null;
+                        CertificateID certId = requests[i].getCertID();
+                        RevokedCertInfo rci;
+                    
+                        try {
+                            cacert = findCAByHash(certId, cacerts);
+                        } catch (OCSPException e) {
+                            m_log.info("Unable to generate CA certificate hash.", e);    
+                            cacert = null;
+                            continue;
+                        }
+                        if (null == cacert) {
+                            m_log.info("Unable to find CA certificate by hash.");
+                            basicRes.addResponse(certId, new UnknownStatus());
+                            continue;                    
+                        }
+
+                        /*
+                         * Implement logic according to
+                         * chapter 2.7 in RFC2560
+                         * 
+                         * 2.7  CA Key Compromise
+                         *    If an OCSP responder knows that a particular CA's private key has
+                         *    been compromised, it MAY return the revoked state for all
+                         *    certificates issued by that CA.
+                         */
+                        rci = m_certStore.isRevoked(m_adm
+                                               , cacert.getIssuerDN().getName()
+                                               , cacert.getSerialNumber());
+                        if (null != rci 
+                            && rci.getReason() == RevokedCertInfo.NOT_REVOKED) {
+                            rci = null;
+                        }
+                        if (null == rci) {
+                            rci = m_certStore.isRevoked(m_adm
+                                                   , cacert.getSubjectDN().getName()
+                                                   , certId.getSerialNumber());
+                            if (null == rci) {
+                                m_log.info("Unable to find revocation information for certificate with serial '"
+                                           + certId.getSerialNumber() + "'"
+                                           + " from issuer '" + cacert.getSubjectDN().getName() + "'");
+                                basicRes.addResponse(certId, new UnknownStatus());
+                            } else {
+                                CertificateStatus certStatus = null; // null mean good
+                                if (rci.getReason() != RevokedCertInfo.NOT_REVOKED) {
+                                    certStatus = new RevokedStatus(new RevokedInfo(
+                                        new DERGeneralizedTime(rci.getRevocationDate()), 
+                                        new CRLReason(rci.getReason())));
+                                } else {
+                                    certStatus = null;
+                                }
+                                if (m_log.isDebugEnabled()) {
+                                    m_log.info("Adding status information for certificate with serial '"
+                                               + certId.getSerialNumber() + "'"
+                                               + " from issuer '" + cacert.getSubjectDN().getName() + "'");
+                                }
+                                basicRes.addResponse(certId, certStatus);
+                            }
+                        } else {
+                            CertificateStatus certStatus = new RevokedStatus(new RevokedInfo(
+                                new DERGeneralizedTime(rci.getRevocationDate()), 
+                                new CRLReason(rci.getReason())));
+                            basicRes.addResponse(certId, certStatus);
+                        }
+                    }
+                    basicRes.generate("sha1withrsa", m_signkey, m_signcerts, new Date(), "BC" );
+                    ocspresp = res.generate(OCSPRespGenerator.SUCCESSFUL, basicRes);
+                }
+            } catch (MalformedRequestException e) {
+                m_log.info("MalformedRequestException caught : ", e);
+                ocspresp = res.generate(OCSPRespGenerator.MALFORMED_REQUEST, basicRes);
+            } catch (SignRequestException e) {
+                m_log.info("SignRequestException caught : ", e);
+                ocspresp = res.generate(OCSPRespGenerator.SIG_REQUIRED, basicRes);
+            } catch (Exception e) {
+                m_log.error("Unable to handle OCSP request.", e);
+                ocspresp = res.generate(OCSPRespGenerator.INTERNAL_ERROR, basicRes);
+            }
+            response.getOutputStream().write(ocspresp.getEncoded());
+        } catch (OCSPException e) {
+            m_log.error("OCSPException caught, fatal error : ", e);
+            throw new ServletException(e);
+        }        
         m_log.debug("<doPost()");
     } //doPost
 

@@ -41,6 +41,12 @@ application for enrollment (apply) and distribution (webdist).
     </module>
     <module>
         <web>
+            <web-uri>status.war</web-uri>
+            <context-root>/ejbca/publicweb/status</context-root>
+        </web>
+    </module>    
+    <module>
+        <web>
             <web-uri>webdist.war</web-uri>
             <context-root>/ejbca/publicweb/webdist</context-root>
         </web>
