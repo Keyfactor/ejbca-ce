@@ -1,6 +1,36 @@
 EJBCA FAQ
 =========
-$Id: FAQ,v 1.15 2002-10-30 15:48:48 anatom Exp $
+$Id: FAQ,v 1.16 2003-03-20 15:39:34 anatom Exp $
+
+---------
+Q : How do I connect to, and alter data in the built-in 'Hypersonic SQL'
+database.
+
+A : Shut down JBoss.
+Alternative 1:
+If you want to simply drop a table, go into the file
+JBOSS_HOME\server\default\db\hypersonic\default.script and delete the lines that
+creates the table, for instance to delete the table GLOBALCONFIGURATIONDATA,
+delete the lines :
+CREATE TABLE GLOBALCONFIGURATIONDATA(CONFIGURATIONID VARCHAR NOT NULL,DATA
+VARBINARY,UNIQUE(CONFIGURATIONID))
+CREATE UNIQUE INDEX PK_GLOBALCONFIGURATIONDATA ON
+GLOBALCONFIGURATIONDATA(CONFIGURATIONID)
+
+Just for fun you can also delete all lines beginning with:
+INSERT GLOBALCONFIGURATIONDATA...
+
+Alternative 2:
+Download HsqlDb fom http://hsqldb.sourceforge.net/. Unpack and
+in the 'bin'-subdirectory run 'runUtil DatabaseManager'. In the window that
+opens connect to 'HSQL Engine Database In-Memory', select URL
+'jdbc:hsqldb:<path-to-jboss>\server\default\db\hypersonic\default' where the
+path-to-jboss is for example 'C:\jboss\jboss-3.0.6_tomcat-4.1.18'.
+Now you can enter you SQL-commands, for example 'drop table
+globalconfigurationdata' and press 'Execute'. Unforturnately you must now go
+into the file JBOSS_HOME\server\default\db\hypersonic\default.properties and set
+the version to the correct old one, edit the lines with 'version' to read 1.6
+(for JBoss 3.0) instead of whatever is there.
 
 ---------
 Q : When enrolling for certificates with IE, the enrollment controll (clsid) is
@@ -178,6 +208,10 @@ important information. Logging in JBoss is configured in 'log4j.properties' in
 the JBoss config directory.
 
 -----
+
+
+
+
 
 
 
