@@ -30,14 +30,14 @@ import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 /**
  * Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.31 2004-01-27 08:49:49 herrvendil Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.32 2004-01-28 14:09:01 anatom Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
 	
 	private final static String USERGENERATED = "USERGENERATED"; 
-	private final static String P12                     = "P12";
-	private final static String JKS                     = "JKS";
-	private final static String PEM                    = "PEM";
+	private final static String P12           = "P12";
+	private final static String JKS           = "JKS";
+	private final static String PEM           = "PEM";
 	
 	private final String[] softtokennames = {USERGENERATED,P12,JKS,PEM};
 	private final int[] softtokenids = {SecConst.TOKEN_SOFT_BROWSERGEN,
@@ -129,8 +129,8 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                         "Type (mask): INVALID=0; END-USER=1; ADMINISTRATOR=64; SENDNOTIFICATION=256");
                 }
 
-                System.out.print("Existing tokens      : " + USERGENERATED + " , " +
-                                          P12 + " , "+ JKS + " , "  + PEM);
+                System.out.print("Existing tokens      : " + USERGENERATED + ", " +
+                                          P12 + ", "+ JKS + ", "  + PEM);
 
                 if (usehardtokens) {
                   Iterator iter = authorizedhardtokenprofiles.iterator();
@@ -201,7 +201,6 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             int type  = Integer.parseInt(args[7]);
             String tokenname = args[8];
             int profileid =  SecConst.EMPTY_ENDENTITYPROFILE;
-
             int certificatetypeid = SecConst.CERTPROFILE_FIXED_ENDUSER;
             int hardtokenissuerid = SecConst.NO_HARDTOKENISSUER;
             boolean error = false;
