@@ -1,6 +1,6 @@
 EJBCA FAQ
 =========
-$Id: FAQ,v 1.9 2002-08-22 19:27:21 anatom Exp $
+$Id: FAQ,v 1.10 2002-08-22 19:48:18 anatom Exp $
 ---------
 Q : I get the error "Object Class Violation : (65)" when publishing certificates
 in LDAP?
@@ -21,7 +21,8 @@ Q : What databases do EJBCA support?
 A : EJBCA supports in theory any database that works with the application
 server. The database must have support for long fields, a CRL can in theory
 become very large.
-EJBCA has been tested with MySQL, PostgreSQL, Oracle, InstantDB and SAPDD. 
+EJBCA has been known to work with MySQL, PostgreSQL, Oracle, Sybase,
+InstantDB and SAPDD. 
 Other databases should work woth simple configuration.
 
 -----
