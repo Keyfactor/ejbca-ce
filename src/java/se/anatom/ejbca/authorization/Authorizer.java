@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.authorization;
 
 import java.rmi.RemoteException;
@@ -37,32 +37,32 @@ import se.anatom.ejbca.util.CertTools;
  *
  * The main metod are isAthorized and authenticate.
  *
- * @version $Id: Authorizer.java,v 1.8 2004-05-19 07:00:46 anatom Exp $
+ * @version $Id: Authorizer.java,v 1.9 2004-08-05 18:23:09 anatom Exp $
  */
 public class Authorizer extends Object implements java.io.Serializable{
-
-
+    
+    
     
     /** Creates new EjbcaAthorization */
     public Authorizer(Collection admingroups, AdminGroupDataLocalHome  admingrouphome,
-                      ILogSessionLocal logsession, ICertificateStoreSessionLocal certificatestoresession, 
-                      IRaAdminSessionLocal raadminsession, ICAAdminSessionLocal caadminsession, Admin admin, int module) 
-                        throws NamingException, CreateException, RemoteException {
+            ILogSessionLocal logsession, ICertificateStoreSessionLocal certificatestoresession, 
+            IRaAdminSessionLocal raadminsession, ICAAdminSessionLocal caadminsession, Admin admin, int module) 
+    throws NamingException, CreateException, RemoteException {
         accesstree = new AccessTree();
         authorizationproxy = new AuthorizationProxy(admingrouphome, accesstree);
         buildAccessTree(admingroups);
         
-                
+        
         this.logsession = logsession;
         this.module=module;
         this.certificatesession = certificatestoresession;
         this.raadminsession = raadminsession;
         this.caadminsession = caadminsession;                 
-
+        
     }
-
+    
     // Public methods.
-
+    
     /**
      * Method to check if a user is authorized to a resource
      *
@@ -73,27 +73,29 @@ public class Authorizer extends Object implements java.io.Serializable{
      */
     public boolean isAuthorized(Admin admin, String resource) throws AuthorizationDeniedException {
         
-       if(admin == null)
-       	 throw  new AuthorizationDeniedException("Administrator not authorized to resource : " + resource);
-       
-       AdminInformation admininformation = admin.getAdminInformation();
-	   
-       if(!authorizationproxy.isAuthorized(admininformation, resource)  && !authorizationproxy.isAuthorized(admininformation, "/super_administrator")){
-         if(!admininformation.isSpecialUser())
-           logsession.log(admin, admininformation.getX509Certificate(), module,   new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Resource : " + resource);
-         else
-           logsession.log(admin, ILogSessionLocal.INTERNALCAID, module,   new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Resource : " + resource);  
-         throw  new AuthorizationDeniedException("Administrator not authorized to resource : " + resource);
-       }
-       if(!admininformation.isSpecialUser())
-         logsession.log(admin,admininformation.getX509Certificate(),  module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,"Resource : " + resource);       
-       else
-         logsession.log(admin, ILogSessionLocal.INTERNALCAID,  module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,"Resource : " + resource);
-           
-       return true;
+        if(admin == null)
+            throw  new AuthorizationDeniedException("Administrator not authorized to resource : " + resource);
+        
+        AdminInformation admininformation = admin.getAdminInformation();
+        
+        if(!authorizationproxy.isAuthorized(admininformation, resource)  && !authorizationproxy.isAuthorized(admininformation, "/super_administrator")){
+            if(!admininformation.isSpecialUser()) {
+                logsession.log(admin, admininformation.getX509Certificate(), module,   new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Resource : " + resource);
+            } else {
+                logsession.log(admin, ILogSessionLocal.INTERNALCAID, module,   new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Resource : " + resource);
+            }
+            throw  new AuthorizationDeniedException("Administrator not authorized to resource : " + resource);
+        }
+        if(!admininformation.isSpecialUser()) {
+            logsession.log(admin,admininformation.getX509Certificate(),  module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,"Resource : " + resource);       
+        } else {
+            logsession.log(admin, ILogSessionLocal.INTERNALCAID,  module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,"Resource : " + resource);
+        }
+        
+        return true;
     }
-
-
+    
+    
     /**
      * Method to check if a user is authorized to a resource without performing any logging
      *
@@ -104,67 +106,68 @@ public class Authorizer extends Object implements java.io.Serializable{
      */
     public boolean isAuthorizedNoLog(Admin admin, String resource) throws AuthorizationDeniedException {
         if(admin == null)
-        	throw  new AuthorizationDeniedException("Administrator not authorized to resource : " + resource);
+            throw  new AuthorizationDeniedException("Administrator not authorized to resource : " + resource);
         
         // Check in accesstree.
-       if(!authorizationproxy.isAuthorized(admin.getAdminInformation(), resource)  && !authorizationproxy.isAuthorized(admin.getAdminInformation(), "/super_administrator")){
-         throw  new AuthorizationDeniedException("Administrator not authorized to resource : " + resource);
-       }
+        if(!authorizationproxy.isAuthorized(admin.getAdminInformation(), resource)  && !authorizationproxy.isAuthorized(admin.getAdminInformation(), "/super_administrator")){
+            throw  new AuthorizationDeniedException("Administrator not authorized to resource : " + resource);
+        }
         return true;
     }
     
-	/**
-	 * Method to check if a group is authorized to a resource
-	 *
-	 * @param admininformation information about the user to be authorized.
-	 * @param resource the resource to look up.
-	 * @return true if authorizes
-	 * @throws AuthorizationDeniedException when authorization is denied.
-	 */
-	public boolean isGroupAuthorized(Admin admin, int pk, String resource) throws AuthorizationDeniedException {
-	   if(admin == null)
-	   	 throw  new AuthorizationDeniedException("Administrator group not authorized to resource : " + resource);
-		
-	   AdminInformation admininformation = admin.getAdminInformation();
-	   
-	   if(!authorizationproxy.isGroupAuthorized(admininformation, pk, resource)){
-		 if(!admininformation.isSpecialUser())
-		   logsession.log(admin, admininformation.getX509Certificate(), module,   new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Adminstrator group authorized to resource : " + resource);
-		 else
-		   logsession.log(admin, ILogSessionLocal.INTERNALCAID, module,   new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Adminstrator group authorized to resource : " + resource);  
-		 throw  new AuthorizationDeniedException("Administrator group not authorized to resource : " + resource);
-	   }
-	   if(!admininformation.isSpecialUser())
-		 logsession.log(admin,admininformation.getX509Certificate(),  module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);       
-	   else
-		 logsession.log(admin, ILogSessionLocal.INTERNALCAID,  module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);
-           
-	   return true;
-	}
-
-
-	/**
-	 * Method to check if a group is authorized to a resource without performing any logging
-	 *
-	 * @param AdminInformation information about the user to be authorized.
-	 * @param resource the resource to look up.
-	 * @return true if authorizes
-	 * @throws AuthorizationDeniedException when authorization is denied.
-	 */
-	public boolean isGroupAuthorizedNoLog(Admin admin, int pk, String resource) throws AuthorizationDeniedException {
-	   if(admin == null)
-  	   	 throw  new AuthorizationDeniedException("Administrator group not authorized to resource : " + resource);
-
-		// Check in accesstree.
-	   if(!authorizationproxy.isGroupAuthorized(admin.getAdminInformation(), 
-	                                              pk, resource)){
-		 throw  new AuthorizationDeniedException("Administrator group not authorized to resource : " + resource);
-	   }
-		return true;
-	}
-
+    /**
+     * Method to check if a group is authorized to a resource
+     *
+     * @param admininformation information about the user to be authorized.
+     * @param resource the resource to look up.
+     * @return true if authorizes
+     * @throws AuthorizationDeniedException when authorization is denied.
+     */
+    public boolean isGroupAuthorized(Admin admin, int pk, String resource) throws AuthorizationDeniedException {
+        if(admin == null)
+            throw  new AuthorizationDeniedException("Administrator group not authorized to resource : " + resource);
+        
+        AdminInformation admininformation = admin.getAdminInformation();
+        
+        if(!authorizationproxy.isGroupAuthorized(admininformation, pk, resource)){
+            if(!admininformation.isSpecialUser()) {
+                logsession.log(admin, admininformation.getX509Certificate(), module,   new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);
+            } else {
+                logsession.log(admin, ILogSessionLocal.INTERNALCAID, module,   new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);
+            }
+            throw  new AuthorizationDeniedException("Administrator group not authorized to resource : " + resource);
+        }
+        if(!admininformation.isSpecialUser()) {
+            logsession.log(admin,admininformation.getX509Certificate(),  module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);       
+        } else {
+            logsession.log(admin, ILogSessionLocal.INTERNALCAID,  module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);
+        }
+        
+        return true;
+    }
     
-
+    
+    /**
+     * Method to check if a group is authorized to a resource without performing any logging
+     *
+     * @param AdminInformation information about the user to be authorized.
+     * @param resource the resource to look up.
+     * @return true if authorizes
+     * @throws AuthorizationDeniedException when authorization is denied.
+     */
+    public boolean isGroupAuthorizedNoLog(Admin admin, int pk, String resource) throws AuthorizationDeniedException {
+        if(admin == null)
+            throw  new AuthorizationDeniedException("Administrator group not authorized to resource : " + resource);
+        
+        // Check in accesstree.
+        if(!authorizationproxy.isGroupAuthorized(admin.getAdminInformation(), pk, resource)) {
+            throw  new AuthorizationDeniedException("Administrator group not authorized to resource : " + resource);
+        }
+        return true;
+    }
+    
+    
+    
     /**
      * Method that authenticates a certificate by verifying signature, checking validity and lookup if certificate is revoked.
      *
@@ -172,30 +175,30 @@ public class Authorizer extends Object implements java.io.Serializable{
      * @throws AuthenticationFailedException if authentication failed.
      */
     public void authenticate(X509Certificate certificate) throws AuthenticationFailedException {
-
-      // Check Validity
+        
+        // Check Validity
         try{
-          certificate.checkValidity();
+            certificate.checkValidity();
         }catch(Exception e){
-           throw new AuthenticationFailedException("Your certificates vality has expired.");
+            throw new AuthenticationFailedException("Your certificates vality has expired.");
         }
-
+        
         // TODO
- /*     // Vertify Signature
-        boolean verified = false;
-        for(int i=0; i < this.cacertificatechain.length; i++){
-           try{
-//            log.debug("Authorizer: authenticate : Comparing : "  + CertTools.getIssuerDN(certificate) + " With " + CertTools.getSubjectDN((X509Certificate) cacertificatechain[i]));
-//            if(LDAPDN.equals(CertTools.getIssuerDN(certificate), CertTools.getSubjectDN((X509Certificate) cacertificatechain[i]))){
-               certificate.verify(cacertificatechain[i].getPublicKey());
-               verified = true;
-//            }
-           }catch(Exception e){}
-        }
-        if(!verified)
-           throw new AuthenticationFailedException("Your certificate cannot be verified by CA certificate chain.");
-*/
-      // Check if certificate is revoked.
+        /*     // Vertify Signature
+         boolean verified = false;
+         for(int i=0; i < this.cacertificatechain.length; i++){
+         try{
+         //            log.debug("Authorizer: authenticate : Comparing : "  + CertTools.getIssuerDN(certificate) + " With " + CertTools.getSubjectDN((X509Certificate) cacertificatechain[i]));
+          //            if(LDAPDN.equals(CertTools.getIssuerDN(certificate), CertTools.getSubjectDN((X509Certificate) cacertificatechain[i]))){
+           certificate.verify(cacertificatechain[i].getPublicKey());
+           verified = true;
+           //            }
+            }catch(Exception e){}
+            }
+            if(!verified)
+            throw new AuthenticationFailedException("Your certificate cannot be verified by CA certificate chain.");
+            */
+        // Check if certificate is revoked.
         RevokedCertInfo revinfo = certificatesession.isRevoked(new Admin(certificate), CertTools.getIssuerDN(certificate),certificate.getSerialNumber());
         if (revinfo == null) {
             // Certificate missing
@@ -205,24 +208,24 @@ public class Authorizer extends Object implements java.io.Serializable{
             throw new AuthenticationFailedException("Your certificate have been revoked.");
         }
     }
-
+    
     /**
      * Method used to return an ArrayList of Integers indicating which CAids a administrator
      * is authorized to access.
      */
-       
+    
     public Collection getAuthorizedCAIds(Admin admin){         
-      ArrayList returnval = new ArrayList();  
-      Iterator iter = caadminsession.getAvailableCAs(admin).iterator();      
-           
-      while(iter.hasNext()){
-        Integer caid = (Integer) iter.next();
-        try{           
-          isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + caid.toString());               
-          returnval.add(caid); 
-        }catch(AuthorizationDeniedException e){}
-      }                         
-      return returnval;
+        ArrayList returnval = new ArrayList();  
+        Iterator iter = caadminsession.getAvailableCAs(admin).iterator();      
+        
+        while(iter.hasNext()){
+            Integer caid = (Integer) iter.next();
+            try{           
+                isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + caid.toString());               
+                returnval.add(caid); 
+            }catch(AuthorizationDeniedException e){}
+        }                         
+        return returnval;
     }		   
     
     /**
@@ -232,38 +235,37 @@ public class Authorizer extends Object implements java.io.Serializable{
      * @param admin, the administrator 
      * @rapriviledge should be one of the end entity profile authorization constans defined in AvailableAccessRules.
      */ 
-       
+    
     public Collection getAuthorizedEndEntityProfileIds(Admin admin, String rapriviledge){
-      ArrayList returnval = new ArrayList();  
-      Iterator iter = raadminsession.getEndEntityProfileIdToNameMap(admin).keySet().iterator();  
-           
-      while(iter.hasNext()){
-        Integer profileid = (Integer) iter.next();
-        try{
-          isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + profileid + rapriviledge);     
-          returnval.add(profileid); 
-        }catch(AuthorizationDeniedException e){}
-                   
-      }
-      
-      return returnval;
+        ArrayList returnval = new ArrayList();  
+        Iterator iter = raadminsession.getEndEntityProfileIdToNameMap(admin).keySet().iterator();  
+        
+        while(iter.hasNext()){
+            Integer profileid = (Integer) iter.next();
+            try{
+                isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + profileid + rapriviledge);     
+                returnval.add(profileid); 
+            }catch(AuthorizationDeniedException e){}
+            
+        }
+        
+        return returnval;
     }
     
     /** Metod to load the access data from database. */
     public void buildAccessTree(Collection admingroups){
-      accesstree.buildTree(admingroups);
-      authorizationproxy.clear();
+        accesstree.buildTree(admingroups);
+        authorizationproxy.clear();
     }
-
+    
     // Private metods
-
-
+    
+    
     // Private fields.
-
     private AccessTree            accesstree;
     private Certificate[]         cacertificatechain;
     private int                   module;
-
+    
     private ICertificateStoreSessionLocal  certificatesession;
     private ILogSessionLocal               logsession;
     private IRaAdminSessionLocal           raadminsession;
