@@ -1,15 +1,16 @@
 <%@ page pageEncoding="ISO-8859-1"%>
-<%@page  errorPage="errorpage.jsp" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean, se.anatom.ejbca.ra.raadmin.GlobalConfiguration " %>
+<%@page errorPage="errorpage.jsp" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean, se.anatom.ejbca.ra.raadmin.GlobalConfiguration " %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
-<%   // Initialize environments
-   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/administrator"); 
+<%   // Initialize environment
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/administrator"); 
 %>
 <head>
   <title><%= globalconfiguration.getEjbcaTitle() %></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
+  <meta http-equiv="Content-Type" content="text/html; charset=<%= ejbcawebbean.getDefaultContentEncoding() %>">
 </head>
 <body>
 <H5><DIV align=right><i><%= ejbcawebbean.getText("VERSION") + " " + GlobalConfiguration.EJBCA_VERSION%></i></div></H5> 

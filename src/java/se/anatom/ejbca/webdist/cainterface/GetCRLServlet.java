@@ -18,8 +18,6 @@ import java.io.PrintStream;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 
-import javax.naming.InitialContext;
-import javax.rmi.PortableRemoteObject;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -28,10 +26,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.ServiceLocator;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 
 /**
@@ -43,7 +42,15 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: GetCRLServlet.java,v 1.21 2005-02-13 17:09:53 anatom Exp $
+ * @version $Id: GetCRLServlet.java,v 1.22 2005-03-21 11:58:32 anatom Exp $
+ * 
+ * @web.servlet name = "GetCRL"
+ *              display-name = "GetCRLServlet"
+ *              description="Used to retrive CA certificate request and Processed CA Certificates from AdminWeb GUI"
+ *              load-on-startup = "99"
+ *
+ * @web.servlet-mapping url-pattern = "/ca/getcrl/getcrl"
+ *
  */
 public class GetCRLServlet extends HttpServlet {
 
@@ -53,21 +60,22 @@ public class GetCRLServlet extends HttpServlet {
     private static final String COMMAND_CRL = "crl";
     private static final String ISSUER_PROPERTY = "issuer";
 
-    private InitialContext ctx = null;
-    private ICertificateStoreSessionHome storehome = null;
+    private ICertificateStoreSessionLocalHome storehome = null;
 
+    private synchronized ICertificateStoreSessionLocalHome getStoreHome() throws IOException {
+        try{
+            if(storehome == null){
+              storehome = (ICertificateStoreSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
+            }
+          } catch(Exception e){
+             throw new java.io.IOException("Authorization Denied");
+          }
+          return storehome;
+    }
+      
 
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        try {
-
-            // Get EJB context and home interfaces
-
-            ctx = new InitialContext();
-
-        } catch( Exception e ) {
-            throw new ServletException(e);
-        }
     }
 
     public void doPost(HttpServletRequest req, HttpServletResponse res)
@@ -100,15 +108,6 @@ public class GetCRLServlet extends HttpServlet {
            throw new java.io.IOException("Authorization Denied");
         }
 
-        try{
-          if(storehome == null){
-            storehome = (ICertificateStoreSessionHome) PortableRemoteObject.narrow(
-              ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class );
-          }
-        } catch(Exception e){
-           throw new java.io.IOException("Authorization Denied");
-        }
-        
         String issuerdn = null; 
         if(req.getParameter(ISSUER_PROPERTY) != null){
           issuerdn = java.net.URLDecoder.decode(req.getParameter(ISSUER_PROPERTY),"UTF-8");
@@ -123,7 +122,7 @@ public class GetCRLServlet extends HttpServlet {
         if (command.equalsIgnoreCase(COMMAND_CRL) && issuerdn != null) {
             try {
                 Admin admin = new Admin(((X509Certificate[]) req.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
-                ICertificateStoreSessionRemote store = storehome.create();
+                ICertificateStoreSessionLocal store = getStoreHome().create();
                 byte[] crl = store.getLastCRL(admin, issuerdn);
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 String dn = CertTools.getIssuerDN(x509crl);

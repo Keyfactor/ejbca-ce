@@ -55,12 +55,13 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.ServiceLocator;
+import se.anatom.ejbca.util.ServiceLocatorException;
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.40 2005-02-23 15:26:09 anatom Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.41 2005-03-21 11:58:51 anatom Exp $
  */
 public class EjbcaWebBean {
 
@@ -558,4 +559,22 @@ public class EjbcaWebBean {
     	return this.administrator;    
     }
 
+    /** Returns the default content encoding used in JSPs. Reads the env-entry contentEncoding from web.xml.
+     * 
+     * @return The content encoding set in the webs env-entry java:comp/env/contentEncoding, or ISO-8859-1 (default), never returns null.
+     */
+    public String getDefaultContentEncoding() {
+        String ret = null;
+        try {
+            ret = (String) ServiceLocator.getInstance().getString("java:comp/env/contentEncoding");            
+        } catch (ServiceLocatorException e) {
+            log.debug("Can not find any default content encoding, using hard default ISO-8859-1.");
+            ret = "ISO-8859-1";            
+        }
+        if (ret == null) {
+            log.debug("Can not find any default content encoding, using hard default ISO-8859-1.");
+            ret = "ISO-8859-1";
+        } 
+        return ret;
+    }
 }

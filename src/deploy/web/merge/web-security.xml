@@ -1,0 +1,15 @@
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name></web-resource-name> 
+      <description></description>
+      <url-pattern>/*</url-pattern>
+    </web-resource-collection>
+    <user-data-constraint>
+      <description>This web demands SSL</description>
+      <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+    </user-data-constraint>
+  </security-constraint>
+
+  <login-config>
+    <auth-method>CLIENT-CERT</auth-method>
+  </login-config>

@@ -44,7 +44,15 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: CACertReqServlet.java,v 1.6 2005-03-04 15:58:18 anatom Exp $
+ * @version $Id: CACertReqServlet.java,v 1.7 2005-03-21 11:58:32 anatom Exp $
+ * 
+ * @web.servlet name = "CACertReq"
+ *              display-name = "CACertReqServlet"
+ *              description="Used to retrive CA certificate request and Processed CA Certificates from AdminWeb GUI"
+ *              load-on-startup = "99"
+ *
+ * @web.servlet-mapping url-pattern = "/ca/editcas/cacertreq"
+ *
  */
 public class CACertReqServlet extends HttpServlet {
 
@@ -57,7 +65,7 @@ public class CACertReqServlet extends HttpServlet {
 	
 	private ISignSessionLocal signsession = null;
    
-   private ISignSessionLocal getSignSession(){
+   private synchronized ISignSessionLocal getSignSession(){
    	  if(signsession == null){	
 		try {
 		    ISignSessionLocalHome signhome = (ISignSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);

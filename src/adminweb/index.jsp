@@ -1,5 +1,5 @@
 <%@ page pageEncoding="ISO-8859-1"%>
-<%@page errorPage="errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.webdist.webconfiguration.WebLanguages"%>
+<%@page errorPage="errorpage.jsp" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.webdist.webconfiguration.WebLanguages"%>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
@@ -9,8 +9,8 @@
 <head>
   <title><%= globalconfiguration.getEjbcaTitle() %></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>">
-
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
+  <meta http-equiv="Content-Type" content="text/html; charset=<%= ejbcawebbean.getDefaultContentEncoding() %>">
 </head>
 
 <frameset rows="131,*" cols="*" frameborder="NO" border="0" framespacing="0"> 

@@ -11,18 +11,16 @@
  *                                                                       *
  *************************************************************************/
  
-package se.anatom.ejbca.apply;
+package se.anatom.ejbca.webdist.cainterface;
 
 import java.beans.Beans;
 import java.io.IOException;
-import java.security.cert.X509Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 import javax.ejb.CreateException;
 import javax.ejb.ObjectNotFoundException;
-import javax.naming.InitialContext;
-import javax.rmi.PortableRemoteObject;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -40,16 +38,16 @@ import se.anatom.ejbca.ca.exception.CADoesntExistsException;
 import se.anatom.ejbca.ca.exception.IllegalKeyException;
 import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
-import se.anatom.ejbca.ca.sign.ISignSessionHome;
-import se.anatom.ejbca.ca.sign.ISignSessionRemote;
+import se.anatom.ejbca.ca.sign.ISignSessionLocal;
+import se.anatom.ejbca.ca.sign.ISignSessionLocalHome;
 import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.protocol.PKCS10RequestMessage;
 import se.anatom.ejbca.protocol.IResponseMessage;
+import se.anatom.ejbca.protocol.PKCS10RequestMessage;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.FileTools;
+import se.anatom.ejbca.util.ServiceLocator;
 import se.anatom.ejbca.util.StringTools;
-import se.anatom.ejbca.webdist.cainterface.CAInterfaceBean;
 import se.anatom.ejbca.webdist.rainterface.RAInterfaceBean;
 import se.anatom.ejbca.webdist.rainterface.UserView;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
@@ -111,11 +109,20 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * 
  *
  * @author Ville Skyttä
- * @version $Id: AdminCertReqServlet.java,v 1.16 2004-04-18 16:01:55 anatom Exp $
+ * @version $Id: AdminCertReqServlet.java,v 1.1 2005-03-21 11:58:32 anatom Exp $
+ * 
+ * @web.servlet name = "AdminCertReq"
+ *              display-name = "AdminCertReqServlet"
+ *              description="Used to retrive CA certificate request and Processed CA Certificates from AdminWeb GUI"
+ *              load-on-startup = "99"
+ *
+ * @web.servlet-mapping url-pattern = "/ca/certreq"
+ *
  */
 public class AdminCertReqServlet extends HttpServlet {
   private final static Logger log = Logger.getLogger(AdminCertReqServlet.class);
-  private ISignSessionHome signhome = null;
+  
+  private ISignSessionLocalHome signhome = null;
   private final static byte[] BEGIN_CERT =
     "-----BEGIN CERTIFICATE-----".getBytes();
   private final static int BEGIN_CERT_LENGTH = BEGIN_CERT.length;
@@ -132,15 +139,13 @@ public class AdminCertReqServlet extends HttpServlet {
   {
     super.init(config);
     try {
-      // Install BouncyCastle provider
-      CertTools.installBCProvider();
-
-      // Get EJB context and home interfaces
-      InitialContext ctx = new InitialContext();
-      signhome = (ISignSessionHome) PortableRemoteObject
-        .narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class);
+        // Install BouncyCastle provider
+        CertTools.installBCProvider();
+        
+        // Get EJB context and home interfaces
+        signhome = (ISignSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
     } catch (Exception e) {
-      throw new ServletException(e);
+        throw new ServletException(e);
     }
   }
 
@@ -263,7 +268,7 @@ public class AdminCertReqServlet extends HttpServlet {
       throw new ServletException("Error adding user: " + e.toString(), e);
     }
 
-    ISignSessionRemote ss;
+    ISignSessionLocal ss;
     try {
       ss = signhome.create();
     } catch (CreateException e) {

@@ -49,6 +49,7 @@
     <property name="rootwar" value="${dist.dir}/publicwebroot.war" />
 
     <property name="ejbdd.src" value="${src}/deploy/ejb" />
+    <property name="webdd.src" value="${src}/deploy/web" />
     <property name="eardd.src" value="${src}/deploy/ear" />
     <property name="caear" value="${dist.dir}/ejbca.ear" />
 
@@ -96,6 +97,8 @@
     <property name="mail.from" value="ejbca-donotreply@domain.com" />
     <property name="mail.subject" value="Retrieve your certificate" />
     <property name="mail.message" value="Hello $CN$NL$NL This is a notification. $NL$NL Your username: $Username$NL password: $Password$NL$NL Your are NOT supposed to go and fetch your certificate, this is only a test." />
+    <property name="web.availablelanguages" value="EN" />
+    <property name="web.contentencoding" value="ISO-8859-1" />
 
     <!-- =================================================================== -->
     <!-- Build ALL                                                           -->
@@ -108,18 +111,21 @@
     <target name="init" depends="j2ee:check">
         <echo>
 ---------- CONFIGURATION PROPERTIES ----------
-jboss.home           = ${jboss.home}
-datasource.jndi-name = ${datasource.jndi-name}
-database.name        = ${database.name}
-datasource.mapping   = ${datasource.mapping}
-database.url         = ${database.url}
-database.driver      = ${database.driver}
-database.username    = ${database.username}
-database.password    = ${database.password}
-mail.jndi-name       = ${mail.jndi-name}
-mail.from            = ${mail.from}
-mail.subject         = ${mail.subject}
-mail.message         = ${mail.message}
+jboss.home             = ${jboss.home}
+datasource.jndi-name   = ${datasource.jndi-name}
+database.name          = ${database.name}
+datasource.mapping     = ${datasource.mapping}
+database.url           = ${database.url}
+database.driver        = ${database.driver}
+database.username      = ${database.username}
+database.password      = ${database.password}
+mail.jndi-name         = ${mail.jndi-name}
+mail.from              = ${mail.from}
+mail.subject           = ${mail.subject}
+mail.message           = ${mail.message}
+web.availablelanguages = ${web.availablelanguages}
+web.contentencoding    = ${web.contentencoding}
+
       </echo>
         <!-- Create the time stamp -->
         <tstamp/>
@@ -151,6 +157,9 @@ mail.message         = ${mail.message}
         <taskdef name="ejbdoclet" classname="xdoclet.modules.ejb.EjbDocletTask">
             <classpath refid="xdoclet.classpath" />
         </taskdef>
+        <taskdef name="webdoclet" classname="xdoclet.modules.web.WebDocletTask">
+            <classpath refid="xdoclet.classpath" />
+        </taskdef>
     	<!-- Copy XDoclet merge files to handle database specific settings -->
         <ejb-merge-copy database="${database.name}" overwrite="true" />
         <ejbdoclet force="false" destdir="${src.gen}" ejbspec="2.0" excludedtags="@version,@author">
@@ -159,7 +168,6 @@ mail.message         = ${mail.message}
                 <exclude name="**/BaseEntityBean.java" />
                 <exclude name="**/BaseSessionBean.java" />
             </fileset>
-            <!--dataobject/-->
             <remoteinterface />
             <homeinterface />
             <localinterface />
@@ -190,6 +198,17 @@ mail.message         = ${mail.message}
                 destdir="${src.dd}/META-INF" 
                 validatexml="false" />
         </ejbdoclet>
+        <webdoclet force="true" destdir="${src.gen}" excludedtags="@version,@author">
+            <fileset dir="${src.java}">
+                <include name="**/*Servlet.java" />
+            </fileset>
+            <deploymentdescriptor destdir="${src.dd}/WEB-INF"
+             servletspec="2.3"
+             sessiontimeout="30" 
+             description="EJBCA Administration web" 
+             mergeDir="${webdd.src}/merge"
+             validatexml="false" />
+        </webdoclet>
     </target>
 
 	<!--
@@ -278,13 +297,14 @@ mail.message         = ${mail.message}
     <target name="adminweb.war" depends="compile">
         <mkdir dir="${adminweb.build}/WEB-INF/lib"/>
         <copy todir="${adminweb.build}">
-            <fileset dir="${adminweb.src}">
-                <exclude name="**/tomcat*-service.xml"/>
-            </fileset>
+            <fileset dir="${adminweb.src}" />
+        </copy>
+        <copy todir="${adminweb.build}/WEB-INF">
+            <fileset dir="${src.dd}/WEB-INF" />
         </copy>
         
     	<jsp-compile uriroot="${adminweb.build}" classpathref="compile.classpath"/>
-        <war destfile="${adminwebwar}" webxml="${adminweb.build}/WEB-INF/web.xml">
+        <war destfile="${adminwebwar}" webxml="${src.dd}/WEB-INF/web.xml">
             <manifest>
                 <attribute name="Class-Path" value="${jar.extclasspath}" />
             </manifest>

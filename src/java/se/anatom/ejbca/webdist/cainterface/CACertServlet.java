@@ -44,7 +44,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CACertServlet.java,v 1.25 2005-02-13 18:38:24 anatom Exp $
+ * @version $Id: CACertServlet.java,v 1.26 2005-03-21 11:58:32 anatom Exp $
  *
  * @web.servlet name = "CACert"
  *              display-name = "CACertServlet"
@@ -53,6 +53,50 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  *
  * @web.servlet-mapping url-pattern = "/ca/cacert"
  *
+ * We put all ejb-env-entrys in this servlet, this is a collection of all envs for all servlets and jsps
+ * 
+ * @web.env-entry description="Defines the admin directory"
+ *   name="ADMINDIRECTORY"
+ *   type="java.lang.String"
+ *   value="adminweb"
+ * 
+ * @web.env-entry description="Defines the available languages by languagecodes separated with a comma"
+ *   name="AVAILABLELANGUAGES"
+ *   type="java.lang.String"
+ *   value="${web.availablelanguages}"
+ * 
+ * @web.env-entry description="Defines the available themes by css-filenames separated with a comma"
+ *   name="AVAILABLETHEMES"
+ *   type="java.lang.String"
+ *   value="default_theme.css"
+ * 
+ * @web.env-entry description="Port used by EJBCA public webcomponents. i.e that doesn't require client authentication"
+ *   name="PUBLICPORT"
+ *   type="java.lang.String"
+ *   value="8080"
+ * 
+ * @web.env-entry description="Port used by EJBCA private webcomponents. i.e that requires client authentication"
+ *   name="PRIVATEPORT"
+ *   type="java.lang.String"
+ *   value="8443"
+ * 
+ * @web.env-entry description="Protocol used by EJBCA public webcomponents. i.e that doesn't require client authentication"
+ *   name="PUBLICPROTOCOL"
+ *   type="java.lang.String"
+ *   value="http"
+ * 
+ * @web.env-entry description="Protocol used by EJBCA private webcomponents. i.e that requires client authentication"
+ *   name="PRIVATEPROTOCOL"
+ *   type="java.lang.String"
+ *   value="https"
+ * 
+ * @web.env-entry description="Default content encoding used to display JSP pages"
+ *   name="contentEncoding"
+ *   type="java.lang.String"
+ *   value="${web.contentencoding}"
+ * 
+ * We put all ejb-local-refs in this servlet, this is a collection of all refs for all servlets and jsps
+ * 
  * @web.ejb-local-ref
  *  name="ejb/RSASignSessionLocal"
  *  type="Session"
@@ -60,6 +104,76 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  *  home="se.anatom.ejbca.ca.sign.ISignSessionLocalHome"
  *  local="se.anatom.ejbca.ca.sign.ISignSessionLocal"
  *
+ * @web.ejb-local-ref
+ *  name="ejb/CertificateStoreSessionLocal"
+ *  type="Session"
+ *  link="CertificateStoreSession"
+ *  home="se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome"
+ *  local="se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal"
+ * 
+ * @web.ejb-local-ref
+ *  name="ejb/CAAdminSessionLocal"
+ *  type="Session"
+ *  link="CAAdminSession"
+ *  home="se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome"
+ *  local="se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal"
+ *  
+ * @web.ejb-local-ref
+ *  name="ejb/UserAdminSessionLocal"
+ *  type="Session"
+ *  link="UserAdminSession"
+ *  home="se.anatom.ejbca.ra.IUserAdminSessionLocalHome"
+ *  local="se.anatom.ejbca.ra.IUserAdminSessionLocal"
+ *  
+ * @web.ejb-local-ref
+ *  name="ejb/RaAdminSessionLocal"
+ *  type="Session"
+ *  link="RaAdminSession"
+ *  home="se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome"
+ *  local="se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal"
+ *  
+ * @web.ejb-local-ref
+ *  name="ejb/LogSessionLocal"
+ *  type="Session"
+ *  link="LogSession"
+ *  home="se.anatom.ejbca.log.ILogSessionLocalHome"
+ *  local="se.anatom.ejbca.log.ILogSessionLocal"
+ *  
+ * @web.ejb-local-ref
+ *  name="ejb/AuthorizationSessionLocal"
+ *  type="Session"
+ *  link="AuthorizationSession"
+ *  home="se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome"
+ *  local="se.anatom.ejbca.authorization.IAuthorizationSessionLocal"
+ *  
+ * @web.ejb-local-ref
+ *  name="ejb/HardTokenSessionLocal"
+ *  type="Session"
+ *  link="HardTokenSession"
+ *  home="se.anatom.ejbca.hardtoken.IHardTokenSessionLocalHome"
+ *  local="se.anatom.ejbca.hardtoken.IHardTokenSessionLocal"
+ *  
+ * @web.ejb-local-ref
+ *  name="ejb/HardTokenBatchJobSessionLocal"
+ *  type="Session"
+ *  link="HardTokenBatchJobSession"
+ *  home="se.anatom.ejbca.hardtoken.IHardTokenBatchJobSessionLocalHome"
+ *  local="se.anatom.ejbca.hardtoken.IHardTokenBatchJobSessionLocal"
+ *  
+ * @web.ejb-local-ref
+ *  name="ejb/KeyRecoverySessionLocal"
+ *  type="Session"
+ *  link="KeyRecoverySession"
+ *  home="se.anatom.ejbca.keyrecovery.IKeyRecoverySessionLocalHome"
+ *  local="se.anatom.ejbca.keyrecovery.IKeyRecoverySessionLocal"
+ *  
+ * @web.ejb-local-ref
+ *  name="ejb/PublisherSessionLocal"
+ *  type="Session"
+ *  link="PublisherSession"
+ *  home="se.anatom.ejbca.ca.publisher.IPublisherSessionLocalHome"
+ *  local="se.anatom.ejbca.ca.publisher.IPublisherSessionLocal"
+ *  
  */
 public class CACertServlet extends HttpServlet {
 
