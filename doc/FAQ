@@ -1,14 +1,11 @@
 EJBCA FAQ
 =========
-$Id: FAQ,v 1.27 2005-01-08 16:21:48 anatom Exp $
+$Id: FAQ,v 1.28 2005-04-08 06:56:31 anatom Exp $
 
 ---------
-Q : When starting JBoss after deployment I get errors like: 'EjbcaDS not bound'
+Q : Where is the log file stored for tracking errors and debug information?
 
-A : You probably did a 'and replaceDS' and entered 'EjbcaDS' instead of 'java:/EjbcaDS'.
-You must search manually in all XML files and replace 'EjbcaDS' with 'java:/EjbcaDS', 
-or perhaps easier and safer, restore the original XML files from the zip file and do 
-'ant replaceDS' again, this time entering 'java:/EjbcaDS'
+A : JBOSS_HOME/server/default/log/server.log
 
 ---------
 Q : I want to add my own static pages under http://<myhost>:8080/ejbca/
@@ -23,17 +20,15 @@ Q : I get a blank page on the admiweb after start.
 A : Either you entered a hostname that does not resolve to the machine where EJBCA is
 running during setup, or you changed the port that JBoss listens to.
 Make sure the hostname resolves to the machine ejbca is running on.
-If you need the change to url, use the command 'setup.sh/cmd setbaseurl'.
-If you changed port default public http=8080, private https=8443) you must edit 
-src/adminweb/WEB-INF/web.xml. Change env entries PUBLICPORT resp PRIVATEPORT.
+If you need the change to url, use the command 'bin/ejbca.sh setup setbaseurl'.
 
 ---------
 Q : Installation hangs and the https server will not work.
 
-A : Perhaps $JBOSS_HOME/bin/tomcat.jks must be executable. All scripts in EJBCA 
-home directory must be executable, run 'chmod u+x *.sh'. Make sure you run the 
-installation of ejbca as a user with enough privileges to write in JBOSS_HOME, 
-preferably the same user as is used to run the JBoss server.
+A : Perhaps $JBOSS_HOME/server/default/conf/keystore/tomcat.jks must be executable. All scripts in 
+EJBCA_HOME/bin directory must be executable, run 'chmod u+x *.sh'. Make sure you run the 
+installation of ejbca as a user with enough privileges to write in JBOSS_HOME, and to 
+JAVA_HOME/jre/lib/security/cacerts. Preferably the same user as is used to run the JBoss server.
 
 ---------
 Q : After upgrading the version of Java, the Admin GUI no longer works.
@@ -41,33 +36,23 @@ Or, the installation seems to work fine, superadmin.p12 is created but ssl conne
 without error messages in JBoss.
 
 A : Tomcat needs the CA-certificate relating to the server certificate in 
-javas trust-store. This is imported when running 'install.sh/cmd' and when
+javas trust-store. This is imported when running 'ant install' and when
 you upgraded java, you have a new, empty truststore.
 Import the CA-certificate in $JAVA_HOME/jre/lib/security/cacerts again, 
 or copy the old truststore from the earlier JAVA_HOME.
 You can manually import it by exporting the ca-certificate:
-'./ca.sh getrootcert <caname> root.der -der'
+'bin/ejbca.sh ca getrootcert <caname> root.der -der'
 and importing it in cacerts:
 'keytool -import -trustcacerts -file root.der -keystore $JAVA_HOME/jre/lib/security/cacerts'
 
 ---------
-Q : When running 'install' or creating JKS or PKCS12 files you can't use longer 
+Q : When running 'ant install' or creating JKS or PKCS12 files you can't use longer 
 password than 7 characters. Anything longer gives an error.
 
 A : If you want to use strong crypto and/or password longer than 7 characters 
 in keystores you must install the 'Unlimited Strength Jurisdiction Policy Files' for JDK.
 The policy files can be found at the same place as the JDK 1.4 download. 
 Further information on this can be found in the Sun documentation on the JCE.
-
----------
-Q : When running then 'Install' command on windows I get the following error:
-java.io.IOException: CreateProcess: ca.cmd init foo "cn=foo" 1024 23 null error=5
-
-A : You don't have enough privileges on the file 'ca.cmd'. Change so you have all 
-permissions by right-clicking the file in windows and choosing properties->security.
-If you have Cygwin or similar installed execute permissions may be needed on 
-.cmd files. Run the command 'chmod a+x *.cmd' in the ejbca directory. 
-Also check the file setup-adminweb.cmd.
 
 ---------
 Q : How do I connect to, and alter data in the built-in 'Hypersonic SQL'
@@ -92,7 +77,7 @@ Download HsqlDb fom http://hsqldb.sourceforge.net/. Unpack and
 in the 'bin'-subdirectory run 'runUtil DatabaseManager'. In the window that
 opens connect to 'HSQL Engine Database In-Memory', select URL
 'jdbc:hsqldb:<path-to-jboss>\server\default\db\hypersonic\default' where the
-path-to-jboss is for example 'C:\jboss\jboss-3.0.6_tomcat-4.1.18'.
+path-to-jboss is for example 'C:\jboss\jboss-4.0.1'.
 Now you can enter you SQL-commands, for example 'drop table
 globalconfigurationdata' and press 'Execute'. Unforturnately you must now go
 into the file JBOSS_HOME\server\default\db\hypersonic\default.properties and set
@@ -138,19 +123,9 @@ Other databases should work with simple configuration of xml-files.
 Q : When using JDK 1.4.x i get a java.io.InvalidClassException?
 
 A : Since JDK 1.4 introduced incompatibilities during class serialization the
-PublicKey
-class used as parameter to some versions of the 'createCertificate' method can
-not be passed correctly.
+PublicKey class used as parameter to some versions of the 'createCertificate' 
+method can not be passed correctly.
 You must use JDK 1.4 on both server and client, then it works.
-
-Another problem that may occur is that JBoss have been upgraded since the
-release of ejbca so the file 'lib/jboss-client.jar' must be replaced by one from
-JBoss.
-
------
-Q : Why are there two versions of all commands, i.e. 'ra.sh' and 'ra.cmd'?
-
-A : 'ra.sh' is for UNIX and 'ra.cmd' for Windows.
 
 -----
 Q : Why do I get the exception/error:
@@ -167,11 +142,11 @@ NEW, FAILED or INPROCESS is it possible to issue a certificate to a user. After
  one-time-password scheme. To issue a new certificate to the user his/her status
  must be
  reset to NEW, FAILED or INPROCESS.
-This can be done with:
+This can be done with the admin-GUI or:
 
-ra.sh/cmd setuserstatus <username> <status>
+bin/ejbca.sh ra setuserstatus <username> <status>
 
-Status '10' is NEW. Just enter 'ra.sh/cmd setuserstatus' to see a list of all
+Status '10' is NEW. Just enter 'bin/ejbca.sj ra setuserstatus' to see a list of all
  status codes.
 
 -----
@@ -242,9 +217,8 @@ arguments to every command above:
 
 unforturnately a bug in keytool prevents this from functioning properly at the
  moment, therefore I
-recommend using the 'ca.sh/cmd' to create PKCS12 keystores. It can be used to
- create keystores generally,
-not just for CAs.
+recommend using the 'bin/ejbca.sh ca' to create PKCS12 keystores. It can be used to
+ create keystores generally, not just for CAs.
 
 -----
 Q : What aliases do a EJBCA keystore contain?
