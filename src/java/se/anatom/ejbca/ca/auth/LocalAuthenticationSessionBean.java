@@ -38,7 +38,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.32 2005-04-11 05:40:51 herrvendil Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.33 2005-04-11 09:17:53 anatom Exp $
  *
  * @ejb.bean
  *   display-name="AuthenticationSB"
@@ -154,7 +154,7 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
                 keyrecoverysession = keyrecoveryhome.create();
               }
     		}catch(Exception e){
-    			  e.printStackTrace();
+    			  error("Error in getKeyRecoverySession: ", e);
     	          throw new EJBException(e);
             }
     	}

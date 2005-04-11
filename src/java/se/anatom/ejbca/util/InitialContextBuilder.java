@@ -25,7 +25,7 @@ import javax.naming.NamingException;
  * Utility class to manage creation of InitialContext.
  * <p/>
  *
- * @version $Id: InitialContextBuilder.java,v 1.2 2004-10-13 07:19:20 anatom Exp $
+ * @version $Id: InitialContextBuilder.java,v 1.3 2005-04-11 09:17:52 anatom Exp $
  */
 
 public class InitialContextBuilder {
@@ -66,7 +66,6 @@ public class InitialContextBuilder {
 			cacheEnv.load( inStream );	
 			try { inStream.close(); } catch ( IOException ioex ) {}
 		} catch (Exception ex2) {
-			//ex2.printStackTrace();
 			cacheEnv = null;
 		}
 	}
