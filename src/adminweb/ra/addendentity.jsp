@@ -376,7 +376,7 @@
            lastselectedtoken = value;
 
            int hardtokenissuer = SecConst.NO_HARDTOKENISSUER;
-           if(tokentype > SecConst.TOKEN_SOFT){
+           if(tokentype > SecConst.TOKEN_SOFT && request.getParameter(SELECT_HARDTOKENISSUER) != null){
              value = request.getParameter(SELECT_HARDTOKENISSUER);
              hardtokenissuer = Integer.parseInt(value);  
              oldprofile.setValue(EndEntityProfile.DEFAULTTOKENISSUER, 0, value);  

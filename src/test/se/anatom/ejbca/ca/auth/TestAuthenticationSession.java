@@ -13,23 +13,40 @@
 
 package se.anatom.ejbca.ca.auth;
 
+import java.security.KeyPair;
+import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Random;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
 
 import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
+
 import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.ca.auth.IAuthenticationSessionHome;
+import se.anatom.ejbca.ca.auth.IAuthenticationSessionRemote;
+import se.anatom.ejbca.ca.auth.UserAuthData;
+import se.anatom.ejbca.ca.sign.ISignSessionHome;
+import se.anatom.ejbca.ca.sign.ISignSessionRemote;
+import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionHome;
+import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionRemote;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 import se.anatom.ejbca.ra.UserDataLocal;
-
+import se.anatom.ejbca.ra. UserDataConstants;
+import se.anatom.ejbca.ra.raadmin.GlobalConfiguration;
+import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
+import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
+import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.KeyTools;
 /**
  * Tests authentication session used by signer.
  *
- * @version $Id: TestAuthenticationSession.java,v 1.3 2005-02-11 13:12:44 anatom Exp $
+ * @version $Id: TestAuthenticationSession.java,v 1.4 2005-04-11 05:40:51 herrvendil Exp $
  */
 public class TestAuthenticationSession extends TestCase {
     private static Logger log = Logger.getLogger(TestAuthenticationSession.class);
@@ -37,9 +54,11 @@ public class TestAuthenticationSession extends TestCase {
     private static Context ctx;
     private static IAuthenticationSessionRemote remote;
     private static IUserAdminSessionRemote usersession;
+    private static IKeyRecoverySessionRemote keyrecsession;
+    private static IRaAdminSessionRemote raadminsession;
     private static String username;
     private static String pwd;
-    private static int caid = 1;
+    private static int caid="CN=TEST".hashCode();
     private static Admin admin = null;
 
     /**
@@ -53,6 +72,8 @@ public class TestAuthenticationSession extends TestCase {
 
     protected void setUp() throws Exception {
         log.debug(">setUp()");
+        
+        CertTools.installBCProvider();
 
         ctx = getInitialContext();
         Object obj = ctx.lookup("AuthenticationSession");
@@ -62,7 +83,14 @@ public class TestAuthenticationSession extends TestCase {
         IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
         usersession = userhome.create();
         admin = new Admin(Admin.TYPE_INTERNALUSER);
-
+        obj = ctx.lookup("KeyRecoverySession");    
+        IKeyRecoverySessionHome keyrechome = (IKeyRecoverySessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IKeyRecoverySessionHome.class);
+        keyrecsession = keyrechome.create();
+        
+        obj = ctx.lookup("RaAdminSession");
+        IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IRaAdminSessionHome.class);                
+        raadminsession = raadminsessionhome.create();
+        
         log.debug("<setUp()");
     }
 
@@ -184,14 +212,59 @@ public class TestAuthenticationSession extends TestCase {
     }
 
     /**
+     * Test reset of key recovery mark.
+     * 
+     * @throws Exception
+     */
+    public void test05UnmarkKeyRecoveryOnFinish() throws Exception {
+    	log.debug(">test05UnmarkKeyRecoveryOnFinish()");
+    	
+    	GlobalConfiguration config = raadminsession.loadGlobalConfiguration(admin);
+    	boolean orgkeyrecconfig = config.getEnableKeyRecovery();
+    	config.setEnableKeyRecovery(true);
+    	raadminsession.saveGlobalConfiguration(admin,config);
+    	
+        // create certificate for user
+        //    	 Set status to NEW        
+        usersession.setPassword(admin, username, "foo123");
+        usersession.setUserStatus(admin, username, UserDataConstants.STATUS_NEW);
+        
+
+    	
+        
+    	// Create a dummy certificate and keypair.
+    	KeyPair keys = KeyTools.genKeys(2048);
+        ISignSessionHome home = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(getInitialContext().lookup("RSASignSession"), ISignSessionHome.class);
+        ISignSessionRemote ss = home.create();
+    	X509Certificate cert = (X509Certificate) ss.createCertificate(admin,username,"foo123",keys.getPublic()); 
+    	
+    	// First mark the user for recovery
+    	keyrecsession.addKeyRecoveryData(admin, cert, username, keys);
+		keyrecsession.markNewestAsRecoverable(admin,username);
+    	
+    	// Now finish the user (The actual test)
+		remote.finishUser(admin,username,pwd);
+		// And se if the user is still marked
+		
+		assertTrue("Failure the Users keyrecovery session should have been unmarked", !keyrecsession.isUserMarked(admin,username));
+		
+		// Clean up
+		keyrecsession.removeAllKeyRecoveryData(admin,username);
+		
+		config.setEnableKeyRecovery(orgkeyrecconfig);
+    	raadminsession.saveGlobalConfiguration(admin,config);
+    	log.debug("<test05UnmarkKeyRecoveryOnFinish()");
+    }
+    
+    /**
      * Delete user after completed tests
      *
      * @throws Exception error
      */
-    public void test05DeleteUser() throws Exception {
-        log.debug(">test01DeleteUser()");
+    public void test06DeleteUser() throws Exception {
+        log.debug(">test06DeleteUser()");
         usersession.deleteUser(admin, username);
         log.debug("deleted user: " + username);
-        log.debug("<test01DeleteUser()");
+        log.debug("<test06eleteUser()");
     }
 }

@@ -291,7 +291,7 @@
                newuser.setTokenType(Integer.parseInt(value));   
 
                int hardtokenissuer = SecConst.NO_HARDTOKENISSUER;
-               if(tokentype > SecConst.TOKEN_SOFT){
+               if(tokentype > SecConst.TOKEN_SOFT && request.getParameter(SELECT_HARDTOKENISSUER) != null){
                  value = request.getParameter(SELECT_HARDTOKENISSUER);
                  hardtokenissuer = Integer.parseInt(value);  
                }
@@ -299,7 +299,7 @@
   
               if(request.getParameter(SELECT_CHANGE_STATUS)!=null){
                 int newstatus = Integer.parseInt(request.getParameter(SELECT_CHANGE_STATUS));
-                if(newstatus == UserDataConstants.STATUS_NEW || newstatus == UserDataConstants.STATUS_GENERATED || newstatus == UserDataConstants.STATUS_HISTORICAL )
+                if(newstatus == UserDataConstants.STATUS_NEW || newstatus == UserDataConstants.STATUS_GENERATED || newstatus == UserDataConstants.STATUS_HISTORICAL || newstatus == UserDataConstants.STATUS_KEYRECOVERY )
                   newuser.setStatus(newstatus); 
               }
                // Send changes to database.
@@ -1118,7 +1118,11 @@ function checkUseInBatch(){
       </td>
       <td > 
         <select name="<%=SELECT_CHANGE_STATUS %>" tabindex="<%=tabindex++%>" >
+         <%if(userdata.getStatus()== UserDataConstants.STATUS_KEYRECOVERY){ %>
+           <option selected value='<%= UserDataConstants.STATUS_KEYRECOVERY %>'><%= ejbcawebbean.getText("STATUSKEYRECOVERY") %></option>
+         <% }else{ %>  
          <option <%if(userdata.getStatus()== UserDataConstants.STATUS_NEW) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_NEW %>'><%= ejbcawebbean.getText("STATUSNEW") %></option>
+         <% } %>
          <option <%if(userdata.getStatus()== UserDataConstants.STATUS_FAILED) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_FAILED %>'><%= ejbcawebbean.getText("STATUSFAILED") %></option>  -->
          <option <%if(userdata.getStatus()== UserDataConstants.STATUS_INITIALIZED) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_INITIALIZED %>'><%= ejbcawebbean.getText("STATUSINITIALIZED") %></option>  -->
          <option <%if(userdata.getStatus()== UserDataConstants.STATUS_INPROCESS) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_INPROCESS %>'><%= ejbcawebbean.getText("STATUSINPROCESS") %></option>  -->
