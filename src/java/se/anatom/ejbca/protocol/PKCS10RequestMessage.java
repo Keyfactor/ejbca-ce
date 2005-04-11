@@ -40,7 +40,7 @@ import java.security.cert.X509Certificate;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.27 2005-04-05 07:28:08 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.28 2005-04-11 09:03:59 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     static final long serialVersionUID = 3597275157018205136L;
@@ -193,8 +193,12 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
         if (username != null)
             return username;
         String name = CertTools.getPartFromDN(getRequestDN(), "CN");
-        // Special if the DN contains unstructiredAddress where it becomes: 
-        // CN=pix.primekey.se + 1.2.840.113549.1.9.2=pix.primekey.se
+        if (name == null) {
+            log.error("No CN in DN: "+getRequestDN());
+            return null;
+        }
+        // Special if the DN contains unstructuredAddress where it becomes: 
+        // CN=pix.primekey.se + unstructuredAddress=pix.primekey.se
         // We only want the CN and not the oid-part.
         String ret = name;
         if (name != null) {
