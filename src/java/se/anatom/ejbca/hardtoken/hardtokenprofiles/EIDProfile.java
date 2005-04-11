@@ -17,6 +17,10 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import se.anatom.ejbca.ca.caadmin.CAInfo;
+
+import java.util.ArrayList;
+
 
 
 /**
@@ -24,11 +28,13 @@ import java.util.List;
  * of eidprofiles in the system.
  *  
  *
- * @version $Id: EIDProfile.java,v 1.3 2004-07-23 12:03:17 sbailliez Exp $
+ * @version $Id: EIDProfile.java,v 1.4 2005-04-11 05:44:42 herrvendil Exp $
  */
-public abstract class EIDProfile extends HardTokenProfileWithVisualLayout {
+public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	
 	public static final String KEYTYPE_RSA = "RSA";
+	
+	public static final int CAID_USEUSERDEFINED = 0;
 	
 	// Protected Constants
 	protected static final String CERTIFICATEPROFILEID           = "certificateprofileid";
@@ -37,7 +43,7 @@ public abstract class EIDProfile extends HardTokenProfileWithVisualLayout {
 	protected static final String MINIMUMKEYLENGTH               = "minimunkeylength";
 	protected static final String KEYTYPES                       = "keytypes";
 
-
+  
 			
     // Default Values
     public EIDProfile() {
@@ -142,9 +148,33 @@ public abstract class EIDProfile extends HardTokenProfileWithVisualLayout {
 	  data.put(KEYTYPES, list);				 
 	}
 	
+	/**
+	 * Returns a collection of all defined certificate profiles.
+	 *
+	 */
 	public Collection getAllCertificateProfileIds(){
 	  return (Collection) data.get(CERTIFICATEPROFILEID);	
 	}
+	
+	/**
+	 * Returns all valid CAids, if a certusage have CAID_USEUSERDEFINED defined then
+	 * it will not be among available valus in returned collection.
+	 * 
+	 * @return
+	 */
+	public Collection getAllCAIds(){
+      Collection caids = (Collection) data.get(CAID);	
+      ArrayList retval = new ArrayList();
+      Iterator iter = caids.iterator();
+      while(iter.hasNext()){
+      	Integer value = (Integer) iter.next();
+      	if(value.intValue() > CAInfo.SPECIALCAIDBORDER || value.intValue() < 0){
+      	  retval.add(value);
+      	}      	
+      }
+      
+      return (Collection) retval;
+	}	
 	
 	public abstract int[] getAvailableMinimumKeyLengths();
 	  		      

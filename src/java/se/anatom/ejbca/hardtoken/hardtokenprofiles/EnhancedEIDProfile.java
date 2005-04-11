@@ -24,7 +24,7 @@ import se.anatom.ejbca.SecConst;
 /**
  * EnhancedEIDProfile with three certificates and key recovery functionallity
  * 
- * @version $Id: EnhancedEIDProfile.java,v 1.4 2004-07-23 12:03:16 sbailliez Exp $
+ * @version $Id: EnhancedEIDProfile.java,v 1.5 2005-04-11 05:44:42 herrvendil Exp $
  */
 public class EnhancedEIDProfile extends EIDProfile {
 						
@@ -32,7 +32,7 @@ public class EnhancedEIDProfile extends EIDProfile {
 	
 	public static final int TYPE_ENHANCEDEID = 2;
 	
-	public static final float LATEST_VERSION = 0;
+	public static final float LATEST_VERSION = 1;
 
     public static final int CERTUSAGE_SIGN    = 0;
 	public static final int CERTUSAGE_AUTH    = 1;
@@ -69,9 +69,9 @@ public class EnhancedEIDProfile extends EIDProfile {
 	  data.put(CERTIFICATEPROFILEID, certprofileids);
 	  	  
 	  ArrayList caids = new ArrayList(NUMBEROFCERTIFICATES);
-	  caids.add(new Integer(0)); // Currently not used
-	  caids.add(new Integer(0)); // Currently not used
-	  caids.add(new Integer(0)); // Currently not used
+	  caids.add(new Integer(CAID_USEUSERDEFINED)); 
+	  caids.add(new Integer(CAID_USEUSERDEFINED)); 
+	  caids.add(new Integer(CAID_USEUSERDEFINED)); 
 	  data.put(CAID, caids);
 	  
 	  ArrayList pintypes = new ArrayList(NUMBEROFCERTIFICATES);
@@ -165,6 +165,7 @@ public class EnhancedEIDProfile extends EIDProfile {
 	  if(LATEST_VERSION != getVersion()){
 		  // New version of the class, upgrade
 	    super.upgrade();
+	    data.put(VERSION, new Float(LATEST_VERSION));
 	  }   
 	}    
 }

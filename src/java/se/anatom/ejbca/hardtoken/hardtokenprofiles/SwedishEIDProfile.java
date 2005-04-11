@@ -24,14 +24,14 @@ import se.anatom.ejbca.SecConst;
 /**
  * Hard token profile with a goal to fulfill Swedish EID standard.
  * 
- * @version $Id: SwedishEIDProfile.java,v 1.2 2004-04-16 07:39:00 anatom Exp $
+ * @version $Id: SwedishEIDProfile.java,v 1.3 2005-04-11 05:44:42 herrvendil Exp $
  */
 public class SwedishEIDProfile extends EIDProfile {
 		
 	// Public Constants
 	public static final int TYPE_SWEDISHEID = 1;
 	
-	public static final float LATEST_VERSION = 0;
+	public static final float LATEST_VERSION = 1;
 
     public static final int CERTUSAGE_SIGN    = 0;
 	public static final int CERTUSAGE_AUTHENC = 1;
@@ -67,8 +67,8 @@ public class SwedishEIDProfile extends EIDProfile {
 	  data.put(CERTIFICATEPROFILEID, certprofileids);
 	  	  
 	  ArrayList caids = new ArrayList(NUMBEROFCERTIFICATES);
-	  caids.add(new Integer(0)); // Currently not used
-	  caids.add(new Integer(0)); // Currently not used
+	  caids.add(new Integer(CAID_USEUSERDEFINED)); // Currently not used
+	  caids.add(new Integer(CAID_USEUSERDEFINED)); // Currently not used
 	  data.put(CAID, caids);    
 	  
 	  ArrayList pintypes = new ArrayList(NUMBEROFCERTIFICATES);
@@ -155,6 +155,8 @@ public class SwedishEIDProfile extends EIDProfile {
 	  if(LATEST_VERSION != getVersion()){
 		  // New version of the class, upgrade
 	    super.upgrade();
+	    
+	    data.put(VERSION, new Float(LATEST_VERSION));
 	  }   
 	}    
 }

@@ -1,7 +1,8 @@
 
 <% 
-  String[] headlines = {"UPLOADENVELOPETEMP","UPLOADVISUALTEMP"};  
-  String[]  actions     = { EditHardTokenProfileJSPHelper.ACTION_UPLOADENVELOPETEMP, EditHardTokenProfileJSPHelper.ACTION_UPLOADVISUALTEMP};
+  String[] headlines = {"UPLOADENVELOPETEMP","UPLOADVISUALTEMP", "UPLOADRECEIPTTEMP", "UPLOADADRESSLABELTEMP"};  
+  String[]  actions     = { EditHardTokenProfileJSPHelper.ACTION_UPLOADENVELOPETEMP, EditHardTokenProfileJSPHelper.ACTION_UPLOADVISUALTEMP, 
+                            EditHardTokenProfileJSPHelper.ACTION_UPLOADRECEIPTTEMP, EditHardTokenProfileJSPHelper.ACTION_UPLOADADRESSLABELTEMP};
 
   int row = 0;
 %>

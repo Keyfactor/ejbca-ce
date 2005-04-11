@@ -1,0 +1,85 @@
+<%               
+  int[] receipttypes = {IReceiptSettings.RECEIPTTYPE_NONE, IReceiptSettings.RECEIPTTYPE_GENERAL};
+  String[] receipttypetexts = {"NONE","GENERALRECEIPT"};
+
+  IReceiptSettings receiptprofile = (IReceiptSettings) helper.profiledata;
+%>
+   <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+         &nbsp;
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+         &nbsp;
+      </td>
+   </tr>
+   <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("RECEIPTSETTINGS") %>:
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+         &nbsp;
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("RECEIPTTYPE") %>
+        </div>
+      </td>
+      <td width="50%" valign="top">   
+        <select name="<%=EditHardTokenProfileJSPHelper.SELECT_RECEIPTTYPE%>" size="1"  >       
+            <% int currentreceipttype = receiptprofile.getReceiptType();
+               for(int i=0; i < receipttypes.length ; i ++){%>
+              <option value="<%=receipttypes[i]%>" <% if(receipttypes[i] == currentreceipttype) out.write(" selected "); %>> 
+                  <%= ejbcawebbean.getText(receipttypetexts[i]) %>
+               </option>
+            <%}%>
+          </select>         
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("CURRENTTEMPLATE") %>
+        </div>
+      </td>
+      <td width="50%" valign="top">          
+         <% if(receiptprofile.getReceiptTemplateFilename() == null || receiptprofile.getReceiptTemplateFilename().equals("")){
+              out.write("NONE");
+            }else{
+              out.write(receiptprofile.getReceiptTemplateFilename());
+            }
+         %> 
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("UPLOADTEMPLATE") %>
+        </div>
+      </td>
+      <td width="50%" valign="top">          
+        <input type="submit" name="<%= EditHardTokenProfileJSPHelper.BUTTON_UPLOADRECEIPTTEMP %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("UPLOADTEMPLATE") %>">
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("NUMOFRECEIPTCOPIES") %>
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+        <select name="<%=EditHardTokenProfileJSPHelper.SELECT_NUMOFRECEIPTCOPIES%>" size="1"  >
+           <%   for(int i=1; i<5;i++){ %>
+           <option  value="<%= i %>" 
+              <% if(receiptprofile.getNumberOfReceiptCopies() == i) out.write(" selected "); %>> 
+              <%= i %>
+           </option>
+           <%   } %> 
+        </select>
+      </td>
+    </tr>

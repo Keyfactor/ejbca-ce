@@ -25,9 +25,13 @@ import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.hardtoken.HardTokenProfileExistsException;
 import se.anatom.ejbca.hardtoken.hardtokenprofiles.EnhancedEIDProfile;
 import se.anatom.ejbca.hardtoken.hardtokenprofiles.HardTokenProfile;
+import se.anatom.ejbca.hardtoken.hardtokenprofiles.HardTokenProfileWithAdressLabel;
 import se.anatom.ejbca.hardtoken.hardtokenprofiles.HardTokenProfileWithPINEnvelope;
+import se.anatom.ejbca.hardtoken.hardtokenprofiles.HardTokenProfileWithReceipt;
 import se.anatom.ejbca.hardtoken.hardtokenprofiles.HardTokenProfileWithVisualLayout;
+import se.anatom.ejbca.hardtoken.hardtokenprofiles.IAdressLabelSettings;
 import se.anatom.ejbca.hardtoken.hardtokenprofiles.IPINEnvelopeSettings;
+import se.anatom.ejbca.hardtoken.hardtokenprofiles.IReceiptSettings;
 import se.anatom.ejbca.hardtoken.hardtokenprofiles.IVisualLayoutSettings;
 import se.anatom.ejbca.hardtoken.hardtokenprofiles.SwedishEIDProfile;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
@@ -36,7 +40,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * Contains help methods used to parse a hard token profile jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditHardTokenProfileJSPHelper.java,v 1.4 2005-03-15 11:56:22 anatom Exp $
+ * @version $Id: EditHardTokenProfileJSPHelper.java,v 1.5 2005-04-11 05:44:42 herrvendil Exp $
  */
 public class EditHardTokenProfileJSPHelper {
 	
@@ -45,6 +49,8 @@ public class EditHardTokenProfileJSPHelper {
 	public static final String ACTION_EDIT_HARDTOKENPROFILE        = "edithardtokenprofile";
     public static final String ACTION_UPLOADENVELOPETEMP           = "uploadenvelopetemp";
 	public static final String ACTION_UPLOADVISUALTEMP             = "uploadvisualtemp";
+	public static final String ACTION_UPLOADRECEIPTTEMP            = "uploadreceipttemp";
+	public static final String ACTION_UPLOADADRESSLABELTEMP        = "uploadadresstemp";
 
 	public static final String ACTION_CHANGE_PROFILETYPE           = "changeprofiletype";
 
@@ -67,6 +73,8 @@ public class EditHardTokenProfileJSPHelper {
 	public static final String BUTTON_CANCEL            = "buttoncancel";
 	public static final String BUTTON_UPLOADENVELOPETEMP= "buttonuploadenvelopetemplate"; 
 	public static final String BUTTON_UPLOADVISUALTEMP  = "buttonuploadvisualtemplate";
+	public static final String BUTTON_UPLOADRECEIPTTEMP = "buttonuploadreceipttemplate";
+	public static final String BUTTON_UPLOADADRESSLABELTEMP  = "buttonuploadadresslabeltemplate";
 	public static final String BUTTON_UPLOADFILE        = "buttonuploadfile";
  
 	public static final String TYPE_SWEDISHEID          = "typeswedisheid";
@@ -83,17 +91,24 @@ public class EditHardTokenProfileJSPHelper {
 
 	public static final String SELECT_HARDTOKENTYPE      = "selecthardtokentype";
 	public static final String SELECT_CERTIFICATEPROFILE = "selectcertificateprofile";
+	public static final String SELECT_CA                 = "selectca";
 	public static final String SELECT_PINTYPE            = "selectpintype";
 	public static final String SELECT_MINKEYLENGTH       = "selectminkeylength";
 	public static final String SELECT_ENVELOPETYPE       = "selectenvelopetype";
 	public static final String SELECT_NUMOFENVELOPECOPIES= "selectenvelopecopies";
+	public static final String SELECT_RECEIPTTYPE        = "selectreceipttype";
+	public static final String SELECT_NUMOFRECEIPTCOPIES = "selectreceiptcopies";
+	public static final String SELECT_ADRESSLABELTYPE    = "selectadresslabeltype";
+	public static final String SELECT_NUMOFADRESSLABELCOPIES = "selectadresslabelcopies";
 	public static final String SELECT_VISUALLAYOUTTYPE   = "selectvisuallayouttype";
 	public static final String SELECT_NUMOFTOKENCOPIES   = "selectnumoftokencopies";
 	
 	public static final String FILE_TEMPLATE             = "filetemplate";
 	
-	public static final int UPLOADMODE_ENVELOPE = 0; 
-	public static final int UPLOADMODE_VISUAL   = 1;
+	public static final int UPLOADMODE_ENVELOPE     = 0; 
+	public static final int UPLOADMODE_VISUAL       = 1;
+	public static final int UPLOADMODE_RECEIPT      = 2;
+	public static final int UPLOADMODE_ADRESSLABEL  = 3;
     
     public static final String PAGE_HARDTOKENPROFILE = "hardtokenprofilepage.jspf";
     public static final String PAGE_HARDTOKENPROFILES = "hardtokenprofilespage.jspf";
@@ -139,8 +154,8 @@ public class EditHardTokenProfileJSPHelper {
 	  	try{     	  	
 		  errorrecievingfile = true;
 		  DiskFileUpload upload = new DiskFileUpload();
-		  upload.setSizeMax(500000);                   
-		  upload.setSizeThreshold(499999);
+		  upload.setSizeMax(2000000);                   
+		  upload.setSizeThreshold(1999999);
 		  List /* FileItem */ items = upload.parseRequest(request);     
 
 		  Iterator iter = items.iterator();
@@ -249,6 +264,7 @@ public class EditHardTokenProfileJSPHelper {
 			  includefile=PAGE_HARDTOKENPROFILES; 
 		  }
 		}
+		
 		if( action.equals(ACTION_EDIT_HARDTOKENPROFILE)){
 			 // Display edit access rules page.
 		   profile = request.getParameter(HIDDEN_HARDTOKENPROFILENAME);
@@ -256,7 +272,9 @@ public class EditHardTokenProfileJSPHelper {
 			 if(!profile.trim().equals("")){
 			   if(request.getParameter(BUTTON_SAVE) != null ||
 			      request.getParameter(BUTTON_UPLOADENVELOPETEMP) != null ||
-				  request.getParameter(BUTTON_UPLOADVISUALTEMP) != null){
+				  request.getParameter(BUTTON_UPLOADVISUALTEMP) != null ||
+				  request.getParameter(BUTTON_UPLOADRECEIPTTEMP) != null ||
+				  request.getParameter(BUTTON_UPLOADADRESSLABELTEMP) != null ){
 		
              
 				 if(profiledata == null){               
@@ -310,6 +328,23 @@ public class EditHardTokenProfileJSPHelper {
 				   if(value != null)                                        
 				     visprof.setVisualLayoutType(Integer.parseInt(value));       
 				 }
+				 
+				 if(profiledata instanceof HardTokenProfileWithReceipt){
+					   value = request.getParameter(SELECT_RECEIPTTYPE);
+					   if(value != null)                                               
+						 ((HardTokenProfileWithReceipt) profiledata).setReceiptType(Integer.parseInt(value));            
+					   value = request.getParameter(SELECT_NUMOFRECEIPTCOPIES);
+					   if(value != null)                                               
+						((HardTokenProfileWithReceipt) profiledata).setNumberOfReceiptCopies(Integer.parseInt(value));       								
+				 }
+				 if(profiledata instanceof HardTokenProfileWithAdressLabel){
+					   value = request.getParameter(SELECT_ADRESSLABELTYPE);
+					   if(value != null)                                               
+						 ((HardTokenProfileWithAdressLabel) profiledata).setAdressLabelType(Integer.parseInt(value));            
+					   value = request.getParameter(SELECT_NUMOFADRESSLABELCOPIES);
+					   if(value != null)                                               
+						((HardTokenProfileWithAdressLabel) profiledata).setNumberOfAdressLabelCopies(Integer.parseInt(value));       								
+				 }
 
 				 if(profiledata instanceof SwedishEIDProfile){
                    SwedishEIDProfile sweprof = (SwedishEIDProfile) profiledata;
@@ -357,6 +392,9 @@ public class EditHardTokenProfileJSPHelper {
 				   value = request.getParameter(SELECT_CERTIFICATEPROFILE + "0");
 				   if(value!= null)
 					 enhprof.setCertificateProfileId(EnhancedEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
+				   value = request.getParameter(SELECT_CA + "0");
+				   if(value!= null)
+					 enhprof.setCAId(EnhancedEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
 				   value = request.getParameter(SELECT_PINTYPE + "0");
 				   if(value!= null)
 					 enhprof.setPINType(EnhancedEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
@@ -365,6 +403,9 @@ public class EditHardTokenProfileJSPHelper {
 				   value = request.getParameter(SELECT_CERTIFICATEPROFILE + "1");
 				   if(value!= null)
 					 enhprof.setCertificateProfileId(EnhancedEIDProfile.CERTUSAGE_AUTH, Integer.parseInt(value));
+				   value = request.getParameter(SELECT_CA + "1");
+				   if(value!= null)
+					 enhprof.setCAId(EnhancedEIDProfile.CERTUSAGE_AUTH, Integer.parseInt(value));
 				   value = request.getParameter(SELECT_PINTYPE + "1");
 				   if(value!= null)
 					 enhprof.setPINType(EnhancedEIDProfile.CERTUSAGE_AUTH, Integer.parseInt(value));
@@ -373,6 +414,9 @@ public class EditHardTokenProfileJSPHelper {
 				   value = request.getParameter(SELECT_CERTIFICATEPROFILE + "2");
 				   if(value!= null)
 					 enhprof.setCertificateProfileId(EnhancedEIDProfile.CERTUSAGE_ENC, Integer.parseInt(value));
+				   value = request.getParameter(SELECT_CA + "2");
+				   if(value!= null)
+					 enhprof.setCAId(EnhancedEIDProfile.CERTUSAGE_ENC, Integer.parseInt(value));
 				   value = request.getParameter(SELECT_PINTYPE + "2");
 				   if(value!= null)
 					 enhprof.setPINType(EnhancedEIDProfile.CERTUSAGE_ENC, Integer.parseInt(value));				   
@@ -396,7 +440,15 @@ public class EditHardTokenProfileJSPHelper {
 				 if(request.getParameter(BUTTON_UPLOADVISUALTEMP) != null){
 				   uploadmode =	UPLOADMODE_VISUAL;
 				   includefile=PAGE_UPLOADTEMPLATE;
-				 }				 
+				 }		
+				 if(request.getParameter(BUTTON_UPLOADRECEIPTTEMP) != null){
+				    uploadmode = UPLOADMODE_RECEIPT;
+					includefile=PAGE_UPLOADTEMPLATE;
+				 }
+				 if(request.getParameter(BUTTON_UPLOADADRESSLABELTEMP) != null){
+					uploadmode = UPLOADMODE_ADRESSLABEL;
+					includefile=PAGE_UPLOADTEMPLATE;
+				}						 
 				 
 			   }
 			   if(request.getParameter(BUTTON_CANCEL) != null){
@@ -460,6 +512,46 @@ public class EditHardTokenProfileJSPHelper {
 			    }
 			    ((IVisualLayoutSettings) profiledata).setVisualLayoutData(filecontent);
 			    ((IVisualLayoutSettings) profiledata).setVisualLayoutTemplateFilename(filename);
+			    fileuploadsuccess = true;
+			  }catch(IOException ioe){
+				fileuploadfailed = true;              	 
+			  }
+			}
+		  includefile=PAGE_HARDTOKENPROFILE;
+		}
+		if( action.equals(ACTION_UPLOADRECEIPTTEMP)){
+			if(profiledata instanceof IReceiptSettings){
+			  try{			  
+			    BufferedReader br = new BufferedReader(new InputStreamReader(file,"UTF8"));
+			    String filecontent = "";
+			    String nextline = "";
+			    while(nextline!=null){
+				  nextline = br.readLine();
+				  if(nextline != null)				    
+				    filecontent += nextline + "\n";
+			    }
+			    ((IReceiptSettings) profiledata).setReceiptData(filecontent);
+			    ((IReceiptSettings) profiledata).setReceiptTemplateFilename(filename);
+			    fileuploadsuccess = true;
+			  }catch(IOException ioe){
+				fileuploadfailed = true;              	 
+			  }
+			}
+		  includefile=PAGE_HARDTOKENPROFILE;
+		}
+		if( action.equals(ACTION_UPLOADADRESSLABELTEMP)){
+			if(profiledata instanceof IAdressLabelSettings){
+			  try{			  
+			    BufferedReader br = new BufferedReader(new InputStreamReader(file,"UTF8"));
+			    String filecontent = "";
+			    String nextline = "";
+			    while(nextline!=null){
+				  nextline = br.readLine();
+				  if(nextline != null)				    
+				    filecontent += nextline + "\n";
+			    }
+			    ((IAdressLabelSettings) profiledata).setAdressLabelData(filecontent);
+			    ((IAdressLabelSettings) profiledata).setAdressLabelTemplateFilename(filename);
 			    fileuploadsuccess = true;
 			  }catch(IOException ioe){
 				fileuploadfailed = true;              	 

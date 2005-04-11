@@ -421,6 +421,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
 	/**
 	 * Retrives a Collection of id:s (Integer) to authorized profiles.
+	 * 
+	 * Authorized hard token profiles are profiles containing only authorized certificate profiles and caids.
 	 *
 	 * @return Collection of id:s (Integer)
      * @ejb.interface-method view-type="both"
@@ -430,7 +432,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 	  Collection result = null;
 
 	  HashSet authorizedcertprofiles = new HashSet(getCertificateStoreSession().getAuthorizedCertificateProfileIds(admin, CertificateDataBean.CERTTYPE_HARDTOKEN));
-
+      HashSet authorizedcaids = new HashSet(this.getAuthorizationSession().getAuthorizedCAIds(admin));
+	  
 	  try{
 		result = this.hardtokenprofilehome.findAll();
 		Iterator i = result.iterator();
@@ -439,7 +442,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 		  HardTokenProfile profile = next.getHardTokenProfile();
 
 		  if(profile instanceof EIDProfile){
-		  	if(authorizedcertprofiles.containsAll(((EIDProfile) profile).getAllCertificateProfileIds())){
+		  	if(authorizedcertprofiles.containsAll(((EIDProfile) profile).getAllCertificateProfileIds()) &&
+		  	   authorizedcaids.containsAll(((EIDProfile) profile).getAllCAIds())){
 		  	  returnval.add(next.getId());
 		  	}
 		  }else{

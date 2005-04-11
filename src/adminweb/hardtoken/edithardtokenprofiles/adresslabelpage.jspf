@@ -1,0 +1,85 @@
+<%               
+  int[] adresslabeltypes = {IAdressLabelSettings.ADRESSLABELTYPE_NONE, IAdressLabelSettings.ADRESSLABELTYPE_GENERAL};
+  String[] adresslabeltypetexts = {"NONE","GENERALLABEL"};
+
+  IAdressLabelSettings adresslabelprofile = (IAdressLabelSettings) helper.profiledata;
+%>
+   <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+         &nbsp;
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+         &nbsp;
+      </td>
+   </tr>
+   <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("ADRESSLABELSETTINGS") %>:
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+         &nbsp;
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("ADRESSLABELTYPE") %>
+        </div>
+      </td>
+      <td width="50%" valign="top">   
+        <select name="<%=EditHardTokenProfileJSPHelper.SELECT_ADRESSLABELTYPE%>" size="1"  >       
+            <% int currentadresslabeltype = adresslabelprofile.getAdressLabelType();
+               for(int i=0; i < adresslabeltypes.length ; i ++){%>
+              <option value="<%=adresslabeltypes[i]%>" <% if(adresslabeltypes[i] == currentadresslabeltype) out.write(" selected "); %>> 
+                  <%= ejbcawebbean.getText(adresslabeltypetexts[i]) %>
+               </option>
+            <%}%>
+          </select>         
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("CURRENTTEMPLATE") %>
+        </div>
+      </td>
+      <td width="50%" valign="top">          
+         <% if(adresslabelprofile.getAdressLabelTemplateFilename() == null || adresslabelprofile.getAdressLabelTemplateFilename().equals("")){
+              out.write("NONE");
+            }else{
+              out.write(adresslabelprofile.getAdressLabelTemplateFilename());
+            }
+         %> 
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("UPLOADTEMPLATE") %>
+        </div>
+      </td>
+      <td width="50%" valign="top">          
+        <input type="submit" name="<%= EditHardTokenProfileJSPHelper.BUTTON_UPLOADADRESSLABELTEMP %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("UPLOADTEMPLATE") %>">
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("NUMOFADRESSLABELCOPIES") %>
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+        <select name="<%=EditHardTokenProfileJSPHelper.SELECT_NUMOFADRESSLABELCOPIES%>" size="1"  >
+           <%   for(int i=1; i<5;i++){ %>
+           <option  value="<%= i %>" 
+              <% if(adresslabelprofile.getNumberOfAdressLabelCopies() == i) out.write(" selected "); %>> 
+              <%= i %>
+           </option>
+           <%   } %> 
+        </select>
+      </td>
+    </tr>

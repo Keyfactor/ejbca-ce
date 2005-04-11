@@ -100,6 +100,29 @@
     <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top"> 
         <div align="right"> 
+          <%= ejbcawebbean.getText("CA") %>
+        </div>
+      </td>
+      <td width="50%" valign="top">   
+        <select name="<%=EditHardTokenProfileJSPHelper.SELECT_CA + "0"%>" size="1"  >       
+            <% int currentca = curprofile.getCAId(EnhancedEIDProfile.CERTUSAGE_SIGN); %>
+               <option value="<%=EIDProfile.CAID_USEUSERDEFINED%>" <% if(EIDProfile.CAID_USEUSERDEFINED == currentca) out.write(" selected "); %>> 
+                  <%= ejbcawebbean.getText("USEUSERDEFINED") %>
+               </option>
+            <% iter = authorizedcas.keySet().iterator();
+               while(iter.hasNext()){
+                 String caname = (String) iter.next();
+                 Integer caid = (Integer) authorizedcas.get(caname);%>
+              <option value="<%=caid.intValue()%>" <% if(caid.intValue() == currentca) out.write(" selected "); %>> 
+                  <%= caname %>
+               </option>
+            <%}%>
+          </select>         
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
           <%= ejbcawebbean.getText("PINTYPE") %>
         </div>
       </td>
@@ -156,6 +179,29 @@
     <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top"> 
         <div align="right"> 
+          <%= ejbcawebbean.getText("CA") %>
+        </div>
+      </td>
+      <td width="50%" valign="top">   
+        <select name="<%=EditHardTokenProfileJSPHelper.SELECT_CA + "1"%>" size="1"  >       
+            <% currentca = curprofile.getCAId(EnhancedEIDProfile.CERTUSAGE_AUTH); %>
+               <option value="<%=EIDProfile.CAID_USEUSERDEFINED%>" <% if(EIDProfile.CAID_USEUSERDEFINED == currentca) out.write(" selected "); %>> 
+                  <%= ejbcawebbean.getText("USEUSERDEFINED") %>
+               </option>
+           <%  iter = authorizedcas.keySet().iterator();
+               while(iter.hasNext()){
+                 String caname = (String) iter.next();
+                 Integer caid = (Integer) authorizedcas.get(caname);%>
+              <option value="<%=caid.intValue()%>" <% if(caid.intValue() == currentca) out.write(" selected "); %>> 
+                  <%= caname %>
+               </option>
+            <%}%>
+          </select>         
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
           <%= ejbcawebbean.getText("PINTYPE") %>
         </div>
       </td>
@@ -204,6 +250,29 @@
                  Integer certprofid = (Integer) authorizedcertprofiles.get(certprof);%>
               <option value="<%=certprofid.intValue()%>" <% if(certprofid.intValue() == currentcert) out.write(" selected "); %>> 
                   <%= certprof %>
+               </option>
+            <%}%>
+          </select>         
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("CA") %>
+        </div>
+      </td>
+      <td width="50%" valign="top">   
+        <select name="<%=EditHardTokenProfileJSPHelper.SELECT_CA + "2"%>" size="1"  >       
+            <% currentca = curprofile.getCAId(EnhancedEIDProfile.CERTUSAGE_ENC); %>
+               <option value="<%=EIDProfile.CAID_USEUSERDEFINED%>" <% if(EIDProfile.CAID_USEUSERDEFINED == currentca) out.write(" selected "); %>> 
+                  <%= ejbcawebbean.getText("USEUSERDEFINED") %>
+               </option>
+            <% iter = authorizedcas.keySet().iterator();
+               while(iter.hasNext()){
+                 String caname = (String) iter.next();
+                 Integer caid = (Integer) authorizedcas.get(caname);%>
+              <option value="<%=caid.intValue()%>" <% if(caid.intValue() == currentca) out.write(" selected "); %>> 
+                  <%= caname %>
                </option>
             <%}%>
           </select>         
