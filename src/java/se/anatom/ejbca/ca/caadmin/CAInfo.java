@@ -20,7 +20,7 @@ import java.util.Date;
 /**
  * Holds nonsensitive information about a CA.
  *
- * @version $Id: CAInfo.java,v 1.6 2004-04-16 07:38:58 anatom Exp $
+ * @version $Id: CAInfo.java,v 1.7 2005-04-11 05:39:12 herrvendil Exp $
  */
 public abstract class CAInfo implements Serializable {
 
@@ -36,7 +36,7 @@ public abstract class CAInfo implements Serializable {
     public static final int SIGNEDBYEXTERNALCA = 2;    
     
     /**
-     * Constant indicating where the special caid border is. All CAs with CA id below this value
+     * Constant indicating where the special caid border is. All CAs with CA id not below this value
      * should be created
      */
     public static final int SPECIALCAIDBORDER = 10;    
