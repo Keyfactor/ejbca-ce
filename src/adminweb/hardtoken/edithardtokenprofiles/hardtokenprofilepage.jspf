@@ -7,11 +7,11 @@
  
   HashMap caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
     
-//  int[] hardtokentypes = {SwedishEIDProfile.TYPE_SWEDISHEID, EnhancedEIDProfile.TYPE_ENHANCEDEID};
-//  String[] hardtokentypetexts = {"SWEDISHEID", "ENHANCEDEID"};
+  int[] hardtokentypes = {SwedishEIDProfile.TYPE_SWEDISHEID, EnhancedEIDProfile.TYPE_ENHANCEDEID};
+  String[] hardtokentypetexts = {"SWEDISHEID", "ENHANCEDEID"};
 
-  int[] hardtokentypes = {SwedishEIDProfile.TYPE_SWEDISHEID};
-  String[] hardtokentypetexts = {"SWEDISHEID"};
+//  int[] hardtokentypes = {SwedishEIDProfile.TYPE_SWEDISHEID};
+//  String[] hardtokentypetexts = {"SWEDISHEID"};
 
   int row = 0;
 %>
@@ -120,7 +120,7 @@ function checkallfields(){
     <% }
        if(helper.profiledata instanceof IVisualLayoutSettings){%>
        <%@ include file="visuallayoutpage.jspf" %> 
-    <% }      
+    <% }     
        if(helper.profiledata instanceof IPINEnvelopeSettings){%>
     <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top"> 
@@ -133,7 +133,13 @@ function checkallfields(){
                 value='<%= ((IPINEnvelopeSettings) helper.profiledata).getVisualValidity()%>'>                    
       </td>
     </tr>
-    <% } %>     
+    <% }   
+       if(helper.profiledata instanceof IReceiptSettings){%>
+       <%@ include file="receiptpage.jspf" %> 
+    <% }
+       if(helper.profiledata instanceof IAdressLabelSettings){%>
+       <%@ include file="adresslabelpage.jspf" %> 
+    <%  } %>     
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right">         
          &nbsp;
