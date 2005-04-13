@@ -721,6 +721,11 @@ public class RSASignSessionBean extends BaseSessionBean {
                 throw new CADoesntExistsException(cve);
             }
             
+            // See if we need some key material to decrypt request
+            if (req.requireKeyInfo()) {
+                // You go figure...scep encrypts message with the public CA-cert
+                req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
+            }
             // Verify the request
             if (req.verify() == false) {
                 getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "POPO verification failed.");
@@ -857,7 +862,11 @@ public class RSASignSessionBean extends BaseSessionBean {
                 throw new CADoesntExistsException(cve);
             }
 
-
+            // See if we need some key material to decrypt request
+            if (req.requireKeyInfo()) {
+                // You go figure...scep encrypts message with the public CA-cert
+                req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
+            }
             //Create the response message with all nonces and checks etc
             ret = createResponseMessage(responseClass, req, ca, catoken);
             
@@ -902,10 +911,6 @@ public class RSASignSessionBean extends BaseSessionBean {
 
     private IResponseMessage createResponseMessage(Class responseClass, IRequestMessage req, CA ca, CAToken catoken) throws CATokenOfflineException {
     	IResponseMessage ret = null;
-    	if (req.requireKeyInfo()) {
-    		// You go figure...scep encrypts message with the public CA-cert
-    		req.setKeyInfo((X509Certificate) ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
-    	}
     	// Create the response message and set all required fields
     	try {
     		ret = (IResponseMessage) responseClass.newInstance();
