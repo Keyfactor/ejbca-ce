@@ -61,7 +61,7 @@ rem for %%i in (%J2EE_DIR%\*.jar) do set J2EE_CP=%%i;!J2EE_CP!
 rem for %%i in (%EJBCA_HOME%\lib\*.jar) do set CP=%%i;!CP!
 rem for %%i in (%EJBCA_HOME%\dist\*.jar) do set CP=%%i;!CP!
 
-set CLASSPATH=%J2EE_CP%;%EJBCA_CP%;%CP%
+set CLASSPATH=%J2EE_CP%;%EJBCA_CP%;%CP%;%EJBCA_HOME%\bin
 rem echo %CLASSPATH%
 %JAVA_HOME%\bin\java -cp %CLASSPATH% %class_name% %2 %3 %4 %5 %6 %7 %8 %9
 
