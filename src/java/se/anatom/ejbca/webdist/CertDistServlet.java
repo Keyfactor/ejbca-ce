@@ -65,7 +65,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.31 2005-02-13 17:10:20 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.32 2005-04-15 13:59:24 anatom Exp $
  */
 public class CertDistServlet extends HttpServlet {
 
@@ -286,7 +286,7 @@ public class CertDistServlet extends HttpServlet {
                     filename = "ca";
                 byte[] enccert = null;
                 if (pkcs7)
-                    enccert = ss.createPKCS7(administrator, cacert);
+                    enccert = ss.createPKCS7(administrator, cacert, true);
                 else
                     enccert = cacert.getEncoded();
                 if (command.equalsIgnoreCase(COMMAND_NSCACERT)) {

@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 /**
  * Tools to handle some common file operations.
  *
- * @version $Id: FileTools.java,v 1.6 2004-04-16 07:38:59 anatom Exp $
+ * @version $Id: FileTools.java,v 1.7 2005-04-15 13:59:26 anatom Exp $
  */
 public class FileTools {
     private static Logger log = Logger.getLogger(FileTools.class);
@@ -78,9 +78,7 @@ public class FileTools {
         log.debug("<getBytesFromPEM");
 
         return bytes;
-    }
-
-    // getBytesfromPEM
+    } // getBytesfromPEM
 
     /**
      * Helpfunction to read a file to a byte array.
@@ -106,10 +104,5 @@ public class FileTools {
         os.close();
 
         return os.toByteArray();
-    }
-
-    // readFiletoBuffer
-}
-
-
-// FileTools
+    } // readFiletoBuffer
+} // FileTools

@@ -288,9 +288,9 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @throws SignRequestSignatureException if the certificate is not signed by the CA
      * @ejb.interface-method view-type="both"
      */
-    public byte[] createPKCS7(Admin admin, Certificate cert) throws CADoesntExistsException, SignRequestSignatureException {
+    public byte[] createPKCS7(Admin admin, Certificate cert, boolean includeChain) throws CADoesntExistsException, SignRequestSignatureException {
         Integer caid = new Integer(CertTools.getIssuerDN((X509Certificate) cert).hashCode());
-        return createPKCS7(caid.intValue(), cert);
+        return createPKCS7(caid.intValue(), cert, includeChain);
     } // createPKCS7
 
     /**
@@ -302,9 +302,9 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @throws CADoesntExistsException if the CA does not exist or is expired, or has an invalid cert
      * @ejb.interface-method view-type="both"
      */
-    public byte[] createPKCS7(Admin admin, int caId) throws CADoesntExistsException {
+    public byte[] createPKCS7(Admin admin, int caId, boolean includeChain) throws CADoesntExistsException {
         try {
-            return createPKCS7(caId, null);
+            return createPKCS7(caId, null, includeChain);
         } catch (SignRequestSignatureException e) {
             error("Unknown error, strange?", e);
             throw new EJBException(e);
@@ -321,7 +321,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @return The DER-encoded PKCS7 message.
      * @throws CADoesntExistsException if the CA does not exist or is expired, or has an invalid cert
      */
-    private byte[] createPKCS7(int caId, Certificate cert) throws CADoesntExistsException, SignRequestSignatureException {
+    private byte[] createPKCS7(int caId, Certificate cert, boolean includeChain) throws CADoesntExistsException, SignRequestSignatureException {
         debug(">createPKCS7(" + caId + ", " + CertTools.getIssuerDN((X509Certificate) cert) + ")");
         byte[] returnval = null;
         // get CA
@@ -351,7 +351,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             throw new CADoesntExistsException(cve);
         }
 
-        returnval = ca.createPKCS7(cert);
+        returnval = ca.createPKCS7(cert, includeChain);
         debug("<createPKCS7()");
         return returnval;
     } // createPKCS7

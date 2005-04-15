@@ -58,7 +58,7 @@ import java.util.Iterator;
  * 7. output the result as a der encoded block on stdout 
  * -----
  *
- * @version $Id: ScepServlet.java,v 1.32 2004-11-20 22:54:28 sbailliez Exp $
+ * @version $Id: ScepServlet.java,v 1.33 2005-04-15 13:59:25 anatom Exp $
  */
 public class ScepServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(ScepServlet.class);
@@ -184,7 +184,7 @@ public class ScepServlet extends HttpServlet {
                 ICAAdminSessionRemote caadminsession = caadminhome.create();
                 CAInfo cainfo = caadminsession.getCAInfo(administrator, message);
                 ISignSessionRemote signsession = signhome.create();
-                byte[] pkcs7 = signsession.createPKCS7(administrator, cainfo.getCAId());
+                byte[] pkcs7 = signsession.createPKCS7(administrator, cainfo.getCAId(), true);
                 if ((pkcs7 != null) && (pkcs7.length > 0)) {
                     log.debug("Sent PKCS7 for CA '" + message + "' to SCEP client.");
                     RequestHelper.sendBinaryBytes(pkcs7, response, "application/x-x509-ca-ra-cert-chain");

@@ -109,7 +109,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * 
  *
  * @author Ville Skyttä
- * @version $Id: AdminCertReqServlet.java,v 1.1 2005-03-21 11:58:32 anatom Exp $
+ * @version $Id: AdminCertReqServlet.java,v 1.2 2005-04-15 13:59:24 anatom Exp $
  * 
  * @web.servlet name = "AdminCertReq"
  *              display-name = "AdminCertReqServlet"
@@ -281,7 +281,7 @@ public class AdminCertReqServlet extends HttpServlet {
       p10.setPassword(password);
       IResponseMessage resp = ss.createCertificate(admin, p10, Class.forName("se.anatom.ejbca.protocol.X509ResponseMessage"));
       X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
-      pkcs7 = ss.createPKCS7(admin, cert);
+      pkcs7 = ss.createPKCS7(admin, cert, true);
     } catch (ClassNotFoundException e) {
       // Class not found
       throw new ServletException(e);

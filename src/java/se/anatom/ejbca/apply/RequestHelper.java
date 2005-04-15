@@ -113,8 +113,8 @@ public class RequestHelper {
         X509Certificate cert = (X509Certificate) signsession.createCertificate(administrator,
                 username, password, nscr.getPublicKey());
 
-        //Certificate[] chain = ss.getCertificateChain();
-        byte[] pkcs7 = signsession.createPKCS7(administrator, cert);
+        // Don't include certificate chain in the PKCS7 to mozilla
+        byte[] pkcs7 = signsession.createPKCS7(administrator, cert, false);
         log.debug("Created certificate (PKCS7) for " + username);
         debug.print("<h4>Generated certificate:</h4>");
         debug.printInsertLineBreaks(cert.toString().getBytes());
@@ -152,7 +152,7 @@ public class RequestHelper {
         if(resulttype == ENCODED_CERTIFICATE)
           result = cert.getEncoded();
         else  
-          result = signsession.createPKCS7(administrator, cert);
+          result = signsession.createPKCS7(administrator, cert, true);
         log.debug("Created certificate (PKCS7) for " + username);
         debug.print("<h4>Generated certificate:</h4>");
         debug.printInsertLineBreaks(cert.toString().getBytes());

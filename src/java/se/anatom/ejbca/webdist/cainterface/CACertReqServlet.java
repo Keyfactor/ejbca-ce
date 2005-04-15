@@ -44,7 +44,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: CACertReqServlet.java,v 1.7 2005-03-21 11:58:32 anatom Exp $
+ * @version $Id: CACertReqServlet.java,v 1.8 2005-04-15 13:59:24 anatom Exp $
  * 
  * @web.servlet name = "CACertReq"
  *              display-name = "CACertReqServlet"
@@ -197,7 +197,7 @@ public class CACertReqServlet extends HttpServlet {
 		if (command.equalsIgnoreCase(COMMAND_CERTPKCS7)) {
 			 try {
 				Certificate cert = cabean.getProcessedCertificate();		
-		        byte[] pkcs7 =  getSignSession().createPKCS7(ejbcawebbean.getAdminObject(),cert);							 	
+		        byte[] pkcs7 =  getSignSession().createPKCS7(ejbcawebbean.getAdminObject(), cert, true);							 	
 			    byte[] b64cert = se.anatom.ejbca.util.Base64.encode(pkcs7);	
 			    RequestHelper.sendNewB64Cert(b64cert, res, RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);																		 					
 			 } catch (Exception e) {

@@ -51,7 +51,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.13 2005-03-30 06:52:13 anatom Exp $
+ * @version $Id: CA.java,v 1.14 2005-04-15 13:59:25 anatom Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -336,7 +336,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     
     public abstract CRL generateCRL(Vector certs, int crlnumber) throws Exception;
     
-    public abstract byte[] createPKCS7(Certificate cert) throws SignRequestSignatureException;            
+    public abstract byte[] createPKCS7(Certificate cert, boolean includeChain) throws SignRequestSignatureException;            
   
         
     public abstract byte[] encryptKeys(KeyPair keypair) throws Exception;

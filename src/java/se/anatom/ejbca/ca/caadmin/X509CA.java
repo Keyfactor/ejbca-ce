@@ -25,7 +25,9 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.CRL;
+import java.security.cert.CertStore;
 import java.security.cert.Certificate;
+import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -39,10 +41,10 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DEREncodableVector;
 import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
@@ -67,10 +69,12 @@ import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
+import org.bouncycastle.cms.CMSProcessable;
 import org.bouncycastle.cms.CMSProcessableByteArray;
+import org.bouncycastle.cms.CMSSignedData;
+import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
-import org.bouncycastle.jce.PKCS7SignedData;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.BasicOCSPRespGenerator;
@@ -101,7 +105,7 @@ import se.anatom.ejbca.util.StringTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.32 2005-03-16 09:47:23 anatom Exp $
+ * @version $Id: X509CA.java,v 1.33 2005-04-15 13:59:25 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -200,7 +204,7 @@ public class X509CA extends CA implements Serializable {
     }
 
 
-    public byte[] createPKCS7(Certificate cert) throws SignRequestSignatureException {
+    public byte[] createPKCS7(Certificate cert, boolean includeChain) throws SignRequestSignatureException {
         // First verify that we signed this certificate
         try {
             if (cert != null)
@@ -209,23 +213,21 @@ public class X509CA extends CA implements Serializable {
             throw new SignRequestSignatureException("Cannot verify certificate in createPKCS7(), did I sign this?");
         }
         Collection chain = getCertificateChain();
-        Certificate[] certs;
+        ArrayList certList = new ArrayList();
         if (cert != null) {
-            certs = new Certificate[chain.size()+1];
-            certs[0] = cert;
-            Iterator iter = chain.iterator();
-            int i=1;
-            while(iter.hasNext()){
-              certs[i] = (Certificate) iter.next();
-              i++;
-            }                
-        } else {
-            certs = (Certificate[]) chain.toArray(new Certificate[chain.size()]);
+            certList.add(cert);
+        } 
+        if (includeChain) {
+            certList.addAll(chain);
         }
         try {
-            PKCS7SignedData pkcs7 = new PKCS7SignedData(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN),certs,"SHA1",getCAToken().getProvider());
-
-            return pkcs7.getEncoded();
+            CMSProcessable msg = new CMSProcessableByteArray("EJBCA".getBytes());
+            CertStore certs = CertStore.getInstance("Collection", new CollectionCertStoreParameters(certList), "BC");
+            CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
+            gen.addSigner(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), (X509Certificate)getCACertificate(), CMSSignedDataGenerator.DIGEST_SHA1);
+            gen.addCertificatesAndCRLs(certs);
+            CMSSignedData s = gen.generate(msg, true, "BC");
+            return s.getEncoded();
         } catch (CATokenOfflineException e) {
         	this.setStatus(SecConst.CA_OFFLINE);
         	throw new javax.ejb.EJBException(e);        	
