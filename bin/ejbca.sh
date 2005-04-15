@@ -53,7 +53,7 @@ then
 EJBCA_HOME=.
 fi
 # Check that classes exist
-if [ ! -d ${EJBCA_HOME}/bin/classes ]
+if [ ! -d ${EJBCA_HOME}/tmp/bin/classes ]
 then    
         echo "You must build EJBCA before using the cli, use 'ant'."
         exit 1
