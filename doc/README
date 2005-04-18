@@ -1,4 +1,4 @@
-$Id: README,v 1.182 2005-03-30 10:39:35 anatom Exp $
+$Id: README,v 1.183 2005-04-18 09:54:53 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -149,13 +149,13 @@ example /opt/jboss-4.0.1.
 2) Copy ejbca.properties.sample to ejbca.properties and customize if needed.
 The default values works fine for a test installaton.
 
-- Customize the database if needed but easiest thing is to keep the default as it is,
-it will use the JBoss embedded HSQLDB and everything will be easier for you.
-For production use you should use a real database instead of the embedded one.
 - Customize the CA properties if you need to do so.
 For production use you need to do this, don't forget to edit
 passwords to be secure and secret. Keep ejbca.properties as secret as possible.
 DO NOT forget the passwords, if you need to re-install the software sometime.
+- Customize the database if needed but easiest thing is to keep the default as it is,
+it will use the JBoss embedded HSQLDB and everything will be easier for you.
+For production use you should use a real database instead of the embedded one.
 
 3) Open a console (terminal) and start JBoss.
 You can start JBoss with 'ant j2ee:run' from EJBCA_HOME
@@ -171,14 +171,17 @@ You will find all keys in ${ejbca.home}/p12. (do not delete those files!)
 - superadmin.p12 should be imported in your browser, that's your administration certificate.
 You will need administrative privileges (e.g. root) for the CA-certificate to be installed
 in Javas trust-keystore ($JAVA_HOME/jre/lib/security/cacerts, default pwd 'changeit').
-TODO: what if the default password was changed?
 
 6) Stop JBoss (ctrl+c or whatever)
 
 7) type 'ant deploy', this will deploy everything again and configure the servlet
 container with the keystore file (this is why we needed to stop the container).
 
-8) Start JBoss again and go to https://localhost:8443/ejbca/ to access the admin-GUI, 
+8) Import the certificate from EJBCA_HOME/p12/superadmin.p12 in your web browser. 
+This is the super administrators certificate used to access the admin GUI. 
+Other administrators with less privileges can be created later on.
+
+9) Start JBoss again and go to https://localhost:8443/ejbca/ to access the admin-GUI, 
 or http://localhost:8080/ejbca for the public pages.
 
 RUNNING TESTS

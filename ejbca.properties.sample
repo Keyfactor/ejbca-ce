@@ -1,21 +1,101 @@
 #
-# $Id: ejbca.properties.sample,v 1.15 2005-04-01 14:00:46 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.16 2005-04-18 09:55:04 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
 # 
-# You should copy and rename this file to .ejbca.properties
+# You should copy and rename this file to ejbca.properties
 # and customize at will.
 #
 
 # JBoss used during development
-# Default:
+# Default: $JBOSS_HOME
 #jboss.home=${basedir}/../../jboss-4.0.1
 jboss.home=${env.JBOSS_HOME}
 
 # which compiler to use
 # default: javac
 #build.compiler=jikes
+
+# ------------ Basic CA configuration ---------------------
+# When upgrading, the important options are:
+# - ca.keystorepass
+# - ca.ocspkeystorepass
+
+# This installation will create a first administrative CA. This CA will be used to create the first
+# superadministrator and for the SSL server certificate of administrative web server.
+# When the administrative web server have been setup you can create other CA:s and administrators.
+# This is only used for administrative purposes,
+# Enter a short name for the CA.
+ca.name=AdminCA1
+
+# The Distinguished Name of the CA. 
+# This is used in the CA certificate to distinguish the CA.
+ca.dn=CN=AdminCA1,O=EJBCA Sample,C=SE
+
+# The keysize in bits of the CA, only digits.
+ca.keysize=2048
+
+# The validity in days for the CA, only digits.
+ca.validity=3650
+
+# The policy id of the CA. Policy id determines which PKI policy the CA uses.
+# Type your policy id or use '2.5.29.32.0' for 'any policy' (rfc3280) or 'null' for no policy at all.
+ca.policy=null
+
+# This password is used internally to protect CA keystores in database (i.e. the CAs private key).
+# foo123 is to keep compatibility with default installations of EJBCA 3.0, please change this if possible
+ca.keystorepass=foo123
+#ca.keystorepass=!secret!
+
+# Password user to protect OCSP keystores in the database (CAs OCSP signer certificate).
+ca.ocspkeystorepass=foo123
+#ca.ocspkeystorepass=ocsp!secret!
+
+# ------------ Web GUI configuration ---------------------
+# When upgrading, the important options are:
+# - httpsserver.password
+
+# Password for java trust keystore (JAVA_HOME/jre/lib/security/cacerts), default is changeit.
+java.trustpassword=changeit
+
+# The password used to protect the generated super administrator P12 keystore (to be imported in browser).
+# Choose a good password here.
+superadmin.password=ejbca
+
+# The password used to protect the web servers SSL keystore.
+# Choose a good password here.
+# If upgrading from EJBCA 3.1, enter here the password found in 
+#   $JBOSS_HOME/server/default/deploy/jbossweb-tomcat50.sar/server.xml
+#   under the section about 'HTTPS Connector...', the password is in attribute 'keystorePass=...'.
+httpsserver.password=serverpwd
+
+# The CA servers DNS host name, must exist on client using the admin GUI.
+httpsserver.hostname=localhost
+
+# The Distinguished Name of the SSL server certificate used by the administrative web gui.
+# The CN part  should match your hosts DNS name to avoid browser warnings.
+httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
+
+# The public port JBoss will listen to http on
+# Default 8080
+#httpserver.pubhttp=8080
+
+# The public port JBoss will listen to https on, no client cert required
+# Default 8442
+#httpserver.pubhttps=8442
+
+# The private port JBoss will listen to https on, client cert required
+# Default 8443
+#httpserver.privhttps=8443
+
+# Defines the available languages by languagecodes separated with a comma (example EN,CH).
+# Default: EN 
+#web.availablelanguages=EN
+
+# Default content encoding used to display JSP pages.
+# Default: ISO-8859-1
+#web.contentencoding=ISO-8859-1
 
 # ------------- database configuration ------------------------
 
@@ -49,7 +129,7 @@ jboss.home=${env.JBOSS_HOME}
 
 # Database connection url.
 # This is the URL used to connect to the database, used to configure a new datasource in JBoss.
-# Default: jdbc:hsqldb:${jboss.server.data.dir}${/}hypersonic${/}ejbcaDB
+# Default: jdbc:hsqldb:${jboss.server.data.dir}${/}hypersonic${/}localDB
 #database.url=jdbc:mysql://127.0.0.1:3306/ejbca
 #database.url=jdbc:postgresql://127.0.0.1/ejbca
 #database.url=jdbc:oracle:thin:@127.0.0.1:1521:ejbca
@@ -69,7 +149,7 @@ jboss.home=${env.JBOSS_HOME}
 #database.username=postgres
 
 # Database password.
-# Default: (works with hsqldb)
+# Default: (blank works with hsqldb)
 #database.password=ejbca
 #database.password=postgres
 
@@ -80,96 +160,35 @@ jboss.home=${env.JBOSS_HOME}
 # It will be copied in ${jboss.server.dir}/deploy/ejbca-mail-service.xml
 
 # The JNDI-name used to send email notifications from EJBCA.
-mail.jndi-name=java:/EjbcaMail
+# Default: java:/EjbcaMail
+#mail.jndi-name=java:/EjbcaMail
 
-# user/password to connect to server.
-mail.user=ejbca_user
-mail.password=primekey
+# user/password to connect to server for sending email notifications from EJBCA.
+# Default: ejbca_user, primekey
+#mail.user=ejbca_user
+#mail.password=primekey
 
 # POP3 and SMTP servers.
-mail.pop3.host=pop3.domain.com
-mail.smtp.host=smtp.domain.com
+# Default: localhost
+#mail.pop3.host=localhost
+#mail.smtp.host=localhost
+#mail.pop3.host=pop3.domain.com
+#mail.smtp.host=smtp.domain.com
 
 # Email address used to send emails.
-mail.from=ejbca-donotreply@domain.com
+# Default: ejbca-donotreply@domain.com
+#mail.from=ejbca-donotreply@domain.com
 
 # JavaMail debug info.
-mail.debug=false
+# Default: false
+#mail.debug=false
 
 # Default subject of notification messages sent from EJBCA.
-mail.subject=Retrieve your certificate
+# Default: 'Retrieve your certificate'
+#mail.subject=Retrieve your certificate
 
 # Defines the default message of the notification. 
 # Use the values $Username, $Password, $CN, $O, $OU, $C, $DATE to indicate which texts 
 # that should be replaced (Case insensitive), $NL stands for newline.
-mail.message=Hello $CN$NL$NL This is a notification. $NL$NL Your username: $Username$NL password: $Password$NL$NL Your are NOT supposed to go and fetch your certificate, this is only a test.
-
-
-# ------------ Basic CA configuration ---------------------
-
-# This installation will create a first administrative CA. This CA will be used to create the first
-# superadministrator and for the SSL server certificate of administrative web server.
-# When the administrative web server have been setup you can create other CA:s and administrators.
-# This is only used for administrative purposes,
-# Enter a short name for the CA.
-ca.name=AdminCA1
-
-# The Distinguished Name of the CA. 
-# This is used in the CA certificate to distinguish the CA.
-ca.dn=CN=AdminCA1,O=EJBCA Sample,C=SE
-
-# The keysize in bits of the CA, only digits.
-ca.keysize=2048
-
-# The validity in days for the CA, only digits.
-ca.validity=3650
-
-# The policy id of the CA. Policy id determines which PKI policy the CA uses.
-# Type your policy id or use '2.5.29.32.0' for 'any policy' (rfc3280) or 'null' for no policy at all.
-ca.policy=null
-
-# This password is used internally to protect CA keystores in database (i.e. the CAs private key).
-ca.keystorepass=!secret!
-
-# Password user to protect OCSP keystores in the database (CAs OCSP signer certificate).
-ca.ocspkeystorepass=ocsp!secret!
-
-# ------------ Web GUI configuration ---------------------
-
-# Password for java trust keystore (JAVA_HOME/jre/lib/security/cacerts), default is changeit.
-java.trustpassword=changeit
-
-# The password used to protect the generated super administrator P12 keystore (to be imported in browser).
-# Choose a good password here.
-superadmin.password=ejbca
-
-# The password used to protect the web servers SSL keystore.
-# Choose a good passowrd here.
-httpsserver.password=serverpwd
-
-# The CA servers DNS host name, must exist on client using the admin GUI.
-httpsserver.hostname=localhost
-
-# The Distinguished Name of the SSL server certificate used by the administrative web gui.
-# The CN part  should match your hosts DNS name to avoid browser warnings.
-httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
-
-# The public port JBoss will listen to http on
-# Default 8080
-httpserver.pubhttp=8080
-
-# The public port JBoss will listen to https on, no client cert required
-# Default 8442
-httpserver.pubhttps=8442
-
-# The private port JBoss will listen to https on, client cert required
-# Default 8443
-httpserver.privhttps=8443
-
-# Defines the available languages by languagecodes separated with a comma (example EN,CH).
-# Default: EN 
-web.availablelanguages=EN
-
-# Default content encoding used to display JSP pages.
-# Default: ISO-8859-1
-web.contentencoding=ISO-8859-1
+# Default: below
+#mail.message=Hello $CN$NL$NL This is a notification. $NL$NL Your username: $Username$NL password: $Password$NL$NL Your are NOT supposed to go and fetch your certificate, this is only a test.

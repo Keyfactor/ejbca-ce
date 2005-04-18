@@ -13,7 +13,7 @@
 
     <path id="classpath">
          <!-- need to pickup jndi.properties and log4j.properties -->
-        <pathelement path="${ejbca.home}"/>
+        <pathelement path="${ejbca.home}/bin"/>
         <pathelement path="${ejbca.home}/tmp/bin/classes"/>
         <fileset dir="${lib.dir}" includes="*.jar"/>
         <fileset dir="${jboss.home}/client" includes="*.jar"/>

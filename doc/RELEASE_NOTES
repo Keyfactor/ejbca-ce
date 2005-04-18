@@ -1,10 +1,11 @@
 EJBCA V3.1
 ----------
 
-This is a plugin-upgrade from 3.0.6. 
-Remove JBOSS_HOME/server/default/deploy/ejbca-ca.ear first, since the ear file changed name.
+This is a plugin-upgrade from 3.0.6, no database changes needed. 
+
 Since the changes are massive, no patch file is provided. 
-Configure according to you options, build and deploy.
+
+To upgrade follow doc/UPGRADE.
 
 Optional migration:
 If you are using MySQL and:

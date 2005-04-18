@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.8 2004-06-02 18:20:29 anatom Exp $
+$Id: UPGRADE,v 1.9 2005-04-18 09:54:53 anatom Exp $
 
 UPGRADE
 =======
@@ -7,40 +7,17 @@ This document describes proceedures needed to upgrade from one
 version of EJBCA to a new version.
 Upgrades within a major version, from 2.0 to 2.0.1 for example, are 
 usually plug-in upgrades and can be made simply by deploying the new 
-software.
+software. See doc/RELEASE_NOTES for info about such upgrades.
 
-From EJBCA 2.x to EJBCA 3.x
----------------------------
-EJBCA 3 has several large database changes due to majur new features.
-
+From EJBCA 3.0.x to EJBCA 3.1
+-----------------------------
 Backup your database first! If the upgrade fails, you can always go back to the earlier version.
 
 The upgrade process typically consists of:
-1. Stop JBoss
-2. ant replaceDS (run from NEW EJBCA_HOME)
-3. ant deploy
-4. Start JBoss
-5. ant upgrade
-6. restart JBoss
-
-Some things are not upgraded from ejbca2, and needs to be rebuilt after the upgrade 
-(if you have used this function and customized).
-
-The (default) LDAP schema has been changed since EJBCA 2.1 to follow RFC 2256. If using LDAP, 
-the schema should be checked. You can configure the schema 
-(in ca/ca/META-INF/ejb-jar.xml) to be the same as before if needed.
-The LDAP schema in EJBCA 2.1.2 is the same as in EJBCA 3.0.
-
-Important data lost during upgrade from EJBCA 2.x to EJBCA 3.x
---------------------------------------------------------------
-
-Key Recovery - If you have used key recovery in ejbca 2, the stored keys are NOT migrated to ejbca 3.
-Recoverable keys will be LOST in ejbca 3.
-
-Access rules and administrator groups - If you have several administrators with different access rules, 
-the access rules needs to be rebuilt using the Admin GUI.
-
-Hard Tokens - If you issued hard tokens with ejbca 2. You must remake your structure with issuers and profiles.
-
-* If you absolutely need any of this data, please contact us.
-
+1. Stop JBoss.
+2. Remove JBOSS_HOME/server/default/deploy/ejbca-ca.ear, the ear file changed name.
+3. Copy ejbca.properties.same to ejbca.properties and configure. 
+   Pay special attention to the upgrade comments for 'CA configuration' and 'Web GUI configuration'.
+4. run 'ant deploy'.
+5. Copy JBOSS_HOME/bin/tomcat.jks to JBOSS_HOME/server/default/conf/keystore/keystore.jks.
+5. Start JBoss.
