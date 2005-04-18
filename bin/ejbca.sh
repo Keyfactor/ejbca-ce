@@ -60,7 +60,7 @@ then
 fi
 
 # library classpath
-CP="$EJBCA_HOME"
+CP="$EJBCA_HOME/tmp/bin/classes"
 for i in "${J2EE_DIR}"/*.jar
 do
 	CP="$i":"$CP"
@@ -69,10 +69,7 @@ for i in "${EJBCA_HOME}"/lib/*.jar
 do
 	CP="$i":"$CP"
 done
-for i in "${EJBCA_HOME}"/dist/*.jar
-do
-	CP="$i":"$CP"
-done
+CP=$CP:$EJBCA_HOME/bin
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
