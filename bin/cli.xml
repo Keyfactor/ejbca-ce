@@ -1,4 +1,10 @@
 <project name="cli" default="ejbca:install" basedir="." xmlns:ejbca="ejbca">
+
+    <!-- Set this to false if no prompting for requested CA, 
+         and Web configuration should be made
+    -->
+    <property name="ejbca.prompt" value="true"/>
+
     <property name="ejbca.home" location=".."/>
     <property environment="env"/>
 
@@ -8,8 +14,6 @@
     <property name="jboss.home" value="${env.JBOSS_HOME}"/>
 
     <property name="lib.dir" location="${ejbca.home}/lib"/>
-
-    <available file="${ejbca.home}/dist/ejbca.ear" property="bootstrap.done"/>
 
     <path id="classpath">
          <!-- need to pickup jndi.properties and log4j.properties -->
@@ -24,38 +28,43 @@
     Hopefully this will simplify maintenance and deployment but it needs more work.
 -->
 
+	<target name="check:bootstrapdone">
+        <available file="${ejbca.home}/dist/ejbca.ear" property="bootstrap.done"/>
+        <fail unless="bootstrap.done" message="Missing EJBCA_HOME/dist/ejbca.ear. You must do 'ant bootstrap' to build the ejbca.ear file." />
+	</target>
+
     <target name="ejbca:noprompt" unless="ejbca.prompt">
         <property name="ca.name" value="AdminCA1"/>
-        <property name="ca.dn" value="CN=AdminCA1,O=PrimeKey Solutions AB,C=SE"/>
-        <property name="ca.keysize" value="512"/>
-        <property name="ca.validity" value="365"/>
+        <property name="ca.dn" value="CN=AdminCA1,O=EJBCA Sample,C=SE"/>
+        <property name="ca.keysize" value="2048"/>
+        <property name="ca.validity" value="3650"/>
         <property name="ca.policy" value="null"/>
-        <property name="ca.keystorepass" value="!secret!"/>
-        <property name="ca.ocspkeystorepass" value="ocsp!secret!"/>
-        <property name="java.trustpassword" value="changeit"/>
-        <property name="httpsserver.dn" value="CN=localhost,O=PrimeKey Solutions AB,C=SE"/>
+        <property name="ca.keystorepass" value="foo123"/>
+        <property name="ca.ocspkeystorepass" value="foo123"/>
+        <property name="httpsserver.dn" value="CN=localhost,O=EJBCA Sample,C=SE"/>
         <property name="httpsserver.password" value="serverpwd"/>
         <property name="httpsserver.hostname" value="localhost"/>
-		<property name="superadmin.password" value="primekey"/>
+		<property name="superadmin.password" value="ejbca"/>
+        <property name="java.trustpassword" value="changeit"/>
     </target>
 
     <target name="ejbca:prompt" if="ejbca.prompt">
         <input message="Please enter the CA name (default: AdminCA1) ?" addproperty="ca.name" defaultvalue="AdminCA1"/>
-        <input message="Please enter the CA dn (default: CN=AdminCA1,O=PrimeKey Solutions AB,C=SE) ?" addproperty="ca.dn" defaultvalue="CN=AdminCA1,O=PrimeKey Solutions AB,C=SE"/>
-        <input message="Please enter the CA key size (eg. 1024) ?" addproperty="ca.keysize" defaultvalue="1024" />
-        <input message="Please enter the CA validity (in days, eg: 365) ?" addproperty="ca.validity" defaultvalue="365"/>
+        <input message="Please enter the CA dn (default: CN=AdminCA1,O=EJBCA Sample,C=SE) ?" addproperty="ca.dn" defaultvalue="CN=AdminCA1,O=EJBCA Sample,C=SE"/>
+        <input message="Please enter the CA key size (default: 2048) ?" addproperty="ca.keysize" defaultvalue="2048" />
+        <input message="Please enter the CA validity in days (default: 3650) ?" addproperty="ca.validity" defaultvalue="3650"/>
         <input message="Please enter the CA policy id (default, no policy) ?" addproperty="ca.policy" defaultvalue="null"/>
-        <input message="Please enter the CA keystore password (default, no policy) ?" addproperty="ca.keystorepass" defaultvalue="null"/>
-        <input message="Please enter the CA OCSP keystore password (default, no policy) ?" addproperty="ca.ocspkeystorepass" defaultvalue="null"/>
-        <input message="Please enter the CA certificate password (default 'changeit') ?" addproperty="java.trustpassword" defaultvalue="changeitt"/>
+        <input message="Please enter the CA keystore password (default: foo123) ?" addproperty="ca.keystorepass" defaultvalue="foo123"/>
+        <input message="Please enter the CA OCSP keystore password (default: foo123) ?" addproperty="ca.ocspkeystorepass" defaultvalue="foo123"/>
         <input message="Please enter the server httpsserver.hostname (default 'localhost') ?" addproperty="httpsserver.hostname" defaultvalue="localhost"/>
-        <input message="Please enter the server dn (default 'CN=localhost,O=PrimeKey Solutions AB,C=SE') ?" addproperty="httpsserver.dn" defaultvalue="CN=localhost,O=PrimeKey Solutions AB,C=SE"/>
-        <input message="Please enter the server keystore password (default: 'serverpwd') ?" addproperty="httpsserver.password" defaultvalue="serverpwd"/>
-        <input message="Please enter the superadmin password (default: 'primekey') ?" addproperty="superadmin.password" defaultvalue="primekey"/>
+        <input message="Please enter the server dn (default: CN=localhost,O=EJBCA Sample,C=SE) ?" addproperty="httpsserver.dn" defaultvalue="CN=localhost,O=EJBCA Sample,C=SE"/>
+        <input message="Please enter the server keystore password (default: serverpwd) ?" addproperty="httpsserver.password" defaultvalue="serverpwd"/>
+        <input message="Please enter the superadmin password (default: ejbca) ?" addproperty="superadmin.password" defaultvalue="ejbca"/>
+        <input message="Please enter the CA certificate password (default: changeit) ?" addproperty="java.trustpassword" defaultvalue="changeit"/>
     </target>
 
-    <target name="ejbca:init" unless="bootstrap.done" depends="ejbca:noprompt,ejbca:prompt">
-    <echo>
+    <target name="ejbca:init" depends="ejbca:noprompt,ejbca:prompt">
+        <echo>
 ------------------- CA Properties ----------------
 ca.name             : ${ca.name}
 ca.dn               : ${ca.dn}
@@ -64,15 +73,15 @@ ca.validity         : ${ca.validity}
 ca.policy           : ${ca.policy}
 ca.keystorepass     : ${ca.keystorepass}
 ca.ocspkeystorepass : ${ca.ocspkeystorepass}
-java.trustpassword  : ${java.trustpassword}
 httpsserver.dn      : ${httpsserver.dn}
 httpsserver.password: ${httpsserver.password}
 httpsserver.hostname: ${httpsserver.hostname}
 superadmin.password : ${superadmin.password}
-    </echo>
+java.trustpassword  : ${java.trustpassword}
+        </echo>
     </target>
     
-    <target name="ejbca:install" depends="ejbca:init" description="Install">
+    <target name="ejbca:install" depends="check:bootstrapdone, ejbca:init" description="Install">
         <echo message="Initializing CA with ${ca.name} '${ca.dn}' ${ca.keysize} ${ca.validity} ${ca.policy} ..."/>
         <ejbca:cli name="ca" arg='init ${ca.name} "${ca.dn}" ${ca.keysize} ${ca.validity} ${ca.policy}'/>
         <antcall target="ejbca:adminweb"/>
