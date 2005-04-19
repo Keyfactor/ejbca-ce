@@ -25,7 +25,7 @@ import se.anatom.ejbca.log.Admin;
 /**
  * Tests the admin preference entity bean.
  *
- * @version $Id: TestAdminPreference.java,v 1.1 2004-06-10 16:17:44 sbailliez Exp $
+ * @version $Id: TestAdminPreference.java,v 1.2 2005-04-19 12:15:52 anatom Exp $
  */
 public class TestAdminPreference extends TestCase {
     private static Logger log = Logger.getLogger(TestAdminPreference.class);
@@ -129,7 +129,7 @@ public class TestAdminPreference extends TestCase {
             int randint = rand.nextInt(9);
             username += (new Integer(randint)).toString();
         }
-        log.debug("Generated random username: username =" + username);
+        //log.debug("Generated random username: username =" + username);
 
         return username;
     } // genRandomUserName

@@ -26,9 +26,6 @@ import junit.framework.TestCase;
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.ca.auth.IAuthenticationSessionHome;
-import se.anatom.ejbca.ca.auth.IAuthenticationSessionRemote;
-import se.anatom.ejbca.ca.auth.UserAuthData;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionHome;
@@ -36,8 +33,8 @@ import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionRemote;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
+import se.anatom.ejbca.ra.UserDataConstants;
 import se.anatom.ejbca.ra.UserDataLocal;
-import se.anatom.ejbca.ra. UserDataConstants;
 import se.anatom.ejbca.ra.raadmin.GlobalConfiguration;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
@@ -46,7 +43,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Tests authentication session used by signer.
  *
- * @version $Id: TestAuthenticationSession.java,v 1.4 2005-04-11 05:40:51 herrvendil Exp $
+ * @version $Id: TestAuthenticationSession.java,v 1.5 2005-04-19 12:16:18 anatom Exp $
  */
 public class TestAuthenticationSession extends TestCase {
     private static Logger log = Logger.getLogger(TestAuthenticationSession.class);
@@ -68,29 +65,31 @@ public class TestAuthenticationSession extends TestCase {
      */
     public TestAuthenticationSession(String name) {
         super(name);
+
+        try {
+            ctx = getInitialContext();
+            Object obj = ctx.lookup("AuthenticationSession");
+            IAuthenticationSessionHome home = (IAuthenticationSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IAuthenticationSessionHome.class);
+            remote = home.create();
+            obj = ctx.lookup("UserAdminSession");
+            IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
+            usersession = userhome.create();
+            admin = new Admin(Admin.TYPE_INTERNALUSER);
+            obj = ctx.lookup("KeyRecoverySession");    
+            IKeyRecoverySessionHome keyrechome = (IKeyRecoverySessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IKeyRecoverySessionHome.class);
+            keyrecsession = keyrechome.create();
+            obj = ctx.lookup("RaAdminSession");
+            IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IRaAdminSessionHome.class);                
+            raadminsession = raadminsessionhome.create();            
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertTrue("Exception on setup", false);
+        } 
     }
 
     protected void setUp() throws Exception {
         log.debug(">setUp()");
-        
         CertTools.installBCProvider();
-
-        ctx = getInitialContext();
-        Object obj = ctx.lookup("AuthenticationSession");
-        IAuthenticationSessionHome home = (IAuthenticationSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IAuthenticationSessionHome.class);
-        remote = home.create();
-        obj = ctx.lookup("UserAdminSession");
-        IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
-        usersession = userhome.create();
-        admin = new Admin(Admin.TYPE_INTERNALUSER);
-        obj = ctx.lookup("KeyRecoverySession");    
-        IKeyRecoverySessionHome keyrechome = (IKeyRecoverySessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IKeyRecoverySessionHome.class);
-        keyrecsession = keyrechome.create();
-        
-        obj = ctx.lookup("RaAdminSession");
-        IRaAdminSessionHome raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IRaAdminSessionHome.class);                
-        raadminsession = raadminsessionhome.create();
-        
         log.debug("<setUp()");
     }
 
@@ -98,11 +97,9 @@ public class TestAuthenticationSession extends TestCase {
     }
 
     private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
-
+        //log.debug(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
-
+        //log.debug("<getInitialContext");
         return ctx;
     }
 
@@ -233,7 +230,7 @@ public class TestAuthenticationSession extends TestCase {
     	
         
     	// Create a dummy certificate and keypair.
-    	KeyPair keys = KeyTools.genKeys(2048);
+    	KeyPair keys = KeyTools.genKeys(1024);
         ISignSessionHome home = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(getInitialContext().lookup("RSASignSession"), ISignSessionHome.class);
         ISignSessionRemote ss = home.create();
     	X509Certificate cert = (X509Certificate) ss.createCertificate(admin,username,"foo123",keys.getPublic()); 

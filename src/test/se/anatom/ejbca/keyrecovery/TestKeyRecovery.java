@@ -35,7 +35,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Tests the key recovery modules.
  *
- * @version $Id: TestKeyRecovery.java,v 1.1 2004-06-10 16:17:44 sbailliez Exp $
+ * @version $Id: TestKeyRecovery.java,v 1.2 2005-04-19 12:16:18 anatom Exp $
  */
 public class TestKeyRecovery extends TestCase {
     private static Logger log = Logger.getLogger(TestKeyRecovery.class);
@@ -58,46 +58,25 @@ public class TestKeyRecovery extends TestCase {
      */
     public TestKeyRecovery(String name) {
         super(name);
-
-        // Generate test keypair and certificate.
         try {
-            CertTools.installBCProvider();
-
-            ISignSessionHome home = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(getInitialContext().lookup("RSASignSession"), ISignSessionHome.class);
-            ISignSessionRemote ss = home.create();
-
-            Object obj = getInitialContext().lookup("UserAdminSession");
-            IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
-            IUserAdminSessionRemote usersession = userhome.create();
-
-            String email = "test@test.se";
-            if (!usersession.existsUser(admin, user)) {
-                keypair = KeyTools.genKeys(2048);
-                usersession.addUser(admin, user, "foo123", "CN=TESTKEYREC", "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, "CN=TEST".hashCode());
-
-                cert = (X509Certificate) ss.createCertificate(admin, user, "foo123", keypair.getPublic());
+            Context jndiContext = getInitialContext();
+            if (cacheAdmin == null) {
+                if (cacheHome == null) {
+                    Object obj1 = jndiContext.lookup("KeyRecoverySession");
+                    cacheHome = (IKeyRecoverySessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IKeyRecoverySessionHome.class);
+                }
+                cacheAdmin = cacheHome.create();
             }
         } catch (Exception e) {
             System.out.println("Error Creating TestKeyRecovery instance.");
+            e.printStackTrace();
+            assertTrue("Error Creating TestKeyRecovery instance", false);
         }
-
     }
 
     protected void setUp() throws Exception {
         log.debug(">setUp()");
-        Context jndiContext = getInitialContext();
-        if (cacheAdmin == null) {
-            if (cacheHome == null) {
-
-                Object obj1 = jndiContext.lookup("KeyRecoverySession");
-                cacheHome = (IKeyRecoverySessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IKeyRecoverySessionHome.class);
-
-            }
-
-            cacheAdmin = cacheHome.create();
-        }
-
-
+        CertTools.installBCProvider();
         log.debug("<setUp()");
     }
 
@@ -105,11 +84,9 @@ public class TestKeyRecovery extends TestCase {
     }
 
     private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
-
+        //log.debug(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
-
+        //log.debug("<getInitialContext");
         return ctx;
     }
 
@@ -121,11 +98,29 @@ public class TestKeyRecovery extends TestCase {
      */
     public void test01AddKeyPair() throws Exception {
         log.debug(">test01AddKeyPair()");
-        CertTools.installBCProvider();
+        // Generate test keypair and certificate.
+        try {
+
+            ISignSessionHome home = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(getInitialContext().lookup("RSASignSession"), ISignSessionHome.class);
+            ISignSessionRemote ss = home.create();
+
+            Object obj = getInitialContext().lookup("UserAdminSession");
+            IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
+            IUserAdminSessionRemote usersession = userhome.create();
+
+            String email = "test@test.se";
+            if (!usersession.existsUser(admin, user)) {
+                keypair = KeyTools.genKeys(1024);
+                usersession.addUser(admin, user, "foo123", "CN=TESTKEYREC", "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, "CN=TEST".hashCode());
+                cert = (X509Certificate) ss.createCertificate(admin, user, "foo123", keypair.getPublic());
+            }
+        } catch (Exception e) {
+            log.error("Exception generating keys/cert: ", e);
+            assertTrue("Exception generating keys/cert", false);            
+        }
         cacheAdmin.addKeyRecoveryData(admin, cert, user, keypair);
 
         assertTrue("Couldn't save key's in database", cacheAdmin.existsKeys(admin, cert));
-
 
         log.debug("<test01AddKeyPair()");
     }
@@ -170,8 +165,7 @@ public class TestKeyRecovery extends TestCase {
             int randint = rand.nextInt(9);
             username += (new Integer(randint)).toString();
         }
-        log.debug("Generated random username: username =" + username);
-
+        //log.debug("Generated random username: username =" + username);
         return username;
     } // genRandomUserName
 }
