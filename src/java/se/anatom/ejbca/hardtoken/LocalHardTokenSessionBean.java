@@ -13,6 +13,7 @@
 
 package se.anatom.ejbca.hardtoken;
 
+import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.sql.Connection;
@@ -41,6 +42,7 @@ import se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome;
 import se.anatom.ejbca.ca.store.CertificateDataBean;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
+import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.hardtoken.hardtokenprofiles.EIDProfile;
 import se.anatom.ejbca.hardtoken.hardtokenprofiles.HardTokenProfile;
 import se.anatom.ejbca.hardtoken.hardtokentypes.HardToken;
@@ -49,7 +51,6 @@ import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
-import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.JDBCUtil;
 
@@ -931,7 +932,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
          * @ejb.interface-method view-type="both"
        */
 
-    public void getIsHardTokenProfileAvailableToIssuer(Admin admin, int issuerid, UserAdminData userdata) throws UnavailableTokenException{
+    public void getIsHardTokenProfileAvailableToIssuer(Admin admin, int issuerid, UserDataVO userdata) throws UnavailableTokenException{
         debug(">getIsTokenTypeAvailableToIssuer(issuerid: " + issuerid + ", tokentype: " + userdata.getTokenType()+ ")");
         boolean returnval = false;
         ArrayList availabletokentypes = getHardTokenIssuerData(admin, issuerid).getHardTokenIssuer().getAvailableHardTokenProfiles();
@@ -1334,6 +1335,37 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        return returnval;
     } // findCertificatesInHardToken
 
+    /**
+     * Returns the tokensn that the have blongs to a given certificatesn and tokensn.
+     *
+     * @param admin the administrator calling the function
+     * @param certificatesn The serialnumber of certificate.
+     * @param issuerdn the issuerdn of the certificate.
+     *
+     * @return the serialnumber or null if no tokensn could be found.
+     * @throws EJBException if a communication or other error occurs.
+      * @ejb.interface-method view-type="both"
+     */
+  public String findHardTokenByCertificateSNIssuerDN(Admin admin, BigInteger certificatesn, String issuerdn){
+     debug("<findHardTokenByCertificateSNIssuerDN(certificatesn :" + certificatesn + ", issuerdn :" + issuerdn+ ")");
+     String returnval = null;
+     HardTokenCertificateMapLocal htcm = null;
+     try{
+       X509Certificate cert = (X509Certificate) getCertificateStoreSession().findCertificateByIssuerAndSerno(admin,issuerdn,certificatesn);
+       if(cert != null){       	       	 
+         htcm = hardtokencertificatemaphome.findByPrimaryKey(CertTools.getFingerprintAsString(cert));        
+         if(htcm != null){
+           returnval = htcm.getTokenSN();
+         }
+       }
+     }catch(Exception e){
+        throw new EJBException(e);
+     }
+
+     debug("<findHardTokenByCertificateSNIssuerDN()");
+     return returnval;
+  } // findCertificatesInHardToken
+    
 
     /**
      * Method used to signal to the log that token was generated successfully.
