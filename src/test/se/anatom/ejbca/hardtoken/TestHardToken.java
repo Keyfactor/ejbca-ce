@@ -13,13 +13,20 @@
 
 package se.anatom.ejbca.hardtoken;
 
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
 
 import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
+
 import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.ca.store.CertificateDataBean;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
+import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.hardtoken.hardtokentypes.SwedishEIDHardToken;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.util.Base64;
@@ -28,14 +35,16 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Tests the hard token related entity beans.
  *
- * @version $Id: TestHardToken.java,v 1.2 2005-03-07 16:50:31 anatom Exp $
+ * @version $Id: TestHardToken.java,v 1.3 2005-04-21 15:21:17 herrvendil Exp $
  */
 public class TestHardToken extends TestCase {
     private static Logger log = Logger.getLogger(TestHardToken.class);
     private IHardTokenSessionRemote cacheAdmin;
+    private ICertificateStoreSessionRemote certStore;
 
 
     private static IHardTokenSessionHome cacheHome;
+    private static ICertificateStoreSessionHome storeHome;
 
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 
@@ -77,6 +86,15 @@ public class TestHardToken extends TestCase {
 
             cacheAdmin = cacheHome.create();
         }
+        if (certStore == null) {
+            if (storeHome == null) {
+                Context jndiContext = getInitialContext();
+                Object obj1 = jndiContext.lookup(ICertificateStoreSessionHome.JNDI_NAME);
+                storeHome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
+            }
+
+            certStore = storeHome.create();
+        }      
 
 
         log.debug("<setUp()");
@@ -148,14 +166,35 @@ public class TestHardToken extends TestCase {
         log.debug("<test02EditHardToken()");
     }
 
+    /**
+     * Test that tries to find a hardtokensn from is certificate
+     *
+     * @throws Exception error
+     */
+    public void test03FindHardTokenByCertificate() throws Exception {
+        log.debug(">test03FindHardTokenByCertificate()");
 
+        boolean ret = false;       
+        
+        X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(testcert);
+        // Store the dummy cert for test.  
+        if(certStore.findCertificateByFingerprint(admin, CertTools.getFingerprintAsString(cert)) == null){
+          certStore.storeCertificate(admin,cert,"DUMMYUSER", CertTools.getFingerprintAsString(cert),CertificateDataBean.CERT_ACTIVE,CertificateDataBean.CERTTYPE_ENDENTITY);
+        }
+        String tokensn = cacheAdmin.findHardTokenByCertificateSNIssuerDN(admin, cert.getSerialNumber(), cert.getIssuerDN().toString());;        
+
+        assertTrue("Couldn't find right hardtokensn", tokensn.equals("1234"));
+
+        log.debug("<test03FindHardTokenByCertificate()");
+    }
+    
     /**
      * removes all profiles
      *
      * @throws Exception error
      */
-    public void test03removeHardTokens() throws Exception {
-        log.debug(">test03removeHardTokens()");
+    public void test04removeHardTokens() throws Exception {
+        log.debug(">test04removeHardTokens()");
         boolean ret = false;
         try {
             cacheAdmin.removeHardToken(admin, "1234");
@@ -163,9 +202,9 @@ public class TestHardToken extends TestCase {
             ret = true;
         } catch (Exception pee) {
         }
-        assertTrue("Removing Certificate Profile failed", ret);
+        assertTrue("Removing Hard Token failed", ret);
 
-        log.debug("<test03removeHardTokens()");
+        log.debug("<test04removeHardTokens()");
     }
 
 
