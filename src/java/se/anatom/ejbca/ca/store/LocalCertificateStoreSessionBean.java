@@ -13,6 +13,25 @@
 
 package se.anatom.ejbca.ca.store;
 
+import java.math.BigInteger;
+import java.security.cert.Certificate;
+import java.security.cert.X509CRL;
+import java.security.cert.X509Certificate;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Random;
+
+import javax.ejb.CreateException;
+import javax.ejb.EJBException;
+import javax.ejb.FinderException;
+
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.JNDINames;
 import se.anatom.ejbca.SecConst;
@@ -31,6 +50,7 @@ import se.anatom.ejbca.ca.store.certificateprofiles.HardTokenAuthEncCertificateP
 import se.anatom.ejbca.ca.store.certificateprofiles.HardTokenEncCertificateProfile;
 import se.anatom.ejbca.ca.store.certificateprofiles.HardTokenSignCertificateProfile;
 import se.anatom.ejbca.ca.store.certificateprofiles.RootCACertificateProfile;
+import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
@@ -40,30 +60,12 @@ import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.JDBCUtil;
 import se.anatom.ejbca.util.StringTools;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.FinderException;
-import java.math.BigInteger;
-import java.security.cert.Certificate;
-import java.security.cert.X509CRL;
-import java.security.cert.X509Certificate;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Random;
-
 
 /**
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.81 2005-03-05 10:13:10 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.82 2005-04-21 15:17:24 herrvendil Exp $
  * @ejb.bean display-name="CertificateStoreSB"
  * name="CertificateStoreSession"
  * view-type="both"
@@ -95,6 +97,14 @@ import java.util.Random;
  * business="se.anatom.ejbca.ca.store.CRLDataLocal"
  * link="CRLData"
  *
+ * @ejb.ejb-external-ref description="The CertReqHistoryData Entity bean"
+ * view-type="local"
+ * ejb-name="CertReqHistoryDataLocal"
+ * type="Entity"
+ * home="se.anatom.ejbca.ca.store.CertReqHistoryDataLocalHome"
+ * business="se.anatom.ejbca.ca.store.CertReqHistoryDataLocal"
+ * link="CertReqHistoryData"
+ *
  * @ejb.ejb-external-ref description="The CertificateProfileData Entity bean"
  * view-type="local"
  * ejb-name="CertificateProfileDataLocal"
@@ -102,7 +112,7 @@ import java.util.Random;
  * home="se.anatom.ejbca.ca.store.CertificateProfileDataLocalHome"
  * business="se.anatom.ejbca.ca.store.CertificateProfileDataLocal"
  * link="CertificateProfileData"
- *
+ * 
  * @ejb.ejb-external-ref description="The Log session bean"
  * view-type="local"
  * ejb-name="LogSessionLocal"
@@ -154,6 +164,12 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * The home interface of CRL entity bean
      */
     private CRLDataLocalHome crlHome = null;
+    
+    /**
+     * The home interface of CRL entity bean
+     */
+    private CertReqHistoryDataLocalHome certReqHistoryHome = null;
+    
 
     /**
      * The local interface of the log session bean
@@ -179,6 +195,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     public void ejbCreate() throws CreateException {
         crlHome = (CRLDataLocalHome) getLocator().getLocalHome(CRLDataLocalHome.COMP_NAME);
         certHome = (CertificateDataLocalHome) getLocator().getLocalHome(CertificateDataLocalHome.COMP_NAME);
+        certReqHistoryHome = (CertReqHistoryDataLocalHome) getLocator().getLocalHome(CertReqHistoryDataLocalHome.COMP_NAME);
         certprofilehome = (CertificateProfileDataLocalHome) getLocator().getLocalHome(CertificateProfileDataLocalHome.COMP_NAME);
     }
 
@@ -255,14 +272,14 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
             X509Certificate cert = (X509Certificate) incert;
             CertificateDataPK pk = new CertificateDataPK();
-            pk.fingerprint = CertTools.getFingerprintAsString(cert);
-            getLogSession().log(admin, cert, LogEntry.MODULE_CA, new java.util.Date(), username, (X509Certificate) incert, LogEntry.EVENT_INFO_STORECERTIFICATE, "");
+            pk.fingerprint = CertTools.getFingerprintAsString(cert);            
             CertificateDataLocal data1 = null;
             data1 = certHome.create(cert);
             data1.setUsername(username);
             data1.setCAFingerprint(cafp);
             data1.setStatus(status);
             data1.setType(type);
+            getLogSession().log(admin, cert, LogEntry.MODULE_CA, new java.util.Date(), username, (X509Certificate) incert, LogEntry.EVENT_INFO_STORECERTIFICATE, "");
         } catch (Exception e) {
             getLogSession().log(admin, (X509Certificate) incert, LogEntry.MODULE_CA, new java.util.Date(), username, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE, "");
             throw new EJBException(e);
@@ -1310,6 +1327,101 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         }
     } //getLastCRLNumber
 
+    /**
+     * Method used to add a CertReqHistory to database
+     * 
+     * @param admin calling the methods
+     * @param certificate the certificate to store (Only X509Certificate used for now)
+     * @param useradmindata the user information used when issuing the certificate.
+     * @ejb.transaction type="Required"
+     * @ejb.interface-method     
+     */
+    public void addCertReqHistoryData(Admin admin, Certificate certificate, UserDataVO useradmindata){
+    	X509Certificate cert = (X509Certificate) certificate;
+        try {
+            
+            debug(">addCertReqHistData(" + cert.getSerialNumber() + ", " + cert.getIssuerDN() + ", " + useradmindata.getUsername() + ")");
+
+            CertReqHistoryDataPK pk = new CertReqHistoryDataPK();
+            pk.fingerprint = CertTools.getFingerprintAsString(cert);
+            CertReqHistoryDataLocal data1 = this.certReqHistoryHome.create(cert,useradmindata);
+            getLogSession().log(admin, cert, LogEntry.MODULE_CA, new java.util.Date(), useradmindata.getUsername(), (X509Certificate) cert, LogEntry.EVENT_INFO_STORECERTIFICATE, "Storing certificate request history successful.");            
+        } catch (Exception e) {
+            getLogSession().log(admin, (X509Certificate) cert, LogEntry.MODULE_CA, new java.util.Date(), useradmindata.getUsername(), cert, LogEntry.EVENT_ERROR_STORECERTIFICATE, "Error storing certificate request history.");
+            throw new EJBException(e);
+        }
+        debug("<addCertReqHistData()");    	
+    }
+    
+    /**
+     * Method to remove CertReqHistory data.
+     * @param admin
+     * @param certFingerprint the primary key.
+     * @ejb.transaction type="Required"    
+     * @ejb.interface-method  
+     */
+    public void removeCertReqHistoryData(Admin admin, String certFingerprint){
+    	debug(">removeCertReqHistData(" + certFingerprint + ")");
+        try {          
+            CertReqHistoryDataPK pk = new CertReqHistoryDataPK();
+            pk.fingerprint = certFingerprint;
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_STORECERTIFICATE, "Removal of certificate request history successful.");
+            this.certReqHistoryHome.remove(pk);
+        } catch (Exception e) {
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECERTIFICATE, "Error removing certificate request history.");
+            throw new EJBException(e);
+        }
+        debug("<removeCertReqHistData()");       	
+    }
+    
+    /**
+     * Retrieves the certificate request data belonging to given certificate serialnumber and issuerdn
+     * 
+     * @param admin
+     * @param certificateSN serial number of the certificate
+     * @param issuerDN
+     * @return the CertReqHistory or null if no data is stored with the certificate.
+     * @ejb.interface-method
+     */
+    public CertReqHistory getCertReqHistory(Admin admin, BigInteger certificateSN, String issuerDN){
+    	CertReqHistory retval = null;
+    	
+    	try{
+    	  Collection result = certReqHistoryHome.findByIssuerDNSerialNumber(issuerDN, certificateSN.toString());
+    	  if(result.iterator().hasNext())
+    	    retval = ((CertReqHistoryDataLocal) result.iterator().next()).getCertReqHistory();
+    	}catch(FinderException fe){
+    		// Do nothing but return null
+    	}
+    	
+    	return retval;
+    }
+    
+    
+    /**
+     * Retrieves all cert request datas belonging to a user.
+     * @param admin
+     * @param username
+     * @return a collection of CertReqHistory
+     * @ejb.interface-method
+     */
+    public Collection getCertReqHistory(Admin admin, String username){
+    	ArrayList retval = new ArrayList();
+    	
+    	try{
+    	  Collection result = certReqHistoryHome.findByUsername(username);
+    	  Iterator iter = result.iterator();
+    	  while(iter.hasNext()){
+    	    retval.add(((CertReqHistoryDataLocal) iter.next()).getCertReqHistory());
+    	  }
+    	}catch(FinderException fe){
+    		// Do nothing but return null
+    	}
+    	
+    	return retval;
+    }
+    
+    
     /**
      * Adds a certificate profile to the database.
      *
