@@ -13,15 +13,15 @@
  
 package se.anatom.ejbca.admin;
 
-import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.ra.UserDataLocal;
 import se.anatom.ejbca.authorization.AuthorizationDeniedException;
+import se.anatom.ejbca.common.UserDataVO;
 
 
 /**
  * Revokes a user in the database, and also revokes all the users certificates.
  *
- * @version $Id: RaRevokeUserCommand.java,v 1.14 2004-10-13 07:14:46 anatom Exp $
+ * @version $Id: RaRevokeUserCommand.java,v 1.15 2005-04-21 15:14:19 herrvendil Exp $
  */
 public class RaRevokeUserCommand extends BaseRaAdminCommand {
     /**
@@ -56,7 +56,7 @@ public class RaRevokeUserCommand extends BaseRaAdminCommand {
             if ((reason == 7) || (reason < 0) || (reason > 10)) {
                 getOutputStream().println("Error : Reason must be an integer between 0 and 10 except 7.");
             } else {
-                UserAdminData data = getAdminSession().findUser(administrator, username);
+                UserDataVO data = getAdminSession().findUser(administrator, username);
                 getOutputStream().println("Found user:");
                 getOutputStream().println("username=" + data.getUsername());
                 getOutputStream().println("dn=\"" + data.getDN() + "\"");

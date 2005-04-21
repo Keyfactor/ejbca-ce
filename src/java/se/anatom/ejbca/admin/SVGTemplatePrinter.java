@@ -32,8 +32,8 @@ import javax.print.PrintServiceLookup;
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
 
+import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.hardtoken.hardtokenprofiles.SVGImageManipulator;
-import se.anatom.ejbca.ra.UserAdminData;
 
 
 
@@ -50,7 +50,7 @@ public class SVGTemplatePrinter {
 	private SVGImageManipulator imagemanipulator = null;
 	private PrintService printservice = null;
 	
-	private UserAdminData userdata = null;
+	private UserDataVO userdata = null;
 	private String[] pins = new String[2];
 	private String[] puks = new String[2];
 	private String hardtokensn = "";
@@ -60,8 +60,8 @@ public class SVGTemplatePrinter {
 		Properties data = new Properties();
 		data.load(new FileInputStream(USERDATAFILENAME));
   						
-		userdata = new UserAdminData("", data.getProperty("DN"),0,"", data.getProperty("EMAIL"), 
-				                                           0,0,0,0, (Date) null, (Date) null,0,0 );
+		userdata = new UserDataVO("", data.getProperty("DN"),0,"", data.getProperty("EMAIL"), 
+				                                           0,0,0,0, (Date) null, (Date) null,0,0 ,null);
 		
 		pins[0] = data.getProperty("PIN1");
 		pins[1] = data.getProperty("PIN2");

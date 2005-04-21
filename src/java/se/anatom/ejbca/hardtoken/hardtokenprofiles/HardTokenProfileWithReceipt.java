@@ -19,14 +19,14 @@ import java.awt.print.PrinterException;
 import java.io.IOException;
 import java.io.StringReader;
 
-import se.anatom.ejbca.ra.UserAdminData;
+import se.anatom.ejbca.common.UserDataVO;
 
 
 /**
  * HardTokenProfileWithReceipt is a basic class that should be inherited by all types
  * of hardtokenprofiles that should have receipt functionality.
  * 
- * @version $Id: HardTokenProfileWithReceipt.java,v 1.1 2005-04-11 05:44:42 herrvendil Exp $
+ * @version $Id: HardTokenProfileWithReceipt.java,v 1.2 2005-04-21 15:19:10 herrvendil Exp $
  */
 public abstract class HardTokenProfileWithReceipt extends HardTokenProfileWithVisualLayout implements IReceiptSettings{
 		
@@ -97,9 +97,9 @@ public abstract class HardTokenProfileWithReceipt extends HardTokenProfileWithVi
 		return ((Integer) data.get(RECEIPTTYPE)).intValue();
 	}
 	/* (non-Javadoc)
-	 * @see se.anatom.ejbca.hardtoken.hardtokenprofiles.IReceiptSettings#printReceipt(se.anatom.ejbca.ra.UserAdminData, java.lang.String[], java.lang.String[], java.lang.String, java.lang.String)
+	 * @see se.anatom.ejbca.hardtoken.hardtokenprofiles.IReceiptSettings#printReceipt(se.anatom.ejbca.ra.UserDataVO, java.lang.String[], java.lang.String[], java.lang.String, java.lang.String)
 	 */
-	public Printable printReceipt(UserAdminData userdata, String[] pincodes,
+	public Printable printReceipt(UserDataVO userdata, String[] pincodes,
 			String[] pukcodes, String hardtokensn, String copyoftokensn)
 			throws IOException, PrinterException {
 		Printable returnval = null;

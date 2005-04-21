@@ -39,7 +39,7 @@ import java.util.Iterator;
  * Stores key recovery data. Uses JNDI name for datasource as defined in env 'Datasource' in
  * ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.27 2005-03-07 16:50:28 anatom Exp $
+ * @version $Id: LocalKeyRecoverySessionBean.java,v 1.28 2005-04-21 15:19:26 herrvendil Exp $
  *
  * @ejb.bean
  *   display-name="Stores key recovery data"
@@ -499,7 +499,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
         KeyRecoveryDataLocal krd = null;
 
         try {
-            Collection result = keyrecoverydatahome.findByUserMark(username);
+            Collection result = keyrecoverydatahome.findByUserMark(username);            
             Iterator i = result.iterator();
 
             while (i.hasNext()) {
@@ -531,7 +531,6 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
         boolean returnval = false;
         KeyRecoveryDataLocal krd = null;
-
         try {
             Collection result = keyrecoverydatahome.findByUserMark(username);
             Iterator i = result.iterator();
@@ -541,7 +540,6 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
                 if (krd.getMarkedAsRecoverable()) {
                     returnval = true;
-
                     break;
                 }
             }

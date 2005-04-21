@@ -84,7 +84,6 @@ import org.bouncycastle.x509.X509V2CRLGenerator;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 
 import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.ca.auth.UserAuthData;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
@@ -98,6 +97,7 @@ import se.anatom.ejbca.ca.exception.IllegalKeyStoreException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.ca.sign.SernoGenerator;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
+import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.StringTools;
 
@@ -105,7 +105,7 @@ import se.anatom.ejbca.util.StringTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.33 2005-04-15 13:59:25 anatom Exp $
+ * @version $Id: X509CA.java,v 1.34 2005-04-21 15:15:59 herrvendil Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -237,7 +237,7 @@ public class X509CA extends CA implements Serializable {
     }    
     
     
-    public Certificate generateCertificate(UserAuthData subject, 
+    public Certificate generateCertificate(UserDataVO subject, 
                                            PublicKey publicKey, 
                                            int keyusage, 
                                            long validity,
@@ -265,7 +265,7 @@ public class X509CA extends CA implements Serializable {
         certgen.setSignatureAlgorithm(sigAlg);
         // Make DNs
         String dn = subject.getDN(); 
-        String altName = subject.getAltName(); 
+        String altName = subject.getSubjectAltName(); 
       
         certgen.setSubjectDN(CertTools.stringToBcX509Name(dn));
         X509Name caname = getSubjectDNAsX509Name();

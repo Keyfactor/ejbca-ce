@@ -18,7 +18,7 @@ import java.awt.print.PrinterException;
 import java.io.IOException;
 import java.io.StringReader;
 
-import se.anatom.ejbca.ra.UserAdminData;
+import se.anatom.ejbca.common.UserDataVO;
 
 /**
  * HardTokenProfileWithVisualLayout is a basic class that should be inherited by all types
@@ -28,7 +28,7 @@ import se.anatom.ejbca.ra.UserAdminData;
  * processed. This information could be PIN-type number of certificates, 
  * certificate profiles and so on. 
  *
- * @version $Id: HardTokenProfileWithVisualLayout.java,v 1.4 2004-04-16 07:39:00 anatom Exp $
+ * @version $Id: HardTokenProfileWithVisualLayout.java,v 1.5 2005-04-21 15:19:12 herrvendil Exp $
  */
 public abstract class HardTokenProfileWithVisualLayout extends HardTokenProfileWithPINEnvelope implements IVisualLayoutSettings{
 		
@@ -94,9 +94,9 @@ public abstract class HardTokenProfileWithVisualLayout extends HardTokenProfileW
 	}
 
 	/**
-	 * @see se.anatom.ejbca.hardtoken.hardtokenprofiles.IVisualLayoutSettings#printVisualValidity(se.anatom.ejbca.ra.UserAdminData, java.lang.String[], java.lang.String[], java.lang.String, java.lang.String)
+	 * @see se.anatom.ejbca.hardtoken.hardtokenprofiles.IVisualLayoutSettings#printVisualValidity(se.anatom.ejbca.ra.UserDataVO, java.lang.String[], java.lang.String[], java.lang.String, java.lang.String)
 	 */
-	public Printable printVisualValidity(UserAdminData userdata, String[] pincodes, String[] pukcodes, String hardtokensn, String copyoftokensn) throws IOException, PrinterException{
+	public Printable printVisualValidity(UserDataVO userdata, String[] pincodes, String[] pukcodes, String hardtokensn, String copyoftokensn) throws IOException, PrinterException{
 		Printable returnval = null;
 	  
 	  if(getVisualLayoutData() != null){

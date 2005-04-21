@@ -26,11 +26,11 @@ import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.JNDINames;
 import se.anatom.ejbca.util.JDBCUtil;
+import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
 import se.anatom.ejbca.log.LogEntry;
-import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.ra.UserDataLocal;
 import se.anatom.ejbca.ra.UserDataLocalHome;
 
@@ -176,10 +176,10 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      * @throws EJBException if a communication or other error occurs.
      * @ejb.interface-method view-type="both"
      */
-    public UserAdminData getNextHardTokenToGenerate(Admin admin, String alias) throws UnavailableTokenException{
+    public UserDataVO getNextHardTokenToGenerate(Admin admin, String alias) throws UnavailableTokenException{
       debug(">getNextHardTokenToGenerate()");
       debug("alias " + alias);
-      UserAdminData returnval=null;
+      UserDataVO returnval=null;
       int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, alias);
 
       debug("issuerid " + issuerid);
@@ -205,10 +205,11 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
             // Assemble result.
 
            if(rs.next()){
-              returnval = new UserAdminData(rs.getString(1), rs.getString(2), rs.getInt(14), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getInt(6)
+           	  // TODO add support for Extended Information
+              returnval = new UserDataVO(rs.getString(1), rs.getString(2), rs.getInt(14), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getInt(6)
                                                , rs.getInt(10), rs.getInt(11)
                                                , new java.util.Date(rs.getLong(8)), new java.util.Date(rs.getLong(9))
-                                               ,  rs.getInt(12), rs.getInt(13));
+                                               ,  rs.getInt(12), rs.getInt(13),null);
               returnval.setPassword(rs.getString(7));
               debug("found user" + returnval.getUsername());
             }
@@ -257,10 +258,11 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
             ps.setInt(4,UserDataLocal.STATUS_KEYRECOVERY);
             // Assemble result.
            while(rs.next() && returnval.size() <= MAX_RETURNED_QUEUE_SIZE){
-              UserAdminData data = new UserAdminData(rs.getString(1), rs.getString(2), rs.getInt(14), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getInt(6)
+              // TODO add support for Extended Information
+              UserDataVO data = new UserDataVO(rs.getString(1), rs.getString(2), rs.getInt(14), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getInt(6)
                                                , rs.getInt(10), rs.getInt(11)
                                                , new java.util.Date(rs.getLong(8)), new java.util.Date(rs.getLong(9))
-                                               ,  rs.getInt(12), rs.getInt(13));
+                                               ,  rs.getInt(12), rs.getInt(13), null);
               data.setPassword(rs.getString(7));
               getHardTokenSession().getIsHardTokenProfileAvailableToIssuer(admin, issuerid, data);
               returnval.add(data);
@@ -292,9 +294,9 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      * @throws EJBException if a communication or other error occurs.
      * @ejb.interface-method view-type="both"
      */
-    public UserAdminData getNextHardTokenToGenerateInQueue(Admin admin, String alias, int index) throws UnavailableTokenException{
+    public UserDataVO getNextHardTokenToGenerateInQueue(Admin admin, String alias, int index) throws UnavailableTokenException{
       debug(">getNextHardTokenToGenerateInQueue()");
-      UserAdminData returnval=null;
+      UserDataVO returnval=null;
       int issuerid = getHardTokenSession().getHardTokenIssuerId(admin, alias);
 
       if(issuerid != LocalHardTokenSessionBean.NO_ISSUER){
@@ -312,10 +314,11 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
 
             // Assemble result.
            if(rs.relative(index)){
-              returnval = new UserAdminData(rs.getString(1), rs.getString(2), rs.getInt(14), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getInt(6)
+              // TODO add support for Extended Information
+              returnval = new UserDataVO(rs.getString(1), rs.getString(2), rs.getInt(14), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getInt(6)
                                                , rs.getInt(10), rs.getInt(11)
                                                , new java.util.Date(rs.getLong(8)), new java.util.Date(rs.getLong(9))
-                                               ,  rs.getInt(12), rs.getInt(13));
+                                               ,  rs.getInt(12), rs.getInt(13), null);
               returnval.setPassword(rs.getString(7));
             }
             if(returnval !=null){

@@ -41,7 +41,6 @@ import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.auth.IAuthenticationSessionLocal;
 import se.anatom.ejbca.ca.auth.IAuthenticationSessionLocalHome;
-import se.anatom.ejbca.ca.auth.UserAuthData;
 import se.anatom.ejbca.ca.caadmin.CA;
 import se.anatom.ejbca.ca.caadmin.CADataLocal;
 import se.anatom.ejbca.ca.caadmin.CADataLocalHome;
@@ -65,6 +64,7 @@ import se.anatom.ejbca.ca.store.CertificateDataBean;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
+import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
@@ -465,11 +465,11 @@ public class RSASignSessionBean extends BaseSessionBean {
         debug(">createCertificate(pk, ku)");
         try {
             // Authorize user and get DN
-            UserAuthData data = authUser(admin, username, password);
+            UserDataVO data = authUser(admin, username, password);
             debug("Authorized user " + username + " with DN='" + data.getDN() + "'." + " with CA=" + data.getCAId());
             if (certificateprofileid != SecConst.PROFILE_NO_PROFILE) {
                 debug("Overriding user certificate profile with :" + certificateprofileid);
-                data.setCertProfileId(certificateprofileid);
+                data.setCertificateProfileId(certificateprofileid);
             }
 
 
@@ -677,7 +677,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         debug(">createCertificate(IRequestMessage)");
         // Get CA that will receive request
         CADataLocal cadata = null;
-        UserAuthData data = null;
+        UserDataVO data = null;
         IResponseMessage ret = null;            
         try {
             // See if we can get issuerDN directly from request
@@ -1055,7 +1055,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         }
     }
 
-    private UserAuthData authUser(Admin admin, String username, String password) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
+    private UserDataVO authUser(Admin admin, String username, String password) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
         // Authorize user and get DN
         try {
             IAuthenticationSessionLocal authSession = authHome.create();
@@ -1090,7 +1090,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @return Certificate that has been generated and signed by the CA
      * @throws IllegalKeyException if the public key given is invalid
      */
-    private Certificate createCertificate(Admin admin, UserAuthData data, CA ca, PublicKey pk, int keyusage) throws IllegalKeyException {
+    private Certificate createCertificate(Admin admin, UserDataVO data, CA ca, PublicKey pk, int keyusage) throws IllegalKeyException {
         debug(">createCertificate(pk, ku)");
         try {
             // If the user is of type USER_INVALID, it cannot have any other type (in the mask)
@@ -1100,7 +1100,7 @@ public class RSASignSessionBean extends BaseSessionBean {
 
                 ICertificateStoreSessionLocal certificateStore = storeHome.create();
                 // Retrieve the certificate profile this user should have
-                int certProfileId = data.getCertProfileId();
+                int certProfileId = data.getCertificateProfileId();
                 CertificateProfile certProfile = certificateStore.getCertificateProfile(admin, certProfileId);
                 // What if certProfile == null?
                 if (certProfile == null) {
@@ -1161,10 +1161,12 @@ public class RSASignSessionBean extends BaseSessionBean {
                     cafingerprint = CertTools.getFingerprintAsString((X509Certificate)cacert);
                 }
                 certificateStore.storeCertificate(admin, cert, data.getUsername(), cafingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType());
+                // Store the request data in history table.
+                certificateStore.addCertReqHistoryData(admin,cert,data);
                 // Store certificate in certificate profiles publishers.
                 IPublisherSessionLocal pub = publishHome.create();
                 if (certProfile.getPublisherList() != null)
-                    pub.storeCertificate(admin, certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), fingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType(), data.getExtendedInformation());
+                    pub.storeCertificate(admin, certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), fingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType(), data.getExtendedinformation());
 
                 debug("<createCertificate(pk, ku)");
                 return cert;

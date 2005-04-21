@@ -13,18 +13,22 @@
 
 package se.anatom.ejbca.ca.auth;
 
-import java.rmi.*;
+import java.rmi.RemoteException;
 
-import javax.ejb.*;
+import javax.ejb.CreateException;
+import javax.ejb.EJBException;
+import javax.ejb.ObjectNotFoundException;
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
+import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionHome;
 import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.LogEntry;
+import se.anatom.ejbca.ra.UserDataLocal;
 import se.anatom.ejbca.util.CertTools;
 
 
@@ -32,7 +36,7 @@ import se.anatom.ejbca.util.CertTools;
  * Approves all authentication requests that contain a DN as the username, password is ignored and
  * the username is returned as DN. Useful for demo purposes to give out certificates to anyone.
  *
- * @version $Id: NullAuthenticationSessionBean.java,v 1.21 2005-03-02 11:25:40 anatom Exp $
+ * @version $Id: NullAuthenticationSessionBean.java,v 1.22 2005-04-21 15:15:39 herrvendil Exp $
  * @ejb.bean
  *   generate="false"
  * @ejb.home
@@ -74,7 +78,7 @@ public class NullAuthenticationSessionBean extends BaseSessionBean {
      *
      * @return UserData for authenticated user
      */
-    public UserAuthData authenticateUser(Admin admin, String username, String password)
+    public UserDataVO authenticateUser(Admin admin, String username, String password)
         throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
         debug(">authenticateUser(" + username + ", hiddenpwd)");
 
@@ -93,7 +97,9 @@ public class NullAuthenticationSessionBean extends BaseSessionBean {
                 String altName = (email == null) ? null : ("rfc822Name=" + email);
 
                 // Use default certificate profile 0
-                UserAuthData ret = new UserAuthData(username, password, dn, admin.getCaId(),  altName, email, SecConst.USER_ENDUSER, SecConst.PROFILE_NO_PROFILE, null);
+                UserDataVO ret = new UserDataVO(username, dn, admin.getCaId(), altName, email, UserDataLocal.STATUS_NEW, SecConst.USER_ENDUSER, SecConst.PROFILE_NO_PROFILE, SecConst.PROFILE_NO_PROFILE, 
+                		                        null, null, SecConst.TOKEN_SOFT_BROWSERGEN,0,null);
+                ret.setPassword(password);
                 debug("<authenticateUser("+username+", hiddenpwd)");
                 return ret;
             } else {

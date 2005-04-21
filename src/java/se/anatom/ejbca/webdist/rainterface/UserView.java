@@ -16,27 +16,27 @@ package se.anatom.ejbca.webdist.rainterface;
 import java.util.Date;
 import java.util.HashMap;
 
-import se.anatom.ejbca.ra.UserAdminData;
+import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 import se.anatom.ejbca.util.StringTools;
 
 /**
  * A class representing a web interface view of a user in the ra user database.
  *
- * @version $Id: UserView.java,v 1.17 2004-04-16 07:38:55 anatom Exp $
+ * @version $Id: UserView.java,v 1.18 2005-04-21 15:19:59 herrvendil Exp $
  */
 public class UserView implements java.io.Serializable, Cloneable, Comparable {
     // Public constants.
 
    public UserView(HashMap  caidtonamemap){
-      userdata = new UserAdminData();
+      userdata = new UserDataVO();
       userdata.setType(1);
       subjectdnfields = new DNFieldExtractor("", DNFieldExtractor.TYPE_SUBJECTDN);
       subjectaltnames = new DNFieldExtractor("", DNFieldExtractor.TYPE_SUBJECTALTNAME);
    }
 
 
-    public UserView(UserAdminData newuserdata, HashMap caidtonamemap){
+    public UserView(UserDataVO newuserdata, HashMap caidtonamemap){
       userdata = newuserdata;
       this.caname = (String) caidtonamemap.get(new Integer(newuserdata.getCAId()));
       subjectdnfields = new DNFieldExtractor(userdata.getDN(), DNFieldExtractor.TYPE_SUBJECTDN);
@@ -188,7 +188,7 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
 
     // Private methods.
     private SortBy sortby;
-    private UserAdminData userdata;
+    private UserDataVO userdata;
     private DNFieldExtractor subjectdnfields;
     private DNFieldExtractor subjectaltnames;
     private String commonname = "";

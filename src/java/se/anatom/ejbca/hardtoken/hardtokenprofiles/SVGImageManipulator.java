@@ -50,7 +50,7 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.svg.SVGRectElement;
 import org.w3c.dom.svg.SVGTextElement;
 
-import se.anatom.ejbca.ra.UserAdminData;
+import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 
 
@@ -59,7 +59,7 @@ import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
  * It replaces all occurrenses of specified variables in the images 
  * with the corresponding userdata.
  *
- * @version $Id: SVGImageManipulator.java,v 1.9 2005-03-16 09:47:24 anatom Exp $
+ * @version $Id: SVGImageManipulator.java,v 1.10 2005-04-21 15:19:11 herrvendil Exp $
  */
 public class SVGImageManipulator {
 	/**
@@ -161,7 +161,7 @@ public class SVGImageManipulator {
      * @return A processed notification message.
      *     
      */
-    public Printable print(UserAdminData userdata, 
+    public Printable print(UserDataVO userdata, 
                       String[] pincodes, String[] pukcodes,
 	                  String hardtokensn, String copyoftokensn) throws IOException, PrinterException {
       // Initialize
@@ -247,7 +247,7 @@ public class SVGImageManipulator {
 
     
 
-    private String processString(String text, UserAdminData userdata, DNFieldExtractor dnfields,
+    private String processString(String text, UserDataVO userdata, DNFieldExtractor dnfields,
                                  String[] pincodes, String[] pukcodes, 
                                  String hardtokensn, String hardtokensnwithoutprefix,
                                  String copyoftokensn, String copyoftokensnwithoutprefix,
@@ -296,7 +296,7 @@ public class SVGImageManipulator {
 
 
     // Private Methods
-    private void insertImage(UserAdminData userdata) throws FileNotFoundException, IOException{
+    private void insertImage(UserDataVO userdata) throws FileNotFoundException, IOException{
     	log.debug(">insertImage("+userdata != null ? userdata.getUsername() : "null"+")");
     	int imgx = 0;
     	int imgy = 0;

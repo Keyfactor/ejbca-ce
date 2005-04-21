@@ -33,15 +33,15 @@ import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.BasicOCSPRespGenerator;
 import org.bouncycastle.ocsp.OCSPException;
 
-import se.anatom.ejbca.ca.auth.UserAuthData;
 import se.anatom.ejbca.ca.caadmin.CA;
 import se.anatom.ejbca.ca.exception.IllegalKeyStoreException;
 import se.anatom.ejbca.ca.store.certificateprofiles.OCSPSignerCertificateProfile;
+import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.KeyTools;
 /** Handles and maintains the CA -part of the OCSP functionality
  * 
- * @version $Id: OCSPCAService.java,v 1.9 2005-03-08 08:45:52 anatom Exp $
+ * @version $Id: OCSPCAService.java,v 1.10 2005-04-21 15:16:28 herrvendil Exp $
  */
 public class OCSPCAService extends ExtendedCAService implements java.io.Serializable{
 
@@ -141,12 +141,12 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 	 KeyPair ocspkeys = KeyTools.genKeys(info.getKeySize());
 	   	  
 	 Certificate ocspcertificate =
-	  ca.generateCertificate(new UserAuthData("NOUSERNAME", null, 	                                          
+	  ca.generateCertificate(new UserDataVO("NOUSERNAME", 	                                          
 											info.getSubjectDN(),
 											0, 
 											info.getSubjectAltName(),
 											"NOEMAIL",
-											0,0,null)
+											0,0,0,0, null,null,0,0,null)																																
 						   , ocspkeys.getPublic(),
 						   -1, // KeyUsage
 						   ca.getValidity(), 

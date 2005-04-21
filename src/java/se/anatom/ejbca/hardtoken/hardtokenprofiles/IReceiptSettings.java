@@ -17,7 +17,7 @@ import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.io.IOException;
 
-import se.anatom.ejbca.ra.UserAdminData;
+import se.anatom.ejbca.common.UserDataVO;
 
 
 
@@ -26,7 +26,7 @@ import se.anatom.ejbca.ra.UserAdminData;
  * to have a hard token profile contain a reciept that may contain policy and 
  * the users hand signature.
  * 
- * @version $Id: IReceiptSettings.java,v 1.1 2005-04-11 05:44:42 herrvendil Exp $
+ * @version $Id: IReceiptSettings.java,v 1.2 2005-04-21 15:19:10 herrvendil Exp $
  */
 
 public interface IReceiptSettings {
@@ -89,7 +89,7 @@ public interface IReceiptSettings {
     * Method that parses the template, replaces the userdata
     * and returning a printable byte array 
     */	
-	public abstract Printable printReceipt(UserAdminData userdata, 
+	public abstract Printable printReceipt(UserDataVO userdata, 
 	                                        String[] pincodes, String[] pukcodes,
 	                                        String hardtokensn, String copyoftokensn)
 	                                          throws IOException, PrinterException;

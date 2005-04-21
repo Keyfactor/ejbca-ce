@@ -19,14 +19,14 @@ import java.awt.print.PrinterException;
 import java.io.IOException;
 import java.io.StringReader;
 
-import se.anatom.ejbca.ra.UserAdminData;
+import se.anatom.ejbca.common.UserDataVO;
 
 
 /**
  * HardTokenProfileWithPINEnvelope is a basic class that should be inherited by all types
  * of hardtokenprofiles that should have PIN envelope functionality.
  * 
- * @version $Id: HardTokenProfileWithPINEnvelope.java,v 1.3 2004-04-16 07:39:00 anatom Exp $
+ * @version $Id: HardTokenProfileWithPINEnvelope.java,v 1.4 2005-04-21 15:19:10 herrvendil Exp $
  */
 public abstract class HardTokenProfileWithPINEnvelope extends HardTokenProfile implements IPINEnvelopeSettings{
 		
@@ -133,9 +133,9 @@ public abstract class HardTokenProfileWithPINEnvelope extends HardTokenProfile i
 
 
 	/**
-	 * @see se.anatom.ejbca.hardtoken.hardtokenprofiles.IPINEnvelopeSettings#printPINEnvelope(se.anatom.ejbca.ra.UserAdminData, java.lang.String[], java.lang.String[], java.lang.String, java.lang.String)
+	 * @see se.anatom.ejbca.hardtoken.hardtokenprofiles.IPINEnvelopeSettings#printPINEnvelope(se.anatom.ejbca.ra.UserDataVO, java.lang.String[], java.lang.String[], java.lang.String, java.lang.String)
 	 */
-	public Printable printPINEnvelope(UserAdminData userdata, String[] pincodes, String[] pukcodes, String hardtokensn, String copyoftokensn) throws IOException, PrinterException{
+	public Printable printPINEnvelope(UserDataVO userdata, String[] pincodes, String[] pukcodes, String hardtokensn, String copyoftokensn) throws IOException, PrinterException{
 		Printable returnval = null;
 	  
 		if(getPINEnvelopeData() != null){

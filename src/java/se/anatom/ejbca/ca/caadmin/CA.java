@@ -27,7 +27,6 @@ import java.util.Vector;
 
 import javax.ejb.EJBException;
 
-import se.anatom.ejbca.ca.auth.UserAuthData;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAService;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
@@ -44,6 +43,7 @@ import se.anatom.ejbca.ca.caadmin.hardcatokens.HardCATokenManager;
 import se.anatom.ejbca.ca.exception.IllegalKeyStoreException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
+import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.UpgradeableDataHashMap;
@@ -51,7 +51,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.14 2005-04-15 13:59:25 anatom Exp $
+ * @version $Id: CA.java,v 1.15 2005-04-21 15:15:59 herrvendil Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -320,7 +320,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     
     public abstract CAInfo getCAInfo() throws Exception;
     
-    public Certificate  generateCertificate(UserAuthData subject, 
+    public Certificate  generateCertificate(UserDataVO subject, 
                                             PublicKey publicKey, 
                                             int keyusage,                                             
                                             CertificateProfile certProfile) throws Exception{
@@ -328,7 +328,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
     
     
-    public abstract Certificate generateCertificate(UserAuthData subject, 
+    public abstract Certificate generateCertificate(UserDataVO subject, 
                                                     PublicKey publicKey, 
                                                     int keyusage, 
                                                     long validity,

@@ -1,7 +1,7 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@page  errorPage="/errorpage.jsp" import="java.util.*, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.webdist.rainterface.UserView,
                  se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.webdist.rainterface.EndEntityProfileDataHandler, se.anatom.ejbca.ra.raadmin.EndEntityProfile, se.anatom.ejbca.ra.UserDataConstants,
-                 javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.authorization.AuthorizationDeniedException, se.anatom.ejbca.ra.raadmin.DNFieldExtractor, se.anatom.ejbca.ra.UserAdminData,
+                 javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.authorization.AuthorizationDeniedException, se.anatom.ejbca.ra.raadmin.DNFieldExtractor, se.anatom.ejbca.common.UserDataVO,
                  se.anatom.ejbca.webdist.hardtokeninterface.HardTokenInterfaceBean, se.anatom.ejbca.hardtoken.HardTokenIssuer, se.anatom.ejbca.hardtoken.HardTokenIssuerData, 
                  se.anatom.ejbca.SecConst, se.anatom.ejbca.util.StringTools" %>
 <html> 
@@ -82,7 +82,7 @@
   String username                  = null;
   EndEntityProfile  profile        = null; 
   UserView userdata                = null;
-  int profileid                    = UserAdminData.NO_ENDENTITYPROFILE;  
+  int profileid                    = UserDataVO.NO_ENDENTITYPROFILE;  
   int[] fielddata                  = null;
 
   boolean userchanged              = false;

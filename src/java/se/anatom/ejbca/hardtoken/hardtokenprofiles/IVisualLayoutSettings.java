@@ -17,7 +17,7 @@ import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.io.IOException;
 
-import se.anatom.ejbca.ra.UserAdminData;
+import se.anatom.ejbca.common.UserDataVO;
 
 
 
@@ -26,7 +26,7 @@ import se.anatom.ejbca.ra.UserAdminData;
  * to have a hard token profile contain Visual Layout, either as a label
  * or used with cardprinter.
  * 
- * @version $Id: IVisualLayoutSettings.java,v 1.3 2004-04-16 07:39:00 anatom Exp $
+ * @version $Id: IVisualLayoutSettings.java,v 1.4 2005-04-21 15:19:10 herrvendil Exp $
  */
 
 public interface IVisualLayoutSettings {
@@ -79,7 +79,7 @@ public interface IVisualLayoutSettings {
     * Method that parses the template, replaces the userdata
     * and returning a printable byte array 
     */	
-	public abstract Printable printVisualValidity(UserAdminData userdata, 
+	public abstract Printable printVisualValidity(UserDataVO userdata, 
 	                                        String[] pincodes, String[] pukcodes,
 	                                        String hardtokensn, String copyoftokensn)
 	                                          throws IOException, PrinterException;

@@ -44,6 +44,7 @@ import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
+import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
@@ -68,7 +69,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.94 2005-03-13 15:16:12 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.95 2005-04-21 15:19:42 herrvendil Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -772,11 +773,11 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      *
      * @param admin    the administrator pwrforming the action
      * @param username username.
-     * @return UserAdminData or null if the user is not found.
+     * @return UserDataVO or null if the user is not found.
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
-    public UserAdminData findUser(Admin admin, String username) throws FinderException, AuthorizationDeniedException {
+    public UserDataVO findUser(Admin admin, String username) throws FinderException, AuthorizationDeniedException {
         debug(">findUser(" + username + ")");
         UserDataPK pk = new UserDataPK(username);
         UserDataLocal data;
@@ -796,10 +797,10 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
                 throw new AuthorizationDeniedException("Administrator not authorized to view user.");
         }
 
-        UserAdminData ret = new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), data.getStatus()
+        UserDataVO ret = new UserDataVO(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), data.getStatus()
                 , data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId()
                 , new java.util.Date(data.getTimeCreated()), new java.util.Date(data.getTimeModified())
-                , data.getTokenType(), data.getHardTokenIssuerId());
+                , data.getTokenType(), data.getHardTokenIssuerId(), data.getExtendedInformation());
         ret.setPassword(data.getClearPassword());
         debug("<findUser(" + username + ")");
         return ret;
@@ -809,17 +810,17 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * Finds a user by its subjectDN.
      *
      * @param subjectdn
-     * @return UserAdminData or null if the user is not found.
+     * @return UserDataVO or null if the user is not found.
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
-    public UserAdminData findUserBySubjectDN(Admin admin, String subjectdn, String issuerdn) throws AuthorizationDeniedException {
+    public UserDataVO findUserBySubjectDN(Admin admin, String subjectdn, String issuerdn) throws AuthorizationDeniedException {
         debug(">findUserBySubjectDN(" + subjectdn + ")");
         String bcdn = CertTools.stringToBCDNString(subjectdn);
         // String used in SQL so strip it
         String dn = StringTools.strip(bcdn);
         debug("Looking for users with subjectdn: " + dn + ", issuerdn : " + issuerdn);
-        UserAdminData returnval = null;
+        UserDataVO returnval = null;
 
         UserDataLocal data = null;
 
@@ -839,10 +840,10 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         }
 
         if (data != null) {
-            returnval = new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), data.getStatus()
+            returnval = new UserDataVO(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), data.getStatus()
                     , data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId()
                     , new java.util.Date(data.getTimeCreated()), new java.util.Date(data.getTimeModified())
-                    , data.getTokenType(), data.getHardTokenIssuerId());
+                    , data.getTokenType(), data.getHardTokenIssuerId(), data.getExtendedInformation());
 
             returnval.setPassword(data.getClearPassword());
         }
@@ -854,7 +855,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * Finds a user by its Email.
      *
      * @param email
-     * @return UserAdminData or null if the user is not found.
+     * @return UserDataVO or null if the user is not found.
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
@@ -884,10 +885,10 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
                 break;
             }
 
-            UserAdminData user = new UserAdminData(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), data.getStatus()
+            UserDataVO user = new UserDataVO(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), data.getStatus()
                     , data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId()
                     , new java.util.Date(data.getTimeCreated()), new java.util.Date(data.getTimeModified())
-                    , data.getTokenType(), data.getHardTokenIssuerId());
+                    , data.getTokenType(), data.getHardTokenIssuerId(), data.getExtendedInformation());
             user.setPassword(data.getClearPassword());
             returnval.add(user);
         }
@@ -936,7 +937,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * Finds all users with a specified status.
      *
      * @param status the status to look for, from 'UserData'.
-     * @return Collection of UserAdminData
+     * @return Collection of UserDataVO
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
@@ -960,7 +961,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * Finds all users registered to a specified ca.
      *
      * @param caid the caid of the CA, from 'UserData'.
-     * @return Collection of UserAdminData
+     * @return Collection of UserDataVO
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
@@ -984,7 +985,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
     /**
      * Finds all users and returns the first MAXIMUM_QUERY_ROWCOUNT.
      *
-     * @return Collection of UserAdminData
+     * @return Collection of UserDataVO
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
@@ -1046,7 +1047,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * @param query                  a number of statments compiled by query class to a SQL 'WHERE'-clause statment.
      * @param caauthorizationstring  is a string placed in the where clause of SQL query indication which CA:s the administrator is authorized to view.
      * @param endentityprofilestring is a string placed in the where clause of SQL query indication which endentityprofiles the administrator is authorized to view.
-     * @return a collection of UserAdminData. Maximum size of Collection is defined i IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT
+     * @return a collection of UserDataVO. Maximum size of Collection is defined i IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT
      * @throws IllegalQueryException when query parameters internal rules isn't fullfilled.
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
@@ -1122,8 +1123,10 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
 
                 // Assemble result.
                 while (rs.next() && returnval.size() <= IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT) {
-                    UserAdminData data = new UserAdminData(rs.getString(1), rs.getString(2), rs.getInt(14), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getInt(6)
-                            , rs.getInt(10), rs.getInt(11), new java.util.Date(rs.getLong(8)), new java.util.Date(rs.getLong(9)), rs.getInt(12), rs.getInt(13));
+                	// TODO add support for extended information.
+                    UserDataVO data = new UserDataVO(rs.getString(1), rs.getString(2), rs.getInt(14), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getInt(6)
+                            , rs.getInt(10), rs.getInt(11), new java.util.Date(rs.getLong(8)), new java.util.Date(rs.getLong(9)), rs.getInt(12), rs.getInt(13),
+							null);
                     data.setPassword(rs.getString(7));
 
                     if (!onlybatchusers || (data.getPassword() != null && data.getPassword().length() > 0))

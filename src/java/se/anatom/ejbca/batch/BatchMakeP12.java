@@ -37,13 +37,13 @@ import org.apache.log4j.Logger;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
+import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionHome;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionRemote;
 import se.anatom.ejbca.keyrecovery.KeyRecoveryData;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
-import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.ra.UserDataLocal;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
@@ -57,7 +57,7 @@ import se.anatom.ejbca.util.P12toPEM;
  * This class generates keys and request certificates for all users with status NEW. The result is
  * generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.54 2005-02-13 11:27:45 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.55 2005-04-21 15:15:16 herrvendil Exp $
  */
 public class BatchMakeP12 {
     /**
@@ -278,7 +278,7 @@ public class BatchMakeP12 {
      * @param keyrecoverflag if we should try to revoer already existing keys
      * @throws Exception If something goes wrong...
      */
-    private void processUser(UserAdminData data, boolean createJKS, boolean createPEM,
+    private void processUser(UserDataVO data, boolean createJKS, boolean createPEM,
                              boolean keyrecoverflag) throws Exception {
         KeyPair rsaKeys = null;
 
@@ -300,7 +300,7 @@ public class BatchMakeP12 {
         }
     } //processUser
 
-    private boolean doCreate(IUserAdminSessionRemote admin, UserAdminData data, int status) throws Exception {
+    private boolean doCreate(IUserAdminSessionRemote admin, UserDataVO data, int status) throws Exception {
         boolean ret = false;
         int tokentype = SecConst.TOKEN_SOFT_BROWSERGEN;
         boolean createJKS = false;
@@ -408,7 +408,7 @@ public class BatchMakeP12 {
                 String failedusers = "";
                 String successusers = "";
                 while (it.hasNext()) {
-                    UserAdminData data = (UserAdminData) it.next();
+                    UserDataVO data = (UserDataVO) it.next();
                     if ((data.getPassword() != null) && (data.getPassword().length() > 0)) {
                         try {
                             if (doCreate(admin, data, status)) {
@@ -454,7 +454,7 @@ public class BatchMakeP12 {
         log.debug(">createUser(" + username + ")");
 
         IUserAdminSessionRemote admin = adminhome.create();
-        UserAdminData data = admin.findUser(administrator, username);
+        UserDataVO data = admin.findUser(administrator, username);
         int status = data.getStatus();
 
         if ((data != null) && (data.getPassword() != null) && (data.getPassword().length() > 0)) {

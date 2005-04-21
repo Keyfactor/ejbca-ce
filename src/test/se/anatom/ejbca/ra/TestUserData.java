@@ -23,11 +23,12 @@ import javax.naming.NamingException;
 import junit.framework.TestCase;
 import org.apache.log4j.Logger;
 import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.log.Admin;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestUserData.java,v 1.2 2004-08-08 11:06:50 anatom Exp $
+ * @version $Id: TestUserData.java,v 1.3 2005-04-21 15:21:50 herrvendil Exp $
  */
 public class TestUserData extends TestCase {
 
@@ -128,7 +129,7 @@ public class TestUserData extends TestCase {
         log.debug(">test02LookupAndChangeUser()");
 
         log.debug("username=" + username);
-        UserAdminData data2 = usersession.findUser(admin,username);
+        UserDataVO data2 = usersession.findUser(admin,username);
         log.debug("found by key! =" + data2);
         log.debug("username=" + data2.getUsername());
         assertTrue("wrong username", data2.getUsername().equals(username));
@@ -157,7 +158,7 @@ public class TestUserData extends TestCase {
     public void test03LookupChangedUser() throws Exception {
         log.debug(">test03LookupChangedUser()");
 
-        UserAdminData data = usersession.findUser(admin,username);
+        UserDataVO data = usersession.findUser(admin,username);
         log.debug("found by key! =" + data);
         log.debug("username=" + data.getUsername());
         assertTrue("wrong username", data.getUsername().equals(username));
@@ -187,7 +188,7 @@ public class TestUserData extends TestCase {
     public void test03LookupChangedUser2() throws Exception {
         log.debug(">test03LookupChangedUser2()");
 
-        UserAdminData data = usersession.findUser(admin,username);
+        UserDataVO data = usersession.findUser(admin,username);
         log.debug("found by key! =" + data);
         log.debug("username=" + data.getUsername());
         assertTrue("wrong username", data.getUsername().equals(username));
@@ -238,7 +239,7 @@ public class TestUserData extends TestCase {
         Iterator iter = coll.iterator();
         while (iter.hasNext()) {
 
-            UserAdminData data = (UserAdminData) iter.next();
+            UserDataVO data = (UserDataVO) iter.next();
             log.debug("New user: " + data.getUsername() + ", " + data.getDN() + ", " + data.getEmail() + ", " + data.getStatus() + ", " + data.getType());
             admin.setUserStatus(new Admin(Admin.TYPE_INTERNALUSER), data.getUsername(), UserDataLocal.STATUS_GENERATED);
         }

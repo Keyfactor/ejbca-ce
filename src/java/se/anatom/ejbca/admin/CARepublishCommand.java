@@ -20,14 +20,14 @@ import java.util.Iterator;
 import se.anatom.ejbca.ca.caadmin.CAInfo;
 import se.anatom.ejbca.ca.store.CertificateDataBean;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
-import se.anatom.ejbca.ra.UserAdminData;
+import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.util.CertTools;
 
 
 /**
  * Re-publishes the certificates of all users beloinging to a particular CA.
  *
- * @version $Id: CARepublishCommand.java,v 1.2 2005-02-03 16:59:50 anatom Exp $
+ * @version $Id: CARepublishCommand.java,v 1.3 2005-04-21 15:14:19 herrvendil Exp $
  */
 public class CARepublishCommand extends BaseCaAdminCommand {
     /**
@@ -89,7 +89,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
             Collection coll = getAdminSession().findAllUsersByCaId(administrator, cainfo.getCAId());
             Iterator iter = coll.iterator();
             while (iter.hasNext()) {
-                UserAdminData data = (UserAdminData) iter.next();
+                UserDataVO data = (UserDataVO) iter.next();
                 getOutputStream().println("User: " + data.getUsername() + ", \"" + data.getDN() +
                     "\", \"" + data.getSubjectAltName() + "\", " + data.getEmail() + ", " +
                     data.getStatus() + ", " + data.getType() + ", " + data.getTokenType() + ", " + data.getHardTokenIssuerId()+", "+data.getCertificateProfileId());

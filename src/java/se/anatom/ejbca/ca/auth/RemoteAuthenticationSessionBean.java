@@ -24,6 +24,7 @@ import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
+import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionHome;
 import se.anatom.ejbca.log.ILogSessionRemote;
@@ -33,7 +34,7 @@ import se.anatom.ejbca.log.LogEntry;
 /**
  * Authenticates users towards a remote user database, using HTTP-based protocol.
  *
- * @version $Id: RemoteAuthenticationSessionBean.java,v 1.16 2005-03-02 11:25:40 anatom Exp $
+ * @version $Id: RemoteAuthenticationSessionBean.java,v 1.17 2005-04-21 15:15:40 herrvendil Exp $
  * @ejb.bean
  *   generate="false"
  * @ejb.home
@@ -82,11 +83,11 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
      *
      * @return UserData for authenticated user
      */
-    public UserAuthData authenticateUser(Admin admin, String username, String password)
+    public UserDataVO authenticateUser(Admin admin, String username, String password)
         throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
         debug(">authenticateUser(" + username + ", hiddenpwd)");
 
-        UserAuthData ret;
+        UserDataVO ret;
 
         try {
             ret = getDNfromRemote(REMOTE_PROTOCOL_VER, username, password);
@@ -132,7 +133,7 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
      * @exception IOException communication error
      * @exception NamingException cannot find AuthURL EJB-environment var
      */
-    private UserAuthData getDNfromRemote(String version, String user, String password)
+    private UserDataVO getDNfromRemote(String version, String user, String password)
         throws NamingException, IOException {
         debug(">getDNfromRemote(" + version + ", " + user + ", " + password + ")");
 
@@ -184,7 +185,7 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
                 }
             }
 
-            UserAuthData ret = new UserAuthData();
+            UserDataVO ret = new UserDataVO();
             ret.setDN(dname);
             ret.setEmail(email);
             debug("<getDNfromRemote");

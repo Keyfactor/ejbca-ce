@@ -16,13 +16,13 @@ package se.anatom.ejbca.admin;
 import java.util.Collection;
 import java.util.Iterator;
 
-import se.anatom.ejbca.ra.UserAdminData;
+import se.anatom.ejbca.common.UserDataVO;
 
 
 /**
  * List users with specified status in the database.
  *
- * @version $Id: RaListUsersCommand.java,v 1.11 2004-10-13 07:14:46 anatom Exp $
+ * @version $Id: RaListUsersCommand.java,v 1.12 2005-04-21 15:14:19 herrvendil Exp $
  *
  * @see se.anatom.ejbca.ra.UserDataLocal
  */
@@ -57,7 +57,7 @@ public class RaListUsersCommand extends BaseRaAdminCommand {
             Iterator iter = coll.iterator();
 
             while (iter.hasNext()) {
-                UserAdminData data = (UserAdminData) iter.next();
+                UserDataVO data = (UserDataVO) iter.next();
                 getOutputStream().println("User: " + data.getUsername() + ", \"" + data.getDN() +
                     "\", \"" + data.getSubjectAltName() + "\", " + data.getEmail() + ", " +
                     data.getStatus() + ", " + data.getType() + ", " + data.getTokenType() + ", " + data.getHardTokenIssuerId());

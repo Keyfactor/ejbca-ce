@@ -48,7 +48,6 @@ import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.authorization.AvailableAccessRules;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome;
-import se.anatom.ejbca.ca.auth.UserAuthData;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAService;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
@@ -67,6 +66,7 @@ import se.anatom.ejbca.ca.store.CertificateDataBean;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
+import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.exception.EjbcaException;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
@@ -82,7 +82,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.38 2005-03-30 06:52:13 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.39 2005-04-21 15:15:59 herrvendil Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -366,8 +366,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
                 log.debug("CAAdminSessionBean : " + cainfo.getSubjectDN());
 
-                UserAuthData cadata = new UserAuthData("nobody", null, cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(), x509cainfo.getSubjectAltName(), null,
-                                                       0,  cainfo.getCertificateProfileId(), null);
+                UserDataVO cadata = new UserDataVO("nobody", cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(), x509cainfo.getSubjectAltName(), null,
+                                                      0,0,0,  cainfo.getCertificateProfileId(), null, null, 0, 0, null);
+                
                 cacertificate = ca.generateCertificate(cadata, catoken.getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN),-1, cainfo.getValidity(), certprofile);
 
                 log.debug("CAAdminSessionBean : " + ((X509Certificate) cacertificate).getSubjectDN().toString());
@@ -402,8 +403,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
             		// Create cacertificate
             		Certificate cacertificate = null;
 
-            		UserAuthData cadata = new UserAuthData("nobody", null, cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(), x509cainfo.getSubjectAltName(), null,
-            				0,  cainfo.getCertificateProfileId(),null);
+            		UserDataVO cadata = new UserDataVO("nobody", cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(), x509cainfo.getSubjectAltName(), null,
+            				0, 0, 0, cainfo.getCertificateProfileId(),null, null, 0, 0, null);
+            		
             		cacertificate = signca.generateCertificate(cadata, catoken.getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), -1, cainfo.getValidity(), certprofile);
 
             		// Build Certificate Chain
@@ -899,8 +901,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				// Create cacertificate
     				Certificate cacertificate = null;
     				if(cainfo instanceof X509CAInfo){
-    					UserAuthData cadata = new UserAuthData("nobody", null, cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(), ((X509CAInfo) cainfo).getSubjectAltName(), null,
-    							0,  cainfo.getCertificateProfileId(), null);
+    					UserDataVO cadata = new UserDataVO("nobody", cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(), ((X509CAInfo) cainfo).getSubjectAltName(), null,
+    							0, 0, 0,  cainfo.getCertificateProfileId(), null, null, 0, 0, null);
     					CertificateProfile certprofile = getCertificateStoreSession().getCertificateProfile(admin, cainfo.getCertificateProfileId());
     					certpublishers = certprofile.getPublisherList();
     					cacertificate = signca.generateCertificate(cadata, publickey, -1, cainfo.getValidity(), certprofile);
@@ -972,8 +974,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				if(ca.getSignedBy() == CAInfo.SELFSIGNED){
     					// create selfsigned certificate
     					if( ca instanceof X509CA){
-    						UserAuthData cainfodata = new UserAuthData("nobody", null, ca.getSubjectDN(), ca.getSubjectDN().hashCode(), ((X509CA) ca).getSubjectAltName(), null,
-    								0,  ca.getCertificateProfileId(), null);
+    						UserDataVO cainfodata = new UserDataVO("nobody",  ca.getSubjectDN(), ca.getSubjectDN().hashCode(), ((X509CA) ca).getSubjectAltName(), null,
+    								0, 0, 0, ca.getCertificateProfileId(), null, null, 0, 0 ,null);
 
     						CertificateProfile certprofile = getCertificateStoreSession().getCertificateProfile(admin, ca.getCertificateProfileId());
     						cacertificate = ca.generateCertificate(cainfodata, ca.getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN),-1, ca.getValidity(), certprofile);
@@ -992,8 +994,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
     						checkSignerValidity(admin, signcadata);
     						// Create cacertificate
     						if( ca instanceof X509CA){
-    							UserAuthData cainfodata = new UserAuthData("nobody", null, ca.getSubjectDN(), ca.getSubjectDN().hashCode(), ((X509CA) ca).getSubjectAltName(), null,
-    									0,  ca.getCertificateProfileId(), null);
+    							UserDataVO cainfodata = new UserDataVO("nobody", ca.getSubjectDN(), ca.getSubjectDN().hashCode(), ((X509CA) ca).getSubjectAltName(), null,
+    									0,0,0, ca.getCertificateProfileId(), null, null, 0,0, null);
 
     							CertificateProfile certprofile = getCertificateStoreSession().getCertificateProfile(admin, ca.getCertificateProfileId());
     							cacertificate = signca.generateCertificate(cainfodata, ca.getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN),-1, ca.getValidity(), certprofile);

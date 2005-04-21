@@ -16,14 +16,14 @@ package se.anatom.ejbca.admin;
 import java.util.Collection;
 import java.util.Iterator;
 
-import se.anatom.ejbca.ra.UserAdminData;
+import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.ra.UserDataLocal;
 
 
 /**
  * List users with status NEW in the database.
  *
- * @version $Id: RaListNewUsersCommand.java,v 1.10 2004-10-13 07:14:45 anatom Exp $
+ * @version $Id: RaListNewUsersCommand.java,v 1.11 2005-04-21 15:14:19 herrvendil Exp $
  *
  * @see se.anatom.ejbca.ra.UserDataLocal
  */
@@ -50,7 +50,7 @@ public class RaListNewUsersCommand extends BaseRaAdminCommand {
             Iterator iter = coll.iterator();
 
             while (iter.hasNext()) {
-                UserAdminData data = (UserAdminData) iter.next();
+                UserDataVO data = (UserDataVO) iter.next();
                 getOutputStream().println("New User: " + data.getUsername() + ", \"" + data.getDN() +
                     "\", \"" + data.getSubjectAltName() + "\", " + data.getEmail() + ", " +
                     data.getStatus() + ", " + data.getType() + ", " + data.getTokenType());

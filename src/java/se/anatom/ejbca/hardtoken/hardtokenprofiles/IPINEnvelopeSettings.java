@@ -17,7 +17,7 @@ import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.io.IOException;
 
-import se.anatom.ejbca.ra.UserAdminData;
+import se.anatom.ejbca.common.UserDataVO;
 
 
 
@@ -25,7 +25,7 @@ import se.anatom.ejbca.ra.UserAdminData;
  * Interface contating methods that need to be implementet in order 
  * to have a hard token profile contain PIN Envelope settings.
  * 
- * @version $Id: IPINEnvelopeSettings.java,v 1.3 2004-04-16 07:39:00 anatom Exp $
+ * @version $Id: IPINEnvelopeSettings.java,v 1.4 2005-04-21 15:19:11 herrvendil Exp $
  */
 
 public interface IPINEnvelopeSettings {
@@ -94,7 +94,7 @@ public interface IPINEnvelopeSettings {
     * Method that parses the template, replaces the userdata
     * and returning a printable byte array 
     */	
-	public abstract Printable printPINEnvelope(UserAdminData userdata, 
+	public abstract Printable printPINEnvelope(UserDataVO userdata, 
 	                                        String[] pincodes, String[] pukcodes,
 	                                        String hardtokensn, String copyoftokensn) 
 	                                          throws   IOException, PrinterException;

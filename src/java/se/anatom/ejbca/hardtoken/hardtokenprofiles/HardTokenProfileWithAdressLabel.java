@@ -19,14 +19,14 @@ import java.awt.print.PrinterException;
 import java.io.IOException;
 import java.io.StringReader;
 
-import se.anatom.ejbca.ra.UserAdminData;
+import se.anatom.ejbca.common.UserDataVO;
 
 
 /**
  * HardTokenProfileWithAdressLabel is a basic class that should be inherited by all types
  * of hardtokenprofiles that should have adress label functionality.
  * 
- * @version $Id: HardTokenProfileWithAdressLabel.java,v 1.1 2005-04-11 05:44:42 herrvendil Exp $
+ * @version $Id: HardTokenProfileWithAdressLabel.java,v 1.2 2005-04-21 15:19:11 herrvendil Exp $
  */
 public abstract class HardTokenProfileWithAdressLabel extends HardTokenProfileWithReceipt implements IAdressLabelSettings{
 		
@@ -97,9 +97,9 @@ public abstract class HardTokenProfileWithAdressLabel extends HardTokenProfileWi
 		return ((Integer) data.get(ADRESSLABELTYPE)).intValue();
 	}
 	/* (non-Javadoc)
-	 * @see se.anatom.ejbca.hardtoken.hardtokenprofiles.IAdressLabelSettings#printAdressLabel(se.anatom.ejbca.ra.UserAdminData, java.lang.String[], java.lang.String[], java.lang.String, java.lang.String)
+	 * @see se.anatom.ejbca.hardtoken.hardtokenprofiles.IAdressLabelSettings#printAdressLabel(se.anatom.ejbca.ra.UserDataVO, java.lang.String[], java.lang.String[], java.lang.String, java.lang.String)
 	 */
-	public Printable printAdressLabel(UserAdminData userdata, String[] pincodes,
+	public Printable printAdressLabel(UserDataVO userdata, String[] pincodes,
 			String[] pukcodes, String hardtokensn, String copyoftokensn)
 			throws IOException, PrinterException {
 		Printable returnval = null;

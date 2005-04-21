@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import se.anatom.ejbca.ra.UserAdminData;
+import se.anatom.ejbca.common.UserDataVO;
 /**
  * A class representing a set of users w
  * @author  philip
@@ -37,7 +37,7 @@ public class UsersView {
       sortby = new SortBy();
     }
     
-    public UsersView(UserAdminData importuser, HashMap caidtonamemap){
+    public UsersView(UserDataVO importuser, HashMap caidtonamemap){
       users = new ArrayList();
       sortby = new SortBy();        
       users.add(new UserView(importuser, caidtonamemap)); 
@@ -91,7 +91,7 @@ public class UsersView {
       Collections.sort(this.users);
     }
     
-    public void setUsers(UserAdminData[] users, HashMap caidtonamemap) {
+    public void setUsers(UserDataVO[] users, HashMap caidtonamemap) {
       UserView user;  
       this.users.clear();
       if(users !=null && users.length > 0){ 
@@ -112,7 +112,7 @@ public class UsersView {
       if(importusers!=null && importusers.size() > 0){
         i=importusers.iterator();
         while(i.hasNext()){
-          UserAdminData nextuser = (UserAdminData) i.next();  
+          UserDataVO nextuser = (UserDataVO) i.next();  
           user = new UserView(nextuser, caidtonamemap); 
           user.setSortBy(this.sortby);
           users.add(user);

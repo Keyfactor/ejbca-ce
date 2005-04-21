@@ -17,7 +17,7 @@ import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.io.IOException;
 
-import se.anatom.ejbca.ra.UserAdminData;
+import se.anatom.ejbca.common.UserDataVO;
 
 
 
@@ -26,7 +26,7 @@ import se.anatom.ejbca.ra.UserAdminData;
  * to have a hard token profile contain adress label, either sent to 
  * a label printer or printed directly on an envelope.
  * 
- * @version $Id: IAdressLabelSettings.java,v 1.1 2005-04-11 05:44:42 herrvendil Exp $
+ * @version $Id: IAdressLabelSettings.java,v 1.2 2005-04-21 15:19:11 herrvendil Exp $
  */
 
 public interface IAdressLabelSettings {
@@ -90,7 +90,7 @@ public interface IAdressLabelSettings {
     * Method that parses the template, replaces the userdata
     * and returning a printable byte array 
     */	
-	public abstract Printable printVisualValidity(UserAdminData userdata, 
+	public abstract Printable printVisualValidity(UserDataVO userdata, 
 	                                        String[] pincodes, String[] pukcodes,
 	                                        String hardtokensn, String copyoftokensn)
 	                                          throws IOException, PrinterException;

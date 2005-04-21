@@ -38,10 +38,10 @@ import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
+import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
-import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 import se.anatom.ejbca.util.CertTools;
@@ -86,7 +86,7 @@ import se.anatom.ejbca.util.StringTools;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.39 2005-02-16 13:11:14 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.40 2005-04-21 15:14:41 herrvendil Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
@@ -211,7 +211,7 @@ public class DemoCertReqServlet extends HttpServlet {
     String includeEmail = request.getParameter("includeemail");
     log.debug("includeEmail="+includeEmail);
 
-    UserAdminData newuser = new UserAdminData();
+    UserDataVO newuser = new UserDataVO();
     newuser.setType(SecConst.USER_ENDUSER);
     newuser.setUsername(username);
     newuser.setDN(dn);
@@ -355,7 +355,7 @@ public class DemoCertReqServlet extends HttpServlet {
       throw new ServletException("Username must not be empty.");
     }
 
-    UserAdminData tmpuser = null;
+    UserDataVO tmpuser = null;
     try {
         tmpuser = adminsession.findUser(admin, username);
      } catch (Exception e) {

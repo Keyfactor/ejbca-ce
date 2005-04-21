@@ -21,10 +21,10 @@ package se.anatom.ejbca.apply;
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
+import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
-import se.anatom.ejbca.ra.UserAdminData;
 
 import java.security.cert.X509Certificate;
 
@@ -39,7 +39,7 @@ import javax.servlet.http.HttpServletRequest;
  * A class used as an interface between Apply jsp pages and ejbca functions.
  *
  * @author Philip Vendil
- * @version $Id: ApplyBean.java,v 1.8 2004-04-16 07:38:58 anatom Exp $
+ * @version $Id: ApplyBean.java,v 1.9 2005-04-21 15:14:41 herrvendil Exp $
  */
 public class ApplyBean {
     /**
@@ -169,5 +169,5 @@ public class ApplyBean {
     private boolean initialized;
     private Admin administrator;
     private String username = "";
-    private UserAdminData useradmindata = null;
+    private UserDataVO useradmindata = null;
 }

@@ -41,13 +41,13 @@ import se.anatom.ejbca.ca.exception.SignRequestException;
 import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
+import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionHome;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionRemote;
 import se.anatom.ejbca.keyrecovery.KeyRecoveryData;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
-import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.ra.UserDataLocal;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
@@ -78,7 +78,7 @@ import se.anatom.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.49 2005-02-11 13:12:28 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.50 2005-04-21 15:14:41 herrvendil Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(CertReqServlet.class);
@@ -176,7 +176,7 @@ public class CertReqServlet extends HttpServlet {
 
             usekeyrecovery = (raadminsession.loadGlobalConfiguration(administrator)).getEnableKeyRecovery();
 
-            UserAdminData data = adminsession.findUser(administrator, username);
+            UserDataVO data = adminsession.findUser(administrator, username);
 
             if (data == null) {
                 throw new ObjectNotFoundException();

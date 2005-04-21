@@ -38,6 +38,7 @@ import se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
+import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.hardtoken.IHardTokenSessionLocal;
 import se.anatom.ejbca.hardtoken.IHardTokenSessionLocalHome;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionLocal;
@@ -45,7 +46,6 @@ import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionLocalHome;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.IUserAdminSessionLocal;
 import se.anatom.ejbca.ra.IUserAdminSessionLocalHome;
-import se.anatom.ejbca.ra.UserAdminData;
 import se.anatom.ejbca.ra.UserDataLocal;
 import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
@@ -61,7 +61,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.52 2005-02-23 15:27:00 anatom Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.53 2005-04-21 15:20:00 herrvendil Exp $
  */
 public class RAInterfaceBean {
 
@@ -236,8 +236,8 @@ public class RAInterfaceBean {
     /* Method to filter out a user by it's username */
     public UserView[] filterByUsername(String username) throws Exception{
        log.debug(">filterByUserName()");
-       UserAdminData[] userarray = new UserAdminData[1];
-       UserAdminData user = null;
+       UserDataVO[] userarray = new UserDataVO[1];
+       UserDataVO user = null;
        try{
          user = adminsession.findUser(administrator, username);
        }catch(AuthorizationDeniedException e){
@@ -247,7 +247,7 @@ public class RAInterfaceBean {
          userarray[0]=user;
          users.setUsers(userarray, informationmemory.getCAIdToNameMap());
        }else{
-         users.setUsers((UserAdminData[]) null, informationmemory.getCAIdToNameMap());
+         users.setUsers((UserDataVO[]) null, informationmemory.getCAIdToNameMap());
        }
        log.debug("<filterByUserName()");
        return users.getUsers(0,1);
@@ -261,7 +261,7 @@ public class RAInterfaceBean {
     /* Method to retrieve a user from the database without inserting it into users data, used by 'viewuser.jsp' and page*/
     public UserView findUser(String username) throws Exception{
        log.debug(">findUser(" + username + ")");
-       UserAdminData user = adminsession.findUser(administrator, username);
+       UserDataVO user = adminsession.findUser(administrator, username);
         UserView userview = null;
         if (user != null) {
             userview = new UserView(user, informationmemory.getCAIdToNameMap());
@@ -273,7 +273,7 @@ public class RAInterfaceBean {
     public UserView findUserForEdit(String username) throws Exception{
        UserView userview = null;
 
-       UserAdminData user = adminsession.findUser(administrator, username);
+       UserDataVO user = adminsession.findUser(administrator, username);
        
        if(this.informationmemory.getGlobalConfiguration().getEnableEndEntityProfileLimitations())
          if(!endEntityAuthorization(administrator, user.getEndEntityProfileId(),AvailableAccessRules.EDIT_RIGHTS, false))
@@ -294,7 +294,7 @@ public class RAInterfaceBean {
     /* Method to find all users in database */
     public UserView[] filterByTokenSN(String tokensn, int index,int size) throws Exception{
       UserView[] returnval = null;
-      UserAdminData user = null;
+      UserDataVO user = null;
       ArrayList userlist = new ArrayList();
       
       Collection usernames = hardtokensession.findHardTokenByTokenSerialNumber(administrator, tokensn);
@@ -329,7 +329,7 @@ public class RAInterfaceBean {
       if(certs != null){
         Iterator iter = certs.iterator();
         while(iter.hasNext()){
-           UserAdminData user = null;
+           UserDataVO user = null;
            try{
              X509Certificate next = (X509Certificate) iter.next();  
              user = adminsession.findUserBySubjectDN(administrator, CertTools.getSubjectDN(next), next.getIssuerDN().toString());
@@ -361,7 +361,7 @@ public class RAInterfaceBean {
       if(!usernames.isEmpty()){
         Iterator i = usernames.iterator();
         while(i.hasNext() && userlist.size() <= MAXIMUM_QUERY_ROWCOUNT +1 ){
-           UserAdminData user = null;
+           UserDataVO user = null;
            try{
              user = adminsession.findUser(administrator, (String) i.next());
              if(user != null)
@@ -387,7 +387,7 @@ public class RAInterfaceBean {
     }
 
     public boolean isAuthorizedToViewUserHistory(String username) throws Exception {
-      UserAdminData user = adminsession.findUser(administrator, username);
+      UserDataVO user = adminsession.findUser(administrator, username);
       return endEntityAuthorization(administrator, user.getEndEntityProfileId(),AvailableAccessRules.HISTORY_RIGHTS, false);
     }
 
@@ -625,7 +625,7 @@ public class RAInterfaceBean {
 
     public boolean authorizedToRevokeCert(String username) throws FinderException, RemoteException, AuthorizationDeniedException{
       boolean returnval=false;
-      UserAdminData data = adminsession.findUser(administrator, username);
+      UserDataVO data = adminsession.findUser(administrator, username);
       if(data == null)
         return false;
               
@@ -643,7 +643,7 @@ public class RAInterfaceBean {
     public boolean keyRecoveryPossible(CertificateView certificatedata) throws Exception{
       boolean returnval = true;
       if(informationmemory.getGlobalConfiguration().getEnableEndEntityProfileLimitations()){
-      	UserAdminData data = adminsession.findUser(administrator, certificatedata.getUsername());
+      	UserDataVO data = adminsession.findUser(administrator, certificatedata.getUsername());
       	if(data != null){       	
           int profileid = data.getEndEntityProfileId();
 		  returnval = endEntityAuthorization(administrator, profileid, AvailableAccessRules.KEYRECOVERY_RIGHTS, false);		  

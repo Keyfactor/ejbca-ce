@@ -11,20 +11,21 @@
  *                                                                       *
  *************************************************************************/
  
-package se.anatom.ejbca.ra;
+package se.anatom.ejbca.common;
 
 import java.io.Serializable;
-
 import java.util.Date;
+
 import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.ra.ExtendedInformation;
 import se.anatom.ejbca.util.StringTools;
 
 /**
  * Holds admin data collected from UserData in the database.
  *
- * @version $Id: UserAdminData.java,v 1.11 2004-11-08 20:56:02 sbailliez Exp $
+ * @version $Id: UserDataVO.java,v 1.1 2005-04-21 15:17:50 herrvendil Exp $
  */
-public class UserAdminData implements Serializable {
+public class UserDataVO implements Serializable {
 
     // Public constants
     public static final int NO_ENDENTITYPROFILE    = 0;
@@ -46,13 +47,14 @@ public class UserAdminData implements Serializable {
     private Date timemodified;
     private int tokentype;
     private int hardtokenissuerid;
+    private ExtendedInformation extendedinformation;
 
-    /** Creates new empty UserAdminData */
-    public UserAdminData() {
+    /** Creates new empty UserDataVO */
+    public UserDataVO() {
     }
 
     /**
-     * Creates new UserAdminData. All fields are almos required in this constructor. Password must
+     * Creates new UserDataVO. All fields are almos required in this constructor. Password must
      * be set amnually though. This is so you should be sure what you do with the password.
      *
      * @param user DOCUMENT ME!
@@ -68,8 +70,8 @@ public class UserAdminData implements Serializable {
      * @param tokentype DOCUMENT ME!
      * @param hardtokenissuerid DOCUMENT ME!
      */
-    public UserAdminData(String user, String dn, int caid, String subjectaltname, String email, int status, int type, int endentityprofileid, int certificateprofileid,
-                         Date timecreated, Date timemodified, int tokentype, int hardtokenissuerid) {
+    public UserDataVO(String user, String dn, int caid, String subjectaltname, String email, int status, int type, int endentityprofileid, int certificateprofileid,
+                         Date timecreated, Date timemodified, int tokentype, int hardtokenissuerid, ExtendedInformation extendedinfo) {
         this.username=StringTools.strip(user);
         this.password=null;
         this.subjectDN=dn;
@@ -147,4 +149,16 @@ public class UserAdminData implements Serializable {
         type = type & (~SecConst.USER_SENDNOTIFICATION);
     }
 
+	/**
+	 * @return Returns the extendedinformation.
+	 */
+	public ExtendedInformation getExtendedinformation() {
+		return extendedinformation;
+	}
+	/**
+	 * @param extendedinformation The extendedinformation to set.
+	 */
+	public void setExtendedinformation(ExtendedInformation extendedinformation) {
+		this.extendedinformation = extendedinformation;
+	}
 }

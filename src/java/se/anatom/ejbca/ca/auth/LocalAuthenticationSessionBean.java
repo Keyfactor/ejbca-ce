@@ -22,6 +22,7 @@ import javax.ejb.ObjectNotFoundException;
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
+import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionLocal;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionLocalHome;
 import se.anatom.ejbca.log.Admin;
@@ -38,7 +39,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.33 2005-04-11 09:17:53 anatom Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.34 2005-04-21 15:15:40 herrvendil Exp $
  *
  * @ejb.bean
  *   display-name="AuthenticationSB"
@@ -143,12 +144,11 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
      * @return
      */
     private IKeyRecoverySessionLocal getKeyRecoverySession(Admin admin){
-    	if(usekeyrecovery && keyrecoverysession == null){
+    	if(keyrecoverysession == null){
     		try{
               IRaAdminSessionLocalHome raadminhome = (IRaAdminSessionLocalHome) getLocator().getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);                            
               IRaAdminSessionLocal raadmin = raadminhome.create();        
               usekeyrecovery = (raadmin.loadGlobalConfiguration(admin)).getEnableKeyRecovery();
-
               if(usekeyrecovery){
                 IKeyRecoverySessionLocalHome keyrecoveryhome = (IKeyRecoverySessionLocalHome) getLocator().getLocalHome(IKeyRecoverySessionLocalHome.COMP_NAME);
                 keyrecoverysession = keyrecoveryhome.create();
@@ -168,14 +168,14 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
      * @param username unique username within the instance
      * @param password password for the user
      *
-     * @return UserAuthData, never returns null
+     * @return UserDataVO, never returns null
      *
      * @throws ObjectNotFoundException if the user does not exist.
      * @throws AuthStatusException If the users status is incorrect.
      * @throws AuthLoginException If the password is incorrect.
      * @ejb.interface-method
      */
-    public UserAuthData authenticateUser(Admin admin, String username, String password)
+    public UserDataVO authenticateUser(Admin admin, String username, String password)
         throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
         debug(">authenticateUser(" + username + ", hiddenpwd)");
 
@@ -193,7 +193,10 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
                 }
 
                 logsession.log(admin, data.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_USERAUTHENTICATION,"Authenticated user: "+username);
-                UserAuthData ret = new UserAuthData(data.getUsername(), data.getClearPassword(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), data.getType(), data.getCertificateProfileId(), data.getExtendedInformation());
+                UserDataVO ret = new UserDataVO(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), 
+                		data.getStatus(), data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId(),
+                		new Date(data.getTimeCreated()), new Date(data.getTimeModified()), data.getTokenType(), data.getHardTokenIssuerId(), data.getExtendedInformation());  
+                ret.setPassword(data.getClearPassword());                             
                 debug("<authenticateUser("+username+", hiddenpwd)");
                 return ret;
             } else {
@@ -233,10 +236,9 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data = userHome.findByPrimaryKey(pk);
             data.setStatus(UserDataLocal.STATUS_GENERATED);
-            data.setTimeModified((new Date()).getTime());
-                                    
+            data.setTimeModified((new Date()).getTime()); 
             // Reset key recoveryflag if keyrecovery is used.
-            if(this.getKeyRecoverySession(admin) != null){            	
+            if(this.getKeyRecoverySession(admin) != null){     
               getKeyRecoverySession(admin).unmarkUser(admin,username);
             }
             
