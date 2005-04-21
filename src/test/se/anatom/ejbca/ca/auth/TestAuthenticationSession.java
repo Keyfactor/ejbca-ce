@@ -26,15 +26,18 @@ import junit.framework.TestCase;
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.ca.auth.IAuthenticationSessionHome;
+import se.anatom.ejbca.ca.auth.IAuthenticationSessionRemote;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
+import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionHome;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionRemote;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
-import se.anatom.ejbca.ra.UserDataConstants;
 import se.anatom.ejbca.ra.UserDataLocal;
+import se.anatom.ejbca.ra. UserDataConstants;
 import se.anatom.ejbca.ra.raadmin.GlobalConfiguration;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
@@ -43,7 +46,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Tests authentication session used by signer.
  *
- * @version $Id: TestAuthenticationSession.java,v 1.5 2005-04-19 12:16:18 anatom Exp $
+ * @version $Id: TestAuthenticationSession.java,v 1.6 2005-04-21 15:20:18 herrvendil Exp $
  */
 public class TestAuthenticationSession extends TestCase {
     private static Logger log = Logger.getLogger(TestAuthenticationSession.class);
@@ -155,7 +158,7 @@ public class TestAuthenticationSession extends TestCase {
         log.debug(">test02AuthenticateUser()");
         // user that we know exists...
         log.debug("Username:" + username + "\npwd:" + pwd);
-        UserAuthData data = remote.authenticateUser(admin, username, pwd);
+        UserDataVO data = remote.authenticateUser(admin, username, pwd);
 
         log.debug("DN: " + data.getDN());
         assertTrue("DN is wrong", data.getDN().indexOf(username) != -1);
@@ -180,7 +183,7 @@ public class TestAuthenticationSession extends TestCase {
         usersession.setUserStatus(admin,username,UserDataLocal.STATUS_GENERATED);
         boolean authfailed = false;
         try {
-            UserAuthData auth = remote.authenticateUser(admin, username, pwd);
+            UserDataVO auth = remote.authenticateUser(admin, username, pwd);
             log.debug("Authenticated user: "+auth.getUsername());
         } catch (Exception e) {
             authfailed = true;
@@ -199,7 +202,7 @@ public class TestAuthenticationSession extends TestCase {
         // user that we know exists... but we issue wrong password
         boolean authfailed = false;
         try {
-            UserAuthData auth = remote.authenticateUser(admin, username, "abc123");
+            UserDataVO auth = remote.authenticateUser(admin, username, "abc123");
             log.debug("Authenticated user: "+auth.getUsername());
         } catch (Exception e) {
             authfailed = true;
@@ -239,11 +242,13 @@ public class TestAuthenticationSession extends TestCase {
     	keyrecsession.addKeyRecoveryData(admin, cert, username, keys);
 		keyrecsession.markNewestAsRecoverable(admin,username);
     	
+		assertTrue("Failure the users keyrecovery session should have been marked", keyrecsession.isUserMarked(admin,username));
+		
     	// Now finish the user (The actual test)
 		remote.finishUser(admin,username,pwd);
 		// And se if the user is still marked
 		
-		assertTrue("Failure the Users keyrecovery session should have been unmarked", !keyrecsession.isUserMarked(admin,username));
+		assertTrue("Failure the users keyrecovery session should have been unmarked", !keyrecsession.isUserMarked(admin,username));
 		
 		// Clean up
 		keyrecsession.removeAllKeyRecoveryData(admin,username);
