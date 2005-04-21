@@ -20,6 +20,7 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Random;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -30,6 +31,7 @@ import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
+import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.KeyTools;
@@ -37,7 +39,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Tests certificate store.
  *
- * @version $Id: TestCertificateData.java,v 1.3 2004-08-08 11:05:07 anatom Exp $
+ * @version $Id: TestCertificateData.java,v 1.4 2005-04-21 15:20:40 herrvendil Exp $
  */
 public class TestCertificateData extends TestCase {
 
@@ -45,6 +47,9 @@ public class TestCertificateData extends TestCase {
     private static Context ctx;
     private static ICertificateStoreSessionHome storehome;
     private static X509Certificate cert;
+    private static X509Certificate cert1;
+    private static X509Certificate cert2;
+    private static String username = "";
     private static long revDate;
     private static Admin admin = null;
     private static KeyPair keyPair;
@@ -65,7 +70,8 @@ public class TestCertificateData extends TestCase {
         admin = new Admin(Admin.TYPE_INTERNALUSER);
         ctx = getInitialContext();
         Object obj2 = ctx.lookup("CertificateStoreSession");
-        storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2, ICertificateStoreSessionHome.class);
+        storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2, ICertificateStoreSessionHome.class);        
+        
         log.debug("<setUp()");
     }
 
@@ -358,4 +364,99 @@ public class TestCertificateData extends TestCase {
         log.debug("<test08IsRevoked()");
     }
 
+    /**
+     * Adds two certificate request histroy datas to the database.
+     *
+     * @throws Exception error
+     */
+    public void test09addCertReqHist() throws Exception {
+        log.debug(">test09addCertReqHist()");
+        ICertificateStoreSessionRemote store = storehome.create();
+                
+        log.info("Generating a small key pair, might take a few seconds...");
+        KeyPair keyPair1 = KeyTools.genKeys(512);
+        KeyPair keyPair2 = KeyTools.genKeys(512);        
+        cert1 = CertTools.genSelfCert("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist1", 24, null, keyPair.getPrivate(), keyPair.getPublic(), false);
+        cert2 = CertTools.genSelfCert("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist2", 24, null, keyPair.getPrivate(), keyPair.getPublic(), false);
+        
+        UserDataVO userdata = new UserDataVO();
+        Random rand = new Random(new Date().getTime() + 4711);        
+        for (int i = 0; i < 6; i++) {
+            int randint = rand.nextInt(9);
+            username += (new Integer(randint)).toString();
+        }
+        log.debug("Generated random username: username =" + username);
+        userdata.setUsername(username);
+        userdata.setDN("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist1");        
+        store.addCertReqHistoryData(admin,cert1, userdata);
+        
+        userdata.setDN("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist2");
+        store.addCertReqHistoryData(admin,cert2, userdata);       
+        log.debug("<test09addCertReqHist()");
+    }    
+
+    /**
+     * checks that getCertReqHistory(Admin admin, BigInteger certificateSN, String issuerDN)
+     * returns the right data.
+     *
+     * @throws Exception error
+     */
+    public void test10getCertReqHistByIssuerDNAndSerial() throws Exception {
+        log.debug(">test10getCertReqHistByIssuerDNAndSerial()");
+        ICertificateStoreSessionRemote store = storehome.create();
+        
+        CertReqHistory certreqhist = store.getCertReqHistory(admin, cert1.getSerialNumber(),cert1.getIssuerDN().toString());
+        
+        assertNotNull("Error couldn't find the certificate request data stored previously", certreqhist);
+        
+        UserDataVO userdata = certreqhist.getUserAdminData();
+        assertTrue("Error wrong username.", (userdata.getUsername().equals(username)));
+        assertTrue("Error wrong DN.", (userdata.getDN().equals("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist1")));
+       
+        log.debug("<test10getCertReqHistByIssuerDNAndSerial()");
+    }    
+    
+    /**
+     * checks that getCertReqHistory(Admin admin, String username)
+     * returns the the two CertReqHistory object previously stored.
+     *
+     * @throws Exception error
+     */
+    public void test11getCertReqHistByUsername() throws Exception {
+        log.debug(">test11getCertReqHistByUsername()");
+        ICertificateStoreSessionRemote store = storehome.create();
+        
+        Collection result = store.getCertReqHistory(admin, username);
+        assertTrue("Error size of the returned collection.", (result.size() == 2));
+
+        Iterator iter = result.iterator();
+        while(iter.hasNext()){
+          CertReqHistory certreqhist = (CertReqHistory) iter.next();
+          assertTrue("Error wrong DN", ((certreqhist.getUserAdminData().getDN().equals("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist1"))|| 
+         		(certreqhist.getUserAdminData().getDN().equals("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist2"))));
+        }         
+        log.debug("<test11getCertReqHistByUsername()");
+    }
+    
+    /**
+     * Removes all the previously stored certreqhist data.
+     *
+     * @throws Exception error
+     */
+    public void test12removeCertReqHistData() throws Exception {
+        log.debug(">test12removeCertReqHistData()");
+        ICertificateStoreSessionRemote store = storehome.create();
+        
+        store.removeCertReqHistoryData(admin, CertTools.getFingerprintAsString(cert1));
+        store.removeCertReqHistoryData(admin, CertTools.getFingerprintAsString(cert2));
+        
+        CertReqHistory certreqhist = store.getCertReqHistory(admin, cert1.getSerialNumber(),cert1.getIssuerDN().toString());
+        assertNull("Error removing cert req history data, cert1 data is still there", certreqhist);
+        
+        certreqhist = store.getCertReqHistory(admin, cert2.getSerialNumber(),cert2.getIssuerDN().toString());
+        assertNull("Error removing cert req history data, cert2 data is still there", certreqhist);
+        
+        log.debug("<test12removeCertReqHistData()");
+    }
+    
 }
