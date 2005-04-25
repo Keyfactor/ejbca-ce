@@ -24,7 +24,7 @@ import se.anatom.ejbca.SecConst;
 /**
  * Hard token profile with a goal to fulfill Swedish EID standard.
  * 
- * @version $Id: SwedishEIDProfile.java,v 1.3 2005-04-11 05:44:42 herrvendil Exp $
+ * @version $Id: SwedishEIDProfile.java,v 1.4 2005-04-25 17:13:20 herrvendil Exp $
  */
 public class SwedishEIDProfile extends EIDProfile {
 		
@@ -44,7 +44,7 @@ public class SwedishEIDProfile extends EIDProfile {
 	
 	
 	// Private Constants
-	public static final int[] AVAILABLEMINIMUMKEYLENGTHS = {1024};
+	public static final int[] AVAILABLEMINIMUMKEYLENGTHS = {1024, 2048};
 		
 	
 	// Protected Fields
