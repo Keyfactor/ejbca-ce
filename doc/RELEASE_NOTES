@@ -1,23 +1,11 @@
 EJBCA V3.1
 ----------
-
-This is a plugin-upgrade from 3.0.6, no database changes needed. 
+This is mostly a plugin-upgrade from 3.0.7, no database changes needed. 
 
 Since the changes are massive, no patch file is provided. 
 
-To upgrade follow doc/UPGRADE.
-
-Optional migration:
-If you are using MySQL and:
-1. Issues hard tokens using the hard token functionality of EJBCA AND uses images larger than 64KB
-   in your card layouts.
-or
-2. Have CRLs that are larger than 64KB in size, or will become this large.
-
-Then you should apply the following SQL commands on your MySQL database:
-
-ALTER TABLE crldata MODIFY base64Crl longtext NULL DEFAULT NULL;
-ALTER TABLE hardtokenprofiledata MODIFY data longtext NULL DEFAULT NULL;
+To upgrade from 3.0.x follow doc/UPGRADE. 
+Please read this carefully!
 
 EJBCA V3.0.7
 ------------

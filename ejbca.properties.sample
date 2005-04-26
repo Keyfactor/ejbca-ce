@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.16 2005-04-18 09:55:04 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.17 2005-04-26 14:22:58 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -45,10 +45,14 @@ ca.policy=null
 
 # This password is used internally to protect CA keystores in database (i.e. the CAs private key).
 # foo123 is to keep compatibility with default installations of EJBCA 3.0, please change this if possible
+# If upgrading, you should take this value from src/ca/ca/META-INF/ejb-jar.xml -> keyStorePass. 
+# The default value is the same for convenience.
 ca.keystorepass=foo123
 #ca.keystorepass=!secret!
 
 # Password user to protect OCSP keystores in the database (CAs OCSP signer certificate).
+# If upgrading, you should take this value from src/ca/ca/META-INF/ejb-jar.xml -> OCSPKeyStorePass. 
+# The default value is the same for convenience.
 ca.ocspkeystorepass=foo123
 #ca.ocspkeystorepass=ocsp!secret!
 
@@ -97,11 +101,11 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 # Default: ISO-8859-1
 #web.contentencoding=ISO-8859-1
 
-# ------------- database configuration ------------------------
+# ------------- Database configuration ------------------------
 
 # jndi name of the datasource to use in deployment descriptors of ejbs.
-# default: ejbcaDS
-#datasource.jndi-name=ejbcaDS
+# default: EjbcaDS
+#datasource.jndi-name=EjbcaDS
 
 # The database name selected for deployment, used to copy XDoclet merge files.
 # All supported databases are defined below, others can easily be added

@@ -24,14 +24,14 @@
          maxThreads="100" minSpareThreads="5" maxSpareThreads="15"
          scheme="https" secure="true" clientAuth="false"
          keystoreFile="${jboss.server.home.dir}/@keystore.file@"
-         keystorePass="@keystore.password@" sslProtocol = "TLS" />
+         keystorePass="@httpsserver.password@" sslProtocol = "TLS" />
     
     <!-- HTTPS Connector requiring client cert on port 8443 -->
     <Connector port="@httpserver.privhttps@" address="${jboss.bind.address}"
          maxThreads="100" minSpareThreads="5" maxSpareThreads="15"
          scheme="https" secure="true" clientAuth="true"
          keystoreFile="${jboss.server.home.dir}/@keystore.file@"
-         keystorePass="@keystore.password@" sslProtocol = "TLS" />
+         keystorePass="@httpsserver.password@" sslProtocol = "TLS" />
 
       <Engine name="jboss.web" defaultHost="localhost">
 

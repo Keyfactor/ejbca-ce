@@ -11,7 +11,7 @@
 	<property name="keystore.file" value="conf/keystore/keystore.jks"/>
 
     <!-- FIXME: It must match the password in cli.xml !! -->
-    <property name="keystore.password" value="serverpwd"/>
+    <property name="httpsserver.password" value="serverpwd"/>
 	
 	<!--
 	 Do not configure the servlet container, deploys blindly ears
@@ -43,10 +43,10 @@
 		<!-- copy the keystore file to the server -->
 		<available file="p12/tomcat.jks" property="keystore.file.present"/>
 		<fail message="Missing JKS keystore file in '${basedir}/p12/tomcat.jks'" unless="keystore.file.present"/>
-		<condition property="keystore.password.present">
-			<isset property="keystore.password"/> 
+		<condition property="httpsserver.password.present">
+			<isset property="httpsserver.password"/> 
 		</condition>
-		<fail message="Missing JKS password '${keystore.password}'" unless="keystore.password.present"/>
+		<fail message="Missing JKS password '${httpsserver.password}'" unless="httpsserver.password.present"/>
 
 		<copy file="p12/tomcat.jks" tofile="${jboss.server.home.dir}/${keystore.file}"/>
 
@@ -63,7 +63,7 @@
 			<filterchain>
 			<tokenfilter>
 		    	<replacestring from="@keystore.file@" to="${keystore.file}"/>
-		    	<replacestring from="@keystore.password@" to="${keystore.password}"/>
+		    	<replacestring from="@httpsserver.password@" to="${httpsserver.password}"/>
 		    	<replacestring from="@httpserver.pubhttp@" to="${httpserver.pubhttp}"/>
 		    	<replacestring from="@httpserver.pubhttps@" to="${httpserver.pubhttps}"/>
 		    	<replacestring from="@httpserver.privhttps@" to="${httpserver.privhttps}"/>

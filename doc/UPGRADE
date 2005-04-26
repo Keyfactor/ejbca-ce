@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.9 2005-04-18 09:54:53 anatom Exp $
+$Id: UPGRADE,v 1.10 2005-04-26 14:23:03 anatom Exp $
 
 UPGRADE
 =======
@@ -15,9 +15,27 @@ Backup your database first! If the upgrade fails, you can always go back to the 
 
 The upgrade process typically consists of:
 1. Stop JBoss.
-2. Remove JBOSS_HOME/server/default/deploy/ejbca-ca.ear, the ear file changed name.
+2. Remove JBOSS_HOME/server/default/deploy/ejbca-ca.ear, the ear file changed name. 
+   If you have configured a new datasource for EJBCA, remove this xml file as well.
 3. Copy ejbca.properties.same to ejbca.properties and configure. 
-   Pay special attention to the upgrade comments for 'CA configuration' and 'Web GUI configuration'.
+   You don't need to configure most  options, since the installation is already done with EJBCA 3.0.x, 
+   no new CAs will be created.
+   Pay special attention to the upgrade comments for 'CA configuration' and 'Web GUI configuration', 
+   it says what options you must configure.
+   'Database configuration' is important if you changed from the default JBoss database.
 4. run 'ant deploy'.
-5. Copy JBOSS_HOME/bin/tomcat.jks to JBOSS_HOME/server/default/conf/keystore/keystore.jks.
+5. Copy JBOSS_HOME/bin/tomcat.jks to JBOSS_HOME/server/default/conf/keystore/keystore.jks (note - name change).
 5. Start JBoss.
+
+Optional database migration
+---------------------------
+If you are using MySQL and:
+1. Issues hard tokens using the hard token functionality of EJBCA AND uses images larger than 64KB
+   in your card layouts.
+or
+2. Have CRLs that are larger than 64KB in size, or will become this large.
+
+Then you should apply the following SQL commands on your MySQL database:
+
+ALTER TABLE crldata MODIFY base64Crl longtext NULL DEFAULT NULL;
+ALTER TABLE hardtokenprofiledata MODIFY data longtext NULL DEFAULT NULL;

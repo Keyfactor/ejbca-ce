@@ -109,7 +109,7 @@
                  enableLookups="true" acceptCount="10" debug="0" scheme="https" secure="true">
                  <Factory className = "org.apache.coyote.tomcat4.CoyoteServerSocketFactory"
                    keystoreFile="${jboss.server.home.dir}/@keystore.file@"
-                   keystorePass="@keystore.password@"
+                   keystorePass="@httpsserver.password@"
                    protocol = "TLS"
                    clientAuth="false"/>
                </Connector>
@@ -120,7 +120,7 @@
                  enableLookups="true" acceptCount="10" debug="0" scheme="https" secure="true">
                  <Factory className = "org.apache.coyote.tomcat4.CoyoteServerSocketFactory"
                    keystoreFile="${jboss.server.home.dir}/@keystore.file@"
-                   keystorePass="@keystore.password@"
+                   keystorePass="@httpsserver.password@"
                    protocol = "TLS"
                    clientAuth="true"/>
                </Connector>
