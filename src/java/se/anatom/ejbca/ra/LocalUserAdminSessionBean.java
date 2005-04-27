@@ -69,7 +69,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.95 2005-04-21 15:19:42 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.96 2005-04-27 09:45:03 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -771,7 +771,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
     /**
      * Finds a user.
      *
-     * @param admin    the administrator pwrforming the action
+     * @param admin the administrator performing the action
      * @param username username.
      * @return UserDataVO or null if the user is not found.
      * @ejb.interface-method
