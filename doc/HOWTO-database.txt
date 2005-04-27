@@ -6,7 +6,7 @@ The following databases have in some stage been tested with EJBCA:
 * Hypersoniq (hsqldb) (default in JBoss)
 * PostegreSQL 7.2 and 8.0 (http://www.postgresql.org/)
 * MySQL (http://www.mysql.com/)
-* Oracle 8i (http://www.oracle.com/)
+* Oracle 8i and 9i (http://www.oracle.com/)
 * Sybase
 
 Unless you are adventurous and know what you're doing, it is recommended to define
@@ -16,13 +16,16 @@ up your server default configuration.
 
 If all is well the automatic deployment script of EJBCA will configure all that for
 you and you will be up and running in 30 seconds.
+Configuration is done in ejbca.properties.
 
 NOW ON TO THE HOWTO!
 
 Troubleshooting database problems:
 ---------------------------------
-* Have you configured a <database-ds.xml> in JBOSS_HOME/server/default/deploy?
+* Have you (ejbca automatically does it) configured a <database-ds.xml> in JBOSS_HOME/server/default/deploy?
+  Configuration is done in ejbca.properties.
 * Do you have the correct username/password configured in <database-ds.xml>?
+  Configuration is done in ejbca.properties.
 * Is the JDBC driver installed in JBOSS_HOME/server/default/lib?
 * Does you database accept incoming connection from the network, not only localhost or vice versa?
 * Do you have a firewall blocking connections to the database?
@@ -34,9 +37,9 @@ Configuring EJBCA
 
 0. Use 'ant clean' to clean up your repository if not already done.
 
-1. Edit '.ejbca.properties' and follow the instructions to change the default values.
+1. Edit 'ejbca.properties' and follow the instructions to change the default values.
    Specify the 'datasource.jndi-name' to the one you chose.
-   For example: 'ejbcaDS'
+   For example: 'EjbcaDS'
 
    There is a .ejbca.properties.sample that is heavily commented.
 
@@ -46,11 +49,12 @@ Configuring EJBCA
   It will also copy ejbca-ds.xml to ${jboss.home}/server/default/deploy.
   This file defines your database configuration such as the driver, url, username, password.
   All other parameters are optional, so don't bother with them unless you know what you're doing.
-  Of course this ejbca-ds.xml should define the jndi-name as 'ejbcaDS' (or whatever name you chose
+  Of course this ejbca-ds.xml should define the jndi-name as 'EjbcaDS' (or whatever name you chose
   in the previous step)
 
   If something is wrong, you should see it in the logs of your application server
 
+XDoclet merge files for database specific table and column configurations are in src/deploy/ejb/merge/<database name>.
 
 Configuring JBoss
 -----------------
@@ -89,8 +93,6 @@ MySQL specifics
 ---------------
 EJBCA have been tested with MySQL 3 and 4.
 
-Jaws configuration file: jbosscmp-jdbc-mysql.xml
-
 JDBC driver: mysql-connector-java-3.0.x.jar (preferably 3.0.9 or higher).
 
 Download JDBC driver for mySQL from http://www.mysql.com/
@@ -99,8 +101,6 @@ PostgreSQL specifics
 --------------------
 EJBCA have been tested with PostgreSQL 7.2 and 8.0.
 
-Jaws configuration file: jbosscmp-jdbc-postgres.xml
-
 JDBC driver: the 7.4 driver (development) is needed to support the JDBC used by
 JBoss.
 
@@ -108,13 +108,18 @@ Download JDBC driver for PostgreSQL from http://jdbc.postgresql.org/.
 
 Oracle specifics
 ----------------
-Jaws configuration file: jbosscmp-jdbc-oracle.xml
+Note that the default Oracle JDBC support is seriously flawed and will not update BLOBS larger than
+a certain size. EJBCA uses some BLOBs, so unforturnately is doesn't work.
+The JDBC-driver from http://www.datadirect.com/ works fine though, but it's not for free.
 
-JDBC driver: classes12.zip (can be downloaded from http://www.oracle.com/).
+I have seen an indication that the JDBC driver for Oracle 10 (latest ojdbc14.jar from ora10)
+would fix the problem. 
+Another reported workaround is to use an OCI connector instead of the thin one. 
+This can be configured in the datasource (don't ask me how though).
+
+JDBC driver (the default flawed one): ojdbc14.zip (can be downloaded from http://www.oracle.com/).
+
 
 MS-SQL specifics
 ----------------
-Jaws configuration file: jbosscmp-jdbc-mssql2000.xml
-
 JDBC driver: http://msdn.microsoft.com/downloads/default.asp?url=/downloads/sample.asp?url=/MSDN-FILES/027/001/779/msdncompositedoc.xml&frame=true
-

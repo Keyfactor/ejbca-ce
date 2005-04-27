@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.17 2005-04-26 14:22:58 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.18 2005-04-27 11:53:14 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -136,16 +136,18 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 # Default: jdbc:hsqldb:${jboss.server.data.dir}${/}hypersonic${/}localDB
 #database.url=jdbc:mysql://127.0.0.1:3306/ejbca
 #database.url=jdbc:postgresql://127.0.0.1/ejbca
-#database.url=jdbc:oracle:thin:@127.0.0.1:1521:ejbca
 #database.url=jdbc:microsoft:sqlserver://localhost:1433;DatabaseName=ejbca
+#database.url=jdbc:oracle:thin:@127.0.0.1:1521:ejbca
+#database.url=jdbc:datadirect:oracle://127.0.0.1:1521;SID=ejbca
 
 # JDBC driver classname.
 # The J2EE server needs to be configured with the appropriate JDBC driver for the selected database
 # Default: org.hsqldb.jdbcDriver
 #database.driver=com.mysql.jdbc.Driver
 #database.driver=org.postgresql.Driver
-#database.driver=oracle.jdbc.driver.OracleDriver
 #database.driver=com.microsoft.jdbc.sqlserver.SQLServerDriver
+#database.driver=oracle.jdbc.driver.OracleDriver
+#database.driver=com.ddtek.jdbc.oracle.OracleDriver
 
 # Database username.
 # Default: sa (works with hsqldb)
