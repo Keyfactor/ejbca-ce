@@ -108,16 +108,15 @@ Download JDBC driver for PostgreSQL from http://jdbc.postgresql.org/.
 
 Oracle specifics
 ----------------
-Note that the default Oracle JDBC support is seriously flawed and will not update BLOBS larger than
-a certain size. EJBCA uses some BLOBs, so unforturnately is doesn't work.
-The JDBC-driver from http://www.datadirect.com/ works fine though, but it's not for free.
+Note that the default Oracle JDBC driver for Oracle 8 and 9 is seriously flawed and will not update 
+BLOBS larger than a certain size. EJBCA uses some BLOBs, so unforturnately is doesn't work.
+The driver from Oracle 10 works fine and can be downloaded from:
+http://www.oracle.com/technology/software/tech/java/sqlj_jdbc/index.html
 
-I have seen an indication that the JDBC driver for Oracle 10 (latest ojdbc14.jar from ora10)
-would fix the problem. 
-Another reported workaround is to use an OCI connector instead of the thin one. 
-This can be configured in the datasource (don't ask me how though).
+The JDBC-driver from http://www.datadirect.com/ also works fine, but it's not for free.
 
-JDBC driver (the default flawed one): ojdbc14.zip (can be downloaded from http://www.oracle.com/).
+JDBC driver: ojdbc14.zip 
+Use latest driver from at least Oracle 10 that can be downloaded from http://www.oracle.com/.
 
 
 MS-SQL specifics
