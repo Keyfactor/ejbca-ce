@@ -9,7 +9,7 @@
   String[] signpintexts    = {"4DIGITS","6TO8DIGITS","6TO8DIGITSLETTERS","6TO8ALLPRINTABLE"};
   String[] authencpintexts = {"4DIGITS","6TO8DIGITS","6TO8DIGITSLETTERS","6TO8ALLPRINTABLE", "SAMEASSIGNCERT"};
 
-  String[] keytexts = {"RSA1024BIT"};
+  String[] keytexts = {"RSA1024BIT", "RSA2048BIT"};
 
   SwedishEIDProfile curprofile = (SwedishEIDProfile) helper.profiledata;
 
