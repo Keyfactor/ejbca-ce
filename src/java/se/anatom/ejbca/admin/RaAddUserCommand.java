@@ -44,7 +44,7 @@ import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 /**
  * Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.37 2004-11-20 19:55:14 sbailliez Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.38 2005-04-27 09:55:34 anatom Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
 	
@@ -289,7 +289,6 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             // Check if username already exists.
             try {
                 if (getAdminSession().findUser(administrator, username) != null) {
-                    ;
                     getOutputStream().println("Error : User already exists in the database.");
                     error = true;
                 }
