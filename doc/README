@@ -1,4 +1,4 @@
-$Id: README,v 1.183 2005-04-18 09:54:53 anatom Exp $
+$Id: README,v 1.184 2005-04-29 06:22:43 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -729,6 +729,14 @@ certificates from the specified CertificateProfile.
 
 INTERNATIONALIZATION
 ====================
+
+To customize EJBCA admin GUI for you languages special characters you may have to 
+change the default page encoding in 'web.contentencoding' to for example UTF-8
+instead of the default ISO-8859-1.
+
+Adding a new language to the admin GUI:
+---------------------------------------
+
 Java uses unicode internally, so the things that needs to be taken care of are:
 
 1. Make sure your system locale is set correctly, so Java will recognize input of your nations language. 
