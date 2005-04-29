@@ -442,6 +442,7 @@ web.contentencoding    = ${web.contentencoding}
             <include name="**/appserver/**" />
             <!-- appserver specific files are built separtely-->
             <classpath refid="jbossservices.classpath" />
+            <classpath refid="compile.classpath" />
         </javac>
         <copy todir="${src.java}">
             <fileset dir="${build}">
