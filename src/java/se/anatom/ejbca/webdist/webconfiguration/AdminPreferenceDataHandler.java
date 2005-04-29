@@ -42,7 +42,7 @@ public class AdminPreferenceDataHandler {
     }
 
     /** Retrieves the admin from the database or null if the admin doesn't exists. */
-    public AdminPreference getAdminPreference(String certificatefingerprint) throws RemoteException {
+    public AdminPreference getAdminPreference(String certificatefingerprint) {
      AdminPreference returnvalue=null;
 
       try{

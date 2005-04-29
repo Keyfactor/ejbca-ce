@@ -13,7 +13,6 @@
  
 package se.anatom.ejbca.webdist.loginterface;
 
-import java.rmi.RemoteException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
@@ -23,7 +22,6 @@ import java.util.Iterator;
 
 import javax.servlet.http.HttpServletRequest;
 
-import se.anatom.ejbca.authorization.AdminInformation;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
 import se.anatom.ejbca.log.Admin;
@@ -45,7 +43,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A java bean handling the interface between EJBCA log module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: LogInterfaceBean.java,v 1.17 2005-04-29 09:15:41 anatom Exp $
+ * @version $Id: LogInterfaceBean.java,v 1.18 2005-04-29 10:02:22 anatom Exp $
  */
 public class LogInterfaceBean {
 
@@ -64,7 +62,6 @@ public class LogInterfaceBean {
     public void initialize(HttpServletRequest request, EjbcaWebBean ejbcawebbean) throws  Exception{
 
       if(!initialized){
-        admininformation = new AdminInformation(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);  
         admin           = new Admin(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
         
         final ServiceLocator locator = ServiceLocator.getInstance();
@@ -83,8 +80,8 @@ public class LogInterfaceBean {
 		HashMap caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
         
         // Add Internal CA Name if it doesn't exists
-        if(caidtonamemap.get(new Integer(ILogSessionLocal.INTERNALCAID)) == null){
-			caidtonamemap.put(new Integer(ILogSessionLocal.INTERNALCAID),ejbcawebbean.getText("INTERNALCA"));
+        if(caidtonamemap.get(new Integer(LogConstants.INTERNALCAID)) == null){
+			caidtonamemap.put(new Integer(LogConstants.INTERNALCAID),ejbcawebbean.getText("INTERNALCA"));
         }
               
         logentriesview = new LogEntriesView(dnproxy, localinfoeventnamesunsorted, localerroreventnamesunsorted, localmodulenamesunsorted,  caidtonamemap);
@@ -101,7 +98,7 @@ public class LogInterfaceBean {
      */
 
     public LogEntryView[] filterByQuery(Query query, int index, int size) throws Exception {
-      Collection logentries = (Collection) logsession.query(query, informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString());
+      Collection logentries = logsession.query(query, informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString());
       logentriesview.setEntries(logentries);
 
       return logentriesview.getEntries(index,size);        
@@ -121,7 +118,7 @@ public class LogInterfaceBean {
       Query query = new Query(Query.TYPE_LOGQUERY);
       query.add(LogMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, user);
         
-      Collection logentries = (Collection) logsession.query(query,informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString());
+      Collection logentries = logsession.query(query,informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString());
       returnval.setEntries(logentries);
 
       return returnval;        
@@ -141,7 +138,7 @@ public class LogInterfaceBean {
       
       query.add(starttime, new Date());
         
-      Collection logentries = (Collection) logsession.query(query,informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString());
+      Collection logentries = logsession.query(query,informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString());
       logentriesview.setEntries(logentries);
 
       return logentriesview.getEntries(index,size);        
@@ -174,7 +171,7 @@ public class LogInterfaceBean {
      *
      * @return the logconfiguration
      */
-    public LogConfiguration loadLogConfiguration(int caid) throws RemoteException{
+    public LogConfiguration loadLogConfiguration(int caid) {
       return logsession.loadLogConfiguration(caid);   
     }    
         
@@ -183,7 +180,7 @@ public class LogInterfaceBean {
      *
      * @param logconfiguration the logconfiguration to save.
      */    
-    public void saveLogConfiguration(int caid, LogConfiguration logconfiguration) throws RemoteException{
+    public void saveLogConfiguration(int caid, LogConfiguration logconfiguration) {
       logsession.saveLogConfiguration(admin, caid, logconfiguration);   
     }    
     
@@ -295,7 +292,6 @@ public class LogInterfaceBean {
     private ICertificateStoreSessionLocal  certificatesession;
     private ILogSessionLocal               logsession;
     private LogEntriesView                 logentriesview;
-    private AdminInformation               admininformation;
     private Admin                          admin;
     private SubjectDNProxy                 dnproxy;  
     private boolean                        initialized=false;

@@ -77,9 +77,8 @@ public class HardTokenView implements java.io.Serializable, Cloneable {
     public String getTextOfField(int index) {
         if (tokendata.getHardToken().getFieldText(index).equals(HardToken.EMPTYROW_FIELD)) {
             return "";
-        } else {
-            return tokendata.getHardToken().getFieldText(index);
         }
+        return tokendata.getHardToken().getFieldText(index);
     }
     
     public boolean isOriginal(){
@@ -102,10 +101,9 @@ public class HardTokenView implements java.io.Serializable, Cloneable {
         HardToken token = tokendata.getHardToken();
 
         if (token.getFieldPointer(index).equals(HardToken.EMPTYROW_FIELD)) {
-            return (Object) "";
-        } else {
-            return (Object) token.getField(token.getFieldPointer(index));
+            return "";
         }
+        return token.getField(token.getFieldPointer(index));
     }
 
     // Private constants.

@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.webdist.webconfiguration;
 
 import javax.naming.Context;
@@ -28,36 +28,36 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
  * By default all data are saved to a database.
  *
  * @author  Philip Vendil
- * @version $Id: GlobalConfigurationDataHandler.java,v 1.18 2004-04-16 07:39:01 anatom Exp $
+ * @version $Id: GlobalConfigurationDataHandler.java,v 1.19 2005-04-29 10:02:23 anatom Exp $
  */
 public class GlobalConfigurationDataHandler {
-
+    
     /** Creates a new instance of GlobalConfigurationDataHandler */
     public GlobalConfigurationDataHandler(Admin administrator,IRaAdminSessionLocal raadminsession, IAuthorizationSessionLocal authorizationsession){
-      this.raadminsession = raadminsession;
-      this.authorizationsession = authorizationsession;
-      this.administrator = administrator;
+        this.raadminsession = raadminsession;
+        this.authorizationsession = authorizationsession;
+        this.administrator = administrator;
     }
-
+    
     public GlobalConfiguration loadGlobalConfiguration() throws NamingException{
         GlobalConfiguration ret = null;
-
+        
         ret = raadminsession.loadGlobalConfiguration(administrator);
         InitialContext ictx = new InitialContext();
         Context myenv = (Context) ictx.lookup("java:comp/env");      
         ret.initialize( (String) myenv.lookup("ADMINDIRECTORY"),
-                        (String) myenv.lookup("AVAILABLELANGUAGES"), (String) myenv.lookup("AVAILABLETHEMES"), 
-                        (String) myenv.lookup("PUBLICPORT"),(String) myenv.lookup("PRIVATEPORT"),
-                        (String) myenv.lookup("PUBLICPROTOCOL"),(String) myenv.lookup("PRIVATEPROTOCOL"));
+                (String) myenv.lookup("AVAILABLELANGUAGES"), (String) myenv.lookup("AVAILABLETHEMES"), 
+                (String) myenv.lookup("PUBLICPORT"),(String) myenv.lookup("PRIVATEPORT"),
+                (String) myenv.lookup("PUBLICPROTOCOL"),(String) myenv.lookup("PRIVATEPROTOCOL"));
         return ret;
     }
-
+    
     public void saveGlobalConfiguration(GlobalConfiguration gc) throws AuthorizationDeniedException {
-       if(this.authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator"));
-         raadminsession.saveGlobalConfiguration(administrator,  gc);
+        if(this.authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator"))
+            raadminsession.saveGlobalConfiguration(administrator,  gc);
     }
-
-   // private IRaAdminSessionHome  raadminsessionhome;
+    
+    // private IRaAdminSessionHome  raadminsessionhome;
     private IRaAdminSessionLocal raadminsession;
     private IAuthorizationSessionLocal  authorizationsession;
     private Admin administrator;

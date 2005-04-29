@@ -23,6 +23,7 @@ import org.apache.commons.fileupload.*;
 
 import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.hardtoken.HardTokenProfileExistsException;
+import se.anatom.ejbca.hardtoken.hardtokenprofiles.EIDProfile;
 import se.anatom.ejbca.hardtoken.hardtokenprofiles.EnhancedEIDProfile;
 import se.anatom.ejbca.hardtoken.hardtokenprofiles.HardTokenProfile;
 import se.anatom.ejbca.hardtoken.hardtokenprofiles.HardTokenProfileWithAdressLabel;
@@ -40,7 +41,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * Contains help methods used to parse a hard token profile jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditHardTokenProfileJSPHelper.java,v 1.5 2005-04-11 05:44:42 herrvendil Exp $
+ * @version $Id: EditHardTokenProfileJSPHelper.java,v 1.6 2005-04-29 10:02:22 anatom Exp $
  */
 public class EditHardTokenProfileJSPHelper {
 	
@@ -123,11 +124,9 @@ public class EditHardTokenProfileJSPHelper {
      *
      * @param request is a reference to the http request.
      */
-    public void initialize(HttpServletRequest request, EjbcaWebBean ejbcawebbean,
-                           HardTokenInterfaceBean hardtokenbean) throws  Exception{
+    public void initialize(EjbcaWebBean ejbcawebbean, HardTokenInterfaceBean hardtokenbean) throws  Exception{
 
       if(!initialized){
-        this.ejbcawebbean = ejbcawebbean;
         this.hardtokenbean = hardtokenbean;
         initialized = true;
 		issuperadministrator = false;
@@ -145,14 +144,11 @@ public class EditHardTokenProfileJSPHelper {
 
 	  InputStream file = null;
 	  
-	  boolean errorrecievingfile = false;
-      boolean buttoncancel = false;
       boolean buttonupload = false;
       String filename = null;
 
-	  if(FileUpload.isMultipartContent(request)){
+	  if(FileUploadBase.isMultipartContent(request)){
 	  	try{     	  	
-		  errorrecievingfile = true;
 		  DiskFileUpload upload = new DiskFileUpload();
 		  upload.setSizeMax(2000000);                   
 		  upload.setSizeThreshold(1999999);
@@ -167,14 +163,14 @@ public class EditHardTokenProfileJSPHelper {
 			    action = item.getString(); 
 			  if(item.getFieldName().equals(HIDDEN_HARDTOKENPROFILENAME))
 			    profilename = item.getString();
-			  if(item.getFieldName().equals(BUTTON_CANCEL))
-			    buttoncancel = true;
+			  if(item.getFieldName().equals(BUTTON_CANCEL)) {
+			      // do nothing
+              }
 			  if(item.getFieldName().equals(BUTTON_UPLOADFILE))
 			    buttonupload = true;
 		    }else{         
 			  file = item.getInputStream();
 			  filename = item.getName(); 
-			  errorrecievingfile = false;                          
 		    }
 		  }
 	  	}catch(IOException e){
@@ -354,8 +350,8 @@ public class EditHardTokenProfileJSPHelper {
 					 int val = Integer.parseInt(value);				   
 					 sweprof.setMinimumKeyLength(SwedishEIDProfile.CERTUSAGE_SIGN, val);
 					 sweprof.setMinimumKeyLength(SwedishEIDProfile.CERTUSAGE_AUTHENC, val);
-					 sweprof.setKeyType(SwedishEIDProfile.CERTUSAGE_SIGN, SwedishEIDProfile.KEYTYPE_RSA);
-					 sweprof.setKeyType(SwedishEIDProfile.CERTUSAGE_AUTHENC, SwedishEIDProfile.KEYTYPE_RSA);
+					 sweprof.setKeyType(SwedishEIDProfile.CERTUSAGE_SIGN, EIDProfile.KEYTYPE_RSA);
+					 sweprof.setKeyType(SwedishEIDProfile.CERTUSAGE_AUTHENC, EIDProfile.KEYTYPE_RSA);
 				   }
 				   	  
                    value = request.getParameter(SELECT_CERTIFICATEPROFILE + "0");
@@ -384,9 +380,9 @@ public class EditHardTokenProfileJSPHelper {
 					 enhprof.setMinimumKeyLength(EnhancedEIDProfile.CERTUSAGE_SIGN, val);
 					 enhprof.setMinimumKeyLength(EnhancedEIDProfile.CERTUSAGE_AUTH, val);
 					 enhprof.setMinimumKeyLength(EnhancedEIDProfile.CERTUSAGE_ENC, val);
-					 enhprof.setKeyType(EnhancedEIDProfile.CERTUSAGE_SIGN, SwedishEIDProfile.KEYTYPE_RSA);
-					 enhprof.setKeyType(EnhancedEIDProfile.CERTUSAGE_ENC, SwedishEIDProfile.KEYTYPE_RSA);
-					 enhprof.setKeyType(EnhancedEIDProfile.CERTUSAGE_ENC, SwedishEIDProfile.KEYTYPE_RSA);
+					 enhprof.setKeyType(EnhancedEIDProfile.CERTUSAGE_SIGN, EIDProfile.KEYTYPE_RSA);
+					 enhprof.setKeyType(EnhancedEIDProfile.CERTUSAGE_ENC, EIDProfile.KEYTYPE_RSA);
+					 enhprof.setKeyType(EnhancedEIDProfile.CERTUSAGE_ENC, EIDProfile.KEYTYPE_RSA);
 				   }	  
 				   
 				   value = request.getParameter(SELECT_CERTIFICATEPROFILE + "0");
@@ -580,7 +576,6 @@ public class EditHardTokenProfileJSPHelper {
     
 
     // Private fields.
-    private EjbcaWebBean ejbcawebbean;
     private HardTokenInterfaceBean hardtokenbean;
     private boolean initialized=false;
 	public boolean  hardtokenprofileexists       = false;

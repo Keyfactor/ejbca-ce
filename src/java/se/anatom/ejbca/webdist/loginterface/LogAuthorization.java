@@ -22,14 +22,14 @@ import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.authorization.AvailableAccessRules;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.log.ILogSessionLocal;
+import se.anatom.ejbca.log.LogConstants;
 import se.anatom.ejbca.log.LogEntry;
 
 /**
  * A class that looks up the which modules a administrator have right to view.
  * This is done by looking up an administrators privileges in the tree and returning a string to be used in SQL-queries.
  * 
- * @version $Id: LogAuthorization.java,v 1.8 2004-04-16 07:38:58 anatom Exp $
+ * @version $Id: LogAuthorization.java,v 1.9 2005-04-29 10:02:23 anatom Exp $
  */
 public class LogAuthorization implements Serializable {
     
@@ -93,7 +93,7 @@ public class LogAuthorization implements Serializable {
          
         try{ 
           this.authorizationsession.isAuthorizedNoLog(administrator, "/super_administrator");
-          caidstring = " caid = " + ILogSessionLocal.INTERNALCAID;       
+          caidstring = " caid = " + LogConstants.INTERNALCAID;       
         }catch(AuthorizationDeniedException e){} 
       
         

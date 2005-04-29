@@ -17,7 +17,7 @@
 
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AvailableAccessRules.HARDTOKEN_EDITHARDTOKENPROFILES); 
                                             hardtokenbean.initialize(request, ejbcawebbean); 
-                                            helper.initialize(request,ejbcawebbean, hardtokenbean);
+                                            helper.initialize(ejbcawebbean, hardtokenbean);
   String THIS_FILENAME            =  globalconfiguration.getHardTokenPath()  + "/edithardtokenprofiles/edithardtokenprofiles.jsp";
   
 
@@ -57,3 +57,4 @@
 
 </body>
 </html>
+/html>
