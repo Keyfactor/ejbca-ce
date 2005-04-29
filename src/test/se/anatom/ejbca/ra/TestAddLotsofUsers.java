@@ -28,7 +28,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestAddLotsofUsers.java,v 1.2 2005-02-11 13:12:16 anatom Exp $
+ * @version $Id: TestAddLotsofUsers.java,v 1.3 2005-04-29 09:16:06 anatom Exp $
  */
 public class TestAddLotsofUsers extends TestCase {
     private static Logger log = Logger.getLogger(TestAddLotsofUsers.class);
@@ -138,14 +138,11 @@ public class TestAddLotsofUsers extends TestCase {
             int profileid = SecConst.EMPTY_ENDENTITYPROFILE;
             int certificatetypeid = SecConst.CERTPROFILE_FIXED_ENDUSER;
             int hardtokenissuerid = SecConst.NO_HARDTOKENISSUER;
-            boolean error = false;
             String dn = "C=SE, O=AnaTom, CN=" + username;
             String subjectaltname = "rfc822Name=" + username + "@foo.se";
             String email = username + "@foo.se";
             if (cacheAdmin.findUser(administrator, username) != null) {
-                ;
                 System.out.println("Error : User already exists in the database.");
-                error = true;
             }
             cacheAdmin.addUser(administrator, username, pwd, CertTools.stringToBCDNString(dn), subjectaltname, email, false, profileid, certificatetypeid,
                     type, token, hardtokenissuerid, caid);

@@ -65,7 +65,7 @@
      if(username != null && reasonstring != null){
        tokensn  = request.getParameter(TOKENSN_PARAMETER);  
         if(rabean.authorizedToRevokeCert(username) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) 
-          && !rabean.isAllTokenCertificatesRevoked(tokensn, username))   
+          && !rabean.isAllTokenCertificatesRevoked(tokensn))   
           rabean.revokeTokenCertificates(tokensn, username, Integer.parseInt(reasonstring));   
      }
    }else{
@@ -77,7 +77,7 @@
      if(username != null && reasonstring != null){
        token = tokenbean.getHardTokenViewWithIndex(username, index);
         if(rabean.authorizedToRevokeCert(username) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) 
-          && !rabean.isAllTokenCertificatesRevoked(token.getTokenSN(), username))
+          && !rabean.isAllTokenCertificatesRevoked(token.getTokenSN()))
           rabean.revokeTokenCertificates(token.getTokenSN(), username, Integer.parseInt(reasonstring));  
      }         
    }
@@ -308,7 +308,7 @@ function viewcert(){
           </td>
           <td>
        <%    if(rabean.authorizedToRevokeCert(username) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) 
-               && !rabean.isAllTokenCertificatesRevoked(token.getTokenSN(), username)){ %>
+               && !rabean.isAllTokenCertificatesRevoked(token.getTokenSN())){ %>
         <input type="submit" name="<%=BUTTON_REVOKE %>" value="<%= ejbcawebbean.getText("REVOKE") %>"
                onClick='return confirmrevokation()'><br>
         <select name="<%=SELECT_REVOKE_REASON %>" >

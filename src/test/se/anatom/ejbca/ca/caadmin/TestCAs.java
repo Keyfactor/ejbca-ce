@@ -32,7 +32,7 @@ import se.anatom.ejbca.log.Admin;
 /**
  * Tests the ca data entity bean.
  *
- * @version $Id: TestCAs.java,v 1.4 2005-03-22 13:51:36 anatom Exp $
+ * @version $Id: TestCAs.java,v 1.5 2005-04-29 09:16:06 anatom Exp $
  */
 public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -126,7 +126,7 @@ public class TestCAs extends TestCase {
                     -1, null,
                     null, // PolicyId
                     24, // CRLPeriod
-                    (Collection) new ArrayList(),
+                    new ArrayList(),
                     true, // Authority Key Identifier
                     false, // Authority Key Identifier Critical
                     true, // CRL Number

@@ -42,7 +42,7 @@ import se.anatom.ejbca.protocol.IResponseMessage;
 import se.anatom.ejbca.protocol.PKCS10RequestMessage;
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
-import se.anatom.ejbca.ra.UserDataLocal;
+import se.anatom.ejbca.ra.UserDataConstants;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
 
@@ -50,7 +50,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.5 2005-03-08 12:45:51 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.6 2005-04-29 09:16:08 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -220,7 +220,7 @@ public class TestSignSession extends TestCase {
         }
         if (userExists) {
             log.info("User foo already exists, resetting status.");
-            usersession.setUserStatus(admin,"foo",UserDataLocal.STATUS_NEW);
+            usersession.setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
 
@@ -254,7 +254,7 @@ public class TestSignSession extends TestCase {
      */
     public void test03TestBCPKCS10() throws Exception {
         log.debug(">test03TestBCPKCS10()");
-        usersession.setUserStatus(admin,"foo",UserDataLocal.STATUS_NEW);
+        usersession.setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA",
@@ -294,7 +294,7 @@ public class TestSignSession extends TestCase {
     public void test04TestKeytoolPKCS10() throws Exception {
         log.debug(">test04TestKeytoolPKCS10()");
 
-        usersession.setUserStatus(admin,"foo",UserDataLocal.STATUS_NEW);
+        usersession.setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(keytoolp10);
@@ -316,7 +316,7 @@ public class TestSignSession extends TestCase {
     public void test05TestIEPKCS10() throws Exception {
         log.debug(">test05TestIEPKCS10()");
 
-        usersession.setUserStatus(admin,"foo",UserDataLocal.STATUS_NEW);
+        usersession.setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(iep10);
@@ -338,7 +338,7 @@ public class TestSignSession extends TestCase {
     public void test06KeyUsage() throws Exception {
         log.debug(">test06KeyUsage()");
 
-        usersession.setUserStatus(admin,"foo",UserDataLocal.STATUS_NEW);
+        usersession.setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
         // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
@@ -357,7 +357,7 @@ public class TestSignSession extends TestCase {
         assertTrue("Fel KeyUsage, keyEncipherment finns ej!", retKU[2]);
         assertTrue("Fel KeyUsage, cRLSign finns!", !retKU[6]);
 
-        usersession.setUserStatus(admin,"foo",UserDataLocal.STATUS_NEW);
+        usersession.setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
         boolean[] keyusage2 = new boolean[9];
@@ -386,7 +386,7 @@ public class TestSignSession extends TestCase {
     public void test07DSAKey() throws Exception {
         log.debug(">test07DSAKey()");
 
-        usersession.setUserStatus(admin,"foo",UserDataLocal.STATUS_NEW);
+        usersession.setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
         try {
@@ -428,7 +428,7 @@ public class TestSignSession extends TestCase {
         if (userExists) {
             log.debug("user swede already exists.");
 
-            usersession.setUserStatus(admin,"swede",UserDataLocal.STATUS_NEW);
+            usersession.setUserStatus(admin,"swede",UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
 

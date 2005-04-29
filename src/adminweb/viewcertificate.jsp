@@ -67,19 +67,15 @@
   if( request.getParameter(HARDTOKENSN_PARAMETER) != null && request.getParameter(USER_PARAMETER ) != null){
      username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
      tokensn  = request.getParameter(HARDTOKENSN_PARAMETER);
-     try{  
-       rabean.loadTokenCertificates(tokensn,username);
-       notauthorized = false;
-     }catch(AuthorizationDeniedException e){}
+     rabean.loadTokenCertificates(tokensn,username);
+     notauthorized = false;
      noparameter = false;
   }
 
   if( request.getParameter(USER_PARAMETER ) != null && request.getParameter(HARDTOKENSN_PARAMETER) == null){
      username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
-     try{  
-       rabean.loadCertificates(username);
-       notauthorized = false;
-     }catch(AuthorizationDeniedException e){}
+     rabean.loadCertificates(username);
+     notauthorized = false;
      noparameter = false;
   }
 
@@ -88,11 +84,8 @@
      String[] certdata = java.net.URLDecoder.decode(request.getParameter(CERTSERNO_PARAMETER ),"UTF-8").split(",",2);
      certificateserno = certdata[0];
      issuerdn = CertTools.stringToBCDNString(certdata[1]);
-
-     try{  
-       rabean.loadCertificates(new BigInteger(certificateserno,16), issuerdn); 
-       notauthorized = false;
-     }catch(AuthorizationDeniedException e){}
+     rabean.loadCertificates(new BigInteger(certificateserno,16), issuerdn); 
+     notauthorized = false;
      noparameter = false;
   }
   if( request.getParameter(CACERT_PARAMETER ) != null){
@@ -127,17 +120,19 @@
      if(!cacerts && rabean.authorizedToRevokeCert(certificatedata.getUsername()) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) 
         && !certificatedata.isRevoked())   
        rabean.revokeCert(certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDN(), certificatedata.getUsername(),reason);
-     try{
-       if(tokensn !=null)
+     try {
+       if(tokensn !=null) {
          rabean.loadTokenCertificates(tokensn,username);
-       else 
-         if(username != null)
+       } else {
+         if(username != null) {
            rabean.loadCertificates(username);
-         else
+         } else {
            rabean.loadCertificates(new BigInteger(certificateserno,16), issuerdn);
-       notauthorized = false;
+         }
+       }
      }catch(AuthorizationDeniedException e){
      }
+       notauthorized = false;
      numberofcertificates = rabean.getNumberOfCertificates();
      certificatedata = rabean.getCertificate(currentindex);
    }
@@ -149,13 +144,15 @@
      if(!cacerts && rabean.keyRecoveryPossible(certificatedata) && usekeyrecovery)  
        rabean.markForRecovery(certificatedata); 
      try{
-       if(tokensn !=null)
+       if(tokensn !=null) {
          rabean.loadTokenCertificates(tokensn,username);
-       else 
-         if(username != null)
+       } else { 
+         if(username != null) {
            rabean.loadCertificates(username);
-         else
+         } else {
            rabean.loadCertificates(new BigInteger(certificateserno,16), issuerdn);
+         }
+       }
        notauthorized = false;
      }catch(AuthorizationDeniedException e){
      }

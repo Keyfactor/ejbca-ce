@@ -30,7 +30,6 @@ import se.anatom.ejbca.authorization.AdminGroup;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
 import se.anatom.ejbca.ca.publisher.IPublisherSessionLocal;
-import se.anatom.ejbca.ca.sign.ISignSessionLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
 import se.anatom.ejbca.hardtoken.IHardTokenSessionLocal;
@@ -50,6 +49,7 @@ import se.anatom.ejbca.webdist.rainterface.EndEntityProfileNameProxy;
  * A class used to improve performance by proxying authorization information about the administrator.
  * It should be used in all jsp interface bean classes. 
  * @author  TomSelleck
+ * @version $Id: InformationMemory.java,v 1.9 2005-04-29 09:15:40 anatom Exp $
  */
 public class InformationMemory {
     
@@ -58,7 +58,6 @@ public class InformationMemory {
                              ICAAdminSessionLocal  caadminsession,
                              IRaAdminSessionLocal raadminsession, 
                              IAuthorizationSessionLocal authorizationsession,
-                             ISignSessionLocal signsession,
                              ICertificateStoreSessionLocal certificatestoresession,
                              IHardTokenSessionLocal hardtokensession,
 							 IPublisherSessionLocal publishersession,
@@ -67,7 +66,6 @@ public class InformationMemory {
       this.administrator = administrator;
       this.raadminsession = raadminsession;
       this.authorizationsession = authorizationsession;
-      this.signsession = signsession;
       this.certificatestoresession = certificatestoresession;
       this.publishersession = publishersession;
       this.globalconfiguration = globalconfiguration;
@@ -530,7 +528,6 @@ public class InformationMemory {
     private ICAAdminSessionLocal caadminsession;
     private IRaAdminSessionLocal raadminsession;
     private IAuthorizationSessionLocal authorizationsession;
-    private ISignSessionLocal signsession;
     private IPublisherSessionLocal publishersession;
     private ICertificateStoreSessionLocal certificatestoresession;
     

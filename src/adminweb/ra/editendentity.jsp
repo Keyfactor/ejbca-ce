@@ -114,7 +114,7 @@
         if( request.getParameter(ACTION) != null){
           if( request.getParameter(ACTION).equals(ACTION_EDITUSER)){
             if( request.getParameter(BUTTON_SAVE) != null ){
-              UserView newuser = new UserView(caidtonamemap);
+              UserView newuser = new UserView();
 
              newuser.setEndEntityProfileId(profileid);
              newuser.setUsername(username);

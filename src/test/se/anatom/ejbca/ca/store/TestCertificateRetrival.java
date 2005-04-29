@@ -189,8 +189,6 @@ public class TestCertificateRetrival extends TestCase {
      */
     public void test02FindCACertificates() throws Exception {
         m_log.debug(">test02FindCACertificates()");
-        X509Certificate cert;
-        cert = CertTools.getCertfromByteArray(testrootcert);
         ICertificateStoreSessionRemote store = m_storehome.create();
 
         // List all certificates to see

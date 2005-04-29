@@ -148,7 +148,7 @@
     }
     if( request.getParameter(ACTION).equals(ACTION_ADDUSER)){
       if( request.getParameter(BUTTON_ADDUSER) != null){
-         UserView newuser = new UserView(caidtonamemap);
+         UserView newuser = new UserView();
          int oldprofileid = UserDataVO.NO_ENDENTITYPROFILE;
  
          // Get previous chosen profile.

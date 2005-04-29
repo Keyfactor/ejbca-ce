@@ -28,7 +28,7 @@ import se.anatom.ejbca.log.Admin;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestUserData.java,v 1.3 2005-04-21 15:21:50 herrvendil Exp $
+ * @version $Id: TestUserData.java,v 1.4 2005-04-29 09:16:05 anatom Exp $
  */
 public class TestUserData extends TestCase {
 
@@ -138,14 +138,14 @@ public class TestUserData extends TestCase {
         log.debug("email=" + data2.getEmail());
         assertNull("wrong email", data2.getEmail());
         log.debug("status=" + data2.getStatus());
-        assertTrue("wrong status", data2.getStatus() == UserDataLocal.STATUS_NEW);
+        assertTrue("wrong status", data2.getStatus() == UserDataConstants.STATUS_NEW);
         log.debug("type=" + data2.getType());
         assertTrue("wrong type", data2.getType() == SecConst.USER_INVALID);
         assertTrue("wrong pwd (foo123 works)", usersession.verifyPassword(admin,username,"foo123") == false);
         assertTrue("wrong pwd " + pwd, usersession.verifyPassword(admin,username,pwd));
 
         // Change DN
-        usersession.changeUser(admin,username,"foo123","C=SE,O=AnaTom,OU=Engineering, CN="+username,null,username+"@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataLocal.STATUS_GENERATED,caid);
+        usersession.changeUser(admin,username,"foo123","C=SE,O=AnaTom,OU=Engineering, CN="+username,null,username+"@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_GENERATED,caid);
         log.debug("Changed it");
         log.debug("<test02LookupAndChangeUser()");
     }
@@ -169,14 +169,14 @@ public class TestUserData extends TestCase {
         assertNotNull("Email should not be null now.", data.getEmail());
         assertTrue("wrong email", data.getEmail().equals(username + "@anatom.se"));
         log.debug("status=" + data.getStatus());
-        assertTrue("wrong status", data.getStatus() == UserDataLocal.STATUS_GENERATED);
+        assertTrue("wrong status", data.getStatus() == UserDataConstants.STATUS_GENERATED);
         log.debug("type=" + data.getType());
         assertTrue("wrong type", data.getType() == SecConst.USER_ENDUSER);
         assertTrue("wrong pwd foo123", usersession.verifyPassword(admin,username,"foo123"));
         assertTrue("wrong pwd (" + pwd + " works)" + pwd, usersession.verifyPassword(admin,username,pwd) == false);
 
         // Use clear text pwd instead, new email, reverse DN again
-        usersession.changeUser(admin,username,"foo234","C=SE,O=AnaTom,CN="+username,null,username+"@anatom.nu",true,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataLocal.STATUS_GENERATED,caid);
+        usersession.changeUser(admin,username,"foo234","C=SE,O=AnaTom,CN="+username,null,username+"@anatom.nu",true,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_GENERATED,caid);
         log.debug("<test03LookupChangedUser()");
     }
 
@@ -199,7 +199,7 @@ public class TestUserData extends TestCase {
         assertNotNull("Email should not be null now.", data.getEmail());
         assertTrue("wrong email", data.getEmail().equals(username + "@anatom.nu"));
         log.debug("status=" + data.getStatus());
-        assertTrue("wrong status", data.getStatus() == UserDataLocal.STATUS_GENERATED);
+        assertTrue("wrong status", data.getStatus() == UserDataConstants.STATUS_GENERATED);
         log.debug("type=" + data.getType());
         assertTrue("wrong type", data.getType() == SecConst.USER_ENDUSER);
         assertTrue("wrong pwd foo234", usersession.verifyPassword(admin,username,"foo234"));
@@ -235,16 +235,16 @@ public class TestUserData extends TestCase {
         Object obj1 = ctx.lookup("UserAdminSession");
         IUserAdminSessionHome adminhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IUserAdminSessionHome.class);
         IUserAdminSessionRemote admin = adminhome.create();
-        Collection coll = admin.findAllUsersByStatus(new Admin(Admin.TYPE_INTERNALUSER), UserDataLocal.STATUS_NEW);
+        Collection coll = admin.findAllUsersByStatus(new Admin(Admin.TYPE_INTERNALUSER), UserDataConstants.STATUS_NEW);
         Iterator iter = coll.iterator();
         while (iter.hasNext()) {
 
             UserDataVO data = (UserDataVO) iter.next();
             log.debug("New user: " + data.getUsername() + ", " + data.getDN() + ", " + data.getEmail() + ", " + data.getStatus() + ", " + data.getType());
-            admin.setUserStatus(new Admin(Admin.TYPE_INTERNALUSER), data.getUsername(), UserDataLocal.STATUS_GENERATED);
+            admin.setUserStatus(new Admin(Admin.TYPE_INTERNALUSER), data.getUsername(), UserDataConstants.STATUS_GENERATED);
         }
 
-        Collection coll1 = admin.findAllUsersByStatus(new Admin(Admin.TYPE_INTERNALUSER), UserDataLocal.STATUS_NEW);
+        Collection coll1 = admin.findAllUsersByStatus(new Admin(Admin.TYPE_INTERNALUSER), UserDataConstants.STATUS_NEW);
         assertTrue("found NEW users though there should be none!", coll1.isEmpty());
         log.debug("<test05ListNewUser()");
     }

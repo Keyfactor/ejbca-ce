@@ -45,7 +45,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A java bean handling the interface between EJBCA log module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: LogInterfaceBean.java,v 1.16 2005-01-04 10:04:43 anatom Exp $
+ * @version $Id: LogInterfaceBean.java,v 1.17 2005-04-29 09:15:41 anatom Exp $
  */
 public class LogInterfaceBean {
 
@@ -165,7 +165,7 @@ public class LogInterfaceBean {
     public boolean nextButton(int index, int size){
       return index + size < logentriesview.size();
     }
-    public boolean previousButton(int index, int size){
+    public boolean previousButton(int index){
       return index > 0 ;
     }
      

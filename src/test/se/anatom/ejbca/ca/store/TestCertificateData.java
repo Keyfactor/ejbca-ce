@@ -39,7 +39,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Tests certificate store.
  *
- * @version $Id: TestCertificateData.java,v 1.4 2005-04-21 15:20:40 herrvendil Exp $
+ * @version $Id: TestCertificateData.java,v 1.5 2005-04-29 09:16:07 anatom Exp $
  */
 public class TestCertificateData extends TestCase {
 
@@ -50,7 +50,6 @@ public class TestCertificateData extends TestCase {
     private static X509Certificate cert1;
     private static X509Certificate cert2;
     private static String username = "";
-    private static long revDate;
     private static Admin admin = null;
     private static KeyPair keyPair;
 
@@ -177,7 +176,6 @@ public class TestCertificateData extends TestCase {
         certfps = store.findCertificatesBySubjectAndIssuer(new Admin(Admin.TYPE_INTERNALUSER), subjectDN, issuerDN);
         assertTrue("something weird with size, all < foos", size >= certfps.size());
         log.debug("List certs for foo: " + certfps.size());
-        revDate = new Date().getTime();
         Iterator iter = certfps.iterator();
         while (iter.hasNext()) {
             X509Certificate cert = (X509Certificate) iter.next();
@@ -373,9 +371,6 @@ public class TestCertificateData extends TestCase {
         log.debug(">test09addCertReqHist()");
         ICertificateStoreSessionRemote store = storehome.create();
                 
-        log.info("Generating a small key pair, might take a few seconds...");
-        KeyPair keyPair1 = KeyTools.genKeys(512);
-        KeyPair keyPair2 = KeyTools.genKeys(512);        
         cert1 = CertTools.genSelfCert("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist1", 24, null, keyPair.getPrivate(), keyPair.getPublic(), false);
         cert2 = CertTools.genSelfCert("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist2", 24, null, keyPair.getPrivate(), keyPair.getPublic(), false);
         

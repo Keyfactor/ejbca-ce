@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package se.anatom.ejbca.webdist.cainterface;
 
 import java.beans.Beans;
@@ -109,7 +109,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * 
  *
  * @author Ville Skyttä
- * @version $Id: AdminCertReqServlet.java,v 1.2 2005-04-15 13:59:24 anatom Exp $
+ * @version $Id: AdminCertReqServlet.java,v 1.3 2005-04-29 09:15:41 anatom Exp $
  * 
  * @web.servlet name = "AdminCertReq"
  *              display-name = "AdminCertReqServlet"
@@ -120,365 +120,363 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  *
  */
 public class AdminCertReqServlet extends HttpServlet {
-  private final static Logger log = Logger.getLogger(AdminCertReqServlet.class);
-  
-  private ISignSessionLocalHome signhome = null;
-  private final static byte[] BEGIN_CERT =
-    "-----BEGIN CERTIFICATE-----".getBytes();
-  private final static int BEGIN_CERT_LENGTH = BEGIN_CERT.length;
-
-  private final static byte[] END_CERT =
-    "-----END CERTIFICATE-----".getBytes();
-  private final static int END_CERT_LENGTH = END_CERT.length;
-
-  private final static byte[] NL = "\n".getBytes();
-  private final static int NL_LENGTH = NL.length;
-
-  public void init(ServletConfig config)
+    private final static Logger log = Logger.getLogger(AdminCertReqServlet.class);
+    
+    private ISignSessionLocalHome signhome = null;
+    private final static byte[] BEGIN_CERT =
+        "-----BEGIN CERTIFICATE-----".getBytes();
+    private final static int BEGIN_CERT_LENGTH = BEGIN_CERT.length;
+    
+    private final static byte[] END_CERT =
+        "-----END CERTIFICATE-----".getBytes();
+    private final static int END_CERT_LENGTH = END_CERT.length;
+    
+    private final static byte[] NL = "\n".getBytes();
+    private final static int NL_LENGTH = NL.length;
+    
+    public void init(ServletConfig config)
     throws ServletException
-  {
-    super.init(config);
-    try {
-        // Install BouncyCastle provider
-        CertTools.installBCProvider();
+    {
+        super.init(config);
+        try {
+            // Install BouncyCastle provider
+            CertTools.installBCProvider();
+            
+            // Get EJB context and home interfaces
+            signhome = (ISignSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
+        } catch (Exception e) {
+            throw new ServletException(e);
+        }
+    }
+    
+    
+    /**
+     * Handles PKCS10 certificate request, these are constructed as:
+     * <pre><code>
+     * CertificationRequest ::= SEQUENCE {
+     * certificationRequestInfo  CertificationRequestInfo,
+     * signatureAlgorithm          AlgorithmIdentifier{{ SignatureAlgorithms }},
+     * signature                       BIT STRING
+     * }
+     * CertificationRequestInfo ::= SEQUENCE {
+     * version             INTEGER { v1(0) } (v1,...),
+     * subject             Name,
+     * subjectPKInfo   SubjectPublicKeyInfo{{ PKInfoAlgorithms }},
+     * attributes          [0] Attributes{{ CRIAttributes }}
+     * }
+     * SubjectPublicKeyInfo { ALGORITHM : IOSet} ::= SEQUENCE {
+     * algorithm           AlgorithmIdentifier {{IOSet}},
+     * subjectPublicKey    BIT STRING
+     * }
+     * </pre>
+     *
+     * PublicKey's encoded-format has to be RSA X.509.
+     */
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
+    throws IOException, ServletException
+    {
+        // Check if authorized
+        EjbcaWebBean ejbcawebbean= getEjbcaWebBean(request);
+        try{
+            ejbcawebbean.initialize(request, "/ra_functionallity/create_end_entity");
+        } catch(Exception e){
+            throw new java.io.IOException("Authorization Denied");
+        }
         
-        // Get EJB context and home interfaces
-        signhome = (ISignSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
-    } catch (Exception e) {
-        throw new ServletException(e);
+        X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+        if (certs == null) {
+            throw new ServletException("This servlet requires certificate authentication!");
+        }
+        
+        Admin admin = new Admin(certs[0]);
+        
+        byte[] buffer = pkcs10Bytes(request.getParameter("pkcs10req"));
+        if (buffer == null) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid request, missing 'pkcs10req'!");
+            return;
+        }
+        
+        RAInterfaceBean rabean = getRaBean(request);
+        
+        // Decompose the PKCS#10 request, and create the user.
+        PKCS10RequestMessage p10 = new PKCS10RequestMessage(buffer);
+        String dn = p10.getCertificationRequest().getCertificationRequestInfo().getSubject().toString();
+        
+        String username = request.getParameter("username");
+        if (username == null || username.trim().length() == 0) {
+            username = dn;
+        }
+        // Strip dangerous chars
+        username = StringTools.strip(username);
+        // need null check here?
+        // Before doing anything else, check if the user name is unique and ok.
+        username = checkUsername(rabean, username);
+        
+        UserView newuser = new UserView();
+        newuser.setUsername(username);
+        
+        newuser.setSubjectDN(dn);
+        newuser.setTokenType(SecConst.TOKEN_SOFT_BROWSERGEN);
+        newuser.setAdministrator(false);
+        newuser.setKeyRecoverable(false);
+        
+        String email = CertTools.getPartFromDN(dn, "E"); // BC says VeriSign
+        if (email == null) email = CertTools.getPartFromDN(dn, "EMAILADDRESS");
+        if (email != null) {
+            newuser.setEmail(email);
+        }
+        
+        String tmp = null;
+        int eProfileId = SecConst.EMPTY_ENDENTITYPROFILE;
+        if ((tmp = request.getParameter("entityprofile")) != null) {
+            int reqId = rabean.getEndEntityProfileId(tmp);
+            if (reqId == 0) {
+                throw new ServletException("No such end entity profile: " + tmp);
+            }
+            eProfileId = reqId;
+        }
+        newuser.setEndEntityProfileId(eProfileId);
+        
+        int cProfileId = SecConst.CERTPROFILE_FIXED_ENDUSER;
+        if ((tmp = request.getParameter("certificateprofile")) != null) {
+            CAInterfaceBean cabean = getCaBean(request);
+            int reqId = cabean.getCertificateProfileId(tmp);
+            if (reqId == 0) {
+                throw new ServletException("No such certificate profile: " + tmp);
+            }
+            cProfileId = reqId;
+        }
+        newuser.setCertificateProfileId(cProfileId);
+        
+        int caid = 0;
+        if ((tmp = request.getParameter("ca")) != null) {
+            // TODO: get requested CA to sign with
+        }
+        newuser.setCAId(caid);
+        
+        
+        String password = request.getParameter("password");
+        if (password == null) password = "";
+        newuser.setPassword(password);
+        newuser.setClearTextPassword(false);
+        
+        try {
+            rabean.addUser(newuser);
+        } catch (Exception e) {
+            throw new ServletException("Error adding user: " + e.toString(), e);
+        }
+        
+        ISignSessionLocal ss;
+        try {
+            ss = signhome.create();
+        } catch (CreateException e) {
+            throw new ServletException(e);
+        }
+        
+        byte[] pkcs7;
+        try {
+            p10.setUsername(username);
+            p10.setPassword(password);
+            IResponseMessage resp = ss.createCertificate(admin, p10, Class.forName("se.anatom.ejbca.protocol.X509ResponseMessage"));
+            X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+            pkcs7 = ss.createPKCS7(admin, cert, true);
+        } catch (ClassNotFoundException e) {
+            // Class not found
+            throw new ServletException(e);
+        } catch (CertificateEncodingException e) {
+            // Error in cert
+            throw new ServletException(e);
+        } catch (CertificateException e) {
+            // Error in cert
+            throw new ServletException(e);
+        } catch (ObjectNotFoundException e) {
+            // User not found
+            throw new ServletException(e);
+        } catch (AuthStatusException e) {
+            // Wrong user status, shouldn't really happen.  The user needs to have
+            // status of NEW, FAILED or INPROCESS.
+            throw new ServletException(e);
+        } catch (AuthLoginException e) {
+            // Wrong username or password, hmm... wasn't the wrong username caught
+            // in the objectnotfoundexception above... and this shouldn't happen.
+            throw new ServletException(e);
+        } catch (IllegalKeyException e) {
+            // Malformed key (?)
+            throw new ServletException(e);
+        } catch (SignRequestException e) {
+            // Invalid request
+            throw new ServletException(e);
+        } catch (SignRequestSignatureException e) {
+            // Invalid signature in certificate request
+            throw new ServletException(e);
+        } catch (CADoesntExistsException e) {
+            // Reqqested CA does not exist
+            throw new ServletException(e);
+        }
+        
+        log.debug("Created certificate (PKCS7) for " + username);
+        
+        sendNewB64Cert(Base64.encode(pkcs7), response);
+        
     }
-  }
-
-
-  /**
-   * Handles PKCS10 certificate request, these are constructed as:
-   * <pre><code>
-   * CertificationRequest ::= SEQUENCE {
-   * certificationRequestInfo  CertificationRequestInfo,
-   * signatureAlgorithm          AlgorithmIdentifier{{ SignatureAlgorithms }},
-   * signature                       BIT STRING
-   * }
-   * CertificationRequestInfo ::= SEQUENCE {
-   * version             INTEGER { v1(0) } (v1,...),
-   * subject             Name,
-   * subjectPKInfo   SubjectPublicKeyInfo{{ PKInfoAlgorithms }},
-   * attributes          [0] Attributes{{ CRIAttributes }}
-   * }
-   * SubjectPublicKeyInfo { ALGORITHM : IOSet} ::= SEQUENCE {
-   * algorithm           AlgorithmIdentifier {{IOSet}},
-   * subjectPublicKey    BIT STRING
-   * }
-   * </pre>
-   *
-   * PublicKey's encoded-format has to be RSA X.509.
-   */
-  public void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws IOException, ServletException
-  {
-    // Check if authorized
-    EjbcaWebBean ejbcawebbean= getEjbcaWebBean(request);
-    try{
-      ejbcawebbean.initialize(request, "/ra_functionallity/create_end_entity");
-    } catch(Exception e){
-       throw new java.io.IOException("Authorization Denied");
-    }
-
-    X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
-    if (certs == null) {
-        throw new ServletException("This servlet requires certificate authentication!");
-    }
-
-    Admin admin = new Admin(certs[0]);
-
-    byte[] buffer = pkcs10Bytes(request.getParameter("pkcs10req"));
-    if (buffer == null) {
-        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid request, missing 'pkcs10req'!");
-        return;
-    }
-
-    RAInterfaceBean rabean = getRaBean(request);
-
-    // Decompose the PKCS#10 request, and create the user.
-    PKCS10RequestMessage p10 = new PKCS10RequestMessage(buffer);
-    String dn = p10.getCertificationRequest().getCertificationRequestInfo().getSubject().toString();
-
-    String username = request.getParameter("username");
-    if (username == null || username.trim().length() == 0) {
-      username = dn;
-    }
-    // Strip dangerous chars
-    username = StringTools.strip(username);
-    // need null check here?
-    // Before doing anything else, check if the user name is unique and ok.
-    username = checkUsername(rabean, username);
-
-    UserView newuser = new UserView(ejbcawebbean.getInformationMemory().getCAIdToNameMap());
-    newuser.setUsername(username);
-
-    newuser.setSubjectDN(dn);
-    newuser.setTokenType(SecConst.TOKEN_SOFT_BROWSERGEN);
-    newuser.setAdministrator(false);
-    newuser.setKeyRecoverable(false);
-
-    String email = CertTools.getPartFromDN(dn, "E"); // BC says VeriSign
-    if (email == null) email = CertTools.getPartFromDN(dn, "EMAILADDRESS");
-    if (email != null) {
-      newuser.setEmail(email);
-    }
-
-    String tmp = null;
-    int eProfileId = SecConst.EMPTY_ENDENTITYPROFILE;
-    if ((tmp = request.getParameter("entityprofile")) != null) {
-      int reqId = rabean.getEndEntityProfileId(tmp);
-      if (reqId == 0) {
-        throw new ServletException("No such end entity profile: " + tmp);
-      } else {
-        eProfileId = reqId;
-      }
-    }
-    newuser.setEndEntityProfileId(eProfileId);
-
-    int cProfileId = SecConst.CERTPROFILE_FIXED_ENDUSER;
-    if ((tmp = request.getParameter("certificateprofile")) != null) {
-      CAInterfaceBean cabean = getCaBean(request);
-      int reqId = cabean.getCertificateProfileId(tmp);
-      if (reqId == 0) {
-        throw new ServletException("No such certificate profile: " + tmp);
-      } else {
-        cProfileId = reqId;
-      }
-    }
-    newuser.setCertificateProfileId(cProfileId);
-
-    int caid = 0;
-    if ((tmp = request.getParameter("ca")) != null) {
-        // TODO: get requested CA to sign with
-    }
-    newuser.setCAId(caid);
     
     
-    String password = request.getParameter("password");
-    if (password == null) password = "";
-    newuser.setPassword(password);
-    newuser.setClearTextPassword(false);
-
-    try {
-      rabean.addUser(newuser);
-    } catch (Exception e) {
-      throw new ServletException("Error adding user: " + e.toString(), e);
-    }
-
-    ISignSessionLocal ss;
-    try {
-      ss = signhome.create();
-    } catch (CreateException e) {
-      throw new ServletException(e);
-    }
-
-    byte[] pkcs7;
-    try {
-      p10.setUsername(username);
-      p10.setPassword(password);
-      IResponseMessage resp = ss.createCertificate(admin, p10, Class.forName("se.anatom.ejbca.protocol.X509ResponseMessage"));
-      X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
-      pkcs7 = ss.createPKCS7(admin, cert, true);
-    } catch (ClassNotFoundException e) {
-      // Class not found
-      throw new ServletException(e);
-    } catch (CertificateEncodingException e) {
-      // Error in cert
-      throw new ServletException(e);
-    } catch (CertificateException e) {
-      // Error in cert
-      throw new ServletException(e);
-    } catch (ObjectNotFoundException e) {
-      // User not found
-      throw new ServletException(e);
-    } catch (AuthStatusException e) {
-      // Wrong user status, shouldn't really happen.  The user needs to have
-      // status of NEW, FAILED or INPROCESS.
-      throw new ServletException(e);
-    } catch (AuthLoginException e) {
-      // Wrong username or password, hmm... wasn't the wrong username caught
-      // in the objectnotfoundexception above... and this shouldn't happen.
-      throw new ServletException(e);
-    } catch (IllegalKeyException e) {
-      // Malformed key (?)
-      throw new ServletException(e);
-    } catch (SignRequestException e) {
-      // Invalid request
-      throw new ServletException(e);
-    } catch (SignRequestSignatureException e) {
-      // Invalid signature in certificate request
-      throw new ServletException(e);
-    } catch (CADoesntExistsException e) {
-      // Reqqested CA does not exist
-      throw new ServletException(e);
-    }
-
-    log.debug("Created certificate (PKCS7) for " + username);
-
-    sendNewB64Cert(Base64.encode(pkcs7), response);
-
-  }
-
-
-  public void doGet(HttpServletRequest request, HttpServletResponse response)
+    public void doGet(HttpServletRequest request, HttpServletResponse response)
     throws IOException, ServletException
-  {
-    log.debug(">doGet()");
-    response.setHeader("Allow", "POST");
-    response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "The certificate request servlet only handles the POST method.");
-    log.debug("<doGet()");
-  } // doGet
-
-
-  private void sendNewB64Cert(byte[] b64cert, HttpServletResponse out)
+    {
+        log.debug(">doGet()");
+        response.setHeader("Allow", "POST");
+        response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "The certificate request servlet only handles the POST method.");
+        log.debug("<doGet()");
+    } // doGet
+    
+    
+    private void sendNewB64Cert(byte[] b64cert, HttpServletResponse out)
     throws IOException
-  {
-    out.setContentType("application/octet-stream");
-    out.setHeader("Content-Disposition", "filename=cert.pem");
-    out.setContentLength(b64cert.length +
-                         BEGIN_CERT_LENGTH + END_CERT_LENGTH + (3 *NL_LENGTH));
-
-    ServletOutputStream os = out.getOutputStream();
-    os.write(BEGIN_CERT);
-    os.write(NL);
-    os.write(b64cert);
-    os.write(NL);
-    os.write(END_CERT);
-    os.write(NL);
-    out.flushBuffer();
-  }
-
-
-  /**
-   *
-   */
-  private final static byte[] pkcs10Bytes(String pkcs10)
-  {
-    if (pkcs10 == null) return null;
-    byte[] reqBytes = pkcs10.getBytes();
-    byte[] bytes = null;
-    try {
-      // A real PKCS10 PEM request
-      String beginKey = "-----BEGIN CERTIFICATE REQUEST-----";
-      String endKey   = "-----END CERTIFICATE REQUEST-----";
-      bytes = FileTools.getBytesFromPEM(reqBytes, beginKey, endKey);
-    } catch (IOException e) {
-      try {
-        // Keytool PKCS10 PEM request
-        String beginKey = "-----BEGIN NEW CERTIFICATE REQUEST-----";
-        String endKey   = "-----END NEW CERTIFICATE REQUEST-----";
-        bytes = FileTools.getBytesFromPEM(reqBytes, beginKey, endKey);
-      } catch (IOException e2) {
-        // IE PKCS10 Base64 coded request
-        bytes = Base64.decode(reqBytes);
-      }
+    {
+        out.setContentType("application/octet-stream");
+        out.setHeader("Content-Disposition", "filename=cert.pem");
+        out.setContentLength(b64cert.length +
+                BEGIN_CERT_LENGTH + END_CERT_LENGTH + (3 *NL_LENGTH));
+        
+        ServletOutputStream os = out.getOutputStream();
+        os.write(BEGIN_CERT);
+        os.write(NL);
+        os.write(b64cert);
+        os.write(NL);
+        os.write(END_CERT);
+        os.write(NL);
+        out.flushBuffer();
     }
-    return bytes;
-  }
-
-
-  /**
-   *
-   */
-  private final RAInterfaceBean getRaBean(HttpServletRequest req)
+    
+    
+    /**
+     *
+     */
+    private final static byte[] pkcs10Bytes(String pkcs10)
+    {
+        if (pkcs10 == null) return null;
+        byte[] reqBytes = pkcs10.getBytes();
+        byte[] bytes = null;
+        try {
+            // A real PKCS10 PEM request
+            String beginKey = "-----BEGIN CERTIFICATE REQUEST-----";
+            String endKey   = "-----END CERTIFICATE REQUEST-----";
+            bytes = FileTools.getBytesFromPEM(reqBytes, beginKey, endKey);
+        } catch (IOException e) {
+            try {
+                // Keytool PKCS10 PEM request
+                String beginKey = "-----BEGIN NEW CERTIFICATE REQUEST-----";
+                String endKey   = "-----END NEW CERTIFICATE REQUEST-----";
+                bytes = FileTools.getBytesFromPEM(reqBytes, beginKey, endKey);
+            } catch (IOException e2) {
+                // IE PKCS10 Base64 coded request
+                bytes = Base64.decode(reqBytes);
+            }
+        }
+        return bytes;
+    }
+    
+    
+    /**
+     *
+     */
+    private final RAInterfaceBean getRaBean(HttpServletRequest req)
     throws ServletException
-  {
-    HttpSession session = req.getSession();
-    RAInterfaceBean rabean = (RAInterfaceBean) session.getAttribute("rabean");
-    if (rabean == null) {
-      try {
-        rabean = (RAInterfaceBean) Beans.instantiate(this.getClass().getClassLoader(), "se.anatom.ejbca.webdist.rainterface.RAInterfaceBean");
-      } catch (ClassNotFoundException e) {
-        throw new ServletException(e);
-      } catch (Exception e) {
-        throw new ServletException("Unable to instantiate RAInterfaceBean", e);
-      }
-      try {
-        rabean.initialize(req, getEjbcaWebBean(req));
-      } catch (Exception e) {
-        throw new ServletException("Cannot initialize RAInterfaceBean", e);
-      }
-      session.setAttribute("rabean", rabean);
+    {
+        HttpSession session = req.getSession();
+        RAInterfaceBean rabean = (RAInterfaceBean) session.getAttribute("rabean");
+        if (rabean == null) {
+            try {
+                rabean = (RAInterfaceBean) Beans.instantiate(this.getClass().getClassLoader(), "se.anatom.ejbca.webdist.rainterface.RAInterfaceBean");
+            } catch (ClassNotFoundException e) {
+                throw new ServletException(e);
+            } catch (Exception e) {
+                throw new ServletException("Unable to instantiate RAInterfaceBean", e);
+            }
+            try {
+                rabean.initialize(req, getEjbcaWebBean(req));
+            } catch (Exception e) {
+                throw new ServletException("Cannot initialize RAInterfaceBean", e);
+            }
+            session.setAttribute("rabean", rabean);
+        }
+        return rabean;
     }
-    return rabean;
-  }
-
-
-  /**
-   *
-   */
-  private final EjbcaWebBean getEjbcaWebBean(HttpServletRequest req)
+    
+    
+    /**
+     *
+     */
+    private final EjbcaWebBean getEjbcaWebBean(HttpServletRequest req)
     throws ServletException
-  {
-    HttpSession session = req.getSession();
-    EjbcaWebBean ejbcawebbean= (EjbcaWebBean)session.getAttribute("ejbcawebbean");
-    if ( ejbcawebbean == null ){
-      try {
-        ejbcawebbean = (EjbcaWebBean) java.beans.Beans.instantiate(this.getClass().getClassLoader(), "se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean");
-       } catch (ClassNotFoundException exc) {
-           throw new ServletException(exc.getMessage());
-       }catch (Exception exc) {
-           throw new ServletException (" Cannot create bean of class "+"se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean", exc);
-       }
-       session.setAttribute("ejbcawebbean", ejbcawebbean);
+    {
+        HttpSession session = req.getSession();
+        EjbcaWebBean ejbcawebbean= (EjbcaWebBean)session.getAttribute("ejbcawebbean");
+        if ( ejbcawebbean == null ){
+            try {
+                ejbcawebbean = (EjbcaWebBean) java.beans.Beans.instantiate(this.getClass().getClassLoader(), "se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean");
+            } catch (ClassNotFoundException exc) {
+                throw new ServletException(exc.getMessage());
+            }catch (Exception exc) {
+                throw new ServletException (" Cannot create bean of class "+"se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean", exc);
+            }
+            session.setAttribute("ejbcawebbean", ejbcawebbean);
+        }
+        return ejbcawebbean;
     }
-    return ejbcawebbean;
-  }
-  /**
-   *
-   */
-  private final CAInterfaceBean getCaBean(HttpServletRequest req)
+    /**
+     *
+     */
+    private final CAInterfaceBean getCaBean(HttpServletRequest req)
     throws ServletException
-  {
-    HttpSession session = req.getSession();
-    CAInterfaceBean cabean = (CAInterfaceBean) session.getAttribute("cabean");
-    if (cabean == null) {
-      try {
-        cabean = (CAInterfaceBean) Beans.instantiate(this.getClass().getClassLoader(), "se.anatom.ejbca.webdist.cainterface.CAInterfaceBean");
-      } catch (ClassNotFoundException e) {
-        throw new ServletException(e);
-      } catch (Exception e) {
-        throw new ServletException("Unable to instantiate CAInterfaceBean", e);
-      }
-      try {
-        cabean.initialize(req, getEjbcaWebBean(req));
-      } catch (Exception e) {
-        throw new ServletException("Cannot initialize CAInterfaceBean", e);
-      }
-      session.setAttribute("cabean", cabean);
+    {
+        HttpSession session = req.getSession();
+        CAInterfaceBean cabean = (CAInterfaceBean) session.getAttribute("cabean");
+        if (cabean == null) {
+            try {
+                cabean = (CAInterfaceBean) Beans.instantiate(this.getClass().getClassLoader(), "se.anatom.ejbca.webdist.cainterface.CAInterfaceBean");
+            } catch (ClassNotFoundException e) {
+                throw new ServletException(e);
+            } catch (Exception e) {
+                throw new ServletException("Unable to instantiate CAInterfaceBean", e);
+            }
+            try {
+                cabean.initialize(req, getEjbcaWebBean(req));
+            } catch (Exception e) {
+                throw new ServletException("Cannot initialize CAInterfaceBean", e);
+            }
+            session.setAttribute("cabean", cabean);
+        }
+        return cabean;
     }
-    return cabean;
-  }
-
-
-  /**
-   *
-   */
-  private final String checkUsername(RAInterfaceBean rabean, String username)
+    
+    
+    /**
+     *
+     */
+    private final String checkUsername(RAInterfaceBean rabean, String username)
     throws ServletException
-  {
-    if (username != null) username = username.trim();
-    if (username == null || username.length() == 0) {
-      throw new ServletException("Username must not be empty.");
+    {
+        if (username != null) username = username.trim();
+        if (username == null || username.length() == 0) {
+            throw new ServletException("Username must not be empty.");
+        }
+        
+        String msg = null;
+        try {
+            if (rabean.userExist(username)) {
+                msg = "User '" + username + "' already exists.";
+            }
+        } catch (Exception e) {
+            throw new ServletException("Error checking username '" + username +
+                    ": " + e.toString(), e);
+        }
+        if (msg != null) {
+            throw new ServletException(msg);
+        }
+        
+        return username;
     }
-
-    String msg = null;
-    try {
-      if (rabean.userExist(username)) {
-        msg = "User '" + username + "' already exists.";
-      }
-    } catch (Exception e) {
-      throw new ServletException("Error checking username '" + username +
-                                 ": " + e.toString(), e);
-    }
-    if (msg != null) {
-      throw new ServletException(msg);
-    }
-
-    return username;
-  }
-
+    
 }

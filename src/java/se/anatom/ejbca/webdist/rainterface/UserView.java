@@ -23,12 +23,12 @@ import se.anatom.ejbca.util.StringTools;
 /**
  * A class representing a web interface view of a user in the ra user database.
  *
- * @version $Id: UserView.java,v 1.18 2005-04-21 15:19:59 herrvendil Exp $
+ * @version $Id: UserView.java,v 1.19 2005-04-29 09:15:40 anatom Exp $
  */
 public class UserView implements java.io.Serializable, Cloneable, Comparable {
     // Public constants.
 
-   public UserView(HashMap  caidtonamemap){
+   public UserView(){
       userdata = new UserDataVO();
       userdata.setType(1);
       subjectdnfields = new DNFieldExtractor("", DNFieldExtractor.TYPE_SUBJECTDN);

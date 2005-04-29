@@ -35,7 +35,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Tests the hard token related entity beans.
  *
- * @version $Id: TestHardToken.java,v 1.3 2005-04-21 15:21:17 herrvendil Exp $
+ * @version $Id: TestHardToken.java,v 1.4 2005-04-29 09:16:08 anatom Exp $
  */
 public class TestHardToken extends TestCase {
     private static Logger log = Logger.getLogger(TestHardToken.class);
@@ -174,14 +174,12 @@ public class TestHardToken extends TestCase {
     public void test03FindHardTokenByCertificate() throws Exception {
         log.debug(">test03FindHardTokenByCertificate()");
 
-        boolean ret = false;       
-        
-        X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(testcert);
+        X509Certificate cert = CertTools.getCertfromByteArray(testcert);
         // Store the dummy cert for test.  
         if(certStore.findCertificateByFingerprint(admin, CertTools.getFingerprintAsString(cert)) == null){
           certStore.storeCertificate(admin,cert,"DUMMYUSER", CertTools.getFingerprintAsString(cert),CertificateDataBean.CERT_ACTIVE,CertificateDataBean.CERTTYPE_ENDENTITY);
         }
-        String tokensn = cacheAdmin.findHardTokenByCertificateSNIssuerDN(admin, cert.getSerialNumber(), cert.getIssuerDN().toString());;        
+        String tokensn = cacheAdmin.findHardTokenByCertificateSNIssuerDN(admin, cert.getSerialNumber(), cert.getIssuerDN().toString());        
 
         assertTrue("Couldn't find right hardtokensn", tokensn.equals("1234"));
 

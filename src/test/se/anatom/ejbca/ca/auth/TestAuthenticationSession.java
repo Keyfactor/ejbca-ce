@@ -26,8 +26,6 @@ import junit.framework.TestCase;
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.ca.auth.IAuthenticationSessionHome;
-import se.anatom.ejbca.ca.auth.IAuthenticationSessionRemote;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.common.UserDataVO;
@@ -36,8 +34,7 @@ import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionRemote;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
-import se.anatom.ejbca.ra.UserDataLocal;
-import se.anatom.ejbca.ra. UserDataConstants;
+import se.anatom.ejbca.ra.UserDataConstants;
 import se.anatom.ejbca.ra.raadmin.GlobalConfiguration;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
@@ -46,7 +43,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Tests authentication session used by signer.
  *
- * @version $Id: TestAuthenticationSession.java,v 1.6 2005-04-21 15:20:18 herrvendil Exp $
+ * @version $Id: TestAuthenticationSession.java,v 1.7 2005-04-29 09:16:07 anatom Exp $
  */
 public class TestAuthenticationSession extends TestCase {
     private static Logger log = Logger.getLogger(TestAuthenticationSession.class);
@@ -180,7 +177,7 @@ public class TestAuthenticationSession extends TestCase {
     public void test03FailAuthenticateUser() throws Exception {
         log.debug(">test03FailAuthenticateUser()");
         // Set status to GENERATED so authentication will fail
-        usersession.setUserStatus(admin,username,UserDataLocal.STATUS_GENERATED);
+        usersession.setUserStatus(admin,username,UserDataConstants.STATUS_GENERATED);
         boolean authfailed = false;
         try {
             UserDataVO auth = remote.authenticateUser(admin, username, pwd);

@@ -56,7 +56,7 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
-import se.anatom.ejbca.ra.UserDataLocal;
+import se.anatom.ejbca.ra.UserDataConstants;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
 
@@ -284,7 +284,7 @@ public class ProtocolHttpTest extends TestCase {
 
         if (userExists) {
             log.debug("User ocsptest already exists.");
-            usersession.setUserStatus(admin,"ocsptest",UserDataLocal.STATUS_NEW);
+            usersession.setUserStatus(admin,"ocsptest",UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
         // Generate certificate for the new user

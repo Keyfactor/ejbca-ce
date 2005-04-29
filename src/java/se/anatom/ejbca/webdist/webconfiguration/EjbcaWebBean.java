@@ -13,17 +13,12 @@
  
 package se.anatom.ejbca.webdist.webconfiguration;
 
-import java.io.IOException;
 import java.net.URLDecoder;
-import java.rmi.RemoteException;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.util.Collection;
 import java.util.Date;
 
-import javax.ejb.CreateException;
-import javax.ejb.FinderException;
-import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
@@ -36,8 +31,6 @@ import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome;
 import se.anatom.ejbca.ca.publisher.IPublisherSessionLocal;
 import se.anatom.ejbca.ca.publisher.IPublisherSessionLocalHome;
-import se.anatom.ejbca.ca.sign.ISignSessionLocal;
-import se.anatom.ejbca.ca.sign.ISignSessionLocalHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
 import se.anatom.ejbca.hardtoken.IHardTokenSessionLocal;
@@ -61,7 +54,7 @@ import se.anatom.ejbca.util.ServiceLocatorException;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.41 2005-03-21 11:58:51 anatom Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.42 2005-04-29 09:15:39 anatom Exp $
  */
 public class EjbcaWebBean {
 
@@ -92,7 +85,6 @@ public class EjbcaWebBean {
     private GlobalConfiguration            globalconfiguration;
     private GlobalConfigurationDataHandler globaldataconfigurationdatahandler;
     private AuthorizationDataHandler       authorizedatahandler;
-    private WebLanguages                   weblanguages;
     private WebLanguages                   adminsweblanguage;
     private String                         usercommonname = "";
     private String                         certificatefingerprint;
@@ -106,8 +98,7 @@ public class EjbcaWebBean {
     
 
     /** Creates a new instance of EjbcaWebBean */
-    public EjbcaWebBean() throws IOException, NamingException, CreateException,
-                                 FinderException, RemoteException{
+    public EjbcaWebBean() {
       initialized=false;
       raauthorized = new Boolean[AUTHORIZED_FIELD_LENGTH];
     }
@@ -115,8 +106,6 @@ public class EjbcaWebBean {
 
     private void commonInit() throws Exception {
         ServiceLocator locator = ServiceLocator.getInstance();
-        ISignSessionLocalHome signsessionhome = (ISignSessionLocalHome) locator.getLocalHome(ISignSessionLocalHome.COMP_NAME);
-        ISignSessionLocal signsession = signsessionhome.create();
 
     	IRaAdminSessionLocalHome raadminsessionhome = (IRaAdminSessionLocalHome) locator.getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
     	IRaAdminSessionLocal raadminsession = raadminsessionhome.create();
@@ -141,7 +130,7 @@ public class EjbcaWebBean {
     	
     	globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler(administrator, raadminsession, authorizationsession);        
     	globalconfiguration = this.globaldataconfigurationdatahandler.loadGlobalConfiguration();
-    	this.informationmemory = new InformationMemory(administrator, caadminsession, raadminsession, authorizationsession, signsession, certificatestoresession, hardtokensession, publishersession, globalconfiguration);
+    	this.informationmemory = new InformationMemory(administrator, caadminsession, raadminsession, authorizationsession, certificatestoresession, hardtokensession, publishersession, globalconfiguration);
     	
     	authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, authorizationsession);
     	
@@ -163,7 +152,6 @@ public class EjbcaWebBean {
     		IUserAdminSessionLocal  adminsession = adminsessionhome.create();
     		
     		adminspreferences = new AdminPreferenceDataHandler(administrator);
-    		weblanguages = new WebLanguages(globalconfiguration);
     		
     		// Check if user certificate is revoked
     		authorizedatahandler.authenticate(certificates[0]);
@@ -217,7 +205,6 @@ public class EjbcaWebBean {
         commonInit(); 
         
         adminspreferences = new AdminPreferenceDataHandler(administrator);
-        weblanguages = new WebLanguages(globalconfiguration);
 
         if(currentadminpreference == null){
            currentadminpreference = adminspreferences.getDefaultAdminPreference();
@@ -524,7 +511,7 @@ public class EjbcaWebBean {
                                           ,currentadminpreference.getSecondaryLanguage());
     }
   
-    public Collection getAuthorizedCAIds(){;
+    public Collection getAuthorizedCAIds(){
       return this.informationmemory.getAuthorizedCAIds();
     }
     
@@ -566,7 +553,7 @@ public class EjbcaWebBean {
     public String getDefaultContentEncoding() {
         String ret = null;
         try {
-            ret = (String) ServiceLocator.getInstance().getString("java:comp/env/contentEncoding");            
+            ret = ServiceLocator.getInstance().getString("java:comp/env/contentEncoding");            
         } catch (ServiceLocatorException e) {
             log.debug("Can not find any default content encoding, using hard default ISO-8859-1.");
             ret = "ISO-8859-1";            

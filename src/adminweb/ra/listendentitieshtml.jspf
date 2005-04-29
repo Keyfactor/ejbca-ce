@@ -194,7 +194,7 @@ function confirmrevokation(){
   <table width="100%" border="0" cellspacing="1" cellpadding="0">
     <tr> 
       <td width="14%"> 
-        <% if(rabean.previousButton(record,size) ){ %>
+        <% if(rabean.previousButton(record) ){ %>
           <input type="submit" name="<%=BUTTON_PREVIOUS %>" value="<%= ejbcawebbean.getText("PREVIOUS") %>">
         <% } %>
       </td>
@@ -384,7 +384,7 @@ function confirmrevokation(){
   <table width="100%" border="0" cellspacing="1" cellpadding="0">
     <tr>
       <td width="14%">
-        <% if(rabean.previousButton(record,size)){ %>
+        <% if(rabean.previousButton(record)){ %>
           <input type="submit" name="<%=BUTTON_PREVIOUS %>" value="<%= ejbcawebbean.getText("PREVIOUS") %>">
         <% } %>
       </td>
