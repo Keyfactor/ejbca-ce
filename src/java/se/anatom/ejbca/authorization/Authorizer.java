@@ -13,20 +13,17 @@
 
 package se.anatom.ejbca.authorization;
 
-import java.rmi.RemoteException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-
-import javax.ejb.CreateException;
-import javax.naming.NamingException;
 
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
+import se.anatom.ejbca.log.LogConstants;
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
 import se.anatom.ejbca.util.CertTools;
@@ -36,7 +33,7 @@ import se.anatom.ejbca.util.CertTools;
  *
  * The main metod are isAthorized and authenticate.
  *
- * @version $Id: Authorizer.java,v 1.11 2005-02-11 13:12:19 anatom Exp $
+ * @version $Id: Authorizer.java,v 1.12 2005-04-29 08:16:10 anatom Exp $
  */
 public class Authorizer extends Object implements java.io.Serializable{
     
@@ -45,8 +42,7 @@ public class Authorizer extends Object implements java.io.Serializable{
     /** Creates new EjbcaAthorization */
     public Authorizer(Collection admingroups, AdminGroupDataLocalHome  admingrouphome,
             ILogSessionLocal logsession, ICertificateStoreSessionLocal certificatestoresession, 
-            IRaAdminSessionLocal raadminsession, ICAAdminSessionLocal caadminsession, Admin admin, int module) 
-    throws NamingException, CreateException, RemoteException {
+            IRaAdminSessionLocal raadminsession, ICAAdminSessionLocal caadminsession, Admin admin, int module) {
         accesstree = new AccessTree();
         authorizationproxy = new AuthorizationProxy(admingrouphome, accesstree);
         buildAccessTree(admingroups);
@@ -54,8 +50,7 @@ public class Authorizer extends Object implements java.io.Serializable{
         this.module=module;
         this.certificatesession = certificatestoresession;
         this.raadminsession = raadminsession;
-        this.caadminsession = caadminsession;                 
-        
+        this.caadminsession = caadminsession;        
     }
     
     // Public methods.
@@ -79,14 +74,14 @@ public class Authorizer extends Object implements java.io.Serializable{
             if(!admininformation.isSpecialUser()) {
                 logsession.log(admin, admininformation.getX509Certificate(), module,   new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Resource : " + resource);
             } else {
-                logsession.log(admin, ILogSessionLocal.INTERNALCAID, module,   new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Resource : " + resource);
+                logsession.log(admin, LogConstants.INTERNALCAID, module,   new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Resource : " + resource);
             }
             throw  new AuthorizationDeniedException("Administrator not authorized to resource : " + resource);
         }
         if(!admininformation.isSpecialUser()) {
             logsession.log(admin,admininformation.getX509Certificate(),  module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,"Resource : " + resource);       
         } else {
-            logsession.log(admin, ILogSessionLocal.INTERNALCAID,  module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,"Resource : " + resource);
+            logsession.log(admin, LogConstants.INTERNALCAID,  module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,"Resource : " + resource);
         }
         
         return true;
@@ -130,14 +125,14 @@ public class Authorizer extends Object implements java.io.Serializable{
             if(!admininformation.isSpecialUser()) {
                 logsession.log(admin, admininformation.getX509Certificate(), module,   new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);
             } else {
-                logsession.log(admin, ILogSessionLocal.INTERNALCAID, module,   new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);
+                logsession.log(admin, LogConstants.INTERNALCAID, module,   new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);
             }
             throw  new AuthorizationDeniedException("Administrator group not authorized to resource : " + resource);
         }
         if(!admininformation.isSpecialUser()) {
             logsession.log(admin,admininformation.getX509Certificate(),  module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);       
         } else {
-            logsession.log(admin, ILogSessionLocal.INTERNALCAID,  module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);
+            logsession.log(admin, LogConstants.INTERNALCAID,  module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,"Adminstrator group not authorized to resource : " + resource);
         }
         
         return true;

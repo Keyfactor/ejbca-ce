@@ -66,8 +66,6 @@ import se.anatom.ejbca.ra.UserDataLocalHome;
  *   business="se.anatom.ejbca.ra.UserDataLocal"
  *   link="UserData"
  *
- * todo FIXME it is a copy if ejb-jar.xml and the type is entity while it is a session bean
- *
  * @ejb.ejb-external-ref
  *   description="The Certificate Store session bean"
  *   view-type="local"
@@ -109,9 +107,6 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
     /** Columns in the database used in select */
     private static final String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearpassword, timeCreated, timeModified, endEntityprofileId, certificateProfileId, tokenType, hardTokenIssuerId, cAId";
 
-    /** The home interface of  User Admin entity bean */
-    private UserDataLocalHome useradminsession = null;
-
     /** The local interface of  hard token session bean */
     private IHardTokenSessionLocal hardtokensession = null;
 
@@ -126,12 +121,6 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
      */
 
     public void ejbCreate() throws CreateException {
-      try{
-        useradminsession = (UserDataLocalHome) getLocator().getLocalHome(UserDataLocalHome.COMP_NAME);
-      }catch(Exception e){
-         throw new EJBException(e);
-      }
-
     }
 
 

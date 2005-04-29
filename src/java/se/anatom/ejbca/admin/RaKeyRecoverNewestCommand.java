@@ -17,7 +17,7 @@ import javax.naming.InitialContext;
 
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionHome;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionRemote;
-import se.anatom.ejbca.ra.UserDataLocal;
+import se.anatom.ejbca.ra.UserDataConstants;
 
 
 /**
@@ -52,8 +52,6 @@ public class RaKeyRecoverNewestCommand extends BaseRaAdminCommand {
             //InitialContext jndicontext = new InitialContext();
             InitialContext jndicontext = getInitialContext();
 
-            Object obj1 = jndicontext.lookup("CertificateStoreSession");
-            obj1 = jndicontext.lookup("KeyRecoverySession");
             IKeyRecoverySessionHome keyrecoverysessionhome = (IKeyRecoverySessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup(
                         "KeyRecoverySession"), IKeyRecoverySessionHome.class);
             IKeyRecoverySessionRemote keyrecoverysession = keyrecoverysessionhome.create();
@@ -73,7 +71,7 @@ public class RaKeyRecoverNewestCommand extends BaseRaAdminCommand {
              
              keyrecoverysession.markNewestAsRecoverable(administrator, username);
         
-             getAdminSession().setUserStatus(administrator, username, UserDataLocal.STATUS_KEYRECOVERY); 
+             getAdminSession().setUserStatus(administrator, username, UserDataConstants.STATUS_KEYRECOVERY); 
              getOutputStream().println("Key corresponding to users newest certificate has been marked for recovery.");             
  
 

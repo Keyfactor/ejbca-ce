@@ -116,7 +116,7 @@ public abstract class CertificateProfileDataBean extends BaseEntityBean {
     public CertificateProfile getCertificateProfile() {
         CertificateProfile returnval = null;
 
-        switch (((Integer) (((HashMap) getData()).get(CertificateProfile.TYPE))).intValue()) {
+        switch (((Integer) (getData().get(CertificateProfile.TYPE))).intValue()) {
             case CertificateProfile.TYPE_ROOTCA:
                 returnval = new RootCACertificateProfile();
 
@@ -129,7 +129,7 @@ public abstract class CertificateProfileDataBean extends BaseEntityBean {
                 returnval = new EndUserCertificateProfile();
         }
 
-        returnval.loadData((Object) getData());
+        returnval.loadData(getData());
 
         return returnval;
     }

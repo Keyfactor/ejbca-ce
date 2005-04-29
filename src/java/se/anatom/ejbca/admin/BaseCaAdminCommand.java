@@ -16,7 +16,6 @@ package se.anatom.ejbca.admin;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
@@ -25,9 +24,7 @@ import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import javax.ejb.CreateException;
 import javax.naming.Context;
-import javax.naming.NamingException;
 
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
@@ -44,7 +41,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Base for CA commands, contains comom functions for CA operations
  *
- * @version $Id: BaseCaAdminCommand.java,v 1.20 2005-02-03 16:59:50 anatom Exp $
+ * @version $Id: BaseCaAdminCommand.java,v 1.21 2005-04-29 08:15:45 anatom Exp $
  */
 public abstract class BaseCaAdminCommand extends BaseAdminCommand {
     /** Private key alias in PKCS12 keystores */
@@ -122,7 +119,7 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
         debug("<makeCertRequest: dn='" + dn + "', reqfile='" + reqfile + "'.");
     } // makeCertRequest
 
-    protected void createCRL(String issuerdn) throws NamingException, CreateException, RemoteException {
+    protected void createCRL(String issuerdn) {
         debug(">createCRL()");
 
         try {

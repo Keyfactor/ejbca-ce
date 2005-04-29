@@ -37,7 +37,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.18 2005-03-13 14:14:39 anatom Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.19 2005-04-29 08:16:11 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents an authorization usergroup"
@@ -394,9 +394,7 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
     }
 
     public void ejbPostCreate(Integer pk, String admingroupname, int caid) {
-
         // Do nothing. Required.
-
     }
 
     // Private Methods.

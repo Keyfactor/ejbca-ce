@@ -16,7 +16,6 @@ package se.anatom.ejbca.admin;
 import java.beans.XMLDecoder;
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.HashMap;
 
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.exception.CertificateProfileExistsException;
@@ -28,7 +27,7 @@ import se.anatom.ejbca.ra.raadmin.EndEntityProfileExistsException;
 /**
  * Export profiles from the databse to XML-files.
  *
- * @version $Id: CaImportProfilesCommand.java,v 1.9 2005-02-11 14:01:29 anatom Exp $
+ * @version $Id: CaImportProfilesCommand.java,v 1.10 2005-04-29 08:15:45 anatom Exp $
  */
 public class CaImportProfilesCommand extends BaseCaAdminCommand {
     /**
@@ -115,7 +114,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                     XMLDecoder decoder = new XMLDecoder( is );
                                     if (entityprofile) {
                                         eprofile = new EndEntityProfile();
-                                        eprofile.loadData((HashMap)decoder.readObject());
+                                        eprofile.loadData(decoder.readObject());
                                         try{                                        
                                             getRaAdminSession().addEndEntityProfile(administrator,profileid,profilename,eprofile);
                                             getOutputStream().println("Added entity profile '"+profilename+"' to database.");
@@ -124,7 +123,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         }                                        
                                     } else {
                                         cprofile = new CertificateProfile();
-                                        cprofile.loadData((HashMap)decoder.readObject());
+                                        cprofile.loadData(decoder.readObject());
                                         try{                                        
                                             getCertificateStoreSession().addCertificateProfile(administrator,profileid,profilename,cprofile);
                                             getOutputStream().println("Added certificate profile '"+profilename+"' to database.");

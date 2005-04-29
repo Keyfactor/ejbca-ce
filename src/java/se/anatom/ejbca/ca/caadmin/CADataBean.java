@@ -37,7 +37,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.12 2005-03-13 14:14:39 anatom Exp $
+ * @version $Id: CADataBean.java,v 1.13 2005-04-29 08:16:30 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a publisher"
@@ -174,7 +174,7 @@ public abstract class CADataBean extends BaseEntityBean {
              
         switch(((Integer)(data.get(CA.CATYPE))).intValue()){
             case CAInfo.CATYPE_X509:
-              ca = (CA) new X509CA(data, this);
+              ca = new X509CA(data, this);
               break;
         }      
       }

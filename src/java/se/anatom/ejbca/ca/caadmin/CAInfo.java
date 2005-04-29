@@ -20,7 +20,7 @@ import java.util.Date;
 /**
  * Holds nonsensitive information about a CA.
  *
- * @version $Id: CAInfo.java,v 1.7 2005-04-11 05:39:12 herrvendil Exp $
+ * @version $Id: CAInfo.java,v 1.8 2005-04-29 08:16:28 anatom Exp $
  */
 public abstract class CAInfo implements Serializable {
 
@@ -87,7 +87,7 @@ public abstract class CAInfo implements Serializable {
     public int getRevokationReason(){ return this.revokationreason;}
     public Date getRevokationDate(){ return this.revokationdate;}    
     
-    public int getCertificateProfileId(){ return this.certificateprofileid; };
+    public int getCertificateProfileId(){ return this.certificateprofileid; }
     
     public int getCRLPeriod(){ return crlperiod;}
     public void setCRLPeriod(int crlperiod){ this.crlperiod=crlperiod;}

@@ -29,6 +29,7 @@ import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
 import se.anatom.ejbca.log.LogEntry;
+import se.anatom.ejbca.ra.UserDataConstants;
 import se.anatom.ejbca.ra.UserDataLocal;
 import se.anatom.ejbca.ra.UserDataLocalHome;
 import se.anatom.ejbca.ra.UserDataPK;
@@ -39,7 +40,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.34 2005-04-21 15:15:40 herrvendil Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.35 2005-04-29 08:13:59 anatom Exp $
  *
  * @ejb.bean
  *   display-name="AuthenticationSB"
@@ -184,7 +185,7 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data = userHome.findByPrimaryKey(pk);
             int status = data.getStatus();
-            if ( (status == UserDataLocal.STATUS_NEW) || (status == UserDataLocal.STATUS_FAILED) || (status == UserDataLocal.STATUS_INPROCESS) || (status == UserDataLocal.STATUS_KEYRECOVERY)) {
+            if ( (status == UserDataConstants.STATUS_NEW) || (status == UserDataConstants.STATUS_FAILED) || (status == UserDataConstants.STATUS_INPROCESS) || (status == UserDataConstants.STATUS_KEYRECOVERY)) {
                 debug("Trying to authenticate user: username="+data.getUsername()+", dn="+data.getSubjectDN()+", email="+data.getSubjectEmail()+", status="+data.getStatus()+", type="+data.getType());
                 if (data.comparePassword(password) == false)
                 {
@@ -199,10 +200,9 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
                 ret.setPassword(data.getClearPassword());                             
                 debug("<authenticateUser("+username+", hiddenpwd)");
                 return ret;
-            } else {
-                logsession.log(admin, data.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"Got request with status '"+status+"', NEW, FAILED or INPROCESS required: "+username);
-                throw new AuthStatusException("User "+username+" has status '"+status+"', NEW, FAILED or INPROCESS required.");
             }
+            logsession.log(admin, data.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"Got request with status '"+status+"', NEW, FAILED or INPROCESS required: "+username);
+            throw new AuthStatusException("User "+username+" has status '"+status+"', NEW, FAILED or INPROCESS required.");
         } catch (ObjectNotFoundException oe) {
             logsession.log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"Got request for nonexisting user: "+username);
             throw oe;
@@ -235,7 +235,7 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
             // Find the user with username username
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data = userHome.findByPrimaryKey(pk);
-            data.setStatus(UserDataLocal.STATUS_GENERATED);
+            data.setStatus(UserDataConstants.STATUS_GENERATED);
             data.setTimeModified((new Date()).getTime()); 
             // Reset key recoveryflag if keyrecovery is used.
             if(this.getKeyRecoverySession(admin) != null){     

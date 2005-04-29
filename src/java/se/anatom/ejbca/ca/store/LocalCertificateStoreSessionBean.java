@@ -65,7 +65,7 @@ import se.anatom.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.82 2005-04-21 15:17:24 herrvendil Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.83 2005-04-29 08:17:03 anatom Exp $
  * @ejb.bean display-name="CertificateStoreSB"
  * name="CertificateStoreSession"
  * view-type="both"
@@ -488,7 +488,6 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
         Connection con = null;
         PreparedStatement ps = null;
-        ;
         ResultSet result = null;
         ArrayList returnval = new ArrayList();
         long currentdate = new Date().getTime();
@@ -1338,16 +1337,14 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      */
     public void addCertReqHistoryData(Admin admin, Certificate certificate, UserDataVO useradmindata){
     	X509Certificate cert = (X509Certificate) certificate;
+        debug(">addCertReqHistData(" + cert.getSerialNumber() + ", " + cert.getIssuerDN() + ", " + useradmindata.getUsername() + ")");
         try {
-            
-            debug(">addCertReqHistData(" + cert.getSerialNumber() + ", " + cert.getIssuerDN() + ", " + useradmindata.getUsername() + ")");
-
             CertReqHistoryDataPK pk = new CertReqHistoryDataPK();
             pk.fingerprint = CertTools.getFingerprintAsString(cert);
-            CertReqHistoryDataLocal data1 = this.certReqHistoryHome.create(cert,useradmindata);
+            certReqHistoryHome.create(cert,useradmindata);
             getLogSession().log(admin, cert, LogEntry.MODULE_CA, new java.util.Date(), useradmindata.getUsername(), (X509Certificate) cert, LogEntry.EVENT_INFO_STORECERTIFICATE, "Storing certificate request history successful.");            
         } catch (Exception e) {
-            getLogSession().log(admin, (X509Certificate) cert, LogEntry.MODULE_CA, new java.util.Date(), useradmindata.getUsername(), cert, LogEntry.EVENT_ERROR_STORECERTIFICATE, "Error storing certificate request history.");
+            getLogSession().log(admin, cert, LogEntry.MODULE_CA, new java.util.Date(), useradmindata.getUsername(), cert, LogEntry.EVENT_ERROR_STORECERTIFICATE, "Error storing certificate request history.");
             throw new EJBException(e);
         }
         debug("<addCertReqHistData()");    	

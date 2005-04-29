@@ -22,7 +22,7 @@ package se.anatom.ejbca.authorization;
  * If needed it can easily be replaced with an int pk and programatic logic to handle 
  * constraints. From the database view the pk is just an int.
  * 
- * @version $Id: AdminEntityPK.java,v 1.8 2005-03-13 14:14:39 anatom Exp $
+ * @version $Id: AdminEntityPK.java,v 1.9 2005-04-29 08:16:11 anatom Exp $
  */
 public final class AdminEntityPK implements java.io.Serializable {
 
@@ -32,13 +32,13 @@ public final class AdminEntityPK implements java.io.Serializable {
         this.PK =
         ((admingroupname==null?0:admingroupname.hashCode())
         ^
-        ((int) caid)
+        (caid)
         ^
-        ((int) matchwith)
+        (matchwith)
         ^
         (matchvalue==null?0:matchvalue.hashCode())
         ^
-        ((int) matchtype));
+        (matchtype));
     }
 
     public AdminEntityPK() {

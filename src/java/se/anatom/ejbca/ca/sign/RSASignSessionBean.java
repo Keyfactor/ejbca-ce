@@ -215,7 +215,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             publishHome = (IPublisherSessionLocalHome) getLocator().getLocalHome(IPublisherSessionLocalHome.COMP_NAME);
 
             // Get a decent source of random data
-            String randomAlgorithm = (String) getLocator().getString("java:comp/env/randomAlgorithm");
+            String randomAlgorithm = getLocator().getString("java:comp/env/randomAlgorithm");
             randomSource = SecureRandom.getInstance(randomAlgorithm);
             SernoGenerator.setAlgorithm(randomAlgorithm);
 

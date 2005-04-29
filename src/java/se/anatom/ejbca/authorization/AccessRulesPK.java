@@ -22,7 +22,7 @@ package se.anatom.ejbca.authorization;
  * If needed it can easily be replaced with an int pk and programatic logic to handle 
  * constraints. From the database view the pk is just an int.
  * 
- * @version $Id: AccessRulesPK.java,v 1.8 2005-03-13 14:14:39 anatom Exp $
+ * @version $Id: AccessRulesPK.java,v 1.9 2005-04-29 08:16:11 anatom Exp $
  */
 
 public final class AccessRulesPK implements java.io.Serializable {
@@ -34,7 +34,7 @@ public final class AccessRulesPK implements java.io.Serializable {
         this.PK =
         ((admingroupname==null?0:admingroupname.hashCode())
         ^
-        ((int) caid)
+        (caid)
         ^ 
         (accessrule.getAccessRule()==null?0:accessrule.getAccessRule().hashCode()));
     }

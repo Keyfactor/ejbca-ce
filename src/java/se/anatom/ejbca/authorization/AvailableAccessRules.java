@@ -15,12 +15,8 @@ package se.anatom.ejbca.authorization;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-
-import javax.ejb.CreateException;
-import javax.naming.NamingException;
 
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.log.Admin;
@@ -30,7 +26,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
 /**
  * 
  *
- * @version $Id: AvailableAccessRules.java,v 1.10 2005-02-03 09:07:24 herrvendil Exp $
+ * @version $Id: AvailableAccessRules.java,v 1.11 2005-04-29 08:16:11 anatom Exp $
  */
 public class AvailableAccessRules {
         
@@ -148,7 +144,7 @@ public class AvailableAccessRules {
                                                         
                                                         
     /** Creates a new instance of AvailableAccessRules */
-    public AvailableAccessRules(Admin admin, Authorizer authorizer, IRaAdminSessionLocal raadminsession, String[] customaccessrules) throws NamingException, CreateException {   
+    public AvailableAccessRules(Admin admin, Authorizer authorizer, IRaAdminSessionLocal raadminsession, String[] customaccessrules) {   
       // Initialize
       this.raadminsession = raadminsession;  
       this.authorizer = authorizer;
@@ -165,8 +161,6 @@ public class AvailableAccessRules {
       }catch(AuthorizationDeniedException e){
         issuperadministrator=false;
       }
-      // Get End Entity Profiles
-      endentityprofiles = raadminsession.getEndEntityProfileIdToNameMap(admin);
       
       // Get CA:s
       authorizedcaids = new HashSet();
@@ -328,7 +322,6 @@ public class AvailableAccessRules {
     private boolean enableendentityprofilelimitations;
     private boolean usehardtokenissuing;
     private boolean usekeyrecovery;
-    private HashMap endentityprofiles;
     private HashSet authorizedcaids;
     private String[] customaccessrules;
     

@@ -36,6 +36,7 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
+import se.anatom.ejbca.log.LogConstants;
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
@@ -46,7 +47,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.22 2005-03-13 14:14:39 anatom Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.23 2005-04-29 08:16:10 anatom Exp $
  *
  * @ejb.bean
  *   description="Session bean handling interface with ra authorization"
@@ -325,12 +326,12 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
         // Add Special Admin Group
         // Special admin group is a group that is not authenticated with client certificate, such as batch tool etc
         try {
-            admingrouphome.findByGroupNameAndCAId(DEFAULTGROUPNAME, ILogSessionLocal.INTERNALCAID);
+            admingrouphome.findByGroupNameAndCAId(DEFAULTGROUPNAME, LogConstants.INTERNALCAID);
         } catch (FinderException e) {
         	debug("initialize: FinderEx, add default group.");
             // Add Default Special Admin Group
             try {
-                AdminGroupDataLocal agdl = admingrouphome.create(new Integer(findFreeAdminGroupId()), DEFAULTGROUPNAME, ILogSessionLocal.INTERNALCAID);
+                AdminGroupDataLocal agdl = admingrouphome.create(new Integer(findFreeAdminGroupId()), DEFAULTGROUPNAME, LogConstants.INTERNALCAID);
 
                 ArrayList adminentities = new ArrayList();
                 adminentities.add(new AdminEntity(AdminEntity.SPECIALADMIN_BATCHCOMMANDLINEADMIN));
@@ -495,7 +496,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public void addAdminGroup(Admin admin, String admingroupname, int caid) throws AdminGroupExistsException {
-        if (!(admingroupname.equals(DEFAULTGROUPNAME) && caid == ILogSessionLocal.INTERNALCAID)) {
+        if (!(admingroupname.equals(DEFAULTGROUPNAME) && caid == LogConstants.INTERNALCAID)) {
 
             boolean success = true;
             try {
@@ -529,7 +530,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public void removeAdminGroup(Admin admin, String admingroupname, int caid) {
-        if (!(admingroupname.equals(DEFAULTGROUPNAME) && caid == ILogSessionLocal.INTERNALCAID)) {
+        if (!(admingroupname.equals(DEFAULTGROUPNAME) && caid == LogConstants.INTERNALCAID)) {
             try {
                 AdminGroupDataLocal agl = admingrouphome.findByGroupNameAndCAId(admingroupname, caid);
                 // Remove groups user entities.
@@ -561,7 +562,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public void renameAdminGroup(Admin admin, String oldname, int caid, String newname) throws AdminGroupExistsException {
-        if (!(oldname.equals(DEFAULTGROUPNAME) && caid == ILogSessionLocal.INTERNALCAID)) {
+        if (!(oldname.equals(DEFAULTGROUPNAME) && caid == LogConstants.INTERNALCAID)) {
             boolean success = false;
             AdminGroupDataLocal agl = null;
             try {
@@ -697,7 +698,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
                 allauthorized = authorizedcaids.containsAll(groupcaids);
 
                 if (issuperadmin || ((allauthorized || carecursive) && authtogroup && !superadmingroup)) {
-                    if (!agdl.getAdminGroupName().equals(PUBLICWEBGROUPNAME) && !(agdl.getAdminGroupName().equals(DEFAULTGROUPNAME) && agdl.getCaId() == ILogSessionLocal.INTERNALCAID))
+                    if (!agdl.getAdminGroupName().equals(PUBLICWEBGROUPNAME) && !(agdl.getAdminGroupName().equals(DEFAULTGROUPNAME) && agdl.getCaId() == LogConstants.INTERNALCAID))
                         returnval.add(agdl.getAdminGroupNames());
                 }
             }
@@ -712,7 +713,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public void addAccessRules(Admin admin, String admingroupname, int caid, Collection accessrules) {
-        if (!(admingroupname.equals(DEFAULTGROUPNAME) && caid == ILogSessionLocal.INTERNALCAID)) {
+        if (!(admingroupname.equals(DEFAULTGROUPNAME) && caid == LogConstants.INTERNALCAID)) {
             try {
                 (admingrouphome.findByGroupNameAndCAId(admingroupname, caid)).addAccessRules(accessrules);
                 signalForAuthorizationTreeUpdate();
@@ -731,7 +732,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public void removeAccessRules(Admin admin, String admingroupname, int caid, Collection accessrules) {
-        if (!(admingroupname.equals(DEFAULTGROUPNAME) && caid == ILogSessionLocal.INTERNALCAID)) {
+        if (!(admingroupname.equals(DEFAULTGROUPNAME) && caid == LogConstants.INTERNALCAID)) {
             try {
                 (admingrouphome.findByGroupNameAndCAId(admingroupname, caid)).removeAccessRules(accessrules);
                 signalForAuthorizationTreeUpdate();
@@ -749,7 +750,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public void replaceAccessRules(Admin admin, String admingroupname, int caid, Collection accessrules) {
-        if (!(admingroupname.equals(DEFAULTGROUPNAME) && caid == ILogSessionLocal.INTERNALCAID)) {
+        if (!(admingroupname.equals(DEFAULTGROUPNAME) && caid == LogConstants.INTERNALCAID)) {
             try {
                 AdminGroupDataLocal agdl = admingrouphome.findByGroupNameAndCAId(admingroupname, caid);
                 Collection currentrules = agdl.getAdminGroup().getAccessRules();
@@ -776,7 +777,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      */
 
     public void addAdminEntities(Admin admin, String admingroupname, int caid, Collection adminentities) {
-        if (!(admingroupname.equals(DEFAULTGROUPNAME) && caid == ILogSessionLocal.INTERNALCAID)) {
+        if (!(admingroupname.equals(DEFAULTGROUPNAME) && caid == LogConstants.INTERNALCAID)) {
             try {
                 (admingrouphome.findByGroupNameAndCAId(admingroupname, caid)).addAdminEntities(adminentities);
                 signalForAuthorizationTreeUpdate();
@@ -795,7 +796,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public void removeAdminEntities(Admin admin, String admingroupname, int caid, Collection adminentities) {
-        if (!(admingroupname.equals(DEFAULTGROUPNAME) && caid == ILogSessionLocal.INTERNALCAID)) {
+        if (!(admingroupname.equals(DEFAULTGROUPNAME) && caid == LogConstants.INTERNALCAID)) {
             try {
                 (admingrouphome.findByGroupNameAndCAId(admingroupname, caid)).removeAdminEntities(adminentities);
                 signalForAuthorizationTreeUpdate();

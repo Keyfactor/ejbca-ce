@@ -51,7 +51,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.15 2005-04-21 15:15:59 herrvendil Exp $
+ * @version $Id: CA.java,v 1.16 2005-04-29 08:16:29 anatom Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -192,10 +192,10 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         if (ret == null) {
             switch(((Integer) ((HashMap)data.get(CATOKENDATA)).get(CAToken.CATOKENTYPE)).intValue()) {
             case CATokenInfo.CATOKENTYPE_P12:
-                ret = (CAToken) new SoftCAToken((HashMap)data.get(CATOKENDATA));
+                ret = new SoftCAToken((HashMap)data.get(CATOKENDATA));
                 break;
             case CATokenInfo.CATOKENTYPE_HSM:
-                ret = (CAToken) new HardCATokenContainer((HashMap)data.get(CATOKENDATA)); 
+                ret = new HardCATokenContainer((HashMap)data.get(CATOKENDATA)); 
                 break;
             case CATokenInfo.CATOKENTYPE_NULL:
                 ret = new NullCAToken();
@@ -212,7 +212,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @param catoken The CAs token, be it soft or hard.
      */
     public void setCAToken(CAToken catoken){
-       data.put(CATOKENDATA, (HashMap) catoken.saveData());        
+       data.put(CATOKENDATA, catoken.saveData());        
        HardCATokenManager.instance().addCAToken(getCAId(), catoken);
     }
     
@@ -231,7 +231,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         }        
       }
         
-      return (Collection) requestcertchain; 
+      return requestcertchain; 
     }
     
     public void setRequestCertificateChain(Collection requestcertificatechain){
@@ -266,8 +266,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 		  }
 		}        
 	  }
-        
-	  return (Collection) certificatechain; 
+	  return certificatechain; 
 	}
     
 	public void setCertificateChain(Collection certificatechain){
@@ -421,7 +420,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     
 	protected void setExtendedCAService(ExtendedCAService extendedcaservice){  
       if(extendedcaservice instanceof OCSPCAService){		
-	    data.put(EXTENDEDCASERVICE+OCSPCAService.TYPE, (HashMap) extendedcaservice.saveData());    
+	    data.put(EXTENDEDCASERVICE+OCSPCAService.TYPE, extendedcaservice.saveData());    
 	    extendedcaservicemap.put(new Integer(OCSPCAService.TYPE), extendedcaservice);
       }   	
 	}

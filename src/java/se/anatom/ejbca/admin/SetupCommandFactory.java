@@ -16,7 +16,7 @@ package se.anatom.ejbca.admin;
 /**
  * Factory for General Setup Commands.
  *
- * @version $Id: SetupCommandFactory.java,v 1.2 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: SetupCommandFactory.java,v 1.3 2005-04-29 08:15:46 anatom Exp $
  */
 public class SetupCommandFactory {
     /**
@@ -39,13 +39,7 @@ public class SetupCommandFactory {
 
         if (args[0].equals("setbaseurl")) {
             return new SetupSetBaseURLCommand(args);
-        }  else {
-            return null;
         }
-    }
-
-    // getCommand
-}
-
-
-// CaAdminCommandFactory
+        return null;
+    } // getCommand
+} // CaAdminCommandFactory

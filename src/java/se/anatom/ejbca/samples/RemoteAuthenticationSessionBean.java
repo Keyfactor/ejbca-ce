@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package se.anatom.ejbca.ca.auth;
+package se.anatom.ejbca.samples;
 
 import java.io.*;
 import java.net.*;
@@ -34,7 +34,7 @@ import se.anatom.ejbca.log.LogEntry;
 /**
  * Authenticates users towards a remote user database, using HTTP-based protocol.
  *
- * @version $Id: RemoteAuthenticationSessionBean.java,v 1.17 2005-04-21 15:15:40 herrvendil Exp $
+ * @version $Id: RemoteAuthenticationSessionBean.java,v 1.1 2005-04-29 08:17:23 anatom Exp $
  * @ejb.bean
  *   generate="false"
  * @ejb.home
@@ -62,7 +62,7 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
         debug(">ejbCreate()");
 
         // Get the URL from the environment from deployment descriptor
-        remoteurl = (String) getLocator().getString("java:comp/env/AuthURL");
+        remoteurl = getLocator().getString("java:comp/env/AuthURL");
         try {
             ILogSessionHome logsessionhome = (ILogSessionHome) getLocator().getLocalHome(ILogSessionHome.COMP_NAME);
             logsession = logsessionhome.create();
@@ -105,9 +105,7 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
         }
         debug(">authenticateUser("+username+", hiddenpwd)");
         return ret;
-    }
-
-    // authenticateUser
+    } // authenticateUser
 
     /**
      * Implements IAuthenticationSession::finishUser. Does nothing!.
@@ -196,10 +194,5 @@ public class RemoteAuthenticationSessionBean extends BaseSessionBean {
         debug("<getDNfromRemote");
 
         return null;
-    }
-
-    // getDNfromRemote
-}
-
-
-// RemoteAuthenticationSessionBean
+    } // getDNfromRemote
+} // RemoteAuthenticationSessionBean

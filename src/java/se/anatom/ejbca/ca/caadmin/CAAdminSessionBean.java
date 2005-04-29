@@ -82,7 +82,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.39 2005-04-21 15:15:59 herrvendil Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.40 2005-04-29 08:16:29 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -283,7 +283,6 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * @jboss.method-attributes transaction-timeout="900"
      */
     public void createCA(Admin admin, CAInfo cainfo) throws CAExistsException, AuthorizationDeniedException, CATokenOfflineException, CATokenAuthenticationFailedException{
-    	Collection certpublishers = null;
     	int castatus = SecConst.CA_OFFLINE;
         // Check that administrat has superadminsitrator rights.
         try{
@@ -316,7 +315,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
         if(catokeninfo instanceof SoftCATokenInfo){
             try{
                 catoken = new SoftCAToken();
-                ((SoftCAToken) catoken).generateKeys((SoftCATokenInfo) catokeninfo);
+                ((SoftCAToken) catoken).generateKeys(catokeninfo);
             }catch(Exception e){
                 getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"Error when creating CA token.",e);
                 throw new EJBException(e);
@@ -350,7 +349,6 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
             // getCertificateProfile
             CertificateProfile certprofile = getCertificateStoreSession().getCertificateProfile(admin,cainfo.getCertificateProfileId());
-            certpublishers = certprofile.getPublisherList();
             if(x509cainfo.getPolicyId() != null){
               certprofile.setUseCertificatePolicies(true);
               certprofile.setCertificatePolicyId(x509cainfo.getPolicyId());
@@ -500,7 +498,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
         // Get CA from database
         try{
             CADataLocal cadata = cadatahome.findByPrimaryKey(new Integer(cainfo.getCAId()));
-            CA ca = (CA) cadata.getCA();
+            CA ca = cadata.getCA();
 
             // Update CA values
             ca.updateCA(cainfo);
@@ -557,7 +555,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
         try{
             CADataLocal cadata = cadatahome.findByName(oldname);
             // Check authorization
-            int caid = ((Integer) cadata.getCaId()).intValue();
+            int caid = cadata.getCaId().intValue();
             try{
                 getAuthorizationSession().isAuthorizedNoLog(admin,"/super_administrator");
             }catch(AuthorizationDeniedException e){
@@ -680,73 +678,75 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public IRequestMessage  makeRequest(Admin admin, int caid, Collection cachain, boolean setstatustowaiting) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
-    	PKCS10RequestMessage returnval = null;
+        PKCS10RequestMessage returnval = null;
         // Check authorization
-		try{
-			getAuthorizationSession().isAuthorizedNoLog(admin,"/super_administrator");
-		}catch(AuthorizationDeniedException e){
-			getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Not authorized to make certificate request for CA",e);
-			throw new AuthorizationDeniedException("Not authorized to make certificate request for CA with caid = " + caid);
-		}
-
-		// Get CA info.
-		CADataLocal cadata = null;
-		try{
-		  cadata = this.cadatahome.findByPrimaryKey(new Integer(caid));
-		  CA ca = cadata.getCA();
-
-		  try{
-		// if issuer is insystem CA or selfsigned, then generate new certificate.
-		    if(ca.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA){
-
-
-			  ca.setRequestCertificateChain(createCertChain(cachain));
-
-		       // generate PKCS10CertificateRequest
-		       // TODO implement PKCS10 Certificate Request arributes.
-		      ASN1Set attributes = null;
-
-			  /* We don't use these uneccesary attributes
-			      DERConstructedSequence kName = new DERConstructedSequence();
-				  DERConstructedSet  kSeq = new DERConstructedSet();
-				  kName.addObject(PKCSObjectIdentifiers.pkcs_9_at_emailAddress);
-				  kSeq.addObject(new DERIA5String("foo@bar.se"));
-				  kName.addObject(kSeq);
-				  req.setAttributes(kName);
-				 */
-
-			  PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA",
-					CertTools.stringToBcX509Name(ca.getSubjectDN()), ca.getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), attributes, ca.getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
-
-		       // create PKCS10RequestMessage
-			  returnval = new PKCS10RequestMessage(req);
-               // Set statuses.
-              if(setstatustowaiting){
-                 cadata.setStatus(SecConst.CA_WAITING_CERTIFICATE_RESPONSE);
-                 ca.setStatus(SecConst.CA_WAITING_CERTIFICATE_RESPONSE);
-              }
-
-              cadata.setCA(ca);
-		    }else{
-		       // Cannot create certificate request for internal CA
-		       getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error: cannot create certificate request for internal CA");
-		       throw new EJBException(new EjbcaException("Error: cannot create certificate request for internal CA"));
-		    }
-		  }catch(CATokenOfflineException e) {
-		    ca.setStatus(SecConst.CA_OFFLINE);
-		    getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error when creating certificate request",e);
-		    throw e;
-		  }
-		}catch(CertPathValidatorException e) {
-		  getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error when creating certificate request",e);
-		  throw e;
+        try{
+            getAuthorizationSession().isAuthorizedNoLog(admin,"/super_administrator");
+        }catch(AuthorizationDeniedException e){
+            getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Not authorized to make certificate request for CA",e);
+            throw new AuthorizationDeniedException("Not authorized to make certificate request for CA with caid = " + caid);
+        }
+        
+        // Get CA info.
+        CADataLocal cadata = null;
+        try{
+            cadata = this.cadatahome.findByPrimaryKey(new Integer(caid));
+            CA ca = cadata.getCA();
+            
+            try{
+                // if issuer is insystem CA or selfsigned, then generate new certificate.
+                if(ca.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA){
+                    
+                    
+                    ca.setRequestCertificateChain(createCertChain(cachain));
+                    
+                    // generate PKCS10CertificateRequest
+                    // TODO implement PKCS10 Certificate Request arributes.
+                    ASN1Set attributes = null;
+                    
+                    /* We don't use these uneccesary attributes
+                     DERConstructedSequence kName = new DERConstructedSequence();
+                     DERConstructedSet  kSeq = new DERConstructedSet();
+                     kName.addObject(PKCSObjectIdentifiers.pkcs_9_at_emailAddress);
+                     kSeq.addObject(new DERIA5String("foo@bar.se"));
+                     kName.addObject(kSeq);
+                     req.setAttributes(kName);
+                     */
+                    
+                    PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA",
+                            CertTools.stringToBcX509Name(ca.getSubjectDN()), ca.getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), attributes, ca.getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
+                    
+                    // create PKCS10RequestMessage
+                    returnval = new PKCS10RequestMessage(req);
+                    // Set statuses.
+                    if(setstatustowaiting){
+                        cadata.setStatus(SecConst.CA_WAITING_CERTIFICATE_RESPONSE);
+                        ca.setStatus(SecConst.CA_WAITING_CERTIFICATE_RESPONSE);
+                    }
+                    
+                    cadata.setCA(ca);
+                }else{
+                    // Cannot create certificate request for internal CA
+                    getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error: cannot create certificate request for internal CA");
+                    throw new EJBException(new EjbcaException("Error: cannot create certificate request for internal CA"));
+                }
+            }catch(CATokenOfflineException e) {
+                ca.setStatus(SecConst.CA_OFFLINE);
+                getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error when creating certificate request",e);
+                throw e;
+            }
+        }catch(CATokenOfflineException e) {
+            throw e;
+        }catch(CertPathValidatorException e) {
+            getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error when creating certificate request",e);
+            throw e;
         }catch(Exception e){
-			getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error when creating certificate request",e);
-		   throw new EJBException(e);
-		}
-
-		getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_INFO_CAEDITED,"Certificate request generated successfully.");
-
+            getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error when creating certificate request",e);
+            throw new EJBException(e);
+        }
+        
+        getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_INFO_CAEDITED,"Certificate request generated successfully.");
+        
         return returnval;
     } // makeRequest
 
@@ -858,7 +858,6 @@ public class CAAdminSessionBean extends BaseSessionBean {
     throws CAExistsException, CADoesntExistsException, AuthorizationDeniedException, CATokenOfflineException {
     	CA ca = null;
     	Collection certchain = null;
-    	Collection certpublishers = null;
     	IResponseMessage returnval = null;
     	// check authorization
     	try{
@@ -904,7 +903,6 @@ public class CAAdminSessionBean extends BaseSessionBean {
     					UserDataVO cadata = new UserDataVO("nobody", cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(), ((X509CAInfo) cainfo).getSubjectAltName(), null,
     							0, 0, 0,  cainfo.getCertificateProfileId(), null, null, 0, 0, null);
     					CertificateProfile certprofile = getCertificateStoreSession().getCertificateProfile(admin, cainfo.getCertificateProfileId());
-    					certpublishers = certprofile.getPublisherList();
     					cacertificate = signca.generateCertificate(cadata, publickey, -1, cainfo.getValidity(), certprofile);
     					returnval = new X509ResponseMessage();
     					returnval.setCertificate(cacertificate);
@@ -1168,13 +1166,13 @@ public class CAAdminSessionBean extends BaseSessionBean {
                                                cacertificate.getNotAfter(), // Expiretime
                                                CAInfo.CATYPE_X509,
                                                signedby,
-                                               (Collection) certificatechain,
+                                               certificatechain,
                                                catoken.getCATokenInfo(),
                                                "Imported CA",
                                                -1, null, // revokationreason, revokationdate
                                                "", // PolicyId
                                                24, // CRLPeriod
-                                               (Collection) new ArrayList(),
+                                               new ArrayList(),
                                                true, // Authority Key Identifier
                                                false, // Authority Key Identifier Critical
                                                true, // CRL Number
@@ -1187,7 +1185,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
             ca.setCertificateChain(certificatechain);
 
             // Store CA in database.
-            cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_ACTIVE, (CA) ca);
+            cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_ACTIVE, ca);
             getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_INFO_CACREATED,"CA imported successfully from old P12 file, status: " + ca.getStatus());
         }catch(Exception e){
             getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"An error occured when trying to import CA from old P12 file", e);
@@ -1273,23 +1271,22 @@ public class CAAdminSessionBean extends BaseSessionBean {
                 // This should never happen.
     			getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error when trying to deactivate CA with caid " + caid + ". CA deactivation not available.");
     			throw new EjbcaException("Error when trying to deactivate CA with caid " + caid + ". CA deactivation not available.");
-    		}else{
-    			CADataLocal cadata = cadatahome.findByPrimaryKey(new Integer(caid));
-    			if(cadata.getStatus() == SecConst.CA_ACTIVE){
-    				try {
-    					cadata.getCA().getCAToken().deactivate();
-    					cadata.setStatus(SecConst.CA_OFFLINE);
-    					getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_INFO_CAEDITED,"CA " + cadata.getName() + "have been deactivated successfully.");
-    				} catch (IllegalKeyStoreException e) {
-    					throw new EJBException(e);
-    				} catch (UnsupportedEncodingException e) {
-    					throw new EJBException(e);
-    				}
-    			}else{
-    				getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error when trying to deactivate CA  " + cadata.getName() + ". CA is not active");
-    				throw new EjbcaException("Wrong user status of CA.");
-    			}
     		}
+            CADataLocal cadata = cadatahome.findByPrimaryKey(new Integer(caid));
+            if(cadata.getStatus() == SecConst.CA_ACTIVE){
+            	try {
+            		cadata.getCA().getCAToken().deactivate();
+            		cadata.setStatus(SecConst.CA_OFFLINE);
+            		getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_INFO_CAEDITED,"CA " + cadata.getName() + "have been deactivated successfully.");
+            	} catch (IllegalKeyStoreException e) {
+            		throw new EJBException(e);
+            	} catch (UnsupportedEncodingException e) {
+            		throw new EJBException(e);
+            	}
+            }else{
+            	getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error when trying to deactivate CA  " + cadata.getName() + ". CA is not active");
+            	throw new EjbcaException("Wrong user status of CA.");
+            }
     	}catch(javax.ejb.FinderException fe) {
     	   getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error when trying to deactivate CA with caid " + caid + ". CA could not be found.");
     	   throw new EJBException(fe);

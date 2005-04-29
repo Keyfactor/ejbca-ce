@@ -16,6 +16,7 @@ package se.anatom.ejbca.batch;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyStore;
@@ -29,6 +30,7 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 
+import javax.ejb.CreateException;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
@@ -44,7 +46,8 @@ import se.anatom.ejbca.keyrecovery.KeyRecoveryData;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
-import se.anatom.ejbca.ra.UserDataLocal;
+import se.anatom.ejbca.ra.UserAdminConstants;
+import se.anatom.ejbca.ra.UserDataConstants;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 import se.anatom.ejbca.util.CertTools;
@@ -57,7 +60,7 @@ import se.anatom.ejbca.util.P12toPEM;
  * This class generates keys and request certificates for all users with status NEW. The result is
  * generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.55 2005-04-21 15:15:16 herrvendil Exp $
+ * @version $Id: BatchMakeP12.java,v 1.56 2005-04-29 08:16:31 anatom Exp $
  */
 public class BatchMakeP12 {
     /**
@@ -285,7 +288,7 @@ public class BatchMakeP12 {
         if (usekeyrecovery && keyrecoverflag) {
             // Recover Keys
             IKeyRecoverySessionRemote keyrecoverysession = keyrecoveryhome.create();
-            KeyRecoveryData recoveryData = (KeyRecoveryData) keyrecoverysession.keyRecovery(administrator, data.getUsername());
+            KeyRecoveryData recoveryData = keyrecoverysession.keyRecovery(administrator, data.getUsername());
             if (recoveryData != null) {
                 rsaKeys = recoveryData.getKeyPair();
             } else {
@@ -314,7 +317,7 @@ public class BatchMakeP12 {
         
         // Only generate supported tokens
         if (createP12 || createPEM || createJKS) {
-            if (status == UserDataLocal.STATUS_KEYRECOVERY) {
+            if (status == UserDataConstants.STATUS_KEYRECOVERY) {
                 log.info("Retrieving keys for " + data.getUsername());
             } else {
                 log.info("Generating keys for " + data.getUsername());
@@ -322,13 +325,13 @@ public class BatchMakeP12 {
             
             // Grab new user, set status to INPROCESS
             admin.setUserStatus(administrator, data.getUsername(),
-                    UserDataLocal.STATUS_INPROCESS);
+                    UserDataConstants.STATUS_INPROCESS);
             processUser(data, createJKS, createPEM,
-                    (status == UserDataLocal.STATUS_KEYRECOVERY));
+                    (status == UserDataConstants.STATUS_KEYRECOVERY));
             
             // If all was OK , set status to GENERATED
             admin.setUserStatus(administrator, data.getUsername(),
-                    UserDataLocal.STATUS_GENERATED);
+                    UserDataConstants.STATUS_GENERATED);
             
             // Delete clear text password
             admin.setClearTextPassword(administrator, data.getUsername(), null);
@@ -349,7 +352,7 @@ public class BatchMakeP12 {
     public void createAllNew() throws Exception {
         log.debug(">createAllNew:");
         log.info("Generating for all NEW.");
-        createAllWithStatus(UserDataLocal.STATUS_NEW);
+        createAllWithStatus(UserDataConstants.STATUS_NEW);
         log.debug("<createAllNew:");
     } // createAllNew
 
@@ -361,7 +364,7 @@ public class BatchMakeP12 {
     public void createAllFailed() throws Exception {
         log.debug(">createAllFailed:");
         log.info("Generating for all FAILED.");
-        createAllWithStatus(UserDataLocal.STATUS_FAILED);
+        createAllWithStatus(UserDataConstants.STATUS_FAILED);
         log.debug("<createAllFailed:");
     } // createAllFailed
 
@@ -374,7 +377,7 @@ public class BatchMakeP12 {
         if (usekeyrecovery) {
             log.debug(">createAllKeyRecover:");
             log.info("Generating for all KEYRECOVER.");
-            createAllWithStatus(UserDataLocal.STATUS_KEYRECOVERY);
+            createAllWithStatus(UserDataConstants.STATUS_KEYRECOVERY);
             log.debug("<createAllKeyRecover:");
         }
     } // createAllKeyRecover
@@ -401,7 +404,7 @@ public class BatchMakeP12 {
             int successcount = 0;
 
             if (result.size() > 0) {
-                if (result.size() < IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT) {
+                if (result.size() < UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT) {
                     stopnow = true;
                 }
                 Iterator it = result.iterator();
@@ -420,10 +423,10 @@ public class BatchMakeP12 {
                             log.error("An error happened, setting status to FAILED.", e);
                             failedusers += (":" + data.getUsername());
                             failcount++;
-                            if (status == UserDataLocal.STATUS_KEYRECOVERY) {
-                                admin.setUserStatus(administrator, data.getUsername(), UserDataLocal.STATUS_KEYRECOVERY);
+                            if (status == UserDataConstants.STATUS_KEYRECOVERY) {
+                                admin.setUserStatus(administrator, data.getUsername(), UserDataConstants.STATUS_KEYRECOVERY);
                             } else {
-                                admin.setUserStatus(administrator, data.getUsername(), UserDataLocal.STATUS_FAILED);
+                                admin.setUserStatus(administrator, data.getUsername(), UserDataConstants.STATUS_FAILED);
                             }
                         }
                     } else {
@@ -458,18 +461,18 @@ public class BatchMakeP12 {
         int status = data.getStatus();
 
         if ((data != null) && (data.getPassword() != null) && (data.getPassword().length() > 0)) {
-            if ((status == UserDataLocal.STATUS_NEW) ||
-                    ((status == UserDataLocal.STATUS_KEYRECOVERY) && usekeyrecovery)) {
+            if ((status == UserDataConstants.STATUS_NEW) ||
+                    ((status == UserDataConstants.STATUS_KEYRECOVERY) && usekeyrecovery)) {
                 try {
                     doCreate(admin, data, status);
                 } catch (Exception e) {
                     // If things went wrong set status to FAILED
                     log.error("An error happened, setting status to FAILED (if not keyrecovery).");
                     log.error(e);
-                    if (status == UserDataLocal.STATUS_KEYRECOVERY) {
-                        admin.setUserStatus(administrator, data.getUsername(), UserDataLocal.STATUS_KEYRECOVERY);
+                    if (status == UserDataConstants.STATUS_KEYRECOVERY) {
+                        admin.setUserStatus(administrator, data.getUsername(), UserDataConstants.STATUS_KEYRECOVERY);
                     } else {
-                        admin.setUserStatus(administrator, data.getUsername(), UserDataLocal.STATUS_FAILED);
+                        admin.setUserStatus(administrator, data.getUsername(), UserDataConstants.STATUS_FAILED);
                     }
                     throw new Exception("BatchMakeP12 failed for '" + username + "'.");
                 }

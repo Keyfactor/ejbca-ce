@@ -58,7 +58,7 @@ import com.novell.ldap.LDAPModificationSet;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.14 2005-03-04 12:20:36 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.15 2005-04-29 08:16:48 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher{
 	 	
@@ -536,8 +536,7 @@ public class LdapPublisher extends BasePublisher{
         	log.error("Error binding to LDAP server: ", e);
             if(e.getMessage() != null)
                 throw new PublisherConnectionException("Error binding to and reading from LDAP server: " + e.getMessage());
-              else
-                throw new PublisherConnectionException("Error binding to and reading from LDAP server. ");                            
+            throw new PublisherConnectionException("Error binding to and reading from LDAP server. ");                            
         }
 	} 
 

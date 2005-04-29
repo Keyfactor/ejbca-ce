@@ -24,7 +24,7 @@ import org.bouncycastle.ocsp.BasicOCSPResp;
 /**
  * Class used when delevering OCSP service response from a CA.  
  *
- * @version $Id: OCSPCAServiceResponse.java,v 1.5 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: OCSPCAServiceResponse.java,v 1.6 2005-04-29 08:16:49 anatom Exp $
  */
 public class OCSPCAServiceResponse extends ExtendedCAServiceResponse implements Serializable {    
              
@@ -41,9 +41,8 @@ public class OCSPCAServiceResponse extends ExtendedCAServiceResponse implements 
 	public Collection getOCSPSigningCertificateChain() { 
         if (ocspcertificatechain != null) {
             return this.ocspcertificatechain;
-        } else {
-            return new ArrayList();
         }
+        return new ArrayList();
     }
     public BasicOCSPResp getBasicOCSPResp() { return this.basicResp; }
         

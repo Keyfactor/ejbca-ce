@@ -410,7 +410,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      * @throws EJBException             if a communication or other error occurs.
      * @ejb.interface-method view-type="both"
      */
-    public void clonePublisher(Admin admin, String oldname, String newname) throws PublisherExistsException {
+    public void clonePublisher(Admin admin, String oldname, String newname) {
         debug(">clonePublisher(name: " + oldname + ")");
         BasePublisher publisherdata = null;
         try {
@@ -424,6 +424,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
                 throw f;
             }
         } catch (Exception e) {
+            error("Error cloning publisher: ", e);
             throw new EJBException(e);
         }
 

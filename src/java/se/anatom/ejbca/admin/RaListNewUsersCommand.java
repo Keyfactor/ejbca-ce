@@ -17,13 +17,13 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import se.anatom.ejbca.common.UserDataVO;
-import se.anatom.ejbca.ra.UserDataLocal;
+import se.anatom.ejbca.ra.UserDataConstants;
 
 
 /**
  * List users with status NEW in the database.
  *
- * @version $Id: RaListNewUsersCommand.java,v 1.11 2005-04-21 15:14:19 herrvendil Exp $
+ * @version $Id: RaListNewUsersCommand.java,v 1.12 2005-04-29 08:15:47 anatom Exp $
  *
  * @see se.anatom.ejbca.ra.UserDataLocal
  */
@@ -46,7 +46,7 @@ public class RaListNewUsersCommand extends BaseRaAdminCommand {
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {
             Collection coll = getAdminSession().findAllUsersByStatus(administrator,
-                    UserDataLocal.STATUS_NEW);
+                    UserDataConstants.STATUS_NEW);
             Iterator iter = coll.iterator();
 
             while (iter.hasNext()) {

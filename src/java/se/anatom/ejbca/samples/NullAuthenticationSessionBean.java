@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package se.anatom.ejbca.ca.auth;
+package se.anatom.ejbca.samples;
 
 import java.rmi.RemoteException;
 
@@ -28,7 +28,7 @@ import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionHome;
 import se.anatom.ejbca.log.ILogSessionRemote;
 import se.anatom.ejbca.log.LogEntry;
-import se.anatom.ejbca.ra.UserDataLocal;
+import se.anatom.ejbca.ra.UserDataConstants;
 import se.anatom.ejbca.util.CertTools;
 
 
@@ -36,7 +36,7 @@ import se.anatom.ejbca.util.CertTools;
  * Approves all authentication requests that contain a DN as the username, password is ignored and
  * the username is returned as DN. Useful for demo purposes to give out certificates to anyone.
  *
- * @version $Id: NullAuthenticationSessionBean.java,v 1.22 2005-04-21 15:15:39 herrvendil Exp $
+ * @version $Id: NullAuthenticationSessionBean.java,v 1.1 2005-04-29 08:17:22 anatom Exp $
  * @ejb.bean
  *   generate="false"
  * @ejb.home
@@ -97,28 +97,25 @@ public class NullAuthenticationSessionBean extends BaseSessionBean {
                 String altName = (email == null) ? null : ("rfc822Name=" + email);
 
                 // Use default certificate profile 0
-                UserDataVO ret = new UserDataVO(username, dn, admin.getCaId(), altName, email, UserDataLocal.STATUS_NEW, SecConst.USER_ENDUSER, SecConst.PROFILE_NO_PROFILE, SecConst.PROFILE_NO_PROFILE, 
+                UserDataVO ret = new UserDataVO(username, dn, admin.getCaId(), altName, email, UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER, SecConst.PROFILE_NO_PROFILE, SecConst.PROFILE_NO_PROFILE, 
                 		                        null, null, SecConst.TOKEN_SOFT_BROWSERGEN,0,null);
                 ret.setPassword(password);
                 debug("<authenticateUser("+username+", hiddenpwd)");
                 return ret;
-            } else {
-                try{
-                  logsession.log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"User does not contain a DN.");
-                }catch(RemoteException re){
-                  throw new EJBException(re);
-                }
-
-                throw new AuthLoginException("User " + username + " does not contain a DN.");
             }
+            try{
+              logsession.log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"User does not contain a DN.");
+            }catch(RemoteException re){
+              throw new EJBException(re);
+            }
+
+            throw new AuthLoginException("User " + username + " does not contain a DN.");
         } catch (AuthLoginException le) {
             throw le;
         } catch (Exception e) {
             throw new EJBException(e.toString());
         }
-    }
-
-    //authenticateUser
+    } //authenticateUser
 
     /**
      * Implements IAuthenticationSession::finishUser. Does nothing...
@@ -131,7 +128,5 @@ public class NullAuthenticationSessionBean extends BaseSessionBean {
         throws ObjectNotFoundException {
         debug(">finishUser(" + username + ", hiddenpwd)");
         debug("<finishUser(" + username + ", hiddenpwd)");
-    }
-
-    //finishUser
+    } //finishUser
 }

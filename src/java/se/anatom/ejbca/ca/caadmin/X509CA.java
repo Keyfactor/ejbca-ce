@@ -105,7 +105,7 @@ import se.anatom.ejbca.util.StringTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.34 2005-04-21 15:15:59 herrvendil Exp $
+ * @version $Id: X509CA.java,v 1.35 2005-04-29 08:16:28 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -133,7 +133,7 @@ public class X509CA extends CA implements Serializable {
     // Public Methods
     /** Creates a new instance of CA, this constuctor should be used when a new CA is created */
     public X509CA(X509CAInfo cainfo) {
-      super((CAInfo) cainfo);  
+      super(cainfo);  
       
       data.put(POLICYID, cainfo.getPolicyId());
       data.put(SUBJECTALTNAME,  cainfo.getSubjectAltName());            
@@ -457,7 +457,7 @@ public class X509CA extends CA implements Serializable {
         cert.verify(getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN));
         log.debug(">X509CA: generate certificate, CA "+ this.getCAId() + " for DN=" + subject.getDN());
             
-      return (X509Certificate) cert;                                                                                        
+      return cert;                                                                                        
     }
     
     public CRL generateCRL(Vector certs, int crlnumber) throws Exception {
@@ -506,7 +506,7 @@ public class X509CA extends CA implements Serializable {
         // Verify before sending back
         crl.verify(getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CRLSIGN));
 
-        return (X509CRL)crl;        
+        return crl;        
     }    
     
     /** Implemtation of UpgradableDataHashMap function getLatestVersion */

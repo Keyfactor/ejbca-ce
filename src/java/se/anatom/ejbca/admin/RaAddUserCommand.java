@@ -44,7 +44,7 @@ import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 /**
  * Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.38 2005-04-27 09:55:34 anatom Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.39 2005-04-29 08:15:46 anatom Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
 	
@@ -108,7 +108,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
               IHardTokenSessionHome hardtokensessionhome = (IHardTokenSessionHome) javax.rmi.PortableRemoteObject.narrow(jndicontext.lookup("HardTokenSession"),
                                                                                  IHardTokenSessionHome.class);
               hardtokensession = hardtokensessionhome.create();
-              hardtokenissueraliases = (String[]) hardtokensession.getHardTokenIssuerAliases(administrator).toArray((Object[]) new String[0]);             
+              hardtokenissueraliases = (String[]) hardtokensession.getHardTokenIssuerAliases(administrator).toArray(new String[0]);             
 
               authorizedhardtokenprofiles = hardtokensession.getAuthorizedHardTokenProfileIds(administrator);
               hardtokenprofileidtonamemap = hardtokensession.getHardTokenProfileIdToNameMap(administrator);

@@ -86,57 +86,56 @@ public class EndEntityProfileAuthorizationProxy implements Serializable {
 
     // Private Methods
     public boolean isAuthorized(Admin admin, int profileid, String rights, boolean log, int module) throws RemoteException {
-      Boolean returnval = null;
-      String resource= null;
-      String adm = null;
-      
-      
-      if(admin.getAdminInformation().isSpecialUser()){
-        adm = Integer.toString(admin.getAdminInformation().getSpecialUser());
-        // TODO Fix
-        return true;
-      }
-      else
+        Boolean returnval = null;
+        String resource= null;
+        String adm = null;
+        
+        
+        if(admin.getAdminInformation().isSpecialUser()){
+            adm = Integer.toString(admin.getAdminInformation().getSpecialUser());
+            // TODO Fix
+            return true;
+        }
         adm = new String(admin.getAdminInformation().getX509Certificate().getSignature());
-      resource = adm + AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights;
+        resource = adm + AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights;
         // Check if name is in hashmap
-      returnval = (Boolean) profileauthstore.get(resource);
-
-      if(returnval != null && log){
-        if(returnval.booleanValue()){
-            getLogSessionBean().log(admin, admin.getCaId(), module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,
-                                    "Resource : " + AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
-        }else{
-            getLogSessionBean().log(admin, admin.getCaId(), module, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,
-                                    "Resource : " + AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
+        returnval = (Boolean) profileauthstore.get(resource);
+        
+        if(returnval != null && log){
+            if(returnval.booleanValue()){
+                getLogSessionBean().log(admin, admin.getCaId(), module, new java.util.Date(),null, null, LogEntry.EVENT_INFO_AUTHORIZEDTORESOURCE,
+                        "Resource : " + AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
+            }else{
+                getLogSessionBean().log(admin, admin.getCaId(), module, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,
+                        "Resource : " + AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
+            }
         }
-      }
-
-      if(returnval==null){
-        // Retreive profilename over RMI
-        try{
-          if(local){
-            if(log)
-              authorizationsessionlocal.isAuthorized(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
-            else
-              authorizationsessionlocal.isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
-          }else{
-            if(log)
-              authorizationsessionremote.isAuthorized(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
-            else
-              authorizationsessionremote.isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
-          }
-          returnval = Boolean.TRUE;
-        }catch(AuthorizationDeniedException e){
-          returnval = Boolean.FALSE;
+        
+        if(returnval==null){
+            // Retreive profilename over RMI
+            try{
+                if(local){
+                    if(log)
+                        authorizationsessionlocal.isAuthorized(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
+                    else
+                        authorizationsessionlocal.isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
+                }else{
+                    if(log)
+                        authorizationsessionremote.isAuthorized(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
+                    else
+                        authorizationsessionremote.isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
+                }
+                returnval = Boolean.TRUE;
+            }catch(AuthorizationDeniedException e){
+                returnval = Boolean.FALSE;
+            }
+            profileauthstore.put(resource,returnval);
         }
-        profileauthstore.put(resource,returnval);
-      }
-
-      return returnval.booleanValue();
+        
+        return returnval.booleanValue();
     }
 
-    private ILogSessionRemote getLogSessionBean() throws RemoteException {
+    private ILogSessionRemote getLogSessionBean() {
       if(logsession == null){
         try{
           jndicontext = new InitialContext();

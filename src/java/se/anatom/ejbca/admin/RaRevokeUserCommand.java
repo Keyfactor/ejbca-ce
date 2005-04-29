@@ -13,15 +13,15 @@
  
 package se.anatom.ejbca.admin;
 
-import se.anatom.ejbca.ra.UserDataLocal;
 import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.common.UserDataVO;
+import se.anatom.ejbca.ra.UserDataConstants;
 
 
 /**
  * Revokes a user in the database, and also revokes all the users certificates.
  *
- * @version $Id: RaRevokeUserCommand.java,v 1.15 2005-04-21 15:14:19 herrvendil Exp $
+ * @version $Id: RaRevokeUserCommand.java,v 1.16 2005-04-29 08:15:46 anatom Exp $
  */
 public class RaRevokeUserCommand extends BaseRaAdminCommand {
     /**
@@ -62,8 +62,8 @@ public class RaRevokeUserCommand extends BaseRaAdminCommand {
                 getOutputStream().println("dn=\"" + data.getDN() + "\"");
                 getOutputStream().println("Old status=" + data.getStatus());
                 getAdminSession().setUserStatus(administrator, username,
-                    UserDataLocal.STATUS_REVOKED);
-                getOutputStream().println("New status=" + UserDataLocal.STATUS_REVOKED);
+                        UserDataConstants.STATUS_REVOKED);
+                getOutputStream().println("New status=" + UserDataConstants.STATUS_REVOKED);
 
                 // Revoke users certificates
                 try {

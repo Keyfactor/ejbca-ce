@@ -45,7 +45,7 @@ public class CRLCreateThread extends Thread
   private boolean run = false;
   private int check = 0; 
   private ICreateCRLSessionRemote createcrlsession = null;
-  private Admin administrator = new Admin(Admin.TYPE_CACOMMANDLINE_USER);;
+  private Admin administrator = new Admin(Admin.TYPE_CACOMMANDLINE_USER);
   
    public CRLCreateThread(String polltime){
    	    super();

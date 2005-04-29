@@ -44,11 +44,10 @@ import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionHome;
 import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionRemote;
-import se.anatom.ejbca.keyrecovery.KeyRecoveryData;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
-import se.anatom.ejbca.ra.UserDataLocal;
+import se.anatom.ejbca.ra.UserDataConstants;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 import se.anatom.ejbca.util.Base64;
@@ -78,7 +77,7 @@ import se.anatom.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.50 2005-04-21 15:14:41 herrvendil Exp $
+ * @version $Id: CertReqServlet.java,v 1.51 2005-04-29 08:12:49 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(CertReqServlet.class);
@@ -183,7 +182,7 @@ public class CertReqServlet extends HttpServlet {
             }
 
             boolean savekeys = data.getKeyRecoverable() && usekeyrecovery;
-            boolean loadkeys = (data.getStatus() == UserDataLocal.STATUS_KEYRECOVERY) &&
+            boolean loadkeys = (data.getStatus() == UserDataConstants.STATUS_KEYRECOVERY) &&
                 usekeyrecovery;
 
             // get users Token Type.
@@ -465,7 +464,7 @@ public class CertReqServlet extends HttpServlet {
          if(loadkeys){
            // used saved keys.
            IKeyRecoverySessionRemote keyrecoverysession = keyrecoveryhome.create();
-           rsaKeys = ((KeyRecoveryData) keyrecoverysession.keyRecovery(administrator, username)).getKeyPair();
+           rsaKeys = (keyrecoverysession.keyRecovery(administrator, username)).getKeyPair();
          }
          else{
            // generate new keys.

@@ -27,60 +27,66 @@ import se.anatom.ejbca.common.UserDataVO;
  */
 
 public class CertReqHistory implements Serializable{
-   private String fingerprint;
-   private String serialNumber;
-   private String issuerDN;
-   private String username;
-   private Date timestamp;
-   private UserDataVO userAdminData;
-   
-	/**
-	 * @param fingerprint the PK of the certificate in the CertificateDataBean
-	 * @param serialNumber of the certificate 
-	 * @param issuerDN DN of the CA issuing the certificate
-	 * @param username of the user used in the certificate request.
-	 * @param timestamp when the certicate was created.
-	 * @param userAdminData the userdata used to create the certificate.
-	 */
-	public CertReqHistory(String fingerprint, String serialNumber,
-			String issuerDN, String username, Date timestamp,
-			UserDataVO userAdminData) {
-		super();
-		this.fingerprint = fingerprint;
-		this.serialNumber = serialNumber;
-		this.issuerDN = issuerDN;
-		this.username = username;
-		this.timestamp = timestamp;
-		this.userAdminData = userAdminData;
-	}
-/**
- * @return Returns the issuerDN.
- */
-public String getIssuerDN() {
-	return issuerDN;
-}
-/**
- * @return Returns the serialNumber.
- */
-public String getSerialNumber() {
-	return serialNumber;
-}
-/**
- * @return Returns the timestamp.
- */
-public Date getTimestamp() {
-	return timestamp;
-}
-/**
- * @return Returns the userAdminData.
- */
-public UserDataVO getUserAdminData() {
-	return userAdminData;
-}
-/**
- * @return Returns the username.
- */
-public String getUsername() {
-	return username;
-}
+    private String fingerprint;
+    private String serialNumber;
+    private String issuerDN;
+    private String username;
+    private Date timestamp;
+    private UserDataVO userAdminData;
+    
+    /**
+     * @param fingerprint the PK of the certificate in the CertificateDataBean
+     * @param serialNumber of the certificate 
+     * @param issuerDN DN of the CA issuing the certificate
+     * @param username of the user used in the certificate request.
+     * @param timestamp when the certicate was created.
+     * @param userAdminData the userdata used to create the certificate.
+     */
+    public CertReqHistory(String fingerprint, String serialNumber,
+            String issuerDN, String username, Date timestamp,
+            UserDataVO userAdminData) {
+        super();
+        this.fingerprint = fingerprint;
+        this.serialNumber = serialNumber;
+        this.issuerDN = issuerDN;
+        this.username = username;
+        this.timestamp = timestamp;
+        this.userAdminData = userAdminData;
+    }
+    /**
+     * @return Returns the fingerprint.
+     */
+    public String getFingerprint() {
+        return fingerprint;
+    }
+    /**
+     * @return Returns the issuerDN.
+     */
+    public String getIssuerDN() {
+        return issuerDN;
+    }
+    /**
+     * @return Returns the serialNumber.
+     */
+    public String getSerialNumber() {
+        return serialNumber;
+    }
+    /**
+     * @return Returns the timestamp.
+     */
+    public Date getTimestamp() {
+        return timestamp;
+    }
+    /**
+     * @return Returns the userAdminData.
+     */
+    public UserDataVO getUserAdminData() {
+        return userAdminData;
+    }
+    /**
+     * @return Returns the username.
+     */
+    public String getUsername() {
+        return username;
+    }
 }
