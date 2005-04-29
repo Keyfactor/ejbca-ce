@@ -54,7 +54,7 @@ import se.anatom.ejbca.util.ServiceLocatorException;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.42 2005-04-29 09:15:39 anatom Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.43 2005-04-29 10:14:14 anatom Exp $
  */
 public class EjbcaWebBean {
 
@@ -132,6 +132,9 @@ public class EjbcaWebBean {
     	globalconfiguration = this.globaldataconfigurationdatahandler.loadGlobalConfiguration();
     	this.informationmemory = new InformationMemory(administrator, caadminsession, raadminsession, authorizationsession, certificatestoresession, hardtokensession, publishersession, globalconfiguration);
     	
+        // Initialize WebLanguages
+        new WebLanguages(globalconfiguration);
+        
     	authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, authorizationsession);
     	
     }
