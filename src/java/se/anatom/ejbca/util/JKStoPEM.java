@@ -30,7 +30,7 @@ import java.util.Enumeration;
  * a third file. The PEM files will have the names <i>common name</i>.pem, <i>common
  * name</i>Key.pem and <i>common name</i>CA.pem derived from the DN in user certificate.
  *
- * @version $Id: JKStoPEM.java,v 1.2 2005-03-18 11:56:36 anatom Exp $
+ * @version $Id: JKStoPEM.java,v 1.3 2005-04-29 10:33:55 anatom Exp $
  */
 public class JKStoPEM {
     String exportpath = "./p12/pem/";
@@ -57,7 +57,6 @@ public class JKStoPEM {
         CertTools.installBCProvider();
 
         JKStoPEM jks = null;
-        String pathAllP12 = null;
 
         try {
             if (args.length > 4) {
@@ -149,7 +148,7 @@ public class JKStoPEM {
      * @throws UnrecoverableKeyException DOCUMENT ME!
      */
     public void createPEM()
-        throws KeyStoreException, FileNotFoundException, IOException, NoSuchProviderException,
+        throws KeyStoreException, FileNotFoundException, IOException,
             NoSuchAlgorithmException, CertificateEncodingException, CertificateException,
             UnrecoverableKeyException {
 

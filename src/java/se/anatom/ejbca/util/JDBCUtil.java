@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
  * stress conditions, or simply exhaust database resources, so it is better to have some
  * warning than nothing at all.
  *
- * @version $Id: JDBCUtil.java,v 1.4 2004-06-15 16:33:55 sbailliez Exp $
+ * @version $Id: JDBCUtil.java,v 1.5 2005-04-29 10:33:55 anatom Exp $
  */
 public class JDBCUtil {
 
@@ -47,7 +47,7 @@ public class JDBCUtil {
     public static DataSource getDataSource(String dsName)
             throws ServiceLocatorException {
         String dataSourceName = ServiceLocator.getInstance().getString(dsName);
-        return (DataSource) ServiceLocator.getInstance().getDataSource(dataSourceName);
+        return ServiceLocator.getInstance().getDataSource(dataSourceName);
     }
 
     /**

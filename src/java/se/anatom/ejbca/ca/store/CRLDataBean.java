@@ -38,7 +38,7 @@ import se.anatom.ejbca.util.CertTools;
  * nextUpdate (nextUpdate)
  * </pre>
  *
- * @version $Id: CRLDataBean.java,v 1.24 2005-03-10 13:36:07 anatom Exp $
+ * @version $Id: CRLDataBean.java,v 1.25 2005-04-29 10:34:02 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a CRL with accompanying data"
  * display-name="CRLDataEB"
@@ -175,24 +175,16 @@ public abstract class CRLDataBean extends BaseEntityBean {
      */
     public X509CRL getCRL() {
         X509CRL crl = null;
-
         try {
             String b64Crl = getBase64Crl();
             crl = CertTools.getCRLfromByteArray(Base64.decode(b64Crl.getBytes()));
         } catch (IOException ioe) {
             log.error("Can't decode CRL.", ioe);
-
             return null;
         } catch (CRLException ce) {
             log.error("Can't decode CRL.", ce);
-
             return null;
-        } catch (CertificateException ce) {
-            log.error("Can't generating CRL.", ce);
-
-            return null;
-        }
-
+        } 
         return crl;
     }
 

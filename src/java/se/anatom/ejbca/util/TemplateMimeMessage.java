@@ -52,7 +52,7 @@ public class TemplateMimeMessage extends MimeMessage {
     }
 
     public void setSubject(String s, String s1) throws MessagingException {
-        String interpolatedContent = interpolate((String)s);
+        String interpolatedContent = interpolate(s);
         super.setSubject(interpolatedContent, s1);
     }
 

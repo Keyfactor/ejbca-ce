@@ -66,7 +66,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.27 2004-11-20 23:30:52 sbailliez Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.28 2005-04-29 10:34:01 anatom Exp $
  */
 public class CAInterfaceBean   {
 
@@ -116,7 +116,7 @@ public class CAInterfaceBean   {
       }
     }
 
-    public CertificateView[] getCACertificates(int caid) throws RemoteException, NamingException, CreateException {
+    public CertificateView[] getCACertificates(int caid) {
       CertificateView[] returnval = null;      
       
       Collection chain = signsession.getCertificateChain(administrator, caid);
@@ -165,7 +165,7 @@ public class CAInterfaceBean   {
     }
 
     /** Returns the profile name from id proxied */
-    public String getCertificateProfileName(int profileid) throws RemoteException{
+    public String getCertificateProfileName(int profileid) {
       return this.informationmemory.getCertificateProfileNameProxy().getCertificateProfileName(profileid);
     }
     
@@ -233,11 +233,11 @@ public class CAInterfaceBean   {
       home.create().run(administrator, issuerdn);
     }
 
-    public int getLastCRLNumber(String  issuerdn) throws RemoteException   {
+    public int getLastCRLNumber(String  issuerdn) {
       return certificatesession.getLastCRLNumber(administrator, issuerdn);      
     }
     
-    public CRLInfo getLastCRLInfo(String issuerdn) throws RemoteException{
+    public CRLInfo getLastCRLInfo(String issuerdn) {
       return certificatesession.getLastCRLInfo(administrator,  issuerdn);          
     }
 
@@ -246,7 +246,7 @@ public class CAInterfaceBean   {
       return certificateprofiles;
     }
     
-    public HashMap getAvailablePublishers() throws NamingException, CreateException{
+    public HashMap getAvailablePublishers() {
       return publishersession.getPublisherIdToNameMap(administrator);
     }
     

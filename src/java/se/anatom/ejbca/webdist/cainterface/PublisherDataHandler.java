@@ -91,7 +91,7 @@ public class PublisherDataHandler implements Serializable {
     }
     
 
-    public void clonePublisher(String originalname, String newname) throws PublisherExistsException, AuthorizationDeniedException{         
+    public void clonePublisher(String originalname, String newname) throws AuthorizationDeniedException{         
       if(authorizedToEditPublishers()){
         publishersession.clonePublisher(administrator, originalname,newname);
         this.info.publishersEdited();

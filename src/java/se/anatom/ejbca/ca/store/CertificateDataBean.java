@@ -13,8 +13,10 @@
  
 package se.anatom.ejbca.ca.store;
 
-import java.io.IOException;
-import java.security.cert.*;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Date;
 
 import javax.ejb.CreateException;
@@ -45,7 +47,7 @@ import se.anatom.ejbca.util.CertTools;
  * Username (username)
  * </pre>
  *
- * @version $Id: CertificateDataBean.java,v 1.33 2005-03-10 13:36:07 anatom Exp $
+ * @version $Id: CertificateDataBean.java,v 1.34 2005-04-29 10:34:02 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a certificate with accompanying data"
  * display-name="CertificateDataEB"
@@ -394,19 +396,12 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      */
     public Certificate getCertificate() {
         X509Certificate cert = null;
-
         try {
             cert = CertTools.getCertfromByteArray(Base64.decode(getBase64Cert().getBytes()));
-        } catch (IOException ioe) {
-            log.error("Can't decode certificate.", ioe);
-
-            return null;
         } catch (CertificateException ce) {
             log.error("Can't decode certificate.", ce);
-
             return null;
         }
-
         return cert;
     }
 

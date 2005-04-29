@@ -29,7 +29,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * Contains help methods used to parse a viewcainfo jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: ViewCAInfoJSPHelper.java,v 1.2 2004-11-13 00:42:16 herrvendil Exp $
+ * @version $Id: ViewCAInfoJSPHelper.java,v 1.3 2005-04-29 10:34:01 anatom Exp $
  */
 public class ViewCAInfoJSPHelper {
 		 
@@ -57,9 +57,7 @@ public class ViewCAInfoJSPHelper {
                            CAInterfaceBean cabean) throws  Exception{
 
       if(!initialized){
-        this.ejbcawebbean = ejbcawebbean;
-        this.cabean = cabean;                
-        		
+        this.cabean = cabean;                        		
         initialized = true;
         can_activate = false;
         authorized = false;
@@ -157,7 +155,6 @@ public class ViewCAInfoJSPHelper {
     
        
     // Private fields.
-    private EjbcaWebBean ejbcawebbean;
     private CAInterfaceBean cabean;
     private boolean initialized=false;
 	public String   generalerrormessage = null;

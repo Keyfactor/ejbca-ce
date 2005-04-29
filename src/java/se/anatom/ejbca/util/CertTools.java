@@ -31,7 +31,7 @@ import org.bouncycastle.x509.X509V3CertificateGenerator;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.73 2005-03-16 09:47:22 anatom Exp $
+ * @version $Id: CertTools.java,v 1.74 2005-04-29 10:33:55 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -537,7 +537,7 @@ public class CertTools {
      * @throws IOException if the byte array cannot be read.
      */
     public static X509Certificate getCertfromByteArray(byte[] cert)
-        throws IOException, CertificateException {
+        throws CertificateException {
         log.debug(">getCertfromByteArray:");
 
         CertificateFactory cf = CertTools.getCertificateFactory();
@@ -560,7 +560,7 @@ public class CertTools {
      * @throws CRLException if the byte arrayen does not contani a correct CRL.
      */
     public static X509CRL getCRLfromByteArray(byte[] crl)
-        throws IOException, CertificateException, CRLException {
+        throws IOException, CRLException {
         log.debug(">getCRLfromByteArray:");
 
         if (crl == null) {
@@ -628,7 +628,7 @@ public class CertTools {
         // bean is created.
         byte[] serno = new byte[8];
         SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-        random.setSeed((long) (new Date().getTime()));
+        random.setSeed((new Date().getTime()));
         random.nextBytes(serno);
         certgen.setSerialNumber((new java.math.BigInteger(serno)).abs());
         certgen.setNotBefore(firstDate);
@@ -800,7 +800,7 @@ public class CertTools {
         Integer no = (Integer) listitem.get(0);
         if (no.intValue() == 0) {
             byte[] altName = (byte[]) listitem.get(1);
-            DERObject oct = (DERObject) (new ASN1InputStream(new ByteArrayInputStream(altName)).readObject());
+            DERObject oct = (new ASN1InputStream(new ByteArrayInputStream(altName)).readObject());
             ASN1Sequence seq = ASN1Sequence.getInstance(oct);
             return seq;
         }
@@ -882,8 +882,6 @@ public class CertTools {
             log.error("Error encoding X509 certificate.", cee);
         } catch (CertificateException cee) {
             log.error("Error decoding X509 certificate.", cee);
-        } catch (IOException ioe) {
-            log.error("Error reading byte array for X509 certificate.", ioe);
         }
 
         return null;

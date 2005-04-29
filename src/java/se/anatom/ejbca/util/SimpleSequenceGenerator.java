@@ -50,7 +50,6 @@ public class SimpleSequenceGenerator {
                 maxAttempts--;
             }
         } catch (Exception e){
-            e = (e.getCause() == null || !(e instanceof Exception)) ? e : (Exception)e.getCause();
             throw new EJBException(e);
         }
         throw new EJBException("Failed to generate a unique id for home " + home.getClass().getName());

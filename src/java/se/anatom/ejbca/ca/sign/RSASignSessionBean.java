@@ -22,7 +22,6 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509CRL;
@@ -894,8 +893,6 @@ public class RSASignSessionBean extends BaseSessionBean {
         } catch (NoSuchAlgorithmException e) {
             log.error("No such algorithm: ", e);
         } catch (CRLException e) {
-            log.error("Cannot create response message: ", e);
-        } catch (CertificateException e) {
             log.error("Cannot create response message: ", e);
         } catch (IOException e) {
             log.error("Cannot create response message: ", e);

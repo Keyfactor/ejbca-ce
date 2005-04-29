@@ -65,7 +65,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.32 2005-04-15 13:59:24 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.33 2005-04-29 10:34:02 anatom Exp $
  */
 public class CertDistServlet extends HttpServlet {
 
@@ -343,8 +343,8 @@ public class CertDistServlet extends HttpServlet {
                     int id = issuerdn.hashCode();
                     cainfo = casession.getCAInfo(administrator, id);
                 }
-                X509Certificate ocspcert = (X509Certificate)null;
-                Iterator iter = ((CAInfo) cainfo).getExtendedCAServiceInfos().iterator();
+                X509Certificate ocspcert = null;
+                Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
                 while(iter.hasNext()){
                   ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();
                   if(next instanceof OCSPCAServiceInfo){

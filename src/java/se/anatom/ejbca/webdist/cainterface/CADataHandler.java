@@ -202,7 +202,7 @@ public class CADataHandler implements Serializable {
   /**
    *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
    */  
-  public void revokeCA(int caid, int reason) throws CADoesntExistsException, AuthorizationDeniedException, CATokenOfflineException{
+  public void revokeCA(int caid, int reason) throws CADoesntExistsException, AuthorizationDeniedException {
       caadminsession.revokeCA(administrator, caid, reason);
       info.cAsEdited();
   }

@@ -30,13 +30,12 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 /** Class to execute a file full of sql commands. Useful for running update scripts.
- * @version $Id: SqlExecutor.java,v 1.4 2004-04-24 15:33:04 anatom Exp $
+ * @version $Id: SqlExecutor.java,v 1.5 2005-04-29 10:33:55 anatom Exp $
  */
 public class SqlExecutor {
     static Logger log = Logger.getLogger(SqlExecutor.class);
 
     private Connection con = null;
-    private String currentDir = null;
     private int lineno = 0;
     private int commands = 0;
     private int errors = 0;
@@ -82,7 +81,6 @@ public class SqlExecutor {
     }
     public void runCommandFile(File file) throws SQLException, FileNotFoundException, IOException {
         log.debug("> runCommandFile: " + file.getPath());
-        this.currentDir = file.getParent();
         Reader rdr = new FileReader(file);
         runCommands(rdr);
         log.debug("< runCommandFile()");

@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -31,9 +30,9 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERTaggedObject;
 
@@ -58,7 +57,7 @@ import com.novell.ldap.LDAPModificationSet;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.15 2005-04-29 08:16:48 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.16 2005-04-29 10:34:02 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher{
 	 	
@@ -123,8 +122,7 @@ public class LdapPublisher extends BasePublisher{
 		  try {
 			X509CRL crl = CertTools.getCRLfromByteArray(fakecrlbytes);
 			fakecrl = crl.getEncoded();
-		  } catch (CertificateException e) {}
-		    catch (CRLException e) {}
+		  } catch (CRLException e) {}
 		    catch (IOException e) {}
 		}
         
