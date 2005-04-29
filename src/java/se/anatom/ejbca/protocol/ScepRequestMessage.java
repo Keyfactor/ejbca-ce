@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -29,9 +28,6 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -66,7 +62,7 @@ import se.anatom.ejbca.util.CertTools;
  * Class to handle SCEP request messages sent to the CA. 
  * TODO: don't forget extensions, e.g. KeyUsage requested by end entity 
  *
- * @version $Id: ScepRequestMessage.java,v 1.37 2005-03-04 12:20:35 anatom Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.38 2005-04-29 10:17:17 anatom Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage, Serializable {
     static final long serialVersionUID = -235623330828902051L;
@@ -146,8 +142,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
      *
      * @throws IOException if the request can not be parsed.
      */
-    public ScepRequestMessage(byte[] msg)
-            throws IOException, InvalidKeyException, GeneralSecurityException, CMSException {
+    public ScepRequestMessage(byte[] msg) throws IOException {
         log.debug(">ScepRequestMessage");
         this.scepmsg = msg;
         init();
@@ -269,10 +264,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         log.debug("<init");
     } // init
 
-    private void decrypt()
-            throws NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException,
-            CMSException, NoSuchProviderException, BadPaddingException,
-            InvalidAlgorithmParameterException, GeneralSecurityException, IOException {
+    private void decrypt() throws CMSException, NoSuchProviderException, GeneralSecurityException, IOException {
         log.debug(">decrypt");
 
         // Now we are getting somewhere (pheew),
@@ -411,6 +403,21 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
                 decrypt();
             }
             ret = super.getUsername();
+            if (ret == null) {
+                // For Cisco boxes they can sometimes send DN as SN instead of CN
+                String name = CertTools.getPartFromDN(getRequestDN(), "SN");
+                if (name == null) {
+                    log.error("No SN in DN: "+getRequestDN());
+                }
+                // Special if the DN contains unstructiredAddress where it becomes: 
+                // SN=1728668 + 1.2.840.113549.1.9.2=pix.primekey.se
+                // We only want the SN and not the oid-part.
+                int index = name.indexOf(' ');
+                ret = name; 
+                if (index > 0) {
+                    ret = name.substring(0,index);        
+                }
+            }
         } catch (IOException e) {
             log.error("PKCS7 not inited!");
         } catch (GeneralSecurityException e) {

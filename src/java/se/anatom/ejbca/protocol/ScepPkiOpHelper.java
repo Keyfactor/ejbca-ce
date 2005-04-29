@@ -13,9 +13,13 @@
 
 package se.anatom.ejbca.protocol;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+
+import javax.ejb.ObjectNotFoundException;
+
 import org.apache.log4j.Logger;
-import org.bouncycastle.cms.CMSException;
-import se.anatom.ejbca.authorization.AuthorizationDeniedException;
+
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
 import se.anatom.ejbca.ca.exception.CADoesntExistsException;
@@ -25,16 +29,11 @@ import se.anatom.ejbca.ca.exception.SignRequestSignatureException;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.log.Admin;
 
-import javax.ejb.ObjectNotFoundException;
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.cert.CertificateEncodingException;
-
 
 /**
  * Helper class to handle SCEP (draft-nourse-scep-06.txt) requests.
  *
- * @version  $Id: ScepPkiOpHelper.java,v 1.27 2004-11-20 22:54:28 sbailliez Exp $
+ * @version  $Id: ScepPkiOpHelper.java,v 1.28 2005-04-29 10:17:16 anatom Exp $
  */
 public class ScepPkiOpHelper {
     private static Logger log = Logger.getLogger(ScepPkiOpHelper.class);
@@ -63,9 +62,9 @@ public class ScepPkiOpHelper {
      * @return byte[] containing response to be sent to client.
      */
     public byte[] scepCertRequest(byte[] msg)
-            throws ObjectNotFoundException, AuthorizationDeniedException, AuthLoginException,
+            throws ObjectNotFoundException, AuthLoginException,
             SignRequestException, AuthStatusException, IllegalKeyException,
-            SignRequestSignatureException, CertificateEncodingException {
+            SignRequestSignatureException {
         byte[] ret = null;
         log.debug(">getRequestMessage(" + msg.length + " bytes)");
 
@@ -94,8 +93,6 @@ public class ScepPkiOpHelper {
                 }
             }
         } catch (IOException e) {
-            log.error("Error receiving ScepMessage: ", e);
-        } catch (CMSException e) {
             log.error("Error receiving ScepMessage: ", e);
         } catch (GeneralSecurityException e) {
             log.error("Error receiving ScepMessage: ", e);
