@@ -1,4 +1,4 @@
-$Id: README,v 1.185 2005-04-30 09:58:19 anatom Exp $
+$Id: README,v 1.186 2005-04-30 10:06:02 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -186,10 +186,10 @@ Other administrators with less privileges can be created later on.
 or http://localhost:8080/ejbca for the public pages.
 
 If you did not have root permission and get an error during installation step 5, you can 
-install the root certificate afterwards with the following commands:
+install the root certificate afterwards with the following commands, WITH the right permissions:
 
 bin/ejbca.sh ca getrootcert AdminCA1 ca.crt -der
-keytool -import -trustcacerts -alias AdminCA1 -file $JAVA_HOME/jre/lib/security/cacerts -storepass changeit -file ca.crt
+keytool -import -trustcacerts -alias AdminCA1 -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit -file ca.crt
 
 where AdminCA1 is the CA name as configured in ejbca.properties (default is AdminCA1).
 You must stop and start JBoss after doing this.
