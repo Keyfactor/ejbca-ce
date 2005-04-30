@@ -18,6 +18,15 @@ If all is well the automatic deployment script of EJBCA will configure all that 
 you and you will be up and running in 30 seconds.
 Configuration is done in ejbca.properties.
 
+In a production environment you should use something else than the default Hypersonic database that comes 
+with JBoss for the reasons:
+1. Hypersonic database is in-memory, which means that over time it will consume more memory. If a large
+numer of certificates is issued, it will become an issue after a while.
+2. Hypersonic does not support full SQL, in particular ALTER statements. When a new version of EJBCA is 
+released we can not create scripts that updates the database if some tables changed. This will make 
+upgrades much much harder.
+
+
 NOW ON TO THE HOWTO!
 
 Troubleshooting database problems:
