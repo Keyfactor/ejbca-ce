@@ -24,7 +24,7 @@ import se.anatom.ejbca.SecConst;
 /**
  * EnhancedEIDProfile with three certificates and key recovery functionallity
  * 
- * @version $Id: EnhancedEIDProfile.java,v 1.5 2005-04-11 05:44:42 herrvendil Exp $
+ * @version $Id: EnhancedEIDProfile.java,v 1.6 2005-05-02 13:03:25 herrvendil Exp $
  */
 public class EnhancedEIDProfile extends EIDProfile {
 						
@@ -32,7 +32,7 @@ public class EnhancedEIDProfile extends EIDProfile {
 	
 	public static final int TYPE_ENHANCEDEID = 2;
 	
-	public static final float LATEST_VERSION = 1;
+	public static final float LATEST_VERSION = 2;
 
     public static final int CERTUSAGE_SIGN    = 0;
 	public static final int CERTUSAGE_AUTH    = 1;
@@ -75,10 +75,16 @@ public class EnhancedEIDProfile extends EIDProfile {
 	  data.put(CAID, caids);
 	  
 	  ArrayList pintypes = new ArrayList(NUMBEROFCERTIFICATES);
-	  pintypes.add(new Integer(PINTYPE_4DIGITS));
-	  pintypes.add(new Integer(PINTYPE_4DIGITS));
+	  pintypes.add(new Integer(PINTYPE_ASCII_NUMERIC));
+	  pintypes.add(new Integer(PINTYPE_ASCII_NUMERIC));
 	  pintypes.add(new Integer(PINTYPE_ENC_SAME_AS_AUTH));
 	  data.put(PINTYPE, pintypes);
+	  
+	  ArrayList minpinlength = new ArrayList(NUMBEROFCERTIFICATES);
+	  minpinlength.add(new Integer(4));
+	  minpinlength.add(new Integer(4));
+	  minpinlength.add(new Integer(0));
+	  data.put(MINIMUMPINLENGTH, minpinlength);
 	  
 	  ArrayList iskeyrecoverable = new ArrayList(NUMBEROFCERTIFICATES);
 	  iskeyrecoverable.add(Boolean.FALSE);
@@ -114,28 +120,6 @@ public class EnhancedEIDProfile extends EIDProfile {
 		return this.isTokenSupported(SUPPORTEDTOKENS, tokenidentificationstring);
 	}
 
-	/* 
-	 * @see se.anatom.ejbca.hardtoken.hardtokenprofiles.HardTokenProfile#getPIN(int, boolean)
-	 */
-	public String getPIN(int certusage, boolean regenerate){
-		if(certusage == CERTUSAGE_AUTH && getPINType(certusage) == PINTYPE_AUTH_SAME_AS_SIGN)
-		  return getPIN(pinstore,CERTUSAGE_SIGN, getPINType(CERTUSAGE_SIGN), false);
-		if(certusage == CERTUSAGE_ENC && getPINType(certusage) == PINTYPE_ENC_SAME_AS_AUTH)
-		  return getPIN(pinstore,CERTUSAGE_AUTH, getPINType(CERTUSAGE_AUTH), false);		  
-		return getPIN(pinstore,certusage, getPINType(certusage),regenerate);
-	}
-
-	/* 
-	 * @see se.anatom.ejbca.hardtoken.hardtokenprofiles.HardTokenProfile#getPUK(int, boolean)
-	 */
-	public String getPUK(int certusage, boolean regenerate) {		
-		if(certusage == CERTUSAGE_AUTH && getPINType(certusage) == PINTYPE_AUTH_SAME_AS_SIGN)
-		  return getPUK(pinstore,CERTUSAGE_SIGN, getPINType(CERTUSAGE_SIGN), false);
-		if(certusage == CERTUSAGE_ENC && getPINType(certusage) == PINTYPE_ENC_SAME_AS_AUTH)
-		  return getPUK(pinstore,CERTUSAGE_AUTH, getPINType(CERTUSAGE_AUTH), false);
-		return getPUK(pukstore,certusage, getPINType(certusage),regenerate);
-	}
-
 
 	/* 
 	 * @see se.anatom.ejbca.hardtoken.hardtokenprofiles.HardTokenProfile#clone()
@@ -165,6 +149,15 @@ public class EnhancedEIDProfile extends EIDProfile {
 	  if(LATEST_VERSION != getVersion()){
 		  // New version of the class, upgrade
 	    super.upgrade();
+	    
+	    if(data.get(MINIMUMPINLENGTH) == null){
+	  	  ArrayList minpinlength = new ArrayList(NUMBEROFCERTIFICATES);
+		  minpinlength.add(new Integer(4));
+		  minpinlength.add(new Integer(4));
+		  minpinlength.add(new Integer(0));
+		  data.put(MINIMUMPINLENGTH, minpinlength);
+	    }
+	    
 	    data.put(VERSION, new Float(LATEST_VERSION));
 	  }   
 	}    

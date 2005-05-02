@@ -1,15 +1,15 @@
 <%               
-  int[] signpintypes = { HardTokenProfile.PINTYPE_4DIGITS,HardTokenProfile.PINTYPE_6TO8DIGITS,
-  		         HardTokenProfile.PINTYPE_6TO8DIGITSLETTERS, HardTokenProfile.PINTYPE_6TO8ALLPRINTABLE}; 
+  int[] signpintypes = { HardTokenProfile.PINTYPE_ASCII_NUMERIC, HardTokenProfile.PINTYPE_ISO9564_1}; 
 		
-  int[] authencpintypes = { HardTokenProfile.PINTYPE_4DIGITS,HardTokenProfile.PINTYPE_6TO8DIGITS,
-                            HardTokenProfile.PINTYPE_6TO8DIGITSLETTERS, HardTokenProfile.PINTYPE_6TO8ALLPRINTABLE,
-			    SwedishEIDProfile.PINTYPE_AUTHENC_SAME_AS_SIGN};
+  int[] authencpintypes = {HardTokenProfile.PINTYPE_ASCII_NUMERIC, HardTokenProfile.PINTYPE_ISO9564_1,
+			                  SwedishEIDProfile.PINTYPE_AUTHENC_SAME_AS_SIGN};
 
-  String[] signpintexts    = {"4DIGITS","6TO8DIGITS","6TO8DIGITSLETTERS","6TO8ALLPRINTABLE"};
-  String[] authencpintexts = {"4DIGITS","6TO8DIGITS","6TO8DIGITSLETTERS","6TO8ALLPRINTABLE", "SAMEASSIGNCERT"};
+  String[] signpintexts    = {"ASCIINUMERIC","ISO95641"};
+  String[] authencpintexts = {"ASCIINUMERIC","ISO95641", "SAMEASSIGNCERT"};
 
   String[] keytexts = {"RSA1024BIT", "RSA2048BIT"};
+
+  int maxpinlength = 8;
 
   SwedishEIDProfile curprofile = (SwedishEIDProfile) helper.profiledata;
 
@@ -39,7 +39,7 @@
                   <%= ejbcawebbean.getText(keytexts[i]) %>
                </option>
             <%}%>
-          </select>         
+          </select>
       </td>
     </tr>
    <tr id="Row<%=row++%2%>"> 
@@ -107,7 +107,15 @@
                   <%= ejbcawebbean.getText(signpintexts[i]) %>
                </option>
             <%}%>
-          </select>         
+          </select>, <%= ejbcawebbean.getText("MINIMUMOF") %>         
+         <select name="<%=EditHardTokenProfileJSPHelper.SELECT_MINPINLENGTH + "0"%>" size="1"  >
+            <% int currentminpinlen = curprofile.getMinimumPINLength(SwedishEIDProfile.CERTUSAGE_SIGN);               
+               for(int i=0;i <= maxpinlength;i++){%>
+              <option value="<%=i%>" <% if(i == currentminpinlen) out.write(" selected "); %>> 
+                  <%= i %>
+               </option>
+            <%}%>
+          </select> <%= ejbcawebbean.getText("CHARS") %>.                   
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
@@ -163,6 +171,14 @@
                   <%= ejbcawebbean.getText(authencpintexts[i]) %>
                </option>
             <%}%>
-          </select>         
+          </select>, <%= ejbcawebbean.getText("MINIMUMOF") %>         
+         <select name="<%=EditHardTokenProfileJSPHelper.SELECT_MINPINLENGTH + "1"%>" size="1"  >
+            <% currentminpinlen = curprofile.getMinimumPINLength(SwedishEIDProfile.CERTUSAGE_AUTHENC);               
+               for(int i=0;i <= maxpinlength;i++){%>
+              <option value="<%=i%>" <% if(i == currentminpinlen) out.write(" selected "); %>> 
+                  <%= i %>
+               </option>
+            <%}%>
+          </select> <%= ejbcawebbean.getText("CHARS") %>.              
       </td>
     </tr>

@@ -24,14 +24,14 @@ import se.anatom.ejbca.SecConst;
 /**
  * Hard token profile with a goal to fulfill Swedish EID standard.
  * 
- * @version $Id: SwedishEIDProfile.java,v 1.4 2005-04-25 17:13:20 herrvendil Exp $
+ * @version $Id: SwedishEIDProfile.java,v 1.5 2005-05-02 13:03:25 herrvendil Exp $
  */
 public class SwedishEIDProfile extends EIDProfile {
 		
 	// Public Constants
 	public static final int TYPE_SWEDISHEID = 1;
 	
-	public static final float LATEST_VERSION = 1;
+	public static final float LATEST_VERSION = 2;
 
     public static final int CERTUSAGE_SIGN    = 0;
 	public static final int CERTUSAGE_AUTHENC = 1;
@@ -72,9 +72,14 @@ public class SwedishEIDProfile extends EIDProfile {
 	  data.put(CAID, caids);    
 	  
 	  ArrayList pintypes = new ArrayList(NUMBEROFCERTIFICATES);
-	  pintypes.add(new Integer(PINTYPE_4DIGITS));
-	  pintypes.add(new Integer(PINTYPE_4DIGITS));
+	  pintypes.add(new Integer(PINTYPE_ASCII_NUMERIC));
+	  pintypes.add(new Integer(PINTYPE_ASCII_NUMERIC));
 	  data.put(PINTYPE, pintypes);
+
+	  ArrayList minpinlength = new ArrayList(NUMBEROFCERTIFICATES);
+	  minpinlength.add(new Integer(4));
+	  minpinlength.add(new Integer(4));
+	  data.put(MINIMUMPINLENGTH, minpinlength);
 	  
 	  ArrayList iskeyrecoverable = new ArrayList(NUMBEROFCERTIFICATES);
 	  iskeyrecoverable.add(new Boolean(false));
@@ -108,23 +113,6 @@ public class SwedishEIDProfile extends EIDProfile {
 		return this.isTokenSupported(SUPPORTEDTOKENS, tokenidentificationstring);
 	}
 
-	/* 
-	 * @see se.anatom.ejbca.hardtoken.hardtokenprofiles.HardTokenProfile#getPIN(int, boolean)
-	 */
-	public String getPIN(int certusage, boolean regenerate){
-		if(certusage == CERTUSAGE_AUTHENC && getPINType(certusage) == PINTYPE_AUTHENC_SAME_AS_SIGN)
-		  return getPIN(pinstore,CERTUSAGE_SIGN, getPINType(CERTUSAGE_SIGN), false);
-		return getPIN(pinstore,certusage, getPINType(certusage),regenerate);
-	}
-
-	/* 
-	 * @see se.anatom.ejbca.hardtoken.hardtokenprofiles.HardTokenProfile#getPUK(int, boolean)
-	 */
-	public String getPUK(int certusage, boolean regenerate) {		
-		if(certusage == CERTUSAGE_AUTHENC && getPINType(certusage) == PINTYPE_AUTHENC_SAME_AS_SIGN)
-		  return getPUK(pinstore,CERTUSAGE_SIGN, getPINType(CERTUSAGE_SIGN), false);
-		return getPUK(pukstore,certusage, getPINType(certusage),regenerate);
-	}
 
 
 	/* 
@@ -155,6 +143,13 @@ public class SwedishEIDProfile extends EIDProfile {
 	  if(LATEST_VERSION != getVersion()){
 		  // New version of the class, upgrade
 	    super.upgrade();
+	    
+	    if(data.get(MINIMUMPINLENGTH) == null){
+	  	  ArrayList minpinlength = new ArrayList(NUMBEROFCERTIFICATES);
+		  minpinlength.add(new Integer(4));
+		  minpinlength.add(new Integer(4));
+		  data.put(MINIMUMPINLENGTH, minpinlength);
+	    }
 	    
 	    data.put(VERSION, new Float(LATEST_VERSION));
 	  }   

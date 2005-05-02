@@ -17,7 +17,6 @@ import java.io.Serializable;
 import java.util.List;
 
 import se.anatom.ejbca.util.UpgradeableDataHashMap;
-import se.anatom.ejbca.util.passgen.PasswordGeneratorFactory;
 
 /**
  * HardTokenProfile is a basic class that should be inherited by all types
@@ -27,7 +26,7 @@ import se.anatom.ejbca.util.passgen.PasswordGeneratorFactory;
  * processed. This information could be PIN-type number of certificates, 
  * certificate profiles and so on. 
  *
- * @version $Id: HardTokenProfile.java,v 1.3 2004-04-16 07:39:00 anatom Exp $
+ * @version $Id: HardTokenProfile.java,v 1.4 2005-05-02 13:03:25 herrvendil Exp $
  */
 public abstract class HardTokenProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     // Default Values
@@ -36,10 +35,8 @@ public abstract class HardTokenProfile extends UpgradeableDataHashMap implements
     public static final String TRUE  = "true";
     public static final String FALSE = "false";
 
-    public static final int PINTYPE_4DIGITS           = 1;
-    public static final int PINTYPE_6TO8DIGITS        = 2;
-    public static final int PINTYPE_6TO8DIGITSLETTERS = 3;
-    public static final int PINTYPE_6TO8ALLPRINTABLE  = 4; 
+    public static final int PINTYPE_ASCII_NUMERIC           = 1;   
+    public static final int PINTYPE_ISO9564_1               = 2;    
 
     // Protected Constants.
 	public static final String TYPE                           = "type";
@@ -48,6 +45,7 @@ public abstract class HardTokenProfile extends UpgradeableDataHashMap implements
     protected static final String EREASABLETOKEN                 = "ereasabletoken";
 	protected static final String HARDTOKENPREFIX                = "hardtokenprefix";
 	protected static final String PINTYPE                        = "pintype";
+	protected static final String MINIMUMPINLENGTH               = "minimumpinlength";
 	protected static final String GENERATEIDENTICALPINFORCOPIES  = "generateidenticalpinforcopies";	
     // Public Methods
 
@@ -56,7 +54,7 @@ public abstract class HardTokenProfile extends UpgradeableDataHashMap implements
      */
     public HardTokenProfile() {
       setNumberOfCopies(1);	 
-      setEreasableToken(false);     
+      setEreasableToken(true);     
       setHardTokenSNPrefix("000000");    
       setGenerateIdenticalPINForCopies(true);  
     }
@@ -101,34 +99,6 @@ public abstract class HardTokenProfile extends UpgradeableDataHashMap implements
 	 * @return true if it's possible to create a token accoringly to the profile.
 	 */
     public abstract boolean isTokenSupported(String tokenidentificationstring);
-
-	/**
-	 * Generates a PIN code that should be used for the given certusage.
-	 * Subsequent calls to the samt method and samt certusage gives the same
-	 * PIN-code if not the regenerate flag i set.
-	 * 
-	 * @param certusage should be one of the CERTUSAGE_ constants.
-	 * @param regenerate indicates that a new PIN should be generated.
-	 * @return a generated PIN code.
-	 */
-    public abstract String getPIN(int certusage, boolean regenerate);
-
-	/**
-	 * Generates a PUK code that should be used for the given certusage.
-	 * Subsequent calls to the samt method and samt certusage gives the same
-	 * PUK-code if not the regenerate flag i set.
-	 * 
-	 * @param certusage should be one of the CERTUSAGE_ constants.
-	 * @param regenerate indicates that a new PUK should be generated.
-	 * @return a generated PUK code.
-	 */            
-	public abstract String getPUK(int certusage, boolean regenerate);
-
-
-    
-    	
-    
-
     // Public Methods mostly used by EJBCA  
 
 	public void setNumberOfCopies(int numberofcopies) { data.put(NUMBEROFCOPIES,new Integer(numberofcopies));}
@@ -153,6 +123,21 @@ public abstract class HardTokenProfile extends UpgradeableDataHashMap implements
 	public  void setPINType(int certusage, int pintype){
 		((List) data.get(PINTYPE)).set(certusage, new Integer(pintype));		
 	}
+	
+	/**
+	 * Retrieves the minimum pin length that should be generated for
+	 * tokens with this profile.
+	 * 
+	 * @param certusage the should be one of the CERTUSAGE_ constants.
+	 * @return a length of chars between 0 - 8. 
+	 */
+	public int getMinimumPINLength(int certusage){
+	  return ((Integer) ((List) data.get(MINIMUMPINLENGTH)).get(certusage)).intValue();	
+	}
+	
+	public  void setMinimumPINLength(int certusage, int length){
+		((List) data.get(MINIMUMPINLENGTH)).set(certusage, new Integer(length));		
+	}
 
     public abstract Object clone() throws CloneNotSupportedException;
 
@@ -175,54 +160,6 @@ public abstract class HardTokenProfile extends UpgradeableDataHashMap implements
 	  return returnval;	
 	}
 	
-	/**
-	 * Help method used to generate PIN-codes.
-	 */
-	protected String getPIN(String[] pinstore, int certusage, int pintype, boolean regenerate){
-      
-	  if(pinstore[certusage] == null || regenerate){
-		switch(pintype){
-		  case PINTYPE_4DIGITS :
-		    pinstore[certusage] = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_DIGITS).getNewPassword(4,4); 
-		    break;
-	      case PINTYPE_6TO8DIGITS :
-		    pinstore[certusage] = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_DIGITS).getNewPassword(6,8);
-			break;
-	      case PINTYPE_6TO8DIGITSLETTERS :
-		    pinstore[certusage] = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_LETTERSANDDIGITS).getNewPassword(6,8);
-			break;
-		  case PINTYPE_6TO8ALLPRINTABLE :
-		    pinstore[certusage] = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_ALLPRINTABLE).getNewPassword(6,8);
-			break;
-		}
-	  }
-    	
-      return pinstore[certusage]; 
-	}
-	
-	/**
-	 * Help method used to generate PUK-codes.
-	 */
-	protected String getPUK(String[] pukstore, int certusage, int pintype, boolean regenerate){
-      // TODO fix lengths
-	  if(pukstore[certusage] == null || regenerate){
-		switch(pintype){
-		  case PINTYPE_4DIGITS :
-			pukstore[certusage] = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_DIGITS).getNewPassword(4,4); 
-			break;
-		  case PINTYPE_6TO8DIGITS :
-			pukstore[certusage] = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_DIGITS).getNewPassword(6,8);
-			break;
-		  case PINTYPE_6TO8DIGITSLETTERS :
-			pukstore[certusage] = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_LETTERSANDDIGITS).getNewPassword(6,8);
-			break;
-		  case PINTYPE_6TO8ALLPRINTABLE :
-			pukstore[certusage] = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_ALLPRINTABLE).getNewPassword(6,8);
-			break;
-		}
-	  }
-    	
-	  return pukstore[certusage]; 
-	}	
+
 
 }

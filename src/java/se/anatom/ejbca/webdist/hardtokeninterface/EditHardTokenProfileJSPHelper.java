@@ -41,7 +41,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * Contains help methods used to parse a hard token profile jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditHardTokenProfileJSPHelper.java,v 1.6 2005-04-29 10:02:22 anatom Exp $
+ * @version $Id: EditHardTokenProfileJSPHelper.java,v 1.7 2005-05-02 13:06:23 herrvendil Exp $
  */
 public class EditHardTokenProfileJSPHelper {
 	
@@ -103,6 +103,7 @@ public class EditHardTokenProfileJSPHelper {
 	public static final String SELECT_NUMOFADRESSLABELCOPIES = "selectadresslabelcopies";
 	public static final String SELECT_VISUALLAYOUTTYPE   = "selectvisuallayouttype";
 	public static final String SELECT_NUMOFTOKENCOPIES   = "selectnumoftokencopies";
+	public static final String SELECT_MINPINLENGTH       = "selectminpinlength";
 	
 	public static final String FILE_TEMPLATE             = "filetemplate";
 	
@@ -360,14 +361,19 @@ public class EditHardTokenProfileJSPHelper {
 				   value = request.getParameter(SELECT_PINTYPE + "0");
 				   if(value!= null)
 					 sweprof.setPINType(SwedishEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
-                    
+				   value = request.getParameter(SELECT_MINPINLENGTH + "0");
+				   if(value!= null)
+					 sweprof.setMinimumPINLength(SwedishEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value)); 
+				   				   
 				   value = request.getParameter(SELECT_CERTIFICATEPROFILE + "1");
 				   if(value!= null)
 					 sweprof.setCertificateProfileId(SwedishEIDProfile.CERTUSAGE_AUTHENC, Integer.parseInt(value));
 				   value = request.getParameter(SELECT_PINTYPE + "1");
 				   if(value!= null)
 				     sweprof.setPINType(SwedishEIDProfile.CERTUSAGE_AUTHENC, Integer.parseInt(value));
-                  
+				   value = request.getParameter(SELECT_MINPINLENGTH + "1");
+				   if(value!= null)
+					 sweprof.setMinimumPINLength(SwedishEIDProfile.CERTUSAGE_AUTHENC, Integer.parseInt(value));                  
                      
 				 }
 
@@ -392,6 +398,9 @@ public class EditHardTokenProfileJSPHelper {
 				   if(value!= null)
 					 enhprof.setCAId(EnhancedEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
 				   value = request.getParameter(SELECT_PINTYPE + "0");
+				   value = request.getParameter(SELECT_MINPINLENGTH + "0");
+				   if(value!= null)
+				   	 enhprof.setMinimumPINLength(EnhancedEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
 				   if(value!= null)
 					 enhprof.setPINType(EnhancedEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
                    enhprof.setIsKeyRecoverable(EnhancedEIDProfile.CERTUSAGE_SIGN, false); 
@@ -405,6 +414,9 @@ public class EditHardTokenProfileJSPHelper {
 				   value = request.getParameter(SELECT_PINTYPE + "1");
 				   if(value!= null)
 					 enhprof.setPINType(EnhancedEIDProfile.CERTUSAGE_AUTH, Integer.parseInt(value));
+				   value = request.getParameter(SELECT_MINPINLENGTH + "1");
+				   if(value!= null)
+				   	 enhprof.setMinimumPINLength(EnhancedEIDProfile.CERTUSAGE_AUTH, Integer.parseInt(value));
 				   enhprof.setIsKeyRecoverable(EnhancedEIDProfile.CERTUSAGE_AUTH, false);
 
 				   value = request.getParameter(SELECT_CERTIFICATEPROFILE + "2");
@@ -415,7 +427,10 @@ public class EditHardTokenProfileJSPHelper {
 					 enhprof.setCAId(EnhancedEIDProfile.CERTUSAGE_ENC, Integer.parseInt(value));
 				   value = request.getParameter(SELECT_PINTYPE + "2");
 				   if(value!= null)
-					 enhprof.setPINType(EnhancedEIDProfile.CERTUSAGE_ENC, Integer.parseInt(value));				   
+					 enhprof.setPINType(EnhancedEIDProfile.CERTUSAGE_ENC, Integer.parseInt(value));			
+				   value = request.getParameter(SELECT_MINPINLENGTH + "2");
+				   if(value!= null)
+				   	 enhprof.setMinimumPINLength(EnhancedEIDProfile.CERTUSAGE_ENC, Integer.parseInt(value));				   
 				   value = request.getParameter(CHECKBOX_KEYRECOVERABLE + "2");
 					if(value != null)                              
 					enhprof.setIsKeyRecoverable(EnhancedEIDProfile.CERTUSAGE_ENC, value.equals(CHECKBOX_VALUE));

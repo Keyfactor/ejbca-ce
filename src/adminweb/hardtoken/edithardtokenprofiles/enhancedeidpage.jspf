@@ -1,21 +1,19 @@
 <%               
-  int[] signpintypes = { HardTokenProfile.PINTYPE_4DIGITS,HardTokenProfile.PINTYPE_6TO8DIGITS,
-  		         HardTokenProfile.PINTYPE_6TO8DIGITSLETTERS, HardTokenProfile.PINTYPE_6TO8ALLPRINTABLE}; 
+  int[] signpintypes = { HardTokenProfile.PINTYPE_ASCII_NUMERIC, HardTokenProfile.PINTYPE_ISO9564_1}; 
 		
-  int[] authpintypes = { HardTokenProfile.PINTYPE_4DIGITS,HardTokenProfile.PINTYPE_6TO8DIGITS,
-                            HardTokenProfile.PINTYPE_6TO8DIGITSLETTERS, HardTokenProfile.PINTYPE_6TO8ALLPRINTABLE,
-			    EnhancedEIDProfile.PINTYPE_AUTH_SAME_AS_SIGN};
+  int[] authpintypes = { HardTokenProfile.PINTYPE_ASCII_NUMERIC, HardTokenProfile.PINTYPE_ISO9564_1,
+			             EnhancedEIDProfile.PINTYPE_AUTH_SAME_AS_SIGN};
 
-  int[] encpintypes = { HardTokenProfile.PINTYPE_4DIGITS,HardTokenProfile.PINTYPE_6TO8DIGITS,
-                            HardTokenProfile.PINTYPE_6TO8DIGITSLETTERS, HardTokenProfile.PINTYPE_6TO8ALLPRINTABLE,
-			    EnhancedEIDProfile.PINTYPE_ENC_SAME_AS_AUTH};
+  int[] encpintypes = { HardTokenProfile.PINTYPE_ASCII_NUMERIC,HardTokenProfile.PINTYPE_ISO9564_1,
+			            EnhancedEIDProfile.PINTYPE_ENC_SAME_AS_AUTH};
 
-  String[] signpintexts    = {"4DIGITS","6TO8DIGITS","6TO8DIGITSLETTERS","6TO8ALLPRINTABLE"};
-  String[] authpintexts    = {"4DIGITS","6TO8DIGITS","6TO8DIGITSLETTERS","6TO8ALLPRINTABLE", "SAMEASSIGNCERT"};
-  String[] encpintexts     = {"4DIGITS","6TO8DIGITS","6TO8DIGITSLETTERS","6TO8ALLPRINTABLE", "SAMEASAUTHCERT"};
+  String[] signpintexts    = {"ASCIINUMERIC","ISO95641"};
+  String[] authpintexts    = {"ASCIINUMERIC","ISO95641", "SAMEASSIGNCERT"};
+  String[] encpintexts     = {"ASCIINUMERIC","ISO95641", "SAMEASAUTHCERT"};
 
   String[] keytexts = {"RSA1024BIT", "RSA2048BIT"};
 
+  int maxpinlength = 8; 
   EnhancedEIDProfile curprofile = (EnhancedEIDProfile) helper.profiledata;
 
 %>
@@ -135,7 +133,15 @@
                   <%= ejbcawebbean.getText(signpintexts[i]) %>
                </option>
             <%}%>
-          </select>         
+          </select>, <%= ejbcawebbean.getText("MINIMUMOF") %>         
+         <select name="<%=EditHardTokenProfileJSPHelper.SELECT_MINPINLENGTH + "0"%>" size="1"  >
+            <% int currentminpinlen = curprofile.getMinimumPINLength(EnhancedEIDProfile.CERTUSAGE_SIGN);               
+               for(int i=0;i <= maxpinlength;i++){%>
+              <option value="<%=i%>" <% if(i == currentminpinlen) out.write(" selected "); %>> 
+                  <%= i %>
+               </option>
+            <%}%>
+          </select> <%= ejbcawebbean.getText("CHARS") %>.          
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
@@ -214,7 +220,15 @@
                   <%= ejbcawebbean.getText(authpintexts[i]) %>
                </option>
             <%}%>
-          </select>         
+          </select>, <%= ejbcawebbean.getText("MINIMUMOF") %>         
+         <select name="<%=EditHardTokenProfileJSPHelper.SELECT_MINPINLENGTH + "1"%>" size="1"  >
+            <% currentminpinlen = curprofile.getMinimumPINLength(EnhancedEIDProfile.CERTUSAGE_AUTH);               
+               for(int i=0;i <= maxpinlength;i++){%>
+              <option value="<%=i%>" <% if(i == currentminpinlen) out.write(" selected "); %>> 
+                  <%= i %>
+               </option>
+            <%}%>
+          </select> <%= ejbcawebbean.getText("CHARS") %>. 
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
@@ -285,7 +299,8 @@
         </div>
       </td>
       <td width="50%" valign="top">          
-         <select name="<%=EditHardTokenProfileJSPHelper.SELECT_PINTYPE + "2"%>" size="1"  >
+         <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.SELECT_PINTYPE + "2" %>' value='<%= EnhancedEIDProfile.PINTYPE_ENC_SAME_AS_AUTH %>'>
+      <!--   <select name="<%=EditHardTokenProfileJSPHelper.SELECT_PINTYPE + "2"%>" size="1"  >
             <% currentpintype = curprofile.getPINType(EnhancedEIDProfile.CERTUSAGE_ENC);
                
                for(int i=0;i < encpintypes.length;i++){%>
@@ -293,7 +308,8 @@
                   <%= ejbcawebbean.getText(encpintexts[i]) %>
                </option>
             <%}%>
-          </select>         
+          </select>         -->
+          <%= ejbcawebbean.getText("SAMEASAUTHCERT") %>
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 

@@ -34,10 +34,13 @@ import se.anatom.ejbca.hardtoken.IHardTokenBatchJobSessionLocal;
 import se.anatom.ejbca.hardtoken.IHardTokenBatchJobSessionLocalHome;
 import se.anatom.ejbca.hardtoken.IHardTokenSessionLocal;
 import se.anatom.ejbca.hardtoken.IHardTokenSessionLocalHome;
+import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionLocal;
+import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionLocalHome;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.IUserAdminSessionLocal;
 import se.anatom.ejbca.ra.IUserAdminSessionLocalHome;
 import se.anatom.ejbca.util.ServiceLocator;
+import se.anatom.ejbca.webdist.rainterface.RAInterfaceBean;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
 
@@ -48,8 +51,8 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * @version $Id: LogInterfaceBean.java,v 1.13 2002/08/28 12:22:25 herrvendil Exp $
  */
 public class HardTokenInterfaceBean {
-    
-    /** Creates new LogInterfaceBean */
+
+	/** Creates new LogInterfaceBean */
     public HardTokenInterfaceBean(){
     }
     // Public methods.
@@ -59,56 +62,56 @@ public class HardTokenInterfaceBean {
      * @param request is a reference to the http request.
      */
     public void initialize(HttpServletRequest request, EjbcaWebBean ejbcawebbean) throws  Exception{
+
+      if(!initialized){
+        admin           = new Admin(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
+            
+        final ServiceLocator locator = ServiceLocator.getInstance();
+        IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome) locator.getLocalHome(IHardTokenSessionLocalHome.COMP_NAME);
+        hardtokensession = hardtokensessionhome.create();
+
+        IHardTokenBatchJobSessionLocalHome  hardtokenbatchsessionhome = (IHardTokenBatchJobSessionLocalHome) locator.getLocalHome(IHardTokenBatchJobSessionLocalHome.COMP_NAME);
+        hardtokenbatchsession = hardtokenbatchsessionhome.create();
         
-        if(!initialized){
-            admin           = new Admin(((X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
-            
-            final ServiceLocator locator = ServiceLocator.getInstance();
-            IHardTokenSessionLocalHome hardtokensessionhome = (IHardTokenSessionLocalHome) locator.getLocalHome(IHardTokenSessionLocalHome.COMP_NAME);
-            hardtokensession = hardtokensessionhome.create();
-            
-            IHardTokenBatchJobSessionLocalHome  hardtokenbatchsessionhome = (IHardTokenBatchJobSessionLocalHome) locator.getLocalHome(IHardTokenBatchJobSessionLocalHome.COMP_NAME);
-            hardtokenbatchsession = hardtokenbatchsessionhome.create();
-            
-            IAuthorizationSessionLocalHome  authorizationsessionhome = (IAuthorizationSessionLocalHome) locator.getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
-            IAuthorizationSessionLocal authorizationsession = authorizationsessionhome.create();
-            
-            IUserAdminSessionLocalHome adminsessionhome = (IUserAdminSessionLocalHome) locator.getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
-            IUserAdminSessionLocal useradminsession = adminsessionhome.create();
-            
-            ICertificateStoreSessionLocalHome certificatestorehome = (ICertificateStoreSessionLocalHome) locator.getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
-            ICertificateStoreSessionLocal certificatesession = certificatestorehome.create();
-            
-            
-            initialized=true;
-            
-            this.informationmemory = ejbcawebbean.getInformationMemory();
-            
-            this.hardtokenprofiledatahandler = new HardTokenProfileDataHandler(admin, hardtokensession, certificatesession, authorizationsession , useradminsession, informationmemory);
-            
-        }
+		IAuthorizationSessionLocalHome  authorizationsessionhome = (IAuthorizationSessionLocalHome) locator.getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
+		IAuthorizationSessionLocal authorizationsession = authorizationsessionhome.create();
+
+		IUserAdminSessionLocalHome adminsessionhome = (IUserAdminSessionLocalHome) locator.getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
+		IUserAdminSessionLocal useradminsession = adminsessionhome.create();
+
+		ICertificateStoreSessionLocalHome certificatestorehome = (ICertificateStoreSessionLocalHome) locator.getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
+		ICertificateStoreSessionLocal certificatesession = certificatestorehome.create();
+
+        IKeyRecoverySessionLocalHome keyrecoverysessionhome = (IKeyRecoverySessionLocalHome) locator.getLocalHome(IKeyRecoverySessionLocalHome.COMP_NAME);
+        keyrecoverysession = keyrecoverysessionhome.create();
+		
+        initialized=true;
+        
+        this.informationmemory = ejbcawebbean.getInformationMemory();
+                      
+        this.hardtokenprofiledatahandler = new HardTokenProfileDataHandler(admin, hardtokensession, certificatesession, authorizationsession , useradminsession, informationmemory);
+		
+      }
     }
     
     /* Returns the first found hard token for the given username. */
     public HardTokenView getHardTokenViewWithUsername(String username) {
-        this.result=null;
-        
-        Collection res = hardtokensession.getHardTokens(admin, username);
-        Iterator iter = res.iterator();
-        if(res.size() > 0) {
-            this.result = new HardTokenView[res.size()];
-            for(int i=0;iter.hasNext();i++) {
-                this.result[i]=new HardTokenView((HardTokenData) iter.next());
-            }
-        } else {
-            this.result = null;
+      this.result=null;
+
+      Collection res = hardtokensession.getHardTokens(admin, username);
+      Iterator iter = res.iterator();
+      if(res.size() > 0) {
+        this.result = new HardTokenView[res.size()];
+        for(int i=0;iter.hasNext();i++) {
+          this.result[i]=new HardTokenView((HardTokenData) iter.next());
         }
         
         if(this.result!= null && this.result.length > 0) {
             return this.result[0];
         }
-        return null;
         
+      }   
+      return null;        
     }
     
     public HardTokenView getHardTokenViewWithIndex(String username, int index) {
@@ -224,16 +227,52 @@ public class HardTokenInterfaceBean {
             informationmemory.hardTokenDataEdited();
         }
     }
+
+/**
+ * Method that checks if a token is key recoverable and also check if the administrator is authorized to the action.
+ * @param tokensn
+ * @param rabean
+ * @return
+ */
     
+    public boolean isTokenKeyRecoverable(String tokensn, String username, RAInterfaceBean rabean) throws Exception{
+      boolean retval = false;	
+      X509Certificate keyRecCert = null;            
+      
+      Collection result = hardtokensession.findCertificatesInHardToken(admin, tokensn);
+      Iterator iter = result.iterator();
+      while(iter.hasNext()){
+      	X509Certificate cert = (X509Certificate) iter.next();
+      	if(keyrecoverysession.existsKeys(admin,cert)){
+      		keyRecCert = cert;
+      	}
+      }
+            
+      if(keyRecCert != null){
+       retval = rabean.keyRecoveryPossible(keyRecCert,username); 
+      }
+      
+      return retval;	
+    }
     
+    public void markTokenForKeyRecovery(String tokensn){                   
+        Collection result = hardtokensession.findCertificatesInHardToken(admin, tokensn);
+        Iterator iter = result.iterator();
+        while(iter.hasNext()){
+        	X509Certificate cert = (X509Certificate) iter.next();
+        	if(keyrecoverysession.existsKeys(admin,cert)){
+        		keyrecoverysession.markAsRecoverable(admin,cert);
+        	}
+        }              
+    }
     
-    
-    
-    public HardTokenProfileDataHandler getHardTokenProfileDataHandler() {	
-        return hardtokenprofiledatahandler;
-    }    
+	
+	public HardTokenProfileDataHandler getHardTokenProfileDataHandler() {	
+		return hardtokenprofiledatahandler;
+	}    
     // Private fields.
     private IHardTokenSessionLocal                hardtokensession;
+    private IKeyRecoverySessionLocal              keyrecoverysession;
     private IHardTokenBatchJobSessionLocal  hardtokenbatchsession;        
     private Admin                                          admin;
     private InformationMemory                      informationmemory;
