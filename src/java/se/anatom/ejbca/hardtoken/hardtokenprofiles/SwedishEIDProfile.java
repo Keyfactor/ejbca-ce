@@ -24,7 +24,7 @@ import se.anatom.ejbca.SecConst;
 /**
  * Hard token profile with a goal to fulfill Swedish EID standard.
  * 
- * @version $Id: SwedishEIDProfile.java,v 1.5 2005-05-02 13:03:25 herrvendil Exp $
+ * @version $Id: SwedishEIDProfile.java,v 1.6 2005-05-02 16:18:40 anatom Exp $
  */
 public class SwedishEIDProfile extends EIDProfile {
 		
@@ -48,8 +48,6 @@ public class SwedishEIDProfile extends EIDProfile {
 		
 	
 	// Protected Fields
-	private String[] pinstore = new String[NUMBEROFCERTIFICATES];
-	private String[] pukstore = new String[NUMBEROFCERTIFICATES];
 	
 	private String[][] SUPPORTEDTOKENS = {{"TODO"}};
 	

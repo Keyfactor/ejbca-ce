@@ -53,7 +53,7 @@ public abstract class HardToken extends UpgradeableDataHashMap implements Serial
     
     // Public Methods
     public Object getField(String field) {
-        return (Object) data.get(field);
+        return data.get(field);
     }
     	
 	public abstract int getNumberOfFields() ;

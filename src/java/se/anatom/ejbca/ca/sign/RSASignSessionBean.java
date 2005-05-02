@@ -1151,7 +1151,6 @@ public class RSASignSessionBean extends BaseSessionBean {
                 debug(cert.toString());
 
                 // Store certificate in the database
-                String fingerprint = CertTools.getFingerprintAsString(cert);
                 String cafingerprint = null;
                 Certificate cacert = ca.getCACertificate();
                 if (cacert instanceof X509Certificate) {

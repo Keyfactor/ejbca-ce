@@ -24,7 +24,6 @@ import java.util.TreeMap;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
 
@@ -46,7 +45,7 @@ import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionLocalHome;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.IUserAdminSessionLocal;
 import se.anatom.ejbca.ra.IUserAdminSessionLocalHome;
-import se.anatom.ejbca.ra.UserDataLocal;
+import se.anatom.ejbca.ra.UserDataConstants;
 import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
@@ -61,7 +60,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.55 2005-05-02 13:07:49 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.56 2005-05-02 16:19:08 anatom Exp $
  */
 public class RAInterfaceBean {
     
@@ -357,7 +356,7 @@ public class RAInterfaceBean {
       long d = Long.parseLong(days);
       Date finddate = new Date();
       long millis = (d * 86400000); // One day in milliseconds.
-      finddate.setTime(finddate.getTime() + (long)millis);
+      finddate.setTime(finddate.getTime() + millis);
 
       Collection usernames =certificatesession.findCertificatesByExpireTimeWithLimit(administrator, finddate);
       if(!usernames.isEmpty()){
@@ -378,7 +377,7 @@ public class RAInterfaceBean {
     }
 
     public UserView[] filterByQuery(Query query, int index, int size) throws Exception {
-      Collection userlist = (Collection) adminsession.query(administrator, query, informationmemory.getUserDataQueryCAAuthoorizationString(), informationmemory.getUserDataQueryEndEntityProfileAuthorizationString());
+      Collection userlist = adminsession.query(administrator, query, informationmemory.getUserDataQueryCAAuthoorizationString(), informationmemory.getUserDataQueryEndEntityProfileAuthorizationString());
       users.setUsers(userlist, informationmemory.getCAIdToNameMap());
 
       return users.getUsers(index,size);
@@ -681,16 +680,15 @@ public class RAInterfaceBean {
 
       if(authorized){
         keyrecoverysession.markAsRecoverable(administrator, certificatedata.getCertificate());
-        adminsession.setUserStatus(administrator, certificatedata.getUsername(),UserDataLocal.STATUS_KEYRECOVERY);
+        adminsession.setUserStatus(administrator, certificatedata.getUsername(),UserDataConstants.STATUS_KEYRECOVERY);
       }
     }
 
     public String[] getCertificateProfileNames(){
-      String[] dummy = {""};
-      Collection certprofilenames = (Collection) this.informationmemory.getAuthorizedEndEntityCertificateProfileNames().keySet();
-      if(certprofilenames == null)
-        return new String[0];
-      else
+        String[] dummy = {""};
+        Collection certprofilenames = this.informationmemory.getAuthorizedEndEntityCertificateProfileNames().keySet();
+        if(certprofilenames == null)
+            return new String[0];
         return (String[]) certprofilenames.toArray(dummy);
     }
 
@@ -747,7 +745,6 @@ public class RAInterfaceBean {
     //
     private EndEntityProfileDataHandler    profiles;
 
-    private InitialContext                                 jndicontext;
     private IUserAdminSessionLocal                 adminsession;
     private IUserAdminSessionLocalHome        adminsessionhome;
     private ICertificateStoreSessionLocal          certificatesession;

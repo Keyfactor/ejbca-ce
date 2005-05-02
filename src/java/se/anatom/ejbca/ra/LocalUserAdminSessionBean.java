@@ -48,6 +48,7 @@ import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
+import se.anatom.ejbca.log.LogConstants;
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.ra.exception.NotFoundException;
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
@@ -69,7 +70,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.96 2005-04-27 09:45:03 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.97 2005-05-02 16:19:09 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -462,7 +463,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
                 }
             }
 
-            if ((type & SecConst.USER_SENDNOTIFICATION) != 0 && statuschanged && (status == UserDataLocal.STATUS_NEW || status == UserDataLocal.STATUS_KEYRECOVERY)) {
+            if ((type & SecConst.USER_SENDNOTIFICATION) != 0 && statuschanged && (status == UserDataConstants.STATUS_NEW || status == UserDataConstants.STATUS_KEYRECOVERY)) {
 
                 sendNotification(admin, profile, username, newpassword, dn, email, caid);
             }
@@ -490,7 +491,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
     public void deleteUser(Admin admin, String username) throws AuthorizationDeniedException, NotFoundException, RemoveException {
         debug(">deleteUser(" + username + ")");
         // Check if administrator is authorized to delete user.
-        int caid = ILogSessionLocal.INTERNALCAID;
+        int caid = LogConstants.INTERNALCAID;
         try {
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data1 = home.findByPrimaryKey(pk);
@@ -532,7 +533,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
     public void setUserStatus(Admin admin, String username, int status) throws AuthorizationDeniedException, FinderException {
         debug(">setUserStatus(" + username + ", " + status + ")");
         // Check if administrator is authorized to edit user.
-        int caid = ILogSessionLocal.INTERNALCAID;
+        int caid = LogConstants.INTERNALCAID;
         try {
             UserDataPK pk = new UserDataPK(username);
             UserDataLocal data1 = home.findByPrimaryKey(pk);
@@ -721,7 +722,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         }
 
         Collection publishers = this.certificatesession.getCertificateProfile(admin, data.getCertificateProfileId()).getPublisherList();
-        setUserStatus(admin, username, UserDataLocal.STATUS_REVOKED);
+        setUserStatus(admin, username, UserDataConstants.STATUS_REVOKED);
         certificatesession.setRevokeStatus(admin, username, publishers, reason);
         logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_INFO_REVOKEDENDENTITY, "");
         debug("<revokeUser()");
@@ -762,7 +763,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         certificatesession.setRevokeStatus(admin, issuerdn, certserno, publishers, reason);
 
         if (certificatesession.checkIfAllRevoked(admin, username)) {
-            setUserStatus(admin, username, UserDataLocal.STATUS_REVOKED);
+            setUserStatus(admin, username, UserDataConstants.STATUS_REVOKED);
             logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_INFO_REVOKEDENDENTITY, "");
         }
         debug("<revokeCert()");
@@ -925,7 +926,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
                 throw new AuthorizationDeniedException("Your certificate does not belong to an administrator.");
             }
         } else {
-            logsession.log(admin, ILogSessionLocal.INTERNALCAID, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_ADMINISTRATORLOGGEDIN, "Certificate didn't belong to any user.");
+            logsession.log(admin, LogConstants.INTERNALCAID, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_ADMINISTRATORLOGGEDIN, "Certificate didn't belong to any user.");
             throw new AuthorizationDeniedException("Your certificate does not belong to any user.");
         }
 
@@ -1122,7 +1123,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
                 rs = ps.executeQuery();
 
                 // Assemble result.
-                while (rs.next() && returnval.size() <= IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT) {
+                while (rs.next() && returnval.size() <= UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT) {
                 	// TODO add support for extended information.
                     UserDataVO data = new UserDataVO(rs.getString(1), rs.getString(2), rs.getInt(14), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getInt(6)
                             , rs.getInt(10), rs.getInt(11), new java.util.Date(rs.getLong(8)), new java.util.Date(rs.getLong(9)), rs.getInt(12), rs.getInt(13),

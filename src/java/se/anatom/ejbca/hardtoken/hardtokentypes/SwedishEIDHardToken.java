@@ -20,7 +20,7 @@ import se.anatom.ejbca.SecConst;
 /**
  * SwedishEIDHardToken is a class defining data stored in database for a Swedish EID token.
  *
- * @version $Id: SwedishEIDHardToken.java,v 1.2 2004-04-16 07:39:02 anatom Exp $
+ * @version $Id: SwedishEIDHardToken.java,v 1.3 2005-05-02 16:19:01 anatom Exp $
  */
 public class SwedishEIDHardToken extends HardToken {
     // Public Constants
@@ -114,7 +114,6 @@ public class SwedishEIDHardToken extends HardToken {
     public void setSignaturePUK(String signaturepuk) {
         data.put(SIGNATUREPUK, signaturepuk);
     }
-    ;
 
     // Private fields.
 }

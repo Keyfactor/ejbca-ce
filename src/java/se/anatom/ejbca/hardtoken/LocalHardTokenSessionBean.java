@@ -49,8 +49,10 @@ import se.anatom.ejbca.hardtoken.hardtokentypes.HardToken;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
+import se.anatom.ejbca.log.LogConstants;
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
+import se.anatom.ejbca.ra.UserAdminConstants;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.JDBCUtil;
 
@@ -1000,7 +1002,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        */
     public void changeHardToken(Admin admin, String tokensn, int tokentype, HardToken hardtokendata) throws HardTokenDoesntExistsException{
         debug(">changeHardToken(tokensn : " + tokensn + ")");
-        int caid = ILogSessionLocal.INTERNALCAID;
+        int caid = LogConstants.INTERNALCAID;
         try {
             HardTokenDataLocal htd = hardtokendatahome.findByPrimaryKey(tokensn);
             htd.setTokenType(tokentype);
@@ -1029,7 +1031,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        */
     public void removeHardToken(Admin admin, String tokensn) throws HardTokenDoesntExistsException{
       debug(">removeHardToken(tokensn : " + tokensn + ")");
-      int caid = ILogSessionLocal.INTERNALCAID;
+      int caid = LogConstants.INTERNALCAID;
       try{
         HardTokenDataLocal htd = hardtokendatahome.findByPrimaryKey(tokensn);
         caid = htd.getSignificantIssuerDN().hashCode();
@@ -1204,7 +1206,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     		// Execute query.
     		rs = ps.executeQuery();
     		// Assemble result.
-    		while(rs.next() && returnval.size() <= IUserAdminSessionRemote.MAXIMUM_QUERY_ROWCOUNT){
+    		while(rs.next() && returnval.size() <= UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT){
     			returnval.add(rs.getString(1));
     		}
     		debug("<findHardTokenByTokenSerialNumber()");

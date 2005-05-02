@@ -52,7 +52,7 @@ import se.anatom.ejbca.util.KeyTools;
  * </ul>
  *
  *
- * @version $Id: HttpGetCert.java,v 1.16 2004-05-31 14:29:07 anatom Exp $
+ * @version $Id: HttpGetCert.java,v 1.17 2005-05-02 16:19:12 anatom Exp $
  */
 public class HttpGetCert {
     private static Logger log = Logger.getLogger(HttpGetCert.class);
@@ -60,7 +60,7 @@ public class HttpGetCert {
     /**
      * Constructor
      */
-    public HttpGetCert() throws java.io.IOException {
+    public HttpGetCert() {
         log.debug(">HttpGetCert:");
 
         // Use for SSL connections

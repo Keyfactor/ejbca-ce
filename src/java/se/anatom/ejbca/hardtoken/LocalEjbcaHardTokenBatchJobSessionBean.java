@@ -23,16 +23,16 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 
 import se.anatom.ejbca.BaseSessionBean;
-import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.JNDINames;
-import se.anatom.ejbca.util.JDBCUtil;
+import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
 import se.anatom.ejbca.log.LogEntry;
+import se.anatom.ejbca.ra.UserDataConstants;
 import se.anatom.ejbca.ra.UserDataLocal;
-import se.anatom.ejbca.ra.UserDataLocalHome;
+import se.anatom.ejbca.util.JDBCUtil;
 
 /**
  * Remote interface for bean used by hardtoken batchprograms to retrieve users to generate from EJBCA RA.
@@ -185,8 +185,8 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
             ps = con.prepareStatement("select " + USERDATA_COL + " from UserData where hardTokenIssuerId=? and tokenType>? and (status=? or status=?)" );
             ps.setInt(1,issuerid);
             ps.setInt(2,SecConst.TOKEN_SOFT);
-            ps.setInt(3,UserDataLocal.STATUS_NEW);
-            ps.setInt(4,UserDataLocal.STATUS_KEYRECOVERY);
+            ps.setInt(3,UserDataConstants.STATUS_NEW);
+            ps.setInt(4,UserDataConstants.STATUS_KEYRECOVERY);
 
             // Execute query.
             rs = ps.executeQuery();
@@ -243,8 +243,8 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
             ps = con.prepareStatement("select " + USERDATA_COL + " from UserData where hardTokenIssuerId=? and tokenType>? and (status=? or status=?)" );
             ps.setInt(1,issuerid);
             ps.setInt(2,SecConst.TOKEN_SOFT);
-            ps.setInt(3,UserDataLocal.STATUS_NEW);
-            ps.setInt(4,UserDataLocal.STATUS_KEYRECOVERY);
+            ps.setInt(3,UserDataConstants.STATUS_NEW);
+            ps.setInt(4,UserDataConstants.STATUS_KEYRECOVERY);
             // Assemble result.
            while(rs.next() && returnval.size() <= MAX_RETURNED_QUEUE_SIZE){
               // TODO add support for Extended Information
@@ -298,8 +298,8 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
             ps = con.prepareStatement("select " + USERDATA_COL + " from UserData where hardTokenIssuerId=? and tokenType>? and (status=? or status=?)" );
             ps.setInt(1,issuerid);
             ps.setInt(2,SecConst.TOKEN_SOFT);
-            ps.setInt(3,UserDataLocal.STATUS_NEW);
-            ps.setInt(4,UserDataLocal.STATUS_KEYRECOVERY);
+            ps.setInt(3,UserDataConstants.STATUS_NEW);
+            ps.setInt(4,UserDataConstants.STATUS_KEYRECOVERY);
 
             // Assemble result.
            if(rs.relative(index)){
@@ -350,8 +350,8 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
             ps = con.prepareStatement("select COUNT(*) from UserData where hardTokenIssuerId=? and tokenType>? and (status=? or status=?)");
             ps.setInt(1,issuerid);
             ps.setInt(2,SecConst.TOKEN_SOFT);
-			ps.setInt(3,UserDataLocal.STATUS_NEW);
-			ps.setInt(4,UserDataLocal.STATUS_KEYRECOVERY);
+			ps.setInt(3,UserDataConstants.STATUS_NEW);
+			ps.setInt(4,UserDataConstants.STATUS_KEYRECOVERY);
             // Execute query.
             rs = ps.executeQuery();
             // Assemble result.

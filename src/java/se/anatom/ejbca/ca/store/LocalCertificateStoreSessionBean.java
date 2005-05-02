@@ -65,7 +65,7 @@ import se.anatom.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.83 2005-04-29 08:17:03 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.84 2005-05-02 16:19:04 anatom Exp $
  * @ejb.bean display-name="CertificateStoreSB"
  * name="CertificateStoreSession"
  * view-type="both"
@@ -1305,7 +1305,6 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
         Connection con = null;
         PreparedStatement ps = null;
-        ;
         ResultSet result = null;
         try {
             con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
@@ -1342,7 +1341,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             CertReqHistoryDataPK pk = new CertReqHistoryDataPK();
             pk.fingerprint = CertTools.getFingerprintAsString(cert);
             certReqHistoryHome.create(cert,useradmindata);
-            getLogSession().log(admin, cert, LogEntry.MODULE_CA, new java.util.Date(), useradmindata.getUsername(), (X509Certificate) cert, LogEntry.EVENT_INFO_STORECERTIFICATE, "Storing certificate request history successful.");            
+            getLogSession().log(admin, cert, LogEntry.MODULE_CA, new java.util.Date(), useradmindata.getUsername(), cert, LogEntry.EVENT_INFO_STORECERTIFICATE, "Storing certificate request history successful.");            
         } catch (Exception e) {
             getLogSession().log(admin, cert, LogEntry.MODULE_CA, new java.util.Date(), useradmindata.getUsername(), cert, LogEntry.EVENT_ERROR_STORECERTIFICATE, "Error storing certificate request history.");
             throw new EJBException(e);

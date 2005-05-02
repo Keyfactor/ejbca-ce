@@ -209,7 +209,7 @@ public abstract class HardTokenDataBean extends BaseEntityBean {
              break;
       }
 
-      returnval.loadData((Object) data);
+      returnval.loadData(data);
       return returnval;
     }
 

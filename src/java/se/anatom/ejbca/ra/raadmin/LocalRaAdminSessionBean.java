@@ -39,7 +39,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.43 2005-03-02 11:25:41 anatom Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.44 2005-05-02 16:18:24 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="RaAdminSB"
@@ -622,7 +622,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
             if(Integer.parseInt(availablecertprofiles[j]) == certificateprofileid){
               exists=true;
               break;
-            };
+            }
           }
         }
       }catch(FinderException e){}
@@ -650,7 +650,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
             if(Integer.parseInt(availablecas[j]) == caid){
               exists=true;
               break;
-            };
+            }
           }
         }
       }catch(FinderException e){}
@@ -765,14 +765,14 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
        debug(">updateAdminPreference(fingerprint : " + certificatefingerprint + ")");
        boolean ret = false;
         try {
-            AdminPreferencesDataLocal apdata = adminpreferenceshome.findByPrimaryKey(certificatefingerprint);
+            adminpreferenceshome.findByPrimaryKey(certificatefingerprint);
             adminpreferenceshome.remove(certificatefingerprint);
             try{
                 AdminPreferencesDataLocal apdata2 = adminpreferenceshome.findByPrimaryKey(certificatefingerprint);
                 debug("Found admin preferences with id "+apdata2.getId());
             }  catch (javax.ejb.FinderException fe) {
             }
-            apdata = adminpreferenceshome.create(certificatefingerprint,adminpreference);
+            adminpreferenceshome.create(certificatefingerprint,adminpreference);
             try{
                 AdminPreferencesDataLocal apdata3 = adminpreferenceshome.findByPrimaryKey(certificatefingerprint);
                 debug("Found admin preferences with id "+apdata3.getId());

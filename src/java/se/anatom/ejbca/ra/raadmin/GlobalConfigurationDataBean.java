@@ -28,7 +28,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * GlobalConfiguration
  * </pre>
  *
- * @version $Id: GlobalConfigurationDataBean.java,v 1.5 2004-11-20 23:06:11 sbailliez Exp $
+ * @version $Id: GlobalConfigurationDataBean.java,v 1.6 2005-05-02 16:18:23 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents global configuration of ra administration"
  * display-name="GlobalConfigurationDataEB"
@@ -90,7 +90,7 @@ public abstract class GlobalConfigurationDataBean extends BaseEntityBean {
      */
     public GlobalConfiguration getGlobalConfiguration(){
       GlobalConfiguration returnval = new GlobalConfiguration();
-      returnval.loadData((Object) getData());
+      returnval.loadData(getData());
       return returnval;
     }
     

@@ -24,7 +24,7 @@ import se.anatom.ejbca.SecConst;
 /**
  * EnhancedEIDProfile with three certificates and key recovery functionallity
  * 
- * @version $Id: EnhancedEIDProfile.java,v 1.6 2005-05-02 13:03:25 herrvendil Exp $
+ * @version $Id: EnhancedEIDProfile.java,v 1.7 2005-05-02 16:18:54 anatom Exp $
  */
 public class EnhancedEIDProfile extends EIDProfile {
 						
@@ -49,8 +49,6 @@ public class EnhancedEIDProfile extends EIDProfile {
 	public static final int[] AVAILABLEMINIMUMKEYLENGTHS = {1024, 2048};
 	
 	// Protected Fields
-	private String[] pinstore = new String[NUMBEROFCERTIFICATES];
-	private String[] pukstore = new String[NUMBEROFCERTIFICATES];
 	
 	private String[][] SUPPORTEDTOKENS = {{"TODO"}};
 	

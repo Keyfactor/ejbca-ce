@@ -31,15 +31,13 @@ import java.security.cert.X509Certificate;
 /**
  * A response message consisting of a single X509 Certificate.
  *
- * @version $Id: X509ResponseMessage.java,v 1.17 2004-11-20 22:54:28 sbailliez Exp $
+ * @version $Id: X509ResponseMessage.java,v 1.18 2005-05-02 16:18:55 anatom Exp $
  */
 public class X509ResponseMessage implements IResponseMessage, Serializable {
     static final long serialVersionUID = -2157072605987735912L;
 
     /** Certificate to be in response message, */
     private Certificate cert = null;
-    /** CRL to be in response message, */
-    private CRL crl = null;
 
     /** status for the response */
     private ResponseStatus status = ResponseStatus.SUCCESS;
@@ -62,7 +60,7 @@ public class X509ResponseMessage implements IResponseMessage, Serializable {
      * @param crl crl in the response message.
      */
     public void setCrl(CRL crl) {
-        this.crl = crl;
+        // This message type does not contain a CRL
     }
 
     /**

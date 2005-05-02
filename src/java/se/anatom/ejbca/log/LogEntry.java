@@ -177,8 +177,7 @@ public class LogEntry implements Serializable {
     public String getEventName() {
         if (this.event >= EVENT_ERROR_BOUNDRARY)
             return EVENTNAMES_ERROR[this.event - EVENT_ERROR_BOUNDRARY];
-        else
-            return EVENTNAMES_INFO[this.event];
+        return EVENTNAMES_INFO[this.event];
     }
 
 

@@ -28,9 +28,7 @@ import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.apply.RequestHelper;
 import se.anatom.ejbca.authorization.AvailableAccessRules;
-import se.anatom.ejbca.ca.sign.ISignSessionLocalHome;
 import se.anatom.ejbca.util.Base64;
-import se.anatom.ejbca.util.ServiceLocator;
 import se.anatom.ejbca.webdist.rainterface.CertificateView;
 import se.anatom.ejbca.webdist.rainterface.RAInterfaceBean;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
@@ -46,7 +44,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * cert, nscert and iecert also takes  parameters issuer and certificatesn were issuer is the DN of issuer and certificate serienumber 
  * is in hex format.
  *
- * @version $Id: EndEntityCertServlet.java,v 1.1 2005-05-02 13:06:02 herrvendil Exp $
+ * @version $Id: EndEntityCertServlet.java,v 1.2 2005-05-02 16:19:09 anatom Exp $
  *
  * @web.servlet name = "EndEntityCert"
  *              display-name = "EndEntityCertServlet"
@@ -68,15 +66,8 @@ public class EndEntityCertServlet extends HttpServlet {
     private static final String ISSUER_PROPERTY = "issuer";
     private static final String CERTIFICATEDN_PROPERTY = "certificatesn";
 
-    private ISignSessionLocalHome signhome = null;
-
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        try {
-            signhome = (ISignSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
-        } catch( Exception e ) {
-            throw new ServletException(e);
-        }
     }
     
     public void doPost(HttpServletRequest req, HttpServletResponse res)

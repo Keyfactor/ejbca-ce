@@ -31,7 +31,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * Profile data
  * </pre>
  *
- * @version $Id: EndEntityProfileDataBean.java,v 1.10 2004-11-20 23:06:10 sbailliez Exp $
+ * @version $Id: EndEntityProfileDataBean.java,v 1.11 2005-05-02 16:18:26 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a profile"
  * display-name="EndEntityProfileDataEB"
@@ -107,7 +107,7 @@ public abstract class EndEntityProfileDataBean extends BaseEntityBean {
      */
     public EndEntityProfile getProfile() {
         EndEntityProfile returnval = new EndEntityProfile();
-        returnval.loadData((Object) getData());
+        returnval.loadData(getData());
 
         return returnval;
     }

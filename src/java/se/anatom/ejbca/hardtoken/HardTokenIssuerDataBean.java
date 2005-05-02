@@ -137,7 +137,7 @@ public abstract class HardTokenIssuerDataBean extends BaseEntityBean {
      */
     public HardTokenIssuer getHardTokenIssuer(){
       HardTokenIssuer returnval = new HardTokenIssuer();
-      returnval.loadData((Object) getData());
+      returnval.loadData(getData());
       return returnval;
     }
 

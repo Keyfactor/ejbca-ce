@@ -31,7 +31,7 @@ import se.anatom.ejbca.util.passgen.PasswordGeneratorFactory;
  * of ejbca web interface.
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.30 2005-05-02 13:03:38 herrvendil Exp $
+ * @version $Id: EndEntityProfile.java,v 1.31 2005-05-02 16:18:23 anatom Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -308,34 +308,30 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     }
 
     public String getValue(int parameter, int number) {
-      String returnval = (String) data.get(new Integer((VALUE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter));
-      if(returnval != null)
-        return returnval;
-      else
+        String returnval = (String) data.get(new Integer((VALUE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter));
+        if(returnval != null)
+            return returnval;
         return "";
     }
 
     public boolean getUse(int parameter, int number){
-      Boolean returnval = (Boolean) data.get(new Integer((USE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter));
-      if(returnval != null)
-        return returnval.booleanValue();
-      else
+        Boolean returnval = (Boolean) data.get(new Integer((USE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter));
+        if(returnval != null)
+            return returnval.booleanValue();
         return false;
     }
 
     public boolean isRequired(int parameter, int number) {
-      Boolean returnval = (Boolean) data.get(new Integer((ISREQUIRED*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter));
-      if(returnval != null)
-        return returnval.booleanValue();
-      else
+        Boolean returnval = (Boolean) data.get(new Integer((ISREQUIRED*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter));
+        if(returnval != null)
+            return returnval.booleanValue();
         return false;
     }
 
     public boolean isModifyable(int parameter, int number){
-      Boolean returnval = (Boolean) data.get(new Integer((MODIFYABLE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter));
-      if(returnval != null)
-        return returnval.booleanValue();
-      else
+        Boolean returnval = (Boolean) data.get(new Integer((MODIFYABLE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter));
+        if(returnval != null)
+            return returnval.booleanValue();
         return false;
     }
 
@@ -547,16 +543,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
       }
       if(availablecertprofiles == null)
            throw new UserDoesntFullfillEndEntityProfile("Error Available certificate profiles is null.");
-      else{
-        boolean found=false;
-        for(int i=0; i < availablecertprofiles.length;i++){
+      boolean found=false;
+      for(int i=0; i < availablecertprofiles.length;i++){
           if( Integer.parseInt(availablecertprofiles[i]) == certificateprofileid)
-            found=true;
-        }
-
-        if(!found)
-           throw new UserDoesntFullfillEndEntityProfile("Couldn't find certificate profile among available certificate profiles.");
+              found=true;
       }
+      
+      if(!found)
+          throw new UserDoesntFullfillEndEntityProfile("Couldn't find certificate profile among available certificate profiles.");
 
       // Check if tokentype is among available  token types.
       String[] availablesofttokentypes;
@@ -566,13 +560,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         throw new UserDoesntFullfillEndEntityProfile("Error parsing end entity profile.");
       }
       if(availablesofttokentypes == null)
-         throw new UserDoesntFullfillEndEntityProfile("Error available  token types is null.");
-      else{
-        boolean found=false;
-        for(int i=0; i < availablesofttokentypes.length;i++){
+          throw new UserDoesntFullfillEndEntityProfile("Error available  token types is null.");
+      found=false;
+      for(int i=0; i < availablesofttokentypes.length;i++){
           if( Integer.parseInt(availablesofttokentypes[i]) == tokentype)
-            found=true;
-        }
+              found=true;
       }
 
       // If soft token check for hardwaretoken issuer id = 0.
@@ -589,17 +581,15 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
           throw new UserDoesntFullfillEndEntityProfile("Error parsing end entity profile.");
         }
         if(availablehardtokenissuers == null)
-           throw new UserDoesntFullfillEndEntityProfile("Error available hard token issuers is null.");
-        else{
-          boolean found=false;
-          for(int i=0; i < availablehardtokenissuers.length;i++){
+            throw new UserDoesntFullfillEndEntityProfile("Error available hard token issuers is null.");
+        found=false;
+        for(int i=0; i < availablehardtokenissuers.length;i++){
             if( Integer.parseInt(availablehardtokenissuers[i]) == hardwaretokenissuerid)
-              found=true;
-          }
-
-          if(!found)
-            throw new UserDoesntFullfillEndEntityProfile("Couldn't find hard token issuers among available hard token issuers.");
+                found=true;
         }
+        
+        if(!found)
+            throw new UserDoesntFullfillEndEntityProfile("Couldn't find hard token issuers among available hard token issuers.");
       }
       
      // Check if ca id is among available ca ids.
@@ -610,18 +600,16 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
           throw new UserDoesntFullfillEndEntityProfile("Error parsing end entity profile.");
       }
       if(availablecaids == null)
-           throw new UserDoesntFullfillEndEntityProfile("Error End Entity Profiles Available CAs is null.");
-      else{
-        boolean found=false;
-        for(int i=0; i < availablecaids.length;i++){
+          throw new UserDoesntFullfillEndEntityProfile("Error End Entity Profiles Available CAs is null.");
+      found=false;
+      for(int i=0; i < availablecaids.length;i++){
           int tmp = Integer.parseInt(availablecaids[i]);
           if( tmp == caid || tmp == SecConst.ALLCAS)
-            found=true;
-        }
-
-        if(!found)
-           throw new UserDoesntFullfillEndEntityProfile("Couldn't find CA among End Entity Profiles Available CAs.");
-      }      
+              found=true;
+      }
+      
+      if(!found)
+          throw new UserDoesntFullfillEndEntityProfile("Couldn't find CA among End Entity Profiles Available CAs.");      
     }
     
     public void doesPasswordFulfillEndEntityProfile(String password, boolean clearpwd)
@@ -633,7 +621,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 			throw new UserDoesntFullfillEndEntityProfile("Autogenerated password must have password==null");
 		}else{           		            
 		 if(!isModifyable(EndEntityProfile.PASSWORD,0)){
-		   if(!password.equals(getValue(EndEntityProfile.PASSWORD,0)));		   
+		   if(!password.equals(getValue(EndEntityProfile.PASSWORD,0)))		   
 			 fullfillsprofile=false;
 		 } 
 		 else

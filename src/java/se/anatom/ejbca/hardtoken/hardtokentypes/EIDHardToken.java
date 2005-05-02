@@ -102,7 +102,6 @@ public class EIDHardToken extends HardToken {
     public void setInitialBasicPIN(String initialbasicpin) {
         data.put(INITIALBASICPIN, initialbasicpin);
     }
-    ;
 
     /**
      * DOCUMENT ME!
@@ -121,7 +120,6 @@ public class EIDHardToken extends HardToken {
     public void setBasicPUK(String basicpuk) {
         data.put(BASICPUK, basicpuk);
     }
-    ;
 
     /**
      * DOCUMENT ME!
@@ -140,7 +138,6 @@ public class EIDHardToken extends HardToken {
     public void setInitialSignaturePIN(String initialsignaturepin) {
         data.put(INITIALSIGNATUREPIN, initialsignaturepin);
     }
-    ;
 
     /**
      * DOCUMENT ME!
@@ -159,7 +156,6 @@ public class EIDHardToken extends HardToken {
     public void setSignaturePUK(String signaturepuk) {
         data.put(SIGNATUREPUK, signaturepuk);
     }
-    ;
 
     // Private fields.
 }

@@ -30,7 +30,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * AdminPreference
  * </pre>
  *
- * @version $Id: AdminPreferencesDataBean.java,v 1.11 2004-11-20 23:06:11 sbailliez Exp $
+ * @version $Id: AdminPreferencesDataBean.java,v 1.12 2005-05-02 16:18:23 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a ra admins user preference."
  * display-name="AdminPreferencesDataEB"
@@ -84,7 +84,7 @@ public abstract class AdminPreferencesDataBean extends BaseEntityBean {
      */
     public AdminPreference getAdminPreference() {
         AdminPreference returnval = new AdminPreference();
-        returnval.loadData((Object) getData());
+        returnval.loadData(getData());
 
         return returnval;
     }

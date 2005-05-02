@@ -13,19 +13,6 @@
 
 package se.anatom.ejbca.log;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import se.anatom.ejbca.BaseSessionBean;
-import se.anatom.ejbca.JNDINames;
-import se.anatom.ejbca.util.CertTools;
-import se.anatom.ejbca.util.JDBCUtil;
-import se.anatom.ejbca.util.query.IllegalQueryException;
-import se.anatom.ejbca.util.query.Query;
-
-import javax.ejb.CreateException;
-import javax.ejb.DuplicateKeyException;
-import javax.ejb.EJBException;
-import javax.ejb.FinderException;
 import java.lang.reflect.Method;
 import java.security.cert.X509Certificate;
 import java.sql.Connection;
@@ -36,6 +23,20 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
+
+import javax.ejb.CreateException;
+import javax.ejb.DuplicateKeyException;
+import javax.ejb.EJBException;
+import javax.ejb.FinderException;
+
+import org.apache.commons.lang.StringUtils;
+
+import se.anatom.ejbca.BaseSessionBean;
+import se.anatom.ejbca.JNDINames;
+import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.JDBCUtil;
+import se.anatom.ejbca.util.query.IllegalQueryException;
+import se.anatom.ejbca.util.query.Query;
 
 
 /**
@@ -109,8 +110,6 @@ import java.util.Properties;
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 
-    private static final Logger log = Logger.getLogger(LocalLogSessionBean.class);
-
     /** The home interface of  LogEntryData entity bean */
     private LogEntryDataLocalHome logentryhome;
 
@@ -163,7 +162,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
                     params[0] = properties[i];
                 else
                     params[0] = new Properties();
-                logdevices.add((ILogDevice) method.invoke(fact, params));
+                logdevices.add(method.invoke(fact, params));
             }
         } catch (Exception e) {
             throw new EJBException(e);

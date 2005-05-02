@@ -21,7 +21,7 @@ import java.util.HashMap;
  * Class containing the log configuration data. Tells which events should be logged and if internal
  * log database and/or external logging device should be used.
  *
- * @version $Id: LogConfiguration.java,v 1.9 2004-11-20 22:49:53 sbailliez Exp $
+ * @version $Id: LogConfiguration.java,v 1.10 2005-05-02 16:18:40 anatom Exp $
  */
 public class LogConfiguration implements Serializable {
     // Public constants
@@ -47,9 +47,8 @@ public class LogConfiguration implements Serializable {
 
         if (log == null) {
             return true; // Default is log everything.
-        } else {
-            return log.booleanValue();
         }
+        return log.booleanValue();
     }
 
     /**
@@ -113,9 +112,8 @@ public class LogConfiguration implements Serializable {
     public String getStringRepresentationOfEventId(int event) {
         if (event >= LogEntry.EVENT_ERROR_BOUNDRARY) {
             return LogEntry.EVENTNAMES_ERROR[event];
-        } else {
-            return LogEntry.EVENTNAMES_INFO[event];
         }
+        return LogEntry.EVENTNAMES_INFO[event];
     }
 
     // Private fields

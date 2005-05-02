@@ -28,7 +28,7 @@ import java.util.ArrayList;
  * of eidprofiles in the system.
  *  
  *
- * @version $Id: EIDProfile.java,v 1.4 2005-04-11 05:44:42 herrvendil Exp $
+ * @version $Id: EIDProfile.java,v 1.5 2005-05-02 16:18:54 anatom Exp $
  */
 public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	
@@ -173,7 +173,7 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
       	}      	
       }
       
-      return (Collection) retval;
+      return retval;
 	}	
 	
 	public abstract int[] getAvailableMinimumKeyLengths();

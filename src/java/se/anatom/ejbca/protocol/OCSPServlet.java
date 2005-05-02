@@ -32,10 +32,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERGeneralizedTime;
-import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.RevokedInfo;
@@ -54,8 +54,6 @@ import org.bouncycastle.ocsp.Req;
 import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.UnknownStatus;
 
-import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
-import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
@@ -82,14 +80,13 @@ import se.anatom.ejbca.util.ServiceLocator;
  * For a detailed description of OCSP refer to RFC2560.
  * 
  * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.38 2005-03-04 12:20:35 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.39 2005-05-02 16:18:54 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 
     private static Logger m_log = Logger.getLogger(OCSPServlet.class);
 
     private ICertificateStoreSessionLocal m_certStore;
-    private ICAAdminSessionLocal m_caadminsession;
     private ISignSessionLocal m_signsession = null;
     private Admin m_adm;
 
@@ -202,7 +199,7 @@ public class OCSPServlet extends HttpServlet {
         DERObjectIdentifier id_pkix_ocsp_basic = new DERObjectIdentifier(OCSPObjectIdentifiers.pkix_ocsp + ".1");
         X509Extensions reqexts = req.getRequestExtensions();
         if (reqexts != null) {
-            X509Extension ext = (X509Extension) reqexts.getExtension(id_pkix_ocsp_nonce);
+            X509Extension ext = reqexts.getExtension(id_pkix_ocsp_nonce);
             if (null != ext) {
                 //m_log.debug("Found extension Nonce");
                 Hashtable table = new Hashtable();
@@ -210,12 +207,12 @@ public class OCSPServlet extends HttpServlet {
                 X509Extensions exts = new X509Extensions(table);
                 res.setResponseExtensions(exts);
             }
-            ext = (X509Extension) reqexts.getExtension(id_pkix_ocsp_response);
+            ext = reqexts.getExtension(id_pkix_ocsp_response);
             if (null != ext) {
                 //m_log.debug("Found extension AcceptableResponses");
                 ASN1OctetString oct = ext.getValue();
                 try {
-                    ASN1Sequence seq = ASN1Sequence.getInstance((ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(oct.getOctets())).readObject());
+                    ASN1Sequence seq = ASN1Sequence.getInstance(new ASN1InputStream(new ByteArrayInputStream(oct.getOctets())).readObject());
                     Enumeration en = seq.getObjects();
                     boolean supportsResponseType = false;
                     while (en.hasMoreElements()) {
@@ -264,8 +261,6 @@ public class OCSPServlet extends HttpServlet {
             ICertificateStoreSessionLocalHome castorehome =
                     (ICertificateStoreSessionLocalHome) locator.getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
             m_certStore = castorehome.create();
-            ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) locator.getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-            m_caadminsession = caadminsessionhome.create();
             m_adm = new Admin(Admin.TYPE_INTERNALUSER);
             ISignSessionLocalHome signhome = (ISignSessionLocalHome) locator.getLocalHome(ISignSessionLocalHome.COMP_NAME);
             m_signsession = signhome.create();
@@ -440,108 +435,107 @@ public class OCSPServlet extends HttpServlet {
                         basicRes = createOCSPResponse(req, cacert);
                     }
                     throw new MalformedRequestException(msg);
-                } else {
-                    m_log.debug("The OCSP request contains " + requests.length + " simpleRequests.");
-                    for (int i = 0; i < requests.length; i++) {
-                        CertificateID certId = requests[i].getCertID();
-                        boolean unknownCA = false; // if the certId was issued by an unknown CA
-                        // The algorithm here:
-                        // We will sign the response with the CA that issued the first 
-                        // certificate(certId) in the request. If the issuing CA is not available
-                        // on this server, we sign the response with the default responderId (from params in web.xml).
-                        // We have to look up the ca-certificate for each certId in the request though, as we will check
-                        // for revocation on the ca-cert as well when checking for revocation on the certId. 
-                        try {
-                            cacert = findCAByHash(certId, m_cacerts);
-                            if (cacert == null) {
-                                // We could not find certificate for this request so get certificate for default responder
-                                cacert = findCertificateBySubject(m_defaultResponderId, m_cacerts);
-                                unknownCA = true;
+                }
+                m_log.debug("The OCSP request contains " + requests.length + " simpleRequests.");
+                for (int i = 0; i < requests.length; i++) {
+                    CertificateID certId = requests[i].getCertID();
+                    boolean unknownCA = false; // if the certId was issued by an unknown CA
+                    // The algorithm here:
+                    // We will sign the response with the CA that issued the first 
+                    // certificate(certId) in the request. If the issuing CA is not available
+                    // on this server, we sign the response with the default responderId (from params in web.xml).
+                    // We have to look up the ca-certificate for each certId in the request though, as we will check
+                    // for revocation on the ca-cert as well when checking for revocation on the certId. 
+                    try {
+                        cacert = findCAByHash(certId, m_cacerts);
+                        if (cacert == null) {
+                            // We could not find certificate for this request so get certificate for default responder
+                            cacert = findCertificateBySubject(m_defaultResponderId, m_cacerts);
+                            unknownCA = true;
+                        }
+                    } catch (OCSPException e) {
+                        m_log.error("Unable to generate CA certificate hash.", e);
+                        cacert = null;
+                        continue;
+                    }
+                    // Create a basic response (if we haven't done it already) using the first issuer we find, or the default one
+                    if ((cacert != null) && (basicRes == null)) {
+                        basicRes = createOCSPResponse(req, cacert);
+                        if (m_log.isDebugEnabled()) {
+                            if (m_useCASigningCert) {
+                                m_log.debug("Signing OCSP response directly with CA: " + cacert.getSubjectDN().getName());
+                            } else {
+                                m_log.debug("Signing OCSP response with OCSP signer of CA: " + cacert.getSubjectDN().getName());
                             }
-                        } catch (OCSPException e) {
-                            m_log.error("Unable to generate CA certificate hash.", e);
-                            cacert = null;
-                            continue;
                         }
-                        // Create a basic response (if we haven't done it already) using the first issuer we find, or the default one
-                        if ((cacert != null) && (basicRes == null)) {
-                            basicRes = createOCSPResponse(req, cacert);
-                            if (m_log.isDebugEnabled()) {
-                                if (m_useCASigningCert) {
-                                    m_log.debug("Signing OCSP response directly with CA: " + cacert.getSubjectDN().getName());
-                                } else {
-                                    m_log.debug("Signing OCSP response with OCSP signer of CA: " + cacert.getSubjectDN().getName());
-                                }
-                            }
-                        } else if (cacert == null) {
-                            final String msg = "Unable to find CA certificate by issuer name hash: " + Hex.encode(certId.getIssuerNameHash()) + ", or even the default responder: " + m_defaultResponderId;
-                            m_log.error(msg);
-                            continue;
-                        }
-                        if (unknownCA == true) {
-                            final String msg = "Unable to find CA certificate by issuer name hash: " + Hex.encode(certId.getIssuerNameHash()) + ", using the default reponder to send 'UnknownStatus'";
-                            m_log.info(msg);
-                            // If we can not find the CA, answer UnknowStatus
-                            basicRes.addResponse(certId, new UnknownStatus());
-                            continue;
-                        }
+                    } else if (cacert == null) {
+                        final String msg = "Unable to find CA certificate by issuer name hash: " + Hex.encode(certId.getIssuerNameHash()) + ", or even the default responder: " + m_defaultResponderId;
+                        m_log.error(msg);
+                        continue;
+                    }
+                    if (unknownCA == true) {
+                        final String msg = "Unable to find CA certificate by issuer name hash: " + Hex.encode(certId.getIssuerNameHash()) + ", using the default reponder to send 'UnknownStatus'";
+                        m_log.info(msg);
+                        // If we can not find the CA, answer UnknowStatus
+                        basicRes.addResponse(certId, new UnknownStatus());
+                        continue;
+                    }
 
 
-                        /*
-                         * Implement logic according to
-                         * chapter 2.7 in RFC2560
-                         * 
-                         * 2.7  CA Key Compromise
-                         *    If an OCSP responder knows that a particular CA's private key has
-                         *    been compromised, it MAY return the revoked state for all
-                         *    certificates issued by that CA.
-                         */
-                        RevokedCertInfo rci;
+                    /*
+                     * Implement logic according to
+                     * chapter 2.7 in RFC2560
+                     * 
+                     * 2.7  CA Key Compromise
+                     *    If an OCSP responder knows that a particular CA's private key has
+                     *    been compromised, it MAY return the revoked state for all
+                     *    certificates issued by that CA.
+                     */
+                    RevokedCertInfo rci;
+                    rci = m_certStore.isRevoked(m_adm
+                            , cacert.getIssuerDN().getName()
+                            , cacert.getSerialNumber());
+                    if (null != rci && rci.getReason() == RevokedCertInfo.NOT_REVOKED) {
+                        rci = null;
+                    }
+                    if (null == rci) {
                         rci = m_certStore.isRevoked(m_adm
-                                , cacert.getIssuerDN().getName()
-                                , cacert.getSerialNumber());
-                        if (null != rci && rci.getReason() == RevokedCertInfo.NOT_REVOKED) {
-                            rci = null;
-                        }
+                                , cacert.getSubjectDN().getName()
+                                , certId.getSerialNumber());
                         if (null == rci) {
-                            rci = m_certStore.isRevoked(m_adm
-                                    , cacert.getSubjectDN().getName()
-                                    , certId.getSerialNumber());
-                            if (null == rci) {
-                                m_log.debug("Unable to find revocation information for certificate with serial '"
+                            m_log.debug("Unable to find revocation information for certificate with serial '"
+                                    + certId.getSerialNumber() + "'"
+                                    + " from issuer '" + cacert.getSubjectDN().getName() + "'");
+                            basicRes.addResponse(certId, new UnknownStatus());
+                        } else {
+                            CertificateStatus certStatus = null; // null mean good
+                            if (rci.getReason() != RevokedCertInfo.NOT_REVOKED) {
+                                certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(rci.getRevocationDate()),
+                                        new CRLReason(rci.getReason())));
+                            } else {
+                                certStatus = null;
+                            }
+                            if (m_log.isDebugEnabled()) {
+                                m_log.debug("Adding status information for certificate with serial '"
                                         + certId.getSerialNumber() + "'"
                                         + " from issuer '" + cacert.getSubjectDN().getName() + "'");
-                                basicRes.addResponse(certId, new UnknownStatus());
-                            } else {
-                                CertificateStatus certStatus = null; // null mean good
-                                if (rci.getReason() != RevokedCertInfo.NOT_REVOKED) {
-                                    certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(rci.getRevocationDate()),
-                                            new CRLReason(rci.getReason())));
-                                } else {
-                                    certStatus = null;
-                                }
-                                if (m_log.isDebugEnabled()) {
-                                    m_log.debug("Adding status information for certificate with serial '"
-                                            + certId.getSerialNumber() + "'"
-                                            + " from issuer '" + cacert.getSubjectDN().getName() + "'");
-                                }
-                                basicRes.addResponse(certId, certStatus);
                             }
-                        } else {
-                            CertificateStatus certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(rci.getRevocationDate()),
-                                    new CRLReason(rci.getReason())));
                             basicRes.addResponse(certId, certStatus);
                         }
-                    }
-                    if ((basicRes != null) && (cacert != null)) {
-                        // generate the signed response object
-                        BasicOCSPResp basicresp = signOCSPResponse(basicRes, cacert);
-                        ocspresp = res.generate(OCSPRespGenerator.SUCCESSFUL, basicresp);
                     } else {
-                        final String msg = "Unable to find CA certificate and key to generate OCSP response!";
-                        m_log.error(msg);
-                        throw new ServletException(msg);
+                        CertificateStatus certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(rci.getRevocationDate()),
+                                new CRLReason(rci.getReason())));
+                        basicRes.addResponse(certId, certStatus);
                     }
+                }
+                if ((basicRes != null) && (cacert != null)) {
+                    // generate the signed response object
+                    BasicOCSPResp basicresp = signOCSPResponse(basicRes, cacert);
+                    ocspresp = res.generate(OCSPRespGenerator.SUCCESSFUL, basicresp);
+                } else {
+                    final String msg = "Unable to find CA certificate and key to generate OCSP response!";
+                    m_log.error(msg);
+                    throw new ServletException(msg);
                 }
             } catch (MalformedRequestException e) {
                 m_log.info("MalformedRequestException caught : ", e);
