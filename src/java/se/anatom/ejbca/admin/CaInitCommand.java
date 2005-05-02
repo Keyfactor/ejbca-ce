@@ -35,7 +35,7 @@ import se.anatom.ejbca.util.StringTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.34 2005-04-29 08:15:46 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.35 2005-05-02 17:05:58 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
@@ -77,6 +77,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             ICAAdminSessionRemote caadminsession = getCAAdminSessionRemote();
             
             getOutputStream().println("Generating rootCA keystore:");
+            getOutputStream().println("CA name: "+caname);
             getOutputStream().println("DN: "+dn);
             getOutputStream().println("Keysize: "+keysize);
             getOutputStream().println("Validity (days): "+validity);

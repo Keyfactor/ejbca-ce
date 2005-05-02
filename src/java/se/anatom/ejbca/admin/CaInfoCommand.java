@@ -23,7 +23,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Gets and prints info about the CA.
  *
- * @version $Id: CaInfoCommand.java,v 1.10 2004-10-13 07:14:45 anatom Exp $
+ * @version $Id: CaInfoCommand.java,v 1.11 2005-05-02 17:05:58 anatom Exp $
  */
 public class CaInfoCommand extends BaseCaAdminCommand {
     /**
@@ -50,6 +50,7 @@ public class CaInfoCommand extends BaseCaAdminCommand {
             String caname = args[1];
             ArrayList chain = new ArrayList(getCertChain(caname));
 
+            getOutputStream().println("CA name: "+caname);
             if (chain.size() < 2)
               getOutputStream().println("This is a Root CA.");
             else
