@@ -21,6 +21,7 @@
   static final String BUTTON_VIEW_NEXT           = "buttonviewnext";
   static final String BUTTON_REVOKE              = "buttonrevoke";
   static final String BUTTON_RECOVERKEY          = "buttonrekoverkey";
+  static final String BUTTON_REPUBLISH           = "buttonrepublish";
 
   static final String CHECKBOX_DIGITALSIGNATURE  = "checkboxdigitalsignature";
   static final String CHECKBOX_NONREPUDIATION    = "checkboxnonrepudiation";
@@ -46,6 +47,9 @@
 
   String THIS_FILENAME            =  globalconfiguration.getAdminWebPath()  + "viewcertificate.jsp";
 
+  final String DOWNLOADCERTIFICATE_LINK     = globalconfiguration.getCaPath() 
+                                                  + "/endentitycert";
+
   boolean noparameter             = true;
   boolean notauthorized           = true;
   boolean cacerts                 = false;
@@ -55,6 +59,7 @@
   String issuerdn                 = null;
   String username                 = null;         
   String tokensn                  = null;
+  String message                  = null;
   int numberofcertificates        = 0;
   int currentindex                = 0;
   int caid                        = 0;
@@ -105,12 +110,13 @@
      cacerts = true;
   }
   if(!noparameter){  
-    if(request.getParameter(BUTTON_VIEW_PREVIOUS) == null && request.getParameter(BUTTON_VIEW_NEXT) == null && 
-       request.getParameter(BUTTON_REVOKE) == null && request.getParameter(BUTTON_RECOVERKEY) == null){
-      numberofcertificates = rabean.getNumberOfCertificates();
-      if(numberofcertificates > 0)
-        certificatedata = rabean.getCertificate(currentindex);
-      }
+     if(request.getParameter(BUTTON_VIEW_PREVIOUS) == null && request.getParameter(BUTTON_VIEW_NEXT) == null && 
+        request.getParameter(BUTTON_REVOKE) == null && request.getParameter(BUTTON_RECOVERKEY) == null &&
+        request.getParameter(BUTTON_REPUBLISH) == null ){
+        numberofcertificates = rabean.getNumberOfCertificates();
+        if(numberofcertificates > 0)
+          certificatedata = rabean.getCertificate(currentindex);
+    }
    }
    if(request.getParameter(BUTTON_REVOKE) != null && request.getParameter(HIDDEN_INDEX)!= null && !cacerts){
      currentindex = Integer.parseInt(request.getParameter(HIDDEN_INDEX));
@@ -130,9 +136,9 @@
            rabean.loadCertificates(new BigInteger(certificateserno,16), issuerdn);
          }
        }
+       notauthorized = false;
      }catch(AuthorizationDeniedException e){
      }
-       notauthorized = false;
      numberofcertificates = rabean.getNumberOfCertificates();
      certificatedata = rabean.getCertificate(currentindex);
    }
@@ -141,11 +147,11 @@
      currentindex = Integer.parseInt(request.getParameter(HIDDEN_INDEX));
      noparameter=false;
      certificatedata = rabean.getCertificate(currentindex);
-     if(!cacerts && rabean.keyRecoveryPossible(certificatedata) && usekeyrecovery)  
+     if(!cacerts && rabean.keyRecoveryPossible(certificatedata.getCertificate(), certificatedata.getUsername()) && usekeyrecovery)  
        rabean.markForRecovery(certificatedata); 
      try{
        if(tokensn !=null) {
-         rabean.loadTokenCertificates(tokensn,username);
+        rabean.loadTokenCertificates(tokensn,username);
        } else { 
          if(username != null) {
            rabean.loadCertificates(username);
@@ -158,6 +164,25 @@
      }
      numberofcertificates = rabean.getNumberOfCertificates();
      certificatedata = rabean.getCertificate(currentindex);
+   }
+   if(request.getParameter(BUTTON_REPUBLISH) != null && request.getParameter(HIDDEN_INDEX)!= null && !cacerts){
+     // Mark certificate for key recovery.
+     currentindex = Integer.parseInt(request.getParameter(HIDDEN_INDEX));
+     noparameter=false;
+     certificatedata = rabean.getCertificate(currentindex);
+     message = cabean.republish(certificatedata); 
+     try{
+       if(tokensn !=null)
+         rabean.loadTokenCertificates(tokensn,username);
+       else 
+         if(username != null)
+           rabean.loadCertificates(username);
+         else
+           rabean.loadCertificates(new BigInteger(certificateserno,16), issuerdn);
+       notauthorized = false;
+     }catch(AuthorizationDeniedException e){
+     }
+     numberofcertificates = rabean.getNumberOfCertificates();
    }
     
     if(request.getParameter(BUTTON_VIEW_PREVIOUS) != null){
@@ -212,6 +237,10 @@ function confirmrevokation(){
 function confirmkeyrecovery(){
   return confirm("<%= ejbcawebbean.getText("AREYOUSUREKEYRECOVER") %>");
 }
+
+function confirmrepublish(){
+  return confirm("<%= ejbcawebbean.getText("AREYOUSUREREPUBLISH") %>");
+}
 -->
 </script>
 
@@ -232,8 +261,10 @@ function confirmkeyrecovery(){
          if(certificatedata == null){%>
   <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("CERTIFICATEDOESNTEXIST") %></h4></div> 
     <%   }
-         else{ %>
-
+         else{ 
+   if(message != null){ %>
+      <div align="center"><h4 id="alert"><%=ejbcawebbean.getText(message) %></h4></div> 
+  <% } %>
   <form name="viewcertificate" action="<%= THIS_FILENAME %>" method="post">
     <% if(username != null){ %>
      <input type="hidden" name='<%= USER_PARAMETER %>' value='<%=username %>'> 
@@ -454,9 +485,13 @@ function confirmkeyrecovery(){
        <tr id="Row<%=(row++)%2%>">
           <td>  
        <% 
-            if(!cacerts &&  rabean.keyRecoveryPossible(certificatedata) && usekeyrecovery){ %>
+            if(!cacerts &&  rabean.keyRecoveryPossible(certificatedata.getCertificate(), certificatedata.getUsername()) && usekeyrecovery){ %>
         <input type="submit" name="<%=BUTTON_RECOVERKEY %>" value="<%= ejbcawebbean.getText("RECOVERKEY") %>"
-               onClick='return confirmkeyrecovery()'>
+               onClick='return confirmkeyrecovery()'><br>
+       <% }
+            if(!cacerts &&  rabean.isAuthorizedToEditUser(certificatedata.getUsername())){ %>
+        <input type="submit" name="<%=BUTTON_REPUBLISH %>" value="<%= ejbcawebbean.getText("REPUBLISH") %>"
+               onClick='return confirmrepublish()'>
        <% } %>
          &nbsp;
           </td>
@@ -478,6 +513,14 @@ function confirmkeyrecovery(){
           &nbsp;
           </td>
        </tr> 
+         <tr id="Row<%=row%2%>">
+            <td>&nbsp;</td>
+            <td>               
+              <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=iecert&certificatesn=<%= certificatedata.getSerialNumber()%>&issuer=<%= certificatedata.getIssuerDN() %>"><%= ejbcawebbean.getText("DOWNLOADIE")%></a><br>
+              <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=nscert&certificatesn=<%= certificatedata.getSerialNumber()%>&issuer=<%= certificatedata.getIssuerDN() %>"><%= ejbcawebbean.getText("DOWNLOADNS")%></a><br>
+              <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=cert&certificatesn=<%= certificatedata.getSerialNumber()%>&issuer=<%= certificatedata.getIssuerDN() %>"><%= ejbcawebbean.getText("DOWNLOADPEM")%></a>
+            </td>   
+          </tr> 
      </table> 
    </form>
    <p></p>
