@@ -43,6 +43,8 @@ import se.anatom.ejbca.ca.publisher.IPublisherSessionLocalHome;
 import se.anatom.ejbca.ca.sign.ISignSessionLocal;
 import se.anatom.ejbca.ca.sign.ISignSessionLocalHome;
 import se.anatom.ejbca.ca.store.CRLInfo;
+import se.anatom.ejbca.ca.store.CertReqHistory;
+import se.anatom.ejbca.ca.store.CertificateInfo;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
@@ -66,7 +68,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.28 2005-04-29 10:34:01 anatom Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.29 2005-05-02 13:06:02 herrvendil Exp $
  */
 public class CAInterfaceBean   {
 
@@ -317,6 +319,30 @@ public class CAInterfaceBean   {
 	 }      
 	 return returnval;
   }
+   
+   public String republish(CertificateView certificatedata){
+	String returnval = "CERTREPUBLISHFAILED";
+	
+	CertReqHistory certreqhist = certificatesession.getCertReqHistory(administrator,certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDN());
+	if(certreqhist != null){
+	  CertificateProfile certprofile = certificatesession.getCertificateProfile(administrator,certreqhist.getUserDataVO().getCertificateProfileId());
+	  if(certprofile != null){
+	    CertificateInfo certinfo = certificatesession.getCertificateInfo(administrator, CertTools.getFingerprintAsString(certificatedata.getCertificate()));
+	    if(certprofile.getPublisherList().size() > 0){
+	    	if(publishersession.storeCertificate(administrator, certprofile.getPublisherList(), certificatedata.getCertificate(), certreqhist.getUserDataVO().getUsername(), certreqhist.getUserDataVO().getPassword(),
+	    			certinfo.getCAFingerprint(), certinfo.getStatus() , certinfo.getType(), certreqhist.getUserDataVO().getExtendedinformation())){
+	    		returnval = "CERTREPUBLISHEDSUCCESS";
+	    	}
+	    }else{
+	    	returnval = "NOPUBLISHERSDEFINED";
+	    }
+	    
+	  }else{
+	  	returnval = "CERTPROFILENOTFOUND";
+	  }	  
+	}
+	return returnval;
+}
     
     // Private methods
 
