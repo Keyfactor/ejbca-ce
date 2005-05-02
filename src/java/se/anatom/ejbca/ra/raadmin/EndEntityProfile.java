@@ -31,7 +31,7 @@ import se.anatom.ejbca.util.passgen.PasswordGeneratorFactory;
  * of ejbca web interface.
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.29 2005-02-11 13:12:20 anatom Exp $
+ * @version $Id: EndEntityProfile.java,v 1.30 2005-05-02 13:03:38 herrvendil Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -485,7 +485,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
       //  Check Email address.
      if(email == null)
        email = "";
-     checkIfEmailFullfillProfile(EMAIL,0,email,"Email");
+     checkIfDomainFullfillProfile(EMAIL,0,email,"Email");
 
       // Check contents of Subject DN fields.
       int[] subjectdnfieldnumbers = subjectdnfields.getNumberOfFields();
@@ -498,7 +498,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
       int[] subjectaltnamesnumbers = subjectaltnames.getNumberOfFields();
       for(int i = DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY; i < DNFieldExtractor.NUMBEROFFIELDS; i++){
         for(int j=0; j < subjectaltnamesnumbers[i-DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY]; j++){
-          checkIfDataFullfillProfile(DNEXTRATORTOPROFILEMAPPER[i],j,subjectaltnames.getField(i,j), DNEXTRATORTOPROFILEMAPPERTEXTS[i], email);
+          if(i == DNFieldExtractor.UPN){
+          	checkIfDomainFullfillProfile(UPN,j,subjectaltnames.getField(i,j),"UPN");
+          }else{
+            checkIfDataFullfillProfile(DNEXTRATORTOPROFILEMAPPER[i],j,subjectaltnames.getField(i,j), DNEXTRATORTOPROFILEMAPPERTEXTS[i], email);
+          }   
         }
       }
 
@@ -713,16 +717,21 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 
     // Private Methods
 
-    private void checkIfEmailFullfillProfile(int field, int number, String email, String text) throws UserDoesntFullfillEndEntityProfile {
-    	if(!email.trim().equals("") && email.indexOf('@') == -1)
-    		throw new UserDoesntFullfillEndEntityProfile("Invalid email address. There must have '@' in address.");
+    /**
+     * Used for both email and upn fields
+     * 
+     */
+    private void checkIfDomainFullfillProfile(int field, int number, String nameAndDomain, String text) throws UserDoesntFullfillEndEntityProfile {
+    	    	
+    	if(!nameAndDomain.trim().equals("") && nameAndDomain.indexOf('@') == -1)
+    		throw new UserDoesntFullfillEndEntityProfile("Invalid " + text + ". There must have '@' in the field.");
     	
-    	String emaildomain = email.substring(email.indexOf('@') + 1);    	    	
+    	String domain = nameAndDomain.substring(nameAndDomain.indexOf('@') + 1);    	    	
     	
-        if(!getUse(field,number) && !email.trim().equals(""))
+        if(!getUse(field,number) && !nameAndDomain.trim().equals(""))
           throw new UserDoesntFullfillEndEntityProfile(text + " cannot be used in end entity profile.");
       
-        if(!isModifyable(field,number) && !email.equals("")){
+        if(!isModifyable(field,number) && !nameAndDomain.equals("")){
           String[] values;
           try{
             values = getValue(field, number).split(SPLITCHAR);
@@ -731,7 +740,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
           }
           boolean exists = false;
           for(int i = 0; i < values.length ; i++){
-            if(emaildomain.equals(values[i].trim()))
+            if(domain.equals(values[i].trim()))
               exists = true;
           }
           if(!exists)

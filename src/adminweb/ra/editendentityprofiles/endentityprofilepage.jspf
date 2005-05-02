@@ -10,7 +10,7 @@
                                  "GIVENNAME2", "INITIALS", "SURNAME","TITLE","ORGANIZATIONUNIT","ORGANIZATION",
                                 "LOCALE","STATE","DOMAINCOMPONENT","COUNTRY"
                                 , "RFC822NAME", "DNSNAME", "IPADDRESS", "OTHERNAME", "UNIFORMRESOURCEID", "X400ADDRESS", "DIRECTORYNAME"
-                                ,"EDIPARTNAME", "REGISTEREDID","","","","","","","","","","","UPN", "","", "UNSTRUCTUREDADDRESS", "UNSTRUCTUREDNAME","GUID"};
+                                ,"EDIPARTNAME", "REGISTEREDID","","","","","","","","","","","UPNDOMAIN", "","", "UNSTRUCTUREDADDRESS", "UNSTRUCTUREDNAME","GUID"};
 
    int[] subjectdnfields = {EndEntityProfile.OLDDNE,EndEntityProfile.UID,EndEntityProfile.COMMONNAME,EndEntityProfile.SN
                            ,EndEntityProfile.GIVENNAME,EndEntityProfile.INITIALS,EndEntityProfile.SURNAME

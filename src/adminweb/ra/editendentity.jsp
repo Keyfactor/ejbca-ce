@@ -25,6 +25,7 @@
   static final String TEXTFIELD_SUBJECTALTNAME    = "textfieldsubjectaltname";
   static final String TEXTFIELD_EMAIL             = "textfieldemail";
   static final String TEXTFIELD_EMAILDOMAIN       = "textfieldemaildomain";
+  static final String TEXTFIELD_UPNNAME           = "textfieldupnnamne";
 
   static final String SELECT_ENDENTITYPROFILE     = "selectendentityprofile";
   static final String SELECT_CERTIFICATEPROFILE   = "selectcertificateprofile";
@@ -220,13 +221,20 @@
                for(int i=0; i < numberofsubjectaltnamefields; i++){
                  fielddata = profile.getSubjectAltNameFieldsInOrder(i); 
 
-                 if(fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.RFC822NAME)
-                   value = request.getParameter(TEXTFIELD_SUBJECTALTNAME+i);
-                 else{
-                   value=null;
+                 if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.RFC822NAME){
+                   value=null; 
                    if(request.getParameter(CHECKBOX_SUBJECTALTNAME+i)!=null)
                      if(request.getParameter(CHECKBOX_SUBJECTALTNAME+i).equals(CHECKBOX_VALUE))
                        value = newuser.getEmail();
+                 }else{
+                   if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.UPN){
+                     if(request.getParameter(TEXTFIELD_SUBJECTALTNAME+i) != null && request.getParameter(TEXTFIELD_UPNNAME+i) != null){
+                       value = request.getParameter(TEXTFIELD_UPNNAME+i) + "@" + 
+                               request.getParameter(TEXTFIELD_SUBJECTALTNAME+i);
+                     }
+                   }else{
+                      value = request.getParameter(TEXTFIELD_SUBJECTALTNAME+i);
+                   }                    
                  }
                  if(value !=null){                
                    if(!value.equals("")){
@@ -239,6 +247,11 @@
                  }
                  value = request.getParameter(SELECT_SUBJECTALTNAME+i);
                  if(value !=null){
+                   if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.UPN){
+                     if(request.getParameter(TEXTFIELD_UPNNAME+i) != null){
+                       value = request.getParameter(TEXTFIELD_UPNNAME+i)+ "@" + value;
+                     } 
+                   }
                    value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.SUBJECTALTNAME[profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]) - DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY] +value);
                    if(!value.equals("")){
                      if(subjectaltname.equals(""))
@@ -588,6 +601,16 @@ function checkallfields(){
          if(fieldtype != EndEntityProfile.OTHERNAME && fieldtype != EndEntityProfile.X400ADDRESS && fieldtype != EndEntityProfile.DIRECTORYNAME && 
             fieldtype != EndEntityProfile.EDIPARTNAME && fieldtype != EndEntityProfile.REGISTEREDID ){ // Not implemented yet.
            if(fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.RFC822NAME){
+             if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.UPN){%>
+    if(!checkfieldforlegaldnchars("document.edituser.<%=TEXTFIELD_UPNNAME+i%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %>"))
+      illegalfields++;
+    <%         if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ %>    
+              if((document.edituser.<%= TEXTFIELD_UPNNAME+i %>.value == "")){ 
+                alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]])%>");
+                illegalfields++;
+              } 
+        <%     }
+             }  
              if(profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){
                if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.IPADDRESS ){ %>
     if(!checkfieldforipaddess("document.edituser.<%=TEXTFIELD_SUBJECTALTNAME+i%>","<%= ejbcawebbean.getText("ONLYNUMBERALSANDDOTS") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %>"))
@@ -595,7 +618,7 @@ function checkallfields(){
            <%  }else{ %>
     if(!checkfieldforlegaldnchars("document.edituser.<%=TEXTFIELD_SUBJECTALTNAME+i%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %>"))
       illegalfields++;
-    <%    if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){%>
+    <%    if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ %>
     if((document.edituser.<%= TEXTFIELD_SUBJECTALTNAME+i %>.value == "")){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]])%>");
       illegalfields++;
@@ -948,10 +971,34 @@ function checkUseInBatch(){
 	 <td align="right"><%= ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %></td>
 	 <td>      
           <%
-             if( fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.RFC822NAME ){
+             if( fieldtype != EndEntityProfile.RFC822NAME ){
+               if(fieldtype == EndEntityProfile.UPN){ 
+                 String upnname = "";
+                 String upndomain = "";            
+                 String fullupn = userdata.getSubjectAltNameField(profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]);
+                 if(fullupn != null && !fullupn.equals("")){
+                   upnname   = fullupn.substring(0,fullupn.indexOf('@'));
+                   upndomain = fullupn.substring(fullupn.indexOf('@')+1);
+                 } %>
+                 <input type="text" name="<%= TEXTFIELD_UPNNAME +i%>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value="<%= upnname %>">@
+          <%     if(!profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ 
+                 String[] options = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]).split(EndEntityProfile.SPLITCHAR); %>
+                <select name="<%= SELECT_SUBJECTALTNAME + i %>" size="1" tabindex="<%=tabindex++%>">
+                  <% if( options != null){
+                      for(int j=0;j < options.length;j++){ %>
+                  <option value='<%=options[j].trim()%>' <%  if(upndomain.equals(options[j].trim())) out.write(" selected "); %>> 
+                    <%=options[j].trim()%>
+                  </option>                
+               <%   }
+                 }
+                %>
+                </select>
+             <% }else{ %> 
+             <input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<%= upndomain %>'>
+             <% }
+              }else{    
                if(!profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ 
-                 String[] options = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]).split(EndEntityProfile.SPLITCHAR);
-               %>
+                 String[] options = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]).split(EndEntityProfile.SPLITCHAR); %>
            <select name="<%= SELECT_SUBJECTALTNAME + i %>" size="1" tabindex="<%=tabindex++%>">
                <% if( options != null){
                     for(int j=0;j < options.length;j++){ %>
@@ -962,11 +1009,11 @@ function checkUseInBatch(){
                   }
                 %>
            </select>
-           <% }else{ %> 
+           <% }else{ %>
              <input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<%= userdata.getSubjectAltNameField(profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]) %>'>
            <% }
             }
-            else{ %>
+            }else{ %>
               <%= ejbcawebbean.getText("USESEMAILFIELDDATA")+ " :"%>&nbsp;
         <input type="checkbox" name="<%=CHECKBOX_SUBJECTALTNAME + i%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" 
           <% if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])) out.write(" disabled='true' ");     

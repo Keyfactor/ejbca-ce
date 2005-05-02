@@ -24,6 +24,7 @@
   static final String TEXTFIELD_SUBJECTALTNAME    = "textfieldsubjectaltname";
   static final String TEXTFIELD_EMAIL             = "textfieldemail";
   static final String TEXTFIELD_EMAILDOMAIN       = "textfieldemaildomain";
+  static final String TEXTFIELD_UPNNAME           = "textfieldupnnamne";
 
   static final String SELECT_ENDENTITYPROFILE     = "selectendentityprofile";
   static final String SELECT_CERTIFICATEPROFILE   = "selectcertificateprofile";
@@ -289,14 +290,21 @@
            int numberofsubjectaltnamefields = oldprofile.getSubjectAltNameFieldOrderLength();
            for(int i=0; i < numberofsubjectaltnamefields; i++){
              fielddata = oldprofile.getSubjectAltNameFieldsInOrder(i); 
-
-             if(fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.RFC822NAME)
-               value = request.getParameter(TEXTFIELD_SUBJECTALTNAME+i);
-             else{
-               value=null;
-               if(request.getParameter(CHECKBOX_SUBJECTALTNAME+i)!=null)
-                 if(request.getParameter(CHECKBOX_SUBJECTALTNAME+i).equals(CHECKBOX_VALUE))
-                   value = newuser.getEmail();
+             
+             if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.RFC822NAME){
+                value=null;   
+                if(request.getParameter(CHECKBOX_SUBJECTALTNAME+i)!=null)
+                  if(request.getParameter(CHECKBOX_SUBJECTALTNAME+i).equals(CHECKBOX_VALUE))
+                    value = newuser.getEmail();             	             	             	
+             }else{             	
+               if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.UPN){
+                  if(request.getParameter(TEXTFIELD_SUBJECTALTNAME+i) != null && request.getParameter(TEXTFIELD_UPNNAME+i) != null){
+                    value = request.getParameter(TEXTFIELD_UPNNAME+i) + "@" + 
+                            request.getParameter(TEXTFIELD_SUBJECTALTNAME+i);
+                  }
+               }else{
+                 value = request.getParameter(TEXTFIELD_SUBJECTALTNAME+i);
+               }
              }
              if(value !=null){
                value=value.trim(); 
@@ -314,6 +322,11 @@
              if(value !=null){
                if(!value.equals("")){
                  lastselectedsubjectaltnames[i] = value;
+                 if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.UPN){
+                   if(request.getParameter(TEXTFIELD_UPNNAME+i) != null){
+                     value = request.getParameter(TEXTFIELD_UPNNAME+i)+ "@" + value;
+                   } 
+                 }
                  value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.SUBJECTALTNAME[oldprofile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]) - DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY] +value);
                  if(subjectaltname.equals(""))
                    subjectaltname = value;
@@ -716,14 +729,25 @@ function checkallfields(){
          if(fieldtype != EndEntityProfile.OTHERNAME && fieldtype != EndEntityProfile.X400ADDRESS && fieldtype != EndEntityProfile.DIRECTORYNAME && 
             fieldtype != EndEntityProfile.EDIPARTNAME && fieldtype != EndEntityProfile.REGISTEREDID ){ // not implemented yet
            if(fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.RFC822NAME){
+             if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.UPN){%>
+    if(!checkfieldforlegaldnchars("document.adduser.<%=TEXTFIELD_UPNNAME+i%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %>"))
+      illegalfields++;
+          <%   if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ %>            
+              if((document.adduser.<%= TEXTFIELD_UPNNAME+i %>.value == "")){ 
+                alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]])%>");
+                illegalfields++;
+              }
+           <%  }
+             }   
              if(profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){
                if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.IPADDRESS ){ %>
     if(!checkfieldforipaddess("document.adduser.<%=TEXTFIELD_SUBJECTALTNAME+i%>","<%= ejbcawebbean.getText("ONLYNUMBERALSANDDOTS") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %>"))
       illegalfields++;
-           <%  }else{ %>
+           <%  }else{ %> 
+
     if(!checkfieldforlegaldnchars("document.adduser.<%=TEXTFIELD_SUBJECTALTNAME+i%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %>"))
       illegalfields++;
-    <%    if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){%>
+    <%    if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ %>
     if((document.adduser.<%= TEXTFIELD_SUBJECTALTNAME+i %>.value == "")){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]])%>");
       illegalfields++;
@@ -1046,7 +1070,10 @@ function checkallfields(){
              if( fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.RFC822NAME ){
                if(!profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ 
                  String[] options = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]).split(EndEntityProfile.SPLITCHAR);
-               %>
+               
+               if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.UPN){ %>
+                   <input type="text" name="<%= TEXTFIELD_UPNNAME+i %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" >@
+                <% } %>
            <select name="<%= SELECT_SUBJECTALTNAME + i %>" size="1" tabindex="<%=tabindex++%>">
                <% if( options != null){
                     for(int j=0;j < options.length;j++){ %>
@@ -1058,7 +1085,10 @@ function checkallfields(){
                   }
                 %>
            </select>
-           <% }else{ %> 
+           <% }else{ 
+                if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.UPN){ %>
+                   <input type="text" name="<%= TEXTFIELD_UPNNAME+i %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" >@
+                <% } %> 
              <input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<%= profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) %>'>
            <% }
             }
