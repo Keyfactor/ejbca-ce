@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE server>
-<!-- $Id: crlcreate-service.xml,v 1.2 2004-02-24 11:53:11 herrvendil Exp $ -->
+<!-- $Id: crlcreate-service.xml,v 1.3 2005-05-02 16:13:42 herrvendil Exp $ -->
 
 <server>
 
@@ -24,7 +24,7 @@
             1MIN      =  Every minute
       -->     
    <attribute name="Polltime">1MIN</attribute>
-   <depends>jboss.j2ee:module=ca.jar,service=EjbModule</depends>
+   <depends>jboss.j2ee:module=ejbca-ejb.jar,service=EjbModule</depends>
    <depends>jboss.j2ee:service=EJB,jndiName=RSASignSession</depends>
    <depends>jboss.j2ee:service=EJB,jndiName=HardTokenSession</depends>
    <depends>jboss.j2ee:service=EJB,jndiName=AuthorizationSession</depends>
