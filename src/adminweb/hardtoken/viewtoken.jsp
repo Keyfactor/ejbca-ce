@@ -17,6 +17,7 @@
 
   static final String BUTTON_CLOSE             = "buttonclose"; 
   static final String BUTTON_REVOKE            = "buttonrevoke";
+  static final String BUTTON_KEYRECOVER        = "buttonkeyrecover";
   static final String BUTTON_VIEW_PREVIOUS     = "buttonviewprevious"; 
   static final String BUTTON_VIEW_NEXT         = "buttonviewnext";
 
@@ -38,6 +39,7 @@
   boolean noparameter              = true;
   boolean authorized               = true;
   boolean alluserstokens           = false;
+  boolean usekeyrecovery           = false;
 
   int numberoftokens = 0;
   int index = -1;
@@ -65,7 +67,7 @@
      if(username != null && reasonstring != null){
        tokensn  = request.getParameter(TOKENSN_PARAMETER);  
         if(rabean.authorizedToRevokeCert(username) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) 
-          && !rabean.isAllTokenCertificatesRevoked(tokensn))   
+          && !rabean.isAllTokenCertificatesRevoked(tokensn, username))   
           rabean.revokeTokenCertificates(tokensn, username, Integer.parseInt(reasonstring));   
      }
    }else{
@@ -77,11 +79,33 @@
      if(username != null && reasonstring != null){
        token = tokenbean.getHardTokenViewWithIndex(username, index);
         if(rabean.authorizedToRevokeCert(username) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) 
-          && !rabean.isAllTokenCertificatesRevoked(token.getTokenSN()))
+          && !rabean.isAllTokenCertificatesRevoked(token.getTokenSN(), username))
           rabean.revokeTokenCertificates(token.getTokenSN(), username, Integer.parseInt(reasonstring));  
      }         
    }
   } 
+  if(request.getParameter(BUTTON_KEYRECOVER) != null){
+   boolean markforrecovery = false;
+   username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
+   if(username != null){
+     if(request.getParameter(TOKENSN_PARAMETER) != null){
+       tokensn  = request.getParameter(TOKENSN_PARAMETER);  
+       markforrecovery = true;
+     }else{
+       String indexstring = request.getParameter(INDEX_PARAMETER);  
+       if(indexstring!= null)
+        index = Integer.parseInt(indexstring); 
+       else
+         index=0;
+       token = tokenbean.getHardTokenViewWithIndex(username, index);
+
+       markforrecovery = true;
+     }         
+    }
+    if(markforrecovery && tokenbean.isTokenKeyRecoverable(tokensn, username, rabean)){             
+         tokenbean.markTokenForKeyRecovery(tokensn);
+    } 
+  }
 
   if( request.getParameter(TOKENSN_PARAMETER) != null ){
     username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
@@ -121,6 +145,9 @@
    }
   }
 
+  
+  usekeyrecovery = globalconfiguration.getEnableKeyRecovery() && tokenbean.isTokenKeyRecoverable(tokensn, username, rabean);
+
  
   int row = 0; 
   int columnwidth = 200;
@@ -141,6 +168,14 @@ function confirmrevokation(){
   }else{
     returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREREVOKETOKEN") %>");
   } 
+  return returnval;
+}
+
+function confirmkeyrecovery(){
+  var returnval = false;
+
+  returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREKEYRECTOKEN") %>");
+  
   return returnval;
 }
 
@@ -304,11 +339,15 @@ function viewcert(){
      </tr> 
        <tr id="Row<%=(row++)%2%>">
           <td>  
-            &nbsp; 
+       <%    if(usekeyrecovery ){ %>
+        <input type="submit" name="<%=BUTTON_KEYRECOVER %>" value="<%= ejbcawebbean.getText("KEYRECOVER") %>"
+               onClick='return confirmkeyrecovery()'>
+       <%    }  %>
+          &nbsp;
           </td>
           <td>
        <%    if(rabean.authorizedToRevokeCert(username) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) 
-               && !rabean.isAllTokenCertificatesRevoked(token.getTokenSN())){ %>
+               && !rabean.isAllTokenCertificatesRevoked(token.getTokenSN(),username)){ %>
         <input type="submit" name="<%=BUTTON_REVOKE %>" value="<%= ejbcawebbean.getText("REVOKE") %>"
                onClick='return confirmrevokation()'><br>
         <select name="<%=SELECT_REVOKE_REASON %>" >
