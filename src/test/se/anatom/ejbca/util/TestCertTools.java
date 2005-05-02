@@ -22,7 +22,7 @@ import org.apache.log4j.Logger;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.4 2005-03-07 16:50:27 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.5 2005-05-02 13:08:12 herrvendil Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);
@@ -405,5 +405,36 @@ public class TestCertTools extends TestCase {
        assertEquals("CN=Foo/,OU=Foo/, Dep,O=Foo/, Inc,C=SE", StringTools.strip(bcdn21));        
        log.debug("<test10TestMultipleReversed()");
    }
+   
+   /** Tests the insertCNPostfix function
+   *
+   * @throws Exception if error...
+   */
+  public void test11TestInsertCNPostfix() throws Exception {
+      log.debug(">test11TestInsertCNPostfix()");
+      
+      // Test the regular case with one CN beging replaced with " (VPN)" postfix
+      String dn1 = "CN=Tomas G,OU=users,OU=orgunit,DC=se,DC=bigcorp,DC=com";
+      String cnpostfix1 = " (VPN)";      
+      String newdn1 = CertTools.insertCNPostfix(dn1,cnpostfix1);
+      assertEquals("CN=Tomas G (VPN),OU=users,OU=orgunit,DC=se,DC=bigcorp,DC=com", newdn1);
+      
+      // Test case when CN doesn't exist
+      String dn2 = "OU=users,OU=orgunit,DC=se,DC=bigcorp,DC=com";
+      String newdn2 = CertTools.insertCNPostfix(dn2,cnpostfix1); 
+      assertEquals("OU=users,OU=orgunit,DC=se,DC=bigcorp,DC=com", newdn2);
+      
+      // Test case with two CNs in DN only first one should be replaced.
+      String dn3 = "CN=Tomas G,CN=Bagare,OU=users,OU=orgunit,DC=se,DC=bigcorp,DC=com";  
+      String newdn3 = CertTools.insertCNPostfix(dn3,cnpostfix1); 
+      assertEquals("CN=Tomas G (VPN),CN=Bagare,OU=users,OU=orgunit,DC=se,DC=bigcorp,DC=com", newdn3);
+ 
+      // Test case with two CNs in reversed DN 
+      String dn4 = "dc=com,dc=bigcorp,dc=se,ou=orgunit,ou=users,cn=Tomas G,CN=Bagare";
+      String newdn4 = CertTools.insertCNPostfix(dn4,cnpostfix1); 
+      assertEquals("dc=com,dc=bigcorp,dc=se,ou=orgunit,ou=users,cn=Tomas G (VPN),CN=Bagare", newdn4);
+      
+      log.debug("<test11TestInsertCNPostfix()");
+  }
     
 }
