@@ -105,7 +105,7 @@ import se.anatom.ejbca.util.StringTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.35 2005-04-29 08:16:28 anatom Exp $
+ * @version $Id: X509CA.java,v 1.36 2005-05-02 13:01:25 herrvendil Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -265,6 +265,10 @@ public class X509CA extends CA implements Serializable {
         certgen.setSignatureAlgorithm(sigAlg);
         // Make DNs
         String dn = subject.getDN(); 
+        if(certProfile.getUseCNPostfix()){
+          dn = CertTools.insertCNPostfix(dn,certProfile.getCNPostfix());	
+        }
+        
         String altName = subject.getSubjectAltName(); 
       
         certgen.setSubjectDN(CertTools.stringToBcX509Name(dn));

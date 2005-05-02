@@ -28,12 +28,12 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.28 2005-02-14 08:01:55 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.29 2005-05-02 13:03:04 herrvendil Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
     // Default Values
-    public static final float LATEST_VERSION = (float) 9.0;
+    public static final float LATEST_VERSION = (float) 10.0;
 
     /** KeyUsage constants */
     public static final int DIGITALSIGNATURE = 0;
@@ -117,7 +117,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 	protected static final String USEOCSPSERVICELOCATOR          = "useocspservicelocator";	
 	protected static final String OCSPSERVICELOCATORURI          = "ocspservicelocatoruri";
 	protected static final String USEMICROSOFTTEMPLATE           = "usemicrosofttemplate";
-	protected static final String MICROSOFTTEMPLATE              = "microsofttemplate"; 
+	protected static final String MICROSOFTTEMPLATE              = "microsofttemplate";
+	protected static final String USECNPOSTFIX                   = "usecnpostfix";
+	protected static final String CNPOSTFIX                      = "cnpostfix"; 
      
     // Public Methods
 
@@ -173,10 +175,15 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
 	  setUseMicrosoftTemplate(false);	  
 	  setMicrosoftTemplate("");
+	  
+	  setUseCNPostfix(false);
+	  setCNPostfix("");
 
     }
 
-    // Public Methods.
+
+
+	// Public Methods.
     /** Returns the version of the certificate, should be one of the VERSION_ constants defined in CertificateProfile class. */
     public String getCertificateVersion(){return (String) data.get(CERTVERSION);}
 	/**
@@ -362,6 +369,24 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     	data.put(MICROSOFTTEMPLATE, mstemplate);	
     }
     
+    public boolean getUseCNPostfix(){
+    	return ((Boolean) data.get(USECNPOSTFIX)).booleanValue();	
+    }
+    
+    public void setUseCNPostfix(boolean use) {
+		data.put(USECNPOSTFIX, Boolean.valueOf(use));			
+	}
+    
+    public String getCNPostfix(){
+    	return (String) data.get(CNPOSTFIX);	
+    }
+    
+    public void setCNPostfix(String cnpostfix) {
+		data.put(CNPOSTFIX, cnpostfix);	
+		
+	}
+	
+    
     /**
      * Returns an ArrayList of OID.strings defined in constant EXTENDEDKEYUSAGEOIDSTRINGS.
      */
@@ -483,7 +508,13 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             if(data.get(USEMICROSOFTTEMPLATE) == null){
                 setUseMicrosoftTemplate(false);            
                 setMicrosoftTemplate("");
-            }          
+            } 
+            
+            if(data.get(USECNPOSTFIX) == null){
+          	  setUseCNPostfix(false);
+        	  setCNPostfix("");
+            } 
+            
         }
         log.debug("<upgrade");
     }

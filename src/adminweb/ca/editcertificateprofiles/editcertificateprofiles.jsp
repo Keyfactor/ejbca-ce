@@ -33,6 +33,7 @@
   static final String TEXTFIELD_CRLDISTURI            = "textfieldcrldisturi";
   static final String TEXTFIELD_CERTIFICATEPOLICYID   = "textfieldcertificatepolicyid";
   static final String TEXTFIELD_OCSPSERVICELOCATOR    = "textfieldocspservicelocatoruri";
+  static final String TEXTFIELD_CNPOSTFIX             = "textfieldcnpostfix";
 
   static final String CHECKBOX_BASICCONSTRAINTS                   = "checkboxbasicconstraints";
   static final String CHECKBOX_BASICCONSTRAINTSCRITICAL           = "checkboxbasicconstraintscritical";
@@ -53,6 +54,7 @@
   static final String CHECKBOX_EXTENDEDKEYUSAGECRITICAL           = "checkboxextendedkeyusagecritical";
   static final String CHECKBOX_USEOCSPSERVICELOCATOR              = "checkuseocspservicelocator";
   static final String CHECKBOX_USEMSTEMPLATE                      = "checkusemstemplate";
+  static final String CHECKBOX_USECNPOSTFIX                       = "checkusecnpostfix";
 
   static final String SELECT_AVAILABLEBITLENGTHS                  = "selectavailablebitlengths";
   static final String SELECT_KEYUSAGE                             = "selectkeyusage";
@@ -449,6 +451,22 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
              else{
                  certificateprofiledata.setUseMicrosoftTemplate(false);                 
                  certificateprofiledata.setMicrosoftTemplate("");
+             }
+
+             use = false;
+             value = request.getParameter(CHECKBOX_USECNPOSTFIX);
+             if(value != null){
+                 use = value.equals(CHECKBOX_VALUE);
+                 certificateprofiledata.setUseCNPostfix(use);
+
+                 value = request.getParameter(TEXTFIELD_CNPOSTFIX);
+                 if(value != null){
+                   certificateprofiledata.setCNPostfix(value);
+                 } 
+             }
+             else{
+                 certificateprofiledata.setUseCNPostfix(false);                 
+                 certificateprofiledata.setCNPostfix("");
              }
 
               cabean.changeCertificateProfile(certprofile,certificateprofiledata);

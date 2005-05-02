@@ -72,6 +72,15 @@ function checkusemstemplatefield(){
   }
 }
 
+function checkusecnpostfixfield(){
+  if(document.editcertificateprofile.<%=CHECKBOX_USECNPOSTFIX %>.checked){    
+    document.editcertificateprofile.<%= TEXTFIELD_CNPOSTFIX %>.disabled = false;    
+  }
+  else{
+    document.editcertificateprofile.<%= TEXTFIELD_CNPOSTFIX %>.disabled = true;
+  }
+}
+
 function typechanged(){
   var seltype = document.editcertificateprofile.<%=SELECT_TYPE %>.options.selectedIndex;
   var type = document.editcertificateprofile.<%=SELECT_TYPE %>.options[seltype].value; 
@@ -421,6 +430,29 @@ function checkallfields(){
            </option>
            <%   } %> 
         </select>
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("USECNPOSTFIX") %> 
+      </td>
+      <td width="50%">
+           <input type="checkbox" name="<%=CHECKBOX_USECNPOSTFIX  %>"  onclick="checkusecnpostfixfield()" value="<%=CHECKBOX_VALUE %>" 
+           <% if(certificateprofiledata.getUseCNPostfix())
+                 out.write("CHECKED");
+           %>>
+      </td>
+    </tr>    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+        <%= ejbcawebbean.getText("CNPOSTFIX") %> <br><%= ejbcawebbean.getText("INSERTEDAFTERCN") %>
+      </td>
+      <td width="50%"> 
+            <input type="text" name="<%=TEXTFIELD_CNPOSTFIX%>" size="60" maxlength="255" 
+           <%       if(!certificateprofiledata.getUseCNPostfix())
+                      out.write(" disabled "); 
+                    else                       
+                      out.write(" value=\"" + certificateprofiledata.getCNPostfix() + "\""); %> >
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 

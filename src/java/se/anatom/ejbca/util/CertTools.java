@@ -31,7 +31,7 @@ import org.bouncycastle.x509.X509V3CertificateGenerator;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.74 2005-04-29 10:33:55 anatom Exp $
+ * @version $Id: CertTools.java,v 1.75 2005-05-02 13:04:12 herrvendil Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -991,6 +991,28 @@ public class CertTools {
         if (sku[8] == true)
             bcku = bcku | X509KeyUsage.decipherOnly;
         return bcku;
+    }
+    
+    /**
+     * Method used to insert a CN postfix into DN by extracting the first found CN appending cnpostfix and then replacing the original CN 
+     * with the new one in DN.
+     * 
+     * If no CN could be found in DN then should the given DN be returned untouched
+     * 
+     * @param dn the DN to manipulate, cannot be null
+     * @param cnpostfix the postfix to insert, cannot be null
+     * @return the new DN
+     */
+    public static String insertCNPostfix(String dn, String cnpostfix){
+      String newdn = dn;
+      
+      String cn = CertTools.getPartFromDN(dn,"cn");
+      if(cn != null){
+      	String newcn = cn + cnpostfix;
+      	newdn = dn.replaceFirst(cn,newcn);
+      }
+      
+      return newdn;
     }
     
     /**
