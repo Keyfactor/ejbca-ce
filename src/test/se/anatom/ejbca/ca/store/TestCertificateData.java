@@ -39,7 +39,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Tests certificate store.
  *
- * @version $Id: TestCertificateData.java,v 1.5 2005-04-29 09:16:07 anatom Exp $
+ * @version $Id: TestCertificateData.java,v 1.6 2005-05-02 15:31:27 anatom Exp $
  */
 public class TestCertificateData extends TestCase {
 
@@ -404,7 +404,7 @@ public class TestCertificateData extends TestCase {
         
         assertNotNull("Error couldn't find the certificate request data stored previously", certreqhist);
         
-        UserDataVO userdata = certreqhist.getUserAdminData();
+        UserDataVO userdata = certreqhist.getUserDataVO();
         assertTrue("Error wrong username.", (userdata.getUsername().equals(username)));
         assertTrue("Error wrong DN.", (userdata.getDN().equals("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist1")));
        
@@ -427,8 +427,8 @@ public class TestCertificateData extends TestCase {
         Iterator iter = result.iterator();
         while(iter.hasNext()){
           CertReqHistory certreqhist = (CertReqHistory) iter.next();
-          assertTrue("Error wrong DN", ((certreqhist.getUserAdminData().getDN().equals("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist1"))|| 
-         		(certreqhist.getUserAdminData().getDN().equals("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist2"))));
+          assertTrue("Error wrong DN", ((certreqhist.getUserDataVO().getDN().equals("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist1"))|| 
+         		(certreqhist.getUserDataVO().getDN().equals("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist2"))));
         }         
         log.debug("<test11getCertReqHistByUsername()");
     }
