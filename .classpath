@@ -26,5 +26,5 @@
 	<classpathentry kind="lib" path="lib/bcprov-jdk14.jar"/>
 	<classpathentry kind="var" path="JBOSS_HOME/client/jboss-j2ee.jar"/>
 	<classpathentry kind="var" path="JBOSS_HOME/client/jbossall-client.jar"/>
-	<classpathentry kind="output" path="bin/classes"/>
+	<classpathentry kind="output" path="tmp/out/classes"/>
 </classpath>
