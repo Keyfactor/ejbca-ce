@@ -28,7 +28,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
 /**
  * A class that looks up the which CA:s or end entity profiles the administrator is authorized to view.
  * 
- * @version $Id: RAAuthorization.java,v 1.5 2005-02-11 13:12:47 anatom Exp $
+ * @version $Id: RAAuthorization.java,v 1.6 2005-05-03 10:18:32 anatom Exp $
  */
 public class RAAuthorization implements Serializable {
     
@@ -154,11 +154,9 @@ public class RAAuthorization implements Serializable {
 	 */
 	public boolean endEntityAuthorization(Admin admin, int profileid, String rights){
 	  boolean returnval = false;
-	  String adm = null;
       
 	  // TODO FIX
 	  if(admin.getAdminInformation().isSpecialUser()){
-		adm = Integer.toString(admin.getAdminInformation().getSpecialUser());
 		return true;
 	  }
 	  try{

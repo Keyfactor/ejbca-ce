@@ -60,7 +60,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.56 2005-05-02 16:19:08 anatom Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.57 2005-05-03 10:18:32 anatom Exp $
  */
 public class RAInterfaceBean {
     
@@ -711,11 +711,9 @@ public class RAInterfaceBean {
      */
     public boolean endEntityAuthorization(Admin admin, int profileid, String rights, boolean log) throws RemoteException {
       boolean returnval = false;
-      String adm = null;
       
       // TODO FIX
       if(admin.getAdminInformation().isSpecialUser()){
-        adm = Integer.toString(admin.getAdminInformation().getSpecialUser());
         return true;
       }
       try{
