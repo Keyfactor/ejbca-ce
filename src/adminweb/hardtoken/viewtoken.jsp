@@ -86,10 +86,12 @@
   } 
   if(request.getParameter(BUTTON_KEYRECOVER) != null){
    boolean markforrecovery = false;
+   String recoverytokensn = null;
    username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
    if(username != null){
      if(request.getParameter(TOKENSN_PARAMETER) != null){
        tokensn  = request.getParameter(TOKENSN_PARAMETER);  
+       recoverytokensn = tokensn;
        markforrecovery = true;
      }else{
        String indexstring = request.getParameter(INDEX_PARAMETER);  
@@ -98,12 +100,12 @@
        else
          index=0;
        token = tokenbean.getHardTokenViewWithIndex(username, index);
-
+       recoverytokensn = token.getTokenSN();
        markforrecovery = true;
      }         
     }
-    if(markforrecovery && tokenbean.isTokenKeyRecoverable(tokensn, username, rabean)){             
-         tokenbean.markTokenForKeyRecovery(tokensn);
+    if(markforrecovery && tokenbean.isTokenKeyRecoverable(recoverytokensn, username, rabean)){             
+         tokenbean.markTokenForKeyRecovery(recoverytokensn, username, rabean);
     } 
   }
 
@@ -146,7 +148,7 @@
   }
 
   
-  usekeyrecovery = globalconfiguration.getEnableKeyRecovery() && tokenbean.isTokenKeyRecoverable(tokensn, username, rabean);
+  usekeyrecovery = globalconfiguration.getEnableKeyRecovery() && tokenbean.isTokenKeyRecoverable(token.getTokenSN(), username, rabean);
 
  
   int row = 0; 
@@ -208,7 +210,7 @@ function viewcert(){
   <form name="viewtoken" action="<%= THIS_FILENAME %>" method="post">
      <input type="hidden" name='<%= USER_PARAMETER %>' value='<%=username %>'>
      <% if (tokensn != null){ %>
-     <input type="hidden" name='<%= TOKENSN_PARAMETER %>' value='<%=tokensn %>'>
+     <input type="hidden" name='<%= TOKENSN_PARAMETER %>' value='<%=token.getTokenSN() %>'>
      <% } %>
      <input type="hidden" name='<%= INDEX_PARAMETER %>' value='<%=index %>'>
 
@@ -340,7 +342,7 @@ function viewcert(){
        <tr id="Row<%=(row++)%2%>">
           <td>  
        <%    if(usekeyrecovery ){ %>
-        <input type="submit" name="<%=BUTTON_KEYRECOVER %>" value="<%= ejbcawebbean.getText("KEYRECOVER") %>"
+        <input type="submit" name="<%=BUTTON_KEYRECOVER %>" value="<%= ejbcawebbean.getText("RECOVERKEY") %>"
                onClick='return confirmkeyrecovery()'>
        <%    }  %>
           &nbsp;

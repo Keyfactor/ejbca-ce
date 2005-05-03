@@ -31,7 +31,6 @@ import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.ra.UserDataConstants;
-import se.anatom.ejbca.ra.UserDataLocal;
 import se.anatom.ejbca.util.JDBCUtil;
 
 /**

@@ -60,7 +60,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.57 2005-05-03 10:18:32 anatom Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.58 2005-05-03 14:01:42 herrvendil Exp $
  */
 public class RAInterfaceBean {
     
@@ -671,16 +671,16 @@ public class RAInterfaceBean {
       return returnval && keyrecoverysession.existsKeys(administrator, cert) && !keyrecoverysession.isUserMarked(administrator,username);
     }
 
-    public void markForRecovery(CertificateView certificatedata) throws Exception{
+    public void markForRecovery(String username, X509Certificate cert) throws Exception{
       boolean authorized = true;
       if(informationmemory.getGlobalConfiguration().getEnableEndEntityProfileLimitations()){
-        int profileid = adminsession.findUser(administrator, certificatedata.getUsername()).getEndEntityProfileId();
+        int profileid = adminsession.findUser(administrator, username).getEndEntityProfileId();
         authorized = endEntityAuthorization(administrator, profileid, AvailableAccessRules.KEYRECOVERY_RIGHTS, false);
       }
 
       if(authorized){
-        keyrecoverysession.markAsRecoverable(administrator, certificatedata.getCertificate());
-        adminsession.setUserStatus(administrator, certificatedata.getUsername(),UserDataConstants.STATUS_KEYRECOVERY);
+        keyrecoverysession.markAsRecoverable(administrator, cert);
+        adminsession.setUserStatus(administrator, username,UserDataConstants.STATUS_KEYRECOVERY);
       }
     }
 

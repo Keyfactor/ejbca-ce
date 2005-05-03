@@ -51,7 +51,6 @@ import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
 import se.anatom.ejbca.log.LogConstants;
 import se.anatom.ejbca.log.LogEntry;
-import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 import se.anatom.ejbca.ra.UserAdminConstants;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.JDBCUtil;
@@ -1320,7 +1319,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        ArrayList returnval = new ArrayList();
        HardTokenCertificateMapLocal htcm = null;
        try{
-         Collection result = hardtokencertificatemaphome.findByTokenSN(tokensn);
+         Collection result = hardtokencertificatemaphome.findByTokenSN(tokensn);         
          Iterator i = result.iterator();
          while(i.hasNext()){
            htcm = (HardTokenCertificateMapLocal) i.next();

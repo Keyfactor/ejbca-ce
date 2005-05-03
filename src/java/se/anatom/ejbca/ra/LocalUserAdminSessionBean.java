@@ -45,6 +45,8 @@ import se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
 import se.anatom.ejbca.common.UserDataVO;
+import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionLocal;
+import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionLocalHome;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.log.ILogSessionLocal;
 import se.anatom.ejbca.log.ILogSessionLocalHome;
@@ -70,7 +72,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.97 2005-05-02 16:19:09 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.98 2005-05-03 14:01:15 herrvendil Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -154,6 +156,15 @@ import se.anatom.ejbca.util.query.UserMatch;
  *   link="RaAdminSession"
  *
  * @ejb.ejb-external-ref
+ *   description="The Key Recovery session bean"
+ *   view-type="local"
+ *   ejb-name="KeyRecoverySessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.keyrecovery.IKeyRecoverySessionLocalHome"
+ *   business="se.anatom.ejbca.keyrecovery.IKeyRecoverySessionLocal"
+ *   link="KeyRecoverySession"
+ *
+ * @ejb.ejb-external-ref
  *   description="The User entity bean"
  *   view-type="local"
  *   ejb-name="UserDataLocal"
@@ -197,6 +208,10 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      */
     private IAuthorizationSessionLocal authorizationsession;
 
+    /**
+     * The local interface of the authorization session bean
+     */
+    private IKeyRecoverySessionLocal keyrecoverysession;
 
     /**
      * The remote interface of the log session bean
@@ -226,14 +241,14 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) getLocator().getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
             authorizationsession = authorizationsessionhome.create();
 
-
             IRaAdminSessionLocalHome raadminsessionhome = (IRaAdminSessionLocalHome) getLocator().getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
             raadminsession = raadminsessionhome.create();
 
-
             ICertificateStoreSessionLocalHome certificatesessionhome = (ICertificateStoreSessionLocalHome) getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
             certificatesession = certificatesessionhome.create();
-
+            
+            IKeyRecoverySessionLocalHome keyrecoverysessionhome = (IKeyRecoverySessionLocalHome) getLocator().getLocalHome(IKeyRecoverySessionLocalHome.COMP_NAME);
+            keyrecoverysession = keyrecoverysessionhome.create();
 
         } catch (Exception e) {
             error("Error creating session bean:", e);
@@ -446,6 +461,9 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             data1.setTokenType(tokentype);
             data1.setHardTokenIssuerId(hardwaretokenissuerid);
             oldstatus = data1.getStatus();
+            if(oldstatus == UserDataConstants.STATUS_KEYRECOVERY && status != UserDataConstants.STATUS_KEYRECOVERY){
+              keyrecoverysession.unmarkUser(admin,username);	
+            }
             statuschanged = status != oldstatus;
             data1.setStatus(status);
             data1.setTimeModified((new java.util.Date()).getTime());
@@ -552,6 +570,10 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
                 }
             }
 
+            if(data1.getStatus() == UserDataConstants.STATUS_KEYRECOVERY && status != UserDataConstants.STATUS_KEYRECOVERY){
+                keyrecoverysession.unmarkUser(admin,username);	
+            }
+            
             data1.setStatus(status);
             data1.setTimeModified((new java.util.Date()).getTime());
             logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_INFO_CHANGEDENDENTITY, ("New status : " + status));

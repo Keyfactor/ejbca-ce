@@ -239,11 +239,11 @@ public class HardTokenInterfaceBean {
       boolean retval = false;	
       X509Certificate keyRecCert = null;            
       
-      Collection result = hardtokensession.findCertificatesInHardToken(admin, tokensn);
+      Collection result = hardtokensession.findCertificatesInHardToken(admin, tokensn);      
       Iterator iter = result.iterator();
-      while(iter.hasNext()){
+      while(iter.hasNext()){      	
       	X509Certificate cert = (X509Certificate) iter.next();
-      	if(keyrecoverysession.existsKeys(admin,cert)){
+      	if(keyrecoverysession.existsKeys(admin,cert)){      
       		keyRecCert = cert;
       	}
       }
@@ -255,13 +255,13 @@ public class HardTokenInterfaceBean {
       return retval;	
     }
     
-    public void markTokenForKeyRecovery(String tokensn){                   
+    public void markTokenForKeyRecovery(String tokensn,String username, RAInterfaceBean rabean) throws Exception{                   
         Collection result = hardtokensession.findCertificatesInHardToken(admin, tokensn);
         Iterator iter = result.iterator();
         while(iter.hasNext()){
         	X509Certificate cert = (X509Certificate) iter.next();
         	if(keyrecoverysession.existsKeys(admin,cert)){
-        		keyrecoverysession.markAsRecoverable(admin,cert);
+        		rabean.markForRecovery(username,cert);        		
         	}
         }              
     }

@@ -148,7 +148,7 @@
      noparameter=false;
      certificatedata = rabean.getCertificate(currentindex);
      if(!cacerts && rabean.keyRecoveryPossible(certificatedata.getCertificate(), certificatedata.getUsername()) && usekeyrecovery)  
-       rabean.markForRecovery(certificatedata); 
+       rabean.markForRecovery(certificatedata.getUsername(), certificatedata.getCertificate()); 
      try{
        if(tokensn !=null) {
         rabean.loadTokenCertificates(tokensn,username);
