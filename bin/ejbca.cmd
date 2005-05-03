@@ -64,8 +64,27 @@ rem for %%i in (%EJBCA_HOME%\dist\*.jar) do set CP=%%i;!CP!
 set CLASSPATH=%J2EE_CP%;%EJBCA_CP%;%CP%;%EJBCA_HOME%\bin
 rem echo %CLASSPATH%
 
-rem Fixup arguments
+rem Fixup arguments, we have to do this since windows normally only 
+rem supports %1-%9 as command line arguments
 shift
-%JAVA_HOME%\bin\java -cp %CLASSPATH% %class_name% %1 %2 %3 %4 %5 %6 %7 %8 %9
+set a=%1
+set b=%2
+set c=%3
+set d=%4
+set e=%5
+set f=%6
+set g=%7
+set h=%8
+set i=%9
+shift
+set j=%9
+shift
+set k=%9
+shift
+set l=%9
+shift
+set m=%9
+rem echo %a% %b% %c% %d% %e% %f% %g% %h% %i% %j% %k% %l% %m%
+%JAVA_HOME%\bin\java -cp %CLASSPATH% %class_name% %a% %b% %c% %d% %e% %f% %g% %h% %i% %j% %k% %l% %m%
 
 :end

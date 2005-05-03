@@ -44,7 +44,7 @@ import se.anatom.ejbca.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 /**
  * Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.39 2005-04-29 08:15:46 anatom Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.40 2005-05-03 16:34:53 anatom Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
 	
@@ -114,7 +114,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
               hardtokenprofileidtonamemap = hardtokensession.getHardTokenProfileIdToNameMap(administrator);
             }  
             
-            if (args.length < 9) {
+            if ( (args.length < 9) || (args.length > 12) ) {
                 Collection certprofileids = certificatesession.getAuthorizedCertificateProfileIds(administrator, CertificateDataBean.CERTTYPE_ENDENTITY);
                 HashMap certificateprofileidtonamemap = certificatesession.getCertificateProfileIdToNameMap(administrator);
                 
@@ -226,24 +226,23 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             }catch(Exception e){               
             }
             
-            if(args.length == 10){
+            if(args.length > 9){
               // Use certificate type, no end entity profile.
               certificatetypeid = certificatesession.getCertificateProfileId(administrator, args[9]);
-
+              getOutputStream().println("Using certificate profile: "+args[9]+", with id: "+certificatetypeid);
             }
 
-            if(args.length == 11){
+            if(args.length > 10){
               // Use certificate type and end entity profile.
               profileid = raadminsession.getEndEntityProfileId(administrator, args[10]);
-              certificatetypeid = certificatesession.getCertificateProfileId(administrator, args[9]);
+              getOutputStream().println("Using entity profile: "+args[10]+", with id: "+profileid);
             }
 
             if(args.length == 12 && usehardtokens){
               // Use certificate type, end entity profile and hardtokenisseur.
-              profileid = raadminsession.getEndEntityProfileId(administrator, args[10]);
-              certificatetypeid = certificatesession.getCertificateProfileId(administrator, args[9]);
               hardtokenissuerid = hardtokensession.getHardTokenIssuerId(administrator,args[11]);
               usehardtokenissuer = true;
+              getOutputStream().println("Using hard token issuer: "+args[11]+", with id: "+hardtokenissuerid);
             }
             
             int tokenid =getTokenId(administrator, tokenname, usehardtokens, hardtokensession);
