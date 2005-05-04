@@ -1,4 +1,4 @@
-$Id: README,v 1.187 2005-05-03 16:57:26 anatom Exp $
+$Id: README,v 1.188 2005-05-04 09:50:35 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -16,7 +16,8 @@ EJBCA Homepage can be found at http://ejbca.sourceforge.net/.
 Information about contacting the EJBCA team, contributing to
 EJBCA, etc can be found through the Homepage.
 
-Documentation can also be found on the homepage.
+Some documentation can also be found on the homepage, but the majority of
+documentation is located on the documentation site http://docs.primekey.se/.
 
 There is an IRC channel for support at
 irc.freenode.net, channel #ejbca.
