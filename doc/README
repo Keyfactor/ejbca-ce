@@ -1,4 +1,4 @@
-$Id: README,v 1.188 2005-05-04 09:50:35 anatom Exp $
+$Id: README,v 1.189 2005-05-04 13:20:47 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -425,6 +425,9 @@ openssl req -key test.key -new -days 30 -out test.pemreq -outform PEM -config ..
 
 Tested with Simple Scep Client (http://www.klake.org/~jt/sscep/):
 You should only use CN in the users DN (same as for PIX below).
+
+Tested with Juniper Networks NetScreen-25/NetScreen-50:
+Working.
 
 Tested with Cisco VPN client version 4.0.2:
 To enroll using the Cisco VPN client use 'CA URL'='http://127.0.0.1:8080/ejbca/publicweb/apply/scep/pkiclient.exe' 
