@@ -13,10 +13,12 @@
  
 package se.anatom.ejbca.appserver.jboss;
 
+import org.jboss.system.ServiceMBeanSupport;
+
 /** 
  * An MBean service managing the automatic creation of CRLs.
 */
-public class CRLCreateService implements CRLCreateServiceMBean
+public class CRLCreateService extends ServiceMBeanSupport implements CRLCreateServiceMBean
 { 
   public static final String POLLTIME_DAILY      = "DAILY";	
   public static final String POLLTIME_HOURLY  = "HOURLY";
