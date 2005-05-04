@@ -67,12 +67,12 @@ public class CRLCreateThread extends Thread
    	    }
    	    
    	    try{
-                Context context = new InitialContext();
-                ICreateCRLSessionHome home = (ICreateCRLSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
-                          "CreateCRLSession"), ICreateCRLSessionHome.class);
-                this.createcrlsession = home.create(); 
-        }catch(Exception e){
-   	    	throw new EJBException(e);
+   	        Context context = new InitialContext();
+   	        ICreateCRLSessionHome home = (ICreateCRLSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
+   	        "CreateCRLSession"), ICreateCRLSessionHome.class);
+   	        this.createcrlsession = home.create(); 
+   	    }catch(Exception e){
+   	        throw new EJBException(e);
    	    }   	      
    	    
    }
@@ -138,11 +138,16 @@ public class CRLCreateThread extends Thread
                nextcalendar.set(Calendar.SECOND, 0);
                nexttime = nextcalendar.getTimeInMillis(); 
                break;
+           default : 
+               log.error("Invalid Polltime set for CRLCreateService! Using 1 minute.");
+               nextcalendar.add(Calendar.MINUTE,1);               
+               nextcalendar.set(Calendar.SECOND, 0);
+               nexttime = nextcalendar.getTimeInMillis(); 
+               break;
+               
       }            
 
-      
-       
-  	  return nexttime - (new Date()).getTime();
+      return nexttime - (new Date()).getTime();
   }
 
  
