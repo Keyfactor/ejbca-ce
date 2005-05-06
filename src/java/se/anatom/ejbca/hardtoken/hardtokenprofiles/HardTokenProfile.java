@@ -26,7 +26,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
  * processed. This information could be PIN-type number of certificates, 
  * certificate profiles and so on. 
  *
- * @version $Id: HardTokenProfile.java,v 1.4 2005-05-02 13:03:25 herrvendil Exp $
+ * @version $Id: HardTokenProfile.java,v 1.5 2005-05-06 10:34:59 herrvendil Exp $
  */
 public abstract class HardTokenProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     // Default Values
@@ -36,7 +36,7 @@ public abstract class HardTokenProfile extends UpgradeableDataHashMap implements
     public static final String FALSE = "false";
 
     public static final int PINTYPE_ASCII_NUMERIC           = 1;   
-    public static final int PINTYPE_ISO9564_1               = 2;    
+    public static final int PINTYPE_ISO9564_1               = 4;    
 
     // Protected Constants.
 	public static final String TYPE                           = "type";

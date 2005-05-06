@@ -24,7 +24,7 @@ import se.anatom.ejbca.SecConst;
 /**
  * EnhancedEIDProfile with three certificates and key recovery functionallity
  * 
- * @version $Id: EnhancedEIDProfile.java,v 1.7 2005-05-02 16:18:54 anatom Exp $
+ * @version $Id: EnhancedEIDProfile.java,v 1.8 2005-05-06 10:34:59 herrvendil Exp $
  */
 public class EnhancedEIDProfile extends EIDProfile {
 						
@@ -38,7 +38,7 @@ public class EnhancedEIDProfile extends EIDProfile {
 	public static final int CERTUSAGE_AUTH    = 1;
 	public static final int CERTUSAGE_ENC     = 2;
 	
-	public static final int PINTYPE_AUTH_SAME_AS_SIGN = 100;
+	public static final int PINTYPE_AUTH_SAME_AS_SIGN = SwedishEIDProfile.PINTYPE_AUTHENC_SAME_AS_SIGN;
 	public static final int PINTYPE_ENC_SAME_AS_AUTH  = 101;
 	
 	// Protected Constants
