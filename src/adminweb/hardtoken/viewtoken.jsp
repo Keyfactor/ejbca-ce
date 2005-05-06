@@ -186,6 +186,12 @@ function viewcert(){
     link = encodeURI(link);
     window.open(link, 'view_cert','height=600,width=600,scrollbars=yes,toolbar=no,resizable=1');
 }
+
+function viewcopies(link){
+    link = encodeURI(link);
+    location.href=link;
+}
+
   <% } %>
 -->
 </script>
@@ -283,7 +289,7 @@ function viewcert(){
                  while(iter.hasNext()){ 
                     String copytokensn = (String) iter.next();%>
                    <br>
-                   <A  href='<%= java.net.URLEncoder.encode(VIEWTOKEN_LINK + "?" + TOKENSN_PARAMETER + "=" + copytokensn + "&" + USER_PARAMETER + "=" + username,"UTF-8")%>'>
+                   <A  style="cursor:hand;" onclick="parent.location=encodeURI('<%= VIEWTOKEN_LINK + "?" + TOKENSN_PARAMETER + "=" + copytokensn + "&" + USER_PARAMETER + "=" + username%>')">
                       <u><%= copytokensn %></u> 
                    </A><%
                  }
@@ -291,7 +297,7 @@ function viewcert(){
             }else{
               out.write(ejbcawebbean.getText("THISISACOPYOF") + ":<br>");  
               String copyofsn = token.getCopyOf();%>
-                <A  href='<%= java.net.URLEncoder.encode(VIEWTOKEN_LINK + "?" + TOKENSN_PARAMETER + "=" + copyofsn + "&" + USER_PARAMETER + "=" + username,"UTF-8")%>'>
+                 <A style="cursor:hand;" onclick="parent.location=encodeURI('<%= VIEWTOKEN_LINK + "?" + TOKENSN_PARAMETER + "=" + copyofsn + "&" + USER_PARAMETER + "=" + username%>')">
                    <u><%= copyofsn %></u> 
                  </A><%
             } %>
