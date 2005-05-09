@@ -27,7 +27,7 @@ import se.anatom.ejbca.upgrade.IUpgradeSessionHome;
 /**
  * Implements call to the upgrade function
  *
- * @version $Id: Upgrade.java,v 1.10 2004-06-28 12:03:52 sbailliez Exp $
+ * @version $Id: Upgrade.java,v 1.11 2005-05-09 15:19:46 anatom Exp $
  */
 public class Upgrade extends BaseCommand {
 
@@ -135,10 +135,12 @@ public class Upgrade extends BaseCommand {
     }
 
     protected IUpgradeSessionRemote getUpgradeSessionRemote() throws NamingException, CreateException, RemoteException {
+        /* No Upgrade session available for the moment... 
         Context ctx = getInitialContext();
         IUpgradeSessionHome home = (IUpgradeSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("UpgradeSession"), IUpgradeSessionHome.class );            
         IUpgradeSessionRemote upgradesession = home.create();          
-        return upgradesession;
+        return upgradesession; */
+        return null;
      }
     
     /**
