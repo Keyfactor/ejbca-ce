@@ -2,3 +2,4 @@ dist
 tmp
 p12
 out
+ejbca.properties
