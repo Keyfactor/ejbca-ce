@@ -1,4 +1,4 @@
-$Id: README,v 1.191 2005-05-09 12:49:10 anatom Exp $
+$Id: README,v 1.192 2005-05-09 13:00:51 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -528,6 +528,8 @@ An appropriate URL for validation is: http://<hostname>:8080/ejbca/publicweb/sta
 If using a dedicated OCSP responder certificate, this certificate must be imported in Mozilla as a Trusted CA certificate, so it
 can be set as OCSP signer in 'Privacy & Security->Validation'. You can do this through 'View Certificates' in EJBCA 
 (http://localhost:8080/ejbca/publicweb/webdist/cacert.jsp).
+
+In doc/samples there is a sample how to check revocation with OCSP using the new APIs in JDK 1.5.
 
 EXPORT/IMPORT PROFILES
 =======================
