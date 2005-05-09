@@ -29,7 +29,7 @@ import se.anatom.ejbca.log.LogEntry;
  * A class that looks up the which modules a administrator have right to view.
  * This is done by looking up an administrators privileges in the tree and returning a string to be used in SQL-queries.
  * 
- * @version $Id: LogAuthorization.java,v 1.9 2005-04-29 10:02:23 anatom Exp $
+ * @version $Id: LogAuthorization.java,v 1.10 2005-05-09 15:41:24 anatom Exp $
  */
 public class LogAuthorization implements Serializable {
     

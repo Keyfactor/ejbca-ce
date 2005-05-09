@@ -26,7 +26,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
 /**
  * A class handling the profile data. It saves and retrieves them currently from a database.
  *
- * @version $Id: EndEntityProfileDataHandler.java,v 1.10 2004-08-06 07:00:12 anatom Exp $
+ * @version $Id: EndEntityProfileDataHandler.java,v 1.11 2005-05-09 15:41:56 anatom Exp $
  */
 public class EndEntityProfileDataHandler {
 
