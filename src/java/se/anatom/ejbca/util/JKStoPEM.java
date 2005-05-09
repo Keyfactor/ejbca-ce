@@ -13,14 +13,22 @@
 
 package se.anatom.ejbca.util;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.UnrecoverableKeyException;
-import java.security.cert.*;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 
 
@@ -30,7 +38,7 @@ import java.util.Enumeration;
  * a third file. The PEM files will have the names <i>common name</i>.pem, <i>common
  * name</i>Key.pem and <i>common name</i>CA.pem derived from the DN in user certificate.
  *
- * @version $Id: JKStoPEM.java,v 1.3 2005-04-29 10:33:55 anatom Exp $
+ * @version $Id: JKStoPEM.java,v 1.4 2005-05-09 19:00:46 anatom Exp $
  */
 public class JKStoPEM {
     String exportpath = "./p12/pem/";

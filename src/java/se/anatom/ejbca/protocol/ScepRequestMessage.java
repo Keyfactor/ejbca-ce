@@ -19,8 +19,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -62,7 +60,7 @@ import se.anatom.ejbca.util.CertTools;
  * Class to handle SCEP request messages sent to the CA. 
  * TODO: don't forget extensions, e.g. KeyUsage requested by end entity 
  *
- * @version $Id: ScepRequestMessage.java,v 1.38 2005-04-29 10:17:17 anatom Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.39 2005-05-09 19:01:47 anatom Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage, Serializable {
     static final long serialVersionUID = -235623330828902051L;

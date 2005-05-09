@@ -18,16 +18,14 @@ import java.io.InputStreamReader;
 import java.rmi.RemoteException;
 
 import javax.ejb.CreateException;
-import javax.naming.Context;
 import javax.naming.NamingException;
 
 import se.anatom.ejbca.upgrade.IUpgradeSessionRemote;
-import se.anatom.ejbca.upgrade.IUpgradeSessionHome;
 
 /**
  * Implements call to the upgrade function
  *
- * @version $Id: Upgrade.java,v 1.11 2005-05-09 15:19:46 anatom Exp $
+ * @version $Id: Upgrade.java,v 1.12 2005-05-09 19:01:34 anatom Exp $
  */
 public class Upgrade extends BaseCommand {
 

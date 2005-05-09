@@ -16,7 +16,6 @@ package se.anatom.ejbca.batch;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyStore;
@@ -30,7 +29,6 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.ejb.CreateException;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
@@ -60,7 +58,7 @@ import se.anatom.ejbca.util.P12toPEM;
  * This class generates keys and request certificates for all users with status NEW. The result is
  * generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.56 2005-04-29 08:16:31 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.57 2005-05-09 19:01:47 anatom Exp $
  */
 public class BatchMakeP12 {
     /**
