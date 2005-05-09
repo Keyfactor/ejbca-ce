@@ -25,6 +25,7 @@ import javax.ejb.EJBException;
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.IJobRunnerSession;
+import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.exception.CADoesntExistsException;
 import se.anatom.ejbca.ca.caadmin.CAInfo;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
@@ -50,7 +51,7 @@ import se.anatom.ejbca.util.CertTools;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.28 2005-05-09 12:49:49 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.29 2005-05-09 16:04:13 anatom Exp $
  * @ejb.bean
  *   description="Session bean handling hard token data, both about hard tokens and hard token issuers."
  *   display-name="CreateCRLSB"
@@ -258,20 +259,25 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
     			int caid = ((Integer) iter.next()).intValue();
     			try{
     			   CAInfo cainfo = caadmin.getCAInfo(admin, caid);
-    			   if(cainfo instanceof X509CAInfo){
-    			      CRLInfo crlinfo = store.getLastCRLInfo(admin,cainfo.getSubjectDN());
-    			      if((currenttime.getTime() + crloverlaptime) >= crlinfo.getExpireDate().getTime()){
-    			      	 this.run(admin, cainfo.getSubjectDN());
-
-    			      	 createdcrls++;
-    			      }
-    			   }
-    		    }catch(Exception e){
+    			   if (cainfo instanceof X509CAInfo) {
+    			       if (cainfo.getStatus() == SecConst.CA_OFFLINE) {
+    			           log.error("CA "+cainfo.getName()+", "+caid+" is off-line. CRL can not be created!");
+    			       } else {
+    			           CRLInfo crlinfo = store.getLastCRLInfo(admin,cainfo.getSubjectDN());
+    			           if((currenttime.getTime() + crloverlaptime) >= crlinfo.getExpireDate().getTime()){
+    			               this.run(admin, cainfo.getSubjectDN());
+    			               createdcrls++;
+    			           }
+    			       }
+    			   }                       
+    		    }catch(Exception e) {
+                    error("Error generating CRLs: ", e);
     		    	logsession.log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,e.getMessage());
     		    	throw new EJBException(e);
     		    }
     		}
     	} catch (Exception e) {
+            error("Error getting available CAs: ", e);
     		logsession.log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,e.getMessage());
     		throw new EJBException(e);
     	}
