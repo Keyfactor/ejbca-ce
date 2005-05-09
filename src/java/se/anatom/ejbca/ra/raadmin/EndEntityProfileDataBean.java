@@ -31,7 +31,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * Profile data
  * </pre>
  *
- * @version $Id: EndEntityProfileDataBean.java,v 1.11 2005-05-02 16:18:26 anatom Exp $
+ * @version $Id: EndEntityProfileDataBean.java,v 1.12 2005-05-09 16:17:06 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a profile"
  * display-name="EndEntityProfileDataEB"
@@ -65,7 +65,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *   signature="java.util.Collection findAll()"
  *   query="SELECT DISTINCT OBJECT(a) from EndEntityProfileDataBean a"
  */
-public abstract class EndEntityProfileDataBean extends BaseEntityBean {
+public abstract class EndEntityProfileDataBean extends BaseEntityBean implements java.io.Serializable {
     private static final Logger log = Logger.getLogger(EndEntityProfileDataBean.class);
 
     /**

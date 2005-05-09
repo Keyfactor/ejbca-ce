@@ -28,9 +28,9 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
  * By default all data are saved to a database.
  *
  * @author  Philip Vendil
- * @version $Id: GlobalConfigurationDataHandler.java,v 1.19 2005-04-29 10:02:23 anatom Exp $
+ * @version $Id: GlobalConfigurationDataHandler.java,v 1.20 2005-05-09 16:12:49 anatom Exp $
  */
-public class GlobalConfigurationDataHandler {
+public class GlobalConfigurationDataHandler implements java.io.Serializable {
     
     /** Creates a new instance of GlobalConfigurationDataHandler */
     public GlobalConfigurationDataHandler(Admin administrator,IRaAdminSessionLocal raadminsession, IAuthorizationSessionLocal authorizationsession){

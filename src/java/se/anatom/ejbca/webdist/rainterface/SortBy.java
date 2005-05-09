@@ -23,8 +23,9 @@ package se.anatom.ejbca.webdist.rainterface;
  * A class specifying which field to sort the userdata by. 
  *
  * @author  Philip Vendil
+ * @version $Id: SortBy.java,v 1.9 2005-05-09 16:17:07 anatom Exp $
  */
-public class SortBy {
+public class SortBy implements java.io.Serializable {
     // Public constants
       // Constants used by userdata.
     public static final int USERNAME         = 0;

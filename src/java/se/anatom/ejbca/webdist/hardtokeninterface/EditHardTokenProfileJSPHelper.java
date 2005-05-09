@@ -41,9 +41,9 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * Contains help methods used to parse a hard token profile jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditHardTokenProfileJSPHelper.java,v 1.7 2005-05-02 13:06:23 herrvendil Exp $
+ * @version $Id: EditHardTokenProfileJSPHelper.java,v 1.8 2005-05-09 16:11:44 anatom Exp $
  */
-public class EditHardTokenProfileJSPHelper {
+public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 	
 	public static final String ACTION                              = "action";
 	public static final String ACTION_EDIT_HARDTOKENPROFILES       = "edithardtokenprofiles";
