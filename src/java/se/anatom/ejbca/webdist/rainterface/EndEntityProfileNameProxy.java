@@ -27,8 +27,9 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
  * A class used to improve performance by proxying end entity profileid to profilename mappings by minimizing the number of needed lockups over rmi.
  * 
  * @author  TomSelleck
+ * @version $Id: EndEntityProfileNameProxy.java,v 1.8 2005-05-09 19:50:38 anatom Exp $
  */
-public class EndEntityProfileNameProxy {
+public class EndEntityProfileNameProxy implements java.io.Serializable {
     
     /** Creates a new instance of ProfileNameProxy */
     public EndEntityProfileNameProxy(Admin administrator, IRaAdminSessionLocal raadminsession){

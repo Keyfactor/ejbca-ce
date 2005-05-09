@@ -23,12 +23,13 @@ import se.anatom.ejbca.ra.raadmin.EndEntityProfileExistsException;
 import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocal;
 import se.anatom.ejbca.ra.raadmin.LocalRaAdminSessionBean;
 import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
+
 /**
  * A class handling the profile data. It saves and retrieves them currently from a database.
  *
- * @version $Id: EndEntityProfileDataHandler.java,v 1.11 2005-05-09 15:41:56 anatom Exp $
+ * @version $Id: EndEntityProfileDataHandler.java,v 1.12 2005-05-09 19:50:38 anatom Exp $
  */
-public class EndEntityProfileDataHandler {
+public class EndEntityProfileDataHandler implements java.io.Serializable {
 
     public static final String EMPTY_PROFILE        = LocalRaAdminSessionBean.EMPTY_ENDENTITYPROFILE;    
     /** Creates a new instance of EndEntityProfileDataHandler */

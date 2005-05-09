@@ -11,13 +11,8 @@
  *                                                                       *
  *************************************************************************/
  
-/*
- * UsersView.java
- *
- * Created on den 18 april 2002, 23:00
- */
-
 package se.anatom.ejbca.webdist.rainterface;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,11 +20,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import se.anatom.ejbca.common.UserDataVO;
+
 /**
  * A class representing a set of users w
  * @author  philip
+ * @version $Id: UsersView.java,v 1.13 2005-05-09 19:50:38 anatom Exp $
  */
-public class UsersView {
+public class UsersView implements java.io.Serializable {
         
     /** Creates a new instance of UsersView */
     public UsersView() {

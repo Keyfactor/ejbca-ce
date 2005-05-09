@@ -11,11 +11,6 @@
  *                                                                       *
  *************************************************************************/
  
-/*
- * DNFieldExtractor.java
- *
- * Created on den 1 maj 2002, 07:09
- */
 package se.anatom.ejbca.ra.raadmin;
 
 import java.util.ArrayList;
@@ -30,9 +25,9 @@ import org.ietf.ldap.LDAPDN;
  * strings.
  *
  * @author Philip Vendil
- * @version $Id: DNFieldExtractor.java,v 1.20 2004-05-30 17:44:09 herrvendil Exp $
+ * @version $Id: DNFieldExtractor.java,v 1.21 2005-05-09 19:51:19 anatom Exp $
  */
-public class DNFieldExtractor {
+public class DNFieldExtractor implements java.io.Serializable {
     private static Logger log = Logger.getLogger(DNFieldExtractor.class);
     // Public constants
     public static final int TYPE_SUBJECTDN = 0;
