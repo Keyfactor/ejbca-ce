@@ -39,11 +39,9 @@
         <property name="ca.keysize" value="2048"/>
         <property name="ca.validity" value="3650"/>
         <property name="ca.policy" value="null"/>
-        <property name="ca.keystorepass" value="foo123"/>
-        <property name="ca.ocspkeystorepass" value="foo123"/>
+        <property name="httpsserver.hostname" value="localhost"/>
         <property name="httpsserver.dn" value="CN=localhost,O=EJBCA Sample,C=SE"/>
         <property name="httpsserver.password" value="serverpwd"/>
-        <property name="httpsserver.hostname" value="localhost"/>
 		<property name="superadmin.password" value="ejbca"/>
         <property name="java.trustpassword" value="changeit"/>
     </target>
@@ -54,8 +52,6 @@
         <input message="Please enter the CA key size (default: 2048) ?" addproperty="ca.keysize" defaultvalue="2048" />
         <input message="Please enter the CA validity in days (default: 3650) ?" addproperty="ca.validity" defaultvalue="3650"/>
         <input message="Please enter the CA policy id (default, no policy) ?" addproperty="ca.policy" defaultvalue="null"/>
-        <input message="Please enter the CA keystore password (default: foo123) ?" addproperty="ca.keystorepass" defaultvalue="foo123"/>
-        <input message="Please enter the CA OCSP keystore password (default: foo123) ?" addproperty="ca.ocspkeystorepass" defaultvalue="foo123"/>
         <input message="Please enter the server httpsserver.hostname (default 'localhost') ?" addproperty="httpsserver.hostname" defaultvalue="localhost"/>
         <input message="Please enter the server dn (default: CN=localhost,O=EJBCA Sample,C=SE) ?" addproperty="httpsserver.dn" defaultvalue="CN=localhost,O=EJBCA Sample,C=SE"/>
         <input message="Please enter the server keystore password (default: serverpwd) ?" addproperty="httpsserver.password" defaultvalue="serverpwd"/>
@@ -71,11 +67,9 @@ ca.dn               : ${ca.dn}
 ca.keysize          : ${ca.keysize}
 ca.validity         : ${ca.validity}
 ca.policy           : ${ca.policy}
-ca.keystorepass     : ${ca.keystorepass}
-ca.ocspkeystorepass : ${ca.ocspkeystorepass}
+httpsserver.hostname: ${httpsserver.hostname}
 httpsserver.dn      : ${httpsserver.dn}
 httpsserver.password: ${httpsserver.password}
-httpsserver.hostname: ${httpsserver.hostname}
 superadmin.password : ${superadmin.password}
 java.trustpassword  : ${java.trustpassword}
         </echo>

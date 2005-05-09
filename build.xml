@@ -91,6 +91,8 @@
     </path>
 
     <!-- those are the default values used within JBoss for easy startup -->
+    <property name="ca.keystorepass" value="foo123"/>
+    <property name="ca.ocspkeystorepass" value="foo123"/>
     <property name="datasource.jndi-name" value="EjbcaDS" />
     <property name="database.name" value="hsqldb" />
     <property name="datasource.mapping" value="Hypersonic SQL" />
@@ -125,6 +127,8 @@
         <echo>
 ---------- CONFIGURATION PROPERTIES ----------
 jboss.home             = ${jboss.home}
+ca.keystorepass        = ${ca.keystorepass}
+ca.ocspkeystorepass    = ${ca.ocspkeystorepass}
 datasource.jndi-name   = ${datasource.jndi-name}
 database.name          = ${database.name}
 datasource.mapping     = ${datasource.mapping}
