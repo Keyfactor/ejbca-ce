@@ -469,7 +469,7 @@ web.contentencoding    = ${web.contentencoding}
     <!-- =================================================================== -->
     <!--Deploy Jboss Specific Services                       -->
     <!-- =================================================================== -->
-    <target name="deployjbossservices" depends="j2ee:assert-run,jbossservices">
+    <target name="deployjbossservices" depends="jbossservices">
         <copy file="${createcrlservicejar}" tofile="${jboss.home}/server/default/deploy/createcrlservice.jar" verbose="true" />
     </target>
 

@@ -50,7 +50,7 @@ import se.anatom.ejbca.util.CertTools;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.27 2005-03-13 13:25:42 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.28 2005-05-09 12:49:49 anatom Exp $
  * @ejb.bean
  *   description="Session bean handling hard token data, both about hard tokens and hard token issuers."
  *   display-name="CreateCRLSB"
@@ -140,8 +140,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
     /** The local interface of the log session bean */
     private ILogSessionLocal logsession;
 
-
-     public static final long  CRLOVERLAPTIME = 0;
+    private static final long  CRLOVERLAPTIME = 0;
 
 
     /** Default create for SessionBean without any creation Arguments.
@@ -223,7 +222,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
 
     /**
      * Method that checks if there are any CRLs needed to be updated and then creates their
-     * CRLs. This method can be called by a scheduler or a service.
+     * CRLs. No overlap is used. This method can be called by a scheduler or a service.
      *
      * @param admin administrator performing the task
      *
@@ -232,6 +231,22 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
      * @ejb.interface-method 
      */
     public int createCRLs(Admin admin)  {
+        return createCRLs(admin, CRLOVERLAPTIME);
+    }
+    
+    /**
+     * Method that checks if there are any CRLs needed to be updated and then creates their
+     * CRLs. A CRL is created if the current one expires within the crloverlaptime (milliseconds).
+     * This method can be called by a scheduler or a service.
+     *
+     * @param admin administrator performing the task
+     * @param crloverlaptime A new CRL is created if the current one expires within the crloverlaptime given in milliseconds
+     *
+     * @return the number of crls created.
+     * @throws EJBException om ett kommunikations eller systemfel intr?ffar.
+     * @ejb.interface-method 
+     */
+    public int createCRLs(Admin admin, long crloverlaptime)  {
     	int createdcrls = 0;
     	try {
     		Date currenttime = new Date();
@@ -245,7 +260,7 @@ public class CreateCRLSessionBean extends BaseSessionBean implements IJobRunnerS
     			   CAInfo cainfo = caadmin.getCAInfo(admin, caid);
     			   if(cainfo instanceof X509CAInfo){
     			      CRLInfo crlinfo = store.getLastCRLInfo(admin,cainfo.getSubjectDN());
-    			      if((currenttime.getTime() + CRLOVERLAPTIME) >= crlinfo.getExpireDate().getTime()){
+    			      if((currenttime.getTime() + crloverlaptime) >= crlinfo.getExpireDate().getTime()){
     			      	 this.run(admin, cainfo.getSubjectDN());
 
     			      	 createdcrls++;
