@@ -39,7 +39,7 @@ import java.util.Iterator;
  * Stores key recovery data. Uses JNDI name for datasource as defined in env 'Datasource' in
  * ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.28 2005-04-21 15:19:26 herrvendil Exp $
+ * @version $Id: LocalKeyRecoverySessionBean.java,v 1.29 2005-05-09 15:21:42 anatom Exp $
  *
  * @ejb.bean
  *   display-name="Stores key recovery data"
@@ -54,11 +54,10 @@ import java.util.Iterator;
  *
  * @ejb.permission role-name="InternalUser"
  *
- * @ejb.env-entry
- *   description="JDBC datasource to be used"
- *   name="DataSource"
- *   type="java.lang.String"
- *   value="java:/@datasource.jndi.name@"
+ * @ejb.env-entry description="JDBC datasource to be used"
+ * name="DataSource"
+ * type="java.lang.String"
+ * value="java:/${datasource.jndi-name}"
  *
  * @ejb.ejb-external-ref
  *   description="The key recovery data entity bean"
