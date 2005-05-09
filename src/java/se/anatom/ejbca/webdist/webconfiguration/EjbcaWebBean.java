@@ -54,9 +54,9 @@ import se.anatom.ejbca.util.ServiceLocatorException;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.43 2005-04-29 10:14:14 anatom Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.44 2005-05-09 15:34:36 anatom Exp $
  */
-public class EjbcaWebBean {
+public class EjbcaWebBean implements java.io.Serializable {
 
     private static Logger log = Logger.getLogger(EjbcaWebBean.class);
 

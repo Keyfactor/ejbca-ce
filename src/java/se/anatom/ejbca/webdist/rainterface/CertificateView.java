@@ -39,9 +39,9 @@ import se.anatom.ejbca.util.Hex;
  * by JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: CertificateView.java,v 1.18 2005-02-18 13:15:02 anatom Exp $
+ * @version $Id: CertificateView.java,v 1.19 2005-05-09 15:34:35 anatom Exp $
  */
-public class CertificateView {
+public class CertificateView implements java.io.Serializable {
 
    public static final int DIGITALSIGNATURE = CertificateProfile.DIGITALSIGNATURE;
    public static final int NONREPUDIATION   = CertificateProfile.NONREPUDIATION;

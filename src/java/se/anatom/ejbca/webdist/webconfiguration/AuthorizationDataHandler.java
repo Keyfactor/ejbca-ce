@@ -31,9 +31,9 @@ import se.anatom.ejbca.log.Admin;
  * A class handling the authorization data. 
  *
  * @author  Philip Vendil
- * @version $Id: AuthorizationDataHandler.java,v 1.19 2005-02-11 13:12:17 anatom Exp $
+ * @version $Id: AuthorizationDataHandler.java,v 1.20 2005-05-09 15:42:40 anatom Exp $
  */
-public class AuthorizationDataHandler {
+public class AuthorizationDataHandler implements java.io.Serializable {
 
     /** Creates a new instance of ProfileDataHandler */
     public AuthorizationDataHandler(Admin administrator, InformationMemory informationmemory, IAuthorizationSessionLocal authorizationsession){       

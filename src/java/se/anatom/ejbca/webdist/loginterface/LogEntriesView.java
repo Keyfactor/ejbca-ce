@@ -25,8 +25,9 @@ import se.anatom.ejbca.log.LogEntry;
 /**
  * A class representing a set of log entry view representations.
  * @author  TomSelleck
+ * @version $Id: LogEntriesView.java,v 1.8 2005-05-09 15:42:40 anatom Exp $
  */
-public class LogEntriesView {
+public class LogEntriesView implements java.io.Serializable {
  
     /** Creates a new instance of LogEntriesView  */
     public LogEntriesView(SubjectDNProxy dnproxy , String[] localinfoeventnames, String[] localerroreventnames, String[] localmodulenames, HashMap caidtonamemap) {

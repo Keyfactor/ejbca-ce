@@ -54,6 +54,7 @@
         <!-- detect jboss web version -->
         <available file="${jboss.deploy.dir}/jbossweb-tomcat41.sar" type="dir" property="jboss.web" value="tomcat41"/>
         <available file="${jboss.deploy.dir}/jbossweb-tomcat50.sar" type="dir" property="jboss.web" value="tomcat50"/>
+        <available file="${jboss.deploy.dir}/jbossweb-tomcat55.sar" type="dir" property="jboss.web" value="tomcat55"/>
         <fail message="Could not detect JBoss Servlet container version" unless="jboss.web"/>
 		
 		<!-- configure the tomcat bundle -->

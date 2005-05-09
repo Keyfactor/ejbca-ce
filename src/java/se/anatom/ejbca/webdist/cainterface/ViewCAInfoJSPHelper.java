@@ -29,9 +29,9 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * Contains help methods used to parse a viewcainfo jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: ViewCAInfoJSPHelper.java,v 1.3 2005-04-29 10:34:01 anatom Exp $
+ * @version $Id: ViewCAInfoJSPHelper.java,v 1.4 2005-05-09 15:34:28 anatom Exp $
  */
-public class ViewCAInfoJSPHelper {
+public class ViewCAInfoJSPHelper implements java.io.Serializable {
 		 
 	public static final String CA_PARAMETER             = "caid";
 

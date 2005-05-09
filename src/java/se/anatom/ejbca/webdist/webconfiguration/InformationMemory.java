@@ -49,9 +49,9 @@ import se.anatom.ejbca.webdist.rainterface.EndEntityProfileNameProxy;
  * A class used to improve performance by proxying authorization information about the administrator.
  * It should be used in all jsp interface bean classes. 
  * @author  TomSelleck
- * @version $Id: InformationMemory.java,v 1.9 2005-04-29 09:15:40 anatom Exp $
+ * @version $Id: InformationMemory.java,v 1.10 2005-05-09 15:34:37 anatom Exp $
  */
-public class InformationMemory {
+public class InformationMemory implements java.io.Serializable {
     
     /** Creates a new instance of ProfileNameProxy */
     public InformationMemory(Admin administrator,

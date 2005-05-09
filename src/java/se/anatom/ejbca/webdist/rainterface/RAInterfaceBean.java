@@ -60,9 +60,9 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.58 2005-05-03 14:01:42 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.59 2005-05-09 15:34:35 anatom Exp $
  */
-public class RAInterfaceBean {
+public class RAInterfaceBean implements java.io.Serializable {
     
     private static Logger log = Logger.getLogger(RAInterfaceBean.class);
     

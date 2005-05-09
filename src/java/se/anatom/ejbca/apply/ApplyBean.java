@@ -39,9 +39,9 @@ import javax.servlet.http.HttpServletRequest;
  * A class used as an interface between Apply jsp pages and ejbca functions.
  *
  * @author Philip Vendil
- * @version $Id: ApplyBean.java,v 1.9 2005-04-21 15:14:41 herrvendil Exp $
+ * @version $Id: ApplyBean.java,v 1.10 2005-05-09 15:34:38 anatom Exp $
  */
-public class ApplyBean {
+public class ApplyBean implements java.io.Serializable {
     /**
      * Creates a new instance of CaInterfaceBean
      */

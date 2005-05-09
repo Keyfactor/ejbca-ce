@@ -50,7 +50,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * @author  Philip Vendil
  * @version $Id: LogInterfaceBean.java,v 1.13 2002/08/28 12:22:25 herrvendil Exp $
  */
-public class HardTokenInterfaceBean {
+public class HardTokenInterfaceBean implements java.io.Serializable {
 
 	/** Creates new LogInterfaceBean */
     public HardTokenInterfaceBean(){

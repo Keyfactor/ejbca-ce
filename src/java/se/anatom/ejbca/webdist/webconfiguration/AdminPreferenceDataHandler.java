@@ -30,7 +30,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
  * @author  Philip Vendil
  * @version $Id: AdminPreferenceDataHandler.java,v 1.8 2002/09/12 18:14:15 herrvendil Exp $
  */
-public class AdminPreferenceDataHandler {
+public class AdminPreferenceDataHandler implements java.io.Serializable {
 
     /** Creates a new instance of AdminPreferences */
     public AdminPreferenceDataHandler(Admin administrator) throws RemoteException, NamingException, CreateException {

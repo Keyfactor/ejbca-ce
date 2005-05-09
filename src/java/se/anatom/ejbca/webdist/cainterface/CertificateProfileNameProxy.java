@@ -21,9 +21,9 @@ import se.anatom.ejbca.log.Admin;
 /**
  * A class used to improve performance by proxying certificateprofile id to certificate name mappings by minimizing the number of needed lockups over rmi.
  * 
- * @version $Id: CertificateProfileNameProxy.java,v 1.7 2004-04-16 07:38:59 anatom Exp $
+ * @version $Id: CertificateProfileNameProxy.java,v 1.8 2005-05-09 15:39:25 anatom Exp $
  */
-public class CertificateProfileNameProxy {
+public class CertificateProfileNameProxy implements java.io.Serializable {
     
     /** Creates a new instance of ProfileNameProxy */
     public CertificateProfileNameProxy(Admin administrator, ICertificateStoreSessionLocal certificatestoresession){

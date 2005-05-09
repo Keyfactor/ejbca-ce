@@ -24,9 +24,9 @@ import se.anatom.ejbca.ra.raadmin.GlobalConfiguration;
  * the presented text in the users prefered language.
  *
  * @author  Philip Vendil
- * @version $Id: WebLanguages.java,v 1.14 2005-03-13 14:14:39 anatom Exp $
+ * @version $Id: WebLanguages.java,v 1.15 2005-05-09 15:34:36 anatom Exp $
  */
-public class WebLanguages {
+public class WebLanguages implements java.io.Serializable {
 
     /** Construtor used to load static content. An instance must be declared with this constructor before
      *  any WebLanguage object can be used. */
