@@ -72,7 +72,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.98 2005-05-03 14:01:15 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.99 2005-05-09 10:22:49 herrvendil Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -461,7 +461,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             data1.setTokenType(tokentype);
             data1.setHardTokenIssuerId(hardwaretokenissuerid);
             oldstatus = data1.getStatus();
-            if(oldstatus == UserDataConstants.STATUS_KEYRECOVERY && status != UserDataConstants.STATUS_KEYRECOVERY){
+            if(oldstatus == UserDataConstants.STATUS_KEYRECOVERY && !(status == UserDataConstants.STATUS_KEYRECOVERY || status == UserDataConstants.STATUS_INPROCESS)){
               keyrecoverysession.unmarkUser(admin,username);	
             }
             statuschanged = status != oldstatus;
@@ -481,7 +481,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
                 }
             }
 
-            if ((type & SecConst.USER_SENDNOTIFICATION) != 0 && statuschanged && (status == UserDataConstants.STATUS_NEW || status == UserDataConstants.STATUS_KEYRECOVERY)) {
+            if ((type & SecConst.USER_SENDNOTIFICATION) != 0 && statuschanged && (status == UserDataConstants.STATUS_NEW || status == UserDataConstants.STATUS_KEYRECOVERY || status == UserDataConstants.STATUS_INITIALIZED)) {
 
                 sendNotification(admin, profile, username, newpassword, dn, email, caid);
             }
@@ -570,7 +570,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
                 }
             }
 
-            if(data1.getStatus() == UserDataConstants.STATUS_KEYRECOVERY && status != UserDataConstants.STATUS_KEYRECOVERY){
+            if(data1.getStatus() == UserDataConstants.STATUS_KEYRECOVERY && !(status == UserDataConstants.STATUS_KEYRECOVERY || status == UserDataConstants.STATUS_INPROCESS || status == UserDataConstants.STATUS_INITIALIZED)){
                 keyrecoverysession.unmarkUser(admin,username);	
             }
             
