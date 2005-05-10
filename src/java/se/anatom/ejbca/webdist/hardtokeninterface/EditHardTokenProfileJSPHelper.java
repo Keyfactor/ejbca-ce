@@ -41,7 +41,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * Contains help methods used to parse a hard token profile jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditHardTokenProfileJSPHelper.java,v 1.8 2005-05-09 16:11:44 anatom Exp $
+ * @version $Id: EditHardTokenProfileJSPHelper.java,v 1.9 2005-05-10 12:01:15 herrvendil Exp $
  */
 public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 	
@@ -398,11 +398,11 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 				   if(value!= null)
 					 enhprof.setCAId(EnhancedEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
 				   value = request.getParameter(SELECT_PINTYPE + "0");
+				   if(value!= null)
+					 enhprof.setPINType(EnhancedEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
 				   value = request.getParameter(SELECT_MINPINLENGTH + "0");
 				   if(value!= null)
 				   	 enhprof.setMinimumPINLength(EnhancedEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
-				   if(value!= null)
-					 enhprof.setPINType(EnhancedEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
                    enhprof.setIsKeyRecoverable(EnhancedEIDProfile.CERTUSAGE_SIGN, false); 
                     
 				   value = request.getParameter(SELECT_CERTIFICATEPROFILE + "1");
