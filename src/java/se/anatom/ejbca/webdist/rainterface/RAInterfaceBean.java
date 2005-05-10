@@ -60,7 +60,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.59 2005-05-09 15:34:35 anatom Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.60 2005-05-10 11:51:23 herrvendil Exp $
  */
 public class RAInterfaceBean implements java.io.Serializable {
     
@@ -718,9 +718,11 @@ public class RAInterfaceBean implements java.io.Serializable {
       }
       try{
         if(log)
-           returnval = authorizationsession.isAuthorized(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
+           returnval = authorizationsession.isAuthorized(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights) &&
+           authorizationsession.isAuthorized(admin, AvailableAccessRules.REGULAR_RAFUNCTIONALITY + rights);
         else
-           returnval = authorizationsession.isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights);
+           returnval = authorizationsession.isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX+Integer.toString(profileid)+rights)&&
+           authorizationsession.isAuthorized(admin, AvailableAccessRules.REGULAR_RAFUNCTIONALITY + rights);
       }catch(AuthorizationDeniedException e){}
 
       return returnval;

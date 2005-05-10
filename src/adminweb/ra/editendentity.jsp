@@ -220,9 +220,8 @@
                int numberofsubjectaltnamefields = profile.getSubjectAltNameFieldOrderLength();
                for(int i=0; i < numberofsubjectaltnamefields; i++){
                  fielddata = profile.getSubjectAltNameFieldsInOrder(i); 
-
-                 if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.RFC822NAME){
-                   value=null; 
+                 value=null; 
+                 if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.RFC822NAME){                   
                    if(request.getParameter(CHECKBOX_SUBJECTALTNAME+i)!=null)
                      if(request.getParameter(CHECKBOX_SUBJECTALTNAME+i).equals(CHECKBOX_VALUE))
                        value = newuser.getEmail();
