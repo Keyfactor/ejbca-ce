@@ -105,7 +105,7 @@ import se.anatom.ejbca.util.StringTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.37 2005-05-09 12:14:36 anatom Exp $
+ * @version $Id: X509CA.java,v 1.38 2005-05-12 18:27:55 herrvendil Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -586,8 +586,7 @@ public class X509CA extends CA implements Serializable {
 		try {
 			edGen.addKeyTransRecipient( this.getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_KEYENCRYPT), this.keyId);
 			ed = edGen.generate(
-					new CMSProcessableByteArray(baos.toByteArray()), CMSEnvelopedDataGenerator.AES256_CBC,
-					              getCAToken().getProvider());
+					new CMSProcessableByteArray(baos.toByteArray()), CMSEnvelopedDataGenerator.AES256_CBC,"BC");
 		} catch (CATokenOfflineException ctoe) {
 			this.setStatus(SecConst.CA_OFFLINE);
           	throw ctoe;	 	
@@ -609,7 +608,7 @@ public class X509CA extends CA implements Serializable {
     	RecipientInformation   recipient = (RecipientInformation) it.next();
     	ObjectInputStream ois = null;
     	try{
-    	  byte[] recdata = recipient.getContent(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT),getCAToken().getProvider());
+    	  byte[] recdata = recipient.getContent(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT),"BC");
     	  ois = new ObjectInputStream(new ByteArrayInputStream(recdata));
     	}catch(CATokenOfflineException e){
     		setStatus(SecConst.CA_OFFLINE);

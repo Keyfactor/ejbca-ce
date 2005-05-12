@@ -60,7 +60,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.60 2005-05-10 11:51:23 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.61 2005-05-12 18:27:45 herrvendil Exp $
  */
 public class RAInterfaceBean implements java.io.Serializable {
     
@@ -582,9 +582,10 @@ public class RAInterfaceBean implements java.io.Serializable {
       if(cert != null){
         RevokedInfoView revokedinfo = null;
         String username = certificatesession.findUsernameByCertSerno(administrator,serno, cert.getIssuerDN().toString());
-        int endentityprofileid = this.adminsession.findUser(administrator, username).getEndEntityProfileId();
-        this.endEntityAuthorization(administrator,endentityprofileid,AvailableAccessRules.VIEW_RIGHTS,true);
-        
+        if(this.adminsession.findUser(administrator, username) != null){
+          int endentityprofileid = this.adminsession.findUser(administrator, username).getEndEntityProfileId();
+          this.endEntityAuthorization(administrator,endentityprofileid,AvailableAccessRules.VIEW_RIGHTS,true);
+        }
         RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), cert.getSerialNumber());
         if(revinfo != null)
           revokedinfo = new RevokedInfoView(revinfo);

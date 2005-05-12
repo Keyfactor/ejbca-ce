@@ -84,8 +84,7 @@
      noparameter = false;
   }
 
-  if( request.getParameter(CERTSERNO_PARAMETER ) != null){
-     
+  if( request.getParameter(CERTSERNO_PARAMETER ) != null){     
      String[] certdata = java.net.URLDecoder.decode(request.getParameter(CERTSERNO_PARAMETER ),"UTF-8").split(",",2);
      certificateserno = certdata[0];
      issuerdn = CertTools.stringToBCDNString(certdata[1]);
@@ -489,7 +488,7 @@ function confirmrepublish(){
         <input type="submit" name="<%=BUTTON_RECOVERKEY %>" value="<%= ejbcawebbean.getText("RECOVERKEY") %>"
                onClick='return confirmkeyrecovery()'><br>
        <% }
-            if(!cacerts &&  rabean.isAuthorizedToEditUser(certificatedata.getUsername())){ %>
+            if(!cacerts &&  rabean.userExist(certificatedata.getUsername()) && rabean.isAuthorizedToEditUser(certificatedata.getUsername())){ %>
         <input type="submit" name="<%=BUTTON_REPUBLISH %>" value="<%= ejbcawebbean.getText("REPUBLISH") %>"
                onClick='return confirmrepublish()'>
        <% } %>
@@ -513,6 +512,7 @@ function confirmrepublish(){
           &nbsp;
           </td>
        </tr> 
+         <% if(!cacerts){ %>
          <tr id="Row<%=row%2%>">
             <td>&nbsp;</td>
             <td>               
@@ -520,7 +520,8 @@ function confirmrepublish(){
               <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=nscert&certificatesn=<%= certificatedata.getSerialNumber()%>&issuer=<%= certificatedata.getIssuerDN() %>"><%= ejbcawebbean.getText("DOWNLOADNS")%></a><br>
               <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=cert&certificatesn=<%= certificatedata.getSerialNumber()%>&issuer=<%= certificatedata.getIssuerDN() %>"><%= ejbcawebbean.getText("DOWNLOADPEM")%></a>
             </td>   
-          </tr> 
+         </tr> 
+         <% } %>
      </table> 
    </form>
    <p></p>

@@ -216,6 +216,7 @@ function checkallfields(){
 
       </td>
       <td width="50%">
+           <!-- Disable the use of critical flag, since it's easy to make misstakes
            <input type="checkbox" name="<%=CHECKBOX_SUBJECTKEYIDENTIFIER %>" onClick="checkusefield('<%=CHECKBOX_SUBJECTKEYIDENTIFIER %>', '<%=CHECKBOX_SUBJECTKEYIDENTIFIERCRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
            <% if(certificateprofiledata.getUseSubjectKeyIdentifier())
                  out.write("CHECKED");
@@ -227,7 +228,11 @@ function checkallfields(){
               else
               if(certificateprofiledata.getSubjectKeyIdentifierCritical())
                  out.write("CHECKED");
-           %>> 
+           %>>  -->
+           <input type="checkbox" name="<%=CHECKBOX_SUBJECTKEYIDENTIFIER %>" value="<%=CHECKBOX_VALUE %>" 
+           <% if(certificateprofiledata.getUseSubjectKeyIdentifier())
+                 out.write("CHECKED");
+           %>> <br>
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
@@ -235,6 +240,7 @@ function checkallfields(){
          <%= ejbcawebbean.getText("AUTHORITYKEYID") %> <br> <%= ejbcawebbean.getText("AUTHORITYKEYIDCRITICAL") %> 
       </td>
       <td width="50%">
+           <!-- Disable the use of critical flag, since it's easy to make misstakes
            <input type="checkbox" name="<%=CHECKBOX_AUTHORITYKEYIDENTIFIER %>" onClick="checkusefield('<%=CHECKBOX_AUTHORITYKEYIDENTIFIER %>', '<%=CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
            <% if(certificateprofiledata.getUseAuthorityKeyIdentifier())
                  out.write("CHECKED");
@@ -246,7 +252,11 @@ function checkallfields(){
              else
              if(certificateprofiledata.getAuthorityKeyIdentifierCritical())
                  out.write("CHECKED");
-           %>> 
+           %>> -->
+           <input type="checkbox" name="<%=CHECKBOX_AUTHORITYKEYIDENTIFIER %>" value="<%=CHECKBOX_VALUE %>" 
+           <% if(certificateprofiledata.getUseAuthorityKeyIdentifier())
+                 out.write("CHECKED");
+           %>>
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
