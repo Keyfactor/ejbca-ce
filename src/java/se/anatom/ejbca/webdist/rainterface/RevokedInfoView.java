@@ -18,6 +18,7 @@
  */
 package se.anatom.ejbca.webdist.rainterface;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
@@ -31,7 +32,7 @@ import se.anatom.ejbca.ca.crl.RevokedCertInfo;
  *
  * @author Philip Vendil
  */
-public class RevokedInfoView {
+public class RevokedInfoView implements Serializable {
     // Public constants.
 
     /**
