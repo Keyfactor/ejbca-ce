@@ -1,4 +1,4 @@
-$Id: README,v 1.192 2005-05-09 13:00:51 anatom Exp $
+$Id: README,v 1.193 2005-05-12 13:17:56 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -803,51 +803,6 @@ SAMPLES
 =======
 A collection of samples are in the directory
 src/java/se/anatom/ejbca/samples.
-
-RemoteAuthentication
---------------------
--AuthResult.java
--RemoteVerifyServlet.java
-These files are a sample of a remote user database providing
-user authentication
- to the CA when the CA is about to generate
-a certificate for a user. A remote user database is used by
-configuring the CA
- to use the 'RemoteAuthenticationSession' instead
-of 'LocalAuthenticationSession'.
-The sample files implement a simple file based user database and
-a servlet that
- responds to the HTTP requests comming from the CA.
-The sample remote authentication is deployes by deploying the
-file
- 'sampleauth.war' in JBoss.
-
-NullAuthenticationSession
--------------------------
-Another sample included is the NullAuthentication (in package
-se.anatom.ejbca.ca.auth)
-session. This authentication module can be used for demo
-purposes since it
-authenticates any request sent to it and uses the passed in
-username as DN.
-It is easily used simply by exchanging the default
-AuthenticationSession in
-ca/ca/META-INF/ejb-jar.xml for the NullAuthenticationSession.
-
-Programatically get certificate
--------------------------------
--HttpGetCert.java
-Example how a certificate can be fetched programmatically using
-HTTP/S. The
- sample generates a certificate request and uses POST to the
- same servlet
-as used from a browser through
-http://127.0.0.1:8080/ejbca/publicweb/apply/apply_man.jsp.
-The servlet url used in the example is
-http://127.0.0.1:8080/ejbca/publicweb/apply/certreq.
-The certificate reply containing a PEM-formatted certificate is
-printed to the
- screen.
 
 
 Troubleshooting

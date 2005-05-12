@@ -34,10 +34,17 @@ import se.anatom.ejbca.util.KeyTools;
 
 
 /**
+ * Example how a certificate can be fetched programmatically using HTTP/S. The sample generates a 
+ * certificate request and uses POST to the same servlet as used from a browser through
+ * http://127.0.0.1:8080/ejbca/publicweb/apply/apply_man.jsp.
+ * The servlet url used in the example is
+ * http://127.0.0.1:8080/ejbca/publicweb/apply/certreq.
+ * The certificate reply containing a PEM-formatted certificate is printed to the screen.
+ * 
  * NOTE: Support for SSL has been commented out in this sample, since it requires JSSE. This sample
  * class generates a PKCS10 request and POSTs to the CAs web interface. The reply is received and
  * printed to stdout. Takes arguments:
- *
+ * 
  * <ul>
  * <li>
  * requesturl - URL to the CA web (servlet where requests are POSTed),
@@ -51,8 +58,7 @@ import se.anatom.ejbca.util.KeyTools;
  * </li>
  * </ul>
  *
- *
- * @version $Id: HttpGetCert.java,v 1.17 2005-05-02 16:19:12 anatom Exp $
+ * @version $Id: HttpGetCert.java,v 1.18 2005-05-12 13:17:49 anatom Exp $
  */
 public class HttpGetCert {
     private static Logger log = Logger.getLogger(HttpGetCert.class);

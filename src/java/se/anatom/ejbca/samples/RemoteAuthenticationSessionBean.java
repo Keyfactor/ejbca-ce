@@ -33,14 +33,27 @@ import se.anatom.ejbca.log.LogEntry;
 
 /**
  * Authenticates users towards a remote user database, using HTTP-based protocol.
+ * 
+ * -AuthResult.java
+ * -RemoteVerifyServlet.java
+ * These files are a sample of a remote user database providing user authentication
+ * to the CA when the CA is about to generate a certificate for a user. 
+ * A remote user database is used by configuring the CA to use the 'RemoteAuthenticationSession' 
+ * instead of 'LocalAuthenticationSession'. 
+ * The sample files implement a simple file based user database and a servlet that
+ * responds to the HTTP requests comming from the CA.
+ * 
+ * To install it must replace the current se.anatom.ejbca.authorization.LocalAuthorizationSessionBean
+ * which will require some work from your part.
  *
- * @version $Id: RemoteAuthenticationSessionBean.java,v 1.1 2005-04-29 08:17:23 anatom Exp $
  * @ejb.bean
  *   generate="false"
  * @ejb.home
  *   generate="none"
  * @ejb.interface
  *   generate="none"
+ *   
+ * @version $Id: RemoteAuthenticationSessionBean.java,v 1.2 2005-05-12 13:17:49 anatom Exp $
  */
 public class RemoteAuthenticationSessionBean extends BaseSessionBean {
     private static String REMOTE_PROTOCOL_VER = "1.0";
