@@ -44,7 +44,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CACertServlet.java,v 1.28 2005-05-02 13:05:14 herrvendil Exp $
+ * @version $Id: CACertServlet.java,v 1.29 2005-05-12 16:10:31 anatom Exp $
  *
  * @web.servlet name = "CACert"
  *              display-name = "CACertServlet"
@@ -227,9 +227,8 @@ public class CACertServlet extends HttpServlet {
            throw new java.io.IOException("Authorization Denied");
         }
         
-        String issuerdn = req.getParameter(ISSUER_PROPERTY);        
+        String issuerdn = req.getParameter(ISSUER_PROPERTY);
         
-
         String command;
         // Keep this for logging.
         log.debug("Got request from "+req.getRemoteAddr());
@@ -291,11 +290,10 @@ public class CACertServlet extends HttpServlet {
                     return;
                 }
             } catch (Exception e) {
+                log.error("Error getting CA certificates: ", e);
                 PrintStream ps = new PrintStream(res.getOutputStream());
                 e.printStackTrace(ps);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting CA certificates.");
-                log.error("Error getting CA certificates.");
-                log.error(e);
                 return;
             }
         }

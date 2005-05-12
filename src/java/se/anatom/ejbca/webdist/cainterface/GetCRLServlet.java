@@ -42,7 +42,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: GetCRLServlet.java,v 1.22 2005-03-21 11:58:32 anatom Exp $
+ * @version $Id: GetCRLServlet.java,v 1.23 2005-05-12 16:10:31 anatom Exp $
  * 
  * @web.servlet name = "GetCRL"
  *              display-name = "GetCRLServlet"
@@ -141,10 +141,10 @@ public class GetCRLServlet extends HttpServlet {
                 res.getOutputStream().write(crl);
                 log.info("Sent latest CRL to client at " + remoteAddr);
             } catch (Exception e) {
-                PrintStream ps = new PrintStream(res.getOutputStream());
-                res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting latest CRL.");
-                e.printStackTrace(ps);
                 log.error("Error sending latest CRL to " + remoteAddr, e);
+                PrintStream ps = new PrintStream(res.getOutputStream());
+                e.printStackTrace(ps);
+                res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting latest CRL.");
                 return;
             }
         }

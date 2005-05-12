@@ -44,7 +44,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: CACertReqServlet.java,v 1.8 2005-04-15 13:59:24 anatom Exp $
+ * @version $Id: CACertReqServlet.java,v 1.9 2005-05-12 16:10:31 anatom Exp $
  * 
  * @web.servlet name = "CACertReq"
  *              display-name = "CACertReqServlet"
@@ -201,10 +201,10 @@ public class CACertReqServlet extends HttpServlet {
 			    byte[] b64cert = se.anatom.ejbca.util.Base64.encode(pkcs7);	
 			    RequestHelper.sendNewB64Cert(b64cert, res, RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);																		 					
 			 } catch (Exception e) {
+                 log.error("Error sending processed certificate to " + remoteAddr, e);
 				 PrintStream ps = new PrintStream(res.getOutputStream());
+                 e.printStackTrace(ps);
 				 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting processed certificate.");
-				 e.printStackTrace(ps);
-				 log.error("Error sending processed certificate to " + remoteAddr, e);
 				 return;
 			 }
 		 }
