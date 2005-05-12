@@ -34,3 +34,5 @@ Risto Laanoja <risto.laanoja(at)eyp.ee>, fix for integer overflow when setting C
 Giampaolo Tomassoni <Giampaolo(at)Tomassoni.biz>, PostgresSQL 8.0.
 Philipp Faerber <philipp.faerber(at)adnovum.ch>, Weblogic 8.1, adminweb sql fix.
 Hu Aranjuez <mynetbus(at)126.com>, column name fix for MS SQL2000.
+Marco Ferrante <marco(at)csita.unige.it>, Italian translation
+
