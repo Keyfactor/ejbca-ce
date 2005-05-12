@@ -44,7 +44,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * cert, nscert and iecert also takes  parameters issuer and certificatesn were issuer is the DN of issuer and certificate serienumber 
  * is in hex format.
  *
- * @version $Id: EndEntityCertServlet.java,v 1.2 2005-05-02 16:19:09 anatom Exp $
+ * @version $Id: EndEntityCertServlet.java,v 1.3 2005-05-12 13:21:47 anatom Exp $
  *
  * @web.servlet name = "EndEntityCert"
  *              display-name = "EndEntityCertServlet"
@@ -172,11 +172,10 @@ public class EndEntityCertServlet extends HttpServlet {
 					return;
 				}
             } catch (Exception e) {
+                log.error("Error getting certificates: ", e);
                 PrintStream ps = new PrintStream(res.getOutputStream());
                 e.printStackTrace(ps);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting certificates.");
-                log.error("Error getting certificates.");
-                log.error(e);
                 return;
             }
         }
