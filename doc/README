@@ -1,4 +1,4 @@
-$Id: README,v 1.193 2005-05-12 13:17:56 anatom Exp $
+$Id: README,v 1.194 2005-05-13 09:33:07 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -780,14 +780,15 @@ it in the src/adminweb/languages directory.
 
 2. Edit ejbca.properties (create with ejbca.properties.sample as template if you don't have one).
 Change 'web.availablelanguages' and add your language code to the value. i.e:
-<env-entry-value>EN,CH</env-entry-value>
+<env-entry-value>EN,FR,IT</env-entry-value>
 
 3. You may have to change the default page encoding in 'web.contentencoding' to for example UTF-8
 instead of the default ISO-8859-1.
 
-4. Redeploy ejbca with 'ant deploy'.
+4. Clean and re-deploy ejbca with 'ant clean' followed by 'ant deploy'. 
+Restart JBoss and your browser after this.
 
-5. Now it should be possible to select CH in the system configuration as default language 
+5. Now it should be possible to select EN, FR and IT in the system configuration as default language 
 and in the administrator preferences page. 
 The language will be changed next time the administrator logs in.
 

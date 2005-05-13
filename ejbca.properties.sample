@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.18 2005-04-27 11:53:14 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.19 2005-05-13 09:33:08 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -94,8 +94,8 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 #httpserver.privhttps=8443
 
 # Defines the available languages by languagecodes separated with a comma (example EN,CH).
-# Default: EN 
-#web.availablelanguages=EN
+# Default: EN,FR,IT 
+#web.availablelanguages=EN,FR,IT
 
 # Default content encoding used to display JSP pages.
 # Default: ISO-8859-1
