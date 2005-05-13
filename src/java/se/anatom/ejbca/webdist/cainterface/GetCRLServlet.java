@@ -14,7 +14,6 @@
 package se.anatom.ejbca.webdist.cainterface;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 
@@ -31,6 +30,7 @@ import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.ServiceLocator;
+import se.anatom.ejbca.webdist.ServletUtils;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 
 /**
@@ -42,7 +42,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: GetCRLServlet.java,v 1.23 2005-05-12 16:10:31 anatom Exp $
+ * @version $Id: GetCRLServlet.java,v 1.24 2005-05-13 06:51:42 anatom Exp $
  * 
  * @web.servlet name = "GetCRL"
  *              display-name = "GetCRLServlet"
@@ -127,14 +127,8 @@ public class GetCRLServlet extends HttpServlet {
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 String dn = CertTools.getIssuerDN(x509crl);
                 String filename = CertTools.getPartFromDN(dn,"CN")+".crl";
-                if (res.containsHeader("Pragma")) {
-                    log.debug("Removing Pragma header to avoid caching issues in IE");
-                    res.setHeader("Pragma",null);
-                }
-                if (res.containsHeader("Cache-Control")) {
-                    log.debug("Removing Cache-Control header to avoid caching issues in IE");
-                    res.setHeader("Cache-Control",null);
-                }
+                // We must remove cache headers for IE
+                ServletUtils.removeCacheHeaders(res);
                 res.setHeader("Content-disposition", "attachment; filename=" +  filename);
                 res.setContentType("application/pkix-crl");
                 res.setContentLength(crl.length);
@@ -142,8 +136,6 @@ public class GetCRLServlet extends HttpServlet {
                 log.info("Sent latest CRL to client at " + remoteAddr);
             } catch (Exception e) {
                 log.error("Error sending latest CRL to " + remoteAddr, e);
-                PrintStream ps = new PrintStream(res.getOutputStream());
-                e.printStackTrace(ps);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting latest CRL.");
                 return;
             }

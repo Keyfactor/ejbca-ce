@@ -34,6 +34,7 @@ import se.anatom.ejbca.protocol.IResponseMessage;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.FileTools;
 import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.webdist.ServletUtils;
 
 /**
  * Helper class for hadnling certificate request from browsers or general PKCS#10
@@ -279,14 +280,8 @@ public class RequestHelper {
             return;
         }
 
-        if (out.containsHeader("Pragma")) {
-            log.debug("Removing Pragma header to avoid caching issues in IE");
-            out.setHeader("Pragma",null);
-        }
-        if (out.containsHeader("Cache-Control")) {
-            log.debug("Removing Cache-Control header to avoid caching issues in IE");
-            out.setHeader("Cache-Control",null);
-        }
+        // We must remove cache headers for IE
+        ServletUtils.removeCacheHeaders(out);
 
         // Set content-type to general file
         out.setContentType("application/octet-stream");        

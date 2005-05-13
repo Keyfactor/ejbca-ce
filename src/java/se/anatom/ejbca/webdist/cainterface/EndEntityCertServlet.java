@@ -14,7 +14,6 @@
 package se.anatom.ejbca.webdist.cainterface;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.math.BigInteger;
 import java.security.cert.X509Certificate;
 
@@ -29,6 +28,7 @@ import org.apache.log4j.Logger;
 import se.anatom.ejbca.apply.RequestHelper;
 import se.anatom.ejbca.authorization.AvailableAccessRules;
 import se.anatom.ejbca.util.Base64;
+import se.anatom.ejbca.webdist.ServletUtils;
 import se.anatom.ejbca.webdist.rainterface.CertificateView;
 import se.anatom.ejbca.webdist.rainterface.RAInterfaceBean;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
@@ -44,7 +44,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * cert, nscert and iecert also takes  parameters issuer and certificatesn were issuer is the DN of issuer and certificate serienumber 
  * is in hex format.
  *
- * @version $Id: EndEntityCertServlet.java,v 1.3 2005-05-12 13:21:47 anatom Exp $
+ * @version $Id: EndEntityCertServlet.java,v 1.4 2005-05-13 06:51:42 anatom Exp $
  *
  * @web.servlet name = "EndEntityCert"
  *              display-name = "EndEntityCertServlet"
@@ -137,14 +137,8 @@ public class EndEntityCertServlet extends HttpServlet {
 				
 				X509Certificate cert = certview.getCertificate();
 				byte[] enccert = cert.getEncoded();
-				if (res.containsHeader("Pragma")) {
-					log.debug("Removing Pragma header to avoid caching issues in IE");
-					res.setHeader("Pragma",null);
-				}
-				if (res.containsHeader("Cache-Control")) {
-					log.debug("Removing Cache-Control header to avoid caching issues in IE");
-					res.setHeader("Cache-Control",null);
-				}
+                // We must remove cache headers for IE
+                ServletUtils.removeCacheHeaders(res);
 				if (command.equalsIgnoreCase(COMMAND_NSCERT)) {
 					res.setContentType("application/x-x509-ca-cert");
 					res.setContentLength(enccert.length);
@@ -173,8 +167,6 @@ public class EndEntityCertServlet extends HttpServlet {
 				}
             } catch (Exception e) {
                 log.error("Error getting certificates: ", e);
-                PrintStream ps = new PrintStream(res.getOutputStream());
-                e.printStackTrace(ps);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting certificates.");
                 return;
             }

@@ -15,7 +15,6 @@ package se.anatom.ejbca.webdist.cainterface;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.security.cert.Certificate;
 
 import javax.ejb.EJBException;
@@ -33,6 +32,7 @@ import se.anatom.ejbca.apply.RequestHelper;
 import se.anatom.ejbca.ca.sign.ISignSessionLocal;
 import se.anatom.ejbca.ca.sign.ISignSessionLocalHome;
 import se.anatom.ejbca.util.ServiceLocator;
+import se.anatom.ejbca.webdist.ServletUtils;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 
 /**
@@ -44,7 +44,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: CACertReqServlet.java,v 1.9 2005-05-12 16:10:31 anatom Exp $
+ * @version $Id: CACertReqServlet.java,v 1.10 2005-05-13 06:51:42 anatom Exp $
  * 
  * @web.servlet name = "CACertReq"
  *              display-name = "CACertReqServlet"
@@ -158,15 +158,8 @@ public class CACertReqServlet extends HttpServlet {
 				String out = "-----BEGIN CERTIFICATE REQUEST-----\n";
 				out += new String(b64certreq);
 				out += "\n-----END CERTIFICATE REQUEST-----\n";
-                
-                if (res.containsHeader("Pragma")) {
-                    log.debug("Removing Pragma header to avoid caching issues in IE");
-                    res.setHeader("Pragma",null);
-                }
-                if (res.containsHeader("Cache-Control")) {
-                    log.debug("Removing Cache-Control header to avoid caching issues in IE");
-                    res.setHeader("Cache-Control",null);
-                }                
+                // We must remove cache headers for IE
+                ServletUtils.removeCacheHeaders(res);
                 String filename = "pkcs10certificaterequest.pem";
                 res.setHeader("Content-disposition", "attachment; filename=" +  filename);
                 res.setContentType("application/octet-stream");
@@ -174,10 +167,8 @@ public class CACertReqServlet extends HttpServlet {
                 res.getOutputStream().write(out.getBytes());
                 log.info("Sent latest Certificate Request to client at " + remoteAddr);
             } catch (Exception e) {
-                PrintStream ps = new PrintStream(res.getOutputStream());
-                res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error sending Certificate Request.");
-                e.printStackTrace(ps);
                 log.error("Error sending Certificate Request to " + remoteAddr, e);
+                res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error sending Certificate Request.");
                 return;
             }
         }
@@ -187,10 +178,8 @@ public class CACertReqServlet extends HttpServlet {
 				byte[] b64cert = se.anatom.ejbca.util.Base64.encode(cert.getEncoded());	
 				RequestHelper.sendNewB64Cert(b64cert, res, RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);							
 			 } catch (Exception e) {
-				 PrintStream ps = new PrintStream(res.getOutputStream());
+                 log.error("Error sending processed certificate to " + remoteAddr, e);
 				 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting processed certificate.");
-				 e.printStackTrace(ps);
-				 log.error("Error sending processed certificate to " + remoteAddr, e);
 				 return;
 			 }
 		 }
@@ -202,8 +191,6 @@ public class CACertReqServlet extends HttpServlet {
 			    RequestHelper.sendNewB64Cert(b64cert, res, RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);																		 					
 			 } catch (Exception e) {
                  log.error("Error sending processed certificate to " + remoteAddr, e);
-				 PrintStream ps = new PrintStream(res.getOutputStream());
-                 e.printStackTrace(ps);
 				 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting processed certificate.");
 				 return;
 			 }

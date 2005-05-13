@@ -65,7 +65,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.33 2005-04-29 10:34:02 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.34 2005-05-13 06:51:47 anatom Exp $
  */
 public class CertDistServlet extends HttpServlet {
 
@@ -167,6 +167,8 @@ public class CertDistServlet extends HttpServlet {
                 byte[] crl = store.getLastCRL(administrator, issuerdn);
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 String dn = CertTools.getIssuerDN(x509crl);
+                // We must remove cache headers for IE
+                ServletUtils.removeCacheHeaders(res);
                 String moz = req.getParameter(MOZILLA_PROPERTY);
                 if ((moz == null) || !moz.equalsIgnoreCase("y")) {
                     String filename = CertTools.getPartFromDN(dn,"CN")+".crl";
@@ -177,18 +179,15 @@ public class CertDistServlet extends HttpServlet {
                 res.getOutputStream().write(crl);
                 log.debug("Sent latest CRL to client at " + remoteAddr);
             } catch (Exception e) {
-                PrintStream ps = new PrintStream(res.getOutputStream());
+                log.debug("Error sending latest CRL to " + remoteAddr+": ", e);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting latest CRL.");
-                e.printStackTrace(ps);
-                log.debug("Error sending latest CRL to " + remoteAddr);
-                log.debug(e);
                 return;
             }
         } else if (command.equalsIgnoreCase(COMMAND_CERT) || command.equalsIgnoreCase(COMMAND_LISTCERT)) {
             String dn = req.getParameter(SUBJECT_PROPERTY);
             if (dn == null) {
-                res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usage command=lastcert/listcert?subject=<subjectdn>.");
                 log.debug("Bad request, no 'subject' arg to 'lastcert' or 'listcert' command.");
+                res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usage command=lastcert/listcert?subject=<subjectdn>.");
                 return;
             }
             try {
@@ -212,6 +211,8 @@ public class CertDistServlet extends HttpServlet {
                     if (latestcertno > -1) {
                         byte[] cert = ((X509Certificate)certs[latestcertno]).getEncoded();
                         String filename = CertTools.getPartFromDN(dn,"CN")+".cer";
+                        // We must remove cache headers for IE
+                        ServletUtils.removeCacheHeaders(res);
                         res.setHeader("Content-disposition", "attachment; filename=" +  filename);
                         res.setContentType("application/octet-stream");
                         res.setContentLength(cert.length);
@@ -219,8 +220,8 @@ public class CertDistServlet extends HttpServlet {
                         log.debug("Sent latest certificate for '"+dn+"' to client at " + remoteAddr);
 
                     } else {
-                        res.sendError(HttpServletResponse.SC_NOT_FOUND, "No certificate found for requested subject '"+dn+"'.");
                         log.debug("No certificate found for '"+dn+"'.");
+                        res.sendError(HttpServletResponse.SC_NOT_FOUND, "No certificate found for requested subject '"+dn+"'.");
                     }
                 }
                 if (command.equalsIgnoreCase(COMMAND_LISTCERT)) {
@@ -250,11 +251,8 @@ public class CertDistServlet extends HttpServlet {
                     pout.close();
                 }
             } catch (Exception e) {
-                PrintStream ps = new PrintStream(res.getOutputStream());
-                e.printStackTrace(ps);
+                log.debug("Error getting certificates for '"+dn+"' for "+remoteAddr+": ", e);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting certificates.");
-                log.debug("Error getting certificates for '"+dn+"' for "+remoteAddr);
-                log.debug(e);
                 return;
             }
         } else if ((command.equalsIgnoreCase(COMMAND_NSCACERT) || command.equalsIgnoreCase(COMMAND_IECACERT) || command.equalsIgnoreCase(COMMAND_CACERT)) && ( issuerdn != null || caid != 0)) {
@@ -295,6 +293,8 @@ public class CertDistServlet extends HttpServlet {
                     res.getOutputStream().write(enccert);
                     log.debug("Sent CA cert to NS client, len="+enccert.length+".");
                 } else if (command.equalsIgnoreCase(COMMAND_IECACERT)) {
+                    // We must remove cache headers for IE
+                    ServletUtils.removeCacheHeaders(res);
                     if (pkcs7)
                         res.setHeader("Content-disposition", "attachment; filename="+filename+".p7c");
                     else
@@ -315,6 +315,8 @@ public class CertDistServlet extends HttpServlet {
                         out += "\n-----END PKCS7-----\n";
                     else
                         out += "\n-----END CERTIFICATE-----\n";
+                    // We must remove cache headers for IE
+                    ServletUtils.removeCacheHeaders(res);
                     res.setHeader("Content-disposition", "attachment; filename="+filename+".pem");
                     res.setContentType("application/octet-stream");
                     res.setContentLength(out.length());
@@ -326,11 +328,8 @@ public class CertDistServlet extends HttpServlet {
                     return;
                 }
             } catch (Exception e) {
-                PrintStream ps = new PrintStream(res.getOutputStream());
-                e.printStackTrace(ps);
+                log.debug("Error getting CA certificates: ", e);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting CA certificates.");
-                log.debug("Error getting CA certificates.");
-                log.debug(e);
                 return;
             }
         } else if ((command.equalsIgnoreCase(COMMAND_NSOCSPCERT) || command.equalsIgnoreCase(COMMAND_IEOCSPCERT) || command.equalsIgnoreCase(COMMAND_OCSPCERT)) && ( issuerdn != null || caid != 0)) {
@@ -368,6 +367,8 @@ public class CertDistServlet extends HttpServlet {
                     res.getOutputStream().write(enccert);
                     log.debug("Sent OCSP cert to NS client, len="+enccert.length+".");
                 } else if (command.equalsIgnoreCase(COMMAND_IEOCSPCERT)) {
+                    // We must remove cache headers for IE
+                    ServletUtils.removeCacheHeaders(res);
                     res.setHeader("Content-disposition", "attachment; filename="+filename+".crt");
                     res.setContentType("application/octet-stream");
                     res.setContentLength(enccert.length);
@@ -379,6 +380,8 @@ public class CertDistServlet extends HttpServlet {
                     out = "-----BEGIN CERTIFICATE-----\n";
                     out += new String(b64cert);
                     out += "\n-----END CERTIFICATE-----\n";
+                    // We must remove cache headers for IE
+                    ServletUtils.removeCacheHeaders(res);
                     res.setHeader("Content-disposition", "attachment; filename="+filename+".pem");
                     res.setContentType("application/octet-stream");
                     res.setContentLength(out.length());
@@ -390,24 +393,21 @@ public class CertDistServlet extends HttpServlet {
                 return;
             }
             } catch (Exception e) {
-                PrintStream ps = new PrintStream(res.getOutputStream());
-                e.printStackTrace(ps);
+                log.debug("Error getting OCSP certificate for CA: ", e);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting OCSP certificate for CA.");
-                log.debug("Error getting OCSP certificate for CA.");
-                log.debug(e);
                 return;
             }
         } else if (command.equalsIgnoreCase(COMMAND_REVOKED)) {
             String dn = req.getParameter(ISSUER_PROPERTY);
             if (dn == null) {
-                res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usage command=revoked?issuer=<issuerdn>&serno=<serialnumber>.");
                 log.debug("Bad request, no 'issuer' arg to 'revoked' command.");
+                res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usage command=revoked?issuer=<issuerdn>&serno=<serialnumber>.");
                 return;
             }
             String serno = req.getParameter(SERNO_PROPERTY);
             if (serno == null) {
-                res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usage command=revoked?issuer=<issuerdn>&serno=<serialnumber>.");
                 log.debug("Bad request, no 'serno' arg to 'revoked' command.");
+                res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usage command=revoked?issuer=<issuerdn>&serno=<serialnumber>.");
                 return;
             }
             log.debug("Looking for certificate for '"+dn+"' and serno='"+serno+"'.");
@@ -433,15 +433,11 @@ public class CertDistServlet extends HttpServlet {
                 printHtmlFooter(pout);
                 pout.close();
             } catch (Exception e) {
-                PrintStream ps = new PrintStream(res.getOutputStream());
-                e.printStackTrace(ps);
+                log.debug("Error checking revocation for '"+dn+"' with serno '"+serno+"': ", e);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error checking revocation.");
-                log.debug("Error checking revocation for '"+dn+"' with serno '"+serno+"'.");
-                log.debug(e);
                 return;
             }
         } else {
-            res.setContentType("text/plain");
             res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Commands=cacert | lastcert | listcerts | crl | revoked && issuer=<issuerdn>");
             return;
         }

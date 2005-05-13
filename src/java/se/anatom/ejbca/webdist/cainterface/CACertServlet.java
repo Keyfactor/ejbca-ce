@@ -32,6 +32,7 @@ import se.anatom.ejbca.ca.sign.ISignSessionLocalHome;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.ServiceLocator;
+import se.anatom.ejbca.webdist.ServletUtils;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 
 /**
@@ -44,7 +45,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CACertServlet.java,v 1.29 2005-05-12 16:10:31 anatom Exp $
+ * @version $Id: CACertServlet.java,v 1.30 2005-05-13 06:51:42 anatom Exp $
  *
  * @web.servlet name = "CACert"
  *              display-name = "CACertServlet"
@@ -255,14 +256,8 @@ public class CACertServlet extends HttpServlet {
                 }
                 X509Certificate cacert = (X509Certificate)chain[level];
                 byte[] enccert = cacert.getEncoded();
-                if (res.containsHeader("Pragma")) {
-                    log.debug("Removing Pragma header to avoid caching issues in IE");
-                    res.setHeader("Pragma",null);
-                }
-                if (res.containsHeader("Cache-Control")) {
-                    log.debug("Removing Cache-Control header to avoid caching issues in IE");
-                    res.setHeader("Cache-Control",null);
-                }
+                // We must remove cache headers for IE
+                ServletUtils.removeCacheHeaders(res);
                 if (command.equalsIgnoreCase(COMMAND_NSCACERT)) {
                     res.setContentType("application/x-x509-ca-cert");
                     res.setContentLength(enccert.length);
@@ -291,14 +286,11 @@ public class CACertServlet extends HttpServlet {
                 }
             } catch (Exception e) {
                 log.error("Error getting CA certificates: ", e);
-                PrintStream ps = new PrintStream(res.getOutputStream());
-                e.printStackTrace(ps);
                 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting CA certificates.");
                 return;
             }
         }
         else {
-            res.setContentType("text/plain");
             res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Bad Request format");
             return;
         }
