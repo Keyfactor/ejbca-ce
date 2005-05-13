@@ -16,15 +16,13 @@ package se.anatom.ejbca.ra.raadmin;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import se.anatom.ejbca.webdist.webconfiguration.WebLanguages;
 import se.anatom.ejbca.util.UpgradeableDataHashMap;
-import se.anatom.ejbca.ra.raadmin.GlobalConfiguration;
 
 /**
  * A class representing a admins personal preferenses.
  *
  * @author  Philip Vendil
- * @version $Id: AdminPreference.java,v 1.6 2004-04-16 07:38:41 anatom Exp $
+ * @version $Id: AdminPreference.java,v 1.7 2005-05-13 09:29:53 anatom Exp $
  */
 public class AdminPreference extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
     
@@ -52,38 +50,36 @@ public class AdminPreference extends UpgradeableDataHashMap implements java.io.S
 
     public int getPreferedLanguage() {return ((Integer) data.get(PREFEREDLANGUAGE)).intValue();}
     public void setPreferedLanguage(int language){ data.put(PREFEREDLANGUAGE, new Integer(language));}
-    
-   /* Returns the prefered language code. Ex: 'EN' */
-    public String getPreferedLanguageCode(){
-      return WebLanguages.getAvailableLanguages()[((Integer) data.get(PREFEREDLANGUAGE)).intValue()];
-    }
-    
-    public void setPreferedLanguage(String languagecode) {
-      String[] languages = WebLanguages.getAvailableLanguages();
-      if(languages != null){
-        for(int i=0; i < languages.length; i++){
-          if(languages[i].toUpperCase().equals(languagecode.toUpperCase()))
-            data.put(PREFEREDLANGUAGE, new Integer(i));
+    /** Method taking a string, needs as input the available languages.
+     * 
+     * @param languages available languages as retrieved from EjbcaWebBean.getAvailableLanguages
+     * @param languagecode two letter language code, ex SE
+     * @see se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean#getAvailableLanguages()
+     */
+    public void setPreferedLanguage(String[] languages, String languagecode) {
+        if(languages != null){
+            for(int i=0; i < languages.length; i++){
+                if(languages[i].toUpperCase().equals(languagecode.toUpperCase()))
+                    data.put(PREFEREDLANGUAGE, new Integer(i));
+            }
         }
-      }
     }    
-
+    
     public int getSecondaryLanguage() {return ((Integer) data.get(SECONDARYLANGUAGE)).intValue();}
     public void setSecondaryLanguage(int language){ data.put(SECONDARYLANGUAGE, new Integer(language));}
-    
-    /* Returns the prefered secondary language code. Ex: 'EN' */
-    public String getSecondaryLanguageCode(){
-      return  WebLanguages.getAvailableLanguages()[((Integer) data.get(SECONDARYLANGUAGE)).intValue()];
-    }
-    
-    public void setSecondaryLanguage(String languagecode){
-      String[] languages = WebLanguages.getAvailableLanguages();
-      if(languages != null){
-        for(int i=0; i < languages.length; i++){
-          if(languages[i].toUpperCase().equals(languagecode.toUpperCase()))
-            data.put(SECONDARYLANGUAGE, new Integer(i));
+    /** Method taking a string, needs as input the available languages.
+     * 
+     * @param languages available languages as retrieved from EjbcaWebBean.getAvailableLanguages
+     * @param languagecode two letter language code, ex SE
+     * @see se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean#getAvailableLanguages()
+     */
+    public void setSecondaryLanguage(String[] languages, String languagecode){
+        if(languages != null){
+            for(int i=0; i < languages.length; i++){
+                if(languages[i].toUpperCase().equals(languagecode.toUpperCase()))
+                    data.put(SECONDARYLANGUAGE, new Integer(i));
+            }
         }
-      }
     }    
 
     public int getEntriesPerPage(){return ((Integer) data.get(ENTRIESPERPAGE)).intValue();}

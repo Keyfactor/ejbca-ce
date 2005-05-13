@@ -32,7 +32,7 @@
       </td>
       <td width="50%" valign="top"> 
         <select name="<%= LIST_PREFEREDLANGUAGE %>">
-          <% String[] availablelanguages = WebLanguages.getAvailableLanguages();                                    
+          <% String[] availablelanguages = ejbcawebbean.getAvailableLanguages();                                    
              int preferedlanguage = dup.getPreferedLanguage();
              for(int i = 0; i < availablelanguages.length; i++){
           %>   <option <% if(i == preferedlanguage){ %> selected <% } %>
@@ -48,7 +48,7 @@
       </td>
       <td width="50%" valign="top"> 
         <select name="<%= LIST_SECONDARYLANGUAGE %>">
-          <% availablelanguages = WebLanguages.getAvailableLanguages();                                    
+          <% availablelanguages = ejbcawebbean.getAvailableLanguages();                                    
              int secondarylanguage = dup.getSecondaryLanguage();
              for(int i = 0; i < availablelanguages.length; i++){
           %>   <option <% if(i == secondarylanguage){ %> selected <% } %>

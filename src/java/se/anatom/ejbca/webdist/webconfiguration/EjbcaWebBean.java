@@ -54,7 +54,7 @@ import se.anatom.ejbca.util.ServiceLocatorException;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.44 2005-05-09 15:34:36 anatom Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.45 2005-05-13 09:29:53 anatom Exp $
  */
 public class EjbcaWebBean implements java.io.Serializable {
 
@@ -130,11 +130,7 @@ public class EjbcaWebBean implements java.io.Serializable {
     	
     	globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler(administrator, raadminsession, authorizationsession);        
     	globalconfiguration = this.globaldataconfigurationdatahandler.loadGlobalConfiguration();
-    	this.informationmemory = new InformationMemory(administrator, caadminsession, raadminsession, authorizationsession, certificatestoresession, hardtokensession, publishersession, globalconfiguration);
-    	
-        // Initialize WebLanguages
-        new WebLanguages(globalconfiguration);
-        
+    	informationmemory = new InformationMemory(administrator, caadminsession, raadminsession, authorizationsession, certificatestoresession, hardtokensession, publishersession, globalconfiguration);
     	authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, authorizationsession);
     	
     }
@@ -184,7 +180,7 @@ public class EjbcaWebBean implements java.io.Serializable {
     		if(currentadminpreference == null){
     			currentadminpreference = adminspreferences.getDefaultAdminPreference();
     		}
-    		adminsweblanguage = new WebLanguages( currentadminpreference.getPreferedLanguage()
+    		adminsweblanguage = new WebLanguages(globalconfiguration, currentadminpreference.getPreferedLanguage()
     				,currentadminpreference.getSecondaryLanguage());
     		
     		// set User Common Name
@@ -212,9 +208,8 @@ public class EjbcaWebBean implements java.io.Serializable {
         if(currentadminpreference == null){
            currentadminpreference = adminspreferences.getDefaultAdminPreference();
         }
-        adminsweblanguage = new WebLanguages( currentadminpreference.getPreferedLanguage()
+        adminsweblanguage = new WebLanguages(globalconfiguration, currentadminpreference.getPreferedLanguage()
                                              ,currentadminpreference.getSecondaryLanguage());
-
         errorpage_initialized=true;
       }
       return globalconfiguration;
@@ -367,9 +362,11 @@ public class EjbcaWebBean implements java.io.Serializable {
      *   if english was the users prefered language. */
     public String getHelpfileInfix(String helpfilename) {
       String returnedurl=null;
-      String prefered = WebLanguages.getAvailableLanguages()[currentadminpreference.getPreferedLanguage()]
-                                          .toLowerCase();
-      String secondary = WebLanguages.getAvailableLanguages()[currentadminpreference.getSecondaryLanguage()]
+      String [] strs = adminsweblanguage.getAvailableLanguages();
+      int index = currentadminpreference.getPreferedLanguage();
+      String prefered = strs[index];
+      prefered = prefered.toLowerCase();
+      String secondary = adminsweblanguage.getAvailableLanguages()[currentadminpreference.getSecondaryLanguage()]
                                            .toLowerCase();
 
       String helpfile = helpfilename.substring(0,helpfilename.lastIndexOf('.'));
@@ -411,9 +408,14 @@ public class EjbcaWebBean implements java.io.Serializable {
 
     public String getImagefileInfix(String imagefilename) {
       String returnedurl=null;
-      String prefered = WebLanguages.getAvailableLanguages()[currentadminpreference.getPreferedLanguage()]
-                                          .toLowerCase();
-      String secondary = WebLanguages.getAvailableLanguages()[currentadminpreference.getSecondaryLanguage()]
+      String [] strs = adminsweblanguage.getAvailableLanguages();
+      log.error("Strs.size: "+strs.length);
+      int index = currentadminpreference.getPreferedLanguage();
+      log.error("Index: "+index);
+      String prefered = strs[index];
+      log.error("prefered: "+ prefered);
+      prefered = prefered.toLowerCase();
+      String secondary = adminsweblanguage.getAvailableLanguages()[currentadminpreference.getSecondaryLanguage()]
                                            .toLowerCase();
 
       String imagefile = imagefilename.substring(0,imagefilename.lastIndexOf('.'));
@@ -481,6 +483,9 @@ public class EjbcaWebBean implements java.io.Serializable {
     }
 
 
+    public String[] getAvailableLanguages() {
+        return adminsweblanguage.getAvailableLanguages();
+    }
     public String getText(String template){
       return adminsweblanguage.getText(template);
     }
@@ -510,7 +515,7 @@ public class EjbcaWebBean implements java.io.Serializable {
     public void addAdminPreference(AdminPreference ap) throws Exception{
       currentadminpreference = ap;
       adminspreferences.addAdminPreference(certificatefingerprint,ap);
-      adminsweblanguage = new WebLanguages( currentadminpreference.getPreferedLanguage()
+      adminsweblanguage = new WebLanguages(globalconfiguration, currentadminpreference.getPreferedLanguage()
                                           ,currentadminpreference.getSecondaryLanguage());
     }
   
@@ -521,7 +526,7 @@ public class EjbcaWebBean implements java.io.Serializable {
     public void changeAdminPreference(AdminPreference ap) throws Exception{
       currentadminpreference = ap;
       adminspreferences.changeAdminPreference(certificatefingerprint,ap);
-      adminsweblanguage = new WebLanguages(currentadminpreference.getPreferedLanguage()
+      adminsweblanguage = new WebLanguages(globalconfiguration, currentadminpreference.getPreferedLanguage()
                                           ,currentadminpreference.getSecondaryLanguage());
     }
 
@@ -537,7 +542,7 @@ public class EjbcaWebBean implements java.io.Serializable {
       if(currentadminpreference == null){
          currentadminpreference = adminspreferences.getDefaultAdminPreference();
       }
-      adminsweblanguage = new WebLanguages( currentadminpreference.getPreferedLanguage()
+      adminsweblanguage = new WebLanguages(globalconfiguration, currentadminpreference.getPreferedLanguage()
                                           ,currentadminpreference.getSecondaryLanguage());
     } // saveDefaultAdminPreference
     

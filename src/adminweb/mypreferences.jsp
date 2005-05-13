@@ -39,13 +39,14 @@
      if( request.getParameter(BUTTON_SAVE) != null){
         // Save global configuration.
         AdminPreference dup = ejbcawebbean.getAdminPreference();
+        String[] languages = ejbcawebbean.getAvailableLanguages();
         if(request.getParameter(LIST_PREFEREDLANGUAGE) != null){
           String preferedlanguage = request.getParameter(LIST_PREFEREDLANGUAGE); 
-          dup.setPreferedLanguage(preferedlanguage.trim());
+          dup.setPreferedLanguage(languages, preferedlanguage.trim());
         }
         if(request.getParameter(LIST_SECONDARYLANGUAGE) != null){
           String secondarylanguage = request.getParameter(LIST_SECONDARYLANGUAGE); 
-          dup.setSecondaryLanguage(secondarylanguage.trim());
+          dup.setSecondaryLanguage(languages, secondarylanguage.trim());
         }
         if(request.getParameter(LIST_THEME) != null){
           String theme = request.getParameter(LIST_THEME); 
@@ -102,7 +103,7 @@
       </td>
       <td width="50%" valign="top"> 
         <select name="<%= LIST_PREFEREDLANGUAGE %>">
-          <% String[] availablelanguages = WebLanguages.getAvailableLanguages();                                    
+          <% String[] availablelanguages = ejbcawebbean.getAvailableLanguages();                                    
              int preferedlanguage = dup.getPreferedLanguage();
              for(int i = 0; i < availablelanguages.length; i++){
           %>   <option <% if(i == preferedlanguage){ %> selected <% } %>
@@ -118,7 +119,7 @@
       </td>
       <td width="50%" valign="top"> 
         <select name="<%= LIST_SECONDARYLANGUAGE %>">
-          <% availablelanguages = WebLanguages.getAvailableLanguages();                                    
+          <% availablelanguages = ejbcawebbean.getAvailableLanguages();                                    
              int secondarylanguage = dup.getSecondaryLanguage();
              for(int i = 0; i < availablelanguages.length; i++){
           %>   <option <% if(i == secondarylanguage){ %> selected <% } %>

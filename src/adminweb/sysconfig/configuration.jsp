@@ -58,13 +58,14 @@
       // Return to Webconfiguration
       // Temporatly save preivous settings
         AdminPreference dup = ejbcawebbean.getDefaultAdminPreference();
+        String[] languages = ejbcawebbean.getAvailableLanguages();
         if(request.getParameter(LIST_PREFEREDLANGUAGE) != null){
           String preferedlanguage = request.getParameter(LIST_PREFEREDLANGUAGE); 
-          dup.setPreferedLanguage(preferedlanguage.trim());
+          dup.setPreferedLanguage(languages, preferedlanguage.trim());
         }
         if(request.getParameter(LIST_SECONDARYLANGUAGE) != null){
           String secondarylanguage = request.getParameter(LIST_SECONDARYLANGUAGE); 
-          dup.setSecondaryLanguage(secondarylanguage.trim());
+          dup.setSecondaryLanguage(languages, secondarylanguage.trim());
         }
         if(request.getParameter(LIST_THEME) != null){
           String theme = request.getParameter(LIST_THEME); 
@@ -126,13 +127,14 @@
      if( request.getParameter(BUTTON_SAVE) != null){
         // Save global configuration.
         AdminPreference dup = ejbcawebbean.getDefaultAdminPreference();
+        String[] languages = ejbcawebbean.getAvailableLanguages();
         if(request.getParameter(LIST_PREFEREDLANGUAGE) != null){
           String preferedlanguage = request.getParameter(LIST_PREFEREDLANGUAGE); 
-          dup.setPreferedLanguage(preferedlanguage.trim());
+          dup.setPreferedLanguage(languages, preferedlanguage.trim());
         }
         if(request.getParameter(LIST_SECONDARYLANGUAGE) != null){
           String secondarylanguage = request.getParameter(LIST_SECONDARYLANGUAGE); 
-          dup.setSecondaryLanguage(secondarylanguage.trim());
+          dup.setSecondaryLanguage(languages, secondarylanguage.trim());
         }
         if(request.getParameter(LIST_THEME) != null){
           String theme = request.getParameter(LIST_THEME); 

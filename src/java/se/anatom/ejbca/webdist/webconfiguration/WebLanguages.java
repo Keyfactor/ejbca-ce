@@ -24,43 +24,44 @@ import se.anatom.ejbca.ra.raadmin.GlobalConfiguration;
  * the presented text in the users prefered language.
  *
  * @author  Philip Vendil
- * @version $Id: WebLanguages.java,v 1.15 2005-05-09 15:34:36 anatom Exp $
+ * @version $Id: WebLanguages.java,v 1.16 2005-05-13 09:29:53 anatom Exp $
  */
 public class WebLanguages implements java.io.Serializable {
 
     /** Construtor used to load static content. An instance must be declared with this constructor before
      *  any WebLanguage object can be used. */
     /** Special constructor used by Ejbca web bean */
-    public WebLanguages(GlobalConfiguration globalconfiguration) throws IOException {
-      if(languages == null){
-        // Get available languages.
-         availablelanguages=null;
-
-         String availablelanguagesstring = globalconfiguration .getAvailableLanguagesAsString();
-         availablelanguages =  availablelanguagesstring.split(",");
-         for(int i=0; i < availablelanguages.length;i++){
-           availablelanguages[i] =  availablelanguages[i].trim().toUpperCase();
-         }
-           // Load availabe languages
-         languages = new LanguageProperties[availablelanguages.length];
-         for(int i = 0; i < availablelanguages.length; i++){
-           languages[i] = new LanguageProperties();
-           String propsfile = "/" + globalconfiguration .getLanguagePath() + "/"
-		   						+ globalconfiguration .getLanguageFilename() + "."
-								+ availablelanguages[i].toLowerCase() +".properties";
-           InputStream is = this.getClass().getResourceAsStream(propsfile);          
-           if(is==null) {
-           	  //if not available as stream, try it as a file
-           	  is = new FileInputStream("/tmp"+propsfile);
-           }
-           languages[i].load(is);
-         }
-      }
+    private void init(GlobalConfiguration globalconfiguration) throws IOException {
+        if(languages == null){
+            // Get available languages.
+            availablelanguages=null;
+            
+            String availablelanguagesstring = globalconfiguration.getAvailableLanguagesAsString();
+            availablelanguages =  availablelanguagesstring.split(",");
+            for(int i=0; i < availablelanguages.length;i++){
+                availablelanguages[i] =  availablelanguages[i].trim().toUpperCase();
+            }
+            // Load availabe languages
+            languages = new LanguageProperties[availablelanguages.length];
+            for(int i = 0; i < availablelanguages.length; i++){
+                languages[i] = new LanguageProperties();
+                String propsfile = "/" + globalconfiguration.getLanguagePath() + "/"
+                + globalconfiguration.getLanguageFilename() + "."
+                + availablelanguages[i].toLowerCase() +".properties";
+                InputStream is = this.getClass().getResourceAsStream(propsfile);          
+                if(is==null) {
+                    //if not available as stream, try it as a file
+                    is = new FileInputStream("/tmp"+propsfile);
+                }
+                languages[i].load(is);
+            }
+        }
     }
 
-    public WebLanguages(int preferedlang, int secondarylang) {
-      this.userspreferedlanguage=preferedlang;
-      this.userssecondarylanguage=secondarylang;
+    public WebLanguages(GlobalConfiguration globalconfiguration, int preferedlang, int secondarylang) throws IOException {
+        init(globalconfiguration);
+        this.userspreferedlanguage=preferedlang;
+        this.userssecondarylanguage=secondarylang;
     }
 
 
@@ -79,7 +80,7 @@ public class WebLanguages implements java.io.Serializable {
     }
 
     /* Returns a textstring containing the available languages */
-    public static String[] getAvailableLanguages(){
+    public String[] getAvailableLanguages(){
       return availablelanguages;
     }
 
@@ -88,7 +89,7 @@ public class WebLanguages implements java.io.Serializable {
     private int userspreferedlanguage;
     private int userssecondarylanguage;
 
-    private static String[] availablelanguages;
-    private static LanguageProperties[] languages = null;
+    private String[] availablelanguages;
+    private LanguageProperties[] languages = null;
 
 }
