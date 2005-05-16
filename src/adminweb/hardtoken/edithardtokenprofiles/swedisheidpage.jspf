@@ -1,11 +1,13 @@
 <%               
-  int[] signpintypes = { HardTokenProfile.PINTYPE_ASCII_NUMERIC, HardTokenProfile.PINTYPE_ISO9564_1}; 
+  int[] signpintypes = { HardTokenProfile.PINTYPE_ASCII_NUMERIC, HardTokenProfile.PINTYPE_UTF8, 
+		                 HardTokenProfile.PINTYPE_ISO9564_1}; 
 		
-  int[] authencpintypes = {HardTokenProfile.PINTYPE_ASCII_NUMERIC, HardTokenProfile.PINTYPE_ISO9564_1,
+  int[] authencpintypes = {HardTokenProfile.PINTYPE_ASCII_NUMERIC, HardTokenProfile.PINTYPE_UTF8, 
+		                   HardTokenProfile.PINTYPE_ISO9564_1,
 			                  SwedishEIDProfile.PINTYPE_AUTHENC_SAME_AS_SIGN};
 
-  String[] signpintexts    = {"ASCIINUMERIC","ISO95641"};
-  String[] authencpintexts = {"ASCIINUMERIC","ISO95641", "SAMEASSIGNCERT"};
+  String[] signpintexts    = {"ASCIINUMERIC","UTF8","ISO95641"};
+  String[] authencpintexts = {"ASCIINUMERIC","UFT8","ISO95641", "SAMEASSIGNCERT"};
 
   String[] keytexts = {"RSA1024BIT", "RSA2048BIT"};
 

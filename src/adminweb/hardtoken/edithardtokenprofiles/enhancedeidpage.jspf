@@ -1,15 +1,18 @@
 <%               
-  int[] signpintypes = { HardTokenProfile.PINTYPE_ASCII_NUMERIC, HardTokenProfile.PINTYPE_ISO9564_1}; 
+  int[] signpintypes = { HardTokenProfile.PINTYPE_ASCII_NUMERIC, HardTokenProfile.PINTYPE_UTF8,
+		                 HardTokenProfile.PINTYPE_ISO9564_1}; 
 		
-  int[] authpintypes = { HardTokenProfile.PINTYPE_ASCII_NUMERIC, HardTokenProfile.PINTYPE_ISO9564_1,
+  int[] authpintypes = { HardTokenProfile.PINTYPE_ASCII_NUMERIC, HardTokenProfile.PINTYPE_UTF8,
+		                 HardTokenProfile.PINTYPE_ISO9564_1,
 			             EnhancedEIDProfile.PINTYPE_AUTH_SAME_AS_SIGN};
 
-  int[] encpintypes = { HardTokenProfile.PINTYPE_ASCII_NUMERIC,HardTokenProfile.PINTYPE_ISO9564_1,
+  int[] encpintypes = { HardTokenProfile.PINTYPE_ASCII_NUMERIC, HardTokenProfile.PINTYPE_UTF8,
+		                HardTokenProfile.PINTYPE_ISO9564_1,
 			            EnhancedEIDProfile.PINTYPE_ENC_SAME_AS_AUTH};
 
-  String[] signpintexts    = {"ASCIINUMERIC","ISO95641"};
-  String[] authpintexts    = {"ASCIINUMERIC","ISO95641", "SAMEASSIGNCERT"};
-  String[] encpintexts     = {"ASCIINUMERIC","ISO95641", "SAMEASAUTHCERT"};
+  String[] signpintexts    = {"ASCIINUMERIC","UTF8","ISO95641"};
+  String[] authpintexts    = {"ASCIINUMERIC","UTF8","ISO95641", "SAMEASSIGNCERT"};
+  String[] encpintexts     = {"ASCIINUMERIC","UTF8","ISO95641", "SAMEASAUTHCERT"};
 
   String[] keytexts = {"RSA1024BIT", "RSA2048BIT"};
 
