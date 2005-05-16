@@ -297,7 +297,8 @@
                     value = newuser.getEmail();             	             	             	
              }else{             	
                if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.UPN){
-                  if(request.getParameter(TEXTFIELD_SUBJECTALTNAME+i) != null && request.getParameter(TEXTFIELD_UPNNAME+i) != null){
+                  if(request.getParameter(TEXTFIELD_SUBJECTALTNAME+i) != null && !request.getParameter(TEXTFIELD_SUBJECTALTNAME+i).equals("") 
+		             && request.getParameter(TEXTFIELD_UPNNAME+i) != null && !request.getParameter(TEXTFIELD_UPNNAME+i).equals("")){
                     value = request.getParameter(TEXTFIELD_UPNNAME+i) + "@" + 
                             request.getParameter(TEXTFIELD_SUBJECTALTNAME+i);
                   }
