@@ -147,9 +147,9 @@
    }
   }
 
-  
-  usekeyrecovery = globalconfiguration.getEnableKeyRecovery() && tokenbean.isTokenKeyRecoverable(token.getTokenSN(), username, rabean);
-
+  if(token!= null){
+    usekeyrecovery = globalconfiguration.getEnableKeyRecovery() && tokenbean.isTokenKeyRecoverable(token.getTokenSN(), username, rabean);
+  }
  
   int row = 0; 
   int columnwidth = 200;
