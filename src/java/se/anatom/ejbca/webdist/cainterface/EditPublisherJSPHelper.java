@@ -31,7 +31,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * Contains help methods used to parse a publisher jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditPublisherJSPHelper.java,v 1.9 2005-05-09 15:34:29 anatom Exp $
+ * @version $Id: EditPublisherJSPHelper.java,v 1.10 2005-05-16 03:56:07 herrvendil Exp $
  */
 public class EditPublisherJSPHelper implements java.io.Serializable {
     
@@ -196,19 +196,19 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
             if( action.equals(ACTION_EDIT_PUBLISHER)){
                 // Display edit access rules page.
                 publisher = request.getParameter(HIDDEN_PUBLISHERNAME);
-                
+                this.publishername = publisher;
                 if(publisher != null){
                     if(!publisher.trim().equals("")){
                         if(request.getParameter(BUTTON_SAVE) != null ||
                                 request.getParameter(BUTTON_TESTCONNECTION) != null){
                             
                             if(publisherdata == null){               
-                                String tokentype = request.getParameter(HIDDEN_PUBLISHERTYPE);
-                                if(tokentype.equals(TYPE_CUSTOM))
+                                int tokentype = new Integer(request.getParameter(HIDDEN_PUBLISHERTYPE)).intValue();
+                                if(tokentype == CustomPublisherContainer.TYPE_CUSTOMPUBLISHERCONTAINER)
                                     publisherdata = new CustomPublisherContainer();
-                                if(tokentype.equals(TYPE_LDAP))
+                                if(tokentype == LdapPublisher.TYPE_LDAPPUBLISHER)
                                     publisherdata = new LdapPublisher();
-                                if(tokentype.equals(TYPE_AD))
+                                if(tokentype == ActiveDirectoryPublisher.TYPE_ADPUBLISHER)
                                     publisherdata = new ActiveDirectoryPublisher();
                             }
                             // Save changes.
