@@ -105,7 +105,7 @@ import se.anatom.ejbca.util.StringTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.38 2005-05-12 18:27:55 herrvendil Exp $
+ * @version $Id: X509CA.java,v 1.39 2005-05-17 11:04:40 herrvendil Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -226,7 +226,7 @@ public class X509CA extends CA implements Serializable {
             CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
             gen.addSigner(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), (X509Certificate)getCACertificate(), CMSSignedDataGenerator.DIGEST_SHA1);
             gen.addCertificatesAndCRLs(certs);
-            CMSSignedData s = gen.generate(msg, true, getCAToken().getProvider());
+            CMSSignedData s = gen.generate(msg, true, "BC");
             return s.getEncoded();
         } catch (CATokenOfflineException e) {
         	this.setStatus(SecConst.CA_OFFLINE);
