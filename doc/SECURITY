@@ -18,6 +18,23 @@ for the admin-GUI.
 This will set up an SSL port open for the public at 8442 and an SSL port
 which require client certificate to access the administraton pages at 8443.
 
+Java truststore
+---------------
+Acceptable CA certificates for clients are stored (by java) in $JAVA_HOME/jre/lib/security/cacerts.
+The EJBCA Root certificate is added here as part of the installation process. There are however 
+many others present as shipped by Java, which means that anyone with a certificate issued 
+by one of those CAs can access port 8443 on you JBoss server. They can not access the admin-GUI however,
+since EJBCA checks authorization. If you want to limit the accessibility to only certificates issued
+by EJBCA you should replace the original cacerts file with one containing only the EJBCA root certificate.
+
+You can create a new keystore with the command:
+keytool -import -alias AdminCA1 -trustcacerts -file root.der -keystore /home/jboss/java/cacerts
+
+Where root.der is the root certificate from EJBCA that you saved, for instance with the command:
+bin/ejbca.sh ca getrootcert AdminCA1 root.der -der
+
+AdminCA1 is the name of your CA that you are using for server and administrator certificates in EJBCA.
+
 Configuring for security
 ------------------------
 The easiest way to keep the installation secure is to block all JBOSS ports
