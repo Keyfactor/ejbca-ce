@@ -1,4 +1,4 @@
-$Id: README,v 1.194 2005-05-13 09:33:07 anatom Exp $
+$Id: README,v 1.195 2005-05-17 07:06:45 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -753,8 +753,17 @@ INTERNATIONALIZATION
 ====================
 
 To customize EJBCA admin GUI for you languages special characters you may have to 
-change the default page encoding in 'web.contentencoding' to for example UTF-8
-instead of the default ISO-8859-1.
+change the default page encoding in 'web.contentencoding' (in ejbca.properties file) 
+to for example UTF-8 instead of the default ISO-8859-1.
+
+Displaying, receiving, decoding and storing different char sets is rather complicated and the 
+architecture is multilayered. There is the web browser, application server, database and 
+operating system, all working together.
+If you change to UFT-8 to handle your char set, perhaps you must also specify that the database 
+connection should use UTF-8.
+For MySQL this can be done in the <connection-url> in your datasource description 
+(JBOSS_HOME/server/default/deploy/ejbca-ds.xml):
+jdbc:mysql://yourhost/ejbca?useUnicode=true&characterEncoding=UTF-8
 
 Adding a new language to the admin GUI:
 ---------------------------------------
