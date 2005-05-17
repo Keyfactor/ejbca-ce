@@ -26,7 +26,7 @@ import java.util.Properties;
 /**
  * Implements a log device using Log4j, implementes the Singleton pattern.
  *
- * @version $Id: Log4jLogDevice.java,v 1.10 2004-11-20 22:49:23 sbailliez Exp $
+ * @version $Id: Log4jLogDevice.java,v 1.11 2005-05-17 10:01:03 herrvendil Exp $
  */
 public class Log4jLogDevice implements ILogDevice, Serializable {
 
@@ -97,12 +97,16 @@ public class Log4jLogDevice implements ILogDevice, Serializable {
         }
 
         Priority priority = Priority.INFO;
+        String eventText = "";
         if (event >= LogEntry.EVENT_ERROR_BOUNDRARY) {
             priority = Priority.ERROR;
             event -= LogEntry.EVENT_ERROR_BOUNDRARY;
+            eventText = LogEntry.EVENTNAMES_ERROR[event];
+        }else{
+        	eventText = LogEntry.EVENTNAMES_INFO[event];	
         }
 
-        String logline = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG).format(time) + ", CAId : " + caid + ", " + LogEntry.MODULETEXTS[module] + ", " + LogEntry.EVENTNAMES_INFO[event] + ", Administrator : " +
+        String logline = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG).format(time) + ", CAId : " + caid + ", " + LogEntry.MODULETEXTS[module] + ", " + eventText + ", Administrator : " +
                 admin + ", User : " + user + ", Certificate : " + cert + ", Comment : " + comment;
         log.log(priority, logline, null);
 
