@@ -23,3 +23,17 @@ script to work, at least until someone provides a weblogic.xml corresponding to 
 call Weblogic instead of JBoss.
 
 7. Run 'ant test:run' to test the setup.
+
+JBOSS
+=====
+
+JBoss commonly have problems with class loading if several applications are run in one instance of JBoss.
+This will typically manifest itself as ClassCast-, IllegalAccess- or VerifyError Exceptions. 
+The reason is usually that mora than one application is using an external jar file, for example commons-fileupload.jar
+or ldap.jar, possibly using different versions as well.
+
+These links describe how to configure jboss-app.xml, etc and also describe how
+JBoss classloading works.
+
+http://wiki.jboss.org/wiki/Wiki.jsp?page=ClassLoadingConfiguration
+http://wiki.jboss.org/wiki/Wiki.jsp?page=JBossClassLoadingUseCases
