@@ -105,7 +105,7 @@ import se.anatom.ejbca.util.StringTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.40 2005-05-17 13:52:00 anatom Exp $
+ * @version $Id: X509CA.java,v 1.41 2005-05-18 17:06:27 primelars Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -608,7 +608,7 @@ public class X509CA extends CA implements Serializable {
     	RecipientInformation   recipient = (RecipientInformation) it.next();
     	ObjectInputStream ois = null;
     	try{
-    	  byte[] recdata = recipient.getContent(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT),"BC");
+    	  byte[] recdata = recipient.getContent(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT),getCAToken().getProvider());
     	  ois = new ObjectInputStream(new ByteArrayInputStream(recdata));
     	}catch(CATokenOfflineException e){
     		setStatus(SecConst.CA_OFFLINE);
