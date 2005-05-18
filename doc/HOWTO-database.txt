@@ -26,6 +26,9 @@ numer of certificates is issued, it will become an issue after a while.
 released we can not create scripts that updates the database if some tables changed. This will make 
 upgrades much much harder.
 
+If you will be running a huuuge system you will probably need to run some analisis tools to perfect indexes
+etc in the database, at least in the long run. Examples of such tools are:
+http://sourceforge.net/projects/mysqa/
 
 NOW ON TO THE HOWTO!
 
