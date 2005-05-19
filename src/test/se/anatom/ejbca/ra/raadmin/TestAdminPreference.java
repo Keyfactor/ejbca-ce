@@ -25,7 +25,7 @@ import se.anatom.ejbca.log.Admin;
 /**
  * Tests the admin preference entity bean.
  *
- * @version $Id: TestAdminPreference.java,v 1.2 2005-04-19 12:15:52 anatom Exp $
+ * @version $Id: TestAdminPreference.java,v 1.3 2005-05-19 07:52:52 anatom Exp $
  */
 public class TestAdminPreference extends TestCase {
     private static Logger log = Logger.getLogger(TestAdminPreference.class);
@@ -40,7 +40,6 @@ public class TestAdminPreference extends TestCase {
 
     private static final String user = genRandomUserName();
 
-
     /**
      * Creates a new AdminPreference object.
      *
@@ -51,21 +50,15 @@ public class TestAdminPreference extends TestCase {
     }
 
     protected void setUp() throws Exception {
-
         log.debug(">setUp()");
-
         if (cacheAdmin == null) {
             if (cacheHome == null) {
                 Context jndiContext = getInitialContext();
                 Object obj1 = jndiContext.lookup("RaAdminSession");
                 cacheHome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IRaAdminSessionHome.class);
-
             }
-
             cacheAdmin = cacheHome.create();
         }
-
-
         log.debug("<setUp()");
     }
 
@@ -74,13 +67,10 @@ public class TestAdminPreference extends TestCase {
 
     private Context getInitialContext() throws NamingException {
         log.debug(">getInitialContext");
-
         Context ctx = new javax.naming.InitialContext();
         log.debug("<getInitialContext");
-
         return ctx;
     }
-
 
     /**
      * tests adding an administrator preference
@@ -89,14 +79,14 @@ public class TestAdminPreference extends TestCase {
      */
     public void test01AddAdminPreference() throws Exception {
         log.debug(">test01AddAdminPreference()");
-
         Admin administrator = new Admin(Admin.TYPE_INTERNALUSER);
-
         AdminPreference pref = new AdminPreference();
         pref.setPreferedLanguage(1);
         pref.setTheme("TEST");
-        this.cacheAdmin.addAdminPreference(administrator, "1234", pref);
-
+        boolean ret = this.cacheAdmin.addAdminPreference(administrator, user, pref);
+        assertTrue("Adminpref för "+user+" borde inte finnas", ret);
+        ret = this.cacheAdmin.addAdminPreference(administrator, user, pref);
+        assertFalse("Adminpref för "+user+" borde redan finnas", ret);
         log.debug("<test01AddAdminPreference()");
     }
 
@@ -106,19 +96,18 @@ public class TestAdminPreference extends TestCase {
      * @throws Exception error
      */
     public void test02ModifyAdminPreference() throws Exception {
-        log.debug(">test01ModifyAdminPreference()");
-
+        log.debug(">test02ModifyAdminPreference()");
         Admin administrator = new Admin(Admin.TYPE_INTERNALUSER);
-
-        AdminPreference pref = this.cacheAdmin.getAdminPreference(administrator, "1234");
+        AdminPreference pref = this.cacheAdmin.getAdminPreference(administrator, user);
         assertTrue("Error Retreiving Administrator Preference.", pref.getPreferedLanguage() == 1);
         assertTrue("Error Retreiving Administrator Preference.", pref.getTheme().equals("TEST"));
-
         pref.setPreferedLanguage(2);
-
-        this.cacheAdmin.changeAdminPreference(administrator, user, pref);
-
-        log.debug("<test01ModifyAdminPreference()");
+        boolean ret = this.cacheAdmin.changeAdminPreference(administrator, user, pref);
+        assertTrue("Adminpref för "+user+" borde finnas", ret);
+        String newuser = genRandomUserName();
+        ret = this.cacheAdmin.changeAdminPreference(administrator, newuser, pref);
+        assertFalse("Adminpref för "+newuser+" borde inte finnas", ret);
+        log.debug("<test02ModifyAdminPreference()");
     }
 
     private static String genRandomUserName() {
@@ -130,7 +119,6 @@ public class TestAdminPreference extends TestCase {
             username += (new Integer(randint)).toString();
         }
         //log.debug("Generated random username: username =" + username);
-
         return username;
     } // genRandomUserName
 
