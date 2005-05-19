@@ -51,7 +51,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.16 2005-04-29 08:16:29 anatom Exp $
+ * @version $Id: CA.java,v 1.17 2005-05-19 04:36:17 primelars Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -379,7 +379,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
           	    returnval = new KeyRecoveryCAServiceResponse(KeyRecoveryCAServiceResponse.TYPE_ENCRYPTKEYSRESPONSE, 
           	  		                       encryptKeys(keyrecoveryrequest.getKeyPair()));	
           	  }catch(Exception e){
-          	  	 throw new IllegalExtendedCAServiceRequestException(e.getClass().getName() + " : " + e.getMessage());
+          	  	 throw new IllegalExtendedCAServiceRequestException(e);
           	  }
           	}else{
           		if(keyrecoveryrequest.getCommand() == KeyRecoveryCAServiceRequest.COMMAND_DECRYPTKEYS){
@@ -387,7 +387,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
                   	returnval = new KeyRecoveryCAServiceResponse(KeyRecoveryCAServiceResponse.TYPE_DECRYPTKEYSRESPONSE, 
           					this.decryptKeys(keyrecoveryrequest.getKeyData()));
           		  }catch(Exception e){
-          		  	 throw new IllegalExtendedCAServiceRequestException(e.getClass().getName() + " : " + e.getMessage());
+          		  	 throw new IllegalExtendedCAServiceRequestException(e);
           		  }
           		}else{
           		  throw new IllegalExtendedCAServiceRequestException("Illegal Command"); 
