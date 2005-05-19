@@ -38,7 +38,6 @@ import org.bouncycastle.ocsp.CertificateID;
 import org.bouncycastle.ocsp.OCSPReq;
 import org.bouncycastle.ocsp.OCSPReqGenerator;
 import org.bouncycastle.ocsp.OCSPResp;
-import org.bouncycastle.ocsp.RespData;
 import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.SingleResp;
 import org.bouncycastle.ocsp.UnknownStatus;
@@ -324,8 +323,7 @@ public class ProtocolHttpTest extends TestCase {
         X509Certificate[] chain = brep.getCerts("BC");
         boolean verify = brep.verify(chain[0].getPublicKey(), "BC");
         assertTrue("Response failed to verify.", verify);
-        RespData respData = brep.getResponseData();
-        SingleResp[] singleResps = respData.getResponses();
+        SingleResp[] singleResps = brep.getResponses();
         assertEquals("No of SingResps shoudl be 1.", singleResps.length, 1);
         SingleResp singleResp = singleResps[0];
         CertificateID certId = singleResp.getCertID();
@@ -374,8 +372,7 @@ public class ProtocolHttpTest extends TestCase {
         X509Certificate[] chain = brep.getCerts("BC");
         boolean verify = brep.verify(chain[0].getPublicKey(), "BC");
         assertTrue("Response failed to verify.", verify);
-        RespData respData = brep.getResponseData();
-        SingleResp[] singleResps = respData.getResponses();
+        SingleResp[] singleResps = brep.getResponses();
         assertEquals("No of SingResps should be 1.", singleResps.length, 1);
         SingleResp singleResp = singleResps[0];
         CertificateID certId = singleResp.getCertID();
@@ -423,8 +420,7 @@ public class ProtocolHttpTest extends TestCase {
         X509Certificate[] chain = brep.getCerts("BC");
         boolean verify = brep.verify(chain[0].getPublicKey(), "BC");
         assertTrue("Response failed to verify.", verify);
-        RespData respData = brep.getResponseData();
-        SingleResp[] singleResps = respData.getResponses();
+        SingleResp[] singleResps = brep.getResponses();
         assertEquals("No of SingResps should be 1.", singleResps.length, 1);
         SingleResp singleResp = singleResps[0];
         CertificateID certId = singleResp.getCertID();
@@ -469,8 +465,7 @@ public class ProtocolHttpTest extends TestCase {
         X509Certificate[] chain = brep.getCerts("BC");
         boolean verify = brep.verify(chain[0].getPublicKey(), "BC");
         assertTrue("Response failed to verify.", verify);
-        RespData respData = brep.getResponseData();
-        SingleResp[] singleResps = respData.getResponses();
+        SingleResp[] singleResps = brep.getResponses();
         assertEquals("No of SingResps should be 1.", singleResps.length, 1);
         SingleResp singleResp = singleResps[0];
         CertificateID certId = singleResp.getCertID();
