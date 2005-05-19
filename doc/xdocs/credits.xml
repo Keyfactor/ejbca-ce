@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<document>
+  <properties>
+    <title>Credits</title>
+  </properties>
+
+  <body>
+    <section name="Credits">
+<p>
+EJBCA uses the opensource JCE crypto provider from <a href="http://www.bouncycastle.org/">The Legion of the Bouncy Castle</a>.
+</p>
+<p>
+Development and default deployment is done using the J2EE application server <a href="http://www.jboss.org/">JBoss AS</a>.
+</p>
+<p>
+This product includes software developed by The Apache Software Foundation
+(<a href="http://www.apache.org/">http://www.apache.org/</a>).
+<ul>
+<li><a href="http://ant.apache.org/">Ant</a></li>
+<li><a href="http://jakarta.apache.org/commons/collections/">commons-collections</a></li>
+<li><a href="http://jakarta.apache.org/commons/fileupload/">commons-fileupload</a></li>
+<li><a href="http://jakarta.apache.org/commons/lang/">commons-lang</a></li>
+<li><a href="http://jakarta.apache.org/tomcat/">Tomcat and Jasper</a></li>
+<li><a href="http://xml.apache.org/xerces-j/">Xerces</a></li>
+<li><a href="http://logging.apache.org/log4j/">log4j</a></li>
+<li><a href="http://xml.apache.org/batik/">Batik</a></li>
+<li>...</li>
+</ul>
+</p>
+
+<p>
+<a href="http://www.openldap.org/">OpenLDAP</a> is used to support LDAP directories.
+</p>
+
+<p>
+Other softwares include:
+<ul>
+<li><a href="http://www.junit.org/">JUnit</a></li>
+<li><a href="http://xdoclet.sourceforge.net/">XDoclet</a></li>
+</ul>
+</p>
+<p>
+Complete descriptions and licenses can be found in the 'doc'-directory in the EJBCA download package.
+</p>
+
+</section>
+
+  </body>
+</document>

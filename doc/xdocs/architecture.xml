@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<document>
+
+  <properties>
+    <title>Architecture</title>
+  </properties>
+
+<body>
+  <section name="Architecture">
+    <p>
+    	The following diagram is a very rough schema of the current architecture of EJBCA.
+    </p>
+    <p>
+    <img src="images/architecture.gif" alt="EJBCA architecture" />
+    </p>
+  </section>
+
+</body>
+</document>
+

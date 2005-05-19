@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<document>
+  <properties>
+    <title>Contacts</title>
+  </properties>
+
+  <body>
+    <section name="Mailing Lists">
+<p>
+EJBCA has two public mailing lists hosted on Sourceforge. To subscribe to any of the lists or
+ browse archived messages, click the links below.
+</p>
+<p>
+<a href="http://lists.sourceforge.net/lists/listinfo/ejbca-news">ejbca-news</a> delivers
+news such as new releases or important features. This is a low traffic list.
+</p>
+<p>
+<a href="http://lists.sourceforge.net/lists/listinfo/ejbca-develop">ejbca-develop</a> is used for development
+discussions of a more technical nature. Almost anything regarding EJBCA can be posted on this list.
+</p>
+    </section>
+
+<section name="Discussion Forums">
+<p>
+ There are also several public <a href="http://sourceforge.net/forum/?group_id=39716">discussion forums</a>
+ that are used for discussions and requests for help etc. 
+</p>
+    </section>
+
+<section name="IRC">
+<p>
+ There is an ICR channel, #ejbca, on irc.freenode.net where support questions can be asked.
+ We are usually there during European office hours, and some other times as well.
+</p>
+</section>
+
+  </body>
+</document>

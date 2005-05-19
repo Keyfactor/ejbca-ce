@@ -1,0 +1,243 @@
+<?xml version="1.0"?>
+<document>
+
+  <properties>
+    <title>Frequently Asked Questions</title>
+  </properties>
+
+  <faqsection title="About this FAQ">
+    <faq>
+      <question>When starting JBoss after deployment I get errors like: 'EjbcaDS not bound' ?</question>
+      <answer>
+        <p>
+        You probably did a 'and replaceDS' and entered 'EjbcaDS' instead of 'java:/EjbcaDS'.
+        You must search manually in all XML files and replace 'EjbcaDS' with 'java:/EjbcaDS',
+        or perhaps easier and safer, restore the original XML files from the zip file and do
+        'ant replaceDS' again, this time entering 'java:/EjbcaDS'.
+        </p>
+      </answer>
+    </faq>
+    <faq>
+      <question>I want to add my own static pages under http://hostname:8080/ejbca/ ?</question>
+      <answer>
+        <p>
+        Put your files (static html is easy) under publicweb/root, do a full build and re-deploy.
+        The indexfile under publicweb/root is the one show on http://hostname:8080/ejbca, so
+        you can add a subdir under there
+        </p>
+      </answer>
+    </faq>
+    <faq>
+      <question>I get a blank page on the admiweb after start. ?</question>
+      <answer>
+        <p>
+		Either you entered a hostname that does not resolve to the machine where EJBCA is running
+		during setup, or you changed the port that JBoss listens to. Make sure the hostname resolves
+		 to the machine ejbca is running on. If you need the change to url, use the command
+		 'setup.sh/cmd setbaseurl'. If you changed port default public http=8080, private https=8443)
+		  you must edit src/adminweb/WEB-INF/web.xml. Change env entries PUBLICPORT resp PRIVATEPORT
+        </p>
+      </answer>
+    </faq>
+    <faq>
+      <question>Installation hangs and the https server will not work.</question>
+      <answer>
+        <p>
+		Perhaps $JBOSS_HOME/bin/tomcat.jks must be executable. All scripts in EJBCA home directory
+		must be executable, run 'chmod u+x *.sh'. Make sure you run the installation of ejbca as a
+		user with enough privileges to write in JBOSS_HOME, preferably the same user as is used to
+		run the JBoss server.
+        </p>
+      </answer>
+    </faq>
+    <faq>
+      <question>After upgrading the version of Java, the Admin GUI no longer works.
+      Or, the installation seems to work fine, superadmin.p12 is created but ssl connections
+      are refused without error messages in JBoss..</question>
+      <answer>
+        <p>
+		Tomcat needs the CA-certificate relating to the server certificate in javas trust-store.
+		This is imported when running 'install.sh/cmd' and when you upgraded java, you have a new, empty truststore.
+		Import the CA-certificate in $JAVA_HOME/jre/lib/security/cacerts again, or copy the old truststore
+		from the earlier JAVA_HOME. You can manually import it by exporting the ca-certificate:
+		<source>
+		./ca.sh getrootcert caname root.der -der
+		</source>
+		and importing it in cacerts:
+		<source>
+		keytool -import -trustcacerts -file root.der -keystore $JAVA_HOME/jre/lib/security/cacerts
+		</source>
+        </p>
+      </answer>
+    </faq>
+    <faq>
+      <question>When running 'install' or creating JKS or PKCS12 files you can't use longer password than 7 characters.
+      Anything longer gives an error</question>
+      <answer>
+        <p>
+		If you want to use strong crypto and/or password longer than 7 characters in keystores you must install the
+		 'Unlimited Strength Jurisdiction Policy Files' for JDK. The policy files can be found at the same place
+		 as the JDK 1.4 download. Further information on this can be found in the Sun documentation on the JCE
+        </p>
+      </answer>
+    </faq>
+    <faq>
+      <question>When running then 'Install' command on windows I get the following error: java.io.IOException:
+       CreateProcess: ca.cmd init foo "cn=foo" 1024 23 null error=5</question>
+      <answer>
+        <p>
+		You don't have enough privileges on the file 'ca.cmd'. Change so you have all permissions by right-clicking
+		the file in windows and choosing properties->security. If you have Cygwin or similar installed execute
+		permissions may be needed on .cmd files. Run the command 'chmod a+x *.cmd' in the ejbca directory.
+		Also check the file setup-adminweb.cmd
+        </p>
+      </answer>
+    </faq>
+    <faq>
+      <question>How do I connect to, and alter data in the built-in 'Hypersonic SQL' database.</question>
+      <answer>
+        <p>
+A : Shut down JBoss.
+Alternative 1:
+If you want to simply drop a table, go into the file JBOSS_HOME\server\default\db\hypersonic\default.script and delete the lines that creates the table, for instance to delete the table GLOBALCONFIGURATIONDATA, delete the lines :
+<source>
+CREATE TABLE GLOBALCONFIGURATIONDATA(CONFIGURATIONID VARCHAR NOT NULL,DATA VARBINARY,UNIQUE(CONFIGURATIONID))
+CREATE UNIQUE INDEX PK_GLOBALCONFIGURATIONDATA ON GLOBALCONFIGURATIONDATA(CONFIGURATIONID)
+</source>
+Just for fun you can also delete all lines beginning with: INSERT GLOBALCONFIGURATIONDATA...
+
+Alternative 2:
+Download HsqlDb fom http://hsqldb.sourceforge.net/. Unpack and in the 'bin'-subdirectory run 'runUtil DatabaseManager'.
+In the window that opens connect to 'HSQL Engine Database In-Memory', select URL 'jdbc:hsqldb:$jboss.home\server\default\db\hypersonic\default'
+where the path-to-jboss is for example 'C:\jboss\jboss-3.0.6_tomcat-4.1.18'.
+Now you can enter you SQL-commands, for example 'drop table globalconfigurationdata'
+and press 'Execute'. Unforturnately you must now go into the file
+JBOSS_HOME\server\default\db\hypersonic\default.properties and set the version to the correct old one, edit
+ the lines with 'version' to read 1.6 (for JBoss 3.0) instead of whatever is there.
+ </p>
+ </answer>
+ </faq>
+    <faq>
+      <question>When enrolling for certificates with IE, the enrollment controll (clsid) is incorrect.</question>
+	  <answer><p>Microsoft changed the enrollment controll due to secrity issues. Look in 'src/publicweb/apply/apply_exp.jsp' for more information.</p></answer>
+	</faq>
+    <faq>
+      <question>I get the error "Object Class Violation : (65)" when publishing certificates in LDAP</question>
+	  <answer><p>You LDAP object class may require some fields in the DN that you have not entered. Some schemas require the DN-attribute SN for instance.</p></answer>
+	</faq>
+    <faq>
+      <question>What applications servers do EJBCA run on ?</question>
+	  <answer><p>Version 1.x of EJBCA has been known to run on JBoss, Weblogic and Orion. Version 2.x of EJBCA has only been tested on JBoss, but should run on any EJB2 capable application server.</p></answer>
+	</faq>
+    <faq>
+      <question>What databases do EJBCA support?</question>
+	  <answer><p>EJBCA supports in theory any database that works with the application server.
+	  The database must have support for long fields, a CRL can in theory become very large.
+EJBCA has been known to work with MySQL, PostgreSQL, Oracle, Sybase, InstantDB, SAPDB and MSSQL 2000.
+Other databases should work with simple configuration.</p>
+	</answer>
+	</faq>
+    <faq>
+      <question>When using JDK 1.4.x i get a java.io.InvalidClassException/?</question>
+	  <answer><p>Since JDK 1.4 introduced incompatibilities during class serialization the PublicKey
+class used as parameter to some versions of the 'createCertificate' method can not be passed correctly.
+You must use JDK 1.4 on both server and client, then it works.
+Another problem that may occur is that JBoss have been upgraded since the release of ejbca so the file 'lib/jboss-client.jar' must be replaced by one from JBoss.
+</p></answer>
+	</faq>
+    <faq>
+      <question>Why are there two versions of all commands, i.e. 'ra.sh' and 'ra.cmd'?</question>
+	  <answer><p>'ra.sh' is for UNIX and 'ra.cmd' for Windows.</p></answer>
+	</faq>
+    <faq>
+      <question>Why do I get the exception/error: User foo has status '40', NEW, FAILED or INPROCESS required.; nested exception is: javax.ejb.EJBException:null</question>
+	  <answer><p>When using the LocalAuthenticationSession (default) all users have a STATUS. The status lifecycle
+	  beginns with NEW and ends with REVOKED. Only when the status is NEW, FAILED or INPROCESS is it possible
+	  to issue a certificate to a user. After a certificate has been issued, the status is set to GENERATED. This works like a
+	one-time-password scheme. To issue a new certificate to the user his/her status must be reset to NEW, FAILED or INPROCESS.
+	This can be done with:
+	<source>
+	ra.sh/cmd setuserstatus username status
+	</source>
+	Status '10' is NEW. Just enter 'ra.sh/cmd setuserstatus' to see a list of all status codes.
+	</p>
+	</answer>
+	</faq>
+    <faq>
+      <question>How do I manipulate EJBCA-keystores using Suns 'keytool'?</question>
+	  <answer><p>EJBCA use PKCS12 format for the keystore because it is a standard, and I like standards.
+Normally keytool (e.g. sun) can read PKCS12 file but not write, so the BouncyCastle JCE is needed to handle PKCS12 keystores.
+Put the BouncyCastle provider 'jce-jdk13-version.jar' in 'jre/lib/ext', the default classpath for extensions in java.
+Now it should be possible to run:
+<source>
+keytool -list -alias privateKey -keystore server.p12 -storetype PKCS12 -storepass foo123 -provider org.bouncycastle.jce.provider.BouncyCastleProvider
+</source>
+It should be possible to import etc as well using keytool.
+</p>
+</answer>
+	</faq>
+    <faq>
+      <question>How do I make a keystore using keytool with a real certificate from EJBCA?</question>
+	  <answer>
+<source>
+# First generate a new keystore and a keypair:
+keytool -genkey -alias mykey -keystore myks.jks -keyalg RSA -dname c=SE,O=AnaTom,CN=Test -keypass foo123 -storepass foo123
+# You SUN keystore is now in the file 'myks.jks'. Next generate a certification request (PKCS10):
+keytool -certreq -alias mykey -sigalg SHA1WithRSA -file myreq.p10 -keypass foo123 -keystore myks.jks -storepass foo123
+</source>
+<p>
+You now hav the certification request in the file 'myreq.p10'.
+
+Open up EJBCA request page in your favorite browser, 'http://127.0.0.1:8080/apply/index.html', and select the link for NOT having a browser, 'http://127.0.0.1:8080/apply/apply_man.jsp'
+
+Download the Root CA certificate by clicking on the link. Save the certificate as 'ca.pem'.
+
+Enter the username and password of a valid user with status NEW, see question 'Why do I get the exception/error:' above. Copy and paste the contents of the certification request, 'myreq.p10' into the text field.
+Save the returned certificate as 'cert.pem'.
+</p>
+<source>
+# Import the Root CA certificate into the keystore 'myks.jks':
+keytool -import -alias cacert -file ca.pem -keystore myks.jks -storepass foo123
+# Import the certificate reply into the keystore:
+keytool -import -alias mykey -file cert.pem -keystore myks.jks -storepass foo123 -keypass foo123
+# Now you can take a look at your SUN keystore with:
+keytool -list -keystore myks.jks
+</source>
+<p>
+In theory, you can use the same method with a BouncyCastle PKCS12 keystore by adding the following
+arguments to every command above:
+</p>
+<source>
+-provider org.bouncycastle.jce.provider.BouncyCastleProvider/ -storetype PKCS12
+</source>
+<p>
+unforturnately a bug in keytool prevents this from functioning properly at the moment, therefore I
+recommend using the 'ca.sh/cmd' to create PKCS12 keystores. It can be used to create keystores generally,
+not just for CAs.
+</p>	  
+	  </answer>
+	</faq>
+    <faq>
+      <question>What aliases do a EJBCA keystore contain?</question>
+	  <answer><p>The keystore EJBCA uses is a PKCS12 keystore. The CAs private key and certificate is cotained in the alias 'privateKey', as configures in 'src/ca/ca/META-INF/ejb-jar.xml'.
+
+If the CA is not a Root CA, i.e. the certificate in alias 'privateKey' is signed by another certificate, that CA certificate (Root certificate) is conatined in the alias with the same name as the CN part of the Root CAs DN, i.e. the CN part of the issuer DN from the certificate in 'privateKey'.
+</p></answer>
+	</faq>
+    <faq>
+      <question>Why does the first function in 'dist.html', fetching a users certificate return an error 404?</question>
+	  <answer><p>You have specified a subject DN to which no certificates have been issued.</p></answer>
+	</faq>
+    <faq>
+      <question>Is EJBCA compatible with another JCE apart from BouncyCastle (for example Cryptix)?</question>
+	  <answer><p>No, this is beacaues only BouncyCastle contains classes to actually generate certificates and CRLs. Normal JCE only allows usage, not creation.</p></answer>
+	</faq>
+    <faq>
+      <question>Where is logging performed and how do I control it?</question>
+	  <answer><p>Logging is done using Log4j. Anything below DEBUG level is considered important information. Logging in JBoss is configured in 'log4j.properties' in the JBoss config directory.</p></answer>
+	</faq>
+        
+
+  </faqsection>
+
+</document>

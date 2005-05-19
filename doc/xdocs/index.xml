@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<document>
+
+  <properties>
+    <title>EJBCA</title>
+  </properties>
+
+<body>
+  <section name="EJBCA 3.0.7">
+    <p class="note">EJBCA 3.0.7 is now available for <a
+    href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=108797">download</a>.</p>
+  </section>
+
+  <section name="EJBCA">
+<p>
+EJBCA is a fully functional Certificate Authority. Based on J2EE technology it constitutes a robust,
+high performance and component based CA. Both flexible and platform independent, EJBCA can be used
+standalone or integrated in any J2EE application.
+</p>
+<p>
+This software is OSI Certified Open Source Software.
+OSI Certified is a certification mark of the Open Source Initiative
+</p>
+</section>
+
+<section name="Support">
+<p>Commercial support for EJBCA is available in Sweden through <a href="http://www.primekey.se/">PrimeKey Solutions</a>. </p>
+</section>
+
+
+</body>
+</document>
+

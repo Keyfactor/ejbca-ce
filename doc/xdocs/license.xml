@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<document>
+  <properties>
+    <title>License</title>
+  </properties>
+<body>
+
+  <section name="License">
+    <p>The LGPL (GNU LESSER GENERAL PUBLIC LICENSE) applies to all releases of EJBCA</p>
+    <p>You can read the original license file <a href="http://www.gnu.org/copyleft/lesser.html" target="_new">here.</a></p>
+</section>
+</body>
+</document>

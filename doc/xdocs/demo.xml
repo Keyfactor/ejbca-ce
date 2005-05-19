@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<document>
+
+  <properties>
+    <title>Demo Certificate</title>
+  </properties>
+
+<body>
+  <section name="Demo Certificate">
+	<p>Primekey host an instance of EJBCA to issue free demo certificates.</p>
+	<p>
+	You can use your free PrimeKey demo certificate to:
+	<ul>
+	<li>protect e-mail using your favorite e-mail application</li> 
+	<li>authenticate to protected websites with your browser </li>
+	<li>sign documents</li> 
+	<li>and more...</li>
+	</ul>
+	</p>
+	<p> 
+	You can access it <a href="http://www.primekey.se/primekey/en/Demo.html">here</a>.
+	</p>
+  </section>
+
+</body>
+</document>
+

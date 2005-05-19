@@ -1,0 +1,286 @@
+/* basic elements */
+html {
+	margin: 0px;
+	padding: 0px;
+	}
+body, ul, li { 
+	font: 9pt/17pt georgia; 
+}
+body { 
+	color: #555753; 
+	background: #fff url(/001/blossoms.jpg) no-repeat bottom right; 
+	margin: 0px; 
+	padding: 0px;
+	}
+ul {
+	margin-top:10px;
+	margin-left:15px;
+	list-style-type:square;
+}
+li {
+	line-height: 16px;
+	margin-top:5px;
+}	
+p { 
+	font: 9pt/17pt georgia; 
+	margin-top: 0px; 
+	text-align: justify;
+	}
+a {
+	text-decoration: underline; 
+}
+a:link { 
+	font-weight: bold; 
+	font-style:italic;
+	color:  #005B88;
+	}
+a:visited { 
+	font-weight: bold;
+	font-style:italic; 
+	color: #606060;
+	}
+a:hover, a:active { 
+	font-weight: bold;
+	color: #005B88;
+	background-color: #D1DCE9;
+	font-style:italic;
+	}
+acronym {
+	border-bottom: none;
+	}
+
+.menucontainer {
+    float: left;
+    background-color: #EEEEEE;
+    margin: 0px;
+    width: 250px;
+    height: 100%;
+}
+
+.menu {
+    font-size : 90%;
+    padding: 3px 8px 5px 3px;
+    border-left: 1px solid #ddd;
+}
+
+.menu a { font-weight:normal; font-style: normal; color: #1081b9; text-decoration : none; }
+.menu a:link {   }
+.menu a:visited {  }
+.menu a:hover { text-decoration: underline; }
+.menu ul { margin: 0px 0px 0px 20px; padding: 0px; }
+.menu li  {  list-style-type: none; font-weight : normal ; }
+.menu ul ul li .sel { list-style-type: none; font-style : italic; }
+.menu ul ul li  { list-style-type: disc; font-weight : normal; }
+
+.menuheader {
+font: italic normal 10pt georgia;
+	letter-spacing: 1px;
+	border-bottom: 1px dashed #688B9A;
+	margin-top: 8px;
+	margin-bottom: 5px;
+	padding: 2px;
+	padding-left: 5px;
+}
+
+.sel {
+    # color: #ffcc00;
+}
+
+.tab { font-size : 85%; border: 0; background-color: #294563;}
+.tab a:link {   text-decoration : none;  }
+.tab a:visited { text-decoration : none; color: #2A4A6D }
+.tab a:hover { color: #000066; }
+
+table .title { background-color: #FFFFFF; width:100%; border: 0px; }
+.dida { font-size: 80%; }
+
+.pre { white-space: pre;}
+.nowrap { white-space: nowrap;}
+
+.main {
+    margin-left: 280px;
+    margin-right: 5px;
+}
+
+.content {
+    padding: 5px 5px 5px 10px;
+    font : small Verdana, Helvetica, sans-serif;
+    font-size : 90%;
+}
+
+.content .ForrestTable { width: 100%; background-color: #7099C5; color: #ffffff; font-size : 90%;}
+.content .ForrestTable caption { text-align: left; color: black; font-weight: bold; }
+.content .ForrestTable th { text-align: center; }
+.content .ForrestTable td { background-color: #f0f0ff; color: black; }
+
+.content .externals { width: 80%; background-color: #7099C5; color: #ffffff; font-size : 90%;}
+.content .externals caption { text-align: left; color: black; font-weight: bold; }
+.content .externals th { width: 120px; text-align: right; }
+.content .externals td { background-color: #f0f0ff; color: black; }
+
+
+
+.frame { margin: 5px 20px 5px 20px; font-size: 90%; }
+.frame .content { margin: 0px; }
+
+.note { margin-top: 15px; margin-bottom: 15px; padding: 5px; border: solid 1px #7099C5; background-color: #f0f0ff; }
+.note .label { background-color: #7099C5; color: #ffffff; }
+
+.warning { margin-top: 15px; margin-bottom: 15px; padding: 5px; border: solid 1px #D00000; background-color: #fff0f0; }
+.warning .label { background-color: #D00000; color: #ffffff; }
+
+.fixme { margin-top: 15px; margin-bottom: 15px; padding: 5px; border: solid 1px #C6C600; background-color: #FAF9C3; }
+.fixme .label { background-color: #C6C600; color: #ffffff; }
+
+.code { background-color:#FCF1D1; border-color: #CFDCED; border-style: dashed; border-width: 1px; margin: 5px; padding: 5px; }
+.codefrag {	font-family: "Courier New", Courier, monospace; }
+
+.highlight { background-color: yellow; }
+
+.minitoc {margin: 5px 5px 5px 40px;}
+
+.dtdElement { width: 100%;	font-size: 90%; background-color : #ffffff; }
+
+.dtdTag {    color: #990000; text-transform : uppercase;  font-style : normal;  font-size : 120%;  font-weight : bold; }
+
+h3 { 
+    font-family: Verdana,Arial,Helvetica,sans-serif;
+    font-size: 11pt;
+    font-style: italic;
+    font-weight: normal;
+    letter-spacing: 1px;
+    margin-top: 2em;
+    margin-right-value: 0px;
+    margin-bottom: 0.5em;
+    padding-top: 0px;
+    padding-bottom: 0px;
+	border-bottom: 1px dashed black;
+}
+
+.subsection {
+    font-family: arial,helvetica,sanserif;
+    background-color: #4C6C8F;
+    color: #ffffff;
+    font-weight: bold;
+    padding: 2px;
+    clear: right;
+}
+
+.toc {
+    font-family: arial,helvetica,sanserif;
+    background-color: #4C6C8F;
+    color: #ffffff;
+    font-weight: bold;
+    padding: 2px;
+}
+
+.faq {
+    font: italic normal 10pt georgia;
+	letter-spacing: 1px; 
+	margin-bottom: 0px; 
+	color: #688B9A;
+	border-bottom: 1px solid #688B9A;
+    padding: 2px;
+}
+
+.navpath {
+    font-family: arial,helvetica,sanserif;
+    background-color: #CFDCED;
+    padding: 2px 6px;
+    margin: 0px 0px 0px 0px;
+    font-size: 90%;
+    border-bottom: 2px solid #4C6C8F;
+}
+
+.title {
+    font-family: Arial,Helvetica,sans-serif;
+    font-size: 130%;
+    font-size: 16pt;
+    font-weight: normal;
+    margin-top: 12px;
+    margin-bottom: 0px;
+    color: rgb(218, 92, 5);
+    
+}
+
+.copyright {
+    font-family: arial,helvetica,sanserif;
+    font-size: 90%;
+    background-color: #F1F1F1;
+    clear: both;
+    text-align: left;
+    margin: 0px;
+    padding-left: 15px;
+    border-top: thin solid #CCC;
+    border-bottom: thin solid #CCC;
+}
+
+.bluebar {
+    padding: 5px 5px 5px 10px;
+    background-color: #4C6C8F;
+    margin: 0px;
+}
+
+.lightbluebar {
+    padding: 5px 5px 5px 10px;
+    background-color: #CFDCED;
+    margin: 0px;
+    border-top: 1px solid #294563;
+    border-bottom: 1px solid #294563;
+}
+
+.logobar {
+    background-color: #005B88;
+    
+    color: white;
+    font-size: 16pt;
+    font-style: italic;
+    padding-right: 10px;
+    margin: 0px;
+    padding-left: 18pt;
+    padding-top: 12pt;
+    padding-bottom: 6pt;
+    border-bottom: 1px solid #ddd;
+}
+
+.searchcaption {
+    font-family: Tahoma;
+    font-size: 8pt;
+    font-style:normal;
+    margin: 0px;
+	float:right;
+    text-align: left;
+    padding-top: 5px;
+}
+
+#searchBox {
+    width: 235px;
+}
+#searchForm {
+    margin: 0px;
+}
+#goButton {
+    font-family: Tahoma;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 8pt;
+}
+@media print {
+   .menu {
+     display: none;
+   }
+}
+
+a.externalLink, a.externalLink:link, a.externalLink:visited, a.externalLink:active, a.externalLink:hover {
+  background: url(./images/external.png) right center no-repeat;
+  padding-right: 15px;
+}
+
+.screenshots {
+
+}
+.screenshots tr td {
+	width:300px;
+}
+.screenshots tr th {
+}

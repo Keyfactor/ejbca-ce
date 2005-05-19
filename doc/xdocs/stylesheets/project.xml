@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="EJBCA" href="http://ejbca.sourceforge.net/">
+
+    <title>EJBCA - The J2EE Certificate Authority</title>
+    <!--logo href="images/ant_logo_large.gif">EJBCA - The J2EE Certificate Authority</logo-->
+
+    <body>
+       <menusection name="Home" index="0"         href="/index.html">
+            <menu name="EJBCA">
+                <item name="Welcome"               href="/index.html"/>
+                <item name="Features"              href="/features.html"/>
+                <item name="Screenshots"           href="/screenshots.html"/>
+                <item name="Demo Certificate"	   href="/demo.html"/>
+                <item name="License"               href="/license.html"/>
+                <item name="Contact &amp; Support" href="/contact.html"/>
+                <item name="Credits"			   href="/credits.html"/>
+            </menu>
+
+            <menu name="Documentation">
+                <item name="Architecture"		href="/architecture.html"/>
+                <item name="How To/Tutorials"   href="/docs.html"/>
+                <item name="FAQ"				href="/faq.html"/>
+                <item name="Security"			href="/security.html"/>
+                <item name="User Guide"			href="/manual.html"/>
+                
+                <item name="JavaDoc"            href="http://ejbca.sourceforge.net/docs/api/index.html"/>
+            </menu>
+
+            <menu name="Download">
+                <item name="Binary Distributions" href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=108797"/>
+            </menu>
+
+            <menu name="Contributing">
+                <item name="CVS Repositories"      href="http://cvs.sourceforge.net/viewcvs.py/ejbca/ejbca/"/>
+                <item name="Bug Database"          href="http://jira.primekey.se/"/>
+                <item name="Donations"             href="http://sourceforge.net/donate/index.php?group_id=39716"/>
+                <item name="Contributors"          href="/contributors.html"/>
+            </menu>
+
+        </menusection>
+
+    </body>
+</project>

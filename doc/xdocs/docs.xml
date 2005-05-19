@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<document>
+
+  <properties>
+    <title>How To and Tutorials</title>
+  </properties>
+
+<body>
+  <section name="How To and Tutotials">
+    <p>
+    	The iframe below is just a convenient insertion of the online documentation available
+    	at <a href="http://docs.primekey.se/">docs.primekey.se</a>.
+    </p>
+    <p>
+    	It contains (among other things) step-by-step tutorials using viewlets.
+    </p>
+    <p>
+		<iframe width="80%" height="100%" src="http://docs.primekey.se/documentation/en.html" name="Online Documentation">
+		</iframe>
+    </p>
+  </section>
+
+</body>
+</document>
+

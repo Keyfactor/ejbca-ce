@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<document>
+
+  <properties>
+    <title>Screenshots</title>
+  </properties>
+
+<body>
+  <section name="Screenshots">
+    <p>The following screenshots are the default one from the administration web-application</p>
+    <p>If you need a more polished UI or simply need to adapt it, we highly recommend the use of
+    the following components:</p>
+    <ul>
+    <li><a href="http://www.opensymphony.com/sitemesh/">OpenSymphony SiteMesh</a></li>
+    <li><a href="http://style.tigris.org/">Tigris Style</a> CSS stylesheets.</li>
+    </ul>
+    <p>
+    <table class="screenshots">
+    <!--tr>
+    	<th></th>
+    	<th></th>
+    	<th></th>
+    </tr-->
+    <tr>
+    	<td><a href="screenshots/ejbca1.jpg"><img src="screenshots/ejbca1_thm.jpg" /></a></td>
+    	<td><a href="screenshots/ejbca2.jpg"><img src="screenshots/ejbca2_thm.jpg" /></a></td>
+    	<td><a href="screenshots/ejbca3.jpg"><img src="screenshots/ejbca3_thm.jpg" /></a></td>
+    </tr>
+    <!--tr>
+    	<th></th>
+    	<th></th>
+    	<th></th>
+    </tr-->
+    <tr>
+    	<td><a href="screenshots/ejbca4.jpg"><img src="screenshots/ejbca4_thm.jpg" /></a></td>
+    	<td><a href="screenshots/ejbca5.jpg"><img src="screenshots/ejbca5_thm.jpg" /></a></td>
+    	<td><a href="screenshots/ejbca6.jpg"><img src="screenshots/ejbca6_thm.jpg" /></a></td>
+    </tr>
+    </table>
+    </p>
+  </section>
+
+</body>
+</document>
+
