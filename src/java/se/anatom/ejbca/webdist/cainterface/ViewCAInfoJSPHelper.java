@@ -29,7 +29,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * Contains help methods used to parse a viewcainfo jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: ViewCAInfoJSPHelper.java,v 1.4 2005-05-09 15:34:28 anatom Exp $
+ * @version $Id: ViewCAInfoJSPHelper.java,v 1.5 2005-05-19 06:16:18 herrvendil Exp $
  */
 public class ViewCAInfoJSPHelper implements java.io.Serializable {
 		 
@@ -56,7 +56,7 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
     public void initialize(HttpServletRequest request, EjbcaWebBean ejbcawebbean,
                            CAInterfaceBean cabean) throws  Exception{
 
-      if(!initialized){
+      if(!initialized){		  
         this.cabean = cabean;                        		
         initialized = true;
         can_activate = false;
@@ -108,9 +108,11 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
     	         	  cabean.getCADataHandler().activateCAToken(caid,authorizationcode);
     	         	  activationmessage = "CAACTIVATIONSUCCESSFUL";
     	         	}catch(CATokenAuthenticationFailedException catafe){
-    	         		activationerrormessage = "AUTHENTICATIONERROR" + ": " + catafe.getMessage();
+    	         		activationerrormessage = "AUTHENTICATIONERROR";
+						activationerrorreason = catafe.getMessage();
     	         	}catch(CATokenOfflineException catoe){
-    	         		activationerrormessage = "ERROR" + ": " + catoe.getMessage();
+    	         		activationerrormessage = "ERROR";
+						activationerrorreason = catoe.getMessage();
     	         	}
     	         }else{
     	         	activationerrormessage = "MUSTENTERAUTHCODE";
@@ -159,6 +161,7 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
     private boolean initialized=false;
 	public String   generalerrormessage = null;
 	public String   activationerrormessage = null;
+	public String   activationerrorreason = null;
 	public String   activationmessage = null;
     public boolean  can_activate = false;    
     public boolean  authorized = false; 

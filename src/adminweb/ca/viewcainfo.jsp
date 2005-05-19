@@ -49,7 +49,7 @@ function viewocspcert(){
   <% } 
      else{
        if(viewcainfohelper.activationerrormessage != null){ %>
-  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText(viewcainfohelper.activationerrormessage) %></h4></div> 
+  <div align="center"><h4 id="alert"><%=ejbcawebbean.getText(viewcainfohelper.activationerrormessage) + " : " + viewcainfohelper.activationerrorreason %></h4></div> 
      <%  }       
          if(viewcainfohelper.activationmessage != null){ %>
               <div align="center"><h4><%=ejbcawebbean.getText(viewcainfohelper.activationmessage) %></h4></div> 
