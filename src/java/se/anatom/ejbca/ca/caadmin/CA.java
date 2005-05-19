@@ -27,6 +27,9 @@ import java.util.Vector;
 
 import javax.ejb.EJBException;
 
+import org.apache.log4j.Logger;
+import org.bouncycastle.cms.CMSException;
+
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAService;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
@@ -51,12 +54,14 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.17 2005-05-19 04:36:17 primelars Exp $
+ * @version $Id: CA.java,v 1.18 2005-05-19 07:36:47 primelars Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
+    /** Log4j instance */
+    private static Logger log = Logger.getLogger(CA.class);
 
-    public static final String TRUE  = "true";
+	public static final String TRUE  = "true";
     public static final String FALSE = "false";
     
     // protected fields.
@@ -375,18 +380,24 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
           if(request instanceof KeyRecoveryCAServiceRequest){
           	KeyRecoveryCAServiceRequest keyrecoveryrequest =  (KeyRecoveryCAServiceRequest) request;
           	if(keyrecoveryrequest.getCommand() == KeyRecoveryCAServiceRequest.COMMAND_ENCRYPTKEYS){
-          	  try{	
-          	    returnval = new KeyRecoveryCAServiceResponse(KeyRecoveryCAServiceResponse.TYPE_ENCRYPTKEYSRESPONSE, 
-          	  		                       encryptKeys(keyrecoveryrequest.getKeyPair()));	
-          	  }catch(Exception e){
-          	  	 throw new IllegalExtendedCAServiceRequestException(e);
-          	  }
+          		try{	
+          			returnval = new KeyRecoveryCAServiceResponse(KeyRecoveryCAServiceResponse.TYPE_ENCRYPTKEYSRESPONSE, 
+          					encryptKeys(keyrecoveryrequest.getKeyPair()));	
+          		}catch(CMSException e){
+          			log.error("encrypt:", e.getUnderlyingException());
+          			throw new IllegalExtendedCAServiceRequestException(e);
+          		}catch(Exception e){
+          			throw new IllegalExtendedCAServiceRequestException(e);
+          		}
           	}else{
           		if(keyrecoveryrequest.getCommand() == KeyRecoveryCAServiceRequest.COMMAND_DECRYPTKEYS){
                   try{
                   	returnval = new KeyRecoveryCAServiceResponse(KeyRecoveryCAServiceResponse.TYPE_DECRYPTKEYSRESPONSE, 
           					this.decryptKeys(keyrecoveryrequest.getKeyData()));
-          		  }catch(Exception e){
+          		  }catch(CMSException e){
+          			 log.error("decrypt:", e.getUnderlyingException());
+        		  	 throw new IllegalExtendedCAServiceRequestException(e);
+         		  }catch(Exception e){
           		  	 throw new IllegalExtendedCAServiceRequestException(e);
           		  }
           		}else{
