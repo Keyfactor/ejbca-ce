@@ -69,8 +69,13 @@ public class HardTokenProfileDataHandler implements Serializable {
     public boolean removeHardTokenProfile(String name) throws AuthorizationDeniedException{
       boolean returnval = true;  
       
-      if(useradminsession.checkForHardTokenProfileId(administrator, getHardTokenProfileId(name)))
+	  int profileid = getHardTokenProfileId(name);
+	  
+      if(useradminsession.checkForHardTokenProfileId(administrator, profileid))
         return true;
+	  
+	  if(hardtokensession.existsHardTokenProfileInHardTokenIssuer(administrator, profileid))
+		return true;  
         
       if(authorizedToProfileName(name, true)){    
 		hardtokensession.removeHardTokenProfile(administrator, name);

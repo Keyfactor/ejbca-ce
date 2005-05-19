@@ -54,7 +54,7 @@ import se.anatom.ejbca.util.ServiceLocatorException;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.45 2005-05-13 09:29:53 anatom Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.46 2005-05-19 06:15:13 herrvendil Exp $
  */
 public class EjbcaWebBean implements java.io.Serializable {
 
@@ -129,8 +129,10 @@ public class EjbcaWebBean implements java.io.Serializable {
     	IPublisherSessionLocal publishersession = publishersessionhome.create();               		
     	
     	globaldataconfigurationdatahandler =  new GlobalConfigurationDataHandler(administrator, raadminsession, authorizationsession);        
-    	globalconfiguration = this.globaldataconfigurationdatahandler.loadGlobalConfiguration();
-    	informationmemory = new InformationMemory(administrator, caadminsession, raadminsession, authorizationsession, certificatestoresession, hardtokensession, publishersession, globalconfiguration);
+    	globalconfiguration = this.globaldataconfigurationdatahandler.loadGlobalConfiguration();       
+		if(informationmemory == null){		  
+    	  informationmemory = new InformationMemory(administrator, caadminsession, raadminsession, authorizationsession, certificatestoresession, hardtokensession, publishersession, globalconfiguration);
+		}
     	authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, authorizationsession);
     	
     }
@@ -409,11 +411,8 @@ public class EjbcaWebBean implements java.io.Serializable {
     public String getImagefileInfix(String imagefilename) {
       String returnedurl=null;
       String [] strs = adminsweblanguage.getAvailableLanguages();
-      log.error("Strs.size: "+strs.length);
       int index = currentadminpreference.getPreferedLanguage();
-      log.error("Index: "+index);
       String prefered = strs[index];
-      log.error("prefered: "+ prefered);
       prefered = prefered.toLowerCase();
       String secondary = adminsweblanguage.getAvailableLanguages()[currentadminpreference.getSecondaryLanguage()]
                                            .toLowerCase();

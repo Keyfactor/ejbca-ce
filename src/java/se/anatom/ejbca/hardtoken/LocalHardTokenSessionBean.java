@@ -1434,6 +1434,31 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
 	 return exists;
    } // existsCertificateProfileInHardTokenProfiles
+   
+	/**
+	* Method to check if a hard token profile exists in any of the hard token issuers.
+	* Used to avoid desyncronization of hard token profile data.
+	*
+	* @param id the hard token profileid to search for.
+	* @return true if hard token profileid exists in any of the hard token issuers.
+    * @ejb.interface-method view-type="both"
+	*/
+  public boolean existsHardTokenProfileInHardTokenIssuer(Admin admin, int id){
+  	 HardTokenIssuer issuer = null;
+	 Collection hardtokenissuers=null;
+	 boolean exists = false;
+	 try{
+	   Collection result = this.hardtokenissuerhome.findAll();
+	   Iterator i = result.iterator();
+	   while(i.hasNext() && !exists){
+		 issuer = ((HardTokenIssuerDataLocal) i.next()).getHardTokenIssuer();
+		 hardtokenissuers = issuer.getAvailableHardTokenProfiles();
+		 if(hardtokenissuers.contains(new Integer(id)))
+			 exists = true;		 
+	   }
+	 }catch(FinderException e){}
+	 return exists;
+  } // existsHardTokenProfileInHardTokenIssuer
 
 	private Integer findFreeHardTokenProfileId(){
 	  Random ran = (new Random((new Date()).getTime()));
