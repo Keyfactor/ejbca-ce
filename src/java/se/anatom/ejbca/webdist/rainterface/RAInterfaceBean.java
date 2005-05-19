@@ -60,7 +60,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.61 2005-05-12 18:27:45 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.62 2005-05-19 06:16:39 herrvendil Exp $
  */
 public class RAInterfaceBean implements java.io.Serializable {
     
@@ -575,28 +575,31 @@ public class RAInterfaceBean implements java.io.Serializable {
     }
 
     public void loadCertificates(BigInteger serno, String issuerdn) throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, FinderException{
-      authorizationsession.isAuthorizedNoLog(administrator, AvailableAccessRules.CAPREFIX + issuerdn.hashCode());        
-      
-      X509Certificate cert = (X509Certificate) certificatesession.findCertificateByIssuerAndSerno(administrator, issuerdn, serno);
-      
-      if(cert != null){
-        RevokedInfoView revokedinfo = null;
-        String username = certificatesession.findUsernameByCertSerno(administrator,serno, cert.getIssuerDN().toString());
-        if(this.adminsession.findUser(administrator, username) != null){
-          int endentityprofileid = this.adminsession.findUser(administrator, username).getEndEntityProfileId();
-          this.endEntityAuthorization(administrator,endentityprofileid,AvailableAccessRules.VIEW_RIGHTS,true);
-        }
-        RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), cert.getSerialNumber());
-        if(revinfo != null)
-          revokedinfo = new RevokedInfoView(revinfo);
-        
-        certificates = new CertificateView[1];
-        certificates[0] = new CertificateView(cert, revokedinfo, username);
-              
-      }
-      else{
-        certificates = null;
-      }
+	  try{	
+		  authorizationsession.isAuthorizedNoLog(administrator, AvailableAccessRules.CAPREFIX + issuerdn.hashCode());        
+		  X509Certificate cert = (X509Certificate) certificatesession.findCertificateByIssuerAndSerno(administrator, issuerdn, serno);
+		  
+		  if(cert != null){
+			  RevokedInfoView revokedinfo = null;
+			  String username = certificatesession.findUsernameByCertSerno(administrator,serno, cert.getIssuerDN().toString());
+			  if(this.adminsession.findUser(administrator, username) != null){
+				  int endentityprofileid = this.adminsession.findUser(administrator, username).getEndEntityProfileId();
+				  this.endEntityAuthorization(administrator,endentityprofileid,AvailableAccessRules.VIEW_RIGHTS,true);
+			  }
+			  RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, CertTools.getIssuerDN(cert), cert.getSerialNumber());
+			  if(revinfo != null)
+				  revokedinfo = new RevokedInfoView(revinfo);
+			  
+			  certificates = new CertificateView[1];
+			  certificates[0] = new CertificateView(cert, revokedinfo, username);
+			  
+		  }
+		  else{
+			  certificates = null;
+		  }
+	  }catch(AuthorizationDeniedException ade){
+		  throw new AuthorizationDeniedException("Not authorized to view certificate, error: " + ade.getMessage());
+	  }
     }
 
     public int getNumberOfCertificates(){
