@@ -157,8 +157,20 @@
           </ul>
         </li>
       #end
+      
+      <li><div class="menuheader">Used Services</div>
+      <ul>
+      <div>
+	    <a href="http://sourceforge.net/">
+	    <img style="border:none" src="http://sourceforge.net/sflogo.php?group_id=39716&type=1" alt="Hosted on SourceForge"/>
+	    </a>
+	  </div>
+      </ul>    
+   	  </li>
+       	        
       </ul>
     </div>
+ 	
   </div>
 #end
 
