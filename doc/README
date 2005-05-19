@@ -1,4 +1,4 @@
-$Id: README,v 1.195 2005-05-17 07:06:45 anatom Exp $
+$Id: README,v 1.196 2005-05-19 07:23:49 anatom Exp $
 
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
@@ -764,6 +764,12 @@ connection should use UTF-8.
 For MySQL this can be done in the <connection-url> in your datasource description 
 (JBOSS_HOME/server/default/deploy/ejbca-ds.xml):
 jdbc:mysql://yourhost/ejbca?useUnicode=true&characterEncoding=UTF-8
+
+If you can't get you national characters to work with the admin GUI, you can try using the cli instead
+(bin/ejbca.sh ra adduser ...), that usually works.
+
+EJBCA have for exmaple been tested on Windows/JBoss 4.0.2/MySQL using Swedish national characters, 
+and it works nicely both with the cli and admin-GUI.
 
 Adding a new language to the admin GUI:
 ---------------------------------------
