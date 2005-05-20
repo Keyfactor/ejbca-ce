@@ -1,4 +1,4 @@
-$Id: INSTALL-guide.txt,v 1.11 2005-03-21 11:57:15 anatom Exp $
+$Id: INSTALL-guide.txt,v 1.1 2005-05-20 11:02:52 anatom Exp $
 
     My LINUX+JBOSS+EJBCA+MYSQL+OPENLDAP How To
     originally contributed by <surd0007(at)yahoo.com.cn>

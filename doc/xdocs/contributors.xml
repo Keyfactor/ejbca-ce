@@ -7,7 +7,7 @@
   <body>
     <section name="Get Involved">
 <p>
-To contact the EJBCA team or to contribute please contact the project
+To contact the EJBCA team or to contribute, use the mailing lists, irc or contact the project
 administrator, who can be found on the sourceforge project page.
 </p>
     </section>
@@ -19,19 +19,19 @@ administrator, who can be found on the sourceforge project page.
 </p>
 
 <ul>
-<li>Tomas Gustavsson tomas(at)primekey.se, project founder.</li>
-<li>Anna Diruba Christensen dilnet(at)hotmail.com, project homepage design.</li>
-<li>Nathan Phelps nphelps(at)solarc.com, testing, bugfinding and suggestions.</li>
-<li>Leo Tai hkleo(at)users.sourceforge.net, Oracle database configuration.</li>
-<li>Timothy Fisher timothyf(at)users.sourceforge.net], architecture overview.</li>
-<li>Karl-König Königsson karlkoenig(at)users.sourceforge.net, better deployment scripts.</li>
-<li>Thomas Karlsson thomas.karlsson(at)planet.eu.org, firewall script.</li>
-<li>Magnus Broqvist magnus(at)han.pp.se, initial P12toPEM implementation.</li>
-<li>Slava Sklarewski Slava.Sklarewski(at)de.gi-de.com, data flow diagram.</li>
-<li>Leonardo Souza Mario Bueno isbueno(at)users.sourceforge.net, patch for request template path.</li>
-<li>Jean ? icejean(at)21cn.com, support for Sybase and Active Directory, port to Java 1.2/EJB 1.0, suggestions and bugfixes.</li>
-<li>Philip Vendil philip(at)primekey.se, web administration</li>
-<li>Lars Silven lars(at)primekey.se, external connection to smart card personalisation, various additions.</li>
+<li>Tomas Gustavsson, tomas(at)primekey.se, project founder.</li>
+<li>Philip Vendil, philip(at)primekey.se, core developer</li>
+<li>Anna Diruba Christensen, dilnet(at)hotmail.com, project homepage design.</li>
+<li>Nathan Phelps, nphelps(at)solarc.com, testing, bugfinding and suggestions.</li>
+<li>Leo Tai, hkleo(at)users.sourceforge.net, Oracle database configuration.</li>
+<li>Timothy Fisher, timothyf(at)users.sourceforge.net], architecture overview.</li>
+<li>Karl-König Königsson, karlkoenig(at)users.sourceforge.net, better deployment scripts.</li>
+<li>Thomas Karlsson, thomas.karlsson(at)planet.eu.org, firewall script.</li>
+<li>Magnus Broqvist, magnus(at)han.pp.se, initial P12toPEM implementation.</li>
+<li>Slava Sklarewski, Slava.Sklarewski(at)de.gi-de.com, data flow diagram.</li>
+<li>Leonardo Souza Mario Bueno, isbueno(at)users.sourceforge.net, patch for request template path.</li>
+<li>Jean ?, icejean(at)21cn.com, support for Sybase and Active Directory, port to Java 1.2/EJB 1.0, suggestions and bugfixes.</li>
+<li>Lars Silven, lars(at)primekey.se, external connection to smart card personalisation, various additions.</li>
 <li>Gösta Bäckström, gosta.backstrom(at)goyada.com, initial PKCS7 to browsers.</li>
 <li>Ville Skyttä, ville.skytta(at)secgo.com, AdminCertReqServlet, various patches</li>
 <li>Koen Serry, koen(at)serry.org, many improvements.</li>
@@ -40,10 +40,17 @@ administrator, who can be found on the sourceforge project page.
 <li>Thomas Meckel, meckel(at)ophios.com, OCSP.</li>
 <li>Jon Barber, jon.barber(at)acm.org, SCEP testing and fixes.</li>
 <li>surd0007(at)yahoo.com.cn, install guide.</li>
-<li>Mike Jackson, mj(at)sci.fi, Proper LDAP schema.</li>
-<li>Stephane Bailliez , patches all over, XDoclet.</li>
-<li>James A. Rome , additional 'Use fields in DN' for publisher.</li>
-<li>Manuel Ruiz , make admin commands flexible and usable from within java-code</li>
+<li>Mike Jackson, mj(at)sci.fi, Proper LDAP schema. Device certificate schemas.</li>
+<li>Stephane Bailliez, patches all over, XDoclet, new install, configure and cli for 3.1, web.</li>
+<li>Yannick Quenec'hdu, yquenechdu(at)linagora.com french translation.</li>
+<li>James A. Rome, jar(at)ornl.gov, additional 'Use fields in DN' for publisher, JKStoPEM, lots of testing and input.</li>
+<li>Manuel Ruiz, mruiz(at)safa.es, make admin commands flexible and usable from within java-code.</li>
+<li>Risto Laanoja, risto.laanoja(at)eyp.ee, fix for integer overflow when setting CRLPeriod longer than 596 hours.</li>
+<li>Giampaolo Tomassoni. Giampaolo(at)Tomassoni.biz, PostgresSQL 8.0.</li>
+<li>Philipp Faerber, philipp.faerber(at)adnovum.ch, Weblogic 8.1, adminweb sql fix.</li>
+<li>Hu Aranjuez, mynetbus(at)126.com, column name fix for MS SQL2000.</li>
+<li>Marco Ferrante, marco(at)csita.unige.it, Italian translation.</li>
+
 </ul>
     </section>
   </body>

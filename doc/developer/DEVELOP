@@ -180,14 +180,14 @@ CVS
 
 All files should have the below part in the initial class comment:
 
-@version $Id: DEVELOP,v 1.19 2005-03-09 11:22:34 anatom Exp $
+@version $Id: DEVELOP,v 1.1 2005-05-20 11:02:52 anatom Exp $
 
 Example:
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
- * @version $Id: DEVELOP,v 1.19 2005-03-09 11:22:34 anatom Exp $
+ * @version $Id: DEVELOP,v 1.1 2005-05-20 11:02:52 anatom Exp $
  */
 
 All java files should include the following header as the first lines in the file:
