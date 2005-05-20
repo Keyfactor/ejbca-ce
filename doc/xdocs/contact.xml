@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <document>
   <properties>
-    <title>Contacts</title>
+    <title>Contacts and Support</title>
   </properties>
 
   <body>
+    <section name="Documentation">
+    <p>
+    First you should look at the <a href="docs.html">documentation resources</a> on this site.
+    </p><p>
+    Second you should see if there is something interesting in the <a href="faq.html">FAQ</a>.
+    </p>
+    </section>
     <section name="Mailing Lists">
 <p>
 EJBCA has two public mailing lists hosted on Sourceforge. To subscribe to any of the lists or
