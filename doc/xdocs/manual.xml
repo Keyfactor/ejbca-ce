@@ -5,29 +5,25 @@
   </properties>
 <body>
 
-<section name="EJBCA">
+<section name="About">
 <p>
 EJBCA is a fully functional Certificate Authority built in Java.
 Based on J2EE technology it constitutes a robust, high
 performance and component based CA. Both flexible and platform independent,
 EJBCA can be used standalone or integrated in any J2EE application.
 </p><p>
-EJBCA Homepage can be found at http://ejbca.sourceforge.net/.
+The EJBCA Homepage can be found at http://ejbca.sourceforge.net/.
 Information about contacting the EJBCA team, contributing to
 EJBCA, etc can be found through the Homepage.
 </p><p>
-Some documentation can also be found on the homepage, but the majority of
-documentation is located on the documentation site http://docs.primekey.se/.
+More documentation can also be found on the homepage and on the documentation site http://docs.primekey.se/.
 </p><p>
-There is an IRC channel for support at
-irc.freenode.net, channel #ejbca.
-</p><p>
-We encourage and appreciate all contributions. The file
-'doc/contributors' contain a list of all people who have donated
-their valuable time to EJBCA.
+EJBCA is completely written in Java and should as such run on any
+platform where a J2EE server runs. Development and testing is
+performed on Linux and Windows platforms.
 </p></section>
 
-<section name="SECURITY">
+<section name="Security">
 <p>
 Security is discussed below in the chapter about configuration
 and in <a href="security.html">Security</a>.
@@ -41,20 +37,13 @@ firewall script provided in 'ejbcafirewall.sh'. If running on Windows, a
 similar aproach should be taken with firewall software/hardware.
 </p></section>
 
-<section name="PLATFORMS">
-<p>
-EJBCA is completely written in Java and should as such run on any
-platform where a J2EE server runs. Development and testing is
-performed on Linux and Windows platforms.
-</p></section>
-
-<section name="UPGRADE">
+<section name="Upgrade">
 <p>
 See doc/RELEASE_NOTES and UPGRADE for information about upgrading from an 
 earlier version of EJBCA.
 </p></section>
 
-<section name="QUICK START GUIDE">
+<section name="Quick start guide">
 
 <subsection name="Build">
 <p>
@@ -102,10 +91,9 @@ released we can not create scripts that updates the database if some tables chan
 upgrades much much harder.
 </p></subsection>
 
-<subsection name="FOR THE IMPATIENT">
+<subsection name="Install">
 <p>
 Note that the installation must be done with a user with privileges to write to JBOSS_HOME and subdirs. 
-
 
 1) Set the environment variable JBOSS_HOME to where your JBoss is installed,
 example /opt/jboss-4.0.1.
@@ -159,7 +147,7 @@ where AdminCA1 is the CA name as configured in ejbca.properties (default is Admi
 You must stop and start JBoss after doing this.
 </p></subsection>
 
-<subsection name="RUNNING TESTS">
+<subsection name="Running optional tests">
 <p>
 If you want to run a thorough test of your new CA, run the automated tests with 'ant test:run'.
 To run the tests you must copy the file lib/ext/junti-1.5.8 to ANT_HOME/lib.
@@ -177,7 +165,7 @@ Security is CRITICAL for a CA.
 </p></subsection>
 </section>
 
-<section name="AFTER INSTALLATION">
+<section name="After the installation">
 <p>
 After installation, that creates a default admin CA
 you can create more CAs using the admin GUI.
@@ -219,7 +207,7 @@ and the the initial CA created.
 </p></subsection>
 </section>
 
-<section name="Running EJBCA">
+<section name="Using EJBCA">
 
 <subsection name="Creating Users">
 <p>
@@ -307,7 +295,7 @@ chain). Exactly how your server wants the files is server-dependent.
 </p></subsection>
 </section>
 
-<section name="CRL GENERATION">
+<section name="CRL generation">
 <p>
 There are at least two ways to have EJBCA to periodically create updated CRLs.
 The first way is to have a cron job or equivalent to call 'bin/ejbca.sh ca createcrl'.
@@ -367,7 +355,7 @@ http://<i>host:port</i>/ejbca/publicweb/webdist/certdist?cmd=crl&amp;issuer=<i>u
 (such as the link from the webdist pages)
 </p></section>
 
-<section name="SCEP">
+<section name="Scep">
 <p>
 Since SCEP uses encryption, you must install the 'Unlimited Strength Jurisdiction Policy Files' for JDK.
 The policy files can be found at the same place as the JDK 1.4 download. Further information on this can be found in 
@@ -456,7 +444,7 @@ CRYPTO_CA: error = 266: failed to verify
 If someone has any ideas what this means, don't hesitate to let us know.
 </p></section>
 
-<section name="OCSP">
+<section name="Ocsp">
 <p>
 There is an OCSP servlet receiving requests on http://localhost:8080/ejbca/publicweb/status/ocsp. The 
 servlet can process requests for certificates signed by a CA running in EJBCA, as long as the CAs OCSP 
@@ -503,25 +491,7 @@ can be set as OCSP signer in 'Privacy &amp; Security->Validation'. You can do th
 In doc/samples there is a sample how to check revocation with OCSP using the new APIs in JDK 1.5.
 </p></section>
 
-<section name="EXPORT/IMPORT PROFILES">
-<p>
-Certificate and End Entity profiles can be exported as XML files and imported in another instance of EJBCA,
-or in the same instance after removal of the old ones. 
-
-When exporting profiles (bin/ejbca.sh ca exportprofiles), all profiles will be exported to the specified directory. The 
-exported files will be given unique names containing profile name and profile id.
-When importing profiles the profile name and id will be read from the filename. All profiles present in the specified
-directory will be imported.
-
-Fixed profiles will not be imported, they will simply be skipped during import.
-If a profiles with the same name as the one beeing imported already exist, the profiles will not be imported.
-
-Import of profiles try to keep the same profile id. If there already exist a profile with the same id in the database, 
-you might have to edit the filename to choose another id. This can only be done if it is a new profile. 
-The reason the id is kept is that there are references to the profile id from users beloinging to the profile.
-</p></section>
-
-<section name="KEY RECOVERY">
+<section name="Key recovery">
 <p>
 Key Recovery can be used to re-use or restore a users private key. To enable key recovery use the admin-GUI:
 1. Set 'Enable Key Recovery' in 'System Configuration'.
@@ -544,7 +514,7 @@ bin/ejbca.sh ra setclearpwd $username $userpass
 bin/ejbca.sh batch
 </p></section>
 
-<section name="EMAIL NOTIFICATIONS">
+<section name="Email notifications">
 <p>
 Mail settings in jboss is created when running the 'ant install' using the values
 specified in ejbca.properties (or default). If if configured in 
@@ -571,7 +541,84 @@ If you want to re-send a notification for a user, reset the status to NEW.
 If the status is already NEW, set the status to GENERATED and then back to NEW.
 </p></section>
 
-<section name="REFERENCE MANUAL">
+<section name="Export and import profiles">
+<p>
+Certificate and End Entity profiles can be exported as XML files and imported in another instance of EJBCA,
+or in the same instance after removal of the old ones. 
+
+When exporting profiles (bin/ejbca.sh ca exportprofiles), all profiles will be exported to the specified directory. The 
+exported files will be given unique names containing profile name and profile id.
+When importing profiles the profile name and id will be read from the filename. All profiles present in the specified
+directory will be imported.
+
+Fixed profiles will not be imported, they will simply be skipped during import.
+If a profiles with the same name as the one beeing imported already exist, the profiles will not be imported.
+
+Import of profiles try to keep the same profile id. If there already exist a profile with the same id in the database, 
+you might have to edit the filename to choose another id. This can only be done if it is a new profile. 
+The reason the id is kept is that there are references to the profile id from users beloinging to the profile.
+</p></section>
+
+<section name="Internationalization">
+<p>
+To customize EJBCA admin GUI for you languages special characters you may have to 
+change the default page encoding in 'web.contentencoding' (in ejbca.properties file) 
+to for example UTF-8 instead of the default ISO-8859-1.
+
+Displaying, receiving, decoding and storing different char sets is rather complicated and the 
+architecture is multilayered. There is the web browser, application server, database and 
+operating system, all working together.
+If you change to UFT-8 to handle your char set, perhaps you must also specify that the database 
+connection should use UTF-8.
+For MySQL this can be done in the <i>connection-url</i> in your datasource description 
+(JBOSS_HOME/server/default/deploy/ejbca-ds.xml):
+jdbc:mysql://yourhost/ejbca?useUnicode=true&amp;characterEncoding=UTF-8
+
+If you can't get you national characters to work with the admin GUI, you can try using the cli instead
+(bin/ejbca.sh ra adduser ...), that usually works.
+
+EJBCA have for exmaple been tested on Windows/JBoss 4.0.2/MySQL using Swedish national characters, 
+and it works nicely both with the cli and admin-GUI.
+</p>
+
+<subsection name="Adding a new language to the admin GUI">
+<p>
+Java uses unicode internally, so the things that needs to be taken care of are:
+
+1. Make sure your system locale is set correctly, so Java will recognize input of your nations language. 
+If Java does not automatically recognize your locale you might need to specify it as options to java during
+startup (i.e. in JBoss and cmd line commands such as ca.sh and ra.sh).
+java -Duser.language=2-char-language-code -Duser.region=2-char-country-code
+example for Swedish: java -Duser.language=sv -Duser.region=SE
+
+2. Your database must also recognize the locale so it does not strip down to plain ascii. 
+This is database and JDBC-driver dependent.
+
+The admin GUI is meant to support multiple languages through language files
+in src/adminweb/languages.
+In order to add a language you should do the following:
+
+1. Rename the languagefile you have created to
+language.<i>languagecode</i>.properties. In case of chinese it should be 'ch', and place 
+it in the src/adminweb/languages directory.
+
+2. Edit ejbca.properties (create with ejbca.properties.sample as template if you don't have one).
+Change 'web.availablelanguages' and add your language code to the value. i.e:
+&lt;env-entry-value>EN,FR,IT&lt;/env-entry-value>
+
+3. You may have to change the default page encoding in 'web.contentencoding' to for example UTF-8
+instead of the default ISO-8859-1.
+
+4. Clean and re-deploy ejbca with 'ant clean' followed by 'ant deploy'. 
+Restart JBoss and your browser after this.
+
+5. Now it should be possible to select EN, FR and IT in the system configuration as default language 
+and in the administrator preferences page. 
+The language will be changed next time the administrator logs in.
+</p></subsection>
+</section>
+
+<section name="Reference manual">
 <p>
 All configuration options, JNDI names etc is configured through the use of an 
 ejbca.properties file. 
@@ -732,73 +779,14 @@ certificates from the specified CertificateProfile.
 </p></subsection>
 </section>
 
-<section name="INTERNATIONALIZATION">
-<p>
-To customize EJBCA admin GUI for you languages special characters you may have to 
-change the default page encoding in 'web.contentencoding' (in ejbca.properties file) 
-to for example UTF-8 instead of the default ISO-8859-1.
-
-Displaying, receiving, decoding and storing different char sets is rather complicated and the 
-architecture is multilayered. There is the web browser, application server, database and 
-operating system, all working together.
-If you change to UFT-8 to handle your char set, perhaps you must also specify that the database 
-connection should use UTF-8.
-For MySQL this can be done in the <i>connection-url</i> in your datasource description 
-(JBOSS_HOME/server/default/deploy/ejbca-ds.xml):
-jdbc:mysql://yourhost/ejbca?useUnicode=true&amp;characterEncoding=UTF-8
-
-If you can't get you national characters to work with the admin GUI, you can try using the cli instead
-(bin/ejbca.sh ra adduser ...), that usually works.
-
-EJBCA have for exmaple been tested on Windows/JBoss 4.0.2/MySQL using Swedish national characters, 
-and it works nicely both with the cli and admin-GUI.
-</p>
-
-<subsection name="Adding a new language to the admin GUI">
-<p>
-Java uses unicode internally, so the things that needs to be taken care of are:
-
-1. Make sure your system locale is set correctly, so Java will recognize input of your nations language. 
-If Java does not automatically recognize your locale you might need to specify it as options to java during
-startup (i.e. in JBoss and cmd line commands such as ca.sh and ra.sh).
-java -Duser.language=2-char-language-code -Duser.region=2-char-country-code
-example for Swedish: java -Duser.language=sv -Duser.region=SE
-
-2. Your database must also recognize the locale so it does not strip down to plain ascii. 
-This is database and JDBC-driver dependent.
-
-The admin GUI is meant to support multiple languages through language files
-in src/adminweb/languages.
-In order to add a language you should do the following:
-
-1. Rename the languagefile you have created to
-language.<i>languagecode</i>.properties. In case of chinese it should be 'ch', and place 
-it in the src/adminweb/languages directory.
-
-2. Edit ejbca.properties (create with ejbca.properties.sample as template if you don't have one).
-Change 'web.availablelanguages' and add your language code to the value. i.e:
-&lt;env-entry-value>EN,FR,IT&lt;/env-entry-value>
-
-3. You may have to change the default page encoding in 'web.contentencoding' to for example UTF-8
-instead of the default ISO-8859-1.
-
-4. Clean and re-deploy ejbca with 'ant clean' followed by 'ant deploy'. 
-Restart JBoss and your browser after this.
-
-5. Now it should be possible to select EN, FR and IT in the system configuration as default language 
-and in the administrator preferences page. 
-The language will be changed next time the administrator logs in.
-</p></subsection>
-</section>
-
-<section name="ADDING YOUR OWN PUBLIC PAGES">
+<section name="Adding your own public pages">
 <p>
 Put your files (static html is easy) under publicweb/root, do a full build and re-deploy. 
 The indexfile under publicweb/root is the one show on http://<i>ejbcahost</i>:8080/ejbca, 
 so you can add a subdir under there.
 </p></section>
 
-<section name="SAMPLES">
+<section name="Samples">
 <p>
 A collection of samples are in the directory
 src/java/se/anatom/ejbca/samples.
@@ -817,7 +805,7 @@ in the file 'log4j.properties' with:
 </p></section>
 
 
-<section name="DEPENDENCIES">
+<section name="Dependencies">
 <p>
 For ease of installation most dependencies are distributed with EJBCA.
 The minimal requirements to download and install are JBoss and Ant.
@@ -891,7 +879,7 @@ See doc/LICENSE-XDOCLET for license conditions of XDoclet.
 </p></section>
 
 
-<section name="EXTRA ABOUT ADMIN-GUI">
+<section name="Extra info about the admin-GUI">
 <p>
 If you had problems using the install script this small part describes brefly 
 what the setup of the adminweb does. It's explained using older (pre ejbca 3.1) 
@@ -992,7 +980,7 @@ $JAVA_HOME/jre/lib/security/cacerts -storepass changeit
 </p></section>
 
 
-<section name="REFERENCES">
+<section name="References">
 <p>
 Request for Comments: 3280 - Certificate and CRL profile
 Request for Comments: 2253 - DN string representation
