@@ -1,7 +1,7 @@
   <security-constraint>
     <web-resource-collection>
-      <web-resource-name></web-resource-name> 
-      <description></description>
+      <web-resource-name>EJBCA</web-resource-name> 
+      <description>EJBCA Admin-GUI</description>
       <url-pattern>/*</url-pattern>
     </web-resource-collection>
     <user-data-constraint>
