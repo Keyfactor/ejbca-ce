@@ -3,16 +3,14 @@
 - Usage of XDoclet to generate ejb interfaces and deployment descriptors. Lots of XDoclet tagging to simplify development and deployment. 
 - Changed packaging to avoid classes duplication between jars.
 - Much improved configuration, installation and deployment, now there is a single point of configuration using a config file.
-- Added rough French translation for the admin webapp .
+- Added French and Italian translation for the admin-GUI.
 - Add parameter for jboss/weblogic to install.
-- Lots of minor and structural changes.
-- Changed database configuration to make it more flexible for deployment
-- The BaseProperty and PropertyPK entity bean is no more used by the HardTokenPropertyEntityBean
-- se.anatom.ejbca.PropertyPK is not used anymore and it should use se.anatom.ejbca.hardtoken.HardTokenPropertyPK
-- BatchMake has been changed to support a dir (directory attribute). Default is still 'p12'
-- Small text and spelling fixes.
+- Changed database configuration to make it more flexible for deployment.
+- BatchMake has been changed to support a dir (directory attribute). Default is still 'p12'.
 - LDAP object classes for devices.
 - New structure for the cli, it now lives in the bin subdirectory.
+- Reorganization of documentation tree, new xml based web site.
+- Lots of minor and structural changes.
 
 3.0.7
 -----
