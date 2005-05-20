@@ -145,13 +145,8 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
         return returnval;
     }
     
-    public Collection getHardTokenIssuerDatas() {
-        return hardtokensession.getHardTokenIssuerDatas(admin);
-    }
+
     
-    public TreeMap getHardTokenIssuers() {
-        return hardtokensession.getHardTokenIssuers(admin);
-    }
     
     public String[] getHardTokenIssuerAliases() {
         return (String[]) hardtokensession.getHardTokenIssuers(admin).keySet().toArray(new String[0]);
