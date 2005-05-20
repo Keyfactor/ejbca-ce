@@ -2,21 +2,18 @@
 <document>
 
   <properties>
-    <title>How To and Tutorials</title>
+    <title>Resources</title>
   </properties>
 
 <body>
-  <section name="How To and Tutotials">
+  <section name="Resources">
     <p>
-    	The iframe below is just a convenient insertion of the online documentation available
-    	at <a href="http://docs.primekey.se/">docs.primekey.se</a>.
-    </p>
-    <p>
-    	It contains (among other things) step-by-step tutorials using viewlets.
-    </p>
-    <p>
-		<iframe width="80%" height="100%" src="http://docs.primekey.se/documentation/en.html" name="Online Documentation">
-		</iframe>
+    The following resources are available for documentation of EJBCA:
+<ul>
+<li>This site.</li>
+<li><a href="http://docs.primekey.se/">docs.primekey.se</a> - Online documentation including step-by-step tutorials using viewlets.</li>
+<li>Documents in the <strong>doc</strong> subdirectory in the distribution.</li>
+</ul>
     </p>
   </section>
 
