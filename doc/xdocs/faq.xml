@@ -7,13 +7,10 @@
 
   <faqsection title="About this FAQ">
     <faq>
-      <question>When starting JBoss after deployment I get errors like: 'EjbcaDS not bound' ?</question>
+      <question>Where is the log file stored for tracking errors and debug information?</question>
       <answer>
         <p>
-        You probably did a 'and replaceDS' and entered 'EjbcaDS' instead of 'java:/EjbcaDS'.
-        You must search manually in all XML files and replace 'EjbcaDS' with 'java:/EjbcaDS',
-        or perhaps easier and safer, restore the original XML files from the zip file and do
-        'ant replaceDS' again, this time entering 'java:/EjbcaDS'.
+        JBOSS_HOME/server/default/log/server.log.
         </p>
       </answer>
     </faq>
@@ -23,7 +20,7 @@
         <p>
         Put your files (static html is easy) under publicweb/root, do a full build and re-deploy.
         The indexfile under publicweb/root is the one show on http://hostname:8080/ejbca, so
-        you can add a subdir under there
+        you can add a subdir under there.
         </p>
       </answer>
     </faq>
@@ -31,11 +28,10 @@
       <question>I get a blank page on the admiweb after start. ?</question>
       <answer>
         <p>
-		Either you entered a hostname that does not resolve to the machine where EJBCA is running
-		during setup, or you changed the port that JBoss listens to. Make sure the hostname resolves
-		 to the machine ejbca is running on. If you need the change to url, use the command
-		 'setup.sh/cmd setbaseurl'. If you changed port default public http=8080, private https=8443)
-		  you must edit src/adminweb/WEB-INF/web.xml. Change env entries PUBLICPORT resp PRIVATEPORT
+		Either you entered a hostname that does not resolve to the machine where EJBCA is
+running during setup, or you changed the port that JBoss listens to.
+Make sure the hostname resolves to the machine ejbca is running on.
+If you need the change to url, use the command 'bin/ejbca.sh setup setbaseurl'.
         </p>
       </answer>
     </faq>
@@ -43,10 +39,10 @@
       <question>Installation hangs and the https server will not work.</question>
       <answer>
         <p>
-		Perhaps $JBOSS_HOME/bin/tomcat.jks must be executable. All scripts in EJBCA home directory
-		must be executable, run 'chmod u+x *.sh'. Make sure you run the installation of ejbca as a
-		user with enough privileges to write in JBOSS_HOME, preferably the same user as is used to
-		run the JBoss server.
+		Perhaps JBOSS_HOME/server/default/conf/keystore/tomcat.jks must be executable. All scripts in 
+EJBCA_HOME/bin directory must be executable, run 'chmod u+x *.sh'. Make sure you run the 
+installation of ejbca as a user with enough privileges to write in JBOSS_HOME, and to 
+JAVA_HOME/jre/lib/security/cacerts. Preferably the same user as is used to run the JBoss server.
         </p>
       </answer>
     </faq>
@@ -56,40 +52,32 @@
       are refused without error messages in JBoss..</question>
       <answer>
         <p>
-		Tomcat needs the CA-certificate relating to the server certificate in javas trust-store.
-		This is imported when running 'install.sh/cmd' and when you upgraded java, you have a new, empty truststore.
-		Import the CA-certificate in $JAVA_HOME/jre/lib/security/cacerts again, or copy the old truststore
-		from the earlier JAVA_HOME. You can manually import it by exporting the ca-certificate:
-		<source>
-		./ca.sh getrootcert caname root.der -der
-		</source>
-		and importing it in cacerts:
-		<source>
-		keytool -import -trustcacerts -file root.der -keystore $JAVA_HOME/jre/lib/security/cacerts
-		</source>
-        </p>
+Tomcat needs the CA-certificate relating to the server certificate in 
+javas trust-store. This is imported when running 'ant install' and when
+you upgraded java, you have a new, empty truststore.
+Import the CA-certificate in JAVA_HOME/jre/lib/security/cacerts again, 
+or copy the old truststore from the earlier JAVA_HOME.
+You can manually import it by exporting the ca-certificate:
+</p>
+<source>
+'bin/ejbca.sh ca getrootcert caname root.der -der'
+</source>
+<p>
+and importing it in cacerts:
+</p><source>
+'keytool -import -trustcacerts -file root.der -keystore $JAVA_HOME/jre/lib/security/cacerts'
+</source>
       </answer>
     </faq>
     <faq>
-      <question>When running 'install' or creating JKS or PKCS12 files you can't use longer password than 7 characters.
-      Anything longer gives an error</question>
+      <question>When running 'ant install' or creating JKS or PKCS12 files you can't use longer 
+password than 7 characters. Anything longer gives an error?</question>
       <answer>
         <p>
-		If you want to use strong crypto and/or password longer than 7 characters in keystores you must install the
-		 'Unlimited Strength Jurisdiction Policy Files' for JDK. The policy files can be found at the same place
-		 as the JDK 1.4 download. Further information on this can be found in the Sun documentation on the JCE
-        </p>
-      </answer>
-    </faq>
-    <faq>
-      <question>When running then 'Install' command on windows I get the following error: java.io.IOException:
-       CreateProcess: ca.cmd init foo "cn=foo" 1024 23 null error=5</question>
-      <answer>
-        <p>
-		You don't have enough privileges on the file 'ca.cmd'. Change so you have all permissions by right-clicking
-		the file in windows and choosing properties->security. If you have Cygwin or similar installed execute
-		permissions may be needed on .cmd files. Run the command 'chmod a+x *.cmd' in the ejbca directory.
-		Also check the file setup-adminweb.cmd
+		If you want to use strong crypto and/or password longer than 7 characters 
+		in keystores you must install the 'Unlimited Strength Jurisdiction Policy Files' for JDK.
+		The policy files can be found at the same place as the JDK download. 
+		Further information on this can be found in the Sun documentation on the JCE.
         </p>
       </answer>
     </faq>
@@ -100,12 +88,13 @@
 A : Shut down JBoss.
 Alternative 1:
 If you want to simply drop a table, go into the file JBOSS_HOME\server\default\db\hypersonic\default.script and delete the lines that creates the table, for instance to delete the table GLOBALCONFIGURATIONDATA, delete the lines :
-<source>
+</p><source>
 CREATE TABLE GLOBALCONFIGURATIONDATA(CONFIGURATIONID VARCHAR NOT NULL,DATA VARBINARY,UNIQUE(CONFIGURATIONID))
 CREATE UNIQUE INDEX PK_GLOBALCONFIGURATIONDATA ON GLOBALCONFIGURATIONDATA(CONFIGURATIONID)
 </source>
+<p>
 Just for fun you can also delete all lines beginning with: INSERT GLOBALCONFIGURATIONDATA...
-
+</p><p>
 Alternative 2:
 Download HsqlDb fom http://hsqldb.sourceforge.net/. Unpack and in the 'bin'-subdirectory run 'runUtil DatabaseManager'.
 In the window that opens connect to 'HSQL Engine Database In-Memory', select URL 'jdbc:hsqldb:$jboss.home\server\default\db\hypersonic\default'
@@ -127,27 +116,24 @@ JBOSS_HOME\server\default\db\hypersonic\default.properties and set the version t
 	</faq>
     <faq>
       <question>What applications servers do EJBCA run on ?</question>
-	  <answer><p>Version 1.x of EJBCA has been known to run on JBoss, Weblogic and Orion. Version 2.x of EJBCA has only been tested on JBoss, but should run on any EJB2 capable application server.</p></answer>
+	  <answer><p>Official application server used for development is JBoss. Contributors have 
+	  ensured that ejbca works on other applications servers as well. 
+	  </p><p>
+	  Version 3.x of EJBCA has been known to run on JBoss, Jonas and Weblogic.
+	  </p><p>
+	  EJBCA tries to stay as close to the spec as possible and should run on any EJB2
+	  capable application server. Differences are present anyhow so you have to try.
+	  </p></answer>
 	</faq>
     <faq>
       <question>What databases do EJBCA support?</question>
-	  <answer><p>EJBCA supports in theory any database that works with the application server.
-	  The database must have support for long fields, a CRL can in theory become very large.
-EJBCA has been known to work with MySQL, PostgreSQL, Oracle, Sybase, InstantDB, SAPDB and MSSQL 2000.
-Other databases should work with simple configuration.</p>
-	</answer>
-	</faq>
-    <faq>
-      <question>When using JDK 1.4.x i get a java.io.InvalidClassException/?</question>
-	  <answer><p>Since JDK 1.4 introduced incompatibilities during class serialization the PublicKey
-class used as parameter to some versions of the 'createCertificate' method can not be passed correctly.
-You must use JDK 1.4 on both server and client, then it works.
-Another problem that may occur is that JBoss have been upgraded since the release of ejbca so the file 'lib/jboss-client.jar' must be replaced by one from JBoss.
-</p></answer>
-	</faq>
-    <faq>
-      <question>Why are there two versions of all commands, i.e. 'ra.sh' and 'ra.cmd'?</question>
-	  <answer><p>'ra.sh' is for UNIX and 'ra.cmd' for Windows.</p></answer>
+	  <answer><p>EJBCA supports in theory any database that works with the application
+	  server. The database must have support for long fields, a CRL can in theory
+	  become very large.
+	  EJBCA has been known to work with MySQL, PostgreSQL 7 and 8, Oracle 8 and 9, Sybase,
+	  HypersonicSQL, SAPDB and MSSQL 2000.
+	  Other databases should work with some simple configuration of xml-files.
+	  </p></answer>
 	</faq>
     <faq>
       <question>Why do I get the exception/error: User foo has status '40', NEW, FAILED or INPROCESS required.; nested exception is: javax.ejb.EJBException:null</question>
@@ -155,26 +141,27 @@ Another problem that may occur is that JBoss have been upgraded since the releas
 	  beginns with NEW and ends with REVOKED. Only when the status is NEW, FAILED or INPROCESS is it possible
 	  to issue a certificate to a user. After a certificate has been issued, the status is set to GENERATED. This works like a
 	one-time-password scheme. To issue a new certificate to the user his/her status must be reset to NEW, FAILED or INPROCESS.
-	This can be done with:
+	This can be done with the admin-GUI or:
 	<source>
-	ra.sh/cmd setuserstatus username status
+	bin/ejbca.sh ra setuserstatus username status
 	</source>
-	Status '10' is NEW. Just enter 'ra.sh/cmd setuserstatus' to see a list of all status codes.
+	Status '10' is NEW. Just enter 'bin/ejbca.sh ra setuserstatus' to see a list of all status codes.
 	</p>
 	</answer>
 	</faq>
     <faq>
       <question>How do I manipulate EJBCA-keystores using Suns 'keytool'?</question>
 	  <answer><p>EJBCA use PKCS12 format for the keystore because it is a standard, and I like standards.
-Normally keytool (e.g. sun) can read PKCS12 file but not write, so the BouncyCastle JCE is needed to handle PKCS12 keystores.
-Put the BouncyCastle provider 'jce-jdk13-version.jar' in 'jre/lib/ext', the default classpath for extensions in java.
-Now it should be possible to run:
-<source>
+	  Normally keytool (e.g. sun) can read PKCS12 file but not write, so the BouncyCastle JCE is needed to handle PKCS12 keystores.
+	  Put the BouncyCastle provider 'jce-jdk14-version.jar' in 'jre/lib/ext', the default classpath for extensions in java.
+	  Now it should be possible to run:
+	  </p>
+	  <source>
 keytool -list -alias privateKey -keystore server.p12 -storetype PKCS12 -storepass foo123 -provider org.bouncycastle.jce.provider.BouncyCastleProvider
-</source>
-It should be possible to import etc as well using keytool.
-</p>
-</answer>
+	  </source>
+	  <p>
+	  It should be possible to import etc as well using keytool.
+	  </p></answer>
 	</faq>
     <faq>
       <question>How do I make a keystore using keytool with a real certificate from EJBCA?</question>
@@ -182,7 +169,8 @@ It should be possible to import etc as well using keytool.
 <source>
 # First generate a new keystore and a keypair:
 keytool -genkey -alias mykey -keystore myks.jks -keyalg RSA -dname c=SE,O=AnaTom,CN=Test -keypass foo123 -storepass foo123
-# You SUN keystore is now in the file 'myks.jks'. Next generate a certification request (PKCS10):
+# You SUN keystore is now in the file 'myks.jks'. 
+# Next generate a certification request (PKCS10):
 keytool -certreq -alias mykey -sigalg SHA1WithRSA -file myreq.p10 -keypass foo123 -keystore myks.jks -storepass foo123
 </source>
 <p>
@@ -212,16 +200,16 @@ arguments to every command above:
 </source>
 <p>
 unforturnately a bug in keytool prevents this from functioning properly at the moment, therefore I
-recommend using the 'ca.sh/cmd' to create PKCS12 keystores. It can be used to create keystores generally,
+recommend using the 'bin/ejbca.sh ca' to create PKCS12 keystores. It can be used to create keystores generally,
 not just for CAs.
 </p>	  
 	  </answer>
 	</faq>
     <faq>
       <question>What aliases do a EJBCA keystore contain?</question>
-	  <answer><p>The keystore EJBCA uses is a PKCS12 keystore. The CAs private key and certificate is cotained in the alias 'privateKey', as configures in 'src/ca/ca/META-INF/ejb-jar.xml'.
+	  <answer><p>The keystore EJBCA uses is a PKCS12 keystore. The CAs private key and certificate is contained in the alias 'privateKey'.'.
 
-If the CA is not a Root CA, i.e. the certificate in alias 'privateKey' is signed by another certificate, that CA certificate (Root certificate) is conatined in the alias with the same name as the CN part of the Root CAs DN, i.e. the CN part of the issuer DN from the certificate in 'privateKey'.
+If the CA is not a Root CA, i.e. the certificate in alias 'privateKey' is signed by another certificate, that CA certificate (Root certificate) is contained in the alias with the same name as the CN part of the Root CAs DN, i.e. the CN part of the issuer DN from the certificate in 'privateKey'.
 </p></answer>
 	</faq>
     <faq>
@@ -232,11 +220,6 @@ If the CA is not a Root CA, i.e. the certificate in alias 'privateKey' is signed
       <question>Is EJBCA compatible with another JCE apart from BouncyCastle (for example Cryptix)?</question>
 	  <answer><p>No, this is beacaues only BouncyCastle contains classes to actually generate certificates and CRLs. Normal JCE only allows usage, not creation.</p></answer>
 	</faq>
-    <faq>
-      <question>Where is logging performed and how do I control it?</question>
-	  <answer><p>Logging is done using Log4j. Anything below DEBUG level is considered important information. Logging in JBoss is configured in 'log4j.properties' in the JBoss config directory.</p></answer>
-	</faq>
-        
 
   </faqsection>
 
