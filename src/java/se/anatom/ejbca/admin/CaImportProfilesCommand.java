@@ -27,7 +27,7 @@ import se.anatom.ejbca.ra.raadmin.EndEntityProfileExistsException;
 /**
  * Export profiles from the databse to XML-files.
  *
- * @version $Id: CaImportProfilesCommand.java,v 1.10 2005-04-29 08:15:45 anatom Exp $
+ * @version $Id: CaImportProfilesCommand.java,v 1.11 2005-05-21 14:29:13 anatom Exp $
  */
 public class CaImportProfilesCommand extends BaseCaAdminCommand {
     /**
@@ -80,7 +80,11 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                         // We don't add the fixed profiles, EJBCA handles those automagically
                         if ( (!entityprofile && profileid == SecConst.CERTPROFILE_FIXED_ENDUSER) || 
                             (!entityprofile && profileid == SecConst.CERTPROFILE_FIXED_SUBCA) ||
-                            (!entityprofile && profileid == SecConst.CERTPROFILE_FIXED_ROOTCA) ) { 
+                            (!entityprofile && profileid == SecConst.CERTPROFILE_FIXED_ROOTCA) ||
+                            (!entityprofile && profileid == SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH) ||
+                            (!entityprofile && profileid == SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC) ||
+                            (!entityprofile && profileid == SecConst.CERTPROFILE_FIXED_HARDTOKENENC) ||
+                            (!entityprofile && profileid == SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN) ) { 
                             getOutputStream().println("Not adding fixed certificate profile '"+profilename+"'.");
                         } else {
                             if (entityprofile && profileid == SecConst.EMPTY_ENDENTITYPROFILE) {
