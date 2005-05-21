@@ -18,7 +18,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * This is a  class containing global configuration parameters.
  *
- * @version $Id: GlobalConfiguration.java,v 1.17 2005-04-26 14:19:00 anatom Exp $
+ * @version $Id: GlobalConfiguration.java,v 1.18 2005-05-21 14:21:14 anatom Exp $
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
 
@@ -45,7 +45,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     private static final  String   DEFAULTFOOTBANNER             = "foot_banner.jsp";
 
     // Title of ra admin web interface.
-    private static final  String   DEFAULTEJBCATITLE             = "Enterprise Java Bean Certificate Authority";
+    private static final  String   DEFAULTEJBCATITLE             = "EJBCA Administration";
 
     // Language codes. Observe the order is important
     public static final  int      EN                 = 0;
