@@ -663,7 +663,8 @@ jdbc:mysql://yourhost/ejbca?useUnicode=true&amp;characterEncoding=UTF-8
 If you can't get you national characters to work with the admin GUI, you can try using the cli instead
 (bin/ejbca.sh ra adduser ...). That usually works.
 </p><p>
-EJBCA have for exmaple been tested on Windows/JBoss 4.0.2/MySQL using Swedish national characters, 
+EJBCA have for exmaple been tested on Windows/JBoss 4.0.2/MySQL and Linux/JBoss4.0.1sp1/HSQL with 
+the default configuration using Swedish national characters, 
 and it works nicely both with the cli and admin-GUI.
 </p>
 
