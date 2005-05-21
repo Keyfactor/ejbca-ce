@@ -22,8 +22,6 @@
                 <item name="FAQ"				href="/faq.html"/>
                 <item name="Security"			href="/security.html"/>
                 <item name="User Guide"			href="/manual.html"/>
-                
-                <item name="JavaDoc"            href="http://ejbca.sourceforge.net/docs/api/index.html"/>
             </menu>
 
             <menu name="Download">

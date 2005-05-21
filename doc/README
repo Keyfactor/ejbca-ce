@@ -1,21 +1,26 @@
 This software is OSI Certified Open Source Software.
 OSI Certified is a certification mark of the Open Source
 Initiative.
-
 EJBCA is licensed under the LGPL license, please see licenses/LICENSE.
 
+Documentation
+-------------
 The main documentation for EJBCA is contained in XML format in the xdocs subdirectory.
-You can build nice looking html pages from this by running 'ant -f docs.xml' from the 
-ejbca home directory. This will produce the same site as displayed on http://ejbca.sf.net/ 
+You can build nice looking html pages from this by running 
+ant doc 
+from the ejbca home directory (EJBCA_HOME). This will produce the same site as displayed on http://ejbca.sf.net/ 
 (or an earlier or later version).
-
-In this directory you will find RELEASE_NOTES with some notes relating to this specific release and
-UPGRADE with information about upgrading from an earlier version of EJBCA.
+The docs will be located in EJBCA_HOME/tmp/htdocs.
 
 In the subdirectories here hides some other docs:
-- xdocs contains the main documentation distributed with ejbca.
+- xdocs contains the main xml documentation distributed with ejbca, build into html as noted above.
 - howto contains howtos for various things, such as databases, application servers, smart card login etc.
 - ldapschema contains an addition to the standard ldap schema in order to support devices with certificates.
 - licenses contains the license for EJBCA and depending projects.
 - samples contains some sample code that does not fit on the source tree
-- developer contains information for developers and architecture documents.
+- developer contains architecture documents and information for developers.
+
+Release notes and upgrade
+-------------------------
+In this directory you will find RELEASE_NOTES with some notes relating to this specific release and
+UPGRADE with information about upgrading from an earlier version of EJBCA.

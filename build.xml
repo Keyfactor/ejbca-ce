@@ -393,6 +393,13 @@ web.contentencoding    = ${web.contentencoding}
 		</ear>
     </target>
 
+    <!-- ===================================================================
+         Build documentation website from doc/xdocs
+         =================================================================== -->
+    <target name="doc" description="Build EJBCA web site and docs">
+        <ant dir="${ejbca.home}" antfile="docs.xml" />
+    </target>
+    
     <!-- =================================================================== -->
     <!-- Build Javadoc part                                                  -->
     <!-- =================================================================== -->
