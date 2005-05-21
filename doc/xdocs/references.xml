@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<document>
+
+  <properties>
+    <title>References</title>
+  </properties>
+
+<body>
+  <section name="References">
+	<subsection name="RFCs">
+	<p>
+	<ul>
+		<li> <a href="http://www.faqs.org/rfcs/rfc3280.html">RFC 3280</a> - Certificate and CRL profile</li>
+		<li> <a href="http://www.faqs.org/rfcs/rfc2253.html">RFC 2253</a> - DN string representation</li>
+		<li> <a href="http://www.faqs.org/rfcs/rfc2560.html">RFC 2560</a> - OCSP</li>
+		<li> <a href="http://www.faqs.org/rfcs/rfc2256.html">RFC 2256</a> - X.500(96) User Schema for use with LDAPv3</li>
+	</ul>
+	</p>
+	</subsection>
+	
+	<subsection name="MySQL">
+	<p>
+	MySQL:
+	Create ALTER-scrips automatically to upgrade database from old
+	version to latest development version:
+	http://www.mysqldiff.org/
+	</p>
+	</subsection>
+	<subsection name="Swedish characters in Java/Jboss">
+	<p>	
+Add the following options to the JVM by modifying JAVA_OPTIONS
+in run.sh/cmd.
+</p>
+<source>
+-Duser.region=SE -Duser.language=sv -Dfile.encoding=ISO-8859-1
+</source>
+</subsection>
+
+<subsection name="PGP">
+<p>
+PKCS12 files generated from EJBCA works excellent as PGP-keys.
+</p>
+</subsection>
+
+<subsection name="Netscape/Mozilla Key Generation">
+<ul>
+  <li>KEYGEN - <a href="http://home.netscape.com/eng/security/comm4-keygen.html">Netscape Extension for Key Generation</a></li>
+</ul>
+<p>
+For Netscape/Mozilla to be able to verify client certificates
+the CA-certificates must have the extensions BasicConstraints and
+AuthorityKeyIdentifier. Client certificates also need AuthorityKeyIdentifier
+</p>
+</subsection>
+
+<subsection name="Microsoft Internet Explorer Key Generation">
+<p>
+For MSIE to verify client certs, the ordering in the DN must be strictly the same in both
+client and CA certs. Possibly that it must also be in a specific order.
+</p>
+<p>
+There is some bug that required a "nocache" meta tag to eliminate duplicate sending of certificate request.
+This duplicate sending will result in wrong behaviour, since user status will be wrong.
+</p>
+<source>
+<![CDATA[<HEAD>
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache" >
+<META HTTP-EQUIV="Expires" CONTENT="-1" >
+</head>]]>
+</source>
+<p>
+Microsoft Knowledge Base documents
+</p>
+<ul>
+<li><a href="http://support.microsoft.com/default.aspx?scid=kb;EN-US;q281245">q281245</a> - Guidelines for Enabling Smart Card Logon with Third-Party Certification Authorities</li>
+<li><a href="http://support.microsoft.com/default.aspx?scid=kb;EN-US;q291010">q291010</a> - Requirements for Domain Controller Certificates from a Third-Party CA</li>
+<li><a href="http://www.microsoft.com/windows2000/en/server/help/default.asp?url=/windows2000/en/server/help/sag_CS_CertTemps.htm">Certificate templates</a></li>
+<li><a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/seccrypto/security/using_the_certificate_enrollment_control_properties.asp">Using the Certificate Enrollment Control Properties</a></li>
+</ul>
+</subsection>
+  </section>
+
+</body>
+</document>
+

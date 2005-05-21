@@ -19,6 +19,7 @@
             <menu name="Documentation">
                 <item name="Architecture"		href="/architecture.html"/>
                 <item name="Resources"          href="/docs.html"/>
+                <item name="References"         href="/references.html"/>
                 <item name="FAQ"				href="/faq.html"/>
                 <item name="Security"			href="/security.html"/>
                 <item name="User Guide"			href="/manual.html"/>

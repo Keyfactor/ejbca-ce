@@ -1,5 +1,19 @@
 ## This is where the common macro's live
 
+#macro (note $data)
+<div class="frame note">
+<div class="label">Note</div>
+<div class="content">$data.content</div>
+</div>
+#end
+
+#macro (warning $data)
+<div class="frame warning">
+<div class="label">Warning</div>
+<div class="content">$data.content</div>
+</div>
+
+
 #macro ( table $table)
   #if ($table.getAttributeValue("class"))
     #set ($class = $table.getAttributeValue("class"))
@@ -41,7 +55,7 @@
   <td colspan="$!colspan" rowspan="$!rowspan"
       valign="top" align="left">
     #if ($value.getText().length() != 0 || $value.hasChildren())
-      $xmlout.outputString($value, true)
+      $value.content
     #else
       &nbsp;
     #end
@@ -62,7 +76,7 @@
   <th colspan="$!colspan" rowspan="$!rowspan"
       valign="top" align="left">
     #if ($value.getText().length() != 0 || $value.hasChildren())
-      $xmlout.outputString($value, true)
+      $value.content
     #else
       &nbsp;
     #end

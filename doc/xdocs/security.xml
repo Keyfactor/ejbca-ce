@@ -6,25 +6,26 @@
 <body>
 <section name="EJBCA SECURITY">
 <p>
-NOTE!
-Security is CRITICAL for a CA. Protection of the CAs private key is esential,
+Security is CRITICAL for a CA. Protection of the CAs private key is essential,
  since compromise of the CAs private key will let anyone issue false
  certificates, which can be used to gain access to systems relying on the CA for
  authentication and other security services.
- </p><p>
+ </p>
+ <p>
 After realizing this, please read on and take a pragmatic approach to security
  suitable for your policy, application and environment.
 </p></section>
 
 <section name="Setting up SSL">
 <p>
-To set upp SSL communcation for all HTTP-traffic to the server 
+To set upp SSL communication for all HTTP traffic to the server 
 follow the instructions for installing EJBCA, this will set up HTTPS 
 for the admin-GUI.
  </p><p>
 This will set up an SSL port open for the public at 8442 and an SSL port
 which require client certificate to access the administraton pages at 8443.
-</p></section>
+</p>
+</section>
 
 <section name="Java truststore">
 <p>
@@ -34,37 +35,42 @@ many others present as shipped by Java, which means that anyone with a certifica
 by one of those CAs can access port 8443 on you JBoss server. They can not access the admin-GUI however,
 since EJBCA checks authorization. If you want to limit the accessibility to only certificates issued
 by EJBCA you should replace the original cacerts file with one containing only the EJBCA root certificate.
-</p><p>
-
-You can create a new keystore with the command:<br></br>
+</p>
+<p>
+You can create a new keystore with the command:
+</p>
+<source>
 keytool -import -alias AdminCA1 -trustcacerts -file root.der -keystore /home/jboss/java/cacerts
-</p><p>
-
-Where root.der is the root certificate from EJBCA that you saved, for instance with the command:<br></br>
+</source>
+<p>
+Where root.der is the root certificate from EJBCA that you saved, for instance with the command:
+</p>
+<source>
 bin/ejbca.sh ca getrootcert AdminCA1 root.der -der
-</p><p>
-
+</source>
+<p>
 AdminCA1 is the name of your CA that you are using for server and administrator certificates in EJBCA.
-</p></section>
+</p>
+</section>
 
 <section name="Configuring for security">
 <p>
-The easiest way to keep the installation secure is to block all JBOSS ports
- (1099, 1476, 4444, 8082, 8083) from the outside and only allow traffic to
- Tomcat ports (8442 and 8443).
+The easiest way to keep the installation secure is to block all default JBOSS ports
+ (1099, 1476, 4444, 8082, 8083) from the outside and only allow traffic to Tomcat ports (8442 and 8443).
 This is because the public end-user actions can be performed through the public
- servlets, while administration tasks are performed directly on the beans.
-</p><p>
-
+servlets, while administration tasks are performed directly on the beans.
+</p>
+<p>
 See 'ejbcafirewall.sh' for an example how to configure an Iptables firewall in
 Linux for protecting EJBCA running on JBoss.
-</p><p>
-
-See www.jboss.org for a list of ports used in JBOSS, for information about
+</p>
+<p>
+See <a href="http://www.jboss.org/">JBoss documentation</a> for a list of ports used in JBoss, for information about
  security in JBOSS/EJB and for how to set up SSL with JBOSS.
-See http://www.javaworld.com/javaworld/jw-08-2001/jw-0831-jaas_p.html for more
+See this <a href="http://www.javaworld.com/javaworld/jw-08-2001/jw-0831-jaas_p.html">JavaWorld article</a> for more
  examples about setting up role-permissions.
-</p></section>
+</p>
+</section>
 
 <section name="File permission">
 <p>

@@ -1,78 +1,68 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 ## Content Stylesheet for Site
-    ## Defined variables
-    #set ($lightbg = "#ffffff")
-    #set ($lightfg = "#ffffff")
-    #set ($darkfg = "#000000")
-    #set ($active = "#ffcc00")
-    #set ($blue4 = "#B2C4E0")
-    #set ($blue3 = "#294563")
-    #set ($blue2 = "#4C6C8F")
-    #set ($blue1 = "#CFDCED")
-    #set ($sourceborder = "#023264")
     #set ($pound = "#" )
+
 ## start the processing
 #document()
 ## end the processing
 
+#macro (process $element)
+	#set ($name = $element.getName())
+	#if ($name.equals("img"))
+	  #image ($element)
+	#elseif ($name.equals("source"))
+	  #source ($element)
+	#elseif ($name.equals("table"))
+	  #table ($element)
+    #elseif ($name.equals("subsection"))
+      #subsection ($element)
+	#elseif ($name.equals("subsubsection"))
+	  #subsubsection ($element)
+	#elseif ($name.equals("note"))
+	  #note ($element)
+	#elseif ($name.equals("warning"))
+	  #warning ($element)
+	#else
+	  $element
+	#end
+#end
+
 ## This is where the common page macro's live
 
 #macro ( subsection $subsection)
-      <h4 class="subsection">
+	  <div class="subsection">
+      <h4>
         <a name="$escape.getText($subsection.getAttributeValue("name"))"></a>
         $subsection.getAttributeValue("name")
       </h4>
       #foreach ( $items in $subsection.getChildren() )
-        #if ($items.getName().equals("img"))
-          #image ($items)
-        #elseif ($items.getName().equals("source"))
-          #source ($items)
-        #elseif ($items.getName().equals("table"))
-          #table ($items)
-        #elseif ($items.getName().equals("subsubsection"))
-          #subsubsection ($items)
-        #else
-          $xmlout.outputString($items)
-        #end
+		#process($items)
       #end
+      </div>
 #end
 
 #macro ( subsubsection $subsubsection)
-      <h5 class="subsection">
+	  <div class="subsubsection">
+      <h5>
         <a name="$escape.getText($subsubsection.getAttributeValue("name"))"></a>
         *** $subsubsection.getAttributeValue("name") ***
       </h5>
       #foreach ( $items in $subsubsection.getChildren() )
-        #if ($items.getName().equals("img"))
-          #image ($items)
-        #elseif ($items.getName().equals("source"))
-          #source ($items)
-        #elseif ($items.getName().equals("table"))
-          #table ($items)
-        #else
-          $xmlout.outputString($items)
-        #end
+		#process($items)
       #end
+      </div>
 #end
 
 #macro ( section $section)
-    <h3 class="section">
+    <div class="section">
+    <h3>
       <a name="$escape.getText($section.getAttributeValue("name"))"></a>
       $section.getAttributeValue("name")
     </h3>
       #foreach ( $items in $section.getChildren() )
-        #if ($items.getName().equals("img"))
-          #image ($items)
-        #elseif ($items.getName().equals("source"))
-          #source ($items)
-        #elseif ($items.getName().equals("table"))
-          #table ($items)
-        #elseif ($items.getName().equals("subsection"))
-          #subsection ($items)
-        #else
-          $xmlout.outputString($items)
-        #end
+		#process($items)
       #end
+      </div>
 #end
 
 ## This is where the FAQ specific macro's live
@@ -89,7 +79,7 @@
 #macro (subtoc $faq)
   #set ($id = $faq.getAttributeValue("id"))
       <li><a href="$pound$id">
-  $xmlout.outputString($faq.getChild("question"), true)
+  $faq.getChild("question").content
       </a></li>
 #end
 
@@ -106,16 +96,29 @@
       $xmlout.outputString($faq.getChild("question"), true)
     </p>
     #foreach ($item in $faq.getChild("answer").getChildren())
-      #if ($item.getName().equals("img"))
-        #image ($item)
-      #elseif ($item.getName().equals("source"))
-        #source ($item)
-      #elseif ($item.getName().equals("table"))
-        #table ($item)
-      #else
-        $xmlout.outputString($item)
-      #end
+		#process($item)
     #end
+#end
+
+#macro (minitoc $root)
+#if ($root.getChild("body").getChildren("section").size() > 0)
+ #set ($sections = $root.getChild("body").getChildren("section"))
+ <div id="minitoc-area">
+ <ul class="minitoc">
+ #foreach ( $section in $sections )
+   <li><a href="#$escape.getText($section.getAttributeValue("name"))">$section.getAttributeValue("name")</a></li>
+   #set ($subsections = $section.getChildren("subsection"))
+   #if ($subsections.size() > 0)
+	 <ul class="minitoc">
+	 #foreach ( $subsection in $subsections )
+	   <li><a href="#$escape.getText($subsection.getAttributeValue("name"))">$subsection.getAttributeValue("name")</a></li>
+	 #end
+	 </ul>
+   #end   
+ #end
+ </ul>
+ </div>
+#end
 #end
 
 #macro (document)
@@ -123,6 +126,7 @@
   <div class="main">
   <div class="content">
     <h1 class="title">$root.getChild("properties").getChild("title").getText()</h1>
+    #minitoc ($root)
   #set ($allSections = $root.getChild("body").getChildren("section"))
   #foreach ( $section in $allSections )
     #section ($section)
