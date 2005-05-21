@@ -16,7 +16,6 @@ package se.anatom.ejbca.webdist.hardtokeninterface;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.TreeMap;
 
 import javax.servlet.http.HttpServletRequest;
 
