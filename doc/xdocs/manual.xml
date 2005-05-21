@@ -643,6 +643,10 @@ If a profiles with the same name as the one beeing imported already exist, the p
 Import of profiles try to keep the same profile id. If there already exist a profile with the same id in the database, 
 you might have to edit the filename to choose another id. This can only be done if it is a new profile. 
 The reason the id is kept is that there are references to the profile id from users beloinging to the profile.
+</p><p>
+One issue to notice regarding import/export of profiles is that if you export an entity profile with 'Available CAs' put to a CA that does not exist where you import the profile, you will not see it.
+Before exporting the profiles, you should set 'Available CAs' to a CA that is also present (with the same DN=caid) on the other CA.   
+This is not ideal, but it is a consequence of how the authorization system works, you are not authorized to see the imported profiles when the caid is unknown. 
 </p></section>
 
 <section name="Internationalization">
