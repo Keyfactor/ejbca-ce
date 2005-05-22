@@ -154,10 +154,10 @@ or http://localhost:8080/ejbca for the public pages.
 If you did not have root permission and get an error during installation step 5, you can 
 install the root certificate afterwards with the following commands, WITH the right permissions:
 </p><p>
-<pre>
+<source>
 bin/ejbca.sh ca getrootcert AdminCA1 ca.crt -der
 keytool -import -trustcacerts -alias AdminCA1 -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit -file ca.crt
-</pre>
+</source>
 </p><p>
 where AdminCA1 is the CA name as configured in ejbca.properties (default is AdminCA1).
 You must stop and start JBoss after doing this.
@@ -188,11 +188,11 @@ You can administrate EJBCA using a web browser and the admin-GUI, this is the ea
 You can also use the command line interface (cli) which is called by 'bin/ejbca.sh'. 
 If you call ejbca.sh you get a list of available commands, and you can get help for all commands by calling
 them without arguments, i.e:
-<pre>
+<source>
 bin/ejbca.sh ca
 bin/ejbca.sh ra adduser
 etc etc
-</pre>
+</source>
 </p>
 </subsection>
 <subsection name="Creating more CAs">
@@ -223,9 +223,9 @@ cli for that.
 <subsection name="Converting an OpenSSL CA">
 <p>
 You can convert a PEM-style Root CA key to a PKCS12 file that can be imported in EJBCA.
-<pre>
+<source>
 openssl pkcs12 -export -out server1.p12 -inkey cakey.pem -in ca.pem -name privateKey
-</pre>
+</source>
 </p><p>
 You can import the CA with the cli command 'bin/ejbca.sh ca importca'.
 </p></subsection>
@@ -303,9 +303,9 @@ and keystore password) by the users password.
 </p><p>
 It is also possible to use openssl to transform a PKCS12 file to PEM-
 format.
-<pre>
+<source>
 openssl pkcs12 -in <i>pkcs12-file</i> -nodes
-</pre>
+</source>
 </p><p>
 copy and paste the private key to key file, the first certificate to
 server cert file and last certificate to CA cert file (If your CA is a
@@ -324,9 +324,9 @@ multiple URLs for CDPs if they are separated by ';'.
 For example: http://cdpurl-1/mycrl.der;http://cdpurl-2/crl.crl
 </p><p>
 A CRLDistributionPoint for a CA in EJBCA could look like:
-<pre>
+<source>
 http://<i>host:port</i>/ejbca/publicweb/webdist/certdist?cmd=crl&amp;issuer=<i>url-encoded-issuerDN</i>
-</pre>
+</source>
 </p><p>
 (such as the link from the webdist pages)
 </p><p>
@@ -348,13 +348,13 @@ In this way we will in the worst case get the overlap time (10 min) as the time 
 fetch the new CRL before the old one expires.
 
 The attribute can have the following values:
-<pre>
+<source>
             DAILY     =  Every midnight
             HOURLY  =  At XX:00 every hour.
             30MIN    =  At XX:30 and XX:00 every hour
             15MIN    =  At XX:15, XX:30, XX:45,XX:00, every hour 
             1MIN      =  Every minute
-</pre>
+</source>
 </p>
 </subsection>
 <subsection name="Cron job">
@@ -366,26 +366,25 @@ otherwise nothing is done.
 If you want to force CRL generation for a CA, use 'bin/ejbca.sh ca createcrl <i>caname</i>'
 </p><p>
 Example crontab entry:
-</p><p>
-<pre>
+</p>
+<source>
 PATH=$PATH:/usr/java/jdk1.4.2_01/bin
 @daily cd /home/ejbca;/home/ejbca/ca.sh createcrl;
-</pre>
-</p><p>
+</source>
+<p>
 where '/usr/java/jdk1.4.2_01/bin' is the path to where 'java' can be found.
 '/home/ejbca' is where ejbca is installed and 'ca.sh' located.
 </p><p>
 Sample crontab to be installed with 'crontab -e':
-<pre>
+</p>
+<source>
 SHELL=/bin/sh
-PATH=
-/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 CLASSPATH=$CLASSPATH:/root/ejbca:/root/ejbca/admin.jar
 JBOSS_HOME=/usr/local/jboss
 # m h dom mon dow command
 00 0    * * *   cd /root/ejbca;./ca.sh createcrl
-</pre>
-</p>
+</source>
 </subsection>
 </section>
 
@@ -414,32 +413,37 @@ The most common errors should be wrong username/password or wrong status (not NE
 <subsection name="Tested devices">
 <subsubsection name="OpenScep">
 <p>
-To use the OpenScep (http://openscep.othello.ch/) client to request a certificate from this servlet, use the command:
-<pre>
+To use the <a href="http://openscep.othello.ch/">OpenScep</a> client to request a certificate from this servlet, use the command:
+</p>
+<source>
 ./scep -k test.key -r test.pemreq -c ejbca-ca.pem -q foo123 -u http://localhost:8080/ejbca/publicweb/apply/scep
 rem ./scep -d -k test.key -r test.pemreq -2 -e test.req -c ejbca-ca.pem -q foo123 -u http://localhost:8080/ejbca/publicweb/apply/scep
-</pre>
-</p><p>
+</source>
+<p>
 Where test.key is generated with:
-<pre>
+</p>
+<source>
 openssl genrsa -out test.key
-</pre>
-</p><p>
+</source>
+<p>
 test1.req is generated with:
-<pre>
+</p>
+<source>
 openssl req -key test.key -new -days 30 -out test.req -outform DER -config ../openssl/openscep.cnf
-</pre>
-</p><p>
+</source>
+<p>
 and test1.pemreq is generated with:
-<pre>
+</p>
+<source>
 openssl req -key test.key -new -days 30 -out test.pemreq -outform PEM -config ../openssl/openscep.cnf
-</pre>
-</p></subsubsection>
+</source>
+</subsubsection>
 <subsubsection name="Simple Scep Client (sscep)">
 <p>
-Simple Scep Client (http://www.klake.org/~jt/sscep/).
+<a href="http://www.klake.org/~jt/sscep/">Simple Scep Client</a>.
 You should only use CN in the users DN (same as for PIX below).
-</p></subsubsection>
+</p>
+</subsubsection>
 <subsubsection name="Juniper Networks NetScreen-25/NetScreen-50">
 <p>
 Working.
@@ -484,7 +488,8 @@ Cisco's PKI protocol uses the clock to make sure that a CRL is not expired.
 Set timezone first, then set time, then check time with 'show clock'.
 </p><p>
 The enrollment steps should be something like:
-<pre>
+</p>
+<source>
 ca identity pixca <i>ca-ip</i>:/ejbca/publicweb/apply/scep/pkiclient.exe
 ca configure pixca ca 1 0 crloptional
 ca authenticate pixca
@@ -497,18 +502,20 @@ ca crl request pixca
 show ca crl
 ca enroll pixca foo123
 --wait--
-</pre>
-</p><p>
+</source>
+<p>
 Unforturnately this gives the following error for me:
-<pre>
+</p>
+<source>
 CRYPTO_CA: error = 293: failed to verify
-</pre>
-</p><p>
+</source>
+<p>
 or sometimes:
-<pre>
+</p>
+<source>
 CRYPTO_CA: error = 266: failed to verify 
-</pre>
-</p><p>
+</source>
+<p>
 If someone has any ideas what this means, don't hesitate to let us know.
 </p></subsubsection>
 </subsection>
@@ -541,10 +548,11 @@ These values should be set during deployment of EJBCA. After the values have bee
 with the 'ant deploy' command.
 </p><p>
 Example to generate an OCSP request using OpenSSL:
-<pre>
+</p>
+<source>
 openssl ocsp -issuer Test-CA.pem -CAfile Test-CA.pem -cert Test.pem -req_text -url http://localhost:8080/ejbca/publicweb/status/ocsp
-</pre>
-</p><p>
+</source>
+<p>
 If Mozilla is to request and accept OCSP-responses from a CA it must be configured:
 <ol>
 <li>'Use OCSP to validate all certificates using this URL and signer' in 'Privace &amp; Security->Validation'.
@@ -580,25 +588,29 @@ The following is an example of a sequence of commands that can be used to genera
 same key pair:
 </p><p>
 # First revoke <i>username</i>, with revocation reason <i>reason</i>,
-<pre>
+</p>
+<source>
 bin/ejbca.sh ra revokeuser $username $reason
-</pre>
-</p><p>
+</source>
+<p>
 # then mark the certificate for keyrecovery,
-<pre>
+</p>
+<source>
 bin/ejbca.sh ra keyrecovernewest $username
-</pre>
-</p><p>
+</source>
+<p>
 # then set clear text password for Batch session to use
-<pre>
+</p>
+<source>
 bin/ejbca.sh ra setclearpwd $username $userpass
-</pre>
-</p><p>
+</source>
+<p>
 # and finally reissue the certificate.
-<pre>
+</p>
+<source>
 bin/ejbca.sh batch
-</pre>
-</p></section>
+</source>
+</section>
 
 <section name="Email notifications">
 <p>
@@ -888,98 +900,16 @@ src/java/se/anatom/ejbca/samples.
 <p>
 Add Debug output from the console administration commands by
 replacing:
-<pre>
+<source>
     log4j.rootCategory=INFO, Console
-</pre>
+</source>
 in the file 'log4j.properties' with:
-<pre>
+<source>
     log4j.rootCategory=DEBUG, Console
-</pre>
+</source>
 </p></section>
 
 
-<section name="Dependencies">
-<p>
-For ease of installation most dependencies are distributed with EJBCA.
-The minimal requirements to download and install are JBoss and Ant.
-</p>
-<subsection name="Bouncycastle">
-<p>
-
-For cryptography and creation of certificates and CRLs, EJBCA
-uses the open source JCE crypto provider from Bouncy Castle,
-http://www.bouncycastle.org/.
-</p><p>
-The provider is distributed with EJBCA as 'bcprov-
-jdk14.jar' and 'bcmail-jdk14.jar'.  
-The latest version of the JCE provider can always be obtained from Bouncy Castle.
-</p><p>
-Bouncy Castle JCE is Copyright (c) 2000 The Legion Of The Bouncy
-Castle, http://www.bouncycastle.org/.
-See doc/LICENSE-BC for license conditions of the Bouncy Castle JCE.
-</p></subsection>
-
-<subsection name="JBoss">
-<p>
-EJBCA is developed on the open source J2EE application server
-JBoss http://www.jboss.org/. 
-</p><p>
-JBoss and jars from JBoss are Copyright (c) 1999-2001 jboss.org.
-</p><p>
-Jar files needed to run EJBCA is distributed with EJBCA. 
-See doc/LICENSE-JBOSS for license conditions of JBoss.
-</p></subsection>
-
-<subsection name="Ant and Log4J">
-<p>
-Ant (used for building) and Log4j (used for logging) is
-Copyright
-1999-2001, Apache Software Foundation and can be obtained from
-http://ant.apache.org/ and http://jakarta.apache.org/.
-</p><p>
-Jar file for Log4j is distributed with EJBCA. 
-See doc/LICENSE-APACHE for license conditions of Ant and Log4j.
-</p></subsection>
-
-<subsection name="JUnit">
-<p>
-For automated testing JUnit is used and can be obtained from
-http://www.junit.org/. Jar file needed to run JUnit tests is
-distributed with EJBCA. 
-</p><p>
-JUnit is released under the IBM Public License
-</p><p>
-http://oss.software.ibm.com/developerworks/opensource/license10.html.
-</p></subsection>
-
-<subsection name="HttpJUnit">
-<p>
-Httpjunit is an extension to junit used to test web pages and forms. 
-Httpjunit can be fund on httpjunit.sourceforge.net
-</p></subsection>
-
-<subsection name="OpenLDAP">
-<p>
-OpenLDAP is an Open Source LDAP directory which can be obtained
-from
-http://www.openldap.org/. This jar fil is needed by EJBCA to store
-certificates and CRLs in LDAP directories. The jar is redistributed
-with EJBCA.  See doc/LICENSE-JLDAP for license conditions of OpenLDAP.
-</p></subsection>
-
-<subsection name="Batik">
-<p>
-Batik is a part of the Apache project and can be obtained from 
-http://xml.apache.org/batik/index.html.
-See doc/LICENSE-APACHE for license conditions of Batik.
-</p></subsection>
-
-<subsection name="XDoclet">
-<p>
-XDoclet can be obtained from http://xdoclet.sourceforge.net/.
-See doc/LICENSE-XDOCLET for license conditions of XDoclet.
-</p></subsection>
-</section>
 
 
 <section name="Extra info about the admin-GUI">
@@ -1062,7 +992,7 @@ In IE it is done by double-clicking on the .p12 file.
 10. Go to https://<i>hostname</i>:8443/ejbca
 </p><p>
 Reference: to generate a JKS with keytool
-<pre>
+<source>
 keytool -genkey -alias tomcat -keystore tomcat.jks -keyalg RSA -dname "C=SE,O=AnaTom,CN=hostname" -storepass foo123
 keytool -certreq -alias tomcat -keystore tomcat.jks -sigalg SHA1WithRSA -storepass foo123 -file tomcat.req
 bin/ejbca.sh ra adduser tomcat foo123 "C=SE,O=AnaTom,CN=hostname" null caname null 1 JKS
@@ -1070,74 +1000,14 @@ bin/ejbca.sh ca processreq tomcat foo123 tomcat.req tomcat.pem
 bin/ejbca.sh ca getrootcert ca.der -der
 keytool -import -trustcacerts -alias cacert -file ca.der -keystore tomcat.jks -storepass foo123
 keytool -import -alias tomcat -file tomcat.pem -keystore tomcat.jks -storepass foo123
-</pre>
+</source>
 </p><p>
 run as root:
-<pre>
+<source>
 keytool -import -trustcacerts -file ca.der -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit
-</pre>
+</source>
 </p></section>
 
-<section name="References">
-<p>
-<ul>
-<li>Request for Comments: 3280 - Certificate and CRL profile</li>
-<li>Request for Comments: 2253 - DN string representation</li>
-<li>Request for Comments: 2560 - OCSP</li>
-<li>Request for Comments: 2256 - X.500(96) User Schema for use with LDAPv3</li>
-</ul>
-</p><p>
-MySQL:
-Create ALTER-scrips automatically to upgrade database from old
-version to latest development version:
-http://www.mysqldiff.org/
-</p><p>
-Swedish characters in Java/Jboss:
-Add the following options to the JVM by modifying JAVA_OPTIONS
-in run.sh/cmd.
--Duser.region=SE -Duser.language=sv -Dfile.encoding=ISO-8859-1
-</p><p>
-PGP:
-PKCS12 files generated from EJBCA works excellent as PGP-keys.
-</p><p>
-Browser key generation:
-http://home.netscape.com/eng/security/comm4-keygen.html
-</p><p>
-Note on Mozilla certs:
-For Netscape/Mozilla to be able to verify client certificates
-the
- CA-certificates must have the extensions BasicConstraints and
- AuthorityKeyIdentifier.
-Client certificates also need AuthorityKeyIdentifier
-</p><p>
-Note on IE certs:
-For IE to verify client certs, the ordering in the DN must be
-strictly the same
- in both client and CA certs. Possibly that it must also be in a
- specific order.
-There is some bug that required a "nocache" meta tag to
-eliminate duplicate sending of certificate request. This
-duplicate sending will result in wrong behaviour, since user
-status will be wrong.
-<pre>
-&lt;HEAD>
-&lt;META HTTP-EQUIV="Pragma" CONTENT="no-cache">
-&lt;META HTTP-EQUIV="Expires" CONTENT="-1">
-&lt;/HEAD>
-</pre>
-</p><p>
-Microsoft Smart Card Logon certificates:
-<ul>
-<li>http://support.microsoft.com/default.aspx?scid=kb;EN-US;q281245</li>
-<li>http://support.microsoft.com/default.aspx?scid=kb;EN-US;q291010</li>
-<li>http://www.microsoft.com/windows2000/en/server/help/default.asp?url=/windows2000/en/server/help/sag_CS_CertTemps.htm</li>
-</ul>
-</p><p>
-Microsoft XENROLL info:
-<ul>
-<li>http://msdn.microsoft.com/library/default.asp?url=/library/en-us/security/security/using_the_certificate_enrollment_control_properties.asp</li>
-</ul>
-</p></section>
 
 
 </body>

@@ -7,8 +7,8 @@
 
 <body>
   <section name="Latest News">
-    <p class="note">EJBCA 3.1.0 is now available for <a
-    href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=108797">download</a>.</p>
+    <note>EJBCA 3.1.0 is now available for <a
+    href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=108797">download</a>.</note>
   </section>
 
   <section name="EJBCA">
