@@ -45,7 +45,7 @@
             <classpath refid="anakia.classpath"/>
         </taskdef>
 
-        <anakia basedir="${docs.src}" destdir="${docs.dest}/"
+        <anakia basedir="${docs.src}" destdir="${docs.dest}"
              extension=".html" style="./site.vsl"
              projectFile="${project.file}"
              excludes="**/stylesheets/**"
@@ -60,6 +60,13 @@
         </copy>
     </target>
     
-    
+    <target name="site:publish" depends="docs">
+    	<chmod perm="+r">
+    		<fileset dir="${docs.dest}" includes="**/*.html,**/*.js,**/*.css,**.jpg,**/*.png"/>
+    	</chmod>
+		<scp todir="${username}:${password}@shell.sourceforge.net:ejbca/htdocs/sandbox">
+			<fileset dir="${docs.dest}"/>
+		</scp>    																																																																																																																																																															
+    </target>
 	
 </project>
