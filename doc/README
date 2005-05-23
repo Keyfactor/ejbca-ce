@@ -7,10 +7,12 @@ Documentation
 -------------
 The main documentation for EJBCA is contained in XML format in the xdocs subdirectory.
 You can build nice looking html pages from this by running 
-ant doc 
+ant doc
+
 from the ejbca home directory (EJBCA_HOME). This will produce the same site as displayed on http://ejbca.sf.net/ 
 (or an earlier or later version).
 The docs will be located in EJBCA_HOME/tmp/htdocs.
+The user's guid is in the file xdocs/manual.xml.
 
 In the subdirectories here hides some other docs:
 - xdocs contains the main xml documentation distributed with ejbca, build into html as noted above.

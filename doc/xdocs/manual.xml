@@ -153,12 +153,12 @@ or http://localhost:8080/ejbca for the public pages.
 </p><p>
 If you did not have root permission and get an error during installation step 5, you can 
 install the root certificate afterwards with the following commands, WITH the right permissions:
-</p><p>
+</p>
 <source>
 bin/ejbca.sh ca getrootcert AdminCA1 ca.crt -der
 keytool -import -trustcacerts -alias AdminCA1 -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit -file ca.crt
 </source>
-</p><p>
+<p>
 where AdminCA1 is the CA name as configured in ejbca.properties (default is AdminCA1).
 You must stop and start JBoss after doing this.
 </p></subsection>
@@ -188,12 +188,12 @@ You can administrate EJBCA using a web browser and the admin-GUI, this is the ea
 You can also use the command line interface (cli) which is called by 'bin/ejbca.sh'. 
 If you call ejbca.sh you get a list of available commands, and you can get help for all commands by calling
 them without arguments, i.e:
+</p>
 <source>
 bin/ejbca.sh ca
 bin/ejbca.sh ra adduser
 etc etc
 </source>
-</p>
 </subsection>
 <subsection name="Creating more CAs">
 <p>
@@ -223,10 +223,11 @@ cli for that.
 <subsection name="Converting an OpenSSL CA">
 <p>
 You can convert a PEM-style Root CA key to a PKCS12 file that can be imported in EJBCA.
+</p>
 <source>
 openssl pkcs12 -export -out server1.p12 -inkey cakey.pem -in ca.pem -name privateKey
 </source>
-</p><p>
+<p>
 You can import the CA with the cli command 'bin/ejbca.sh ca importca'.
 </p></subsection>
 </section>
@@ -303,10 +304,11 @@ and keystore password) by the users password.
 </p><p>
 It is also possible to use openssl to transform a PKCS12 file to PEM-
 format.
+</p>
 <source>
-openssl pkcs12 -in <i>pkcs12-file</i> -nodes
+openssl pkcs12 -in pkcs12-file -nodes
 </source>
-</p><p>
+<p>
 copy and paste the private key to key file, the first certificate to
 server cert file and last certificate to CA cert file (If your CA is a
 subordinate CA to another Root CA, the CA cert file may need to contain the whole cert
@@ -324,10 +326,11 @@ multiple URLs for CDPs if they are separated by ';'.
 For example: http://cdpurl-1/mycrl.der;http://cdpurl-2/crl.crl
 </p><p>
 A CRLDistributionPoint for a CA in EJBCA could look like:
+</p>
 <source>
-http://<i>host:port</i>/ejbca/publicweb/webdist/certdist?cmd=crl&amp;issuer=<i>url-encoded-issuerDN</i>
+http://host:port/ejbca/publicweb/webdist/certdist?cmd=crl&amp;issuer=url-encoded-issuerDN
 </source>
-</p><p>
+<p>
 (such as the link from the webdist pages)
 </p><p>
 There are at least two ways to have EJBCA to periodically create updated CRLs.
@@ -348,14 +351,14 @@ In this way we will in the worst case get the overlap time (10 min) as the time 
 fetch the new CRL before the old one expires.
 
 The attribute can have the following values:
-<source>
-            DAILY     =  Every midnight
-            HOURLY  =  At XX:00 every hour.
-            30MIN    =  At XX:30 and XX:00 every hour
-            15MIN    =  At XX:15, XX:30, XX:45,XX:00, every hour 
-            1MIN      =  Every minute
-</source>
 </p>
+<source>
+DAILY   =  Every midnight
+HOURLY  =  At XX:00 every hour.
+30MIN   =  At XX:30 and XX:00 every hour
+15MIN   =  At XX:15, XX:30, XX:45,XX:00, every hour 
+1MIN    =  Every minute
+</source>
 </subsection>
 <subsection name="Cron job">
 <p>
@@ -452,8 +455,12 @@ Working.
 <p>
 Tested with version 4.0.2.
 </p><p>
-To enroll using the Cisco VPN client use 'CA URL'='http://127.0.0.1:8080/ejbca/publicweb/apply/scep/pkiclient.exe' 
-and the CA name as 'CA Domain'. In the DN screen simply enter the username (as added in EJBCA) as 'Name [CN]'.
+To enroll using the Cisco VPN client use:
+<ul>
+<li>CA URL='http://127.0.0.1:8080/ejbca/publicweb/apply/scep/pkiclient.exe'</li>
+<li>CA Domain=you CAs name in EJBCA</li>
+<li>In the DN screen simply enter the username (as added in EJBCA) as 'Name [CN]'</li>
+</ul>
 </p></subsubsection>
 <subsubsection name="Cisco PIX">
 <p>
@@ -490,7 +497,7 @@ Set timezone first, then set time, then check time with 'show clock'.
 The enrollment steps should be something like:
 </p>
 <source>
-ca identity pixca <i>ca-ip</i>:/ejbca/publicweb/apply/scep/pkiclient.exe
+ca identity pixca ca-ip:/ejbca/publicweb/apply/scep/pkiclient.exe
 ca configure pixca ca 1 0 crloptional
 ca authenticate pixca
 --wait--
@@ -813,9 +820,12 @@ user.</li>
 <subsection name="Other Configuration">
 <p>
 If you want to change the baseurl of the admin-web after installation use the command:
-'bin/ejbca.sh setup setbaseurl <i>computername</i> <i>applicationpath</i>'
+</p>
+<source>
+bin/ejbca.sh setup setbaseurl computername applicationpath
 Ex: bin/ejbca.sh setup setbaseurl localhost ejbca
-</p><p>
+</source>
+<p>
 To change ports (default public http=8080, public https=8442, private https=8443) you must edit 
 ejbca.properties. Change the properties httpserver.pubhttp, httpserver.pubhttps and httpserver.privhttps.
 After changing, run 'ant deploy' and re-start the application server.
@@ -832,17 +842,27 @@ Certificates can be created batch-wise with EJBCA. The class
 se.anatom.ejbca.batch.BatchMakeP12 creates keystore files for
 all users designated as NEW or FAILED in the local RA database. 
 To be able to batch generate certificates, the users must be registered 
-with clear text passwords. To set a clear text password for a user use 
-'bin/ejbca.sh.sh ra setclearpwd <i>username</i> <i>password</i>'.
-To generate keystore files for all users with status NEW or
-FAILED, run 'bin/ejbca.sh batch'. This will generate files for users if their
-clear text passwords are NOT null.
+with clear text passwords. To set a clear text password for a user use
+</p>
+<source>
+bin/ejbca.sh.sh ra setclearpwd username password
+</source>
+<p>
+To generate keystore files for all users with status NEW or FAILED, run 
+</p>
+<source>
+bin/ejbca.sh batch 
+</source>
+<p>
+This will generate files for users if their clear text passwords are NOT null.
 </p><p>
-Without arguments 'batch' generates keystore files for all NEW or
-FAILED users.
+Without arguments 'batch' generates keystore files for all NEW or FAILED users.
 To generate a keystore file for a specific user, enter command
-'bin/ejbca.sh batch <i>username</i>'.
-</p><p>
+</p>
+<source>
+bin/ejbca.sh batch username
+</source>
+<p>
 Generated keystore files are stored in a subdirectory (to the
 current directory) called 'p12'. If the directory does not exist, 
 it will be created.
@@ -900,17 +920,17 @@ src/java/se/anatom/ejbca/samples.
 <p>
 Add Debug output from the console administration commands by
 replacing:
+</p>
 <source>
     log4j.rootCategory=INFO, Console
 </source>
+<p>
 in the file 'log4j.properties' with:
+</p>
 <source>
     log4j.rootCategory=DEBUG, Console
 </source>
-</p></section>
-
-
-
+</section>
 
 <section name="Extra info about the admin-GUI">
 <p>
@@ -941,14 +961,23 @@ generating a certificate request that is processed by EJBCA, and last import
 the returned certificate and the CA-certificate into the keystore).
 </p><p>
 Create a user in EJBCA, DN="C=SE,O=PrimeKey,CN=<i>your-host-name</i>".
-bin/ejbca.sh ra adduser tomcat foo123 "C=SE,O=PrimeKey,CN=<i>your-host-name</i>" null <i>caname</i> null 1 3
-</p><p>
+</p>
+<source>
+bin/ejbca.sh ra adduser tomcat foo123 "C=SE,O=PrimeKey,CN=your-host-name" null caname null 1 3
+</source>
+<p>
 Set a clear text password for the tomcat:
+</p>
+<source>
 bin/ejbca.sh ra setclearpwd tomcat foo123
-</p><p>
+</source>
+<p>
 Generate a JKS-keystore for tomcat:
+</p>
+<source>
 bin/ejbca.sh batch tomcat
-</p><p>
+</source>
+<p>
 4. Name the generated keystore 'tomcat.jks' and put in
 $JBOSS_HOME/server/default/conf/keystore.
 </p><p>
@@ -956,27 +985,29 @@ $JBOSS_HOME/server/default/conf/keystore.
 http://localhost:8080/ejbca/publicweb/webdist/cacert.jsp (call
 it ejbca-ca.pem).
 </p><p>
-6. Add the EJBCA CA certificate to the Java trust-keystore in
-$JAVA_HOME/jre/lib/security/cacerts
-</p><p>
-keytool -import -trustcacerts -file ejbca-ca.pem -keystore
-$JAVA_HOME/jre/lib/security/cacerts -storepass changeit
-</p><p>
+6. Add the EJBCA CA certificate to the Java trust-keystore in $JAVA_HOME/jre/lib/security/cacerts
+</p>
+<source>
+keytool -import -trustcacerts -file ejbca-ca.pem -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit
+</source>
+<p>
 7. Create a user for EJBCA admin with CN=SuperAdmin and the
-RAADMIN bit
-(temporarily CN=SuperAdmin gives admin rights).
-bin/ejbca.sh ra adduser raadmin foo123 "C=SE,O=PrimeKey,CN=SuperAdmin"
-null <i>caname</i> null 65 1
-</p><p>
+RAADMIN bit (temporarily CN=SuperAdmin gives admin rights).
+</p>
+<source>
+bin/ejbca.sh ra adduser raadmin foo123 "C=SE,O=PrimeKey,CN=SuperAdmin" null caname null 65 1
+</source>
+<p>
 Alternative:
 Create a PKCS12 file with EJBCA for a user with CN=SuperAdmin
-and the RAADMIN
-bit (temporarily CN=SuperAdmin gives adminrights).
-bin/ejbca.sh ra adduser raadmin foo123 "C=SE,O=PrimeKey,CN=SuperAdmin"
-null <i>caname</i> null65 2
+and the RAADMIN bit (temporarily CN=SuperAdmin gives adminrights).
+</p>
+<source>
+bin/ejbca.sh ra adduser raadmin foo123 "C=SE,O=PrimeKey,CN=SuperAdmin" null caname null65 2
 bin/ejbca.sh ra setclearpwd raadmin foo123
 bin/ejbca.sh batch
-</p><p>
+</source>
+<p>
 8. Fetch the certificate using your browser a
 http://localhost:8080/ejbca/publicweb/apply
 </p><p>
@@ -992,6 +1023,7 @@ In IE it is done by double-clicking on the .p12 file.
 10. Go to https://<i>hostname</i>:8443/ejbca
 </p><p>
 Reference: to generate a JKS with keytool
+</p>
 <source>
 keytool -genkey -alias tomcat -keystore tomcat.jks -keyalg RSA -dname "C=SE,O=AnaTom,CN=hostname" -storepass foo123
 keytool -certreq -alias tomcat -keystore tomcat.jks -sigalg SHA1WithRSA -storepass foo123 -file tomcat.req
@@ -1001,12 +1033,13 @@ bin/ejbca.sh ca getrootcert ca.der -der
 keytool -import -trustcacerts -alias cacert -file ca.der -keystore tomcat.jks -storepass foo123
 keytool -import -alias tomcat -file tomcat.pem -keystore tomcat.jks -storepass foo123
 </source>
-</p><p>
+<p>
 run as root:
+</p>
 <source>
 keytool -import -trustcacerts -file ca.der -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit
 </source>
-</p></section>
+</section>
 
 
 

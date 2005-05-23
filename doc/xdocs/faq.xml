@@ -60,12 +60,12 @@ or copy the old truststore from the earlier JAVA_HOME.
 You can manually import it by exporting the ca-certificate:
 </p>
 <source>
-'bin/ejbca.sh ca getrootcert caname root.der -der'
+bin/ejbca.sh ca getrootcert caname root.der -der
 </source>
 <p>
 and importing it in cacerts:
 </p><source>
-'keytool -import -trustcacerts -file root.der -keystore $JAVA_HOME/jre/lib/security/cacerts'
+keytool -import -trustcacerts -file root.der -keystore $JAVA_HOME/jre/lib/security/cacerts
 </source>
       </answer>
     </faq>
