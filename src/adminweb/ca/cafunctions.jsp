@@ -61,6 +61,23 @@
   <script language=javascript src="<%= globalconfiguration .getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
 <body>
+<SCRIPT language="JavaScript">
+<!--  
+function viewcacert(caid){   
+    var link = "<%=VIEWCERTIFICATE_LINK%>?caid="+caid;
+    link = encodeURI(link);     
+    win_popup = window.open(link, 'view_cert','height=600,width=600,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup.focus();
+} 
+
+function viewcainfo(caid){        
+    var link = "<%=VIEWINFO_LINK%>?caid="+caid;
+    link = encodeURI(link);
+    win_popup = window.open(link, 'view_info','height=450,width=450,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup.focus();
+}
+-->
+</SCRIPT>
 <form name='createcrl' method=GET action='<%=THIS_FILENAME %>'>
 <input type='hidden' name='<%=HIDDEN_NUMBEROFCAS %>' value='<%=canames.keySet().size()%>'> 
   <h2 align="center"><%= ejbcawebbean.getText("CAFUNCTIONS") %></h2>
@@ -80,8 +97,8 @@
        int chainsize = certificatechain.length;
  %>
        <br>
-       <H3><%= ejbcawebbean.getText("BASICFUNCTIONSFOR") + " : " + caname%> <a href="<%=THIS_FILENAME%>"  onClick="window.open('<%=VIEWCERTIFICATE_LINK%>?caid=<%=caid%>', 'view_cert','height=600,width=600,scrollbars=yes,toolbar=no,resizable=1')"><%= ejbcawebbean.getText("VIEWCERTIFICATE")%></a>&nbsp;&nbsp;
-                                                                            <a href="<%=THIS_FILENAME%>"  onClick="window.open('<%=VIEWINFO_LINK%>?caid=<%=caid%>', 'view_info','height=450,width=450,scrollbars=yes,toolbar=no,resizable=1')"><%= ejbcawebbean.getText("VIEWINFO")%></a></H3>    
+       <H3><%= ejbcawebbean.getText("BASICFUNCTIONSFOR") + " : " + caname%> <a href="<%=THIS_FILENAME%>"  onClick="viewcacert(<%=caid%>)"><%= ejbcawebbean.getText("VIEWCERTIFICATE")%></a>&nbsp;&nbsp;
+                                                                            <a href="<%=THIS_FILENAME%>"  onClick="viewcainfo(<%=caid%>)"><%= ejbcawebbean.getText("VIEWINFO")%></a></H3>    
  
         <table> 
           <% int row = 0;

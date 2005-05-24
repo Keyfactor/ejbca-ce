@@ -181,17 +181,26 @@ function confirmrevokation(){
 
 <%  }  
 
-   if(editca && !isexternal){ %>
+  if(editca && !waitingresponse){%>
+function viewcacert(){
+    win_popup = window.open('<%=VIEWCERT_LINK%>?caid=<%=caid%>', 'view_cert','height=600,width=600,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup.focus();
+}
+  
+  <% } if(editca && !isexternal){ %>
 function confirmrenewal(){
     
   return confirm("<%= ejbcawebbean.getText("AREYOUSURERENEWCA") %>") && checkallfields();     
 }
 
+
+    
   <% if(ocspcert != null){ %>
 function viewocspcert(){        
     var link = "<%= VIEWCERT_LINK %>?<%= CERTSERNO_PARAMETER %>=<%= java.net.URLEncoder.encode(ocspcert.getSerialNumber().toString(16) + "," + CertTools.getIssuerDN(ocspcert),"UTF-8")%>";
     link = encodeURI(link);
-    window.open(link, 'view_cert','height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup = window.open(link, 'view_cert','height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup.focus();
 }
  
 function checkactivateocsp(){ 
@@ -621,7 +630,7 @@ function checkallfields(){
         &nbsp;
       </td>
       <td width="50%"> 
-        <a style="cursor:hand;" onClick="window.open('<%=VIEWCERT_LINK%>?caid=<%=caid%>', 'view_cert','height=600,width=600,scrollbars=yes,toolbar=no,resizable=1')";><u><%= ejbcawebbean.getText("VIEWCACERTIFICATE")%></u></a>
+        <a style="cursor:hand;" onClick="viewcacert()"><u><%= ejbcawebbean.getText("VIEWCACERTIFICATE")%></u></a>
       </td>
     </tr>
     <% } %>

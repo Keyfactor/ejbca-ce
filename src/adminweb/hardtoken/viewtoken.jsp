@@ -184,7 +184,8 @@ function confirmkeyrecovery(){
 function viewcert(){
     var link = "<%= VIEWCERT_LINK %>?<%= USER_PARAMETER %>=<%= java.net.URLEncoder.encode(username,"UTF-8")%>&<%=TOKENSN_PARAMETER %>=<%=token.getTokenSN()%>";
     link = encodeURI(link);
-    window.open(link, 'view_cert','height=600,width=600,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup = window.open(link, 'view_cert','height=600,width=600,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup.focus();
 }
 
 function viewcopies(link){

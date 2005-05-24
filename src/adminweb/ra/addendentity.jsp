@@ -1258,7 +1258,8 @@ function viewuser(row){
     var username = hiddenusernamefield.value;
     var link = "<%= VIEWUSER_LINK %>?<%= USER_PARAMETER %>="+username;
     link = encodeURI(link);
-    window.open(link, 'view_user','height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup = window.open(link, 'view_user','height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup.focus();
 }
 
 function edituser(row){
@@ -1266,7 +1267,8 @@ function edituser(row){
     var username = hiddenusernamefield.value;
     var link = "<%= EDITUSER_LINK %>?<%= USER_PARAMETER %>="+username;
     link = encodeURI(link);
-    window.open(link, 'edit_user','height=600,width=550,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup = window.open(link, 'edit_user','height=600,width=550,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup.focus();
 }
 
 -->

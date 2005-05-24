@@ -34,7 +34,8 @@
 function viewocspcert(){        
     var link = "<%= VIEWCERT_LINK %>?<%= viewcainfohelper.CERTSERNO_PARAMETER %>=<%=java.net.URLEncoder.encode(viewcainfohelper.ocspcert.getSerialNumber().toString(16) + "," + CertTools.getIssuerDN(viewcainfohelper.ocspcert),"UTF-8")%>";
     link = encodeURI(link);
-    window.open(link, 'view_cert','height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup = window.open(link, 'view_cert','height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
+    win_popup.focus();
 }
 -->
 </SCRIPT>
