@@ -24,7 +24,7 @@ import se.anatom.ejbca.SecConst;
 /**
  * EnhancedEIDProfile with three certificates and key recovery functionallity
  * 
- * @version $Id: EnhancedEIDProfile.java,v 1.8 2005-05-06 10:34:59 herrvendil Exp $
+ * @version $Id: EnhancedEIDProfile.java,v 1.9 2005-05-24 09:33:39 herrvendil Exp $
  */
 public class EnhancedEIDProfile extends EIDProfile {
 						
@@ -32,7 +32,7 @@ public class EnhancedEIDProfile extends EIDProfile {
 	
 	public static final int TYPE_ENHANCEDEID = 2;
 	
-	public static final float LATEST_VERSION = 2;
+	public static final float LATEST_VERSION = 3;
 
     public static final int CERTUSAGE_SIGN    = 0;
 	public static final int CERTUSAGE_AUTH    = 1;
@@ -51,8 +51,7 @@ public class EnhancedEIDProfile extends EIDProfile {
 	// Protected Fields
 	
 	private String[][] SUPPORTEDTOKENS = {{"TODO"}};
-	
-	
+		
 	
     // Default Values
     public EnhancedEIDProfile() {
@@ -89,6 +88,12 @@ public class EnhancedEIDProfile extends EIDProfile {
 	  iskeyrecoverable.add(Boolean.FALSE);
 	  iskeyrecoverable.add(Boolean.TRUE);
 	  data.put(ISKEYRECOVERABLE, iskeyrecoverable);
+	  
+	  ArrayList reuseoldcertificate = new ArrayList(NUMBEROFCERTIFICATES);
+	  reuseoldcertificate.add(Boolean.FALSE);
+	  reuseoldcertificate.add(Boolean.FALSE);
+	  reuseoldcertificate.add(Boolean.FALSE);
+	  data.put(REUSEOLDCERTIFICATE, reuseoldcertificate);
 
 	  ArrayList minimumkeylength = new ArrayList(NUMBEROFCERTIFICATES);
 	  minimumkeylength.add(new Integer(2048));
@@ -154,6 +159,14 @@ public class EnhancedEIDProfile extends EIDProfile {
 		  minpinlength.add(new Integer(4));
 		  minpinlength.add(new Integer(0));
 		  data.put(MINIMUMPINLENGTH, minpinlength);
+	    }
+
+	    if(data.get(REUSEOLDCERTIFICATE) == null){
+		  ArrayList reuseoldcertificate = new ArrayList(NUMBEROFCERTIFICATES);
+		  reuseoldcertificate.add(Boolean.FALSE);
+		  reuseoldcertificate.add(Boolean.FALSE);
+		  reuseoldcertificate.add(Boolean.FALSE);
+		  data.put(REUSEOLDCERTIFICATE, reuseoldcertificate);
 	    }
 	    
 	    data.put(VERSION, new Float(LATEST_VERSION));

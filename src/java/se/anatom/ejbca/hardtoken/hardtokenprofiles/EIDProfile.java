@@ -28,7 +28,7 @@ import java.util.ArrayList;
  * of eidprofiles in the system.
  *  
  *
- * @version $Id: EIDProfile.java,v 1.5 2005-05-02 16:18:54 anatom Exp $
+ * @version $Id: EIDProfile.java,v 1.6 2005-05-24 09:33:39 herrvendil Exp $
  */
 public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	
@@ -40,6 +40,7 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	protected static final String CERTIFICATEPROFILEID           = "certificateprofileid";
 	protected static final String CAID                           = "caid";	
 	protected static final String ISKEYRECOVERABLE               = "iskeyrecoverable";
+	protected static final String REUSEOLDCERTIFICATE            = "reuseoldcertificate";
 	protected static final String MINIMUMKEYLENGTH               = "minimunkeylength";
 	protected static final String KEYTYPES                       = "keytypes";
 
@@ -82,6 +83,15 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	 */
 	public boolean getIsKeyRecoverable (int certusage){return ((Boolean) ((List) data.get(ISKEYRECOVERABLE)).get(certusage)).booleanValue();}
 
+	/**
+	 * Indicates if the certificate should be reused when recovering a token. This
+	 * since some application requires the same certificate when decrypting data.
+	 * 
+	 * @param certusage should be one of the CERTUSAGE_ constants.
+	 * @return true if the certificate should bereused
+	 */
+	public boolean getReuseOldCertificate (int certusage){return ((Boolean) ((List) data.get(REUSEOLDCERTIFICATE)).get(certusage)).booleanValue();}
+	
 	/**
 	 * Gives the minimum key length allowed. 
 	 * Generally will the tokens maximum kapacity of key be generated
@@ -128,6 +138,15 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 		List list = (List) data.get(ISKEYRECOVERABLE);	  
 		list.set(certusage, Boolean.valueOf(iskeyrecoverable));
 		data.put(ISKEYRECOVERABLE, list);		
+	}
+	
+	/**
+	 * See above
+	 */
+	public void setReuseOldCertificate (int certusage, boolean reuseoldcertificate){
+		List list = (List) data.get(REUSEOLDCERTIFICATE);	  
+		list.set(certusage, Boolean.valueOf(reuseoldcertificate));
+		data.put(REUSEOLDCERTIFICATE, list);				
 	}
 
 	/**

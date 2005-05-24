@@ -13,6 +13,16 @@
 
 package se.anatom.ejbca.keyrecovery;
 
+import java.security.KeyPair;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.Collection;
+import java.util.Iterator;
+
+import javax.ejb.CreateException;
+import javax.ejb.EJBException;
+import javax.ejb.FinderException;
+
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceRequest;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceResponse;
@@ -26,20 +36,12 @@ import se.anatom.ejbca.log.ILogSessionLocalHome;
 import se.anatom.ejbca.log.LogEntry;
 import se.anatom.ejbca.util.CertTools;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-import javax.ejb.FinderException;
-import java.security.KeyPair;
-import java.security.cert.X509Certificate;
-import java.util.Collection;
-import java.util.Iterator;
-
 
 /**
  * Stores key recovery data. Uses JNDI name for datasource as defined in env 'Datasource' in
  * ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.29 2005-05-09 15:21:42 anatom Exp $
+ * @version $Id: LocalKeyRecoverySessionBean.java,v 1.30 2005-05-24 09:33:39 herrvendil Exp $
  *
  * @ejb.bean
  *   display-name="Stores key recovery data"
@@ -353,11 +355,13 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
                         KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) signsession.extendedService(admin, caid,
                                 new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_DECRYPTKEYS, krd.getKeyDataAsByteArray()));
                         KeyPair keys = response.getKeyPair();
-                        returnval = new KeyRecoveryData(krd.getCertificateSN(), krd.getIssuerDN(),
-                                krd.getUsername(), krd.getMarkedAsRecoverable(), keys);
                         certificate = (X509Certificate) certificatestoresession
-                                .findCertificateByIssuerAndSerno(admin,
-                                        krd.getIssuerDN(), krd.getCertificateSN());
+                        .findCertificateByIssuerAndSerno(admin,
+                                krd.getIssuerDN(), krd.getCertificateSN());
+                        returnval = new KeyRecoveryData(krd.getCertificateSN(), krd.getIssuerDN(),
+                                krd.getUsername(), krd.getMarkedAsRecoverable(), keys, (Certificate) certificate);
+
+                        
                     }
 
                     krd.setMarkedAsRecoverable(false);

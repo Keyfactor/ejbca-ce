@@ -24,14 +24,14 @@ import se.anatom.ejbca.SecConst;
 /**
  * Hard token profile with a goal to fulfill Swedish EID standard.
  * 
- * @version $Id: SwedishEIDProfile.java,v 1.6 2005-05-02 16:18:40 anatom Exp $
+ * @version $Id: SwedishEIDProfile.java,v 1.7 2005-05-24 09:33:39 herrvendil Exp $
  */
 public class SwedishEIDProfile extends EIDProfile {
 		
 	// Public Constants
 	public static final int TYPE_SWEDISHEID = 1;
 	
-	public static final float LATEST_VERSION = 2;
+	public static final float LATEST_VERSION = 3;
 
     public static final int CERTUSAGE_SIGN    = 0;
 	public static final int CERTUSAGE_AUTHENC = 1;
@@ -83,6 +83,12 @@ public class SwedishEIDProfile extends EIDProfile {
 	  iskeyrecoverable.add(new Boolean(false));
 	  iskeyrecoverable.add(new Boolean(false));
 	  data.put(ISKEYRECOVERABLE, iskeyrecoverable);
+	  
+	    
+	  ArrayList reuseoldcertificate = new ArrayList(NUMBEROFCERTIFICATES);
+	  reuseoldcertificate.add(Boolean.FALSE);
+	  reuseoldcertificate.add(Boolean.FALSE);
+	  data.put(REUSEOLDCERTIFICATE, reuseoldcertificate);		    
 
 	  ArrayList minimumkeylength = new ArrayList(NUMBEROFCERTIFICATES);
 	  minimumkeylength.add(new Integer(1024));
@@ -148,6 +154,13 @@ public class SwedishEIDProfile extends EIDProfile {
 		  minpinlength.add(new Integer(4));
 		  data.put(MINIMUMPINLENGTH, minpinlength);
 	    }
+	    
+	    if(data.get(REUSEOLDCERTIFICATE) == null){
+	    	ArrayList reuseoldcertificate = new ArrayList(NUMBEROFCERTIFICATES);
+	    	reuseoldcertificate.add(Boolean.FALSE);
+	    	reuseoldcertificate.add(Boolean.FALSE);			 
+	    	data.put(REUSEOLDCERTIFICATE, reuseoldcertificate);
+		}
 	    
 	    data.put(VERSION, new Float(LATEST_VERSION));
 	  }   

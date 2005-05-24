@@ -16,6 +16,7 @@ package se.anatom.ejbca.keyrecovery;
 import se.anatom.ejbca.util.StringTools;
 
 import java.math.BigInteger;
+import java.security.cert.Certificate;
 import java.security.KeyPair;
 
 
@@ -24,17 +25,19 @@ import java.security.KeyPair;
  * between server and clients.
  *
  * @author TomSelleck
- * @version $Id: KeyRecoveryData.java,v 1.8 2004-11-20 22:43:30 sbailliez Exp $
+ * @version $Id: KeyRecoveryData.java,v 1.9 2005-05-24 09:33:39 herrvendil Exp $
  */
 public class KeyRecoveryData implements java.io.Serializable {
-    // Public Constructors
+
+	// Public Constructors
     public KeyRecoveryData(BigInteger certificatesn, String issuerdn, String username,
-                           boolean markedasrecoverable, KeyPair keypair) {
+                           boolean markedasrecoverable, KeyPair keypair, Certificate certificate) {
         this.certificatesn = certificatesn;
         this.issuerdn = issuerdn;
         this.username = StringTools.strip(username);
         this.markedasrecoverable = markedasrecoverable;
         this.keypair = keypair;
+        this.certificate = certificate;
     }
 
     /**
@@ -129,11 +132,26 @@ public class KeyRecoveryData implements java.io.Serializable {
         this.keypair = keypair;
     }
 
+	/**
+	 * @return Returns the certificate.
+	 */
+	public Certificate getCertificate() {
+		return certificate;
+	}
+	/**
+	 * @param certificate The certificate to set.
+	 */
+	public void setCertificate(Certificate certificate) {
+		this.certificate = certificate;
+	}
+    
     // Private fields
     private BigInteger certificatesn;
     private String issuerdn;
     private String username;
     private boolean markedasrecoverable;
     private KeyPair keypair;
+    private Certificate certificate;
+
 
 }
