@@ -114,5 +114,16 @@ public class DummyHardCAToken implements IHardCAToken {
 		return null;
 	}
 
+	/**
+	 *  Method that returns the current status of the catoken.
+	 * 
+	 *  Should return one of the IHardCAToken.STATUS_.. values 
+	 */
+	public int getCATokenStatus() {
+		log.debug("getCATokenStatus()");
+		// Implements this
+		return 0;
+	}
+
 
 }

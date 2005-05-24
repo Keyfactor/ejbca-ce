@@ -82,7 +82,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.40 2005-04-29 08:16:29 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.41 2005-05-24 09:32:53 herrvendil Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -590,11 +590,12 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			  cadata.setStatus(SecConst.CA_EXPIRED);
 			}
             authorizedToCA(admin,cadata.getCaId().intValue());
-            try{
-            	cadata.getCA().getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN);
-            }catch(CATokenOfflineException ctoe){
+            
+            CATokenInfo catokeninfo = cadata.getCA().getCAToken().getCATokenInfo();
+            if(catokeninfo instanceof HardCATokenInfo && ((HardCATokenInfo) catokeninfo).getCATokenStatus() == IHardCAToken.STATUS_OFFLINE){
             	cadata.setStatus(SecConst.CA_OFFLINE);
             }
+        
             cainfo = cadata.getCA().getCAInfo();
         }catch(javax.ejb.FinderException fe) {}
          catch(Exception e){
@@ -616,9 +617,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			if(cadata.getStatus() == SecConst.CA_ACTIVE && new Date(cadata.getExpireTime()).before(new Date())){
 			  cadata.setStatus(SecConst.CA_EXPIRED);
 			}
-            try{
-            	cadata.getCA().getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN);
-            }catch(CATokenOfflineException ctoe){
+            CATokenInfo catokeninfo = cadata.getCA().getCAToken().getCATokenInfo();
+            if(catokeninfo instanceof HardCATokenInfo && ((HardCATokenInfo) catokeninfo).getCATokenStatus() == IHardCAToken.STATUS_OFFLINE){
             	cadata.setStatus(SecConst.CA_OFFLINE);
             }
             cainfo = cadata.getCA().getCAInfo();

@@ -25,16 +25,25 @@ import se.anatom.ejbca.ca.exception.CATokenOfflineException;
  *  All HardCAToken plug-ins must implement this interface.
  * 
  * 
- * @version $Id: IHardCAToken.java,v 1.1 2004-05-10 04:35:10 herrvendil Exp $
+ * @version $Id: IHardCAToken.java,v 1.2 2005-05-24 09:32:53 herrvendil Exp $
  */
 public interface IHardCAToken {
 
+	public static final int STATUS_ACTIVE  = 1;
+	public static final int STATUS_OFFLINE = 2;
+	
    /** 
     * Method called after creation of instance. Gives the object it's properties.
     *
     */	
 	public abstract void init(Properties properties, String signaturealgorithm);
 	
+	/**
+	 *  Method that returns the current status of the catoken.
+	 * 
+	 *  Should return one of the IHardCAToken.STATUS_.. values 
+	 */
+	public abstract int getCATokenStatus();
 	
     /**
      * Method used to activate HardCATokens when connected after being offline.

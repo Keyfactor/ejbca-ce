@@ -30,7 +30,7 @@ import se.anatom.ejbca.ca.exception.CATokenOfflineException;
  * HardCATokenContainer is a class managing the persistent storage of a hardcatoken publisher.
  * 
  *
- * @version $Id: HardCATokenContainer.java,v 1.1 2004-05-10 04:35:10 herrvendil Exp $
+ * @version $Id: HardCATokenContainer.java,v 1.2 2005-05-24 09:32:53 herrvendil Exp $
  */
 public class HardCATokenContainer extends CAToken{
 	private IHardCAToken hardcatoken = null; 
@@ -68,7 +68,7 @@ public class HardCATokenContainer extends CAToken{
 		info.setClassPath(getClassPath());
 		info.setProperties(getPropertyData());
 		info.setSignatureAlgorithm(getSignatureAlgorithm());
-		
+		info.setCATokenStatus(hardcatoken.getCATokenStatus());
 		return info;
 	}
 

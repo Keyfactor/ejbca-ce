@@ -260,5 +260,14 @@ public class HardCATokenSample implements IHardCAToken {
 	  
 	  return true;
 	}
+
+	/**
+	 * @see se.anatom.ejbca.ca.caadmin.IHardCAToken#getCATokenStatus()
+	 */
+	public int getCATokenStatus() {
+		if(authenticated)
+		  return IHardCAToken.STATUS_ACTIVE;	
+		return IHardCAToken.STATUS_OFFLINE;
+	}
 	
 }

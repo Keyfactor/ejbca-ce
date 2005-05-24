@@ -18,22 +18,23 @@ import java.io.Serializable;
 /**
  * Holds properties of a HardCAToken.
  *
- * @version $Id: HardCATokenInfo.java,v 1.1 2004-05-10 04:35:10 herrvendil Exp $
+ * @version $Id: HardCATokenInfo.java,v 1.2 2005-05-24 09:32:53 herrvendil Exp $
  */
 public class HardCATokenInfo extends CATokenInfo implements Serializable {    
     
 	String properties;
-	String classpath;
-	String authenticationcode;
+	String classPath;
+	String authenticationCode;
+	int cATokenStatus;
 	
     public HardCATokenInfo(){}
     
     public String getClassPath(){
-    	return classpath;
+    	return classPath;
     }
     
     public void setClassPath(String classpath){
-    	this.classpath = classpath;
+    	this.classPath = classpath;
     }
     
     public String getProperties(){
@@ -48,12 +49,28 @@ public class HardCATokenInfo extends CATokenInfo implements Serializable {
 	 * @return Returns the authenticationcode.
 	 */
 	public String getAuthenticationCode() {
-		return authenticationcode;
+		return authenticationCode;
 	}
 	/**
 	 * @param authenticationcode The authenticationcode to set.
 	 */
 	public void setAuthenticationCode(String authenticationcode) {
-		this.authenticationcode = authenticationcode;
+		this.authenticationCode = authenticationcode;
+	}
+	
+	/**
+	 * 
+	 * @param catokenstatus is one of IHardCAToken.STATUS_.. constants
+	 */
+	public void setCATokenStatus(int catokenstatus){
+	  this.cATokenStatus = catokenstatus;	
+	}
+	
+	/**
+	 * 
+	 * @return catokenstatus, one of IHardCAToken.STATUS_.. constants
+	 */
+	public int getCATokenStatus(){
+	  return cATokenStatus;	
 	}
 }
