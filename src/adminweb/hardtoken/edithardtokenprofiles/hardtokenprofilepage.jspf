@@ -18,6 +18,20 @@
 <SCRIPT language="JavaScript">
 <!--  
 
+   <% if(helper.profiledata instanceof EnhancedEIDProfile){ %>
+function checkkeyrecfield(usefield, criticalfield){
+  var usebox = eval("document.editprofile." + usefield);
+  var cribox = eval("document.editprofile." + criticalfield);
+  if(usebox.checked){
+    cribox.disabled = false;
+  }
+  else{
+    cribox.checked=false;
+    cribox.disabled = true;
+  }
+}   
+   <% } %>
+
 function checkallfields(){
     var illegalfields = 0;
 
@@ -37,7 +51,9 @@ function checkallfields(){
       illegalfields++;
    
      return illegalfields == 0;  
-   } 
+} 
+   
+
 -->
 
 </SCRIPT>

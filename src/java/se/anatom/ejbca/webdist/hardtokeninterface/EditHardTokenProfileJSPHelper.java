@@ -41,7 +41,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * Contains help methods used to parse a hard token profile jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditHardTokenProfileJSPHelper.java,v 1.9 2005-05-10 12:01:15 herrvendil Exp $
+ * @version $Id: EditHardTokenProfileJSPHelper.java,v 1.10 2005-05-24 09:33:59 herrvendil Exp $
  */
 public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 	
@@ -86,6 +86,7 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 
 	public static final String CHECKBOX_EREASBLE        = "checkboxereasable";
 	public static final String CHECKBOX_KEYRECOVERABLE  = "checkboxkeyrecoverable";
+	public static final String CHECKBOX_REUSEOLDCERT    = "checkboxreuseoldcert";
 	public static final String CHECKBOX_USEIDENTICALPINS= "useidenticalpins";
 
 	public static final String HIDDEN_HARDTOKENTYPE     = "hiddenhardtokentype";
@@ -436,7 +437,13 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 					enhprof.setIsKeyRecoverable(EnhancedEIDProfile.CERTUSAGE_ENC, value.equals(CHECKBOX_VALUE));
 					else
 					  enhprof.setIsKeyRecoverable(EnhancedEIDProfile.CERTUSAGE_ENC, false);
+					value = request.getParameter(CHECKBOX_REUSEOLDCERT + "2");
+					if(value != null)                              
+						enhprof.setReuseOldCertificate(EnhancedEIDProfile.CERTUSAGE_ENC, value.equals(CHECKBOX_VALUE));
+					else
+						enhprof.setReuseOldCertificate(EnhancedEIDProfile.CERTUSAGE_ENC, false);
 				   				
+					
 				 }
 
              				 				 

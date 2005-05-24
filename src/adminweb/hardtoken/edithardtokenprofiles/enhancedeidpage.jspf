@@ -322,10 +322,16 @@
         </div>
       </td>
       <td width="50%" valign="top">                   
-          <input type="checkbox" name="<%= EditHardTokenProfileJSPHelper.CHECKBOX_KEYRECOVERABLE + "2" %>" value="<%=EditHardTokenProfileJSPHelper.CHECKBOX_VALUE %>" 
+          <input type="checkbox" name="<%= EditHardTokenProfileJSPHelper.CHECKBOX_KEYRECOVERABLE + "2" %>" onClick="checkkeyrecfield('<%=EditHardTokenProfileJSPHelper.CHECKBOX_KEYRECOVERABLE + "2" %>','<%=EditHardTokenProfileJSPHelper.CHECKBOX_REUSEOLDCERT + "2" %>')" value="<%=EditHardTokenProfileJSPHelper.CHECKBOX_VALUE %>" 
            <%  if(curprofile.getIsKeyRecoverable(EnhancedEIDProfile.CERTUSAGE_ENC))
                  out.write("CHECKED");
            %>>
+            <%= ejbcawebbean.getText("REUSEOLDCERTIFICATE") %>
+          <input type="checkbox" name="<%= EditHardTokenProfileJSPHelper.CHECKBOX_REUSEOLDCERT + "2" %>" value="<%=EditHardTokenProfileJSPHelper.CHECKBOX_VALUE %>" 
+           <%  if(curprofile.getReuseOldCertificate(EnhancedEIDProfile.CERTUSAGE_ENC) && curprofile.getIsKeyRecoverable(EnhancedEIDProfile.CERTUSAGE_ENC))
+                 out.write(" CHECKED ");
+               if(!curprofile.getIsKeyRecoverable(EnhancedEIDProfile.CERTUSAGE_ENC))
+                 out.write(" disabled ");
+           %>>
       </td>
     </tr>
-
