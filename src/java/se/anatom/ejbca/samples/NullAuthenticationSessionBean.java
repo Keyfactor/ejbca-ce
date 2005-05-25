@@ -40,13 +40,46 @@ import se.anatom.ejbca.util.CertTools;
  * which will require some work from your part.
  *
  * @ejb.bean
+ *   display-name="AuthenticationSB"
+ *   name="AuthenticationSession"
+ *   jndi-name="AuthenticationSession"
+ *   local-jndi-name="AuthenticationSessionLocal"
+ *   view-type="both"
+ *   type="Stateless"
+ *   transaction-type="Container"
  *   generate="false"
+ *
+ * @ejb.transaction type="Supports"
+ *
+ * @ejb.permission role-name="InternalUser"
+ * 
+ * @ejb.ejb-external-ref
+ *   description="The Log session bean"
+ *   view-type="local"
+ *   ejb-name="LogSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.log.ILogSessionLocalHome"
+ *   business="se.anatom.ejbca.log.ILogSessionLocal"
+ *   link="LogSession"
+ * 
  * @ejb.home
+ *   extends="javax.ejb.EJBHome"
+ *   local-extends="javax.ejb.EJBLocalHome"
+ *   local-class="se.anatom.ejbca.samples.IAuthenticationSessionLocalHome"
+ *   remote-class="se.anatom.ejbca.samples.IAuthenticationSessionHome"
  *   generate="none"
+ *
  * @ejb.interface
+ *   extends="javax.ejb.EJBObject"
+ *   local-extends="javax.ejb.EJBLocalObject"
+ *   local-class="se.anatom.ejbca.samples.IAuthenticationSessionLocal"
+ *   remote-class="se.anatom.ejbca.samples.IAuthenticationSessionRemote"
  *   generate="none"
- *   
- * @version $Id: NullAuthenticationSessionBean.java,v 1.2 2005-05-12 13:17:38 anatom Exp $
+ *
+ * @ejb.security-identity run-as="InternalUser"
+ * 
+ * @version $Id: NullAuthenticationSessionBean.java,v 1.3 2005-05-25 19:03:36 anatom Exp $
+ * 
  */
 public class NullAuthenticationSessionBean extends BaseSessionBean {
     /** The remote interface of the log session bean */
