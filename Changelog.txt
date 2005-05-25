@@ -11,6 +11,8 @@
 - New structure for the cli, it now lives in the bin subdirectory.
 - Reorganization of documentation tree, new xml based web site.
 - Lots of minor and structural changes.
+- New web site for http://ejbca.sf.net/.
+
 
 3.0.7
 -----
