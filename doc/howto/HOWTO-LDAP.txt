@@ -252,13 +252,13 @@ Configure SSL
 Create a user in ejbca (this example is for adding a user with the cli interface, adding a user 
 with the admin-GUI works just as fine).
 In the mail ejbca directory type (use simply 'ra' on windows):
-./ra.sh adduser ldap foo123 "C=SE,O=Foo,CN=ldap" null AdminCA1 null 1 PEM
-./ra.sh setclearpwd foo123 
+bin/ejbca.sh ra adduser ldap foo123 "C=SE,O=Foo,CN=ldap" null AdminCA1 null 1 PEM
+bin/ejbca.sh ra setclearpwd ldap foo123 
 Where foo123 is the ldap users password, C=SE... is the users DN and AdminCA1 is the name you 
 chose for your CA. The user type is end-user (1), keystore type is PEM, and if using the admin-GUI 
 check 'use batch').
 Batch generate the PEM keystore:
-./batch.sh
+bin/ejbca.sh batch
 
 Copy the resulting files p12/pem/ldap.pem, p12/pem/ldap-CA.pem and p12/pem/ldap-Key.pem to your 
 LDAP server. In this example the slapd.conf is located in /usr/local/etc/openldap so we copy the 
@@ -289,8 +289,8 @@ Note! The CA certificate of the (root)CA used to sign the ldap server certificat
 the java trust cert store ($JAVA_HOME/jre/lib/security/cacerts). If you use the defualt CA created when  
 ejbca was installed this is alread included. Otherwise you will have to add it using something like:
 First get the CA cert:
-ca getrootcert MyCA -der
-Then add it to javas trust store:
+bin/ejbca.sh ca getrootcert MyCA -der
+Then add it to the java trust store:
 keytool -import -trustcacert -alias MyCA -keystore $JAVA_HOME/jre/lib/security/cacerts -password changeit
 
 A guide for configuring OpenLDAP on Solaris can be found at:
