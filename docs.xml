@@ -61,13 +61,25 @@
         </copy>
     </target>
     
-    <target name="site:publish" depends="docs">
-    	<chmod perm="+r">
-    		<fileset dir="${docs.dest}" includes="**/*.html,**/*.js,**/*.css,**.jpg,**/*.png"/>
-    	</chmod>
-		<scp todir="${username}:${password}@shell.sourceforge.net:ejbca/htdocs/sandbox">
-			<fileset dir="${docs.dest}"/>
-		</scp>    																																																																																																																																																															
+    <target name="site:publish" depends="docs" description="Publish the website">
+    	<property name="publish.dir" value="ejbca/htdocs/sandbox"/>
+    	<tar destfile="htdocs.tgz" compression="gzip">
+    		<tarfileset dir="${docs.dest}" mode="664" dirmode="775" username="${username}" group="ejbca"/>
+    	</tar>
+    	<scp file="htdocs.tgz" todir="${username}:${password}@shell.sourceforge.net:"/>
+    	<sshexec host="shell.sourceforge.net"
+				username="${username}" password="${password}"
+				command="mkdir ${publish.dir} ; tar -xzpf htdocs.tgz -C ${publish.dir};"/>
+		<!-- I'm setting the permissions this way as there seems to be a problem with dirmode -->
+		<echo message="Setting directory permissions"/>
+    	<sshexec host="shell.sourceforge.net"
+				username="${username}" password="${password}"
+				command="find ${publish.dir} -type d -exec chmod 775 {} \;"/> 
+		<echo message="Setting file permissions"/>
+    	<sshexec host="shell.sourceforge.net"
+				username="${username}" password="${password}"
+				command="find ${publish.dir} -type f -exec chmod 664 {} \;"/>
+		
     </target>
 	
 </project>
