@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<document>
+
+  <properties>
+    <title>Howto</title>
+  </properties>
+
+<body>
+  <section name="Howto documents">
+    <p>
+    A number of HOWTO documents are available in the <strong>doc/howto</strong> directory in the source distribution.
+    </p><p>
+    This excellent HOWTO on LDAP and email setup has been contributed by SensorNet
+<ul>
+<li><a href="sensornet/CertificateInfrastructure.html">SensorNet LDAP and mail</a></li>
+</ul>
+    </p>
+  </section>
+
+</body>
+</document>
+

@@ -1,0 +1,331 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-15"
+ http-equiv="content-type">
+  <title>Managing Certificates In Mozilla/Netscape 7.x</title>
+  <meta content="James A. Rome" name="author">
+</head>
+<body>
+<h1 style="text-align: center; color: rgb(0, 102, 0);">SensorNet
+and Digital Certificates</h1>
+<h1 style="text-align: center; color: rgb(0, 0, 153);">Managing
+Certificates In Mozilla/Netscape 7.x</h1>
+<br>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="2"
+ cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top;">
+      <h2>Contents</h2>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">
+      <ul>
+        <li>
+          <h3><a href="#Accessing_your_certificates">Accessing
+certificates</a></h3>
+        </li>
+        <li>
+          <h3><a href="#Exporting_certificates_from_Mozilla">Exporting
+certificates</a></h3>
+        </li>
+        <li>
+          <h3><a href="#Trusting_the_SensorNet_Certificate">Trusting
+the Certificate Authority</a></h3>
+        </li>
+        <li>
+          <h3><a href="#Importing_a_certificate_into_Mozilla">Importing
+certificates</a></h3>
+        </li>
+      </ul>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr
+ style="font-family: Helvetica,Arial,sans-serif; color: rgb(0, 102, 0);">
+      <td style="vertical-align: top;">
+      <h3><a name="Accessing_your_certificates"></a>Accessing your
+certificates</h3>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">In Mozilla/Netscape 7.x,
+certificates are managed from the <span style="font-weight: bold;">Edit
+Menu</span> by selecting <span style="font-weight: bold;">Preferences</span>.
+The screen in Figure 1 will appear.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr align="center">
+      <td style="vertical-align: top;"><img
+ style="width: 699px; height: 569px;" alt="Preferences menu"
+ src="MozillaEditPrefs.png"><br>
+      <span style="font-weight: bold;">Figure 1.</span><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Click the <span
+ style="font-weight: bold;">Manage Certificates</span>&nbsp; button to
+open the Certificate Manager (Figure 2).<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr align="center">
+      <td style="vertical-align: top;"><img
+ style="width: 707px; height: 494px;" alt="Certificate Manager"
+ src="MozillaCertificateManager.png"><br>
+      <span style="font-weight: bold;">Figure 2.</span><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Your certificate will appear
+under Oak Ridge National Laboratory.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr
+ style="font-family: Helvetica,Arial,sans-serif; color: rgb(0, 102, 0);">
+      <td style="vertical-align: top;">
+      <h3><a name="Exporting_certificates_from_Mozilla"></a>Exporting
+certificates from Mozilla (Backup)</h3>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">The first thing you want to do
+is to export your certificate so that it is backed up in
+a safe place, and also so that you can then import it into other
+browsers on this or other computers. Select you identity as shown above
+and click the <span style="font-weight: bold;">Backup </span>button.
+A dialog box will come up asking you where to store the key (Figure 3).
+The default for Mozilla id to use the industry-standard PKCS #12 format
+with the extension ".p12". </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; text-align: center;"><img
+ style="width: 749px; height: 498px;" alt="Key file" src="KeyFile.png"><br>
+      <span style="font-weight: bold;">Figure 3.</span><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">When you click the Save button,
+a password box will pop up asking you for the password for the Software
+Security Device (Figure 4). This is the password you should have set
+for Mozilla to allow it to store everything securely&nbsp; by clicking
+Master Password in Figure 1.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; text-align: center;"><img
+ style="width: 473px; height: 143px;" alt="Master passwords"
+ src="MasterPassword.png"><br>
+      <span style="font-weight: bold;">Figure 4.</span><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Next, you need to enter a
+password to protect the private keys in the new exported certificate
+file (Figure 5). Be sure to choose a good password. -- at least 8
+characters including letters, numbers, and special characters, and no
+dictionary words. Click <span style="font-weight: bold;">OK</span> and
+the certificate along with its private key is exported securely. <span
+ style="font-weight: bold; font-style: italic;">Be sure to copy your
+exported certificate to a floppy or a CD</span> so that it is stored
+off of your computer in case you need to rebuild it, loose a hard
+drive, etc. </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; text-align: center;"><img
+ style="width: 649px; height: 307px;" alt="Certificate password"
+ src="CertificatePassword.png"><br>
+      <span style="font-weight: bold;">Figure 5.</span><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr
+ style="font-family: Helvetica,Arial,sans-serif; color: rgb(0, 102, 0);">
+      <td style="vertical-align: top;">
+      <h3><a name="Trusting_the_SensorNet_Certificate"></a>Trusting the
+SensorNet Certificate Authority</h3>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">The SensornetCA certificate
+should have been automatically imported into Mozilla when you generated
+your SensorNet certificate. Click the <span style="font-weight: bold;">Authorities
+      </span>tab in the Certificate Manager (Figure 2) to look for the
+SensorNet Certificate Authority (Figure 6). It will be listed under Oak
+Ridge National Laboratory. In the event that the SensorNetCA
+certificate is missing, you can <a
+ href="../IEHowTo/ManagingCertificateIE.html#Manual_Import">import
+it manually</a>.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; text-align: center;"><img
+ style="width: 705px; height: 495px;"
+ alt="Finding the SensorNetCA certificate"
+ src="CACertificateManager.png"><br>
+      <span style="font-weight: bold;">Figure 6.</span><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Highlight the SensorNetCA entry
+and click the <span style="font-weight: bold;">Edit </span>button to
+be able to trust this certificate forall&nbsp; its purposes (Figure 6).<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; text-align: center;"><img
+ style="width: 302px; height: 206px;" alt="Edit CA trust"
+ src="EditTrust.png"><br>
+      <span style="font-weight: bold;">Figure 7.</span><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">If you wish, you can also look
+at the SensorNetCA certificate properties by clicking the View button
+as shown in Figure 8.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; text-align: center;"><img
+ style="width: 572px; height: 643px;" alt="CA certificate properties"
+ src="CAProperties.png"><br>
+      <span style="font-weight: bold;">Figure 8.</span><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr
+ style="font-family: Helvetica,Arial,sans-serif; color: rgb(0, 102, 0);">
+      <td style="vertical-align: top;">
+      <h3><a name="Importing_a_certificate_into_Mozilla"></a>Importing
+a certificate into Mozilla</h3>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Return to the <span
+ style="font-weight: bold;">Your Certificate</span> tab in Figure 2 and
+Click the <span style="font-weight: bold;">Import </span>button. A
+file dialog will appear (Figure 9). Both .p12 and .pfx files can be
+used for import&nbsp; </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; text-align: center;"><img
+ style="width: 748px; height: 498px;" alt="Keys available for import"
+ src="keylist.png"><br>
+      <span style="font-weight: bold;">Figure 9.</span><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">After you select the file to
+import, you will be asked for the password for the Software Security
+Device which will be used to store the certificate.&nbsp; This is the
+same as in Figure 4. Then you will be asked for the password that was
+used to protect the certificate (Figure 10). This is the password you
+used to protect the key file when you exported it in Figure 5. Your
+certificate will now appear in the certificate cache.<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; text-align: center;"><img
+ style="width: 404px; height: 143px;"
+ alt="The password used to protect the file"
+ src="CertificateFilePassword.png"><br>
+      <span style="font-weight: bold;">Figure 10.</span><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">These same operations would take
+more than twice as many steps if you did them in Internet Explorer!<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+</body>
+</html>
