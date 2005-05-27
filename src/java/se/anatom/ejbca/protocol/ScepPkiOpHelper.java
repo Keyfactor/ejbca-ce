@@ -33,7 +33,7 @@ import se.anatom.ejbca.log.Admin;
 /**
  * Helper class to handle SCEP (draft-nourse-scep-06.txt) requests.
  *
- * @version  $Id: ScepPkiOpHelper.java,v 1.28 2005-04-29 10:17:16 anatom Exp $
+ * @version  $Id: ScepPkiOpHelper.java,v 1.29 2005-05-27 14:52:27 anatom Exp $
  */
 public class ScepPkiOpHelper {
     private static Logger log = Logger.getLogger(ScepPkiOpHelper.class);
@@ -64,7 +64,7 @@ public class ScepPkiOpHelper {
     public byte[] scepCertRequest(byte[] msg)
             throws ObjectNotFoundException, AuthLoginException,
             SignRequestException, AuthStatusException, IllegalKeyException,
-            SignRequestSignatureException {
+            SignRequestSignatureException, CADoesntExistsException {
         byte[] ret = null;
         log.debug(">getRequestMessage(" + msg.length + " bytes)");
 
@@ -98,8 +98,6 @@ public class ScepPkiOpHelper {
             log.error("Error receiving ScepMessage: ", e);
         } catch (ClassNotFoundException e) {
             log.error("Error createing response message template: ", e);
-        } catch (CADoesntExistsException e) {
-            log.error("Requested CA does not exist: ", e);
         }
 
         log.debug("<getRequestMessage():" + ((ret == null) ? 0 : ret.length));

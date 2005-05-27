@@ -250,7 +250,8 @@ public class ProtocolHttpTest extends TestCase {
         WebResponse response = wc.getResponse(request);
         // TODO: since our request most certainly uses the wrong CA cert to encrypt the
         // request, it will fail. If we get something back, we came a little bit at least :)
-        assertEquals("Response code", 400, response.getResponseCode());
+        // We should get a NOT_FOUND error back.
+        assertEquals("Response code", 404, response.getResponseCode());
         // TODO: send crap message and get good error
 
         log.debug("<test02OpenScep()");

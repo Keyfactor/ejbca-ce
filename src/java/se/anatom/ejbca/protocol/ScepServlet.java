@@ -21,6 +21,7 @@ import se.anatom.ejbca.ca.caadmin.ICAAdminSessionHome;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionRemote;
 import se.anatom.ejbca.ca.exception.AuthLoginException;
 import se.anatom.ejbca.ca.exception.AuthStatusException;
+import se.anatom.ejbca.ca.exception.CADoesntExistsException;
 import se.anatom.ejbca.ca.sign.ISignSessionHome;
 import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.log.Admin;
@@ -58,7 +59,7 @@ import java.util.Iterator;
  * 7. output the result as a der encoded block on stdout 
  * -----
  *
- * @version $Id: ScepServlet.java,v 1.33 2005-04-15 13:59:25 anatom Exp $
+ * @version $Id: ScepServlet.java,v 1.34 2005-05-27 14:52:27 anatom Exp $
  */
 public class ScepServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(ScepServlet.class);
@@ -200,6 +201,11 @@ public class ScepServlet extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST,
                         "Invalid parameter: " + operation);
             }
+        } catch (CADoesntExistsException cae) {
+            log.error("SCEP cert request for unknown CA, or can't find user.", cae);
+
+            // TODO: Send back proper Failure Response
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, cae.getMessage());
         } catch (java.lang.ArrayIndexOutOfBoundsException ae) {
             log.error("Empty or invalid request received.", ae);
 

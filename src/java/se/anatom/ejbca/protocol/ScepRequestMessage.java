@@ -60,7 +60,7 @@ import se.anatom.ejbca.util.CertTools;
  * Class to handle SCEP request messages sent to the CA. 
  * TODO: don't forget extensions, e.g. KeyUsage requested by end entity 
  *
- * @version $Id: ScepRequestMessage.java,v 1.39 2005-05-09 19:01:47 anatom Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.40 2005-05-27 14:52:27 anatom Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage, Serializable {
     static final long serialVersionUID = -235623330828902051L;
@@ -406,8 +406,9 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
                 String name = CertTools.getPartFromDN(getRequestDN(), "SN");
                 if (name == null) {
                     log.error("No SN in DN: "+getRequestDN());
+                    return null;
                 }
-                // Special if the DN contains unstructiredAddress where it becomes: 
+                // Special if the DN contains unstructuredAddress where it becomes: 
                 // SN=1728668 + 1.2.840.113549.1.9.2=pix.primekey.se
                 // We only want the SN and not the oid-part.
                 int index = name.indexOf(' ');
