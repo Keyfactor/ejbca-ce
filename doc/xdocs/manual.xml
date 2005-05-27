@@ -541,14 +541,15 @@ For a CA to be valid as an OCSP-responder it must have the KeyUsage 'Digital Sig
 This KeyUsage must be included if the CA is to sign OCSP-responses.
 The default certificate profiles for CAs includes the key usage 'Digital Signature'.
 </p><p>
-There are a few one-time parameters affecting the OCSP service in the file src/publicweb/status/WEB-INF/web.xml:
+There are a two parameters affecting the OCSP service that can be configured in ejbca.properties:
 <ul>
 <li>'useCASigningCert' - If set to true (default) the OCSP reponses will be signed directly by the CAs certificate instead 
 of the CAs OCSP responder. If set to false, the CAs special OCSP responder certificate is used to sign the
 OCSP responses. The OCSP responder certificate is signed directly by the CA.</li>
 <li>'defaultResponderID' - Specifies the subject of a CA which will 
 generate responses when no real CA can be found from the request. This is used to generate 'unknown' 
-responses when a request is received for a certificate that is not signed by any CA on this server.</li>
+responses when a request is received for a certificate that is not signed by any CA on this server.
+Set this to the same DN as your initial Admin CA for example.</li>
 </ul>
 </p><p>
 These values should be set during deployment of EJBCA. After the values have been edited, they are installed 

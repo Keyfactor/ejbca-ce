@@ -93,6 +93,8 @@
     <!-- those are the default values used within JBoss for easy startup -->
     <property name="ca.keystorepass" value="foo123"/>
     <property name="ca.ocspkeystorepass" value="foo123"/>
+    <property name="ocsp.defaultresponder" value="CN=AdminCA1,O=EJBCA Sample,C=SE"/>
+    <property name="ocsp.usecasigningcert" value="true"/>
     <property name="datasource.jndi-name" value="EjbcaDS" />
     <property name="database.name" value="hsqldb" />
     <property name="datasource.mapping" value="Hypersonic SQL" />
@@ -129,6 +131,8 @@
 jboss.home             = ${jboss.home}
 ca.keystorepass        = ${ca.keystorepass}
 ca.ocspkeystorepass    = ${ca.ocspkeystorepass}
+ocsp.defaultresponder  = ${ocsp.defaultresponder}
+ocsp.usecasigningcert  = ${ocsp.usecasigningcert}
 datasource.jndi-name   = ${datasource.jndi-name}
 database.name          = ${database.name}
 datasource.mapping     = ${datasource.mapping}
@@ -226,12 +230,23 @@ web.contentencoding    = ${web.contentencoding}
         <webdoclet force="true" destdir="${src.gen}" excludedtags="@version,@author">
             <fileset dir="${src.java}">
                 <include name="**/*Servlet.java" />
+                <exclude name="**/protocol/*Servlet.java" />
             </fileset>
             <deploymentdescriptor destdir="${src.dd}/WEB-INF"
              servletspec="2.3"
              sessiontimeout="30" 
              description="EJBCA Administration web" 
              mergeDir="${webdd.src}/merge"
+             validatexml="false" />
+        </webdoclet>
+        <webdoclet force="true" destdir="${src.gen}" excludedtags="@version,@author">
+            <fileset dir="${src.java}">
+                <include name="**/protocol/OCSPServlet.java" />
+            </fileset>
+            <deploymentdescriptor destdir="${src.dd}/status/WEB-INF"
+             servletspec="2.3"
+             sessiontimeout="30" 
+             description="OCSP responder" 
              validatexml="false" />
         </webdoclet>
     </target>
@@ -283,7 +298,7 @@ web.contentencoding    = ${web.contentencoding}
     <!-- Build status part                                                                                                                             -->
     <!-- =================================================================== -->
     <target name="status.war" depends="compile">
-        <war destfile="${statuswar}" webxml="${status.src}/WEB-INF/web.xml">
+        <war destfile="${statuswar}" webxml="${src.dd}/status/WEB-INF/web.xml">
             <fileset dir="${status.src}" excludes="WEB-INF/web.xml" />
             <classes dir="${build}">
                 <include name="se/anatom/ejbca/protocol/OCSPServlet*.class" />

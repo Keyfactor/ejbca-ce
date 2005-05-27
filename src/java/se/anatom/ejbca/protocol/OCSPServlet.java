@@ -79,8 +79,57 @@ import se.anatom.ejbca.util.ServiceLocator;
  * Servlet implementing server side of the Online Certificate Status Protocol (OCSP)
  * For a detailed description of OCSP refer to RFC2560.
  * 
- * @author Thomas Meckel (Ophios GmbH)
- * @version  $Id: OCSPServlet.java,v 1.39 2005-05-02 16:18:54 anatom Exp $
+ * @web.servlet name = "OCSP"
+ *              display-name = "OCSPServlet"
+ *              description="Answers OCSP requests"
+ *              load-on-startup = "99"
+ *
+ * @web.servlet-mapping url-pattern = "/ocsp"
+ *
+ * @web.servlet-init-param description="Algorithm used by server to generate signature on OCSP responses"
+ *   name="SignatureAlgorithm"
+ *   value="SHA1WithRSA"
+ *   
+ * @web.servlet-init-param description="If set to true the servlet will enforce OCSP request signing"
+ *   name="enforceRequestSigning"
+ *   value="false"
+ *   
+ * @web.servlet-init-param description="If set to true the certificate chain will be returned with the OCSP response"
+ *   name="includeCertChain"
+ *   value="true"
+ *   
+ * @web.servlet-init-param description="If set to true the OCSP reponses will be signed directly by the CAs certificate instead of the CAs OCSP responder"
+ *   name="useCASigningCert"
+ *   value="${ocsp.usecasigningcert}"
+ *   
+ * @web.servlet-init-param description="Specifies the subject of a certificate which is used to identifiy the responder which will generate responses when no real CA can be found from the request. This is used to generate 'unknown' responses when a request is received for a certificate that is not signed by any CA on this server"
+ *   name="defaultResponderID"
+ *   value="${ocsp.defaultresponder}"
+ *   
+ *   
+ * @web.ejb-local-ref
+ *  name="ejb/CertificateStoreSessionLocal"
+ *  type="Session"
+ *  link="CertificateStoreSession"
+ *  home="se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome"
+ *  local="se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal"
+ *
+ * @web.ejb-local-ref
+ *  name="ejb/RSASignSessionLocal"
+ *  type="Session"
+ *  link="RSASignSession"
+ *  home="se.anatom.ejbca.ca.sign.ISignSessionLocalHome"
+ *  local="se.anatom.ejbca.ca.sign.ISignSessionLocal"
+ *
+ * @web.ejb-local-ref
+ *  name="ejb/CAAdminSessionLocal"
+ *  type="Session"
+ *  link="CAAdminSession"
+ *  home="se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome"
+ *  local="se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal"
+ *
+ * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson
+ * @version  $Id: OCSPServlet.java,v 1.40 2005-05-27 14:50:53 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 

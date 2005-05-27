@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.19 2005-05-13 09:33:08 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.20 2005-05-27 14:50:28 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -42,6 +42,16 @@ ca.validity=3650
 # The policy id of the CA. Policy id determines which PKI policy the CA uses.
 # Type your policy id or use '2.5.29.32.0' for 'any policy' (rfc3280) or 'null' for no policy at all.
 ca.policy=null
+
+# Specifies the subject of a certificate which is used to identifiy the 
+# responder which will generate responses when no real CA can be found from the request. 
+# This is used to generate 'unknown' responses when a request is received for a certificate 
+# that is not signed by any CA on this server. Recommended to use same as ca.dn.
+ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
+
+#If set to true the OCSP reponses will be signed directly by the CAs certificate instead 
+# of the CAs OCSP responder. Default true.
+ocsp.usecasigningcert=true
 
 # This password is used internally to protect CA keystores in database (i.e. the CAs private key).
 # foo123 is to keep compatibility with default installations of EJBCA 3.0, please change this if possible
