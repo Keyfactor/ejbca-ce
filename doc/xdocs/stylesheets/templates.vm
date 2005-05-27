@@ -12,7 +12,7 @@
 <div class="label">Warning</div>
 <div class="content">$data.content</div>
 </div>
-
+#end
 
 #macro ( table $table)
   #if ($table.getAttributeValue("class"))
