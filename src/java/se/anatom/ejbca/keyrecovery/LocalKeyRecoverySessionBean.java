@@ -14,7 +14,6 @@
 package se.anatom.ejbca.keyrecovery;
 
 import java.security.KeyPair;
-import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
@@ -41,7 +40,7 @@ import se.anatom.ejbca.util.CertTools;
  * Stores key recovery data. Uses JNDI name for datasource as defined in env 'Datasource' in
  * ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.31 2005-05-26 06:32:26 herrvendil Exp $
+ * @version $Id: LocalKeyRecoverySessionBean.java,v 1.32 2005-05-27 12:42:20 anatom Exp $
  *
  * @ejb.bean
  *   display-name="Stores key recovery data"
@@ -359,7 +358,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
                         .findCertificateByIssuerAndSerno(admin,
                                 krd.getIssuerDN(), krd.getCertificateSN());
                         returnval = new KeyRecoveryData(krd.getCertificateSN(), krd.getIssuerDN(),
-                                krd.getUsername(), krd.getMarkedAsRecoverable(), keys, (Certificate) certificate);
+                                krd.getUsername(), krd.getMarkedAsRecoverable(), keys, certificate);
 
                         
                     }
