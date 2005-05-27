@@ -16,7 +16,7 @@
     <p>
     This excellent HOWTO on PKI in general, LDAP, email and server setup has been kindly contributed by SensorNet. Please read this notice!
     </p>
-    <source>
+    <note>
 These pages were created by the SensorNet Project at Oak Ridge National
 Laboratory (ORNL), Oak Ridge, Tennessee, USA to provide help for their
 instance of EJBCA. You are welcome to modify these pages for your own
@@ -24,9 +24,12 @@ use, but please remove any links to the SensorNetCA web pages so that we
 do not get excess traffic. Please tell your users not to use the URLs in
 the screen shots, and please credit Oak Ridge National Laboratory. ORNL
 is operated by UT-Battelle for the U.S. Department Of Energy.
-    </source>
+    </note>
     <p>
     <ul>
+    <li><a href="sensornet/infrastructure.html">SensorNet certificate infrastructure </a></li>
+    <li><a href="sensornet/short-course.html">A short course on certificates</a></li>
+    <li><a href="sensornet/ca-enrollment.html">Certificate Authority Enrollment</a></li>
     <li><a href="sensornet/CertificateInfrastructure.html">SensorNet certificate infrastructure basics and enrollment</a></li>
     <li><a href="sensornet/MozillaHowTo/MozillaCertificateManagement.html">Managing certificates in Mozilla</a></li>
     <li><a href="sensornet/IEHowTo/ManagingCertificateIE.html">Managing certificates in Internet Explorer</a></li>
