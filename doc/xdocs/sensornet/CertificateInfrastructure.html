@@ -21,7 +21,7 @@
     </tr>
     <tr align="center">
       <td colspan="2" rowspan="1" style="vertical-align: top;">
-      <h2>September 2004</h2>
+      <h2>November 2004</h2>
       </td>
     </tr>
   </tbody>
@@ -30,26 +30,6 @@
 <table style="width: 100%; text-align: left;" border="0" cellpadding="2"
  cellspacing="2">
   <tbody>
-    <tr>
-      <td style="vertical-align: top;">
-      <h3>Credits<br>
-      </h3>
-      </td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;">These pages were created by the
-SensorNet Project at Oak Ridge National Laboratory (ORNL), Oak Ridge,
-Tennessee, USA to provide help for their instance of EJBCA. You are
-welcom to modify these pages for your own use, but please remove any
-links to the SensorNetCA web pages so that we do not get excess
-traffic. Please tell your users not to use the URLs in the screen
-shots, and please credit Oak Ridge National Laboratory. ORNL is
-operated by UT-Battelle for the U.S. Department Of Energy.</td>
-    </tr>
-    <tr>
-      <td style="vertical-align: top;"><br>
-      </td>
-    </tr>
     <tr style="font-family: Helvetica,Arial,sans-serif;">
       <td style="vertical-align: top;">
       <h3>Introduction</h3>
@@ -58,9 +38,9 @@ operated by UT-Battelle for the U.S. Department Of Energy.</td>
     <tr>
       <td style="vertical-align: top;">We all agree on the need for
 security. However, there are many ways to achieve different levels of
-security. The purpose of this Web page is to outline the needs of
-SensorNet, to explain how certificates meet these
-needs, and to guide you through the certificate issuing and use process.</td>
+security. The purpose of this Web page is to outline the needs of SensorNet,
+to explain how certificates meet these needs, and to guide you through the certificate
+issuing and use process.</td>
     </tr>
     <tr>
       <td style="vertical-align: top;"><br>
@@ -80,6 +60,9 @@ enrollment<br>
         <li><a href="#Managing_Certificates">Managing certificates</a></li>
         <li><a href="#Using_certificates_for_secure_e-mail">Using
 certificates for secure e-mail</a></li>
+        <li><a href="IISHowTo/ServerCert.html">Obtaining server certificates for IIS</a></li>
+        <li><a href="serverHowTo/serverCert.html">Obtaining certificates for Unix servers, nodes, or applications</a></li>
+        <li><a href="TomcatHowTo/TomcatCert.html">Obtaining server certificates for Tomcat</a></li>
       </ul>
       </td>
     </tr>
@@ -266,7 +249,7 @@ certificate will be authenticated securely and can use SSL for secure
 access. No user ids and passwords are required. However, once per
 browser session, the user will have to unlock his private certificate
 key with a local password. The SensorNet CA web site is set up this way
-on a Tomcat server. <br>
+on a Tomcat server. To access this server, go to [link removed].<br>
       </td>
     </tr>
     <tr>
@@ -378,7 +361,7 @@ enrollment<br>
       <td style="vertical-align: top;">Certificate authorities create,
 verify, renew, revoke, and reissue certificates. We are now using the
 Enterprise Java Bean Certificate Authority (EJBCA) via a secure (https)
-SSL connection. <br>
+SSL connection. You may access the SensorNet Certificate Server at [link removed].<br>
       </td>
     </tr>
     <tr>

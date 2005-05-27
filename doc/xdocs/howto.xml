@@ -9,11 +9,36 @@
   <section name="Howto documents">
     <p>
     A number of HOWTO documents are available in the <strong>doc/howto</strong> directory in the source distribution.
-    </p><p>
-    This excellent HOWTO on LDAP and email setup has been contributed by SensorNet
-<ul>
-<li><a href="sensornet/CertificateInfrastructure.html">SensorNet LDAP and mail</a></li>
-</ul>
+    </p>
+    </section>
+    
+  <section name="SensorNet PKI">
+    <p>
+    This excellent HOWTO on PKI in general, LDAP, email and server setup has been kindly contributed by SensorNet. Please read this notice!
+    </p>
+    <source>
+These pages were created by the SensorNet Project at Oak Ridge National
+Laboratory (ORNL), Oak Ridge, Tennessee, USA to provide help for their
+instance of EJBCA. You are welcome to modify these pages for your own
+use, but please remove any links to the SensorNetCA web pages so that we
+do not get excess traffic. Please tell your users not to use the URLs in
+the screen shots, and please credit Oak Ridge National Laboratory. ORNL
+is operated by UT-Battelle for the U.S. Department Of Energy.
+    </source>
+    <p>
+    <ul>
+    <li><a href="sensornet/CertificateInfrastructure.html">SensorNet certificate infrastructure basics and enrollment</a></li>
+    <li><a href="sensornet/MozillaHowTo/MozillaCertificateManagement.html">Managing certificates in Mozilla</a></li>
+    <li><a href="sensornet/IEHowTo/ManagingCertificateIE.html">Managing certificates in Internet Explorer</a></li>
+
+    <li><a href="sensornet/LDAPHowTo/SecureEmailNS-Moz/LDAPandMail.html">LDAP and email in Mozilla</a></li>
+    <li><a href="sensornet/LDAPHowTo/SecureEmailO/SecureEmailUsingOutlook.html">LDAP and email in Outlook</a></li>
+    <li><a href="sensornet/LDAPHowTo/SecureEmailOE/Securee-mail%20OutlookExpress.html">LDAP and email in Outlook Express</a></li>
+
+    <li><a href="sensornet/IISHowTo/ServerCert.html">Server certificates for IIS</a></li>
+    <li><a href="sensornet/serverHowTo/serverCert.html">Server certificates for Apache and unix servers</a></li>
+    <li><a href="sensornet/TomcatHowTo/TomcatCert.html">Server certificates for Tomcat</a></li>
+    </ul>
     </p>
   </section>
 

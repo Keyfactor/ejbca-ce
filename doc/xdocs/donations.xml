@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<document>
+
+  <properties>
+    <title>Donations</title>
+  </properties>
+
+<body>
+  <section name="Donations and contributions">
+    <p>
+    You can contribute to EJBCA in a number of ways:
+    <ul>
+    <li>Through <a href="http://sourceforge.net/donate/index.php?group_id=39716">Donations</a>.</li>
+    <li>By contributing code or documentation, see <a href="contact.html">contact &amp; support</a>.</li>    
+    <li>By hiring someone for integration or sponsoring development of features. Contact the project admins at <a href="contact.html">contact &amp; support</a>.</li>
+    </ul>
+    </p>
+  </section>
+
+</body>
+</document>
+

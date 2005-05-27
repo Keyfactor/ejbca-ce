@@ -33,7 +33,7 @@
             <menu name="Contributing">
                 <item name="CVS Repositories"      href="http://cvs.sourceforge.net/viewcvs.py/ejbca/ejbca/"/>
                 <item name="Bug Database"          href="http://jira.primekey.se/"/>
-                <item name="Donations"             href="http://sourceforge.net/donate/index.php?group_id=39716"/>
+                <item name="Donations"             href="/donations.html"/>
                 <item name="Contributors"          href="/contributors.html"/>
             </menu>
 

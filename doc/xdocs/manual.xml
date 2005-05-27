@@ -562,7 +562,7 @@ openssl ocsp -issuer Test-CA.pem -CAfile Test-CA.pem -cert Test.pem -req_text -u
 <p>
 If Mozilla is to request and accept OCSP-responses from a CA it must be configured:
 <ol>
-<li>'Use OCSP to validate all certificates using this URL and signer' in 'Privace &amp; Security->Validation'.
+<li>'Use OCSP to validate all certificates using this URL and signer' in 'Privacy &amp; Security->Validation'.
 Choose the CA from EJBCA (which you should have made Trusted by right clicking in 
 'Privacy &amp; Security->Certificates->Manage Certificates->Authorities' and checking the appropriate checkboxes).
 </li>
