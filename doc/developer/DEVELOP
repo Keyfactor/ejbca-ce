@@ -165,12 +165,12 @@ public int myMethod(int arg) {
 Making session beans
 ====================
 
-All session beans should inherit the class se.anatom.ejbca.BaseSessionBean.java.
+All session beans should extend the class se.anatom.ejbca.BaseSessionBean.
 
 Making entity beans
 ===================
 
-All entity beans should inherit the class se.anatom.ejbca.BaseEntityBean.java.
+All entity beans should extend the class se.anatom.ejbca.BaseEntityBean.
 When doing this, the standard methods like setting the context are already in
 there. They can however always be overriden.
 
@@ -180,14 +180,14 @@ CVS
 
 All files should have the below part in the initial class comment:
 
-@version $Id: DEVELOP,v 1.1 2005-05-20 11:02:52 anatom Exp $
+@version $Id: DEVELOP,v 1.2 2005-05-27 12:56:36 anatom Exp $
 
 Example:
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
- * @version $Id: DEVELOP,v 1.1 2005-05-20 11:02:52 anatom Exp $
+ * @version $Id: DEVELOP,v 1.2 2005-05-27 12:56:36 anatom Exp $
  */
 
 All java files should include the following header as the first lines in the file:
@@ -228,42 +228,6 @@ The SigningDeviceFactory class MUST contain the method:
         return PKCS12SigningDevice.instance(prop);
     }
 
-CertificateStore/Publisher architecture
-=======================================
-
-The CertificateStore/Publisher architecture is defined by the two interfaces
-IPublisherSession and ICertificateStoreSession:
-
-public interface IPublisherSession;
-public interface ICertificateStoreSession extends IPublisherSession;
-
-The CertificateStoreSession is the primary storage
-for certificates and CRL. The CA always puts certificates and CRLs in the
-CertificateStoreSession session bean defined in ca/ejb-jar.xml. The
-CertificateStoreSession is also used to retrieve and find certificates,
-retrieve CRLs, check for revocation etc. the CertificateStoreSession implements
-the interface ICertificateStoreSession.
-
-Certificates and CRLs can also be published to any number of other certificate
-stores, which are defined by session beans PublisherSession1, PublisherSession2,
-etc. A PublisherSession is a simple subset of the CertificateStoreSession and
-can only be used to store certificates and CRLs. PublisherSession's implement
-the interface IPublisherSession.
-
-The IPublisherSession is a simple interface which is only used to store a
-certificate or a CRL.
-The ICertificateStoreSession extends the IPublisherSession interface with
-capabilities to find certificates and CRL etc.
-A class implementing the ICertificateStoreSession interface can thus also be
-used a PublisherSession and a class implementing the IPublisherSession can
-easily (well maybe not so easily) be extended to a fully fledged
-CertificateStore.
-
-This architecture gives us the choice of for example an SQL database aa
-CertificateStoreSession where we also publish certificates to an LDAP directory,
-or the LDAP directory as the primary CertificateStoreSession where we also
-publish certificates to a specific SQL database for a specific purpose.
-
 Clear or hashed passwords
 =========================
 
@@ -289,11 +253,4 @@ If using the command line gui there is a command 'ra setclearpwd'
 If using programatically:
 In IUserAdminSession there is a flag 'clearpwd' to the method addUser, or you can use 
 the method setOpenPassword on the UserDataBean object returned from findUser.
-
-Running Webtest
-===============
-'runtest.cmd web' is meant to test virtually all functions using http.
-
-Prerequisites for running the tests is to have a CA setup with 
-issuerDN: CN=TestCA,O=AnaTom,C=SE.
 
