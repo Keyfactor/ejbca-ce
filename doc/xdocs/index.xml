@@ -19,12 +19,13 @@ standalone or integrated in any J2EE application.
 </p>
 <p>
 This software is OSI Certified Open Source Software.
-OSI Certified is a certification mark of the Open Source Initiative
+OSI Certified is a certification mark of the Open Source Initiative.
 </p>
 </section>
 
-<section name="Support">
-<p>Commercial support for EJBCA is available in Sweden through <a href="http://www.primekey.se/">PrimeKey Solutions</a>. </p>
+<section name="Support and development">
+<p>Commercial support, development and integration for EJBCA is available through <a href="http://www.primekey.se/">PrimeKey Solutions</a>. 
+</p>
 </section>
 
 
