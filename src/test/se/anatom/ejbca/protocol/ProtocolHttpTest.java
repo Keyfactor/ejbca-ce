@@ -15,11 +15,16 @@ package se.anatom.ejbca.protocol;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStreamReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.NoSuchProviderException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.Collection;
@@ -35,6 +40,7 @@ import junit.framework.TestSuite;
 import org.apache.log4j.Logger;
 import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.CertificateID;
+import org.bouncycastle.ocsp.OCSPException;
 import org.bouncycastle.ocsp.OCSPReq;
 import org.bouncycastle.ocsp.OCSPReqGenerator;
 import org.bouncycastle.ocsp.OCSPResp;
@@ -61,7 +67,6 @@ import se.anatom.ejbca.util.CertTools;
 
 import com.meterware.httpunit.GetMethodWebRequest;
 import com.meterware.httpunit.HttpUnitOptions;
-import com.meterware.httpunit.PostMethodWebRequest;
 import com.meterware.httpunit.WebConversation;
 import com.meterware.httpunit.WebRequest;
 import com.meterware.httpunit.WebResponse;
@@ -257,6 +262,44 @@ public class ProtocolHttpTest extends TestCase {
         log.debug("<test02OpenScep()");
     }
 
+
+    private SingleResp sendOCSPPost(byte[] ocspPackage) throws IOException, OCSPException, NoSuchProviderException {
+        // POST the OCSP request
+        URL url = new URL(httpReqPath + '/' + resourceOcsp);
+        HttpURLConnection con = (HttpURLConnection)url.openConnection();
+        // we are going to do a POST
+        con.setDoOutput(true);
+        con.setRequestMethod("POST");
+
+        // POST it
+        con.setRequestProperty("Content-Type", "application/ocsp-request");
+        OutputStream os = con.getOutputStream();
+        os.write(ocspPackage);
+        os.close();
+        assertEquals("Response code", 200, con.getResponseCode());
+        assertEquals("Content-Type", "application/ocsp-response", con.getContentType());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        // This works for small requests, and OCSP requests are small
+        InputStream in = con.getInputStream();
+        int b = in.read();
+        while (b != -1) {
+            baos.write(b);
+            b = in.read();
+        }
+        baos.flush();
+        in.close();
+        byte[] respBytes = baos.toByteArray();
+        OCSPResp response = new OCSPResp(new ByteArrayInputStream(respBytes));
+        assertEquals("Response status not zero.", response.getStatus(), 0);
+        BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
+        X509Certificate[] chain = brep.getCerts("BC");
+        boolean verify = brep.verify(chain[0].getPublicKey(), "BC");
+        assertTrue("Response failed to verify.", verify);
+        SingleResp[] singleResps = brep.getResponses();
+        assertEquals("No of SingResps shoudl be 1.", singleResps.length, 1);
+        SingleResp singleResp = singleResps[0];
+        return singleResp;
+    }
     /** Tests ocsp message
      * @throws Exception error
      */
@@ -298,35 +341,10 @@ public class ProtocolHttpTest extends TestCase {
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
         OCSPReq req = gen.generate();
-        // POST the OCSP request
-        WebConversation wc = new WebConversation();
-        ByteArrayInputStream bais = new ByteArrayInputStream(req.getEncoded());
-        PostMethodWebRequest request = new PostMethodWebRequest(httpReqPath + '/' + resourceOcsp, bais, "application/ocsp-request");
-        WebResponse webresponse = wc.getResponse(request);
-        assertEquals("Response code", 200, webresponse.getResponseCode());
-        assertEquals("Content-Type", "application/ocsp-response", webresponse.getContentType());
-        // Extract the response
-        // BUG in httpunit 1.5.4,webresponse.getInputStream converts binary to ascii on windows-platform.
-        InputStreamReader in = new InputStreamReader(webresponse.getInputStream());
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        // This works for small requests, and OCSP requests are small
-        int b = in.read();
-        while (b != -1) {
-            baos.write(b);
-            b = in.read();
-        }
-        baos.flush();
-        in.close();
-        byte[] respBytes = baos.toByteArray();
-        OCSPResp response = new OCSPResp(new ByteArrayInputStream(respBytes));
-        assertEquals("Response status not zero.", response.getStatus(), 0);
-        BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
-        X509Certificate[] chain = brep.getCerts("BC");
-        boolean verify = brep.verify(chain[0].getPublicKey(), "BC");
-        assertTrue("Response failed to verify.", verify);
-        SingleResp[] singleResps = brep.getResponses();
-        assertEquals("No of SingResps shoudl be 1.", singleResps.length, 1);
-        SingleResp singleResp = singleResps[0];
+
+        // Send the request and receive a singleResponse
+        SingleResp singleResp = sendOCSPPost(req.getEncoded());
+        
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
         Object status = singleResp.getCertStatus();
@@ -348,34 +366,10 @@ public class ProtocolHttpTest extends TestCase {
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
         OCSPReq req = gen.generate();
-        // POST the OCSP request
-        WebConversation wc1 = new WebConversation();
-        ByteArrayInputStream bais = new ByteArrayInputStream(req.getEncoded());
-        PostMethodWebRequest request = new PostMethodWebRequest(httpReqPath + '/' + resourceOcsp, bais, "application/ocsp-request");
-        WebResponse webresponse = wc1.getResponse(request);
-        assertEquals("Response code", 200, webresponse.getResponseCode());
-        assertEquals("Content-Type", "application/ocsp-response", webresponse.getContentType());
-        // Extract the response
-        InputStreamReader in = new InputStreamReader(webresponse.getInputStream());
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        // This works for small requests, and OCSP requests are small
-        int b = in.read();
-        while (b != -1) {
-            baos.write(b);
-            b = in.read();
-        }
-        baos.flush();
-        in.close();
-        byte[] respBytes = baos.toByteArray();
-        OCSPResp response = new OCSPResp(new ByteArrayInputStream(respBytes));
-        assertEquals("Response status not zero.", response.getStatus(), 0);
-        BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
-        X509Certificate[] chain = brep.getCerts("BC");
-        boolean verify = brep.verify(chain[0].getPublicKey(), "BC");
-        assertTrue("Response failed to verify.", verify);
-        SingleResp[] singleResps = brep.getResponses();
-        assertEquals("No of SingResps should be 1.", singleResps.length, 1);
-        SingleResp singleResp = singleResps[0];
+
+        // Send the request and receive a singleResponse
+        SingleResp singleResp = sendOCSPPost(req.getEncoded());
+
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
         Object status = singleResp.getCertStatus();
@@ -396,34 +390,10 @@ public class ProtocolHttpTest extends TestCase {
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, new BigInteger("1")));
         OCSPReq req = gen.generate();
-        // POST the OCSP request
-        WebConversation wc1 = new WebConversation();
-        ByteArrayInputStream bais = new ByteArrayInputStream(req.getEncoded());
-        PostMethodWebRequest request = new PostMethodWebRequest(httpReqPath + '/' + resourceOcsp, bais, "application/ocsp-request");
-        WebResponse webresponse = wc1.getResponse(request);
-        assertEquals("Response code", 200, webresponse.getResponseCode());
-        assertEquals("Content-Type", "application/ocsp-response", webresponse.getContentType());
-        // Extract the response
-        InputStreamReader in = new InputStreamReader(webresponse.getInputStream());
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        // This works for small requests, and OCSP requests are small
-        int b = in.read();
-        while (b != -1) {
-            baos.write(b);
-            b = in.read();
-        }
-        baos.flush();
-        in.close();
-        byte[] respBytes = baos.toByteArray();
-        OCSPResp response = new OCSPResp(new ByteArrayInputStream(respBytes));
-        assertEquals("Response status not zero.", response.getStatus(), 0);
-        BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
-        X509Certificate[] chain = brep.getCerts("BC");
-        boolean verify = brep.verify(chain[0].getPublicKey(), "BC");
-        assertTrue("Response failed to verify.", verify);
-        SingleResp[] singleResps = brep.getResponses();
-        assertEquals("No of SingResps should be 1.", singleResps.length, 1);
-        SingleResp singleResp = singleResps[0];
+        
+        // Send the request and receive a singleResponse
+        SingleResp singleResp = sendOCSPPost(req.getEncoded());
+
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), new BigInteger("1"));
         Object status = singleResp.getCertStatus();
@@ -441,40 +411,35 @@ public class ProtocolHttpTest extends TestCase {
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, unknowncacert, new BigInteger("1")));
         OCSPReq req = gen.generate();
-        // POST the OCSP request
-        WebConversation wc1 = new WebConversation();
-        ByteArrayInputStream bais = new ByteArrayInputStream(req.getEncoded());
-        PostMethodWebRequest request = new PostMethodWebRequest(httpReqPath + '/' + resourceOcsp, bais, "application/ocsp-request");
-        WebResponse webresponse = wc1.getResponse(request);
-        assertEquals("Response code", 200, webresponse.getResponseCode());
-        assertEquals("Content-Type", "application/ocsp-response", webresponse.getContentType());
-        // Extract the response
-        InputStreamReader in = new InputStreamReader(webresponse.getInputStream());
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        // This works for small requests, and OCSP requests are small
-        int b = in.read();
-        while (b != -1) {
-            baos.write(b);
-            b = in.read();
-        }
-        baos.flush();
-        in.close();
-        byte[] respBytes = baos.toByteArray();
-        OCSPResp response = new OCSPResp(new ByteArrayInputStream(respBytes));
-        assertEquals("Response status not zero.", response.getStatus(), 0);
-        BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
-        X509Certificate[] chain = brep.getCerts("BC");
-        boolean verify = brep.verify(chain[0].getPublicKey(), "BC");
-        assertTrue("Response failed to verify.", verify);
-        SingleResp[] singleResps = brep.getResponses();
-        assertEquals("No of SingResps should be 1.", singleResps.length, 1);
-        SingleResp singleResp = singleResps[0];
+        
+        // Send the request and receive a singleResponse
+        SingleResp singleResp = sendOCSPPost(req.getEncoded());
+
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), new BigInteger("1"));
         Object status = singleResp.getCertStatus();
         assertTrue("Status is not Unknown", status instanceof UnknownStatus);
 
         log.debug("<test06OcspUnknownCA()");
+    }
+    
+    public void test07OcspSendWrongContentType() throws Exception {
+        // An OCSP request for a certificate from an unknwon CA
+        OCSPReqGenerator gen = new OCSPReqGenerator();
+        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, unknowncacert, new BigInteger("1")));
+        OCSPReq req = gen.generate();
+        // POST the OCSP request
+        URL url = new URL(httpReqPath + '/' + resourceOcsp);
+        HttpURLConnection con = (HttpURLConnection)url.openConnection();
+        // we are going to do a POST
+        con.setDoOutput(true);
+        con.setRequestMethod("POST");
+        // POST it, but don't add content type
+        OutputStream os = con.getOutputStream();
+        os.write(req.getEncoded());
+        os.close();
+        assertEquals("Response code", 400, con.getResponseCode());
+        
     }
 
 }
