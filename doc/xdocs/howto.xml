@@ -31,18 +31,38 @@ is operated by UT-Battelle for the U.S. Department Of Energy.
     <li><a href="sensornet/short-course.html">A short course on certificates</a></li>
     <li><a href="sensornet/ca-enrollment.html">Certificate Authority Enrollment</a></li>
     <li><a href="sensornet/CertificateInfrastructure.html">SensorNet certificate infrastructure basics and enrollment</a></li>
-    <li><a href="sensornet/MozillaHowTo/MozillaCertificateManagement.html">Managing certificates in Mozilla</a></li>
-    <li><a href="sensornet/IEHowTo/ManagingCertificateIE.html">Managing certificates in Internet Explorer</a></li>
-
-    <li><a href="sensornet/LDAPHowTo/SecureEmailNS-Moz/LDAPandMail.html">LDAP and email in Mozilla</a></li>
-    <li><a href="sensornet/LDAPHowTo/SecureEmailO/SecureEmailUsingOutlook.html">LDAP and email in Outlook</a></li>
-    <li><a href="sensornet/LDAPHowTo/SecureEmailOE/Securee-mail%20OutlookExpress.html">LDAP and email in Outlook Express</a></li>
-
-    <li><a href="sensornet/IISHowTo/ServerCert.html">Server certificates for IIS</a></li>
-    <li><a href="sensornet/serverHowTo/serverCert.html">Server certificates for Apache and unix servers</a></li>
-    <li><a href="sensornet/TomcatHowTo/TomcatCert.html">Server certificates for Tomcat</a></li>
+	</ul>
+	</p>
+	
+	<subsection name="Managing certificates">
+	<p>
+	<ul>
+    <li><a href="sensornet/MozillaHowTo/MozillaCertificateManagement.html">Using Mozilla</a></li>
+    <li><a href="sensornet/IEHowTo/ManagingCertificateIE.html">Using Microsoft Internet Explorer</a></li>
     </ul>
     </p>
+	</subsection>
+
+	<subsection name="Configuring email client and LDAP">
+	<p>
+	<ul>
+    <li><a href="sensornet/LDAPHowTo/SecureEmailNS-Moz/LDAPandMail.html">Using Mozilla</a></li>
+    <li><a href="sensornet/LDAPHowTo/SecureEmailO/SecureEmailUsingOutlook.html">Using Microsoft Outlook</a></li>
+    <li><a href="sensornet/LDAPHowTo/SecureEmailOE/Securee-mail%20OutlookExpress.html">Using Microsoft Outlook Express</a></li>
+    </ul>
+    </p>
+	</subsection>
+
+	<subsection name="Server certificates">
+	<p>
+	<ul>
+    <li><a href="sensornet/IISHowTo/ServerCert.html">Microsoft IIS</a></li>
+    <li><a href="sensornet/howto-server.html">Apache HTTPd and Unix servers</a></li>
+    <li><a href="sensornet/howto-tomcat.html">Apache Tomcat</a></li>
+    </ul>
+    </p>
+    </subsection>
+    
   </section>
 
 </body>
