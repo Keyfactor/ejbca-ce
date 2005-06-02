@@ -600,7 +600,7 @@ function checkallfields(){
         <%= ejbcawebbean.getText("OCSPSERVICE") %>
       </td>
       <td width="50%"> <%= ejbcawebbean.getText("ACTIVE") %> 
-        <input type="checkbox" onclick="checkactivateocsp()" name="<%=CHECKBOX_ACTIVATEOCSPSERVICE %>" value="<%=CHECKBOX_VALUE %>" 
+        <input type="checkbox"          <% if(editca && ocspcert != null){ %> onclick="checkactivateocsp()" <% } %> name="<%=CHECKBOX_ACTIVATEOCSPSERVICE %>" value="<%=CHECKBOX_VALUE %>" 
            <% if(waitingresponse) out.write(" disabled ");%>
             <% if((editca && (ocspcainfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE)) || !editca)
                  out.write("CHECKED");%>>
