@@ -59,7 +59,7 @@ import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
  * It replaces all occurrenses of specified variables in the images 
  * with the corresponding userdata.
  *
- * @version $Id: SVGImageManipulator.java,v 1.11 2005-04-25 17:45:49 primelars Exp $
+ * @version $Id: SVGImageManipulator.java,v 1.12 2005-06-05 21:39:21 primelars Exp $
  */
 public class SVGImageManipulator {
 	/**
@@ -268,11 +268,11 @@ public class SVGImageManipulator {
 	  text = HARDTOKENSN.matcher(text).replaceAll(hardtokensn);
 	  text = HARDTOKENSNWITHOUTPREFIX.matcher(text).replaceAll(hardtokensnwithoutprefix);
 
-      for(int i=pincodes.length-1; i>=0; i--){
+      for(int i=Math.min(PINS.length, pincodes.length)-1; i>=0; i--){
       	text = PINS[i].matcher(text).replaceAll(pincodes[i]);
       }
 
-	  for(int i=pukcodes.length-1; i>=0; i--){
+	  for(int i=Math.min(PUKS.length, pukcodes.length)-1; i>=0; i--){
 		text = PUKS[i].matcher(text).replaceAll(pukcodes[i]);
 	  }
 
