@@ -18,14 +18,14 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * This is a  class containing global configuration parameters.
  *
- * @version $Id: GlobalConfiguration.java,v 1.18 2005-05-21 14:21:14 anatom Exp $
+ * @version $Id: GlobalConfiguration.java,v 1.19 2005-06-07 20:08:39 anatom Exp $
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
 
     // Default Values
     public static final float LATEST_VERSION = 1;
     
-    public static final String EJBCA_VERSION = "EJBCA 3.1 beta1";
+    public static final String EJBCA_VERSION = "EJBCA 3.1";
 
 
     // Entries to choose from in userpreference part, defines the size of data to be displayed on one page.
