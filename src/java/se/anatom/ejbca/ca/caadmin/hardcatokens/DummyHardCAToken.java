@@ -24,12 +24,13 @@ import se.anatom.ejbca.ca.exception.CATokenAuthenticationFailedException;
 import se.anatom.ejbca.ca.exception.CATokenOfflineException;
 
 /**
- * @author herrvendil
  * 
  * Class used as test and demonstrationclass when writing HardCAToken plug-ins as HSMs.
  * 
  * Observe: Remember to add a loadClass("thisclass") row to the HardCATokenManager.init() method when adding new plug-ins.
- * 
+
+ * @author herrvendil
+ * @version $Id: DummyHardCAToken.java,v 1.5 2005-06-07 20:10:18 anatom Exp $
  * 
  */
 public class DummyHardCAToken implements IHardCAToken {
