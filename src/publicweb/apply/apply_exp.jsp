@@ -108,6 +108,7 @@ Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45}
    Function NewCSR(keyflags)
       NewCSR = ""
       szName          = "CN=6AEK347fw8vWE424"
+       newencoder.reset  
        newencoder.HashAlgorithm = "MD5"
        err.clear
        On Error Resume Next
@@ -116,11 +117,16 @@ Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45}
        newencoder.providerName = options(index).text
        tmpProviderType = options(index).value
        newencoder.providerType = tmpProviderType
+       if Document.CertReqForm.enchancedeid.checked then      
+         MsgBox("Trying to add enhanced")
+         newencoder.ContainerName = "\Prime EID IP1 (basic PIN)\E"
+       end if
        newencoder.KeySpec = 2
        if tmpProviderType < 2 Then
           newencoder.KeySpec = 1
        end if
        newencoder.GenKeyFlags = &h04000001 OR keyflags
+ 
        NewCSR = newencoder.createPKCS10(szName, "")
        if len(NewCSR)<>0 then Exit Function
        newencoder.GenKeyFlags = &h04000000 OR keyflags
@@ -146,6 +152,7 @@ Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45}
    Function OldCSR(keyflags)
       OldCSR = ""
       szName          = "CN=6AEK347fw8vWE424"
+       oldencoder.reset
        oldencoder.HashAlgorithm = "MD5"
        err.clear
        On Error Resume Next
@@ -154,6 +161,9 @@ Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45}
        oldencoder.providerName = options(index).text
        tmpProviderType = options(index).value
        oldencoder.providerType = tmpProviderType
+       if Document.CertReqForm.enchancedeid.checked then         
+         oldencoder.ContainerName = "\Prime EID IP1 (basic PIN)\E"
+       end if
        oldencoder.KeySpec = 2
        if tmpProviderType < 2 Then
           oldencoder.KeySpec = 1
@@ -263,6 +273,9 @@ try  {
     <SELECT NAME="CspProvider">
     </SELECT></P>
 
+    <P>Check if you are add a certificate to an Enhanced eID: 
+       <INPUT TYPE="checkbox" NAME="enchancedeid" VALUE="true"> 
+    </P> 
     <INPUT TYPE="hidden" NAME="pkcs10" VALUE="">
 
 <INPUT type="button" value="OK" name="GenReq">
