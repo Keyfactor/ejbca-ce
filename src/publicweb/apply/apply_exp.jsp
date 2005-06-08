@@ -118,7 +118,6 @@ Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45}
        tmpProviderType = options(index).value
        newencoder.providerType = tmpProviderType
        if Document.CertReqForm.enchancedeid.checked then      
-         MsgBox("Trying to add enhanced")
          newencoder.ContainerName = "\Prime EID IP1 (basic PIN)\E"
        end if
        newencoder.KeySpec = 2
