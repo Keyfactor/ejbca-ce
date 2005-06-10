@@ -16,6 +16,7 @@
 <li>Simple installation and configuration.</li>
 <li>Powerful Web based administration GUI using strong authentication.</li>
 <li>Command line administration for scripts etc.</li>
+<li>Modular API for HSMs. Support for nCipher HSM sponsored by Linagora.</li>
 <li>Individual enrollment or batch production of certificates.</li>
 <li>Server and client certificates can be exported as PKCS12, JKS or PEM.</li>
 <li>Browser enrollment with Netscape, Mozilla, IE, etc.</li>
