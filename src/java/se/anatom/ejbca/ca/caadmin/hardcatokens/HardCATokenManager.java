@@ -26,7 +26,7 @@ import se.anatom.ejbca.ca.caadmin.CAToken;
  * Each HardCaToken plug-in should register itself by using the method register.
  * The CA keeps a registry of CA tokens created here.
  * 
- * @version $Id: HardCATokenManager.java,v 1.12 2005-06-10 06:54:51 anatom Exp $
+ * @version $Id: HardCATokenManager.java,v 1.13 2005-06-10 08:12:53 anatom Exp $
  * 
  */
 public class HardCATokenManager {
@@ -48,7 +48,7 @@ public class HardCATokenManager {
      * All new plug-ins should add a loadClass call with it's classpath to this method.
      */
     static {
-        HardCATokenManager.instance().addAvailableHardCAToken("se.primeKey.caToken.nFast.NFastCAToken", "NFastCAToken", false, true);
+        HardCATokenManager.instance().addAvailableHardCAToken("se.anatom.ejbca.ca.caadmin.hardcatokens.NFastCAToken", "NFastCAToken", false, true);
 		HardCATokenManager.instance().addAvailableHardCAToken("se.primeKey.caToken.card.PrimeCAToken", "PrimeCAToken", false, true);
 		HardCATokenManager.instance().addAvailableHardCAToken("se.anatom.ejbca.ca.caadmin.hardcatokens.DummyHardCAToken", "DummyHardCAToken", false, false);
 		HardCATokenManager.instance().addAvailableHardCAToken("se.anatom.ejbca.ca.caadmin.hardcatokens.HardCATokenSample", "HardCATokenSample", false, false);
@@ -106,22 +106,40 @@ public class HardCATokenManager {
 	 * @return true if registration went successful, false if the classpath could not be found or the classpath was already registered.
 	 */
 	public synchronized boolean addAvailableHardCAToken(String classpath, String name, boolean translateable, boolean use) {
-		boolean retval = false;	
-        if (!availablehardcatokens.contains(classpath)) {
-            try {             
-                   log.debug("HardCATokenManager registering " + classpath);                
-                   // Check that class exists   
-                   Class.forName(classpath).getName();  
-                   // Add to the available tokens
-                   availablehardcatokens.put(classpath, new AvailableHardCAToken(classpath, name, translateable, use));         
-                   retval = true;
-                   log.debug("Registered " + classpath + "Successfully.");
-                } catch (ClassNotFoundException e) {
-                   log.error("Error registering " + classpath + " couldn't find classpath");
-                }            
-        }
-		return retval;
+	    boolean retval = false;	
+	    if (!availablehardcatokens.contains(classpath)) {
+	        log.debug("HardCATokenManager registering " + classpath);                
+	        if (loadClass(classpath)) {
+	            // Add to the available tokens
+	            availablehardcatokens.put(classpath, new AvailableHardCAToken(classpath, name, translateable, use));         
+	            retval = true;
+	            log.debug("Registered " + classpath + "Successfully.");                       
+	        } else {
+	            log.error("Error registering " + classpath + " couldn't find classpath");
+	        }
+	    }
+	    return retval;
 	}
+    /**
+     * Method loading a class in order to test if it can be instasiated.
+     * 
+     * @param classpath 
+     */
+    private boolean loadClass(String classpath){
+        try {           
+            HardCATokenManager.class.getClassLoader().loadClass(classpath).newInstance();       
+        } catch (ClassNotFoundException e) {
+            log.info("Class not found: "+classpath); 
+            return false;
+        } catch (InstantiationException e) {
+            log.error("InstantiationException: "+classpath);
+            return false;
+        } catch (IllegalAccessException e) {
+            log.error("IllegalAccessException: "+classpath);
+            return false;
+        }    
+        return true;
+    }
 	
 	/**
 	 * Method returning to the system available HardCATokens
