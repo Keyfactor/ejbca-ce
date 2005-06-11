@@ -1,0 +1,94 @@
+How-to migrate an OpenSSL-based CA to EJBCA
+===========================================
+
+© Marco Ferrante, CSITA - Università di Genova, 18/05/2005
+
+Many people start to run a small Certification Authority to issue few certificates for SSL servers. Usually, they use directly OpenSSL tools.
+As soon as the request for certificates grows, they realize that a more friendly PKI software is needed. EJBCA can be a good replacement.
+This how-to is addressed to people who want to migrate their existing Certificate Authority from an OpenSSL-based software to EJBCA.
+Instructions refer to version 3.07 of EJBCA.
+Before deploy EJBCA
+
+   1. In X.509 certificates, subject and issuer are identified by Distinguished Name (DN). According to X.500, a DN is a set (unordered) of Relative Distinguished Name (RND) and RDNs themselves are sequences of (usually one) Attribute Value Assertion (AVA). AVAs are like:
+
+	C=IT
+	DC=foo.bar
+	CN=John Doe
+	CN=John Doe/email=john@foo.bar
+	employeeNumber=123456
+
+      When a certificate is stored or printed, DN is encoded, so RDNs acquire an order which depends on the cryptographic library used.
+      If you are using OpenSSL as a CA in a "classic" way, the order of RDN in subject name follows the order of fields in the policy section of OpenSSL configuration file, while issuer DN is verbatim copied from the issuer certificate.
+      Using default configuration file, OpenSSL produces certificates with DN ordered in X.500 style, where the most significant element leads (If your CA already uses a different order, you can skip this step). For example:
+
+C=US, L=Area 51, O=Hanger 18, OU=X.500 Standards Designers, CN=John Doe
+
+      Thanks to Peter Guttman's X.509 Style Guide for the nice example
+      EJBCA internally handles DN as a set of RDN, and rearrange them only when a certificate file is produced. But EJBCA reorder both issuer and subject DN.
+      Using default configuration, EJBCA produces certficates with orders RDN as LDAP does (RFC 1779), where most significant element trails. For example:
+
+CN=John Doe, OU=X.500 Standards Designers, O=Hanger 18, L=Area 51, C=US
+
+      As result, if you import a CA root certificate generated with OpenSSL, in which issuer and subject DN are encoded such as:
+
+C=IT, O=University of Genoa, CN=My OpenSSL CA
+
+      the issuer in your certificates emitted using EJBCA will become:
+
+CN=My OpenSSL CA, O=University of Genoa, C=IT
+
+      Note that above examples represent internal encoding; every software is free to print DN as prefers.
+      According to X.500, both forms should be acceptable and a order-insensitive way to compare DN is defined. Unfortunately, looking up in their keystore for trusted certificates, many libraries compare issuer DN in the same order they are encoded. This problem affects especially OpenSSL-based software, which computes hash on DN to speed up certificate search.
+      If your users have already loaded your root certificate in several programs (browser, email client, SSL/TLS server, ect...) probably they will experience several troubles with your new issued certificates.
+      You can avoid problems if your CA will be consistent and will use DNs in the same previous form in every certificate.
+      To change order in which DN will be encoded, edit se/anatom/ejbca/util/CertTools.java before deploy EJBCA and set
+
+/** Change this if you want reverse order */
+private static final String[] dNObjects = dNObjectsReverse;
+
+      This is a general option and cannot be set on per-CA basis. You cannot configure this option after EJBCA has been initialized because you will be unable to access to administration interface.
+      I hope this parameter can be configured by deployment script in future release of EJBCA.
+   2. Now, you have to deploy EJBCA and make sure your installation is up and running. Follow EJBCA instructions and run runtest.sh/cmd from bin directory of EJBCA distribution. After running the test suite, it's good idea to delete the database because tests leave some garbage in it.
+      Beware: don't run test on a production system!.
+
+Import your CA certificate
+
+   1. To import your root certificate, use OpenSSL tool to create a PKCS#12 package containing both CA private key and CA certificate:
+
+openssl pkcs12 -export -out oldca.p12 -inkey <ca private key file> \
+        -in <ca certificate file> -name privateKey
+
+   2. From bin directory of EJBCA distribution, import CA PKCS#12:
+
+ca.sh (or .cmd) importca <ca nick name> oldca.p12 <PKCS#12 password>
+
+      Now you can see the result in EJBCA administration interface. Sometimes, web interface require a while before "Basic Functions" displays imported CA, but it should be already listed by "Edit Certificate Authorities".
+   3. To import a sub CA, you should care that PKCS#12 contains a full certificates chain, otherwise EJBCA will incorrectly show it as a self signed CA.
+      However, an "optimistic" design in EJBCA 3.07 import function will cause imported sub CA still displayed as signed from an external CA, even if issuer CA is already available.
+      You can apply this patch to se/anatom/ejbca/ca/caadmin/CAAdminSessionBean.java and re-deploy EJBCA before import your sub CA.
+      For a first level CA, you can create a correct package with:
+
+openssl pkcs12 -export -out oldsubca.p12 -inkey <sub ca private key file> \
+        -in <sub ca certificate file> -certfile <signer ca certificate file> -name privateKey
+
+      and importing it in the same way of root certificate.
+
+Import your existing end entity certificates
+
+   1. Prepare now any required profile for both end entities and certificates. You can try to match constraints defined in your OpenSSL configuration file if desired.
+      Don't issue any certificate before importing your legacy or you can produce a conflict in certificate serial numbers.
+   2. Now, you have to import every certificate issued with OpenSSL. This is useful because EJBCA acts as certificates repository but is essential if in the future you need to revoke an old certificate.
+      Since to EJBCA project doesn't distribute any tool to import existing certificates, you can download this migration tool as compiled version or Java source. It requires JDK >= 1.4.
+      To import a certificate, unpack it in EJBCA directory and type:
+
+migrate.sh <user name> <user password> <ca nick name> [ACTIVE|REVOKED] <user certificate file>
+
+      Using this syntax, defaults EMPTY end entity profile and ENDUSER certificate profile will be assigned to the user.
+      You can also specify profiles for user and certificate as last parameters, but pay attention to use profiles compatible each other as defined in your EJBCA configuration.
+   3. When all your legacy certificates has been loaded, you can generate a new CRL and start to use EJBCA.
+
+Setting up your SSL/TLS server and client
+
+   1. If your previous OpenSSL-based CA has issued certificates for HTTPS servers, probably your users had already installed your root certificate in their browser. Can be unfair if, when connecting to your fresh EJBCA public web, they will receive a warning about certificate emitted by a "AdminCA1" entity.
+      You can now issue a new certificate for Tomcat and importing it as described in "HOWTO-multiplecas.txt" document in EJBCA distribution.
+   2. If you want that your LDAP publisher connects to your LDAP server over SSL, but your LDAP server already uses a certificate issued by your previous CA software, you must import it in your system keystore. Instructions are available in "HOWTO-LDAP.txt" document in EJBCA distribution.

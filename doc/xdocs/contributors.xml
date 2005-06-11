@@ -49,7 +49,7 @@ administrator, who can be found on the sourceforge project page.
 <li>Giampaolo Tomassoni. Giampaolo(at)Tomassoni.biz, PostgresSQL 8.0.</li>
 <li>Philipp Faerber, philipp.faerber(at)adnovum.ch, Weblogic 8.1, adminweb sql fix.</li>
 <li>Hu Aranjuez, mynetbus(at)126.com, column name fix for MS SQL2000.</li>
-<li>Marco Ferrante, marco(at)csita.unige.it, Italian translation.</li>
+<li>Marco Ferrante, marco(at)csita.unige.it, Italian translation, openssl migration howto, importcert cli function.</li>
 <li>Alejandro Falcone, afalcone(at)speedy.com.ar, Spanish translation.</li>
 
 </ul>

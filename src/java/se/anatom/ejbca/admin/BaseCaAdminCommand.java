@@ -41,7 +41,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Base for CA commands, contains comom functions for CA operations
  *
- * @version $Id: BaseCaAdminCommand.java,v 1.21 2005-04-29 08:15:45 anatom Exp $
+ * @version $Id: BaseCaAdminCommand.java,v 1.22 2005-06-11 12:49:57 anatom Exp $
  */
 public abstract class BaseCaAdminCommand extends BaseAdminCommand {
     /** Private key alias in PKCS12 keystores */
@@ -149,5 +149,21 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
       CAInfo cainfo = getCAAdminSessionRemote().getCAInfo(administrator, caname);
       return cainfo.getSubjectDN();  
    }
+   
+   protected CAInfo getCAInfo(String caname) throws Exception {
+	   CAInfo result;
+	   try {
+		   result = getCAAdminSessionRemote().getCAInfo(administrator, caname);
+	   } catch (Exception e) {
+		   debug("Error retriving CA " + caname + " info.", e);
+		   throw new Exception("Error retriving CA " + caname + " info.");
+	   }
+	   if (result == null) {
+		   debug("CA " + caname + " not found.");
+		   throw new Exception("CA " + caname + " not found.");
+	   }
+	   return result;
+   }
+   
    
 }

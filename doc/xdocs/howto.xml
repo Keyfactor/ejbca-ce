@@ -64,6 +64,12 @@ is operated by UT-Battelle for the U.S. Department Of Energy.
     </subsection>
     
   </section>
+  
+  <section name="Migrating an OpenSSL based CA">
+  <p>
+  Read the <a href="http://www.csita.unige.it/software/free/ejbca/">howto</a> at Csita.
+  </p>
+  </section>
 
 </body>
 </document>

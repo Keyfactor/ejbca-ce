@@ -13,16 +13,58 @@
  
 package se.anatom.ejbca.util;
 
-import java.io.*;
-import java.security.*;
-import java.security.cert.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.net.URL;
+import java.security.InvalidKeyException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.Security;
+import java.security.SignatureException;
+import java.security.cert.CRLException;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509CRL;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
 
 import org.apache.log4j.Logger;
-
-import org.bouncycastle.asn1.*;
-import org.bouncycastle.asn1.x509.*;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1TaggedObject;
+import org.bouncycastle.asn1.DERObject;
+import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.DERTaggedObject;
+import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
+import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.PolicyInformation;
+import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.asn1.x509.X509NameTokenizer;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
@@ -31,7 +73,7 @@ import org.bouncycastle.x509.X509V3CertificateGenerator;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.75 2005-05-02 13:04:12 herrvendil Exp $
+ * @version $Id: CertTools.java,v 1.76 2005-06-11 12:50:06 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -539,12 +581,9 @@ public class CertTools {
     public static X509Certificate getCertfromByteArray(byte[] cert)
         throws CertificateException {
         log.debug(">getCertfromByteArray:");
-
         CertificateFactory cf = CertTools.getCertificateFactory();
-        X509Certificate x509cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(
-                    cert));
+        X509Certificate x509cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(cert));
         log.debug("<getCertfromByteArray:");
-
         return x509cert;
     } // getCertfromByteArray
 
@@ -807,7 +846,124 @@ public class CertTools {
         return null;
     }
     
-    /**
+	/**
+	 * SubjectAltName ::= GeneralNames
+	 
+	 GeneralNames :: = SEQUENCE SIZE (1..MAX) OF GeneralName
+	 
+	 GeneralName ::= CHOICE {
+	 otherName                       [0]     OtherName,
+	 rfc822Name                      [1]     IA5String,
+	 dNSName                         [2]     IA5String,
+	 x400Address                     [3]     ORAddress,
+	 directoryName                   [4]     Name,
+	 ediPartyName                    [5]     EDIPartyName,
+	 uniformResourceIdentifier       [6]     IA5String,
+	 iPAddress                       [7]     OCTET STRING,
+	 registeredID                    [8]     OBJECT IDENTIFIER}
+	 
+	 SubjectAltName is of form \"rfc822Name=<email>,
+	 dNSName=<host name>, uri=<http://host.com/>,
+	 ipaddress=<address>, guid=<globally unique id>
+	 
+	 * Marco Ferrante, (c) 2005 CSITA - University of Genoa (Italy)
+	 * @param certificate
+	 * @return String containing altNames of form "rfc822Name=email, dNSName=hostname, uri=uri, ipadsress=ip"  
+	 * @throws java.lang.Exception
+	 */
+	public static String getSubjectAlternativeName(X509Certificate certificate) throws Exception {
+		log.debug("Search for SubjectAltName");
+		if (certificate.getSubjectAlternativeNames() == null)
+			return null;
+		
+		java.util.Collection altNames = certificate.getSubjectAlternativeNames();
+		if (altNames.size() > 1) {
+			throw new Exception("Unable to handle multiple SubjectAltName.");
+		}
+		java.util.List item = (java.util.List)altNames.iterator().next();
+		Integer type = (Integer)item.get(0);
+		Object value = item.get(1);
+		String result = null;
+		switch (type.intValue()) {
+			case 0: throw new Exception("SubjectAltName of type OtherName not supported.");
+			case 1: result = "rfc822Name=" + (String)value;
+				break;
+			case 2: result = "dNSName=" + (String)value;
+				break;
+			case 3: throw new Exception("SubjectAltName of type x400Address not supported.");
+			case 4: throw new Exception("SubjectAltName of type directoryName not supported.");
+			case 5: throw new Exception("SubjectAltName of type ediPartyName not supported.");
+			case 6: result = "uri=" + (String)value;
+				break;
+			case 7: result = "ipaddress=" + (String)value;
+				break;
+			default: throw new Exception("SubjectAltName of unknown type.");
+		}
+		return result;
+	}
+
+	/**
+	 * Search for e-mail address, first in SubjectAltName (as in PKIX
+	 * recomandation) then in subject DN.
+	 * Marco Ferrante, (c) 2005 CSITA - University of Genoa (Italy)
+	 * 
+	 * @param certificate
+	 * @return subject email or null if not present in certificate
+	 * @throws java.lang.Exception
+	 */
+	public static String getEMailAddress(X509Certificate certificate) throws Exception {
+		log.debug("Searching for EMail Address in SubjectAltName");
+		if (certificate.getSubjectAlternativeNames() != null) {
+			java.util.Collection altNames = certificate.getSubjectAlternativeNames();
+			for (java.util.Iterator i = altNames.iterator(); i.hasNext(); ) {
+				java.util.List item = (java.util.List)altNames.iterator().next();
+				Integer type = (Integer)item.get(0);
+				if (type.intValue() == 1) {
+					return (String)item.get(1);
+				}
+			}
+		}
+		log.debug("Searching for EMail Address in Subject DN");
+		return CertTools.getEmailFromDN(certificate.getSubjectDN().getName());
+	}
+	
+	/**
+	 * Check the certificate with CA certificate.
+	 *
+	 * @param certificate cert to verify
+	 * @param caCertPath collection of X509Certificate
+	 * @return true if verified OK, false if not
+	 */
+	public static boolean verify(X509Certificate certificate, Collection caCertPath) throws Exception {
+		try {
+			ArrayList certlist = new ArrayList();
+			// Create CertPath
+			certlist.add(certificate);
+			// Add other certs...			
+			CertificateFactory cf = CertificateFactory.getInstance("X.509");
+			java.security.cert.CertPath cp = cf.generateCertPath(certlist);
+			// Create TrustAnchor. Since EJBCA use BouncyCastle provider, we assume
+			// certificate already in correct order
+			X509Certificate[] cac = (X509Certificate[]) caCertPath.toArray(new X509Certificate[] {});
+			java.security.cert.TrustAnchor anchor = new java.security.cert.
+			TrustAnchor(cac[0], null);
+			// Set the PKIX parameters
+			java.security.cert.PKIXParameters params = new java.security.cert.PKIXParameters(java.util.Collections.singleton(anchor));
+			params.setRevocationEnabled(false);
+			java.security.cert.CertPathValidator cpv = java.security.cert.
+			CertPathValidator.getInstance("PKIX");
+			java.security.cert.PKIXCertPathValidatorResult result =
+				(java.security.cert.PKIXCertPathValidatorResult) cpv.validate(cp, params);
+			log.debug("Certificate verify result: " + result.toString());
+		} catch (java.security.cert.CertPathValidatorException cpve) {
+			throw new Exception("Invalid certificate or certificate not issued by specified CA: " + cpve.getMessage());
+		} catch (Exception e) {
+			throw new Exception("Error checking certificate chain: " + e.getMessage());
+		}
+		return true;
+	}
+	
+	/**
      * Return the CRL distribution point URL form a certificate.
      */
     public static URL getCrlDistributionPoint(X509Certificate certificate)

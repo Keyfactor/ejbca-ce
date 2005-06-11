@@ -82,7 +82,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.41 2005-05-24 09:32:53 herrvendil Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.42 2005-06-11 12:50:06 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -677,7 +677,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     /**
      * @ejb.interface-method
      */
-    public IRequestMessage  makeRequest(Admin admin, int caid, Collection cachain, boolean setstatustowaiting) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
+    public IRequestMessage makeRequest(Admin admin, int caid, Collection cachain, boolean setstatustowaiting) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
         PKCS10RequestMessage returnval = null;
         // Check authorization
         try{
@@ -701,7 +701,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
                     ca.setRequestCertificateChain(createCertChain(cachain));
                     
                     // generate PKCS10CertificateRequest
-                    // TODO implement PKCS10 Certificate Request arributes.
+                    // TODO implement PKCS10 Certificate Request attributes.
                     ASN1Set attributes = null;
                     
                     /* We don't use these uneccesary attributes
@@ -1141,11 +1141,46 @@ public class CAAdminSessionBean extends BaseSessionBean {
             ((SoftCAToken) catoken).importKeysFromP12(p12privatekey, p12publickey);
 
             // Create a X509CA
-            int signedby = CAInfo.SELFSIGNED;
-            int certprof = SecConst.CERTPROFILE_FIXED_ROOTCA;
-            if(certchain.length > 1){
-                signedby = CAInfo.SIGNEDBYEXTERNALCA;
-                certprof = SecConst.CERTPROFILE_FIXED_SUBCA;
+			int signedby = CAInfo.SIGNEDBYEXTERNALCA;
+            int certprof = SecConst.CERTPROFILE_FIXED_SUBCA;
+			String description = "Imported external signed CA";
+            if(certchain.length == 1) {
+				if (verifyIssuer(cacertificate, cacertificate)) {
+					signedby = CAInfo.SELFSIGNED;
+					certprof = SecConst.CERTPROFILE_FIXED_ROOTCA;
+					description = "Imported root CA";
+				} else {
+					// A less strict strategy can be to assume certificate signed
+					// by an external CA. Useful if admin user forgot to create a full
+					// certificate chain in PKCS#12 package.
+					log.error("Cannot import CA " + cacertificate.getSubjectDN().getName()
+							+ ": certificate " + cacertificate.getSerialNumber()
+							+ " is not self-signed.");
+					throw new Exception("Cannot import CA "
+							+ cacertificate.getSubjectDN().getName()
+							+ ": certificate is not self-signed. Check "
+							+ "certificate chain in PKCS#12");
+				}
+			} else if (certchain.length > 1){
+				Collection cas = getAvailableCAs(admin);
+				Iterator iter = cas.iterator();
+				// Assuming certificate chain in forward direction (from target
+				// to most-trusted CA). Multiple CA chains can contains the
+				// issuer certificate; so only the chain where target certificate
+				// is the issuer will be selected.
+				while (iter.hasNext()) {
+					int caid = ((Integer)iter.next()).intValue();
+					CAInfo superCaInfo = getCAInfo(admin, caid);
+					Iterator i = superCaInfo.getCertificateChain().iterator();
+					if (i.hasNext()) {
+						X509Certificate superCaCert = (X509Certificate)i.next();
+						if (verifyIssuer(cacertificate, superCaCert)) {
+							signedby = caid;
+							description = "Imported sub CA";
+							break;
+						}
+					}
+				}					
             }
 
             // Create and active OSCP CA Service.
@@ -1168,7 +1203,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
                                                signedby,
                                                certificatechain,
                                                catoken.getCATokenInfo(),
-                                               "Imported CA",
+                                               description,
                                                -1, null, // revokationreason, revokationdate
                                                "", // PolicyId
                                                24, // CRLPeriod
@@ -1344,7 +1379,29 @@ public class CAAdminSessionBean extends BaseSessionBean {
     //
     // Private methods
     //
-    
+	
+	/** Check if subject certificate is signed by issuer certificate. Used in
+	 * @see #upgradeFromOldCAKeyStore(Admin, String, byte[], char[], char[], String).
+	 * This method does a lazy check: if signature verification failed for
+	 * any reason that prevent verification, e.g. signature algorithm not
+	 * supported, method returns false.
+	 * Author: Marco Ferrante
+	 *
+	 * @param subject Subject certificate
+	 * @param issuer Issuer certificate
+	 * @return true if subject certificate is signed by issuer certificate
+	 * @throws java.lang.Exception
+	 */
+	private boolean verifyIssuer(X509Certificate subject, X509Certificate issuer) throws Exception {
+		try {
+			PublicKey issuerKey = issuer.getPublicKey();
+			subject.verify(issuerKey);
+			return true;
+		} catch (java.security.GeneralSecurityException e) {
+			return false;
+		}
+	}
+	
     /** Checks the signer validity given a CADataLocal object, as a side-effect marks the signer as expired if it is expired, 
      * and throws an EJBException to the caller. 
      * 
