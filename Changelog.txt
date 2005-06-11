@@ -3,15 +3,14 @@
 - Usage of XDoclet to generate ejb interfaces and deployment descriptors. Lots of XDoclet tagging to simplify development and deployment. 
 - Changed packaging to avoid classes duplication between jars.
 - Much improved configuration, installation and deployment, now there is a single point of configuration using a config file.
-- Added French and Italian translation for the admin-GUI.
+- Added French, Italian and spanish translations for the admin-GUI.
 - Add parameter for jboss/weblogic to install.
 - Changed database configuration to make it more flexible for deployment.
 - BatchMake has been changed to support a dir (directory attribute). Default is still 'p12'.
 - LDAP object classes for devices.
 - New structure for the cli, it now lives in the bin subdirectory.
-- Reorganization of documentation tree, new xml based web site.
+- Reorganization of documentation tree, new xml based web site for http://ejbca.sf.net/.
 - Lots of minor and structural changes.
-- New web site for http://ejbca.sf.net/.
 
 
 3.0.7

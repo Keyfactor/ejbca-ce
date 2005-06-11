@@ -1,32 +1,5 @@
-$Id: TODO,v 1.81 2004-10-10 08:18:34 anatom Exp $
+$Id: TODO,v 1.82 2005-06-11 13:07:48 anatom Exp $
 
-V 3.x
------
-- Make it possible to dynamically configure new OtherNames in subjectAltName.
-- More automated testing, Junit as well as web-stuff (httpjunit).
-- Continue improving exceptions and error handling.
-- Commands and status for certificate suspend (command for unrevoke, status for unrevoked).
-- Import utility to get users from external datasources.
-- Import utility to import a CA from P12 or PEM file, both rootCA and subCA.
-- Command line to edit/change users.
-- Better command line tools for batch stuff.
-- I18N, use traditional bundle pickup, and i18n-enable servlets with error messages displayed by jsp-page.
+The TODO list for bugs and new features is maintained in
+http://jira.primekey.se/
 
-General
--------
-- Add smart card support (PKCS15) in CA for protection of private key.
-- CMP (rfc 2510)
-- Strategy for handling certificate issuance if notAfter is beyond CAs notAfter.
-- Run on other appservers, ie Jonas, Websphere etc.
-- Test LDAP with mod_authz_ldap in apache
-- XKMS specifications
-- XML/Soap stuff.
-- Check architecture for JSPs (MVC - ModelViewController?).
-- Make a database model similar to architecture model (documentation).
-- Documentation...
-
-Discarded
----------
-- Make CA/RA for off-line authorization of requests for high security
-environments.
-- RA with self registration for end-entities, RA approves registration.
