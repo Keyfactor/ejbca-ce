@@ -7,8 +7,14 @@
 
 <body>
   <section name="Latest News">
-    <note>EJBCA 3.1.0 is now available for <a
-    href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=108797">download</a>.</note>
+    <note>
+    EJBCA 3.1.0 is now available for <a
+    href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=108797">download</a>.
+    </note>
+    <p>
+    EJBCA 3.1 contains support for nCipher HSM. The development of this functionality was sponsored by 
+    Linagora, <a href="http://www.linagora.com/" class="externalLink">www.linagora.com</a>
+    </p>
   </section>
 
   <section name="EJBCA">
