@@ -656,6 +656,68 @@ If you want to re-send a notification for a user, reset the status to NEW.
 If the status is already NEW, set the status to GENERATED and then back to NEW.
 </p></section>
 
+<section name="Hardware Security Modules (HSM)">
+<subsection name="nCipher NFast">
+<p>
+Follow these steps to create a CA that is using a NFast card:
+</p>
+<strong>1. Create keys that should be used on the NFast card</strong>
+<p>
+You may use the java keytool. It is advisable to define an alias for using the tool for keystores on the NFast:
+</p>
+<source>
+alias keyToolHSM='java -cp /opt/nfast/java/classes/rsaprivenc.jar:/opt/nfast/java/classes/nfjava.jar
+:/opt/nfast/java/classes/kmjava.jar:/opt/nfast/java/classes/kmcsp.jar
+:/opt/nfast/java/classes/jutils.jar sun.security.tools.KeyTool -provider com.ncipher.provider.km.nCipherKM 
+-storetype nCipher.sworld'
+</source>
+<p>
+Then the keyToolHSM alias could be used to manage keys on the NFast card in exactly the same way as soft keys are managed by keytool.
+All keys for one CA should be in the same keystore. Different CAs may share the same keystore but may also have different keystores.
+</p>
+<strong>2. Copy files to jboss that implements the nCipher CA Token functionality to JBoss</strong>
+<p>
+The file are copied from the dist directory. The destination is the deploy directory of the application server (server/default/deploy in jboss).
+The files to be copied are:
+</p>
+<source>
+jutil.jar kmcsp.jar kmjava.jar nfjava.jar rsaprivenc.jar
+</source>
+<p>
+You could also make links if you prefer that.
+</p>
+<strong>3. Make EJBCA aware of the NFast HSM</strong>
+<p>
+Restart the application server.
+</p>
+<strong>4. Create a new CA in the web GUI of EJBCA</strong>
+<p>
+Choose NFastCAToken as "CA Token Type".
+</p><p>
+Define the keystore on the nFast card that should be used. The keystore is defined by the hexadecimal hash string from the keystore file (open the .jks with a text editor ) generated in step 1.
+Define which keys in the keystore that should be used and the purpose of these keys.
+</p><p>
+Use one row for each definition. Begin the row with a key word. It is one row for the keystore and one for each key definition. Key word and value is separated by one or more spaces.
+A row with the keyword keyStore must always be present.
+The keywords for keys that can be used are:
+<ul>
+<li>certSignKey   - the key to be used when signing certificates </li>
+<li>crlSignKey    - the key to be used when signing CLSs </li>
+<li>keyEncryptKey - the key to be used for key encryption and decryption.</li>
+<li>defaultKey    - the key to be used when no other key is defined for a purpose. If this is the only definition then this key will be used for all purposes.</li>
+</ul>
+</p>
+<p>
+Example:
+</p>
+<source>
+keyStore 578fc1f0b19d5bc6f61e3a3f1e28318715385a20
+certSignKey rootCertSign
+defaultKey rootCRLSign
+</source>
+</subsection>
+</section>
+
 <section name="Export and import profiles">
 <p>
 Certificate and End Entity profiles can be exported as XML files and imported in another instance of EJBCA,
