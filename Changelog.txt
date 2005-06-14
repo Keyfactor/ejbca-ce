@@ -10,6 +10,7 @@
 - LDAP object classes for devices.
 - New structure for the cli, it now lives in the bin subdirectory.
 - Reorganization of documentation tree, new xml based web site for http://ejbca.sf.net/.
+- New version, 1.28, of bouncycatle provider.
 - Lots of minor and structural changes.
 
 
