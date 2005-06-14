@@ -1,6 +1,10 @@
 <?xml version="1.0"?>
 <project name="ejbca" default="build" basedir=".">
 
+	<property name="app.name" value="ejbca" />
+    <property name="app.name.cap" value="EJBCA" />
+	<property name="app.version" value="${app.name.cap} 3.1" />
+	
     <property name="ejbca.home" location="." />
     <property environment="env" />
 
@@ -8,8 +12,8 @@
        (and without typing -D each time it compiles it).
        First it checks your home directory for ejbca.properties
        net it checks the properties file here. -->
-    <property file="${user.home}/ejbca.properties" />
-    <property file="ejbca.properties" />
+    <property file="${user.home}/${app.name}.properties" />
+    <property file="${app.name}.properties" />
 
     <import file="bin/jboss.xml" />
 
@@ -18,8 +22,9 @@
     <property name="bin" value="./${tmp}/bin" />
     <property name="build" value="${bin}/classes" />
     <property name="lib" value="lib" />
+	<property name="preprocessed" value="${tmp}/preprocessed"/>
 
-    <property name="src" value="src" />
+    <property name="src" value="${preprocessed}" />
     <property name="src.java" value="${src}/java" />
     <property name="src.gen" value="${bin}/gensrc" />
     <property name="src.dd" value="${bin}/dd" />
@@ -51,10 +56,12 @@
     <property name="ejbdd.src" value="${src}/deploy/ejb" />
     <property name="webdd.src" value="${src}/deploy/web" />
     <property name="eardd.src" value="${src}/deploy/ear" />
-    <property name="caear" value="${dist.dir}/ejbca.ear" />
+    <property name="caear" value="${dist.dir}/${app.name}.ear" />
 
-    <property name="createcrlservice.build" value="${tmp}/crlcreateservice.jar" />
-    <property name="createcrlservicejar" value="${dist.dir}/crlcreateservice.jar" />
+	<property name="createcrlservice.name" value="crlcreateservice.jar" />
+    <property name="createcrlservice.build" value="${tmp}/${createcrlservice.name}" />
+	
+    <property name="createcrlservicejar" value="${dist.dir}/${createcrlservice.name}" />
 
     <property name="jar.extclasspath" value="lib/bcmail-jdk14.jar lib/bcprov-jdk14.jar lib/log4j-1.2.7.jar lib/ldap.jar lib/commons-lang-2.0.jar lib/commons-collections.jar lib/commons-fileupload-1.0.jar"/>
 
@@ -93,7 +100,7 @@
     <!-- those are the default values used within JBoss for easy startup -->
     <property name="ca.keystorepass" value="foo123"/>
     <property name="ca.ocspkeystorepass" value="foo123"/>
-    <property name="ocsp.defaultresponder" value="CN=AdminCA1,O=EJBCA Sample,C=SE"/>
+    <property name="ocsp.defaultresponder" value="CN=AdminCA1,O=${app.name.cap} Sample,C=SE"/>
     <property name="ocsp.usecasigningcert" value="true"/>
     <property name="datasource.jndi-name" value="EjbcaDS" />
     <property name="database.name" value="hsqldb" />
@@ -182,7 +189,7 @@ web.contentencoding    = ${web.contentencoding}
     <!-- =================================================================== -->
     <!-- Autogenerate all ejb interfaces and deployment descriptors          -->
     <!-- =================================================================== -->
-    <target name="run-xdoc" depends="init">
+    <target name="run-xdoc" depends="init, preprocess">
         <taskdef name="ejbdoclet" classname="xdoclet.modules.ejb.EjbDocletTask">
             <classpath refid="xdoclet.classpath" />
         </taskdef>
@@ -250,7 +257,43 @@ web.contentencoding    = ${web.contentencoding}
              validatexml="false" />
         </webdoclet>
     </target>
+	
+	<!--
+	  Preprocesses EJBCA by replacing tags with correct version and application texts.
+	-->
+	<target name="preprocess">
+        <copy todir="${preprocessed}">
+            <fileset dir="src">
+              <include name="**"/>
+              <exclude name="**/*.java"/>
+              <exclude name="**/*.html"/>
+              <exclude name="**/*.htm"/>            	
+              <exclude name="**/*.xml"/>
+              <exclude name="**/*.jsp"/>
+              <exclude name="**/*.jspf"/>
+              <exclude name="**/*.properties"/>
+            </fileset>	      
+	    </copy>
+        <copy todir="${preprocessed}">
+            <fileset dir="src">
+                <include name="**/*.java"/>
+                <include name="**/*.html"/>
+                <include name="**/*.htm"/>
+                <include name="**/*.xml"/>
+                <include name="**/*.jsp"/>
+                <include name="**/*.jspf"/>
+                <include name="**/*.properties"/>
+            </fileset>	   
 
+			<filterchain>
+			<tokenfilter>			    
+		        <replacestring from="@ejbca@" to="${app.name}"/>
+		    	<replacestring from="@EJBCA@" to="${app.name.cap}"/>
+			</tokenfilter>
+			</filterchain>
+	    </copy>
+		<replace file="${src.java}/se/anatom/ejbca/ra/raadmin/GlobalConfiguration.java" token="@ejbca.version@" value="${app.version}"/>	
+	</target>
 	<!--
 	  EJBCA need to be run before the app.server (or the webapp) is fully ssl configured with the keystore
 	  So we are 'bootstrapping' it, the 'j2ee.web-noconfigure' property will skip all the serverside
@@ -497,6 +540,27 @@ web.contentencoding    = ${web.contentencoding}
     <!-- =================================================================== -->
     <target name="deployjbossservices" depends="jbossservices">
         <copy file="${createcrlservicejar}" tofile="${jboss.home}/server/default/deploy/createcrlservice.jar" verbose="true" />
+    </target>
+	
+    <!-- =================================================================== -->
+    <!--Deploy EJBCA with Jboss Specific Services inside the ear file.       -->
+    <!-- =================================================================== -->
+    <target name="deploywithjbossservices" depends="jbossservices">    	
+        <copy todir="${tmp}" overwrite="false">
+        	<fileset dir="${eardd.src}">
+        	   <include name="META-INF/jboss-app.xml" />
+        	</fileset> 
+    	</copy>
+    	<replace file="${tmp}/META-INF/jboss-app.xml" token="!--@crlcreateservice.jar@-->" value="module>&lt;service>crlcreateservice.jar&lt;/service>&lt;/module>"/>
+        <ear update="true" destfile="${caear}"  > 
+            <fileset dir="${tmp}">
+                <include name="META-INF/jboss-app.xml" />
+            </fileset>
+            <fileset dir="${dist.dir}">
+                <include name="${createcrlservice.name}" />
+            </fileset>
+		</ear>
+        <antcall target="j2ee:deploy" />
     </target>
 
     <!-- ======================================================================= -->

@@ -1,10 +1,10 @@
 <%@ page isErrorPage="true" %>
 
 <html>
-<title>EJBCA Certificate Enroll Error</title>
+<title>@EJBCA@ Certificate Enroll Error</title>
 <body>
 
-<h2>EJBCA Certificate Enroll Error</h2>
+<h2>@EJBCA@ Certificate Enroll Error</h2>
 <%
 String isException = (String)request.getAttribute("Exception");
 String errMsg = (String)request.getAttribute("ErrorMessage");

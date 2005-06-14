@@ -1,8 +1,8 @@
-<HEAD><TITLE>EJBCA Certificate enroll</TITLE></HEAD>
+<HEAD><TITLE>@EJBCA@ Certificate enroll</TITLE></HEAD>
 <BODY bgcolor="#ffffff" link="black" vlink="black" alink="black">
 
 <center>
-<FONT face=arial size="3"><strong>EJBCA Certificate Enrollment
+<FONT face=arial size="3"><strong>@EJBCA@ Certificate Enrollment
 </strong></FONT>
 </center>
 

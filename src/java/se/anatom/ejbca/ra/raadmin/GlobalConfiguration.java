@@ -18,14 +18,14 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * This is a  class containing global configuration parameters.
  *
- * @version $Id: GlobalConfiguration.java,v 1.19 2005-06-07 20:08:39 anatom Exp $
+ * @version $Id: GlobalConfiguration.java,v 1.20 2005-06-14 12:20:31 herrvendil Exp $
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
 
     // Default Values
     public static final float LATEST_VERSION = 1;
     
-    public static final String EJBCA_VERSION = "EJBCA 3.1";
+    public static final String EJBCA_VERSION = "@ejbca.version@";
 
 
     // Entries to choose from in userpreference part, defines the size of data to be displayed on one page.
@@ -45,7 +45,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     private static final  String   DEFAULTFOOTBANNER             = "foot_banner.jsp";
 
     // Title of ra admin web interface.
-    private static final  String   DEFAULTEJBCATITLE             = "EJBCA Administration";
+    private static final  String   DEFAULTEJBCATITLE             = "@EJBCA@ Administration";
 
     // Language codes. Observe the order is important
     public static final  int      EN                 = 0;

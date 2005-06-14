@@ -1,8 +1,8 @@
-<HEAD><TITLE>EJBCA Mozilla Certificate enroll</TITLE></HEAD>
+<HEAD><TITLE>@EJBCA@ Mozilla Certificate enroll</TITLE></HEAD>
 <BODY bgcolor="#ffffff" link="black" vlink="black" alink="black">
 
 <center>
-<FONT face=arial size="3"><strong>EJBCA Mozilla Certificate Enrollment
+<FONT face=arial size="3"><strong>@EJBCA@ Mozilla Certificate Enrollment
 </strong></FONT>
 </center>
 

@@ -24,7 +24,7 @@
 <%
   applybean.initialize(request);
 
-  String THIS_FILENAME            =  "/ejbca/publicweb/apply/apply_main.jsp";
+  String THIS_FILENAME            =  "/@ejbca@/publicweb/apply/apply_main.jsp";
   int[] defaultkeylengths        = {512,1024,2048};
   String includefile = "apply_auth.jsp";
   String username = "";

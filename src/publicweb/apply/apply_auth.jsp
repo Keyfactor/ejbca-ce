@@ -1,7 +1,7 @@
 
 
 <HEAD>
-<TITLE>EJBCA IE Certificate Enroll</TITLE>
+<TITLE>@EJBCA@ IE Certificate Enroll</TITLE>
 
  
 <link rel="stylesheet" href="../indexmall.css" type="text/css">
@@ -10,7 +10,7 @@
 
 <BODY  bgcolor="#ffffff" link="black" vlink="black" alink="black">
 <center>
-  <strong class="titel"><span class="E">E</span><span class="J">J</span><span class="B">B</span><span class="C">C</span><span class="A">A</span> 
+  <strong class="titel">@EJBCA@</span> 
   Certificate Enrollment </strong> 
 </center>
 

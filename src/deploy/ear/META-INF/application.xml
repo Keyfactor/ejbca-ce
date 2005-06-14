@@ -15,31 +15,31 @@ applications for enrollment, distribution and administration.
     <module>
         <web>
             <web-uri>publicwebroot.war</web-uri>
-            <context-root>/ejbca</context-root>
+            <context-root>/@ejbca@</context-root>
         </web>
     </module>
     <module>
         <web>
             <web-uri>apply.war</web-uri>
-            <context-root>/ejbca/publicweb/apply</context-root>
+            <context-root>/@ejbca@/publicweb/apply</context-root>
         </web>
     </module>
     <module>
         <web>
             <web-uri>status.war</web-uri>
-            <context-root>/ejbca/publicweb/status</context-root>
+            <context-root>/@ejbca@/publicweb/status</context-root>
         </web>
     </module>
     <module>
         <web>
             <web-uri>webdist.war</web-uri>
-            <context-root>/ejbca/publicweb/webdist</context-root>
+            <context-root>/@ejbca@/publicweb/webdist</context-root>
         </web>
     </module>
     <module>
         <web>
             <web-uri>adminweb.war</web-uri>
-            <context-root>/ejbca/adminweb</context-root>
+            <context-root>/@ejbca@/adminweb</context-root>
         </web>
     </module>
 </application>

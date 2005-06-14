@@ -8,8 +8,8 @@
     <property name="ejbca.home" location=".."/>
     <property environment="env"/>
 
-    <property file="${user.home}/ejbca.properties"/>
-    <property file="${ejbca.home}/ejbca.properties"/>
+    <property file="${user.home}/${app.name}.properties"/>
+    <property file="${ejbca.home}/${app.name}.properties"/>
     <!-- this sucks because we have a dependency with JBoss just for the jndi provider -->
     <property name="jboss.home" value="${env.JBOSS_HOME}"/>
 
@@ -29,18 +29,18 @@
 -->
 
 	<target name="check:bootstrapdone">
-        <available file="${ejbca.home}/dist/ejbca.ear" property="bootstrap.done"/>
-        <fail unless="bootstrap.done" message="Missing EJBCA_HOME/dist/ejbca.ear. You must do 'ant bootstrap' to build the ejbca.ear file." />
+        <available file="${ejbca.home}/dist/${app.name}.ear" property="bootstrap.done"/>
+        <fail unless="bootstrap.done" message="Missing EJBCA_HOME/dist/${app.name}.ear. You must do 'ant bootstrap' to build the ${app.name}.ear file." />
 	</target>
 
     <target name="ejbca:noprompt" unless="ejbca.prompt">
         <property name="ca.name" value="AdminCA1"/>
-        <property name="ca.dn" value="CN=AdminCA1,O=EJBCA Sample,C=SE"/>
+        <property name="ca.dn" value="CN=AdminCA1,O=${app.name.cap} Sample,C=SE"/>
         <property name="ca.keysize" value="2048"/>
         <property name="ca.validity" value="3650"/>
         <property name="ca.policy" value="null"/>
         <property name="httpsserver.hostname" value="localhost"/>
-        <property name="httpsserver.dn" value="CN=localhost,O=EJBCA Sample,C=SE"/>
+        <property name="httpsserver.dn" value="CN=localhost,O=${app.name.cap} Sample,C=SE"/>
         <property name="httpsserver.password" value="serverpwd"/>
 		<property name="superadmin.password" value="ejbca"/>
         <property name="java.trustpassword" value="changeit"/>
@@ -48,14 +48,14 @@
 
     <target name="ejbca:prompt" if="ejbca.prompt">
         <input message="Please enter the CA name (default: AdminCA1) ?" addproperty="ca.name" defaultvalue="AdminCA1"/>
-        <input message="Please enter the CA dn (default: CN=AdminCA1,O=EJBCA Sample,C=SE) ?" addproperty="ca.dn" defaultvalue="CN=AdminCA1,O=EJBCA Sample,C=SE"/>
+        <input message="Please enter the CA dn (default: CN=AdminCA1,O=${app.name.cap} Sample,C=SE) ?" addproperty="ca.dn" defaultvalue="CN=AdminCA1,O=${app.name.cap} Sample,C=SE"/>
         <input message="Please enter the CA key size (default: 2048) ?" addproperty="ca.keysize" defaultvalue="2048" />
         <input message="Please enter the CA validity in days (default: 3650) ?" addproperty="ca.validity" defaultvalue="3650"/>
         <input message="Please enter the CA policy id (default, no policy) ?" addproperty="ca.policy" defaultvalue="null"/>
         <input message="Please enter the server httpsserver.hostname (default 'localhost') ?" addproperty="httpsserver.hostname" defaultvalue="localhost"/>
-        <input message="Please enter the server dn (default: CN=localhost,O=EJBCA Sample,C=SE) ?" addproperty="httpsserver.dn" defaultvalue="CN=localhost,O=EJBCA Sample,C=SE"/>
+        <input message="Please enter the server dn (default: CN=localhost,O=${app.name.cap} Sample,C=SE) ?" addproperty="httpsserver.dn" defaultvalue="CN=localhost,O=${app.name.cap} Sample,C=SE"/>
         <input message="Please enter the server keystore password (default: serverpwd) ?" addproperty="httpsserver.password" defaultvalue="serverpwd"/>
-        <input message="Please enter the superadmin password (default: ejbca) ?" addproperty="superadmin.password" defaultvalue="ejbca"/>
+        <input message="Please enter the superadmin password (default: ${app.name}) ?" addproperty="superadmin.password" defaultvalue="${app.name}"/>
         <input message="Please enter the CA certificate password (default: changeit) ?" addproperty="java.trustpassword" defaultvalue="changeit"/>
     </target>
 
@@ -87,7 +87,7 @@ java.trustpassword  : ${java.trustpassword}
     </target>
 
 	<target name="ejbca:adminweb">
-		<ejbca:cli name="setup" arg="setbaseurl ${httpsserver.hostname} ejbca"/>
+		<ejbca:cli name="setup" arg="setbaseurl ${httpsserver.hostname} ${app.name}"/>
 		
 		<ejbca:cli name="ra" arg='adduser tomcat ${httpsserver.password} "${httpsserver.dn}" null ${ca.name} null 1 JKS'/>
 		<ejbca:cli name="ra" arg="setclearpwd tomcat ${httpsserver.password}"/>

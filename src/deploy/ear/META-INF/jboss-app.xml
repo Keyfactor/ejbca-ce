@@ -14,4 +14,8 @@
 	  <!-- does not work with JBoss 4.0.x so remove it for the time beeing
 	<loader-repository>se.anatom.ejbca.loader:loader=ejbca-ca.ear</loader-repository>
 	  -->
+   <!-- String indicating where crlcreateservice should be replaced -->
+   <!--@crlcreateservice.jar@-->
+
+
 </jboss-app>

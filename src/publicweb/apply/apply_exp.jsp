@@ -1,5 +1,5 @@
 <HEAD>
-<TITLE>EJBCA IE Certificate Enroll</TITLE>
+<TITLE>@EJBCA@ IE Certificate Enroll</TITLE>
 
  
 <link rel="stylesheet" href="../indexmall.css" type="text/css">

@@ -3,11 +3,11 @@
 
 <HTML>
 <HEAD>
-<TITLE>EJBCA - Fetch CA Certificate</TITLE>
+<TITLE>@EJBCA@ - Fetch CA Certificate</TITLE>
 <link rel="stylesheet" href="indexmall.css" type="text/css">
 </HEAD>
 <BODY>
-<p align="center"><span class="E">E</span><span class="J">J</span><span class="B">B</span><span class="C">C</span><span class="A">A 
+<p align="center"><span class="E">@EJBCA@ 
   </span> <span class="titel">Fetch CA Certificate</span> </p>
 <p align="center"> 
   <%

@@ -18,7 +18,7 @@
 <H3><%= ejbcawebbean.getText("WELCOME") + " " + ejbcawebbean.getUsersCommonName() + " " + ejbcawebbean.getText("TOEJBCA")%> </H3> 
 
 <br><br>
-<p><%= ejbcawebbean.getText("EJBCAISAFULLY") %></p>
+<p><%= ejbcawebbean.getText("EJBCAISAFULLY") + " " + ejbcawebbean.getText("EJBCAISAFULLY2")%></p>
 <p><%= ejbcawebbean.getText("WRITTENEXCLUSIVELY") %></p>
 
 <% // Include Footer 
