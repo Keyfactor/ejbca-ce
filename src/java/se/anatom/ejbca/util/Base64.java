@@ -21,9 +21,9 @@ import java.io.ByteArrayOutputStream;
  * It extends the bouncycastle implementation and adds the functionality to split lines 
  * with a '\n' after every 64 bytes.
  *
- * @version $Id: Base64.java,v 1.6 2005-06-11 13:59:56 anatom Exp $
+ * @version $Id: Base64.java,v 1.7 2005-06-14 15:13:37 anatom Exp $
  */
-public class Base64 extends org.bouncycastle.util.encoders.Base64 {
+public class Base64 {
 
     /**
      * encode the input data producong a base 64 encoded byte array with the output lines be split by '\n' (64 byte rows).
@@ -59,6 +59,10 @@ public class Base64 extends org.bouncycastle.util.encoders.Base64 {
             }
         }
         return os.toByteArray();
+    }
+    
+    public static byte[] decode(byte[] bytes) {
+        return org.bouncycastle.util.encoders.Base64.decode(bytes);
     }
 
 }
