@@ -54,7 +54,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.18 2005-05-19 07:36:47 primelars Exp $
+ * @version $Id: CA.java,v 1.19 2005-06-14 15:02:30 anatom Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -204,6 +204,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
                 break;
             case CATokenInfo.CATOKENTYPE_NULL:
                 ret = new NullCAToken();
+                break;
             default:
                 throw new IllegalKeyStoreException("No CA Token type defined!");
             }
