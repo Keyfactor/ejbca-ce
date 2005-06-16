@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.SecConst;
@@ -86,7 +87,7 @@ import se.anatom.ejbca.util.StringTools;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.40 2005-04-21 15:14:41 herrvendil Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.41 2005-06-16 13:53:46 anatom Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
@@ -161,6 +162,15 @@ public class DemoCertReqServlet extends HttpServlet {
 
      Admin admin = new Admin(Admin.TYPE_RACOMMANDLINE_USER, request.getRemoteAddr());
      RequestHelper helper = new RequestHelper(admin, debug);
+     String encoding = request.getCharacterEncoding();
+     if(StringUtils.isEmpty(encoding)) {
+         encoding = RequestHelper.getDefaultContentEncoding();
+         log.debug("Setting encoding to default value: "+encoding);
+         request.setCharacterEncoding(encoding);
+     } else {
+         log.debug("Setting encoding to value from request: "+encoding);
+         request.setCharacterEncoding(encoding);         
+     }
 
       String dn = null;
       dn = request.getParameter("user");

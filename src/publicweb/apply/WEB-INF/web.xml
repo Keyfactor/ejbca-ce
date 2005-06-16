@@ -17,6 +17,7 @@
         <display-name>ScepServlet</display-name>
         <servlet-class>se.anatom.ejbca.protocol.ScepServlet</servlet-class>
     </servlet>
+
 <!--
     <servlet>
         <servlet-name>DemoCertReqServlet</servlet-name>
@@ -28,6 +29,7 @@
         </init-param>
     </servlet>
 -->
+
     <servlet-mapping>
 	<servlet-name>CertReqServlet</servlet-name>
 	<url-pattern>/certreq</url-pattern>
@@ -36,10 +38,19 @@
 	<servlet-name>ScepServlet</servlet-name>
 	<url-pattern>/scep/pkiclient.exe</url-pattern>
     </servlet-mapping>
+
 <!--
     <servlet-mapping>
         <servlet-name>DemoCertReqServlet</servlet-name>
         <url-pattern>/democertreq</url-pattern>
     </servlet-mapping>
 -->
+
+   <env-entry>
+      <description><![CDATA[Default content encoding used to decode form posts]]></description>
+      <env-entry-name>contentEncoding</env-entry-name>
+      <env-entry-value>ISO-8859-1</env-entry-value>
+      <env-entry-type>java.lang.String</env-entry-type>
+   </env-entry>
+
 </web-app>

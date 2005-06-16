@@ -34,6 +34,8 @@ import se.anatom.ejbca.protocol.IResponseMessage;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.FileTools;
 import se.anatom.ejbca.util.CertTools;
+import se.anatom.ejbca.util.ServiceLocator;
+import se.anatom.ejbca.util.ServiceLocatorException;
 import se.anatom.ejbca.webdist.ServletUtils;
 
 /**
@@ -363,5 +365,24 @@ public class RequestHelper {
 	  }	  
 	  return new PKCS10RequestMessage(buffer);
     } // PKCS10RequestMessage
+
+    /** Returns the default content encoding used in JSPs. Reads the env-entry contentEncoding from web.xml.
+     * 
+     * @return The content encoding set in the webs env-entry java:comp/env/contentEncoding, or ISO-8859-1 (default), never returns null.
+     */
+    public static String getDefaultContentEncoding() {
+        String ret = null;
+        try {
+            ret = ServiceLocator.getInstance().getString("java:comp/env/contentEncoding");            
+        } catch (ServiceLocatorException e) {
+            log.debug("Can not find any default content encoding, using hard default ISO-8859-1.");
+            ret = "ISO-8859-1";            
+        }
+        if (ret == null) {
+            log.debug("Can not find any default content encoding, using hard default ISO-8859-1.");
+            ret = "ISO-8859-1";
+        } 
+        return ret;
+    }
     
 }
