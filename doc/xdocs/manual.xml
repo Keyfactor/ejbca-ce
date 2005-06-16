@@ -982,6 +982,48 @@ The indexfile under publicweb/root is the one shown on http://<i>ejbcahost</i>:8
 so you can add a subdir under there.
 </p></section>
 
+<section name="Using the demo servlet">
+<p>
+There is a demo servlet that will accept any incoming post, create a user with a unique username, and instantly
+send back a certificate. The entity- and certificate profiles used are sent as parameters in the post.
+
+To set up the demo servlet:
+</p>
+<ol>
+<li>Find out the CA id of the CA you want to use for signing of the demo certificates. Use the admin-GUI or 'ejbca.sh ca listcas' to find the integer value that is the CA id.</li>
+<li>Configure the CA id in src/java/se/anatom/ejbca/apply/DemoCertReqServlet.java, it's the parameter DEFAULT_DEMOCAID.</li>
+<li>Edit src/publicweb/apply/WEB-INF/web.xml and uncomment the two sections for the demo servlet.</li>
+<li>If using UTF-8 to display the web-page containing the demo form to the users, change ISO-8859-1 to UTF-8 for the env-entry 'contentEncoding'. Otherwise national characters in names will be encoded/displayed incorrectly in the certificates.</li>
+<li>Deploy with 'ant deploy'.</li>
+<li>Create an end entity profile and a certificate profile that should be used for the demo certificates.</li>
+<li>Create a demo apply page containing something similar to the sample form below for Mozilla/Firefox. There sre some demo_xx scripts under src/publicweb/apply.</li>
+</ol>
+<source>
+&lt;form name="demoreq" action="http://127.0.0.1:8080/ejbca/publicweb/apply/democertreq" method="post">
+  Please fill out the form and click &lt;b>Enroll&lt;/b> to receive your certificate.
+  Read our &lt;a href="http://www.primekey.se/primekey/en/Demo.html">privacy policy&lt;/a>.&lt;br>
+  &lt;input name="certificateprofile" value="DemoCertProfile" type="hidden">
+  &lt;input name="entityprofile" value="DemoEntityProfile" type="hidden">&lt;br>
+  &lt;br>
+  Full name:
+  &lt;input name="user" value="C=SE,O=PrimeKey Solutions AB,OU=Demo,CN=" size="25" maxlength="60" class="input" type="text">
+  &lt;p align="left"> E-mail:
+  &lt;input name="email" size="25" maxlength="60" class="input" type="text">
+  &lt;input name="includeemail" value="true" type="hidden">
+  &lt;/p>
+  &lt;p align="left"> Choose key length from the list below. The default is recommended in most cases. &lt;br>
+  &lt;br>
+  &lt;keygen type="hidden" name="keygen" value="challenge">
+  &lt;/p>&lt;p align="left">
+  &lt;input value="Enroll" name="submit" type="submit">
+&lt;/form>
+</source>
+<p>
+You can use some hidden fields and some java script to for example only ask for a name, and concatenate it with a hidden partial DN to produce
+a full dn for the 'user' parameter. Use your imagination!
+</p>
+</section>
+
 <section name="Samples">
 <p>
 A collection of samples are in the directory
