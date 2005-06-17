@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.10 2005-04-26 14:23:03 anatom Exp $
+$Id: UPGRADE,v 1.11 2005-06-17 08:07:04 anatom Exp $
 
 UPGRADE
 =======
@@ -17,8 +17,8 @@ The upgrade process typically consists of:
 1. Stop JBoss.
 2. Remove JBOSS_HOME/server/default/deploy/ejbca-ca.ear, the ear file changed name. 
    If you have configured a new datasource for EJBCA, remove this xml file as well.
-3. Copy ejbca.properties.same to ejbca.properties and configure. 
-   You don't need to configure most  options, since the installation is already done with EJBCA 3.0.x, 
+3. Copy ejbca.properties.sample to ejbca.properties and configure. 
+   You don't need to configure most options, since the installation is already done with EJBCA 3.0.x, 
    no new CAs will be created.
    Pay special attention to the upgrade comments for 'CA configuration' and 'Web GUI configuration', 
    it says what options you must configure.

@@ -1,5 +1,9 @@
 EJBCA V3.1
 ----------
+This is a major release including many new features, improvements, and bug fixes. 
+Read the full changelog.
+We are very proud of this release and recommend an upgrade.
+
 This is mostly a plugin-upgrade from 3.0.7, no database changes needed. 
 
 Since the changes are massive, no patch file is provided. 
