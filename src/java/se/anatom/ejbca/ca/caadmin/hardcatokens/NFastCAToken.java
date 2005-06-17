@@ -37,7 +37,7 @@ import se.anatom.ejbca.ca.exception.CATokenOfflineException;
  * and the development was sponsored by Linagora (www.linagora.com).
  * 
  * @author Lars Silvén
- * @version $Id: NFastCAToken.java,v 1.1 2005-06-10 08:12:53 anatom Exp $
+ * @version $Id: NFastCAToken.java,v 1.2 2005-06-17 10:49:55 primelars Exp $
  */
 public class NFastCAToken implements IHardCAToken {
 
@@ -132,10 +132,11 @@ public class NFastCAToken implements IHardCAToken {
 	public int getCATokenStatus() {
 		String strings[] = keyStrings.getAllStrings();
 		int i=0;
-		while( mKeys.get(strings[i])!=null && i<strings.length )
+		while( strings!=null && i<strings.length && mKeys!=null && mKeys.get(strings[i])!=null )
 			i++;
 		if ( i<strings.length )
 			return IHardCAToken.STATUS_OFFLINE;
-        return IHardCAToken.STATUS_ACTIVE;
+		else
+		    return IHardCAToken.STATUS_ACTIVE;
 	}
 }
