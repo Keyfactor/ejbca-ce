@@ -124,11 +124,15 @@ Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45}
        if tmpProviderType < 2 Then
           newencoder.KeySpec = 1
        end if
-       newencoder.GenKeyFlags = &h04000001 OR keyflags
+       
+       keysize = document.CertReqForm.keysize.value
+       keymask = keysize * 65536
+       
+       newencoder.GenKeyFlags = (keymask + 1) OR keyflags
  
        NewCSR = newencoder.createPKCS10(szName, "")
        if len(NewCSR)<>0 then Exit Function
-       newencoder.GenKeyFlags = &h04000000 OR keyflags
+       newencoder.GenKeyFlags = keymask OR keyflags
        NewCSR = newencoder.createPKCS10(szName, "")
        if len(NewCSR)<>0 then Exit Function
        if newencoder.providerName = "Microsoft Enhanced Cryptographic Provider v1.0" Then
@@ -167,10 +171,14 @@ Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45}
        if tmpProviderType < 2 Then
           oldencoder.KeySpec = 1
        end if
-       oldencoder.GenKeyFlags = &h04000001 OR keyflags
+       
+       keysize = document.CertReqForm.keysize.value
+       keymask = keysize * 65536
+       
+       oldencoder.GenKeyFlags = (keymask + 1) OR keyflags
        OldCSR = oldencoder.createPKCS10(szName, "")
        if len(OldCSR)<>0 then Exit Function
-       oldencoder.GenKeyFlags = &h04000000 OR keyflags
+       oldencoder.GenKeyFlags = keymask OR keyflags
        OldCSR = oldencoder.createPKCS10(szName, "")
        if len(OldCSR)<>0 then Exit Function
        if oldencoder.providerName = "Microsoft Enhanced Cryptographic Provider v1.0" Then
@@ -271,6 +279,14 @@ try  {
     <P>Please choose the CSP you wish to use from the list below (the default is probably good):</P>
     <SELECT NAME="CspProvider">
     </SELECT></P>
+
+    <P>Select your prefered keysize:
+    <select name=keysize>
+      <option value="512">512</option>
+      <option value="1024" SELECTED>1024</option>
+      <option value="2048">2048</option>
+    </select>
+    </P>   
 
     <P>Check if you are add a certificate to an Enhanced eID: 
        <INPUT TYPE="checkbox" NAME="enchancedeid" VALUE="true"> 
