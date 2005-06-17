@@ -1,5 +1,6 @@
 3.1
 ---
+General (not from Jira):
 - Usage of XDoclet to generate ejb interfaces and deployment descriptors. Lots of XDoclet tagging to simplify development and deployment. 
 - Changed packaging to avoid classes duplication between jars.
 - Much improved configuration, installation and deployment, now there is a single point of configuration using a config file.
@@ -12,6 +13,49 @@
 - Reorganization of documentation tree, new xml based web site for http://ejbca.sf.net/.
 - New version, 1.28, of bouncycatle provider.
 - Lots of minor and structural changes.
+New features:
+* [ECA-6] - Download certificate link in 'View Certificate' window
+* [ECA-12] - CA keystore randomizer in the ant script
+* [ECA-19] - Create Servlet for initial installation
+* [ECA-45] - Add SHA256WithRSA as signature algorithm for certs
+* [ECA-62] - Add Receipt and address templates
+* [ECA-67] - Republish button in view certificate window
+* [ECA-68] - CN Postfix in certificate profile
+* [ECA-69] - Only domain used for UPN in End Entity Profile
+* [ECA-70] - Key Recover button in view hard token window
+* [ECA-86] - Javascript changed so all new small windows automatically gets focused.
+* [ECA-87] - Added a new getCATokenStatus method in the IHardCAToken interface
+* [ECA-90] - Support for nCipher HSM (sponsored by Linagora)
+* [ECA-96] - Add importcert cli function
+Improvements:
+* [ECA-48] - make web page encoding selectable by parameter
+* [ECA-56] - Bad error message when authorization fails
+* [ECA-61] - Enable Advanced Profiles
+* [ECA-73] - Add more information regarding Critical Extension
+* [ECA-76] - Installation on JBoss 4.0.2
+* [ECA-82] - Available languages (EN, FR, IT, ES) selectable by default in admin-GUI.
+* [ECA-88] - Added a 'reuse old certificate' flag to the hard token profiles
+Bugs fixed:
+* [ECA-13] - Exception after editing entity profile
+* [ECA-28] - RA Admin privileges don't work
+* [ECA-34] - Multiple bugs in Hard Token Issuing handling.
+* [ECA-38] - register users with int'l characters in dn does not work
+* [ECA-39] - HTML error in view end entity jsp page when displaying subjectDN
+* [ECA-43] - exception during CRL generation
+* [ECA-44] - no key length selection for p12 generated server certs
+* [ECA-55] - export/import profiles does not ignore fixed HARDTOKEN profiles
+* [ECA-71] - CRL creation in batch mode is not possible if a CA is not active
+* [ECA-72] - cmd-line not working
+* [ECA-74] - CRLCreateService not working
+* [ECA-77] - bug when signing certificate with "card CA token"
+* [ECA-78] - CRLCreatService has no overlap
+* [ECA-79] - View ocsp certificate not working (exception)
+* [ECA-80] - wrong PIN type is stored in DB
+* [ECA-91] - Bug in base64 decoder
+* [ECA-92] - UserGenerated Certificates doesn't work with enhanced EID hard tokens and IE
+* [ECA-100] - Subject DN with "'" (ASCII 27) displays as "\" in admin GUI.
+* [ECA-102] - missing break; causes IllegalKeystoreException
+* [ECA-104] - Handle language encodings in demo servlet
 
 
 3.0.7
