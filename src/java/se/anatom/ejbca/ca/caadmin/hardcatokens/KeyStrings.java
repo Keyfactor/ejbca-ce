@@ -19,19 +19,14 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-
 import se.anatom.ejbca.SecConst;
 
 /**
  * 
- * @version $Id: KeyStrings.java,v 1.1 2005-06-10 08:12:52 anatom Exp $
+ * @version $Id: KeyStrings.java,v 1.2 2005-06-17 07:01:54 primelars Exp $
 */
 public class KeyStrings {
     
-    /** Log4j instance for Base */
-    private static transient final Logger log = Logger.getLogger(KeyStrings.class);
-
     final private String CAKEYPURPOSE_CERTSIGN_STRING = "certSignKey";
     final private String CAKEYPURPOSE_CRLSIGN_STRING = "crlSignKey";
     final private String CAKEYPURPOSE_KEYENCRYPT_STRING = "keyEncryptKey";
@@ -44,10 +39,6 @@ public class KeyStrings {
                 CAKEYPURPOSE_DEFAULT_STRING);
             defaultKeyS = tmpS!=null ? tmpS.trim() : null;
         }
-        if ( defaultKeyS!= null )
-            log.debug("CA default key " +
-                           CAKEYPURPOSE_DEFAULT_STRING +
-                           " with value: " + defaultKeyS);
         map = new Hashtable();
         addKey(CAKEYPURPOSE_CERTSIGN_STRING,
                SecConst.CAKEYPURPOSE_CERTSIGN,
@@ -64,8 +55,6 @@ public class KeyStrings {
         String value = properties.getProperty(keyS);
         if ( value!=null && value.length()>0 ) {
             value = value.trim();
-            log.debug("CA key " + keyS + " with nr " + keyI +
-                           " added Value: " + value);
             map.put(new Integer(keyI), value);
         }
     }
