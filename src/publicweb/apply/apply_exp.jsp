@@ -288,7 +288,7 @@ try  {
     </select>
     </P>   
 
-    <P>Check if you are add a certificate to an Enhanced eID: 
+    <P>Check if you are adding a certificate to an Enhanced eID card: 
        <INPUT TYPE="checkbox" NAME="enchancedeid" VALUE="true"> 
     </P> 
     <INPUT TYPE="hidden" NAME="pkcs10" VALUE="">
