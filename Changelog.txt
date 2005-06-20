@@ -56,7 +56,7 @@ Bugs fixed:
 * [ECA-100] - Subject DN with "'" (ASCII 27) displays as "\" in admin GUI.
 * [ECA-102] - missing break; causes IllegalKeystoreException
 * [ECA-104] - Handle language encodings in demo servlet
-
+* [ECA-106] - non-superadmin cannot press cancel in my_preferences page
 
 3.0.7
 -----
