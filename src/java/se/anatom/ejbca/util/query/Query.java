@@ -130,7 +130,7 @@ public class Query implements java.io.Serializable {
             matches.addElement(new UserMatch(matchwith, matchtype, matchvalue));
             break;
         }
-        if (StringTools.hasStripChars(matchvalue)) {
+        if (StringTools.hasSqlStripChars(matchvalue)) {
             hasIllegalSqlChars = true;
         }
     }
@@ -158,7 +158,7 @@ public class Query implements java.io.Serializable {
         }
         connectors.addElement(new Integer(connector));
 
-        if (StringTools.hasStripChars(matchvalue)) {
+        if (StringTools.hasSqlStripChars(matchvalue)) {
             hasIllegalSqlChars = true;
         }
     }

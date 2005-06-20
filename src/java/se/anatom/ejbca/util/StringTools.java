@@ -21,14 +21,19 @@ import org.apache.log4j.Logger;
 /**
  * This class implements some utility functions that are useful when handling Strings.
  *
- * @version $Id: StringTools.java,v 1.23 2005-06-17 06:55:48 anatom Exp $
+ * @version $Id: StringTools.java,v 1.24 2005-06-20 07:47:56 anatom Exp $
  */
 public class StringTools {
     private static Logger log = Logger.getLogger(StringTools.class);
 
-    // Characters that are not allowed in strings that may be passed to the db
+    // Characters that are not allowed in strings that may be stored in the db
     private static final char[] stripChars = {
         '\"', '\n', '\r', '/', '\\', ';', '&', '|', '!', '\0', '%', '`', '<', '>', '?',
+        '$', ':', '~'
+    };
+    // Characters that are not allowed in strings that may be used in db queries
+    private static final char[] stripSqlChars = {
+        '\'', '\"', '\n', '\r', '/', '\\', ';', '&', '|', '!', '\0', '%', '`', '<', '>', '?',
         '$', ':', '~'
     };
     // Characters that are allowed to escape in strings
@@ -76,15 +81,15 @@ public class StringTools {
      * @return true if some chars in the string would be stripped, false if not.
      * @see #strip
      */
-    public static boolean hasStripChars(String str) {
+    public static boolean hasSqlStripChars(String str) {
         if (str == null) {
             return false;
         }
         String ret = str;
-        for (int i = 0; i < stripChars.length; i++) {
-            if (ret.indexOf(stripChars[i]) > -1) {
+        for (int i = 0; i < stripSqlChars.length; i++) {
+            if (ret.indexOf(stripSqlChars[i]) > -1) {
                 // If it is an escape char, we have to process manually
-                if (stripChars[i] == '\\') {
+                if (stripSqlChars[i] == '\\') {
                     // If it is an escaped char, allow it if it is an allowed escapechar
                     int index = ret.indexOf('\\');
                     while (index > -1) {
@@ -99,7 +104,7 @@ public class StringTools {
             }
         }
         return false;
-    } // hasStripChars
+    } // hasSqlStripChars
 
     /** Checks if a character is an allowed escape characted according to allowedEscapeChars
      * 
