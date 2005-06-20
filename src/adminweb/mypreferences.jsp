@@ -32,7 +32,7 @@
     // Determine action 
   if( request.getParameter(BUTTON_CANCEL) != null){
        // Cancel current values and go back to old ones.
-       ejbcawebbean.initialize(request,"/");
+       //ejbcawebbean.initialize(request,"/administrator");
       
 %>  <jsp:forward page="<%= forwardurl %>"/>
 <%  }
