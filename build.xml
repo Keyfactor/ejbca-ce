@@ -180,9 +180,6 @@ web.contentencoding    = ${web.contentencoding}
         <delete dir="${src.gen}" />
         <delete dir="${src.dd}" />
         <delete dir="${apidoc}" />
-        <delete>
-            <fileset dir="${src.java}" includes="**/*.class,**/*.log,**/.nbattrs,**/filesystem.attributes" />
-        </delete>
         <delete dir="${tmp}"/>
     </target>
 
