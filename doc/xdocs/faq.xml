@@ -7,6 +7,20 @@
 
   <faqsection title="About this FAQ">
     <faq>
+      <question>Enroll manually for a server - why are my PKCS10  DN fields Ignored?</question>
+      <answer>
+        <p>
+		EJBCA does not trust the DN parts the user enters when he creates the
+		PKCS10 request.
+		The only way to match the certificate with what you enter in the
+		pkcs10 is to enter the same thing in the end entity in ejbca.
+		</p><p>
+		PKCS#10 is the standard format for sending the public key (self signed
+		to provide proof-of-possession) to a CA.
+        </p>
+      </answer>
+    </faq>
+    <faq>
       <question>Where is the log file stored for tracking errors and debug information?</question>
       <answer>
         <p>
