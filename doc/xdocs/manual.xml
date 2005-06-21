@@ -143,6 +143,8 @@ If you don't have root permission now, you can do it manually later after step 9
 </p><p>
 7) type 'ant deploy', this will deploy everything again and configure the servlet
 container with the keystore file (this is why we needed to stop the container).
+If you alternative want to use jbossspecific service for automatic creation of the CRL:s you should use
+'ant deploywithjbossservices' instead.
 </p><p>
 8) Import the certificate from EJBCA_HOME/p12/superadmin.p12 in your web browser. 
 This is the super administrators certificate used to access the admin GUI. 
@@ -338,7 +340,7 @@ There are at least two ways to have EJBCA to periodically create updated CRLs.
 <subsection name="JBossservice">
 <p>
 The first way to have CRLs generated automatically is to build and deploy the JBOSS CRL Service.
- This is done with the command 'ant deployjbossservices'.
+ This is done with the command 'ant deploywithjbossservices' (inside ejbca.ear) alternatively 'ant deployjbossservices' (outside ejbca.ear)
  If you only want to build the jar (without deploying) you can do so with the command 'ant jbossservices'.
  After installation with deployjbossservices, JBoss must be restarted. 
  </p><p>
