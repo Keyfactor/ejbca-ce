@@ -813,32 +813,14 @@ ejbca.properties file.
 <p>
 The CA has a command line interface 'bin/ejbca.sh ca. Options are:
 <ul>
-<li>init - Creates a new Root CA.
-Stores CA certificates and publishes first CRL.</li>
-<li>makeroot - creates a new Root CA keystore (only used by Root
-CA). - not used in EJBCA3
+<li>info - prints information about a CA.</li>
+<li>init - creates a new Root CA.
+<li>listcas - lists all CAs in the system.</li>
+Stores CA certificates and publishes first CRL.
 Quote the DN (") so it is treated as one argument.</li>
 <li>getrootcert - exports the CA certificates to file.</li>
-<li>makereq - generates a certification request for a subCA for
-sending to a. - not used in EJBCA3
-RootCA. Used to create a keystore for a
-subordinate CA. Quote the DN  so it is treated as one argument.</li>
-<li>recrep - used to receive certificates which has been produced
-as result of. - not used in EJBCA3
-sending a certificate request to a RootCA.</li>
-<li>processreq - processes a certification request for. - not used in EJBCA3
-a subordinate CA and creates  a certification reply.</li>
 <li>createcrl - issues a CRL.</li>
 <li>getcrl - retrieves the latest CRL.</li>
-<li>rolloverroot - used to generate a new RootCA certificate using
-an existing. - not used in EJBCA3
-keypair. This updates the current RootCA keystore.
-(only used by Root CA). When this is used, sub-certificates do
-not need to be resigned.</li>
-<li>rolloversub - used to generate a new subCA certificate using
-an existing. - not used in EJBCA3
-keypair. This updates the current subCA keystore.
-When this is used, sub-certificates do not need to be resigned.</li>
 <li>listexpired - List certificates that will expire within a
 given number of days.</li>
 <li>exportprofiles - exports entity and certificate profiles to xml-files.</li>
@@ -849,6 +831,9 @@ can get into trouble with authorization if you don't have the same CAs with the 
 caids (DNs) where you import the profiles.</li>
 <li>importca - creates a new CA by importing keys from en existing PKCS12 file.
 A PKCS12 file can be generates from PEM files with openssl.</li>
+<li>importcert - creates a user and imports a certificate for him/her.</li>
+<li>republish - republishes certificates for a CA and all users. 
+Can be used to add a publisher to a CA after some time, and then publish all certs.</li>
 </ul>
 </p></subsection>
 
