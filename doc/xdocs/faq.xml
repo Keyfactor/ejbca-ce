@@ -39,24 +39,32 @@
       </answer>
     </faq>
     <faq>
-      <question>I get a blank page on the admiweb after start. ?</question>
+      <question>I get an error message when accessing the admin-GUI, "Could not establish an encrypted connection because your certificate was rejected ... Error code: -12224"?</question>
       <answer>
         <p>
-		Either you entered a hostname that does not resolve to the machine where EJBCA is
-running during setup, or you changed the port that JBoss listens to.
-Make sure the hostname resolves to the machine ejbca is running on.
-If you need the change to url, use the command 'bin/ejbca.sh setup setbaseurl'.
+        Make sure you have imported to correct superadmin.p12 in your browser.
+        </p><p>
+        You may have to delete and import the ca certificate in your java trust-store:
         </p>
+<source>
+bin/ejbca.sh ca getrootcert caname rootca.der -der
+</source>
+<source>
+keytool -alias EJBCA-CA -delete -trustcacerts -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit
+</source>
+<source>
+keytool -alias EJBCA-CA -import -trustcacerts -file rootca.der -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit
+</source>
       </answer>
     </faq>
     <faq>
-      <question>Installation hangs and the https server will not work.</question>
+      <question>I get a blank page on the admiweb after start?</question>
       <answer>
         <p>
-		Perhaps JBOSS_HOME/server/default/conf/keystore/tomcat.jks must be executable. All scripts in 
-EJBCA_HOME/bin directory must be executable, run 'chmod u+x *.sh'. Make sure you run the 
-installation of ejbca as a user with enough privileges to write in JBOSS_HOME, and to 
-JAVA_HOME/jre/lib/security/cacerts. Preferably the same user as is used to run the JBoss server.
+		Either you entered a hostname that does not resolve to the machine where EJBCA is
+		running during setup, or you changed the port that JBoss listens to.
+		Make sure the hostname resolves to the machine ejbca is running on.
+		If you need the change to url, use the command 'bin/ejbca.sh setup setbaseurl'.
         </p>
       </answer>
     </faq>
@@ -92,6 +100,17 @@ password than 7 characters. Anything longer gives an error?</question>
 		in keystores you must install the 'Unlimited Strength Jurisdiction Policy Files' for JDK.
 		The policy files can be found at the same place as the JDK download. 
 		Further information on this can be found in the Sun documentation on the JCE.
+        </p>
+      </answer>
+    </faq>
+    <faq>
+      <question>Installation hangs and the https server will not work.</question>
+      <answer>
+        <p>
+		Perhaps JBOSS_HOME/server/default/conf/keystore/tomcat.jks must be executable. All scripts in 
+EJBCA_HOME/bin directory must be executable, run 'chmod u+x *.sh'. Make sure you run the 
+installation of ejbca as a user with enough privileges to write in JBOSS_HOME, and to 
+JAVA_HOME/jre/lib/security/cacerts. Preferably the same user as is used to run the JBoss server.
         </p>
       </answer>
     </faq>
