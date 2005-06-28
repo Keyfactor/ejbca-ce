@@ -26,6 +26,7 @@ import java.util.Date;
  * Main function is getQueryString which returns a fragment of SQL statment.
  *
  * @author TomSelleck
+ * @version $Id: TimeMatch.java,v 1.6 2005-06-28 08:47:35 anatom Exp $
  *
  * @see se.anatom.ejbca.util.query.BasicMatch
  * @see se.anatom.ejbca.util.query.UserMatch

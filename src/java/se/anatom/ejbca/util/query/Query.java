@@ -33,6 +33,7 @@ import se.anatom.ejbca.util.StringTools;
  * statement.
  *
  * @author tomselleck
+ * @version $Id: Query.java,v 1.7 2005-06-28 08:47:35 anatom Exp $
  */
 public class Query implements java.io.Serializable {
     private static Logger log = Logger.getLogger(Query.class);

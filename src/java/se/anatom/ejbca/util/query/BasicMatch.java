@@ -23,6 +23,7 @@ package se.anatom.ejbca.util.query;
  * LogMatch. Main function is getQueryString which is abstract and must be overloaded.
  *
  * @author tomselleck
+ * @version $Id: BasicMatch.java,v 1.5 2005-06-28 08:47:35 anatom Exp $
  *
  * @see se.anatom.ejbca.util.query.UserMatch
  * @see se.anatom.ejbca.util.query.TimeMatch

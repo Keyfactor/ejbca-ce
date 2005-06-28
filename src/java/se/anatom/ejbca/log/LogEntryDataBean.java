@@ -67,6 +67,8 @@ import java.util.Date;
  *
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"
+ *   
+ * @version $Id: LogEntryDataBean.java,v 1.18 2005-06-28 08:43:59 anatom Exp $
  */
 public abstract class LogEntryDataBean extends BaseEntityBean {
 
@@ -104,8 +106,7 @@ public abstract class LogEntryDataBean extends BaseEntityBean {
      */
     public abstract void setAdminData(String admindata);
 
-    // The id of the CA performing the event.
-    /**
+    /** The id of the CA performing the event.
      * @ejb.persistence
      * @ejb.interface-method view-type="local"
      */
@@ -116,8 +117,7 @@ public abstract class LogEntryDataBean extends BaseEntityBean {
      */
     public abstract void setCaId(int caid);
 
-    // Indicates the module (CA,RA ...) using the logsession bean.
-    /**
+    /** Indicates the module (CA,RA ...) using the logsession bean.
      * @ejb.persistence
      * @ejb.interface-method view-type="local"
      */
@@ -144,7 +144,7 @@ public abstract class LogEntryDataBean extends BaseEntityBean {
      */
     public abstract String getUsername();
 
-    /** username must be called 'striped' using StringTools.strip()
+    /** username must be called 'stripped' using StringTools.strip()
      * @ejb.persistence
      */
     public abstract void setUsername(String username);
@@ -217,17 +217,6 @@ public abstract class LogEntryDataBean extends BaseEntityBean {
     }
 
     /**
-     * DOCUMENT ME!
-     *
-     * @param id DOCUMENT ME!
-     * @param admintype DOCUMENT ME!
-     * @param admindata DOCUMENT ME!
-     * @param module DOCUMENT ME!
-     * @param time DOCUMENT ME!
-     * @param username DOCUMENT ME!
-     * @param certificatesnr DOCUMENT ME!
-     * @param event DOCUMENT ME!
-     * @param comment DOCUMENT ME!
      */
     public void ejbPostCreate(Integer id, int admintype, String admindata, int caid, int module, Date time, String username, String certificatesnr, int event, String comment) {
 // Do nothing. Required.

@@ -23,6 +23,7 @@ package se.anatom.ejbca.util.query;
  * function is getQueryString which returns a fragment of SQL statment.
  *
  * @author TomSelleck
+ * @version $Id: UserMatch.java,v 1.11 2005-06-28 08:47:35 anatom Exp $
  *
  * @see se.anatom.ejbca.util.query.BasicMatch
  * @see se.anatom.ejbca.util.query.TimeMatch

@@ -107,6 +107,7 @@ import se.anatom.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
+ * @version $Id: LocalLogSessionBean.java,v 1.28 2005-06-28 08:43:59 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 
