@@ -59,7 +59,7 @@ import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
  * It replaces all occurrenses of specified variables in the images 
  * with the corresponding userdata.
  *
- * @version $Id: SVGImageManipulator.java,v 1.12 2005-06-05 21:39:21 primelars Exp $
+ * @version $Id: SVGImageManipulator.java,v 1.13 2005-06-28 12:08:24 primelars Exp $
  */
 public class SVGImageManipulator {
 	/**
@@ -114,7 +114,7 @@ public class SVGImageManipulator {
 //	private static final Pattern COPYOFSNWITHOUTPREFIX = Pattern.compile("\\$COPYOFSNWITHOUTPREFIX", Pattern.CASE_INSENSITIVE);
 
     static {
-        PINS = new Pattern[30];
+        PINS = new Pattern[0x50];
         PUKS = new Pattern[PINS.length];
         for (int i=0; i<PINS.length; i++) {
             final int pinNr = i+1;
