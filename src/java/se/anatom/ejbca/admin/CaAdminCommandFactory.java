@@ -16,7 +16,7 @@ package se.anatom.ejbca.admin;
 /**
  * Factory for CA Admin Commands.
  *
- * @version $Id: CaAdminCommandFactory.java,v 1.11 2005-06-11 12:49:57 anatom Exp $
+ * @version $Id: CaAdminCommandFactory.java,v 1.12 2005-06-28 12:13:08 herrvendil Exp $
  */
 public class CaAdminCommandFactory {
     /**
@@ -37,9 +37,7 @@ public class CaAdminCommandFactory {
             return null;
         }
 
-        if (args[0].equals("makeroot")) {
-            return new CaMakeRootCommand(args);
-        } else if (args[0].equals("getrootcert")) {
+        if (args[0].equals("getrootcert")) {
             return new CaGetRootCertCommand(args);
         } else if (args[0].equals("listexpired")) {
             return new CaListExpiredCommand(args);
@@ -49,20 +47,10 @@ public class CaAdminCommandFactory {
             return new CaListCAsCommand(args);
         } else if (args[0].equals("init")) {
             return new CaInitCommand(args);
-        } else if (args[0].equals("makereq")) {
-            return new CaMakeReqCommand(args);
-        } else if (args[0].equals("recrep")) {
-            return new CaRecRepCommand(args);
-        } else if (args[0].equals("processreq")) {
-            return new CaProcessReqCommand(args);
         } else if (args[0].equals("createcrl")) {
             return new CaCreateCrlCommand(args);
         } else if (args[0].equals("getcrl")) {
             return new CaGetCrlCommand(args);
-        } else if (args[0].equals("rolloverroot")) {
-            return new CaRolloverRootCommand(args);
-        } else if (args[0].equals("rolloversub")) {
-            return new CaRolloverSubCommand(args);
         } else if (args[0].equals("exportprofiles")) {
             return new CaExportProfilesCommand(args);
         } else if (args[0].equals("importprofiles")) {

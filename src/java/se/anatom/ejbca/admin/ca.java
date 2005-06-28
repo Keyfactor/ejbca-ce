@@ -17,7 +17,7 @@ package se.anatom.ejbca.admin;
 /**
  * Implements the CA command line interface
  *
- * @version $Id: ca.java,v 1.40 2005-06-11 12:49:48 anatom Exp $
+ * @version $Id: ca.java,v 1.41 2005-06-28 12:13:08 herrvendil Exp $
  */
 public class ca extends BaseCommand {
     /**
@@ -33,7 +33,7 @@ public class ca extends BaseCommand {
                 cmd.execute();
             } else {
                 System.out.println(
-                    "Usage: CA info | init | listcas | makeroot | getrootcert | makereq | recrep | processreq | createcrl | getcrl | rolloverroot | rolloversub | listexpired | exportprofiles | importprofiles | importca | importcert | republish");
+                    "Usage: CA info | init | listcas | getrootcert | createcrl | getcrl |  listexpired | exportprofiles | importprofiles | importca | importcert | republish");
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());            
