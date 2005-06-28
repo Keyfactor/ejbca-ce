@@ -13,13 +13,13 @@
  
 package se.anatom.ejbca.hardtoken.hardtokenprofiles;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.caadmin.CAInfo;
-
-import java.util.ArrayList;
 
 
 
@@ -28,13 +28,13 @@ import java.util.ArrayList;
  * of eidprofiles in the system.
  *  
  *
- * @version $Id: EIDProfile.java,v 1.6 2005-05-24 09:33:39 herrvendil Exp $
+ * @version $Id: EIDProfile.java,v 1.7 2005-06-28 08:11:24 herrvendil Exp $
  */
 public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	
 	public static final String KEYTYPE_RSA = "RSA";
 	
-	public static final int CAID_USEUSERDEFINED = 0;
+	public static final int CAID_USEUSERDEFINED = SecConst.CAID_USEUSERDEFINED;
 	
 	// Protected Constants
 	protected static final String CERTIFICATEPROFILEID           = "certificateprofileid";

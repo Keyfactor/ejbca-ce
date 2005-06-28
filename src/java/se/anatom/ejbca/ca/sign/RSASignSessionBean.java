@@ -190,6 +190,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * Source of good random data
      */
     SecureRandom randomSource = null;
+    
 
 
     /**
@@ -429,7 +430,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
-        return createCertificate(admin, username, password, pk, keyusage, SecConst.PROFILE_NO_PROFILE);
+        return createCertificate(admin, username, password, pk, keyusage, SecConst.PROFILE_NO_PROFILE, SecConst.CAID_USEUSERDEFINED);
     }
 
 
@@ -451,7 +452,11 @@ public class RSASignSessionBean extends BaseSessionBean {
      *                             digitalSignature and nonRepudiation. ex. int keyusage = CertificateData.keyCertSign
      *                             | CertificateData.cRLSign; gives keyCertSign and cRLSign
      * @param certificateprofileid used to override the one set in userdata.
-     *                             Should be set to SecConst.PROFILE_NO_PROFILE if the regular certificateid shpuld be used
+     *                             Should be set to SecConst.PROFILE_NO_PROFILE if the usedata certificateprofileid should be used
+     * @param caid                 used to override the one set in userdata.¨
+     *                             Should be set to SecConst.CAID_USEUSERDEFINED if the regular certificateprofileid should be used
+     * 
+     * 
      * @return The newly created certificate or null.
      * @throws ObjectNotFoundException if the user does not exist.
      * @throws AuthStatusException     If the users status is incorrect.
@@ -460,7 +465,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
      */
-    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, int certificateprofileid) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
+    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, int certificateprofileid, int caid) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
         debug(">createCertificate(pk, ku)");
         try {
             // Authorize user and get DN
@@ -469,6 +474,11 @@ public class RSASignSessionBean extends BaseSessionBean {
             if (certificateprofileid != SecConst.PROFILE_NO_PROFILE) {
                 debug("Overriding user certificate profile with :" + certificateprofileid);
                 data.setCertificateProfileId(certificateprofileid);
+            }
+            
+            if (caid != SecConst.CAID_USEUSERDEFINED) {
+                debug("Overriding user caid with :" + caid);
+                data.setCAId(caid);
             }
 
 
