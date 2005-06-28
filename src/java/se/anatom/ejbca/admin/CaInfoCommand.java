@@ -17,13 +17,14 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 
+import se.anatom.ejbca.ca.caadmin.CAInfo;
 import se.anatom.ejbca.util.CertTools;
 
 
 /**
  * Gets and prints info about the CA.
  *
- * @version $Id: CaInfoCommand.java,v 1.11 2005-05-02 17:05:58 anatom Exp $
+ * @version $Id: CaInfoCommand.java,v 1.12 2005-06-28 12:04:54 herrvendil Exp $
  */
 public class CaInfoCommand extends BaseCaAdminCommand {
     /**
@@ -49,8 +50,14 @@ public class CaInfoCommand extends BaseCaAdminCommand {
         try {            
             String caname = args[1];
             ArrayList chain = new ArrayList(getCertChain(caname));
-
-            getOutputStream().println("CA name: "+caname);
+            CAInfo cainfo = getCAInfo(caname);
+                                    
+            getOutputStream().println("CA name: " + caname);
+            getOutputStream().println("CA ID: " + cainfo.getCAId());
+            getOutputStream().println("CA CRL Period: " + cainfo.getCRLPeriod());
+            getOutputStream().println("CA Description: " + cainfo.getDescription());
+            getOutputStream().println("\n");
+            
             if (chain.size() < 2)
               getOutputStream().println("This is a Root CA.");
             else
@@ -60,6 +67,7 @@ public class CaInfoCommand extends BaseCaAdminCommand {
             if (chain.size() > 0) {
                 X509Certificate rootcert = (X509Certificate)chain.get(chain.size()-1);
                 getOutputStream().println("Root CA DN: "+CertTools.getSubjectDN(rootcert));
+                getOutputStream().println("Root CA id: "+CertTools.getSubjectDN(rootcert));
                 getOutputStream().println("Certificate valid from: "+rootcert.getNotBefore().toString());
                 getOutputStream().println("Certificate valid to: "+rootcert.getNotAfter().toString());
                 getOutputStream().println("Root CA keysize: "+((RSAPublicKey)rootcert.getPublicKey()).getModulus().bitLength());            
