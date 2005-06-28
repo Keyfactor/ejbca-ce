@@ -212,7 +212,7 @@ function checkallfields(){
       </td>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("SUBJECTKEYID") %> <br>  <%= ejbcawebbean.getText("SUBJECTKEYIDCRITICAL") %>
+        <%= ejbcawebbean.getText("SUBJECTKEYID") %> <br> <!-- <%= ejbcawebbean.getText("SUBJECTKEYIDCRITICAL") %> -->
 
       </td>
       <td width="50%">
@@ -237,7 +237,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-         <%= ejbcawebbean.getText("AUTHORITYKEYID") %> <br> <%= ejbcawebbean.getText("AUTHORITYKEYIDCRITICAL") %> 
+         <%= ejbcawebbean.getText("AUTHORITYKEYID") %> <br> <!--<%= ejbcawebbean.getText("AUTHORITYKEYIDCRITICAL") %> -->
       </td>
       <td width="50%">
            <!-- Disable the use of critical flag, since it's easy to make misstakes
