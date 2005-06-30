@@ -55,6 +55,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A class help administrating CAs. 
  *
  * @author  TomSelleck
+ * @version $Id: CADataHandler.java,v 1.13 2005-06-30 11:15:06 anatom Exp $
  */
 public class CADataHandler implements Serializable {
 
@@ -81,7 +82,7 @@ public class CADataHandler implements Serializable {
     }
     
   /**
-   *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+   *  @see se.anatom.ejbca.ca.caadmin.CAAdminSessionBean
    */    
   public void createCA(CAInfo cainfo) throws CAExistsException, CATokenOfflineException, CATokenAuthenticationFailedException, AuthorizationDeniedException{
     caadminsession.createCA(administrator, cainfo);
@@ -89,7 +90,7 @@ public class CADataHandler implements Serializable {
   }
   
   /**
-   *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+   *  @see se.anatom.ejbca.ca.caadmin.CAAdminSessionBean
    */
   public void editCA(CAInfo cainfo) throws AuthorizationDeniedException{
     caadminsession.editCA(administrator, cainfo);  
@@ -97,7 +98,7 @@ public class CADataHandler implements Serializable {
   }
 
   /**
-   *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+   *  @see se.anatom.ejbca.ca.caadmin.CAAdminSessionBean
    */  
   public boolean removeCA(int caid) throws AuthorizationDeniedException{
       
@@ -115,7 +116,7 @@ public class CADataHandler implements Serializable {
   }
 
   /**
-   *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+   *  @see se.anatom.ejbca.ca.caadmin.CAAdminSessionBean
    */  
   public void renameCA(String oldname, String newname) throws CAExistsException, AuthorizationDeniedException{
     caadminsession.renameCA(administrator, oldname, newname);  
@@ -135,7 +136,7 @@ public class CADataHandler implements Serializable {
   }
   
   /**
-   *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+   *  @see se.anatom.ejbca.ca.caadmin.CAAdminSessionBean
    */  
   public CAInfoView getCAInfo(int caid) throws Exception{
     // temporate        
@@ -148,14 +149,14 @@ public class CADataHandler implements Serializable {
   }
 
   /**
-   *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+   *  @see se.anatom.ejbca.ca.caadmin.CAAdminSessionBean
    */  
   public HashMap getCAIdToNameMap(){
     return info.getCAIdToNameMap();
   }
   
   /**
-   *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+   *  @see se.anatom.ejbca.ca.caadmin.CAAdminSessionBean
    */  
   public PKCS10CertificationRequest  makeRequest(int caid, Collection cachain, boolean setstatustowaiting) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
   	
@@ -164,7 +165,7 @@ public class CADataHandler implements Serializable {
   }	    
 
   /**
-   *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+   *  @see se.anatom.ejbca.ca.caadmin.CAAdminSessionBean
    */  
   public void receiveResponse(int caid, InputStream is) throws Exception{
   	 Collection certs = CertTools.getCertsFromPEM(is);
@@ -178,7 +179,7 @@ public class CADataHandler implements Serializable {
   }
 
   /**
-   *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+   *  @see se.anatom.ejbca.ca.caadmin.CAAdminSessionBean
    */  
   public Certificate processRequest(CAInfo cainfo, IRequestMessage requestmessage) throws Exception {      
       Certificate returnval = null;
@@ -192,7 +193,7 @@ public class CADataHandler implements Serializable {
   }
 
   /**
-   *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+   *  @see se.anatom.ejbca.ca.caadmin.CAAdminSessionBean
    */  
   public void renewCA(int caid, IResponseMessage responsemessage) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
       caadminsession.renewCA(administrator, caid, responsemessage);
@@ -200,7 +201,7 @@ public class CADataHandler implements Serializable {
   }
 
   /**
-   *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+   *  @see se.anatom.ejbca.ca.caadmin.CAAdminSessionBean
    */  
   public void revokeCA(int caid, int reason) throws CADoesntExistsException, AuthorizationDeniedException {
       caadminsession.revokeCA(administrator, caid, reason);
@@ -208,7 +209,7 @@ public class CADataHandler implements Serializable {
   }
       
   /**
-   *  @see se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal
+   *  @see se.anatom.ejbca.ca.caadmin.CAAdminSessionBean
    */  
  public void publishCA(int caid){
  	CAInfo cainfo = caadminsession.getCAInfo(administrator, caid);

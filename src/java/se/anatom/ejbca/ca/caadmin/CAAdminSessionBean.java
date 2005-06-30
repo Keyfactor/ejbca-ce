@@ -82,7 +82,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.42 2005-06-11 12:50:06 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.43 2005-06-30 11:15:06 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -202,83 +202,22 @@ public class CAAdminSessionBean extends BaseSessionBean {
     }
 
 
-    /** Gets connection to log session bean
-     */
-    private ILogSessionLocal getLogSession() {
-        if(logsession == null){
-            try{
-                ILogSessionLocalHome home = (ILogSessionLocalHome) getLocator().getLocalHome(ILogSessionLocalHome.COMP_NAME);
-                logsession = home.create();
-            }catch(Exception e){
-                throw new EJBException(e);
-            }
-        }
-        return logsession;
-    } //getLogSession
-
-
-    /** Gets connection to authorization session bean
-     * @return Connection
-     */
-    private IAuthorizationSessionLocal getAuthorizationSession() {
-        if(authorizationsession == null){
-            try{
-                IAuthorizationSessionLocalHome home = (IAuthorizationSessionLocalHome) getLocator().getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
-                authorizationsession = home.create();
-            }catch(Exception e){
-                throw new EJBException(e);
-            }
-        }
-        return authorizationsession;
-    } //getAuthorizationSession
-
-    /** Gets connection to crl create session bean
-     * @return Connection
-     */
-    private ICreateCRLSessionLocal getCRLCreateSession() {
-      if(jobrunner == null){
-      	 try{
-      	    ICreateCRLSessionLocalHome home = (ICreateCRLSessionLocalHome) getLocator().getLocalHome(ICreateCRLSessionLocalHome.COMP_NAME);
-    	    jobrunner = home.create();
-      	 }catch(Exception e){
-      	 	throw new EJBException(e);
-      	 }
-      }
-      return jobrunner;
-    }
-
-    /** Gets connection to certificate store session bean
-     * @return Connection
-     */
-    private ICertificateStoreSessionLocal getCertificateStoreSession() {
-        if(certificatestoresession == null){
-            try{
-                ICertificateStoreSessionLocalHome home = (ICertificateStoreSessionLocalHome) getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
-                certificatestoresession = home.create();
-            }catch(Exception e){
-                throw new EJBException(e);
-            }
-        }
-        return certificatestoresession;
-    } //getCertificateStoreSession
-
-    /** Gets connection to sign session bean
-     * @return Connection
-     */
-    private ISignSessionLocal getSignSession() {
-        if(signsession == null){
-            try{
-                ISignSessionLocalHome signsessionhome = (ISignSessionLocalHome) getLocator().getLocalHome(ISignSessionLocalHome.COMP_NAME);
-                signsession = signsessionhome.create();
-            }catch(Exception e){
-                throw new EJBException(e);
-            }
-        }
-        return signsession;
-    } //getSignSession
-
-
     /**
+     * Method used to create a new CA.
+     *
+     * The cainfo parameter should at least contain the following information.
+     *   SubjectDN
+     *   Name (if null then is subjectDN used).
+     *   Validity
+     *   a CATokenInfo
+     *   Description (optional)
+     *   Status (SecConst.CA_ACTIVE or SecConst.CA_WAITING_CERTIFICATE_RESPONSE)
+     *   SignedBy (CAInfo.SELFSIGNED, CAInfo.SIGNEDBYEXTERNALCA or CAId of internal CA)    
+     *
+     *  For other optional values see:
+     *  @see se.anatom.ejbca.ca.caadmin.CAInfo
+     *  @see se.anatom.ejbca.ca.caadmin.X509CAInfo
+     *  
      * @ejb.interface-method
      * @jboss.method-attributes transaction-timeout="900"
      */
@@ -473,6 +412,16 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // createCA
 
     /**
+     * Method used to edit the data of a CA. 
+     * 
+     * Not all of the CAs data can be edited after the creation, therefore will only
+     * the values from CAInfo that is possible be uppdated. 
+     *
+     * 
+     *  For values see:
+     *  @see se.anatom.ejbca.ca.caadmin.CAInfo
+     *  @see se.anatom.ejbca.ca.caadmin.X509CAInfo
+     *  
      * @ejb.interface-method
      */
     public void editCA(Admin admin, CAInfo cainfo) throws AuthorizationDeniedException{
@@ -523,6 +472,14 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // editCA
 
     /**
+     * Method used to remove a CA from the system. 
+     *
+     * First there is a check that the CA isn't used by any EndEntity, Profile or AccessRule
+     * before it is removed. 
+     * 
+     * Should be used with care. If any certificate has been created with the CA use revokeCA instead
+     * and don't remove it.
+     * 
      * @ejb.interface-method
      */
     public void removeCA(Admin admin, int caid) throws AuthorizationDeniedException{
@@ -548,6 +505,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // removeCA
 
     /**
+     * Renames the name of CA used in administrators web interface.
+     * This name doesn't have to be the same as SubjectDN and is only used for reference.
+     * 
      * @ejb.interface-method
      */
     public void renameCA(Admin admin, String oldname, String newname) throws CAExistsException, AuthorizationDeniedException{
@@ -579,6 +539,11 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // renewCA
 
     /**
+     * Returns a value object containing nonsensitive information about a CA give it's name.
+     * @param admin administrator calling the method
+     * @param name human readable name of CA
+     * @return value object or null if CA does not exist
+     * 
      * @ejb.transaction type="Supports"
      * @ejb.interface-method
      */
@@ -606,6 +571,11 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // getCAInfo
 
     /**
+     * Returns a value object containing nonsensitive information about a CA give it's CAId.
+     * @param admin administrator calling the method
+     * @param caid numerical id of CA (subjectDN.hashCode())
+     * @return value object or null if CA does not exist
+     * 
      * @ejb.transaction type="Supports"
      * @ejb.interface-method
      */
@@ -632,6 +602,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // getCAInfo
 
     /**
+     * Returns a HashMap containing mappings of caid to CA name of all CAs in the system.
+     * 
      * @ejb.transaction type="Supports"
      * @ejb.interface-method
      */
@@ -675,6 +647,13 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
 
     /**
+     *  Creates a certificate request that should be sent to External Root CA for process before
+     *  activation of CA.
+     *
+     *  @param rootcertificates A Collection of rootcertificates.
+     *  @param setstatustowaiting should be set true when creating new CAs and false for renewing old CAs
+     *  @return PKCS10RequestMessage
+     *  
      * @ejb.interface-method
      */
     public IRequestMessage makeRequest(Admin admin, int caid, Collection cachain, boolean setstatustowaiting) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
@@ -751,6 +730,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // makeRequest
 
     /**
+     *  Receives a certificate response from an external CA and sets the newly created CAs status to active.
+     *  
      * @ejb.interface-method
      */
     public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
@@ -852,6 +833,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // recieveResponse
 
     /**
+     *  Processes a Certificate Request from an external CA.
+     *   
      * @ejb.interface-method
      */
     public IResponseMessage processRequest(Admin admin, CAInfo cainfo, IRequestMessage requestmessage)
@@ -947,6 +930,12 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // processRequest
 
     /**
+     *  Renews a existing CA certificate using the same keys as before. Data  about new CA is taken
+     *  from database.
+     * 
+     *  @param certificateresponce should be set with new certificatechain if CA is signed by external
+     *         RootCA, otherwise use the null value.
+     *          
      * @ejb.interface-method
      */
     public void renewCA(Admin admin, int caid, IResponseMessage responsemessage)  throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
@@ -1061,6 +1050,11 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // renewCA
 
     /**
+     *  Method that revokes the CA. After this is all certificates created by this CA
+     *  revoked and a final CRL is created.
+     *
+     *  @param reason one of RevokedCertInfo.REVOKATION_REASON values.
+     *  
      * @ejb.interface-method
      */
     public void revokeCA(Admin admin, int caid, int reason)  throws CADoesntExistsException, AuthorizationDeniedException{
@@ -1108,6 +1102,12 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // revokeCA
 
     /**
+     * Method that should be used when upgrading from a older version of EJBCA. i.e. >3.0
+     *
+     * @param a byte array of old server p12 file.
+     * @param keystorepass used to unlock the keystore.
+     * @param privkeypass used to unlock the private key.
+     * 
      * @ejb.interface-method
      */
     public void upgradeFromOldCAKeyStore(Admin admin, String caname, byte[] p12file, char[] keystorepass,
@@ -1230,6 +1230,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // upgradeFromOldCAKeyStore
 
     /**
+     *  Method returning a Collection of Certificate of all CA certificates known to the system.
+     *  
      * @ejb.transaction type="Supports"
      * @ejb.interface-method
      */
@@ -1252,6 +1254,17 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // getAllCACertificates
 
     /**
+     *  Activates an 'Offline' CA Token and sets the CA status to acitve and ready for use again.
+     *  The admin must be authorized to "/ca_functionality/basic_functions/activate_ca" inorder to activate/deactivate.
+     * 
+     *  @param admin the adomistrator calling the method
+     *  @param caid the is of the ca to activate
+     *  @param the authorizationcode used to unlock the CA tokens private keys. 
+     * 
+     *  @throws AuthorizationDeniedException it the administrator isn't authorized to activate the CA.
+     *  @throws CATokenAuthenticationFailedException if the current status of the ca or authenticationcode is wrong.
+     *  @throws CATokenOfflineException if the CA token is still offline when calling the method.
+     *  
      * @ejb.interface-method
      */
     public void activateCAToken(Admin admin, int caid, String authorizationcode) throws AuthorizationDeniedException, CATokenAuthenticationFailedException, CATokenOfflineException{
@@ -1290,6 +1303,15 @@ public class CAAdminSessionBean extends BaseSessionBean {
     }
 
     /**
+     *  Deactivates an 'active' CA token and sets the CA status to offline.
+     *  The admin must be authorized to "/ca_functionality/basic_functions/activate_ca" inorder to activate/deactivate.
+     * 
+     *  @param admin the adomistrator calling the method
+     *  @param caid the is of the ca to activate. 
+     * 
+     *  @throws AuthorizationDeniedException it the administrator isn't authorized to activate the CA.
+     *  @throws EjbcaException if the given caid couldn't be found or its status is wrong.
+     *  
      * @ejb.interface-method
      */
     public void deactivateCAToken(Admin admin, int caid) throws AuthorizationDeniedException, EjbcaException{
@@ -1329,6 +1351,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
     }
 
     /**
+     *  Method used to check if certificate profile id exists in any CA.
+     *  
      * @ejb.interface-method
      */
     public boolean exitsCertificateProfileInCAs(Admin admin, int certificateprofileid){
@@ -1348,6 +1372,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
 
     /**
+     *  Method used to check if publishers id exists in any CAs CRLPublishers Collection.
+     *  
      * @ejb.interface-method
      */
     public boolean exitsPublisherInCAs(Admin admin, int publisherid){
@@ -1380,6 +1406,81 @@ public class CAAdminSessionBean extends BaseSessionBean {
     // Private methods
     //
 	
+    /** Gets connection to log session bean
+     */
+    private ILogSessionLocal getLogSession() {
+        if(logsession == null){
+            try{
+                ILogSessionLocalHome home = (ILogSessionLocalHome) getLocator().getLocalHome(ILogSessionLocalHome.COMP_NAME);
+                logsession = home.create();
+            }catch(Exception e){
+                throw new EJBException(e);
+            }
+        }
+        return logsession;
+    } //getLogSession
+
+
+    /** Gets connection to authorization session bean
+     * @return Connection
+     */
+    private IAuthorizationSessionLocal getAuthorizationSession() {
+        if(authorizationsession == null){
+            try{
+                IAuthorizationSessionLocalHome home = (IAuthorizationSessionLocalHome) getLocator().getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
+                authorizationsession = home.create();
+            }catch(Exception e){
+                throw new EJBException(e);
+            }
+        }
+        return authorizationsession;
+    } //getAuthorizationSession
+
+    /** Gets connection to crl create session bean
+     * @return Connection
+     */
+    private ICreateCRLSessionLocal getCRLCreateSession() {
+      if(jobrunner == null){
+         try{
+            ICreateCRLSessionLocalHome home = (ICreateCRLSessionLocalHome) getLocator().getLocalHome(ICreateCRLSessionLocalHome.COMP_NAME);
+            jobrunner = home.create();
+         }catch(Exception e){
+            throw new EJBException(e);
+         }
+      }
+      return jobrunner;
+    }
+
+    /** Gets connection to certificate store session bean
+     * @return Connection
+     */
+    private ICertificateStoreSessionLocal getCertificateStoreSession() {
+        if(certificatestoresession == null){
+            try{
+                ICertificateStoreSessionLocalHome home = (ICertificateStoreSessionLocalHome) getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
+                certificatestoresession = home.create();
+            }catch(Exception e){
+                throw new EJBException(e);
+            }
+        }
+        return certificatestoresession;
+    } //getCertificateStoreSession
+
+    /** Gets connection to sign session bean
+     * @return Connection
+     */
+    private ISignSessionLocal getSignSession() {
+        if(signsession == null){
+            try{
+                ISignSessionLocalHome signsessionhome = (ISignSessionLocalHome) getLocator().getLocalHome(ISignSessionLocalHome.COMP_NAME);
+                signsession = signsessionhome.create();
+            }catch(Exception e){
+                throw new EJBException(e);
+            }
+        }
+        return signsession;
+    } //getSignSession
+
 	/** Check if subject certificate is signed by issuer certificate. Used in
 	 * @see #upgradeFromOldCAKeyStore(Admin, String, byte[], char[], char[], String).
 	 * This method does a lazy check: if signature verification failed for
@@ -1543,8 +1644,6 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
   	 return returnval;
   }
-
-
 
 
 } //CAAdminSessionBean
