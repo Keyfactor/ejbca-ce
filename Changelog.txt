@@ -1,3 +1,13 @@
+3.1.1
+---
+** Bug
+    * [ECA-113] - key Ids looks critical when editing certificate profiles
+** Task
+    * [ECA-111] - Remove obsolete cli commands
+** Improvement
+    * [ECA-114] - add CA id to 'ca info' cli command
+    * [ECA-116] - Added caid to create certificate method
+
 3.1
 ---
 General (not from Jira):

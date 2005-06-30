@@ -1,3 +1,10 @@
+EJBCA V3.1.1
+------------
+This is a minor release with a few small bugfixes found in the 3.1 release.
+Read the changelog for details.
+
+This is a plugin-upgrade from 3.1.
+
 EJBCA V3.1
 ----------
 This is a major release including many new features, improvements, and bug fixes. 
