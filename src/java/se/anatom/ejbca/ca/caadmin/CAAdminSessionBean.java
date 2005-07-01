@@ -82,7 +82,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.43 2005-06-30 11:15:06 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.44 2005-07-01 09:55:09 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -1219,8 +1219,32 @@ public class CAAdminSessionBean extends BaseSessionBean {
             ca.setCAToken(catoken);
             ca.setCertificateChain(certificatechain);
 
+            //  Publish CA certificates.
+            int certtype = CertificateDataBean.CERTTYPE_SUBCA;
+            if(ca.getSignedBy() == CAInfo.SELFSIGNED)
+              certtype = CertificateDataBean.CERTTYPE_ROOTCA;
+            getSignSession().publishCACertificate(admin, ca.getCertificateChain(), ca.getCRLPublishers(), certtype);
+
+            // activate External CA Services
+            Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
+            while(iter.hasNext()){
+                ExtendedCAServiceInfo info = (ExtendedCAServiceInfo) iter.next();
+                if(info instanceof OCSPCAServiceInfo){
+                    try{
+                        ca.initExternalService(OCSPCAService.TYPE, ca);
+                        ArrayList ocspcertificate = new ArrayList();
+                        ocspcertificate.add(((OCSPCAServiceInfo) ca.getExtendedCAServiceInfo(OCSPCAService.TYPE)).getOCSPSignerCertificatePath().get(0));
+                        getSignSession().publishCACertificate(admin, ocspcertificate, ca.getCRLPublishers(), CertificateDataBean.CERTTYPE_ENDENTITY);
+                    }catch(Exception fe){
+                        getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"Couldn't Create ExternalCAService.",fe);
+                        throw new EJBException(fe);
+                    }
+                }
+            }
+            
             // Store CA in database.
             cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_ACTIVE, ca);
+            this.getCRLCreateSession().run(admin,cainfo.getSubjectDN());
             getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_INFO_CACREATED,"CA imported successfully from old P12 file, status: " + ca.getStatus());
         }catch(Exception e){
             getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"An error occured when trying to import CA from old P12 file", e);
