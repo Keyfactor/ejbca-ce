@@ -57,8 +57,6 @@ You have to put them there with other means, before you start publishing.
 CONFIGURE LDAP PUBLISHERS
 =========================
 
-Consider also checking INSTALL-guide.txt in the source package.
-
 A good free LDAP server can be found at http://www.openldap.org/
 
 A Publisher is a session bean that implements the IPublishSession interface and
@@ -166,6 +164,30 @@ handles things directly according to you demands.
 Look in the directory src/java/se/anatom/ejbca/ca/publishers for more information 
 about writing your own solution. There is an empty custom publisher called 
 DummyCustomPublisher.java that can be extended.
+
+What EJBCA stores/creates/modifies
+------------------------------------------
+When ejbca publishes a certificate to LDAP it firsts builds the DN from the baseDN and 
+'LDAP location fields for cert DN'. It checks if the entry exists in the ldap and either 
+creates or modifies the entry.
+Apart from the DN in the entry a number of attributes are also stored, some are required by schema, 
+some are optional. EJBCA find attributes in the certificate, if there is an OU (organizational unit) in 
+the certificate EJBCA uses that to populate the OU attribute in the ldap entry. 
+When updating an entry that already exists EJBCA uses replace on the existing attributes,
+so if an email attributes already exists and EJBCA finds an email adress in the certificate, the email
+attribute in ldap is replaced with the email adress from the certificate.
+
+The attributes that EJBCA creates or replaces are:
+- cn (common name)
+- l (locality)
+- ou (organizational unit)
+- sn (surname)
+- gn (givenname)
+- st (state)
+- o (organization)
+- uid (user id)
+- initials
+- title
 
 
 USING LDAP

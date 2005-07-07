@@ -16,6 +16,18 @@ You might notice that there is a j2ee:debug target, it will start JBoss in debug
 Just fire up your debugger to the default transport and address display on your console and 
 you're set. You can now debug your application. 
 
+Persistance
+===========
+It is important to use consistent standardized persistance mechanism, so it is the same everywhere. This
+makes is easier to maintain if developers know where to find things. In EJBCA the persistance mechanism is:
+1. EJB entity beans. Use find-statements declared with EJB-QL in the entity beans to find various things in 
+   different ways.
+2. If the above does not work (really really doesn'y work) for performance or some other reason, you can use
+   JDBC directly from session beans using preparedStatements. When using JDBC directly is is crucial that 
+   you follow the guidelines below about Database connections.
+   
+NEVER NEVER use JDBC directly from other paces than session beans (such as servlets etc).
+ 
 Database connections and statements
 ===================================
 It is very important to close connections and prepared statments when doing direct
@@ -180,14 +192,14 @@ CVS
 
 All files should have the below part in the initial class comment:
 
-@version $Id: DEVELOP,v 1.2 2005-05-27 12:56:36 anatom Exp $
+@version $Id: DEVELOP,v 1.3 2005-07-07 07:49:24 anatom Exp $
 
 Example:
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
- * @version $Id: DEVELOP,v 1.2 2005-05-27 12:56:36 anatom Exp $
+ * @version $Id: DEVELOP,v 1.3 2005-07-07 07:49:24 anatom Exp $
  */
 
 All java files should include the following header as the first lines in the file:
