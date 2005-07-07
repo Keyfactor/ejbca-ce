@@ -57,7 +57,7 @@ import com.novell.ldap.LDAPModificationSet;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.16 2005-04-29 10:34:02 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.17 2005-07-07 07:52:11 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher{
 	 	
@@ -843,7 +843,7 @@ public class LdapPublisher extends BasePublisher{
         			}
         		}
         		if (gn != null) {
-        			attributeSet.add(new LDAPAttribute("givenName", gn));
+        			attributeSet.add(new LDAPAttribute("gn", gn));
         		}
         		String st = CertTools.getPartFromDN(dn, "ST");
         		if (st != null) {
