@@ -81,6 +81,23 @@ so the ONLY the user running the application server can access them.
 If PKCS12 files are generated for users, the subdirectory ('p12') where
 they are stored and the generated files should be protected in the same way.
 </p></section>
+
+<section name="User authentication">
+<p>
+Default user authentication for enrollment in EJBCA is done with a one-time
+password scheme. When a user has enrolled for a certificate his status is
+set to GENERATED and the password can not be used again to enroll for a new
+certificate. An administrator must re-set the users status and preferably
+set a new password.
+</p><p>
+
+If implementing other user authentication scenarios you should remember
+that certificate authentication is stronger than password based
+authentication (for example LDAP). If EJBCA users authenticate 
+with some other (not one-time) password instead of usual one-time password, 
+a strong authentication mechanism will be build on a weaker one.
+</p></section>
+
 </body>
 </document>
 
