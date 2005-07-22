@@ -55,6 +55,9 @@ keytool -alias EJBCA-CA -delete -trustcacerts -keystore $JAVA_HOME/jre/lib/secur
 <source>
 keytool -alias EJBCA-CA -import -trustcacerts -file rootca.der -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit
 </source>
+<p>
+Make sure you restart JBoss after making changes to the java trust store.
+</p>
       </answer>
     </faq>
     <faq>
