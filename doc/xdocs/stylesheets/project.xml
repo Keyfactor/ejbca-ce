@@ -13,17 +13,18 @@
                 <item name="Demo Certificate"	   href="/demo.html"/>
                 <item name="License"               href="/license.html"/>
                 <item name="Contact &amp; Support" href="/contact.html"/>
-                <item name="Credits"			   href="/credits.html"/>
+                <item name="Credits"		   href="/credits.html"/>
             </menu>
 
             <menu name="Documentation">
-                <item name="Architecture"		  href="/architecture.html"/>
-                <item name="User Guide"			  href="/manual.html"/>
-                <item name="FAQ"				  href="/faq.html"/>
+                <item name="Architecture"	  href="/architecture.html"/>
+                <item name="User Guide"		  href="/manual.html"/>
+                <item name="FAQ"		  href="/faq.html"/>
                 <item name="Tutorials and more"   href="http://docs.primekey.se/"/>
                 <item name="Howto"                href="/howto.html"/>
-                <item name="Security"			  href="/security.html"/>
+                <item name="Security"		  href="/security.html"/>
                 <item name="References"           href="/references.html"/>
+                <item name="Changelog"            href="http://jira.primekey.se/browse/ECA?report=com.atlassian.jira.plugin.system.project:changelog-panel"/>
             </menu>
 
             <menu name="Download">
