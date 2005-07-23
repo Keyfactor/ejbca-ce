@@ -77,7 +77,7 @@ import se.anatom.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.51 2005-04-29 08:12:49 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.52 2005-07-23 19:55:44 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(CertReqServlet.class);
@@ -167,7 +167,7 @@ public class CertReqServlet extends HttpServlet {
             ISignSessionRemote signsession = signsessionhome.create();
             RequestHelper helper = new RequestHelper(administrator, debug);
 
-            log.debug("Got request for " + username + "/" + password);
+            log.debug("Got request for " + username + "/hiddenpwd");
             debug.print("<h3>username: " + username + "</h3>");
 
             // Check user
