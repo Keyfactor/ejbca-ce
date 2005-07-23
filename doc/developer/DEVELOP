@@ -1,4 +1,15 @@
 
+Using the Issue Tracker
+=======================
+All checkins to CVS must be followed by an issue in the issue tracker at
+http://jira.primekey.se/. This is needed to keep a good changelog, which is
+vital for a succesfull release.
+The only exceptions to this rule are trivial internal fixes like typos, or 
+removal of unused imports, constans and the like. Also documentation fixes
+does not need to be tracked in jira.
+If submitting patches to ejbca comitters, they should be able to create jira
+issues if none exist.
+
 Eclipse
 =======
 To build succesfully using Eclipse, there are .classpath and .project files in the package and in cvs. 
@@ -192,14 +203,14 @@ CVS
 
 All files should have the below part in the initial class comment:
 
-@version $Id: DEVELOP,v 1.3 2005-07-07 07:49:24 anatom Exp $
+@version $Id: DEVELOP,v 1.4 2005-07-23 17:30:04 anatom Exp $
 
 Example:
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
- * @version $Id: DEVELOP,v 1.3 2005-07-07 07:49:24 anatom Exp $
+ * @version $Id: DEVELOP,v 1.4 2005-07-23 17:30:04 anatom Exp $
  */
 
 All java files should include the following header as the first lines in the file:
