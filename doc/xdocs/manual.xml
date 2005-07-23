@@ -659,6 +659,28 @@ If the status is already NEW, set the status to GENERATED and then back to NEW.
 </p></section>
 
 <section name="Hardware Security Modules (HSM)">
+<p>
+EJBCA have a moduler API for HSMs, HardCAToken. For every CA that is created
+a HardCAToken object is also created. This object contains among other
+things references to keys (or the keys themselves of a soft token is used).
+
+For each HSM hardware that should be supported you need one HardCAToken
+class that implementes support for this particular HSM. A hard ca token
+plug-in must:
+</p>
+<ol>
+<li>implement IHardCAToken</li>
+<li>be loaded at the static initialization if HardCATokenManager where it is
+registered with the HardCATokenManager using the method
+addAvailableHardCAToken()</li>
+</ol>
+<p>
+See HardCATokenSample and/or DummyHardCAToken for samples.
+Unlike the sample addAvailableHardCAToken() must be called with use=true, or
+the token will not be usable in EJBCA (as the flag suggests).
+</p><p>
+EJBCA has build-in support for the nCipher NFast HSM.
+</p>
 <subsection name="nCipher NFast">
 <p>
 Follow these steps to create a CA that is using a NFast card:
@@ -718,6 +740,518 @@ certSignKey rootCertSign
 defaultKey rootCRLSign
 </source>
 </subsection>
+</section>
+
+<section name="LDAP and Publishers">
+<p>
+EJBCA has a modular support for something we call Publishers. A publisher
+can be any external source where you want to send issued certificates and
+CRLs to be stored. The most common cases of Publishers, which are
+implemented by default in EJBCA are LDAP directories and Active Directory
+(which is a special case of LDAP directory).
+</p><p>
+The Publisher architecture is modular and it's possible to implement custom
+publishers that can also be easily integrated and set up in the admin-GUI.
+</p><p>
+First we will start with describing the built-in publishers.
+</p>
+<subsection name="LDAP Naming">
+<p>
+A good book to understand LDAP naming is "Understanding and Deploying LDAP
+Directory Services". The recommended method of choosing a naming suffix is
+the one described in RFC2247 that maps a DNS domain to a DN. If my DNS
+domain is bigcorp.com it will map to the DN "dc=bigcorp,dc=com". The top
+node in my LDAP directory will then be "dc=bigcorp,dc=com".
+</p><p>
+The dc component support is mandated by all of the X.509 RFCs now.
+For example, if I have this directory:
+</p>
+<source>
+dc=bigcorp,dc=com
+    |
+    +-dc=fi
+    |
+    |
+    +-dc=se
+        |
+        +-cn=Mike Jackson
+</source>
+<p>
+The most understandable method is taking the subject name in
+forward order, like:
+cn=Mike Jackson,dc=se,dc=bigcorp,dc=com
+</p><p>
+If the DN is ordered like this it should be published to the correct object
+in the tree.
+</p><p>
+If the DN is ordered reverse, like:
+dc=bigcorp,dc=com,dc=se,cn=Mike Jackson
+EJBCA will reorder it incorrectly to forward order, so the publishing will
+be wrong.
+</p><p>
+Therefore...
+Use forward order like this:
+'cn=Mike Jackson,dc=se,dc=bigcorp,dc=com' if using the dc model or
+<br></br>
+'cn=Mike Jackson,o=bigcorp,c=se' if using the o,c model.
+</p><p>
+An example image of an LDAP structure can be seen below in HOWTO-LDAP-tree.png.
+<img src="screenshots/HOWTO-LDAP-tree.png" />
+</p><p>
+Making unique LDAP DNs is the next challenge. If you are in a small
+organization having the CN will probably work fine, but in a larger
+organization there are probably several people with the same name. Somehow
+the names must be made unique, and one way is to introduce numbers, initials
+etc in the CN. Another way that we recommend is to use uid in the LDAP DN
+instead. LDAP DNs will then looks like "uid=tomas,dc=bigcorp,dc=com". Uid is
+the users username, normally used for login etc, and you probably already
+have some proceedure to create unique usernames already.
+</p>
+</subsection>
+
+<subsection name="LDAP Basics">
+<p>
+LDAP has an unusual structure, if you are not used to X.500 style naming.
+Things are either branches, or leaf nodes. You can't just drop an object
+anywhere you like; You need to create the framework to support it.
+Sort of like if you wanted to put entries in /etc/hosts, if the directory
+/etc did not exist.
+</p><p>
+First you mkdir /etc, Then you create the file. Then you start putting
+things in the file. The difference with LDAP and x.500 is that instead of paths
+separate by slashes, you have paths separated by commas and '=' signs.
+</p><p>
+For example, if you want to make an object
+"cn=ldaphost,ou=hosts,dc=yourdom,dc=com",
+you first have to make sure "dc=yourdom,dc=com" exists.
+<br></br>
+Then make sure
+<br></br>
+"ou=hosts,dc=yourdom,dc=com" exists.
+<br></br>
+THEN you can try
+<br></br>
+"cn=ldaphost,ou=hosts,dc=yourdom,dc=com"
+</p><p>
+EJBCA does not create branches in LDAP.
+You have to put them there with other means, before you start publishing.
+</p>
+</subsection>
+
+<subsection name="Configure LDAP publishers">
+<p>
+A Publisher is a session bean that implements the IPublishSession interface
+and is used to store certificates and CRLs for entities.
+EJBCA have support for endless number of publishers simply by defining
+publishers in the admin-GUI. The user of EJBCA can implement own publishers, but EJBCA
+already comes with a publisher for LDAP.
+</p><p>
+EJBCA uses a notion of base DN to publish to different LDAP structures. The
+DN used in the certificate can be different from the LDAP structure.
+</p>
+
+<subsubsection name="Configuring EJBCA">
+<p>
+To configure the publisher for LDAP:
+</p>
+<ol>
+<li>Choose 'Edit Publishers' in the admin-GUI.</li>
+<li>Add a new publisher with a name you define yourself. Edit the publisher and
+fill in all the neccesary fields.</li>
+</ol>
+<p>
+Parameters to LDAP Publisher:
+</p>
+<ul>
+<li>'Hostname' is the host where the LDAP server is located.</li>
+<li>'Port' is the port on which the LDAP server listens, default non-SSL is
+389.</li>
+<li>'Login DN' is the DN of a user on the LDAP server with permissions to add
+and update enties.</li>
+<li>'Login Password' is the password for the user above.</li>
+<li>'User Object Class' is the objectclass for the LDAP entries for users,
+where user certificates are published. The entry is hierarchical separated by ';' to
+build a structure like:
+<br></br>
+objectclass: top
+<br></br>
+objectclass: person
+<br></br>
+objectclass: organizationalPerson
+<br></br>
+objectclass: inetOrgPerson
+<br></br>
+This objectclass must allow the attribute 'userCertificate;binary'.
+<br></br>
+Default 'top;person;organizationalPerson;inetOrgPerson'
+</li>
+<li>'CA Object Class' is the objectclass for the LDAP entries for CAs, where
+CA certificates and CRLs are published. The entry is hierarchical separated by
+';' to build a structure. This objectclass must allow the attributes
+'cACertificate;binary', 'certificateRevocationList;binary' and
+'authorityRevocationList;binary'.
+<br></br>
+Default 'top;applicationProcess;certificationAuthority'
+</li>
+<li>'User Certificate Attribute' is the attribute name, in the
+userObjectClass, for the users certificate. 
+<br></br>
+Default 'userCertificate;binary'.
+</li>
+<li>'CA Certificate Attribute' is the attribute name, in the cAObjectClass,
+for the CAs certificate. 
+<br></br>
+Default 'cACertificate;binary'.</li>
+<li>'CRL Attribute' is the attribute name, in the cAObjectClass, for CRLs
+(user CRLs) publisher by the CA. 
+<br></br>
+Default 'certificateRevocationList;binary'.
+</li>
+<li>'ARL Attribute' is the attribute name, in the cAObjectClass, for ARLs (CA
+CRLs) publisher by the CA. 
+<br></br>
+Default 'authorityRevocationList;binary'
+(note that pure ARLs are not implemented yet in EJBCA).
+</li>
+<li>'LDAP location fields from cert DN'
+When configuring the LDAP publisher the BaseDN will be used as the base for
+the DN published in LDAP,
+and it will be appended to the LDAP location fields selected to be used.
+example: If the user DN in EJBCA is "cn=tomas gustavsson, uid=tomasg,
+O=PrimeKey Solutions AB, C=SE"
+and the BaseDN is "dc=PrimeKey,dc=SE" and the selected LDAP location fields
+are "CN".
+The LDAP DN used for publishing will be "cn=tomas gustavsson, dc=PrimeKey,
+dc=SE", and the "uid=tomasg"
+will be added as an attribute in LDAP. The certificate stored under
+"cn=tomas gustavsson, dc=PrimeKey, dc=SE"
+will have the subjectDN "cn=tomas gustavsson, uid=tomasg, O=PrimeKey
+Solutions AB, C=SE".
+</li>
+</ul>
+</subsubsection>
+
+<subsubsection name="Setting up certificate profiles">
+<p>
+You MUST make a custom certificate profile to publish to LDAP!
+</p><p>
+To publish in LDAP you must create a Certificate profile in EJBCA that
+publishes to LDAP. If the above is configured, there will be a section for
+'Publishers' available when creating/editing a certificate profile (with 'Edit Certificate
+Profiles').
+Choose this, and then when adding end-entities, make sure they use the new
+certificate profile and voila, the certs will be published.
+</p>
+</subsubsection>
+
+<subsubsection name="Publishing to Active Directory">
+<p>
+When configuring Active Directory LDAP, Bind DN for the users are usually,
+cn=user,cn=Users,dc=domain-component1,dc=domain-component2.
+<br></br>
+For example: cn=Philip Vendil,cn=Users,dc=primekey,dc=se for the domain
+primekey.se
+</p><p>
+If your DN is like "cn=Ejbca1,0=MyOrg,c=SE" 
+<br></br>
+and your base DN is like "DC=Security,DC=Software,DC=MyOrg".
+<br></br>
+The publisher for AD should have base DN like
+<br></br>
+"cn=Users,dc=Security,dc=Software,dc=MyOrg"
+</p><p>
+For Login DN you should use the full ldap name, for example:
+<br></br>
+"CN=Administrator,C=Users,dc=primekey,dc=se"
+</p><p>
+In order to connect to AD though SSL you should issue a LDAP SSL P12
+to the domain controller. According to 
+<a href="http://support.microsoft.com/default.aspx?scid=kb;en-us;321051&amp;sd=tech">
+MS Article ID 321051</a>
+</p><p>
+The same certificate is used for both the AD and global catalogue (GC).
+Remember to add the CA certificate to the machine stores trusted root
+certificates.
+</p>
+</subsubsection>
+
+<subsubsection name="Custom publishers">
+<p>
+If your setup makes it very complex to configure multiple certificate
+profiles and multiple publishers you might consider writing a custom publisher that
+handles things directly according to you demands.
+</p><p>
+Look in the directory src/java/se/anatom/ejbca/ca/publishers for more
+information about writing your own solution. There is an empty custom publisher called
+DummyCustomPublisher.java that can be extended.
+</p>
+</subsubsection>
+
+<subsubsection name="What EJBCA stores/creates/modifies">
+<p>
+When ejbca publishes a certificate to LDAP it firsts builds the DN from the
+baseDN and 'LDAP location fields for cert DN'. It checks if the entry exists in the
+ldap and either creates or modifies the entry.
+</p><p>
+Apart from the DN in the entry a number of attributes are also stored, some
+are required by schema, some are optional. EJBCA find attributes in the certificate, if there is an
+OU (organizational unit) in the certificate EJBCA uses that to populate the OU attribute in the ldap
+entry.
+</p><p>
+When updating an entry that already exists EJBCA uses replace on the
+existing attributes, so if an email attributes already exists and EJBCA finds an email adress in
+the certificate, the email attribute in ldap is replaced with the email adress from the certificate.
+</p><p>
+The attributes that EJBCA creates or replaces are:
+</p>
+<ul>
+<li>cn (common name)</li>
+<li>l (locality)</li>
+<li>ou (organizational unit)</li>
+<li>sn (surname)</li>
+<li>gn (givenname)</li>
+<li>st (state)</li>
+<li>o (organization)</li>
+<li>uid (user id)</li>
+<li>initials</li>
+<li>title</li>
+</ul>
+</subsubsection>
+
+</subsection>
+
+<subsection name="Using LDAP">
+<p>
+In Mozilla you can for example enter a URL like:
+<br></br>
+ldap://ip-address-of-ldap-server:389/cn=Tomas Gustavsson,dc=se,dc=bigcorp,dc=com
+<br></br>
+and it will fetch an adress book entry with the information about the user,
+including the certificate.
+</p><p>
+The LDAP url format is described in <a
+href="http://www.ietf.org/rfc/rfc2255.txt">RFC2255</a>.
+</p><p>
+Examples of using LDAP with Netscape/Mozilla can be found in the
+howto-section of this web page.
+</p><p>
+To use LDAP top fetch user certificates and use them for encrypting email
+there seems to be a requirement to use SSL connection to the LDAP server
+(Account Options->Compositions &amp; Addressing->Edit directories->Edit->Use
+Secure Connection), see also below how to configure OpenLDAP for SSL.
+</p><p>
+Note: When fetching certificates from LDAP with Mozilla for example with
+URL:
+<br></br>
+ldap://ldap-server-host/dc=bigcorp,dc=com??sub?(cn=MyName)?(objectclass=*)
+<br></br>
+To get a checkbox at the fetched certificate, the CA certificate must be
+installed in the Windows truststore, not only in Mozillas.
+</p><p>
+To use SSL against an LDAP server with MS Outlook you must make sure the CN
+in the LDAP servers certificate is the same as the hostname. 
+An example of adding a user for the LDAP server with the CLI interface is:
+</p>e
+<source>
+bin/ejbca.sh ra adduser ldap password "C=SE,O=Foo,CN=ldap.foo.se" null MyCA null 1 PEM
+</source>
+<p>
+where ldap.foo.se is the hostname of the LDAP server that Outlook should use.
+</p><p>
+The CA certificate must also be imported into Windows properly.
+</p>
+</subsection>
+
+<subsection name="Configure OpenLDAP">
+<p>
+The objectclass 'inetOrgPerson' is used by default to store certificates.
+</p><p>
+Example:
+</p>
+<source>
+dn: cn=Mike Jackson,ou=people,dc=company,dc=com
+objectclass: top
+objectclass: person
+objectclass: organizationalPerson
+objectclass: inetOrgPerson
+cn: Mike Jackson
+sn: Jackson
+userCertificate;binary::
+</source>
+<p>
+CAs are published in the form:
+</p>
+<source>
+dn: cn=ejbca,dc=jackson,dc=net
+objectClass: top
+objectClass: applicationProcess
+objectClass: certificationAuthority
+cn: ejbca
+cACertificate;binary:
+certificateRevocationList;binary:
+authorityRevocationList;binary:
+</source>
+<p>
+To configure OpenLDAP (version 2.2.5) to include the 'inetOrgPerson' you
+must add the following lines to slapd.conf:
+</p>
+<source>
+include         /usr/local/etc/openldap/schema/cosine.schema
+include         /usr/local/etc/openldap/schema/inetorgperson.schema
+</source>
+<p>
+Don't forget to add the top object by creating an LDIF file (org.ldif):
+</p>
+<source>
+dn: o=AnaTom,c=SE
+objectclass: dcObject
+objectclass: organization
+o: AnaTom
+dc: AnaTom
+
+dn: cn=Admin,o=AnaTom,c=SE
+objectclass: organizationalRole
+cn: Admin
+</source>
+<p>
+And using the command:
+</p>
+<source>
+ldapadd -x -D "cn=Admin,o=AnaTom,c=SE" -W -f org.ldif
+</source>
+<p>
+Check what you have in the LDAP by:
+</p>
+<source>
+/usr/local/bin/ldapsearch -x -b 'o=AnaTom,c=SE' '(objectclass=*)'
+</source>
+</subsection>
+
+<subsubsection name="Configure SSL">
+<p>
+Create a user in ejbca (this example is for adding a user with the cli
+interface, adding a user with the admin-GUI works just as fine).
+In the mail ejbca directory type (use simply 'ra' on windows):
+</p>
+<source>
+bin/ejbca.sh ra adduser ldap foo123 "C=SE,O=Foo,CN=ldap" null AdminCA1 null 1 PEM
+bin/ejbca.sh ra setclearpwd ldap foo123
+</source>
+<p>
+Where foo123 is the ldap users password, C=SE... is the users DN and
+AdminCA1 is the name you chose for your CA. The user type is end-user (1), keystore type is PEM, and
+if using the admin-GUI check 'use batch').
+Batch generate the PEM keystore:
+</p>
+<source>
+bin/ejbca.sh batch
+</source>
+<p>
+Copy the resulting files p12/pem/ldap.pem, p12/pem/ldap-CA.pem and
+p12/pem/ldap-Key.pem to your LDAP server. In this example the slapd.conf is located in
+/usr/local/etc/openldap so we copy the files to that directory. 
+Protect theses files so they are only readable by the LDAP server.
+
+Add the following to your slapd.conf:
+</p>
+<source>
+# Use SSL
+TLSCipherSuite HIGH:MEDIUM:+SSLv3
+TLSCertificateFile /usr/local/etc/openldap/ldap.pem
+TLSCertificateKeyFile /usr/local/etc/openldap/ldap-Key.pem
+TLSCACertificateFile /usr/local/etc/openldap/ldap-CA.pem
+</source>
+<p>
+Restart slapd:
+</p>
+<source>
+./slapd -h "ldap:/// ldaps:///"
+</source>
+<p>
+and check thats it is running with 'ps -ef|grep slapd'.
+</p><p>
+On SuSE, if using the builting OpenLDAP you have to enable ldaps in
+/etc/sysconfig/openldap:
+</p>
+<source>
+OPENLDAP_START_LDAPS="yes"
+</source>
+<p>
+and then run
+</p>
+<source>
+SuSEconfig
+</source>
+<p>
+and then
+</p>
+<source>
+rcldap start
+</source>
+<p>
+Configure your LDAP publisher in EJBCA to use SSL by checking the checkbox
+'Use SSL', the port shold change to port 636.
+</p><p>
+Note! The CA certificate of the (root)CA used to sign the ldap server
+certificate must be present in the java trust cert store 
+($JAVA_HOME/jre/lib/security/cacerts). If you use
+the defualt CA created when ejbca was installed this is alread included. 
+Otherwise you will have to add it using something like:
+First get the CA cert:
+</p>
+<source>
+bin/ejbca.sh ca getrootcert MyCA -der
+</source>
+<p>
+Then add it to the java trust store:
+</p>
+<source>
+keytool -import -trustcacert -alias MyCA -keystore $JAVA_HOME/jre/lib/security/cacerts -password changeit
+</source>
+<p>
+A guide for configuring OpenLDAP on Solaris can be found at
+<a href="http://www.bolthole.com/solaris/LDAP.html">bolthole.com</a>
+</p>
+</subsubsection>
+
+<subsection name="Extra device schema">
+<p>
+To store certificates for devices (e.g. routers, toasters etc) in LDAP there
+is no really suitable standard object class. inetOrgPerson requires surnames
+etc, and the device objectclass does not include a certifictae attribute.
+</p><p>
+Mike Jackson has kindly contributed additional objects that extend the
+standard device class with a certificate attribute. 
+The ejbcaDevice uses object ids from PrimeKey Solutions AB.
+</p>
+</subsection>
+
+<subsubsection name="Installation">
+<p>
+For the Netscape/SUN servers, on UNIX, copy the 85ejbca.ldif file into:
+</p>
+<source>
+/usr/netscape/servers/slapd-hostname/config/schema/
+</source>
+<p>
+and restart the LDAP server.
+</p><p>
+For OpenLDAP, copy the ejbca.schema file into, e.g.:
+</p>
+<source>
+/usr/local/etc/openldap/schema/
+</source>
+<p>
+and edit slapd.conf to add the following line:
+</p>
+<source>
+include /usr/local/etc/openldap/schema/ejbca.schema
+</source>
+<p>
+then restart the server.
+</p>
+</subsubsection>
+
 </section>
 
 <section name="Export and import profiles">
