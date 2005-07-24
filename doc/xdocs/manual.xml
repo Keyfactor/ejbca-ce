@@ -962,7 +962,7 @@ The publisher for AD should have base DN like
 </p><p>
 For Login DN you should use the full ldap name, for example:
 <br></br>
-"CN=Administrator,C=Users,dc=primekey,dc=se"
+"CN=Administrator,CN=Users,dc=primekey,dc=se"
 </p><p>
 In order to connect to AD though SSL you should issue a LDAP SSL P12
 to the domain controller. According to 
