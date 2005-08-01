@@ -45,7 +45,7 @@ administrator, who can be found on the sourceforge project page.
 <li>Yannick Quenec'hdu, yquenechdu(at)linagora.com french translation.</li>
 <li>James A. Rome, jar(at)ornl.gov, additional 'Use fields in DN' for publisher, JKStoPEM, lots of testing and input.</li>
 <li>Manuel Ruiz, mruiz(at)safa.es, make admin commands flexible and usable from within java-code.</li>
-<li>Risto Laanoja, risto.laanoja(at)eyp.ee, fix for integer overflow when setting CRLPeriod longer than 596 hours.</li>
+<li>Risto Laanoja, risto.laanoja(at)eyp.ee, fix for integer overflow when setting CRLPeriod longer than 596 hours. Several instances of one altName and other patches. User authentication with JAAS/Kerberos.</li>
 <li>Giampaolo Tomassoni. Giampaolo(at)Tomassoni.biz, PostgresSQL 8.0.</li>
 <li>Philipp Faerber, philipp.faerber(at)adnovum.ch, Weblogic 8.1, adminweb sql fix.</li>
 <li>Hu Aranjuez, mynetbus(at)126.com, column name fix for MS SQL2000.</li>
