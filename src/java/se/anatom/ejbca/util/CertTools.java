@@ -73,7 +73,7 @@ import org.bouncycastle.x509.X509V3CertificateGenerator;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.76 2005-06-11 12:50:06 anatom Exp $
+ * @version $Id: CertTools.java,v 1.77 2005-08-01 15:09:14 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -940,7 +940,7 @@ public class CertTools {
 			// Create CertPath
 			certlist.add(certificate);
 			// Add other certs...			
-			CertificateFactory cf = CertificateFactory.getInstance("X.509");
+			CertificateFactory cf = CertificateFactory.getInstance("X.509", "BC");
 			java.security.cert.CertPath cp = cf.generateCertPath(certlist);
 			// Create TrustAnchor. Since EJBCA use BouncyCastle provider, we assume
 			// certificate already in correct order
@@ -951,7 +951,7 @@ public class CertTools {
 			java.security.cert.PKIXParameters params = new java.security.cert.PKIXParameters(java.util.Collections.singleton(anchor));
 			params.setRevocationEnabled(false);
 			java.security.cert.CertPathValidator cpv = java.security.cert.
-			CertPathValidator.getInstance("PKIX");
+			CertPathValidator.getInstance("PKIX", "BC");
 			java.security.cert.PKIXCertPathValidatorResult result =
 				(java.security.cert.PKIXCertPathValidatorResult) cpv.validate(cp, params);
 			log.debug("Certificate verify result: " + result.toString());
