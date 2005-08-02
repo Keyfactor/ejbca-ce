@@ -46,6 +46,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
@@ -73,7 +74,7 @@ import org.bouncycastle.x509.X509V3CertificateGenerator;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.77 2005-08-01 15:09:14 anatom Exp $
+ * @version $Id: CertTools.java,v 1.78 2005-08-02 11:37:08 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -378,6 +379,34 @@ public class CertTools {
         log.debug("<getpartFromDN: resulting DN part=" + part);
         return part;
     } //getPartFromDN
+
+    /**
+	 * Gets a specified parts of a DN. Returns all occurences as an ArrayList, also works if DN contains several
+	 * instances of a part (i.e. cn=x, cn=y returns {x, y, null}).
+	 *
+	 * @param dn String containing DN, The DN string has the format "C=SE, O=xx, OU=yy, CN=zz".
+	 * @param dnpart String specifying which part of the DN to get, should be "CN" or "OU" etc.
+	 *
+	 * @return ArrayList containing dnparts or empty list if dnpart is not present
+	 */
+	public static ArrayList getPartsFromDN(String dn, String dnpart) {
+		log.debug(">getPartsFromDN: dn:'" + dn + "', dnpart=" + dnpart);
+		ArrayList parts = new ArrayList();
+		if ((dn != null) && (dnpart != null)) {
+			String o;
+			dnpart += "="; // we search for 'CN=' etc.
+			X509NameTokenizer xt = new X509NameTokenizer(dn);
+			while (xt.hasMoreTokens()) {
+				o = xt.nextToken();
+				if ((o.length() > dnpart.length()) &&
+						o.substring(0, dnpart.length()).equalsIgnoreCase(dnpart)) {
+					parts.add(o.substring(dnpart.length()));
+				}
+			}
+		}
+		log.debug("<getpartsFromDN: resulting DN part=" + parts.toString());
+		return parts;
+	} //getPartFromDN
 
     /**
      * Gets subject DN in the format we are sure about (BouncyCastle),supporting UTF8.
@@ -792,20 +821,30 @@ public class CertTools {
             Iterator i = altNames.iterator();
             while (i.hasNext()) {
                 ASN1Sequence seq = getAltnameSequence((List)i.next());
-                if ( seq != null) {                    
-                    // First in sequence is the object identifier, that we must check
-                    DERObjectIdentifier id = DERObjectIdentifier.getInstance(seq.getObjectAt(0));
-                    if (id.getId().equals(CertTools.UPN_OBJECTID)) {
-                        ASN1TaggedObject obj = (ASN1TaggedObject) seq.getObjectAt(1);
-                        DERUTF8String str = DERUTF8String.getInstance(obj.getObject());
-                        return str.getString();                        
-                    }
+                String ret = getUPNStringFromSequence(seq);
+                if (ret != null) {
+                    return ret;
                 }
             }
         }
         return null;
     } // getUPNAltName
 
+    /** Helper method for the above method
+     */
+    private static String getUPNStringFromSequence(ASN1Sequence seq) {
+        if ( seq != null) {                    
+            // First in sequence is the object identifier, that we must check
+            DERObjectIdentifier id = DERObjectIdentifier.getInstance(seq.getObjectAt(0));
+            if (id.getId().equals(CertTools.UPN_OBJECTID)) {
+                ASN1TaggedObject obj = (ASN1TaggedObject) seq.getObjectAt(1);
+                DERUTF8String str = DERUTF8String.getInstance(obj.getObject());
+                return str.getString();                        
+            }
+        }
+        return null;
+    }
+    
     /**
      * Gets the Microsoft specific GUID altName, that is encoded as an octect string.
      *
@@ -848,27 +887,30 @@ public class CertTools {
     
 	/**
 	 * SubjectAltName ::= GeneralNames
-	 
-	 GeneralNames :: = SEQUENCE SIZE (1..MAX) OF GeneralName
-	 
-	 GeneralName ::= CHOICE {
-	 otherName                       [0]     OtherName,
-	 rfc822Name                      [1]     IA5String,
-	 dNSName                         [2]     IA5String,
-	 x400Address                     [3]     ORAddress,
-	 directoryName                   [4]     Name,
-	 ediPartyName                    [5]     EDIPartyName,
-	 uniformResourceIdentifier       [6]     IA5String,
-	 iPAddress                       [7]     OCTET STRING,
-	 registeredID                    [8]     OBJECT IDENTIFIER}
-	 
-	 SubjectAltName is of form \"rfc822Name=<email>,
-	 dNSName=<host name>, uri=<http://host.com/>,
-	 ipaddress=<address>, guid=<globally unique id>
-	 
-	 * Marco Ferrante, (c) 2005 CSITA - University of Genoa (Italy)
-	 * @param certificate
-	 * @return String containing altNames of form "rfc822Name=email, dNSName=hostname, uri=uri, ipadsress=ip"  
+	 *
+	 * GeneralNames :: = SEQUENCE SIZE (1..MAX) OF GeneralName
+	 *
+	 * GeneralName ::= CHOICE {
+	 * otherName                       [0]     OtherName,
+	 * rfc822Name                      [1]     IA5String,
+	 * dNSName                         [2]     IA5String,
+	 * x400Address                     [3]     ORAddress,
+	 * directoryName                   [4]     Name,
+	 * ediPartyName                    [5]     EDIPartyName,
+	 * uniformResourceIdentifier       [6]     IA5String,
+	 * iPAddress                       [7]     OCTET STRING,
+	 * registeredID                    [8]     OBJECT IDENTIFIER}
+	 * 
+	 * SubjectAltName is of form \"rfc822Name=<email>,
+	 * dNSName=<host name>, uniformResourceIdentifier=<http://host.com/>,
+	 * iPAddress=<address>, guid=<globally unique id>
+     * 
+     * Supported altNames are upn, rfc822Name, uniformResourceIdentifier, dNSName, iPAddress, 
+	 *
+	 * @author Marco Ferrante, (c) 2005 CSITA - University of Genoa (Italy)
+     * @author Tomas Gustavsson
+	 * @param certificate containing alt names
+	 * @return String containing altNames of form "rfc822Name=email, dNSName=hostname, uniformResourceIdentifier=uri, iPAddress=ip, upn=upn" or null if no altNames exist. Values in returned String is from CertTools constants. AltNames not supported are simply not shown in the resulting string.  
 	 * @throws java.lang.Exception
 	 */
 	public static String getSubjectAlternativeName(X509Certificate certificate) throws Exception {
@@ -877,29 +919,50 @@ public class CertTools {
 			return null;
 		
 		java.util.Collection altNames = certificate.getSubjectAlternativeNames();
-		if (altNames.size() > 1) {
-			throw new Exception("Unable to handle multiple SubjectAltName.");
-		}
-		java.util.List item = (java.util.List)altNames.iterator().next();
-		Integer type = (Integer)item.get(0);
-		Object value = item.get(1);
-		String result = null;
-		switch (type.intValue()) {
-			case 0: throw new Exception("SubjectAltName of type OtherName not supported.");
-			case 1: result = "rfc822Name=" + (String)value;
-				break;
-			case 2: result = "dNSName=" + (String)value;
-				break;
-			case 3: throw new Exception("SubjectAltName of type x400Address not supported.");
-			case 4: throw new Exception("SubjectAltName of type directoryName not supported.");
-			case 5: throw new Exception("SubjectAltName of type ediPartyName not supported.");
-			case 6: result = "uri=" + (String)value;
-				break;
-			case 7: result = "ipaddress=" + (String)value;
-				break;
-			default: throw new Exception("SubjectAltName of unknown type.");
-		}
-		return result;
+        if (altNames == null) {
+            return null;
+        }
+        Iterator iter = altNames.iterator();
+        String result = "";
+        String append = "";
+        while (iter.hasNext()) {
+            java.util.List item = (java.util.List)iter.next();
+            Integer type = (Integer)item.get(0);
+            Object value = item.get(1);
+            if (!StringUtils.isEmpty(result)) {
+                // Result already contains one altname, so we have to add comma if there are more altNames
+                append = ", ";
+            }
+            switch (type.intValue()) {
+                case 0: ASN1Sequence seq = getAltnameSequence(item);
+                    String upn = getUPNStringFromSequence(seq);
+                    // OtherName can be something else besides UPN
+                    if (upn != null) {
+                        result += append + CertTools.UPN+"="+upn;                        
+                    }
+                    break;
+                case 1: result += append + CertTools.EMAIL+"=" + (String)value;
+                    break;
+                case 2: result += append + CertTools.DNS+"=" + (String)value;
+                    break;
+                case 3: // SubjectAltName of type x400Address not supported
+                    break;
+                case 4: // SubjectAltName of type directoryName not supported
+                    break;
+                case 5: // SubjectAltName of type ediPartyName not supported
+                    break;
+                case 6: result += append + CertTools.URI+"=" + (String)value;
+                    break;
+                case 7: result += append + CertTools.IPADDR+"=" + (String)value;
+                    break;
+                default: // SubjectAltName of unknown type
+                    break;
+            }
+        }
+        if (StringUtils.isEmpty(result)) {
+            return null;
+        }
+        return result;            
 	}
 
 	/**

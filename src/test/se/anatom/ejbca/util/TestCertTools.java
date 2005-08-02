@@ -16,13 +16,14 @@ package se.anatom.ejbca.util;
 import java.security.cert.X509Certificate;
 
 import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
 
 
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.6 2005-06-17 07:52:09 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.7 2005-08-02 11:37:19 anatom Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);
@@ -62,6 +63,25 @@ public class TestCertTools extends TestCase {
             +"gSkt3hvNwG4kLBmmwe9YLdS83dgNImMWL/DgID/47aENlBNai14CvtMceokik4IN"
             +"sacc7x/Vp3xezHLuBMcf3E3VSo4FwqcUYFmu7Obke3ebmB08nC6gnQHkzjNsmQw=").getBytes());
 
+    static byte[] altNameCert = Base64.decode(
+            ("MIIDDzCCAfegAwIBAgIIPiL0klmu1uIwDQYJKoZIhvcNAQEFBQAwNzERMA8GA1UE"
+             +"AxMIQWRtaW5DQTExFTATBgNVBAoTDEVKQkNBIFNhbXBsZTELMAkGA1UEBhMCU0Uw"
+             +"HhcNMDUwODAyMTAxOTQ5WhcNMDcwODAyMTAyOTQ5WjAsMQwwCgYDVQQDEwNmb28x"
+             +"DzANBgNVBAoTBkFuYVRvbTELMAkGA1UEBhMCU0UwXDANBgkqhkiG9w0BAQEFAANL"
+             +"ADBIAkEAmMVWkkEMLbDNoB/NG3kJ22eC18syXqaHWRWc4DldFeCMGeLzfB2NklNv"
+             +"hmr2kgIJcK+wyFpMkYm46dSMOrvovQIDAQABo4HxMIHuMAwGA1UdEwEB/wQCMAAw"
+             +"DgYDVR0PAQH/BAQDAgWgMDsGA1UdJQQ0MDIGCCsGAQUFBwMBBggrBgEFBQcDAgYI"
+             +"KwYBBQUHAwQGCCsGAQUFBwMFBggrBgEFBQcDBzAdBgNVHQ4EFgQUIV/Fck/+UVnw"
+             +"tJigtZIF5OuuhlIwHwYDVR0jBBgwFoAUB/2KRYNOZxRDkJ5oChjNeXgwtCcwUQYD"
+             +"VR0RBEowSIEKdG9tYXNAYS5zZYIId3d3LmEuc2WGEGh0dHA6Ly93d3cuYS5zZS+H"
+             +"BAoBAQGgGAYKKwYBBAGCNxQCA6AKDAhmb29AYS5zZTANBgkqhkiG9w0BAQUFAAOC"
+             +"AQEAfAGJM0/s+Yi1Ewmvt9Z/9w8X/T/02bF8P8MJG2H2eiIMCs/tkNhnlFGYYGhD"
+             +"Km8ynveQZbdYvKFioOr/D19gMis/HNy9UDfOMrJdeGWiwxUHvKKbtcSlOPH3Hm0t"
+             +"LSKomWdKfjTksfj69Tf01S0oNonprvwGxIdsa1uA9BC/MjkkPt1qEWkt/FWCfq9u"
+             +"8Xyj2tZEJKjLgAW6qJ3ye81pEVKHgMmapWTQU2uI1qyEPYxoT9WkQtSObGI1wCqO"
+             +"YmKglnd5BIUBPO9LOryyHlSRTID5z0UgDlrTAaNYuN8QOYF+DZEQxm4bSXTDooGX"
+             +"rHjSjn/7Urb31CXWAxq0Zhk3fg==").getBytes());
+    
     /**
      * Creates a new TestCertTools object.
      *
@@ -440,5 +460,61 @@ public class TestCertTools extends TestCase {
       
       log.debug("<test11TestInsertCNPostfix()");
   }
-    
+  
+  /**
+   */
+  public void test12GetPartsFromDN() throws Exception {
+      log.debug(">test01GetPartFromDN()");
+
+      // We try to examine the general case and som special cases, which we want to be able to handle
+      String dn0 = "C=SE, O=AnaTom, CN=foo";
+      assertEquals(CertTools.getPartsFromDN(dn0, "CN").size(), 1);
+      assertTrue(CertTools.getPartsFromDN(dn0, "CN").contains("foo"));
+      assertEquals(CertTools.getPartsFromDN(dn0, "O").size(), 1);
+      assertTrue(CertTools.getPartsFromDN(dn0, "O").contains("AnaTom"));
+      assertEquals(CertTools.getPartsFromDN(dn0, "C").size(), 1);
+      assertTrue(CertTools.getPartsFromDN(dn0, "C").contains("SE"));
+      assertEquals(CertTools.getPartsFromDN(dn0, "cn").size(), 1);
+      assertTrue(CertTools.getPartsFromDN(dn0, "cn").contains("foo"));
+      assertEquals(CertTools.getPartsFromDN(dn0, "o").size(), 1);
+      assertTrue(CertTools.getPartsFromDN(dn0, "o").contains("AnaTom"));
+      assertEquals(CertTools.getPartsFromDN(dn0, "c").size(), 1);
+      assertTrue(CertTools.getPartsFromDN(dn0, "c").contains("SE"));
+
+      String dn1 = "uri=http://www.a.se, C=SE, O=AnaTom, CN=foo";
+      assertEquals(CertTools.getPartsFromDN(dn1, "CN").size(), 1);
+      assertTrue(CertTools.getPartsFromDN(dn1, "CN").contains("foo"));
+      assertEquals(CertTools.getPartsFromDN(dn1, CertTools.URI).size(), 0);
+      assertEquals(CertTools.getPartsFromDN(dn1, CertTools.URI1).size(), 1);
+      assertTrue(CertTools.getPartsFromDN(dn1, CertTools.URI1).contains("http://www.a.se"));
+
+      String dn2 = "uri=http://www.a.se, uri=http://www.b.se, C=SE, O=AnaTom, CN=foo";
+      assertEquals(CertTools.getPartsFromDN(dn2, "CN").size(), 1);
+      assertTrue(CertTools.getPartsFromDN(dn2, "CN").contains("foo"));
+      assertEquals(CertTools.getPartsFromDN(dn2, CertTools.URI1).size(), 2);
+      assertTrue(CertTools.getPartsFromDN(dn2, CertTools.URI1).contains("http://www.a.se"));
+      assertTrue(CertTools.getPartsFromDN(dn2, CertTools.URI1).contains("http://www.b.se"));
+
+      log.debug("<test12GetPartsFromDN()");
+  }
+  
+  public void test13GetSubjectAltNameString() throws Exception {
+      log.debug(">test13GetSubjectAltNameString()");
+      
+      String altNames = CertTools.getSubjectAlternativeName(CertTools.getCertfromByteArray(altNameCert));
+      log.debug(altNames);
+      String name = CertTools.getPartFromDN(altNames,CertTools.UPN);
+      assertEquals("foo@a.se", name);
+      assertEquals("foo@a.se", CertTools.getUPNAltName(CertTools.getCertfromByteArray(altNameCert)));
+      name = CertTools.getPartFromDN(altNames,CertTools.URI);
+      assertEquals("http://www.a.se/", name);
+      name = CertTools.getPartFromDN(altNames,CertTools.EMAIL);
+      assertEquals("tomas@a.se", name);
+      name = CertTools.getPartFromDN(altNames,CertTools.DNS);
+      assertEquals("www.a.se", name);
+      name = CertTools.getPartFromDN(altNames,CertTools.IPADDR);
+      assertEquals("10.1.1.1", name);
+      log.debug("<test13GetSubjectAltNameString()");
+  }
+
 }

@@ -14,11 +14,13 @@
 package se.anatom.ejbca.ca.sign;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -43,6 +45,9 @@ import se.anatom.ejbca.protocol.PKCS10RequestMessage;
 import se.anatom.ejbca.ra.IUserAdminSessionHome;
 import se.anatom.ejbca.ra.IUserAdminSessionRemote;
 import se.anatom.ejbca.ra.UserDataConstants;
+import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
+import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
+import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
 
@@ -50,7 +55,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.6 2005-04-29 09:16:08 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.7 2005-08-02 11:37:19 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -125,6 +130,7 @@ public class TestSignSession extends TestCase {
     private static ISignSessionHome home;
     private static ISignSessionRemote remote;
     private static IUserAdminSessionRemote usersession;
+    private static IRaAdminSessionRemote rasession;
     private static KeyPair keys;
     private static int caid = 0;
     private Admin admin;
@@ -164,6 +170,10 @@ public class TestSignSession extends TestCase {
         obj = ctx.lookup("UserAdminSession");
         IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
         usersession = userhome.create();
+        
+        obj = ctx.lookup("RaAdminSession");
+        IRaAdminSessionHome rahome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IRaAdminSessionHome.class);
+        rasession = rahome.create();
 
         log.debug("<setUp()");
     }
@@ -445,12 +455,76 @@ public class TestSignSession extends TestCase {
         log.debug("<test08SwedeChars()");
     }
 
+
+    /** Tests multiple instances of one altName
+     * 
+     */
+    public void test09TestMultipleAltNames() throws Exception {
+        log.debug(">test09TestMultipleAltNames()");
+
+        // Create a good end entity profile (good enough), allowing multiple UPN names
+        rasession.removeEndEntityProfile(admin, "TESTMULALTNAME");
+        EndEntityProfile profile = new EndEntityProfile();
+        profile.addField(EndEntityProfile.ORGANIZATION);
+        profile.addField(EndEntityProfile.COUNTRY);
+        profile.addField(EndEntityProfile.COMMONNAME);
+        profile.addField(EndEntityProfile.UNIFORMRESOURCEID);
+        profile.addField(EndEntityProfile.DNSNAME);
+        profile.addField(EndEntityProfile.DNSNAME);
+        profile.addField(EndEntityProfile.RFC822NAME);
+        profile.addField(EndEntityProfile.IPADDRESS);
+        profile.addField(EndEntityProfile.UPN);
+        profile.addField(EndEntityProfile.UPN);
+        profile.setValue(EndEntityProfile.AVAILCAS,0, Integer.toString(SecConst.ALLCAS));
+        rasession.addEndEntityProfile(admin, "TESTMULALTNAME", profile);
+        int eeprofile = rasession.getEndEntityProfileId(admin, "TESTMULALTNAME");
+        try {
+            // Change a user that we know...
+            usersession.changeUser(admin, "foo", "foo123", "C=SE,O=AnaTom,CN=foo",
+                    "uniformResourceIdentifier=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1",
+                    "foo@anatom.se", false,
+                    eeprofile,
+                    SecConst.CERTPROFILE_FIXED_ENDUSER,
+                    SecConst.USER_ENDUSER,
+                    SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, caid);
+            log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
+        } catch (RemoteException re) {
+            assertTrue("User foo does not exist, or error changing user", false);
+        } 
+        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", keys.getPublic());
+        assertNotNull("Failed to create certificate", cert);
+        FileOutputStream fos = new FileOutputStream("cert.crt");
+        fos.write(cert.getEncoded());
+        fos.close();
+        String altNames = CertTools.getSubjectAlternativeName(cert);
+        log.debug(altNames);
+        ArrayList list = CertTools.getPartsFromDN(altNames,CertTools.UPN);
+        assertEquals(2, list.size());
+        assertTrue(list.contains("foo@a.se"));
+        assertTrue(list.contains("foo@b.se"));
+        String name = CertTools.getPartFromDN(altNames,CertTools.URI);
+        assertEquals("http://www.a.se/", name);
+        name = CertTools.getPartFromDN(altNames,CertTools.EMAIL);
+        assertEquals("tomas@a.se", name);
+        list = CertTools.getPartsFromDN(altNames,CertTools.DNS);
+        assertEquals(2, list.size());
+        assertTrue(list.contains("www.a.se"));
+        assertTrue(list.contains("www.b.se"));
+        name = CertTools.getPartFromDN(altNames,CertTools.IPADDR);
+        assertEquals("10.1.1.1", name);
+
+        // Clean up
+        rasession.removeEndEntityProfile(admin, "TESTMULALTNAME");
+
+        log.debug("<test09TestMultipleAltNames()");        
+    }
+    
     /**
      * Tests scep message
      */
 /*
-    public void test09TestOpenScep() throws Exception {
-        log.debug(">test09TestOpenScep()");
+    public void test10TestOpenScep() throws Exception {
+        log.debug(">test10TestOpenScep()");
         UserDataPK pk = new UserDataPK("foo");
         UserDataRemote data = userhome.findByPrimaryKey(pk);
         data.setStatus(UserDataRemote.STATUS_NEW);
@@ -460,7 +534,7 @@ public class TestSignSession extends TestCase {
         byte[] msg = resp.getResponseMessage();
         log.debug("Message: "+new String(Base64.encode(msg,true)));
         assertNotNull("Failed to get encoded response message", msg);
-        log.debug("<test09TestOpenScep()");
+        log.debug("<test10TestOpenScep()");
     }
 */
 }

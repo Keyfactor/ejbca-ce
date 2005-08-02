@@ -105,7 +105,7 @@ import se.anatom.ejbca.util.StringTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.41 2005-05-18 17:06:27 primelars Exp $
+ * @version $Id: X509CA.java,v 1.42 2005-08-02 11:37:19 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -346,7 +346,7 @@ public class X509CA extends CA implements Serializable {
                 X509Extensions.AuthorityKeyIdentifier.getId(),
                 certProfile.getAuthorityKeyIdentifierCritical(), aki);
         }
-        // Subject Alternative name
+         // Subject Alternative name
         if ( (certProfile.getUseSubjectAlternativeName() == true) && (altName != null) && (altName.length() > 0) ) {
             String email = CertTools.getEmailFromDN(altName);
             DEREncodableVector vec = new DEREncodableVector();
@@ -354,46 +354,74 @@ public class X509CA extends CA implements Serializable {
                 GeneralName gn = new GeneralName(1, new DERIA5String(email));
                 vec.add(gn);
             }
-            String dns = CertTools.getPartFromDN(altName, CertTools.DNS);
-            if (dns != null) {
-                GeneralName gn = new GeneralName(2, new DERIA5String(dns));
-                vec.add(gn);
+            
+            ArrayList dns = CertTools.getPartsFromDN(altName, CertTools.DNS);
+            if (!dns.isEmpty()) {            
+				Iterator iter = dns.iterator();
+				while (iter.hasNext()) {
+					GeneralName gn = new GeneralName(2, new DERIA5String((String)iter.next()));
+					vec.add(gn);
+				}
             }
-            String uri = CertTools.getPartFromDN(altName, CertTools.URI);
-            if (uri == null){            
-                uri  = CertTools.getPartFromDN(altName, CertTools.URI1);
-            }
-            if (uri != null) {
-                GeneralName gn = new GeneralName(6, new DERIA5String(uri));
-                vec.add(gn);
-            }
-            String ipstr = CertTools.getPartFromDN(altName, CertTools.IPADDR);
-            if (ipstr != null) {
-                byte[] ipoctets = StringTools.ipStringToOctets(ipstr);
-                GeneralName gn = new GeneralName(7, new DEROctetString(ipoctets));
-                vec.add(gn);
-            }
-            String upn =  CertTools.getPartFromDN(altName, CertTools.UPN);
-            if (upn != null) {
-                ASN1EncodableVector v = new ASN1EncodableVector();
-                v.add(new DERObjectIdentifier(CertTools.UPN_OBJECTID));
-                v.add(new DERTaggedObject(true, 0, new DERUTF8String(upn)));
-                //GeneralName gn = new GeneralName(new DERSequence(v), 0);
-                DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
-                vec.add(gn);
-            }            
-            String guid =  CertTools.getPartFromDN(altName, CertTools.GUID);
-            if (guid != null) {
-                ASN1EncodableVector v = new ASN1EncodableVector();
-                byte[] guidbytes = Hex.decode(guid);
-                if (guidbytes != null) {
-                    v.add(new DERObjectIdentifier(CertTools.GUID_OBJECTID));
-                    v.add(new DERTaggedObject(true, 0, new DEROctetString(guidbytes)));
-                    DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
-                    vec.add(gn);                    
-                } else {
-                    log.error("Cannot decode hexadecimal guid: "+guid);
-                }
+            			            
+            ArrayList uri = CertTools.getPartsFromDN(altName, CertTools.URI);
+			if (!uri.isEmpty()) {            
+				Iterator iter = uri.iterator();
+				while (iter.hasNext()) {
+					GeneralName gn = new GeneralName(6, new DERIA5String((String)iter.next()));
+					vec.add(gn);
+				}
+			}
+
+			uri = CertTools.getPartsFromDN(altName, CertTools.URI1);
+			if (!uri.isEmpty()) {            
+				Iterator iter = uri.iterator();
+				while (iter.hasNext()) {
+					GeneralName gn = new GeneralName(6, new DERIA5String((String)iter.next()));
+					vec.add(gn);
+				}
+			}
+            
+                    
+            ArrayList ipstr = CertTools.getPartsFromDN(altName, CertTools.IPADDR);
+			if (!ipstr.isEmpty()) {            
+				Iterator iter = ipstr.iterator();
+				while (iter.hasNext()) {
+					byte[] ipoctets = StringTools.ipStringToOctets((String)iter.next());
+					GeneralName gn = new GeneralName(7, new DEROctetString(ipoctets));
+					vec.add(gn);
+				}
+			}
+			            
+            ArrayList upn =  CertTools.getPartsFromDN(altName, CertTools.UPN);
+			if (!upn.isEmpty()) {            
+				Iterator iter = upn.iterator();				
+				while (iter.hasNext()) {
+					ASN1EncodableVector v = new ASN1EncodableVector();
+					v.add(new DERObjectIdentifier(CertTools.UPN_OBJECTID));
+					v.add(new DERTaggedObject(true, 0, new DERUTF8String((String)iter.next())));
+					//GeneralName gn = new GeneralName(new DERSequence(v), 0);
+					DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
+					vec.add(gn);
+				}
+			}
+            
+          
+            ArrayList guid =  CertTools.getPartsFromDN(altName, CertTools.GUID);
+			if (!guid.isEmpty()) {            
+				Iterator iter = guid.iterator();				
+				while (iter.hasNext()) {					
+	                ASN1EncodableVector v = new ASN1EncodableVector();
+	                byte[] guidbytes = Hex.decode((String)iter.next());
+	                if (guidbytes != null) {
+	                    v.add(new DERObjectIdentifier(CertTools.GUID_OBJECTID));
+	                    v.add(new DERTaggedObject(true, 0, new DEROctetString(guidbytes)));
+	                    DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
+	                    vec.add(gn);                    
+	                } else {
+	                    log.error("Cannot decode hexadecimal guid: "+guid);
+	                }
+				}
             }            
             if (vec.size() > 0) {
                 GeneralNames san = new GeneralNames(new DERSequence(vec));
