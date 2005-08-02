@@ -10,6 +10,13 @@ does not need to be tracked in jira.
 If submitting patches to ejbca comitters, they should be able to create jira
 issues if none exist.
 
+Checking in to CVS
+==================
+When checking in to CVS, make sure the following conditions are met:
+- The checkin can be tracked to a Jira issue.
+- There is JUnit test coverage for the code.
+- There is sufficient documentation for the feature.
+
 Eclipse
 =======
 To build succesfully using Eclipse, there are .classpath and .project files in the package and in cvs. 
@@ -203,14 +210,14 @@ CVS
 
 All files should have the below part in the initial class comment:
 
-@version $Id: DEVELOP,v 1.4 2005-07-23 17:30:04 anatom Exp $
+@version $Id: DEVELOP,v 1.5 2005-08-02 06:29:39 anatom Exp $
 
 Example:
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
- * @version $Id: DEVELOP,v 1.4 2005-07-23 17:30:04 anatom Exp $
+ * @version $Id: DEVELOP,v 1.5 2005-08-02 06:29:39 anatom Exp $
  */
 
 All java files should include the following header as the first lines in the file:
