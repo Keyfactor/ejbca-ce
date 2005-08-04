@@ -692,8 +692,7 @@ web.contentencoding    = ${web.contentencoding}
             <batchtest fork="yes" todir="${test.dir}/reports">
                 <fileset dir="${test.dir}">
                     <include name="**/util/Test*" />
-                    <!-- The Messagesteste demands some CAs that we can't create automagically
-                    <include name="**/protocol/Test*" /> -->
+                    <include name="**/protocol/Test*" />
                     <include name="**/ra/Test*" />
                     <!-- LotsosUsers creates LOOOOTS of users, only run once in a while -->
                     <exclude name="**/ra/TestAddLotsofUsers*" />

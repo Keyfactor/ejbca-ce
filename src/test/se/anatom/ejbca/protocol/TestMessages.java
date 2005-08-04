@@ -17,36 +17,285 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
 import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
+
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.KeyTools;
 
 
 /**
- * Tests signing session.
+ * Protocol messages.
  *
- * @version $Id: TestMessages.java,v 1.1 2004-06-10 16:17:44 sbailliez Exp $
+ * @version $Id: TestMessages.java,v 1.2 2005-08-04 14:55:23 anatom Exp $
  */
 public class TestMessages extends TestCase {
+
+    private PrivateKey privateKey = null;
+    private X509Certificate caCert = null;
+    private static Logger log = Logger.getLogger(TestMessages.class);
+
+    /**
+     * Creates a new TestMessages object.
+     *
+     * @param name name
+     */
+    public TestMessages(String name) {
+        super(name);
+    }
+
+    protected void setUp() throws Exception {
+        log.debug(">setUp()");
+
+        // Install BouncyCastle provider
+        CertTools.installBCProvider();
+
+        KeyStore keyStore = KeyStore.getInstance("PKCS12", "BC");
+        InputStream is = new ByteArrayInputStream(p12);
+        String keyStorePass = "foo123";
+        keyStore.load(is, keyStorePass.toCharArray());
+
+        String privateKeyAlias = "privatesignkeyalias";
+        char[] pkPass = null;
+        privateKey = (PrivateKey) keyStore.getKey(privateKeyAlias, pkPass);
+
+        if (privateKey == null) {
+            log.error("Cannot load key with alias '" + privateKeyAlias + "' from keystore.");
+            throw new Exception("Cannot load key with alias '" + privateKeyAlias +
+                    "' from keystore.");
+        }
+
+        Certificate[] certchain = KeyTools.getCertChain(keyStore, privateKeyAlias);
+        caCert = (X509Certificate) certchain[0];
+
+        
+        //System.out.println(caCert.toString());
+        log.debug("<setUp()");
+    }
+
+    protected void tearDown() throws Exception {
+    }
+
+    /** Tests scep message from OpenScep
+     * @throws Exception error
+     */
+    public void test01TestOpenScep() throws Exception {
+        log.debug(">test01TestOpenScep()");
+        ScepRequestMessage msg = new ScepRequestMessage(openscep);
+        // You should be able to get issuer DN before anything else
+        String issuerdn = msg.getIssuerDN();
+        log.debug("IssuerDN: " + issuerdn);
+        assertEquals("CN=AdminCA1,O=EJBCA Sample,C=SE", issuerdn);
+        if (msg.requireKeyInfo()) {
+            msg.setKeyInfo(caCert, privateKey);
+        }
+        boolean ret = msg.verify();
+        assertTrue("Failed to verify SCEP message from OpenSCEP.", ret);
+        String dn = msg.getRequestDN();
+        log.debug("DN: " + dn);
+        assertEquals("C=SE,O=Foo,CN=openscep", dn);
+        String username = msg.getUsername();
+        assertEquals("openscep", username);
+        String pwd = msg.getPassword();
+        log.debug("Pwd: " + pwd);
+        assertEquals("foo123", pwd);
+        log.debug("<test01TestOpenScep()");
+    }
+
+    /** Tests scep message from Simple Scep
+     * @throws Exception error
+     */
+    public void test02TestSimpleScep() throws Exception {
+        log.debug(">test02TestSimpleScep()");
+        ScepRequestMessage msg = new ScepRequestMessage(sscep);
+        // You should be able to get issuer DN before anything else
+        String issuerdn = msg.getIssuerDN();
+        log.debug("IssuerDN: " + issuerdn);
+        assertEquals("CN=AdminCA1,O=EJBCA Sample,C=SE", issuerdn);
+        if (msg.requireKeyInfo()) {
+            msg.setKeyInfo(caCert, privateKey);
+        }
+        boolean ret = msg.verify();
+        assertTrue("Failed to verify SCEP message from Simple Scep.", ret);
+        String dn = msg.getRequestDN();
+        log.debug("DN: " + dn);
+        assertEquals("C=SE,O=Foo,CN=openscep", dn);
+        String username = msg.getUsername();
+        assertEquals("openscep", username);
+        String pwd = msg.getPassword();
+        log.debug("Pwd: " + pwd);
+        assertEquals("foo123", pwd);
+        log.debug("<test02TestSimpleScep()");
+    }
+
+    /** Tests scep message from Java Scep Client
+     * @throws Exception error
+     */
+    public void test03TestJavaScepClient() throws Exception {
+        log.debug(">test03TestJavaScepClient()");
+        ScepRequestMessage msg = new ScepRequestMessage(scepclient);
+        // You should be able to get issuer DN before anything else
+        String issuerdn = msg.getIssuerDN();
+        log.debug("IssuerDN: " + issuerdn);
+        assertEquals("CN=AdminCA1,O=EJBCA Sample,C=SE", issuerdn);
+        if (msg.requireKeyInfo()) {
+            msg.setKeyInfo(caCert, privateKey);
+        }
+        boolean thrown = false;
+        try {
+            // We know this will throw an exception since scepclient doesn't work
+            // If it starts working we know there is something wrong
+            boolean ret = msg.verify();  
+            assertTrue("Failed to verify SCEP message from Java Scep Client.", ret);
+        } catch (IllegalArgumentException e) {
+            thrown = true;
+        }
+        assertTrue(thrown);
+        /*
+        String dn = msg.getRequestDN();
+        log.debug("DN: " + dn);
+        assertEquals("C=SE,O=Foo,CN=openscep", dn);
+        String username = msg.getUsername();
+        assertEquals("openvpn", username);
+        String pwd = msg.getPassword();
+        log.debug("Pwd: " + pwd);
+        assertEquals("foo123", pwd);
+        */
+        log.debug("<test03TestJavaScepClient()");
+    }
+    /** Tests scep message from Cisco VPN client
+     * @throws Exception error
+     */
+    public void test03TestCiscoVPNScep() throws Exception {
+        log.debug(">test03TestCiscoVPNScep()");
+        ScepRequestMessage msg = new ScepRequestMessage(ciscovpnscep);
+        // You should be able to get issuer DN before anything else
+        String issuerdn = msg.getIssuerDN();
+        log.debug("IssuerDN: " + issuerdn);
+        assertEquals("CN=AdminCA1,O=EJBCA Sample,C=SE", issuerdn);
+        if (msg.requireKeyInfo()) {
+            msg.setKeyInfo(caCert, privateKey);
+        }
+        boolean ret = msg.verify();
+        assertTrue("Failed to verify SCEP message from Cisco VPN client.", ret);
+        String dn = msg.getRequestDN();
+        log.debug("DN: " + dn);
+        assertEquals("CN=ciscovpn", dn);
+        String username = msg.getUsername();
+        assertEquals("ciscovpn", username);
+        String pwd = msg.getPassword();
+        log.debug("Pwd: " + pwd);
+        assertEquals("foo123", pwd);
+        log.debug("<test03TestCiscoVPNScep()");
+    }
+    /** Tests scep message from Cisco PIX
+     * @throws Exception error
+     */
+    /* This doesn't work because we don't have the right CA
+    public void test04TestPixScep() throws Exception {
+        log.debug(">test02TestPixScep()");
+        ScepRequestMessage msg = new ScepRequestMessage(pixscep);
+        // You should be able to get issuer DN before anything else
+        String issuerdn = msg.getIssuerDN();
+        log.debug("IssuerDN: " + issuerdn);
+        assertEquals("E=postmaster@tdconline.dk,CN=tdcoca,OU=Online Privat,O=TDC", issuerdn);
+        if (msg.requireKeyInfo()) {
+            msg.setKeyInfo(caCert, privateKey);
+        }
+        boolean ret = msg.verify();
+        assertTrue(ret);
+        String dn = msg.getRequestDN();
+        log.debug("DN: " + dn);
+        assertEquals("C=Se,O=PrimeKey,CN=Tomas G", dn);
+        String pwd = msg.getPassword();
+        log.debug("Pwd: " + pwd);
+        assertEquals("foo123", pwd);
+        assertTrue("Failed to verify SCEP message from PIX.", ret);
+        log.debug("<test04TestPixScep()");
+    } */
+    
+    public void test05KeyToolP10() throws Exception {
+        log.debug(">test05KeyToolP10()");
+        PKCS10RequestMessage msg = new PKCS10RequestMessage(keytoolp10);
+
+        boolean ret = msg.verify();
+        assertTrue(ret);
+        String dn = msg.getRequestDN();
+        log.debug("DN: " + dn);
+        assertEquals("CN=Test,O=AnaTom,C=SE", dn);
+        String pwd = msg.getPassword();
+        assertNull(pwd);
+        String username = msg.getUsername();
+        assertEquals("Test", username);
+        PublicKey pk = msg.getRequestPublicKey();
+        assertNotNull(pk);
+        String alg = pk.getAlgorithm();
+        assertEquals("RSA",alg);
+        
+        log.debug("<test05KeyToolP10()");        
+    }
+
+    public void test06OldBCP10() throws Exception {
+        log.debug(">test06OldBCP10()");
+        PKCS10RequestMessage msg = new PKCS10RequestMessage(oldbcp10);
+
+        boolean ret = msg.verify();
+        assertTrue(ret);
+        String dn = msg.getRequestDN();
+        log.debug("DN: " + dn);
+        assertEquals("C=SE,O=AnaTom,CN=Test", dn);
+        String pwd = msg.getPassword();
+        assertNull(pwd);
+        String username = msg.getUsername();
+        assertEquals("Test", username);
+        PublicKey pk = msg.getRequestPublicKey();
+        assertNotNull(pk);
+        String alg = pk.getAlgorithm();
+        assertEquals("RSA",alg);
+        
+        log.debug("<test06OldBCP10()");        
+    }
+    public void test07IEP10() throws Exception {
+        log.debug(">test07IEP10()");
+        PKCS10RequestMessage msg = new PKCS10RequestMessage(iep10);
+
+        boolean ret = msg.verify();
+        assertTrue(ret);
+        String dn = msg.getRequestDN();
+        log.debug("DN: " + dn);
+        assertEquals("CN=6AEK347fw8vWE424", dn);
+        String pwd = msg.getPassword();
+        assertNull(pwd);
+        String username = msg.getUsername();
+        assertEquals("6AEK347fw8vWE424", username);
+        PublicKey pk = msg.getRequestPublicKey();
+        assertNotNull(pk);
+        String alg = pk.getAlgorithm();
+        assertEquals("RSA",alg);
+        
+        log.debug("<test07IEP10()");        
+    }
+    
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
             "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDY+ATE4ZB0oKfmXStu8J+do0GhTag6rOGtoydI" +
             "eNX9DdytlsmXDyONKl8746478/3HXdx9rA0RevUizKSataMpDsb3TjprRjzBTvYPZSIfzko6s8g6" +
             "AZLO07xCFOoDmyRzb9k/KEZsMls0ujx79CQ9p5K4rg2ksjmDeW7DaPMphQIDAQABoAAwDQYJKoZI" +
             "hvcNAQEFBQADgYEAyJVobqn6wGRoEsdHxjoqPXw8fLrQyBGEwXccnVpI4kv9iIZ45Xres0LrOwtS" +
             "kFLbpn0guEzhxPBbL6mhhmDDE4hbbHJp1Kh6gZ4Bmbb5FrwpvUyrSjTIwwRC7GAT00A1kOjl9jCC" +
-            "XCfJkJH2QleCy7eKANq+DDTXzpEOvL/UqN0=").getBytes());
+    "XCfJkJH2QleCy7eKANq+DDTXzpEOvL/UqN0=").getBytes());
     static byte[] oldbcp10 = Base64.decode(("MIIBbDCB1gIBADAtMQswCQYDVQQGEwJTRTEPMA0GA1UEChMGQW5hVG9tMQ0wCwYDVQQDEwRUZXN0" +
             "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCzN9nDdwmq23/RLGisvR3CRO9JSem2QZ7JC7nr" +
             "NlbxQBLVqlkypT/lxMMur+lTX1S+jBaqXjtirhZTVaV5C/+HObWZ5vrj30lmsCdgzFybSzVxBz0l" +
             "XC0UEDbgBml/hO70cSDdmyw3YE9g5eH3wdYs2FCTzexRF3kNAVHNUa8svwIDAQABoAAwDQYJKoZI" +
             "hvcNAQEFBQADgYEAm6uRSyEmyCcs652Ttg2npm6JZPFT2qwSl4dviyIKJbn6j+meCzvn2TMP10d8" +
             "7Ak5sv5NJew1XGkM4mGpF9cfcVshxLVlW+cgq0749fWbyS8KlgQP/ANh3DkLl8k5E+3Wnbi0JjCV" +
-            "Xe1s44+K2solX8jOtryoR4TMJ6p9HpsuO68=").getBytes());
+    "Xe1s44+K2solX8jOtryoR4TMJ6p9HpsuO68=").getBytes());
     static byte[] iep10 = Base64.decode(("MIICnTCCAgYCAQAwGzEZMBcGA1UEAxMQNkFFSzM0N2Z3OHZXRTQyNDCBnzANBgkq" +
             "hkiG9w0BAQEFAAOBjQAwgYkCgYEAukW70HN9bt5x2AiSZm7y8GXQuyp1jN2OIvqU" +
             "sr0dzLIOFt1H8GPJkL80wx3tLDj3xJfWJdww3TqExsxMSP+qScoYKIOeNBb/2OMW" +
@@ -60,43 +309,143 @@ public class TestMessages extends TestCase {
             "egHAsQV4dQC2hOGGhOnv88JhP9Pwpso3t2tqJROa5ZNRRSJSkw8AAAAAAAAAADAN" +
             "BgkqhkiG9w0BAQQFAAOBgQCL5k4bJt265j63qB/9GoQb1XFOPSar1BDFi+veCPA2" +
             "GJ/vRXt77Vcr4inx9M51iy87FNcGGsmyesBoDg73p06UxpIDhkL/WpPwZAfQhWGe" +
-            "o/gWydmP/hl3uEfE0E4WG02UXtNwn3ziIiJM2pBCGQQIN2rFggyD+aTxwAwOU7Z2" + "fw==").getBytes());
-    static byte[] openscep = Base64.decode(("MIIGqwYJKoZIhvcNAQcCoIIGnDCCBpgCAQExDjAMBggqhkiG9w0CBQUAMIICuwYJ" +
-            "KoZIhvcNAQcBoIICrASCAqgwggKkBgkqhkiG9w0BBwOgggKVMIICkQIBADGB1TCB" +
-            "0gIBADA7MC8xDzANBgNVBAMTBlRlc3RDQTEPMA0GA1UEChMGQW5hVG9tMQswCQYD" +
-            "VQQGEwJTRQIIbzEhUVZYO3gwDQYJKoZIhvcNAQEBBQAEgYCksIoSXYsCQPot2DDW" +
-            "dexdFqLj1Fuz3xSpu/rLozXKxEY0n0W0JXRR9OxxuyqNw9cLZhiyWkNsJGbP/rEz" +
-            "yrXe9NXuLK5U8+qqE8OhnY9BhCxjeUJSLni6oCSi7YzwOqdg2KmifJrQQI/jZIiC" +
-            "tSISAtE6qi6DKQwLCkQLmokLrjCCAbIGCSqGSIb3DQEHATARBgUrDgMCBwQILYvZ" +
-            "rBWuC02AggGQW9o5MB/7LN4o9G4ZD1l2mHzS+g+Y/dT2qD/qIaQi1Mamv2oKx9eO" +
-            "uFtaGkBBGWZlIKg4mm/DFtvXqW8Y5ijAiQVHHPuRKNyIV6WVuFjNjhNlM+DWLJR+" +
-            "rpHEhvB6XeDo/pd+TyOKFcxedMPTD7U+j46yd46vKdmoKAiIF21R888uVSz3GDts" +
-            "NlqgvZ7VlaI++Tj7aPdOI7JTdQXZk2FWF7Ql0LBIPwk9keffptF5if5Y+aHqB0a2" +
-            "uQj1aE8Em15VG8p8MmLJOX0OA1aeqfxR0wk343r44UebliY2DE8cEnym/fmya30/" +
-            "7WYzJ7erWofO2ukg1yc93wUpyIKxt2RGIy5geqQCjCYSSGgaNFafEV2pnOVSx+7N" +
-            "9z/ICNQfDBD6b83MO7yPHC1cXcdREKHHeqaKyQLiVRk9+R/3D4vEZt682GRaUKOY" +
-            "PQXK1Be2nyZoo4gZs62nZVAliJ+chFkEUog9k9OsIvZRG7X+VEjVYBqxlE1S3ikt" +
-            "igFXiuLC/LDCi3IgVwQjfNx1/mhxsO7GSaCCAfswggH3MIIBYKADAgEDAiA4OEUy" +
-            "REVFNDcwNjhCQjM3RjE5QkE2NDdCRjAyRkQwRjANBgkqhkiG9w0BAQQFADAyMQsw" +
-            "CQYDVQQGEwJTZTERMA8GA1UEChMIUHJpbWVLZXkxEDAOBgNVBAMTB1RvbWFzIEcw" +
-            "HhcNMDMwNjAxMDgzNDQyWhcNMDMwNzAxMDgzNDQyWjAyMQswCQYDVQQGEwJTZTER" +
-            "MA8GA1UEChMIUHJpbWVLZXkxEDAOBgNVBAMTB1RvbWFzIEcwgZ8wDQYJKoZIhvcN" +
-            "AQEBBQADgY0AMIGJAoGBAOu47fpIQfzfSnEBTG2WJpKZz1891YLNulc7XgMk8hl3" +
-            "nVC4m34SaR7eXR3nCsorYEpPPmL3affaPFsBnNBQNoZLxKmQ1RKiDyu8dj90AKCP" +
-            "CFlIM2aJbKMiQad+dt45qse6k0yTrY3Yx0hMH76tRkDif4DjM5JUvdf4d/zlYcCz" +
-            "AgMBAAEwDQYJKoZIhvcNAQEEBQADgYEAGNoWI02kXNEA5sPHb3KEY8QZoYM5Kha1" +
-            "JA7HLmlXKy6geeJmk329CUnvF0Cr7zxbMkFRdUDUtR8omDDnGlBSOCkV6LLYH939" +
-            "Z8iysfaxigZkxUqUYGLtYHhsEjVgcpfKZVxTz0E2ocR2P+IuU04Duel/gU4My6Qv" +
-            "LDpwo1CQC10xggHDMIIBvwIBATBWMDIxCzAJBgNVBAYTAlNlMREwDwYDVQQKEwhQ" +
-            "cmltZUtleTEQMA4GA1UEAxMHVG9tYXMgRwIgODhFMkRFRTQ3MDY4QkIzN0YxOUJB" +
-            "NjQ3QkYwMkZEMEYwDAYIKoZIhvcNAgUFAKCBwTASBgpghkgBhvhFAQkCMQQTAjE5" +
-            "MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTAzMDYw" +
-            "MTA4MzQ0MlowHwYJKoZIhvcNAQkEMRIEEBqGJFo7n4B8sFBCi54PckIwIAYKYIZI" +
-            "AYb4RQEJBTESBBA77Owxh2rbflhXsDYw3xsLMDAGCmCGSAGG+EUBCQcxIhMgODhF" +
-            "MkRFRTQ3MDY4QkIzN0YxOUJBNjQ3QkYwMkZEMEYwDQYJKoZIhvcNAQEBBQAEgYB4" +
-            "BPcw4NPIt4nMOFKSGg5oM1nGDPGFN7eorZV+/2uWiQfdtK4B4lzCTuNxWRT853dW" +
-            "dRDzXBCGEArlG8ef+vDD/HP9SX3MQ0NJWym48VI9bTpP/mJlUKSsfgDYHohvUlVI" +
-            "E5QFC6ILVLUmuWPGchUEAb8t30DDnmeXs8QxdqHfbQ==").getBytes());
+            "o/gWydmP/hl3uEfE0E4WG02UXtNwn3ziIiJM2pBCGQQIN2rFggyD+aTxwAwOU7Z2" + 
+            "fw==").getBytes());
+    static byte[] openscep = Base64.decode(("MIIF3AYJKoZIhvcNAQcCoIIFzTCCBckCAQExDjAMBggqhkiG9w0CBQUAMIICvgYJ"+
+            "KoZIhvcNAQcBoIICrwSCAqswggKnBgkqhkiG9w0BBwOgggKYMIIClAIBADGCAV8w"+
+            "ggFbAgEAMEMwNzERMA8GA1UEAxMIQWRtaW5DQTExFTATBgNVBAoTDEVKQkNBIFNh"+
+            "bXBsZTELMAkGA1UEBhMCU0UCCFKNUA0mbQyIMA0GCSqGSIb3DQEBAQUABIIBADv6"+
+            "P/L3m1syqxfcN8hTnLhEKDpV2381g6/C7TDHTI/2Ro8C8x1p9FP9AFJQv4XDCncB"+
+            "EMeTyJxjuaHLdbx35uAZdOex38zwrczaaT+uf74OUVuyTKrRofctqjLFlaTXy8WL"+
+            "KqUXwt0fefDmnZhThiXXcplnTs5/CgfQAyHOYI9/PvdUyIqEfK+/ixvVWSYk0vp6"+
+            "jlYVwkSm06LiOysYbYp9B7nnbxBjjqKxK8vT7zjoId1U1ip2XB8mmfpw8Ahf3Mr2"+
+            "508krK+pen3uwawVaeucqN2b1xySKxox/FFwkHfif1L33esx65mp4661SFUdHjOH"+
+            "zuijrocx+Rj3S0w5/LUwggEqBgkqhkiG9w0BBwEwEQYFKw4DAgcECAMrD4EmoGjY"+
+            "gIIBCJYOYZ8RkGoH/U9j7rzMxWPGbUmlEtNERUowB9dg+lWftUHuWwmao8uGwRHr"+
+            "rPQ+QhTkGdMzwNG0PRAsG61M4Z7cF1o3URmAsXJpb/LiCGJoTX91L4SLtmBH9MRr"+
+            "ZGPFWKzm7kzVWpcpXO2+/Gv9bdSt8hJWWaceZFJeB6q7yHu/Y/Eofj7biz5C3+v8"+
+            "NcmDwsmNwBQwjTqpAVQ/1x52uA1lvaw7SKQ24L1kqm6nWA1XipbYRxBwvo23S5yb"+
+            "CJrEwp4swLkccesTESOLoN4gM0WN2EBHnpdOL7ZcWQBOg/+/6oxeaXPw96lW1Q77"+
+            "tYZuTnOfeaP5DY5lkUIEL4Yr81VloaPzsXo81qCCAW4wggFqMIIBFKADAgEDAiAw"+
+            "QzUyMzQzNjcyNzEyRjczNEQ4M0M1MkRBMTg3RkExNDANBgkqhkiG9w0BAQQFADAu"+
+            "MQswCQYDVQQGEwJTRTEMMAoGA1UEChMDRm9vMREwDwYDVQQDEwhvcGVuc2NlcDAe"+
+            "Fw0wNTA4MDMxMTI4MTVaFw0wNTA5MDIxMTI4MTVaMC4xCzAJBgNVBAYTAlNFMQww"+
+            "CgYDVQQKEwNGb28xETAPBgNVBAMTCG9wZW5zY2VwMFwwDQYJKoZIhvcNAQEBBQAD"+
+            "SwAwSAJBAKk7hSPJ2yobo/jFJTucp6fjO+w//giNNloBR66DvFKkuJrmrf59Li8J"+
+            "QXE3hOXWHgXUokYm3aVhMm9zomDh+F0CAwEAATANBgkqhkiG9w0BAQQFAANBADCU"+
+            "MOSzoqI97EYM7ut0FzsKKe4MWr4ftMKyK/1if6ZmrqKhB5W/k7yHfmrFXc5PySAE"+
+            "9NkIlvSO+ve9MTV1rkAxggF+MIIBegIBATBSMC4xCzAJBgNVBAYTAlNFMQwwCgYD"+
+            "VQQKEwNGb28xETAPBgNVBAMTCG9wZW5zY2VwAiAwQzUyMzQzNjcyNzEyRjczNEQ4"+
+            "M0M1MkRBMTg3RkExNDAMBggqhkiG9w0CBQUAoIHBMBIGCmCGSAGG+EUBCQIxBBMC"+
+            "MTkwGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMDUw"+
+            "ODAzMTEyODE1WjAfBgkqhkiG9w0BCQQxEgQQpw/eMRfE6qbrkh3Aw7ByQjAgBgpg"+
+            "hkgBhvhFAQkFMRIEEDBi3ch9EaexEb/QHSvGkqIwMAYKYIZIAYb4RQEJBzEiEyAw"+
+            "QzUyMzQzNjcyNzEyRjczNEQ4M0M1MkRBMTg3RkExNDANBgkqhkiG9w0BAQEFAARA"+
+            "Y5xIjYsxIQLVM8M3B9/mxni08SEqVSXwWJYjFfg9ISx/j/IaDwHCisn7by4zW06e"+
+    "4JaIa/rgTnUOJCZnLf4IuA==").getBytes());
+    static byte[] sscep = Base64.decode(("MIIF3AYJKoZIhvcNAQcCoIIFzTCCBckCAQExDjAMBggqhkiG9w0CBQUAMIICvgYJ"+
+            "KoZIhvcNAQcBoIICrwSCAqswggKnBgkqhkiG9w0BBwOgggKYMIIClAIBADGCAV8w"+
+            "ggFbAgEAMEMwNzERMA8GA1UEAxMIQWRtaW5DQTExFTATBgNVBAoTDEVKQkNBIFNh"+
+            "bXBsZTELMAkGA1UEBhMCU0UCCFKNUA0mbQyIMA0GCSqGSIb3DQEBAQUABIIBACje"+
+            "wUlnG2qbzoLZ0ZFovNZCtWbvEJKbYLX0sl7DUAzmGIjoEfQE1THar7Xzgj+xwnEk"+
+            "ZoxJCu3JwzElpXd8ptPCe3gvdRv7XAqh0kZ2hgrHa51D/xX1j2pU0Fl6IkbEzFej"+
+            "V8pN/7IqgB81g/neleo+k2UA0Jn2afKRoUZlZDidJz9tK+fumWOfPJBqTPghsVxx"+
+            "+LPFZEeE1OOT/fnH0uuNRiFj43vY+CfY+YrspSadthRdWbDJTUJ+sBVBnh1xX83Q"+
+            "6CjG22A4b+q8FUUta3+H8nnVLtAZfAwaU5/beTiw1t3UPMoJn8judZun2otWQbN0"+
+            "az2XiiYvhapEvwLth2wwggEqBgkqhkiG9w0BBwEwEQYFKw4DAgcECPHxpAekbhIP"+
+            "gIIBCKmFl5f+6wl04t9g2mD5vGwe1Nn/nG7tFn+m78HBdm+2DA03B+fCUu/Qvqnb"+
+            "CeTd5qnLD90nOqzX73BUSTTnlttKG4kN4wmdTd603saz3OeCV3urrnRpVh7SIeAh"+
+            "QMCG/Ul6XHTTCS1eVR88IbJmaLjNFeePQe1jz+yuJA/sikOlWPFiFkfJMMRhxxev"+
+            "4+VOcpi+z4jKzQhkNkWUA2HqutnE7GZg4wiyn+iIXXHCeT4HnrqIIgEcuiJRVUIu"+
+            "V/ySyE8TWg7mkJFEn/1rKo6J1V6Q8svFaziMvYFPw6h4ZHGJT6buTrjIEP6hZN+P"+
+            "nf9ePrjLunkqexpIR+Ejrzlg4KYef692PEny9qCCAW4wggFqMIIBFKADAgECAiAw"+
+            "QzUyMzQzNjcyNzEyRjczNEQ4M0M1MkRBMTg3RkExNDANBgkqhkiG9w0BAQQFADAu"+
+            "MQswCQYDVQQGEwJTRTEMMAoGA1UEChMDRm9vMREwDwYDVQQDEwhvcGVuc2NlcDAe"+
+            "Fw0wNTA4MDMxMTI2NTNaFw0wNTA4MDkxMzI2NTNaMC4xCzAJBgNVBAYTAlNFMQww"+
+            "CgYDVQQKEwNGb28xETAPBgNVBAMTCG9wZW5zY2VwMFwwDQYJKoZIhvcNAQEBBQAD"+
+            "SwAwSAJBAKk7hSPJ2yobo/jFJTucp6fjO+w//giNNloBR66DvFKkuJrmrf59Li8J"+
+            "QXE3hOXWHgXUokYm3aVhMm9zomDh+F0CAwEAATANBgkqhkiG9w0BAQQFAANBADU3"+
+            "m4OiT5RxWBb8tJE5LqQuz/kBH9qdwG+Bws/qVtsQjNGby1cY7QXNcBiUtmv3DTCo"+
+            "WPWuJdJCC7C8s+iiAokxggF+MIIBegIBATBSMC4xCzAJBgNVBAYTAlNFMQwwCgYD"+
+            "VQQKEwNGb28xETAPBgNVBAMTCG9wZW5zY2VwAiAwQzUyMzQzNjcyNzEyRjczNEQ4"+
+            "M0M1MkRBMTg3RkExNDAMBggqhkiG9w0CBQUAoIHBMBIGCmCGSAGG+EUBCQIxBBMC"+
+            "MTkwGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMDUw"+
+            "ODAzMTEyNjUzWjAfBgkqhkiG9w0BCQQxEgQQNE7agWOiOWxGiuNFoVJ5vTAgBgpg"+
+            "hkgBhvhFAQkFMRIEENX1p6qK9g+/tP1K8FPkOzwwMAYKYIZIAYb4RQEJBzEiEyAw"+
+            "QzUyMzQzNjcyNzEyRjczNEQ4M0M1MkRBMTg3RkExNDANBgkqhkiG9w0BAQEFAARA"+
+            "huyzMfvqURfBh3YZLyzLiKjucS2b72/TsN4Wo6Bes9mxIZOjc+BZ60M1MVhJtq0/"+
+    "1ttZ62RT+p4E0axVW1bwWw==").getBytes());
+    static byte[] scepclient = Base64.decode(("MIIGjgYJKoZIhvcNAQcCoIIGfzCCBnsCAQExDDAKBggqhkiG9w0CBTCCA1IGCSqG"+
+            "SIb3DQEHAaCCA0MEggM/MIIDOwYJKoZIhvcNAQcDoIIDLDCCAygCAQAxggFdMIIB"+
+            "WQIBADBDMDcxETAPBgNVBAMTCEFkbWluQ0ExMRUwEwYDVQQKEwxFSkJDQSBTYW1w"+
+            "bGUxCzAJBgNVBAYTAlNFAghSjVANJm0MiDALBgkqhkiG9w0BAQEEggEAn/Gnirf+"+
+            "lms6CcU5/d8JV7i9XJVVNbv478NcGRU61BsuSolLBeUWIhoVwVFIcV6P8qEjl2CH"+
+            "dpnMWgvQpwmmG2KJqq6dqkLS3HES6ucrs20r5OpHd8F/thk46UvHc61HhIiGXspp"+
+            "xAwHrCKSCKE5m/yH0ZVnSzaGOWdd9TQwJ/+7zDxAeRbrouAFN8oniTi4bHqBOyT9"+
+            "Wm7bKxO3GdoeESigrWtzuxIPbsVy31MHQ+MidHx7RzaAWnZHH6xMvu4yx6T9vxc0"+
+            "t/GVbfBl/ocDI0iPBhcW2G4s4sO/KCFA4bmzF1ROTYqEyvCEG9REihjX9CyOBk+K"+
+            "T9w/vRsu2scnrTCCAcAGCSqGSIb3DQEHATAHBgUrDgMCB4CCAaj66BdC8chDp2dP"+
+            "gpEdWfO5RnjdU5CATmSaMn72pW6cWYYo+ATyOCWMLTNUxDknNyETyB8yahHff8Yd"+
+            "vmwddAvh9Doj/FJlHgtnvOmy1338pbZXOf78/haoGycHdYuy76XeJGgRZbhhX9L5"+
+            "tg3j8drcuJ2AZaKxQrxzO+RM5Qhqp9EolD1mHkgw7hEnmhLftZ1fJIPIrBbflqHp"+
+            "6TsvpbRpht/dyLEFj3UoMIeLL8o7hDIXO9iSYd+4mroQL4juGZDZ+VKHDIbw/7dN"+
+            "IIJPMMxgYqfXxgvzbGrh4SWQggPEbDLS6Qe41eBBPnc6uIHljT3H1dSaYDDCFJ2E"+
+            "ZybSqlTF4EpaHqVpQRylQya2zh9RTbwMKt+3D/vJtn8bNN4GA2DP3k2wuWax644j"+
+            "6yL1gjSL1HNYgd8Mn+2jDLul3oMoFQXarWf9qJnwm8jSrINTlfB/IgQBwaIcu4Ah"+
+            "8wTBCaSYGskxfGXvI/O7z1uYhR9JPA9QZiQzoE8Ix3X+RteDjQem5PrxSAy0uChB"+
+            "6ibJyF61E854Xli4r0buHAncd1LF5VH6ZUJcStlaoIIBozCCAZ8wggEKoAMCAQIC"+
+            "AhJnMAsGCSqGSIb3DQEBBDAYMRYwFAYDVQQDEw1vcGVuc2NlcHByb3h5MB4XDTA1"+
+            "MDgwMzExMTYyM1oXDTA1MDgwMzEyMjMwM1owGDEWMBQGA1UEAxMNb3BlbnNjZXBw"+
+            "cm94eTCBnTALBgkqhkiG9w0BAQEDgY0AMIGJAoGBAMXz6rZ3GcZ+X2aj75ua4TyL"+
+            "UGO8EHk5mshcazBZNX8QBT0BttuZgIoEmBte/4/BUG21Xcd2945H2mFoZQoseO0I"+
+            "oaefFMynenXZaUhSt+RNku/HUCcZoKum54jqrC6pgTgK0JkI9X2W/rkaxN4iaCzh"+
+            "GUoF0+zojckuIAUiFoynAgMBAAEwCwYJKoZIhvcNAQEEA4GBAF7FhYDUYgZV5b8e"+
+            "j6xj5mZ5z3NZnskrX8vmCULIV0S3VbPFAu2oC4dVpjjvy2dmn+GaRiOnBxZXnsD7"+
+            "PUA3Z7HAevN/behPXSN2caqcibMEw9/Uohs5bqLteVDWaoiORK+xcTfB1Hho28l4"+
+            "7QRYwa8tpEJ73/uJllM4bcqVZ2CZMYIBaTCCAWUCAQEwHjAYMRYwFAYDVQQDEw1v"+
+            "cGVuc2NlcHByb3h5AgISZzAKBggqhkiG9w0CBaCBozAYBgkqhkiG9w0BCQMxCwYJ"+
+            "KoZIhvcNAQcBMB8GCSqGSIb3DQEJBDESBBDnITiTC5U++NTUz4UFD98oMDAGCmCG"+
+            "SAGG+EUBCQcxIhMgQzk5M0JCMjBDODdCRjAwN0NFNTQ4RUZGMjUzM0Y5RjgwEgYK"+
+            "YIZIAYb4RQEJAjEEEwIxOTAgBgpghkgBhvhFAQkFMRIEEHuGVM2E/7ZErCqymL4g"+
+            "lCAwCwYJKoZIhvcNAQEBBIGAYGUu23CZnLS1H0MV80xPpMWFgjtLFeC4J3AcnzBh"+
+            "E432HHpGan4pabNkOcF7S95F96lymo6CVJtadDqSxHuuQ0G/Oa9HlzuM1KAmYWwl"+
+            "Pb7v/Q+xlKVKQhDNWLukTl3PrBjtaArEnAQaYLsXjxVQU5HSiReFujsBFEsqOwYZ"+
+    "hQo=").getBytes());
+    static byte[] ciscovpnscep = Base64.decode(("MIIGewYJKoZIhvcNAQcCoIIGbDCCBmgCAQExDjAMBggqhkiG9w0CBQUAMIIDJgYJ"+
+            "KoZIhvcNAQcBoIIDFwSCAxMwggMPBgkqhkiG9w0BBwOgggMAMIIC/AIBADGCAV8w"+
+            "ggFbAgEAMEMwNzERMA8GA1UEAxMIQWRtaW5DQTExFTATBgNVBAoTDEVKQkNBIFNh"+
+            "bXBsZTELMAkGA1UEBhMCU0UCCFKNUA0mbQyIMA0GCSqGSIb3DQEBAQUABIIBAGnE"+
+            "mtuxxdoWr+dr8OikckNWTQqT0JQoYh4sQRfE/PdQk1LEnkecdexEWCE51q+r2WN4"+
+            "9iyUWOvmBA+xZEaZlFxTTZDx4YWJ/RDU91ZuVdLBxtCsSBo8p9gxMIWJCaqm+CMJ"+
+            "R7jvUBWFUtI/0Z1ED7a/mYtI7OSc/awYAgjDEyCwxJIg9BYuPGJUxCuLdcQw2jHg"+
+            "VLWfeZSnJyNoL+xCF53bvH8NG31ipfihpqlbbZLcigt9irxHst7d0VQdOVe0GH1z"+
+            "TDW8yGNEwLB0+gCoGPnbzG6vMBURQtwS6cBBmWy5n/G5t1iS4IgITkqzE5VDdUsO"+
+            "cAsJC0CFmooc2R1Kj1YwggGSBgkqhkiG9w0BBwEwEQYFKw4DAgcECE6lRDTM/hQ3"+
+            "gIIBcM/ZXsVuwI/V1xPXJP4zjK3kiT5YM59ahj3Q+cL1eo7b9hYW9jqhczMsJP4B"+
+            "Bt5slCouugiiinwQjkft5fdR95qAJx7LfG2T5KF+PiGIoeKWBduuoV8tdvyhE8Ag"+
+            "0t9o9y43CdCQkA9OfHzGdS4QrpkaS3DlVUlD1QIQCTERCnOQvptIWkF3mDpbtjwM"+
+            "PvmjiZXK1N+AoBmU0RFBqtrIySNRoZn4f+h/oUIfaJ2AUraPY9518ZRNQjbPoLMM"+
+            "wdwQ8KuXgv0Ah7BR3ccDE+2Nen+k+8CAqJI73nxe6/Eq4VX32hwYmTkPY9dN1WtQ"+
+            "sSIq8oFa2NhASc68FiNJEDDbdTgNvuIperePC/I/CzfRcBDAjGpCRioI8lymNQDA"+
+            "xeWXHqGZjzs8h9FFF+5xM6SYSH9WRMmBCZGnayYMRvzVYpcp5tYkPI9OnPGwxKNw"+
+            "dORv3INxwEoXtF8i0Pyc6138ZXgZ1l+sOjVYnmCkvMfZ8dQuoIIBrTCCAakwggES"+
+            "oAMCAQICEF2HNzgvaHHRvp9UVOGL41IwDQYJKoZIhvcNAQEEBQAwEzERMA8GA1UE"+
+            "AxMIY2lzY292cG4wHhcNMDUwODA0MTQzOTUyWhcNMDUwOTAzMTQzOTUyWjATMREw"+
+            "DwYDVQQDEwhjaXNjb3ZwbjCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAp2LH"+
+            "i5opb2EfEeVLiWNAYX8bM+Me5WQt2txneT0zfvoMmQixLIIMBzLlcsKrkATI/Ber"+
+            "PgDNWlW9f0zXk71lYufijtf7TMNcwrjdDLQ3q9B1/PELkFicKpGLZ1z7Y4890pq0"+
+            "YYIModioC5TxnSB/rSAG5VPIR9IeDirXQ19+wbMCAwEAATANBgkqhkiG9w0BAQQF"+
+            "AAOBgQBa7jf/YY6mnP991J8HwWvHMs1gdMDLaBlA3ypQ9MYwUaNqduZDPnEAxhPz"+
+            "fMuQncB1TIjAGbK24NtV3IOWWu+JMQmT2OL7Z8md5j/sVMAvlaVzWjAEfKq2dgEV"+
+            "spo/lDwwbW8+WMgEnDrXOao/5zy1H0SB8XVsC+Jk9r8yT7eO+TGCAXYwggFyAgEB"+
+            "MCcwEzERMA8GA1UEAxMIY2lzY292cG4CEF2HNzgvaHHRvp9UVOGL41IwDAYIKoZI"+
+            "hvcNAgUFAKCBozASBgpghkgBhvhFAQkCMQQTAjE5MBgGCSqGSIb3DQEJAzELBgkq"+
+            "hkiG9w0BBwEwHwYJKoZIhvcNAQkEMRIEELGqr8B3gk4zDxcuarvrVXIwIAYKYIZI"+
+            "AYb4RQEJBTESBBDSWdNXDqxf6kR0/lhgow/mMDAGCmCGSAGG+EUBCQcxIhMgNUQ4"+
+            "NzM3MzgyRjY4NzFEMUJFOUY1NDU0RTE4QkUzNTIwDQYJKoZIhvcNAQEBBQAEgYBt"+
+            "aq3dXfzHpidRFn0iLdjlar0IqQVSyOiQHEaUanmCCk39QJ3pWmnXiPQCQfE9cptI"+
+            "BpykteSCQxMvzTjEpGpZINObz1A9y/h3LtMidSsaxvMRxJSEapl50GzcLj0fhbSh"+
+    "oCNO9WsRgdZH2qf4iZrHFefSN90eKifkzcyTyKLmIw==").getBytes());
     static byte[] pixscep = Base64.decode(("MIAGCSqGSIb3DQEHAqCAMIACAQExDjAMBggqhkiG9w0CBQUAMIAGCSqGSIb3DQEH" +
             "AaCAJIAEggOZMIAGCSqGSIb3DQEHA6CAMIACAQAxgDCCAYMCAQAwazBfMSYwJAYJ" +
             "KoZIhvcNAQkBFhdwb3N0bWFzdGVyQHRkY29ubGluZS5kazEPMA0GA1UEAxMGdGRj" +
@@ -139,133 +488,108 @@ public class TestMessages extends TestCase {
             "SIb3DQEBAQUABIGAfiGzBNxJiy4XI3DG13Osso4qV+7rvwg+CVbe0gqt01s1kd5A" +
             "LxwTYVhXXKG1spaBnebu+T9xZDZqvF9eY1ANJVNSIpNygKmJdhjsJivKFkD9Jz2y" +
             "F/BYZzv618HlvZQj9Sbv7PaODRU4xqGVifa6LllK/572uQdUQj3FTkssqFQAAAAA" +
-            "AAAAAA==").getBytes());
-    static byte[] p12 = Base64.decode(("MIACAQMwgAYJKoZIhvcNAQcBoIAkgASCAy4wgDCABgkqhkiG9w0BBwGggCSABIID" +
-            "FjCCAxIwggMOBgsqhkiG9w0BDAoBAqCCArEwggKtMCcGCiqGSIb3DQEMAQMwGQQU" +
-            "VnhToLFkCvaqCu8OkXi6Jljy/Y8CAWQEggKAv4LDUWwUi7eZKiCoYsqevVUAEOwE" +
-            "dy8xOmtyjzEPO0W8pltybVk2nfEaS6CrPQLvi1aAQD/5NjkO0agfgwS8gOZPIRaX" +
-            "HzETkxsR6tNd1eP5jGXOYfxhQGGL3laVvvGhrNFbx7AW/ugMgBPMj+OWRkuSMVBY" +
-            "uZgmBX3CM14UFl1X4jVG/nX/eS1LKIdDI2hcebWvkpuOWR46LxH1yXgSqW0RYjCV" +
-            "ZhNvsQtvQGfgMBgGOhjec+p6xMiw8OXSR6kfDVHJyJfFwqz2DTz1zIfi28WPVCSv" +
-            "2TmMPvPFGjbE5bo8PlVh5Gu5sX9DzQQ41Vio/c1dxwBDe4CgAYuDfI0Fu0ZVSMZM" +
-            "TSDt7lC4t/YoxqFCxSBn9pmYOCLBiBmQgtzJZfQYrMJSdaBqXWNx5vUibd+K/tzL" +
-            "Hfik1SmH+MY8bjBC/PSlCz8cbAwAdqGKCN5kjT+RcPM5oRIAc4isXs+epApzf4jF" +
-            "AKqgNFnHKfgTEabVT9E/QUEwS7PfDi2jzID/8a3LUQvjp95B9kD6DJH4nlIZVT+2" +
-            "aHzOooZ2K54pqq2OlS6yeYKRo2GcGdVcm13zw+wBnw+2Zz34zrzd1Uq9wGuoduNF" +
-            "VJNKqNkLvva94InFAaiPbHgAkH179pVF8oTeFOh0NXBTj4mZQgpgYPO1ASMZEvY7" +
-            "5nC/Uf+6kyr92qc0s4GpAV1Sm2lsSyBdINAxSnzW2XSJ389RztAN5H6ycUcJBbaG" +
-            "N9DfBSxK8kkFRW7b8dx7PXd2ofe9U/pIJgRlscPSC30cRRp4jT2JXvpW+D3EocI8" +
-            "uUEzRSliEpec1zn2SrPUKCCQVc6BoBHsN62/I1LtM2+Wybx5fyRGsw7i4zFKMCMG" +
-            "CSqGSIb3DQEJFDEWHhQAcAByAGkAdgBhAHQAZQBLAGUAeTAjBgkqhkiG9w0BCRUx" +
-            "FgQUY3v0dqhUJI6ldKV3RKb0Xg9XklEABAEABAEABAEABAEABIIDAgAwgAYJKoZI" +
-            "hvcNAQcGoIAwgAIBADCABgkqhkiG9w0BBwEwJwYKKoZIhvcNAQwBBjAZBBTDw4v0" +
-            "l2xpgaM/AkWLRwcyAaI5lQIBZKCABIICsEY/4hTSq1sKzRlg+oP1Cu/fGipwALox" +
-            "HFj5wvC+hN78ZMjFYAK3b61ft0hUKeqtmzDDzgbMn9qEjsV3WERKID1AqNy18a2j" +
-            "i7MuR2sidbz7H7pOr2QrKajmiFf4IKiXXiqrx9qnF40l3HzUGaiGw36BvFZ1lXkJ" +
-            "HRA97mTcuEczZXkp5N+U9e7sztQE0b7MYcGPYi01CpJzYSRryU4BRG4a0vRhEJFp" +
-            "mHu+mfpaBux93HvOeOFD/bb59EUuoGgog2dYUFRL4ZTH99I0MpcHbRp/wIeNdMpJ" +
-            "KOjzrw1OHzkkqLOTC/m4nI+da3OXShPdByTHHdZ29fNYCVxdOgqUtym1PP7cHsUn" +
-            "Y5PThfXM5ZXV0G7pvC0zVz+qTS6G+Xg8bu91g07jh5HOSHOUfa/XMhhLZFUgYr9r" +
-            "7ZId98C+lg7atW3LjhJ9FPawogXpDXp+wo/NNp2Lq7KHyevJSfwkrLMOeETo9tMY" +
-            "NUv/zPPGpiVUZX75zNkOx+YlL0dUJ4VcorXpDRs/OwM7CEGJSuGytXLz7eNEYVak" +
-            "iLhlb8vwJrkrlhFDd7vu9G5UAOb4Sp7IWwEooO/yo6/rDusXoT6+jFJ6bt27lEFj" +
-            "3PUYSijBCbVtn7Wqd6sKWqeCd10RZjz5AME3xiOcKWPtIYfFsztJmvjuRBxM5gi0" +
-            "QOwqdNd63apOv1I/nzPDgBYlIhH7kn+5jMb0RHJarMWuSTJQDpQYctRnpvPSM1HE" +
-            "srjxQ8n4Ukbg+XoUHTS4VPuxGf0NYakW5CZDJeKaJ+a/R3oU37esYOikmMJPnSUa" +
-            "PKZ1XJeHqK7kCrnbiw/WOYowaUw+BuIjpqSwgNyWktKLXWKreMtKjGtbxZ01BSsM" +
-            "VhyB+EXgjzqMBGGnCxbJ0aA4AoSBS73XvqlB+S8FUbmi7XfzPvKM4XMABAEABAEA" +
-            "BAEABAEABAEABAEABAEABAEABAEABAEABAEAAAAAAAAAMDwwITAJBgUrDgMCGgUA" +
-            "BBQ/qUCCCV8/5FhF5438mA7FYj0eKQQUC1bpAMlQMV4fwFz/nNVuiJUqmkYCAWQA" + "AA==").getBytes());
-    private PrivateKey privateKey = null;
-    private X509Certificate caCert = null;
-    private static Logger log = Logger.getLogger(TestMessages.class);
-
-    /**
-     * Creates a new TestMessages object.
-     *
-     * @param name name
-     */
-    public TestMessages(String name) {
-        super(name);
-    }
-
-    protected void setUp() throws Exception {
-        log.debug(">setUp()");
-
-        // Install BouncyCastle provider
-        CertTools.installBCProvider();
-
-        KeyStore keyStore = KeyStore.getInstance("PKCS12", "BC");
-        InputStream is = new ByteArrayInputStream(p12);
-        String keyStorePass = "foo123";
-        keyStore.load(is, keyStorePass.toCharArray());
-
-        String privateKeyAlias = "privateKey";
-        char[] pkPass = null;
-        privateKey = (PrivateKey) keyStore.getKey(privateKeyAlias, pkPass);
-
-        if (privateKey == null) {
-            log.error("Cannot load key with alias '" + privateKeyAlias + "' from keystore.");
-            throw new Exception("Cannot load key with alias '" + privateKeyAlias +
-                    "' from keystore.");
-        }
-
-        Certificate[] certchain = KeyTools.getCertChain(keyStore, privateKeyAlias);
-        caCert = (X509Certificate) certchain[0];
-
-        //System.out.println(caCert.toString());
-        log.debug("<setUp()");
-    }
-
-    protected void tearDown() throws Exception {
-    }
-
-    /** Tests scep message from OpenScep
-     * @throws Exception error
-     */
-    public void test01TestOpenScep() throws Exception {
-        log.debug(">test01TestOpenScep()");
-        ScepRequestMessage msg = new ScepRequestMessage(openscep);
-        // You should be able to get issuer DN before anything else
-        String issuerdn = msg.getIssuerDN();
-        log.debug("IssuerDN: " + issuerdn);
-        assertEquals("CN=TestCA,O=AnaTom,C=SE", issuerdn);
-        if (msg.requireKeyInfo()) {
-            msg.setKeyInfo(caCert, privateKey);
-        }
-        boolean ret = msg.verify();
-        String dn = msg.getRequestDN();
-        log.debug("DN: " + dn);
-        assertEquals("C=Se,O=PrimeKey,CN=Tomas G", dn);
-        String pwd = msg.getPassword();
-        log.debug("Pwd: " + pwd);
-        assertEquals("foo123", pwd);
-        assertTrue("Failed to verify SCEP message from OpenSCEP.", ret);
-        log.debug("<test01TestOpenScep()");
-    }
-
-    /** Tests scep message from Cisco PIX
-     * @throws Exception error
-     */
-    public void test02TestPixScep() throws Exception {
-        log.debug(">test02TestPixScep()");
-        ScepRequestMessage msg = new ScepRequestMessage(pixscep);
-        // You should be able to get issuer DN before anything else
-        String issuerdn = msg.getIssuerDN();
-        log.debug("IssuerDN: " + issuerdn);
-        assertEquals("E=postmaster@tdconline.dk,CN=tdcoca,OU=Online Privat,O=TDC", issuerdn);
-        if (msg.requireKeyInfo()) {
-            msg.setKeyInfo(caCert, privateKey);
-        }
-        boolean ret = msg.verify();
-        String dn = msg.getRequestDN();
-        log.debug("DN: " + dn);
-        assertEquals("C=Se,O=PrimeKey,CN=Tomas G", dn);
-        String pwd = msg.getPassword();
-        log.debug("Pwd: " + pwd);
-        assertEquals("foo123", pwd);
-        assertTrue("Failed to verify SCEP message from PIX.", ret);
-        log.debug("<test02TestPixScep()");
-    }
-
+    "AAAAAA==").getBytes());
+    static byte[] p12 = Base64.decode(("MIACAQMwgAYJKoZIhvcNAQcBoIAkgASCCvIwgDCABgkqhkiG9w0BBwGggCSABIIK" +
+            "2jCCCtYwggVmBgsqhkiG9w0BDAoBAqCCBPkwggT1MCcGCiqGSIb3DQEMAQMwGQQU" +
+            "M9v7H78lfcE5imiW09/BzSilz+0CAWQEggTIq8j9XRSKczoqkW8oBbYpLUM2F3ic" +
+            "alq86KdAsJPhiKlxYmf56ylUg8c1DBJIIw9/kj84rZ3YMzTenWCvroa7KIZdGoIy" +
+            "lWMUcKgYD/0dzR+tApz7WQMs7MA7eaEx6w1O/ppdEI5ISDb38uR8xDAuPxsRYavV" +
+            "tFDJs6f9GBdyfhSJsX+FJv7NcoEPRw6As8+SJzFMRHj8+VvtUgE8BFAXsZ8C5DkF" +
+            "e0fO0nISJEHOPRDoWH3o0MXKSm3HBPIDZjvlb3Wg9Rv08gOf1kcRpu6OI89dloo5" +
+            "wX4NRq/j+aA6Q+AWCH148DfGK1a455d847N36gMwsTRFnyOx1rSTIoSXI/2kPCN5" +
+            "dvylCbLxQuo+qEY+SHvBFP9t3GvE/dIYHz1hq3Ze8/Buf4HOL7HUW6WwcabYjZx/" +
+            "xGpSHUSwGnhYRyyVpWEQySIa0/QKijJsNBK7Y/GCus4w0pNeTYwP1HCrEDupRgFF" +
+            "IG3bSUFCH7kjr3IfAGP45PJXlFkqQna92NEFHOfT3LupE/gkwdPr2iGlOps9v9Jw" +
+            "aKWF+dNgoTSGV39cxVNJ8nn4qpetfTOLNxvTC7cK1mMaGPLytB7GV4rkp34PY5JR" +
+            "HDg5svKFRgp184wZgD/9MoRLU0JT9RfnY6DFJOUoA6R1L3SkoY4cvJQDgK5YaXyY" +
+            "uyYKfJGcX6I/g2eZuYvooWk+jM2XFuWEQxpF3GgwenvWh0sQfOBE91Afh17z7lHx" +
+            "1/4zJE6YUjHYyed0mUQQs/imoLgxzvHZ29vGU1qj6gtxyYdQaXnUpHrnvJeR7Q8g" +
+            "XgF7YzTbitx6y12pP+zIXkIiigTTxYrF3+adkacAqLM7mNk7IMFLjv/N7AcUrAkK" +
+            "+EUeH27cQB27yfjEX0wqxUSrV9DS1uwTwqvS6UFWVZP1G/VkBpc/A+MAwekUGGH9" +
+            "ByQimhHeg3tIeQ4bSAXr9pM/xzi8dk8MYJw1+l8az5LaYsgbO9iFUwUVDZfwuOD7" +
+            "8FRQKmEx9Q7+jeCd7j6o/B/AnDL9dmpc/n1nnC0zKkROEI8ZU2ErkCcnOFnvAMW+" +
+            "Gzjz769KGMO59iZRXC8YjL2T8iB5SH9wgrGH+pZ4HRGtnoHsrwhXMmPshsR+USNs" +
+            "V3/HH+5XgU9HQukHxVd6lwI3jvJbtO4jvzPpH2Uj6poNAL3+pNrRshNRc54gNOuz" +
+            "pwtTAS9e6SKBU3D44KZ//RYpKMYm+Or5gfNTYJN8lSCRtD0/iD32V5LOwnPK2PZi" +
+            "G0DAZ6ne37IUWS4p5yjeCqZDzhjh37z+D7sbyqVPSR5TzdN7Tjyv7BSe73XWbVME" +
+            "qxyVmiXYaTYMdQ2KpfPfTSQTKJhyAhBbwEYE3E0me9UVz3syJc/UBkodxKJPiTJo" +
+            "VIWEfZ6AxxhqMhJGy2gDZgR/nn518EI21Pca99ehwfBakJc2qDAUYYFkT3laL1ks" +
+            "YP/OT0vAqqiqT/J08owUcxO4cRCZVk2zz94bq/SggQ1T5DuliZaMJ43TcBeW2hzr" +
+            "DH9Qra3MoBdJu+F+Dw9YXMpZv+97fOnpTwBWBgz/LkDf4/OMDy0CAgN8V9lzwg0w" +
+            "vNw/PemztRpGnLI9xR77iZ4LB+iyeDtALyaznqnnKf4oZP1Uhds2mgsNxNAa1Om0" +
+            "EWkuMVowIwYJKoZIhvcNAQkVMRYEFGdq7yBdfjk4/bYULRgeEaIt3crGMDMGCSqG" +
+            "SIb3DQEJFDEmHiQAcAByAGkAdgBhAHQAZQBkAGUAYwBrAGUAeQBhAGwAaQBhAHMw" +
+            "ggVoBgsqhkiG9w0BDAoBAqCCBPkwggT1MCcGCiqGSIb3DQEMAQMwGQQU897tECd+" +
+            "HTblVRmacnpGAAanf6YCAWQEggTIyiJzXF0VFCH9y94VtbDlHhA74rJ3GY2HG6js" +
+            "dgTuPrs6WL1qGzVqyBh0K/No5WHGggxXtr0tNirGAY+OxWzCPeROqCDudsCHp9vP" +
+            "aZPBojPTdXH/ZBj0JNUYCnmIg3Z29u2l7HR/d92qH02Su4PnwyyrjMUHuFys6ltF" +
+            "IsvXfv87oWlfE777jDh3qQcfBSF6C/aZH/kuVmvPIEVl0MbBdOFrScK3gJOTapeS" +
+            "bb/JwGXzV63tJD+s5LqkEPkLTEFK8jMikVvmhVlbUL8Wcd4bve3coFSZ01QwxJBG" +
+            "6i9R4C7SOU05IcKCWlOrqefkv/gVZOfWAWvlCwizXIusYi0vOAcTK/1FBfMXtkDj" +
+            "LP2xMRrSlNUVFhj22ZTo2/xxwWu6gxFO72bP00CLIFB2GIW7tT18v7FNll5Kd9mB" +
+            "naHFikeE+JsXeywxsUVSTwSDeR8+kT1ObPFR6oIDGz9JKkJ/l5cAWlkSmz4PCiU4" +
+            "my4jEoZZMO/mGSL5RWMjQKPNd0evijHul0KA5Q3E1lQDWPFb4j5VSne88C6vDdt3" +
+            "4FQPe/+d0VPMKZKeWkVRiOm61V/RB+7EEskNbAUEASeiSPvLb/1abUCiTVZhExra" +
+            "be0T3KY+yqeXRIvraSED/+8wKZfmpL6aV0VXjtfs+zfE23anAv6FZMG/Br+zP+AN" +
+            "WjIgCy0WqG4r6OsCAWQGz0kv5m43fP/PouCyMwolqwlO48YGARTp0dN7/0ZIymft" +
+            "HslyOTm2nIAWJL3F2Um+ij5jr7zFZU5Y0VW327iIkN9Z7jQezULu2nRpY2HKNvB5" +
+            "WNNTf+k0H3L6bsjeQ0xCru4o1fTw+jyYs0oTThmrzdg4zMCZo73ZvvLGUwPrVeGm" +
+            "Dc7hX2Ladf/e0fAJGZWEhyxQDwWAYgxaJQJ3HxnHc5dlAFgendwxvc2DbWVQGxCo" +
+            "IOngMB5oCabMurHeKrqSlNeKq3NqzirDnrMzAe+6eigXd3X8YCCcgSeV8mf2n+lN" +
+            "VluUepojm6CZpauWEJsffLG2I+sglxNYv4YeiIcvpRj9+2Y9ngJ30aZm+YUZ7dBl" +
+            "Dnsh85bhLeApG65h9j8Gv4Hg8pdCSF4qdYOx/5ewfHXctAEBZNUi9ON0UB0mKSw4" +
+            "ISQYyBTtrUvTPqJwTsiq3k7Y52j4rBrIJyIIn3ffYGZPDpXFmrI4a73heNbT2kTD" +
+            "+NJVRSwZfX+4qykP0PIrxAupW28MQR7N67NmpgTeNmQyP2k2GbqhwMUkRxjaZk0e" +
+            "zM2ErY6PMIOgxUDMYakCC0STfoA5svp1bPhKINqhQHp63EWMbEVAVBUX2IGZ1nfY" +
+            "YS3W3lXbKowdnGfuhFkNg8NnMD8CEsmVCULj2LuxEFH+KWVzNnCJ1e1X07ygSUKL" +
+            "z3RJqMDL8DOA6kxSYRICL8WaNuJIAIDrVq4jNG/2QXvLqfgySNmiEka+A/wGqBFm" +
+            "GmzaptwyXbgwY9LnHpl90FFuCM/FIB83l1MFWflf+iTpfK3cZ6AlNyPN9xZ+ANRg" +
+            "gUz626jNa+nUgWcNMRaVCYHcjJAAsVdqYjO7Cn6iHrE5jzAKYSTn8d7Twm1e9a8+" +
+            "LeiG7UfPILknNwqbdarj5tS+/44f/t5iYqxMfknPYriBvj3b2QSyPp8RWEy/MVww" +
+            "IwYJKoZIhvcNAQkVMRYEFAf9ikWDTmcUQ5CeaAoYzXl4MLQnMDUGCSqGSIb3DQEJ" +
+            "FDEoHiYAcAByAGkAdgBhAHQAZQBzAGkAZwBuAGsAZQB5AGEAbABpAGEAcwAEAQAE" +
+            "AQAEAQAEAQAEggeKADCABgkqhkiG9w0BBwaggDCAAgEAMIAGCSqGSIb3DQEHATAn" +
+            "BgoqhkiG9w0BDAEGMBkEFL9IGozYO+/gw0lMa/ZD7qticoAzAgFkoIAEggc4A2bR" +
+            "LXs1Gqb9nvqgnA3xlL0hek4U2lYUIFMywrKnIUiWQJLmfHf87u23Ij0KKH3VjXgA" +
+            "ZPaBEzGoksSJVZaJXeO6QrvtwBSoQ+2aEjIXKMz3x9RxojzQl/BUO8iA/INIPjY4" +
+            "N4EmdrEGaKZH8WrBVXjgGI+Wjrl7zikvj7rrmE82EomrcUneO9eLj1lCRbSr2jCN" +
+            "k7dGSj9q9fpqsONSJZFsf2OUwlINQWdwTB1O+7c00f38tPP3VXqhADjxZlTTlDzV" +
+            "RsC8Jp7JOcHgyCADreRSvt/8fZ7ix6qrr9exvjNc811onCJ0bF1nxHuPa7QIXSNL" +
+            "zy8QalL71YFNeiGic7zEXUpF+ZssOl7nTHNSel3jqMrOsh7KKw+/JSZNciZOxrxa" +
+            "WeeiJXd3F5zQHUTMZ60GNlLUb5MlHM5QBrO5txsmdw8qM7cnj4l1e0Uv0pUfWSNb" +
+            "E3BR3UE064jXbyH3n4DQD9CZ6n/jEDTbRTgtbgQJYq8kfZtJG0qmoxzs6c40GKUI" +
+            "ZmWCGTFC4oEInnJ1vV6cltNxlftCuDNwA12y5S4z+nOftLe5FRaiECY4CuvdGJrS" +
+            "5wJF/DrkJydzXSYw7zr3bvzc0uLNVoN9E3Ul1QH7tTFCgMg+mgTNXqGRP86HjTdk" +
+            "92so0e5Fd3UnVAdg9CHVmhKRa30fv7DENtNaAKC8uKaJjAy3iXRVD9pSrvGoRLko" +
+            "zigz6AGrEgYMZGS8Oyt9r6b7V5DsqNvbg9dZIxm+JpavhnnlRxx0vOjvoS9OO0+A" +
+            "039NUbB4/60f9DaUZem286vgBV2NaV072hmyzob0PxMeIAP//bG9GQloQvJdDaxy" +
+            "hQLXSaFk0e0zH5QvCv42VvHxB+gqKH3mjEdPtbDiRyVIsrSDR5uM83oHwBfa/Z3C" +
+            "LMenxrLojndEaDW0wwyqFucnTaamOhF0h7aqzmO/Y4QIF7gryNao0N7nYgNiLR/p" +
+            "UWY2kzJ617xj99rwssffOOYx88tSzXPJSjtktHTRD2uEDbpvlRXUsDJbbLcG5CFp" +
+            "Gv9inKiEiKarihLqQfXjhN2/Y4vi5eE1/PjBMIZ+2jeKg2DLrwjZfhs6AT9JN+48" +
+            "RUncJGlJHf0wR+ofDBVf/WIhjzWEjFkTJgyK9PqSoMB5DmY5kzUyUwN2ChXWaNf/" +
+            "cIPmsdVgcrCr058OoYIoevLgCwem3qpr67vgGJFBsm+qsEzGogiZ8Y4R1J/H5Xcx" +
+            "DiIdxnu4HyL/e/Nunt83ulmdf6MtVaQqGV5fm96LGIyrFXlWsHgwssSg6u52ysLf" +
+            "Gt883UTnBgsKzYrZVbUyBT+MTJrbvex5zwVX9myf3DwW5AgNDZ3UTrhqdRw+izMC" +
+            "VBdd2thRLSi35mzHrwD9O49K9LCQ0e4w7c5H0+33Q3jO7TS5r65LmqFeXJ2tzP3i" +
+            "RS5eyEFVr4GyrI0L9+Zvt6TLBLsYsi1V8du6SRngCvEVYx7+ysfVwWEpbQXVbGq/" +
+            "EVJph+GqvxsiN6ohtS6j0XRnbtFLr5Cmw/GjgbgBX2dGP7KB9BTy8/ccmCrJX3Xw" +
+            "jxuBUBHOpsQcUV9G/s5ZSCWAi5cgifwfgLcPAaF8qNXENFNz0Vz+LMNgEi7WZXs+" +
+            "siFkww6XFH4dRTSWxRq2H96ch8FmYeZubiyqzyQIW7yDtxpQkvO2QDQMto6kT/aB" +
+            "L00KX6DnJ+XXVjk9vvCVAG64JWBkJ4VX+TD3FkcbTZnTXZq+epehRm0FRDSarncC" +
+            "OfCU3vCjyya/1sLpkBR4H+KArvcCimKnJvHkBjQkcfK/Uq7gl1YuG3Yuh1Mt4XHp" +
+            "+N9RqF2l6UT+D7aLcfTzd1/+M6g+DJw6B/8dglYrF8VnaI8b3FXFSToRLgQFILBW" +
+            "4DaaUSj7MjRpQgxBQzHrV2FrF0MwhKyEJhv7H22DSspyPOcRddGq/kpf1ZuKyG8M" +
+            "wkfgPZMQ7M97ha13aQt6PAXJhZKVddP3U+i46UjzpaTOrB2XTMjoPBjKTdqc3/tt" +
+            "VrGF6a+YQqQf7/lMPAT3AhKuBveH1+IGbYKLZwSKIAWV3i3RX3kCCflYJNJOiR0v" +
+            "+AERvsR7zqCPX5k9OdFva3PUHTnhpCIezSeIcmJG/rY3Omfw8dAkzT0F0dq/wYdv" +
+            "7nfhSbQg8UbUAI6EZsk9tYwpNVeEAur5IOFyR9tlaNHXb5D4uXeGRZqH5F1uxZt3" +
+            "J383Y8qvC4vmTboTRfJ6VYuc/2BckW5REXpKGH6nLbsZf3rTwjj+4pd1wI40dVS7" +
+            "K22WVfkGy2BDo/5kR93yFEuZvEWmG8s9JvACiKjkefvq9qQk3PG4ljdHjR8UYzHA" +
+            "S3Dniak/FFnVhvHPwMs9qs2OYaIF+BKG7k4Qr34SCRmR0tvfVdvV+5ZyRVDbruLi" +
+            "ATW8ahl9i725+n/EknOyupv1RfDI8mX3WJFU+Nink45aVe0lB6sZNcGOGNLrwNup" +
+            "UxxOH7kAlxTAOK+lW94r0saD5ZY6AAQBAAQBAAQBAAQBAAQBAAQBAAQBAAQBAAQB" +
+            "AAQBAAQBAAAAAAAAADA8MCEwCQYFKw4DAhoFAAQURCoC9aMwMaUQwabHmxqHNPDm" +
+    "Jb4EFAtXS2+0nByy9M2RLJ2xjB38iCBOAgFkAAA=").getBytes());
+    
 }

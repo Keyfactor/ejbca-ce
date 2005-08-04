@@ -40,7 +40,7 @@ import java.security.cert.X509Certificate;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.28 2005-04-11 09:03:59 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.29 2005-08-04 14:55:24 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     static final long serialVersionUID = 3597275157018205136L;
@@ -136,7 +136,7 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     /**
      * Returns the challenge password from the certificattion request.
      *
-     * @return challenge password from certification request.
+     * @return challenge password from certification request or null if none exist in the request.
      */
     public String getPassword() {
         if (password != null)
@@ -157,6 +157,9 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
         CertificationRequestInfo info = pkcs10.getCertificationRequestInfo();
         AttributeTable attributes = new AttributeTable(info.getAttributes());
         Attribute attr = attributes.get(PKCSObjectIdentifiers.pkcs_9_at_challengePassword);
+        if (attr == null) {
+            return null;
+        }
         ASN1Set values = attr.getAttrValues();
 
         if (values.size() > 0) {
