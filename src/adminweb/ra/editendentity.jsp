@@ -897,7 +897,7 @@ function checkUseInBatch(){
            <select name="<%= SELECT_EMAILDOMAIN %>" size="1" tabindex="<%=tabindex++%>">
                <% if( options != null){
                     for(int i=0;i < options.length;i++){ %>
-             <option value='<%=options[i].trim()%>' <% if(emaildomain.equals(options[i])) out.write(" selected "); %>>
+             <option value="<%=options[i].trim()%>" <% if(emaildomain.equals(options[i])) out.write(" selected "); %>>
                 <%=options[i].trim()%>  
              </option>                
                <%   }
@@ -905,7 +905,7 @@ function checkUseInBatch(){
                 %>
            </select>
            <% }else{ %> 
-             <input type="text" name="<%= TEXTFIELD_EMAILDOMAIN %>" size="20" maxlength="255" tabindex="<%=tabindex++%>"  value='<%=emaildomain%>'>
+             <input type="text" name="<%= TEXTFIELD_EMAILDOMAIN %>" size="20" maxlength="255" tabindex="<%=tabindex++%>"  value="<%=emaildomain%>">
            <% } %>
         </td>
 	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_EMAIL %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(EndEntityProfile.EMAIL,0)) out.write(" CHECKED "); %>></td>
@@ -930,7 +930,7 @@ function checkUseInBatch(){
            <select name="<%= SELECT_SUBJECTDN + i %>" size="1" tabindex="<%=tabindex++%>">
                <% if( options != null){
                     for(int j=0;j < options.length;j++){ %>
-             <option value='<%=options[j].trim()%>' <% if(userdata.getSubjectDNField(profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]).equals(options[j].trim())) out.write(" selected "); %>> 
+             <option value="<%=options[j].trim()%>" <% if(userdata.getSubjectDNField(profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]).equals(options[j].trim())) out.write(" selected "); %>> 
                 <%=options[j].trim()%>
              </option>                
                <%   }
@@ -938,7 +938,7 @@ function checkUseInBatch(){
                 %>
            </select>
            <% }else{ %> 
-             <input type="text" name="<%= TEXTFIELD_SUBJECTDN + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<%= userdata.getSubjectDNField(profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]) %>'>
+             <input type="text" name="<%= TEXTFIELD_SUBJECTDN + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value="<%= userdata.getSubjectDNField(profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]) %>">
            <% }
             }
             else{ %>
@@ -986,7 +986,7 @@ function checkUseInBatch(){
                 <select name="<%= SELECT_SUBJECTALTNAME + i %>" size="1" tabindex="<%=tabindex++%>">
                   <% if( options != null){
                       for(int j=0;j < options.length;j++){ %>
-                  <option value='<%=options[j].trim()%>' <%  if(upndomain.equals(options[j].trim())) out.write(" selected "); %>> 
+                  <option value="<%=options[j].trim()%>" <%  if(upndomain.equals(options[j].trim())) out.write(" selected "); %>> 
                     <%=options[j].trim()%>
                   </option>                
                <%   }
@@ -994,7 +994,7 @@ function checkUseInBatch(){
                 %>
                 </select>
              <% }else{ %> 
-             <input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<%= upndomain %>'>
+             <input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value="<%= upndomain %>">
              <% }
               }else{    
                if(!profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ 
@@ -1002,7 +1002,7 @@ function checkUseInBatch(){
            <select name="<%= SELECT_SUBJECTALTNAME + i %>" size="1" tabindex="<%=tabindex++%>">
                <% if( options != null){
                     for(int j=0;j < options.length;j++){ %>
-             <option value='<%=options[j].trim()%>' <%  if(userdata.getSubjectAltNameField(profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]).equals(options[j].trim())) out.write(" selected "); %>> 
+             <option value="<%=options[j].trim()%>" <%  if(userdata.getSubjectAltNameField(profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]).equals(options[j].trim())) out.write(" selected "); %>> 
                 <%=options[j].trim()%>
              </option>                
                <%   }
@@ -1010,7 +1010,7 @@ function checkUseInBatch(){
                 %>
            </select>
            <% }else{ %>
-             <input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<%= userdata.getSubjectAltNameField(profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]) %>'>
+             <input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value="<%= userdata.getSubjectAltNameField(profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]) %>">
            <% }
             }
             }else{ %>

@@ -898,7 +898,7 @@ function checkallfields(){
            <select name="<%= SELECT_USERNAME %>" size="1" tabindex="<%=tabindex++%>">
                <% if( options != null){
                     for(int i=0;i < options.length;i++){ %>
-             <option value='<%=options[i].trim()%>' <% if(lastselectedusername.equals(options[i])) out.write(" selected "); %>> 
+             <option value="<%=options[i].trim()%>" <% if(lastselectedusername.equals(options[i])) out.write(" selected "); %>> 
                <%=options[i].trim()%>
              </option>                
                <%   }
@@ -906,7 +906,7 @@ function checkallfields(){
                 %>
            </select>
            <% }else{ %> 
-             <input type="text" name="<%= TEXTFIELD_USERNAME %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<%= profile.getValue(EndEntityProfile.USERNAME,0) %>'>
+             <input type="text" name="<%= TEXTFIELD_USERNAME %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value="<%= profile.getValue(EndEntityProfile.USERNAME,0) %>">
            <% } %>
 
         </td>
@@ -1023,7 +1023,7 @@ function checkallfields(){
            <select name="<%= SELECT_SUBJECTDN + i %>" size="1" tabindex="<%=tabindex++%>">
                <% if( options != null){
                     for(int j=0;j < options.length;j++){ %>
-             <option value='<%=options[j].trim()%>' <% if( lastselectedsubjectdns != null) 
+             <option value="<%=options[j].trim()%>" <% if( lastselectedsubjectdns != null) 
                                                          if(lastselectedsubjectdns[i].equals(options[j])) out.write(" selected "); %>> 
                 <%=options[j].trim()%>
              </option>                
@@ -1032,7 +1032,7 @@ function checkallfields(){
                 %>
            </select>
            <% }else{ %> 
-             <input type="text" name="<%= TEXTFIELD_SUBJECTDN + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<%= profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) %>'>
+             <input type="text" name="<%= TEXTFIELD_SUBJECTDN + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value="<%= profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) %>">
            <% }
             }
             else{ %>
@@ -1077,7 +1077,7 @@ function checkallfields(){
            <select name="<%= SELECT_SUBJECTALTNAME + i %>" size="1" tabindex="<%=tabindex++%>">
                <% if( options != null){
                     for(int j=0;j < options.length;j++){ %>
-             <option value='<%=options[j].trim()%>' <% if( lastselectedsubjectaltnames != null) 
+             <option value="<%=options[j].trim()%>" <% if( lastselectedsubjectaltnames != null) 
                                                          if(lastselectedsubjectaltnames[i].equals(options[j])) out.write(" selected "); %>> 
                 <%=options[j].trim()%>
              </option>                
@@ -1089,7 +1089,7 @@ function checkallfields(){
                 if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.UPN){ %>
                    <input type="text" name="<%= TEXTFIELD_UPNNAME+i %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" >@
                 <% } %> 
-             <input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value='<%= profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) %>'>
+             <input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value="<%= profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) %>">
            <% }
             }
             else{ %>
