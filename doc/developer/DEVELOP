@@ -17,6 +17,12 @@ When checking in to CVS, make sure the following conditions are met:
 - There is JUnit test coverage for the code.
 - There is sufficient documentation for the feature.
 
+When checking in to CVS you must use a checkin comment starting with jira
+issue (if linked to a jira issue). For example:
+ECA-113: my comment here
+In this way jira can make a reference from an issue to specified CVS
+checkins, something that is very very useful.
+
 Eclipse
 =======
 To build succesfully using Eclipse, there are .classpath and .project files in the package and in cvs. 
@@ -210,14 +216,14 @@ CVS
 
 All files should have the below part in the initial class comment:
 
-@version $Id: DEVELOP,v 1.5 2005-08-02 06:29:39 anatom Exp $
+@version $Id: DEVELOP,v 1.6 2005-08-07 06:44:57 anatom Exp $
 
 Example:
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
- * @version $Id: DEVELOP,v 1.5 2005-08-02 06:29:39 anatom Exp $
+ * @version $Id: DEVELOP,v 1.6 2005-08-07 06:44:57 anatom Exp $
  */
 
 All java files should include the following header as the first lines in the file:
