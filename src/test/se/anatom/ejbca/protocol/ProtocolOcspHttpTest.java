@@ -73,12 +73,11 @@ import com.meterware.httpunit.WebResponse;
 
 /** Tests http pages of ocsp and scep
  **/
-public class ProtocolHttpTest extends TestCase {
+public class ProtocolOcspHttpTest extends TestCase {
     private static Logger log = Logger.getLogger(TestMessages.class);
 
     private static final String httpReqPath = "http://127.0.0.1:8080/ejbca";
     private static final String resourceOcsp = "publicweb/status/ocsp";
-    private static final String resourceScep = "publicweb/apply/scep/pkiclient.exe";
 
     static byte[] openscep = Base64.decode(("MIIGqwYJKoZIhvcNAQcCoIIGnDCCBpgCAQExDjAMBggqhkiG9w0CBQUAMIICuwYJ" +
             "KoZIhvcNAQcBoIICrASCAqgwggKkBgkqhkiG9w0BBwOgggKVMIICkQIBADGB1TCB" +
@@ -147,11 +146,11 @@ public class ProtocolHttpTest extends TestCase {
 
 
     public static TestSuite suite() {
-        return new TestSuite(ProtocolHttpTest.class);
+        return new TestSuite(ProtocolOcspHttpTest.class);
     }
 
 
-    public ProtocolHttpTest(String name) {
+    public ProtocolOcspHttpTest(String name) {
         super(name);
     }
 
@@ -234,77 +233,14 @@ public class ProtocolHttpTest extends TestCase {
         WebRequest request = new GetMethodWebRequest(httpReqPath + '/' + resourceOcsp);
         WebResponse response = wc.getResponse(request);
         assertEquals("Response code", 405, response.getResponseCode());
-        // Hit scep, gives a 400: Bad Request
-        request = new GetMethodWebRequest(httpReqPath + '/' + resourceScep);
-        response = wc.getResponse(request);
-        assertEquals("Response code", 400, response.getResponseCode());
-    }
-
-    /** Tests scep message from OpenScep
-     * Prerequisites for running the tests is to have a CA setup with
-     * issuerDN: CN=TestCA,O=AnaTom,C=SE.
-     * @throws Exception error
-     */
-    public void test02OpenScep() throws Exception {
-        log.debug(">test02OpenScep()");
-        // send message to server and see what happens
-        WebConversation wc = new WebConversation();
-        WebRequest request = new GetMethodWebRequest(httpReqPath + '/' + resourceScep);
-        request.setParameter("operation", "PKIOperation");
-        request.setParameter("message", new String(Base64.encode(openscep)));
-        WebResponse response = wc.getResponse(request);
-        // TODO: since our request most certainly uses the wrong CA cert to encrypt the
-        // request, it will fail. If we get something back, we came a little bit at least :)
-        // We should get a NOT_FOUND error back.
-        assertEquals("Response code", 404, response.getResponseCode());
-        // TODO: send crap message and get good error
-
-        log.debug("<test02OpenScep()");
     }
 
 
-    private SingleResp sendOCSPPost(byte[] ocspPackage) throws IOException, OCSPException, NoSuchProviderException {
-        // POST the OCSP request
-        URL url = new URL(httpReqPath + '/' + resourceOcsp);
-        HttpURLConnection con = (HttpURLConnection)url.openConnection();
-        // we are going to do a POST
-        con.setDoOutput(true);
-        con.setRequestMethod("POST");
-
-        // POST it
-        con.setRequestProperty("Content-Type", "application/ocsp-request");
-        OutputStream os = con.getOutputStream();
-        os.write(ocspPackage);
-        os.close();
-        assertEquals("Response code", 200, con.getResponseCode());
-        assertEquals("Content-Type", "application/ocsp-response", con.getContentType());
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        // This works for small requests, and OCSP requests are small
-        InputStream in = con.getInputStream();
-        int b = in.read();
-        while (b != -1) {
-            baos.write(b);
-            b = in.read();
-        }
-        baos.flush();
-        in.close();
-        byte[] respBytes = baos.toByteArray();
-        OCSPResp response = new OCSPResp(new ByteArrayInputStream(respBytes));
-        assertEquals("Response status not zero.", response.getStatus(), 0);
-        BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
-        X509Certificate[] chain = brep.getCerts("BC");
-        boolean verify = brep.verify(chain[0].getPublicKey(), "BC");
-        assertTrue("Response failed to verify.", verify);
-        SingleResp[] singleResps = brep.getResponses();
-        assertEquals("No of SingResps shoudl be 1.", singleResps.length, 1);
-        SingleResp singleResp = singleResps[0];
-        return singleResp;
-    }
     /** Tests ocsp message
      * @throws Exception error
      */
-    public void test03OcspGood() throws Exception {
-        log.debug(">test03OcspGood()");
+    public void test02OcspGood() throws Exception {
+        log.debug(">test02OcspGood()");
 
         // find a CA (TestCA?) create a user and generate his cert
         // send OCSP req to server and get good response
@@ -349,14 +285,14 @@ public class ProtocolHttpTest extends TestCase {
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
         Object status = singleResp.getCertStatus();
         assertEquals("Status is not null (good)", status, null);
-        log.debug("<test03OcspGood()");
+        log.debug("<test02OcspGood()");
     }
 
     /** Tests ocsp message
      * @throws Exception error
      */
-    public void test04OcspRevoked() throws Exception {
-        log.debug(">test04OcspRevoked()");
+    public void test03OcspRevoked() throws Exception {
+        log.debug(">test03OcspRevoked()");
         // Now revoke the certificate and try again
         CertificateDataPK pk = new CertificateDataPK();
         pk.fingerprint = CertTools.getFingerprintAsString(ocspTestCert);
@@ -378,14 +314,14 @@ public class ProtocolHttpTest extends TestCase {
         assertTrue("Status does not have reason", rev.hasRevocationReason());
         int reason = rev.getRevocationReason();
         assertEquals("Wrong revocation reason", reason, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
-        log.debug("<test04OcspRevoked()");
+        log.debug("<test03OcspRevoked()");
     }
 
     /** Tests ocsp message
      * @throws Exception error
      */
-    public void test05OcspUnknown() throws Exception {
-        log.debug(">test05OcspUnknown()");
+    public void test04OcspUnknown() throws Exception {
+        log.debug(">test04OcspUnknown()");
         // An OCSP request for an unknown certificate (not exist in db)
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, new BigInteger("1")));
@@ -399,14 +335,14 @@ public class ProtocolHttpTest extends TestCase {
         Object status = singleResp.getCertStatus();
         assertTrue("Status is not Unknown", status instanceof UnknownStatus);
 
-        log.debug("<test05OcspUnknown()");
+        log.debug("<test04OcspUnknown()");
     }
 
     /** Tests ocsp message
      * @throws Exception error
      */
-    public void test06OcspUnknownCA() throws Exception {
-        log.debug(">test06OcspUnknownCA()");
+    public void test05OcspUnknownCA() throws Exception {
+        log.debug(">test05OcspUnknownCA()");
         // An OCSP request for a certificate from an unknwon CA
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, unknowncacert, new BigInteger("1")));
@@ -420,10 +356,10 @@ public class ProtocolHttpTest extends TestCase {
         Object status = singleResp.getCertStatus();
         assertTrue("Status is not Unknown", status instanceof UnknownStatus);
 
-        log.debug("<test06OcspUnknownCA()");
+        log.debug("<test05OcspUnknownCA()");
     }
     
-    public void test07OcspSendWrongContentType() throws Exception {
+    public void test06OcspSendWrongContentType() throws Exception {
         // An OCSP request for a certificate from an unknwon CA
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, unknowncacert, new BigInteger("1")));
@@ -442,4 +378,45 @@ public class ProtocolHttpTest extends TestCase {
         
     }
 
+    //
+    // Private helper methods
+    //
+    
+    private SingleResp sendOCSPPost(byte[] ocspPackage) throws IOException, OCSPException, NoSuchProviderException {
+        // POST the OCSP request
+        URL url = new URL(httpReqPath + '/' + resourceOcsp);
+        HttpURLConnection con = (HttpURLConnection)url.openConnection();
+        // we are going to do a POST
+        con.setDoOutput(true);
+        con.setRequestMethod("POST");
+
+        // POST it
+        con.setRequestProperty("Content-Type", "application/ocsp-request");
+        OutputStream os = con.getOutputStream();
+        os.write(ocspPackage);
+        os.close();
+        assertEquals("Response code", 200, con.getResponseCode());
+        assertEquals("Content-Type", "application/ocsp-response", con.getContentType());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        // This works for small requests, and OCSP requests are small
+        InputStream in = con.getInputStream();
+        int b = in.read();
+        while (b != -1) {
+            baos.write(b);
+            b = in.read();
+        }
+        baos.flush();
+        in.close();
+        byte[] respBytes = baos.toByteArray();
+        OCSPResp response = new OCSPResp(new ByteArrayInputStream(respBytes));
+        assertEquals("Response status not zero.", response.getStatus(), 0);
+        BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
+        X509Certificate[] chain = brep.getCerts("BC");
+        boolean verify = brep.verify(chain[0].getPublicKey(), "BC");
+        assertTrue("Response failed to verify.", verify);
+        SingleResp[] singleResps = brep.getResponses();
+        assertEquals("No of SingResps shoudl be 1.", singleResps.length, 1);
+        SingleResp singleResp = singleResps[0];
+        return singleResp;
+    }
 }

@@ -134,7 +134,7 @@
     <!-- =================================================================== -->
     <target name="init" depends="j2ee:check">
         <echo>
----------- CONFIGURATION PROPERTIES ----------
+---------- ${app.version} CONFIGURATION PROPERTIES ----------
 jboss.home             = ${jboss.home}
 ca.keystorepass        = ${ca.keystorepass}
 ca.ocspkeystorepass    = ${ca.ocspkeystorepass}
@@ -734,9 +734,11 @@ web.contentencoding    = ${web.contentencoding}
                 <path location="${test.dir}" />
             </classpath>
             <formatter type="xml" />
-            <batchtest fork="no" todir="${test.dir}/web/reports">
+        	<!-- we must use fork=yes or the BC JCE won't be authenticated due to some problem with ant classloading -->
+            <batchtest fork="yes" todir="${test.dir}/web/reports">
                 <fileset dir="${test.dir}">
-                    <include name="**/protocol/ProtocolHttpTest*" />
+                    <include name="**/protocol/ProtocolScepHttpTest*" />
+                    <include name="**/protocol/ProtocolOcspHttpTest*" />
                     <include name="**/webdist/WebdistHttpTest*" />
                 </fileset>
             </batchtest>
