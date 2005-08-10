@@ -72,6 +72,7 @@ import se.anatom.ejbca.protocol.FailInfo;
 import se.anatom.ejbca.protocol.IRequestMessage;
 import se.anatom.ejbca.protocol.IResponseMessage;
 import se.anatom.ejbca.protocol.ResponseStatus;
+import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Hex;
 
@@ -944,7 +945,7 @@ public class RSASignSessionBean extends BaseSessionBean {
     	// Sendernonce is a random number
     	byte[] senderNonce = new byte[16];
     	randomSource.nextBytes(senderNonce);
-    	ret.setSenderNonce(Hex.encode(senderNonce));
+    	ret.setSenderNonce(new String(Base64.encode(senderNonce)));
     	// If we have a specified request key info, use it in the reply
     	if (req.getRequestKeyInfo() != null) {
     		ret.setRecipientKeyInfo(req.getRequestKeyInfo());
