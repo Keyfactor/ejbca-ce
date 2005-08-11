@@ -403,6 +403,20 @@ There is a SCEP servlet receiving requests on http://localhost:8080/ejbca/public
 </p>
 <subsection name="Level of SCEP support">
 <p>
+EJBCA implements features from (at least) draft 11 of the SCEP spec. This means that we implement the following SCEP messages:
+<ul>
+<li>PKCSReq</li>
+<li>GetCRL</li>
+<li>GetCACert</li>
+<li>GetCACertChain</li>
+<li>GetCACaps</li>
+</ul>
+And the following CA capabilities:
+<ul>
+<li>POSTPKIOperation</li>
+<li>SHA-1</li>
+</ul>
+</p><p>
 EJBCA does succesfully receive SCEP 'PKCSReq' requests and send back the certifificate/CRL immediately in a proper SCEP reply message.
 EJBCA does not support the 'polling' model, EJBCA uses the direct method, where a request is granted or denied immediately.
 EJBCA will not send back proper SCEP error messages in all cases of failure. The error messages are not completely implemented.
@@ -418,6 +432,9 @@ The most common errors should be wrong username/password or wrong status (not NE
 <subsection name="Tested devices">
 <subsubsection name="OpenScep">
 <p>
+OpenScep has does not work with modern OpenSSL implementation (only works with OpenSSL 0.9.6) and also has a bug
+that causes it to crash when receiving SCEP responses. There are patches that adress these issues though so it can be used.
+</p><p>
 To use the <a href="http://openscep.othello.ch/">OpenScep</a> client to request a certificate from this servlet, use the command:
 </p>
 <source>
@@ -466,7 +483,7 @@ To enroll using the Cisco VPN client use:
 </p></subsubsection>
 <subsubsection name="Cisco PIX">
 <p>
-Cisco PIX is not currently tested as working.
+Cisco PIX has not currently been tested as working.
 <ul>
 <li>You must configure JBoss to use port 80 to enroll with PIX, this is done in 
 JBOSS_HOME/server/default/deploy/jbossweb-tomcat50.sar/service.xml (or similar depending on version).</li>
