@@ -52,7 +52,7 @@ import java.util.Hashtable;
 /**
  * A response message for scep (pkcs7).
  *
- * @version $Id: ScepResponseMessage.java,v 1.24 2005-08-10 12:54:22 anatom Exp $
+ * @version $Id: ScepResponseMessage.java,v 1.25 2005-08-11 08:59:34 anatom Exp $
  */
 public class ScepResponseMessage implements IResponseMessage, Serializable {
     static final long serialVersionUID = 2016710353393853878L;
@@ -199,8 +199,8 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
                 } else if (cert != null) {
                     log.debug("Adding certificates to response message");
                     certList.add(cert);
-                    // Don't add the CA cert, it's optional and I bet it may confuse some apps
-                    // certList.add(signCert);
+                    // Add the CA cert, it's optional but Cisco VPN client complains if it isn't there
+                    certList.add(signCert);
                 }
                 CertStore certs = CertStore.getInstance("Collection",
                         new CollectionCertStoreParameters(certList), "BC");
@@ -275,6 +275,7 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
             // TransactionId
             if (transactionId != null) {
                 oid = new DERObjectIdentifier(ScepRequestMessage.id_transId);
+                log.debug("Added transactionId: " + transactionId);
                 value = new DERSet(new DERPrintableString(transactionId));
                 attr = new Attribute(oid, value);
                 attributes.put(attr.getAttrType(), attr);
