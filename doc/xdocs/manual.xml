@@ -470,6 +470,13 @@ You should only use CN in the users DN (same as for PIX below).
 <p>
 Working.
 </p></subsubsection>
+<subsubsection name="Cryptlib">
+<p>
+When using <a href="http://www.cs.auckland.ac.nz/~pgut001/cryptlib/">Cryptlib</a>, the CA certificate must have 
+KeyUsage 'Key Encipherment' in addition to the usual key usage flags. This is reasonable, since SCEP requires the CA
+to actually encrypt data (which generally is a bad thing, since a special encryption certificate should be used for that).
+<br></br>Don't forget to add a challenge password to the certificate request.
+</p></subsubsection>
 <subsubsection name="Cisco VPN client">
 <p>
 Tested with version 4.0.2.
