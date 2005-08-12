@@ -15,6 +15,7 @@ package se.anatom.ejbca.protocol;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Set;
+import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERString;
 import org.bouncycastle.asn1.DERUTF8String;
@@ -22,6 +23,8 @@ import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x509.X509Extension;
+import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import se.anatom.ejbca.util.CertTools;
@@ -40,7 +43,7 @@ import java.security.cert.X509Certificate;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.30 2005-08-10 12:53:11 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.31 2005-08-12 10:06:53 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     static final long serialVersionUID = 3597275157018205136L;
@@ -147,32 +150,55 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
             }
         } catch (IllegalArgumentException e) {
             log.error("PKCS10 not inited!");
-
             return null;
         }
 
         String ret = null;
 
         // Get attributes
+        // The password attribute can be either a pkcs_9_at_challengePassword directly
+        // or
+        // a pkcs_9_at_extensionRequest containing a pkcs_9_at_challengePassword as a
+        // X509Extension.
         CertificationRequestInfo info = pkcs10.getCertificationRequestInfo();
         AttributeTable attributes = new AttributeTable(info.getAttributes());
         if (attributes == null) {
             return null;
         }
         Attribute attr = attributes.get(PKCSObjectIdentifiers.pkcs_9_at_challengePassword);
+        DEREncodable obj = null;
         if (attr == null) {
-            return null;
+            // See if we have it embedded in an extension request instead
+            attr = attributes.get(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+            if (attr == null) {
+                return null;                
+            }
+            log.debug("got extension request");
+            ASN1Set values = attr.getAttrValues();
+            if (values.size() == 0) {
+                return null;
+            }
+            X509Extensions exts = X509Extensions.getInstance(values.getObjectAt(0));
+            X509Extension ext = exts.getExtension(PKCSObjectIdentifiers.pkcs_9_at_challengePassword);
+            if (ext == null) {
+                log.debug("no challenge password extension");
+                return null;
+            }
+            obj = ext.getValue();
+        } else {
+            // If it is a challengePassword directly, it's just to grab the value
+            ASN1Set values = attr.getAttrValues();
+            obj = values.getObjectAt(0);
         }
-        ASN1Set values = attr.getAttrValues();
 
-        if (values.size() > 0) {
+        if (obj != null) {
             DERString str = null;
 
             try {
-                str = DERPrintableString.getInstance((values.getObjectAt(0)));
+                str = DERPrintableString.getInstance((obj));
             } catch (IllegalArgumentException ie) {
                 // This was not printable string, should be utf8string then according to pkcs#9 v2.0
-                str = DERUTF8String.getInstance((values.getObjectAt(0)));
+                str = DERUTF8String.getInstance((obj));
             }
 
             if (str != null) {

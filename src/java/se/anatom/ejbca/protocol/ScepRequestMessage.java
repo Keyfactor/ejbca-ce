@@ -60,7 +60,7 @@ import se.anatom.ejbca.util.CertTools;
  * Class to handle SCEP request messages sent to the CA. 
  * TODO: don't forget extensions, e.g. KeyUsage requested by end entity 
  *
- * @version $Id: ScepRequestMessage.java,v 1.40 2005-05-27 14:52:27 anatom Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.41 2005-08-12 10:06:53 anatom Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage, Serializable {
     static final long serialVersionUID = -235623330828902051L;
@@ -297,11 +297,13 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         if (messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
             ASN1Sequence seq = (ASN1Sequence) derobj;
             pkcs10 = new PKCS10CertificationRequest(seq);
+            log.debug("Successfully extracted PKCS10.");
+            //log.debug("Successfully extracted PKCS10:"+new String(Base64.encode(pkcs10.getEncoded())));
         }
         if (messageType == ScepRequestMessage.SCEP_TYPE_GETCRL) {
             issuerAndSerno = IssuerAndSerialNumber.getInstance(derobj);
+            log.debug("Successfully extracted IssuerAndSerialNumber.");
         }
-        log.debug("Successfully extracted PKCS10.");
         log.debug("<decrypt");
     } // decrypt
 
