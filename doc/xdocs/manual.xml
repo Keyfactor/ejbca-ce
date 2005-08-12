@@ -475,7 +475,6 @@ Working.
 When using <a href="http://www.cs.auckland.ac.nz/~pgut001/cryptlib/">Cryptlib</a>, the CA certificate must have 
 KeyUsage 'Key Encipherment' in addition to the usual key usage flags. This is reasonable, since SCEP requires the CA
 to actually encrypt data (which generally is a bad thing, since a special encryption certificate should be used for that).
-<br></br>Don't forget to add a challenge password to the certificate request.
 <br></br>Use the complete path as for the Cisco VPN client below as server name.
 </p></subsubsection>
 <subsubsection name="Cisco VPN client">
