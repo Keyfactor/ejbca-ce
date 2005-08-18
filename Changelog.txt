@@ -1,3 +1,21 @@
+3.1.2
+---
+New Feature
+    * [ECA-46] - multiple instances of altNames in certificates
+    * [ECA-130] - Implement new Scep mode using POST
+Bug
+    * [ECA-118] - Imported OpenSSL CA not working
+    * [ECA-121] - Can not publish certificate with comma in DN to LDAP
+    * [ECA-123] - Dash not allowed in username
+    * [ECA-124] - User passwords leak into debug log
+    * [ECA-125] - Admiweb too restrictive for estonian chars.
+    * [ECA-126] - Some imported CA certificate contains the field "friendlyName" in PKCS#12 twice
+    * [ECA-131] - Problem with certificate import CLI command
+    * [ECA-133] - Single quote in DN does not work
+    * [ECA-136] - senderNonce in returned SCEP messages longer than 16 bytes
+Improvement
+    * [ECA-108] - Add changelog to ejbca web site
+
 3.1.1
 ---
 ** Bug
