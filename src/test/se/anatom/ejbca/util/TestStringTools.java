@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
 /**
  * Tests the StringTools class .
  *
- * @version $Id: TestStringTools.java,v 1.4 2005-06-20 12:07:47 anatom Exp $
+ * @version $Id: TestStringTools.java,v 1.5 2005-08-18 07:30:49 anatom Exp $
  */
 public class TestStringTools extends TestCase {
     private static Logger log = Logger.getLogger(TestStringTools.class);
@@ -72,5 +72,13 @@ public class TestStringTools extends TestCase {
     	assertTrue("String has chars that should be stripped!", StringTools.hasSqlStripChars(strip1));
     	assertEquals("String not stripped correctly!", stripped, "foo/bar/far/");
 		log.debug("<test03Strip()");
+    }
+    public void test04Strip() throws Exception {
+        log.debug(">test04Strip()");
+        String strip1 = "CN=foo, O=Acme\\, Inc, OU=;\\/<>bar";
+        String stripped = StringTools.strip(strip1);
+        assertTrue("String has chars that should be stripped!", StringTools.hasSqlStripChars(strip1));
+        assertEquals("String not stripped correctly!", stripped, "CN=foo, O=Acme\\, Inc, OU=/////bar");
+        log.debug("<test04Strip()");
     }
 }

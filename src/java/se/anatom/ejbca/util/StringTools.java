@@ -21,19 +21,19 @@ import org.apache.log4j.Logger;
 /**
  * This class implements some utility functions that are useful when handling Strings.
  *
- * @version $Id: StringTools.java,v 1.24 2005-06-20 07:47:56 anatom Exp $
+ * @version $Id: StringTools.java,v 1.25 2005-08-18 07:30:50 anatom Exp $
  */
 public class StringTools {
     private static Logger log = Logger.getLogger(StringTools.class);
 
     // Characters that are not allowed in strings that may be stored in the db
     private static final char[] stripChars = {
-        '\"', '\n', '\r', '/', '\\', ';', '&', '|', '!', '\0', '%', '`', '<', '>', '?',
+        '\"', '\n', '\r', '\\', ';', '&', '|', '!', '\0', '%', '`', '<', '>', '?',
         '$', ':', '~'
     };
     // Characters that are not allowed in strings that may be used in db queries
     private static final char[] stripSqlChars = {
-        '\'', '\"', '\n', '\r', '/', '\\', ';', '&', '|', '!', '\0', '%', '`', '<', '>', '?',
+        '\'', '\"', '\n', '\r', '\\', ';', '&', '|', '!', '\0', '%', '`', '<', '>', '?',
         '$', ':', '~'
     };
     // Characters that are allowed to escape in strings
@@ -62,7 +62,7 @@ public class StringTools {
                     // If it is an escaped char, allow it if it is an allowed escapechar
                     int index = ret.indexOf('\\');
                     while (index > -1) {
-                    	if (isAllowed(ret.charAt(index+1))) {
+                    	if (!isAllowed(ret.charAt(index+1))) {
                             ret = StringUtils.overlay(ret,"/",index,index+1);
                         }
                         index = ret.indexOf('\\',index+1);
