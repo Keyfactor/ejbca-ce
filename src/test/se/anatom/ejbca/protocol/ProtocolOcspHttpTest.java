@@ -263,7 +263,8 @@ public class ProtocolOcspHttpTest extends TestCase {
 
         if (userExists) {
             log.debug("User ocsptest already exists.");
-            usersession.setUserStatus(admin,"ocsptest",UserDataConstants.STATUS_NEW);
+            usersession.changeUser(admin, "ocsptest", "foo123", "C=SE,O=AnaTom,CN=OCSPTest",null,"ocsptest@anatom.se",false, SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW, caid);
+            //usersession.setUserStatus(admin,"ocsptest",UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
         // Generate certificate for the new user
