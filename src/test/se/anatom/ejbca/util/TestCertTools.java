@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.7 2005-08-02 11:37:19 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.8 2005-08-18 07:48:25 anatom Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);
@@ -252,12 +252,13 @@ public class TestCertTools extends TestCase {
         String dn21 = "C=SE,O=Foo\\, Inc, OU=Foo\\, Dep, CN=Foo\\'";
         String bcdn21 = CertTools.stringToBCDNString(dn21);
         assertEquals(bcdn21, "CN=Foo\',OU=Foo\\, Dep,O=Foo\\, Inc,C=SE");
-        assertEquals(StringTools.strip(bcdn21), "CN=Foo',OU=Foo/, Dep,O=Foo/, Inc,C=SE");
+        // it is allowed to escape ,
+        assertEquals(StringTools.strip(bcdn21), "CN=Foo',OU=Foo\\, Dep,O=Foo\\, Inc,C=SE");
 
         String dn22 = "C=SE,O=Foo\\, Inc, OU=Foo, Dep, CN=Foo'";
         String bcdn22 = CertTools.stringToBCDNString(dn22);
         assertEquals(bcdn22, "CN=Foo',OU=Foo,O=Foo\\, Inc,C=SE");
-        assertEquals(StringTools.strip(bcdn22), "CN=Foo',OU=Foo,O=Foo/, Inc,C=SE");
+        assertEquals(StringTools.strip(bcdn22), "CN=Foo',OU=Foo,O=Foo\\, Inc,C=SE");
         log.debug("<test02StringToBCDNString()");
     }
 
@@ -426,7 +427,7 @@ public class TestCertTools extends TestCase {
        String dn21 = "C=SE,O=Foo\\, Inc, OU=Foo\\, Dep, CN=Foo\\'";
        String bcdn21 = CertTools.stringToBCDNString(dn21);
        assertEquals("CN=Foo\',OU=Foo\\, Dep,O=Foo\\, Inc,C=SE", bcdn21);        
-       assertEquals("CN=Foo',OU=Foo/, Dep,O=Foo/, Inc,C=SE", StringTools.strip(bcdn21));        
+       assertEquals("CN=Foo',OU=Foo\\, Dep,O=Foo\\, Inc,C=SE", StringTools.strip(bcdn21));        
        log.debug("<test10TestMultipleReversed()");
    }
    
