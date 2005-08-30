@@ -7,7 +7,7 @@ You need to drop your jdbc driver in ${jboss.home}/server/default/lib
 
 Customize at will as this is mainly for development.
 
-$Id: ejbca-ds.xml,v 1.1 2004-06-24 12:35:02 sbailliez Exp $
+$Id: ejbca-ds.xml,v 1.2 2005-08-30 06:08:03 anatom Exp $
 
  -->
 
@@ -41,8 +41,8 @@ $Id: ejbca-ds.xml,v 1.1 2004-06-24 12:35:02 sbailliez Exp $
 
       <!-- The time before an unused connection is destroyed -->
       <!-- NOTE: This is the check period. It will be destroyed somewhere between 1x and 2x this timeout after last use -->
-      <!-- TEMPORARY FIX! - Disable idle connection removal, HSQLDB has a problem with not reaping threads on closed connections -->
-      <idle-timeout-minutes>0</idle-timeout-minutes>
+      <!-- Note for HSQLDB! - If you have problems, set to 0 to disable idle connection removal, HSQLDB has a problem with not reaping threads on closed connections -->
+      <idle-timeout-minutes>5</idle-timeout-minutes>
 
       <!-- sql to call when connection is created
         <new-connection-sql>some arbitrary sql</new-connection-sql>
