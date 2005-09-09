@@ -53,7 +53,7 @@ Configuring EJBCA
    Specify the 'datasource.jndi-name' to the one you chose.
    For example: 'EjbcaDS'
 
-   There is a .ejbca.properties.sample that is heavily commented.
+   There is a ejbca.properties.sample that is heavily commented.
 
 2. Use 'ant deploy', it will configure automatically all deployment descriptors such
    as ejb-jar.xml, jbosscmp-jdbc.xml, according to the database/jndi-name you chose before.
