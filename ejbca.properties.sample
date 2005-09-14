@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.21 2005-06-10 06:50:12 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.22 2005-09-14 16:33:43 herrvendil Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -16,6 +16,10 @@ jboss.home=${env.JBOSS_HOME}
 # which compiler to use
 # default: javac
 #build.compiler=jikes
+
+# which java version to use 14 for 1.4 and 15 for 1.5
+# default: 14
+java.ver =14
 
 # ------------ Basic CA configuration ---------------------
 # When upgrading, the important options are:

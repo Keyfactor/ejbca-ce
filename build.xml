@@ -14,6 +14,8 @@
        net it checks the properties file here. -->
     <property file="${user.home}/${app.name}.properties" />
     <property file="${app.name}.properties" />
+	<property name="java.ver" value="14" />
+	
 
     <import file="bin/jboss.xml" />
 
@@ -63,7 +65,7 @@
 	
     <property name="createcrlservicejar" value="${dist.dir}/${createcrlservice.name}" />
 
-    <property name="jar.extclasspath" value="lib/bcmail-jdk14.jar lib/bcprov-jdk14.jar lib/log4j-1.2.7.jar lib/ldap.jar lib/commons-lang-2.0.jar lib/commons-collections.jar lib/commons-fileupload-1.0.jar"/>
+    <property name="jar.extclasspath" value="lib/bcmail-jdk${java.ver}.jar lib/bcprov-jdk${java.ver}.jar lib/log4j-1.2.7.jar lib/ldap.jar lib/commons-lang-2.0.jar lib/commons-collections.jar lib/commons-fileupload-1.0.jar"/>
 
     <path id="ext.classpath">
         <fileset dir="lib/ext" includes="*.jar" />
@@ -71,7 +73,9 @@
 
     <path id="compile.classpath">
         <path refid="ext.classpath" />
-        <fileset dir="lib" includes="*.jar" />
+        <fileset dir="lib" includes="*.jar" excludes="bc*.jar"/>
+        <fileset dir="lib" includes="bcmail-jdk${java.ver}.jar"/>
+    	<fileset dir="lib" includes="bcprov-jdk${java.ver}.jar"/>
         <path refid="j2ee.classpath" />
     </path>
 
@@ -136,6 +140,7 @@
         <echo>
 ---------- ${app.version} CONFIGURATION PROPERTIES ----------
 jboss.home             = ${jboss.home}
+java.ver               = ${java.ver}
 ca.keystorepass        = ${ca.keystorepass}
 ca.ocspkeystorepass    = ${ca.ocspkeystorepass}
 ocsp.defaultresponder  = ${ocsp.defaultresponder}
@@ -433,8 +438,8 @@ web.contentencoding    = ${web.contentencoding}
                 <exclude name="META-INF/application.xml" />
             </fileset>
             <fileset dir=".">
-                <include name="${lib}/bcmail-jdk14.jar" />
-                <include name="${lib}/bcprov-jdk14.jar" />
+                <include name="${lib}/bcmail-jdk${java.ver}.jar" />
+                <include name="${lib}/bcprov-jdk${java.ver}.jar" />
                 <include name="${lib}/log4j-1.2.7.jar" />
                 <include name="${lib}/ldap.jar" />
                 <include name="${lib}/commons-lang-2.0.jar" />
