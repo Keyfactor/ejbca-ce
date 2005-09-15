@@ -30,6 +30,7 @@ attributeTypes: (
   NAME 'ejbcaDeviceCertificate'
   DESC 'Cerfificate for devices'
   SYNTAX 1.3.6.1.4.1.1466.115.121.1.5
+  X-ORIGIN 'EJBCA'
   )
 #
 #********************************************************************
@@ -51,6 +52,7 @@ objectClasses: (
   AUXILIARY
   MUST ( ejbcaDeviceCertificate )
   MAY  ( description )
+  X-ORIGIN 'EJBCA'
   )
 #
 #********************************************************************
