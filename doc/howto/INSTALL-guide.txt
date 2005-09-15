@@ -1,11 +1,17 @@
-$Id: INSTALL-guide.txt,v 1.1 2005-05-20 11:02:52 anatom Exp $
+$Id: INSTALL-guide.txt,v 1.2 2005-09-15 07:04:24 anatom Exp $
 
     My LINUX+JBOSS+EJBCA+MYSQL+OPENLDAP How To
     originally contributed by <surd0007(at)yahoo.com.cn>
  
-This install guide is a complement to the guide present in README.
-The quick install guide in README should be the first choice, you can 
-consult this guide for additional information related to MySQL and OpenLDAP.
+NOTE: This is an unoficial guide, read the note below.
+
+This install guide is a complement to the guide present in 'User Guide'.
+The quick install guide in the 'User Guide' at http://ejbca.org/ 
+should be read first first choice, you can consult this guide for additional 
+information related to MySQL and OpenLDAP.
+
+NOTE: This guide is not updated with the frequency of the official User Guide, 
+so please go there first.
 
  
  Softwares needed:
