@@ -51,7 +51,7 @@ administrator, who can be found on the sourceforge project page.
 <li>Hu Aranjuez, mynetbus(at)126.com, column name fix for MS SQL2000.</li>
 <li>Marco Ferrante, marco(at)csita.unige.it, Italian translation, openssl migration howto, importcert cli function.</li>
 <li>Alejandro Falcone, afalcone(at)speedy.com.ar, Spanish translation.</li>
-<li>Bruno Bonfils, asyd(at)gwyneth.glou.net, added X-ORIGIN to device schema for latest SunD irectory Server.</li>
+<li>Bruno Bonfils, asyd(at)gwyneth.glou.net, added X-ORIGIN to device schema for latest Sun Directory Server.</li>
 </ul>
     </section>
   </body>

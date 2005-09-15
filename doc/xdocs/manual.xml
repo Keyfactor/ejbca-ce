@@ -433,13 +433,12 @@ The most common errors should be wrong username/password or wrong status (not NE
 <subsubsection name="OpenScep">
 <p>
 OpenScep has does not work with modern OpenSSL implementation (only works with OpenSSL 0.9.6) and also has a bug
-that causes it to crash when receiving SCEP responses. There are patches that adress these issues though so it can be used.
+that causes it to crash when receiving SCEP responses. There are <a href="http://www.primekey.se/~tomas/download.html">patches</a> that adress these issues though so it can be used.
 </p><p>
 To use the <a href="http://openscep.othello.ch/">OpenScep</a> client to request a certificate from this servlet, use the command:
 </p>
 <source>
 ./scep -k test.key -r test.pemreq -c ejbca-ca.pem -q foo123 -u http://localhost:8080/ejbca/publicweb/apply/scep
-rem ./scep -d -k test.key -r test.pemreq -2 -e test.req -c ejbca-ca.pem -q foo123 -u http://localhost:8080/ejbca/publicweb/apply/scep
 </source>
 <p>
 Where test.key is generated with:
