@@ -1379,7 +1379,7 @@ The CA has a command line interface 'bin/ejbca.sh ca. Options are:
 Stores CA certificates and publishes first CRL.
 Quote the DN (") so it is treated as one argument.</li>
 <li>getrootcert - exports the CA certificates to file.</li>
-<li>createcrl - issues a CRL.</li>
+<li>createcrl - issues a CRL. With no CA name given it issues all CRLs that are 'due'. If a CA name is given CRL generation for that CA is 'forced'.</li>
 <li>getcrl - retrieves the latest CRL.</li>
 <li>listexpired - List certificates that will expire within a
 given number of days.</li>
