@@ -55,6 +55,7 @@ Further information on this can be found in the Sun documentation on the JCE.
 Needed to build and run are:
 <ul>
 <li>JDK 1.4.x or 1.5.x</li>
+<li><i>Unlimited Strength Jurisdiction Policy Files</i> for your JDK</li>
 <li>JBOSS >3.2.6 or 4.0.x (latest tested verison is JBoss 4.0.2)</li>
 <li>Ant 1.6.x to build (http://jakarta.apache.org/ant/)</li>
 </ul>
