@@ -493,10 +493,11 @@ To enroll using the Cisco VPN client use:
 Cisco PIX has not currently been tested as working.
 <ul>
 <li>You must configure JBoss to use port 80 to enroll with PIX, this is done in 
-JBOSS_HOME/server/default/deploy/jbossweb-tomcat50.sar/service.xml (or similar depending on version).</li>
+JBOSS_HOME/server/default/deploy/jbossweb-tomcat50.sar/service.xml (or similar depending on version). You must run as root to use port 80.</li>
 <li>EJBCA supports the 'ca' mode of enrollment for pix, not 'ra'.</li>
 <li>The certificate profile used by the SCEP CA must include the key usages KeyEncipherment and DataEncipherment, otherwise PIX will 
-not be able to verify/decrypt encrypted SCEP messages. This is not in the default certificate profile for CAs.</li>
+not be able to verify/decrypt encrypted SCEP messages. This is not in the default certificate profile for CAs. Create a new certificate profile before 
+creating the Scep CA, you can use ROOTCA as template for the new certificate profile.</li>
 <li>When enrolling for certificate using SCEP with for example a Cisco PIX there is a 'ca_nickname'. This nickname 
 should be the CA-name as defined when creating the CA in EJBCA. For example 'vpnca'. </li>
 <li>Only use lower-case names when creating the CA in EJBCA, since PIX will change the CA name VpnCA to vpnca when enrolling.</li>
@@ -523,18 +524,31 @@ Set timezone first, then set time, then check time with 'show clock'.
 The enrollment steps should be something like:
 </p>
 <source>
+-- Connect with pix and enter admin mode
+telnet 10.1.1.1 (default pwd cisco)
+enable (default blank pwd)
+configure terminal
+-- Enable CA loggin
+debug crypto ca
+-- Clear current PKI config
+clear ca identity
+-- Enter PKI config, i.e location of CA etc. Don't require CRLs, it's easier
 ca identity pixca ca-ip:/ejbca/publicweb/apply/scep/pkiclient.exe
 ca configure pixca ca 1 0 crloptional
 ca authenticate pixca
 --wait--
+-- look at the fetched certificate
 show ca certificate
 ca save all
 wr mem
+-- get a CRL if you really want to (if you did not configure CRL as optional you must)
 ca crl request pixca
 --wait--
 show ca crl
+-- Generate keys and enroll for the certificate (user in ejbca has password foo123)
+ca generate rsa key 1024
 ca enroll pixca foo123
---wait--
+--wait, wait, this will take a long time--
 </source>
 <p>
 Unforturnately this gives the following error for me:
