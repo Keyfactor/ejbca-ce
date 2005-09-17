@@ -31,7 +31,7 @@ import java.security.cert.X509Certificate;
 /**
  * A response message consisting of a single X509 Certificate.
  *
- * @version $Id: X509ResponseMessage.java,v 1.18 2005-05-02 16:18:55 anatom Exp $
+ * @version $Id: X509ResponseMessage.java,v 1.19 2005-09-17 15:18:07 anatom Exp $
  */
 public class X509ResponseMessage implements IResponseMessage, Serializable {
     static final long serialVersionUID = -2157072605987735912L;
@@ -215,5 +215,10 @@ public class X509ResponseMessage implements IResponseMessage, Serializable {
      * @param recipientKeyInfo key info
      */
     public void setRecipientKeyInfo(byte[] recipientKeyInfo) {
+    }
+    
+    /** @see se.anatom.ejca.protocol.IResponseMessage
+     */
+    public void setPreferredDigestAlg(String digest) {
     }
 }

@@ -26,7 +26,7 @@ import java.security.cert.X509Certificate;
  * Base interface for request messages sent to the CA. Implementors of this interface must also
  * implement Serializable if they are to be sent to any EJB bussiness methods.
  *
- * @version $Id: IRequestMessage.java,v 1.15 2005-04-05 07:24:40 anatom Exp $
+ * @version $Id: IRequestMessage.java,v 1.16 2005-09-17 15:18:07 anatom Exp $
  */
 public interface IRequestMessage {
     /**
@@ -150,4 +150,13 @@ public interface IRequestMessage {
      * @return request key info
      */
     public byte[] getRequestKeyInfo();
+    
+    /**
+     * Returns the name of the preferred Digest algorithm to be used in the response if applicable.
+     * Defaults to CMSSignedDataGenerator.SHA1 for normal messages, but to MD5 for SCEP messages. If SCEP request is 
+     * digested with SHA1 it is set to SHA1 though.
+     *  
+     * @return oid of digest algorithm ex CMSSignedDataGenerator.MD5, SHA1, SHA256 etc
+     */
+    public String getPreferredDigestAlg(); 
 }

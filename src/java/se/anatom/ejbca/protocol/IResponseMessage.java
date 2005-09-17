@@ -39,7 +39,7 @@ import java.security.cert.X509Certificate;
  * byte[] responseMessage = resp.getResponseMessage(); 
  * </code>
  *
- * @version $Id: IResponseMessage.java,v 1.14 2004-11-20 22:54:28 sbailliez Exp $
+ * @version $Id: IResponseMessage.java,v 1.15 2005-09-17 15:18:07 anatom Exp $
  */
 public interface IResponseMessage {
 
@@ -177,4 +177,12 @@ public interface IResponseMessage {
      * @param recipientKeyInfo key info
      */
     public void setRecipientKeyInfo(byte[] recipientKeyInfo);
+    
+    /**
+     * Sets preferred digest algorithm for the response message, if applicable. 
+     * If this is not called, a default is used.
+     * 
+     * @param String oid of digest algorithm ex CMSSignedDataGenerator.MD5, SHA1, SHA256 etc
+     */
+    public void setPreferredDigestAlg(String digest);
 }

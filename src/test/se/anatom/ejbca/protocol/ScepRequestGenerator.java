@@ -49,6 +49,7 @@ public class ScepRequestGenerator {
     private X509Certificate cacert = null;
     private String reqdn = null;
     private KeyPair keys = null;
+    private String digestOid = CMSSignedDataGenerator.DIGEST_SHA1;
     private PKCS10CertificationRequest p10request;
     int keysize = 1024;
     private String senderNonce = null;
@@ -59,6 +60,9 @@ public class ScepRequestGenerator {
     }
     public void setKeys(KeyPair myKeys) {
         this.keys = myKeys;
+    }
+    public void setDigestOid(String oid) {
+    	digestOid = oid;
     }
     /** Base 64 encode senderNonce
      */
@@ -163,7 +167,7 @@ public class ScepRequestGenerator {
         certList.add(cert);
         CertStore certs = CertStore.getInstance("Collection", new CollectionCertStoreParameters(certList), "BC");
         gen1.addCertificatesAndCRLs(certs);
-        gen1.addSigner(keys.getPrivate(), cert, CMSSignedDataGenerator.DIGEST_SHA1,
+        gen1.addSigner(keys.getPrivate(), cert, digestOid,
                 new AttributeTable(attributes), null);
         // The signed data to be enveloped
         CMSSignedData s = gen1.generate(signThis, true, "BC");

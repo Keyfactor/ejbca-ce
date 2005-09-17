@@ -950,6 +950,8 @@ public class RSASignSessionBean extends BaseSessionBean {
     	if (req.getRequestKeyInfo() != null) {
     		ret.setRecipientKeyInfo(req.getRequestKeyInfo());
     	}
+    	// Which digest algorithm to use to create the response, if applicable
+    	ret.setPreferredDigestAlg(req.getPreferredDigestAlg());
     	return ret;
     }
     /**

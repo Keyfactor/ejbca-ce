@@ -26,6 +26,7 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import se.anatom.ejbca.util.CertTools;
 
@@ -43,7 +44,7 @@ import java.security.cert.X509Certificate;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.31 2005-08-12 10:06:53 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.32 2005-09-17 15:18:07 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     static final long serialVersionUID = 3597275157018205136L;
@@ -58,6 +59,9 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
 
     /** manually set username */
     protected String username = null;
+    
+    /** preferred digest algorithm to use in replies, if applicable */
+    private transient String preferredDigestAlg = CMSSignedDataGenerator.DIGEST_SHA1;
 
     /** The pkcs10 request message, not serialized. */
     protected transient PKCS10CertificationRequest pkcs10 = null;
@@ -237,7 +241,13 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
             int index = name.indexOf(' ');
             if (index > 0) {
                 ret = name.substring(0, index);
-            }            
+            } else {
+                // Perhaps there is no space, only +
+                index = name.indexOf('+');
+                if (index > 0) {
+                    ret = name.substring(0, index);
+                }            	
+            }
         }
         log.debug("UserName='" + ret + "'");
         return ret;
@@ -417,6 +427,12 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
      */
     public byte[] getRequestKeyInfo() {
         return null;
+    }
+    
+    /** @see se.anatom.ejbca.protocol.IRequestMessage
+     */
+    public String getPreferredDigestAlg() {
+    	return preferredDigestAlg;
     }
 }
 

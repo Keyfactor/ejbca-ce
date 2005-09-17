@@ -49,8 +49,12 @@ import org.bouncycastle.asn1.cms.SignedData;
 import org.bouncycastle.asn1.cms.SignerInfo;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.CMSSignedData;
+import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
+import org.bouncycastle.cms.SignerInformation;
+import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 
 import se.anatom.ejbca.util.Base64;
@@ -60,7 +64,7 @@ import se.anatom.ejbca.util.CertTools;
  * Class to handle SCEP request messages sent to the CA. 
  * TODO: don't forget extensions, e.g. KeyUsage requested by end entity 
  *
- * @version $Id: ScepRequestMessage.java,v 1.41 2005-08-12 10:06:53 anatom Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.42 2005-09-17 15:18:07 anatom Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage, Serializable {
     static final long serialVersionUID = -235623330828902051L;
@@ -133,8 +137,11 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
     /** IssuerAndSerialNUmber for CRL request */
     private transient IssuerAndSerialNumber issuerAndSerno = null;
 
+    /** preferred digest algorithm to use in replies, if applicable */
+    private transient String preferredDigestAlg = CMSSignedDataGenerator.DIGEST_MD5;
+
     /**
-     * Constucts a new SCEP/PKCS7 message handler object.
+     * Constructs a new SCEP/PKCS7 message handler object.
      *
      * @param msg The DER encoded PKCS7 request.
      *
@@ -150,6 +157,20 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
     private void init() throws IOException {
         log.debug(">init");
 
+        try {
+            CMSSignedData csd = new CMSSignedData(scepmsg);
+            SignerInformationStore infoStore = csd.getSignerInfos();
+            Collection signers = infoStore.getSigners();
+            Iterator iter = signers.iterator();
+            if (iter.hasNext()) {
+            	SignerInformation si = (SignerInformation)iter.next();
+            	preferredDigestAlg = si.getDigestAlgOID();
+            	log.debug("Set "+ preferredDigestAlg+" as preferred digest algorithm for SCEP");
+            }        	
+        } catch (CMSException e) {
+        	// ignore, use default digest algo
+        	log.error("CMSException trying to get preferred digest algorithm: ", e);
+        }
         // Parse and verify the entegrity of the PKIOperation message PKCS#7
         /* If this would have been done using the newer CMS it would have made me so much happier... */
         ASN1Sequence seq = (ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(scepmsg)).readObject();
@@ -161,7 +182,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
             //  pkcsGetCertInitialSigned, pkcsGetCertSigned, pkcsGetCRLSigned
             // (could also be pkcsRepSigned or certOnly, but we don't receive them on the server side
             // Try to find out what kind of message this is
-            sd = new SignedData((ASN1Sequence) ci.getContent());
+            sd = new SignedData((ASN1Sequence) ci.getContent());	
 
             // Get self signed cert to identify the senders public key
             ASN1Set certs = sd.getCertificates();
@@ -417,6 +438,12 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
                 ret = name; 
                 if (index > 0) {
                     ret = name.substring(0,index);        
+                } else {
+                    // Perhaps there is no space, only +
+                    index = name.indexOf('+');
+                    if (index > 0) {
+                        ret = name.substring(0, index);
+                    }            	
                 }
             }
         } catch (IOException e) {
@@ -602,6 +629,12 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
     public int getMessageType() {
         return messageType;
 
+    }
+
+    /** @see se.anatom.ejbca.protocol.IRequestMessage
+     */
+    public String getPreferredDigestAlg() {
+    	return preferredDigestAlg;
     }
 
     //

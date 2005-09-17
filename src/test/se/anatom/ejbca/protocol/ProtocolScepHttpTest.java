@@ -59,6 +59,7 @@ import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSProcessable;
 import org.bouncycastle.cms.CMSSignedData;
+import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.cms.SignerId;
@@ -231,8 +232,8 @@ public class ProtocolScepHttpTest extends TestCase {
         log.debug("<test02OpenScep()");
     }
 
-    public void test03ScepRequestOK() throws Exception {
-        log.debug(">test03ScepRequestOK()");
+    public void test03ScepRequestOKSHA1() throws Exception {
+        log.debug(">test03ScepRequestOKSHA1()");
         // find a CA create a user and
         // send SCEP req to server and get good response with cert
 
@@ -241,31 +242,49 @@ public class ProtocolScepHttpTest extends TestCase {
         
         // Pre-generate key for all requests to speed things up a bit
         keys = KeyTools.genKeys(512);
-        byte[] msgBytes = genScepRequest(false);
+        byte[] msgBytes = genScepRequest(false, CMSSignedDataGenerator.DIGEST_SHA1);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, false);
-        log.debug("<test03ScepRequestOK()");
+        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, false, CMSSignedDataGenerator.DIGEST_SHA1);
+        log.debug("<test03ScepRequestOKSHA1()");
     }
 
-    public void test04ScepRequestPostOK() throws Exception {
-        log.debug(">test04ScepRequestPostOK()");
+    public void test04ScepRequestOKMD5() throws Exception {
+        log.debug(">test04ScepRequestOKMD5()");
+        // find a CA create a user and
+        // send SCEP req to server and get good response with cert
+
+        // Make user that we know...
+        createScepUser();
+        
+        // Pre-generate key for all requests to speed things up a bit
+        keys = KeyTools.genKeys(512);
+        byte[] msgBytes = genScepRequest(false, CMSSignedDataGenerator.DIGEST_MD5);
+        // Send message with GET
+        byte[] retMsg = sendScep(false, msgBytes);
+        assertNotNull(retMsg);
+        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, false, CMSSignedDataGenerator.DIGEST_MD5);
+        log.debug("<test04ScepRequestOKMD5()");
+    }
+
+    public void test05ScepRequestPostOK() throws Exception {
+        log.debug(">test05ScepRequestPostOK()");
         // find a CA, create a user and
         // send SCEP req to server and get good response with cert
 
         createScepUser();
         
-        byte[] msgBytes = genScepRequest(false);
+        byte[] msgBytes = genScepRequest(false, CMSSignedDataGenerator.DIGEST_SHA1);
         // Send message with GET
         byte[] retMsg = sendScep(true, msgBytes);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, false);
-        log.debug(">test04ScepRequestPostOK()");
+        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, false, CMSSignedDataGenerator.DIGEST_SHA1);
+        log.debug(">test05ScepRequestPostOK()");
     }
 
-    public void test05ScepGetCACert() throws Exception {
-        log.debug(">test05ScepGetCACert()");
+    public void test06ScepGetCACert() throws Exception {
+        log.debug(">test06ScepGetCACert()");
         String reqUrl = httpReqPath + '/' + resourceScep+"?operation=GetCACert&message="+caname;
         URL url = new URL(reqUrl);
         HttpURLConnection con = (HttpURLConnection)url.openConnection();
@@ -290,20 +309,20 @@ public class ProtocolScepHttpTest extends TestCase {
         X509Certificate cert = CertTools.getCertfromByteArray(respBytes);
         // Check that we got the right cert back
         assertEquals(cacert.getSubjectDN().getName(), cert.getSubjectDN().getName());
-        log.debug(">test05ScepGetCACert()");
+        log.debug(">test06ScepGetCACert()");
     }
 
-    public void test06ScepGetCrl() throws Exception {
-        log.debug(">test06ScepGetCrl()");
-        byte[] msgBytes = genScepRequest(true);
+    public void test07ScepGetCrl() throws Exception {
+        log.debug(">test07ScepGetCrl()");
+        byte[] msgBytes = genScepRequest(true, CMSSignedDataGenerator.DIGEST_SHA1);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, true);
-        log.debug(">test06ScepGetCrl()");
+        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, true, CMSSignedDataGenerator.DIGEST_SHA1);
+        log.debug(">test07ScepGetCrl()");
     }
-    public void test07ScepGetCACaps() throws Exception {
-        log.debug(">test07ScepGetCACaps()");
+    public void test08ScepGetCACaps() throws Exception {
+        log.debug(">test08ScepGetCACaps()");
         String reqUrl = httpReqPath + '/' + resourceScep+"?operation=GetCACaps&message="+caname;
         URL url = new URL(reqUrl);
         HttpURLConnection con = (HttpURLConnection)url.openConnection();
@@ -326,7 +345,7 @@ public class ProtocolScepHttpTest extends TestCase {
         assertNotNull("Response can not be null.", respBytes);
         assertTrue(respBytes.length > 0);
         assertEquals(new String(respBytes), "POSTPKIOperation\nSHA-1");
-        log.debug(">test07ScepGetCACaps()");
+        log.debug(">test08ScepGetCACaps()");
     }
     public void test99CleanUp() throws Exception {
         // remove user
@@ -359,9 +378,10 @@ public class ProtocolScepHttpTest extends TestCase {
         
     }
 
-    private byte[] genScepRequest(boolean makeCrlReq) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, InvalidAlgorithmParameterException, CertStoreException, IOException, CMSException {
+    private byte[] genScepRequest(boolean makeCrlReq, String digestoid) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, InvalidAlgorithmParameterException, CertStoreException, IOException, CMSException {
         ScepRequestGenerator gen = new ScepRequestGenerator();
         gen.setKeys(keys);
+        gen.setDigestOid(digestoid);
         byte[] msgBytes = null;
         if (makeCrlReq) {
             msgBytes = gen.generateCrlReq("C=SE, O=PrimeKey, CN=sceptest", cacert);
@@ -379,7 +399,7 @@ public class ProtocolScepHttpTest extends TestCase {
         return msgBytes;
     }
     
-    private void checkScepResponse(byte[] retMsg, String userDN, String senderNonce, String transId, boolean crlRep) throws CMSException, NoSuchProviderException, NoSuchAlgorithmException, CertStoreException, InvalidKeyException, CertificateException, SignatureException, CRLException {
+    private void checkScepResponse(byte[] retMsg, String userDN, String senderNonce, String transId, boolean crlRep, String digestOid) throws CMSException, NoSuchProviderException, NoSuchAlgorithmException, CertStoreException, InvalidKeyException, CertificateException, SignatureException, CRLException {
         //
         // Parse response message
         //
@@ -390,6 +410,8 @@ public class ProtocolScepHttpTest extends TestCase {
         assertTrue(col.size() > 0);
         Iterator iter = col.iterator();
         SignerInformation signerInfo = (SignerInformation)iter.next();
+        // Check that the message is signed with the correct digest alg
+        assertEquals(signerInfo.getDigestAlgOID(), digestOid);
         SignerId sinfo = signerInfo.getSID();
         // Check that the signer is the expected CA
         assertEquals(CertTools.stringToBCDNString(cacert.getIssuerDN().getName()), CertTools.stringToBCDNString(sinfo.getIssuerAsString()));
