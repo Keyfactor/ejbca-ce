@@ -490,7 +490,7 @@ To enroll using the Cisco VPN client use:
 </p></subsubsection>
 <subsubsection name="Cisco PIX">
 <p>
-Cisco PIX has not currently been tested as working.
+Cisco PIX is working as of EJBCA 3.1.3.
 <ul>
 <li>You must configure JBoss to use port 80 to enroll with PIX, this is done in 
 JBOSS_HOME/server/default/deploy/jbossweb-tomcat50.sar/service.xml (or similar depending on version). You must run as root to use port 80.</li>
@@ -499,19 +499,18 @@ JBOSS_HOME/server/default/deploy/jbossweb-tomcat50.sar/service.xml (or similar d
 not be able to verify/decrypt encrypted SCEP messages. This is not in the default certificate profile for CAs. Create a new certificate profile before 
 creating the Scep CA, you can use ROOTCA as template for the new certificate profile.</li>
 <li>When enrolling for certificate using SCEP with for example a Cisco PIX there is a 'ca_nickname'. This nickname 
-should be the CA-name as defined when creating the CA in EJBCA. For example 'vpnca'. </li>
+should be the CA-name as defined when creating the CA in EJBCA. For example 'vpnca'.</li>
 <li>Only use lower-case names when creating the CA in EJBCA, since PIX will change the CA name VpnCA to vpnca when enrolling.</li>
-<li>The username in EJBCA must be the name the PIX identifies itself with <i>name</i>.<i>domain</i>, example pix.primekey.se. </li>
-<li>The end-entity DN should only include the DN component CN plus unstructuredXX, ex "CN=pix.primekey.se, unstructuredName=pix.primekey.se",
-no O or C should be in the certificate.</li>
-<li>Certificates used for PIX must include the DN component unstructuredName (fqdn) and could also include unstructuredAddress (ip).</li>
-<li>Certificates used for PIX must include the SubjectAltName dNSName beeing the fqdn of the pix, eg <i>name</i>.<i>domain</i>, 
-iPAddress can also be useful. If unstructuredAddress is used iPAddress should be used (but I don't think you should use ip).</li>
+<li>The username in EJBCA must be the name the PIX identifies itself with <i>name</i>.<i>domain</i>, example pix.primekey.se.</li>
+<li>The end-entity DN must include the DN components CN and unstructuredName, ex "CN=pix.primekey.se, unstructuredName=pix.primekey.se". 
+You can also include O, C etc in the certificate. A normal DN for a PIX is "CN=pix.primekey.se,unstructuredName=pix.primekey.se,O=PrimeKey,C=SE".</li>
+<li>Certificates used for PIX MUST include the DN component unstructuredName (fqdn) and could also include unstructuredAddress (ip) beeing the IP-address of the PIX.</li>
+<li>Certificates used for PIX may also use the SubjectAltName dNSName and iPAddress matching the DN components unstructuredName and unstructuredAddress, but it's not necessary.</li>
 <li>Cisco does not support use of the 'Domain Component', DC, attribute in DNs, don't use it.</li>
-<li>The PIX user should have a DN like "unstructuredName=pix.primekey.se, CN=pix.primekey.se", 
-KeyUsage "Digital Signature, Key Encipherment", SubjectAltName "DNS:pix.primekey.se".</li>
-<li>When the VPN-client (above) connects to the PIX, the 'ou' part of the clients DN must match a Vpngroup you have specified, 
+<li>KeyUsage should include <i>Digital Signature</i> and <i>Key Encipherment</i>, the EJBCA defaults work fine.</li>
+<li>When the Cisco VPN-client (above) connects to the PIX, the 'ou' part of the clients DN must match a Vpngroup you have specified, 
 otherwise the connection will fail.</li>
+<li>Cisco PIX needs the SCEP response messages to use MD5 as hash algorithm, not SHA1, this is handled by EJBCA automatically.</li>
 </ul>
 </p><p>
 Please notice this Cisco note:
@@ -528,7 +527,7 @@ The enrollment steps should be something like:
 telnet 10.1.1.1 (default pwd cisco)
 enable (default blank pwd)
 configure terminal
--- Enable CA loggin
+-- Enable CA logging
 debug crypto ca
 -- Clear current PKI config
 clear ca identity
@@ -536,35 +535,50 @@ clear ca identity
 ca identity pixca ca-ip:/ejbca/publicweb/apply/scep/pkiclient.exe
 ca configure pixca ca 1 0 crloptional
 ca authenticate pixca
---wait--
--- look at the fetched certificate
+-- wait --
+-- Look at the fetched certificate
 show ca certificate
 ca save all
 wr mem
--- get a CRL if you really want to (if you did not configure CRL as optional you must)
+-- Get a CRL if you really want to (if you did not configure CRL as optional you must)
 ca crl request pixca
---wait--
+-- wait --
 show ca crl
 -- Generate keys and enroll for the certificate (user in ejbca has password foo123)
 ca generate rsa key 1024
 ca enroll pixca foo123
---wait, wait, this will take a long time--
+-- wait, wait, this will take a long time --
+-- Look at the fetched certificate, this should now show both the pix cert and the ca cert
+show ca certificate
+
+pix(config)# show ca cert
+Certificate
+  Status: Available
+  Certificate Serial Number: 594f643a6916d78d
+  Key Usage: General Purpose
+  Subject Name:
+    C = SE
+    O = PrimeKey
+    CN = pix.primekey.se
+    UNSTRUCTURED NAME = pix.primekey.se
+    UNSTRUCTURED IP = 10.1.1.1
+  Validity Date:
+    start date: 14:42:29 GMT Sep 17 2005
+    end   date: 14:52:29 GMT Sep 17 2007
+
+CA Certificate
+  Status: Available
+  Certificate Serial Number: 7c7cf75236955a51
+  Key Usage: General Purpose
+    C = SE
+    O = PrimeKey
+    CN = pixca
+  Validity Date:
+    start date: 15:59:20 GMT Sep 16 2005
+    end   date: 16:09:20 GMT Sep 14 2015
+
 </source>
-<p>
-Unforturnately this gives the following error for me:
-</p>
-<source>
-CRYPTO_CA: error = 293: failed to verify
-</source>
-<p>
-or sometimes:
-</p>
-<source>
-CRYPTO_CA: error = 266: failed to verify 
-</source>
-<p>
-If someone has any ideas what this means, don't hesitate to let us know.
-</p></subsubsection>
+</subsubsection>
 </subsection>
 </section>
 
