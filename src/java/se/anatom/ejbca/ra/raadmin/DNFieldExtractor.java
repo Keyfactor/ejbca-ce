@@ -25,7 +25,7 @@ import org.ietf.ldap.LDAPDN;
  * strings.
  *
  * @author Philip Vendil
- * @version $Id: DNFieldExtractor.java,v 1.21 2005-05-09 19:51:19 anatom Exp $
+ * @version $Id: DNFieldExtractor.java,v 1.22 2005-09-17 14:37:20 anatom Exp $
  */
 public class DNFieldExtractor implements java.io.Serializable {
     private static Logger log = Logger.getLogger(DNFieldExtractor.class);
@@ -67,7 +67,7 @@ public class DNFieldExtractor implements java.io.Serializable {
     public static final int NUMBEROFFIELDS = 27;
     public static final String[] SUBJECTDNFIELDS = {
         "E=", "UID=", "CN=", "SN=", "GIVENNAME=", "INITIALS=", "SURNAME=", "T=", "OU=", "O=", "L=",
-        "ST=", "DC=", "C=", "1.2.840.113549.1.9.8=", "1.2.840.113549.1.9.2="
+        "ST=", "DC=", "C=", "UNSTRUCTUREDADDRESS=", "UNSTRUCTUREDNAME="
     };
     
     public static final String[] SUBJECTALTNAME = {

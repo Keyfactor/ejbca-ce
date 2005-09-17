@@ -72,7 +72,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.100 2005-05-10 11:51:26 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.101 2005-09-17 14:37:20 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -432,7 +432,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
                         tokentype, hardwaretokenissuerid, caid);
             } catch (UserDoesntFullfillEndEntityProfile udfp) {
                 logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY, "Userdata didn'nt fullfill end entity profile. + " + udfp.getMessage());
-                throw new UserDoesntFullfillEndEntityProfile(udfp.getMessage());
+                throw udfp;
             }
             // Check if administrator is authorized to edit user.
             if (!authorizedToEndEntityProfile(admin, endentityprofileid, AvailableAccessRules.EDIT_RIGHTS)) {
