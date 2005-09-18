@@ -33,7 +33,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Protocol messages.
  *
- * @version $Id: TestMessages.java,v 1.2 2005-08-04 14:55:23 anatom Exp $
+ * @version $Id: TestMessages.java,v 1.3 2005-09-18 07:47:26 anatom Exp $
  */
 public class TestMessages extends TestCase {
 
@@ -147,16 +147,10 @@ public class TestMessages extends TestCase {
         if (msg.requireKeyInfo()) {
             msg.setKeyInfo(caCert, privateKey);
         }
-        boolean thrown = false;
-        try {
-            // We know this will throw an exception since scepclient doesn't work
-            // If it starts working we know there is something wrong
-            boolean ret = msg.verify();  
-            assertTrue("Failed to verify SCEP message from Java Scep Client.", ret);
-        } catch (IllegalArgumentException e) {
-            thrown = true;
-        }
-        assertTrue(thrown);
+        // We know this will throw an exception since scepclient doesn't work
+        // If it starts working we know there is something wrong
+        boolean ret = msg.verify();  
+        assertFalse("Failed to fail to verify SCEP message from Java Scep Client.", ret);
         /*
         String dn = msg.getRequestDN();
         log.debug("DN: " + dn);
