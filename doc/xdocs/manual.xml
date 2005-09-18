@@ -448,13 +448,13 @@ Where test.key is generated with:
 openssl genrsa -out test.key
 </source>
 <p>
-test1.req is generated with:
+test.req is generated with:
 </p>
 <source>
 openssl req -key test.key -new -days 30 -out test.req -outform DER -config ../openssl/openscep.cnf
 </source>
 <p>
-and test1.pemreq is generated with:
+and test.pemreq is generated with:
 </p>
 <source>
 openssl req -key test.key -new -days 30 -out test.pemreq -outform PEM -config ../openssl/openscep.cnf
