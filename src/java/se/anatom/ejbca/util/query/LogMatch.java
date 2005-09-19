@@ -23,7 +23,7 @@ package se.anatom.ejbca.util.query;
  * function is getQueryString which returns a fragment of SQL statment.
  *
  * @author TomSelleck
- * @version $Id: LogMatch.java,v 1.8 2005-06-28 08:44:20 anatom Exp $
+ * @version $Id: LogMatch.java,v 1.9 2005-09-19 13:03:59 anatom Exp $
  *
  * @see se.anatom.ejbca.util.query.BasicMatch
  * @see se.anatom.ejbca.util.query.TimeMatch
@@ -66,6 +66,8 @@ public class LogMatch extends BasicMatch {
         this.matchtype = matchtype;
         this.matchvalue = matchvalue;
 
+        // The row below does not do anthing but check that matchvalue contains
+        // a legal number value when matching number field. See @throws clause.
         if ((matchwith == MATCH_WITH_EVENT) || (matchwith == MATCH_WITH_SPECIALADMIN)) {
             new Integer(matchvalue);
         }
