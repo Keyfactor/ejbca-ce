@@ -107,7 +107,7 @@ import se.anatom.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.28 2005-06-28 08:43:59 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.29 2005-09-19 13:09:47 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 
@@ -127,7 +127,12 @@ public class LocalLogSessionBean extends BaseSessionBean {
     private ArrayList logdevices;
 
     /** Columns in the database used in select */
-    private final String LOGENTRYDATA_COL = "adminType, adminData, caid, module, time, username, certificateSNR, event, comment";
+    private final String LOGENTRYDATA_TABLE = "LogEntryData";
+    private final String LOGENTRYDATA_COL = "adminType, adminData, caid, module, time, username, certificateSNR, event";
+    // Different column names is an unforturnalte workaround because of Orcale, you cannot have a column named 'comment' in Oracle.
+    // The workaround 'comment_' was spread in the wild in 2005, so we have to use it so far.
+    private final String LOGENTRYDATA_COL_COMMENT_OLD = "comment";
+    private final String LOGENTRYDATA_COL_COMMENT_ORA = "comment_";
 
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -295,7 +300,14 @@ public class LocalLogSessionBean extends BaseSessionBean {
         try {
             // Construct SQL query.
             con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            String sql = "select "+LOGENTRYDATA_COL+" from LogEntryData where ( "
+            // Different column names is an unforturnalte workaround because of Orcale, you cannot have a column named 'comment' in Oracle.
+            // The workaround 'comment_' was spread in the wild in 2005, so we have to use it so far.
+            String commentCol = LOGENTRYDATA_COL_COMMENT_OLD;
+            if (!JDBCUtil.columnExists(con, LOGENTRYDATA_TABLE, LOGENTRYDATA_COL_COMMENT_OLD)) {
+                log.debug("Using oracle column name 'comment_' in LogEntryData.");
+                commentCol = LOGENTRYDATA_COL_COMMENT_ORA;
+            }
+            String sql = "select "+LOGENTRYDATA_COL+", "+commentCol+" from "+LOGENTRYDATA_TABLE+" where ( "
                     + query.getQueryString() + ") and (" + capriviledges + ")";
             if (StringUtils.isNotEmpty(viewlogprivileges)) {
                 sql += " and (" + viewlogprivileges + ")";

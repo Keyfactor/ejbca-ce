@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
  * stress conditions, or simply exhaust database resources, so it is better to have some
  * warning than nothing at all.
  *
- * @version $Id: JDBCUtil.java,v 1.5 2005-04-29 10:33:55 anatom Exp $
+ * @version $Id: JDBCUtil.java,v 1.6 2005-09-19 13:09:47 anatom Exp $
  */
 public class JDBCUtil {
 
@@ -117,9 +117,27 @@ public class JDBCUtil {
      * @param rs  the result set to close (can be null)
      */
     public static void close(Connection con, PreparedStatement ps, ResultSet rs) {
-        close(con);
-        close(ps);
         close(rs);
+        close(ps);
+        close(con);
     }
-
+    /**
+     * Check if a certain column exists in the database.
+     * @param con the connection to use, not closed by this method
+     * @param table the table where the column perhaps exists
+     * @param col the name of the column to check for
+     * @return true if the column exists, falst if not (the database throws an SQLException)
+     */
+    public static boolean columnExists(Connection con, String table, String col) {
+        PreparedStatement st = null;
+        try {
+            st = con.prepareStatement("select "+col+" from "+table+" where 1=0");
+            st.executeQuery();
+            return true;
+        } catch (SQLException e) {
+            return false;
+        } finally {
+            JDBCUtil.close(st);
+        }
+    }
 }
