@@ -12,6 +12,7 @@
 <li>Flexible, component based architecture.</li>
 <li>Multiple levels of CAs.</li>
 <li>Multiple CAs and levels of CAs, build a complete infrastructure (or several) within one instance of EJBCA.</li>
+<li>Supports SHA-1 or SHA-256 as hash algorithm and RSA as public key algorithm for digtal signatures.</li>
 <li>Standalone or integrated in any J2EE application.</li>
 <li>Simple installation and configuration.</li>
 <li>Powerful Web based administration GUI using strong authentication.</li>

@@ -1,0 +1,130 @@
+<?xml version="1.0"?>
+<document>
+
+  <properties>
+    <title>Reference installations</title>
+  </properties>
+
+<body>
+  <section name="Reference installations">
+	<p>This section lists a few sites where EJBCA have been deployed succesfully.
+	As any software installations things move around over time, so the number of users etc should be considered an indication, not an absolute number.
+	</p>
+	<p>
+	If you like to be present on the list of reference installations, please <a href="contact.html">contact</a> us.
+	</p>
+	
+	<subsection name="PrimeKey Solutions AB">
+	<p>
+	<ul>
+	<li>Location: Stockholm, Sweden</li>
+    <li>Installed by: <a href="http://www.primekey.se/">PrimeKey Solutions AB</a></li>
+    <li>Trade of Industry: IT-Security</li>
+    <li>Solution 1: Internal CA. Operational since 2002. Using EJBCA to authenticate users for access to internal web services and email both from internal network and from internet. Issues both smart cards (using PrimeCard) and soft tokens to users.</li>
+    <li>Count of Users: Less than 100</li>
+    <li>Solution 2: External CA. Operational since 2004. Using EJBCA for partners and demo purposes. Each partner have their own SubCA and all CAs sses smart card HSM for protection of CA private keys. Issues both smart cards (using PrimeCard or manual enrollment using different CSPs) and soft tokens to users.</li>
+    <li>Count of Users: Less than 100</li>
+    </ul>
+	</p>
+	</subsection>
+
+	<subsection name="Ministry of Defence, France">
+	<p>
+	<ul>
+	<li>Location: France</li>
+    <li>Installed by: <a href="http://www.linagora.fr/">Linagora S.A</a> with support from PrimeKey Solutions AB</li>
+    <li>Trade of Industry: Defence (Public Sector)</li>
+    <li>Solution: Operational since april 2005. Backup PKI infrastructure. Uses nCipher HSM for CA key storage at root CA, and have several sub CAs. Issues soft tokens (pkcs12) to users using browsers and email clients.</li>
+    <li>Count of Users: Up to 1000 in the first phase</li>
+    </ul>
+	</p>
+	</subsection>
+
+	<subsection name="KG Knutsson AB">
+	<p>
+	<ul>
+	<li>Organization: <a href="http://www.kgk.se/">KG Knutsson AB</a></li>
+	<li>Location: Sweden</li>
+    <li>Installed by: <a href="http://www.primekey.se/">PrimeKey Solutions AB</a></li>
+    <li>Trade of Industry: Trade and Commerce</li>
+    <li>Solution: Pilot installation. Operational since dec 2004. Using EJBCA for issuing digital certificates. In combination with smart cards. Advanced setup with smart cards used for login to Active Directory infrastructure, browsers and email clients. Special use is key backup and recovery.</li>
+    <li>Count of Users: Up to 1000</li>
+    </ul>
+	</p>
+	</subsection>
+
+	<subsection name="National Swedish Police Board">
+	<p>
+	<ul>
+	<li>Location: Sweden</li>
+    <li>Installed by: <a href="http://www.primekey.se/">PrimeKey Solutions AB</a></li>
+    <li>Trade of Industry: Public Sector</li>
+    <li>Solution: Pilot installation. Operational since 2005. Using EJBCA for issuing certificates for VPN purposes.</li>
+    <li>Count of Users: Up to 100 in the first phase, option up to 25000 users.</li>
+    </ul>
+	</p>
+	</subsection>
+
+	<subsection name="ZhuHai Local Taxation Bureau">
+	<p>
+	<ul>
+	<li>Location: ZhuHai city, GuangDong province, China</li>
+    <li>Trade of Industry: Govermental authority (Taxation)</li>
+    <li>Solution: Operational since 2003. Use EJBCA as user database for Websphere. Login to application with forms and XML-signatures created using smart cards with certificates from EJBCA.</li>
+    <li>Count of Users: Up to 25000 in the first phase</li>
+    </ul>
+	</p>
+	</subsection>
+
+	<subsection name="Grupo Safa">
+	<p>
+	<ul>
+	<li>Location: Spain</li>
+    <li>Trade of Industry: Health Care (Pharmaceutical area)/Public Sector</li>
+    <li>Solution: Are using EJBCA to generate digital certificates internally and to their customers through a B2B-portal.</li>
+    <li>Count of Users: Up to 20000</li>
+    </ul>
+	</p>
+	</subsection>
+
+	<subsection name="Serasa.com">
+	<p>
+	<ul>
+	<li>Location: Brazil</li>
+	<li>Installed by: <a href="http://www.serasa.com/">Serasa.com</a></li>
+    <li>Trade of Industry: Financial/Public sector</li>
+    <li>Solution: Operational since 2004. Are using EJBCA to generate digital certificates to the financial sector.</li>
+    <li>Count of Users: Up to 20000</li>
+    </ul>
+	</p>
+	</subsection>
+
+	<subsection name="Evaltec">
+	<p>
+	<ul>
+	<li>Location: Brazil</li>
+	<li>Installed by: <a href="http://www.iqualy.com/">Iqualy.com</a></li>
+    <li>Trade of Industry: Bank and Finance</li>
+    <li>Solution: Operational since 2004. Using EJBCA for issuing digital certificates (soft tokens).</li>
+    <li>Count of Users: Unknown</li>
+    </ul>
+	</p>
+	</subsection>
+
+	<subsection name="Concealed customer">
+	<p>
+	<ul>
+	<li>Location: Sweden</li>
+    <li>Installed by: <a href="http://www.primekey.se/">PrimeKey Solutions AB</a></li>
+    <li>Trade of Industry: Public Sector</li>
+    <li>Solution: Operational since feb 2003. Uses smart cards issued to employees. Advanced setup with smart cards used for login to Active Directory infrastructure, browsers and email clients. Special use is key backup and recovery.</li>
+    <li>Count of Users: Up to 1000.</li>
+    </ul>
+	</p>
+	</subsection>
+	
+  </section>
+
+</body>
+</document>
+

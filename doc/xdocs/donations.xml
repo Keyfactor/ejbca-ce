@@ -2,16 +2,25 @@
 <document>
 
   <properties>
-    <title>Donations</title>
+    <title>Contribute to EJBCA</title>
   </properties>
 
 <body>
-  <section name="Donations and contributions">
+  <section name="Contributions">
     <p>
-    You can contribute to EJBCA in a number of ways:
+    EJBCA is an open source project and appreciates community contributions:
+    <ul>
+    <li>Contribute code, joint the EJBCA Team!<br></br>We are generous with CVS access once you have proven yourself with a few patches and have longer-term intentions.</li>
+    <li>Contribute documentation. Documentation can always be improved.</li>
+    </ul>
+    See <a href="contact.html">contact &amp; support</a> for ways to contact EJBCA.
+    </p>  
+  </section>
+  <section name="Donations">
+    <p>
+    You can donate to EJBCA in a number of ways:
     <ul>
     <li>Through <a href="http://sourceforge.net/donate/index.php?group_id=39716">Donations</a>.</li>
-    <li>By contributing code or documentation, see <a href="contact.html">contact &amp; support</a>.</li>    
     <li>By hiring someone for integration or sponsoring development of features. Contact the project admins at <a href="contact.html">contact &amp; support</a>.</li>
     <li>By hiring us for support. Contact the project admins at <a href="contact.html">contact &amp; support</a>.</li>
     </ul>

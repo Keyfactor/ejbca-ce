@@ -13,7 +13,8 @@
                 <item name="Demo Certificate"	   href="/demo.html"/>
                 <item name="License"               href="/license.html"/>
                 <item name="Contact &amp; Support" href="/contact.html"/>
-                <item name="Credits"		   href="/credits.html"/>
+                <item name="Credits"               href="/credits.html"/>
+                <item name="Reference installations" href="/installations.html"/>
             </menu>
 
             <menu name="Documentation">
@@ -32,10 +33,10 @@
             </menu>
 
             <menu name="Contributing">
-                <item name="CVS Repositories"      href="http://cvs.sourceforge.net/viewcvs.py/ejbca/ejbca/"/>
-                <item name="Bug Database"          href="http://jira.primekey.se/"/>
-                <item name="Donations"             href="/donations.html"/>
+                <item name="Contribute to EJBCA"     href="/donations.html"/>
                 <item name="Contributors"          href="/contributors.html"/>
+                <item name="Bug Database"          href="http://jira.primekey.se/"/>
+                <item name="CVS Repositories"      href="http://cvs.sourceforge.net/viewcvs.py/ejbca/ejbca/"/>
             </menu>
 
         </menusection>
