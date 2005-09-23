@@ -488,9 +488,10 @@ To enroll using the Cisco VPN client use:
 <li>In the DN screen simply enter the username (as added in EJBCA) as 'Name [CN]'</li>
 </ul>
 </p></subsubsection>
-<subsubsection name="Cisco PIX">
+<subsubsection name="Cisco PIX/3000">
 <p>
 Cisco PIX is working as of EJBCA 3.1.3.
+<br></br>Also Cisco 3000 is reported working well. The description below is for PIX, 3000 probably have less constraints than the PIX.
 <ul>
 <li>You must configure JBoss to use port 80 to enroll with PIX, this is done in 
 JBOSS_HOME/server/default/deploy/jbossweb-tomcat50.sar/service.xml (or similar depending on version). You must run as root to use port 80.</li>
