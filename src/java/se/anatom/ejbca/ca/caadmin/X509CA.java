@@ -105,7 +105,7 @@ import se.anatom.ejbca.util.StringTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.42 2005-08-02 11:37:19 anatom Exp $
+ * @version $Id: X509CA.java,v 1.43 2005-09-25 14:17:52 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -581,7 +581,7 @@ public class X509CA extends CA implements Serializable {
                       log.debug("<extendedService(super)");
                       return super.extendedService(request);                      
                   }
-                  BasicOCSPResp ocspresp = ocsprespgen.generate(sigAlg, pk, chain, new Date(), "BC" );
+                  BasicOCSPResp ocspresp = ocsprespgen.generate(sigAlg, pk, chain, new Date(), getCAToken().getProvider() );
                   returnval = new OCSPCAServiceResponse(ocspresp, chain == null ? null : Arrays.asList(chain));              
               } catch (IllegalKeyStoreException ike) {
                   throw new ExtendedCAServiceRequestException(ike);
