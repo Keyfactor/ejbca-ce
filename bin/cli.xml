@@ -81,8 +81,8 @@ java.trustpassword  : ${java.trustpassword}
         <antcall target="ejbca:adminweb"/>
         <echo message="Creating root certificate in DER format..."/>
         <ejbca:cli name="ca" arg='getrootcert ${ca.name} ${java.io.tmpdir}/rootca.der -der'/>
-        <ejbca:keytool arg="-v -alias EJBCA-CA -delete -keystore ${java.home}/lib/security/cacerts -storepass ${java.trustpassword}"/>
-        <ejbca:keytool arg="-v -alias EJBCA-CA -import -trustcacerts -file ${java.io.tmpdir}/rootca.der -keystore ${java.home}/lib/security/cacerts -storepass ${java.trustpassword} -noprompt"/>
+        <ejbca:keytool arg="-v -alias EJBCA-CA -delete -keystore '${java.home}/lib/security/cacerts' -storepass ${java.trustpassword}"/>
+        <ejbca:keytool arg="-v -alias EJBCA-CA -import -trustcacerts -file '${java.io.tmpdir}/rootca.der' -keystore '${java.home}/lib/security/cacerts' -storepass ${java.trustpassword} -noprompt"/>
         <delete file="${java.io.tmpdir}/rootca.der"/>
     </target>
 
