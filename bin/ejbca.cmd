@@ -85,6 +85,6 @@ set l=%9
 shift
 set m=%9
 rem echo %a% %b% %c% %d% %e% %f% %g% %h% %i% %j% %k% %l% %m%
-%JAVA_HOME%\bin\java -cp %CLASSPATH% %class_name% %a% %b% %c% %d% %e% %f% %g% %h% %i% %j% %k% %l% %m%
+"%JAVA_HOME%\bin\java" -cp %CLASSPATH% %class_name% %a% %b% %c% %d% %e% %f% %g% %h% %i% %j% %k% %l% %m%
 
 :end
