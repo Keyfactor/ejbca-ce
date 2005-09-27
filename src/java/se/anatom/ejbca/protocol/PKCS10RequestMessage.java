@@ -44,7 +44,7 @@ import java.security.cert.X509Certificate;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.32 2005-09-17 15:18:07 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.33 2005-09-27 18:20:09 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     static final long serialVersionUID = 3597275157018205136L;
@@ -78,6 +78,7 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
      * @throws IOException if the request can not be parsed.
      */
     public PKCS10RequestMessage() {
+    	// No constructor
     }
 
     /**
@@ -378,10 +379,11 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
      *
      * @param cert certificate containing the public key.
      * @param key private key.
+     * @param provider the provider to use, if the private key is on a HSM you must use a special provider. If null is given, the default BC provider is used.
      *
      * @see #requireKeyInfo()
      */
-    public void setKeyInfo(X509Certificate cert, PrivateKey key) {
+    public void setKeyInfo(X509Certificate cert, PrivateKey key, String Provider) {
     }
 
     /**

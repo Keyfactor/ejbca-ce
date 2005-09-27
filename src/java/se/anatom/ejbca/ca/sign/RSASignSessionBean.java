@@ -734,7 +734,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             // See if we need some key material to decrypt request
             if (req.requireKeyInfo()) {
                 // You go figure...scep encrypts message with the public CA-cert
-                req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
+                req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getProvider());
             }
             // Verify the request
             if (req.verify() == false) {
@@ -875,7 +875,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             // See if we need some key material to decrypt request
             if (req.requireKeyInfo()) {
                 // You go figure...scep encrypts message with the public CA-cert
-                req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
+                req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getProvider());
             }
             //Create the response message with all nonces and checks etc
             ret = createResponseMessage(responseClass, req, ca, catoken);

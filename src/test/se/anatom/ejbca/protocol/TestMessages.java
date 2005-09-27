@@ -33,7 +33,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Protocol messages.
  *
- * @version $Id: TestMessages.java,v 1.3 2005-09-18 07:47:26 anatom Exp $
+ * @version $Id: TestMessages.java,v 1.4 2005-09-27 18:20:09 anatom Exp $
  */
 public class TestMessages extends TestCase {
 
@@ -93,7 +93,7 @@ public class TestMessages extends TestCase {
         log.debug("IssuerDN: " + issuerdn);
         assertEquals("CN=AdminCA1,O=EJBCA Sample,C=SE", issuerdn);
         if (msg.requireKeyInfo()) {
-            msg.setKeyInfo(caCert, privateKey);
+            msg.setKeyInfo(caCert, privateKey, null);
         }
         boolean ret = msg.verify();
         assertTrue("Failed to verify SCEP message from OpenSCEP.", ret);
@@ -119,7 +119,7 @@ public class TestMessages extends TestCase {
         log.debug("IssuerDN: " + issuerdn);
         assertEquals("CN=AdminCA1,O=EJBCA Sample,C=SE", issuerdn);
         if (msg.requireKeyInfo()) {
-            msg.setKeyInfo(caCert, privateKey);
+            msg.setKeyInfo(caCert, privateKey, null);
         }
         boolean ret = msg.verify();
         assertTrue("Failed to verify SCEP message from Simple Scep.", ret);
@@ -145,7 +145,7 @@ public class TestMessages extends TestCase {
         log.debug("IssuerDN: " + issuerdn);
         assertEquals("CN=AdminCA1,O=EJBCA Sample,C=SE", issuerdn);
         if (msg.requireKeyInfo()) {
-            msg.setKeyInfo(caCert, privateKey);
+            msg.setKeyInfo(caCert, privateKey, null);
         }
         // We know this will throw an exception since scepclient doesn't work
         // If it starts working we know there is something wrong
@@ -174,7 +174,7 @@ public class TestMessages extends TestCase {
         log.debug("IssuerDN: " + issuerdn);
         assertEquals("CN=AdminCA1,O=EJBCA Sample,C=SE", issuerdn);
         if (msg.requireKeyInfo()) {
-            msg.setKeyInfo(caCert, privateKey);
+            msg.setKeyInfo(caCert, privateKey, null);
         }
         boolean ret = msg.verify();
         assertTrue("Failed to verify SCEP message from Cisco VPN client.", ret);

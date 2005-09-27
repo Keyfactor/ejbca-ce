@@ -64,7 +64,7 @@ import se.anatom.ejbca.util.CertTools;
  * Class to handle SCEP request messages sent to the CA. 
  * TODO: don't forget extensions, e.g. KeyUsage requested by end entity 
  *
- * @version $Id: ScepRequestMessage.java,v 1.42 2005-09-17 15:18:07 anatom Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.43 2005-09-27 18:20:09 anatom Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage, Serializable {
     static final long serialVersionUID = -235623330828902051L;
@@ -133,6 +133,8 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
 
     /** Private key used for decryption. */
     private transient PrivateKey privateKey = null;
+    /** JCE Provider used when decrypting with private key. Default provider is BC. */
+    private transient String jceProvider = "BC";
 
     /** IssuerAndSerialNUmber for CRL request */
     private transient IssuerAndSerialNumber issuerAndSerno = null;
@@ -310,7 +312,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
 
         while (it.hasNext()) {
             RecipientInformation recipient = (RecipientInformation) it.next();
-            decBytes = recipient.getContent(privateKey, "BC");
+            decBytes = recipient.getContent(privateKey, jceProvider);
             break;
         }
 
@@ -568,13 +570,19 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
      *
      * @param cert certificate containing the public key.
      * @param key private key.
+     * @param provider the provider to use, if the private key is on a HSM you must use a special provider. If null is given, the default BC provider is used.
      *
      * @see #requireKeyInfo()
      */
-    public void setKeyInfo(X509Certificate cert, PrivateKey key) {
+    public void setKeyInfo(X509Certificate cert, PrivateKey key, String provider) {
         // We don't need the public key 
         // this.cert = cert;
         this.privateKey = key;
+        if (provider == null) {
+        	this.jceProvider = "BC";
+        } else {
+            this.jceProvider = provider;        	
+        }
     }
 
     /**
