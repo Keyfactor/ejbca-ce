@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.22 2005-09-14 16:33:43 herrvendil Exp $
+# $Id: ejbca.properties.sample,v 1.23 2005-10-06 19:09:48 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -208,7 +208,7 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 #mail.subject=Retrieve your certificate
 
 # Defines the default message of the notification. 
-# Use the values $Username, $Password, $CN, $O, $OU, $C, $DATE to indicate which texts 
-# that should be replaced (Case insensitive), $NL stands for newline.
+# Use the values ${USERNAME}, ${PASSWORD}, ${CN}, ${O}, ${OU}, ${C}, ${DATE} to indicate which texts 
+# that should be replaced (Case sensitive), ${NL} stands for newline.
 # Default: below
-#mail.message=Hello $CN$NL$NL This is a notification. $NL$NL Your username: $Username$NL password: $Password$NL$NL Your are NOT supposed to go and fetch your certificate, this is only a test.
+#mail.message=Hello ${CN}${NL}${NL} This is a notification. ${NL}${NL} Your username: ${USERNAME}${NL} password: ${PASSWORD}${NL}${NL} Your are NOT supposed to go and fetch your certificate, this is only a test.
