@@ -119,6 +119,7 @@
     <property name="mail.password" value="primekey" />
     <property name="mail.pop3.host" value="localhost" />
     <property name="mail.smtp.host" value="localhost" />
+    <property name="mail.smtp.auth" value="false" />
     <property name="mail.subject" value="Retrieve your certificate" />
     <property name="mail.message" value="Hello $CN$NL$NL This is a notification. $NL$NL Your username: $Username$NL password: $Password$NL$NL Your are NOT supposed to go and fetch your certificate, this is only a test." />
     <property name="mail.debug" value="false" />
@@ -158,8 +159,8 @@ mail.subject           = ${mail.subject}
 mail.message           = ${mail.message}
 mail.user              = ${mail.user}
 mail.password          = ${mail.password}
-mail.pop3.host         = ${mail.pop3.host}
 mail.smtp.host         = ${mail.smtp.host}
+mail.smtp.auth         = ${mail.smtp.auth}
 mail.debug             = ${mail.debug}
 httpserver.pubhttp	   = ${httpserver.pubhttp}
 httpserver.pubhttps	   = ${httpserver.pubhttps}

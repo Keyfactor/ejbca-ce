@@ -7,7 +7,7 @@ mail server.
 
 Customize at will as this is mainly for development.
 
-$Id: ejbca-mail-service.xml,v 1.4 2005-10-06 19:34:52 anatom Exp $
+$Id: ejbca-mail-service.xml,v 1.5 2005-10-06 19:51:08 anatom Exp $
 
  -->
 
@@ -40,7 +40,7 @@ $Id: ejbca-mail-service.xml,v 1.4 2005-10-06 19:34:52 anatom Exp $
           <!-- Change to the SMTP gateway server -->
           <property name="mail.smtp.host" value="${mail.smtp.host}"/>
           <!-- Set to true to enable authentication on the SMTP server -->
-          <property name="mail.smtp.auth" value="false"/>
+          <property name="mail.smtp.auth" value="${mail.smtp.auth}"/>
 
           <!-- Change to the address mail will be from  -->
           <property name="mail.from" value="${mail.from}"/>
