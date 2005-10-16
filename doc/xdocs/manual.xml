@@ -99,7 +99,11 @@ numer of certificates is issued, it will become an issue after a while.</li>
 released we can not create scripts that updates the database if some tables changed. This will make 
 upgrades much much harder.</li>
 </ol>
-</p></subsection>
+</p><p>
+For information about installing JDBC drivers for other databases, see the document <i>'doc/howto/HOWTO-database.txt'</i>
+in the distribution.
+</p>
+</subsection>
 
 <subsection name="Install">
 <p>
