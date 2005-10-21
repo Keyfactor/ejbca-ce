@@ -226,6 +226,30 @@ and stored/published.
 Subordinate CAs are created using the admin GUI, you can not use the 
 cli for that.
 </p>
+<p>
+When creating a CA that is signed by an external CA, you actually create a PKCS10 certificate request
+that is sent to the external CA. When the external CA returns your CAs certificate, this is processed and
+the CA becomes activated.
+<br></br>When creating the certificate request you give the certificate chain of the CA that will sign your CA.
+This is given in PEM format, and EJBCA can be a bit picky about the format. It should be in plain PEM format without
+blank lines before or after like:
+</p>
+<source>
+-----BEGIN CERTIFICATE-----
+MIICIDCCAYmgAwIBAgIIVP8CMpl0En0wDQYJKoZIhvcNAQEFBQAwIDEOMAwGA1UE
+AxMFUVhMVkExDjAMBgNVBAoTBVFYTFZBMB4XDTA1MTAxOTA4MjYxMloXDTA2MTAx
+OTA4MzYxMlowIDEOMAwGA1UEAxMFUVhMVkExDjAMBgNVBAoTBVFYTFZBMIGfMA0G
+CSqGSIb3DQEBAQUAA4GNADCBiQKBgQCRJvog0sJIzWr2VvpI86dzGBaLazqp+dY7
+E/IleqQPRNMQIe8OjCuADNFiSfaiCC6MH4dTm6LwaxmX36eLHSU9/jH5/QZllolC
+7sttv/ay8cAtIKYCjcsjyNmFzU7BcxxhiY0CWWlemz3eXMkQLZbgR5lR8ce5m0Jg
+OZeLAoOfxwIDAQABo2MwYTAPBgNVHRMBAf8EBTADAQH/MA4GA1UdDwEB/wQEAwIB
+JjAdBgNVHQ4EFgQUrpCjRSqqOYm5qOyRKHpZin+0EWkwHwYDVR0jBBgwFoAUrpCj
+RSqqOYm5qOyRKHpZin+0EWkwDQYJKoZIhvcNAQEFBQADgYEABJK+RVZiOJdB2uqs
+LHprk3VPMtUck4exh+/52WnzNaUIpALDFaKB5XKSk0OGQE3S0ltMlsdCJIU1iNff
+QcVC7vrCjlnv9sUa22YIzK4ZBuY8a0cRC/GhfpoX9o+vp1wNWVtTwOLAuNRuZJxw
+U03ZXi1b1HuLtSXrFb6d/3BQq8Y=
+-----END CERTIFICATE-----
+</source>
 </subsection> 
 <subsection name="Converting an OpenSSL CA">
 <p>
