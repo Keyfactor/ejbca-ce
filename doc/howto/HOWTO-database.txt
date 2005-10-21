@@ -76,13 +76,14 @@ NOTE:
 If you are using the default database HSQLDB: Nothing should be done, just install
 JBoss and run.
 
-The following is only if you want to replace the default database with another.
+The following is only if you want to replace the default database with another for EJBCA.
 
 The description given here is for JBoss 3.x. Consider consulting the
 official JBoss documentation.
 
 Database configuration files in JBoss are located in the
-<jboss-home>/server/default/deploy.
+<jboss-home>/server/default/deploy. EJBCA automatically deploys a new datasource
+definition file in JBoss, so you don't have to do anything with that.
 
 1. Install and setup the database your database.
 
@@ -111,6 +112,10 @@ connections more stable and persistent over database restarts. The connect strin
 jdbc:mysql://127.0.0.1/ejbca?autoReconnect=true
 
 Download JDBC driver for mySQL from http://www.mysql.com/
+
+Sometimes there can be problems with MySQL realted to case sensitivity of database tables.
+If you run into this see:
+http://dev.mysql.com/doc/refman/4.1/en/name-case-sensitivity.html
 
 PostgreSQL specifics
 --------------------
