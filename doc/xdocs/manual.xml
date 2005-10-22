@@ -250,6 +250,12 @@ QcVC7vrCjlnv9sUa22YIzK4ZBuY8a0cRC/GhfpoX9o+vp1wNWVtTwOLAuNRuZJxw
 U03ZXi1b1HuLtSXrFb6d/3BQq8Y=
 -----END CERTIFICATE-----
 </source>
+<p>To process an external request in EJBCA, type the name of new CA in the 'Add' field in 
+'Edit Certificate Authorities' and press 'Process Certificate Request'.
+</p><p>
+When you have received the signed certificate back from the external CA, edit the CA that
+created the request and press 'Receive Certificate Response'.
+</p>
 </subsection> 
 <subsection name="Converting an OpenSSL CA">
 <p>
