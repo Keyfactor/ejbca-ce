@@ -794,4 +794,49 @@ web.contentencoding    = ${web.contentencoding}
         </javac>
         </sequential>
     </macrodef>    
+	
+	<!--
+        Target that finds duplicated code. 
+        You must install jar files from pmd.sourceforge.net in ANT_HOME/lib so the taskdef finds the class
+	-->
+	<!--
+	<target name="cpd">
+	    <taskdef name="cpd" classname="net.sourceforge.pmd.cpd.CPDTask" />
+	    <cpd minimumTokenCount="100" outputFile="${src}/cpd.txt">
+	        <fileset dir="${src.java}/se/anatom">
+	            <include name="**/*.java"/>
+	        </fileset>
+	    </cpd>
+	</target>
+	-->
+
+	<!-- Target that runs the Lint code check from http://www.jutils.com/.
+         You must install lint4j.jar in ANT_HOME/lib so the taskdef finds the class
+	-->
+	<!--
+	<target name="lint" description="Perform checks on EJBCA source code">
+		<taskdef name="lint4j" classname="com.jutils.lint4j.ant.Lint4jAntTask" />
+	  <lint4j packages="se.anatom.ejbca.*" level="3">
+	    <sourcepath>
+		  <dirset dir="${src}">
+			<include name="**/java" />
+		  </dirset>
+		</sourcepath>
+		<classpath>
+		  <fileset dir="${lib}">
+			<include name="**/*.jar" />
+		  </fileset>
+		  <dirset dir="${tmp}">
+			<include name="bin/classes" />
+		  </dirset>
+          <path refid="j2ee.classpath" />
+		</classpath>
+	    <formatters>
+	      <formatter type="text" />
+	      <formatter type="text" toFile="ejbca-lint.out"/>
+	    </formatters>
+	  </lint4j>
+	</target>
+    -->
+	
 </project>
