@@ -60,7 +60,7 @@
     <li>Installed by: <a href="http://www.primekey.se/">PrimeKey Solutions AB</a></li>
     <li>Trade of Industry: Public Sector</li>
     <li>Solution: Pilot installation. Operational since 2005. Using EJBCA for issuing certificates for VPN purposes.</li>
-    <li>Count of Users: Up to 25000 users.</li>
+    <li>Count of Users: Up to 25000 users</li>
     </ul>
 	</p>
 	</subsection>
@@ -118,11 +118,23 @@
     <li>Installed by: <a href="http://www.primekey.se/">PrimeKey Solutions AB</a></li>
     <li>Trade of Industry: Public Sector</li>
     <li>Solution: Operational since feb 2003. Uses smart cards issued to employees. Advanced setup with smart cards used for login to Active Directory infrastructure, browsers and email clients. Special use is key backup and recovery.</li>
-    <li>Count of Users: Up to 1000.</li>
+    <li>Count of Users: Up to 1000</li>
     </ul>
 	</p>
 	</subsection>
 	
+	<subsection name="Firmasys">
+	<p>
+	<ul>
+	<li>Location: Suresnes, France</li>
+    <li>Installed by: <a href="email:asyd@solaris-fr.org">Bruno Bonfils</a></li>
+    <li>Trade of Industry: Financial (Application Editor)</li>
+    <li>Solution: VPN identities, server and user certificates (X.509 authentication).</li>
+    <li>Count of Users: Unknown</li>
+    </ul>
+	</p>
+	</subsection>
+
   </section>
 
 </body>
