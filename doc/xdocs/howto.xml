@@ -70,6 +70,98 @@ is operated by UT-Battelle for the U.S. Department Of Energy.
   Read the <a href="http://www.csita.unige.it/software/free/ejbca/">howto</a> at Csita.
   </p>
   </section>
+  
+  <section name="EJBCA and Cisco IOS">
+  <p>This howto is contributed by Bruno Bonfils.</p>
+  <p>Here is the IOS config related to the CA:
+  </p>
+  <source>
+!
+crypto ca trustpoint FMSCA
+enrollment url http://pki.intranet.fimasys.fr:8080/ejbca/publicweb/apply/scep
+serial-number
+source interface Ethernet0
+auto-enroll regenerate
+!
+  </source>
+  <p>
+  <ul>
+    <li>The enrollment line tell how (the method, here an http url) to contact the PKI software. Note: you must omit the pkiclient.exe filename at the end which is automagically add by IOS.</li>
+    <li>The serial-number tells IOS to include the serial number in the request.</li>
+    <li>The name of the trustpoint you use MUST MATCH exactly the shortname of your CA in EJBCA (here FMSCA).</li>
+  </ul>
+  Once you have that, use the command:
+  </p>
+  <source>
+# crypto ca authenticate FMSCA  
+  </source>
+  <p>
+  to fetch the CA certificate.
+  </p>
+  <p>
+  Then, login to EJBCA, and create a new entity profile that looks like:
+  </p>
+  <p>
+  <img alt="End Entity profile for IOS" src="images/ios-profile.jpg"/>
+  </p>
+  <p>
+  Then, do the password enrollment with the command:  
+  </p>
+  <source>
+# crypto ca enroll FMSCA
+  </source>
+  <p>
+  Check your ejbca logs, you shoud see something like:
+  </p>
+  <source>
+ERROR [PKCS10RequestMessage] No CN in DN: SN=12013150+unstructuredName=saroumane.nanthrax.net
+ERROR [Log4jLogDevice] October 19, 2005 9:48:33 AM CEST, CAId : 0, CA, EVENT_ERROR_USERAUTHENTICATION, Administrator : PUBLICWEBUSER, IP Address : 192.168.134.1, User : 12013150, Certificate : No Certificate Involved, Comment : Got request for nonexisting user: 12013150
+  </source>
+  <p>
+  So, you know you must add an entity using the serial number as username, the password you define in IOS, and serialNumber/unstructuredNamed as subject DN fields.
+  </p>
+  <p>
+  After adding the end entity, do the password enrollment again. If you see this you have enrolled succesfully:
+  </p>
+  <source>
+saroumane#sh crypto ca cert
+Certificate
+  Status: Available
+  Certificate Serial Number: 426FA96340F5D2CA
+  Certificate Usage: General Purpose
+  Issuer:
+    c=FR
+    o=Fimasys
+    cn=Fimasys Security CA
+  Subject:
+    Name: saroumane.nanthrax.net
+    Serial Number: 12013150
+    serialNumber=12013150
+    hostname=saroumane.nanthrax.net
+  Validity Date:
+    start date: 08:58:28 CET Oct 19 2005
+    end   date: 09:08:28 CET Oct 19 2007
+  Associated Trustpoints: FMSCA
+
+CA Certificate
+  Status: Available
+  Certificate Serial Number: 7AA2B9942CD0D362
+  Certificate Usage: Signature
+  Issuer:
+    c=FR
+    o=Fimasys
+    cn=Fimasys Security CA
+  Subject:
+    c=FR
+    o=Fimasys
+    cn=Fimasys Security CA
+  Validity Date:
+    start date: 07:29:35 CET Oct 17 2005
+    end   date: 07:39:35 CET Oct 15 2015
+  Associated Trustpoints: FMSCA  
+  </source>
+  
+  </section>
 
 </body>
 </document>
