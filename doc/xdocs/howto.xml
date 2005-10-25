@@ -73,6 +73,9 @@ is operated by UT-Battelle for the U.S. Department Of Energy.
   
   <section name="EJBCA and Cisco IOS">
   <p>This howto is contributed by Bruno Bonfils.</p>
+  <p>
+  There is a <a href="http://www.ipflow.utc.fr/index.php/Cisco_7200_Simulator">Cisco 7200 emulator</a> available.
+  </p>
   <p>Here is the IOS config related to the CA:
   </p>
   <source>
@@ -160,7 +163,7 @@ CA Certificate
     end   date: 07:39:35 CET Oct 15 2015
   Associated Trustpoints: FMSCA  
   </source>
-  
+
   </section>
 
 </body>
