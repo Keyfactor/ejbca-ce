@@ -81,7 +81,7 @@ is operated by UT-Battelle for the U.S. Department Of Energy.
   <source>
 !
 crypto ca trustpoint FMSCA
-enrollment url http://pki.intranet.fimasys.fr:8080/ejbca/publicweb/apply/scep
+enrollment url http://your.ca.host.name:8080/ejbca/publicweb/apply/scep
 serial-number
 source interface Ethernet0
 auto-enroll regenerate
@@ -117,7 +117,7 @@ auto-enroll regenerate
   Check your ejbca logs, you shoud see something like:
   </p>
   <source>
-ERROR [PKCS10RequestMessage] No CN in DN: SN=12013150+unstructuredName=saroumane.nanthrax.net
+ERROR [PKCS10RequestMessage] No CN in DN: SN=12013150+unstructuredName=your.ciscobox.hosts.name
 ERROR [Log4jLogDevice] October 19, 2005 9:48:33 AM CEST, CAId : 0, CA, EVENT_ERROR_USERAUTHENTICATION, Administrator : PUBLICWEBUSER, IP Address : 192.168.134.1, User : 12013150, Certificate : No Certificate Involved, Comment : Got request for nonexisting user: 12013150
   </source>
   <p>
@@ -137,10 +137,10 @@ Certificate
     o=Fimasys
     cn=Fimasys Security CA
   Subject:
-    Name: saroumane.nanthrax.net
+    Name: your.ciscobox.hosts.name
     Serial Number: 12013150
     serialNumber=12013150
-    hostname=saroumane.nanthrax.net
+    hostname=your.ciscobox.hosts.name
   Validity Date:
     start date: 08:58:28 CET Oct 19 2005
     end   date: 09:08:28 CET Oct 19 2007
