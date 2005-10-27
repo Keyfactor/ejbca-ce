@@ -29,27 +29,27 @@ public class ServletDebug {
     private final HttpServletRequest request;
     private final HttpServletResponse response;
 
-    ServletDebug(HttpServletRequest request, HttpServletResponse response) {
+    public ServletDebug(HttpServletRequest request, HttpServletResponse response) {
         buffer = new ByteArrayOutputStream();
         printer = new PrintStream(buffer);
         this.request = request;
         this.response = response;
     }
 
-    void printDebugInfo() throws IOException, ServletException {
+    public void printDebugInfo() throws IOException, ServletException {
         request.setAttribute("ErrorMessage", new String(buffer.toByteArray()));
         request.getRequestDispatcher("error.jsp").forward(request, response);
     }
 
-    void print(Object o) {
+    public void print(Object o) {
         printer.println(o);
     }
 
-    void printMessage(String msg) {
+    public void printMessage(String msg) {
         print("<p>" + msg);
     }
 
-    void printInsertLineBreaks(byte[] bA) throws Exception {
+    public void printInsertLineBreaks(byte[] bA) throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(bA)));
 
         while (true) {
@@ -63,7 +63,7 @@ public class ServletDebug {
         }
     }
 
-    void takeCareOfException(Throwable t) {
+    public void takeCareOfException(Throwable t) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         t.printStackTrace(new PrintStream(baos));
         print("<h4>Exception:</h4>");
@@ -77,7 +77,7 @@ public class ServletDebug {
         request.setAttribute("Exception", "true");
     }
 
-    void ieCertFix(byte[] bA) throws Exception {
+    public void ieCertFix(byte[] bA) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PrintStream tmpPrinter = new PrintStream(baos);
         RequestHelper.ieCertFormat(bA, tmpPrinter);
