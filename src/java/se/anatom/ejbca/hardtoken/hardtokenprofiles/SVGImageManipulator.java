@@ -59,7 +59,7 @@ import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
  * It replaces all occurrenses of specified variables in the images 
  * with the corresponding userdata.
  *
- * @version $Id: SVGImageManipulator.java,v 1.14 2005-08-29 18:45:12 herrvendil Exp $
+ * @version $Id: SVGImageManipulator.java,v 1.15 2005-10-28 20:28:55 primelars Exp $
  */
 public class SVGImageManipulator {
 	/**
@@ -177,43 +177,14 @@ public class SVGImageManipulator {
       Node originaldokument = svgdoc.cloneNode(true);
       
       // Get Text rows
-      Collection texts = new ArrayList();
-	  NodeList list = svgdoc.getDocumentElement().getElementsByTagName("text");	  
-	  int numberofelements = list.getLength();	  
-	  for(int i=0; i<numberofelements; i++){
-		Node node = list.item(i);		  
-		if(node instanceof SVGTextElement){	
-		  NodeList list2 = ((SVGTextElement) node).getChildNodes();
-		  int numberofelements2 = list2.getLength();
-		  for(int j=0;j<numberofelements2;j++){		  	  
-			  Node node2 = list2.item(j);			  
-			  if(node2 instanceof GenericText)
-			  	texts.add(node2);			    
-			  if(node2 instanceof SVGOMTSpanElement){
-			  	 SVGOMTSpanElement tspan = (SVGOMTSpanElement) node2;
-			  	 NodeList list3 = tspan.getChildNodes();
-			  	 int numberofelements3 = list3.getLength();
-			  	 for(int k=0;k<numberofelements3;k++){
-			  	 	Node node3 = list3.item(k);
-			  	 	if(node3 instanceof GenericText)
-			  	 		texts.add(node3);			    
-			  	 }
-			  }		  
-		  }
-		}		  
-	  }
-	  
-	  Iterator iter = texts.iterator();
-	  String data = "";
-	  while(iter.hasNext()){
-	  	GenericText text = (GenericText) iter.next(); 
-	  	data = text.getData();
-	  	data = processString(data, userdata, dnfields, pincodes, pukcodes,
+      process( "text", userdata, dnfields, pincodes, pukcodes,
 	  			hardtokensn, hardtokensnwithoutprefix,
 				copyoftokensn, copyoftokensnwithoutprefix,
 				startdate, enddate);			  
-	  	text.setData(data);
-	  }
+      process( "svg:text", userdata, dnfields, pincodes, pukcodes,
+	  			hardtokensn, hardtokensnwithoutprefix,
+				copyoftokensn, copyoftokensnwithoutprefix,
+				startdate, enddate);			  
                        
       // Add Image
       /**
@@ -243,6 +214,48 @@ public class SVGImageManipulator {
       return t;
     }
 
+    private void process(String tagName, UserDataVO userdata,
+    		DNFieldExtractor dnfields, String[] pincodes, String[] pukcodes,
+    		String hardtokensn, String hardtokensnwithoutprefix,
+    		String copyoftokensn, String copyoftokensnwithoutprefix,
+    		String startdate, String enddate){
+    	Collection texts = new ArrayList();
+    	NodeList list = svgdoc.getDocumentElement().getElementsByTagName(tagName);	  
+    	int numberofelements = list.getLength();	  
+    	for(int i=0; i<numberofelements; i++){
+    		Node node = list.item(i);		  
+    		if(node instanceof SVGTextElement){	
+    			NodeList list2 = ((SVGTextElement) node).getChildNodes();
+    			int numberofelements2 = list2.getLength();
+    			for(int j=0;j<numberofelements2;j++){		  	  
+    				Node node2 = list2.item(j);			  
+    				if(node2 instanceof GenericText)
+    					texts.add(node2);			    
+    				if(node2 instanceof SVGOMTSpanElement){
+    					SVGOMTSpanElement tspan = (SVGOMTSpanElement) node2;
+    					NodeList list3 = tspan.getChildNodes();
+    					int numberofelements3 = list3.getLength();
+    					for(int k=0;k<numberofelements3;k++){
+    						Node node3 = list3.item(k);
+    						if(node3 instanceof GenericText)
+    							texts.add(node3);			    
+    					}
+    				}		  
+    			}
+    		}
+    	}
+  	  Iterator iter = texts.iterator();
+	  String data = "";
+	  while(iter.hasNext()){
+	  	GenericText text = (GenericText) iter.next(); 
+	  	data = text.getData();
+	  	data = processString(data, userdata, dnfields, pincodes, pukcodes,
+	  			hardtokensn, hardtokensnwithoutprefix,
+				copyoftokensn, copyoftokensnwithoutprefix,
+				startdate, enddate);			  
+	  	text.setData(data);
+	  }
+    }
     
 
     private String processString(String text, UserDataVO userdata, DNFieldExtractor dnfields,
@@ -252,7 +265,7 @@ public class SVGImageManipulator {
                                  String startdate, String enddate){
  
  
-  	  text = USERNAME.matcher(text).replaceAll(userdata.getUsername());	
+  	  text = USERNAME.matcher(text).replaceAll(userdata.getUsername());	  
   	  text = UID.matcher(text).replaceAll(dnfields.getField(DNFieldExtractor.UID, 0));
       text = CN.matcher(text).replaceAll(dnfields.getField(DNFieldExtractor.CN, 0));
 	  text = OU.matcher(text).replaceAll(dnfields.getField(DNFieldExtractor.OU, 0));
