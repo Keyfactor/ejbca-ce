@@ -14,6 +14,8 @@
 		<li> <a href="http://www.faqs.org/rfcs/rfc2253.html">RFC 2253</a> - DN string representation</li>
 		<li> <a href="http://www.faqs.org/rfcs/rfc2560.html">RFC 2560</a> - OCSP</li>
 		<li> <a href="http://www.faqs.org/rfcs/rfc2256.html">RFC 2256</a> - X.500(96) User Schema for use with LDAPv3</li>
+		<li> <a href="http://www.faqs.org/rfcs/rfc2818.html">RFC 2818</a> - HTTP Over TLS</li>
+		<li> <a href="http://www.faqs.org/rfcs/rfc2595.html">RFC 2595</a> - Using TLS with IMAP, POP3 and ACAP</li>
 	</ul>
 	</p>
 	</subsection>
