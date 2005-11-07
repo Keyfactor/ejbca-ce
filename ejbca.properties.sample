@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.24 2005-10-06 19:51:08 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.25 2005-11-07 15:46:50 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -108,6 +108,9 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 #httpserver.privhttps=8443
 
 # Defines the available languages by languagecodes separated with a comma (example EN,CH).
+# If you are not sure that you know how to add a new language (languagefile.XX.properties etc), 
+# we suggest you stick with the default the first time you install if you wan't to add your own language.
+# Otherwise you may not be able to log in to the admin-GUI.
 # Default: EN,FR,IT,ES 
 #web.availablelanguages=EN,FR,IT,ES
 
