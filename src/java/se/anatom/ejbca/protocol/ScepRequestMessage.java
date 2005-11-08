@@ -64,7 +64,7 @@ import se.anatom.ejbca.util.CertTools;
  * Class to handle SCEP request messages sent to the CA. 
  * TODO: don't forget extensions, e.g. KeyUsage requested by end entity 
  *
- * @version $Id: ScepRequestMessage.java,v 1.43 2005-09-27 18:20:09 anatom Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.44 2005-11-08 19:04:41 anatom Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage, Serializable {
     static final long serialVersionUID = -235623330828902051L;
@@ -117,7 +117,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
 
     /** Error text */
     private String errorText = null;
-
+    
     /** Issuer DN the message is sent to (CAs DN), contained in the 
      * request as recipientInfo.issuerAndSerialNumber in EnvelopeData part */
     private transient String issuerDN = null;
@@ -146,12 +146,14 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
      * Constructs a new SCEP/PKCS7 message handler object.
      *
      * @param msg The DER encoded PKCS7 request.
+     * @param incCACert if the CA certificate should be included in the response or not
      *
      * @throws IOException if the request can not be parsed.
      */
-    public ScepRequestMessage(byte[] msg) throws IOException {
+    public ScepRequestMessage(byte[] msg, boolean incCACert) throws IOException {
         log.debug(">ScepRequestMessage");
         this.scepmsg = msg;
+        this.includeCACert = incCACert;
         init();
         log.debug("<ScepRequestMessage");
     }
@@ -644,6 +646,8 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
     public String getPreferredDigestAlg() {
     	return preferredDigestAlg;
     }
+    
+    
 
     //
     // Private helper methods

@@ -31,7 +31,7 @@ import java.security.cert.X509Certificate;
 /**
  * A response message consisting of a single X509 Certificate.
  *
- * @version $Id: X509ResponseMessage.java,v 1.19 2005-09-17 15:18:07 anatom Exp $
+ * @version $Id: X509ResponseMessage.java,v 1.20 2005-11-08 19:04:41 anatom Exp $
  */
 public class X509ResponseMessage implements IResponseMessage, Serializable {
     static final long serialVersionUID = -2157072605987735912L;
@@ -61,6 +61,13 @@ public class X509ResponseMessage implements IResponseMessage, Serializable {
      */
     public void setCrl(CRL crl) {
         // This message type does not contain a CRL
+    }
+
+    /** @see se.anatom.ejbca.protocol.IResponseMessage#setIncludeCACert
+     * 
+     */
+    public void setIncludeCACert(boolean incCACert) {
+    	// Do nothing, not applicable
     }
 
     /**

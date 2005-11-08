@@ -16,6 +16,19 @@
         <servlet-name>ScepServlet</servlet-name>
         <display-name>ScepServlet</display-name>
         <servlet-class>se.anatom.ejbca.protocol.ScepServlet</servlet-class>
+        <init-param>
+            <param-name>includeCACert</param-name>
+            <param-value>1</param-value>
+        </init-param>
+    </servlet>
+    <servlet>
+        <servlet-name>ScepServletNoCACert</servlet-name>
+        <display-name>ScepServletNoCACert</display-name>
+        <servlet-class>se.anatom.ejbca.protocol.ScepServlet</servlet-class>
+        <init-param>
+            <param-name>includeCACert</param-name>
+            <param-value>0</param-value>
+        </init-param>
     </servlet>
 
 <!--
@@ -31,12 +44,16 @@
 -->
 
     <servlet-mapping>
-	<servlet-name>CertReqServlet</servlet-name>
-	<url-pattern>/certreq</url-pattern>
+      <servlet-name>CertReqServlet</servlet-name>
+      <url-pattern>/certreq</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-	<servlet-name>ScepServlet</servlet-name>
-	<url-pattern>/scep/pkiclient.exe</url-pattern>
+      <servlet-name>ScepServlet</servlet-name>
+      <url-pattern>/scep/pkiclient.exe</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+      <servlet-name>ScepServletNoCACert</servlet-name>
+      <url-pattern>/scep/noca/pkiclient.exe</url-pattern>
     </servlet-mapping>
 
 <!--

@@ -33,7 +33,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Protocol messages.
  *
- * @version $Id: TestMessages.java,v 1.4 2005-09-27 18:20:09 anatom Exp $
+ * @version $Id: TestMessages.java,v 1.5 2005-11-08 19:04:41 anatom Exp $
  */
 public class TestMessages extends TestCase {
 
@@ -87,7 +87,7 @@ public class TestMessages extends TestCase {
      */
     public void test01TestOpenScep() throws Exception {
         log.debug(">test01TestOpenScep()");
-        ScepRequestMessage msg = new ScepRequestMessage(openscep);
+        ScepRequestMessage msg = new ScepRequestMessage(openscep, true);
         // You should be able to get issuer DN before anything else
         String issuerdn = msg.getIssuerDN();
         log.debug("IssuerDN: " + issuerdn);
@@ -113,7 +113,7 @@ public class TestMessages extends TestCase {
      */
     public void test02TestSimpleScep() throws Exception {
         log.debug(">test02TestSimpleScep()");
-        ScepRequestMessage msg = new ScepRequestMessage(sscep);
+        ScepRequestMessage msg = new ScepRequestMessage(sscep, true);
         // You should be able to get issuer DN before anything else
         String issuerdn = msg.getIssuerDN();
         log.debug("IssuerDN: " + issuerdn);
@@ -139,7 +139,7 @@ public class TestMessages extends TestCase {
      */
     public void test03TestJavaScepClient() throws Exception {
         log.debug(">test03TestJavaScepClient()");
-        ScepRequestMessage msg = new ScepRequestMessage(scepclient);
+        ScepRequestMessage msg = new ScepRequestMessage(scepclient, true);
         // You should be able to get issuer DN before anything else
         String issuerdn = msg.getIssuerDN();
         log.debug("IssuerDN: " + issuerdn);
@@ -168,7 +168,7 @@ public class TestMessages extends TestCase {
      */
     public void test03TestCiscoVPNScep() throws Exception {
         log.debug(">test03TestCiscoVPNScep()");
-        ScepRequestMessage msg = new ScepRequestMessage(ciscovpnscep);
+        ScepRequestMessage msg = new ScepRequestMessage(ciscovpnscep, true);
         // You should be able to get issuer DN before anything else
         String issuerdn = msg.getIssuerDN();
         log.debug("IssuerDN: " + issuerdn);

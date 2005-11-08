@@ -44,7 +44,7 @@ import java.security.cert.X509Certificate;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.33 2005-09-27 18:20:09 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.34 2005-11-08 19:04:41 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     static final long serialVersionUID = 3597275157018205136L;
@@ -60,6 +60,9 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     /** manually set username */
     protected String username = null;
     
+    /** If the CA certificate should be included in the reponse or not, default to true = yes */
+    protected boolean includeCACert = true;
+
     /** preferred digest algorithm to use in replies, if applicable */
     private transient String preferredDigestAlg = CMSSignedDataGenerator.DIGEST_SHA1;
 
@@ -436,6 +439,12 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     public String getPreferredDigestAlg() {
     	return preferredDigestAlg;
     }
+    /** @see se.anatom.ejbca.protocol.IRequestMessage
+     */
+    public boolean includeCACert() {
+    	return includeCACert;
+    }
+    
 }
 
 // PKCS10RequestMessage

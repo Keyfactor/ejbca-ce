@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.apply.RequestHelper;
@@ -63,7 +64,7 @@ import se.anatom.ejbca.util.CertTools;
  * 7. output the result as a der encoded block on stdout 
  * -----
  *
- * @version $Id: ScepServlet.java,v 1.35 2005-08-11 09:02:27 anatom Exp $
+ * @version $Id: ScepServlet.java,v 1.36 2005-11-08 19:04:41 anatom Exp $
  */
 public class ScepServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(ScepServlet.class);
@@ -178,7 +179,11 @@ public class ScepServlet extends HttpServlet {
                 ScepPkiOpHelper helper = new ScepPkiOpHelper(administrator, signsession);
                 
                 // Read the message end get the cert, this also checksauthorization
-                byte[] reply = helper.scepCertRequest(scepmsg);
+                boolean includeCACert = true;
+                if (StringUtils.equals("0", getInitParameter("includeCACert"))) {
+                	includeCACert = false;
+                }
+                byte[] reply = helper.scepCertRequest(scepmsg, includeCACert);
                 if (reply == null) {
                     // This is probably a getCert message?
                     response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED,

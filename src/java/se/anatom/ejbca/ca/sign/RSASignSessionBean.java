@@ -952,6 +952,8 @@ public class RSASignSessionBean extends BaseSessionBean {
     	}
     	// Which digest algorithm to use to create the response, if applicable
     	ret.setPreferredDigestAlg(req.getPreferredDigestAlg());
+    	// Include the CA cert or not in the response, if applicable for the response type
+    	ret.setIncludeCACert(req.includeCACert());
     	return ret;
     }
     /**

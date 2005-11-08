@@ -39,7 +39,7 @@ import java.security.cert.X509Certificate;
  * byte[] responseMessage = resp.getResponseMessage(); 
  * </code>
  *
- * @version $Id: IResponseMessage.java,v 1.15 2005-09-17 15:18:07 anatom Exp $
+ * @version $Id: IResponseMessage.java,v 1.16 2005-11-08 19:04:41 anatom Exp $
  */
 public interface IResponseMessage {
 
@@ -56,6 +56,14 @@ public interface IResponseMessage {
      * @param crl crl in the response message.
      */
     public void setCrl(CRL crl);
+    
+    /** 
+     * Determines if the CA certificate should be included in the response message, if
+     * applicable for the response message type.
+     * 
+     * @param includeCACert true or false
+     */
+    public void setIncludeCACert(boolean incCACert);
 
     /**
      * Gets the response message in the default encoding format.

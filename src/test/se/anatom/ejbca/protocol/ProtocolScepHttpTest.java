@@ -94,6 +94,7 @@ public class ProtocolScepHttpTest extends TestCase {
 
     private static final String httpReqPath = "http://127.0.0.1:8080/ejbca";
     private static final String resourceScep = "publicweb/apply/scep/pkiclient.exe";
+    private static final String resourceScepNoCA = "publicweb/apply/scep/noca/pkiclient.exe";
 
     static byte[] openscep = Base64.decode(("MIIGqwYJKoZIhvcNAQcCoIIGnDCCBpgCAQExDjAMBggqhkiG9w0CBQUAMIICuwYJ" +
             "KoZIhvcNAQcBoIICrASCAqgwggKkBgkqhkiG9w0BBwOgggKVMIICkQIBADGB1TCB" +
@@ -244,9 +245,9 @@ public class ProtocolScepHttpTest extends TestCase {
         keys = KeyTools.genKeys(512);
         byte[] msgBytes = genScepRequest(false, CMSSignedDataGenerator.DIGEST_SHA1);
         // Send message with GET
-        byte[] retMsg = sendScep(false, msgBytes);
+        byte[] retMsg = sendScep(false, msgBytes, false);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, false, CMSSignedDataGenerator.DIGEST_SHA1);
+        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, false, CMSSignedDataGenerator.DIGEST_SHA1, false);
         log.debug("<test03ScepRequestOKSHA1()");
     }
 
@@ -262,9 +263,9 @@ public class ProtocolScepHttpTest extends TestCase {
         keys = KeyTools.genKeys(512);
         byte[] msgBytes = genScepRequest(false, CMSSignedDataGenerator.DIGEST_MD5);
         // Send message with GET
-        byte[] retMsg = sendScep(false, msgBytes);
+        byte[] retMsg = sendScep(false, msgBytes, false);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, false, CMSSignedDataGenerator.DIGEST_MD5);
+        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, false, CMSSignedDataGenerator.DIGEST_MD5, false);
         log.debug("<test04ScepRequestOKMD5()");
     }
 
@@ -277,14 +278,29 @@ public class ProtocolScepHttpTest extends TestCase {
         
         byte[] msgBytes = genScepRequest(false, CMSSignedDataGenerator.DIGEST_SHA1);
         // Send message with GET
-        byte[] retMsg = sendScep(true, msgBytes);
+        byte[] retMsg = sendScep(true, msgBytes, false);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, false, CMSSignedDataGenerator.DIGEST_SHA1);
+        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, false, CMSSignedDataGenerator.DIGEST_SHA1, false);
         log.debug(">test05ScepRequestPostOK()");
     }
 
-    public void test06ScepGetCACert() throws Exception {
-        log.debug(">test06ScepGetCACert()");
+    public void test06ScepRequestPostOKNoCA() throws Exception {
+        log.debug(">test06ScepRequestPostOKNoCA()");
+        // find a CA, create a user and
+        // send SCEP req to server and get good response with cert
+
+        createScepUser();
+        
+        byte[] msgBytes = genScepRequest(false, CMSSignedDataGenerator.DIGEST_SHA1);
+        // Send message with GET
+        byte[] retMsg = sendScep(true, msgBytes, true);
+        assertNotNull(retMsg);
+        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, false, CMSSignedDataGenerator.DIGEST_SHA1, true);
+        log.debug(">test06ScepRequestPostOKNoCA()");
+    }
+
+    public void test07ScepGetCACert() throws Exception {
+        log.debug(">test07ScepGetCACert()");
         String reqUrl = httpReqPath + '/' + resourceScep+"?operation=GetCACert&message="+caname;
         URL url = new URL(reqUrl);
         HttpURLConnection con = (HttpURLConnection)url.openConnection();
@@ -309,20 +325,20 @@ public class ProtocolScepHttpTest extends TestCase {
         X509Certificate cert = CertTools.getCertfromByteArray(respBytes);
         // Check that we got the right cert back
         assertEquals(cacert.getSubjectDN().getName(), cert.getSubjectDN().getName());
-        log.debug(">test06ScepGetCACert()");
+        log.debug(">test07ScepGetCACert()");
     }
 
-    public void test07ScepGetCrl() throws Exception {
-        log.debug(">test07ScepGetCrl()");
+    public void test08ScepGetCrl() throws Exception {
+        log.debug(">test08ScepGetCrl()");
         byte[] msgBytes = genScepRequest(true, CMSSignedDataGenerator.DIGEST_SHA1);
         // Send message with GET
-        byte[] retMsg = sendScep(false, msgBytes);
+        byte[] retMsg = sendScep(false, msgBytes, false);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, true, CMSSignedDataGenerator.DIGEST_SHA1);
-        log.debug(">test07ScepGetCrl()");
+        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, true, CMSSignedDataGenerator.DIGEST_SHA1, false);
+        log.debug(">test08ScepGetCrl()");
     }
-    public void test08ScepGetCACaps() throws Exception {
-        log.debug(">test08ScepGetCACaps()");
+    public void test09ScepGetCACaps() throws Exception {
+        log.debug(">test09ScepGetCACaps()");
         String reqUrl = httpReqPath + '/' + resourceScep+"?operation=GetCACaps&message="+caname;
         URL url = new URL(reqUrl);
         HttpURLConnection con = (HttpURLConnection)url.openConnection();
@@ -345,7 +361,7 @@ public class ProtocolScepHttpTest extends TestCase {
         assertNotNull("Response can not be null.", respBytes);
         assertTrue(respBytes.length > 0);
         assertEquals(new String(respBytes), "POSTPKIOperation\nSHA-1");
-        log.debug(">test08ScepGetCACaps()");
+        log.debug(">test09ScepGetCACaps()");
     }
     public void test99CleanUp() throws Exception {
         // remove user
@@ -399,7 +415,7 @@ public class ProtocolScepHttpTest extends TestCase {
         return msgBytes;
     }
     
-    private void checkScepResponse(byte[] retMsg, String userDN, String senderNonce, String transId, boolean crlRep, String digestOid) throws CMSException, NoSuchProviderException, NoSuchAlgorithmException, CertStoreException, InvalidKeyException, CertificateException, SignatureException, CRLException {
+    private void checkScepResponse(byte[] retMsg, String userDN, String senderNonce, String transId, boolean crlRep, String digestOid, boolean noca) throws CMSException, NoSuchProviderException, NoSuchAlgorithmException, CertStoreException, InvalidKeyException, CertificateException, SignatureException, CRLException {
         //
         // Parse response message
         //
@@ -502,7 +518,11 @@ public class ProtocolScepHttpTest extends TestCase {
                 // We got a reply with a requested certificate 
                 Collection certs = certstore.getCertificates(null);
                 // EJBCA returns the issued cert and the CA cert (cisco vpn client requires that the ca cert is included)
-                assertEquals(certs.size(), 2);
+                if (noca) {
+                    assertEquals(certs.size(), 1);	                	
+                } else {
+                    assertEquals(certs.size(), 2);                	
+                }
                 it = certs.iterator();
                 // Issued certificate must be first
                 boolean verified = false;
@@ -532,7 +552,11 @@ public class ProtocolScepHttpTest extends TestCase {
                     }
                 }
                 assertTrue(verified);
-                assertTrue(gotcacert);
+                if (noca) {
+                	assertFalse(gotcacert);
+                } else {
+                    assertTrue(gotcacert);                	
+                }
             }
         }
         
@@ -551,12 +575,18 @@ public class ProtocolScepHttpTest extends TestCase {
         signer2.update("PrimeKey".getBytes());
         return signer2.verify(signature);
     }
-    private byte[] sendScep(boolean post, byte[] scepPackage) throws IOException, OCSPException, NoSuchProviderException {
+    private byte[] sendScep(boolean post, byte[] scepPackage, boolean noca) throws IOException, OCSPException, NoSuchProviderException {
         // POST the OCSP request
         // we are going to do a POST
+    	String resource = resourceScep;
+    	if (noca) {
+    		resource = resourceScepNoCA;
+    	}
+    	String urlString = httpReqPath + '/' + resource+"?operation=PKIOperation";
+    	log.debug("UrlString =" + urlString);
         HttpURLConnection con = null;
         if (post) {
-            URL url = new URL(httpReqPath + '/' + resourceScep+"?operation=PKIOperation");
+            URL url = new URL(urlString);
             con = (HttpURLConnection)url.openConnection();
             con.setDoOutput(true);
             con.setRequestMethod("POST");
@@ -566,7 +596,7 @@ public class ProtocolScepHttpTest extends TestCase {
             os.write(scepPackage);
             os.close();
         } else {
-            String reqUrl = httpReqPath + '/' + resourceScep+"?operation=PKIOperation&message=" + URLEncoder.encode(new String(Base64.encode(scepPackage)),"UTF-8");
+            String reqUrl = urlString + "&message=" + URLEncoder.encode(new String(Base64.encode(scepPackage)),"UTF-8");
             URL url = new URL(reqUrl);
             con = (HttpURLConnection)url.openConnection();
             con.setRequestMethod("GET");

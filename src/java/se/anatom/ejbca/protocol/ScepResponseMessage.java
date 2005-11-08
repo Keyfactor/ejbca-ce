@@ -52,7 +52,7 @@ import java.util.Hashtable;
 /**
  * A response message for scep (pkcs7).
  *
- * @version $Id: ScepResponseMessage.java,v 1.26 2005-09-17 15:18:07 anatom Exp $
+ * @version $Id: ScepResponseMessage.java,v 1.27 2005-11-08 19:04:41 anatom Exp $
  */
 public class ScepResponseMessage implements IResponseMessage, Serializable {
     static final long serialVersionUID = 2016710353393853878L;
@@ -91,6 +91,8 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
     private transient CRL crl = null;
     private transient X509Certificate signCert = null;
     private transient PrivateKey signKey = null;
+    /** If the CA certificate should be included in the reponse or not, default to true = yes */
+    private transient boolean includeCACert = true;
 
     /** Default digest algorithm for SCEP response message, can be overridden */
     private transient String digestAlg = CMSSignedDataGenerator.DIGEST_MD5;
@@ -110,6 +112,13 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
      */
     public void setCrl(CRL crl) {
         this.crl = crl;
+    }
+
+    /** @see se.anatom.ejbca.protocol.IResponseMessage#setIncludeCACert
+     * 
+     */
+    public void setIncludeCACert(boolean incCACert) {
+    	this.includeCACert = incCACert;
     }
 
     /**
@@ -202,7 +211,9 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
                     log.debug("Adding certificates to response message");
                     certList.add(cert);
                     // Add the CA cert, it's optional but Cisco VPN client complains if it isn't there
-                    certList.add(signCert);
+                    if (includeCACert) {
+                        certList.add(signCert);                    	
+                    }
                 }
                 CertStore certs = CertStore.getInstance("Collection",
                         new CollectionCertStoreParameters(certList), "BC");
