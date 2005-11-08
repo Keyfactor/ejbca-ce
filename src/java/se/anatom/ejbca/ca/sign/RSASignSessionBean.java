@@ -931,10 +931,10 @@ public class RSASignSessionBean extends BaseSessionBean {
     		return null;
     	}
     	if (ret.requireSignKeyInfo()) {
-    		ret.setSignKeyInfo((X509Certificate) ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
+    		ret.setSignKeyInfo((X509Certificate) ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getProvider());
     	}
     	if (ret.requireEncKeyInfo()) {
-    		ret.setEncKeyInfo((X509Certificate) ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT));
+    		ret.setEncKeyInfo((X509Certificate) ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT), catoken.getProvider());
     	}
     	if (req.getSenderNonce() != null) {
     		ret.setRecipientNonce(req.getSenderNonce());

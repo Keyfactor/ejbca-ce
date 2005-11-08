@@ -39,7 +39,7 @@ import java.security.cert.X509Certificate;
  * byte[] responseMessage = resp.getResponseMessage(); 
  * </code>
  *
- * @version $Id: IResponseMessage.java,v 1.16 2005-11-08 19:04:41 anatom Exp $
+ * @version $Id: IResponseMessage.java,v 1.17 2005-11-08 19:37:53 anatom Exp $
  */
 public interface IResponseMessage {
 
@@ -142,10 +142,11 @@ public interface IResponseMessage {
      *
      * @param cert certificate containing the public key.
      * @param key private key.
+     * @param provider the provider to use, if the private key is on a HSM you must use a special provider. If null is given, the default BC provider is used.
      *
      * @see #requireSignKeyInfo()
      */
-    public void setSignKeyInfo(X509Certificate cert, PrivateKey key);
+    public void setSignKeyInfo(X509Certificate cert, PrivateKey key, String provider);
 
     /**
      * Sets the public and private key needed to encrypt the message. Must be set if
@@ -153,10 +154,11 @@ public interface IResponseMessage {
      *
      * @param cert certificate containing the public key.
      * @param key private key.
+     * @param provider the provider to use, if the private key is on a HSM you must use a special provider. If null is given, the default BC provider is used.
      *
      * @see #requireEncKeyInfo()
      */
-    public void setEncKeyInfo(X509Certificate cert, PrivateKey key);
+    public void setEncKeyInfo(X509Certificate cert, PrivateKey key, String provider);
 
     /**
      * Sets a senderNonce if it should be present in the response

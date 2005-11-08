@@ -52,7 +52,7 @@ import java.util.Hashtable;
 /**
  * A response message for scep (pkcs7).
  *
- * @version $Id: ScepResponseMessage.java,v 1.27 2005-11-08 19:04:41 anatom Exp $
+ * @version $Id: ScepResponseMessage.java,v 1.28 2005-11-08 19:37:53 anatom Exp $
  */
 public class ScepResponseMessage implements IResponseMessage, Serializable {
     static final long serialVersionUID = 2016710353393853878L;
@@ -89,8 +89,12 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
     /** Certificate to be in response message, not serialized */
     private transient Certificate cert = null;
     private transient CRL crl = null;
+    /** Certificate for the signer of the response message (CA) */
     private transient X509Certificate signCert = null;
+    /** Private key used to sign the response message */
     private transient PrivateKey signKey = null;
+    /** The default provider is BC, if nothing else is specified when setting SignKeyInfo */
+    private transient String provider = "BC";
     /** If the CA certificate should be included in the reponse or not, default to true = yes */
     private transient boolean includeCACert = true;
 
@@ -328,7 +332,7 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
             // Add our signer info and sign the message
             gen1.addSigner(signKey, signCert, digestAlg,
                     new AttributeTable(attributes), null);
-            signedData = gen1.generate(msg, true, "BC");
+            signedData = gen1.generate(msg, true, provider);
             responseMessage = signedData.getEncoded();
             if (responseMessage != null) {
                 ret = true;
@@ -370,12 +374,16 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
      *
      * @param cert certificate containing the public key.
      * @param key private key.
+     * @param provider the provider to use, if the private key is on a HSM you must use a special provider. If null is given, the default BC provider is used.
      *
      * @see #requireSignKeyInfo()
      */
-    public void setSignKeyInfo(X509Certificate cert, PrivateKey key) {
-        signCert = cert;
-        signKey = key;
+    public void setSignKeyInfo(X509Certificate cert, PrivateKey key, String prov) {
+        this.signCert = cert;
+        this.signKey = key;
+        if (prov != null) {
+        	this.provider = prov;
+        }
     }
 
     /**
@@ -384,10 +392,11 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
      *
      * @param cert certificate containing the public key.
      * @param key private key.
+     * @param provider the provider to use, if the private key is on a HSM you must use a special provider. If null is given, the default BC provider is used.
      *
      * @see #requireEncKeyInfo()
      */
-    public void setEncKeyInfo(X509Certificate cert, PrivateKey key) {
+    public void setEncKeyInfo(X509Certificate cert, PrivateKey key, String provider) {
         // We don't need these.
     }
 

@@ -31,7 +31,7 @@ import java.security.cert.X509Certificate;
 /**
  * A response message consisting of a single X509 Certificate.
  *
- * @version $Id: X509ResponseMessage.java,v 1.20 2005-11-08 19:04:41 anatom Exp $
+ * @version $Id: X509ResponseMessage.java,v 1.21 2005-11-08 19:37:53 anatom Exp $
  */
 public class X509ResponseMessage implements IResponseMessage, Serializable {
     static final long serialVersionUID = -2157072605987735912L;
@@ -173,10 +173,11 @@ public class X509ResponseMessage implements IResponseMessage, Serializable {
      *
      * @param cert certificate containing the public key.
      * @param key private key.
+     * @param provider the provider to use, if the private key is on a HSM you must use a special provider. If null is given, the default BC provider is used.
      *
      * @see #requireSignKeyInfo()
      */
-    public void setSignKeyInfo(X509Certificate cert, PrivateKey key) {
+    public void setSignKeyInfo(X509Certificate cert, PrivateKey key, String provider) {
     }
 
     /**
@@ -185,10 +186,11 @@ public class X509ResponseMessage implements IResponseMessage, Serializable {
      *
      * @param cert certificate containing the public key.
      * @param key private key.
+     * @param provider the provider to use, if the private key is on a HSM you must use a special provider. If null is given, the default BC provider is used.
      *
      * @see #requireEncKeyInfo()
      */
-    public void setEncKeyInfo(X509Certificate cert, PrivateKey key) {
+    public void setEncKeyInfo(X509Certificate cert, PrivateKey key, String provider) {
     }
 
     /**

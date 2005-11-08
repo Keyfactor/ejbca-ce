@@ -431,6 +431,8 @@ public class ProtocolScepHttpTest extends TestCase {
         SignerId sinfo = signerInfo.getSID();
         // Check that the signer is the expected CA
         assertEquals(CertTools.stringToBCDNString(cacert.getIssuerDN().getName()), CertTools.stringToBCDNString(sinfo.getIssuerAsString()));
+        // Verify the signature
+        signerInfo.verify(cacert.getPublicKey(), "BC");
         // Get authenticated attributes
         AttributeTable tab = signerInfo.getSignedAttributes();
         // --Fail info
