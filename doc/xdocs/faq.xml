@@ -42,9 +42,9 @@
       <question>I get an error message when accessing the admin-GUI, "Could not establish an encrypted connection because your certificate was rejected ... Error code: -12224"?</question>
       <answer>
         <p>
-        Make sure you have imported to correct superadmin.p12 in your browser.
+        <b>1)</b> Make sure you have imported to correct superadmin.p12 in your browser.
         </p><p>
-        You may have to delete and import the ca certificate in your java trust-store:
+        <b>2)</b> You may have to delete and import the ca certificate in your java trust-store:
         </p>
 <source>
 bin/ejbca.sh ca getrootcert caname rootca.der -der
@@ -55,17 +55,35 @@ keytool -alias EJBCA-CA -delete -trustcacerts -keystore $JAVA_HOME/jre/lib/secur
 <source>
 keytool -alias EJBCA-CA -import -trustcacerts -file rootca.der -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit
 </source>
-<p>
-Make sure you restart JBoss after making changes to the java trust store.
-</p>
+	<p>
+	Make sure you restart JBoss after making changes to the java trust store.
+	</p>
+	<p>
+	<b>3)</b> Perhaps the JBoss/Tomcat configuration was not done automatically because you are running another configuration than 'default'
+	in JBoss. the file '$JBOSS_HOME/server/default/deploy/jbossweb-tomcat55.sar/server.xml' holds the Tomcat configuration.
+	The configuration should be like the following, where 'serverpwd' is the 'httpsserver.password' as configured in ejbca.properties.
+	</p>
+<source>
+&lt;!-- HTTPS Connector requiring client cert on port 8443 --&gt;
+&lt;Connector port="8443" address="${jboss.bind.address}"
+    maxThreads="100" strategy="ms" maxHttpHeaderSize="8192"
+    emptySessionPath="true"
+    scheme="https" secure="true" clientAuth="true"
+    keystoreFile="${jboss.server.home.dir}/conf/keystore/keystore.jks"
+    keystorePass="serverpwd" sslProtocol = "TLS" /&gt;
+</source>
+	<p>
+	Also the file '$EJBCA_HOME/p12/tomcat.jks' must be copied to '$JBOSS_HOME/server/default/conf/keystore/keystore.jks', where 'default' should
+	be replaced with the JBoss configuration you are using.
+	</p>
       </answer>
     </faq>
     <faq>
       <question>I get a blank page on the admiweb after start?</question>
       <answer>
         <p>
-		Either you entered a hostname that does not resolve to the machine where EJBCA is
-		running during setup, or you changed the port that JBoss listens to.
+		Either you entered a hostname (in httpsserver.hostname in ejbca.properties) that does not resolve to the 
+		machine where EJBCA is running during setup, or you changed the port that JBoss listens to.
 		Make sure the hostname resolves to the machine ejbca is running on.
 		If you need the change to url, use the command 'bin/ejbca.sh setup setbaseurl'.
         </p>
