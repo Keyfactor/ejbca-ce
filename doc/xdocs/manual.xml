@@ -434,8 +434,21 @@ Since SCEP uses encryption, you must install the 'Unlimited Strength Jurisdictio
 The policy files can be found at the same place as the JDK download. Further information on this can be found in 
 the Sun documentation on the JCE.
 </p><p>
-There is a SCEP servlet receiving requests on http://localhost:8080/ejbca/publicweb/apply/scep/pkiclient.exe
+There are some compatibility issues with SCEP, one beeing if the CA certificate should be returned in a SCEP enrollment
+response or not. The CA certificate is optional but some, Cisco VPN client, seems to require it while others, Juniper, 
+seems to dislike it. Therefore EJBCA has two SCEP URLs.
+</p><p>
+The default including the CA certificate (use if nothing else specified): 
 </p>
+<source>
+http://localhost:8080/ejbca/publicweb/apply/scep/pkiclient.exe
+</source>
+<p>
+Not including the CA certificate (try if the default doesn't work): 
+</p>
+<source>
+http://localhost:8080/ejbca/publicweb/apply/scep/noca/pkiclient.exe
+</source>
 <subsection name="Level of SCEP support">
 <p>
 EJBCA implements features from (at least) draft 11 of the SCEP spec. This means that we implement the following SCEP messages:
@@ -502,7 +515,7 @@ You should only use CN in the users DN (same as for PIX below).
 </subsubsection>
 <subsubsection name="Juniper Networks NetScreen-25/NetScreen-50">
 <p>
-Working.
+Works nice using the URL not including the CA certificate.
 </p></subsubsection>
 <subsubsection name="Cryptlib">
 <p>
