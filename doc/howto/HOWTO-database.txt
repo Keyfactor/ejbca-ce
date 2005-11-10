@@ -144,4 +144,10 @@ recommend that you try different versions until you find one that works...or use
 
 MS-SQL specifics
 ----------------
-JDBC driver: http://msdn.microsoft.com/downloads/default.asp?url=/downloads/sample.asp?url=/MSDN-FILES/027/001/779/msdncompositedoc.xml&frame=true
+Microsofts JDBC driver:
+http://msdn.microsoft.com/downloads/default.asp?url=/downloads/sample.asp?url=/MSDN-FILES/027/001/779/msdncompositedoc.xml&frame=true
+
+There is also an open source JDBC driver at:
+http://jtds.sourceforge.net/
+This driver is not tested by us (yet), but it has received very good reviews as beeing much better than Microsofts
+driver, so I suggest you take it for a spin.
