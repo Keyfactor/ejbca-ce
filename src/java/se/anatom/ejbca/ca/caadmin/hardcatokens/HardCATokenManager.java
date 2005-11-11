@@ -26,7 +26,7 @@ import se.anatom.ejbca.ca.caadmin.CAToken;
  * Each HardCaToken plug-in should register itself by using the method register.
  * The CA keeps a registry of CA tokens created here.
  * 
- * @version $Id: HardCATokenManager.java,v 1.13 2005-06-10 08:12:53 anatom Exp $
+ * @version $Id: HardCATokenManager.java,v 1.14 2005-11-11 08:53:49 anatom Exp $
  * 
  */
 public class HardCATokenManager {
@@ -115,7 +115,8 @@ public class HardCATokenManager {
 	            retval = true;
 	            log.debug("Registered " + classpath + "Successfully.");                       
 	        } else {
-	            log.error("Error registering " + classpath + " couldn't find classpath");
+                // Normally not an error, since these classes are provided by HSM vendor
+	            log.info("Can not register " + classpath + ". This is normally not an error.");
 	        }
 	    }
 	    return retval;
@@ -132,7 +133,7 @@ public class HardCATokenManager {
             log.info("Class not found: "+classpath); 
             return false;
         } catch (InstantiationException e) {
-            log.error("InstantiationException: "+classpath);
+            log.info("Can not instantiate "+classpath+". "+e.getMessage());
             return false;
         } catch (IllegalAccessException e) {
             log.error("IllegalAccessException: "+classpath);

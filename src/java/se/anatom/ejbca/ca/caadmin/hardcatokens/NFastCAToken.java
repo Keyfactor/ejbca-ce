@@ -37,7 +37,7 @@ import se.anatom.ejbca.ca.exception.CATokenOfflineException;
  * and the development was sponsored by Linagora (www.linagora.com).
  * 
  * @author Lars Silvén
- * @version $Id: NFastCAToken.java,v 1.3 2005-06-20 07:48:54 anatom Exp $
+ * @version $Id: NFastCAToken.java,v 1.4 2005-11-11 08:53:49 anatom Exp $
  */
 public class NFastCAToken implements IHardCAToken {
 
@@ -48,10 +48,14 @@ public class NFastCAToken implements IHardCAToken {
     static final private String PROVIDER_NAME = "nCipherKM";
     static final private String PROVIDER_CLASS = "com.ncipher.provider.km.nCipherKM"; 
 
-    public NFastCAToken() throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+    public NFastCAToken() throws InstantiationException, IllegalAccessException {
         log.info("Creating NFastCAToken");
-        Provider prov = (Provider)Class.forName(PROVIDER_CLASS).newInstance();        
-        Security.addProvider( prov );
+        try {
+            Provider prov = (Provider)Class.forName(PROVIDER_CLASS).newInstance();        
+            Security.addProvider( prov );            
+        } catch (ClassNotFoundException e) {
+            throw new InstantiationException("Class not found: "+PROVIDER_CLASS);
+        }
     }
 
     private KeyStrings keyStrings;
