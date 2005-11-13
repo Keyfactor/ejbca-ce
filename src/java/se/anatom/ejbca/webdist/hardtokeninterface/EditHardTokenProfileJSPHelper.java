@@ -41,7 +41,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * Contains help methods used to parse a hard token profile jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditHardTokenProfileJSPHelper.java,v 1.10 2005-05-24 09:33:59 herrvendil Exp $
+ * @version $Id: EditHardTokenProfileJSPHelper.java,v 1.11 2005-11-13 19:40:14 herrvendil Exp $
  */
 public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 	
@@ -238,7 +238,9 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 			 if(profile != null){
 			   if(!profile.trim().equals("")){          
 				 try{
-				   handler.addHardTokenProfile(profile.trim(), new SwedishEIDProfile());
+				   if(!handler.addHardTokenProfile(profile.trim(), new SwedishEIDProfile())){
+					  profilemalformed = true;  
+				   }
 				 }catch( HardTokenProfileExistsException e){
 				   hardtokenprofileexists=true;
 				 }             
@@ -448,7 +450,9 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 
              				 				 
 				 if(request.getParameter(BUTTON_SAVE) != null){
-				   handler.changeHardTokenProfile(profile,profiledata);					
+				   if(!handler.changeHardTokenProfile(profile,profiledata)){
+					   profilemalformed = true;					
+				   }
 				   includefile=PAGE_HARDTOKENPROFILES;
 				 }				 
 				 if(request.getParameter(BUTTON_UPLOADENVELOPETEMP) != null){
@@ -601,6 +605,7 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
     private HardTokenInterfaceBean hardtokenbean;
     private boolean initialized=false;
 	public boolean  hardtokenprofileexists       = false;
+	public boolean  profilemalformed       = false;
 	public boolean  hardtokenprofiledeletefailed = false;
     public boolean  issuperadministrator = false;
     public boolean  fileuploadsuccess = false;

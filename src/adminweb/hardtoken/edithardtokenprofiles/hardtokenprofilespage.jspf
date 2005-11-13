@@ -21,6 +21,14 @@
         <td width="35%"></td>
       </tr>
     <% } %>
+    <% if(helper.profilemalformed){ 
+          helper.profilemalformed= false;%> 
+      <tr> 
+        <td width="5%"></td>
+        <td width="60%"><H4 id="alert"><%= ejbcawebbean.getText("HARDTOKENPROFILEMALFORMED") %></H4></td>
+        <td width="35%"></td>
+      </tr>
+    <% } %>
     <% if(helper.hardtokenprofiledeletefailed){
           helper.hardtokenprofiledeletefailed = false; 
           %> 

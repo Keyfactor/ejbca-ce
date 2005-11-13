@@ -16,6 +16,8 @@ package se.anatom.ejbca.webdist.hardtokeninterface;
 import java.io.Serializable;
 import java.util.HashSet;
 
+import javax.ejb.EJBException;
+
 import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.ca.store.CertificateDataBean;
@@ -47,22 +49,43 @@ public class HardTokenProfileDataHandler implements Serializable {
        this.info = info;       
     }
     
-       /** Method to add a hard token profile. Throws HardTokenProfileExitsException if profile already exists  */
-    public void addHardTokenProfile(String name, HardTokenProfile profile) throws HardTokenProfileExistsException, AuthorizationDeniedException {
+       /** Method to add a hard token profile. 
+        * 
+        * @return false, if the profile have a bad XML encoding.
+        * @throws HardTokenProfileExitsException if profile already exists  */
+    public boolean addHardTokenProfile(String name, HardTokenProfile profile) throws HardTokenProfileExistsException, AuthorizationDeniedException {
+      boolean success = false;
       if(authorizedToProfile(profile, true)){
-        hardtokensession.addHardTokenProfile(administrator, name, profile);
-        this.info.hardTokenDataEdited();
+    	if(checkXMLEncoding(profile)){
+          hardtokensession.addHardTokenProfile(administrator, name, profile);
+          this.info.hardTokenDataEdited();
+          success=true;
+    	}  
+         
       }else
-        throw new AuthorizationDeniedException("Not authorized to add hard token profile");  
+        throw new AuthorizationDeniedException("Not authorized to add hard token profile");
+      
+      return success;
     }    
 
-       /** Method to change a hard token profile. */     
-    public void changeHardTokenProfile(String name, HardTokenProfile profile) throws AuthorizationDeniedException{
-      if(authorizedToProfile(profile, true)){ 
-        hardtokensession.changeHardTokenProfile(administrator, name,profile);   
-		this.info.hardTokenDataEdited();
+
+
+	/** Method to change a hard token profile. 
+        * 
+        * @return false, if the profile have a bad XML encoding.
+        * */     
+    public boolean changeHardTokenProfile(String name, HardTokenProfile profile) throws AuthorizationDeniedException{
+        boolean success = false;
+      if(authorizedToProfile(profile, true)){
+    	  if(checkXMLEncoding(profile)){   	  
+    		  hardtokensession.changeHardTokenProfile(administrator, name,profile);   
+    		  this.info.hardTokenDataEdited();
+    		  success=true;
+    	  } 
       }else
-        throw new AuthorizationDeniedException("Not authorized to edit hard token profile");      
+        throw new AuthorizationDeniedException("Not authorized to edit hard token profile");
+      
+      return success;
     }
     
     /** Method to remove a hard token profile, returns true if deletion failed.*/ 
@@ -174,6 +197,35 @@ public class HardTokenProfileDataHandler implements Serializable {
       return returnval;  
     }    
    
+    /**
+     * Method that test to XML encode and decode a profile.
+     * @param profile 
+     * @return false if something went wrong in the encoding process.
+     */
+    private boolean checkXMLEncoding(HardTokenProfile profile) {
+        boolean success = false;
+        try{
+    	
+		  java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+
+		  java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
+		  encoder.writeObject(profile.saveData());
+		  encoder.close();
+          String data = baos.toString("UTF8");
+		  java.beans.XMLDecoder decoder =
+				new java.beans.XMLDecoder(
+						new java.io.ByteArrayInputStream(data.getBytes("UTF8")));
+		  decoder.readObject();
+		  decoder.close();
+		  
+		  success = true;
+		} catch (Exception e) {
+          success = false;  
+		}
+
+		return success;
+	}
+    
     private IHardTokenSessionLocal         hardtokensession; 
     private Admin                          administrator;
     private IAuthorizationSessionLocal     authorizationsession;
