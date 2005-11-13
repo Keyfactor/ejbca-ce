@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.10 2005-11-08 08:24:50 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.11 2005-11-13 18:33:44 herrvendil Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);
@@ -458,6 +458,12 @@ public class TestCertTools extends TestCase {
       String dn4 = "dc=com,dc=bigcorp,dc=se,ou=orgunit,ou=users,cn=Tomas G,CN=Bagare";
       String newdn4 = CertTools.insertCNPostfix(dn4,cnpostfix1); 
       assertEquals("dc=com,dc=bigcorp,dc=se,ou=orgunit,ou=users,cn=Tomas G (VPN),CN=Bagare", newdn4);
+
+      // Test case with two CNs in reversed DN 
+      String dn5 = "UID=tomas,CN=tomas,OU=users,OU=orgunit,DC=se,DC=bigcorp,DC=com";
+      String cnpostfix5 = " (VPN)";      
+      String newdn5 = CertTools.insertCNPostfix(dn5,cnpostfix5);
+      assertEquals("UID=tomas,CN=tomas (VPN),OU=users,OU=orgunit,DC=se,DC=bigcorp,DC=com", newdn5);
       
       log.debug("<test11TestInsertCNPostfix()");
   }

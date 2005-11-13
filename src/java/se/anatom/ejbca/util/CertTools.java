@@ -74,7 +74,7 @@ import org.bouncycastle.x509.X509V3CertificateGenerator;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.79 2005-11-08 08:17:40 anatom Exp $
+ * @version $Id: CertTools.java,v 1.80 2005-11-13 18:31:42 herrvendil Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -1224,14 +1224,27 @@ public class CertTools {
      * @return the new DN
      */
     public static String insertCNPostfix(String dn, String cnpostfix){
-      String newdn = dn;
+      String newdn = null;
       
-      String cn = CertTools.getPartFromDN(dn,"cn");
-      if(cn != null){
-      	String newcn = cn + cnpostfix;
-      	newdn = dn.replaceFirst(cn,newcn);
+      if ((dn != null) && (cnpostfix != null)) {
+          String o;          
+          X509NameTokenizer xt = new X509NameTokenizer(dn);
+          boolean alreadyreplaced = false;
+          while (xt.hasMoreTokens()) {
+              o = xt.nextToken();             
+              if (!alreadyreplaced && (o.length() > 3) &&
+                      o.substring(0, 3).equalsIgnoreCase("cn=")) {
+                  o += cnpostfix;     
+                  alreadyreplaced = true;
+              }
+              if(newdn==null){
+            	  newdn=o;
+              }else{	  
+                newdn += "," + o;
+              }  
+          }
       }
-      
+ 
       return newdn;
     }
     
