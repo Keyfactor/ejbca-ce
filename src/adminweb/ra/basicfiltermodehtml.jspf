@@ -15,7 +15,7 @@
            onclick='return checkfieldforhexadecimalnumbers("document.form.<%=TEXTFIELD_SERIALNUMBER %>","<%= ejbcawebbean.getText("ONLYHEXNUMBERS") %>")'>
   </p>
   <% if(globalconfiguration.getIssueHardwareTokens()){ %>
-  <p><%= ejbcawebbean.getText("ORTOKENSERIAL") %>
+  <p><%= ejbcawebbean.getText("ORTOKENSERIALPATTERN") %>
     <input type="text" name="<%=TEXTFIELD_TOKENSERIALNUMBER %>" size="33" maxlength="255" 
      <% if(oldaction != null && oldactionvalue!= null && oldaction.equals(OLD_ACTION_FINDTOKEN))
           out.write("value='"+oldactionvalue+"'"); %>
