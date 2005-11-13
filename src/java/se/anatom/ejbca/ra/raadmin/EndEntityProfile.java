@@ -13,11 +13,11 @@
  
 package se.anatom.ejbca.ra.raadmin;
 
-import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
@@ -31,7 +31,7 @@ import se.anatom.ejbca.util.passgen.PasswordGeneratorFactory;
  * of ejbca web interface.
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.32 2005-07-22 09:18:01 anatom Exp $
+ * @version $Id: EndEntityProfile.java,v 1.33 2005-11-13 18:36:05 herrvendil Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -247,7 +247,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         }
 
         // Remove from order list.
-        if(parameter >= OLDDNE && parameter <= COUNTRY){
+        if((parameter >= OLDDNE && parameter <= COUNTRY) || parameter == UNSTRUCTUREDADDRESS || parameter == UNSTRUCTUREDNAME){
           ArrayList fieldorder = (ArrayList) data.get(SUBJECTDNFIELDORDER);
           int value = (NUMBERBOUNDRARY*parameter) + number;
           for(int i=0; i < fieldorder.size(); i++){
@@ -258,7 +258,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
           }
         }
 
-        if((parameter >= RFC822NAME && parameter <= REGISTEREDID) || parameter == UPN || parameter == UNSTRUCTUREDADDRESS || parameter == UNSTRUCTUREDNAME || parameter == GUID){
+        if((parameter >= RFC822NAME && parameter <= REGISTEREDID) || parameter == UPN || parameter == GUID){
           ArrayList fieldorder = (ArrayList) data.get(SUBJECTALTNAMEFIELDORDER);
           int value = (NUMBERBOUNDRARY*parameter) + number;
           for(int i=0; i < fieldorder.size(); i++){
