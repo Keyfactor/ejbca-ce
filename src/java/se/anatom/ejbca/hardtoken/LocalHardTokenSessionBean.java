@@ -1201,7 +1201,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     	try{
     		// Construct SQL query.
     		con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-    		ps = con.prepareStatement("select distinct username from HardTokenData where  tokenSN LIKE '" + searchpattern + "%'");
+    		ps = con.prepareStatement("select distinct username from HardTokenData where  tokenSN LIKE '%" + searchpattern + "%'");
     		// Execute query.
     		rs = ps.executeQuery();
     		// Assemble result.
