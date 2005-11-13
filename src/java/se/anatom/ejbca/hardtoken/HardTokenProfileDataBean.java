@@ -141,7 +141,7 @@ public abstract class HardTokenProfileDataBean extends BaseEntityBean {
      * Method that returns the hard token profile data and updates it if nessesary.
      * @ejb.interface-method view-type="local"
      */
-    public HardTokenProfile getHardTokenProfile(){
+    public HardTokenProfile getHardTokenProfile() throws ArrayIndexOutOfBoundsException{
 
   	  if(profile == null){
 	    java.beans.XMLDecoder decoder;
@@ -152,7 +152,10 @@ public abstract class HardTokenProfileDataBean extends BaseEntityBean {
 		} catch (UnsupportedEncodingException e) {
 		  throw new EJBException(e);
 		}
+		
+		
 		HashMap data = (HashMap) decoder.readObject();
+		
 		decoder.close();
 
 		switch (((Integer) (data.get(HardTokenProfile.TYPE))).intValue()) {

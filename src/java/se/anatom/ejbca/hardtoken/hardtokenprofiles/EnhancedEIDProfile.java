@@ -14,9 +14,12 @@
 package se.anatom.ejbca.hardtoken.hardtokenprofiles;
 
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+
+import javax.ejb.EJBException;
 
 import se.anatom.ejbca.SecConst;
 
@@ -24,7 +27,7 @@ import se.anatom.ejbca.SecConst;
 /**
  * EnhancedEIDProfile with three certificates and key recovery functionallity
  * 
- * @version $Id: EnhancedEIDProfile.java,v 1.9 2005-05-24 09:33:39 herrvendil Exp $
+ * @version $Id: EnhancedEIDProfile.java,v 1.10 2005-11-13 18:37:26 herrvendil Exp $
  */
 public class EnhancedEIDProfile extends EIDProfile {
 						
@@ -129,14 +132,8 @@ public class EnhancedEIDProfile extends EIDProfile {
 	 */
 	public Object clone() throws CloneNotSupportedException {
 	    EnhancedEIDProfile clone = new EnhancedEIDProfile();
-	    HashMap clonedata = (HashMap) clone.saveData();
-	    Iterator i = (data.keySet()).iterator();
-	    while(i.hasNext()){
-		  Object key = i.next();
-		  clonedata.put(key, data.get(key));
-	    }
-
-	    clone.loadData(clonedata);
+	    
+	    super.clone(clone);
 
 	    return clone;
     }

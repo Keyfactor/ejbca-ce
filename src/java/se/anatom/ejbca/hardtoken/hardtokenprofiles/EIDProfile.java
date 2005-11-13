@@ -13,10 +13,15 @@
  
 package se.anatom.ejbca.hardtoken.hardtokenprofiles;
 
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+
+import javax.ejb.EJBException;
 
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.caadmin.CAInfo;
@@ -28,7 +33,7 @@ import se.anatom.ejbca.ca.caadmin.CAInfo;
  * of eidprofiles in the system.
  *  
  *
- * @version $Id: EIDProfile.java,v 1.7 2005-06-28 08:11:24 herrvendil Exp $
+ * @version $Id: EIDProfile.java,v 1.8 2005-11-13 18:37:26 herrvendil Exp $
  */
 public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	
@@ -221,6 +226,27 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
       }
     	    	
       return returnval;	 
+    }
+    
+    /**
+     * Help Method that should be used 
+     * @param emptyclone
+     */
+    
+    protected void clone(EIDProfile emptyclone){
+		java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+
+		try{
+			ObjectOutputStream oos = new ObjectOutputStream(baos);	
+			oos.writeObject(this.saveData());
+			oos.close();
+			ObjectInputStream ois = new ObjectInputStream(new java.io.ByteArrayInputStream(baos.toByteArray()));
+			HashMap cloneddata = (HashMap) ois.readObject();		
+			ois.close();
+			emptyclone.loadData(cloneddata);
+		}catch(Exception e){
+			throw new EJBException(e);
+		}   	    
     }
 
 

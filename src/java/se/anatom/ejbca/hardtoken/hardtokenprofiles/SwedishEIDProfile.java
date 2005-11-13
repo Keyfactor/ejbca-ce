@@ -24,7 +24,7 @@ import se.anatom.ejbca.SecConst;
 /**
  * Hard token profile with a goal to fulfill Swedish EID standard.
  * 
- * @version $Id: SwedishEIDProfile.java,v 1.7 2005-05-24 09:33:39 herrvendil Exp $
+ * @version $Id: SwedishEIDProfile.java,v 1.8 2005-11-13 18:37:26 herrvendil Exp $
  */
 public class SwedishEIDProfile extends EIDProfile {
 		
@@ -124,14 +124,7 @@ public class SwedishEIDProfile extends EIDProfile {
 	 */
 	public Object clone() throws CloneNotSupportedException {
 	    SwedishEIDProfile clone = new SwedishEIDProfile();
-	    HashMap clonedata = (HashMap) clone.saveData();
-	    Iterator i = (data.keySet()).iterator();
-	    while(i.hasNext()){
-		  Object key = i.next();
-		  clonedata.put(key, data.get(key));
-	    }
-
-	    clone.loadData(clonedata);
+	    super.clone(clone);
 
 	    return clone;
     }
