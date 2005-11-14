@@ -20,10 +20,10 @@ After realizing this, please read on and take a pragmatic approach to security
 <p>
 To set upp SSL communication for all HTTP traffic to the server 
 follow the instructions for installing EJBCA, this will set up HTTPS 
-for the admin-GUI.
+for the admin-GUI automatically.
  </p><p>
 This will set up an SSL port open for the public at 8442 and an SSL port
-which require client certificate to access the administraton pages at 8443.
+which require client certificate to access the administration GUI at 8443.
 </p>
 </section>
 
@@ -53,6 +53,14 @@ AdminCA1 is the name of your CA that you are using for server and administrator 
 </p>
 </section>
 
+<section name="Securing JBoss">
+<p>
+JBoss has description how to secure a default installation of JBoss. You should read this document before putting
+your application in production.
+</p><p>
+Check out: <a href="http://wiki.jboss.org/wiki/Wiki.jsp?page=SecureJBoss">SecureJBoss</a>
+</p>
+</section>
 <section name="Configuring for security">
 <p>
 The easiest way to keep the installation secure is to block all default JBOSS ports
