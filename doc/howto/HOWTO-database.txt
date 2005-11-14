@@ -141,6 +141,7 @@ Use latest driver from at least Oracle 10 that can be downloaded from http://www
 We also had reports that some version of the Oracle 10 driver does not work, but that the driver 
 from Oracle 9.2i works. Since oracles JDBC driver seems to be of such bad quality, we have to 
 recommend that you try different versions until you find one that works...or use another database.
+Version 10.1.0.4.0 is confirmed to work.
 
 MS-SQL specifics
 ----------------
