@@ -3,6 +3,8 @@
      Written by Philip Vendil 
      27 mars 2002 */
 
+
+
 function checkAll(checkboxlist,size) {
   for (var i = 0; i < size; i++) {
     box = eval(checkboxlist + i  ); 
@@ -51,7 +53,9 @@ function displayHelpWindow(helplink) {
 function checkfieldforlegalchars(thetextfield , alerttext){
   field = eval(thetextfield);
   var text = new String(field.value);
-  re = /[^a-öA-ÖüÜ_ 0-9\-.]/g;
+  
+  re = /[^\u0041-\u005a\u0061-\u007a\u00aa\u00b5\u00ba\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u01ba\u01bc-\u01bf\u01c4-\u02ad\u0386\u0388-\u0481\u048c-\u0556\u0561-\u0587\u10a0-\u10c5\u1e00-\u1fbc\u1fbe\u1fc2-\u1fcc\u1fd0-\u1fdb\u1fe0-\u1fec\u1ff2-\u1ffc\u207f\u2102\u2107\u210a-\u2113\u2115\u2119-\u211d\u2124\u2126\u2128\u212a-\u212d\u212f-\u2131\u2133\u2134\u2139\ufb00-\ufb17\uff21-\uff3a\uff41-\uff5a_ 0-9\-]/g; 
+
   if(re.exec(text)){
     alert(alerttext);
     return false;
@@ -64,7 +68,7 @@ function checkfieldforlegalchars(thetextfield , alerttext){
 function checkfieldforlegalcharswithchangeable(thetextfield , alerttext){
   field = eval(thetextfield);
   var text = new String(field.value);
-  re = /[^a-öA-ÖüÜ_ 0-9\-;]/g;
+  re = /[^\u0041-\u005a\u0061-\u007a\u00aa\u00b5\u00ba\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u01ba\u01bc-\u01bf\u01c4-\u02ad\u0386\u0388-\u0481\u048c-\u0556\u0561-\u0587\u10a0-\u10c5\u1e00-\u1fbc\u1fbe\u1fc2-\u1fcc\u1fd0-\u1fdb\u1fe0-\u1fec\u1ff2-\u1ffc\u207f\u2102\u2107\u210a-\u2113\u2115\u2119-\u211d\u2124\u2126\u2128\u212a-\u212d\u212f-\u2131\u2133\u2134\u2139\ufb00-\ufb17\uff21-\uff3a\uff41-\uff5a_ 0-9\-;]/g;
   if(re.exec(text)){
     alert(alerttext);
     return false;
@@ -77,7 +81,7 @@ function checkfieldforlegalcharswithchangeable(thetextfield , alerttext){
 function checkfieldforlegaldnchars(thetextfield , alerttext){
   field = eval(thetextfield);
   var text = new String(field.value);
-  re = /[^a-öA-ÖüÜ_ 0-9@\.\,\-:\/\?\'\=\(\)]/g;
+  re = /[^\u0041-\u005a\u0061-\u007a\u00aa\u00b5\u00ba\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u01ba\u01bc-\u01bf\u01c4-\u02ad\u0386\u0388-\u0481\u048c-\u0556\u0561-\u0587\u10a0-\u10c5\u1e00-\u1fbc\u1fbe\u1fc2-\u1fcc\u1fd0-\u1fdb\u1fe0-\u1fec\u1ff2-\u1ffc\u207f\u2102\u2107\u210a-\u2113\u2115\u2119-\u211d\u2124\u2126\u2128\u212a-\u212d\u212f-\u2131\u2133\u2134\u2139\ufb00-\ufb17\uff21-\uff3a\uff41-\uff5a@\.\*\,\-:\/\?\'\=\(\)]/g;
   if(re.exec(text)){
     alert(alerttext);
     return false;
@@ -90,7 +94,7 @@ function checkfieldforlegaldnchars(thetextfield , alerttext){
 function checkfieldforcompletednchars(thetextfield , alerttext){
   field = eval(thetextfield);
   var text = new String(field.value);
-  re = /[^a-öA-ÖüÜ_ 0-9@\,\=\.\-:\/\?\'\(\)]/g;
+  re = /[^\u0041-\u005a\u0061-\u007a\u00aa\u00b5\u00ba\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u01ba\u01bc-\u01bf\u01c4-\u02ad\u0386\u0388-\u0481\u048c-\u0556\u0561-\u0587\u10a0-\u10c5\u1e00-\u1fbc\u1fbe\u1fc2-\u1fcc\u1fd0-\u1fdb\u1fe0-\u1fec\u1ff2-\u1ffc\u207f\u2102\u2107\u210a-\u2113\u2115\u2119-\u211d\u2124\u2126\u2128\u212a-\u212d\u212f-\u2131\u2133\u2134\u2139\ufb00-\ufb17\uff21-\uff3a\uff41-\uff5a@\,\=\.\*\-:\/\?\'\(\)]/g;
   if(re.exec(text)){
     alert(alerttext);
     return false;
@@ -103,7 +107,7 @@ function checkfieldforcompletednchars(thetextfield , alerttext){
 function checkfieldforlegaldncharswithchangeable(thetextfield , alerttext){
   field = eval(thetextfield);
   var text = new String(field.value);
-  re = /[^a-öA-ÖüÜ_ 0-9@.,\-:\/;\'\?\+\=\(\)\"]/g;
+  re = /[^\u0041-\u005a\u0061-\u007a\u00aa\u00b5\u00ba\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u01ba\u01bc-\u01bf\u01c4-\u02ad\u0386\u0388-\u0481\u048c-\u0556\u0561-\u0587\u10a0-\u10c5\u1e00-\u1fbc\u1fbe\u1fc2-\u1fcc\u1fd0-\u1fdb\u1fe0-\u1fec\u1ff2-\u1ffc\u207f\u2102\u2107\u210a-\u2113\u2115\u2119-\u211d\u2124\u2126\u2128\u212a-\u212d\u212f-\u2131\u2133\u2134\u2139\ufb00-\ufb17\uff21-\uff3a\uff41-\uff5a@\.\,\*\-:\/;\'\?\+\=\(\)\"]/g;
   if(re.exec(text)){
     alert(alerttext);
     return false;
@@ -129,7 +133,7 @@ function checkfieldforipaddess(thetextfield , alerttext){
 function checkfieldforlegalemailchars(thetextfield , alerttext){
   field = eval(thetextfield);
   var text = new String(field.value);
-  re = /[^a-öA-ÖüÜ_0-9@\.\-]/g;
+  re = /[^\u0041-\u005a\u0061-\u007a\u00aa\u00b5\u00ba\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u01ba\u01bc-\u01bf\u01c4-\u02ad\u0386\u0388-\u0481\u048c-\u0556\u0561-\u0587\u10a0-\u10c5\u1e00-\u1fbc\u1fbe\u1fc2-\u1fcc\u1fd0-\u1fdb\u1fe0-\u1fec\u1ff2-\u1ffc\u207f\u2102\u2107\u210a-\u2113\u2115\u2119-\u211d\u2124\u2126\u2128\u212a-\u212d\u212f-\u2131\u2133\u2134\u2139\ufb00-\ufb17\uff21-\uff3a\uff41-\uff5a_0-9@\.\-]/g;
   if(re.exec(text)){
     alert(alerttext);
     return false;
@@ -142,7 +146,7 @@ function checkfieldforlegalemailchars(thetextfield , alerttext){
 function checkfieldforlegalemailcharswithchangeable(thetextfield , alerttext){
   field = eval(thetextfield);
   var text = new String(field.value);
-  re = /[^a-öA-ÖüÜ_0-9@\.\-;]/g;
+  re = /[^\u0041-\u005a\u0061-\u007a\u00aa\u00b5\u00ba\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u01ba\u01bc-\u01bf\u01c4-\u02ad\u0386\u0388-\u0481\u048c-\u0556\u0561-\u0587\u10a0-\u10c5\u1e00-\u1fbc\u1fbe\u1fc2-\u1fcc\u1fd0-\u1fdb\u1fe0-\u1fec\u1ff2-\u1ffc\u207f\u2102\u2107\u210a-\u2113\u2115\u2119-\u211d\u2124\u2126\u2128\u212a-\u212d\u212f-\u2131\u2133\u2134\u2139\ufb00-\ufb17\uff21-\uff3a\uff41-\uff5a_0-9@\.\-;]/g;
   if(re.exec(text)){
     alert(alerttext);
     return false;
@@ -155,7 +159,7 @@ function checkfieldforlegalemailcharswithchangeable(thetextfield , alerttext){
 function checkfieldforlegalemailcharswithoutat(thetextfield , alerttext){
   field = eval(thetextfield);
   var text = new String(field.value);
-  re = /[^a-öA-ÖüÜ_0-9\.\-]/g;
+  re = /[^\u0041-\u005a\u0061-\u007a\u00aa\u00b5\u00ba\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u01ba\u01bc-\u01bf\u01c4-\u02ad\u0386\u0388-\u0481\u048c-\u0556\u0561-\u0587\u10a0-\u10c5\u1e00-\u1fbc\u1fbe\u1fc2-\u1fcc\u1fd0-\u1fdb\u1fe0-\u1fec\u1ff2-\u1ffc\u207f\u2102\u2107\u210a-\u2113\u2115\u2119-\u211d\u2124\u2126\u2128\u212a-\u212d\u212f-\u2131\u2133\u2134\u2139\ufb00-\ufb17\uff21-\uff3a\uff41-\uff5a_0-9\.\-]/g;
   if(re.exec(text)){
     alert(alerttext);
     return false;
@@ -168,7 +172,7 @@ function checkfieldforlegalemailcharswithoutat(thetextfield , alerttext){
 function checkfieldforlegalemailcharswithoutatwithchangeable(thetextfield , alerttext){
   field = eval(thetextfield);
   var text = new String(field.value);
-  re = /[^a-öA-ÖüÜ_0-9\.\-;]/g;
+  re = /[^\u0041-\u005a\u0061-\u007a\u00aa\u00b5\u00ba\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u01ba\u01bc-\u01bf\u01c4-\u02ad\u0386\u0388-\u0481\u048c-\u0556\u0561-\u0587\u10a0-\u10c5\u1e00-\u1fbc\u1fbe\u1fc2-\u1fcc\u1fd0-\u1fdb\u1fe0-\u1fec\u1ff2-\u1ffc\u207f\u2102\u2107\u210a-\u2113\u2115\u2119-\u211d\u2124\u2126\u2128\u212a-\u212d\u212f-\u2131\u2133\u2134\u2139\ufb00-\ufb17\uff21-\uff3a\uff41-\uff5a_0-9\.\-;]/g;
   if(re.exec(text)){
     alert(alerttext);
     return false;
@@ -209,7 +213,7 @@ function checkfieldforhexadecimalnumbers(thetextfield , alerttext){
 function checkfieldforlegalresourcechars(thetextfield , alerttext){
   field = eval(thetextfield);
   var text = new String(field.value);
-  re = /[^a-öA-ÖüÜ_ 0-9\/]/g;
+  re = /[^\u0041-\u005a\u0061-\u007a\u00aa\u00b5\u00ba\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u01ba\u01bc-\u01bf\u01c4-\u02ad\u0386\u0388-\u0481\u048c-\u0556\u0561-\u0587\u10a0-\u10c5\u1e00-\u1fbc\u1fbe\u1fc2-\u1fcc\u1fd0-\u1fdb\u1fe0-\u1fec\u1ff2-\u1ffc\u207f\u2102\u2107\u210a-\u2113\u2115\u2119-\u211d\u2124\u2126\u2128\u212a-\u212d\u212f-\u2131\u2133\u2134\u2139\ufb00-\ufb17\uff21-\uff3a\uff41-\uff5a_ 0-9\/]/g;
   if(re.exec(text)){
     alert(alerttext);
     return false;
