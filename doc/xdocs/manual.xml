@@ -1403,6 +1403,17 @@ EJBCA have for exmaple been tested on Windows/JBoss 4.0.2/MySQL and Linux/JBoss4
 the default configuration using Swedish national characters, 
 and it works nicely both with the cli and admin-GUI.
 </p>
+<p>
+To make everything work perfect you MAY have to also configure JBoss to encode URIs according to your settings,
+this is done with the 'URIEncoding' directory in JBOSS_HOME/server/default/deploy/jbossweb-tomcat55.sar/server.xml:
+</p>
+<source>
+&lt;Connector port="8443" address="${jboss.bind.address}"
+         maxThreads="100" minSpareThreads="5" maxSpareThreads="15"
+         scheme="https" secure="true" clientAuth="true"
+         keystoreFile="${jboss.server.home.dir}/../../bin/tomcat.jks"
+         keystorePass="t0mcat." sslProtocol = "TLS" URIEncoding="UTF-8"/&gt;
+</source>
 
 <subsection name="Adding a new language to the admin GUI">
 <p>
@@ -1423,7 +1434,7 @@ in src/adminweb/languages.
 In order to add a language you should do the following:
 <ol>
 <li>Rename the languagefile you have created to
-language.<i>languagecode</i>.properties. In case of chinese it should be 'ch', and place 
+language.<i>languagecode</i>.properties. In case of chinese it should be 'zh', and place 
 it in the src/adminweb/languages directory.
 </li>
 <li>Edit ejbca.properties (create with ejbca.properties.sample as template if you don't have one).
