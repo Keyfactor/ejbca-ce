@@ -107,14 +107,12 @@ MySQL specifics
 EJBCA have been tested with MySQL 3 and 4.
 
 JDBC driver: mysql-connector-java-3.0.x.jar (preferably 3.0.9 or higher).
-You should perhaps add '?autoReconnect=true' to the end of the connect string to make database 
-connections more stable and persistent over database restarts. The connect string typically looks like:
-jdbc:mysql://127.0.0.1/ejbca?autoReconnect=true
 
 Download JDBC driver for mySQL from http://www.mysql.com/
 
 Sometimes there can be problems with MySQL realted to case sensitivity of database tables.
 If you run into this see:
+http://mysqld.active-venture.com/Name_case_sensitivity.html
 http://dev.mysql.com/doc/refman/4.1/en/name-case-sensitivity.html
 
 PostgreSQL specifics
