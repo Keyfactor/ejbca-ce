@@ -17,9 +17,13 @@ import java.io.ByteArrayOutputStream;
 import java.rmi.RemoteException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.TreeMap;
 
 import javax.ejb.CreateException;
@@ -30,13 +34,13 @@ import javax.servlet.http.HttpServletRequest;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 
-import se.anatom.ejbca.ca.crl.ICreateCRLSessionHome;
 import se.anatom.ejbca.apply.RequestHelper;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocalHome;
 import se.anatom.ejbca.ca.caadmin.CAInfo;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome;
+import se.anatom.ejbca.ca.crl.ICreateCRLSessionHome;
 import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.ca.publisher.IPublisherSessionLocal;
 import se.anatom.ejbca.ca.publisher.IPublisherSessionLocalHome;
@@ -68,7 +72,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.30 2005-05-09 15:34:28 anatom Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.31 2005-11-16 22:08:51 herrvendil Exp $
  */
 public class CAInterfaceBean implements java.io.Serializable {
 
@@ -341,8 +345,31 @@ public class CAInterfaceBean implements java.io.Serializable {
 	  	returnval = "CERTPROFILENOTFOUND";
 	  }	  
 	}
-	return returnval;
-}
+	return returnval; 
+   }
+   
+   /** Class used to sort CertReq History by users modfifytime, with latest first*/
+   private class CertReqUserCreateComparator implements Comparator{
+
+	public int compare(Object arg0, Object arg1) {		
+		return 0 - (((CertReqHistory) arg0).getUserDataVO().getTimeModified().compareTo(
+				      ((CertReqHistory) arg1).getUserDataVO().getTimeModified()));
+	}
+	   
+   }
+   
+   /**
+    * Returns a List of CertReqHistUserData from the certreqhist database in an collection sorted by timestamp.
+    * 
+    */
+   public List getCertReqUserDatas(String username){
+	   List history = this.certificatesession.getCertReqHistory(administrator, username);
+	   
+	   // Sort it by timestamp, newest first;
+	   Collections.sort(history, new CertReqUserCreateComparator());
+	   	   
+	   return history;
+   }
     
     // Private methods
 

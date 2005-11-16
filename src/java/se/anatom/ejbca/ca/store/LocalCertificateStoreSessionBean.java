@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 import javax.ejb.CreateException;
@@ -65,7 +66,7 @@ import se.anatom.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.84 2005-05-02 16:19:04 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.85 2005-11-16 22:08:51 herrvendil Exp $
  * @ejb.bean display-name="CertificateStoreSB"
  * name="CertificateStoreSession"
  * view-type="both"
@@ -1401,7 +1402,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @return a collection of CertReqHistory
      * @ejb.interface-method
      */
-    public Collection getCertReqHistory(Admin admin, String username){
+    public List getCertReqHistory(Admin admin, String username){
     	ArrayList retval = new ArrayList();
     	
     	try{

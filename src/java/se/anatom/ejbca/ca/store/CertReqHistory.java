@@ -22,7 +22,7 @@ import se.anatom.ejbca.common.UserDataVO;
  * CertReqHistory Entity Bean. See constructor for details of its fields.
  * 
  * @author Philip Vendil
- * @version $Id: CertReqHistory.java,v 1.4 2005-05-02 16:19:05 anatom Exp $
+ * @version $Id: CertReqHistory.java,v 1.5 2005-11-16 22:08:51 herrvendil Exp $
  * @see se.anatom.ejbca.ca.store.CertReqHistoryDataBean  
  */
 
@@ -89,4 +89,6 @@ public class CertReqHistory implements Serializable{
     public String getUsername() {
         return username;
     }
+    
+
 }

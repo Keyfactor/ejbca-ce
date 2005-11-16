@@ -200,8 +200,8 @@ function viewcopies(link){
 <body >
   <h2 align="center"><%= ejbcawebbean.getText("VIEWHARDTOKEN") %></h2>
  <!-- <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("hardtoken_help.html")  + "#viewhardtoken"%>")'>
-    <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
-  </div> 
+    <u><%= ejbcawebbean.getText("HELP") %></u> </A>
+  </div>  -->
   <%if(noparameter){%>
   <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYPARAMETER") %></h4></div> 
   <% } 

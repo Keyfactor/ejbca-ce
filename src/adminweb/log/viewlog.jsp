@@ -3,7 +3,7 @@
                  se.anatom.ejbca.webdist.rainterface.SortBy,se.anatom.ejbca.webdist.loginterface.LogEntryView,
                  se.anatom.ejbca.webdist.loginterface.LogInterfaceBean, se.anatom.ejbca.log.LogEntry, se.anatom.ejbca.log.Admin, se.anatom.ejbca.ra.raadmin.AdminPreference,
                  javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.util.query.*, java.util.Calendar, java.util.Date, java.text.DateFormat, java.util.Locale,
-                 java.util.HashMap, java.util.Collection, java.util.Iterator, java.util.TreeMap" %>
+                 java.util.HashMap, java.util.Collection, java.util.Iterator, java.util.TreeMap, se.anatom.ejbca.webdist.rainterface.ViewEndEntityHelper" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
 <jsp:useBean id="logbean" scope="session" class="se.anatom.ejbca.webdist.loginterface.LogInterfaceBean" />
@@ -107,11 +107,13 @@
   static final String HIDDEN_USERNAME           = "hiddenusername";
   static final String HIDDEN_CERTSERNO          = "hiddencertserno";
   static final String HIDDEN_ADMINSERNO         = "hiddenadminserno";
+  static final String HIDDEN_TIMESTAMP          = "hiddentimestamp";
 
   static final String VALUE_NONE                = "-1";
   static final String ALL_STATUS                = "-1";
 
   static final String USER_PARAMETER            = "username";
+  static final String TIMESTAMP_PARAMETER       = ViewEndEntityHelper.TIMESTAMP_PARAMETER;
   static final String CERTSERNO_PARAMETER       = "certsernoparameter";
 
   static final String[] VIEWLASTTIMESTEXTS      = {"15MIN", "1HOUR", "6HOURS", "1DAY", "7DAYS"};
