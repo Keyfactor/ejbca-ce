@@ -16,24 +16,28 @@ package se.anatom.ejbca.ca.store.certificateprofiles;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.ca.store.CertificateDataBean;
+import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 import se.anatom.ejbca.util.UpgradeableDataHashMap;
 
 /**
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.29 2005-05-02 13:03:04 herrvendil Exp $
+ * @version $Id: CertificateProfile.java,v 1.30 2005-11-17 19:22:33 herrvendil Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
     // Default Values
-    public static final float LATEST_VERSION = (float) 10.0;
+    public static final float LATEST_VERSION = (float) 11.0;
 
     /** KeyUsage constants */
     public static final int DIGITALSIGNATURE = 0;
@@ -119,7 +123,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 	protected static final String USEMICROSOFTTEMPLATE           = "usemicrosofttemplate";
 	protected static final String MICROSOFTTEMPLATE              = "microsofttemplate";
 	protected static final String USECNPOSTFIX                   = "usecnpostfix";
-	protected static final String CNPOSTFIX                      = "cnpostfix"; 
+	protected static final String CNPOSTFIX                      = "cnpostfix";	
+	protected static final String USESUBJECTDNSUBSET             = "usesubjectdnsubset";
+	protected static final String SUBJECTDNSUBSET                = "subjectdnsubset";
+	protected static final String USESUBJECTALTNAMESUBSET        = "usesubjectaltnamesubset";
+	protected static final String SUBJECTALTNAMESUBSET           = "subjectaltnamesubset";
      
     // Public Methods
 
@@ -178,7 +186,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 	  
 	  setUseCNPostfix(false);
 	  setCNPostfix("");
-
+	  
+	  setUseSubjectDNSubSet(false);
+	  setSubjectDNSubSet(new ArrayList());
+	  setUseSubjectAltNameSubSet(false);
+	  setSubjectAltNameSubSet(new ArrayList());
+	  
     }
 
 
@@ -386,6 +399,135 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 		
 	}
 	
+    public boolean getUseSubjectDNSubSet(){
+    	return ((Boolean) data.get(USESUBJECTDNSUBSET)).booleanValue();	
+    }
+    
+    public void setUseSubjectDNSubSet(boolean use) {
+		data.put(USESUBJECTDNSUBSET, Boolean.valueOf(use));			
+	}
+    
+    /**
+     * Returns a collection of Integer (DNFieldExtractor constants) indicating
+     * which subject dn fields that should be used in certificate.
+     * 
+     */
+    public Collection getSubjectDNSubSet(){
+    	return (Collection) data.get(SUBJECTDNSUBSET);	
+    }
+
+    /**
+     * Should contain a collection of Integer (DNFieldExtractor constants) indicating
+     * which subject dn fields that should be used in certificate.
+     * 
+     */
+    public void setSubjectDNSubSet(Collection subjectdns) {
+		data.put(SUBJECTDNSUBSET, subjectdns);	
+		
+	}
+
+    /**
+     * Method taking a full user dn and returns a DN only containing the 
+     * DN fields specified in the subjectdn sub set array.
+     * 
+     * @param dn
+     * @return a subset of original DN
+     */
+    
+    public String createSubjectDNSubSet(String dn){
+    	DNFieldExtractor extractor = new DNFieldExtractor(dn,DNFieldExtractor.TYPE_SUBJECTDN);    	
+    	return constructUserData(extractor, getSubjectDNSubSet(), true);
+    }
+    
+    public boolean getUseSubjectAltNameSubSet(){
+    	return ((Boolean) data.get(USESUBJECTALTNAMESUBSET)).booleanValue();	
+    }
+    
+    public void setUseSubjectAltNameSubSet(boolean use) {
+		data.put(USESUBJECTALTNAMESUBSET, Boolean.valueOf(use));			
+	}
+
+    /**
+     * Returns a collection of Integer (DNFieldExtractor constants) indicating
+     * which subject altnames fields that should be used in certificate.
+     * 
+     */
+    public Collection getSubjectAltNameSubSet(){
+    	return (Collection) data.get(SUBJECTALTNAMESUBSET);	
+    }
+    
+    /**
+     * Returns a collection of Integer (DNFieldExtractor constants) indicating
+     * which subject altnames fields that should be used in certificate.
+     * 
+     */
+    public void setSubjectAltNameSubSet(Collection subjectaltnames) {
+		data.put(SUBJECTALTNAMESUBSET, subjectaltnames);	
+		
+	}
+
+    
+    /**
+     * Method taking a full user dn and returns a AltName only containing the 
+     * AltName fields specified in the subjectaltname sub set array.
+     * 
+     * @param dn
+     * @return a subset of original DN
+     */
+    public String createSubjectAltNameSubSet(String subjectaltname){
+    	DNFieldExtractor extractor = new DNFieldExtractor(subjectaltname,DNFieldExtractor.TYPE_SUBJECTALTNAME);    	
+    	return constructUserData(extractor, getSubjectAltNameSubSet(), false);
+    }
+    
+    /**
+     * Help method converting a full DN or Subject Alt Name to one usng only specified fields
+     * @param extractor 
+     * @param usefields
+     * @return
+     */
+    protected String constructUserData(DNFieldExtractor extractor, Collection usefields, boolean subjectdn){
+        String retval = "";
+                       
+        if(usefields instanceof List){
+          Collections.sort((List) usefields);
+        }
+        Iterator iter = usefields.iterator(); 
+        String dnField = null;
+        while(iter.hasNext()){
+        	Integer next = (Integer) iter.next();
+        	dnField = getDNField(extractor, next.intValue(), subjectdn);
+        	if (StringUtils.isNotEmpty(dnField)) {
+            	if(retval.length() == 0)
+              	  retval += dnField; // first item, don't start with a comma
+              	else
+              	  retval += "," + dnField;      	    
+        	}
+        }
+        
+              
+        log.debug("CertificateProfile: constructed DN or AltName: " + retval );
+        return retval;	
+      }
+      
+      protected String getDNField(DNFieldExtractor extractor, int field, boolean subjectdn){
+        String retval = "";
+        String[] fieldnames =  DNFieldExtractor.SUBJECTDNFIELDS;
+        int f = field;
+        if(!subjectdn){
+        	fieldnames =  DNFieldExtractor.SUBJECTALTNAME;
+        	f = field - DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY;
+        }
+        
+        int num = extractor.getNumberOfFields(field);
+        for(int i=0;i<num;i++){
+        	if(retval.length() == 0)
+        	  retval += fieldnames[f] + extractor.getField(field,i);
+        	else
+        	  retval += "," + fieldnames[f] + extractor.getField(field,i);	
+        }    
+        return retval;      	
+      }
+    
     
     /**
      * Returns an ArrayList of OID.strings defined in constant EXTENDEDKEYUSAGEOIDSTRINGS.
@@ -514,6 +656,13 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
           	  setUseCNPostfix(false);
         	  setCNPostfix("");
             } 
+            
+            if(data.get(USESUBJECTDNSUBSET) == null){
+          	  setUseSubjectDNSubSet(false);
+        	  setSubjectDNSubSet(new ArrayList());
+        	  setUseSubjectAltNameSubSet(false);
+        	  setSubjectAltNameSubSet(new ArrayList());
+            }
             
         }
         log.debug("<upgrade");

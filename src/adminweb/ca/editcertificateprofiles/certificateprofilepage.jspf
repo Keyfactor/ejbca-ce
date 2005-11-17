@@ -20,6 +20,26 @@
   TreeMap authorizedpublishers = ejbcawebbean.getInformationMemory().getAuthorizedPublisherNames();
   HashMap publisheridtonamemap = ejbcawebbean.getInformationMemory().getPublisherIdToNameMap();
 
+  int[] usefieldsindn =  {DNFieldExtractor.CN, DNFieldExtractor.UID, DNFieldExtractor.SN, 
+          DNFieldExtractor.GIVENNAME, DNFieldExtractor.SURNAME, DNFieldExtractor.T, 
+          DNFieldExtractor.L, DNFieldExtractor.INITIALS, DNFieldExtractor.E, 
+          DNFieldExtractor.ST, DNFieldExtractor.C, DNFieldExtractor.O, DNFieldExtractor.OU,
+          DNFieldExtractor.UNSTRUCTUREDADDRESS, DNFieldExtractor.UNSTRUCTUREDNAME };
+
+  String[] usefieldsindntexts = {"MATCHCOMMONNAME","MATCHUID","MATCHDNSERIALNUMBER",
+               "MATCHGIVENNAME", "MATCHSURNAME","MATCHTITLE",
+               "MATCHLOCALE","MATCHINITIALS","OLDEMAILDN1", "MATCHSTATE",
+               "MATCHCOUNTRY", "MATCHORGANIZATION", "MATCHORGANIZATIONUNIT",
+               "UNSTRUCTUREDADDRESS","UNSTRUCTUREDNAME"}; 
+  
+  int[] usefieldsinaltname =  {DNFieldExtractor.RFC822NAME, DNFieldExtractor.DNSNAME, DNFieldExtractor.IPADDRESS, 
+           DNFieldExtractor.URI, DNFieldExtractor.UPN, DNFieldExtractor.GUID};
+
+  
+  String[] usefieldsinaltnametexts = {"RFC822NAME","DNSNAME","IPADDRESS",
+               "UNIFORMRESOURCEID", "UPN","GUID"}; 
+  
+  
   int row = 0;
 %>
 <SCRIPT language="JavaScript">
@@ -78,6 +98,24 @@ function checkusecnpostfixfield(){
   }
   else{
     document.editcertificateprofile.<%= TEXTFIELD_CNPOSTFIX %>.disabled = true;
+  }
+}
+
+function checkusesubjectdnsubsetfield(){
+  if(document.editcertificateprofile.<%=CHECKBOX_USESUBJECTDNSUBSET %>.checked){    
+    document.editcertificateprofile.<%= SELECT_SUBJECTDNSUBSET %>.disabled = false;    
+  }
+  else{
+    document.editcertificateprofile.<%= SELECT_SUBJECTDNSUBSET %>.disabled = true;
+  }
+}
+
+function checkusesubjectaltnamesubsetfield(){
+  if(document.editcertificateprofile.<%=CHECKBOX_USESUBJECTALTNAMESUBSET %>.checked){    
+    document.editcertificateprofile.<%=SELECT_SUBJECTALTNAMESUBSET%>.disabled = false;    
+  }
+  else{
+    document.editcertificateprofile.<%=SELECT_SUBJECTALTNAMESUBSET%>.disabled = true;
   }
 }
 
@@ -465,6 +503,62 @@ function checkallfields(){
                       out.write(" value=\"" + certificateprofiledata.getCNPostfix() + "\""); %> >
       </td>
     </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("USESUBJECTDNSUBSET") %> 
+      </td>
+      <td width="50%">
+           <input type="checkbox" name="<%=CHECKBOX_USESUBJECTDNSUBSET  %>"  onclick="checkusesubjectdnsubsetfield()" value="<%=CHECKBOX_VALUE %>" 
+           <% if(certificateprofiledata.getUseSubjectDNSubSet())
+                 out.write("CHECKED");
+           %>>
+      </td>
+    </tr>        
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("SUBSETOFSUBJECTDN") %><br>
+        </div>
+      </td>
+      <td width="50%" valign="top">   
+        <select name="<%=SELECT_SUBJECTDNSUBSET%>" size="15" multiple <%if(!certificateprofiledata.getUseSubjectDNSubSet()){out.write(" disabled ");} %>>       
+            <% HashSet currentfields = new HashSet(certificateprofiledata.getSubjectDNSubSet());
+               for(int i=0;i < usefieldsindn.length; i++){ %>                                  
+              <option value="<%=usefieldsindn[i]%>" <% if(currentfields.contains(new Integer(usefieldsindn[i]))) out.write(" selected "); %>> 
+                  <%= ejbcawebbean.getText(usefieldsindntexts[i]) %>
+               </option>
+            <%}%>
+          </select>         
+      </td>
+    </tr>
+     <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("USESUBJECTALTNAMESUBSET") %> 
+      </td>
+      <td width="50%">
+           <input type="checkbox" name="<%=CHECKBOX_USESUBJECTALTNAMESUBSET  %>"  onclick="checkusesubjectaltnamesubsetfield()" value="<%=CHECKBOX_VALUE %>" 
+           <% if(certificateprofiledata.getUseSubjectAltNameSubSet())
+                 out.write("CHECKED");
+           %>>
+      </td>
+    </tr>        
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("SUBSETOFSUBJECTALTNAME") %><br>
+        </div>
+      </td>
+      <td width="50%" valign="top">   
+        <select name="<%=SELECT_SUBJECTALTNAMESUBSET%>" size="6" multiple <%if(!certificateprofiledata.getUseSubjectAltNameSubSet()){out.write(" disabled ");} %>>       
+            <% currentfields = new HashSet(certificateprofiledata.getSubjectAltNameSubSet());
+               for(int i=0;i < usefieldsinaltname.length; i++){ %>                                  
+              <option value="<%=usefieldsinaltname[i]%>" <% if(currentfields.contains(new Integer(usefieldsinaltname[i]))) out.write(" selected "); %>> 
+                  <%= ejbcawebbean.getText(usefieldsinaltnametexts[i]) %>
+               </option>
+            <%}%>
+          </select>         
+      </td>
+    </tr>   
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 
         <%= ejbcawebbean.getText("AVAILABLEBITLENGTHS") %> <br>&nbsp;

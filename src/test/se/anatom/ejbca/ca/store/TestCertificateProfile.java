@@ -13,19 +13,24 @@
 
 package se.anatom.ejbca.ca.store;
 
+import java.util.ArrayList;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
 
 import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
+
 import se.anatom.ejbca.ca.exception.CertificateProfileExistsException;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
 import se.anatom.ejbca.log.Admin;
+import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 
 /**
  * Tests the certificate profile entity bean.
  *
- * @version $Id: TestCertificateProfile.java,v 1.2 2004-07-23 10:24:42 anatom Exp $
+ * @version $Id: TestCertificateProfile.java,v 1.3 2005-11-17 19:22:34 herrvendil Exp $
  */
 public class TestCertificateProfile extends TestCase {
     private static Logger log = Logger.getLogger(TestCertificateProfile.class);
@@ -168,6 +173,51 @@ public class TestCertificateProfile extends TestCase {
 
         log.debug("<test05removeCertificateProfiles()");
     }
+    
+    public void test06createSubjectDNSubSet() throws Exception{
+        log.debug(">test06createSubjectDNSubSet()");    	
+    	CertificateProfile profile = new CertificateProfile();
+    	
+    	ArrayList dnsubset = new ArrayList();
+    	dnsubset.add(new Integer(DNFieldExtractor.CN));
+    	dnsubset.add(new Integer(DNFieldExtractor.UID));
+    	dnsubset.add(new Integer(DNFieldExtractor.GIVENNAME));
+    	dnsubset.add(new Integer(DNFieldExtractor.SURNAME));    	
+    	profile.setSubjectDNSubSet(dnsubset);
+    	
+    	String indn1 = "UID=PVE,CN=Philip Vendil,SN=123435,GIVENNAME=Philip,SURNAME=Vendil";
+    	String outdn1 = profile.createSubjectDNSubSet(indn1);
+    	String expecteddn1 = "UID=PVE,CN=Philip Vendil,GIVENNAME=Philip,SURNAME=Vendil";
+        assertTrue("createSubjectDNSubSet doesn't work" + outdn1 + " != "+ expecteddn1, expecteddn1.equalsIgnoreCase(outdn1)); 
+        
+    	String indn2 = "UID=PVE,CN=Philip Vendil,CN=SecondUsername,SN=123435,SN=54321,GIVENNAME=Philip,SURNAME=Vendil";
+    	String outdn2 = profile.createSubjectDNSubSet(indn2);
+    	String expecteddn2 = "UID=PVE,CN=Philip Vendil,CN=SecondUsername,GIVENNAME=Philip,SURNAME=Vendil";
+        assertTrue("createSubjectDNSubSet doesn't work" + outdn2 + " != "+ expecteddn2, expecteddn2.equalsIgnoreCase(outdn2));
+        
+        log.debug(">test06createSubjectDNSubSet()");
+    }
 
+    public void test07createSubjectAltNameSubSet() throws Exception{
+        log.debug(">test07createSubjectAltNameSubSet()");
 
+    	CertificateProfile profile = new CertificateProfile();
+    	
+    	ArrayList altnamesubset = new ArrayList();
+    	altnamesubset.add(new Integer(DNFieldExtractor.RFC822NAME));
+    	altnamesubset.add(new Integer(DNFieldExtractor.UPN));    	
+    	profile.setSubjectAltNameSubSet(altnamesubset);
+    	
+    	String inaltname1 = "RFC822NAME=test@test.se,UPN=testacc@test.se,IPADDRESS=10.1.1.0";
+    	String outaltname1 = profile.createSubjectAltNameSubSet(inaltname1);
+    	String expectedaltname1 = "RFC822NAME=test@test.se,UPN=testacc@test.se";
+        assertTrue("createSubjectAltNameSubSet doesn't work" + outaltname1 + " != "+ expectedaltname1, expectedaltname1.equalsIgnoreCase(outaltname1)); 
+        
+    	String inaltname2 = "RFC822NAME=test@test.se,RFC822NAME=test2@test2.se,UPN=testacc@test.se,IPADDRESS=10.1.1.0,IPADDRESS=10.1.1.2";
+    	String outaltname2 = profile.createSubjectAltNameSubSet(inaltname2);
+    	String expectedaltname2 = "RFC822NAME=test@test.se,RFC822NAME=test2@test2.se,UPN=testacc@test.se";
+        assertTrue("createSubjectAltNameSubSet doesn't work" + outaltname2 + " != "+ expectedaltname2, expectedaltname2.equalsIgnoreCase(outaltname2));
+        
+        log.debug(">test07createSubjectAltNameSubSet()");
+    }
 }

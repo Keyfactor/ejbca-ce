@@ -1,7 +1,7 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.SecConst, se.anatom.ejbca.authorization.AuthorizationDeniedException,
                se.anatom.ejbca.webdist.cainterface.CAInterfaceBean, se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile, se.anatom.ejbca.webdist.cainterface.CertificateProfileDataHandler, 
-               se.anatom.ejbca.ca.exception.CertificateProfileExistsException, se.anatom.ejbca.webdist.rainterface.CertificateView"%>
+               se.anatom.ejbca.ca.exception.CertificateProfileExistsException, se.anatom.ejbca.webdist.rainterface.CertificateView, se.anatom.ejbca.ra.raadmin.DNFieldExtractor"%>
 
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
@@ -55,6 +55,8 @@
   static final String CHECKBOX_USEOCSPSERVICELOCATOR              = "checkuseocspservicelocator";
   static final String CHECKBOX_USEMSTEMPLATE                      = "checkusemstemplate";
   static final String CHECKBOX_USECNPOSTFIX                       = "checkusecnpostfix";
+  static final String CHECKBOX_USESUBJECTDNSUBSET                 = "checkusesubjectdnsubset";
+  static final String CHECKBOX_USESUBJECTALTNAMESUBSET            = "checkusesubjectaltnamesubset";
 
   static final String SELECT_AVAILABLEBITLENGTHS                  = "selectavailablebitlengths";
   static final String SELECT_KEYUSAGE                             = "selectkeyusage";
@@ -63,6 +65,8 @@
   static final String SELECT_AVAILABLECAS                         = "selectavailablecas";
   static final String SELECT_AVAILABLEPUBLISHERS                  = "selectavailablepublishers";
   static final String SELECT_MSTEMPLATE                           = "selectmstemplate";
+  static final String SELECT_SUBJECTDNSUBSET                      = "selectsubjectdnsubset";
+  static final String SELECT_SUBJECTALTNAMESUBSET                 = "selectsubjectaltnamesubset";
 
   // Declare Language file.
 
@@ -468,7 +472,47 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
                  certificateprofiledata.setUseCNPostfix(false);                 
                  certificateprofiledata.setCNPostfix("");
              }
+             
+             use = false;
+             value = request.getParameter(CHECKBOX_USESUBJECTDNSUBSET);
+             if(value != null){
+                 use = value.equals(CHECKBOX_VALUE);
+                 certificateprofiledata.setUseSubjectDNSubSet(use);
 
+                 values = request.getParameterValues(SELECT_SUBJECTDNSUBSET);
+                 if(values != null){
+                     ArrayList usefields = new ArrayList();
+                     for(int i=0;i< values.length;i++){
+                         usefields.add(new Integer(values[i]));	
+                     }                     
+                     certificateprofiledata.setSubjectDNSubSet(usefields);
+                 }
+             }
+             else{
+                 certificateprofiledata.setUseSubjectDNSubSet(false);                 
+                 certificateprofiledata.setSubjectDNSubSet(new ArrayList());
+             }
+             
+             use = false;
+             value = request.getParameter(CHECKBOX_USESUBJECTALTNAMESUBSET);
+             if(value != null){
+                 use = value.equals(CHECKBOX_VALUE);
+                 certificateprofiledata.setUseSubjectAltNameSubSet(use);
+
+                 values = request.getParameterValues(SELECT_SUBJECTALTNAMESUBSET);
+                 if(values != null){
+                     ArrayList usefields = new ArrayList();
+                     for(int i=0;i< values.length;i++){
+                         usefields.add(new Integer(values[i]));	
+                     }                     
+                     certificateprofiledata.setSubjectAltNameSubSet(usefields);
+                 }
+             }
+             else{
+                 certificateprofiledata.setUseSubjectAltNameSubSet(false);                 
+                 certificateprofiledata.setSubjectAltNameSubSet(new ArrayList());
+             }
+             
               cabean.changeCertificateProfile(certprofile,certificateprofiledata);
            }
            if(request.getParameter(BUTTON_CANCEL) != null){
