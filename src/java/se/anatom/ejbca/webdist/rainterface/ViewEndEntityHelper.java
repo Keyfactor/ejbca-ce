@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
 package se.anatom.ejbca.webdist.rainterface;
 
 import java.util.Date;
@@ -19,7 +32,7 @@ import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
  * Helper class for the View End Entity Page, parses the request and performs apporiate actions.
  * 
  * @author Philip Vendil
- * @version $Id: ViewEndEntityHelper.java,v 1.2 2005-11-18 12:15:09 anatom Exp $
+ * @version $Id: ViewEndEntityHelper.java,v 1.3 2005-11-18 12:17:48 anatom Exp $
  */
 
 public class ViewEndEntityHelper implements java.io.Serializable{
