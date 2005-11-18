@@ -16,8 +16,6 @@ package se.anatom.ejbca.webdist.hardtokeninterface;
 import java.io.Serializable;
 import java.util.HashSet;
 
-import javax.ejb.EJBException;
-
 import se.anatom.ejbca.authorization.AuthorizationDeniedException;
 import se.anatom.ejbca.authorization.IAuthorizationSessionLocal;
 import se.anatom.ejbca.ca.store.CertificateDataBean;
@@ -33,6 +31,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A class handling the hardtoken profile data.
  *
  * @author  TomSelleck
+ * @version $Id: HardTokenProfileDataHandler.java,v 1.10 2005-11-18 12:15:08 anatom Exp $
  */
 public class HardTokenProfileDataHandler implements Serializable {
 

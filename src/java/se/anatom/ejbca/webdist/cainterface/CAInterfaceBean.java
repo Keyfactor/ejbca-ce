@@ -17,7 +17,6 @@ import java.io.ByteArrayOutputStream;
 import java.rmi.RemoteException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -72,7 +71,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.31 2005-11-16 22:08:51 herrvendil Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.32 2005-11-18 12:15:09 anatom Exp $
  */
 public class CAInterfaceBean implements java.io.Serializable {
 

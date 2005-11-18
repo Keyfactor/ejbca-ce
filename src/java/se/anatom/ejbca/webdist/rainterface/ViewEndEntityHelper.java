@@ -12,14 +12,14 @@ import se.anatom.ejbca.ca.store.CertReqHistory;
 import se.anatom.ejbca.ra.UserDataConstants;
 import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
 import se.anatom.ejbca.webdist.cainterface.CAInterfaceBean;
-import se.anatom.ejbca.webdist.hardtokeninterface.HardTokenInterfaceBean;
 import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 
 
 /**
  * Helper class for the View End Entity Page, parses the request and performs apporiate actions.
+ * 
  * @author Philip Vendil
- *
+ * @version $Id: ViewEndEntityHelper.java,v 1.2 2005-11-18 12:15:09 anatom Exp $
  */
 
 public class ViewEndEntityHelper implements java.io.Serializable{
