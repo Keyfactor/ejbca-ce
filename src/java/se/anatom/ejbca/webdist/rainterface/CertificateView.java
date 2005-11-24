@@ -27,11 +27,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.Hex;
+import se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean;
 
 
 /**
@@ -39,7 +39,7 @@ import se.anatom.ejbca.util.Hex;
  * by JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: CertificateView.java,v 1.19 2005-05-09 15:34:35 anatom Exp $
+ * @version $Id: CertificateView.java,v 1.20 2005-11-24 21:21:41 herrvendil Exp $
  */
 public class CertificateView implements java.io.Serializable {
 
@@ -208,8 +208,17 @@ public class CertificateView implements java.io.Serializable {
       return returnval; 
     }
 
-    public String getBasicConstraints() {
-      return Integer.toString(certificate.getBasicConstraints());
+    public String getBasicConstraints(EjbcaWebBean ejbcawebbean) {
+    	String retval = ejbcawebbean.getText("ENDENTITY");
+    	if(certificate.getBasicConstraints() != -1){                	
+       	    if(certificate.getBasicConstraints() == Integer.MAX_VALUE){
+                retval = ejbcawebbean.getText("CANOLIMIT");
+       	    }else{
+               retval = ejbcawebbean.getText("CAPATHLENGTH") + " : " + certificate.getBasicConstraints();                    	 
+            }
+       }
+    	
+      return retval;
     }
 
     public String getSignature() {

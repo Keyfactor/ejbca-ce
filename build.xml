@@ -269,6 +269,7 @@ web.contentencoding    = ${web.contentencoding}
             <fileset dir="src">
               <include name="**"/>
               <exclude name="**/*.java"/>
+              <exclude name="**/*.java.15"/>
               <exclude name="**/*.html"/>
               <exclude name="**/*.htm"/>            	
               <exclude name="**/*.xml"/>
@@ -295,6 +296,12 @@ web.contentencoding    = ${web.contentencoding}
 			</tokenfilter>
 			</filterchain>
 	    </copy>
+		<echo>Ignore warnings about 'Couldn't find file' during preprocessing if you are running jdk 1.4</echo>
+        <copy file="src/java/se/anatom/ejbca/ca/caadmin/CATokenInfo.java.${java.ver}" tofile="${preprocessed}/java/se/anatom/ejbca/ca/caadmin/CATokenInfo.java" overwrite="true" failonerror="false"/>
+        <copy file="src/java/se/anatom/ejbca/ca/caadmin/ExtendedX509CertificateObject.java.${java.ver}" tofile="${preprocessed}/java/se/anatom/ejbca/ca/caadmin/ExtendedX509CertificateObject.java" overwrite="true" failonerror="false"/>
+        <copy file="src/java/se/anatom/ejbca/ca/caadmin/ExtendedX509CRLObject.java.${java.ver}" tofile="${preprocessed}/java/se/anatom/ejbca/ca/caadmin/ExtendedX509CRLObject.java" overwrite="true" failonerror="false"/>
+        <copy file="src/java/se/anatom/ejbca/ca/caadmin/ExtendedX509Util.java.${java.ver}" tofile="${preprocessed}/java/se/anatom/ejbca/ca/caadmin/ExtendedX509Util.java" overwrite="true" failonerror="false"/>
+        <copy file="src/java/se/anatom/ejbca/ca/caadmin/ExtendedX509V3CertificateGenerator.java.${java.ver}" tofile="${preprocessed}/java/se/anatom/ejbca/ca/caadmin/ExtendedX509V3CertificateGenerator.java" overwrite="true" failonerror="false"/>
 		<replace file="${src.java}/se/anatom/ejbca/ra/raadmin/GlobalConfiguration.java" token="@ejbca.version@" value="${app.version}"/>	
 	</target>
 	<!--

@@ -32,12 +32,12 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.30 2005-11-17 19:22:33 herrvendil Exp $
+ * @version $Id: CertificateProfile.java,v 1.31 2005-11-24 21:20:13 herrvendil Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
     // Default Values
-    public static final float LATEST_VERSION = (float) 11.0;
+    public static final float LATEST_VERSION = (float) 12.0;
 
     /** KeyUsage constants */
     public static final int DIGITALSIGNATURE = 0;
@@ -128,6 +128,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 	protected static final String SUBJECTDNSUBSET                = "subjectdnsubset";
 	protected static final String USESUBJECTALTNAMESUBSET        = "usesubjectaltnamesubset";
 	protected static final String SUBJECTALTNAMESUBSET           = "subjectaltnamesubset";
+	protected static final String USEPATHLENGTHCONSTRAINT        = "usepathlengthconstraint";
+	protected static final String PATHLENGTHCONSTRAINT           = "pathlengthconstraint";
      
     // Public Methods
 
@@ -191,6 +193,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 	  setSubjectDNSubSet(new ArrayList());
 	  setUseSubjectAltNameSubSet(false);
 	  setSubjectAltNameSubSet(new ArrayList());
+	  
+	  setUsePathLengthConstraint(false);
+	  setPathLengthConstraint(0);
 	  
     }
 
@@ -587,6 +592,32 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       data.put(USEDPUBLISHERS, publisher);   
     }   
     	
+    /**
+     * Method indicating that Path Length Constain should be used in the BasicConstaint
+     * 
+     */
+    public boolean getUsePathLengthConstraint(){
+    	return ((Boolean) data.get(USEPATHLENGTHCONSTRAINT)).booleanValue();	
+    }
+    
+    /**
+     * Method indicating that Path Length Constain should be used in the BasicConstaint
+     * 
+     */
+    public void setUsePathLengthConstraint(boolean use) {
+		data.put(USEPATHLENGTHCONSTRAINT, Boolean.valueOf(use));			
+	}
+    
+    public int getPathLengthConstraint(){
+    	return ((Integer) data.get(PATHLENGTHCONSTRAINT)).intValue();	
+    }
+    
+  
+    public void setPathLengthConstraint(int pathlength) {
+		data.put(PATHLENGTHCONSTRAINT, new Integer(pathlength));			
+	}   
+    
+    
 	public boolean getUseOCSPServiceLocator(){ return ((Boolean) data.get(USEOCSPSERVICELOCATOR)).booleanValue(); }
 	public void setUseOCSPServiceLocator(boolean useocspservicelocator) { data.put(USEOCSPSERVICELOCATOR, Boolean.valueOf(useocspservicelocator));}
 
@@ -662,6 +693,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         	  setSubjectDNSubSet(new ArrayList());
         	  setUseSubjectAltNameSubSet(false);
         	  setSubjectAltNameSubSet(new ArrayList());
+            }
+            
+            if(data.get(USEPATHLENGTHCONSTRAINT) == null){
+            	setUsePathLengthConstraint(false);
+            	setPathLengthConstraint(0);
             }
             
         }

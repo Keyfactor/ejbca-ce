@@ -29,12 +29,13 @@
   static final String BUTTON_SAVE              = "buttonsave";
   static final String BUTTON_CANCEL            = "buttoncancel";
  
-  static final String TEXTFIELD_VALIDITY              = "textfieldvalidity";
-  static final String TEXTFIELD_CRLDISTURI            = "textfieldcrldisturi";
-  static final String TEXTFIELD_CERTIFICATEPOLICYID   = "textfieldcertificatepolicyid";
-  static final String TEXTFIELD_OCSPSERVICELOCATOR    = "textfieldocspservicelocatoruri";
-  static final String TEXTFIELD_CNPOSTFIX             = "textfieldcnpostfix";
-
+  static final String TEXTFIELD_VALIDITY               = "textfieldvalidity";
+  static final String TEXTFIELD_CRLDISTURI             = "textfieldcrldisturi";
+  static final String TEXTFIELD_CERTIFICATEPOLICYID    = "textfieldcertificatepolicyid";
+  static final String TEXTFIELD_OCSPSERVICELOCATOR     = "textfieldocspservicelocatoruri";
+  static final String TEXTFIELD_CNPOSTFIX              = "textfieldcnpostfix";
+  static final String TEXTFIELD_PATHLENGTHCONSTRAINT   = "textfieldpathlengthconstraint";
+  
   static final String CHECKBOX_BASICCONSTRAINTS                   = "checkboxbasicconstraints";
   static final String CHECKBOX_BASICCONSTRAINTSCRITICAL           = "checkboxbasicconstraintscritical";
   static final String CHECKBOX_KEYUSAGE                           = "checkboxkeyusage";
@@ -57,6 +58,7 @@
   static final String CHECKBOX_USECNPOSTFIX                       = "checkusecnpostfix";
   static final String CHECKBOX_USESUBJECTDNSUBSET                 = "checkusesubjectdnsubset";
   static final String CHECKBOX_USESUBJECTALTNAMESUBSET            = "checkusesubjectaltnamesubset";
+  static final String CHECKBOX_USEPATHLENGTHCONSTRAINT            = "checkusepathlengthconstraint";
 
   static final String SELECT_AVAILABLEBITLENGTHS                  = "selectavailablebitlengths";
   static final String SELECT_KEYUSAGE                             = "selectkeyusage";
@@ -230,6 +232,21 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
                  certificateprofiledata.setUseBasicConstraints(false);
                  certificateprofiledata.setBasicConstraintsCritical(false); 
              }      
+             
+             use = false;
+             value = request.getParameter(CHECKBOX_USEPATHLENGTHCONSTRAINT);
+             if(value != null){
+                 use = value.equals(CHECKBOX_VALUE);
+                 certificateprofiledata.setUsePathLengthConstraint(use);
+                 value = request.getParameter(TEXTFIELD_PATHLENGTHCONSTRAINT); 
+                 if(value != null){
+                   certificateprofiledata.setPathLengthConstraint(Integer.parseInt(value));
+                 } 
+             }
+             else{
+                 certificateprofiledata.setUsePathLengthConstraint(false);
+                 certificateprofiledata.setPathLengthConstraint(0); 
+             }             
        
              use = false;
              value = request.getParameter(CHECKBOX_KEYUSAGE);

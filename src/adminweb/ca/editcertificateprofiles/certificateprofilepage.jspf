@@ -125,16 +125,46 @@ function typechanged(){
 
   if(type == <%= CertificateDataBean.CERTTYPE_ENDENTITY %>){
     document.editcertificateprofile.<%=SELECT_AVAILABLEPUBLISHERS %>.disabled=false;
+    document.editcertificateprofile.<%=CHECKBOX_USEPATHLENGTHCONSTRAINT %>.disabled=true;
+    document.editcertificateprofile.<%=CHECKBOX_USEPATHLENGTHCONSTRAINT %>.checked=false;
+    document.editcertificateprofile.<%=TEXTFIELD_PATHLENGTHCONSTRAINT %>.disabled=true;
+    document.editcertificateprofile.<%=TEXTFIELD_PATHLENGTHCONSTRAINT %>.value="";
   }else{
     document.editcertificateprofile.<%=SELECT_AVAILABLEPUBLISHERS %>.disabled=true;
+    if(document.editcertificateprofile.<%=CHECKBOX_BASICCONSTRAINTS %>.checked){    
+      document.editcertificateprofile.<%=CHECKBOX_USEPATHLENGTHCONSTRAINT %>.disabled=false;
+    }  
   } 
+  
+  
+  
+}
+
+function checkusebasicconstraintfield(){
+  if(document.editcertificateprofile.<%=CHECKBOX_BASICCONSTRAINTS %>.checked){
+    document.editcertificateprofile.<%= CHECKBOX_BASICCONSTRAINTSCRITICAL %>.disabled = false;
+    
+    var seltype = document.editcertificateprofile.<%=SELECT_TYPE %>.options.selectedIndex;
+    var type = document.editcertificateprofile.<%=SELECT_TYPE %>.options[seltype].value; 
+    if(type == <%= CertificateDataBean.CERTTYPE_SUBCA %> || type == <%= CertificateDataBean.CERTTYPE_ROOTCA %>){
+      document.editcertificateprofile.<%=CHECKBOX_USEPATHLENGTHCONSTRAINT %>.disabled=false;
+    }          
+  }
+  else{
+    document.editcertificateprofile.<%= CHECKBOX_BASICCONSTRAINTSCRITICAL %>.disabled = true;
+    document.editcertificateprofile.<%= CHECKBOX_BASICCONSTRAINTSCRITICAL %>.checked = false;
+    document.editcertificateprofile.<%= CHECKBOX_USEPATHLENGTHCONSTRAINT %>.disabled = true;
+    document.editcertificateprofile.<%= CHECKBOX_USEPATHLENGTHCONSTRAINT %>.checked = false;
+    document.editcertificateprofile.<%= TEXTFIELD_PATHLENGTHCONSTRAINT %>.disabled=true;
+    document.editcertificateprofile.<%= TEXTFIELD_PATHLENGTHCONSTRAINT %>.value="";
+  }
 }
 
 function checkusecertificatepoliciesfield(){
   if(document.editcertificateprofile.<%=CHECKBOX_USECERTIFICATEPOLICIES %>.checked){
     document.editcertificateprofile.<%= CHECKBOX_CERTIFICATEPOLICIESCRITICAL %>.disabled = false;
     document.editcertificateprofile.<%= TEXTFIELD_CERTIFICATEPOLICYID %>.disabled = false;
-    document.editcertificateprofile.<%= TEXTFIELD_CERTIFICATEPOLICYID %>.value = "";
+
   }
   else{
     document.editcertificateprofile.<%= CHECKBOX_CERTIFICATEPOLICIESCRITICAL %>.disabled = true;
@@ -143,6 +173,18 @@ function checkusecertificatepoliciesfield(){
     document.editcertificateprofile.<%= TEXTFIELD_CERTIFICATEPOLICYID %>.value = "";
   }
 }
+
+function checkusepathlengtconstraintfield(){
+  if(document.editcertificateprofile.<%=CHECKBOX_USEPATHLENGTHCONSTRAINT %>.checked){  
+    document.editcertificateprofile.<%= TEXTFIELD_PATHLENGTHCONSTRAINT %>.disabled = false;
+    document.editcertificateprofile.<%= TEXTFIELD_PATHLENGTHCONSTRAINT %>.value = "1";
+  }
+  else{
+    document.editcertificateprofile.<%= TEXTFIELD_PATHLENGTHCONSTRAINT %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_PATHLENGTHCONSTRAINT %>.value = "";
+  }
+}
+
 
 function checkuseextendedkeyusagefield(){
   if(document.editcertificateprofile.<%=CHECKBOX_USEEXTENDEDKEYUSAGE %>.checked){
@@ -168,6 +210,16 @@ function checkallfields(){
     for(var i=0; i < availablebitlengths.length; i++){
       if(availablebitlengths[i].selected==true)
         selected++; 
+    }
+
+    if(!document.editcertificateprofile.<%=TEXTFIELD_PATHLENGTHCONSTRAINT%>.disabled){
+      if(!checkfieldfordecimalnumbers("document.editcertificateprofile.<%=TEXTFIELD_PATHLENGTHCONSTRAINT%>","<%= ejbcawebbean.getText("ONLYDECNUMBERSINPATHLEN") %>")){
+         illegalfields++;
+      }    
+      if(document.editcertificateprofile.<%=TEXTFIELD_PATHLENGTHCONSTRAINT%>.value==""){
+         alert("<%= ejbcawebbean.getText("PATHLENCANNOTBEEMPTY") %>");
+         illegalfields++;
+      }
     }
 
     if(selected == 0){
@@ -216,11 +268,11 @@ function checkallfields(){
 
       </td>
       <td width="50%">
-           <input type="checkbox" name="<%=CHECKBOX_BASICCONSTRAINTS %>"   onClick="checkusefield('<%=CHECKBOX_BASICCONSTRAINTS %>', '<%=CHECKBOX_BASICCONSTRAINTSCRITICAL %>')" value="<%=CHECKBOX_VALUE %>" 
+           <input type="checkbox" name="<%=CHECKBOX_BASICCONSTRAINTS%>"   onClick="checkusebasicconstraintfield()" value="<%=CHECKBOX_VALUE %>"
            <% if(certificateprofiledata.getUseBasicConstraints()) 
                  out.write("CHECKED");
            %>> <br> 
-          <input type="checkbox" name="<%=CHECKBOX_BASICCONSTRAINTSCRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
+          <input type="checkbox" name="<%=CHECKBOX_BASICCONSTRAINTSCRITICAL%>" value="<%=CHECKBOX_VALUE %>" 
            <%
                if(!certificateprofiledata.getUseBasicConstraints())
                  out.write(" disabled ");  
@@ -229,6 +281,25 @@ function checkallfields(){
                  out.write("CHECKED");
            %>> 
       </td>
+    </tr>  
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("USEPATHLENGTHCONSTRAINT") %> <br> <%= ejbcawebbean.getText("PATHLENGTHCONSTRAINT") %>
+      </td>
+      <td width="50%">
+           <% boolean enablepathlenconstraint = certificateprofiledata.getUseBasicConstraints() && (certificateprofiledata.getType() == CertificateDataBean.CERTTYPE_SUBCA ||certificateprofiledata.getType() == CertificateDataBean.CERTTYPE_ROOTCA); %>
+           <input type="checkbox" name="<%=CHECKBOX_USEPATHLENGTHCONSTRAINT %>"   onClick="checkusepathlengtconstraintfield()" value="<%=CHECKBOX_VALUE %>" <% if(!enablepathlenconstraint) out.write(" disabled "); %>
+           <% if(certificateprofiledata.getUsePathLengthConstraint() && enablepathlenconstraint) 
+                 out.write(" CHECKED ");
+           %>> <br> 
+           <input type="text" name="<%=TEXTFIELD_PATHLENGTHCONSTRAINT%>" size="2" maxlength="2" 
+           <%      if(!certificateprofiledata.getUsePathLengthConstraint() || !enablepathlenconstraint) 
+                       out.write(" disabled ");
+                    else                       
+                       out.write(" value=\"" + certificateprofiledata.getPathLengthConstraint() + "\""); 
+                      %>>
+      </td>
+    </tr>  
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("USEKEYUSAGE") %> <br>  <%= ejbcawebbean.getText("KEYUSAGECRITICAL") %>

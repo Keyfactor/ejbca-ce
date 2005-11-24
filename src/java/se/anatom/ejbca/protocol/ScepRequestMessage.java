@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -55,8 +57,8 @@ import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
 
+import se.anatom.ejbca.common.ExtendedPKCS10CertificationRequest;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
 
@@ -64,7 +66,7 @@ import se.anatom.ejbca.util.CertTools;
  * Class to handle SCEP request messages sent to the CA. 
  * TODO: don't forget extensions, e.g. KeyUsage requested by end entity 
  *
- * @version $Id: ScepRequestMessage.java,v 1.44 2005-11-08 19:04:41 anatom Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.45 2005-11-24 21:20:13 herrvendil Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage, Serializable {
     static final long serialVersionUID = -235623330828902051L;
@@ -321,7 +323,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         DERObject derobj = new ASN1InputStream(new ByteArrayInputStream(decBytes)).readObject();
         if (messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
             ASN1Sequence seq = (ASN1Sequence) derobj;
-            pkcs10 = new PKCS10CertificationRequest(seq);
+            pkcs10 = new ExtendedPKCS10CertificationRequest(seq);
             log.debug("Successfully extracted PKCS10.");
             //log.debug("Successfully extracted PKCS10:"+new String(Base64.encode(pkcs10.getEncoded())));
         }

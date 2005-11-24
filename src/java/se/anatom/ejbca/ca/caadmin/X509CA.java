@@ -80,8 +80,6 @@ import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.BasicOCSPRespGenerator;
 import org.bouncycastle.ocsp.OCSPException;
 import org.bouncycastle.util.encoders.Hex;
-import org.bouncycastle.x509.X509V2CRLGenerator;
-import org.bouncycastle.x509.X509V3CertificateGenerator;
 
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
@@ -105,7 +103,7 @@ import se.anatom.ejbca.util.StringTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.44 2005-11-17 19:22:34 herrvendil Exp $
+ * @version $Id: X509CA.java,v 1.45 2005-11-24 21:20:13 herrvendil Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -255,7 +253,7 @@ public class X509CA extends CA implements Serializable {
           val = certProfile.getValidity();
         
         lastDate.setTime(lastDate.getTime() + ( val * 24 * 60 * 60 * 1000));
-        X509V3CertificateGenerator certgen = new X509V3CertificateGenerator();
+        ExtendedX509V3CertificateGenerator certgen = new ExtendedX509V3CertificateGenerator();
         // Serialnumber is random bits, where random generator is initialized by the
         // serno generator.
         BigInteger serno = SernoGenerator.instance().getSerno();
@@ -288,11 +286,16 @@ public class X509CA extends CA implements Serializable {
 
         // Basic constranits, all subcerts are NOT CAs
         if (certProfile.getUseBasicConstraints() == true) {
-            boolean isCA = false;
+        	BasicConstraints bc = new BasicConstraints(false);
             if ((certProfile.getType() == CertificateProfile.TYPE_SUBCA)
-                || (certProfile.getType() == CertificateProfile.TYPE_ROOTCA))
-                isCA = true;
-            BasicConstraints bc = new BasicConstraints(isCA);
+                || (certProfile.getType() == CertificateProfile.TYPE_ROOTCA)){            	
+            	if(certProfile.getUsePathLengthConstraint()){
+            		bc = new BasicConstraints(certProfile.getPathLengthConstraint());
+            	}else{
+            		bc =  new BasicConstraints(true);
+            	}            	
+            }
+                            
             certgen.addExtension(
                 X509Extensions.BasicConstraints.getId(),
                 certProfile.getBasicConstraintsCritical(),
@@ -510,7 +513,7 @@ public class X509CA extends CA implements Serializable {
 
         // crlperiod is hours = crlperiod*60*60*1000 milliseconds
         nextUpdate.setTime(nextUpdate.getTime() + (getCRLPeriod() * (long)(60 * 60 * 1000)));
-        X509V2CRLGenerator crlgen = new X509V2CRLGenerator();
+        ExtendedX509V2CRLGenerator crlgen = new ExtendedX509V2CRLGenerator();
         crlgen.setThisUpdate(thisUpdate);
         crlgen.setNextUpdate(nextUpdate);
         crlgen.setSignatureAlgorithm(sigAlg);

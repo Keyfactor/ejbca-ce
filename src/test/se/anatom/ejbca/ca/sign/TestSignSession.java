@@ -33,12 +33,12 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
 
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionHome;
 import se.anatom.ejbca.ca.caadmin.ICAAdminSessionRemote;
 import se.anatom.ejbca.ca.exception.IllegalKeyException;
+import se.anatom.ejbca.common.ExtendedPKCS10CertificationRequest;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.protocol.IResponseMessage;
 import se.anatom.ejbca.protocol.PKCS10RequestMessage;
@@ -55,7 +55,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.7 2005-08-02 11:37:19 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.8 2005-11-24 21:21:25 herrvendil Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -267,7 +267,7 @@ public class TestSignSession extends TestCase {
         usersession.setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
-        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA",
+        ExtendedPKCS10CertificationRequest req = new ExtendedPKCS10CertificationRequest("SHA1WithRSA",
                 CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"), keys.getPublic(), null,
                 keys.getPrivate());
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
@@ -275,7 +275,7 @@ public class TestSignSession extends TestCase {
         dOut.writeObject(req);
         dOut.close();
 
-        PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
+        ExtendedPKCS10CertificationRequest req2 = new ExtendedPKCS10CertificationRequest(bOut.toByteArray());
         boolean verify = req2.verify();
         log.debug("Verify returned " + verify);
         if (verify == false) {

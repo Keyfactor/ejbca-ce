@@ -1,7 +1,7 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, java.io.*, org.apache.commons.fileupload.*, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.SecConst, se.anatom.ejbca.util.FileTools, se.anatom.ejbca.util.CertTools, se.anatom.ejbca.authorization.AuthorizationDeniedException,
                se.anatom.ejbca.webdist.cainterface.CAInterfaceBean, se.anatom.ejbca.ca.caadmin.CAInfo, se.anatom.ejbca.ca.caadmin.X509CAInfo, se.anatom.ejbca.ca.caadmin.CATokenInfo, se.anatom.ejbca.ca.caadmin.SoftCATokenInfo, se.anatom.ejbca.webdist.cainterface.CADataHandler,
-               se.anatom.ejbca.webdist.rainterface.RevokedInfoView, se.anatom.ejbca.ca.caadmin.CATokenInfo, se.anatom.ejbca.ca.caadmin.SoftCATokenInfo, se.anatom.ejbca.webdist.webconfiguration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.bouncycastle.jce.PKCS10CertificationRequest, 
+               se.anatom.ejbca.webdist.rainterface.RevokedInfoView, se.anatom.ejbca.ca.caadmin.CATokenInfo, se.anatom.ejbca.ca.caadmin.SoftCATokenInfo, se.anatom.ejbca.webdist.webconfiguration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, se.anatom.ejbca.common.ExtendedPKCS10CertificationRequest, 
                se.anatom.ejbca.protocol.PKCS10RequestMessage, se.anatom.ejbca.ca.exception.CAExistsException, se.anatom.ejbca.ca.exception.CADoesntExistsException, se.anatom.ejbca.ca.exception.CATokenOfflineException, se.anatom.ejbca.ca.exception.CATokenAuthenticationFailedException,
                se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceInfo, se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, se.anatom.ejbca.ca.caadmin.hardcatokens.HardCATokenManager, se.anatom.ejbca.ca.caadmin.AvailableHardCAToken, se.anatom.ejbca.ca.caadmin.HardCATokenInfo"%>
 
@@ -585,7 +585,7 @@
            try{
              CAInfo cainfo = cabean.getRequestInfo();              
              cadatahandler.createCA(cainfo);                           
-             PKCS10CertificationRequest certreq = null;
+             ExtendedPKCS10CertificationRequest certreq = null;
              try{ 
                certreq=cadatahandler.makeRequest(caid, certchain, true);
                cabean.savePKCS10RequestData(certreq);     
@@ -645,7 +645,7 @@
            errorrecievingfile = true; 
          } 
        }else{
-         cabean.savePKCS10RequestData((org.bouncycastle.jce.PKCS10CertificationRequest) null);  
+         cabean.savePKCS10RequestData((ExtendedPKCS10CertificationRequest) null);  
        }
       }
       if( action.equals(ACTION_PROCESSREQUEST2)){        
@@ -721,7 +721,7 @@
                                                         finishuser, 
                                                         new ArrayList());
                  try{
-                   PKCS10CertificationRequest req = cabean.getPKCS10RequestData(); 
+                   ExtendedPKCS10CertificationRequest req = cabean.getPKCS10RequestData(); 
                    java.security.cert.Certificate result = cadatahandler.processRequest(x509cainfo, new PKCS10RequestMessage(req));
                    cabean.saveProcessedCertificate(result);
                    filemode = CERTGENMODE;   
@@ -740,7 +740,7 @@
         if(!buttoncancel){
           try{
            Collection certchain = CertTools.getCertsFromPEM(file);                       
-           PKCS10CertificationRequest certreq = cadatahandler.makeRequest(caid, certchain, false);
+           ExtendedPKCS10CertificationRequest certreq = cadatahandler.makeRequest(caid, certchain, false);
            cabean.savePKCS10RequestData(certreq);   
                
            filemode = CERTREQGENMODE;

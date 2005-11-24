@@ -27,12 +27,12 @@ import java.util.Collection;
 import javax.naming.Context;
 
 import org.bouncycastle.asn1.DEROutputStream;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
 
 import se.anatom.ejbca.ca.caadmin.CAInfo;
 import se.anatom.ejbca.ca.crl.ICreateCRLSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
+import se.anatom.ejbca.common.ExtendedPKCS10CertificationRequest;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
@@ -41,7 +41,7 @@ import se.anatom.ejbca.util.CertTools;
 /**
  * Base for CA commands, contains comom functions for CA operations
  *
- * @version $Id: BaseCaAdminCommand.java,v 1.22 2005-06-11 12:49:57 anatom Exp $
+ * @version $Id: BaseCaAdminCommand.java,v 1.23 2005-11-24 21:20:13 herrvendil Exp $
  */
 public abstract class BaseCaAdminCommand extends BaseAdminCommand {
     /** Private key alias in PKCS12 keystores */
@@ -84,7 +84,7 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
             SignatureException {
         debug(">makeCertRequest: dn='" + dn + "', reqfile='" + reqfile + "'.");
 
-        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA",
+        ExtendedPKCS10CertificationRequest req = new ExtendedPKCS10CertificationRequest("SHA1WithRSA",
                 CertTools.stringToBcX509Name(dn), rsaKeys.getPublic(), null, rsaKeys.getPrivate());
 
         /* We don't use these uneccesary attributes
@@ -100,7 +100,7 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
         dOut.writeObject(req);
         dOut.close();
 
-        PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
+        ExtendedPKCS10CertificationRequest req2 = new ExtendedPKCS10CertificationRequest(bOut.toByteArray());
         boolean verify = req2.verify();
         System.out.println("Verify returned " + verify);
 

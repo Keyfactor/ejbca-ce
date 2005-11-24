@@ -18,14 +18,15 @@ import java.io.Serializable;
 /**
  * Holds nonsensitive information about a CAToken.
  *
- * @version $Id: CATokenInfo.java,v 1.6 2005-11-24 21:20:13 herrvendil Exp $
+ * @version $Id: CATokenInfo.java.15,v 1.2 2005-11-24 21:20:13 herrvendil Exp $
  */
 public abstract class CATokenInfo implements Serializable {
 
     public static final String SIGALG_SHA1_WITH_RSA = "SHA1WithRSA";
     public static final String SIGALG_SHA256_WITH_RSA = "SHA256WithRSA";
-   
-    public static final String[] AVAILABLE_SIGALGS = {SIGALG_SHA1_WITH_RSA, SIGALG_SHA256_WITH_RSA};
+    public static final String SIGALG_SHA256_WITH_RSA_AND_MGF1      = "SHA256WithRSAAndMGF1";
+    
+    public static final String[] AVAILABLE_SIGALGS = {SIGALG_SHA1_WITH_RSA, SIGALG_SHA256_WITH_RSA, SIGALG_SHA256_WITH_RSA_AND_MGF1};
     
     public static final int CATOKENTYPE_P12          = 1;
     public static final int CATOKENTYPE_HSM          = 2;

@@ -13,6 +13,17 @@
 
 package se.anatom.ejbca.protocol;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.math.BigInteger;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SignatureException;
+import java.security.cert.X509Certificate;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.DEREncodable;
@@ -27,24 +38,15 @@ import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
-import se.anatom.ejbca.util.CertTools;
 
-import java.io.Serializable;
-import java.math.BigInteger;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SignatureException;
-import java.security.cert.X509Certificate;
+import se.anatom.ejbca.common.ExtendedPKCS10CertificationRequest;
+import se.anatom.ejbca.util.CertTools;
 
 
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.34 2005-11-08 19:04:41 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.35 2005-11-24 21:20:13 herrvendil Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     static final long serialVersionUID = 3597275157018205136L;
@@ -67,7 +69,7 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
     private transient String preferredDigestAlg = CMSSignedDataGenerator.DIGEST_SHA1;
 
     /** The pkcs10 request message, not serialized. */
-    protected transient PKCS10CertificationRequest pkcs10 = null;
+    protected transient ExtendedPKCS10CertificationRequest pkcs10 = null;
 
     /** Type of error */
     private int error = 0;
@@ -103,15 +105,15 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
      *
      * @param p10 the PKCS#10 request
      */
-    public PKCS10RequestMessage(PKCS10CertificationRequest p10) {
-        log.debug(">PKCS10RequestMessage(PKCS10CertificationRequest)");
+    public PKCS10RequestMessage(ExtendedPKCS10CertificationRequest p10) {
+        log.debug(">PKCS10RequestMessage(ExtendedPKCS10CertificationRequest)");
         p10msg = p10.getEncoded();
         pkcs10 = p10;
-        log.debug("<PKCS10RequestMessage(PKCS10CertificationRequest)");
+        log.debug("<PKCS10RequestMessage(ExtendedPKCS10CertificationRequest)");
     }
 
     private void init() {
-        pkcs10 = new PKCS10CertificationRequest(p10msg);
+        pkcs10 = new ExtendedPKCS10CertificationRequest(p10msg);
     }
 
     /**
@@ -317,7 +319,7 @@ public class PKCS10RequestMessage implements IRequestMessage, Serializable {
      *
      * @return the request object
      */
-    public PKCS10CertificationRequest getCertificationRequest() {
+    public ExtendedPKCS10CertificationRequest getCertificationRequest() {
         try {
             if (pkcs10 == null) {
                 init();

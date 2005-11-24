@@ -346,11 +346,7 @@ function confirmrepublish(){
        </tr>
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("BASICCONSTRAINTS") %></td>
-	 <td><% if(Integer.parseInt(certificatedata.getBasicConstraints()) == -1)
-                     out.write(ejbcawebbean.getText("ENDENTITY"));
-                else
-                     out.write(ejbcawebbean.getText("CA"));
-                   %>
+	 <td><%=  certificatedata.getBasicConstraints(ejbcawebbean)  %>
          </td>
        </tr>
        <tr id="Row<%=(row++)%2%>">

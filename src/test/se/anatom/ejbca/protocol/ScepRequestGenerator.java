@@ -36,8 +36,8 @@ import org.bouncycastle.cms.CMSProcessable;
 import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
 
+import se.anatom.ejbca.common.ExtendedPKCS10CertificationRequest;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.KeyTools;
@@ -50,7 +50,7 @@ public class ScepRequestGenerator {
     private String reqdn = null;
     private KeyPair keys = null;
     private String digestOid = CMSSignedDataGenerator.DIGEST_SHA1;
-    private PKCS10CertificationRequest p10request;
+    private ExtendedPKCS10CertificationRequest p10request;
     int keysize = 1024;
     private String senderNonce = null;
     private String transactionId = null;
@@ -108,7 +108,7 @@ public class ScepRequestGenerator {
         v.add(new DERSequence(vec));
         DERSet set = new DERSet(v);
         // Create PKCS#10 certificate request
-        p10request = new PKCS10CertificationRequest("SHA1WithRSA",
+        p10request = new ExtendedPKCS10CertificationRequest("SHA1WithRSA",
                 CertTools.stringToBcX509Name(reqdn), keys.getPublic(), set, keys.getPrivate());
         
         // Create self signed cert, validity 1 day

@@ -26,8 +26,8 @@ import java.security.KeyPair;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
 
+import se.anatom.ejbca.common.ExtendedPKCS10CertificationRequest;
 import se.anatom.ejbca.util.Base64;
 import se.anatom.ejbca.util.CertTools;
 import se.anatom.ejbca.util.KeyTools;
@@ -58,7 +58,7 @@ import se.anatom.ejbca.util.KeyTools;
  * </li>
  * </ul>
  *
- * @version $Id: HttpGetCert.java,v 1.18 2005-05-12 13:17:49 anatom Exp $
+ * @version $Id: HttpGetCert.java,v 1.19 2005-11-24 21:20:13 herrvendil Exp $
  */
 public class HttpGetCert {
     private static Logger log = Logger.getLogger(HttpGetCert.class);
@@ -253,7 +253,7 @@ public class HttpGetCert {
         System.out.println("Keys generated.");
 
         // Generate PKCS10 certificate request
-        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA",
+        ExtendedPKCS10CertificationRequest req = new ExtendedPKCS10CertificationRequest("SHA1WithRSA",
                 CertTools.stringToBcX509Name("C=SE,O=AnaTom,CN=HttpTest"), rsaKeys.getPublic(),
                 null, rsaKeys.getPrivate());
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();

@@ -40,7 +40,6 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 
 import org.bouncycastle.asn1.ASN1Set;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
 
 import se.anatom.ejbca.BaseSessionBean;
 import se.anatom.ejbca.SecConst;
@@ -66,6 +65,7 @@ import se.anatom.ejbca.ca.store.CertificateDataBean;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocal;
 import se.anatom.ejbca.ca.store.ICertificateStoreSessionLocalHome;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
+import se.anatom.ejbca.common.ExtendedPKCS10CertificationRequest;
 import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.exception.EjbcaException;
 import se.anatom.ejbca.log.Admin;
@@ -82,7 +82,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.45 2005-10-21 07:02:21 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.46 2005-11-24 21:20:13 herrvendil Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -692,8 +692,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
                      req.setAttributes(kName);
                      */
                     
-                    PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA",
-                            CertTools.stringToBcX509Name(ca.getSubjectDN()), ca.getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), attributes, ca.getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), ca.getCAToken().getProvider());
+                    ExtendedPKCS10CertificationRequest req = new ExtendedPKCS10CertificationRequest("SHA1WithRSA",
+                            CertTools.stringToBcX509Name(ca.getSubjectDN()), ca.getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), attributes, ca.getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
                     
                     // create PKCS10RequestMessage
                     returnval = new PKCS10RequestMessage(req);
