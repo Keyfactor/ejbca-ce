@@ -52,6 +52,11 @@ import org.bouncycastle.jce.X509Principal;
 import org.bouncycastle.jce.interfaces.PKCS12BagAttributeCarrier;
 import org.bouncycastle.util.encoders.Hex;
 
+/** Class copied from BouncyCastle and extended to supoprt RSA-DSS signatures
+ * 
+ * @version $Id: ExtendedX509CertificateObject.java,v 1.3 2005-11-25 08:39:04 anatom Exp $
+ *
+ */ 
 public class ExtendedX509CertificateObject
     extends X509Certificate
     implements PKCS12BagAttributeCarrier
@@ -235,10 +240,7 @@ public class ExtendedX509CertificateObject
 
             return bOut.toByteArray();
         }
-        else
-        {
-            return null;
-        }
+        return null;
     }
 
     public boolean[] getIssuerUniqueID()
@@ -318,7 +320,6 @@ public class ExtendedX509CertificateObject
         throws CertificateParsingException
     {
         byte[]  bytes = this.getExtensionBytes("2.5.29.37");
-        int     length = 0;
 
         if (bytes != null)
         {
@@ -361,10 +362,7 @@ public class ExtendedX509CertificateObject
                     {
                         return ((DERInteger)seq.getObjectAt(1)).getValue().intValue();
                     }
-                    else
-                    {
-                        return -1;
-                    }
+                    return -1;
                 }
                 else if (seq.size() == 1)
                 {
@@ -374,15 +372,9 @@ public class ExtendedX509CertificateObject
                         {
                             return Integer.MAX_VALUE;
                         }
-                        else
-                        {
-                            return -1;
-                        }
-                    }
-                    else
-                    {
                         return -1;
                     }
+                    return -1;
                 }
             }
             catch (Exception e)
@@ -390,7 +382,6 @@ public class ExtendedX509CertificateObject
                 throw new RuntimeException("error processing key usage extension");
             }
         }
-
         return -1;
     }
 
@@ -530,20 +521,17 @@ public class ExtendedX509CertificateObject
     }
 
     static PublicKey createPublicKeyFromPublicKeyInfo(
-                                                      SubjectPublicKeyInfo         info)
-                                                  {
-                                                      AlgorithmIdentifier     algId = info.getAlgorithmId();
-                                                      
-                                                      if (algId.getObjectId().equals(PKCSObjectIdentifiers.rsaEncryption)
-                                                          || algId.getObjectId().equals(X509ObjectIdentifiers.id_ea_rsa))
-                                                      {
-                                                            return new ExtendedJCERSAPublicKey(info);
-                                                      }
-                                                      else
-                                                      {
-                                                          throw new RuntimeException("algorithm identifier in key not recognised");
-                                                      }
-                                                  }
+            SubjectPublicKeyInfo         info)
+    {
+        AlgorithmIdentifier     algId = info.getAlgorithmId();
+        
+        if (algId.getObjectId().equals(PKCSObjectIdentifiers.rsaEncryption)
+                || algId.getObjectId().equals(X509ObjectIdentifiers.id_ea_rsa))
+        {
+            return new ExtendedJCERSAPublicKey(info);
+        }
+        throw new RuntimeException("algorithm identifier in key not recognised");
+    }
     public PublicKey getPublicKey()
     {
         return createPublicKeyFromPublicKeyInfo(c.getSubjectPublicKeyInfo());

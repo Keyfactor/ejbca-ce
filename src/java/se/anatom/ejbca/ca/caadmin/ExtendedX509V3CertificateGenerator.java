@@ -22,7 +22,6 @@ import java.util.Vector;
 
 import javax.security.auth.x500.X500Principal;
 
-import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -49,6 +48,8 @@ import org.bouncycastle.jce.X509Principal;
 /**
  * class to produce an X.509 Version 3 certificate, this is a copy of the bc class X509V3CertificateGenerator but can also issue certificates
  * using the RSASSA-PSS algorithm.This class should only be used for proof of concept
+ * 
+ * @version $Id: ExtendedX509V3CertificateGenerator.java,v 1.3 2005-11-25 08:39:04 anatom Exp $
  */
 public class ExtendedX509V3CertificateGenerator
 {
@@ -57,8 +58,6 @@ public class ExtendedX509V3CertificateGenerator
     private String                      signatureAlgorithm;
     private Hashtable                   extensions = null;
     private Vector                      extOrdering = null;
-
-    private static Logger log = Logger.getLogger(ExtendedX509V3CertificateGenerator.class);
 
     public ExtendedX509V3CertificateGenerator()
     {

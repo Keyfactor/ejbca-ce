@@ -26,7 +26,6 @@ import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.pkcs.CertificationRequest;
 import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.pkcs.RSASSAPSSparams;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509Name;
@@ -35,6 +34,8 @@ import org.bouncycastle.jce.X509Principal;
 
 /**
  * Class copied from BC where RSASSA-PSS support is added.
+ * 
+ * @version $Id: ExtendedPKCS10CertificationRequest.java,v 1.3 2005-11-25 08:39:04 anatom Exp $
  */
 public class ExtendedPKCS10CertificationRequest
     extends CertificationRequest
