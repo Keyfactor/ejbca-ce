@@ -488,7 +488,7 @@ web.contentencoding    = ${web.contentencoding}
         <!-- validargs="hsql,oracle,mssql,mysql,postgres,postgres8,sapdb,hsqldb,sybase" -->
         <input message="Data source (default java:/DefaultDS):" addproperty="ejbca.DS" defaultvalue="java:/DefaultDS" />
         <input message="CA name(default MyCA):" addproperty="ejbca.CA" defaultvalue="MyCA" />
-        <input message="CA keystore filename (default $JBOSS_HOME/server/default/conf/server.p12):" addproperty="ejbca.KS" defaultvalue="${jboss.home}/server/default/conf/server.p12" />
+        <input message="CA keystore filename (default $JBOSS_HOME/server/default/conf/server.p12):" addproperty="ejbca.KS" defaultvalue="${jboss.conf.dir}/server.p12" />
         <input message="CA keystore password:" addproperty="ejbca.KSPWD" />
         <java classname="se.anatom.ejbca.admin.Upgrade" fork="true">
             <sysproperty key="ejbcaOS" value="${ejbca.OS}" />
@@ -549,7 +549,7 @@ web.contentencoding    = ${web.contentencoding}
     <!--Deploy Jboss Specific Services                       -->
     <!-- =================================================================== -->
     <target name="deployjbossservices" depends="jbossservices">
-        <copy file="${createcrlservicejar}" tofile="${jboss.home}/server/default/deploy/createcrlservice.jar" verbose="true" />
+        <copy file="${createcrlservicejar}" tofile="${jboss.farm.dir}/createcrlservice.jar" verbose="true" />
     </target>
 	
     <!-- =================================================================== -->
@@ -667,11 +667,11 @@ web.contentencoding    = ${web.contentencoding}
             <echo message="Verifying EJB jar @{file}" />
             <java classname="org.jboss.verifier.Main" fork="true">
                 <classpath>
-                    <fileset dir="${jboss.home}/server/default/lib" includes="*.jar" />
+                    <fileset dir="${jboss.server.home.dir}/lib" includes="*.jar" />
                     <fileset dir="${jboss.home}/client" includes="*.jar" />
                     <fileset dir="${jboss.home}/lib" includes="*.jar" />
                     <fileset dir="${dist.dir}" includes="*.jar" />
-                    <pathelement location="${jboss.home}/server/default/conf" />
+                    <pathelement location="${jboss.conf.dir}" />
                 </classpath>
                 <arg value="@{file}" />
             </java>

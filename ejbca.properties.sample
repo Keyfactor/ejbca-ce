@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.26 2005-11-14 12:13:29 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.27 2005-11-25 12:50:32 primelars Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -216,3 +216,12 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 # that should be replaced (Case sensitive), ${NL} stands for newline.
 # Default: below
 #mail.message=Hello ${CN}${NL}${NL} This is a notification. ${NL}${NL} Your username: ${USERNAME}${NL} password: ${PASSWORD}${NL}${NL} Your are NOT supposed to go and fetch your certificate, this is only a test.
+
+# ----------------- cluster configuration ----------------
+# The configuration. Use "all" when clustering.
+# Default: default
+#jboss.config=all
+
+# Name of the farm directory. Use "farm" when clustering.
+# Default: deploy
+#jboss.farm.name=farm
