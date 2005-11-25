@@ -96,7 +96,8 @@ a database named 'ejbca' with description "database for ejbca" and with user pos
 Typically for mysql: 'mysqladmin create ejbca' will create the database. 
 Start 'mysql -u root mysql' and create the user with "grant all on ejbca.* to ejbca@'<host>' identified by '<pwd>'".
 
-3. Put the JDBC driver for the database in <jboss-home>/server/default/lib/.
+3. Put the JDBC driver for the database in <jboss-home>/server/default/lib/ (or replace default if you are running 
+   another JBoss target, perhaps all?).
 
 4. DONE! Start JBoss. Run tests with 'ant test:run'.
    Use your favorite database graphic editor to look at the beautiful database tables.
@@ -110,7 +111,7 @@ JDBC driver: mysql-connector-java-3.0.x.jar (preferably 3.0.9 or higher).
 
 Download JDBC driver for mySQL from http://www.mysql.com/
 
-Sometimes there can be problems with MySQL realted to case sensitivity of database tables.
+Sometimes there can be problems with MySQL related to case sensitivity of database tables.
 If you run into this see:
 http://mysqld.active-venture.com/Name_case_sensitivity.html
 http://dev.mysql.com/doc/refman/4.1/en/name-case-sensitivity.html
