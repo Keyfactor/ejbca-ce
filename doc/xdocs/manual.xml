@@ -226,6 +226,8 @@ and stored/published.
 Subordinate CAs are created using the admin GUI, you can not use the 
 cli for that.
 </p>
+</subsection> 
+<subsection name="Creating a SubCA signed by en external CA">
 <p>
 When creating a CA that is signed by an external CA, you actually create a PKCS10 certificate request
 that is sent to the external CA. When the external CA returns your CAs certificate, this is processed and
@@ -251,10 +253,12 @@ U03ZXi1b1HuLtSXrFb6d/3BQq8Y=
 -----END CERTIFICATE-----
 </source>
 <p>To process an external request in EJBCA, type the name of new CA in the 'Add' field in 
-'Edit Certificate Authorities' and press 'Process Certificate Request'.
+'Edit Certificate Authorities' and press 'Process Certificate Request'. The argument is the
+certificate request exactly as created by the subCA, no blank lines etc.
 </p><p>
 When you have received the signed certificate back from the external CA, edit the CA that
-created the request and press 'Receive Certificate Response'.
+created the request and press 'Receive Certificate Response'. 
+The PEM file must have no blank lines etc.
 </p>
 </subsection> 
 <subsection name="Converting an OpenSSL CA">
@@ -1514,8 +1518,8 @@ as a hash in the database.</li>
 <li>setclearpwd - set a clear text
 password for a user, needed to generate  certificates batch-wise.</li>
 <li>setuserstatus - sets status of a user, users can only apply
-for certificates when their status is NEW. finduser - find a user in the database
-and lists details.</li>
+for certificates when their status is NEW.</li> 
+<li>finduser - find a user in the database and lists details.</li>
 <li>listnewusers - lists all users with status NEW.</li>
 <li>listusers - lists users with specified status (give command to
 see list of status codes).</li>
