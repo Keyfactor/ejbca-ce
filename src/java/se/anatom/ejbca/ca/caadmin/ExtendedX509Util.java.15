@@ -74,7 +74,7 @@ class ExtendedX509Util
         algorithmParameters.put("GOST3411WITHGOST3410", new DERNull());
         algorithmParameters.put("SHA256WITHRSAANDMGF1", new RSASSAPSSparams( new AlgorithmIdentifier(new DERObjectIdentifier("2.16.840.1.101.3.4.2.1"), new DERNull()), 
                                                                              new AlgorithmIdentifier(PKCSObjectIdentifiers.id_mgf1, new AlgorithmIdentifier(new DERObjectIdentifier("2.16.840.1.101.3.4.2.1"), new DERNull())),  
-                                                                             new DERInteger(32), new DERInteger(1)
+                                                                             new DERInteger(20), new DERInteger(1)
                                                                              ).getDERObject());
         
         
