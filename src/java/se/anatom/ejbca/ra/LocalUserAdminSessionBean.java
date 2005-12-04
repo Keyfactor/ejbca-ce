@@ -72,7 +72,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.101 2005-09-17 14:37:20 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.102 2005-12-04 16:04:26 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -305,6 +305,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * @param tokentype             the type of token to be generated, one of SecConst.TOKEN constants
      * @param hardwaretokenissuerid , if token should be hard, the id of the hard token issuer,
      *                              else 0.
+    * @param                        caid the id of the CA that should be used to issue the users certificate
      * @ejb.interface-method
      */
     public void addUser(Admin admin, String username, String password, String subjectdn, String subjectaltname, String email, boolean clearpwd, int endentityprofileid, int certificateprofileid,
@@ -403,6 +404,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * @param type                  of user i.e administrator, keyrecoverable and/or sendnotification
      * @param tokentype             the type of token to be generated, one of SecConst.TOKEN constants
      * @param hardwaretokenissuerid if token should be hard, the id of the hard token issuer, else 0.
+     * @param status 				the status of the user, from UserDataConstants.STATUS_X
      * @param caid                  the id of the CA that should be used to issue the users certificate
      * @throws EJBException if a communication or other error occurs.
      * @ejb.interface-method
