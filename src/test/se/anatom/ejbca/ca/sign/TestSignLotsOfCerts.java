@@ -40,7 +40,7 @@ import se.anatom.ejbca.util.CertTools;
  * -the users performancefoono1-10 should not exist in the database
  * 
  *
- * @version $Id: TestSignLotsOfCerts.java,v 1.1 2005-12-04 16:04:53 anatom Exp $
+ * @version $Id: TestSignLotsOfCerts.java,v 1.2 2005-12-04 16:18:54 anatom Exp $
  */
 public class TestSignLotsOfCerts extends TestCase {
     private static Logger log = Logger.getLogger(TestSignLotsOfCerts.class);
@@ -98,7 +98,7 @@ public class TestSignLotsOfCerts extends TestCase {
      */
     private static KeyPair genKeys() throws Exception {
         KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA", "BC");
-        keygen.initialize(512);
+        keygen.initialize(1024);
         log.debug("Generating keys, please wait...");
         KeyPair rsaKeys = keygen.generateKeyPair();
         log.debug("Generated " + rsaKeys.getPrivate().getAlgorithm() + " keys with length" +
