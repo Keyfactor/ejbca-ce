@@ -21,24 +21,24 @@ administrator, who can be found on the sourceforge project page.
 <ul>
 <li>Tomas Gustavsson, tomas(at)primekey.se, project founder.</li>
 <li>Philip Vendil, philip(at)primekey.se, core developer</li>
-<li>Anna Diruba Christensen, dilnet(at)hotmail.com, project homepage design.</li>
+<li>Anna Diruba Christensen, dilnet(at)hotmail.com, first project homepage design.</li>
 <li>Nathan Phelps, nphelps(at)solarc.com, testing, bugfinding and suggestions.</li>
 <li>Leo Tai, hkleo(at)users.sourceforge.net, Oracle database configuration.</li>
 <li>Timothy Fisher, timothyf(at)users.sourceforge.net], architecture overview.</li>
-<li>Karl-König Königsson, karlkoenig(at)users.sourceforge.net, better deployment scripts.</li>
+<li>Karl-König Königsson, karlkoenig(at)users.sourceforge.net, better deployment scripts for EJBCA 2.x.</li>
 <li>Thomas Karlsson, thomas.karlsson(at)planet.eu.org, firewall script.</li>
 <li>Magnus Broqvist, magnus(at)han.pp.se, initial P12toPEM implementation.</li>
 <li>Slava Sklarewski, Slava.Sklarewski(at)de.gi-de.com, data flow diagram.</li>
 <li>Leonardo Souza Mario Bueno, isbueno(at)users.sourceforge.net, patch for request template path.</li>
-<li>Jean ?, icejean(at)21cn.com, support for Sybase and Active Directory, port to Java 1.2/EJB 1.0, suggestions and bugfixes.</li>
+<li>Jean ?, icejean(at)21cn.com, support for Sybase and Active Directory, port to Java 1.2/EJB 1.0, suggestions and bugfixes. Quick guide for setting up a CA.</li>
 <li>Lars Silven, lars(at)primekey.se, external connection to smart card personalisation, various additions.</li>
 <li>Gösta Bäckström, gosta.backstrom(at)goyada.com, initial PKCS7 to browsers.</li>
 <li>Ville Skyttä, ville.skytta(at)secgo.com, AdminCertReqServlet, various patches</li>
-<li>Koen Serry, koen(at)serry.org, many improvements.</li>
-<li>Dickon Field, Dickon.Field(at)concise.co.uk, Weblogic 7.1.</li>
+<li>Koen Serry, koen(at)serry.org, many small improvements.</li>
+<li>Dickon Field, Dickon.Field(at)concise.co.uk, EJBCA 3.0.x on Weblogic 7.1.</li>
 <li>Justin Wood, justin(at)braidquest.com, PKI Tools subproject.</li>
-<li>Thomas Meckel, meckel(at)ophios.com, OCSP.</li>
-<li>Jon Barber, jon.barber(at)acm.org, SCEP testing and fixes.</li>
+<li>Thomas Meckel, meckel(at)ophios.com, initial OCSP implementation.</li>
+<li>Jon Barber, jon.barber(at)acm.org, early SCEP testing and fixes.</li>
 <li>surd0007(at)yahoo.com.cn, install guide.</li>
 <li>Mike Jackson, mj(at)sci.fi, Proper LDAP schema. Device certificate schemas.</li>
 <li>Stephane Bailliez, stephane(at)bearaway.org, patches all over, XDoclet, new install, configure and cli for 3.1, web.</li>
@@ -47,11 +47,12 @@ administrator, who can be found on the sourceforge project page.
 <li>Manuel Ruiz, mruiz(at)safa.es, make admin commands flexible and usable from within java-code.</li>
 <li>Risto Laanoja, risto.laanoja(at)eyp.ee, fix for integer overflow when setting CRLPeriod longer than 596 hours. Several instances of one altName and other patches. User authentication with JAAS/Kerberos.</li>
 <li>Giampaolo Tomassoni. Giampaolo(at)Tomassoni.biz, PostgresSQL 8.0.</li>
-<li>Philipp Faerber, philipp.faerber(at)adnovum.ch, Weblogic 8.1, adminweb sql fix.</li>
+<li>Philipp Faerber, philipp.faerber(at)adnovum.ch, EJBCA 3.0.x on Weblogic 8.1, adminweb sql fix.</li>
 <li>Hu Aranjuez, mynetbus(at)126.com, column name fix for MS SQL2000.</li>
 <li>Marco Ferrante, marco(at)csita.unige.it, Italian translation, openssl migration howto, importcert cli function.</li>
 <li>Alejandro Falcone, afalcone(at)speedy.com.ar, Spanish translation.</li>
 <li>Bruno Bonfils, asyd(at)gwyneth.glou.net, added X-ORIGIN to device schema for latest Sun Directory Server. Tested Cisco IOS and made the IOS Howto.</li>
+<li>Resurrección Mazo González, rmazgon<(at)canarias.org, LdapSearchPublisher.</li>
 </ul>
     </section>
   </body>
