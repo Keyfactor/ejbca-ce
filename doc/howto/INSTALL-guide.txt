@@ -1,4 +1,4 @@
-$Id: INSTALL-guide.txt,v 1.2 2005-09-15 07:04:24 anatom Exp $
+$Id: INSTALL-guide.txt,v 1.3 2005-12-05 14:47:37 anatom Exp $
 
     My LINUX+JBOSS+EJBCA+MYSQL+OPENLDAP How To
     originally contributed by <surd0007(at)yahoo.com.cn>
@@ -81,11 +81,14 @@ so please go there first.
  	#cp ejbca.properties.sample ejbca.properties
     #edit ejbca.properties and uncomment the MySQL parts, database.name, datasource.mapping, database.url, database.driver, database.username and database.password.
     
- 	Compile ejbca source and deploy to application server:
+	Compile ejbca source and deploy to application server:
  	#ant bootstrap
  	
  	Install ejbca
  	#ant install 
+ 	
+ 	Copy configuration and ssl files to JBoss and re-deploy ejbca
+ 	#ant deploy
  	
  	Restart JBoss
   
@@ -124,6 +127,7 @@ the SuSE version and uninstall it, and the user will be created for you.)
 5) As jboss, go into /usr/ejbca and do
 ant bootstrap
 ant install
+ant deploy
 
 6) As root edit  /usr/share/jboss/bin/jboss_init_suse.sh to use 'default'
 rather than 'all'. move it to /etc/init.d/jboss and link that
