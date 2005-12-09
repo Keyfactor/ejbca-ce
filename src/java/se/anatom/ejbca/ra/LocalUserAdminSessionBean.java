@@ -72,7 +72,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.102 2005-12-04 16:04:26 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.103 2005-12-09 14:13:45 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -88,12 +88,6 @@ import se.anatom.ejbca.util.query.UserMatch;
  *  name="DataSource"
  *  type="java.lang.String"
  *  value="java:/${datasource.jndi-name}"
- *
- * @ejb.env-entry
- *   description="Factory class can dynamically link to external implementation class"
- *   name="RMIFactory"
- *   type="java.lang.String"
- *   value="se.walter.cardPersonalization.ra.ejbca.RMIFactoryImpl"
  *
  * @ejb.env-entry
  *   description="Defines the JNDI name of the mail service used"
@@ -1047,24 +1041,6 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         debug("<findAllUsersByStatusWithLimit()");
         return returnval;
     }
-
-    /**
-     * Starts an external service that may be needed bu user administration.
-     *
-     * @ejb.interface-method
-     */
-    public void startExternalService(String[] args) {
-        debug(">startService()");
-        try {
-            String className = getLocator().getString("java:comp/env/RMIFactory");
-            RMIFactory rmiFactory = (RMIFactory) Class.forName(className).newInstance();
-            rmiFactory.startConnection(args);
-            debug(">startService()");
-        } catch (Exception e) {
-            error("Error starting external service.", e);
-            throw new EJBException("Error starting external service", e);
-        }
-    } // startExternalService
 
     /**
      * Method to execute a customized query on the ra user data. The parameter query should be a legal Query object.
