@@ -40,7 +40,7 @@ import se.anatom.ejbca.util.CertTools;
  * -the users performancefoono1-10 should not exist in the database
  * 
  *
- * @version $Id: TestSignLotsOfCerts.java,v 1.2 2005-12-04 16:18:54 anatom Exp $
+ * @version $Id: TestSignLotsOfCerts.java,v 1.3 2005-12-09 14:29:26 anatom Exp $
  */
 public class TestSignLotsOfCerts extends TestCase {
     private static Logger log = Logger.getLogger(TestSignLotsOfCerts.class);
@@ -122,7 +122,7 @@ public class TestSignLotsOfCerts extends TestCase {
         }
         if (userExists) {
             log.info("User performancefoo already exists, resetting status.");
-            usersession.setUserStatus(admin,"performancefoo",UserDataConstants.STATUS_NEW);
+            usersession.setUserStatus(admin,"performancefoo"+post,UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
 
