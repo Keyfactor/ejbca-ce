@@ -473,7 +473,7 @@ web.contentencoding    = ${web.contentencoding}
     <!-- =================================================================== -->
     <target name="javadoc" depends="">
         <mkdir dir="${apidoc}" />
-        <javadoc packagenames="se.anatom.*" maxmemory="256m" sourcepath="${src.java}" destdir="${apidoc}" extdirs="${lib}" author="true" version="true" use="true" windowtitle="EJBCA API" bottom="Copyright &#169; 2004 PrimeKey Solutions AB.">
+        <javadoc packagenames="se.anatom.*" maxmemory="256m" sourcepath="${src.java}" destdir="${apidoc}" extdirs="${lib}" author="true" version="true" use="true" windowtitle="EJBCA API" bottom="Copyright &#169; PrimeKey Solutions AB.">
         </javadoc>
     </target>
 
