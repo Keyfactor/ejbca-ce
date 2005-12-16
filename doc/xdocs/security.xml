@@ -16,6 +16,18 @@ After realizing this, please read on and take a pragmatic approach to security
  suitable for your policy, application and environment.
 </p></section>
 
+<section name="Securing JBoss">
+<p>
+JBoss has description how to secure a default installation of JBoss. You should read this document before putting
+your application in production.
+</p><p>
+Check out: <a href="http://wiki.jboss.org/wiki/Wiki.jsp?page=SecureJBoss">SecureJBoss</a>
+</p>
+<p>You should at least disable the public admin console by removing jmx-console.war, management/console-mgr.sar and 
+jbossweb-tomcat55.sar/ROOT.war from deploy.
+</p>
+</section>
+
 <section name="Setting up SSL">
 <p>
 To set upp SSL communication for all HTTP traffic to the server 
@@ -53,14 +65,6 @@ AdminCA1 is the name of your CA that you are using for server and administrator 
 </p>
 </section>
 
-<section name="Securing JBoss">
-<p>
-JBoss has description how to secure a default installation of JBoss. You should read this document before putting
-your application in production.
-</p><p>
-Check out: <a href="http://wiki.jboss.org/wiki/Wiki.jsp?page=SecureJBoss">SecureJBoss</a>
-</p>
-</section>
 <section name="Configuring for security">
 <p>
 The easiest way to keep the installation secure is to block all default JBOSS ports
