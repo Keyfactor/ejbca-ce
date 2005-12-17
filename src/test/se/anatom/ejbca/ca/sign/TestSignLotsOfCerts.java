@@ -40,15 +40,15 @@ import se.anatom.ejbca.util.CertTools;
  * -the users performancefoono1-10 should not exist in the database
  * 
  *
- * @version $Id: TestSignLotsOfCerts.java,v 1.3 2005-12-09 14:29:26 anatom Exp $
+ * @version $Id: TestSignLotsOfCerts.java,v 1.4 2005-12-17 10:35:50 anatom Exp $
  */
 public class TestSignLotsOfCerts extends TestCase {
     private static Logger log = Logger.getLogger(TestSignLotsOfCerts.class);
-    private static Context ctx;
+    public static Context ctx;
     private static IUserAdminSessionRemote usersession;
-    private static KeyPair keys;
+    public static KeyPair keys;
     private static int caid = 0;
-    private Admin admin;
+    public Admin admin;
 
     /**
      * Creates a new TestSignSession object.
@@ -208,8 +208,7 @@ public class TestSignLotsOfCerts extends TestCase {
     private class SignTester implements Runnable {
     	public void run() {
             try {
-                Context c = getInitialContext();
-                Object obj = c.lookup("RSASignSession");
+                Object obj = ctx.lookup("RSASignSession");
                 ISignSessionHome rsahome = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ISignSessionHome.class);
                 ISignSessionRemote rsaremote = rsahome.create();
                 String user = "performancefoo"+Thread.currentThread().getName();
