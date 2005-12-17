@@ -57,7 +57,7 @@ import com.novell.ldap.LDAPModificationSet;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.17 2005-07-07 07:52:11 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.18 2005-12-17 16:13:42 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher{
 	 	
@@ -306,8 +306,8 @@ public class LdapPublisher extends BasePublisher{
             // disconnect with the server
             lc.disconnect();
         } catch (LDAPException e) {
-            log.error("Error storing certificate (" + attribute + ") in LDAP (" + objectclass + "): ", e);  
-            throw new PublisherException("Error storing certificate (" + attribute + ") in LDAP (" + objectclass + ").");            
+            log.error("Error storing certificate (" + attribute + ") in LDAP (" + objectclass + ") for DN (" + dn + "): ", e);  
+            throw new PublisherException("Error storing certificate (" + attribute + ") in LDAP (" + objectclass + ") for DN (" + dn + ").");            
         }
         log.debug("<storeCertificate()");
         return true;
