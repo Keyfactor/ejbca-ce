@@ -16,7 +16,7 @@ package se.anatom.ejbca.admin;
 /**
  * Factory for RA Admin Commands.
  *
- * @version $Id: RaAdminCommandFactory.java,v 1.8 2004-04-16 07:38:57 anatom Exp $
+ * @version $Id: RaAdminCommandFactory.java,v 1.9 2005-12-17 15:07:32 anatom Exp $
  */
 public class RaAdminCommandFactory {
     /**
@@ -55,8 +55,6 @@ public class RaAdminCommandFactory {
             return new RaListUsersCommand(args);
         } else if (args[0].equals("revokeuser")) {
             return new RaRevokeUserCommand(args);
-        } else if (args[0].equals("startservice")) {
-            return new RaStartServiceCommand(args);
         } else if (args[0].equals("keyrecover")) {
             return new RaKeyRecoverCommand(args);
         } else if (args[0].equals("keyrecovernewest")) {
