@@ -969,7 +969,7 @@ To configure the publisher for LDAP:
 fill in all the neccesary fields.</li>
 </ol>
 <p>
-Parameters to LDAP Publisher:
+Generic parameters to LDAP Publisher:
 </p>
 <ul>
 <li>'Hostname' is the host where the LDAP server is located.</li>
@@ -978,6 +978,10 @@ Parameters to LDAP Publisher:
 <li>'Login DN' is the DN of a user on the LDAP server with permissions to add
 and update enties.</li>
 <li>'Login Password' is the password for the user above.</li>
+<li>'Modify Existing Users' defines if attributes (such as email) in existing LDAP objects are replaced with new values
+when an entry is updated with a new certificate.</li>
+<li>'Create Nonexisting Users' defines if an LDAP object should be created by EJBCA if there is no existing object 
+when EJBCA publishes the certificate.</li>
 <li>'User Object Class' is the objectclass for the LDAP entries for users,
 where user certificates are published. The entry is hierarchical separated by ';' to
 build a structure like:
@@ -1053,6 +1057,54 @@ certificate profile and voila, the certs will be published.
 </p>
 </subsubsection>
 
+<subsubsection name="Different LDAP publishers">
+<strong>LDAP Publisher</strong>
+<p>
+The regular LDAP Publisher works by searching the DN in LDAP.
+</p><p>
+When ejbca creates an object to publish a certificate to LDAP it firsts builds the DN from the
+baseDN and 'LDAP location fields for cert DN'. It checks if the entry exists in the
+ldap and either creates or modifies the entry.
+</p>
+<p>Example: The certificate DN is "CN=Tomas Gustavsson,O=Foo,C=SE", 
+the BaseDN in the publisher is "DC=primekey,DC=se" and the CN is selected in "LDAP location fields from cert DN".
+<br></br>The resulting DN that EJBCA will search for in the LDAP and create if it does not already exist is 
+"CN=Tomas Gustavsson,DC=primekey,DC=se".
+</p>
+<p>
+Using this publisher, if you have multiple trees in your LDAP (for example "ou=foo,dc=primekey,dc=se" and "ou=bar,dc=primekey,dc=se")
+you can either:
+<ol>
+<li>Include both CN and OU in 'LDAP location fields from cert DN' and have your cert DNs like "CN=Tomas,OU=foo,O=MyOrg,C=SE.</li>
+<li>Use different publishers for ou=foo and ou=bar and issue certificates for the different OUs with different certificate profiles.</li>
+</ol>
+</p>
+<strong>LDAP Search Publisher (from EJBCA v3.2)</strong>
+<p>
+The LDAP Search Publisher works by searching the LDAP for existing entries using a user defined search filter. 
+If no entries exist in the LDAP when searching for an entry, one is created just like in the regular LDAP Publisher.
+</p><p>
+The search filter is defined in the two fields under "LDAP search settings":
+<ul>
+<li>Suffix base DN of LDAP Search - the base for your search filter.</li>
+<li>LDAP filter of the search - your LDAP filter.</li>
+</ul>
+The best example of such a search filter is if base is "dc=primekey,dc=se" and filter is "uid=$USERNAME".
+The search done by ejbca will be equal to the search:<br></br>
+ldapsearch -x -b "dc=primekey,dc=se" "(uid=$USERNAME)"
+</p><p>
+$USERNAME is replaced by the EJBCA username of the user that has had a new certificate just generated.
+Other variables apart from $USERNAME is $CN, $O, $OU and $C where these values are taken from the certificate DN.
+</p><p>
+When a certificate is generated for say user "ldap" EJBCA will perform the search:<br></br>
+ldapsearch -x -b "dc=primekey,dc=se" "(uid=ldap)"
+</p><p>
+The certificate generated for ldap will be published in the object returned by the search. 
+This is very useful if you want to publish certificates to an LDAP directory where your users already exists, such as an email directory.
+The DN in the LDAP does not have to match the DN in the certificates at all.
+</p>
+</subsubsection>
+
 <subsubsection name="Publishing to Active Directory">
 <p>
 When configuring Active Directory LDAP, Bind DN for the users are usually,
@@ -1098,10 +1150,6 @@ DummyCustomPublisher.java that can be extended.
 
 <subsubsection name="What EJBCA stores/creates/modifies">
 <p>
-When ejbca publishes a certificate to LDAP it firsts builds the DN from the
-baseDN and 'LDAP location fields for cert DN'. It checks if the entry exists in the
-ldap and either creates or modifies the entry.
-</p><p>
 Apart from the DN in the entry a number of attributes are also stored, some
 are required by schema, some are optional. EJBCA find attributes in the certificate, if there is an
 OU (organizational unit) in the certificate EJBCA uses that to populate the OU attribute in the ldap
@@ -1110,6 +1158,9 @@ entry.
 When updating an entry that already exists EJBCA uses replace on the
 existing attributes, so if an email attributes already exists and EJBCA finds an email adress in
 the certificate, the email attribute in ldap is replaced with the email adress from the certificate.
+</p><p>
+Note that attributes are only replaced/updated if the flag "Modify Existing Users" in the Publisher is active. 
+The certificate attribute is always updated though.
 </p><p>
 The attributes that EJBCA creates or replaces are:
 </p>
