@@ -152,6 +152,9 @@ public abstract class PublisherDataBean extends BaseEntityBean {
                 case LdapPublisher.TYPE_LDAPPUBLISHER:
                     publisher = new LdapPublisher();
                     break;
+                case LdapSearchPublisher.TYPE_LDAPSEARCHPUBLISHER:
+                      publisher = new LdapSearchPublisher();
+                      break;
                 case ActiveDirectoryPublisher.TYPE_ADPUBLISHER:
                     publisher = new ActiveDirectoryPublisher();
                     break;

@@ -13,7 +13,6 @@
  
 package se.anatom.ejbca.ca.publisher;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
@@ -30,11 +29,6 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DERTaggedObject;
 
 import se.anatom.ejbca.ca.exception.PublisherConnectionException;
 import se.anatom.ejbca.ca.exception.PublisherException;
@@ -57,9 +51,9 @@ import com.novell.ldap.LDAPModificationSet;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.18 2005-12-17 16:13:42 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.19 2005-12-18 15:20:23 anatom Exp $
  */
-public class LdapPublisher extends BasePublisher{
+public class LdapPublisher extends BasePublisher {
 	 	
 	private static Logger log = Logger.getLogger(LdapPublisher.class);
 	
@@ -158,38 +152,10 @@ public class LdapPublisher extends BasePublisher{
         }
 
         // Extract the users email from the cert.
-        // First see if we have subjectAltNames extension
-        String email = null;
-        byte[] subjAltNameValue = ((X509Certificate) incert).getExtensionValue("2.5.29.17");
-
-        // If not, see if we have old styld email-in-DN
-        if (subjAltNameValue == null) {
-            email = CertTools.getEmailFromDN(certdn);
-        } else {
-            try {
-                // Get extension value
-                ByteArrayInputStream bIn = new ByteArrayInputStream(subjAltNameValue);
-                DEROctetString asn1 = (DEROctetString) new ASN1InputStream(bIn).readObject();
-                ByteArrayInputStream bIn1 = new ByteArrayInputStream(asn1.getOctets());
-                ASN1Sequence san = (ASN1Sequence) new ASN1InputStream(bIn1).readObject();
-
-                for (int i = 0; i < san.size(); i++) {
-                    DERTaggedObject gn = (DERTaggedObject) san.getObjectAt(i);
-                    if (gn.getTagNo() == 1) {
-                        // This is rfc822Name!
-                        DERIA5String str;
-                        if (gn.getObject() instanceof DERIA5String) {
-                            str = (DERIA5String) gn.getObject();
-                        } else {
-                            str = new DERIA5String(((DEROctetString) gn.getObject()).getOctets());
-                        }
-                        email = str.getString();
-                    }
-                }
-            } catch (IOException e) {
-                log.error("IOException when getting subjectAltNames extension.");
-                throw new PublisherException("IOException when getting subjectAltNames extension.");
-            }
+        String email = CertTools.getRfc822AltName((X509Certificate)incert);
+        // If it doesn't exist, see if we have old styld email-in-DN
+        if (email == null) {
+        	email = CertTools.getEmailFromDN(certdn);
         }
 
         // Check if the entry is already present, we will update it with the new certificate.
@@ -202,8 +168,6 @@ public class LdapPublisher extends BasePublisher{
             lc.bind(ldapVersion, getLoginDN(), getLoginPassword());
             // try to read the old object
             oldEntry = lc.read(dn);
-            // disconnect with the server
-            lc.disconnect();
         } catch (LDAPException e) {
             if (e.getLDAPResultCode() == LDAPException.NO_SUCH_OBJECT) {
                 log.debug("No old entry exist for '" + dn + "'.");
@@ -212,7 +176,14 @@ public class LdapPublisher extends BasePublisher{
                 log.error("Error binding to and reading from LDAP server: ", e);
                 throw new PublisherException("Error binding to and reading from LDAP server.");                                
             }
-        }
+        } finally {
+			// disconnect with the server
+			try {
+				lc.disconnect();
+			} catch (LDAPException e) {
+				log.error("LdapPublisher: LDAP disconnection failed: ", e);
+			}
+		}
 
         LDAPEntry newEntry = null;
         LDAPModificationSet modSet = null;
@@ -303,12 +274,17 @@ public class LdapPublisher extends BasePublisher{
                   }
                 }  
             }
-            // disconnect with the server
-            lc.disconnect();
         } catch (LDAPException e) {
             log.error("Error storing certificate (" + attribute + ") in LDAP (" + objectclass + ") for DN (" + dn + "): ", e);  
             throw new PublisherException("Error storing certificate (" + attribute + ") in LDAP (" + objectclass + ") for DN (" + dn + ").");            
-        }
+        } finally {
+			// disconnect with the server
+			try {
+				lc.disconnect();
+			} catch (LDAPException e) {
+				log.error("LdapPublisher: LDAP disconnection failed: ", e);
+			}
+		}
         log.debug("<storeCertificate()");
         return true;
 		
@@ -347,9 +323,6 @@ public class LdapPublisher extends BasePublisher{
             lc.bind(ldapVersion, getLoginDN(), getLoginPassword());
             // try to read the old object
             oldEntry = lc.read(dn);
-            
-            // disconnect with the server
-            lc.disconnect();
         } catch (LDAPException e) {
             if (e.getLDAPResultCode() == LDAPException.NO_SUCH_OBJECT) {
                 log.debug("No old entry exist for '" + dn + "'.");
@@ -357,7 +330,14 @@ public class LdapPublisher extends BasePublisher{
                 log.error("Error binding to and reading from LDAP server: ", e);
                 throw new PublisherException("Error binding to and reading from LDAP server.");                
             }
-        }
+        } finally {
+			// disconnect with the server
+			try {
+				lc.disconnect();
+			} catch (LDAPException e) {
+				log.error("LdapPublisher: LDAP disconnection failed: ", e);
+			}
+		}
 
         LDAPEntry newEntry = null;
         LDAPModificationSet modSet = null;
@@ -399,12 +379,17 @@ public class LdapPublisher extends BasePublisher{
                 lc.add(newEntry);
                 log.debug("\nAdded object: " + dn + " successfully.");                
             }
-            // disconnect with the server
-            lc.disconnect();
         } catch (LDAPException e) {
             log.error("Error storing CRL (" + getCRLAttribute() + ") in LDAP (" + getCAObjectClass() + "): ", e);
             throw new PublisherException("Error storing CRL (" + getCRLAttribute() + ") in LDAP (" + getCAObjectClass() + "): ");                        
-        }
+        } finally {
+			// disconnect with the server
+			try {
+				lc.disconnect();
+			} catch (LDAPException e) {
+				log.error("LdapPublisher: LDAP disconnection failed: ", e);
+			}
+		}
         return true;
     }
     
@@ -445,8 +430,6 @@ public class LdapPublisher extends BasePublisher{
             lc.bind(ldapVersion, getLoginDN(), getLoginPassword());
             // try to read the old object
             oldEntry = lc.read(dn);
-            // disconnect with the server
-            lc.disconnect();
         } catch (LDAPException e) {
             if (e.getLDAPResultCode() == LDAPException.NO_SUCH_OBJECT) {
                 log.debug("No old entry exist for '" + dn + "'.");
@@ -455,7 +438,14 @@ public class LdapPublisher extends BasePublisher{
                 log.error("Error binding to and reading from LDAP server: ", e);
                 throw new PublisherException("Error binding to and reading from LDAP server.");                                
             }
-        }
+        } finally {
+			// disconnect with the server
+			try {
+				lc.disconnect();
+			} catch (LDAPException e) {
+				log.error("LdapPublisher: LDAP disconnection failed: ", e);
+			}
+		}
 
         
         LDAPModificationSet modSet = null;
@@ -494,12 +484,17 @@ public class LdapPublisher extends BasePublisher{
                 lc.modify(dn, modSet);
                 log.debug("\nRemoved certificate : " + dn + " successfully.");  
             }               
-            // disconnect with the server
-            lc.disconnect();
         } catch (LDAPException e) {
             log.error("Error when removing certificate from LDAP (" + dn + "): ", e);  
             throw new PublisherException("Error when removing certificate from LDAP (" + dn + ")");            
-        }
+        } finally {
+			// disconnect with the server
+			try {
+				lc.disconnect();
+			} catch (LDAPException e) {
+				log.error("LdapPublisher: LDAP disconnection failed: ", e);
+			}
+		}
         log.debug("<revokeCertificate()");
 	}
     
@@ -507,35 +502,40 @@ public class LdapPublisher extends BasePublisher{
 	 * @see se.anatom.ejbca.ca.publisher.BasePublisher
 	 */    
 	public void testConnection(Admin admin) throws PublisherConnectionException{
-	    int ldapVersion = LDAPConnection.LDAP_V3;
-        LDAPConnection lc = null;
-        if(getUseSSL()){
-          lc = new LDAPConnection(new LDAPJSSESecureSocketFactory());
-        }else{
-          lc = new LDAPConnection();        
-        }
-
-        LDAPEntry entry = null;
-        try {
-            // connect to the server
-            lc.connect(getHostname(), Integer.parseInt(getPort()));
-            // authenticate to the server
-            lc.bind(ldapVersion, getLoginDN(), getLoginPassword());
-            // try to read the old object
-            entry = lc.read(getBaseDN());
-            // disconnect with the server
-            lc.disconnect();
-            
-            log.debug("Entry" + entry.toString());
-            
-            if(entry == null)
-              throw new PublisherConnectionException("Couldn't find bindDN.");
-        } catch (LDAPException e) {
-        	log.error("Error binding to LDAP server: ", e);
-            if(e.getMessage() != null)
-                throw new PublisherConnectionException("Error binding to and reading from LDAP server: " + e.getMessage());
-            throw new PublisherConnectionException("Error binding to and reading from LDAP server. ");                            
-        }
+		int ldapVersion = LDAPConnection.LDAP_V3;
+		LDAPConnection lc = null;
+		if(getUseSSL()){
+			lc = new LDAPConnection(new LDAPJSSESecureSocketFactory());
+		}else{
+			lc = new LDAPConnection();        
+		}
+		
+		LDAPEntry entry = null;
+		try {
+			// connect to the server
+			lc.connect(getHostname(), Integer.parseInt(getPort()));
+			// authenticate to the server
+			lc.bind(ldapVersion, getLoginDN(), getLoginPassword());
+			// try to read the old object
+			entry = lc.read(getBaseDN());			
+			log.debug("Entry" + entry.toString());
+			if(entry == null) {
+				throw new PublisherConnectionException("Couldn't find bindDN.");
+			}
+		} catch (LDAPException e) {
+			log.error("Error binding to LDAP server: ", e);
+			if(e.getMessage() != null) {
+				throw new PublisherConnectionException("Error binding to and reading from LDAP server: " + e.getMessage());            	
+			}
+			throw new PublisherConnectionException("Error binding to and reading from LDAP server. ");                            
+		} finally {
+			// disconnect with the server
+			try {
+				lc.disconnect();
+			} catch (LDAPException e) {
+				log.error("LdapPublisher: LDAP disconnection failed: ", e);
+			}
+		}
 	} 
 
     /**
@@ -961,42 +961,42 @@ public class LdapPublisher extends BasePublisher{
     } // getModificationSet
     
     protected String constructLDAPDN(String dn){
-      String retval = "";
-      DNFieldExtractor extractor = new DNFieldExtractor(dn,DNFieldExtractor.TYPE_SUBJECTDN); 
-            
-      Collection usefields = getUseFieldInLdapDN();
-      if(usefields instanceof List){
-        Collections.sort((List) usefields);
-      }
-      Iterator iter = usefields.iterator(); 
-      String dnField = null;
-      while(iter.hasNext()){
-      	Integer next = (Integer) iter.next();
-      	dnField = getDNField(extractor, next.intValue());
-      	if (StringUtils.isNotEmpty(dnField)) {
-          	if(retval.length() == 0)
-            	  retval += dnField; // first item, don't start with a comma
-            	else
-            	  retval += "," + dnField;      	    
-      	}
-      }
-      
-      retval = retval + "," + this.getBaseDN();
-            
-      log.debug("LdapPublisher: constructed DN: " + retval );
-      return retval;	
+    	String retval = "";
+    	DNFieldExtractor extractor = new DNFieldExtractor(dn,DNFieldExtractor.TYPE_SUBJECTDN); 
+    	
+    	Collection usefields = getUseFieldInLdapDN();
+    	if(usefields instanceof List){
+    		Collections.sort((List) usefields);
+    	}
+    	Iterator iter = usefields.iterator(); 
+    	String dnField = null;
+    	while(iter.hasNext()){
+    		Integer next = (Integer) iter.next();
+    		dnField = getDNField(extractor, next.intValue());
+    		if (StringUtils.isNotEmpty(dnField)) {
+    			if(retval.length() == 0) {
+    				retval += dnField; // first item, don't start with a comma
+    			} else {
+    				retval += "," + dnField;
+    			}
+    		}
+    	}
+    	retval = retval + "," + this.getBaseDN();
+    	log.debug("LdapPublisher: constructed DN: " + retval );
+    	return retval;	
     }
     
     protected String getDNField(DNFieldExtractor extractor, int field){
-      String retval = "";
-      int num = extractor.getNumberOfFields(field);
-      for(int i=0;i<num;i++){
-      	if(retval.length() == 0)
-      	  retval += DNFieldExtractor.SUBJECTDNFIELDS[field] + extractor.getField(field,i);
-      	else
-      	  retval += "," + DNFieldExtractor.SUBJECTDNFIELDS[field] + extractor.getField(field,i);	
-      }    
-      return retval;      	
+    	String retval = "";
+    	int num = extractor.getNumberOfFields(field);
+    	for (int i=0;i<num;i++) {
+    		if (retval.length() == 0) {
+    			retval += DNFieldExtractor.SUBJECTDNFIELDS[field] + extractor.getField(field,i);
+    		} else {
+    			retval += "," + DNFieldExtractor.SUBJECTDNFIELDS[field] + extractor.getField(field,i);
+    		}
+    	}    
+    	return retval;      	
     }
     
     protected static byte[] fakecrlbytes = Base64.decode(

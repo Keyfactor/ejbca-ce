@@ -52,6 +52,7 @@ import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
+import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
@@ -74,7 +75,7 @@ import org.bouncycastle.x509.X509V3CertificateGenerator;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.80 2005-11-13 18:31:42 herrvendil Exp $
+ * @version $Id: CertTools.java,v 1.81 2005-12-18 15:20:23 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -835,13 +836,51 @@ public class CertTools {
     } // getCertificatePolicyId
 
     /**
+     * Gets the rfc822 (email) altName.
+     *
+     * @param cert certificate containing the extension
+     * @return String with the email name or null if the altName does not exist
+     */
+    public static String getRfc822AltName(X509Certificate cert) {
+    	// First see if we have subjectAltNames extension
+    	String email = null;
+    	try {
+			byte[] subjAltNameValue = cert.getExtensionValue(X509Extensions.SubjectAlternativeName.getId());
+			if (subjAltNameValue != null) {
+				// Get extension value
+				ByteArrayInputStream bIn = new ByteArrayInputStream(subjAltNameValue);
+				DEROctetString asn1 = (DEROctetString)new ASN1InputStream(bIn).readObject();
+				ByteArrayInputStream bIn1 = new ByteArrayInputStream(asn1.getOctets());
+				ASN1Sequence san = (ASN1Sequence) new ASN1InputStream(bIn1).readObject();
+				// Loop over the sequence of altNames
+				for (int i = 0; i < san.size(); i++) {
+					DERTaggedObject gn = (DERTaggedObject) san.getObjectAt(i);
+					if (gn.getTagNo() == 1) {
+						// This is rfc822Name!
+						DERIA5String str;
+						if (gn.getObject() instanceof DERIA5String) {
+							str = (DERIA5String) gn.getObject();
+						} else {
+							str = new DERIA5String( ( (DEROctetString) gn.getObject()).getOctets());
+						}
+						email = str.getString();
+					}
+				}				
+			}
+		} catch (IOException e) {
+			log.error("IOException getting subject altName, ignoring and returning null: ", e);
+			email = null;
+		}
+    	return email;
+    } // getRfc822AltName
+
+    /**
      * Gets the Microsoft specific UPN altName.
      *
      * @param cert certificate containing the extension
-     * @return String with the UPN name
+     * @return String with the UPN name or null if the altName does not exist
      */
-    public static String getUPNAltName(X509Certificate cert)
-        throws IOException, CertificateParsingException {
+    public static String getUPNAltName(X509Certificate cert) throws IOException, CertificateParsingException {
         Collection altNames = cert.getSubjectAlternativeNames();
         if (altNames != null) {
             Iterator i = altNames.iterator();
@@ -875,7 +914,7 @@ public class CertTools {
      * Gets the Microsoft specific GUID altName, that is encoded as an octect string.
      *
      * @param cert certificate containing the extension
-     * @return String with the hex-encoded GUID byte array
+     * @return String with the hex-encoded GUID byte array or null if the altName does not exist
      */
     public static String getGuidAltName(X509Certificate cert)
         throws IOException, CertificateParsingException {
