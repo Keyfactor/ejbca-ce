@@ -82,11 +82,7 @@ public class LdapSearchPublisher extends LdapPublisher {
 		}
 		
 		// Extract the users email from the cert.
-		String email = CertTools.getRfc822AltName((X509Certificate)incert);
-		// If it doesn't exist, see if we have old styld email-in-DN
-		if (email == null) {
-			email = CertTools.getEmailFromDN(certdn);
-		}
+		String email = CertTools.getEMailAddress((X509Certificate)incert);
 		
 		// Check if the entry is already present, first, defined filter will be used. As second option, it check if the entry had been created in other session. We will update it with the new certificate and update LDAP entry if we apporve it
 		LDAPEntry oldEntry = null;

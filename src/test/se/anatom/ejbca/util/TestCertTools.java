@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.11 2005-11-13 18:33:44 herrvendil Exp $
+ * @version $Id: TestCertTools.java,v 1.12 2005-12-20 16:27:32 anatom Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);
@@ -520,6 +520,8 @@ public class TestCertTools extends TestCase {
       name = CertTools.getEMailAddress(CertTools.getCertfromByteArray(altNameCert));
       assertEquals("tomas@a.se", name);
       name = CertTools.getEMailAddress(CertTools.getCertfromByteArray(testcert));
+      assertNull(name);
+      name = CertTools.getEMailAddress(null);
       assertNull(name);
       name = CertTools.getPartFromDN(altNames,CertTools.DNS);
       assertEquals("www.a.se", name);

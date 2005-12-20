@@ -52,7 +52,6 @@ import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
@@ -75,7 +74,7 @@ import org.bouncycastle.x509.X509V3CertificateGenerator;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.81 2005-12-18 15:20:23 anatom Exp $
+ * @version $Id: CertTools.java,v 1.82 2005-12-20 16:26:53 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -274,24 +273,30 @@ public class CertTools {
     /**
      * Search for e-mail address, first in SubjectAltName (as in PKIX
      * recomandation) then in subject DN.
-     * Marco Ferrante, (c) 2005 CSITA - University of Genoa (Italy)
+     * Original author: Marco Ferrante, (c) 2005 CSITA - University of Genoa (Italy)
      * 
      * @param certificate
      * @return subject email or null if not present in certificate
-     * @throws java.lang.Exception
      */
-    public static String getEMailAddress(X509Certificate certificate) throws Exception {
+    public static String getEMailAddress(X509Certificate certificate) {
         log.debug("Searching for EMail Address in SubjectAltName");
-        if (certificate.getSubjectAlternativeNames() != null) {
-            java.util.Collection altNames = certificate.getSubjectAlternativeNames();
-            Iterator iter = altNames.iterator();
-            while (iter.hasNext()) {
-                java.util.List item = (java.util.List)iter.next();
-                Integer type = (Integer)item.get(0);
-                if (type.intValue() == 1) {
-                    return (String)item.get(1);
+        if (certificate == null) {
+            return null;
+        }
+        try {
+            if (certificate.getSubjectAlternativeNames() != null) {
+                java.util.Collection altNames = certificate.getSubjectAlternativeNames();
+                Iterator iter = altNames.iterator();
+                while (iter.hasNext()) {
+                    java.util.List item = (java.util.List)iter.next();
+                    Integer type = (Integer)item.get(0);
+                    if (type.intValue() == 1) {
+                        return (String)item.get(1);
+                    }
                 }
             }
+        } catch (CertificateParsingException e) {
+            log.error("Error parsing certificate: ", e);
         }
         log.debug("Searching for EMail Address in Subject DN");
         return CertTools.getEmailFromDN(certificate.getSubjectDN().getName());
@@ -834,45 +839,6 @@ public class CertTools {
         String id = pol.getPolicyIdentifier().getId();
         return id;
     } // getCertificatePolicyId
-
-    /**
-     * Gets the rfc822 (email) altName.
-     *
-     * @param cert certificate containing the extension
-     * @return String with the email name or null if the altName does not exist
-     */
-    public static String getRfc822AltName(X509Certificate cert) {
-    	// First see if we have subjectAltNames extension
-    	String email = null;
-    	try {
-			byte[] subjAltNameValue = cert.getExtensionValue(X509Extensions.SubjectAlternativeName.getId());
-			if (subjAltNameValue != null) {
-				// Get extension value
-				ByteArrayInputStream bIn = new ByteArrayInputStream(subjAltNameValue);
-				DEROctetString asn1 = (DEROctetString)new ASN1InputStream(bIn).readObject();
-				ByteArrayInputStream bIn1 = new ByteArrayInputStream(asn1.getOctets());
-				ASN1Sequence san = (ASN1Sequence) new ASN1InputStream(bIn1).readObject();
-				// Loop over the sequence of altNames
-				for (int i = 0; i < san.size(); i++) {
-					DERTaggedObject gn = (DERTaggedObject) san.getObjectAt(i);
-					if (gn.getTagNo() == 1) {
-						// This is rfc822Name!
-						DERIA5String str;
-						if (gn.getObject() instanceof DERIA5String) {
-							str = (DERIA5String) gn.getObject();
-						} else {
-							str = new DERIA5String( ( (DEROctetString) gn.getObject()).getOctets());
-						}
-						email = str.getString();
-					}
-				}				
-			}
-		} catch (IOException e) {
-			log.error("IOException getting subject altName, ignoring and returning null: ", e);
-			email = null;
-		}
-    	return email;
-    } // getRfc822AltName
 
     /**
      * Gets the Microsoft specific UPN altName.

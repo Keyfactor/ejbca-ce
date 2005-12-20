@@ -51,7 +51,7 @@ import com.novell.ldap.LDAPModificationSet;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.19 2005-12-18 15:20:23 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.20 2005-12-20 16:27:00 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
@@ -152,11 +152,7 @@ public class LdapPublisher extends BasePublisher {
         }
 
         // Extract the users email from the cert.
-        String email = CertTools.getRfc822AltName((X509Certificate)incert);
-        // If it doesn't exist, see if we have old styld email-in-DN
-        if (email == null) {
-        	email = CertTools.getEmailFromDN(certdn);
-        }
+        String email = CertTools.getEMailAddress((X509Certificate)incert);
 
         // Check if the entry is already present, we will update it with the new certificate.
         LDAPEntry oldEntry = null;
