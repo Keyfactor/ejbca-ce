@@ -36,7 +36,7 @@ import se.anatom.ejbca.util.Base64;
  * Observe: Remember to add a line in teh static section of HardCATokenManager adding the token as available token.
  * 
  * @author herrvendil
- * @version $Id: HardCATokenSample.java,v 1.7 2005-12-21 12:50:33 anatom Exp $
+ * @version $Id: HardCATokenSample.java,v 1.8 2005-12-21 13:04:28 anatom Exp $
  */
 public class HardCATokenSample implements IHardCAToken {
     /** Log4j instance for Base */
@@ -147,6 +147,7 @@ public class HardCATokenSample implements IHardCAToken {
      * be created, if for example depending jar files for the particular HSM is not available.
      */
 	public HardCATokenSample() {
+        log.debug("Creating HardCATokenSample");
         AvailableHardCAToken token = HardCATokenManager.instance().getAvailableHardCAToken("se.anatom.ejbca.ca.caadmin.hardcatokens.HardCATokenSample");
         if (token != null) {
             log.debug("Registered HardCATokenSample succesfully.");

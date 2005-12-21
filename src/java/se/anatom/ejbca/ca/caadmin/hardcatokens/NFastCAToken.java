@@ -37,7 +37,7 @@ import se.anatom.ejbca.ca.exception.CATokenOfflineException;
  * and the development was sponsored by Linagora (www.linagora.com).
  * 
  * @author Lars Silvén
- * @version $Id: NFastCAToken.java,v 1.5 2005-12-21 12:50:33 anatom Exp $
+ * @version $Id: NFastCAToken.java,v 1.6 2005-12-21 13:04:28 anatom Exp $
  */
 public class NFastCAToken implements IHardCAToken {
 
@@ -54,7 +54,7 @@ public class NFastCAToken implements IHardCAToken {
      * @throws InstantiationException if the nCipher provider is not available
      */
     public NFastCAToken() throws InstantiationException, IllegalAccessException {
-        log.info("Creating NFastCAToken");
+        log.debug("Creating NFastCAToken");
         try {
             Provider prov = (Provider)Class.forName(PROVIDER_CLASS).newInstance();        
             Security.addProvider( prov );            

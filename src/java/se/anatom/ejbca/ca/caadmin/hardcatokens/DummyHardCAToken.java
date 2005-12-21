@@ -31,7 +31,7 @@ import se.anatom.ejbca.ca.exception.CATokenOfflineException;
  * Observe: Remember to add a loadClass("thisclass") row to the HardCATokenManager.init() method when adding new plug-ins.
 
  * @author herrvendil
- * @version $Id: DummyHardCAToken.java,v 1.6 2005-12-21 12:50:33 anatom Exp $
+ * @version $Id: DummyHardCAToken.java,v 1.7 2005-12-21 13:04:28 anatom Exp $
  * 
  */
 public class DummyHardCAToken implements IHardCAToken {
@@ -42,6 +42,7 @@ public class DummyHardCAToken implements IHardCAToken {
      * be created, if for example depending jar files for the particular HSM is not available.
      */
 	public DummyHardCAToken(){
+        log.debug("Creating DummyHardCAToken");
         AvailableHardCAToken token = HardCATokenManager.instance().getAvailableHardCAToken("se.anatom.ejbca.ca.caadmin.hardcatokens.DummyHardCAToken");
         if (token != null) {
             log.debug("Registered DummyHardCAToken succesfully.");
