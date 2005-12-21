@@ -19,6 +19,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
+import se.anatom.ejbca.ca.caadmin.AvailableHardCAToken;
 import se.anatom.ejbca.ca.caadmin.IHardCAToken;
 import se.anatom.ejbca.ca.exception.CATokenAuthenticationFailedException;
 import se.anatom.ejbca.ca.exception.CATokenOfflineException;
@@ -30,18 +31,19 @@ import se.anatom.ejbca.ca.exception.CATokenOfflineException;
  * Observe: Remember to add a loadClass("thisclass") row to the HardCATokenManager.init() method when adding new plug-ins.
 
  * @author herrvendil
- * @version $Id: DummyHardCAToken.java,v 1.5 2005-06-07 20:10:18 anatom Exp $
+ * @version $Id: DummyHardCAToken.java,v 1.6 2005-12-21 12:50:33 anatom Exp $
  * 
  */
 public class DummyHardCAToken implements IHardCAToken {
     /** Log4j instance */
 	private static final Logger log = Logger.getLogger(DummyHardCAToken.class);
 	
-	// TODO set this right after testing.
-	private static boolean registered = HardCATokenManager.instance().addAvailableHardCAToken("se.anatom.ejbca.ca.caadmin.hardcatokens.DummyHardCAToken", "DummyHardCAToken", false, false);
-	
+    /** The constructor of HardCAToken should throw an InstantiationException is the token can not
+     * be created, if for example depending jar files for the particular HSM is not available.
+     */
 	public DummyHardCAToken(){
-        if (registered) {
+        AvailableHardCAToken token = HardCATokenManager.instance().getAvailableHardCAToken("se.anatom.ejbca.ca.caadmin.hardcatokens.DummyHardCAToken");
+        if (token != null) {
             log.debug("Registered DummyHardCAToken succesfully.");
         }
 	}

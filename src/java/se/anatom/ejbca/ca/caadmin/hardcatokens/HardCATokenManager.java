@@ -26,7 +26,7 @@ import se.anatom.ejbca.ca.caadmin.CAToken;
  * Each HardCaToken plug-in should register itself by using the method register.
  * The CA keeps a registry of CA tokens created here.
  * 
- * @version $Id: HardCATokenManager.java,v 1.14 2005-11-11 08:53:49 anatom Exp $
+ * @version $Id: HardCATokenManager.java,v 1.15 2005-12-21 12:50:33 anatom Exp $
  * 
  */
 public class HardCATokenManager {
@@ -49,9 +49,10 @@ public class HardCATokenManager {
      */
     static {
         HardCATokenManager.instance().addAvailableHardCAToken("se.anatom.ejbca.ca.caadmin.hardcatokens.NFastCAToken", "NFastCAToken", false, true);
-		HardCATokenManager.instance().addAvailableHardCAToken("se.primeKey.caToken.card.PrimeCAToken", "PrimeCAToken", false, true);
-		HardCATokenManager.instance().addAvailableHardCAToken("se.anatom.ejbca.ca.caadmin.hardcatokens.DummyHardCAToken", "DummyHardCAToken", false, false);
-		HardCATokenManager.instance().addAvailableHardCAToken("se.anatom.ejbca.ca.caadmin.hardcatokens.HardCATokenSample", "HardCATokenSample", false, false);
+        HardCATokenManager.instance().addAvailableHardCAToken("se.primeKey.caToken.card.PrimeCAToken", "PrimeCAToken", false, true);
+        HardCATokenManager.instance().addAvailableHardCAToken("se.anatom.ejbca.ca.caadmin.hardcatokens.EracomCAToken", "Eracom", false, true);
+        HardCATokenManager.instance().addAvailableHardCAToken("se.anatom.ejbca.ca.caadmin.hardcatokens.DummyHardCAToken", "DummyHardCAToken", false, false);
+        HardCATokenManager.instance().addAvailableHardCAToken("se.anatom.ejbca.ca.caadmin.hardcatokens.HardCATokenSample", "HardCATokenSample", false, false);
     }
 
     /** Don't allow external creation of this class, implementing the Singleton pattern. 
@@ -113,7 +114,7 @@ public class HardCATokenManager {
 	            // Add to the available tokens
 	            availablehardcatokens.put(classpath, new AvailableHardCAToken(classpath, name, translateable, use));         
 	            retval = true;
-	            log.debug("Registered " + classpath + "Successfully.");                       
+	            log.debug("Registered " + classpath + " successfully.");                       
 	        } else {
                 // Normally not an error, since these classes are provided by HSM vendor
 	            log.info("Can not register " + classpath + ". This is normally not an error.");

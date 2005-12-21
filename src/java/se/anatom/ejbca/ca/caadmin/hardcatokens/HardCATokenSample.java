@@ -24,26 +24,23 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.SecConst;
+import se.anatom.ejbca.ca.caadmin.AvailableHardCAToken;
 import se.anatom.ejbca.ca.caadmin.IHardCAToken;
 import se.anatom.ejbca.ca.exception.CATokenAuthenticationFailedException;
 import se.anatom.ejbca.ca.exception.CATokenOfflineException;
 import se.anatom.ejbca.util.Base64;
 
 /**
- * @author herrvendil
- * 
  * Class used as test and demonstrationclass when writing HardCAToken plug-ins as HSMs.
  * 
- * Observe: Remember to add a loadClass("thisclass") row to the HardCATokenManager.init() method when adding new plug-ins.
+ * Observe: Remember to add a line in teh static section of HardCATokenManager adding the token as available token.
  * 
- * 
+ * @author herrvendil
+ * @version $Id: HardCATokenSample.java,v 1.7 2005-12-21 12:50:33 anatom Exp $
  */
 public class HardCATokenSample implements IHardCAToken {
     /** Log4j instance for Base */
-    private static transient Logger log = Logger.getLogger(HardCATokenSample.class);
-	
-	// TODO set this right after testing.
-	private static boolean registered = HardCATokenManager.instance().addAvailableHardCAToken("se.anatom.ejbca.ca.caadmin.hardcatokens.HardCATokenSample", "HardCATokenSample", false, false);
+    private static final Logger log = Logger.getLogger(HardCATokenSample.class);
 	
 	private static byte[] signkeypairenc = Base64.decode(
 			("rO0ABXNyABVqYXZhLnNlY3VyaXR5LktleVBhaXKXAww60s0SkwIAAkwACnByaXZh"
@@ -146,9 +143,13 @@ public class HardCATokenSample implements IHardCAToken {
     
     private boolean offline = false;
    
+    /** The constructor of HardCAToken should throw an InstantiationException is the token can not
+     * be created, if for example depending jar files for the particular HSM is not available.
+     */
 	public HardCATokenSample() {
-        if (registered) {
-            log.debug("Registered HardCATokenSample sucessfully.");
+        AvailableHardCAToken token = HardCATokenManager.instance().getAvailableHardCAToken("se.anatom.ejbca.ca.caadmin.hardcatokens.HardCATokenSample");
+        if (token != null) {
+            log.debug("Registered HardCATokenSample succesfully.");
         }
 	}
 	

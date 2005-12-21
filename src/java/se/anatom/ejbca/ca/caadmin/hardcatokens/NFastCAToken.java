@@ -37,17 +37,22 @@ import se.anatom.ejbca.ca.exception.CATokenOfflineException;
  * and the development was sponsored by Linagora (www.linagora.com).
  * 
  * @author Lars Silvén
- * @version $Id: NFastCAToken.java,v 1.4 2005-11-11 08:53:49 anatom Exp $
+ * @version $Id: NFastCAToken.java,v 1.5 2005-12-21 12:50:33 anatom Exp $
  */
 public class NFastCAToken implements IHardCAToken {
 
-    /** Log4j instance for Base */
-    private static transient final Logger log = Logger.getLogger(NFastCAToken.class);
+    /** Log4j instance */
+    private static final Logger log = Logger.getLogger(NFastCAToken.class);
 
     static final private String KEYSTORE_STRING = "keyStore";
     static final private String PROVIDER_NAME = "nCipherKM";
     static final private String PROVIDER_CLASS = "com.ncipher.provider.km.nCipherKM"; 
 
+    /** The constructor of HardCAToken should throw an InstantiationException is the token can not
+     * be created, if for example depending jar files for the particular HSM is not available.
+     * 
+     * @throws InstantiationException if the nCipher provider is not available
+     */
     public NFastCAToken() throws InstantiationException, IllegalAccessException {
         log.info("Creating NFastCAToken");
         try {
@@ -135,11 +140,16 @@ public class NFastCAToken implements IHardCAToken {
 	 */
 	public int getCATokenStatus() {
 		String strings[] = keyStrings.getAllStrings();
+        if (strings == null) {
+            return IHardCAToken.STATUS_OFFLINE;
+        }
 		int i=0;
-		while( strings!=null && i<strings.length && mKeys!=null && mKeys.get(strings[i])!=null )
-			i++;
-		if ( i<strings.length )
-			return IHardCAToken.STATUS_OFFLINE;
+		while( strings!=null && i<strings.length && mKeys!=null && mKeys.get(strings[i])!=null ) {
+            i++;            
+        }
+		if (i < strings.length) {
+            return IHardCAToken.STATUS_OFFLINE;            
+        }
         return IHardCAToken.STATUS_ACTIVE;
 	}
 }
