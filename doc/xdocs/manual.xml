@@ -789,6 +789,8 @@ Unlike the sample addAvailableHardCAToken() must be called with use=true, or
 the token will not be usable in EJBCA (as the flag suggests).
 </p><p>
 EJBCA has build-in support for the nCipher NFast HSM.
+</p><p>
+EJBCA 3.2 also has a (yet untested) implementation for the Eracom HSM.
 </p>
 <subsection name="nCipher NFast">
 <p>
@@ -848,6 +850,29 @@ keyStore 578fc1f0b19d5bc6f61e3a3f1e28318715385a20
 certSignKey rootCertSign
 defaultKey rootCRLSign
 </source>
+</subsection>
+
+<subsection name="Eracom HSM (EJBCA 3.2)">
+<p>
+Follow these steps to create a CA that is using a Eracom HSM:
+</p>
+<strong>1. Create keys that should be used on the HSM</strong>
+<p>
+</p>
+<strong>2. Copy files that implements the Eracom HSM Token functionality to JBoss</strong>
+<p>
+The destination is the deploy directory of the application server (server/default/deploy in jboss).
+</p>
+<strong>3. Make EJBCA aware of the Eracom HSM</strong>
+<p>
+Restart the application server.
+</p>
+<strong>4. Create a new CA in the web GUI of EJBCA</strong>
+<p>
+Choose Eracom as "CA Token Type".
+</p><p>
+Enter the properties that is used to configure the Eracom HSM.
+</p>
 </subsection>
 </section>
 

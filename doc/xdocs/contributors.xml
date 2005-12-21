@@ -47,7 +47,7 @@ administrator, who can be found on the sourceforge project page.
 <li>Manuel Ruiz, mruiz(at)safa.es, make admin commands flexible and usable from within java-code.</li>
 <li>Risto Laanoja, risto.laanoja(at)eyp.ee, fix for integer overflow when setting CRLPeriod longer than 596 hours. Several instances of one altName and other patches. User authentication with JAAS/Kerberos.</li>
 <li>Giampaolo Tomassoni. Giampaolo(at)Tomassoni.biz, PostgresSQL 8.0.</li>
-<li>Philipp Faerber, philipp.faerber(at)adnovum.ch, EJBCA 3.0.x on Weblogic 8.1, adminweb sql fix.</li>
+<li>Philipp Faerber, philipp.faerber(at)adnovum.ch, EJBCA 3.0.x on Weblogic 8.1, adminweb sql fix. Support for Eracom HSM.</li>
 <li>Hu Aranjuez, mynetbus(at)126.com, column name fix for MS SQL2000.</li>
 <li>Marco Ferrante, marco(at)csita.unige.it, Italian translation, openssl migration howto, importcert cli function.</li>
 <li>Alejandro Falcone, afalcone(at)speedy.com.ar, Spanish translation.</li>
