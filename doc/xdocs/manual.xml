@@ -790,7 +790,7 @@ the token will not be usable in EJBCA (as the flag suggests).
 </p><p>
 EJBCA has build-in support for the nCipher NFast HSM.
 </p><p>
-EJBCA 3.2 also has a (yet untested) implementation for the Eracom HSM.
+EJBCA 3.2 also has an implementation for the Eracom HSM.
 </p>
 <subsection name="nCipher NFast">
 <p>
