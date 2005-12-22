@@ -37,7 +37,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.19 2005-04-29 08:16:11 anatom Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.20 2005-12-22 14:01:38 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents an authorization usergroup"
@@ -45,7 +45,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  *   name="AdminGroupData"
  *   view-type="local"
  *   type="CMP"
- *   reentrant="false"
+ *   reentrant="False"
  *   cmp-version="2.x"
  *   transaction-type="Container"
  *   schema="AdminGroupDataBean"

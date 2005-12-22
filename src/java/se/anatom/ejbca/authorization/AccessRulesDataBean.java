@@ -35,7 +35,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *   name="AccessRulesData"
  *   view-type="local"
  *   type="CMP"
- *   reentrant="false"
+ *   reentrant="False"
  *   cmp-version="2.x"
  *   transaction-type="Container"
  *   schema="AccessRulesDataBean"
