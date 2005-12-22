@@ -18,6 +18,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -30,16 +31,15 @@ import se.anatom.ejbca.util.CertTools;
 import com.novell.ldap.LDAPAttribute;
 import com.novell.ldap.LDAPAttributeSet;
 import com.novell.ldap.LDAPEntry;
-import com.novell.ldap.LDAPModificationSet;
 
 /**
  * ActiveDirectoryPublisher is a class handling a publishing to Active Directory catalouges.  
  *
- * @version $Id: ActiveDirectoryPublisher.java,v 1.7 2004-11-07 14:58:11 herrvendil Exp $
+ * @version $Id: ActiveDirectoryPublisher.java,v 1.8 2005-12-22 13:08:34 anatom Exp $
  */
 public class ActiveDirectoryPublisher extends LdapPublisher{
 	
-	private static Logger log = Logger.getLogger(ActiveDirectoryPublisher.class);
+	private static final Logger log = Logger.getLogger(ActiveDirectoryPublisher.class);
 	 	
 	public static final float LATEST_VERSION = 1;
 
@@ -237,9 +237,8 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
      *
      * @return LDAPModificationSet created...
      */
-    protected LDAPModificationSet getModificationSet(LDAPEntry oldEntry, String dn, boolean extra, boolean person) {
-    	//LDAPModificationSet modSet = super.getModificationSet(oldEntry, dn, extra, person);
-    	LDAPModificationSet modSet = super.getModificationSet(oldEntry, dn, false, person);
+    protected ArrayList getModificationSet(LDAPEntry oldEntry, String dn, boolean extra, boolean person) {
+    	ArrayList modSet = super.getModificationSet(oldEntry, dn, false, person);
 
 		// Modify AD specific attributes
 		

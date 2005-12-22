@@ -25,7 +25,7 @@ import org.ietf.ldap.LDAPDN;
  * strings.
  *
  * @author Philip Vendil
- * @version $Id: DNFieldExtractor.java,v 1.22 2005-09-17 14:37:20 anatom Exp $
+ * @version $Id: DNFieldExtractor.java,v 1.23 2005-12-22 13:08:35 anatom Exp $
  */
 public class DNFieldExtractor implements java.io.Serializable {
     private static Logger log = Logger.getLogger(DNFieldExtractor.class);
@@ -100,7 +100,6 @@ public class DNFieldExtractor implements java.io.Serializable {
         String[] fields;
         this.type = type;
         
-        
         if (type == TYPE_SUBJECTDN) {        	
             fieldnumbers = new int[SUBJECTDNFIELDS.length];
             fields = SUBJECTDNFIELDS;
@@ -121,8 +120,11 @@ public class DNFieldExtractor implements java.io.Serializable {
                     for (int j = 0; j < fields.length; j++) {
                         if (dnexploded[i].toUpperCase().startsWith(fields[j])) {
                             exists = true;
-
                             String rdn = LDAPDN.unescapeRDN(dnexploded[i]);
+                            // We don't want the CN= (or whatever) part of the RDN
+                            if (rdn.toUpperCase().startsWith(fields[j])) {
+                                rdn = rdn.substring(fields[j].length(),rdn.length());                                
+                            }
 
                             if (type == TYPE_SUBJECTDN) {
                                 dnfields.put(new Integer((j * BOUNDRARY) + fieldnumbers[j]), rdn);
@@ -130,11 +132,9 @@ public class DNFieldExtractor implements java.io.Serializable {
                                 dnfields.put(new Integer(((j + SUBJECTALTERNATIVENAMEBOUNDRARY) * BOUNDRARY) +
                                         fieldnumbers[j]), rdn);
                             }
-
                             fieldnumbers[j]++;
                         }
                     }
-
                     if (!exists) {
                         existsother = true;
                     }
