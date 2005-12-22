@@ -26,10 +26,12 @@ import javax.ejb.CreateException;
  * property String should be one of the property constants.
  * value (String) the value of the property.
  *
- * @version $Id: BasePropertyEntityBean.java,v 1.0 2003/12/26 12:37:16 herrvendil Exp
+ * @version $Id: BasePropertyEntityBean.java,v 1.7 2005-12-22 14:29:21 anatom Exp $
  *
  * @ejb.bean
  *	 generate="false"
+ *   name="BaseProperty"
+ *   display-name="BasePropertyEB"
  *   view-type="local"
  *   cmp-version="2.x"
  *

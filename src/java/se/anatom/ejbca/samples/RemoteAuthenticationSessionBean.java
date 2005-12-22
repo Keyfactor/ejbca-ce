@@ -48,12 +48,14 @@ import se.anatom.ejbca.log.LogEntry;
  *
  * @ejb.bean
  *   generate="false"
+ *   display-name="RemoteAuthenticationSB"
+ *   name="RemoteAuthenticationSession"
  * @ejb.home
  *   generate="none"
  * @ejb.interface
  *   generate="none"
  *   
- * @version $Id: RemoteAuthenticationSessionBean.java,v 1.2 2005-05-12 13:17:49 anatom Exp $
+ * @version $Id: RemoteAuthenticationSessionBean.java,v 1.3 2005-12-22 14:29:20 anatom Exp $
  */
 public class RemoteAuthenticationSessionBean extends BaseSessionBean {
     private static String REMOTE_PROTOCOL_VER = "1.0";
