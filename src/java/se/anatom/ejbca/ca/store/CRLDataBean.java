@@ -38,7 +38,7 @@ import se.anatom.ejbca.util.CertTools;
  * nextUpdate (nextUpdate)
  * </pre>
  *
- * @version $Id: CRLDataBean.java,v 1.27 2005-12-27 14:23:46 anatom Exp $
+ * @version $Id: CRLDataBean.java,v 1.28 2005-12-27 16:09:08 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a CRL with accompanying data"
  * display-name="CRLDataEB"
@@ -68,7 +68,7 @@ import se.anatom.ejbca.util.CertTools;
  *
  * @ejb.finder description="findByIssuerDNAndCRLNumber"
  *   signature="se.anatom.ejbca.ca.store.CRLDataLocal findByIssuerDNAndCRLNumber(java.lang.String issuerdn, int cRLNumber)"
- *   query="SELECT DISTINCT OBJECT(a) from CRLDataBean a WHERE a.issuerDN=?1 AND cRLNumber=?2"
+ *   query="SELECT DISTINCT OBJECT(a) from CRLDataBean a WHERE a.issuerDN=?1 AND a.crlNumber=?2"
  *
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"

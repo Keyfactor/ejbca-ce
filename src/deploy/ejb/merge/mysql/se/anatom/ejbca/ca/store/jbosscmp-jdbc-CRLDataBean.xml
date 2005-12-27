@@ -1,5 +1,5 @@
 <cmp-field>
-  <field-name>CRLNumber</field-name>
+  <field-name>crlNumber</field-name>
   <column-name>cRLNumber</column-name>
 </cmp-field>
 <cmp-field>
@@ -9,7 +9,7 @@
   <field-name>fingerprint</field-name>
 </cmp-field>
 <cmp-field>
-  <field-name>CAFingerprint</field-name>
+  <field-name>caFingerprint</field-name>
   <column-name>cAFingerprint</column-name>
 </cmp-field>
 <cmp-field>

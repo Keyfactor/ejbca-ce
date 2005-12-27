@@ -8,7 +8,7 @@
   <field-name>fingerprint</field-name>
 </cmp-field>
 <cmp-field>
-  <field-name>CAFingerprint</field-name>
+  <field-name>caFingerprint</field-name>
   <column-name>cAFingerprint</column-name>
 </cmp-field>
 <cmp-field>
