@@ -46,8 +46,6 @@ import java.util.HashMap;
  * schema="CertificateProfileDataBean"
  * primkey-field="id"
  *
- * @ejb.permission role-name="InternalUser"
- *
  * @ejb.pk class="java.lang.Integer"
  * generate="false"
  *

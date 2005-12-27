@@ -53,8 +53,6 @@ import se.anatom.ejbca.util.StringTools;
  *   schema="HardTokenDataBean"
  *   primkey-field="tokenSN"
  *
- * @ejb.permission role-name="InternalUser"
- *
  * @ejb.pk generate="false"
  *   class="java.lang.String"
  *
@@ -114,22 +112,22 @@ public abstract class HardTokenDataBean extends BaseEntityBean {
     /**
      * @ejb.persistence column-name="cTime"
      */
-    public abstract long getCTime();
+    public abstract long getCtime();
 
     /**
      * @ejb.persistence column-name="cTime"
      */
-    public abstract void setCTime(long createtime);
+    public abstract void setCtime(long createtime);
 
     /**
      * @ejb.persistence column-name="mTime"
      */
-    public abstract long getMTime();
+    public abstract long getMtime();
 
     /**
      * @ejb.persistence column-name="mTime"
      */
-    public abstract void setMTime(long modifytime);
+    public abstract void setMtime(long modifytime);
 
     /**
      * @ejb.persistence
@@ -168,22 +166,22 @@ public abstract class HardTokenDataBean extends BaseEntityBean {
     /**
      * @ejb.interface-method view-type="local"
      */
-    public Date getCreateTime(){ return new Date(getCTime()); }
+    public Date getCreateTime(){ return new Date(getCtime()); }
 
     /**
      * @ejb.interface-method view-type="local"
      */
-    public void setCreateTime(Date createtime){ setCTime(createtime.getTime()); }
+    public void setCreateTime(Date createtime){ setCtime(createtime.getTime()); }
 
     /**
      * @ejb.interface-method view-type="local"
      */
-    public Date getModifyTime(){ return new Date(getCTime()); }
+    public Date getModifyTime(){ return new Date(getCtime()); }
 
     /**
      * @ejb.interface-method view-type="local"
      */
-    public void setModifyTime(Date modifytime){ setMTime(modifytime.getTime()); }
+    public void setModifyTime(Date modifytime){ setMtime(modifytime.getTime()); }
 
     /**
      * Method that returns the hard token issuer data and updates it if nessesary.
@@ -236,8 +234,8 @@ public abstract class HardTokenDataBean extends BaseEntityBean {
     public String ejbCreate(String tokensn, String username, Date createtime, Date modifytime, int tokentype, String significantissuerdn, HardToken tokendata) throws CreateException {
         setTokenSN(tokensn);
         setUsername(StringTools.strip(username));
-        setCTime(createtime.getTime());
-        setMTime(modifytime.getTime());
+        setCtime(createtime.getTime());
+        setMtime(modifytime.getTime());
         setTokenType(tokentype);
         setSignificantIssuerDN(significantissuerdn);
         setHardToken(tokendata);

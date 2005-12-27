@@ -72,7 +72,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.103 2005-12-09 14:13:45 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.104 2005-12-27 14:18:56 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -81,8 +81,6 @@ import se.anatom.ejbca.util.query.UserMatch;
  *   transaction-type="Container"
  *
  * @ejb.transaction type="Required"
- *
- * @ejb.permission role-name="InternalUser"
  *
  * @ejb.env-entry
  *  name="DataSource"

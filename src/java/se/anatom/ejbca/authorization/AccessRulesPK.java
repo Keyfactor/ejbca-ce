@@ -22,16 +22,16 @@ package se.anatom.ejbca.authorization;
  * If needed it can easily be replaced with an int pk and programatic logic to handle 
  * constraints. From the database view the pk is just an int.
  * 
- * @version $Id: AccessRulesPK.java,v 1.9 2005-04-29 08:16:11 anatom Exp $
+ * @version $Id: AccessRulesPK.java,v 1.10 2005-12-27 14:18:56 anatom Exp $
  */
 
 public final class AccessRulesPK implements java.io.Serializable {
 
-    public int PK;
+    public int primKey;
 
 
     public AccessRulesPK(java.lang.String admingroupname, int caid, AccessRule accessrule) {
-        this.PK =
+        this.primKey =
         ((admingroupname==null?0:admingroupname.hashCode())
         ^
         (caid)
@@ -42,14 +42,14 @@ public final class AccessRulesPK implements java.io.Serializable {
     public AccessRulesPK() {
     }
 
-    public int getPK()
+    public int getPrimKey()
 	{
-    	return PK;
+    	return primKey;
     }
 
-    public void setPK(int PK)
+    public void setpK(int primKey)
 	{
-    	this.PK = PK;
+    	this.primKey = primKey;
     }
 
     /**
@@ -60,21 +60,21 @@ public final class AccessRulesPK implements java.io.Serializable {
             return false;
         }
         se.anatom.ejbca.authorization.AccessRulesPK other = (se.anatom.ejbca.authorization.AccessRulesPK) otherOb;
-        return (this.PK==other.PK);
+        return (this.primKey==other.primKey);
     }
 
     /**
      * @see java.lang.Object#hashCode()
      */
     public int hashCode() {
-        return this.PK;
+        return this.primKey;
     }
 
     /** @return String representation of this pk in the form of [.field1.field2.field3]. */
     public String toString()
 	{
     	StringBuffer toStringValue = new StringBuffer("[.");
-    	toStringValue.append(this.PK).append('.');
+    	toStringValue.append(this.primKey).append('.');
     	toStringValue.append(']');
     	return toStringValue.toString();
     }

@@ -40,7 +40,7 @@ import se.anatom.ejbca.util.CertTools;
  * UserDataVO (userAdminData)
  * </pre>
  *
- * @version $Id: CertReqHistoryDataBean.java,v 1.1 2005-04-21 15:17:26 herrvendil Exp $
+ * @version $Id: CertReqHistoryDataBean.java,v 1.2 2005-12-27 14:18:55 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity containing historical record over data user to generate a users certificate"
  * display-name="CertReqHistoryDataEB"
@@ -53,9 +53,6 @@ import se.anatom.ejbca.util.CertTools;
  * schema="CertReqHistoryDataBean"
  *
  * @ejb.transaction type="Required"
- *
- * @ejb.permission role-name="InternalUser"
- *
  *
  * @ejb.pk class="se.anatom.ejbca.ca.store.CertReqHistoryDataPK"
  * extends="java.lang.Object"

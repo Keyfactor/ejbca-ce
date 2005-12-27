@@ -71,8 +71,6 @@ import se.anatom.ejbca.util.JDBCUtil;
  *
  * @ejb.transaction type="Supports"
  *
- * @ejb.permission role-name="InternalUser"
- *
  * @ejb.env-entry
  *   description="The JDBC datasource to be used"
  *  name="DataSource"

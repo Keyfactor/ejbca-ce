@@ -43,8 +43,6 @@ import se.anatom.ejbca.BaseEntityBean;
  *   schema="HardTokenCertificateMapBean"
  *   primkey-field="certificateFingerprint"
  *
- * @ejb.permission role-name="InternalUser"
- *
  * @ejb.pk generate="false"
  *   class="java.lang.String"
  *

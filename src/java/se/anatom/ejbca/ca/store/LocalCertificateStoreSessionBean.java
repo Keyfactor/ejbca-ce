@@ -66,7 +66,7 @@ import se.anatom.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.85 2005-11-16 22:08:51 herrvendil Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.86 2005-12-27 14:18:55 anatom Exp $
  * @ejb.bean display-name="CertificateStoreSB"
  * name="CertificateStoreSession"
  * view-type="both"
@@ -74,8 +74,6 @@ import se.anatom.ejbca.util.StringTools;
  * transaction-type="Container"
  *
  * @ejb.transaction type="Supports"
- * @ejb.security-identity run-as="InternalUser"
- * @ejb.permission role-name="InternalUser"
  *
  * @ejb.env-entry description="JDBC datasource to be used"
  * name="DataSource"
@@ -277,7 +275,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             CertificateDataLocal data1 = null;
             data1 = certHome.create(cert);
             data1.setUsername(username);
-            data1.setCAFingerprint(cafp);
+            data1.setCaFingerprint(cafp);
             data1.setStatus(status);
             data1.setType(type);
             getLogSession().log(admin, cert, LogEntry.MODULE_CA, new java.util.Date(), username, (X509Certificate) incert, LogEntry.EVENT_INFO_STORECERTIFICATE, "");
@@ -305,7 +303,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         try {
             X509CRL crl = CertTools.getCRLfromByteArray(incrl);
             CRLDataLocal data1 = crlHome.create(crl, number);
-            data1.setCAFingerprint(cafp);
+            data1.setCaFingerprint(cafp);
             getLogSession().log(admin, crl.getIssuerDN().toString().hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_STORECRL, "Number : " + number + " Fingerprint : " + CertTools.getFingerprintAsString(crl) + ".");
         } catch (Exception e) {
             getLogSession().log(admin, LogConstants.INTERNALCAID, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL, "Number : " + number + ".");
@@ -742,7 +740,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
         try {
             CertificateDataLocal res = certHome.findByPrimaryKey(new CertificateDataPK(fingerprint));
-            ret = new CertificateInfo(res.getFingerprint(), res.getCAFingerprint(), res.getSerialNumber(), res.getIssuerDN(), res.getSubjectDN(),
+            ret = new CertificateInfo(res.getFingerprint(), res.getCaFingerprint(), res.getSerialNumber(), res.getIssuerDN(), res.getSubjectDN(),
                     res.getStatus(), res.getType(), res.getExpireDate(), res.getRevocationDate(), res.getRevocationReason());
             debug("<getCertificateInfo()");
         } catch (FinderException fe) {

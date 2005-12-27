@@ -38,8 +38,6 @@ import javax.ejb.CreateException;
  *   transaction-type="Container"
  *   schema="HardTokenPropertyEntityBean"
  *
- * @ejb.permission role-name="InternalUser"
- *
  * @ejb.pk
  *   class="se.anatom.ejbca.hardtoken.HardTokenPropertyPK"
  *   extends="java.lang.Object"

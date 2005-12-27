@@ -37,7 +37,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.13 2005-04-29 08:16:30 anatom Exp $
+ * @version $Id: CADataBean.java,v 1.14 2005-12-27 14:18:56 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a publisher"
@@ -52,8 +52,6 @@ import se.anatom.ejbca.BaseEntityBean;
  *   transaction-type="Container"
  *   schema="CADataBean"
  *   primkey-field="caId"
- *
- * @ejb.permission role-name="InternalUser"
  *
  * @ejb.pk generate="false"
  *   class="java.lang.Integer"

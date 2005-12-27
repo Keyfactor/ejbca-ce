@@ -38,8 +38,6 @@ import se.anatom.ejbca.BaseEntityBean;
  *   transaction-type="Container"
  *   schema="AdminEntityDataBean"
  *
- * @ejb.permission role-name="InternalUser"
- *
  * @ejb.pk
  *   generate="false"
  *   class="se.anatom.ejbca.authorization.AdminEntityPK"
@@ -59,18 +57,18 @@ import se.anatom.ejbca.BaseEntityBean;
  */
 public abstract class AdminEntityDataBean extends BaseEntityBean {
 
-    private static Logger log = Logger.getLogger(AdminEntityDataBean.class);
+    private static final Logger log = Logger.getLogger(AdminEntityDataBean.class);
 
     /**
      * @ejb.persistence column-name="pK"
      * @ejb.pk-field
      */
-    public abstract int getPK();
+    public abstract int getPrimKey();
 
     /**
      * @ejb.persistence
      */
-    public abstract void setPK(int pK);
+    public abstract void setPrimKey(int primKey);
 
 	/**
 	 * @ejb.persistence
@@ -120,7 +118,7 @@ public abstract class AdminEntityDataBean extends BaseEntityBean {
 	 */
     public AdminEntityPK ejbCreate(String admingroupname, int caid, int matchwith, int matchtype, String matchvalue) throws CreateException {
         AdminEntityPK ret = new AdminEntityPK(admingroupname, caid, matchwith, matchtype, matchvalue);
-        setPK(ret.PK);
+        setPrimKey(ret.primKey);
         setMatchWith(matchwith);
         setMatchType(matchtype);
         setMatchValue(matchvalue);

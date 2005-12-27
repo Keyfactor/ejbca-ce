@@ -34,7 +34,7 @@ import java.math.BigInteger;
  *  keypair
  * </pre>
  *
- * @version $Id: KeyRecoveryDataBean.java,v 1.20 2005-02-23 16:07:43 anatom Exp $
+ * @version $Id: KeyRecoveryDataBean.java,v 1.21 2005-12-27 14:18:55 anatom Exp $
  *
  * @ejb.bean
  *   description="Stores key recovery data"
@@ -47,8 +47,6 @@ import java.math.BigInteger;
  *   cmp-version="2.x"
  *   transaction-type="Container"
  *   schema="KeyRecoveryDataBean"
- *
- * @ejb.permission role-name="InternalUser"
  *
  * @ejb.pk
  *   class="se.anatom.ejbca.keyrecovery.KeyRecoveryDataPK"

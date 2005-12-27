@@ -82,7 +82,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.46 2005-11-24 21:20:13 herrvendil Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.47 2005-12-27 14:18:56 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -94,8 +94,6 @@ import se.anatom.ejbca.util.KeyTools;
  *   transaction-type="Container"
  *
  * @ejb.transaction type="Required"
- *
- * @ejb.permission role-name="InternalUser"
  *
  * @ejb.env-entry description="Used internally to keystores in database"
  *   name="keyStorePass"
@@ -167,8 +165,6 @@ import se.anatom.ejbca.util.KeyTools;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal"
  *
- * @ejb.security-identity
- *   run-as="InternalUser"
  */
 public class CAAdminSessionBean extends BaseSessionBean {
 

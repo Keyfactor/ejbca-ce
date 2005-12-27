@@ -38,7 +38,7 @@ import se.anatom.ejbca.util.CertTools;
  * nextUpdate (nextUpdate)
  * </pre>
  *
- * @version $Id: CRLDataBean.java,v 1.26 2005-12-27 14:18:55 anatom Exp $
+ * @version $Id: CRLDataBean.java,v 1.27 2005-12-27 14:23:46 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a CRL with accompanying data"
  * display-name="CRLDataEB"
@@ -77,13 +77,13 @@ public abstract class CRLDataBean extends BaseEntityBean {
     private static final Logger log = Logger.getLogger(CRLDataBean.class);
 
     /**
-     * @ejb.persistence column-name="cRLONumber"
+     * @ejb.persistence column-name="cRLNumber"
      * @ejb.interface-method
      */
     public abstract int getCrlNumber();
 
     /**
-     * @ejb.persistence column-name="cRLONumber"
+     * @ejb.persistence column-name="cRLNumber"
      * @ejb.interface-method
      */
     public abstract void setCrlNumber(int crlNumber);

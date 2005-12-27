@@ -37,7 +37,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.20 2005-12-22 14:01:38 anatom Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.21 2005-12-27 14:18:56 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents an authorization usergroup"
@@ -49,9 +49,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  *   cmp-version="2.x"
  *   transaction-type="Container"
  *   schema="AdminGroupDataBean"
- *   primkey-field="PK"
- *
- * @ejb.permission role-name="InternalUser"
+ *   primkey-field="primKey"
  *
  * @ejb.home
  *   generate="local"
@@ -98,8 +96,8 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
      * @ejb.persistence column-name="pK"
      * @ejb.pk-field
      */
-    public abstract Integer getPK();
-    public abstract void setPK(Integer pk);
+    public abstract Integer getPrimKey();
+    public abstract void setPrimKey(Integer primKey);
 
     /**
      * @ejb.persistence
@@ -130,15 +128,15 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
      * target-role-name="AdminEntityData" target-ejb="AdminEntityData"
      * 
      * @jboss.target-relation
-     * related-pk-field="PK"
+     * related-pk-field="primKey"
      * fk-column="AdminGroupData_adminEntities"  
      * 
      * @weblogic.target-column-map
-     * key-column="PK"
+     * key-column="pK"
      * foreign-key-column="AdminGroupData_adminEntities"
      * 
      * @sunone.relation
-     * column="PK"
+     * column="pK"
      * target="AdminGroupData_adminEntities"
      */
     public abstract Collection getAdminEntities();
@@ -150,15 +148,15 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
      * target-role-name="AccessRulesData" target-ejb="AccessRulesData"
      * 
      * @jboss.target-relation
-     * related-pk-field="PK"
+     * related-pk-field="primKey"
      * fk-column="AdminGroupData_accessRules"
      *      
      * @weblogic.target-column-map
-     * key-column="PK"
+     * key-column="pK"
      * foreign-key-column="AdminGroupData_accessRules"
      * 
      * @sunone.relation
-     * column="PK"
+     * column="pK"
      * target="AdminGroupData_accessRules"
      */
     public abstract Collection getAccessRules();
@@ -365,7 +363,7 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
             accessrules.add(ar.getAccessRuleObject());
         }
 
-        return new AdminGroup(getPK().intValue(), getAdminGroupName(), getCaId(), accessrules, adminentities);
+        return new AdminGroup(getPrimKey().intValue(), getAdminGroupName(), getCaId(), accessrules, adminentities);
     } // getAdminGroup
 
     /**
@@ -373,7 +371,7 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
      * @ejb.interface-method view-type="local"
      */
     public AdminGroup getAdminGroupNames() {
-        return new AdminGroup(getPK().intValue(), getAdminGroupName(), getCaId(), null, null);
+        return new AdminGroup(getPrimKey().intValue(), getAdminGroupName(), getCaId(), null, null);
     } // getAdminGroupNames
     //
     // Fields required by Container
@@ -386,7 +384,7 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
      * @ejb.create-method view-type="local"
      */
     public Integer ejbCreate(Integer pk, String admingroupname, int caid) throws CreateException {
-        setPK(pk);
+        setPrimKey(pk);
         setAdminGroupName(admingroupname);
         setCaId(caid);
         debug("Created admingroup : " + admingroupname);

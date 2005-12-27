@@ -46,8 +46,6 @@ import java.util.Date;
  *   schema="LogEntryDataBean"
  *   primkey-field="id"
  *
- * @ejb.permission role-name="InternalUser"
- *
  * @ejb.pk
  *   generate="false"
  *   class="java.lang.Integer"
@@ -68,7 +66,7 @@ import java.util.Date;
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"
  *   
- * @version $Id: LogEntryDataBean.java,v 1.18 2005-06-28 08:43:59 anatom Exp $
+ * @version $Id: LogEntryDataBean.java,v 1.19 2005-12-27 14:18:55 anatom Exp $
  */
 public abstract class LogEntryDataBean extends BaseEntityBean {
 

@@ -47,7 +47,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.23 2005-04-29 08:16:10 anatom Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.24 2005-12-27 14:18:56 anatom Exp $
  *
  * @ejb.bean
  *   description="Session bean handling interface with ra authorization"
@@ -60,8 +60,6 @@ import se.anatom.ejbca.util.ServiceLocator;
  *   transaction-type="Container"
  *
  * @ejb.transaction type="Required"
- *
- * @ejb.permission role-name="InternalUser"
  *
  * @ejb.env-entry
  * name="DataSource"
@@ -127,10 +125,6 @@ import se.anatom.ejbca.util.ServiceLocator;
  *   home="se.anatom.ejbca.authorization.AdminGroupDataLocalHome"
  *   business="se.anatom.ejbca.authorization.AdminGroupDataLocal"
  *   link="AdminGroupData"
- *
- * @ejb.security-identity
- *   description=""
- *   run-as="InternalUser"
  *
  * @ejb.home
  *   extends="javax.ejb.EJBHome"

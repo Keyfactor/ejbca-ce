@@ -53,8 +53,6 @@ import se.anatom.ejbca.util.query.Query;
  *   type="Stateless"
  *   transaction-type="Container"
  *
- * @ejb.permission role-name="InternalUser"
- *
  * @ejb.env-entry
  * name="DataSource"
  * type="java.lang.String"
@@ -107,7 +105,7 @@ import se.anatom.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.29 2005-09-19 13:09:47 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.30 2005-12-27 14:18:55 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 

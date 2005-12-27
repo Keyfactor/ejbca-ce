@@ -90,8 +90,6 @@ import se.anatom.ejbca.util.Hex;
  *
  * @ejb.transaction type="Required"
  *
- * @ejb.permission role-name="InternalUser"
- *
  * @ejb.env-entry description="Used internally to keystores in database"
  *   name="keyStorePass"
  *   type="java.lang.String"

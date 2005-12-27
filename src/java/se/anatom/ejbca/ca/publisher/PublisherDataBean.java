@@ -47,8 +47,6 @@ import java.util.HashMap;
  *   schema="PublisherDataBean"
  *   primkey-field="id"
  *
- * @ejb.permission role-name="InternalUser"
- *
  * @ejb.pk generate="false"
  *   class="java.lang.Integer"
  *

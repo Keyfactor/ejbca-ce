@@ -39,7 +39,7 @@ import se.anatom.ejbca.log.LogEntry;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.44 2005-05-02 16:18:24 anatom Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.45 2005-12-27 14:18:56 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="RaAdminSB"
@@ -51,8 +51,6 @@ import se.anatom.ejbca.log.LogEntry;
  *   transaction-type="Container"
  *
  * @ejb.transaction type="Required"
- *
- * @ejb.permission role-name="InternalUser"
  *
  * @ejb.home
  *   extends="javax.ejb.EJBHome"
@@ -106,7 +104,6 @@ import se.anatom.ejbca.log.LogEntry;
  *   business="se.anatom.ejbca.ra.raadmin.GlobalConfigurationDataLocal"
  *   link="GlobalConfigurationData"
  *
- * @ejb.security-identity run-as="InternalUser"
  */
 public class LocalRaAdminSessionBean extends BaseSessionBean  {
 

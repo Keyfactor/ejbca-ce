@@ -52,8 +52,6 @@ import se.anatom.ejbca.hardtoken.hardtokenprofiles.SwedishEIDProfile;
  *   schema="HardTokenProfileDataBean"
  *   primkey-field="id"
  *
- * @ejb.permission role-name="InternalUser"
- *
  * @ejb.pk generate="false"
  *   class="java.lang.Integer"
  *

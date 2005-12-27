@@ -38,9 +38,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *   cmp-version="2.x"
  *   transaction-type="Container"
  *   schema="AuthorizationTreeUpdateDataBean"
- *   primkey-field="PK"
- *
- * @ejb.permission role-name="InternalUser"
+ *   primkey-field="primKey"
  *
  * @ejb.pk
  *   generate="false"
@@ -65,8 +63,8 @@ public abstract class AuthorizationTreeUpdateDataBean extends BaseEntityBean
      * @ejb.persistence column-name="pK"
      * @ejb.pk-field
      */
-    public abstract Integer getPK();
-    public abstract void setPK(Integer pK);
+    public abstract Integer getPrimKey();
+    public abstract void setPrimKey(Integer primKey);
 
 	/**
      * Method returning the newest authorizationtreeupdatenumber. Should be used after each
@@ -87,7 +85,7 @@ public abstract class AuthorizationTreeUpdateDataBean extends BaseEntityBean
      * @ejb.create-method
 	 */
     public Integer ejbCreate() throws CreateException {
-      setPK(AUTHORIZATIONTREEUPDATEDATA);
+      setPrimKey(AUTHORIZATIONTREEUPDATEDATA);
       setAuthorizationTreeUpdateNumber(0);
       return null;
     }

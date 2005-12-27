@@ -51,8 +51,6 @@ import se.anatom.ejbca.util.CertTools;
  *
  * @ejb.transaction type="Supports"
  *
- * @ejb.permission role-name="InternalUser"
- * 
  * @ejb.ejb-external-ref
  *   description="The Log session bean"
  *   view-type="local"
@@ -76,9 +74,8 @@ import se.anatom.ejbca.util.CertTools;
  *   remote-class="se.anatom.ejbca.samples.IAuthenticationSessionRemote"
  *   generate="none"
  *
- * @ejb.security-identity run-as="InternalUser"
- * 
- * @version $Id: NullAuthenticationSessionBean.java,v 1.3 2005-05-25 19:03:36 anatom Exp $
+ *
+ * @version $Id: NullAuthenticationSessionBean.java,v 1.4 2005-12-27 14:18:56 anatom Exp $
  * 
  */
 public class NullAuthenticationSessionBean extends BaseSessionBean {
