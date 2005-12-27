@@ -30,7 +30,7 @@ administrator, who can be found on the sourceforge project page.
 <li>Magnus Broqvist, magnus(at)han.pp.se, initial P12toPEM implementation.</li>
 <li>Slava Sklarewski, Slava.Sklarewski(at)de.gi-de.com, data flow diagram.</li>
 <li>Leonardo Souza Mario Bueno, isbueno(at)users.sourceforge.net, patch for request template path.</li>
-<li>Jean ?, icejean(at)21cn.com, support for Sybase and Active Directory, port to Java 1.2/EJB 1.0, suggestions and bugfixes. Quick guide for setting up a CA.</li>
+<li>Jean Ye, zhjeanye(at)pub.zhuhai.gd.cn, support for Sybase, intial support for Active Directory, EJBCA 3.1 on Weblogic 8.1, port of EJBCA 2 to Java 1.2/EJB 1.0, suggestions and bugfixes. Quick guide for setting up a CA.</li>
 <li>Lars Silven, lars(at)primekey.se, external connection to smart card personalisation, various additions.</li>
 <li>Gösta Bäckström, gosta.backstrom(at)goyada.com, initial PKCS7 to browsers.</li>
 <li>Ville Skyttä, ville.skytta(at)secgo.com, AdminCertReqServlet, various patches</li>
@@ -39,7 +39,7 @@ administrator, who can be found on the sourceforge project page.
 <li>Justin Wood, justin(at)braidquest.com, PKI Tools subproject.</li>
 <li>Thomas Meckel, meckel(at)ophios.com, initial OCSP implementation.</li>
 <li>Jon Barber, jon.barber(at)acm.org, early SCEP testing and fixes.</li>
-<li>surd0007(at)yahoo.com.cn, install guide.</li>
+<li>surd0007(at)yahoo.com.cn, initial install guide.</li>
 <li>Mike Jackson, mj(at)sci.fi, Proper LDAP schema. Device certificate schemas.</li>
 <li>Stephane Bailliez, stephane(at)bearaway.org, patches all over, XDoclet, new install, configure and cli for 3.1, web.</li>
 <li>Yannick Quenec'hdu, yquenechdu(at)linagora.com french translation.</li>
