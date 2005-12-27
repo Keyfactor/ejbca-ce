@@ -430,7 +430,10 @@ web.contentencoding    = ${web.contentencoding}
                 <!-- todo: autogenerate this from a fileset -->
                 <attribute name="Class-Path" value="${jar.extclasspath}" />
             </manifest>
-            <fileset dir="${src.dd}"/>
+            <fileset dir="${src.dd}">
+            	<exclude name="WEB-INF/**"/>
+            	<exclude name="status/**"/>
+            </fileset>
             <fileset dir="${build}"/>
             <fileset dir="${src}/log"/>
             <fileset dir="${src}/upgrade"/>
