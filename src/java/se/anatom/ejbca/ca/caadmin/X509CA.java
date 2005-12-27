@@ -103,7 +103,7 @@ import se.anatom.ejbca.util.StringTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.45 2005-11-24 21:20:13 herrvendil Exp $
+ * @version $Id: X509CA.java,v 1.46 2005-12-27 17:36:42 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -112,8 +112,6 @@ public class X509CA extends CA implements Serializable {
     // Default Values
     public static final float LATEST_VERSION = 1;
 
-    private X509Name subjectx509name = null;
-    
     private byte[]  keyId = new byte[] { 1, 2, 3, 4, 5 };
     
     
@@ -280,8 +278,10 @@ public class X509CA extends CA implements Serializable {
         }
         
         certgen.setSubjectDN(CertTools.stringToBcX509Name(dn));
-        X509Name caname = getSubjectDNAsX509Name();
-        certgen.setIssuerDN(caname);
+        // We must take the issuer DN directly from the CA-certificate otherwise we risk re-ordering the DN
+        // which many applications do not like.
+        X509Certificate cacert = (X509Certificate)getCACertificate();
+        certgen.setIssuerDN(cacert.getSubjectX500Principal());
         certgen.setPublicKey(publicKey);
 
         // Basic constranits, all subcerts are NOT CAs
@@ -660,13 +660,4 @@ public class X509CA extends CA implements Serializable {
     }
     
     
-   // private help methods
-    private X509Name getSubjectDNAsX509Name(){
-      if(subjectx509name == null){
-        subjectx509name = CertTools.stringToBcX509Name(getSubjectDN());  
-      }
-        
-      return subjectx509name;  
-    }
-
 }
