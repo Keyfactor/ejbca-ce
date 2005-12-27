@@ -40,7 +40,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.35 2005-04-29 08:13:59 anatom Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.36 2005-12-27 14:18:55 anatom Exp $
  *
  * @ejb.bean
  *   display-name="AuthenticationSB"
@@ -52,8 +52,6 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
  *   transaction-type="Container"
  *
  * @ejb.transaction type="Required"
- *
- * @ejb.permission role-name="InternalUser"
  *
  * @ejb.ejb-external-ref
  *   description="The User entity bean"
@@ -102,8 +100,6 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="se.anatom.ejbca.ca.auth.IAuthenticationSessionLocal"
  *   remote-class="se.anatom.ejbca.ca.auth.IAuthenticationSessionRemote"
- *
- * @ejb.security-identity run-as="InternalUser"
  *
  */
 public class LocalAuthenticationSessionBean extends BaseSessionBean {

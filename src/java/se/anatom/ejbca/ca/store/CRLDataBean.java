@@ -38,7 +38,7 @@ import se.anatom.ejbca.util.CertTools;
  * nextUpdate (nextUpdate)
  * </pre>
  *
- * @version $Id: CRLDataBean.java,v 1.25 2005-04-29 10:34:02 anatom Exp $
+ * @version $Id: CRLDataBean.java,v 1.26 2005-12-27 14:18:55 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a CRL with accompanying data"
  * display-name="CRLDataEB"
@@ -51,8 +51,6 @@ import se.anatom.ejbca.util.CertTools;
  * schema="CRLDataBean"
  *
  * @ejb.transaction type="Required"
- *
- * @ejb.permission role-name="InternalUser"
  *
  * @ejb.pk class="se.anatom.ejbca.ca.store.CRLDataPK"
  * extends="java.lang.Object"
@@ -70,7 +68,7 @@ import se.anatom.ejbca.util.CertTools;
  *
  * @ejb.finder description="findByIssuerDNAndCRLNumber"
  *   signature="se.anatom.ejbca.ca.store.CRLDataLocal findByIssuerDNAndCRLNumber(java.lang.String issuerdn, int cRLNumber)"
- *   query="SELECT DISTINCT OBJECT(a) from CRLDataBean a WHERE a.issuerDN=?1 AND a.CRLNumber=?2"
+ *   query="SELECT DISTINCT OBJECT(a) from CRLDataBean a WHERE a.issuerDN=?1 AND cRLNumber=?2"
  *
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"
@@ -79,16 +77,16 @@ public abstract class CRLDataBean extends BaseEntityBean {
     private static final Logger log = Logger.getLogger(CRLDataBean.class);
 
     /**
-     * @ejb.persistence column-name="cRLNumber"
+     * @ejb.persistence column-name="cRLONumber"
      * @ejb.interface-method
      */
-    public abstract int getCRLNumber();
+    public abstract int getCrlNumber();
 
     /**
-     * @ejb.persistence column-name="cRLNumber"
+     * @ejb.persistence column-name="cRLONumber"
      * @ejb.interface-method
      */
-    public abstract void setCRLNumber(int cRLNumber);
+    public abstract void setCrlNumber(int crlNumber);
 
     /**
      * @ejb.persistence
@@ -121,13 +119,13 @@ public abstract class CRLDataBean extends BaseEntityBean {
      * @ejb.persistence column-name="cAFingerprint"
      * @ejb.interface-method
      */
-    public abstract String getCAFingerprint();
+    public abstract String getCaFingerprint();
 
     /**
      * @ejb.persistence column-name="cAFingerprint"
      * @ejb.interface-method
      */
-    public abstract void setCAFingerprint(String cAFingerprint);
+    public abstract void setCaFingerprint(String caFingerprint);
 
     /**
      * @ejb.persistence
@@ -256,8 +254,8 @@ public abstract class CRLDataBean extends BaseEntityBean {
             log.debug("Creating crldata, issuer=" + getIssuerDN());
 
             // Default values for cafp
-            setCAFingerprint(null);
-            setCRLNumber(number);
+            setCaFingerprint(null);
+            setCrlNumber(number);
             setThisUpdate(incrl.getThisUpdate());
             setNextUpdate(incrl.getNextUpdate());
         } catch (CRLException ce) {
