@@ -50,6 +50,8 @@ import java.util.Date;
  *   generate="false"
  *   class="java.lang.Integer"
  *
+ * @ejb.persistence table-name = "LogEntryData"
+ * 
  * @ejb.home
  *   generate="local"
  *   local-extends="javax.ejb.EJBLocalHome"
@@ -66,7 +68,7 @@ import java.util.Date;
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"
  *   
- * @version $Id: LogEntryDataBean.java,v 1.19 2005-12-27 14:18:55 anatom Exp $
+ * @version $Id: LogEntryDataBean.java,v 1.20 2005-12-29 13:51:29 anatom Exp $
  */
 public abstract class LogEntryDataBean extends BaseEntityBean {
 

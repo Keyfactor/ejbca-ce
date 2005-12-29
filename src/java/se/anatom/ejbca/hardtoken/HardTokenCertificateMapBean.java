@@ -46,6 +46,8 @@ import se.anatom.ejbca.BaseEntityBean;
  * @ejb.pk generate="false"
  *   class="java.lang.String"
  *
+ * @ejb.persistence table-name = "HardTokenCertificateMap"
+ * 
  * @ejb.home
  *   generate="local"
  *   local-extends="javax.ejb.EJBLocalHome"

@@ -72,7 +72,7 @@ import se.anatom.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.104 2005-12-27 14:18:56 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.105 2005-12-29 13:51:29 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -170,6 +170,10 @@ import se.anatom.ejbca.util.query.UserMatch;
  *   res-type="javax.mail.Session"
  *   res-auth="Container"
  *
+ * @weblogic.resource-description
+ *   res-ref-name="mail/DefaultMail"
+ *   jndi-name="EjbcaMail"
+ *   
  * @ejb.home
  *   extends="javax.ejb.EJBHome"
  *   local-extends="javax.ejb.EJBLocalHome"

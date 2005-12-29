@@ -45,6 +45,8 @@ import se.anatom.ejbca.BaseEntityBean;
  *   extends="java.lang.Object"
  *   implements="java.io.Serializable"
  *
+ * @ejb.persistence table-name = "AccessRulesData"
+ * 
  * @ejb.home
  *   generate="local"
  *   local-extends="javax.ejb.EJBLocalHome"
@@ -55,7 +57,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="se.anatom.ejbca.authorization.AccessRulesDataLocal"
  *
- * @version $Id: AccessRulesDataBean.java,v 1.11 2005-12-27 14:18:56 anatom Exp $
+ * @version $Id: AccessRulesDataBean.java,v 1.12 2005-12-29 13:51:29 anatom Exp $
  */
 public abstract class AccessRulesDataBean extends BaseEntityBean
 {

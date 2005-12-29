@@ -49,6 +49,8 @@ import java.util.HashMap;
  * @ejb.pk class="java.lang.Integer"
  * generate="false"
  *
+ * @ejb.persistence table-name = "CertificateProfileData"
+ * 
  * @ejb.home local-extends="javax.ejb.EJBLocalHome"
  * local-class="se.anatom.ejbca.ca.store.CertificateProfileDataLocalHome"
  *

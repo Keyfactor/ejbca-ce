@@ -36,12 +36,14 @@ import javax.ejb.CreateException;
  *   reentrant="False"
  *   cmp-version="2.x"
  *   transaction-type="Container"
- *   schema="HardTokenPropertyEntityBean"
+ *   schema="HardTokenPropertyDataBean"
  *
  * @ejb.pk
  *   class="se.anatom.ejbca.hardtoken.HardTokenPropertyPK"
  *   extends="java.lang.Object"
  *
+ * @ejb.persistence table-name = "HardTokenPropertyData"
+ * 
  * @ejb.home
  *   local-extends="javax.ejb.EJBLocalHome"
  *   local-class="se.anatom.ejbca.hardtoken.HardTokenPropertyLocalHome"
@@ -53,12 +55,12 @@ import javax.ejb.CreateException;
  * @ejb.finder
  *   description="findByProperty"
  *   signature="se.anatom.ejbca.hardtoken.HardTokenPropertyLocal findByProperty(java.lang.String id, java.lang.String property)"
- *   query="SELECT DISTINCT OBJECT(a) from HardTokenPropertyEntityBean a WHERE a.id =?1 AND a.property=?2"
+ *   query="SELECT DISTINCT OBJECT(a) from HardTokenPropertyDataBean a WHERE a.id =?1 AND a.property=?2"
  *
  * @ejb.finder
  *   description="findIdsByPropertyAndValue"
  *   signature="Collection findIdsByPropertyAndValue(java.lang.String property, java.lang.String value)"
- *   query="SELECT DISTINCT OBJECT(a) from HardTokenPropertyEntityBean a WHERE a.property =?1 AND a.value=?2"
+ *   query="SELECT DISTINCT OBJECT(a) from HardTokenPropertyDataBean a WHERE a.property =?1 AND a.value=?2"
  *
  * @ejb.transaction
  *   type="Supports"

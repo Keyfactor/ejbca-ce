@@ -27,7 +27,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * logentryrownumber is the number of the last row number in the log entry database.
  * </pre>
  *
- * @version $Id: LogConfigurationDataBean.java,v 1.18 2005-12-27 14:18:55 anatom Exp $
+ * @version $Id: LogConfigurationDataBean.java,v 1.19 2005-12-29 13:51:29 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a Log Entry with accompanying data"
@@ -45,6 +45,8 @@ import se.anatom.ejbca.BaseEntityBean;
  *   generate="false"
  *   class="java.lang.Integer"
  *
+ * @ejb.persistence table-name = "LogConfigurationData"
+ * 
  * @ejb.home
  *   generate="local"
  *   local-extends="javax.ejb.EJBLocalHome"

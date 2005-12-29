@@ -37,7 +37,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.21 2005-12-27 14:18:56 anatom Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.22 2005-12-29 13:51:29 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents an authorization usergroup"
@@ -56,6 +56,8 @@ import se.anatom.ejbca.util.ServiceLocator;
  *   local-extends="javax.ejb.EJBLocalHome"
  *   local-class="se.anatom.ejbca.authorization.AdminGroupDataLocalHome"
  *
+ * @ejb.persistence table-name = "AdminGroupData"
+ * 
  * @ejb.interface
  *   generate="local"
  *   local-extends="javax.ejb.EJBLocalObject"

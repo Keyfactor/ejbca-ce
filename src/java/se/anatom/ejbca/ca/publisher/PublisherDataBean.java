@@ -49,6 +49,8 @@ import java.util.HashMap;
  *
  * @ejb.pk generate="false"
  *   class="java.lang.Integer"
+ *   
+ * @ejb.persistence table-name = "PublisherData"
  *
  * @ejb.home
  *   generate="local"
@@ -70,8 +72,7 @@ import java.util.HashMap;
  *   signature="Collection findAll()"
  *   query="SELECT DISTINCT OBJECT(a) from PublisherDataBean a"
  *
- * @ejb.transaction
- *   type="Supports"
+ * @ejb.transaction type="Supports"
  *
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"

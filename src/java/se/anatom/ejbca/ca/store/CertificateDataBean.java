@@ -47,7 +47,7 @@ import se.anatom.ejbca.util.CertTools;
  * Username (username)
  * </pre>
  *
- * @version $Id: CertificateDataBean.java,v 1.35 2005-12-27 14:18:55 anatom Exp $
+ * @version $Id: CertificateDataBean.java,v 1.36 2005-12-29 13:51:29 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a certificate with accompanying data"
  * display-name="CertificateDataEB"
@@ -65,6 +65,8 @@ import se.anatom.ejbca.util.CertTools;
  * extends="java.lang.Object"
  * implements="java.io.Serializable"
  *
+ * @ejb.persistence table-name = "CertificateData"
+ * 
  * @ejb.home
  * generate="local"
  * local-extends="javax.ejb.EJBLocalHome"

@@ -40,7 +40,7 @@ import se.anatom.ejbca.util.CertTools;
  * UserDataVO (userAdminData)
  * </pre>
  *
- * @version $Id: CertReqHistoryDataBean.java,v 1.2 2005-12-27 14:18:55 anatom Exp $
+ * @version $Id: CertReqHistoryDataBean.java,v 1.3 2005-12-29 13:51:29 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity containing historical record over data user to generate a users certificate"
  * display-name="CertReqHistoryDataEB"
@@ -58,6 +58,8 @@ import se.anatom.ejbca.util.CertTools;
  * extends="java.lang.Object"
  * implements="java.io.Serializable"
  *
+ * @ejb.persistence table-name = "CertReqHistoryData"
+ * 
  * @ejb.home
  * generate="local"
  * local-extends="javax.ejb.EJBLocalHome"

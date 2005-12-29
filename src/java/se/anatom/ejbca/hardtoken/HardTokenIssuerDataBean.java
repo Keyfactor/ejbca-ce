@@ -50,6 +50,8 @@ import se.anatom.ejbca.BaseEntityBean;
  * @ejb.pk generate="false"
  *   class="java.lang.Integer"
  *
+ * @ejb.persistence table-name = "HardTokenIssuerData"
+ * 
  * @ejb.home
  *   generate="local"
  *   local-extends="javax.ejb.EJBLocalHome"

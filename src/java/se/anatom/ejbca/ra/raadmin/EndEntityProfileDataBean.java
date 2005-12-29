@@ -31,7 +31,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * Profile data
  * </pre>
  *
- * @version $Id: EndEntityProfileDataBean.java,v 1.12 2005-05-09 16:17:06 anatom Exp $
+ * @version $Id: EndEntityProfileDataBean.java,v 1.13 2005-12-29 13:51:29 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a profile"
  * display-name="EndEntityProfileDataEB"
@@ -46,6 +46,8 @@ import se.anatom.ejbca.BaseEntityBean;
  *
  * @ejb.pk class="java.lang.Integer"
  * generate="false"
+ *
+ * @ejb.persistence table-name = "EndEntityProfileData"
  *
  * @ejb.home
  * local-extends="javax.ejb.EJBLocalHome"

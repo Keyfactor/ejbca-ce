@@ -55,6 +55,8 @@ import se.anatom.ejbca.hardtoken.hardtokenprofiles.SwedishEIDProfile;
  * @ejb.pk generate="false"
  *   class="java.lang.Integer"
  *
+ * @ejb.persistence table-name = "HardTokenProfileData"
+ * 
  * @ejb.home
  *   generate="local"
  *   local-extends="javax.ejb.EJBLocalHome"

@@ -44,6 +44,8 @@ import se.anatom.ejbca.BaseEntityBean;
  *   generate="false"
  *   class="java.lang.Integer"
  *
+ * @ejb.persistence table-name = "AuthorizationTreeUpdateData"
+ * 
  * @ejb.home
  *   generate="local"
  *   local-extends="javax.ejb.EJBLocalHome"

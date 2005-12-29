@@ -44,6 +44,8 @@ import se.anatom.ejbca.BaseEntityBean;
  *   extends="java.lang.Object"
  *   implements="java.io.Serializable"
  *
+ * @ejb.persistence table-name = "AdminEntityData"
+ * 
  * @ejb.home
  *   generate="local"
  *   local-extends="javax.ejb.EJBLocalHome"

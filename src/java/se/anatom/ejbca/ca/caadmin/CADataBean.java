@@ -37,7 +37,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.14 2005-12-27 14:18:56 anatom Exp $
+ * @version $Id: CADataBean.java,v 1.15 2005-12-29 13:51:29 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a publisher"
@@ -56,6 +56,8 @@ import se.anatom.ejbca.BaseEntityBean;
  * @ejb.pk generate="false"
  *   class="java.lang.Integer"
  *
+ * @ejb.persistence table-name = "CAData"
+ * 
  * @ejb.home
  *   generate="local"
  *   local-extends="javax.ejb.EJBLocalHome"

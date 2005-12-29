@@ -56,6 +56,8 @@ import se.anatom.ejbca.util.StringTools;
  * @ejb.pk generate="false"
  *   class="java.lang.String"
  *
+ * @ejb.persistence table-name = "HardTokenData"
+ * 
  * @ejb.home
  *   generate="local"
  *   local-extends="javax.ejb.EJBLocalHome"
