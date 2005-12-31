@@ -28,7 +28,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * GlobalConfiguration
  * </pre>
  *
- * @version $Id: GlobalConfigurationDataBean.java,v 1.7 2005-12-29 13:51:29 anatom Exp $
+ * @version $Id: GlobalConfigurationDataBean.java,v 1.8 2005-12-31 14:50:03 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents global configuration of ra administration"
  * display-name="GlobalConfigurationDataEB"
@@ -45,6 +45,8 @@ import se.anatom.ejbca.BaseEntityBean;
  * generate="false"
  *
  * @ejb.persistence table-name = "GlobalConfigurationData"
+ * 
+ * @ejb.transaction type="Supports"
  * 
  * @ejb.home
  * local-extends="javax.ejb.EJBLocalHome"

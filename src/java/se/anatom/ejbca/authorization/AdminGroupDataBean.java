@@ -37,7 +37,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.22 2005-12-29 13:51:29 anatom Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.23 2005-12-31 14:50:03 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents an authorization usergroup"
@@ -57,6 +57,9 @@ import se.anatom.ejbca.util.ServiceLocator;
  *   local-class="se.anatom.ejbca.authorization.AdminGroupDataLocalHome"
  *
  * @ejb.persistence table-name = "AdminGroupData"
+ * 
+ * Vi use EJB relationships here and it often requires a transaction so it's easiest to set Required on all.
+ * @ejb.transaction type="Required"
  * 
  * @ejb.interface
  *   generate="local"
