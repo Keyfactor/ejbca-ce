@@ -222,20 +222,23 @@ web.contentencoding    = ${web.contentencoding}
                 mergeDir="${ejbdd.src}/merge"
                 datasource="java:/${datasource.jndi-name}" 
                 datasourcemapping="${datasource.mapping}" />
-            <jonas version="3.0" 
-                xmlencoding="UTF-8" 
-                destdir="${src.dd}/META-INF" 
-                validatexml="false" />
-            <weblogic version="7.0" 
+            <weblogic version="8.1" 
                 xmlencoding="UTF-8" 
                 destdir="${src.dd}/META-INF" 
                 validatexml="false" 
                 datasource="${datasource.jndi-name}" 
-                persistence="weblogic" />
+                persistence="weblogic"
+                createTables="Disabled" />
+<!--            
             <sunone version="7.0" 
                 xmlencoding="UTF-8" 
                 destdir="${src.dd}/META-INF" 
                 validatexml="false" />
+            <jonas version="3.0" 
+                xmlencoding="UTF-8" 
+                destdir="${src.dd}/META-INF" 
+                validatexml="false" /> 
+-->                
         </ejbdoclet>
         <webdoclet force="true" destdir="${src.gen}" excludedtags="@version,@author">
             <fileset dir="${src.java}">
