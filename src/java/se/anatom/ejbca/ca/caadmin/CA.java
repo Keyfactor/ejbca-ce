@@ -54,7 +54,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.19 2005-06-14 15:02:30 anatom Exp $
+ * @version $Id: CA.java,v 1.20 2005-12-31 14:47:44 anatom Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -258,9 +258,15 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
       this.requestcertchain.addAll(requestcertificatechain);
     }
 
+    /* Returns a collection of CA-certificates, with this CAs cert i position 0, or null
+     * if no CA-certificates exist.
+     */
 	public Collection getCertificateChain(){
 	  if(certificatechain == null){
 		Collection storechain = (Collection) data.get(CERTIFICATECHAIN);
+		if (storechain == null) {
+			return null;
+		}
 		Iterator iter = storechain.iterator();
 		this.certificatechain = new ArrayList();
 		while(iter.hasNext()){
@@ -294,11 +300,16 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	}
 
     
+    /* Returns the CAs certificate, or null if no CA-certificates exist.
+     */
     public Certificate getCACertificate(){       
-       if(certificatechain == null){
-         getCertificateChain();
+       if(certificatechain == null) { 
+    	   getCertificateChain();
+    	   // if it's still null, return null
+           if (certificatechain == null) {
+        	   return null;
+           }
        }
-              
        return (Certificate) this.certificatechain.get(0);
     }
     
