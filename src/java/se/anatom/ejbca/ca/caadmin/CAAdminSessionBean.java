@@ -82,7 +82,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.47 2005-12-27 14:18:56 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.48 2006-01-02 08:43:49 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -547,22 +547,22 @@ public class CAAdminSessionBean extends BaseSessionBean {
         CAInfo cainfo = null;
         try{
             CADataLocal cadata = cadatahome.findByName(name);
-			if(cadata.getStatus() == SecConst.CA_ACTIVE && new Date(cadata.getExpireTime()).before(new Date())){
-			  cadata.setStatus(SecConst.CA_EXPIRED);
-			}
+            if(cadata.getStatus() == SecConst.CA_ACTIVE && new Date(cadata.getExpireTime()).before(new Date())){
+                cadata.setStatus(SecConst.CA_EXPIRED);
+            }
             authorizedToCA(admin,cadata.getCaId().intValue());
-            
             CATokenInfo catokeninfo = cadata.getCA().getCAToken().getCATokenInfo();
             if(catokeninfo instanceof HardCATokenInfo && ((HardCATokenInfo) catokeninfo).getCATokenStatus() == IHardCAToken.STATUS_OFFLINE){
-            	cadata.setStatus(SecConst.CA_OFFLINE);
+                cadata.setStatus(SecConst.CA_OFFLINE);
             }
-        
             cainfo = cadata.getCA().getCAInfo();
-        }catch(javax.ejb.FinderException fe) {}
-         catch(Exception e){
-           throw new EJBException(e);
-         }
-
+        } catch(javax.ejb.FinderException fe) {             
+            // ignore
+            log.debug("Can nog find CA with name: "+name);
+        } catch(Exception e) {
+            log.error("Error getting CA info: ", e);
+            throw new EJBException(e);
+        }
         return cainfo;
     } // getCAInfo
 
@@ -580,20 +580,21 @@ public class CAAdminSessionBean extends BaseSessionBean {
         try{
             authorizedToCA(admin,caid);
             CADataLocal cadata = cadatahome.findByPrimaryKey(new Integer(caid));
-			if(cadata.getStatus() == SecConst.CA_ACTIVE && new Date(cadata.getExpireTime()).before(new Date())){
-			  cadata.setStatus(SecConst.CA_EXPIRED);
-			}
+            if(cadata.getStatus() == SecConst.CA_ACTIVE && new Date(cadata.getExpireTime()).before(new Date())){
+                cadata.setStatus(SecConst.CA_EXPIRED);
+            }
             CATokenInfo catokeninfo = cadata.getCA().getCAToken().getCATokenInfo();
             if(catokeninfo instanceof HardCATokenInfo && ((HardCATokenInfo) catokeninfo).getCATokenStatus() == IHardCAToken.STATUS_OFFLINE){
-            	cadata.setStatus(SecConst.CA_OFFLINE);
+                cadata.setStatus(SecConst.CA_OFFLINE);
             }
             cainfo = cadata.getCA().getCAInfo();
-
-        }catch(javax.ejb.FinderException fe) {}
-         catch(Exception e){
-           throw new EJBException(e);
-         }
-
+        } catch(javax.ejb.FinderException fe) {
+            // ignore
+            log.debug("Can nog find CA with id: "+caid);
+        } catch(Exception e){
+            log.error("Error getting CA info: ", e);
+            throw new EJBException(e);
+        }        
         return cainfo;
     } // getCAInfo
 
