@@ -53,6 +53,8 @@ import se.anatom.ejbca.util.query.Query;
  *   type="Stateless"
  *   transaction-type="Container"
  *
+ * @weblogic.enable-call-by-reference True
+ *
  * @ejb.env-entry
  * name="DataSource"
  * type="java.lang.String"
@@ -105,7 +107,7 @@ import se.anatom.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.30 2005-12-27 14:18:55 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.31 2006-01-02 15:23:06 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 

@@ -82,7 +82,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.48 2006-01-02 08:43:49 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.49 2006-01-02 15:23:07 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -94,6 +94,8 @@ import se.anatom.ejbca.util.KeyTools;
  *   transaction-type="Container"
  *
  * @ejb.transaction type="Required"
+ * 
+ * @weblogic.enable-call-by-reference True
  *
  * @ejb.env-entry description="Used internally to keystores in database"
  *   name="keyStorePass"

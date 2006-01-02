@@ -57,6 +57,8 @@ import se.anatom.ejbca.ra.ExtendedInformation;
  *
  * @ejb.transaction type="Required"
  *
+ * @weblogic.enable-call-by-reference True
+ *
  * @ejb.env-entry name="DataSource"
  *   type="java.lang.String"
  *   value="java:/${datasource.jndi-name}"

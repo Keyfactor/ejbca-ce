@@ -40,7 +40,7 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.36 2005-12-27 14:18:55 anatom Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.37 2006-01-02 15:23:06 anatom Exp $
  *
  * @ejb.bean
  *   display-name="AuthenticationSB"
@@ -52,6 +52,8 @@ import se.anatom.ejbca.ra.raadmin.IRaAdminSessionLocalHome;
  *   transaction-type="Container"
  *
  * @ejb.transaction type="Required"
+ *
+ * @weblogic.enable-call-by-reference True
  *
  * @ejb.ejb-external-ref
  *   description="The User entity bean"

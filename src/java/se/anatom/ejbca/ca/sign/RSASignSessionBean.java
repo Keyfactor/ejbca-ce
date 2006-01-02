@@ -90,6 +90,8 @@ import se.anatom.ejbca.util.Hex;
  *
  * @ejb.transaction type="Required"
  *
+ * @weblogic.enable-call-by-reference True
+ *
  * @ejb.env-entry description="Used internally to keystores in database"
  *   name="keyStorePass"
  *   type="java.lang.String"
