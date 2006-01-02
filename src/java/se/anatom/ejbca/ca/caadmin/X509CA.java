@@ -103,11 +103,11 @@ import se.anatom.ejbca.util.StringTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.47 2005-12-31 14:47:44 anatom Exp $
+ * @version $Id: X509CA.java,v 1.48 2006-01-02 08:29:44 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
-    private static Logger log = Logger.getLogger(X509CA.class);
+    private static final Logger log = Logger.getLogger(X509CA.class);
 
     // Default Values
     public static final float LATEST_VERSION = 1;
@@ -158,21 +158,21 @@ public class X509CA extends CA implements Serializable {
       return ((Boolean)data.get(USEAUTHORITYKEYIDENTIFIER)).booleanValue();
     }
     public void setUseAuthorityKeyIdentifier(boolean useauthoritykeyidentifier) {
-      data.put(USEAUTHORITYKEYIDENTIFIER, new Boolean(useauthoritykeyidentifier));
+      data.put(USEAUTHORITYKEYIDENTIFIER, Boolean.valueOf(useauthoritykeyidentifier));
     }
     
     public boolean  getAuthorityKeyIdentifierCritical(){
       return ((Boolean)data.get(AUTHORITYKEYIDENTIFIERCRITICAL)).booleanValue();
     }
     public void setAuthorityKeyIdentifierCritical(boolean authoritykeyidentifiercritical) {
-      data.put(AUTHORITYKEYIDENTIFIERCRITICAL, new Boolean(authoritykeyidentifiercritical));
+      data.put(AUTHORITYKEYIDENTIFIERCRITICAL, Boolean.valueOf(authoritykeyidentifiercritical));
     }
 
     public boolean  getUseCRLNumber(){return ((Boolean)data.get(USECRLNUMBER)).booleanValue();}
-    public void setUseCRLNumber(boolean usecrlnumber) {data.put(USECRLNUMBER, new Boolean(usecrlnumber));}
+    public void setUseCRLNumber(boolean usecrlnumber) {data.put(USECRLNUMBER, Boolean.valueOf(usecrlnumber));}
     
     public boolean  getCRLNumberCritical(){return ((Boolean)data.get(CRLNUMBERCRITICAL)).booleanValue();}
-    public void setCRLNumberCritical(boolean crlnumbercritical) {data.put(CRLNUMBERCRITICAL, new Boolean(crlnumbercritical));}
+    public void setCRLNumberCritical(boolean crlnumbercritical) {data.put(CRLNUMBERCRITICAL, Boolean.valueOf(crlnumbercritical));}
     
     
     public void updateCA(CAInfo cainfo) throws Exception{
