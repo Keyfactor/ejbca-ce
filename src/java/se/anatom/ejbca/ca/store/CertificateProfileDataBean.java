@@ -59,11 +59,11 @@ import java.util.HashMap;
  *
  * @ejb.finder description="findByCertificateProfileName"
  * signature="CRLDataLocal findByCertificateProfileName(java.lang.String name)"
- * query="SELECT DISTINCT OBJECT(a) from CertificateProfileDataBean a WHERE a.certificateProfileName=?1"
+ * query="SELECT OBJECT(a) from CertificateProfileDataBean a WHERE a.certificateProfileName=?1"
  *
  * @ejb.finder description="findAll"
  * signature="Collection findAll()"
- * query="SELECT DISTINCT OBJECT(a) from CertificateProfileDataBean AS a"
+ * query="SELECT OBJECT(a) from CertificateProfileDataBean AS a"
  *
  * @ejb.transaction
  *   type="Supports"

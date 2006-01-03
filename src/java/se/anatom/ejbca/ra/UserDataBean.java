@@ -54,7 +54,7 @@ import java.util.HashMap;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.39 2005-12-31 14:50:03 anatom Exp $
+ * @version $Id: UserDataBean.java,v 1.40 2006-01-03 13:19:41 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a Log Entry with accompanying data"
  * display-name="UserDataEB"
@@ -85,22 +85,22 @@ import java.util.HashMap;
  * @ejb.finder
  *   description="findBySubjectDN"
  *   signature="se.anatom.ejbca.ra.UserDataLocal findBySubjectDN(java.lang.String username, int caId)"
- *   query="SELECT DISTINCT OBJECT(a) from UserDataBean a WHERE a.subjectDN=?1 AND a.caId=?2"
+ *   query="SELECT OBJECT(a) from UserDataBean a WHERE a.subjectDN=?1 AND a.caId=?2"
  *
  * @ejb.finder
  *   description="findBySubjectEmail"
  *   signature="java.util.Collection findBySubjectEmail(java.lang.String subjectEmail)"
- *   query="SELECT DISTINCT OBJECT(a) from UserDataBean a WHERE a.subjectEmail=?1"
+ *   query="SELECT OBJECT(a) from UserDataBean a WHERE a.subjectEmail=?1"
  *
  * @ejb.finder
  *   description="findByStatus"
  *   signature="java.util.Collection findByStatus(int status)"
- *   query="SELECT DISTINCT OBJECT(a) from UserDataBean a WHERE a.status=?1"
+ *   query="SELECT OBJECT(a) from UserDataBean a WHERE a.status=?1"
  *
  * @ejb.finder
  *   description="findAll"
  *   signature="java.util.Collection findAll()"
- *   query="SELECT DISTINCT OBJECT(a) from UserDataBean a"
+ *   query="SELECT OBJECT(a) from UserDataBean a"
  */
 public abstract class UserDataBean extends BaseEntityBean {
 

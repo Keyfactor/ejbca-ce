@@ -47,7 +47,7 @@ import se.anatom.ejbca.util.CertTools;
  * Username (username)
  * </pre>
  *
- * @version $Id: CertificateDataBean.java,v 1.36 2005-12-29 13:51:29 anatom Exp $
+ * @version $Id: CertificateDataBean.java,v 1.37 2006-01-03 13:19:41 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a certificate with accompanying data"
  * display-name="CertificateDataEB"
@@ -79,27 +79,27 @@ import se.anatom.ejbca.util.CertTools;
  *
  * @ejb.finder description="findByExpireDate"
  * signature="Collection findByExpireDate(long date)"
- * query="SELECT DISTINCT OBJECT(a) from CertificateDataBean a WHERE a.expireDate<?1"
+ * query="SELECT OBJECT(a) from CertificateDataBean a WHERE a.expireDate<?1"
  *
  * @ejb.finder description="findBySubjectDNAndIssuerDN"
  * signature="Collection findBySubjectDNAndIssuerDN(java.lang.String subjectDN, java.lang.String issuerDN)"
- * query="SELECT DISTINCT OBJECT(a) from CertificateDataBean a WHERE a.subjectDN=?1 AND a.issuerDN=?2"
+ * query="SELECT OBJECT(a) from CertificateDataBean a WHERE a.subjectDN=?1 AND a.issuerDN=?2"
   *
  * @ejb.finder description="findBySubjectDN"
  * signature="Collection findBySubjectDN(java.lang.String subjectDN)"
- * query="SELECT DISTINCT OBJECT(a) from CertificateDataBean a WHERE a.subjectDN=?1"
+ * query="SELECT OBJECT(a) from CertificateDataBean a WHERE a.subjectDN=?1"
   *
  * @ejb.finder description="findBySerialNumber"
  * signature="Collection findBySerialNumber(java.lang.String sn)"
- * query="SELECT DISTINCT OBJECT(a) from CertificateDataBean a WHERE a.serialNumber=?1"
+ * query="SELECT OBJECT(a) from CertificateDataBean a WHERE a.serialNumber=?1"
   *
  * @ejb.finder description="findByIssuerDNSerialNumber"
  * signature="Collection findByIssuerDNSerialNumber(java.lang.String issuerDN, java.lang.String serialNumber)"
- * query="SELECT DISTINCT OBJECT(a) from CertificateDataBean a WHERE a.issuerDN=?1 AND a.serialNumber=?2"
+ * query="SELECT OBJECT(a) from CertificateDataBean a WHERE a.issuerDN=?1 AND a.serialNumber=?2"
  *
  * @ejb.finder description="findByUsername"
  * signature="Collection findByUsername(java.lang.String username)"
- * query="SELECT DISTINCT OBJECT(a) from CertificateDataBean a WHERE  a.username=?1"
+ * query="SELECT OBJECT(a) from CertificateDataBean a WHERE  a.username=?1"
  *
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"

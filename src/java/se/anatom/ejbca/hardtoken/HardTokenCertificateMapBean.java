@@ -61,7 +61,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * @ejb.finder
  *   description="findByTokenSN"
  *   signature="Collection findByTokenSN(java.lang.String sn)"
- *   query="SELECT DISTINCT OBJECT(a) from HardTokenCertificateMapBean a WHERE a.tokenSN=?1"
+ *   query="SELECT OBJECT(a) from HardTokenCertificateMapBean a WHERE a.tokenSN=?1"
  *
  * @ejb.transaction
  *   type="Supports"

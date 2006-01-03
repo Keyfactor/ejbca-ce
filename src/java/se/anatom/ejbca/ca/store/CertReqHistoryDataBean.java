@@ -40,7 +40,7 @@ import se.anatom.ejbca.util.CertTools;
  * UserDataVO (userAdminData)
  * </pre>
  *
- * @version $Id: CertReqHistoryDataBean.java,v 1.3 2005-12-29 13:51:29 anatom Exp $
+ * @version $Id: CertReqHistoryDataBean.java,v 1.4 2006-01-03 13:19:41 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity containing historical record over data user to generate a users certificate"
  * display-name="CertReqHistoryDataEB"
@@ -72,11 +72,11 @@ import se.anatom.ejbca.util.CertTools;
  *
  * @ejb.finder description="findByIssuerDNSerialNumber"
  * signature="Collection findByIssuerDNSerialNumber(java.lang.String issuerDN, java.lang.String serialNumber)"
- * query="SELECT DISTINCT OBJECT(a) from CertReqHistoryDataBean a WHERE a.issuerDN=?1 AND a.serialNumber=?2"
+ * query="SELECT OBJECT(a) from CertReqHistoryDataBean a WHERE a.issuerDN=?1 AND a.serialNumber=?2"
  *
  * @ejb.finder description="findByUsername"
  * signature="Collection findByUsername(java.lang.String username)"
- * query="SELECT DISTINCT OBJECT(a) from CertReqHistoryDataBean a WHERE  a.username=?1"
+ * query="SELECT OBJECT(a) from CertReqHistoryDataBean a WHERE  a.username=?1"
  *
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"

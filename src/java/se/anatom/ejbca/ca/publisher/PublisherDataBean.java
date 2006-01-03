@@ -65,12 +65,12 @@ import java.util.HashMap;
  * @ejb.finder
  *   description="findByName"
  *   signature="se.anatom.ejbca.ca.publisher.PublisherDataLocal findByName(java.lang.String name)"
- *   query="SELECT DISTINCT OBJECT(a) from PublisherDataBean a WHERE a.name=?1"
+ *   query="SELECT OBJECT(a) from PublisherDataBean a WHERE a.name=?1"
  *
  * @ejb.finder
  *   description="findAll"
  *   signature="Collection findAll()"
- *   query="SELECT DISTINCT OBJECT(a) from PublisherDataBean a"
+ *   query="SELECT OBJECT(a) from PublisherDataBean a"
  *
  * @ejb.transaction type="Supports"
  *
