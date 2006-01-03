@@ -11,8 +11,8 @@ Also edit bin/cli.xml and remove the comments for the two weblogic lines.
 2. If you are using Oracle go into file src/java/se/anatom/ejbca/log/LogEntryDataBean.java and change
 a line above the method 'getComment()' according to the documentation there.
 
-3. In the database configured for DefaultPool and DefaultDS in Weblogic, create
-tables if weblogic does not do it automagically. 
+3. Create EjbcaPool and EjbcaDS in Weblogic. In the database configured for EjbcaPool and EjbcaDS in Weblogic, 
+create tables. 
 - You can do an 'ant bootstrap' to JBoss if you want JBoss to create the tables for you.
 
 See the file create-tables-ejbca3.sql for table definitions.
