@@ -68,7 +68,7 @@ import java.util.Date;
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"
  *   
- * @version $Id: LogEntryDataBean.java,v 1.20 2005-12-29 13:51:29 anatom Exp $
+ * @version $Id: LogEntryDataBean.java,v 1.21 2006-01-03 15:07:20 anatom Exp $
  */
 public abstract class LogEntryDataBean extends BaseEntityBean {
 
@@ -172,6 +172,10 @@ public abstract class LogEntryDataBean extends BaseEntityBean {
     public abstract void setEvent(int event);
 
     /**
+     * If you are using Weblogic and Oracle add:
+     * column-name="comment_"
+     * to the end of the ejb persistense line.
+     * 
      * @ejb.persistence
      * @ejb.interface-method view-type="local"
      */

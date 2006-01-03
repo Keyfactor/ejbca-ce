@@ -4,31 +4,35 @@ CONFIGURING Weblogic
 
 Note: EJBCA should work fine with Weblogic 7.x/8.x
 
-0. Edit ejbca.properties, it's important to at least set up the database parameters.
+1. Edit ejbca.properties, it's important to at least set up the database parameters.
 Make special not to 'datasource.jndi-name' which is specific for Weblogic.
+Also edit bin/cli.xml and remove the comments for the two weblogic lines.
 
-1. In the database configured for DefaultPool and DefaultDS in Weblogic, create
+2. If you are using Oracle go into file src/java/se/anatom/ejbca/log/LogEntryDataBean.java and change
+a line above the method 'getComment()' according to the documentation there.
+
+3. In the database configured for DefaultPool and DefaultDS in Weblogic, create
 tables if weblogic does not do it automagically. 
 - You can do an 'ant bootstrap' to JBoss if you want JBoss to create the tables for you.
 
 See the file create-tables-ejbca3.sql for table definitions.
 
-2. Set the environment variable WEBLOGIC_HOME pointing to for example /bea/weblogic81 
+4. Set the environment variable WEBLOGIC_HOME pointing to for example /bea/weblogic81 
 (weblogic.jar is located under WEBLOGIC_HOME/server/lib).
 
-3. Unforturnately you must also point JBOSS_HOME to where JBoss is located in order for the build 
+5. Unforturnately you must also point JBOSS_HOME to where JBoss is located in order for the build 
 script to work, at least until someone provides a weblogic.xml corresponding to bin/jboss.xml.
 
-4. Deploy the ear file in weblogic, it should works straight away.
+6. Deploy the ear file in weblogic, it should works straight away.
 
-5. Edit 'jndi.properties' in the directories 'ejbca' and 'ejbca/src/java' to
+7. Edit 'jndi.properties' in the directories 'ejbca' and 'ejbca/src/java' to
 call Weblogic instead of JBoss.
 
-6. Run 'ant install' to do the installation.
+8. Run 'ant install' to do the installation.
 
-7. Run 'ant test:run' to test the setup.
+9. Run 'ant test:run' to test the setup.
 
-8. Configure SSL in Weblogic, it should require client certificates and trust the initial CA installed 
+10. Configure SSL in Weblogic, it should require client certificates and trust the initial CA installed 
 when doing 'ant install', you can get the cert with 'bin/ejbca.sh ca getrootcert cert.pem'.
 This should make the admin-GUI work, but it haven't been verified by anyone yet...
 
