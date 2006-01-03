@@ -46,7 +46,7 @@ import se.anatom.ejbca.util.SqlExecutor;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.22 2005-05-09 15:19:40 anatom Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.23 2006-01-03 14:38:16 anatom Exp $
  * @ejb.bean
  *   display-name="UpgradeSB"
  *   name="UpgradeSession"
@@ -66,7 +66,7 @@ import se.anatom.ejbca.util.SqlExecutor;
  * @ejb.env-entry
  * name="DataSource"
  * type="java.lang.String"
- * value="java:/${datasource.jndi-name}"
+ * value="${datasource.jndi-name}"
  *
  * @ejb.interface
  *   extends="javax.ejb.EJBObject"

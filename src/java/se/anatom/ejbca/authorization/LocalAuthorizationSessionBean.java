@@ -47,7 +47,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.25 2006-01-02 15:23:07 anatom Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.26 2006-01-03 14:38:16 anatom Exp $
  *
  * @ejb.bean
  *   description="Session bean handling interface with ra authorization"
@@ -66,7 +66,7 @@ import se.anatom.ejbca.util.ServiceLocator;
  * @ejb.env-entry
  * name="DataSource"
  * type="java.lang.String"
- * value="java:/${datasource.jndi-name}"
+ * value="${datasource.jndi-name}"
  *
  * @ejb.env-entry
  *   description="Custom Available Access Rules, use ';' to separate multiple accessrules"

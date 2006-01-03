@@ -1,3 +1,16 @@
+EJBCA V3.1.4
+------------
+This is a minor release with some new features and some bugfixes.
+Read the changelog for details.
+
+This is a plugin-upgrade from 3.1.3. Except for the following:
+If you changed 'datasource.jndi-name' from the default value i ejbca.properties,
+edit you ejbca.properties and add 'java:/' in front of your old value.
+
+Otherwise simply keep/copy ejbca.properties from the earlier installation, 
+copy the directory 'p12' from the earlier installation and 'ant deploy' 
+(or deploywithjbossservice) this new one.
+
 EJBCA V3.1.3
 ------------
 This is a minor release with some new features and some bugfixes.

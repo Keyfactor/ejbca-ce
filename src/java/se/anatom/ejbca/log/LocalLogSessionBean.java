@@ -58,7 +58,7 @@ import se.anatom.ejbca.util.query.Query;
  * @ejb.env-entry
  * name="DataSource"
  * type="java.lang.String"
- * value="java:/${datasource.jndi-name}"
+ * value="${datasource.jndi-name}"
  *
  * @ejb.env-entry
  *   description="String representing the log device factories to be used. The different device classes should be separated with semicolons (;)."
@@ -107,7 +107,7 @@ import se.anatom.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.32 2006-01-03 13:18:11 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.33 2006-01-03 14:38:16 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 
