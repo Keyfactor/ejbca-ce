@@ -70,12 +70,12 @@ import se.anatom.ejbca.hardtoken.hardtokenprofiles.SwedishEIDProfile;
  * @ejb.finder
  *   description="findByName"
  *   signature="se.anatom.ejbca.hardtoken.HardTokenProfileDataLocal findByName(java.lang.String name)"
- *   query="SELECT DISTINCT OBJECT(a) from HardTokenProfileDataBean a WHERE a.name=?1"
+ *   query="SELECT OBJECT(a) from HardTokenProfileDataBean a WHERE a.name=?1"
  *
  * @ejb.finder
  *   description="findAll"
  *   signature="java.util.Collection findAll()"
- *   query="SELECT DISTINCT OBJECT(a) from HardTokenProfileDataBean a"
+ *   query="SELECT OBJECT(a) from HardTokenProfileDataBean a"
  *
  * @ejb.transaction
  *   type="Supports"
@@ -87,8 +87,6 @@ import se.anatom.ejbca.hardtoken.hardtokenprofiles.SwedishEIDProfile;
 public abstract class HardTokenProfileDataBean extends BaseEntityBean {
 
     private static final Logger log = Logger.getLogger(HardTokenProfileDataBean.class);
-
-    private HardTokenProfile profile = null;
 
 	/**
      * @ejb.pk-field
@@ -142,35 +140,34 @@ public abstract class HardTokenProfileDataBean extends BaseEntityBean {
      * @ejb.interface-method view-type="local"
      */
     public HardTokenProfile getHardTokenProfile() throws ArrayIndexOutOfBoundsException{
-
-  	  if(profile == null){
-	    java.beans.XMLDecoder decoder;
-		try {
-		  decoder =
-			new java.beans.XMLDecoder(
-					new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
-		} catch (UnsupportedEncodingException e) {
-		  throw new EJBException(e);
-		}
-		
-		
-		HashMap data = (HashMap) decoder.readObject();
-		
-		decoder.close();
-
-		switch (((Integer) (data.get(HardTokenProfile.TYPE))).intValue()) {
-		  case SwedishEIDProfile.TYPE_SWEDISHEID :
-		    profile = new SwedishEIDProfile();
-		    break;
-		  case EnhancedEIDProfile.TYPE_ENHANCEDEID:
-		    profile =  new EnhancedEIDProfile();
-		    break;
-		}
-
-		profile.loadData(data);
-	  }
-
-		return profile;
+        
+        HardTokenProfile profile = null;
+        java.beans.XMLDecoder decoder;
+        try {
+            decoder =
+                new java.beans.XMLDecoder(
+                        new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
+        } catch (UnsupportedEncodingException e) {
+            throw new EJBException(e);
+        }
+        
+        
+        HashMap data = (HashMap) decoder.readObject();
+        
+        decoder.close();
+        
+        switch (((Integer) (data.get(HardTokenProfile.TYPE))).intValue()) {
+        case SwedishEIDProfile.TYPE_SWEDISHEID :
+            profile = new SwedishEIDProfile();
+            break;
+        case EnhancedEIDProfile.TYPE_ENHANCEDEID:
+            profile =  new EnhancedEIDProfile();
+            break;
+        }
+        
+        profile.loadData(data);
+        
+        return profile;
     }
 
     /**
@@ -193,7 +190,6 @@ public abstract class HardTokenProfileDataBean extends BaseEntityBean {
           throw new EJBException(e);
 		}
 
-		this.profile = hardtokenprofile;
         setUpdateCounter(getUpdateCounter() +1);
     }
 
@@ -201,13 +197,6 @@ public abstract class HardTokenProfileDataBean extends BaseEntityBean {
     //
     // Fields required by Container
     //
-
-    /**
-     * Passivates bean, resets profile data.
-     */
-    public void ejbPassivate() {
-        this.profile = null;
-    }
 
 
     /**

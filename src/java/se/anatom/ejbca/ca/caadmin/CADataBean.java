@@ -37,7 +37,7 @@ import se.anatom.ejbca.BaseEntityBean;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.15 2005-12-29 13:51:29 anatom Exp $
+ * @version $Id: CADataBean.java,v 1.16 2006-01-03 13:17:31 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a publisher"
@@ -71,12 +71,12 @@ import se.anatom.ejbca.BaseEntityBean;
  * @ejb.finder
  *   description="findByName"
  *   signature="se.anatom.ejbca.ca.caadmin.CADataLocal findByName(java.lang.String name)"
- *   query="SELECT DISTINCT OBJECT(a) from CADataBean a WHERE a.name=?1"
+ *   query="SELECT OBJECT(a) from CADataBean a WHERE a.name=?1"
  *
  * @ejb.finder
  *   description="findAll"
  *   signature="Collection findAll()"
- *   query="SELECT DISTINCT OBJECT(a) from CADataBean a"
+ *   query="SELECT OBJECT(a) from CADataBean a"
  *
  * @ejb.transaction
  *   type="Supports"
@@ -85,8 +85,6 @@ import se.anatom.ejbca.BaseEntityBean;
  *   jndi-name="${datasource.jndi-name}"
  */
 public abstract class CADataBean extends BaseEntityBean {
-
-    private CA ca = null;
 
     private static final Logger log = Logger.getLogger(CADataBean.class);
 
@@ -167,7 +165,7 @@ public abstract class CADataBean extends BaseEntityBean {
      * @ejb.interface-method
      */
     public CA getCA() throws java.io.UnsupportedEncodingException{
-      if(ca == null){        
+        CA ca = null;
         java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
         HashMap data = (HashMap) decoder.readObject();
         decoder.close();
@@ -177,8 +175,6 @@ public abstract class CADataBean extends BaseEntityBean {
               ca = new X509CA(data, this);
               break;
         }      
-      }
-            
       return ca;              
     }
     
@@ -193,16 +189,8 @@ public abstract class CADataBean extends BaseEntityBean {
        encoder.writeObject(ca.saveData());
        encoder.close();
        setData(baos.toString("UTF8"));
-       this.ca = ca;
        ca.setOwner(this);
     }   
-    
-    /**
-     * Passivates bean, resets CA data.
-     */
-    public void ejbPassivate() {
-        this.ca = null;
-    }
     
 
     //
