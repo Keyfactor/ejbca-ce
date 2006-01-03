@@ -107,7 +107,7 @@ import se.anatom.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.31 2006-01-02 15:23:06 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.32 2006-01-03 13:18:11 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 
@@ -268,8 +268,10 @@ public class LocalLogSessionBean extends BaseSessionBean {
             logentryhome.create(id, admin.getAdminType(), admin.getAdminData(), caid, module, time, username, uid, event, comment);
         } catch (DuplicateKeyException e) {
             // FIXME we are losing a db audit entry in this case, what do we do ?
+            log.error("DuplicateKeyException during log, missing log entry: ", e);
             getAndIncrementRowCount();
         } catch (CreateException e) {
+            log.error("CreateException during log, missing log entry: ", e);
             throw new EJBException(e);
         }
     }
@@ -350,10 +352,12 @@ public class LocalLogSessionBean extends BaseSessionBean {
             logconfigdata = logconfigurationhome.findByPrimaryKey(new Integer(caid));
             logconfiguration = logconfigdata.loadLogConfiguration();
         } catch (FinderException e) {
+            log.debug("Can't find log configuration during load (caid="+caid+"), trying to create new: ", e);
             try {
                 logconfiguration = new LogConfiguration();
                 logconfigdata = logconfigurationhome.create(new Integer(caid), logconfiguration);
             } catch (CreateException f) {
+                log.error("Error creating new log configuration data for caid "+caid+": ", f);
                 throw new EJBException(f);
             }
         }
@@ -376,6 +380,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
                 (logconfigurationhome.findByPrimaryKey(new Integer(caid))).saveLogConfiguration(logconfiguration);
                 log(admin, caid, LogEntry.MODULE_LOG, new Date(), null, null, LogEntry.EVENT_INFO_EDITLOGCONFIGURATION, "");
             } catch (FinderException e) {
+                log.info("Can't find logconfiguaration during save, creating new");
                 logconfigurationhome.create(new Integer(caid), logconfiguration);
                 log(admin, caid, LogEntry.MODULE_LOG, new Date(), null, null, LogEntry.EVENT_INFO_EDITLOGCONFIGURATION, "");
             }
