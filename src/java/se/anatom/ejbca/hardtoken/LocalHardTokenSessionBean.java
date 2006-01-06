@@ -77,7 +77,7 @@ import se.anatom.ejbca.util.JDBCUtil;
  *   description="The JDBC datasource to be used"
  *  name="DataSource"
  *  type="java.lang.String"
- *  value="${datasource.jndi-name}"
+ *  value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
  *
  * @ejb.ejb-external-ref
  *   description="The hard token profile data entity bean"

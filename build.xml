@@ -106,7 +106,8 @@
     <property name="ca.ocspkeystorepass" value="foo123"/>
     <property name="ocsp.defaultresponder" value="CN=AdminCA1,O=${app.name.cap} Sample,C=SE"/>
     <property name="ocsp.usecasigningcert" value="true"/>
-    <property name="datasource.jndi-name" value="java:/EjbcaDS" />
+    <property name="datasource.jndi-name" value="EjbcaDS" />
+    <property name="datasource.jndi-name-prefix" value="java:/" />
     <property name="database.name" value="hsqldb" />
     <property name="datasource.mapping" value="Hypersonic SQL" />
     <property name="database.url" value="jdbc:hsqldb:$${jboss.server.data.dir}$${/}hypersonic$${/}localDB" />
@@ -147,6 +148,7 @@ ca.ocspkeystorepass    = ${ca.ocspkeystorepass}
 ocsp.defaultresponder  = ${ocsp.defaultresponder}
 ocsp.usecasigningcert  = ${ocsp.usecasigningcert}
 datasource.jndi-name   = ${datasource.jndi-name}
+datasource.jndi-name-prefix = ${datasource.jndi-name-prefix}
 database.name          = ${database.name}
 datasource.mapping     = ${datasource.mapping}
 database.url           = ${database.url}
@@ -220,7 +222,7 @@ web.contentencoding    = ${web.contentencoding}
                 validatexml="false" 
                 destdir="${src.dd}/META-INF" 
                 mergeDir="${ejbdd.src}/merge"
-                datasource="java:/${datasource.jndi-name}" 
+                datasource="${datasource.jndi-name-prefix}${datasource.jndi-name}" 
                 datasourcemapping="${datasource.mapping}" />
             <weblogic version="8.1" 
                 xmlencoding="UTF-8" 

@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.28 2006-01-03 14:38:16 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.29 2006-01-06 17:49:11 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -120,10 +120,15 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 
 # ------------- Database configuration ------------------------
 
-# jndi name of the datasource to use in deployment descriptors of ejbs. Use the plain EjbcaDS for Weblogic
-# default: java:/EjbcaDS
-#datasource.jndi-name=java:/EjbcaDS
+# jndi name of the datasource to use in deployment descriptors of ejbs.
+# default: EjbcaDS
 #datasource.jndi-name=EjbcaDS
+
+# Prefix for the jndi name of the datasource to use in deployment descriptors of ejbs. 
+# JBoss requires 'java:/' as prefix, while weblogic does not want anything ('')
+# default: java:/
+#datasource.jndi-name-prefix=java:/
+#datasource.jndi-name-prefix=
 
 # The database name selected for deployment, used to copy XDoclet merge files.
 # All supported databases are defined below, others can easily be added

@@ -61,7 +61,7 @@ import se.anatom.ejbca.ra.ExtendedInformation;
  *
  * @ejb.env-entry name="DataSource"
  *   type="java.lang.String"
- *   value="${datasource.jndi-name}"
+ *   value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
  *
  * @ejb.env-entry description="Custom Available Access Rules, use ';' to separate multiple accessrules"
  *   name="CustomAvailableAccessRules"

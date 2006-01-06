@@ -5,7 +5,7 @@ CONFIGURING Weblogic
 Note: EJBCA should work fine with Weblogic 7.x/8.x
 
 1. Edit ejbca.properties, it's important to at least set up the database parameters.
-Make special not to 'datasource.jndi-name' which is specific for Weblogic.
+Make special not to 'datasource.jndi-name-prefix' which is specific for Weblogic.
 Also edit bin/cli.xml and remove the comments for the two weblogic lines.
 
 2. If you are using Oracle go into file src/java/se/anatom/ejbca/log/LogEntryDataBean.java and change
