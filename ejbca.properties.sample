@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.29 2006-01-06 17:49:11 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.30 2006-01-07 20:36:12 primelars Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -231,3 +231,8 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 # Name of the farm directory. Use "farm" when clustering.
 # Default: deploy
 #jboss.farm.name=farm
+
+#------------------- HW token ------------------------------
+# The directory of the HW token classes. If this is an emty directory, no HW token will be used.
+# Default: ./hwtoken (if the default directory is to be used but not existing an empty directory will be created).
+#hwtoken_classes=../java/build-1.5/caTokenCard

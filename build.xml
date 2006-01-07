@@ -34,6 +34,8 @@
     <property name="test.dir" value="${bin}/junit" />
     <property name="test.src.dir" location="${src}/test" />
     <property name="dist.dir" location="dist" />
+    <property name="hwtoken_classes" value="hwtoken"/>
+    <property name="hwtoken.class.dir" location="${hwtoken_classes}" />
     <property name="apidoc" value="./doc/api" />
 
     <property name="apply.src" value="${src}/publicweb/apply" />
@@ -430,6 +432,8 @@ web.contentencoding    = ${web.contentencoding}
     <!-- Build ca ejb part                                                    -->
     <!-- =================================================================== -->
     <target name="ejbca-ejb.jar" depends="compile" description="Creates master ejb.jar">
+    <!-- create empty direktory for HW tokens if not existing -->
+        <mkdir dir="${hwtoken.class.dir}"/>
         <jar jarfile="${dist.dir}/ejbca-ejb.jar">
             <manifest>
                 <!-- todo: autogenerate this from a fileset -->
@@ -442,6 +446,7 @@ web.contentencoding    = ${web.contentencoding}
             <fileset dir="${build}"/>
             <fileset dir="${src}/log"/>
             <fileset dir="${src}/upgrade"/>
+            <fileset dir="${hwtoken.class.dir}"/>
         </jar>
     </target>
     
@@ -466,7 +471,7 @@ web.contentencoding    = ${web.contentencoding}
                 <include name="*-ejb.jar" />
                 <include name="*.war" />
             </fileset>
-		</ear>
+	</ear>
     </target>
 
     <!-- ===================================================================
