@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.30 2006-01-07 20:36:12 primelars Exp $
+# $Id: ejbca.properties.sample,v 1.31 2006-01-08 16:10:08 primelars Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -233,6 +233,7 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 #jboss.farm.name=farm
 
 #------------------- HW token ------------------------------
-# The directory of the HW token classes. If this is an emty directory, no HW token will be used.
-# Default: ./hwtoken (if the default directory is to be used but not existing an empty directory will be created).
-#hwtoken_classes=../java/build-1.5/caTokenCard
+# The directory of the HW token classes. If this is an emty directory no HW token will be used.
+# If the directory is not existing an empty directory will be created.
+# Default: ./hwtoken
+#hwtoken_classes=../java/caTokenClasses-1.5
