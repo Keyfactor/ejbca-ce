@@ -129,7 +129,7 @@
     <property name="httpserver.pubhttp" value="8080" />
     <property name="httpserver.pubhttps" value="8442" />
     <property name="httpserver.privhttps" value="8443" />
-    <property name="web.availablelanguages" value="EN,FR,IT,ES" />
+    <property name="web.availablelanguages" value="EN,FR,IT,ES,SE" />
     <property name="web.contentencoding" value="ISO-8859-1" />
 
     <!-- =================================================================== -->

@@ -26,7 +26,7 @@ administrator, who can be found on the sourceforge project page.
 <li>Leo Tai, hkleo(at)users.sourceforge.net, Oracle database configuration.</li>
 <li>Timothy Fisher, timothyf(at)users.sourceforge.net], architecture overview.</li>
 <li>Karl-König Königsson, karlkoenig(at)users.sourceforge.net, better deployment scripts for EJBCA 2.x.</li>
-<li>Thomas Karlsson, thomas.karlsson(at)planet.eu.org, firewall script.</li>
+<li>Thomas Karlsson, thomas.karlsson(at)planet.eu.org, firewall script, swedish translation.</li>
 <li>Magnus Broqvist, magnus(at)han.pp.se, initial P12toPEM implementation.</li>
 <li>Slava Sklarewski, Slava.Sklarewski(at)de.gi-de.com, data flow diagram.</li>
 <li>Leonardo Souza Mario Bueno, isbueno(at)users.sourceforge.net, patch for request template path.</li>
