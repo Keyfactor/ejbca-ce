@@ -11,12 +11,12 @@
       <!-- A HTTP/1.1 Connector on port 8080 -->
       <Connector port="@httpserver.pubhttp@" address="${jboss.bind.address}"
          maxThreads="150" minSpareThreads="25" maxSpareThreads="75"
-         enableLookups="false" redirectPort="8443" acceptCount="100"
+         enableLookups="false" redirectPort="@httpserver.privhttps@" acceptCount="100"
          connectionTimeout="20000" disableUploadTimeout="true"/>
 
       <!-- A AJP 1.3 Connector on port 8009 -->
       <Connector port="8009" address="${jboss.bind.address}"
-         enableLookups="false" redirectPort="8443" debug="0"
+         enableLookups="false" redirectPort="@httpserver.privhttps@" debug="0"
          protocol="AJP/1.3"/>
 
     <!-- A HTTPS Connector without client cert on port 8442 -->
@@ -24,14 +24,16 @@
          maxThreads="100" minSpareThreads="5" maxSpareThreads="15"
          scheme="https" secure="true" clientAuth="false"
          keystoreFile="${jboss.server.home.dir}/@keystore.file@"
-         keystorePass="@httpsserver.password@" sslProtocol = "TLS" />
+         keystorePass="@httpsserver.password@" sslProtocol = "TLS" 
+         URIEncoding="@web.contentencoding@" />
     
     <!-- HTTPS Connector requiring client cert on port 8443 -->
     <Connector port="@httpserver.privhttps@" address="${jboss.bind.address}"
          maxThreads="100" minSpareThreads="5" maxSpareThreads="15"
          scheme="https" secure="true" clientAuth="true"
          keystoreFile="${jboss.server.home.dir}/@keystore.file@"
-         keystorePass="@httpsserver.password@" sslProtocol = "TLS" />
+         keystorePass="@httpsserver.password@" sslProtocol = "TLS" 
+         URIEncoding="@web.contentencoding@" />
 
       <Engine name="jboss.web" defaultHost="localhost">
 

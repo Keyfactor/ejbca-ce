@@ -68,6 +68,7 @@
 		    	<replacestring from="@httpserver.pubhttp@" to="${httpserver.pubhttp}"/>
 		    	<replacestring from="@httpserver.pubhttps@" to="${httpserver.pubhttps}"/>
 		    	<replacestring from="@httpserver.privhttps@" to="${httpserver.privhttps}"/>
+		    	<replacestring from="@web.contentencoding@" to="${web.contentencoding}"/>
 			</tokenfilter>
 			</filterchain>
         </copy>

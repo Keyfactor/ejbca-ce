@@ -54,7 +54,7 @@ administrator, who can be found on the sourceforge project page.
 <li>Bruno Bonfils, asyd(at)gwyneth.glou.net, added X-ORIGIN to device schema for latest Sun Directory Server. Tested Cisco IOS and made the IOS Howto.</li>
 <li>Resurrección Mazo González, rmazgon(at)canarias.org, LdapSearchPublisher.</li>
 <li>Ronan le Meillat, ronan.le_meillat(at)lesmuids.com, htmlized french translation.</li>
-<li>Jerry, zjl6(at)users.sourceforge.net, limit length of primary key columns when using UTF-8 encoding in MySQL.</li>
+<li>Jerry, zjl6(at)users.sourceforge.net, limit length of primary key columns when using UTF-8 encoding in MySQL, fix for static fields in server.xml.</li>
 </ul>
     </section>
   </body>
