@@ -29,14 +29,17 @@
 <li>Multiple levels of administrators with specified privileges and user groups. Configurable certificate profiles for different types and contents of certificates.</li>
 <li>Configurable entity profiles for different types of users.</li>
 <li>Follows X509 and PKIX (RFC3280) standards where applicable.</li>
+<li>Qualified Certificate Statement (RFC3739).</li>
 <li>Revocation and Certificate Revocation Lists (CRLs).</li>
 <li>Fully supports the Online Certificate Status Protocol (OCSP), including AIA-extension.</li>
 <li>CRL creation and URL-based CRLDistribution Points according to RFC3280. Stores Certificates and CRLs in any SQL database (handled by application server).</li>
-<li>Optional multiple publishers for publishing certificates and CRLs in LDAP.</li>
-<li>Key recovery module to store private keys for recovery for selected users and certificates.</li>
+<li>Optional multiple publishers for publishing certificates and CRLs in LDAP. Several flexible standard publishers exist to meet different demands.</li>
+<li>Supports authentication and publishing of certificates to Microsoft Active Directory.</li>
 <li>Component based architecture for publishing certificates and CRLs to different sources.</li>
+<li>Key recovery module to store private keys for recovery for selected users and certificates.</li>
 <li>Component based architecture for various authorization methods of entities when issuing certificates.</li>
 <li>Easy to integrate into large applications for optimal integration into bussiness process.</li>
+<li>Deploys easily in a clustered high availability environment.</li>
 </ul>    
 
   </section>

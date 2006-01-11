@@ -5,14 +5,22 @@
   </properties>
 
   <body>
-    <section name="Documentation">
+<section name="Support">
+<p>
+If you need commercial support or professional services contact the project admins below. 
+We have ready-made support programs available.
+</p>
+</section>
+
+<section name="Documentation">
     <p>
     First you should look at the documentation resources on this site.
     </p><p>
     Second you should see if there is something interesting in the <a href="faq.html">FAQ</a>.
     </p>
-    </section>
-    <section name="Mailing Lists">
+</section>
+
+<section name="Mailing Lists">
 <p>
 EJBCA has two public mailing lists hosted on Sourceforge. To subscribe to any of the lists or
  browse archived messages, click the links below.
