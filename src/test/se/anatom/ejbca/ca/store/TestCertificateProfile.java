@@ -24,13 +24,14 @@ import org.apache.log4j.Logger;
 
 import se.anatom.ejbca.ca.exception.CertificateProfileExistsException;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
+import se.anatom.ejbca.ca.store.certificateprofiles.EndUserCertificateProfile;
 import se.anatom.ejbca.log.Admin;
 import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 
 /**
  * Tests the certificate profile entity bean.
  *
- * @version $Id: TestCertificateProfile.java,v 1.3 2005-11-17 19:22:34 herrvendil Exp $
+ * @version $Id: TestCertificateProfile.java,v 1.4 2006-01-12 08:58:44 anatom Exp $
  */
 public class TestCertificateProfile extends TestCase {
     private static Logger log = Logger.getLogger(TestCertificateProfile.class);
@@ -219,5 +220,19 @@ public class TestCertificateProfile extends TestCase {
         assertTrue("createSubjectAltNameSubSet doesn't work" + outaltname2 + " != "+ expectedaltname2, expectedaltname2.equalsIgnoreCase(outaltname2));
         
         log.debug(">test07createSubjectAltNameSubSet()");
+    }
+    
+    public void test08CertificateProfileValues() throws Exception {
+        CertificateProfile ep = new EndUserCertificateProfile();
+        assertEquals("2.5.29.32.0", ep.getCertificatePolicyId());
+        assertEquals(CertificateProfile.LATEST_VERSION, ep.getLatestVersion(),0);
+        String qcId = ep.getQCStatementId();
+        assertEquals("", qcId);
+        CertificateProfile cp = new CertificateProfile();
+        assertEquals("2.5.29.32.0", cp.getCertificatePolicyId());
+        assertEquals(CertificateProfile.LATEST_VERSION, cp.getLatestVersion(),0);
+        assertEquals("", cp.getQCStatementId());
+        cp.setQCStatementId("1.1.1.2");
+        assertEquals("1.1.1.2", cp.getQCStatementId());
     }
 }
