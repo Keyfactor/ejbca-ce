@@ -55,6 +55,7 @@ administrator, who can be found on the sourceforge project page.
 <li>Resurrección Mazo González, rmazgon(at)canarias.org, LdapSearchPublisher.</li>
 <li>Ronan le Meillat, ronan.le_meillat(at)lesmuids.com, htmlized french translation.</li>
 <li>Zhengrong (Jerry) Liu, zjl6(at)users.sourceforge.net, limit length of primary key columns when using UTF-8 encoding in MySQL, fix for static fields in server.xml.</li>
+<li>Thomas Karlsson, karlsson(at)relea.se, Swedish translation of admin-GUI.</li>
 </ul>
     </section>
   </body>
