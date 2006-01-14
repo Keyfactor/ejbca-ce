@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.32 2006-01-08 19:53:38 herrvendil Exp $
+# $Id: ejbca.properties.sample,v 1.33 2006-01-14 16:01:24 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -129,6 +129,11 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 # default: java:/
 #datasource.jndi-name-prefix=java:/
 #datasource.jndi-name-prefix=
+
+# Weblogic in combination with Oracle requires special handling of LONG/BLOB columns
+# If, and only if, you are using Weblogic and Oracle, uncomment the row below.
+# default: 
+#weblogic-oracle-columntype=@weblogic.dbms-column-type OracleBlob
 
 # The database name selected for deployment, used to copy XDoclet merge files.
 # All supported databases are defined below, others can easily be added

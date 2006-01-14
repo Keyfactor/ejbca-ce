@@ -31,7 +31,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * Profile data
  * </pre>
  *
- * @version $Id: EndEntityProfileDataBean.java,v 1.15 2006-01-03 13:19:41 anatom Exp $
+ * @version $Id: EndEntityProfileDataBean.java,v 1.16 2006-01-14 16:00:52 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a profile"
  * display-name="EndEntityProfileDataEB"
@@ -96,6 +96,7 @@ public abstract class EndEntityProfileDataBean extends BaseEntityBean implements
 
     /**
      * @ejb.persistence
+     * @weblogic.ora.columntyp@
      */
     public abstract HashMap getData();
 

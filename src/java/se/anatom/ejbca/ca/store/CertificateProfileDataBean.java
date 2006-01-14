@@ -100,6 +100,7 @@ public abstract class CertificateProfileDataBean extends BaseEntityBean {
 
     /**
      * @ejb.persistence
+     * @weblogic.ora.columntyp@
      */
     public abstract HashMap getData();
 

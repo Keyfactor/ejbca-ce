@@ -121,6 +121,7 @@ public abstract class HardTokenIssuerDataBean extends BaseEntityBean {
 
     /**
      * @ejb.persistence
+     * @weblogic.ora.columntyp@
      */
     public abstract HashMap getData();
 

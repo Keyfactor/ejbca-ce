@@ -116,6 +116,7 @@
     <property name="database.driver" value="org.hsqldb.jdbcDriver" />
     <property name="database.username" value="sa" />
     <property name="database.password" value="" />
+	<property name="weblogic-oracle-columntype" value="" />
     <property name="mail.jndi-name" value="java:/EjbcaMail" />
     <property name="mail.from" value="ejbca-donotreply@domain.com" />
     <property name="mail.user" value="ejbca_user" />
@@ -157,6 +158,7 @@ database.url           = ${database.url}
 database.driver        = ${database.driver}
 database.username      = ${database.username}
 database.password      = ${database.password}
+weblogic-oracle-columntype = ${weblogic-oracle-columntype}
 mail.jndi-name         = ${mail.jndi-name}
 mail.from              = ${mail.from}
 mail.subject           = ${mail.subject}
@@ -300,6 +302,7 @@ web.contentencoding    = ${web.contentencoding}
 			<tokenfilter>			    
 		        <replacestring from="@ejbca@" to="${app.name}"/>
 		    	<replacestring from="@EJBCA@" to="${app.name.cap}"/>
+		    	<replacestring from="@weblogic.ora.columntyp@" to="${weblogic-oracle-columntype}"/>
 			</tokenfilter>
 			</filterchain>
 	    </copy>

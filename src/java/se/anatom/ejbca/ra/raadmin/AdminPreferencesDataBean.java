@@ -30,7 +30,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * AdminPreference
  * </pre>
  *
- * @version $Id: AdminPreferencesDataBean.java,v 1.14 2005-12-31 14:50:03 anatom Exp $
+ * @version $Id: AdminPreferencesDataBean.java,v 1.15 2006-01-14 16:00:52 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a ra admins user preference."
  * display-name="AdminPreferencesDataEB"
@@ -76,6 +76,7 @@ public abstract class AdminPreferencesDataBean extends BaseEntityBean {
 
     /**
      * @ejb.persistence
+     * @weblogic.ora.columntyp@
      */
     public abstract HashMap getData();
     public abstract void setData(HashMap data);

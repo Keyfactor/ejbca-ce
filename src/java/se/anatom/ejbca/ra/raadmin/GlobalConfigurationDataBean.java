@@ -28,7 +28,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * GlobalConfiguration
  * </pre>
  *
- * @version $Id: GlobalConfigurationDataBean.java,v 1.9 2006-01-03 13:19:41 anatom Exp $
+ * @version $Id: GlobalConfigurationDataBean.java,v 1.10 2006-01-14 16:00:52 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents global configuration of ra administration"
  * display-name="GlobalConfigurationDataEB"
@@ -81,6 +81,7 @@ public abstract class GlobalConfigurationDataBean extends BaseEntityBean {
 
     /**
      * @ejb.persistence
+     * @weblogic.ora.columntyp@
      */
     public abstract HashMap getData();
 

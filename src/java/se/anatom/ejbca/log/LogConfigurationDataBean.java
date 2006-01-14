@@ -27,7 +27,7 @@ import se.anatom.ejbca.BaseEntityBean;
  * logentryrownumber is the number of the last row number in the log entry database.
  * </pre>
  *
- * @version $Id: LogConfigurationDataBean.java,v 1.19 2005-12-29 13:51:29 anatom Exp $
+ * @version $Id: LogConfigurationDataBean.java,v 1.20 2006-01-14 16:00:52 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a Log Entry with accompanying data"
@@ -79,6 +79,7 @@ public abstract class LogConfigurationDataBean extends BaseEntityBean {
 
     /**
      * @ejb.persistence
+     * @weblogic.ora.columntyp@
      */
     public abstract LogConfiguration getLogConfiguration();
 
