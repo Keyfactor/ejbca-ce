@@ -39,7 +39,7 @@ import org.bouncycastle.jce.interfaces.*;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.30 2005-03-04 12:20:23 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.31 2006-01-14 14:10:00 anatom Exp $
  */
 public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);
@@ -59,7 +59,9 @@ public class KeyTools {
      */
     public static KeyPair genKeys(int keysize)
         throws NoSuchAlgorithmException, NoSuchProviderException {
-        log.debug(">genKeys()");
+    	if (log.isDebugEnabled()) {
+            log.debug(">genKeys("+keysize+")");    		
+    	}
 
         KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA", "BC");
         keygen.initialize(keysize);
