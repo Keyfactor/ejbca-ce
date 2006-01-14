@@ -48,10 +48,15 @@ import java.util.Vector;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
+import org.bouncycastle.asn1.DEREncodable;
+import org.bouncycastle.asn1.DEREncodableVector;
+import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
@@ -60,21 +65,27 @@ import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.PolicyInformation;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.x509.X509NameTokenizer;
+import org.bouncycastle.asn1.x509.qualified.QCStatement;
+import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
+import org.bouncycastle.asn1.x509.qualified.SemanticsInformation;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 
 
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.82 2005-12-20 16:26:53 anatom Exp $
+ * @version $Id: CertTools.java,v 1.83 2006-01-14 11:33:58 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -95,6 +106,8 @@ public class CertTools {
     public static final String GUID = "guid";
     /** ObjectID for upn altName for windows domain controller guid */
     public static final String GUID_OBJECTID = "1.3.6.1.4.1.311.25.1";
+    /** Object id for qcStatements Extension */
+    public static final String QCSTATEMENTS_OBJECTID = "1.3.6.1.5.5.7.1.3";
     
     private static final String[] EMAILIDS = { EMAIL, EMAIL1, EMAIL2, EMAIL3 };
     /** ObjectID for unstructuredName DN attribute */
@@ -895,7 +908,7 @@ public class CertTools {
                     if (id.getId().equals(CertTools.GUID_OBJECTID)) {
                         ASN1TaggedObject obj = (ASN1TaggedObject) seq.getObjectAt(1);
                         ASN1OctetString str = ASN1OctetString.getInstance(obj.getObject());
-                        return Hex.encode(str.getOctets());                        
+                        return new String(Hex.encode(str.getOctets()));                        
                     }
                 }
             }
@@ -909,11 +922,14 @@ public class CertTools {
         Integer no = (Integer) listitem.get(0);
         if (no.intValue() == 0) {
             byte[] altName = (byte[]) listitem.get(1);
-            DERObject oct = (new ASN1InputStream(new ByteArrayInputStream(altName)).readObject());
-            ASN1Sequence seq = ASN1Sequence.getInstance(oct);
-            return seq;
+            return getAltnameSequence(altName);
         }
         return null;
+    }
+    private static ASN1Sequence getAltnameSequence(byte[] value) throws IOException {
+        DERObject oct = (new ASN1InputStream(new ByteArrayInputStream(value)).readObject());
+        ASN1Sequence seq = ASN1Sequence.getInstance(oct);
+        return seq;
     }
     
 	/**
@@ -996,6 +1012,126 @@ public class CertTools {
         return result;            
 	}
 
+    /** Returns the 'statementId' defined in the QCStatement extension (rfc3739).
+     * 
+     * @param cert Certificate containing the extension
+     * @return String with the oid, for example "1.1.1.2", or null if no identifier is found.
+     * @throws IOException if there is a problem parsing the certificate
+     */
+    public static String getQcStatementId(X509Certificate cert) throws IOException {
+        DERObject obj = getExtensionValue(cert, QCSTATEMENTS_OBJECTID);
+        if (obj == null) {
+            return null;
+        }
+        ASN1Sequence seq = (ASN1Sequence)obj;
+        // Check the size so we don't ArrayIndexOutOfBounds
+        if (seq.size() < 1) {
+            return null;
+        }
+        QCStatement qc = QCStatement.getInstance(seq.getObjectAt(0));
+        
+        DERObjectIdentifier oid = qc.getStatementId();
+        if (oid != null) {
+            return oid.getId();
+        }
+        return null;
+    }
+    /** Returns the 'NameRegistrationAuthorities' defined in the QCStatement extension (rfc3739).
+     * 
+     * @param cert Certificate containing the extension
+     * @return String with for example 'rfc822Name=foo2bar.se, rfc822Name=bar2foo.se' etc. Supports email, dns and uri name, or null of no RAs are found.
+     * @throws IOException if there is a problem parsing the certificate
+     */
+    public static String getQcStatementAuthorities(X509Certificate cert) throws IOException {
+        String ret = null;
+        DERObject obj = getExtensionValue(cert, QCSTATEMENTS_OBJECTID);
+        if (obj == null) {
+            return null;
+        }
+        ASN1Sequence seq = (ASN1Sequence)obj;
+        // Check the size so we don't ArrayIndexOutOfBounds
+        if (seq.size() < 1) {
+            return null;
+        }
+        QCStatement qc = QCStatement.getInstance(seq.getObjectAt(0));
+        
+        DERObjectIdentifier oid = qc.getStatementId();
+        if (oid.equals(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v1) || oid.equals(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2)) {
+            // We MAY have a SemanticsInformation object here
+            ASN1Encodable enc = qc.getStatementInfo();
+            if (enc == null) {
+                return null;
+            }
+            SemanticsInformation si = SemanticsInformation.getInstance(enc);
+            GeneralName[] gns = si.getNameRegistrationAuthorities();
+            if (gns == null) {
+                return null;
+            }
+            StringBuffer strBuf = new StringBuffer(); 
+            for (int i = 0; i < gns.length; i++) {
+                GeneralName gn = gns[i];
+                if (strBuf.length() != 0) {
+                    // Append comma so we get nice formatting if there are more than one authority
+                    strBuf.append(", ");
+                }
+                String str = getGeneralNameString(gn.getTagNo(), gn.getName());
+                if (str != null) {
+                    strBuf.append(str);
+                }
+            }
+            if (strBuf.length() > 0) {
+                ret = strBuf.toString();
+            }
+        }
+        return ret;
+    }
+    /**
+     * GeneralName ::= CHOICE {
+     * otherName                       [0]     OtherName,
+     * rfc822Name                      [1]     IA5String,
+     * dNSName                         [2]     IA5String,
+     * x400Address                     [3]     ORAddress,
+     * directoryName                   [4]     Name,
+     * ediPartyName                    [5]     EDIPartyName,
+     * uniformResourceIdentifier       [6]     IA5String,
+     * iPAddress                       [7]     OCTET STRING,
+     * registeredID                    [8]     OBJECT IDENTIFIER}
+     * 
+     * @param tag the no tag 0-8
+     * @param value the DEREncodable value as returned by GeneralName.getName()
+     * @return String in form rfc822Name=<email> or uri=<uri> etc 
+     * @throws IOException 
+     */
+    private static String getGeneralNameString(int tag, DEREncodable value) throws IOException {
+        String ret = null;
+        switch (tag) {
+        case 0: ASN1Sequence seq = getAltnameSequence(value.getDERObject().getEncoded());
+            String upn = getUPNStringFromSequence(seq);
+            // OtherName can be something else besides UPN
+            if (upn != null) {
+                ret = CertTools.UPN+"="+upn;                        
+            }
+            break;
+        case 1: ret = CertTools.EMAIL+"=" + DERIA5String.getInstance(value).getString();
+            break;
+        case 2: ret = CertTools.DNS+"=" + DERIA5String.getInstance(value).getString();
+            break;
+        case 3: // SubjectAltName of type x400Address not supported
+            break;
+        case 4: // SubjectAltName of type directoryName not supported
+            break;
+        case 5: // SubjectAltName of type ediPartyName not supported
+            break;
+        case 6: ret = CertTools.URI+"=" + DERIA5String.getInstance(value).getString();
+            break;
+        case 7: // SubjectAltName of type iPAddr not supported
+            break;
+        default: // SubjectAltName of unknown type
+            break;
+        }
+        return ret;
+    }
+    
 	/**
 	 * Check the certificate with CA certificate.
 	 *
@@ -1102,7 +1238,7 @@ public class CertTools {
             X509Certificate cert = getCertfromByteArray(ba);
             byte[] res = generateSHA1Fingerprint(cert.getEncoded());
 
-            return Hex.encode(res);
+            return new String(Hex.encode(res));
         } catch (CertificateEncodingException cee) {
             log.error("Error encoding X509 certificate.", cee);
         } catch (CertificateException cee) {
@@ -1123,7 +1259,7 @@ public class CertTools {
         try {
             byte[] res = generateSHA1Fingerprint(cert.getEncoded());
 
-            return Hex.encode(res);
+            return new String(Hex.encode(res));
         } catch (CertificateEncodingException cee) {
             log.error("Error encoding X509 certificate.", cee);
         }
@@ -1142,7 +1278,7 @@ public class CertTools {
         try {
             byte[] res = generateSHA1Fingerprint(crl.getEncoded());
 
-            return Hex.encode(res);
+            return new String(Hex.encode(res));
         } catch (CRLException ce) {
             log.error("Error encoding X509 CRL.", ce);
         }
@@ -1335,4 +1471,87 @@ public class CertTools {
         }
     }
 
+    public static GeneralNames getGeneralNamesFromAltName(String altName) {
+        DEREncodableVector vec = new DEREncodableVector();
+        // TODO: should support several emails as well, just like for dns etc
+        String email = CertTools.getEmailFromDN(altName);
+        if (email != null) {
+            GeneralName gn = new GeneralName(1, new DERIA5String(email));
+            vec.add(gn);
+        }
+        
+        ArrayList dns = CertTools.getPartsFromDN(altName, CertTools.DNS);
+        if (!dns.isEmpty()) {            
+            Iterator iter = dns.iterator();
+            while (iter.hasNext()) {
+                GeneralName gn = new GeneralName(2, new DERIA5String((String)iter.next()));
+                vec.add(gn);
+            }
+        }
+                                
+        ArrayList uri = CertTools.getPartsFromDN(altName, CertTools.URI);
+        if (!uri.isEmpty()) {            
+            Iterator iter = uri.iterator();
+            while (iter.hasNext()) {
+                GeneralName gn = new GeneralName(6, new DERIA5String((String)iter.next()));
+                vec.add(gn);
+            }
+        }
+
+        uri = CertTools.getPartsFromDN(altName, CertTools.URI1);
+        if (!uri.isEmpty()) {            
+            Iterator iter = uri.iterator();
+            while (iter.hasNext()) {
+                GeneralName gn = new GeneralName(6, new DERIA5String((String)iter.next()));
+                vec.add(gn);
+            }
+        }
+        
+                
+        ArrayList ipstr = CertTools.getPartsFromDN(altName, CertTools.IPADDR);
+        if (!ipstr.isEmpty()) {            
+            Iterator iter = ipstr.iterator();
+            while (iter.hasNext()) {
+                byte[] ipoctets = StringTools.ipStringToOctets((String)iter.next());
+                GeneralName gn = new GeneralName(7, new DEROctetString(ipoctets));
+                vec.add(gn);
+            }
+        }
+                    
+        ArrayList upn =  CertTools.getPartsFromDN(altName, CertTools.UPN);
+        if (!upn.isEmpty()) {            
+            Iterator iter = upn.iterator();             
+            while (iter.hasNext()) {
+                ASN1EncodableVector v = new ASN1EncodableVector();
+                v.add(new DERObjectIdentifier(CertTools.UPN_OBJECTID));
+                v.add(new DERTaggedObject(true, 0, new DERUTF8String((String)iter.next())));
+                //GeneralName gn = new GeneralName(new DERSequence(v), 0);
+                DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
+                vec.add(gn);
+            }
+        }
+        
+        
+        ArrayList guid =  CertTools.getPartsFromDN(altName, CertTools.GUID);
+        if (!guid.isEmpty()) {            
+            Iterator iter = guid.iterator();                
+            while (iter.hasNext()) {                    
+                ASN1EncodableVector v = new ASN1EncodableVector();
+                byte[] guidbytes = Hex.decode((String)iter.next());
+                if (guidbytes != null) {
+                    v.add(new DERObjectIdentifier(CertTools.GUID_OBJECTID));
+                    v.add(new DERTaggedObject(true, 0, new DEROctetString(guidbytes)));
+                    DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
+                    vec.add(gn);                    
+                } else {
+                    log.error("Cannot decode hexadecimal guid: "+guid);
+                }
+            }
+        }
+        GeneralNames ret = null; 
+        if (vec.size() > 0) {
+            ret = new GeneralNames(new DERSequence(vec));
+        }
+        return ret;
+    }
 } // CertTools

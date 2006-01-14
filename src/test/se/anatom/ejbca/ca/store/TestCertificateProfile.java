@@ -31,7 +31,7 @@ import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 /**
  * Tests the certificate profile entity bean.
  *
- * @version $Id: TestCertificateProfile.java,v 1.5 2006-01-12 10:56:16 anatom Exp $
+ * @version $Id: TestCertificateProfile.java,v 1.6 2006-01-14 11:34:23 anatom Exp $
  */
 public class TestCertificateProfile extends TestCase {
     private static Logger log = Logger.getLogger(TestCertificateProfile.class);
@@ -220,6 +220,20 @@ public class TestCertificateProfile extends TestCase {
         assertTrue("createSubjectAltNameSubSet doesn't work" + outaltname2 + " != "+ expectedaltname2, expectedaltname2.equalsIgnoreCase(outaltname2));
         
         log.debug(">test07createSubjectAltNameSubSet()");
+    }
+    
+    public void test08CertificateProfileValues() throws Exception {
+        CertificateProfile ep = new EndUserCertificateProfile();
+        assertEquals("2.5.29.32.0", ep.getCertificatePolicyId());
+        assertEquals(CertificateProfile.LATEST_VERSION, ep.getLatestVersion(),0);
+        String qcId = ep.getQCSemanticsId();
+        assertEquals("", qcId);
+        CertificateProfile cp = new CertificateProfile();
+        assertEquals("2.5.29.32.0", cp.getCertificatePolicyId());
+        assertEquals(CertificateProfile.LATEST_VERSION, cp.getLatestVersion(),0);
+        assertEquals("", cp.getQCSemanticsId());
+        cp.setQCSemanticsId("1.1.1.2");
+        assertEquals("1.1.1.2", cp.getQCSemanticsId());
     }
     
 }

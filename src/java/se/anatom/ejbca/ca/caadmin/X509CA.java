@@ -39,18 +39,15 @@ import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DEREncodableVector;
 import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERObjectIdentifier;
-import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
-import org.bouncycastle.asn1.DERTaggedObject;
-import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
@@ -67,6 +64,9 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
+import org.bouncycastle.asn1.x509.qualified.QCStatement;
+import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
+import org.bouncycastle.asn1.x509.qualified.SemanticsInformation;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
 import org.bouncycastle.cms.CMSProcessable;
@@ -79,7 +79,6 @@ import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.BasicOCSPRespGenerator;
 import org.bouncycastle.ocsp.OCSPException;
-import org.bouncycastle.util.encoders.Hex;
 
 import se.anatom.ejbca.SecConst;
 import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
@@ -97,13 +96,12 @@ import se.anatom.ejbca.ca.sign.SernoGenerator;
 import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
 import se.anatom.ejbca.common.UserDataVO;
 import se.anatom.ejbca.util.CertTools;
-import se.anatom.ejbca.util.StringTools;
 
 /**
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.48 2006-01-02 08:29:44 anatom Exp $
+ * @version $Id: X509CA.java,v 1.49 2006-01-14 11:33:58 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -367,83 +365,8 @@ public class X509CA extends CA implements Serializable {
         }
          // Subject Alternative name
         if ( (certProfile.getUseSubjectAlternativeName() == true) && (altName != null) && (altName.length() > 0) ) {
-            String email = CertTools.getEmailFromDN(altName);
-            DEREncodableVector vec = new DEREncodableVector();
-            if (email != null) {
-                GeneralName gn = new GeneralName(1, new DERIA5String(email));
-                vec.add(gn);
-            }
-            
-            ArrayList dns = CertTools.getPartsFromDN(altName, CertTools.DNS);
-            if (!dns.isEmpty()) {            
-				Iterator iter = dns.iterator();
-				while (iter.hasNext()) {
-					GeneralName gn = new GeneralName(2, new DERIA5String((String)iter.next()));
-					vec.add(gn);
-				}
-            }
-            			            
-            ArrayList uri = CertTools.getPartsFromDN(altName, CertTools.URI);
-			if (!uri.isEmpty()) {            
-				Iterator iter = uri.iterator();
-				while (iter.hasNext()) {
-					GeneralName gn = new GeneralName(6, new DERIA5String((String)iter.next()));
-					vec.add(gn);
-				}
-			}
-
-			uri = CertTools.getPartsFromDN(altName, CertTools.URI1);
-			if (!uri.isEmpty()) {            
-				Iterator iter = uri.iterator();
-				while (iter.hasNext()) {
-					GeneralName gn = new GeneralName(6, new DERIA5String((String)iter.next()));
-					vec.add(gn);
-				}
-			}
-            
-                    
-            ArrayList ipstr = CertTools.getPartsFromDN(altName, CertTools.IPADDR);
-			if (!ipstr.isEmpty()) {            
-				Iterator iter = ipstr.iterator();
-				while (iter.hasNext()) {
-					byte[] ipoctets = StringTools.ipStringToOctets((String)iter.next());
-					GeneralName gn = new GeneralName(7, new DEROctetString(ipoctets));
-					vec.add(gn);
-				}
-			}
-			            
-            ArrayList upn =  CertTools.getPartsFromDN(altName, CertTools.UPN);
-			if (!upn.isEmpty()) {            
-				Iterator iter = upn.iterator();				
-				while (iter.hasNext()) {
-					ASN1EncodableVector v = new ASN1EncodableVector();
-					v.add(new DERObjectIdentifier(CertTools.UPN_OBJECTID));
-					v.add(new DERTaggedObject(true, 0, new DERUTF8String((String)iter.next())));
-					//GeneralName gn = new GeneralName(new DERSequence(v), 0);
-					DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
-					vec.add(gn);
-				}
-			}
-            
-          
-            ArrayList guid =  CertTools.getPartsFromDN(altName, CertTools.GUID);
-			if (!guid.isEmpty()) {            
-				Iterator iter = guid.iterator();				
-				while (iter.hasNext()) {					
-	                ASN1EncodableVector v = new ASN1EncodableVector();
-	                byte[] guidbytes = Hex.decode((String)iter.next());
-	                if (guidbytes != null) {
-	                    v.add(new DERObjectIdentifier(CertTools.GUID_OBJECTID));
-	                    v.add(new DERTaggedObject(true, 0, new DEROctetString(guidbytes)));
-	                    DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
-	                    vec.add(gn);                    
-	                } else {
-	                    log.error("Cannot decode hexadecimal guid: "+guid);
-	                }
-				}
-            }            
-            if (vec.size() > 0) {
-                GeneralNames san = new GeneralNames(new DERSequence(vec));
+            GeneralNames san = CertTools.getGeneralNamesFromAltName(altName);            
+            if (san != null) {
                 certgen.addExtension(X509Extensions.SubjectAlternativeName.getId(), certProfile.getSubjectAlternativeNameCritical(), san);
             }
         }
@@ -493,6 +416,32 @@ public class X509CA extends CA implements Serializable {
              DERObjectIdentifier oid = new DERObjectIdentifier(OID_MSTEMPLATE);                           
              certgen.addExtension(oid, false, new DERIA5String(mstemplate));             
          }
+         
+         // QCStatement (rfc3739)
+         if (certProfile.getUseQCStatement() == true) {
+             String names = certProfile.getQCStatementRAName();
+             GeneralNames san = CertTools.getGeneralNamesFromAltName(names);
+             SemanticsInformation si = null;
+             if (san != null) {
+                 if (StringUtils.isNotEmpty(certProfile.getQCSemanticsId())) {
+                     si = new SemanticsInformation(new DERObjectIdentifier(certProfile.getQCSemanticsId()), san.getNames());
+                 } else {
+                     si = new SemanticsInformation(san.getNames());                     
+                 }
+             } else if (StringUtils.isNotEmpty(certProfile.getQCSemanticsId())) {
+                 si = new SemanticsInformation(new DERObjectIdentifier(certProfile.getQCSemanticsId()));                 
+             }
+             QCStatement qc = null;
+             if ( (si != null)  ) {
+                 qc = new QCStatement(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2, si);
+             } 
+             if (qc != null) {
+                 // we only support one QCStatement in the sequence of QCStatements                 
+                 DEREncodableVector vec = new DEREncodableVector();
+                 vec.add(qc);
+                 certgen.addExtension(CertTools.QCSTATEMENTS_OBJECTID, certProfile.getQCStatementCritical(), new DERSequence(vec));                 
+             }
+         }
 		          
          X509Certificate cert;
          try{
@@ -510,6 +459,7 @@ public class X509CA extends CA implements Serializable {
             
       return cert;                                                                                        
     }
+
     
     public CRL generateCRL(Vector certs, int crlnumber) throws Exception {
         final String sigAlg= getCAToken().getCATokenInfo().getSignatureAlgorithm();

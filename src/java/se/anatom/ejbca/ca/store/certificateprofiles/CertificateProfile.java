@@ -32,12 +32,12 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.31 2005-11-24 21:20:13 herrvendil Exp $
+ * @version $Id: CertificateProfile.java,v 1.32 2006-01-14 11:33:58 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
     // Default Values
-    public static final float LATEST_VERSION = (float) 12.0;
+    public static final float LATEST_VERSION = (float) 13.0;
 
     /** KeyUsage constants */
     public static final int DIGITALSIGNATURE = 0;
@@ -130,6 +130,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 	protected static final String SUBJECTALTNAMESUBSET           = "subjectaltnamesubset";
 	protected static final String USEPATHLENGTHCONSTRAINT        = "usepathlengthconstraint";
 	protected static final String PATHLENGTHCONSTRAINT           = "pathlengthconstraint";
+    protected static final String USEQCSTATEMENT                 = "useqcstatement";
+    protected static final String QCSTATEMENTCRITICAL            = "useqcstatementcritical";
+    protected static final String QCSTATEMENTRANAME              = "useqcstatementraname";
+    protected static final String QCSSEMANTICSID                 = "useqcsematicsid";
      
     // Public Methods
 
@@ -197,6 +201,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 	  setUsePathLengthConstraint(false);
 	  setPathLengthConstraint(0);
 	  
+      setUseQCStatement(false);
+      setQCStatementCritical(false);
+      setQCStatementRAName(null);
+      setQCSemanticsId(null);
     }
 
 
@@ -629,6 +637,26 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 		data.put(OCSPSERVICELOCATORURI,ocspservicelocatoruri);
 	}
 
+    public boolean getUseQCStatement(){ return ((Boolean) data.get(USEQCSTATEMENT)).booleanValue(); }
+    public void setUseQCStatement(boolean useqcstatement) { data.put(USEQCSTATEMENT, Boolean.valueOf(useqcstatement));}
+    public boolean getQCStatementCritical() { return ((Boolean) data.get(QCSTATEMENTCRITICAL)).booleanValue(); }
+    public void  setQCStatementCritical(boolean qcstatementcritical) { data.put(QCSTATEMENTCRITICAL, Boolean.valueOf(qcstatementcritical));}
+
+    public String getQCStatementRAName(){ return (String) data.get(QCSTATEMENTRANAME); }
+    public void setQCStatementRAName(String qcstatementraname) {
+      if(qcstatementraname==null)
+        data.put(QCSTATEMENTRANAME,"");
+      else
+        data.put(QCSTATEMENTRANAME,qcstatementraname);
+    }
+    public String getQCSemanticsId(){ return (String) data.get(QCSSEMANTICSID); }
+    public void setQCSemanticsId(String qcsemanticsid) {
+      if(qcsemanticsid==null)
+        data.put(QCSSEMANTICSID,"");
+      else
+        data.put(QCSSEMANTICSID,qcsemanticsid);
+    }
+
     public Object clone() throws CloneNotSupportedException {
       CertificateProfile clone = new CertificateProfile();
       HashMap clonedata = (HashMap) clone.saveData();
@@ -700,6 +728,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             	setPathLengthConstraint(0);
             }
             
+            if(data.get(USEQCSTATEMENT) == null){
+                setUseQCStatement(false);
+                setQCStatementCritical(false);
+                setQCStatementRAName("");
+                setQCSemanticsId("");
+            }
         }
         log.debug("<upgrade");
     }
