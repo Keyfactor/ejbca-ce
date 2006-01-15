@@ -54,6 +54,8 @@
   static final String BUTTON_RECIEVEFILE                = "buttonrecievefile";     
   static final String BUTTON_PUBLISHCA                  = "buttonpublishca";     
   static final String BUTTON_REVOKERENEWOCSPCERTIFICATE = "checkboxrenewocspcertificate";
+  static final String BUTTON_GENDEFAULTCRLDISTPOINT     = "checkboxgeneratedefaultcrldistpoint";
+  static final String BUTTON_GENDEFAULTOCSPLOCATOR      = "checkbexgeneratedefaultocsplocator";
 
   static final String TEXTFIELD_SUBJECTDN             = "textfieldsubjectdn";
   static final String TEXTFIELD_SUBJECTALTNAME        = "textfieldsubjectaltname";  
@@ -63,6 +65,8 @@
   static final String TEXTFIELD_POLICYID              = "textfieldpolicyid";
   static final String TEXTFIELD_HARDCATOKENPROPERTIES = "textfieldhardcatokenproperties";
   static final String TEXTFIELD_AUTHENTICATIONCODE    = "textfieldauthenticationcode";
+  static final String TEXTFIELD_DEFAULTCRLDISTPOINT   = "textfielddefaultcrldistpoint";
+  static final String TEXTFIELD_DEFAULTOCSPLOCATOR    = "textfielddefaultocsplocator";
 
   static final String CHECKBOX_AUTHORITYKEYIDENTIFIER             = "checkboxauthoritykeyidentifier";
   static final String CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL     = "checkboxauthoritykeyidentifiercritical";
@@ -188,7 +192,7 @@
       if( request.getParameter(BUTTON_EDIT_CA) != null){
           // Display  profilepage.jsp         
          includefile="choosecapage.jspf";
-         if(request.getParameter(SELECT_CAS) != null){
+         if(request.getParameter(SELECT_CAS) != null && !request.getParameter(SELECT_CAS).equals("")){
            caid = Integer.parseInt(request.getParameter(SELECT_CAS));
            if(caid != 0){             
              editca = true;
@@ -198,7 +202,7 @@
       }
       if( request.getParameter(BUTTON_DELETE_CA) != null) {
           // Delete profile and display choosecapage. 
-          if(request.getParameter(SELECT_CAS) != null){
+          if(request.getParameter(SELECT_CAS) != null && !request.getParameter(SELECT_CAS).equals("")){
             caid = Integer.parseInt(request.getParameter(SELECT_CAS));
             if(caid != 0){             
                 cadeletefailed = !cadatahandler.removeCA(caid);
@@ -208,7 +212,7 @@
       }
       if( request.getParameter(BUTTON_RENAME_CA) != null){ 
          // Rename selected profile and display profilespage.
-       if(request.getParameter(SELECT_CAS) != null && request.getParameter(TEXTFIELD_CANAME) != null){
+       if(request.getParameter(SELECT_CAS) != null  && !request.getParameter(SELECT_CAS).equals("") && request.getParameter(TEXTFIELD_CANAME) != null){
          String newcaname = request.getParameter(TEXTFIELD_CANAME).trim();
          String oldcaname = (String) caidtonamemap.get(new Integer(request.getParameter(SELECT_CAS)));    
          if(!newcaname.equals("") ){           
@@ -344,6 +348,9 @@
                    crlnumbercritical = false;
               }              
               
+             String defaultcrldistpoint = request.getParameter(TEXTFIELD_DEFAULTCRLDISTPOINT);
+             String defaultocsplocator  = request.getParameter(TEXTFIELD_DEFAULTOCSPLOCATOR);
+              
              boolean finishuser = false;
              value = request.getParameter(CHECKBOX_FINISHUSER);
              if(value != null)
@@ -382,6 +389,8 @@
                                                         authoritykeyidentifiercritical,
                                                         usecrlnumber, 
                                                         crlnumbercritical, 
+                                                        defaultcrldistpoint,
+                                                        defaultocsplocator,
                                                         finishuser, extendedcaservices);
                  try{
                    cadatahandler.createCA((CAInfo) x509cainfo);
@@ -411,6 +420,8 @@
                                                         authoritykeyidentifiercritical,
                                                         usecrlnumber, 
                                                         crlnumbercritical, 
+                                                        defaultcrldistpoint,
+                                                        defaultocsplocator,
                                                         finishuser, extendedcaservices);
                  cabean.saveRequestInfo(x509cainfo);                
                  filemode = MAKEREQUESTMODE;
@@ -492,6 +503,9 @@
                    crlnumbercritical = false;
               }              
               
+             String defaultcrldistpoint = request.getParameter(TEXTFIELD_DEFAULTCRLDISTPOINT);
+             String defaultocsplocator  = request.getParameter(TEXTFIELD_DEFAULTOCSPLOCATOR);
+              
              boolean finishuser = false;
              value = request.getParameter(CHECKBOX_FINISHUSER);
              if(value != null)
@@ -532,6 +546,8 @@
                                                       authoritykeyidentifiercritical,
                                                       usecrlnumber, 
                                                       crlnumbercritical, 
+                                                      defaultcrldistpoint,
+                                                      defaultocsplocator,
                                                       finishuser,extendedcaservices);
                  
                cadatahandler.editCA((CAInfo) x509cainfo);
@@ -702,8 +718,8 @@
               boolean authoritykeyidentifiercritical = false;              
 
               boolean usecrlnumber = false;
-              boolean crlnumbercritical = false;                            
-              
+              boolean crlnumbercritical = false;
+                                                                      
               boolean finishuser = false;
               ArrayList crlpublishers = new ArrayList(); 
               
@@ -718,6 +734,7 @@
                                                         authoritykeyidentifiercritical,
                                                         usecrlnumber, 
                                                         crlnumbercritical, 
+                                                        "","",
                                                         finishuser, 
                                                         new ArrayList());
                  try{
