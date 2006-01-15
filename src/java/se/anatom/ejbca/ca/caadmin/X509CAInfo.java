@@ -22,7 +22,7 @@ import se.anatom.ejbca.util.StringTools;
 /**
  * Holds nonsensitive information about a X509CA.
  *
- * @version $Id: X509CAInfo.java,v 1.6 2004-05-06 16:27:22 anatom Exp $
+ * @version $Id: X509CAInfo.java,v 1.7 2006-01-15 11:12:54 herrvendil Exp $
  */
 public class X509CAInfo extends CAInfo{
    
@@ -31,6 +31,8 @@ public class X509CAInfo extends CAInfo{
   boolean authoritykeyidentifiercritical;
   boolean usecrlnumber;
   boolean crlnumbercritical;
+  String defaultcrldistpoint;
+  String defaultocsplocator;
   String subjectaltname;
     
     /**
@@ -40,7 +42,7 @@ public class X509CAInfo extends CAInfo{
                     int validity, Date expiretime, int catype, int signedby, Collection certificatechain, 
                     CATokenInfo catokeninfo, String description, int revokationreason, Date revokationdate, String policyid, int crlperiod, Collection crlpublishers,
                     boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
-                    boolean usecrlnumber, boolean crlnumbercritical, boolean finishuser,
+                    boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultocspservicelocator, boolean finishuser,
                     Collection extendedcaserviceinfos) {
         this.subjectdn = StringTools.strip(CertTools.stringToBCDNString(subjectdn));
         this.caid = this.subjectdn.hashCode();
@@ -62,6 +64,8 @@ public class X509CAInfo extends CAInfo{
         this.authoritykeyidentifiercritical = authoritykeyidentifiercritical;
         this.usecrlnumber = usecrlnumber;
         this.crlnumbercritical = crlnumbercritical;
+        this.defaultcrldistpoint = defaultcrldistpoint;
+        this.defaultocsplocator = defaultocspservicelocator;
         this.finishuser = finishuser;                     
         this.subjectaltname = subjectaltname;
         this.certificateprofileid = certificateprofileid;
@@ -74,7 +78,8 @@ public class X509CAInfo extends CAInfo{
     public X509CAInfo(int caid, int validity, CATokenInfo catokeninfo, String description,
                       int crlperiod, Collection crlpublishers,
                       boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
-                      boolean usecrlnumber, boolean crlnumbercritical, boolean finishuser, Collection extendedcaserviceinfos) {        
+                      boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultocspservicelocator, 
+                      boolean finishuser, Collection extendedcaserviceinfos) {        
         this.caid = caid;
         this.validity=validity;
         this.catokeninfo = catokeninfo; 
@@ -85,6 +90,8 @@ public class X509CAInfo extends CAInfo{
         this.authoritykeyidentifiercritical = authoritykeyidentifiercritical;
         this.usecrlnumber = usecrlnumber;
         this.crlnumbercritical = crlnumbercritical;
+        this.defaultcrldistpoint = defaultcrldistpoint;
+        this.defaultocsplocator = defaultocspservicelocator;
         this.finishuser = finishuser;
 		this.extendedcaserviceinfos = extendedcaserviceinfos; 
     }  
@@ -108,6 +115,10 @@ public class X509CAInfo extends CAInfo{
   public void setAuthorityKeyIdentifierCritical(boolean authoritykeyidentifiercritical)
                 {this.authoritykeyidentifiercritical=authoritykeyidentifiercritical;}
   
+  
+  public String getDefaultCRLDistPoint(){ return defaultcrldistpoint; }
+  
+  public String getDefaultOCSPServiceLocator(){ return defaultocsplocator; }
   
   public String getSubjectAltName(){ return subjectaltname; }
   

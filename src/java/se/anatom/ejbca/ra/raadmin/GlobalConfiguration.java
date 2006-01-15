@@ -18,7 +18,7 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
 /**
  * This is a  class containing global configuration parameters.
  *
- * @version $Id: GlobalConfiguration.java,v 1.20 2005-06-14 12:20:31 herrvendil Exp $
+ * @version $Id: GlobalConfiguration.java,v 1.21 2006-01-15 11:12:54 herrvendil Exp $
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
 
@@ -34,7 +34,11 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     private final  String[] DEFAULTPOSSIBLELOGENTRIESPERPAGE = {"10" , "25" , "50" , "100", "200", "400"};
 
     // Path added to baseurl used as default vaule in CRLDistributionPointURI field in Certificate Profile definitions.
-    private static final  String   DEFAULTCRLDISTURIPATH  = "publicweb/webdist/certdist?cmd=crl&issuer=CN=TestCA,O=AnaTom,C=SE";
+    private static final  String   DEFAULTCRLDISTURIPATH  = "publicweb/webdist/certdist?cmd=crl&issuer=";
+    
+    // Path added to baseurl used as default vaule in CRLDistributionPointURI field in Certificate Profile definitions.
+    private static final  String   DEFAULTCRLDISTURIPATHDN  = "CN=TestCA,O=AnaTom,C=SE";
+
 
     // Path added to baseurl used as default vaule in OCSP Service Locator URI field in Certificate Profile definitions.
 	private static final  String   DEFAULTOCSPSERVICELOCATORURIPATH = "publicweb/status/ocsp";
@@ -152,6 +156,14 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     public String getAdminWebPath(){return (String) data.get(ADMINPATH);}
 
     public String getStandardCRLDistributionPointURI(){
+        String retval = getBaseUrl();
+        retval =retval.replaceFirst((String) data.get(PRIVATEPROTOCOL), (String) data.get(PUBLICPROTOCOL));
+        retval =retval.replaceFirst((String) data.get(PRIVATEPORT), (String) data.get(PUBLICPORT));
+        retval+= DEFAULTCRLDISTURIPATH + DEFAULTCRLDISTURIPATHDN;
+        return retval;
+    }
+    
+    public String getStandardCRLDistributionPointURINoDN(){
         String retval = getBaseUrl();
         retval =retval.replaceFirst((String) data.get(PRIVATEPROTOCOL), (String) data.get(PUBLICPROTOCOL));
         retval =retval.replaceFirst((String) data.get(PRIVATEPORT), (String) data.get(PUBLICPORT));

@@ -82,7 +82,7 @@ import se.anatom.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.49 2006-01-02 15:23:07 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.50 2006-01-15 11:12:54 herrvendil Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -1211,6 +1211,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
                                                false, // Authority Key Identifier Critical
                                                true, // CRL Number
                                                false, // CRL Number Critical
+                                               "", // Default CRL Dist Point
+                                               "", // Default OCSP Service Locator                                               
                                                true, // Finish User
 			                                   extendedcaservices);
 

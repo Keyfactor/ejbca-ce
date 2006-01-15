@@ -101,14 +101,14 @@ import se.anatom.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.49 2006-01-14 11:33:58 anatom Exp $
+ * @version $Id: X509CA.java,v 1.50 2006-01-15 11:12:54 herrvendil Exp $
  */
 public class X509CA extends CA implements Serializable {
 
     private static final Logger log = Logger.getLogger(X509CA.class);
 
     // Default Values
-    public static final float LATEST_VERSION = 1;
+    public static final float LATEST_VERSION = 2;
 
     private byte[]  keyId = new byte[] { 1, 2, 3, 4, 5 };
     
@@ -120,6 +120,8 @@ public class X509CA extends CA implements Serializable {
     protected static final String AUTHORITYKEYIDENTIFIERCRITICAL = "authoritykeyidentifiercritical";
     protected static final String USECRLNUMBER                   = "usecrlnumber";
     protected static final String CRLNUMBERCRITICAL              = "crlnumbercritical";
+    protected static final String DEFAULTCRLDISTPOINT            = "defaultcrldistpoint";
+    protected static final String DEFAULTOCSPSERVICELOCATOR      = "defaultocspservicelocator";
 
     /** OID used for creating MS Templates */
     protected static final String OID_MSTEMPLATE = "1.3.6.1.4.1.311.20.2";
@@ -135,6 +137,8 @@ public class X509CA extends CA implements Serializable {
       setAuthorityKeyIdentifierCritical(cainfo.getAuthorityKeyIdentifierCritical()); 
       setUseCRLNumber(cainfo.getUseCRLNumber());
       setCRLNumberCritical(cainfo.getCRLNumberCritical());
+      setDefaultCRLDistPoint(cainfo.getDefaultCRLDistPoint());
+      setDefaultOCSPServiceLocator(cainfo.getDefaultOCSPServiceLocator());
       setFinishUser(cainfo.getFinishUser());
       
       data.put(CA.CATYPE, new Integer(CAInfo.CATYPE_X509));
@@ -172,6 +176,24 @@ public class X509CA extends CA implements Serializable {
     public boolean  getCRLNumberCritical(){return ((Boolean)data.get(CRLNUMBERCRITICAL)).booleanValue();}
     public void setCRLNumberCritical(boolean crlnumbercritical) {data.put(CRLNUMBERCRITICAL, Boolean.valueOf(crlnumbercritical));}
     
+    public String  getDefaultCRLDistPoint(){return (String) data.get(DEFAULTCRLDISTPOINT);}
+    public void setDefaultCRLDistPoint(String defailtcrldistpoint) {
+    	if(defailtcrldistpoint == null){
+    		data.put(DEFAULTCRLDISTPOINT, "");
+    	}else{
+    		data.put(DEFAULTCRLDISTPOINT, defailtcrldistpoint);
+    	}     
+    }
+    
+    public String  getDefaultOCSPServiceLocator(){return (String) data.get(DEFAULTOCSPSERVICELOCATOR);}
+    public void setDefaultOCSPServiceLocator(String defaultocsplocator) {
+    	if(defaultocsplocator == null){
+    		data.put(DEFAULTOCSPSERVICELOCATOR, "");
+    	}else{
+    		data.put(DEFAULTOCSPSERVICELOCATOR, defaultocsplocator);
+    	}     
+    }
+    
     
     public void updateCA(CAInfo cainfo) throws Exception{
       super.updateCA(cainfo); 
@@ -181,6 +203,8 @@ public class X509CA extends CA implements Serializable {
       setAuthorityKeyIdentifierCritical(info.getAuthorityKeyIdentifierCritical()); 
       setUseCRLNumber(info.getUseCRLNumber());
       setCRLNumberCritical(info.getCRLNumberCritical());
+      setDefaultCRLDistPoint(info.getDefaultCRLDistPoint());
+      setDefaultOCSPServiceLocator(info.getDefaultOCSPServiceLocator());
     }
     
     public CAInfo getCAInfo() throws Exception{
@@ -194,7 +218,7 @@ public class X509CA extends CA implements Serializable {
                     getValidity(), getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(),
                     getCAToken().getCATokenInfo(), getDescription(), getRevokationReason(), getRevokationDate(), getPolicyId(), getCRLPeriod(), getCRLPublishers(),
                     getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(),
-                    getUseCRLNumber(), getCRLNumberCritical(), getFinishUser(), externalcaserviceinfos); 
+                    getUseCRLNumber(), getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultOCSPServiceLocator(), getFinishUser(), externalcaserviceinfos); 
     }
 
 
@@ -381,8 +405,12 @@ public class X509CA extends CA implements Serializable {
 
          // CRL Distribution point URI
          if (certProfile.getUseCRLDistributionPoint() == true) {
-             // Multiple CDPs are spearated with the ';' sign
-            StringTokenizer tokenizer = new StringTokenizer(certProfile.getCRLDistributionPointURI(), ";", false);
+        	 String crldistpoint = certProfile.getCRLDistributionPointURI();
+        	 if(certProfile.getUseDefaultCRLDistributionPoint()){
+        		 crldistpoint = getDefaultCRLDistPoint();
+        	 }
+             // Multiple CDPs are spearated with the ';' sign        	         	 
+            StringTokenizer tokenizer = new StringTokenizer(crldistpoint, ";", false);
             ArrayList distpoints = new ArrayList();
             while (tokenizer.hasMoreTokens()) {
                 // 6 is URI
@@ -404,6 +432,9 @@ public class X509CA extends CA implements Serializable {
          // Authority Information Access (OCSP url)
          if (certProfile.getUseOCSPServiceLocator() == true) {
              String ocspUrl = certProfile.getOCSPServiceLocatorURI();
+             if(certProfile.getUseDefaultOCSPServiceLocator()){
+            	 ocspUrl = getDefaultOCSPServiceLocator();
+             }
              // OCSP access location is a URL (GeneralName no 6)
              GeneralName ocspLocation = new GeneralName(6, new DERIA5String(ocspUrl));
              certgen.addExtension(X509Extensions.AuthorityInfoAccess.getId(),
@@ -520,6 +551,11 @@ public class X509CA extends CA implements Serializable {
     public void upgrade(){
       if(LATEST_VERSION != getVersion()){
         // New version of the class, upgrade
+    	  
+    	  if(data.get(DEFAULTOCSPSERVICELOCATOR) == null){
+    		  setDefaultCRLDistPoint("");
+    		  setDefaultOCSPServiceLocator("");
+    	  }
 
         data.put(VERSION, new Float(LATEST_VERSION));
       }  

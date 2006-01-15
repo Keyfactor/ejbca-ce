@@ -35,6 +35,8 @@
   static final String TEXTFIELD_OCSPSERVICELOCATOR     = "textfieldocspservicelocatoruri";
   static final String TEXTFIELD_CNPOSTFIX              = "textfieldcnpostfix";
   static final String TEXTFIELD_PATHLENGTHCONSTRAINT   = "textfieldpathlengthconstraint";
+  static final String TEXTFIELD_QCSSEMANTICSID         = "textfieldqcsemanticsid";
+  static final String TEXTFIELD_QCSTATEMENTRANAME      = "textfieldqcstatementraname";
   
   static final String CHECKBOX_BASICCONSTRAINTS                   = "checkboxbasicconstraints";
   static final String CHECKBOX_BASICCONSTRAINTSCRITICAL           = "checkboxbasicconstraintscritical";
@@ -47,6 +49,7 @@
   static final String CHECKBOX_SUBJECTALTERNATIVENAME             = "checkboxsubjectalternativename";
   static final String CHECKBOX_SUBJECTALTERNATIVENAMECRITICAL     = "checkboxsubjectalternativenamecritical";
   static final String CHECKBOX_CRLDISTRIBUTIONPOINT               = "checkboxcrldistributionpoint";
+  static final String CHECKBOX_USEDEFAULTCRLDISTRIBUTIONPOINT     = "checkboxusedefaultcrldistributionpoint";
   static final String CHECKBOX_CRLDISTRIBUTIONPOINTCRITICAL       = "checkboxcrldistributionpointcritical";
   static final String CHECKBOX_USECERTIFICATEPOLICIES             = "checkusecertificatepolicies";
   static final String CHECKBOX_CERTIFICATEPOLICIESCRITICAL        = "checkcertificatepoliciescritical";
@@ -54,11 +57,14 @@
   static final String CHECKBOX_USEEXTENDEDKEYUSAGE                = "checkuseextendedkeyusage";
   static final String CHECKBOX_EXTENDEDKEYUSAGECRITICAL           = "checkboxextendedkeyusagecritical";
   static final String CHECKBOX_USEOCSPSERVICELOCATOR              = "checkuseocspservicelocator";
+  static final String CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR      = "checkusedefaultocspservicelocator";
   static final String CHECKBOX_USEMSTEMPLATE                      = "checkusemstemplate";
   static final String CHECKBOX_USECNPOSTFIX                       = "checkusecnpostfix";
   static final String CHECKBOX_USESUBJECTDNSUBSET                 = "checkusesubjectdnsubset";
   static final String CHECKBOX_USESUBJECTALTNAMESUBSET            = "checkusesubjectaltnamesubset";
   static final String CHECKBOX_USEPATHLENGTHCONSTRAINT            = "checkusepathlengthconstraint";
+  static final String CHECKBOX_USEQCSTATEMENT                     = "checkuseqcstatement";
+  static final String CHECKBOX_QCSTATEMENTCRITICAL                = "checkqcstatementcritical";
 
   static final String SELECT_AVAILABLEBITLENGTHS                  = "selectavailablebitlengths";
   static final String SELECT_KEYUSAGE                             = "selectkeyusage";
@@ -322,12 +328,19 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
                    certificateprofiledata.setCRLDistributionPointCritical(value.equals(CHECKBOX_VALUE)); 
                  else
                    certificateprofiledata.setCRLDistributionPointCritical(false); 
-
+                   
+                 value = request.getParameter(CHECKBOX_USEDEFAULTCRLDISTRIBUTIONPOINT); 
+                 if(value != null)
+                   certificateprofiledata.setUseDefaultCRLDistributionPoint(value.equals(CHECKBOX_VALUE)); 
+                 else
+                   certificateprofiledata.setUseDefaultCRLDistributionPoint(false); 
+                   
                  value = request.getParameter(TEXTFIELD_CRLDISTURI);
-                 if(value != null){
+                 if(value != null && !certificateprofiledata.getUseDefaultCRLDistributionPoint()){
                    value=value.trim();
                    certificateprofiledata.setCRLDistributionPointURI(value);
                  } 
+                 
              }
              else{
                  certificateprofiledata.setUseCRLDistributionPoint(false);
@@ -446,8 +459,15 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
                  use = value.equals(CHECKBOX_VALUE);
                  certificateprofiledata.setUseOCSPServiceLocator(use);
 
-                 value = request.getParameter(TEXTFIELD_OCSPSERVICELOCATOR);
+                 value = request.getParameter(CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR);
                  if(value != null){
+                   certificateprofiledata.setUseDefaultOCSPServiceLocator(value.equals(CHECKBOX_VALUE));
+                 }else{
+                   certificateprofiledata.setUseDefaultOCSPServiceLocator(false);
+                 }          
+                  
+                 value = request.getParameter(TEXTFIELD_OCSPSERVICELOCATOR);
+                 if(value != null && !certificateprofiledata.getUseDefaultOCSPServiceLocator()){
                    value=value.trim();
                    certificateprofiledata.setOCSPServiceLocatorURI(value);
                  } 
@@ -528,6 +548,31 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
              else{
                  certificateprofiledata.setUseSubjectAltNameSubSet(false);                 
                  certificateprofiledata.setSubjectAltNameSubSet(new ArrayList());
+             }
+             
+             value = request.getParameter(CHECKBOX_USEQCSTATEMENT);
+             if(value != null){                  
+                  certificateprofiledata.setUseQCStatement(value.equals(CHECKBOX_VALUE));
+                  
+                  if(certificateprofiledata.getUseQCStatement()){
+                     value = request.getParameter(CHECKBOX_QCSTATEMENTCRITICAL);
+                     if(value != null) {
+                       certificateprofiledata.setQCStatementCritical(value.equals(CHECKBOX_VALUE));
+                     }else{
+                       certificateprofiledata.setQCStatementCritical(false);
+                     }   
+                     certificateprofiledata.setQCSemanticsId(request.getParameter(TEXTFIELD_QCSSEMANTICSID));
+                     certificateprofiledata.setQCStatementRAName(request.getParameter(TEXTFIELD_QCSTATEMENTRANAME));
+                  }else{
+                     certificateprofiledata.setQCStatementCritical(false);
+                     certificateprofiledata.setQCSemanticsId("");
+                     certificateprofiledata.setQCStatementRAName("");                  
+                  }
+             }else{
+                 certificateprofiledata.setUseQCStatement(false);
+                 certificateprofiledata.setQCStatementCritical(false);
+                 certificateprofiledata.setQCSemanticsId("");
+                 certificateprofiledata.setQCStatementRAName("");               
              }
              
               cabean.changeCertificateProfile(certprofile,certificateprofiledata);

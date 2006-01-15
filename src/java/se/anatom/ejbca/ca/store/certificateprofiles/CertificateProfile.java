@@ -32,12 +32,12 @@ import se.anatom.ejbca.util.UpgradeableDataHashMap;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.32 2006-01-14 11:33:58 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.33 2006-01-15 11:12:53 herrvendil Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
     // Default Values
-    public static final float LATEST_VERSION = (float) 13.0;
+    public static final float LATEST_VERSION = (float) 14.0;
 
     /** KeyUsage constants */
     public static final int DIGITALSIGNATURE = 0;
@@ -102,6 +102,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USESUBJECTALTERNATIVENAME      = "usesubjectalternativename";
     protected static final String SUBJECTALTERNATIVENAMECRITICAL = "subjectalternativenamecritical";
     protected static final String USECRLDISTRIBUTIONPOINT        = "usecrldistributionpoint";
+    protected static final String USEDEFAULTCRLDISTRIBUTIONPOINT = "usedefaultcrldistributionpoint";
     protected static final String CRLDISTRIBUTIONPOINTCRITICAL   = "crldistributionpointcritical";
     protected static final String CRLDISTRIBUTIONPOINTURI        = "crldistributionpointuri";
     protected static final String USECERTIFICATEPOLICIES         = "usecertificatepolicies";
@@ -118,7 +119,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String EXTENDEDKEYUSAGECRITICAL       = "extendedkeyusagecritical";
     protected static final String AVAILABLECAS                   = "availablecas";
     protected static final String USEDPUBLISHERS                 = "usedpublishers";         
-	protected static final String USEOCSPSERVICELOCATOR          = "useocspservicelocator";	
+	protected static final String USEOCSPSERVICELOCATOR          = "useocspservicelocator";
+	protected static final String USEDEFAULTOCSPSERVICELOCATOR   = "usedefaultocspservicelocator";	
 	protected static final String OCSPSERVICELOCATORURI          = "ocspservicelocatoruri";
 	protected static final String USEMICROSOFTTEMPLATE           = "usemicrosofttemplate";
 	protected static final String MICROSOFTTEMPLATE              = "microsofttemplate";
@@ -157,6 +159,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       setSubjectAlternativeNameCritical(false);
 
       setUseCRLDistributionPoint(false);
+      setUseDefaultCRLDistributionPoint(false);
       setCRLDistributionPointCritical(false);
       setCRLDistributionPointURI("");
 
@@ -185,6 +188,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       setPublisherList(new ArrayList());
       
 	  setUseOCSPServiceLocator(false);	  
+	  setUseDefaultOCSPServiceLocator(false);
 	  setOCSPServiceLocatorURI("");
 
 	  setUseMicrosoftTemplate(false);	  
@@ -256,6 +260,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public boolean getUseCRLDistributionPoint(){ return ((Boolean) data.get(USECRLDISTRIBUTIONPOINT)).booleanValue(); }
     public void setUseCRLDistributionPoint(boolean usecrldistributionpoint) { data.put(USECRLDISTRIBUTIONPOINT, Boolean.valueOf(usecrldistributionpoint));}
 
+    public boolean getUseDefaultCRLDistributionPoint(){ return ((Boolean) data.get(USEDEFAULTCRLDISTRIBUTIONPOINT)).booleanValue(); }
+    public void setUseDefaultCRLDistributionPoint(boolean usedefaultcrldistributionpoint) { data.put(USEDEFAULTCRLDISTRIBUTIONPOINT, Boolean.valueOf(usedefaultcrldistributionpoint));}
+    
     public boolean getCRLDistributionPointCritical(){ return ((Boolean) data.get(CRLDISTRIBUTIONPOINTCRITICAL)).booleanValue(); }
     public void setCRLDistributionPointCritical(boolean crldistributionpointcritical) { data.put(CRLDISTRIBUTIONPOINTCRITICAL, Boolean.valueOf(crldistributionpointcritical));}
 
@@ -624,10 +631,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setPathLengthConstraint(int pathlength) {
 		data.put(PATHLENGTHCONSTRAINT, new Integer(pathlength));			
 	}   
-    
-    
+
 	public boolean getUseOCSPServiceLocator(){ return ((Boolean) data.get(USEOCSPSERVICELOCATOR)).booleanValue(); }
 	public void setUseOCSPServiceLocator(boolean useocspservicelocator) { data.put(USEOCSPSERVICELOCATOR, Boolean.valueOf(useocspservicelocator));}
+    
+	public boolean getUseDefaultOCSPServiceLocator(){ return ((Boolean) data.get(USEDEFAULTOCSPSERVICELOCATOR)).booleanValue(); }
+	public void setUseDefaultOCSPServiceLocator(boolean usedefaultocspservicelocator) { data.put(USEDEFAULTOCSPSERVICELOCATOR, Boolean.valueOf(usedefaultocspservicelocator));}
 
 	public String getOCSPServiceLocatorURI(){ return (String) data.get(OCSPSERVICELOCATORURI); }
 	public void setOCSPServiceLocatorURI(String ocspservicelocatoruri) {
@@ -731,9 +740,15 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             if(data.get(USEQCSTATEMENT) == null){
                 setUseQCStatement(false);
                 setQCStatementCritical(false);
-                setQCStatementRAName("");
-                setQCSemanticsId("");
+                setQCStatementRAName(null);
+                setQCSemanticsId(null);
             }
+            
+            if(data.get(USEDEFAULTCRLDISTRIBUTIONPOINT) == null){
+            	setUseDefaultCRLDistributionPoint(false);
+            	setUseDefaultOCSPServiceLocator(false);
+            }
+            
         }
         log.debug("<upgrade");
     }

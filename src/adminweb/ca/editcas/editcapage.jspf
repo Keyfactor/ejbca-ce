@@ -164,9 +164,21 @@ function isExternal(){
    } 
 }
 
-
     <% } %>
 <% }
+   if(!processrequest){ %>
+function gendefaultcrldistpoint(){
+ <% if(!editca){ %>
+    document.ca.<%=TEXTFIELD_DEFAULTCRLDISTPOINT%>.value = "<%=globalconfiguration.getStandardCRLDistributionPointURINoDN() %>" + document.ca.<%=TEXTFIELD_SUBJECTDN%>.value;
+ <% }else{ %>
+    document.ca.<%=TEXTFIELD_DEFAULTCRLDISTPOINT%>.value = "<%=globalconfiguration.getStandardCRLDistributionPointURINoDN() + cainfo.getSubjectDN()%>";
+ <% } %>
+}
+
+function gendefaultocsplocator(){
+    document.ca.<%=TEXTFIELD_DEFAULTOCSPLOCATOR%>.value = "<%=globalconfiguration.getStandardOCSPServiceLocatorURI() %>";
+}
+<% } 
    if(revokable){ %>
 function confirmrevokation(){
   var returnval = false;
@@ -226,6 +238,7 @@ function checkusefield(usefield, criticalfield){
     cribox.disabled = true;
   }
 }
+
 
 function checkallfields(){
     var illegalfields = 0;
@@ -564,7 +577,7 @@ function checkallfields(){
             <% if(editca) out.write(" value='" + x509cainfo.getCRLPeriod()+ "'");%>>
            <% } %> 
       </td>
-    </tr>    
+    </tr>     
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 
         <%= ejbcawebbean.getText("CRLPUBLISHERS") %> <br>&nbsp;
@@ -584,6 +597,32 @@ function checkallfields(){
            </option>  
               <% } %>
         </select>
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("DEFAULTCRLDISTPOINT") %> <br> (<%= ejbcawebbean.getText("USEDTOOVERIDECERTPROFILE") %>)
+      </td>
+      <td width="50%">
+           <% if(isexternal){
+                out.write("" + x509cainfo.getDefaultCRLDistPoint());
+              }else{ %>
+         <input type="text" name="<%=TEXTFIELD_DEFAULTCRLDISTPOINT%>" size="80" maxlength="255"
+            <% if(editca) out.write(" value='" + x509cainfo.getDefaultCRLDistPoint()+ "'");%>>
+           <% } %> <input type="button" name="<%=BUTTON_GENDEFAULTOCSPLOCATOR%>" onClick="gendefaultcrldistpoint()" value="<%= ejbcawebbean.getText("GENERATE") %>" >
+      </td>
+    </tr>
+        <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("DEFAULTOCSPLOCATOR") %> <br> (<%= ejbcawebbean.getText("USEDTOOVERIDECERTPROFILE") %>)
+      </td>
+      <td width="50%">
+           <% if(isexternal){
+                out.write("" + x509cainfo.getDefaultOCSPServiceLocator());
+              }else{ %>
+         <input type="text" name="<%=TEXTFIELD_DEFAULTOCSPLOCATOR%>" size="80" maxlength="255"
+            <% if(editca) out.write(" value='" + x509cainfo.getDefaultOCSPServiceLocator()+ "'");%>>
+           <% } %> <input type="button" name="<%=BUTTON_GENDEFAULTOCSPLOCATOR%>" onClick="gendefaultocsplocator()" value="<%= ejbcawebbean.getText("GENERATE") %>" >
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 

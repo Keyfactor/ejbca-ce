@@ -60,12 +60,26 @@ function checkusefield(usefield, criticalfield){
 function checkusecrldisturifield(){
   if(document.editcertificateprofile.<%=CHECKBOX_CRLDISTRIBUTIONPOINT %>.checked){
     document.editcertificateprofile.<%= CHECKBOX_CRLDISTRIBUTIONPOINTCRITICAL %>.disabled = false;
-    document.editcertificateprofile.<%= TEXTFIELD_CRLDISTURI %>.disabled = false;
-    document.editcertificateprofile.<%= TEXTFIELD_CRLDISTURI %>.value = "<%= globalconfiguration.getStandardCRLDistributionPointURI() %>";
+    document.editcertificateprofile.<%= CHECKBOX_USEDEFAULTCRLDISTRIBUTIONPOINT %>.disabled = false;
+    document.editcertificateprofile.<%= CHECKBOX_USEDEFAULTCRLDISTRIBUTIONPOINT %>.checked = true;
   }
   else{
     document.editcertificateprofile.<%= CHECKBOX_CRLDISTRIBUTIONPOINTCRITICAL %>.disabled = true;
     document.editcertificateprofile.<%= CHECKBOX_CRLDISTRIBUTIONPOINTCRITICAL %>.checked = false;
+    document.editcertificateprofile.<%= CHECKBOX_USEDEFAULTCRLDISTRIBUTIONPOINT %>.disabled = true;
+    document.editcertificateprofile.<%= CHECKBOX_USEDEFAULTCRLDISTRIBUTIONPOINT %>.checked = false;
+    document.editcertificateprofile.<%= TEXTFIELD_CRLDISTURI %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_CRLDISTURI %>.value = "";   
+  }
+
+}
+
+function checkusedefaultsecrldisturifield(){
+  if(!document.editcertificateprofile.<%=CHECKBOX_USEDEFAULTCRLDISTRIBUTIONPOINT %>.checked){
+    document.editcertificateprofile.<%= TEXTFIELD_CRLDISTURI %>.disabled = false;
+    document.editcertificateprofile.<%= TEXTFIELD_CRLDISTURI %>.value = "<%= globalconfiguration.getStandardCRLDistributionPointURI() %>";
+  }
+  else{
     document.editcertificateprofile.<%= TEXTFIELD_CRLDISTURI %>.disabled = true;
     document.editcertificateprofile.<%= TEXTFIELD_CRLDISTURI %>.value = "";
   }
@@ -74,12 +88,42 @@ function checkusecrldisturifield(){
 
 function checkuseocspservicelocatorfield(){
   if(document.editcertificateprofile.<%=CHECKBOX_USEOCSPSERVICELOCATOR %>.checked){    
+    document.editcertificateprofile.<%= CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR %>.disabled = false;
+    document.editcertificateprofile.<%= CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR %>.checked = true;
+  }
+  else{
+    document.editcertificateprofile.<%= CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR %>.disabled = true;
+    document.editcertificateprofile.<%= CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR %>.checked = false;
+    document.editcertificateprofile.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.value = "";
+  }
+}
+
+function checkdefaultocspservicelocatorfield(){
+  if(!document.editcertificateprofile.<%=CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR %>.checked){    
     document.editcertificateprofile.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.disabled = false;
     document.editcertificateprofile.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.value = "<%= globalconfiguration.getStandardOCSPServiceLocatorURI() %>";
   }
   else{
     document.editcertificateprofile.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.disabled = true;
     document.editcertificateprofile.<%= TEXTFIELD_OCSPSERVICELOCATOR %>.value = "";
+  }
+}
+
+function checkuseqcstatementfield(){
+  if(document.editcertificateprofile.<%=CHECKBOX_USEQCSTATEMENT %>.checked){    
+    document.editcertificateprofile.<%= CHECKBOX_QCSTATEMENTCRITICAL %>.disabled = false;
+    document.editcertificateprofile.<%= CHECKBOX_QCSTATEMENTCRITICAL %>.checked = false;
+    document.editcertificateprofile.<%= TEXTFIELD_QCSSEMANTICSID %>.disabled = false;
+    document.editcertificateprofile.<%= TEXTFIELD_QCSTATEMENTRANAME %>.disabled = false;
+  }
+  else{
+    document.editcertificateprofile.<%= CHECKBOX_QCSTATEMENTCRITICAL %>.disabled = true;
+    document.editcertificateprofile.<%= CHECKBOX_QCSTATEMENTCRITICAL %>.checked = false;
+    document.editcertificateprofile.<%= TEXTFIELD_QCSSEMANTICSID %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_QCSTATEMENTRANAME %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_QCSSEMANTICSID %>.value = "";
+    document.editcertificateprofile.<%= TEXTFIELD_QCSTATEMENTRANAME %>.value = "";
   }
 }
 
@@ -211,6 +255,11 @@ function checkallfields(){
       if(availablebitlengths[i].selected==true)
         selected++; 
     }
+    
+    if(selected == 0){
+      alert("<%=  ejbcawebbean.getText("ONEAVAILABLEBITLENGTH") %>");
+      illegalfields++; 
+    }
 
     if(!document.editcertificateprofile.<%=TEXTFIELD_PATHLENGTHCONSTRAINT%>.disabled){
       if(!checkfieldfordecimalnumbers("document.editcertificateprofile.<%=TEXTFIELD_PATHLENGTHCONSTRAINT%>","<%= ejbcawebbean.getText("ONLYDECNUMBERSINPATHLEN") %>")){
@@ -221,11 +270,16 @@ function checkallfields(){
          illegalfields++;
       }
     }
-
-    if(selected == 0){
-      alert("<%=  ejbcawebbean.getText("ONEAVAILABLEBITLENGTH") %>");
-      illegalfields++; 
+    
+    if(document.editcertificateprofile.<%=CHECKBOX_USEQCSTATEMENT%>.checked){
+      if(document.editcertificateprofile.<%= TEXTFIELD_QCSSEMANTICSID %>.value == "" &&
+         document.editcertificateprofile.<%= TEXTFIELD_QCSTATEMENTRANAME %>.value == ""){
+          alert("<%= ejbcawebbean.getText("QCFIELDCANNOTBEEMTPY") %>");
+          illegalfields++;        
+      }
     }
+
+
    
      return illegalfields == 0;  
    } 
@@ -390,7 +444,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("CRLDISTPOINT") %> <br>  <%= ejbcawebbean.getText("CRLDISTPOINTCRITICAL") %> <br> <%= ejbcawebbean.getText("CRLDISTPOINTURI") %>
+        <%= ejbcawebbean.getText("CRLDISTPOINT") %> <br>  <%= ejbcawebbean.getText("CRLDISTPOINTCRITICAL") %> <br> <%= ejbcawebbean.getText("USEDEFAULTCRLDISTPOINT") %> <br> <%= ejbcawebbean.getText("CRLDISTPOINTURI") %>
 
       </td>
       <td width="50%">
@@ -406,8 +460,16 @@ function checkallfields(){
                  if(certificateprofiledata.getCRLDistributionPointCritical())
                  out.write("CHECKED");
            %>> <br> 
+           <input type="checkbox" name="<%=CHECKBOX_USEDEFAULTCRLDISTRIBUTIONPOINT %>" onClick="checkusedefaultsecrldisturifield()" value="<%=CHECKBOX_VALUE %>" 
+           <%
+               if(!certificateprofiledata.getUseCRLDistributionPoint())
+                 out.write(" disabled "); 
+               else
+                 if(certificateprofiledata.getUseDefaultCRLDistributionPoint())
+                 out.write(" CHECKED ");
+           %>> <br> 
            <input type="text" name="<%=TEXTFIELD_CRLDISTURI%>" size="60" maxlength="255" 
-           <%       if(!certificateprofiledata.getUseCRLDistributionPoint())
+           <%       if(!certificateprofiledata.getUseCRLDistributionPoint() || certificateprofiledata.getUseDefaultCRLDistributionPoint())
                       out.write(" disabled "); 
                     else 
                       if(!certificateprofiledata.getCRLDistributionPointURI().equals(""))
@@ -418,15 +480,22 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("OCSPSERVICELOCATOR") %> <br> <%= ejbcawebbean.getText("OCSPSERVICELOCATORURI") %>
+        <%= ejbcawebbean.getText("OCSPSERVICELOCATOR") %> <br> <%= ejbcawebbean.getText("USECADEFINEDOCSPLOC") %> <br> <%= ejbcawebbean.getText("OCSPSERVICELOCATORURI") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USEOCSPSERVICELOCATOR %>" onClick="checkuseocspservicelocatorfield()" value="<%=CHECKBOX_VALUE %>" 
            <% if(certificateprofiledata.getUseOCSPServiceLocator())
                  out.write("CHECKED");
            %>> <br> 
+           <input type="checkbox" name="<%=CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR %>" onClick="checkdefaultocspservicelocatorfield()" value="<%=CHECKBOX_VALUE %>" 
+           <% if(!certificateprofiledata.getUseOCSPServiceLocator())
+                 out.write(" disabled ");
+              if(certificateprofiledata.getUseDefaultOCSPServiceLocator())
+                 out.write(" CHECKED ");
+                 
+           %>> <br>
            <input type="text" name="<%=TEXTFIELD_OCSPSERVICELOCATOR%>" size="60" maxlength="255" 
-           <%       if(!certificateprofiledata.getUseOCSPServiceLocator())
+           <%       if(!certificateprofiledata.getUseOCSPServiceLocator() || certificateprofiledata.getUseDefaultOCSPServiceLocator())
                       out.write(" disabled "); 
                     else 
                       if(!certificateprofiledata.getOCSPServiceLocatorURI().equals(""))
@@ -457,7 +526,37 @@ function checkallfields(){
            <%       if(!certificateprofiledata.getUseCertificatePolicies())
                       out.write(" disabled "); 
                     else 
-                      out.write(" value=\"" + certificateprofiledata.getCertificatePolicyId() + "\""); %>
+                      out.write(" value=\"" + certificateprofiledata.getCertificatePolicyId() + "\""); %>>
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("USEQUALIFIEDCERTSTATEMENT") %> <br>  <%= ejbcawebbean.getText("QUALIFIEDCERTSTATCRIT") %> <br> 
+        <%= ejbcawebbean.getText("SEMANTICID") %> <br> <%= ejbcawebbean.getText("RANAME") %>
+      </td>
+      <td width="50%">
+           <input type="checkbox" name="<%=CHECKBOX_USEQCSTATEMENT %>" onClick="checkuseqcstatementfield()" value="<%=CHECKBOX_VALUE %>" 
+           <% if(certificateprofiledata.getUseQCStatement())
+                 out.write("CHECKED");
+           %>> <br> 
+          <input type="checkbox" name="<%=CHECKBOX_QCSTATEMENTCRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
+           <%
+               if(!certificateprofiledata.getUseQCStatement())
+                 out.write(" disabled "); 
+               else
+                 if(certificateprofiledata.getQCStatementCritical())
+                   out.write("CHECKED");
+           %>> <br> 
+           <input type="text" name="<%=TEXTFIELD_QCSSEMANTICSID %>" size="60" maxlength="255" 
+           <%       if(!certificateprofiledata.getUseQCStatement())
+                      out.write(" disabled "); 
+                    else 
+                      out.write(" value=\"" + certificateprofiledata.getQCSemanticsId() + "\""); %>> <br>
+            <input type="text" name="<%=TEXTFIELD_QCSTATEMENTRANAME %>" size="60" maxlength="255" 
+           <%       if(!certificateprofiledata.getUseQCStatement())
+                      out.write(" disabled "); 
+                    else 
+                      out.write(" value=\"" + certificateprofiledata.getQCStatementRAName() + "\""); %>>
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
