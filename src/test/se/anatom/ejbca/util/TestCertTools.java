@@ -18,16 +18,17 @@ import java.security.cert.X509Certificate;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 
 
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.12 2005-12-20 16:27:32 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.13 2006-01-16 14:35:40 anatom Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);
-    static byte[] testcert = Base64.decode(("MIIDATCCAmqgAwIBAgIIczEoghAwc3EwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
+    private static byte[] testcert = Base64.decode(("MIIDATCCAmqgAwIBAgIIczEoghAwc3EwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
             + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAzMDky"
             + "NDA2NDgwNFoXDTA1MDkyMzA2NTgwNFowMzEQMA4GA1UEAxMHcDEydGVzdDESMBAG"
             + "A1UEChMJUHJpbWVUZXN0MQswCQYDVQQGEwJTRTCBnTANBgkqhkiG9w0BAQEFAAOB"
@@ -45,7 +46,7 @@ public class TestCertTools extends TestCase {
             + "ifn1eHMbL8dGLd5bc2GNBZkmhFIEoDvbfn9jo7phlS8iyvF2YhC4eso8Xb+T7+BZ"
             + "QUOBOvc=").getBytes());
 
-    static byte[] guidcert = Base64.decode(
+    private static byte[] guidcert = Base64.decode(
             ("MIIC+zCCAmSgAwIBAgIIBW0F4eGmH0YwDQYJKoZIhvcNAQEFBQAwMTERMA8GA1UE"
             +"AxMIQWRtaW5DQTExDzANBgNVBAoTBkFuYVRvbTELMAkGA1UEBhMCU0UwHhcNMDQw"
             +"OTE2MTc1NzQ1WhcNMDYwOTE2MTgwNzQ1WjAyMRQwEgYKCZImiZPyLGQBARMEZ3Vp"
@@ -63,7 +64,7 @@ public class TestCertTools extends TestCase {
             +"gSkt3hvNwG4kLBmmwe9YLdS83dgNImMWL/DgID/47aENlBNai14CvtMceokik4IN"
             +"sacc7x/Vp3xezHLuBMcf3E3VSo4FwqcUYFmu7Obke3ebmB08nC6gnQHkzjNsmQw=").getBytes());
 
-    static byte[] altNameCert = Base64.decode(
+    private static byte[] altNameCert = Base64.decode(
             ("MIIDDzCCAfegAwIBAgIIPiL0klmu1uIwDQYJKoZIhvcNAQEFBQAwNzERMA8GA1UE"
              +"AxMIQWRtaW5DQTExFTATBgNVBAoTDEVKQkNBIFNhbXBsZTELMAkGA1UEBhMCU0Uw"
              +"HhcNMDUwODAyMTAxOTQ5WhcNMDcwODAyMTAyOTQ5WjAsMQwwCgYDVQQDEwNmb28x"
@@ -82,6 +83,46 @@ public class TestCertTools extends TestCase {
              +"YmKglnd5BIUBPO9LOryyHlSRTID5z0UgDlrTAaNYuN8QOYF+DZEQxm4bSXTDooGX"
              +"rHjSjn/7Urb31CXWAxq0Zhk3fg==").getBytes());
     
+    /** The reference certificate from RFC3739 */
+    private static byte[] qcRefCert = Base64.decode(
+            ("MIIDEDCCAnmgAwIBAgIESZYC0jANBgkqhkiG9w0BAQUFADBIMQswCQYDVQQGEwJE"
+            +"RTE5MDcGA1UECgwwR01EIC0gRm9yc2NodW5nc3plbnRydW0gSW5mb3JtYXRpb25z"
+            +"dGVjaG5payBHbWJIMB4XDTA0MDIwMTEwMDAwMFoXDTA4MDIwMTEwMDAwMFowZTEL"
+            +"MAkGA1UEBhMCREUxNzA1BgNVBAoMLkdNRCBGb3JzY2h1bmdzemVudHJ1bSBJbmZv"
+            +"cm1hdGlvbnN0ZWNobmlrIEdtYkgxHTAMBgNVBCoMBVBldHJhMA0GA1UEBAwGQmFy"
+            +"emluMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDc50zVodVa6wHPXswg88P8"
+            +"p4fPy1caIaqKIK1d/wFRMN5yTl7T+VOS57sWxKcdDzGzqZJqjwjqAP3DqPK7AW3s"
+            +"o7lBG6JZmiqMtlXG3+olv+3cc7WU+qDv5ZXGEqauW4x/DKGc7E/nq2BUZ2hLsjh9"
+            +"Xy9+vbw+8KYE9rQEARdpJQIDAQABo4HpMIHmMGQGA1UdCQRdMFswEAYIKwYBBQUH"
+            +"CQQxBBMCREUwDwYIKwYBBQUHCQMxAxMBRjAdBggrBgEFBQcJATERGA8xOTcxMTAx"
+            +"NDEyMDAwMFowFwYIKwYBBQUHCQIxCwwJRGFybXN0YWR0MA4GA1UdDwEB/wQEAwIG"
+            +"QDASBgNVHSAECzAJMAcGBSskCAEBMB8GA1UdIwQYMBaAFAABAgMEBQYHCAkKCwwN"
+            +"Dg/+3LqYMDkGCCsGAQUFBwEDBC0wKzApBggrBgEFBQcLAjAdMBuBGW11bmljaXBh"
+            +"bGl0eUBkYXJtc3RhZHQuZGUwDQYJKoZIhvcNAQEFBQADgYEAj4yAu7LYa3X04h+C"
+            +"7+DyD2xViJCm5zEYg1m5x4znHJIMZsYAU/vJJIJQkPKVsIgm6vP/H1kXyAu0g2Ep"
+            +"z+VWPnhZK1uw+ay1KRXw8rw2mR8hQ2Ug6QZHYdky2HH3H/69rWSPp888G8CW8RLU"
+            +"uIKzn+GhapCuGoC4qWdlGLWqfpc=").getBytes());
+    
+    private static byte[] qcPrimeCert = Base64.decode(
+            ("MIIDNDCCAhygAwIBAgIINXNkdTFl6HMwDQYJKoZIhvcNAQEFBQAwNzERMA8GA1UE"
+            +"AxMIQWRtaW5DQTExFTATBgNVBAoTDEVKQkNBIFNhbXBsZTELMAkGA1UEBhMCU0Uw"
+            +"HhcNMDYwMTEyMTA0MjA3WhcNMDgwMTEyMTA1MjA3WjAwMRMwEQYKCZImiZPyLGQB"
+            +"ARMDcWMxMQwwCgYDVQQDEwNxYzExCzAJBgNVBAYTAlNFMIGfMA0GCSqGSIb3DQEB"
+            +"AQUAA4GNADCBiQKBgQCWWSPWBRUajnJSnFqx80lx41EB3+GAAVDk4kjLttsFs6Lm"
+            +"03fNeXbH2WdsAfYmqMQkOrgnW689JkKD9IKlW4b/lDang1S40YnGYkCkgpL3AF7N"
+            +"RQBuw/FV4RJz9YhyO1mjkVBrTvQv43YlMXS0O4xNIotbcjIv7z8liG6FaEVSSwID"
+            +"AQABo4HOMIHLMAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgWgMDsGA1UdJQQ0"
+            +"MDIGCCsGAQUFBwMBBggrBgEFBQcDAgYIKwYBBQUHAwQGCCsGAQUFBwMFBggrBgEF"
+            +"BQcDBzAdBgNVHQ4EFgQU6e+JB76kq6NtZKJ0JxU97b1tfXswHwYDVR0jBBgwFoAU"
+            +"B/2KRYNOZxRDkJ5oChjNeXgwtCcwLgYIKwYBBQUHAQMEIjAgMB4GCCsGAQUFBwsC"
+            +"MBIwEIEOcWNAcHJpbWVrZXkuc2UwDQYJKoZIhvcNAQEFBQADggEBAJF3a0dOjQSr"
+            +"qTncH9ncV5Lm7Skpp7EIYZnBmCp1IVFiebKo3qgbZKVT/eGBTS6uWXTfL8U40JDu"
+            +"taKcuoC6hPf5+akJ1cf4P5cH0vJ1wGbsZ9xeaGjqKyYxLYZys10TY2fEReYYOhwN"
+            +"yiGzGzglCXyKXz1rYj7VgTbHqajsU5lNM8WLD4m0w41u9s3U2Dx3Ds+tax4YNvxL"
+            +"2JN5I3crHeecFOseYwDqw4qYzhK4Mj5eXPL9ds9kxDyxzX1TAsAF6U/GL1CZ+U7A"
+            +"AL09MR1v8HDq5lKtpFwKLZ1B3yMMubGEQ5thm00WZ+JfF/wk7+EpXp8VO2BwqnqR"
+            +"lSZ/+Qd4Vm8=").getBytes());
+
     /**
      * Creates a new TestCertTools object.
      *
@@ -530,4 +571,13 @@ public class TestCertTools extends TestCase {
       log.debug("<test13GetSubjectAltNameString()");
   }
 
+  public void test14QCStatement()  throws Exception {
+      X509Certificate cert = CertTools.getCertfromByteArray(qcRefCert);
+      //System.out.println(cert);
+      assertEquals("rfc822name=municipality@darmstadt.de", CertTools.getQcStatementAuthorities(cert));
+      assertEquals(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2.getId(), CertTools.getQcStatementId(cert));
+      X509Certificate cert2 = CertTools.getCertfromByteArray(qcPrimeCert);
+      assertEquals("rfc822name=qc@primekey.se", CertTools.getQcStatementAuthorities(cert2));
+      assertEquals(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2.getId(), CertTools.getQcStatementId(cert2));
+  }
 }
