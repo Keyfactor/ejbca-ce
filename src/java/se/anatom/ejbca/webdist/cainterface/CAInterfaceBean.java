@@ -71,7 +71,7 @@ import se.anatom.ejbca.webdist.webconfiguration.InformationMemory;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.33 2005-11-24 21:21:25 herrvendil Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.34 2006-01-16 09:48:09 herrvendil Exp $
  */
 public class CAInterfaceBean implements java.io.Serializable {
 
@@ -388,7 +388,7 @@ public class CAInterfaceBean implements java.io.Serializable {
     private Admin                              administrator;
     private InformationMemory                  informationmemory;
     private CAInfo                                      cainfo;
-    private ExtendedPKCS10CertificationRequest       request;
+    transient private ExtendedPKCS10CertificationRequest       request;
     private Certificate	                             processedcert;
     
 }
