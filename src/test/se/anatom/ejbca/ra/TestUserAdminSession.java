@@ -15,19 +15,24 @@ package se.anatom.ejbca.ra;
 
 import java.util.Date;
 import java.util.Random;
+
 import javax.ejb.DuplicateKeyException;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
 import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
-import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.ra.exception.NotFoundException;
+import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
+import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.NotFoundException;
+
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestUserAdminSession.java,v 1.2 2005-02-11 13:12:16 anatom Exp $
+ * @version $Id: TestUserAdminSession.java,v 1.3 2006-01-17 20:34:15 anatom Exp $
  */
 public class TestUserAdminSession extends TestCase {
 

@@ -21,17 +21,19 @@ import javax.naming.NamingException;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
+import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
+import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
+import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 
-import se.anatom.ejbca.ca.exception.CertificateProfileExistsException;
-import se.anatom.ejbca.ca.store.certificateprofiles.CertificateProfile;
-import se.anatom.ejbca.ca.store.certificateprofiles.EndUserCertificateProfile;
-import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.ra.raadmin.DNFieldExtractor;
 
 /**
  * Tests the certificate profile entity bean.
  *
- * @version $Id: TestCertificateProfile.java,v 1.6 2006-01-14 11:34:23 anatom Exp $
+ * @version $Id: TestCertificateProfile.java,v 1.7 2006-01-17 20:33:58 anatom Exp $
  */
 public class TestCertificateProfile extends TestCase {
     private static Logger log = Logger.getLogger(TestCertificateProfile.class);

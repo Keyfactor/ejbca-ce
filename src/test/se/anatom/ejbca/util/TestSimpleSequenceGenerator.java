@@ -7,6 +7,8 @@ import javax.ejb.EJBLocalHome;
 
 import junit.framework.TestCase;
 
+import org.ejbca.util.SimpleSequenceGenerator;
+
 /**
  * Test for the SimpleSequenceGenerator.
  *

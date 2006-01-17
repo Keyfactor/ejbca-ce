@@ -307,12 +307,12 @@ web.contentencoding    = ${web.contentencoding}
 			</filterchain>
 	    </copy>
 		<echo>Ignore warnings about 'Couldn't find file' during preprocessing if you are running jdk 1.4</echo>
-        <copy file="src/java/se/anatom/ejbca/ca/caadmin/CATokenInfo.java.${java.ver}" tofile="${preprocessed}/java/se/anatom/ejbca/ca/caadmin/CATokenInfo.java" overwrite="true" failonerror="false"/>
-        <copy file="src/java/se/anatom/ejbca/ca/caadmin/ExtendedX509CertificateObject.java.${java.ver}" tofile="${preprocessed}/java/se/anatom/ejbca/ca/caadmin/ExtendedX509CertificateObject.java" overwrite="true" failonerror="false"/>
-        <copy file="src/java/se/anatom/ejbca/ca/caadmin/ExtendedX509CRLObject.java.${java.ver}" tofile="${preprocessed}/java/se/anatom/ejbca/ca/caadmin/ExtendedX509CRLObject.java" overwrite="true" failonerror="false"/>
-        <copy file="src/java/se/anatom/ejbca/ca/caadmin/ExtendedX509Util.java.${java.ver}" tofile="${preprocessed}/java/se/anatom/ejbca/ca/caadmin/ExtendedX509Util.java" overwrite="true" failonerror="false"/>
-        <copy file="src/java/se/anatom/ejbca/ca/caadmin/ExtendedX509V3CertificateGenerator.java.${java.ver}" tofile="${preprocessed}/java/se/anatom/ejbca/ca/caadmin/ExtendedX509V3CertificateGenerator.java" overwrite="true" failonerror="false"/>
-		<replace file="${src.java}/se/anatom/ejbca/ra/raadmin/GlobalConfiguration.java" token="@ejbca.version@" value="${app.version}"/>	
+        <copy file="src/java/org/ejbca/core/model/ca/catoken/CATokenInfo.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/catoken/CATokenInfo.java" overwrite="true" failonerror="false"/>
+        <copy file="src/java/org/ejbca/core/model/ca/caadmin/ExtendedX509CertificateObject.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/caadmin/ExtendedX509CertificateObject.java" overwrite="true" failonerror="false"/>
+        <copy file="src/java/org/ejbca/core/model/ca/caadmin/ExtendedX509CRLObject.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/caadmin/ExtendedX509CRLObject.java" overwrite="true" failonerror="false"/>
+        <copy file="src/java/org/ejbca/core/model/ca/caadmin/ExtendedX509Util.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/caadmin/ExtendedX509Util.java" overwrite="true" failonerror="false"/>
+        <copy file="src/java/org/ejbca/core/model/ca/caadmin/ExtendedX509V3CertificateGenerator.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/caadmin/ExtendedX509V3CertificateGenerator.java" overwrite="true" failonerror="false"/>
+		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@ejbca.version@" value="${app.version}"/>	
 	</target>
 	<!--
 	  EJBCA need to be run before the app.server (or the webapp) is fully ssl configured with the keystore
@@ -506,7 +506,7 @@ web.contentencoding    = ${web.contentencoding}
         <input message="CA name(default MyCA):" addproperty="ejbca.CA" defaultvalue="MyCA" />
         <input message="CA keystore filename (default $JBOSS_HOME/server/default/conf/server.p12):" addproperty="ejbca.KS" defaultvalue="${jboss.conf.dir}/server.p12" />
         <input message="CA keystore password:" addproperty="ejbca.KSPWD" />
-        <java classname="se.anatom.ejbca.admin.Upgrade" fork="true">
+        <java classname="org.ejbca.ui.cli.admin.Upgrade" fork="true">
             <sysproperty key="ejbcaOS" value="${ejbca.OS}" />
             <sysproperty key="ejbcaURL" value="${ejbca.URL}" />
             <sysproperty key="ejbcaDB" value="${ejbca.DB}" />
@@ -630,7 +630,7 @@ web.contentencoding    = ${web.contentencoding}
 
     <!--
     Macro that creates an exploded war based on the structure in use for this
-    project. The 'name' attributes should match the se.anatom.ejbca.name package
+    project. The 'name' attributes should match the org.ejbca.name package
     and it expects to find a directory 'name' in src with the META-INF as the
     subdirectory.
     -->
@@ -840,7 +840,7 @@ web.contentencoding    = ${web.contentencoding}
 	<!--
 	<target name="lint" description="Perform checks on EJBCA source code">
 		<taskdef name="lint4j" classname="com.jutils.lint4j.ant.Lint4jAntTask" />
-	  <lint4j packages="se.anatom.ejbca.*" level="3">
+	  <lint4j packages="org.ejbca.*" level="3">
 	    <sourcepath>
 		  <dirset dir="${src}">
 			<include name="**/java" />

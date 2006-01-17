@@ -1,11 +1,10 @@
 <%@ page pageEncoding="ISO-8859-1"%>
-<%@page errorPage="/errorpage.jsp"  import=" java.util.*, java.security.cert.Certificate, java.security.cert.X509Certificate, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration,
-                                              se.anatom.ejbca.webdist.cainterface.CAInterfaceBean, se.anatom.ejbca.webdist.rainterface.CertificateView,
-                                              se.anatom.ejbca.ca.caadmin.CAInfo, se.anatom.ejbca.ca.store.CRLInfo, se.anatom.ejbca.authorization.AuthorizationDeniedException, se.anatom.ejbca.SecConst"%>
+<%@page errorPage="/errorpage.jsp"  import=" java.util.*, java.security.cert.Certificate, java.security.cert.X509Certificate,org.ejbca.core.model.ra.raadmin.GlobalConfiguration,
+                                              org.ejbca.core.model.ca.store.CRLInfo, org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.core.model.SecConst"%>
 <html>
-<jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
+<jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
-<jsp:useBean id="cabean" scope="session" class="se.anatom.ejbca.webdist.cainterface.CAInterfaceBean" />
+<jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" />
 <jsp:setProperty name="cabean" property="*" /> 
 <%!
 
@@ -43,7 +42,7 @@
        if( request.getParameter(BUTTON_CREATECRL+i) != null ){      
          // Check if user id authorized to create new crl.
          ejbcawebbean.isAuthorized(CREATECRL_LINK);
-         ejbcawebbean.isAuthorized(se.anatom.ejbca.authorization.AvailableAccessRules.CAPREFIX + casubjectdn.hashCode());
+         ejbcawebbean.isAuthorized(org.ejbca.core.model.authorization.AvailableAccessRules.CAPREFIX + casubjectdn.hashCode());
          // Create new crl
          cabean.createCRL(casubjectdn);
       }         
@@ -91,7 +90,7 @@ function viewcainfo(caid){
      while(iter.hasNext()){
        String caname = (String) iter.next();  
        int caid = ((Integer) canames.get(caname)).intValue();
-       se.anatom.ejbca.webdist.cainterface.CAInfoView cainfo = cabean.getCAInfo(caid);
+       org.ejbca.ui.web.admin.cainterface.CAInfoView cainfo = cabean.getCAInfo(caid);
        String subjectdn = cainfo.getCAInfo().getSubjectDN();
        Certificate[] certificatechain = (Certificate[]) cainfo.getCertificateChain().toArray(new Certificate[0]);
        int chainsize = certificatechain.length;

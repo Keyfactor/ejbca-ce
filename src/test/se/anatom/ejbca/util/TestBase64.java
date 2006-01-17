@@ -8,15 +8,17 @@ package se.anatom.ejbca.util;
 
 import java.security.cert.X509Certificate;
 
+import junit.framework.TestCase;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
-import junit.framework.TestCase;
+import org.ejbca.util.Base64;
+import org.ejbca.util.CertTools;
 
 /** Tests base64 encoding and decoding
  * 
  * @author tomasg
- * @version $Id: TestBase64.java,v 1.1 2005-06-11 13:59:37 anatom Exp $
+ * @version $Id: TestBase64.java,v 1.2 2006-01-17 20:34:15 anatom Exp $
  */
 public class TestBase64 extends TestCase {
     private static final Logger log = Logger.getLogger(TestBase64.class);

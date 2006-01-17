@@ -16,23 +16,31 @@ package se.anatom.ejbca.ca.caadmin;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
 
 import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
-import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.authorization.IAuthorizationSessionHome;
-import se.anatom.ejbca.authorization.IAuthorizationSessionRemote;
-import se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
-import se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
-import se.anatom.ejbca.ca.exception.CAExistsException;
-import se.anatom.ejbca.log.Admin;
+import org.ejbca.core.ejb.authorization.IAuthorizationSessionHome;
+import org.ejbca.core.ejb.authorization.IAuthorizationSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
+import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ca.caadmin.CAExistsException;
+import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.caadmin.X509CAInfo;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
+import org.ejbca.core.model.ca.catoken.CATokenInfo;
+import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
+import org.ejbca.core.model.log.Admin;
 
 /**
  * Tests the ca data entity bean.
  *
- * @version $Id: TestCAs.java,v 1.5 2005-04-29 09:16:06 anatom Exp $
+ * @version $Id: TestCAs.java,v 1.6 2006-01-17 20:33:57 anatom Exp $
  */
 public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -131,6 +139,8 @@ public class TestCAs extends TestCase {
                     false, // Authority Key Identifier Critical
                     true, // CRL Number
                     false, // CRL Number Critical
+                    null, // defaultcrldistpoint 
+                    null, // defaultocsplocator
                     true, // Finish User
                     extendedcaservices);
 

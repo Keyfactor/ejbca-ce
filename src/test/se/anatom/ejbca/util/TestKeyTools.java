@@ -24,12 +24,16 @@ import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 
 import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
+import org.ejbca.util.Base64;
+import org.ejbca.util.CertTools;
+import org.ejbca.util.KeyTools;
 
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestKeyTools.java,v 1.1 2004-06-10 16:17:45 sbailliez Exp $
+ * @version $Id: TestKeyTools.java,v 1.2 2006-01-17 20:34:15 anatom Exp $
  */
 public class TestKeyTools extends TestCase {
 

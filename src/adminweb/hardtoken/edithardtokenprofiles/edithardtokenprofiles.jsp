@@ -1,13 +1,13 @@
 <%@ page pageEncoding="ISO-8859-1"%>
-<%@page errorPage="/errorpage.jsp" import="java.util.*, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.SecConst, se.anatom.ejbca.authorization.AuthorizationDeniedException,
-               se.anatom.ejbca.authorization.AvailableAccessRules,
-               se.anatom.ejbca.webdist.hardtokeninterface.HardTokenInterfaceBean, se.anatom.ejbca.hardtoken.hardtokenprofiles.*, se.anatom.ejbca.webdist.hardtokeninterface.EditHardTokenProfileJSPHelper, 
-               se.anatom.ejbca.hardtoken.HardTokenProfileExistsException"%>
+<%@page errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.SecConst, org.ejbca.core.model.authorization.AuthorizationDeniedException,
+               org.ejbca.core.model.authorization.AvailableAccessRules,
+               org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.profiles.*, org.ejbca.ui.web.admin.hardtokeninterface.EditHardTokenProfileJSPHelper, 
+               org.ejbca.core.model.hardtoken.HardTokenProfileExistsException"%>
 
 <html>
-<jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
-<jsp:useBean id="hardtokenbean" scope="session" class="se.anatom.ejbca.webdist.hardtokeninterface.HardTokenInterfaceBean" />
-<jsp:useBean id="helper" scope="session" class="se.anatom.ejbca.webdist.hardtokeninterface.EditHardTokenProfileJSPHelper" />
+<jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
+<jsp:useBean id="hardtokenbean" scope="session" class="org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean" />
+<jsp:useBean id="helper" scope="session" class="org.ejbca.ui.web.admin.hardtokeninterface.EditHardTokenProfileJSPHelper" />
 
 <% 
 

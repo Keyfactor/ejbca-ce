@@ -1,4 +1,4 @@
-<%@ page import="se.anatom.ejbca.ca.store.CertificateDataBean"%>
+<%@ page import="org.ejbca.core.ejb.ca.store.CertificateDataBean"%>
 <%
   CertificateProfile certificateprofiledata = cabean.getCertificateProfile(certprofile.trim());
 

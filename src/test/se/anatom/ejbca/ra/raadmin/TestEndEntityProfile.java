@@ -17,13 +17,18 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 
 import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
-import se.anatom.ejbca.log.Admin;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 
 /**
  * Tests the end entity profile entity bean.
  *
- * @version $Id: TestEndEntityProfile.java,v 1.1 2004-06-10 16:17:44 sbailliez Exp $
+ * @version $Id: TestEndEntityProfile.java,v 1.2 2006-01-17 20:34:15 anatom Exp $
  */
 public class TestEndEntityProfile extends TestCase {
     private static Logger log = Logger.getLogger(TestEndEntityProfile.class);

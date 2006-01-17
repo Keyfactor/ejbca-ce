@@ -1,13 +1,13 @@
 <!-- Version: $Id: viewcertificate.jsp,v 1.4 2002/08/28 12:22:25 herrvendil Exp $ -->
 
 <%@ page pageEncoding="ISO-8859-1"%>
-<%@page errorPage="/errorpage.jsp"  import="java.math.BigInteger, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean, se.anatom.ejbca.ra.raadmin.GlobalConfiguration, 
-                 se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.webdist.rainterface.CertificateView, se.anatom.ejbca.webdist.rainterface.RevokedInfoView,
-                 javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.authorization.AuthorizationDeniedException, se.anatom.ejbca.util.CertTools" %>
+<%@page errorPage="/errorpage.jsp"  import="java.math.BigInteger, org.ejbca.ui.web.admin.configuration.EjbcaWebBean, org.ejbca.core.model.ra.raadmin.GlobalConfiguration, 
+                 org.ejbca.ui.web.admin.rainterface.CertificateView, org.ejbca.ui.web.admin.rainterface.RevokedInfoView,
+                 org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.util.CertTools" %>
 <html>
-<jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
-<jsp:useBean id="rabean" scope="session" class="se.anatom.ejbca.webdist.rainterface.RAInterfaceBean" />
-<jsp:useBean id="cabean" scope="session" class="se.anatom.ejbca.webdist.cainterface.CAInterfaceBean" />
+<jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
+<jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
+<jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" />
 
 <%! // Declarations
  
@@ -97,7 +97,7 @@
      if(request.getParameter(BUTTON_VIEW_PREVIOUS) == null && request.getParameter(BUTTON_VIEW_NEXT) == null){
        try{  
          ejbcawebbean.isAuthorizedNoLog("/ca_functionality/basic_functions");
-         ejbcawebbean.isAuthorized(se.anatom.ejbca.authorization.AvailableAccessRules.CAPREFIX + caid);
+         ejbcawebbean.isAuthorized(org.ejbca.core.model.authorization.AvailableAccessRules.CAPREFIX + caid);
          rabean.loadCACertificates(cabean.getCACertificates(caid)); 
          numberofcertificates = rabean.getNumberOfCertificates();
          if(numberofcertificates > 0)

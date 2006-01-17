@@ -1,9 +1,9 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 
-<%@page isErrorPage="true" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.authorization.AuthorizationDeniedException,
-                                   se.anatom.ejbca.authorization.AuthenticationFailedException"%>
+<%@page isErrorPage="true" import="org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.authorization.AuthorizationDeniedException,
+                                   org.ejbca.core.model.authorization.AuthenticationFailedException"%>
 
-<jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
+<jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 
 <%   // Initialize environment

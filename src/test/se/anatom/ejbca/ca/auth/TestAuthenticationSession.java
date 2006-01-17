@@ -24,26 +24,29 @@ import javax.naming.NamingException;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionHome;
+import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionRemote;
+import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
+import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
+import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionHome;
+import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionRemote;
+import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
+import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
+import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
+import org.ejbca.util.CertTools;
+import org.ejbca.util.KeyTools;
 
-import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.ca.sign.ISignSessionHome;
-import se.anatom.ejbca.ca.sign.ISignSessionRemote;
 import se.anatom.ejbca.common.UserDataVO;
-import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionHome;
-import se.anatom.ejbca.keyrecovery.IKeyRecoverySessionRemote;
-import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.ra.IUserAdminSessionHome;
-import se.anatom.ejbca.ra.IUserAdminSessionRemote;
-import se.anatom.ejbca.ra.UserDataConstants;
-import se.anatom.ejbca.ra.raadmin.GlobalConfiguration;
-import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
-import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
-import se.anatom.ejbca.util.CertTools;
-import se.anatom.ejbca.util.KeyTools;
+
 /**
  * Tests authentication session used by signer.
  *
- * @version $Id: TestAuthenticationSession.java,v 1.7 2005-04-29 09:16:07 anatom Exp $
+ * @version $Id: TestAuthenticationSession.java,v 1.8 2006-01-17 20:33:42 anatom Exp $
  */
 public class TestAuthenticationSession extends TestCase {
     private static Logger log = Logger.getLogger(TestAuthenticationSession.class);

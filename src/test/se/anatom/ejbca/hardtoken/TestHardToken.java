@@ -22,20 +22,23 @@ import javax.naming.NamingException;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-
-import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.ca.store.CertificateDataBean;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
-import se.anatom.ejbca.hardtoken.hardtokentypes.SwedishEIDHardToken;
-import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.util.Base64;
-import se.anatom.ejbca.util.CertTools;
+import org.ejbca.core.ejb.ca.store.CertificateDataBean;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
+import org.ejbca.core.ejb.hardtoken.IHardTokenSessionHome;
+import org.ejbca.core.ejb.hardtoken.IHardTokenSessionRemote;
+import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.hardtoken.HardTokenData;
+import org.ejbca.core.model.hardtoken.HardTokenExistsException;
+import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.util.Base64;
+import org.ejbca.util.CertTools;
 
 /**
  * Tests the hard token related entity beans.
  *
- * @version $Id: TestHardToken.java,v 1.4 2005-04-29 09:16:08 anatom Exp $
+ * @version $Id: TestHardToken.java,v 1.5 2006-01-17 20:33:58 anatom Exp $
  */
 public class TestHardToken extends TestCase {
     private static Logger log = Logger.getLogger(TestHardToken.class);

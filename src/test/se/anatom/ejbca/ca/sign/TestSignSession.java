@@ -33,29 +33,30 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
-
-import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.ca.caadmin.ICAAdminSessionHome;
-import se.anatom.ejbca.ca.caadmin.ICAAdminSessionRemote;
-import se.anatom.ejbca.ca.exception.IllegalKeyException;
-import se.anatom.ejbca.common.ExtendedPKCS10CertificationRequest;
-import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.protocol.IResponseMessage;
-import se.anatom.ejbca.protocol.PKCS10RequestMessage;
-import se.anatom.ejbca.ra.IUserAdminSessionHome;
-import se.anatom.ejbca.ra.IUserAdminSessionRemote;
-import se.anatom.ejbca.ra.UserDataConstants;
-import se.anatom.ejbca.ra.raadmin.EndEntityProfile;
-import se.anatom.ejbca.ra.raadmin.IRaAdminSessionHome;
-import se.anatom.ejbca.ra.raadmin.IRaAdminSessionRemote;
-import se.anatom.ejbca.util.Base64;
-import se.anatom.ejbca.util.CertTools;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
+import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
+import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
+import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
+import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ca.IllegalKeyException;
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.protocol.ExtendedPKCS10CertificationRequest;
+import org.ejbca.core.protocol.IResponseMessage;
+import org.ejbca.core.protocol.PKCS10RequestMessage;
+import org.ejbca.util.Base64;
+import org.ejbca.util.CertTools;
 
 
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.8 2005-11-24 21:21:25 herrvendil Exp $
+ * @version $Id: TestSignSession.java,v 1.9 2006-01-17 20:33:58 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -289,7 +290,7 @@ public class TestSignSession extends TestCase {
         p10.setUsername("foo");
         p10.setPassword("foo123");
         IResponseMessage resp = remote.createCertificate(admin,
-                p10, Class.forName("se.anatom.ejbca.protocol.X509ResponseMessage"));
+                p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
         X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
@@ -311,7 +312,7 @@ public class TestSignSession extends TestCase {
         p10.setUsername("foo");
         p10.setPassword("foo123");
         IResponseMessage resp = remote.createCertificate(admin,
-                p10, Class.forName("se.anatom.ejbca.protocol.X509ResponseMessage"));
+                p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
         X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
@@ -333,7 +334,7 @@ public class TestSignSession extends TestCase {
         p10.setUsername("foo");
         p10.setPassword("foo123");
         IResponseMessage resp = remote.createCertificate(admin,
-                p10, Class.forName("se.anatom.ejbca.protocol.X509ResponseMessage"));
+                p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
         X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
@@ -404,7 +405,7 @@ public class TestSignSession extends TestCase {
             p10.setUsername("foo");
             p10.setPassword("foo123");
             IResponseMessage resp = remote.createCertificate(admin,
-                    p10, Class.forName("se.anatom.ejbca.protocol.X509ResponseMessage"));
+                    p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
             X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
             log.info("cert with DN '"+cert.getSubjectDN().getName()+"' should not be issued?");
         } catch (Exception e) {
@@ -529,7 +530,7 @@ public class TestSignSession extends TestCase {
         UserDataRemote data = userhome.findByPrimaryKey(pk);
         data.setStatus(UserDataRemote.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
-        IResponseMessage resp = remote.createCertificate(admin, new ScepRequestMessage(openscep), -1, Class.forName("se.anatom.ejbca.protocol.ScepResponseMessage"));
+        IResponseMessage resp = remote.createCertificate(admin, new ScepRequestMessage(openscep), -1, Class.forName("org.ejbca.core.protocol.ScepResponseMessage"));
         assertNotNull("Failed to create certificate", resp);
         byte[] msg = resp.getResponseMessage();
         log.debug("Message: "+new String(Base64.encode(msg,true)));

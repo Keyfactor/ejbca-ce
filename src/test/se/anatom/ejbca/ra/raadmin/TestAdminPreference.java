@@ -15,17 +15,22 @@ package se.anatom.ejbca.ra.raadmin;
 
 import java.util.Date;
 import java.util.Random;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
 
 import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
-import se.anatom.ejbca.log.Admin;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.raadmin.AdminPreference;
 
 /**
  * Tests the admin preference entity bean.
  *
- * @version $Id: TestAdminPreference.java,v 1.3 2005-05-19 07:52:52 anatom Exp $
+ * @version $Id: TestAdminPreference.java,v 1.4 2006-01-17 20:34:15 anatom Exp $
  */
 public class TestAdminPreference extends TestCase {
     private static Logger log = Logger.getLogger(TestAdminPreference.class);

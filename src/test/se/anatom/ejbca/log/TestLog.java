@@ -16,17 +16,24 @@ package se.anatom.ejbca.log;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
 
 import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
-import se.anatom.ejbca.util.query.Query;
+import org.ejbca.core.ejb.log.ILogSessionHome;
+import org.ejbca.core.ejb.log.ILogSessionRemote;
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.log.LogConfiguration;
+import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.util.query.Query;
 
 /**
  * Tests the log modules entity and session beans.
  *
- * @version $Id: TestLog.java,v 1.2 2005-02-11 13:12:28 anatom Exp $
+ * @version $Id: TestLog.java,v 1.3 2006-01-17 20:34:15 anatom Exp $
  */
 public class TestLog extends TestCase {
     private static Logger log = Logger.getLogger(TestLog.class);

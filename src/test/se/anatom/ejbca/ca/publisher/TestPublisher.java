@@ -15,22 +15,31 @@ package se.anatom.ejbca.ca.publisher;
 
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
 
 import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
-import se.anatom.ejbca.ca.exception.PublisherExistsException;
-import se.anatom.ejbca.ca.store.CertificateDataBean;
-import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.util.Base64;
-import se.anatom.ejbca.util.CertTools;
+import org.ejbca.core.ejb.ca.publisher.IPublisherSessionHome;
+import org.ejbca.core.ejb.ca.publisher.IPublisherSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateDataBean;
+import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
+import org.ejbca.core.model.ca.publisher.BasePublisher;
+import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
+import org.ejbca.core.model.ca.publisher.LdapPublisher;
+import org.ejbca.core.model.ca.publisher.PublisherExistsException;
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.util.Base64;
+import org.ejbca.util.CertTools;
+
 
 
 /**
  * Tests Publishers.
  *
- * @version $Id: TestPublisher.java,v 1.4 2005-04-29 09:16:08 anatom Exp $
+ * @version $Id: TestPublisher.java,v 1.5 2006-01-17 20:33:58 anatom Exp $
  */
 public class TestPublisher extends TestCase {
     
@@ -172,7 +181,7 @@ public class TestPublisher extends TestCase {
         boolean ret = false;
         try {
             CustomPublisherContainer publisher = new CustomPublisherContainer();
-            publisher.setClassPath("se.anatom.ejbca.ca.publisher.DummyCustomPublisher");
+            publisher.setClassPath("org.ejbca.core.model.ca.publisher.DummyCustomPublisher");
             publisher.setDescription("Used in Junit Test, Remove this one");
             pub.addPublisher(admin, "TESTDUMMYCUSTOM", publisher);
             ret = true;

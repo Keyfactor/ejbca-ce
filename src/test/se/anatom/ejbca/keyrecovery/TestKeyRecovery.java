@@ -18,24 +18,29 @@ import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Random;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
 
 import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
-import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.ca.sign.ISignSessionHome;
-import se.anatom.ejbca.ca.sign.ISignSessionRemote;
-import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.ra.IUserAdminSessionHome;
-import se.anatom.ejbca.ra.IUserAdminSessionRemote;
-import se.anatom.ejbca.util.CertTools;
-import se.anatom.ejbca.util.KeyTools;
+import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
+import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
+import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionHome;
+import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionRemote;
+import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
+import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.util.CertTools;
+import org.ejbca.util.KeyTools;
 
 /**
  * Tests the key recovery modules.
  *
- * @version $Id: TestKeyRecovery.java,v 1.2 2005-04-19 12:16:18 anatom Exp $
+ * @version $Id: TestKeyRecovery.java,v 1.3 2006-01-17 20:34:16 anatom Exp $
  */
 public class TestKeyRecovery extends TestCase {
     private static Logger log = Logger.getLogger(TestKeyRecovery.class);

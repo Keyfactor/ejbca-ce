@@ -1,13 +1,13 @@
 <%@ page pageEncoding="ISO-8859-1"%>
-<%@page errorPage="/errorpage.jsp"  import="java.util.Iterator, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean, se.anatom.ejbca.ra.raadmin.GlobalConfiguration, 
-                 se.anatom.ejbca.webdist.hardtokeninterface.HardTokenView, se.anatom.ejbca.webdist.hardtokeninterface.HardTokenInterfaceBean, se.anatom.ejbca.SecConst,
-                 javax.ejb.CreateException, java.rmi.RemoteException, se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, se.anatom.ejbca.webdist.rainterface.RevokedInfoView" %>
+<%@page errorPage="/errorpage.jsp"  import="java.util.Iterator, org.ejbca.ui.web.admin.configuration.EjbcaWebBean, org.ejbca.core.model.ra.raadmin.GlobalConfiguration, 
+                 org.ejbca.ui.web.admin.hardtokeninterface.HardTokenView,
+                 org.ejbca.ui.web.admin.rainterface.RevokedInfoView" %>
 <html>
-<jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
+<jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
-<jsp:useBean id="tokenbean" scope="session" class="se.anatom.ejbca.webdist.hardtokeninterface.HardTokenInterfaceBean" />
+<jsp:useBean id="tokenbean" scope="session" class="org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean" />
 <jsp:setProperty name="tokenbean" property="*" /> 
-<jsp:useBean id="rabean" scope="session" class="se.anatom.ejbca.webdist.rainterface.RAInterfaceBean" />
+<jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
 <jsp:setProperty name="rabean" property="*" /> 
 <%! // Declarations
  
@@ -328,7 +328,7 @@ function viewcopies(link){
         <A style="cursor:hand;" onclick='viewcert()'>
         <u><%= ejbcawebbean.getText("VIEWCERTIFICATES") %></u> </A>
         <%   }
-         }catch(se.anatom.ejbca.authorization.AuthorizationDeniedException ade){}
+         }catch(org.ejbca.core.model.authorization.AuthorizationDeniedException ade){}
         %>&nbsp; 
        </td>
      </tr> 

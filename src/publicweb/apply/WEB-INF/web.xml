@@ -6,7 +6,7 @@
     <servlet>
         <servlet-name>CertReqServlet</servlet-name>
         <display-name>CertReqServlet</display-name>
-        <servlet-class>se.anatom.ejbca.apply.CertReqServlet</servlet-class>
+        <servlet-class>org.ejbca.ui.web.pub.CertReqServlet</servlet-class>
         <init-param>
             <param-name>responseTemplate</param-name>
             <param-value>certInstT.html</param-value>
@@ -15,7 +15,7 @@
     <servlet>
         <servlet-name>ScepServlet</servlet-name>
         <display-name>ScepServlet</display-name>
-        <servlet-class>se.anatom.ejbca.protocol.ScepServlet</servlet-class>
+        <servlet-class>org.ejbca.ui.web.protocol.ScepServlet</servlet-class>
         <init-param>
             <param-name>includeCACert</param-name>
             <param-value>1</param-value>
@@ -24,7 +24,7 @@
     <servlet>
         <servlet-name>ScepServletNoCACert</servlet-name>
         <display-name>ScepServletNoCACert</display-name>
-        <servlet-class>se.anatom.ejbca.protocol.ScepServlet</servlet-class>
+        <servlet-class>org.ejbca.ui.web.protocol.ScepServlet</servlet-class>
         <init-param>
             <param-name>includeCACert</param-name>
             <param-value>0</param-value>
@@ -35,7 +35,7 @@
     <servlet>
         <servlet-name>DemoCertReqServlet</servlet-name>
         <display-name>DemoCertReqServlet</display-name>
-        <servlet-class>se.anatom.ejbca.apply.DemoCertReqServlet</servlet-class>
+        <servlet-class>org.ejbca.ui.web.DemoCertReqServlet</servlet-class>
         <init-param>
             <param-name>responseTemplate</param-name>
             <param-value>certInstT.html</param-value>

@@ -1,13 +1,13 @@
 <%@ page pageEncoding="ISO-8859-1"%>
-<%@page errorPage="/errorpage.jsp" import="java.util.*, java.io.*, org.apache.commons.fileupload.*, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, se.anatom.ejbca.SecConst, se.anatom.ejbca.util.FileTools, se.anatom.ejbca.util.CertTools, se.anatom.ejbca.authorization.AuthorizationDeniedException,
-               se.anatom.ejbca.webdist.cainterface.CAInterfaceBean, se.anatom.ejbca.ca.caadmin.CAInfo, se.anatom.ejbca.ca.caadmin.X509CAInfo, se.anatom.ejbca.ca.caadmin.CATokenInfo, se.anatom.ejbca.ca.caadmin.SoftCATokenInfo, se.anatom.ejbca.webdist.cainterface.CADataHandler,
-               se.anatom.ejbca.webdist.rainterface.RevokedInfoView, se.anatom.ejbca.ca.caadmin.CATokenInfo, se.anatom.ejbca.ca.caadmin.SoftCATokenInfo, se.anatom.ejbca.webdist.webconfiguration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, se.anatom.ejbca.common.ExtendedPKCS10CertificationRequest, 
-               se.anatom.ejbca.protocol.PKCS10RequestMessage, se.anatom.ejbca.ca.exception.CAExistsException, se.anatom.ejbca.ca.exception.CADoesntExistsException, se.anatom.ejbca.ca.exception.CATokenOfflineException, se.anatom.ejbca.ca.exception.CATokenAuthenticationFailedException,
-               se.anatom.ejbca.ca.caadmin.extendedcaservices.OCSPCAServiceInfo, se.anatom.ejbca.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, se.anatom.ejbca.ca.caadmin.hardcatokens.HardCATokenManager, se.anatom.ejbca.ca.caadmin.AvailableHardCAToken, se.anatom.ejbca.ca.caadmin.HardCATokenInfo"%>
+<%@page errorPage="/errorpage.jsp" import="java.util.*, java.io.*, org.apache.commons.fileupload.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.SecConst, org.ejbca.util.FileTools, org.ejbca.util.CertTools, org.ejbca.core.model.authorization.AuthorizationDeniedException,
+               org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.caadmin.CAInfo, org.ejbca.core.model.ca.caadmin.X509CAInfo, org.ejbca.core.model.ca.catoken.CATokenInfo, org.ejbca.core.model.ca.catoken.SoftCATokenInfo, org.ejbca.ui.web.admin.cainterface.CADataHandler,
+               org.ejbca.ui.web.admin.rainterface.RevokedInfoView, org.ejbca.ui.web.admin.configuration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.ejbca.core.protocol.ExtendedPKCS10CertificationRequest, 
+               org.ejbca.core.protocol.PKCS10RequestMessage, org.ejbca.core.model.ca.caadmin.CAExistsException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.model.ca.catoken.CATokenOfflineException, org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException,
+               org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, org.ejbca.core.model.ca.catoken.HardCATokenManager, org.ejbca.core.model.ca.catoken.AvailableHardCAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo"%>
 
 <html>
-<jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
-<jsp:useBean id="cabean" scope="session" class="se.anatom.ejbca.webdist.cainterface.CAInterfaceBean" />
+<jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
+<jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" />
 
 <%! // Declarations 
   static final String ACTION                              = "action";
@@ -308,8 +308,8 @@
                 subjectaltname = ""; 
               else{
                 if(!subjectaltname.trim().equals("")){
-                   se.anatom.ejbca.ra.raadmin.DNFieldExtractor subtest = 
-                     new se.anatom.ejbca.ra.raadmin.DNFieldExtractor(subjectaltname,se.anatom.ejbca.ra.raadmin.DNFieldExtractor.TYPE_SUBJECTALTNAME);                   
+                   org.ejbca.core.model.ra.raadmin.DNFieldExtractor subtest = 
+                     new org.ejbca.core.model.ra.raadmin.DNFieldExtractor(subjectaltname,org.ejbca.core.model.ra.raadmin.DNFieldExtractor.TYPE_SUBJECTALTNAME);                   
                    if(subtest.isIllegal() || subtest.existsOther()){
                      illegaldnoraltname = true;
                    }
@@ -648,7 +648,7 @@
             }  
             opstr.close();                
                                          
-            PKCS10RequestMessage certreq = se.anatom.ejbca.apply.RequestHelper.genPKCS10RequestMessageFromPEM(ostr.toByteArray());
+            PKCS10RequestMessage certreq = org.ejbca.ui.web.pub.RequestHelper.genPKCS10RequestMessageFromPEM(ostr.toByteArray());
             
              if (certreq != null) {               
                cabean.savePKCS10RequestData(certreq.getCertificationRequest());                                
@@ -700,8 +700,8 @@
                 subjectaltname = ""; 
               else{
                 if(!subjectaltname.trim().equals("")){
-                   se.anatom.ejbca.ra.raadmin.DNFieldExtractor subtest = 
-                     new se.anatom.ejbca.ra.raadmin.DNFieldExtractor(subjectaltname,se.anatom.ejbca.ra.raadmin.DNFieldExtractor.TYPE_SUBJECTALTNAME);                   
+                   org.ejbca.core.model.ra.raadmin.DNFieldExtractor subtest = 
+                     new org.ejbca.core.model.ra.raadmin.DNFieldExtractor(subjectaltname,org.ejbca.core.model.ra.raadmin.DNFieldExtractor.TYPE_SUBJECTALTNAME);                   
                    if(subtest.isIllegal() || subtest.existsOther()){
                      illegaldnoraltname = true;
                    }

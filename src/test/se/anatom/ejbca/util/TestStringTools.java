@@ -14,13 +14,15 @@
 package se.anatom.ejbca.util;
 
 import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
+import org.ejbca.util.StringTools;
 
 
 /**
  * Tests the StringTools class .
  *
- * @version $Id: TestStringTools.java,v 1.5 2005-08-18 07:30:49 anatom Exp $
+ * @version $Id: TestStringTools.java,v 1.6 2006-01-17 20:34:15 anatom Exp $
  */
 public class TestStringTools extends TestCase {
     private static Logger log = Logger.getLogger(TestStringTools.class);

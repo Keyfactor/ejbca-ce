@@ -15,6 +15,7 @@ package se.anatom.ejbca.ra.raadmin;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
+
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 

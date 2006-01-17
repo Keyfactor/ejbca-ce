@@ -1628,7 +1628,7 @@ LDAP setup is explained in HOWTO-LDAP.txt
 <subsection name="Batch creation of certificates">
 <p>
 Certificates can be created batch-wise with EJBCA. The class
-se.anatom.ejbca.batch.BatchMakeP12 creates keystore files for
+org.ejbca.ui.cli.batch.BatchMakeP12 creates keystore files for
 all users designated as NEW or FAILED in the local RA database. 
 To be able to batch generate certificates, the users must be registered 
 with clear text passwords. To set a clear text password for a user use

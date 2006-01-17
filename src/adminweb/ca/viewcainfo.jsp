@@ -1,13 +1,13 @@
 <%@ page pageEncoding="ISO-8859-1"%>
-<%@page errorPage="/errorpage.jsp"  import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean, se.anatom.ejbca.ra.raadmin.GlobalConfiguration, 
-                 se.anatom.ejbca.webdist.cainterface.CAInfoView, se.anatom.ejbca.util.CertTools, se.anatom.ejbca.webdist.cainterface.CAInterfaceBean, se.anatom.ejbca.SecConst,
-                 se.anatom.ejbca.authorization.AuthorizationDeniedException,
+<%@page errorPage="/errorpage.jsp"  import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean, org.ejbca.core.model.ra.raadmin.GlobalConfiguration, 
+                 org.ejbca.ui.web.admin.cainterface.CAInfoView, org.ejbca.util.CertTools, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.SecConst,
+                 org.ejbca.core.model.authorization.AuthorizationDeniedException,
                  javax.ejb.CreateException, java.rmi.RemoteException, java.security.cert.X509Certificate" %>
 
 <html>
-<jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
-<jsp:useBean id="cabean" scope="session" class="se.anatom.ejbca.webdist.cainterface.CAInterfaceBean" />
-<jsp:useBean id="viewcainfohelper" scope="session" class="se.anatom.ejbca.webdist.cainterface.ViewCAInfoJSPHelper" />
+<jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
+<jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" />
+<jsp:useBean id="viewcainfohelper" scope="session" class="org.ejbca.ui.web.admin.cainterface.ViewCAInfoJSPHelper" />
 
 <%
   // Initialize environment.

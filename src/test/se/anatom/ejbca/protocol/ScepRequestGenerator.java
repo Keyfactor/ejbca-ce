@@ -36,11 +36,13 @@ import org.bouncycastle.cms.CMSProcessable;
 import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
+import org.ejbca.core.protocol.ExtendedPKCS10CertificationRequest;
+import org.ejbca.core.protocol.ScepRequestMessage;
+import org.ejbca.core.protocol.ScepResponseMessage;
+import org.ejbca.util.Base64;
+import org.ejbca.util.CertTools;
+import org.ejbca.util.KeyTools;
 
-import se.anatom.ejbca.common.ExtendedPKCS10CertificationRequest;
-import se.anatom.ejbca.util.Base64;
-import se.anatom.ejbca.util.CertTools;
-import se.anatom.ejbca.util.KeyTools;
 
 public class ScepRequestGenerator {
     private static Logger log = Logger.getLogger(ScepResponseMessage.class);

@@ -17,13 +17,16 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 
 import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
-import se.anatom.ejbca.log.Admin;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
+import org.ejbca.core.model.log.Admin;
 
 /**
  * Tests and removes the ca data entity bean.
  *
- * @version $Id: TestRemoveCA.java,v 1.1 2004-06-10 16:17:43 sbailliez Exp $
+ * @version $Id: TestRemoveCA.java,v 1.2 2006-01-17 20:33:58 anatom Exp $
  */
 public class TestRemoveCA extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);

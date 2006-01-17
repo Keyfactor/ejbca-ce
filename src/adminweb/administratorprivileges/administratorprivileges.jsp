@@ -1,12 +1,12 @@
 <%@ page pageEncoding="ISO-8859-1"%>
-<%@page errorPage="/errorpage.jsp" import="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration
-               , se.anatom.ejbca.webdist.webconfiguration.AuthorizationDataHandler,
-                se.anatom.ejbca.webdist.webconfiguration.AccessRulesView, se.anatom.ejbca.authorization.*,
-                se.anatom.ejbca.webdist.rainterface.RAInterfaceBean, java.util.*"%>
+<%@page errorPage="/errorpage.jsp" import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration
+               , org.ejbca.ui.web.admin.configuration.AuthorizationDataHandler,
+                org.ejbca.ui.web.admin.configuration.AccessRulesView, org.ejbca.core.model.authorization.*,
+                org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, java.util.*"%>
 
-<jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
-<jsp:useBean id="rabean" scope="session" class="se.anatom.ejbca.webdist.rainterface.RAInterfaceBean" />
-<jsp:useBean id="cabean" scope="session" class="se.anatom.ejbca.webdist.cainterface.CAInterfaceBean" />
+<jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
+<jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
+<jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" />
 
 <%! // Declarations  
   static final String ACTION                        = "action";

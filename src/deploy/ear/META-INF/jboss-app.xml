@@ -8,11 +8,11 @@
 		
 		To have a look at the loading disaster:
 		
-		http://localhost:8080/jmx-console/HtmlAdaptor?action=inspectMBean&name=se.anatom.ejbca.loader%3Aloader%3Dejbca-ca.ear
+		http://localhost:8080/jmx-console/HtmlAdaptor?action=inspectMBean&name=org.ejbca.loader%3Aloader%3Dejbca-ca.ear
 	  -->
 	  
 	  <!-- does not work with JBoss 4.0.x so remove it for the time beeing
-	<loader-repository>se.anatom.ejbca.loader:loader=ejbca-ca.ear</loader-repository>
+	<loader-repository>org.ejbca.loader:loader=ejbca-ca.ear</loader-repository>
 	  -->
    <!-- String indicating where crlcreateservice should be replaced -->
    <!--@crlcreateservice.jar@-->

@@ -18,21 +18,24 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
 
 import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
-import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.ca.caadmin.ICAAdminSessionHome;
-import se.anatom.ejbca.ca.caadmin.ICAAdminSessionRemote;
-import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.ra.IUserAdminSessionHome;
-import se.anatom.ejbca.ra.IUserAdminSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
+import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
+import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.ui.cli.batch.BatchMakeP12;
 
 /** Tests the batch making of soft cards.
  *
- * @version $Id: TestBatchMakeP12.java,v 1.2 2005-02-11 13:12:14 anatom Exp $
+ * @version $Id: TestBatchMakeP12.java,v 1.3 2006-01-17 20:33:42 anatom Exp $
  */
 
 public class TestBatchMakeP12 extends TestCase {

@@ -1,8 +1,10 @@
 package se.anatom.ejbca.util;
 
+import java.util.HashMap;
+
 import junit.framework.TestCase;
 
-import java.util.HashMap;
+import org.ejbca.util.TemplateMimeMessage;
 
 /**
  * TestCase for TemplateMimeMessage

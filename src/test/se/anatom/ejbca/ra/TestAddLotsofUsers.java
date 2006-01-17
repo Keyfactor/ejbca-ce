@@ -16,19 +16,24 @@ package se.anatom.ejbca.ra;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
 
 import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
-import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.util.CertTools;
+import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
+import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.util.CertTools;
+
 
 /**
  * Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestAddLotsofUsers.java,v 1.3 2005-04-29 09:16:06 anatom Exp $
+ * @version $Id: TestAddLotsofUsers.java,v 1.4 2006-01-17 20:34:15 anatom Exp $
  */
 public class TestAddLotsofUsers extends TestCase {
     private static Logger log = Logger.getLogger(TestAddLotsofUsers.class);

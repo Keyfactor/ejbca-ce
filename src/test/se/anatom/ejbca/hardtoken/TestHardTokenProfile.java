@@ -14,21 +14,27 @@
 package se.anatom.ejbca.hardtoken;
 
 import java.util.Arrays;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
 
 import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
-import se.anatom.ejbca.hardtoken.hardtokenprofiles.EnhancedEIDProfile;
-import se.anatom.ejbca.hardtoken.hardtokenprofiles.HardTokenProfile;
-import se.anatom.ejbca.hardtoken.hardtokenprofiles.SwedishEIDProfile;
-import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.util.CertTools;
+import org.ejbca.core.ejb.hardtoken.IHardTokenSessionHome;
+import org.ejbca.core.ejb.hardtoken.IHardTokenSessionRemote;
+import org.ejbca.core.model.hardtoken.HardTokenProfileExistsException;
+import org.ejbca.core.model.hardtoken.profiles.EnhancedEIDProfile;
+import org.ejbca.core.model.hardtoken.profiles.HardTokenProfile;
+import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.util.CertTools;
+
 
 /**
  * Tests the hard token profile entity bean.
  *
- * @version $Id: TestHardTokenProfile.java,v 1.1 2004-06-10 16:17:44 sbailliez Exp $
+ * @version $Id: TestHardTokenProfile.java,v 1.2 2006-01-17 20:33:58 anatom Exp $
  */
 public class TestHardTokenProfile extends TestCase {
     private static Logger log = Logger.getLogger(TestHardTokenProfile.class);

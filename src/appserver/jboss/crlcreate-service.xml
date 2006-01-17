@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE server>
-<!-- $Id: crlcreate-service.xml,v 1.3 2005-05-02 16:13:42 herrvendil Exp $ -->
+<!-- $Id: crlcreate-service.xml,v 1.4 2006-01-17 20:29:04 anatom Exp $ -->
 
 <server>
 
@@ -10,7 +10,7 @@
   <!-- PrimeCard Connection Service                                         -->
   <!-- ==================================================================== -->
 
-  <mbean code="se.anatom.ejbca.appserver.jboss.CRLCreateService"
+  <mbean code="org.ejbca.appserver.jboss.CRLCreateService"
          name="user:service=CRLCreateService">
          
          

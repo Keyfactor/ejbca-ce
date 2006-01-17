@@ -28,18 +28,25 @@ import javax.naming.NamingException;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.store.CertificateDataBean;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
+import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.model.ca.store.CertReqHistory;
+import org.ejbca.core.model.ca.store.CertificateInfo;
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.util.CertTools;
+import org.ejbca.util.KeyTools;
 
-import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.ca.crl.RevokedCertInfo;
 import se.anatom.ejbca.common.UserDataVO;
-import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.util.CertTools;
-import se.anatom.ejbca.util.KeyTools;
+
+
 
 /**
  * Tests certificate store.
  *
- * @version $Id: TestCertificateData.java,v 1.6 2005-05-02 15:31:27 anatom Exp $
+ * @version $Id: TestCertificateData.java,v 1.7 2006-01-17 20:33:58 anatom Exp $
  */
 public class TestCertificateData extends TestCase {
 

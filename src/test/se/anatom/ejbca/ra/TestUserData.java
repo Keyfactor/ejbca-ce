@@ -17,18 +17,26 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
 
 import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
-import se.anatom.ejbca.SecConst;
+import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
+import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.UserDataConstants;
+
 import se.anatom.ejbca.common.UserDataVO;
-import se.anatom.ejbca.log.Admin;
+
+
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestUserData.java,v 1.4 2005-04-29 09:16:05 anatom Exp $
+ * @version $Id: TestUserData.java,v 1.5 2006-01-17 20:34:15 anatom Exp $
  */
 public class TestUserData extends TestCase {
 

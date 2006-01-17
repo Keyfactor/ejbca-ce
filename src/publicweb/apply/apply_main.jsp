@@ -1,9 +1,9 @@
 <%@ page pageEncoding="ISO-8859-1"%>
-<%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.security.cert.*,se.anatom.ejbca.ca.sign.*,
-                                 se.anatom.ejbca.log.Admin, se.anatom.ejbca.apply.ApplyBean, se.anatom.ejbca.SecConst"%>
+<%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.security.cert.*,
+                                 org.ejbca.core.model.log.Admin, org.ejbca.core.model.ApplyBean, org.ejbca.core.model.SecConst"%>
 
 <HTML>
-<jsp:useBean id="applybean" scope="session" class="se.anatom.ejbca.apply.ApplyBean" />
+<jsp:useBean id="applybean" scope="session" class="org.ejbca.core.model.ApplyBean" />
 <%!
 
   static final String ACTION                              = "action";

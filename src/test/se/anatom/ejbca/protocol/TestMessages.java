@@ -24,16 +24,18 @@ import java.security.cert.X509Certificate;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.protocol.PKCS10RequestMessage;
+import org.ejbca.core.protocol.ScepRequestMessage;
+import org.ejbca.util.Base64;
+import org.ejbca.util.CertTools;
+import org.ejbca.util.KeyTools;
 
-import se.anatom.ejbca.util.Base64;
-import se.anatom.ejbca.util.CertTools;
-import se.anatom.ejbca.util.KeyTools;
 
 
 /**
  * Protocol messages.
  *
- * @version $Id: TestMessages.java,v 1.5 2005-11-08 19:04:41 anatom Exp $
+ * @version $Id: TestMessages.java,v 1.6 2006-01-17 20:28:08 anatom Exp $
  */
 public class TestMessages extends TestCase {
 

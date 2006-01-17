@@ -1,10 +1,10 @@
 <%@ page pageEncoding="ISO-8859-1"%>
-<%@page errorPage="/errorpage.jsp"  import=" se.anatom.ejbca.authorization.AuthorizationDeniedException, se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean,se.anatom.ejbca.ra.raadmin.GlobalConfiguration, 
-                se.anatom.ejbca.log.LogConfiguration, se.anatom.ejbca.webdist.loginterface.LogInterfaceBean, se.anatom.ejbca.webdist.cainterface.CAInterfaceBean, se.anatom.ejbca.log.LogEntry,
-                se.anatom.ejbca.webdist.webconfiguration.WebLanguages, java.util.HashMap, java.util.Arrays, java.util.Iterator, java.util.Collection"%>
+<%@page errorPage="/errorpage.jsp"  import=" org.ejbca.core.model.authorization.AuthorizationDeniedException,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, 
+                org.ejbca.core.model.log.LogConfiguration,
+                java.util.HashMap, java.util.Iterator, java.util.Collection"%>
 
-<jsp:useBean id="ejbcawebbean" scope="session" class="se.anatom.ejbca.webdist.webconfiguration.EjbcaWebBean" />
-<jsp:useBean id="logbean" scope="session" class="se.anatom.ejbca.webdist.loginterface.LogInterfaceBean" />
+<jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
+<jsp:useBean id="logbean" scope="session" class="org.ejbca.ui.web.admin.loginterface.LogInterfaceBean" />
 
 
 <%! // Declarations 

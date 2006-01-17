@@ -26,11 +26,14 @@ import javax.naming.NamingException;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.store.CertificateDataBean;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.util.Base64;
+import org.ejbca.util.CertTools;
 
-import se.anatom.ejbca.ca.crl.RevokedCertInfo;
-import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.util.Base64;
-import se.anatom.ejbca.util.CertTools;
 
 public class TestCertificateRetrival extends TestCase {
 

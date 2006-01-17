@@ -1,5 +1,5 @@
 <%@ page pageEncoding="ISO-8859-1"%>
-<%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.security.cert.*,se.anatom.ejbca.ca.sign.*,se.anatom.ejbca.ca.caadmin.*,se.anatom.ejbca.log.Admin"%>
+<%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.security.cert.*,org.ejbca.core.ejb.ca.sign.*,org.ejbca.core.ejb.ca.caadmin.*,org.ejbca.core.model.ca.caadmin.*,org.ejbca.core.model.log.Admin"%>
 
 <HTML>
 <HEAD>

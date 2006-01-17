@@ -1,5 +1,5 @@
 <%@ page pageEncoding="ISO-8859-1"%>
-<%@page  errorPage="error.jsp" import="se.anatom.ejbca.util.CertTools, java.security.cert.*" %>
+<%@page  errorPage="error.jsp" import="org.ejbca.util.CertTools, java.security.cert.*" %>
 <html>
 <%   // Initialize environment
     X509Certificate[] certificates =   (X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" );

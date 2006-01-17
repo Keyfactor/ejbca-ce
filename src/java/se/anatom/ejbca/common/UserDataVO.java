@@ -16,14 +16,15 @@ package se.anatom.ejbca.common;
 import java.io.Serializable;
 import java.util.Date;
 
-import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.ra.ExtendedInformation;
-import se.anatom.ejbca.util.StringTools;
+import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ra.ExtendedInformation;
+import org.ejbca.util.StringTools;
+
 
 /**
  * Holds admin data collected from UserData in the database.
  *
- * @version $Id: UserDataVO.java,v 1.1 2005-04-21 15:17:50 herrvendil Exp $
+ * @version $Id: UserDataVO.java,v 1.2 2006-01-17 20:32:49 anatom Exp $
  */
 public class UserDataVO implements Serializable {
 

@@ -1,4 +1,4 @@
-<%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.security.cert.*,se.anatom.ejbca.ca.sign.*,se.anatom.ejbca.apply.RequestHelper, se.anatom.ejbca.log.Admin"%>
+<%@ page language="Java" import="org.ejbca.ui.web.pub.RequestHelper"%>
 
 <HTML>
 <HEAD>

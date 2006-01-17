@@ -26,13 +26,14 @@ import javax.naming.NamingException;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
-
-import se.anatom.ejbca.SecConst;
-import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.ra.IUserAdminSessionHome;
-import se.anatom.ejbca.ra.IUserAdminSessionRemote;
-import se.anatom.ejbca.ra.UserDataConstants;
-import se.anatom.ejbca.util.CertTools;
+import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
+import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
+import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
+import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.util.CertTools;
 
 
 /** This is a manual test that requires some manual set up and configuration.
@@ -40,7 +41,7 @@ import se.anatom.ejbca.util.CertTools;
  * -the users performancefoono1-10 should not exist in the database
  * 
  *
- * @version $Id: TestSignLotsOfCerts.java,v 1.4 2005-12-17 10:35:50 anatom Exp $
+ * @version $Id: TestSignLotsOfCerts.java,v 1.5 2006-01-17 20:33:58 anatom Exp $
  */
 public class TestSignLotsOfCerts extends TestCase {
     private static Logger log = Logger.getLogger(TestSignLotsOfCerts.class);

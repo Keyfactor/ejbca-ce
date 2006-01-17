@@ -13,8 +13,14 @@
  
 package se.anatom.ejbca.webdist;
 
-import junit.framework.*;
-import com.meterware.httpunit.*;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
+import com.meterware.httpunit.GetMethodWebRequest;
+import com.meterware.httpunit.HttpUnitOptions;
+import com.meterware.httpunit.WebConversation;
+import com.meterware.httpunit.WebRequest;
+import com.meterware.httpunit.WebResponse;
 
 /** Tests http pages of public webdist
  **/

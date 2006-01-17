@@ -17,23 +17,27 @@ import java.security.cert.X509CRL;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
+
 import javax.naming.Context;
 import javax.naming.NamingException;
 
 import junit.framework.TestCase;
+
 import org.apache.log4j.Logger;
-import se.anatom.ejbca.ca.caadmin.CAInfo;
-import se.anatom.ejbca.ca.caadmin.ICAAdminSessionHome;
-import se.anatom.ejbca.ca.caadmin.ICAAdminSessionRemote;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionHome;
-import se.anatom.ejbca.ca.store.ICertificateStoreSessionRemote;
-import se.anatom.ejbca.log.Admin;
-import se.anatom.ejbca.util.CertTools;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionHome;
+import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionRemote;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
+import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.util.CertTools;
 
 /**
  * Tests CRL session (agentrunner and certificatesession).
  *
- * @version $Id: TestCreateCRLSession.java,v 1.2 2005-02-11 13:12:46 anatom Exp $
+ * @version $Id: TestCreateCRLSession.java,v 1.3 2006-01-17 20:33:58 anatom Exp $
  */
 public class TestCreateCRLSession extends TestCase {
 

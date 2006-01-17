@@ -14,19 +14,17 @@ fi
 
 # Wich command are we running?
 if [ "$1" = "batch" ] ; then 
-	class_name=se.anatom.ejbca.batch.BatchMakeP12
+	class_name=org.ejbca.ui.cli.batch.BatchMakeP12
 elif [ "$1" = "ca" ] ; then
-	class_name=se.anatom.ejbca.admin.ca
-elif [ "$1" = "jobrunner" ] ; then
-	class_name=se.anatom.ejbca.util.JobRunner
+	class_name=org.ejbca.ui.cli.ca
 elif [ "$1" = "ra" ] ; then
-	class_name=se.anatom.ejbca.admin.ra
+	class_name=org.ejbca.ui.cli.ra
 elif [ "$1" = "setup" ] ; then
-	class_name=se.anatom.ejbca.admin.setup
+	class_name=org.ejbca.ui.cli.setup
 elif [ "$1" = "template" ] ; then
-	class_name=se.anatom.ejbca.admin.SVGTemplatePrinter
+	class_name=org.ejbca.ui.cli.SVGTemplatePrinter
 else
-	echo "Usage: $0 [batch|ca|ra|setup|template|jobrunner] options"
+	echo "Usage: $0 [batch|ca|ra|setup|template] options"
 	echo "For options information, specify a command directive"
 	exit 1
 fi

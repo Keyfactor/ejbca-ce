@@ -102,7 +102,7 @@ java.trustpassword  : ${java.trustpassword}
 		if it is not an issue with the Ant classloader
 		For in ejbca.home in order to have the p12 directory as a child of it.
 		-->
-		<java dir="${ejbca.home}" fork="true" classname="se.anatom.ejbca.batch.BatchMakeP12" classpathref="classpath"/>
+		<java dir="${ejbca.home}" fork="true" classname="org.ejbca.ui.cli.batch.BatchMakeP12" classpathref="classpath"/>
 		
 	</target>
     
@@ -121,7 +121,7 @@ java.trustpassword  : ${java.trustpassword}
         <attribute name="arg"/>
         <sequential>
         <echo message="@{name} @{arg}"/>
-        <java classname="se.anatom.ejbca.admin.@{name}" classpathref="classpath">
+        <java classname="org.ejbca.ui.cli.@{name}" classpathref="classpath">
             <arg line="@{arg}"/>
         </java>
         </sequential>
