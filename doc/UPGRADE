@@ -1,13 +1,41 @@
-$Id: UPGRADE,v 1.11 2005-06-17 08:07:04 anatom Exp $
+$Id: UPGRADE,v 1.12 2006-01-17 08:58:58 anatom Exp $
 
 UPGRADE
 =======
 
 This document describes proceedures needed to upgrade from one 
 version of EJBCA to a new version.
-Upgrades within a major version, from 2.0 to 2.0.1 for example, are 
+Upgrades within a major version, from 3.1.1 to 3.1.2 for example, are 
 usually plug-in upgrades and can be made simply by deploying the new 
 software. See doc/RELEASE_NOTES for info about such upgrades.
+
+From EJBCA 3.1.x to EJBCA 3.2
+-----------------------------
+Backup your database first! If the upgrade fails, you can always go back to the earlier version.
+
+For a quick-and-dirty upgrade of the database if you have 
+NOT done any special Log Configurations and only used the default, and you DO NOT mind deleting the 
+EJBCA log entries from the database, i.e. you are not interested in the log history.
+If the above two conditions are met, issue the following two commands to your database:
+-----
+delete from LogConfigurationData;
+delete from LogEntryData;
+-----
+
+Keep/copy ejbca.properties from the earlier installation, 
+copy the directory 'p12' from the earlier installation and 'ant deploy' 
+(or deploywithjbossservice) this new one.
+
+TODO: Database upgrade
+
+From EJBCA 3.1.x to EJBCA 3.1.x
+-------------------------------
+See release notes for details between certain versions. 
+Normally upgrades within a major release are plug-in upgrades.
+
+Otherwise simply keep/copy ejbca.properties from the earlier installation, 
+copy the directory 'p12' from the earlier installation and 'ant deploy' 
+(or deploywithjbossservice) this new one.
 
 From EJBCA 3.0.x to EJBCA 3.1
 -----------------------------
