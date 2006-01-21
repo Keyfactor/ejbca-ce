@@ -53,6 +53,7 @@ import org.bouncycastle.ocsp.OCSPRespGenerator;
 import org.bouncycastle.ocsp.Req;
 import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.UnknownStatus;
+import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
@@ -72,7 +73,6 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.Hex;
 
 /** 
  * Servlet implementing server side of the Online Certificate Status Protocol (OCSP)
@@ -128,7 +128,7 @@ import org.ejbca.util.Hex;
  *  local="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
  *
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson
- * @version  $Id: OCSPServlet.java,v 1.1 2006-01-17 20:32:20 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.2 2006-01-21 12:20:50 anatom Exp $
  */
 public class OCSPServlet extends HttpServlet {
 

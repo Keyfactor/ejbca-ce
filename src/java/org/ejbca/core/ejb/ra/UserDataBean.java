@@ -13,22 +13,21 @@
 
 package org.ejbca.core.ejb.ra;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Date;
+import java.util.HashMap;
+
+import javax.ejb.CreateException;
+
 import org.apache.log4j.Logger;
+import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.ejb.BaseEntityBean;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.Hex;
 import org.ejbca.util.StringTools;
-
-
-
-import javax.ejb.CreateException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Date;
-import java.util.HashMap;
 
 /**
  * Entity bean should not be used directly, use though Session beans.
@@ -58,7 +57,7 @@ import java.util.HashMap;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.1 2006-01-17 20:30:05 anatom Exp $
+ * @version $Id: UserDataBean.java,v 1.2 2006-01-21 12:20:56 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a Log Entry with accompanying data"
  * display-name="UserDataEB"
@@ -421,7 +420,7 @@ public abstract class UserDataBean extends BaseEntityBean {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA1");
             byte[] pwdhash = md.digest(password.trim().getBytes());
-            ret = Hex.encode(pwdhash);
+            ret = new String(Hex.encode(pwdhash));
         } catch (NoSuchAlgorithmException nsae) {
             log.error("SHA1 algorithm not supported.", nsae);
             throw nsae;

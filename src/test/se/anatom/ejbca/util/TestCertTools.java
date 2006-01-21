@@ -19,16 +19,16 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
+import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.Hex;
 import org.ejbca.util.StringTools;
 
 
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.14 2006-01-17 20:34:15 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.15 2006-01-21 12:20:56 anatom Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);

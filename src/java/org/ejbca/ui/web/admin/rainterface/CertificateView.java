@@ -27,11 +27,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.util.CertTools;
-import org.ejbca.util.Hex;
 
 
 
@@ -40,7 +40,7 @@ import org.ejbca.util.Hex;
  * by JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: CertificateView.java,v 1.1 2006-01-17 20:32:20 anatom Exp $
+ * @version $Id: CertificateView.java,v 1.2 2006-01-21 12:20:56 anatom Exp $
  */
 public class CertificateView implements java.io.Serializable {
 
@@ -230,7 +230,8 @@ public class CertificateView implements java.io.Serializable {
       String returnval = "";
       try {
          byte[] res = CertTools.generateSHA1Fingerprint(certificate.getEncoded());
-         returnval = (Hex.encode(res)).toUpperCase();
+         String ret = new String(Hex.encode(res));
+         returnval = ret.toUpperCase();
       } catch (CertificateEncodingException cee) {
       }
       return  returnval;
@@ -240,7 +241,8 @@ public class CertificateView implements java.io.Serializable {
       String returnval = "";
       try {
          byte[] res = CertTools.generateMD5Fingerprint(certificate.getEncoded());
-         returnval = (Hex.encode(res)).toUpperCase();
+         String ret = new String(Hex.encode(res));
+         returnval = ret.toUpperCase();
       } catch (CertificateEncodingException cee) {
       }
       return  returnval;

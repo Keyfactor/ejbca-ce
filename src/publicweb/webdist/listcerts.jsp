@@ -1,5 +1,5 @@
 <%@ page pageEncoding="ISO-8859-1"%>
-<%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.net.*,java.security.cert.*,java.math.BigInteger,org.ejbca.core.ejb.ca.store.*,org.ejbca.util.Hex, org.ejbca.core.model.log.Admin"%>
+<%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.net.*,java.security.cert.*,java.math.BigInteger,org.ejbca.core.ejb.ca.store.*,org.bouncycastle.util.encoders.Hex, org.ejbca.core.model.log.Admin"%>
 <html>
 <head><title>@EJBCA@ - List certificates</title>
 <link rel="stylesheet" href="indexmall.css" type="text/css">
@@ -27,7 +27,7 @@ try  {
             String subject = x509cert.getSubjectDN().toString();
             String issuer = x509cert.getIssuerDN().toString();
             BigInteger serno = x509cert.getSerialNumber();
-            String hexSerno = Hex.encode(serno.toByteArray());
+            String hexSerno = new String(Hex.encode(serno.toByteArray()));
             String urlEncIssuer = URLEncoder.encode(issuer);
 %>
   <pre>Subject: <%=subject%>
