@@ -64,6 +64,9 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
+import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
+import org.bouncycastle.asn1.x509.qualified.Iso4217CurrencyCode;
+import org.bouncycastle.asn1.x509.qualified.MonetaryValue;
 import org.bouncycastle.asn1.x509.qualified.QCStatement;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.SemanticsInformation;
@@ -103,7 +106,7 @@ import se.anatom.ejbca.common.UserDataVO;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: X509CA.java,v 1.2 2006-01-21 11:49:22 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -464,14 +467,49 @@ public class X509CA extends CA implements Serializable {
              } else if (StringUtils.isNotEmpty(certProfile.getQCSemanticsId())) {
                  si = new SemanticsInformation(new DERObjectIdentifier(certProfile.getQCSemanticsId()));                 
              }
+             ArrayList qcs = new ArrayList();
              QCStatement qc = null;
+             // First the standard rfc3739 QCStatement with an optional SematicsInformation
+             DERObjectIdentifier pkixQcSyntax = RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v1;
+             if (certProfile.getUsePkixQCSyntaxV2()) {
+            	 pkixQcSyntax = RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2;
+             }
              if ( (si != null)  ) {
-                 qc = new QCStatement(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2, si);
-             } 
-             if (qc != null) {
-                 // we only support one QCStatement in the sequence of QCStatements                 
+                 qc = new QCStatement(pkixQcSyntax, si);
+                 qcs.add(qc);
+             } else {
+            	 qc = new QCStatement(pkixQcSyntax);
+                 qcs.add(qc);
+             }
+             // ETSI Statement that the certificate is a Qualified Certificate
+             if (certProfile.getUseQCEtsiQCCompliance()) {
+            	 qc = new QCStatement(ETSIQCObjectIdentifiers.id_etsi_qcs_QcCompliance);
+                 qcs.add(qc);
+             }
+             // ETSI Statement regarding limit on the value of transactions
+             if (certProfile.getUseQCEtsiValueLimit()) {
+            	 // Both value and currency must be availabel for this extension
+            	 if ( (certProfile.getQCEtsiValueLimit() > 0) && (certProfile.getQCEtsiValueLimitCurrency() != null) ) {
+            		 int limit = certProfile.getQCEtsiValueLimit();
+            		 // The exponent should be default 0
+            		 int exponent = certProfile.getQCEtsiValueLimitExp();
+            		 MonetaryValue value = new MonetaryValue(new Iso4217CurrencyCode(certProfile.getQCEtsiValueLimitCurrency()), limit, exponent);
+            		 qc = new QCStatement(ETSIQCObjectIdentifiers.id_etsi_qcs_LimiteValue, value);
+            		 qcs.add(qc);
+            	 }
+             }
+             // ETSI Statement claiming that the private key resides in a Signature Creation Device
+             if (certProfile.getUseQCEtsiSignatureDevice()) {
+            	 qc = new QCStatement(ETSIQCObjectIdentifiers.id_etsi_qcs_QcSSCD);
+                 qcs.add(qc);
+             }
+             if (qcs.size() >  0) {
                  DEREncodableVector vec = new DEREncodableVector();
-                 vec.add(qc);
+                 Iterator iter = qcs.iterator();
+                 while (iter.hasNext()) {
+                	 QCStatement q = (QCStatement)iter.next();
+                     vec.add(q);
+                 }
                  certgen.addExtension(CertTools.QCSTATEMENTS_OBJECTID, certProfile.getQCStatementCritical(), new DERSequence(vec));                 
              }
          }

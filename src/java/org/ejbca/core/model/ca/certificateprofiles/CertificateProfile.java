@@ -32,12 +32,12 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.1 2006-01-17 20:31:51 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.2 2006-01-21 11:49:21 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
     // Default Values
-    public static final float LATEST_VERSION = (float) 14.0;
+    public static final float LATEST_VERSION = (float) 15.0;
 
     /** KeyUsage constants */
     public static final int DIGITALSIGNATURE = 0;
@@ -133,9 +133,16 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 	protected static final String USEPATHLENGTHCONSTRAINT        = "usepathlengthconstraint";
 	protected static final String PATHLENGTHCONSTRAINT           = "pathlengthconstraint";
     protected static final String USEQCSTATEMENT                 = "useqcstatement";
+    protected static final String USEPKIXQCSYNTAXV2              = "usepkixqcsyntaxv2";
     protected static final String QCSTATEMENTCRITICAL            = "useqcstatementcritical";
     protected static final String QCSTATEMENTRANAME              = "useqcstatementraname";
     protected static final String QCSSEMANTICSID                 = "useqcsematicsid";
+    protected static final String USEQCETSIQCCOMPLIANCE          = "useqcetsiqccompliance";
+    protected static final String USEQCETSIVALUELIMIT            = "useqcetsivaluelimit";
+    protected static final String QCETSIVALUELIMIT               = "qcetsivaluelimit";
+    protected static final String QCETSIVALUELIMITEXP            = "qcetsivaluelimitexp";
+    protected static final String QCETSIVALUELIMITCURRENCY       = "qcetsivaluelimitcurrency";
+    protected static final String USEQCETSISIGNATUREDEVICE       = "useqcetsisignaturedevice";
      
     // Public Methods
 
@@ -206,9 +213,16 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 	  setPathLengthConstraint(0);
 	  
       setUseQCStatement(false);
+      setUsePkixQCSyntaxV2(false);
       setQCStatementCritical(false);
       setQCStatementRAName(null);
       setQCSemanticsId(null);
+      setUseQCEtsiQCCompliance(false);
+      setUseQCEtsiSignatureDevice(false);
+      setUseQCEtsiValueLimit(false);
+      setQCEtsiValueLimit(0);
+      setQCEtsiValueLimitExp(0);
+      setQCEtsiValueLimitCurrency(null);
     }
 
 
@@ -648,6 +662,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     public boolean getUseQCStatement(){ return ((Boolean) data.get(USEQCSTATEMENT)).booleanValue(); }
     public void setUseQCStatement(boolean useqcstatement) { data.put(USEQCSTATEMENT, Boolean.valueOf(useqcstatement));}
+    public boolean getUsePkixQCSyntaxV2(){ return ((Boolean) data.get(USEPKIXQCSYNTAXV2)).booleanValue(); }
+    public void setUsePkixQCSyntaxV2(boolean pkixqcsyntaxv2) { data.put(USEPKIXQCSYNTAXV2, Boolean.valueOf(pkixqcsyntaxv2));}
     public boolean getQCStatementCritical() { return ((Boolean) data.get(QCSTATEMENTCRITICAL)).booleanValue(); }
     public void  setQCStatementCritical(boolean qcstatementcritical) { data.put(QCSTATEMENTCRITICAL, Boolean.valueOf(qcstatementcritical));}
 
@@ -665,7 +681,24 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       else
         data.put(QCSSEMANTICSID,qcsemanticsid);
     }
-
+    public boolean getUseQCEtsiQCCompliance(){ return ((Boolean) data.get(USEQCETSIQCCOMPLIANCE)).booleanValue(); }
+    public void setUseQCEtsiQCCompliance(boolean useqcetsiqccompliance) { data.put(USEQCETSIQCCOMPLIANCE, Boolean.valueOf(useqcetsiqccompliance));}
+    public boolean getUseQCEtsiValueLimit(){ return ((Boolean) data.get(USEQCETSIVALUELIMIT)).booleanValue(); }
+    public void setUseQCEtsiValueLimit(boolean useqcetsivaluelimit) { data.put(USEQCETSIVALUELIMIT, Boolean.valueOf(useqcetsivaluelimit));}
+    public int getQCEtsiValueLimit(){return ((Integer) data.get(QCETSIVALUELIMIT)).intValue();}
+    public void setQCEtsiValueLimit(int qcetsivaluelimit){data.put(QCETSIVALUELIMIT, new Integer(qcetsivaluelimit));}
+    public int getQCEtsiValueLimitExp(){return ((Integer) data.get(QCETSIVALUELIMITEXP)).intValue();}
+    public void setQCEtsiValueLimitExp(int qcetsivaluelimitexp){data.put(QCETSIVALUELIMITEXP, new Integer(qcetsivaluelimitexp));}
+    public String getQCEtsiValueLimitCurrency(){ return (String) data.get(QCETSIVALUELIMITCURRENCY); }
+    public void setQCEtsiValueLimitCurrency(String qcetsicaluelimitcurrency) {
+      if(qcetsicaluelimitcurrency==null)
+        data.put(QCETSIVALUELIMITCURRENCY,"");
+      else
+        data.put(QCETSIVALUELIMITCURRENCY,qcetsicaluelimitcurrency);
+    }
+    public boolean getUseQCEtsiSignatureDevice(){ return ((Boolean) data.get(USEQCETSISIGNATUREDEVICE)).booleanValue(); }
+    public void setUseQCEtsiSignatureDevice(boolean useqcetsisignaturedevice) { data.put(USEQCETSISIGNATUREDEVICE, Boolean.valueOf(useqcetsisignaturedevice));}
+    
     public Object clone() throws CloneNotSupportedException {
       CertificateProfile clone = new CertificateProfile();
       HashMap clonedata = (HashMap) clone.saveData();
@@ -739,9 +772,16 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             
             if(data.get(USEQCSTATEMENT) == null){
                 setUseQCStatement(false);
+                setUsePkixQCSyntaxV2(false);
                 setQCStatementCritical(false);
                 setQCStatementRAName(null);
                 setQCSemanticsId(null);
+                setUseQCEtsiQCCompliance(false);
+                setUseQCEtsiSignatureDevice(false);
+                setUseQCEtsiValueLimit(false);
+                setQCEtsiValueLimit(0);
+                setQCEtsiValueLimitExp(0);
+                setQCEtsiValueLimitCurrency(null);
             }
             
             if(data.get(USEDEFAULTCRLDISTRIBUTIONPOINT) == null){
