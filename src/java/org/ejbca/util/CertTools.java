@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.math.BigInteger;
 import java.net.URL;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
@@ -73,6 +74,8 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.x509.X509NameTokenizer;
+import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
+import org.bouncycastle.asn1.x509.qualified.MonetaryValue;
 import org.bouncycastle.asn1.x509.qualified.QCStatement;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.SemanticsInformation;
@@ -85,7 +88,7 @@ import org.bouncycastle.x509.X509V3CertificateGenerator;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.1 2006-01-17 20:32:19 anatom Exp $
+ * @version $Id: CertTools.java,v 1.2 2006-01-22 09:04:17 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -1012,29 +1015,77 @@ public class CertTools {
         return result;            
 	}
 
-    /** Returns the 'statementId' defined in the QCStatement extension (rfc3739).
+    /** Returns all the 'statementId' defined in the QCStatement extension (rfc3739).
      * 
      * @param cert Certificate containing the extension
-     * @return String with the oid, for example "1.1.1.2", or null if no identifier is found.
+     * @return Collection of String with the oid, for example "1.1.1.2", or empty Collection if no identifier is found, never returns null.
      * @throws IOException if there is a problem parsing the certificate
      */
-    public static String getQcStatementId(X509Certificate cert) throws IOException {
+    public static Collection getQcStatementIds(X509Certificate cert) throws IOException {
+        ArrayList ret = new ArrayList();
+        DERObject obj = getExtensionValue(cert, QCSTATEMENTS_OBJECTID);
+        if (obj == null) {
+            return ret;
+        }
+        ASN1Sequence seq = (ASN1Sequence)obj;
+        for (int i = 0; i < seq.size(); i++) {
+            QCStatement qc = QCStatement.getInstance(seq.getObjectAt(i));
+            DERObjectIdentifier oid = qc.getStatementId();
+            if (oid != null) {
+                ret.add(oid.getId());
+            }        	
+        }
+        return ret;
+    }
+    /** Returns the value limit ETSI QCStatement if present.
+     * 
+     * @param cert X509Certificate possibly containing the QCStatement extension
+     * @return String with the value and currency (ex '50000 SEK')or null if the extension is not present
+     * @throws IOException if there is a problem parsing the certificate
+     */
+    public static String getQcStatementValueLimit(X509Certificate cert) throws IOException {
+    	String ret = null;
         DERObject obj = getExtensionValue(cert, QCSTATEMENTS_OBJECTID);
         if (obj == null) {
             return null;
         }
         ASN1Sequence seq = (ASN1Sequence)obj;
-        // Check the size so we don't ArrayIndexOutOfBounds
-        if (seq.size() < 1) {
-            return null;
+        MonetaryValue mv = null;
+        // Look through all the QCStatements na dsee if we have a stadard ETSI LimitValue
+        for (int i = 0; i < seq.size(); i++) {
+            QCStatement qc = QCStatement.getInstance(seq.getObjectAt(i));
+            DERObjectIdentifier oid = qc.getStatementId();
+            if (oid != null) {
+            	if (oid.equals(ETSIQCObjectIdentifiers.id_etsi_qcs_LimiteValue)) {
+                    // We MAY have a MonetaryValue object here
+                    ASN1Encodable enc = qc.getStatementInfo();
+                    if (enc != null) {
+                    	mv = MonetaryValue.getInstance(enc);
+                        // We can break the loop now, we got it!
+                        break;
+                    }
+            	}
+            }        	
         }
-        QCStatement qc = QCStatement.getInstance(seq.getObjectAt(0));
-        
-        DERObjectIdentifier oid = qc.getStatementId();
-        if (oid != null) {
-            return oid.getId();
+        if (mv != null) {
+        	BigInteger amount = mv.getAmount();
+        	BigInteger exp = mv.getExponent();
+        	BigInteger ten = BigInteger.valueOf(10);
+        	// A possibly gotcha here if the monetary value is larger than what fits in a long...
+        	long value = amount.longValue() * (ten.pow(exp.intValue())).longValue();
+        	if (value < 0) {
+        		log.error("ETSI LimitValue amount is < 0.");
+        	}
+        	String curr = mv.getCurrency().getAlphabetic();
+        	if (curr == null) {
+        		log.error("ETSI LimitValue currency is null");
+        	}
+        	if ( (value >= 0) && (curr != null) ) {
+        		ret = value + " "+curr;
+        	}
         }
-        return null;
+    	return ret;
+    	
     }
     /** Returns the 'NameRegistrationAuthorities' defined in the QCStatement extension (rfc3739).
      * 
@@ -1049,20 +1100,24 @@ public class CertTools {
             return null;
         }
         ASN1Sequence seq = (ASN1Sequence)obj;
-        // Check the size so we don't ArrayIndexOutOfBounds
-        if (seq.size() < 1) {
-            return null;
+        SemanticsInformation si = null;
+        // Look through all the QCStatements na dsee if we have a stadard RFC3739 pkixQCSyntax
+        for (int i = 0; i < seq.size(); i++) {
+            QCStatement qc = QCStatement.getInstance(seq.getObjectAt(i));
+            DERObjectIdentifier oid = qc.getStatementId();
+            if (oid != null) {
+            	if (oid.equals(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v1) || oid.equals(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2)) {
+                    // We MAY have a SemanticsInformation object here
+                    ASN1Encodable enc = qc.getStatementInfo();
+                    if (enc != null) {
+                        si = SemanticsInformation.getInstance(enc);
+                        // We can break the loop now, we got it!
+                        break;
+                    }
+            	}
+            }        	
         }
-        QCStatement qc = QCStatement.getInstance(seq.getObjectAt(0));
-        
-        DERObjectIdentifier oid = qc.getStatementId();
-        if (oid.equals(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v1) || oid.equals(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2)) {
-            // We MAY have a SemanticsInformation object here
-            ASN1Encodable enc = qc.getStatementInfo();
-            if (enc == null) {
-                return null;
-            }
-            SemanticsInformation si = SemanticsInformation.getInstance(enc);
+        if (si != null) {
             GeneralName[] gns = si.getNameRegistrationAuthorities();
             if (gns == null) {
                 return null;

@@ -14,10 +14,12 @@
 package se.anatom.ejbca.util;
 
 import java.security.cert.X509Certificate;
+import java.util.Collection;
 
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.util.Base64;
@@ -28,7 +30,7 @@ import org.ejbca.util.StringTools;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.15 2006-01-21 12:20:56 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.16 2006-01-22 09:04:11 anatom Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);
@@ -108,24 +110,24 @@ public class TestCertTools extends TestCase {
             +"uIKzn+GhapCuGoC4qWdlGLWqfpc=").getBytes());
     
     private static byte[] qcPrimeCert = Base64.decode(
-            ("MIIDNDCCAhygAwIBAgIINXNkdTFl6HMwDQYJKoZIhvcNAQEFBQAwNzERMA8GA1UE"
-            +"AxMIQWRtaW5DQTExFTATBgNVBAoTDEVKQkNBIFNhbXBsZTELMAkGA1UEBhMCU0Uw"
-            +"HhcNMDYwMTEyMTA0MjA3WhcNMDgwMTEyMTA1MjA3WjAwMRMwEQYKCZImiZPyLGQB"
-            +"ARMDcWMxMQwwCgYDVQQDEwNxYzExCzAJBgNVBAYTAlNFMIGfMA0GCSqGSIb3DQEB"
-            +"AQUAA4GNADCBiQKBgQCWWSPWBRUajnJSnFqx80lx41EB3+GAAVDk4kjLttsFs6Lm"
-            +"03fNeXbH2WdsAfYmqMQkOrgnW689JkKD9IKlW4b/lDang1S40YnGYkCkgpL3AF7N"
-            +"RQBuw/FV4RJz9YhyO1mjkVBrTvQv43YlMXS0O4xNIotbcjIv7z8liG6FaEVSSwID"
-            +"AQABo4HOMIHLMAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgWgMDsGA1UdJQQ0"
-            +"MDIGCCsGAQUFBwMBBggrBgEFBQcDAgYIKwYBBQUHAwQGCCsGAQUFBwMFBggrBgEF"
-            +"BQcDBzAdBgNVHQ4EFgQU6e+JB76kq6NtZKJ0JxU97b1tfXswHwYDVR0jBBgwFoAU"
-            +"B/2KRYNOZxRDkJ5oChjNeXgwtCcwLgYIKwYBBQUHAQMEIjAgMB4GCCsGAQUFBwsC"
-            +"MBIwEIEOcWNAcHJpbWVrZXkuc2UwDQYJKoZIhvcNAQEFBQADggEBAJF3a0dOjQSr"
-            +"qTncH9ncV5Lm7Skpp7EIYZnBmCp1IVFiebKo3qgbZKVT/eGBTS6uWXTfL8U40JDu"
-            +"taKcuoC6hPf5+akJ1cf4P5cH0vJ1wGbsZ9xeaGjqKyYxLYZys10TY2fEReYYOhwN"
-            +"yiGzGzglCXyKXz1rYj7VgTbHqajsU5lNM8WLD4m0w41u9s3U2Dx3Ds+tax4YNvxL"
-            +"2JN5I3crHeecFOseYwDqw4qYzhK4Mj5eXPL9ds9kxDyxzX1TAsAF6U/GL1CZ+U7A"
-            +"AL09MR1v8HDq5lKtpFwKLZ1B3yMMubGEQ5thm00WZ+JfF/wk7+EpXp8VO2BwqnqR"
-            +"lSZ/+Qd4Vm8=").getBytes());
+            ("MIIDMDCCAhigAwIBAgIIUDIxBvlO2qcwDQYJKoZIhvcNAQEFBQAwNzERMA8GA1UE"
+    		+"AxMIQWRtaW5DQTExFTATBgNVBAoTDEVKQkNBIFNhbXBsZTELMAkGA1UEBhMCU0Uw"
+    		+"HhcNMDYwMTIyMDgxNTU0WhcNMDgwMTIyMDgyNTU0WjAOMQwwCgYDVQQDEwNxYzIw"
+    		+"gZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAKkuPOqOEWCJH9xb11sS++vfKb/z"
+    		+"gHf2clwyf2vSFWTSDzQHOa2j5rwZ/F23X/mZl96fFAIfTBmr5dCwt0xAXZvTcKfO"
+    		+"RAcKl7ZBXvsAYvwl1KIUpA8NqEbgjwA+OaTdND2vpAhII7PoU4CkoNajy44EuL3Y"
+    		+"xP6KNWTMiks9KP5vAgMBAAGjgewwgekwDAYDVR0TAQH/BAIwADAOBgNVHQ8BAf8E"
+    		+"BAMCBPAwJwYDVR0lBCAwHgYIKwYBBQUHAwIGCCsGAQUFBwMEBggrBgEFBQcDBzAd"
+    		+"BgNVHQ4EFgQUZsj/dUVp1FmOJpYZ2j5fYKIdXYowHwYDVR0jBBgwFoAUs8UBsa9O"
+    		+"S1c8/I07DHYFJp0po0AwYAYIKwYBBQUHAQMEVDBSMCMGCCsGAQUFBwsBMBcGAykB"
+    		+"AjAQgQ5xY0BwcmltZWtleS5zZTAIBgYEAI5GAQEwFwYGBACORgECMA0TA1NFSwID"
+    		+"AMNQAgEAMAgGBgQAjkYBBDANBgkqhkiG9w0BAQUFAAOCAQEAjmL27XY5Wt0/axsI"
+    		+"PbtcfrJ6xEm5PlYabM+T3I6lksov6Rz1+/n/L1S5poGPG8iOdJCExcnR0HbNkeB+"
+    		+"2oPltqSaxyoSfGugVn/Oufz2BfFd7OCWe14dPsA181oC7/nq+mzhBpQ7App9JirA"
+    		+"aeJQrcRDNK7vVOmg2LZ2oSYno/TuRTFq0GxsEVjEdzAxpAxY7N8ff6gY7IHd7+hc"
+    		+"4GiFY+NnNp9Dvf6mOYTXLxsOc+093S7uK2ohhq99aYCkzJmrngtrImtKi0y/LMjq"
+    		+"oviMCQmzMLY2Ifcw+CsOyQZx7nxwafZ7BAzm6vIvSeiIe3VlskRGzYDM66NJJNNo"
+    		+"C2HsPA==").getBytes());
 
     /**
      * Creates a new TestCertTools object.
@@ -579,9 +581,16 @@ public class TestCertTools extends TestCase {
       X509Certificate cert = CertTools.getCertfromByteArray(qcRefCert);
       //System.out.println(cert);
       assertEquals("rfc822name=municipality@darmstadt.de", CertTools.getQcStatementAuthorities(cert));
-      assertEquals(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2.getId(), CertTools.getQcStatementId(cert));
+      Collection ids = CertTools.getQcStatementIds(cert);
+      assertTrue(ids.contains(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2.getId()));
       X509Certificate cert2 = CertTools.getCertfromByteArray(qcPrimeCert);
       assertEquals("rfc822name=qc@primekey.se", CertTools.getQcStatementAuthorities(cert2));
-      assertEquals(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2.getId(), CertTools.getQcStatementId(cert2));
+      ids = CertTools.getQcStatementIds(cert2);
+      assertTrue(ids.contains(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v1.getId()));
+      assertTrue(ids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcCompliance.getId()));
+      assertTrue(ids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcSSCD.getId()));
+      assertTrue(ids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_LimiteValue.getId()));
+      String limit = CertTools.getQcStatementValueLimit(cert2);
+      assertEquals("50000 SEK", limit);
   }
 }
