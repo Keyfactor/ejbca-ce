@@ -14,7 +14,6 @@
 package se.anatom.ejbca.ca.sign;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -33,16 +32,21 @@ import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
+import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.IllegalKeyException;
+import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -56,7 +60,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.9 2006-01-17 20:33:58 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.10 2006-01-22 09:49:56 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -132,6 +136,7 @@ public class TestSignSession extends TestCase {
     private static ISignSessionRemote remote;
     private static IUserAdminSessionRemote usersession;
     private static IRaAdminSessionRemote rasession;
+    private static ICertificateStoreSessionRemote storesession;
     private static KeyPair keys;
     private static int caid = 0;
     private Admin admin;
@@ -175,6 +180,10 @@ public class TestSignSession extends TestCase {
         obj = ctx.lookup("RaAdminSession");
         IRaAdminSessionHome rahome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IRaAdminSessionHome.class);
         rasession = rahome.create();
+
+        obj = ctx.lookup("CertificateStoreSession");
+        ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICertificateStoreSessionHome.class);
+        storesession = storehome.create();
 
         log.debug("<setUp()");
     }
@@ -494,9 +503,9 @@ public class TestSignSession extends TestCase {
         } 
         X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", keys.getPublic());
         assertNotNull("Failed to create certificate", cert);
-        FileOutputStream fos = new FileOutputStream("cert.crt");
-        fos.write(cert.getEncoded());
-        fos.close();
+//        FileOutputStream fos = new FileOutputStream("cert.crt");
+//        fos.write(cert.getEncoded());
+//        fos.close();
         String altNames = CertTools.getSubjectAlternativeName(cert);
         log.debug(altNames);
         ArrayList list = CertTools.getPartsFromDN(altNames,CertTools.UPN);
@@ -520,6 +529,69 @@ public class TestSignSession extends TestCase {
         log.debug("<test09TestMultipleAltNames()");        
     }
     
+    /** Tests creting a certificate with QC statement
+     * 
+     */
+    public void test10TestQcCert() throws Exception {
+        log.debug(">test10TestQcCert()");
+
+        // Create a good certificate profile (good enough), using QC statement
+        storesession.removeCertificateProfile(admin,"TESTQC");
+        EndUserCertificateProfile certprof = new EndUserCertificateProfile();
+        certprof.setUseQCStatement(true);
+        certprof.setQCStatementRAName("rfc822Name=qc@primekey.se");
+        certprof.setUseQCEtsiQCCompliance(true);
+        certprof.setUseQCEtsiSignatureDevice(true);
+        certprof.setUseQCEtsiValueLimit(true);
+        certprof.setQCEtsiValueLimit(50000);
+        certprof.setQCEtsiValueLimitCurrency("SEK");
+        storesession.addCertificateProfile(admin, "TESTQC", certprof);
+        int cprofile = storesession.getCertificateProfileId(admin,"TESTQC");
+
+        // Create a good end entity profile (good enough), allowing multiple UPN names
+        rasession.removeEndEntityProfile(admin, "TESTQC");
+        EndEntityProfile profile = new EndEntityProfile();
+        profile.addField(EndEntityProfile.COUNTRY);
+        profile.addField(EndEntityProfile.COMMONNAME);
+        profile.setValue(EndEntityProfile.AVAILCAS,0, Integer.toString(SecConst.ALLCAS));
+        profile.setValue(EndEntityProfile.AVAILCERTPROFILES,0,Integer.toString(cprofile));
+        rasession.addEndEntityProfile(admin, "TESTQC", profile);
+        int eeprofile = rasession.getEndEntityProfileId(admin, "TESTQC");
+        try {
+            // Change a user that we know...
+            usersession.changeUser(admin, "foo", "foo123", "C=SE,CN=qc",
+                    null,
+                    "foo@anatom.nu", false,
+                    eeprofile,
+                    cprofile,
+                    SecConst.USER_ENDUSER,
+                    SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, caid);
+            log.debug("created user: foo, foo123, C=SE, CN=qc");
+        } catch (RemoteException re) {
+            assertTrue("User foo does not exist, or error changing user", false);
+        } 
+        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", keys.getPublic());
+        assertNotNull("Failed to create certificate", cert);
+//        FileOutputStream fos = new FileOutputStream("cert.crt");
+//        fos.write(cert.getEncoded());
+//        fos.close();
+        String dn = cert.getSubjectDN().getName();
+        assertEquals(CertTools.stringToBCDNString("cn=qc,c=SE"), CertTools.stringToBCDNString(dn));
+        assertEquals("rfc822name=qc@primekey.se", CertTools.getQcStatementAuthorities(cert));
+        Collection ids = CertTools.getQcStatementIds(cert);
+        assertTrue(ids.contains(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v1.getId()));
+        assertTrue(ids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcCompliance.getId()));
+        assertTrue(ids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcSSCD.getId()));
+        assertTrue(ids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_LimiteValue.getId()));
+        String limit = CertTools.getQcStatementValueLimit(cert);
+        assertEquals("50000 SEK", limit);
+
+        // Clean up
+        rasession.removeEndEntityProfile(admin, "TESTQC");
+        storesession.removeCertificateProfile(admin,"TESTQC");
+
+        log.debug("<test10TestQcCert()");        
+    }
     /**
      * Tests scep message
      */
