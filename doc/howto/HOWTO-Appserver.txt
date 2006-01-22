@@ -8,6 +8,7 @@ Note: EJBCA should work fine with Weblogic 7.x/8.x
 Make special note to:
 datasource.jndi-name-prefix - which is specific for Weblogic.
 weblogic-oracle-columntype - which is specific for Weblogic.
+httpserver.privhttps=7002 - default SSL port of Weblogic is 7002, default of EJBCA on JBoss is 8443.
 
 If you had issued an 'ant' command before, it is now important to do 'ant clean' before building again.
 
@@ -16,19 +17,33 @@ Also edit bin/cli.xml and remove the comments for the two weblogic lines.
 2. If you are using Oracle go into file src/java/se/anatom/ejbca/log/LogEntryDataBean.java and change
 a line above the method 'getComment()' according to the documentation there.
 
-3. Create EjbcaPool and EjbcaDS in Weblogic. In the database configured for EjbcaPool and EjbcaDS in Weblogic, 
-create tables. 
+3. Create EJBCA domain with weblogic configuration wizard, select Basic weblogic server domain, Express,
+   Development mode, sun's JDK at bea's home directory, and remember the admin username/password.
+   
+4. Create EjbcaPool and EjbcaDS in Weblogic, the JNDI name should be the one specified in ejbca.properties.
+Create tables in the database configured for EjbcaPool and EjbcaDS in Weblogic.
 - You can do an 'ant bootstrap' to JBoss if you want JBoss to create the tables for you.
 
-See the file create-tables-ejbca3.sql for table definitions.
+See the file create-tables-ejbca3.sql for table definitions, or just run /doc/howto/create-tables-ejbca3-oracle.sql for Oracle.
 
-4. Set the environment variable WEBLOGIC_HOME pointing to for example /bea/weblogic81 
+5.Create a new java mail session for user notification in UserAdminSessionBean. In Weblogic, the JNDI name should be "EjbcaMail".
+  key in the properties:
+  mail.store.protocol=pop3
+  mail.transport.protocol=smtp
+  mail.user=icejean
+  mail.pop3.host=pop.21cn.com
+  mail.smtp.host=smtp.21cn.com
+  mail.smtp.auth=false
+  mail.from=icejean@21cn.com
+  mail.debug=false
+  
+6. Set the environment variable WEBLOGIC_HOME pointing to for example /bea/weblogic81 
 (weblogic.jar is located under WEBLOGIC_HOME/server/lib).
 
-5. Unforturnately you must also point JBOSS_HOME to where JBoss is located in order for the build 
+7. Unforturnately you must also point JBOSS_HOME to where JBoss is located in order for the build 
 script to work, at least until someone provides a weblogic.xml corresponding to bin/jboss.xml.
 
-6. Deploy the ear file in weblogic, it should works straight away.
+8. Deploy the ear file in weblogic, it should works straight away.
 
 7. Edit 'jndi.properties' in the directories 'ejbca/bin' and 'ejbca/src/java' to
 call Weblogic instead of JBoss, modify the principal and credentials according to you weblogic 
@@ -36,11 +51,28 @@ domain's setting (same as the user name/password to login weblogic console).
 
 8. Run 'ant install' to do the installation.
 
-9. Run 'ant test:run' to test the setup.
-
-10. Configure SSL in Weblogic, it should require client certificates and trust the initial CA installed 
+10. Configure SSL in Weblogic:
+a) Copy %JAVA_HOME%/jre/lib/security/cacerts to %BEA_HOME%/jre/lib/security, so that Weblogic can trust the initial CA installed 
 when doing 'ant install', you can get the cert with 'bin/ejbca.sh ca getrootcert cert.pem'.
-This should make the admin-GUI work, but it haven't been verified by anyone yet...
+b) Configure weblogic server for SSL.
+   server->configuration->keystore&ssl, click "Change", select "Custom Identity and Java Standard Trust"
+     Custom Identity Keystore: path to tomcat.jks generated while "ant isntall",
+     Private Key Alias: localhost
+     Passphrase: serverpwd, specified in ejbca.properties.
+ 
+   server->configuration->keystore&ssl->advanced options->Server Attributes->Two Way Client Cert Behavior:
+     Client Certs Requested And Enforced
+
+   server->configuration->general, check "SSL Listen Port Enabled", note that the port should be same as httpserver.privhttps in ejbca.properties.
+
+11.Copy %EJBCA_HOME%/src/adminweb/languages/*.* to /tmp/languages/*.* , where /tmp should be at the same disk with weblogic,
+   d:\ for example, as org.ejbca.ui.web.admin.configuration.WebLanguages.init() has a bug of reading those property files
+   within the servlet context on weblogic. Need to be addressed in the future.
+   
+This should make the admin-GUI work, note to install the  Unlimited Strength Jurisdiction Policy Files from java.sun.com 
+for both sun's JDK and BEA's JDK first before installation.
+If installing with Oracle, perhaps you need to replace jdbc driver at weblogic_home\server\lib, weblogic_home\server\ext\jdbc\oracle\920, 10g 
+all to 10.1.0.2, in my case which is Oracle 9.2.0.
 
 JBOSS
 =====
