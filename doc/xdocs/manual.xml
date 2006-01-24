@@ -113,7 +113,7 @@ Note that the installation must be done with a user with privileges to write to 
 example /opt/jboss-4.0.2.
 </p><p>
 2) Copy ejbca.properties.sample to ejbca.properties and customize if needed.
-The default values works fine for a test installaton.
+The default values works fine for a test installaton. 
 </p><p>
 <ul>
 <li>Customize the CA properties if you need to do so.
@@ -123,6 +123,8 @@ DO NOT forget the passwords, if you need to re-install the software sometime.</l
 <li>Customize the database if needed but easiest thing is to keep the default as it is,
 it will use the JBoss embedded HSQLDB and everything will be easier for you.
 For production use you should use a real database instead of the embedded one.</li>
+<li>Small note, in the ca.dn you can not use DC components for the initial CA, 
+you can create CAs using DC components later on once the admin GUI is up and running.</li>
 </ul>
 </p><p>
 3) Open a console (terminal) and start JBoss.
