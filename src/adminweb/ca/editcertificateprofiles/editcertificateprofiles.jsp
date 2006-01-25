@@ -37,6 +37,9 @@
   static final String TEXTFIELD_PATHLENGTHCONSTRAINT   = "textfieldpathlengthconstraint";
   static final String TEXTFIELD_QCSSEMANTICSID         = "textfieldqcsemanticsid";
   static final String TEXTFIELD_QCSTATEMENTRANAME      = "textfieldqcstatementraname";
+  static final String TEXTFIELD_QCETSIVALUELIMIT       = "textfieldqcetsivaluelimit";
+  static final String TEXTFIELD_QCETSIVALUELIMITEXP    = "textfieldqcetsivaluelimitexp";
+  static final String TEXTFIELD_QCETSIVALUELIMITCUR    = "textfieldqcetsivaluelimitcur";
   
   static final String CHECKBOX_BASICCONSTRAINTS                   = "checkboxbasicconstraints";
   static final String CHECKBOX_BASICCONSTRAINTSCRITICAL           = "checkboxbasicconstraintscritical";
@@ -65,6 +68,10 @@
   static final String CHECKBOX_USEPATHLENGTHCONSTRAINT            = "checkusepathlengthconstraint";
   static final String CHECKBOX_USEQCSTATEMENT                     = "checkuseqcstatement";
   static final String CHECKBOX_QCSTATEMENTCRITICAL                = "checkqcstatementcritical";
+  static final String CHECKBOX_USEPKIXQCSYNTAXV2                  = "checkpkixqcsyntaxv2";
+  static final String CHECKBOX_USEQCETSIQCCOMPLIANCE              = "checkqcetsiqcompliance";
+  static final String CHECKBOX_USEQCETSIVALUELIMIT                = "checkqcetsivaluelimit";
+  static final String CHECKBOX_USEQCETSISIGNATUREDEVICE           = "checkqcetsisignaturedevice";
 
   static final String SELECT_AVAILABLEBITLENGTHS                  = "selectavailablebitlengths";
   static final String SELECT_KEYUSAGE                             = "selectkeyusage";
@@ -550,6 +557,18 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
                  certificateprofiledata.setSubjectAltNameSubSet(new ArrayList());
              }
              
+             certificateprofiledata.setUseQCStatement(false);
+             certificateprofiledata.setQCStatementCritical(false);
+             certificateprofiledata.setUsePkixQCSyntaxV2(false);
+             certificateprofiledata.setUseQCEtsiQCCompliance(false);
+             certificateprofiledata.setUseQCEtsiSignatureDevice(false);
+             certificateprofiledata.setUseQCEtsiValueLimit(false);
+             certificateprofiledata.setQCSemanticsId("");
+             certificateprofiledata.setQCStatementRAName("");
+             certificateprofiledata.setQCEtsiValueLimit(0);
+             certificateprofiledata.setQCEtsiValueLimitExp(0);
+             certificateprofiledata.setQCEtsiValueLimitCurrency("");
+             
              value = request.getParameter(CHECKBOX_USEQCSTATEMENT);
              if(value != null){                  
                   certificateprofiledata.setUseQCStatement(value.equals(CHECKBOX_VALUE));
@@ -558,21 +577,29 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
                      value = request.getParameter(CHECKBOX_QCSTATEMENTCRITICAL);
                      if(value != null) {
                        certificateprofiledata.setQCStatementCritical(value.equals(CHECKBOX_VALUE));
-                     }else{
-                       certificateprofiledata.setQCStatementCritical(false);
-                     }   
+                     }
+                     value = request.getParameter(CHECKBOX_USEPKIXQCSYNTAXV2);
+                     if(value != null) {
+                       certificateprofiledata.setUsePkixQCSyntaxV2(value.equals(CHECKBOX_VALUE));
+                     }
+                     value = request.getParameter(CHECKBOX_USEQCETSIQCCOMPLIANCE);
+                     if(value != null) {
+                       certificateprofiledata.setUseQCEtsiQCCompliance(value.equals(CHECKBOX_VALUE));
+                     }
+                     value = request.getParameter(CHECKBOX_USEQCETSISIGNATUREDEVICE);
+                     if(value != null) {
+                       certificateprofiledata.setUseQCEtsiSignatureDevice(value.equals(CHECKBOX_VALUE));
+                     }
+                     value = request.getParameter(CHECKBOX_USEQCETSIVALUELIMIT);
+                     if(value != null) {
+                       certificateprofiledata.setUseQCEtsiValueLimit(value.equals(CHECKBOX_VALUE));
+                       certificateprofiledata.setQCEtsiValueLimit(new Integer(request.getParameter(TEXTFIELD_QCETSIVALUELIMIT)).intValue());
+                       certificateprofiledata.setQCEtsiValueLimitExp(new Integer(request.getParameter(TEXTFIELD_QCETSIVALUELIMITEXP)).intValue());  
+                       certificateprofiledata.setQCEtsiValueLimitCurrency(request.getParameter(TEXTFIELD_QCETSIVALUELIMITCUR));                                                                    
+                     }                     
                      certificateprofiledata.setQCSemanticsId(request.getParameter(TEXTFIELD_QCSSEMANTICSID));
                      certificateprofiledata.setQCStatementRAName(request.getParameter(TEXTFIELD_QCSTATEMENTRANAME));
-                  }else{
-                     certificateprofiledata.setQCStatementCritical(false);
-                     certificateprofiledata.setQCSemanticsId("");
-                     certificateprofiledata.setQCStatementRAName("");                  
                   }
-             }else{
-                 certificateprofiledata.setUseQCStatement(false);
-                 certificateprofiledata.setQCStatementCritical(false);
-                 certificateprofiledata.setQCSemanticsId("");
-                 certificateprofiledata.setQCStatementRAName("");               
              }
              
               cabean.changeCertificateProfile(certprofile,certificateprofiledata);

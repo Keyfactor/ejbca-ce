@@ -113,9 +113,12 @@ function checkdefaultocspservicelocatorfield(){
 function checkuseqcstatementfield(){
   if(document.editcertificateprofile.<%=CHECKBOX_USEQCSTATEMENT %>.checked){    
     document.editcertificateprofile.<%= CHECKBOX_QCSTATEMENTCRITICAL %>.disabled = false;
-    document.editcertificateprofile.<%= CHECKBOX_QCSTATEMENTCRITICAL %>.checked = false;
     document.editcertificateprofile.<%= TEXTFIELD_QCSSEMANTICSID %>.disabled = false;
     document.editcertificateprofile.<%= TEXTFIELD_QCSTATEMENTRANAME %>.disabled = false;
+    document.editcertificateprofile.<%= CHECKBOX_USEPKIXQCSYNTAXV2 %>.disabled = false;
+    document.editcertificateprofile.<%= CHECKBOX_USEQCETSIQCCOMPLIANCE %>.disabled = false;
+    document.editcertificateprofile.<%= CHECKBOX_USEQCETSIVALUELIMIT %>.disabled = false;
+    document.editcertificateprofile.<%= CHECKBOX_USEQCETSISIGNATUREDEVICE %>.disabled = false;
   }
   else{
     document.editcertificateprofile.<%= CHECKBOX_QCSTATEMENTCRITICAL %>.disabled = true;
@@ -124,6 +127,36 @@ function checkuseqcstatementfield(){
     document.editcertificateprofile.<%= TEXTFIELD_QCSTATEMENTRANAME %>.disabled = true;
     document.editcertificateprofile.<%= TEXTFIELD_QCSSEMANTICSID %>.value = "";
     document.editcertificateprofile.<%= TEXTFIELD_QCSTATEMENTRANAME %>.value = "";
+    document.editcertificateprofile.<%= CHECKBOX_USEPKIXQCSYNTAXV2 %>.disabled = true;
+    document.editcertificateprofile.<%= CHECKBOX_USEPKIXQCSYNTAXV2 %>.checked = false;
+    document.editcertificateprofile.<%= CHECKBOX_USEQCETSIQCCOMPLIANCE %>.disabled = true;
+    document.editcertificateprofile.<%= CHECKBOX_USEQCETSIQCCOMPLIANCE %>.checked = false;
+    document.editcertificateprofile.<%= CHECKBOX_USEQCETSIVALUELIMIT %>.disabled = true;
+    document.editcertificateprofile.<%= CHECKBOX_USEQCETSIVALUELIMIT %>.checked = false;
+    document.editcertificateprofile.<%= CHECKBOX_USEQCETSISIGNATUREDEVICE %>.disabled = true;
+    document.editcertificateprofile.<%= CHECKBOX_USEQCETSISIGNATUREDEVICE %>.checked = false;
+    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMIT %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITEXP %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITCUR %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMIT %>.value = "";
+    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITEXP %>.value = "";
+    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITCUR %>.value = "";
+  }
+}
+
+function checkuseetsivaluelimitfield(){
+  if(document.editcertificateprofile.<%=CHECKBOX_USEQCETSIVALUELIMIT %>.checked){    
+    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMIT %>.disabled = false;
+    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITEXP %>.disabled = false;
+    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITCUR %>.disabled = false;
+  }
+  else{
+    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMIT %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITEXP %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITCUR %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMIT %>.value = "";
+    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITEXP %>.value = "";
+    document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITCUR %>.value = "";
   }
 }
 
@@ -270,7 +303,7 @@ function checkallfields(){
          illegalfields++;
       }
     }
-    
+        
     if(document.editcertificateprofile.<%=CHECKBOX_USEQCSTATEMENT%>.checked){
       if(document.editcertificateprofile.<%= TEXTFIELD_QCSSEMANTICSID %>.value == "" &&
          document.editcertificateprofile.<%= TEXTFIELD_QCSTATEMENTRANAME %>.value == ""){
@@ -279,7 +312,33 @@ function checkallfields(){
       }
     }
 
-
+    if(!document.editcertificateprofile.<%=TEXTFIELD_QCETSIVALUELIMIT%>.disabled){
+      if(!checkfieldfordecimalnumbers("document.editcertificateprofile.<%=TEXTFIELD_QCETSIVALUELIMIT%>","<%= ejbcawebbean.getText("ONLYDECINETSIVALUELIMIT") %>")){
+         illegalfields++;
+      }    
+      if(document.editcertificateprofile.<%=TEXTFIELD_QCETSIVALUELIMIT%>.value==""){
+         alert("<%= ejbcawebbean.getText("ETSIVALUELIMCANNOTBEEMPTY") %>");
+         illegalfields++;
+      }
+    }
+    
+    if(!document.editcertificateprofile.<%=TEXTFIELD_QCETSIVALUELIMITEXP%>.disabled){
+      if(!checkfieldfordecimalnumbers("document.editcertificateprofile.<%=TEXTFIELD_QCETSIVALUELIMITEXP%>","<%= ejbcawebbean.getText("ONLYDECINETSIVALUELIMIT") %>")){
+         illegalfields++;
+      }    
+      if(document.editcertificateprofile.<%=TEXTFIELD_QCETSIVALUELIMITEXP%>.value==""){
+         alert("<%= ejbcawebbean.getText("ETSIVALUELIMCANNOTBEEMPTY") %>");
+         illegalfields++;
+      }
+    }
+    
+    if(!document.editcertificateprofile.<%=TEXTFIELD_QCETSIVALUELIMITCUR%>.disabled){   
+      if(document.editcertificateprofile.<%=TEXTFIELD_QCETSIVALUELIMITCUR%>.value==""){
+      
+         alert("<%= ejbcawebbean.getText("ETSIVALUELIMCANNOTBEEMPTY") %>");
+         illegalfields++;
+      }
+    }    
    
      return illegalfields == 0;  
    } 
@@ -306,7 +365,7 @@ function checkallfields(){
         <A href="<%=THIS_FILENAME %>"><u><%= ejbcawebbean.getText("BACKTOCERTIFICATEPROFILES") %></u></A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
    <!--     <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") + "#certificateprofiles"%>")'>
         <u><%= ejbcawebbean.getText("HELP") %></u> </A></div> -->
-      </td>
+      </div></td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
@@ -316,7 +375,7 @@ function checkallfields(){
         <input type="text" name="<%=TEXTFIELD_VALIDITY%>" size="5" maxlength="255" 
            value="<%= certificateprofiledata.getValidity()  %>"><br>
       </td>
-    <tr  id="Row<%=row++%2%>"> 
+    </tr><tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("USEBASICCONSTRAINTS") %> <br>  <%= ejbcawebbean.getText("BASICCONSTRAINTSCRITICAL") %>
 
@@ -373,7 +432,7 @@ function checkallfields(){
                  out.write("CHECKED");
            %>> 
       </td>
-    <tr  id="Row<%=row++%2%>"> 
+    </tr><tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("SUBJECTKEYID") %> <br> <!-- <%= ejbcawebbean.getText("SUBJECTKEYIDCRITICAL") %> -->
 
@@ -529,39 +588,136 @@ function checkallfields(){
                       out.write(" value=\"" + certificateprofiledata.getCertificatePolicyId() + "\""); %>>
       </td>
     </tr>
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("USEQUALIFIEDCERTSTATEMENT") %> <br>  <%= ejbcawebbean.getText("QUALIFIEDCERTSTATCRIT") %> <br> 
-        <%= ejbcawebbean.getText("SEMANTICID") %> <br> <%= ejbcawebbean.getText("RANAME") %>
+    <tr  id="Row<%=row%2%>"> 
+      <td width="50%"  align="right" > 
+        <%= ejbcawebbean.getText("USEQUALIFIEDCERTSTATEMENT") %>
+        
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USEQCSTATEMENT %>" onClick="checkuseqcstatementfield()" value="<%=CHECKBOX_VALUE %>" 
            <% if(certificateprofiledata.getUseQCStatement())
                  out.write("CHECKED");
-           %>> <br> 
-          <input type="checkbox" name="<%=CHECKBOX_QCSTATEMENTCRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
+           %>>                 
+      </td>
+    </tr>
+    <tr  id="Row<%=row%2%>"> 
+      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("QUALIFIEDCERTSTATCRIT") %></td>
+      <td width="50%" valign="top">
+        <input type="checkbox" name="<%=CHECKBOX_QCSTATEMENTCRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
            <%
                if(!certificateprofiledata.getUseQCStatement())
                  out.write(" disabled "); 
                else
                  if(certificateprofiledata.getQCStatementCritical())
                    out.write("CHECKED");
-           %>> <br> 
-           <input type="text" name="<%=TEXTFIELD_QCSSEMANTICSID %>" size="60" maxlength="255" 
+           %>> 
+      </td>
+    </tr>
+    <tr  id="Row<%=row%2%>"> 
+      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("USEPKIXQCSYNTAXV2") %></td>
+      <td width="50%" valign="top">
+         <input type="checkbox" name="<%=CHECKBOX_USEPKIXQCSYNTAXV2 %>" value="<%=CHECKBOX_VALUE %>" 
+           <%
+               if(!certificateprofiledata.getUseQCStatement())
+                 out.write(" disabled "); 
+               else
+                 if(certificateprofiledata.getUsePkixQCSyntaxV2())
+                   out.write("CHECKED");
+           %>> 
+      </td>
+    </tr>
+    <tr  id="Row<%=row%2%>"> 
+      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("SEMANTICID") %> </td>
+      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCSSEMANTICSID %>" size="60" maxlength="255" 
            <%       if(!certificateprofiledata.getUseQCStatement())
                       out.write(" disabled "); 
                     else 
-                      out.write(" value=\"" + certificateprofiledata.getQCSemanticsId() + "\""); %>> <br>
-            <input type="text" name="<%=TEXTFIELD_QCSTATEMENTRANAME %>" size="60" maxlength="255" 
+                      out.write(" value=\"" + certificateprofiledata.getQCSemanticsId() + "\""); %>>
+
+      </td>
+    </tr>
+    <tr  id="Row<%=row%2%>"> 
+      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("RANAME") %> </td>
+      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCSTATEMENTRANAME %>" size="60" maxlength="255" 
            <%       if(!certificateprofiledata.getUseQCStatement())
                       out.write(" disabled "); 
                     else 
                       out.write(" value=\"" + certificateprofiledata.getQCStatementRAName() + "\""); %>>
+
       </td>
     </tr>
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="50%" valign="top" align="right">&nbsp;</td>
-      <td width="50%" valign="top" align="right">&nbsp;</td>
+    <tr  id="Row<%=row%2%>"> 
+      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("USEETSIQCCOMPLIANCE") %> </td>
+      <td width="50%" valign="top"><input type="checkbox" name="<%=CHECKBOX_USEQCETSIQCCOMPLIANCE %>" value="<%=CHECKBOX_VALUE %>" 
+           <%
+               if(!certificateprofiledata.getUseQCStatement())
+                 out.write(" disabled "); 
+               else
+                 if(certificateprofiledata.getUseQCEtsiQCCompliance())
+                   out.write("CHECKED");
+           %>>
+
+      </td>
+    </tr>
+    <tr  id="Row<%=row%2%>"> 
+      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("USEETSISECUREDEVICE") %> </td>
+      <td width="50%" valign="top"><input type="checkbox" name="<%=CHECKBOX_USEQCETSISIGNATUREDEVICE %>" value="<%=CHECKBOX_VALUE %>" 
+           <%
+               if(!certificateprofiledata.getUseQCStatement())
+                 out.write(" disabled "); 
+               else
+                 if(certificateprofiledata.getUseQCEtsiSignatureDevice())
+                   out.write("CHECKED");
+           %>>
+
+      </td>
+    </tr>
+    <tr  id="Row<%=row%2%>"> 
+      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("USEETSITRANSACTIONLIMIT") %> </td>
+      <td width="50%" valign="top"><input type="checkbox" name="<%=CHECKBOX_USEQCETSIVALUELIMIT %>" onClick="checkuseetsivaluelimitfield()" value="<%=CHECKBOX_VALUE %>" 
+           <%
+               if(!certificateprofiledata.getUseQCStatement())
+                 out.write(" disabled "); 
+               else
+                 if(certificateprofiledata.getUseQCEtsiValueLimit())
+                   out.write("CHECKED");
+           %>>
+
+      </td>
+    </tr>
+    <tr  id="Row<%=row%2%>"> 
+      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("VALUELIMITCURRENCY") %> </td>
+      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCETSIVALUELIMITCUR %>" size="10" maxlength="255" 
+           <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCEtsiValueLimit())
+                      out.write(" disabled "); 
+                    else 
+                      out.write(" value=\"" + certificateprofiledata.getQCEtsiValueLimitCurrency() + "\""); %>>
+
+      </td>
+    </tr>     
+    <tr  id="Row<%=row%2%>"> 
+      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("VALUELIMITAMOUT") %> </td>
+      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCETSIVALUELIMIT %>" size="10" maxlength="255" 
+           <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCEtsiValueLimit())
+                      out.write(" disabled "); 
+                    else 
+                      out.write(" value=\"" + certificateprofiledata.getQCEtsiValueLimit() + "\""); %>>
+
+      </td>
+    </tr>  
+    <tr  id="Row<%=row%2%>"> 
+      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("VALUELIMITEXPONENT") %> </td>
+      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCETSIVALUELIMITEXP %>" size="10" maxlength="255" 
+           <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCEtsiValueLimit())
+                      out.write(" disabled "); 
+                    else 
+                      out.write(" value=\"" + certificateprofiledata.getQCEtsiValueLimitExp() + "\""); %>>
+
+      </td>
+    </tr>                     
+    <tr  id="Row<%=row++%2%>">
+    	<td width="50%" valign="top" align="right"></td>
+    	<td width="50%" valign="top" align="right"></td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 
