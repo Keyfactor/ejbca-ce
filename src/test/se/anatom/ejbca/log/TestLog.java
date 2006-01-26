@@ -33,7 +33,7 @@ import org.ejbca.util.query.Query;
 /**
  * Tests the log modules entity and session beans.
  *
- * @version $Id: TestLog.java,v 1.3 2006-01-17 20:34:15 anatom Exp $
+ * @version $Id: TestLog.java,v 1.4 2006-01-26 13:01:59 anatom Exp $
  */
 public class TestLog extends TestCase {
     private static Logger log = Logger.getLogger(TestLog.class);
@@ -125,7 +125,7 @@ public class TestLog extends TestCase {
         boolean found = false;
         while (iter.hasNext()) {
             LogEntry entry = (LogEntry) iter.next();
-            if (entry.getComment().equals("Test")) {
+            if ( (entry.getComment() != null) && (entry.getComment().equals("Test")) ) {
                 found = true;
             }
         }
