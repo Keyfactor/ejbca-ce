@@ -13,19 +13,19 @@
  
 package org.ejbca.ui.cli;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.rmi.RemoteException;
 
 import javax.ejb.CreateException;
+import javax.naming.Context;
 import javax.naming.NamingException;
 
+import org.ejbca.core.ejb.upgrade.IUpgradeSessionHome;
 import org.ejbca.core.ejb.upgrade.IUpgradeSessionRemote;
 
 /**
  * Implements call to the upgrade function
  *
- * @version $Id: Upgrade.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: Upgrade.java,v 1.2 2006-01-26 14:17:57 anatom Exp $
  */
 public class Upgrade extends BaseCommand {
 
@@ -41,21 +41,6 @@ public class Upgrade extends BaseCommand {
         
         boolean ret = false;
         
-        String database = System.getProperty("ejbcaDB");
-        debug("ejbcaDB="+database);
-        String datasource = System.getProperty("ejbcaDS");
-        debug("ejbcaDS="+datasource);
-        String caname= System.getProperty("ejbcaCA");
-        debug("ejbcaCA="+caname);
-        String keystore = System.getProperty("ejbcaKS");
-        debug("ejbcaKS="+keystore);
-        String kspwd = System.getProperty("ejbcaKSPWD");
-        debug("ejbcaKSPWD="+kspwd);
-        String os = System.getProperty("ejbcaOS");
-        debug("ejbcaOS="+os);
-        String url = System.getProperty("ejbcaURL");
-        debug("ejbcaURL="+url);
-        
         // Check prerequisited
         if (!appServerRunning()) {
            error("The application server must be running.");
@@ -64,81 +49,22 @@ public class Upgrade extends BaseCommand {
        // Upgrade the database
        try {
           IUpgradeSessionRemote upgradesession = getUpgradeSessionRemote();
-          String[] args = new String[5];
-          args[0] = database;
-          args[1] = datasource;
-          args[2] = caname;
-          args[3] = keystore;
-          args[4] = kspwd;
+          String[] args = null;
           ret = upgradesession.upgrade(administrator, args);
        } catch (Exception e) {
            error("Can't upgrade: ", e);
            ret = false;
        }
        
-       if (ret) {
-           // Fix the adminweb URL, must be done after database migration
-           if(os.equalsIgnoreCase("windows")) {
-               try {
-                  String[] command = new String[4];
-                  command[0] = "setup.cmd";
-                  command[1] = "setbaseurl";
-                  command[2] = url;
-                  command[3] = "ejbca";
-                  Process runcainit = Runtime.getRuntime().exec(command);
-                  
-                  BufferedReader br = new BufferedReader(new InputStreamReader(runcainit.getInputStream()));
-                  Thread.sleep(1000);
-                  String line = "";
-                  while((line = br.readLine()) != null){
-                      System.out.println(line);
-                  }
-                  if(runcainit.waitFor() != 0){                   
-                      error("Error setting baseurl");
-                      return false;
-                  }               
-              } catch (Exception e) {             
-                  error("Error setting baseurl:", e);
-                  return false;
-              }   
-          }
-          if(os.equalsIgnoreCase("unix")) {           
-              try {
-                  String[] command = new String[4];
-                  command[0] = "./setup.sh";
-                  command[1] = "setbaseurl";
-                  command[2] = url;
-                  command[3] = "ejbca";
-                  Process runcainit = Runtime.getRuntime().exec(command);
-                                                  
-                  BufferedReader br = new BufferedReader(new InputStreamReader(runcainit.getInputStream()));
-                  Thread.sleep(1000);
-                  String line = "";
-                  while((line = br.readLine()) != null){
-                      System.out.println(line);
-                  }   
-                  if(runcainit.waitFor() != 0){
-                      error("Error setting baseurl");
-                      return false;
-                  }               
-              } catch (Exception e) {
-                  error("Error setting baseurl: ", e);
-                  return false;
-              }
-          }           
-       }
-
       debug("<upgrade");
       return ret;
     }
 
     protected IUpgradeSessionRemote getUpgradeSessionRemote() throws NamingException, CreateException, RemoteException {
-        /* No Upgrade session available for the moment... 
         Context ctx = getInitialContext();
         IUpgradeSessionHome home = (IUpgradeSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("UpgradeSession"), IUpgradeSessionHome.class );            
         IUpgradeSessionRemote upgradesession = home.create();          
-        return upgradesession; */
-        return null;
+        return upgradesession;
      }
     
     /**

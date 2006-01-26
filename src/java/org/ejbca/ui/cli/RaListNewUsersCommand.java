@@ -17,8 +17,8 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.model.ra.UserDataVO;
 
-import se.anatom.ejbca.common.UserDataVO;
 
 
 
@@ -26,7 +26,7 @@ import se.anatom.ejbca.common.UserDataVO;
 /**
  * List users with status NEW in the database.
  *
- * @version $Id: RaListNewUsersCommand.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: RaListNewUsersCommand.java,v 1.2 2006-01-26 14:17:57 anatom Exp $
  *
  * @see org.ejbca.core.ejb.ra.UserDataLocal
  */

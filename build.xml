@@ -496,27 +496,18 @@ web.contentencoding    = ${web.contentencoding}
     <!-- ========================================================================== -->
     <!-- Upgrades the database for a new version of ejbca                           -->
     <!-- ========================================================================== -->
-    <target name="upgrade" depends="build">
+    <target name="upgrade">
         <!-- Get input -->
-        <input message="Type of system:" validargs="unix,windows" addproperty="ejbca.OS" />
+        <!-- <input message="Type of system:" validargs="unix,windows" addproperty="ejbca.OS" />
         <input message="Hostname for adminweb (default 127.0.0.1):" addproperty="ejbca.URL" defaultvalue="127.0.0.1" />
-        <input message="Type of database:" validargs="mysql" addproperty="ejbca.DB" />
+        <input message="Type of database:" validargs="mysql" addproperty="ejbca.DB" /> -->
         <!-- validargs="hsql,oracle,mssql,mysql,postgres,postgres8,sapdb,hsqldb,sybase" -->
-        <input message="Data source (default java:/DefaultDS):" addproperty="ejbca.DS" defaultvalue="java:/DefaultDS" />
-        <input message="CA name(default MyCA):" addproperty="ejbca.CA" defaultvalue="MyCA" />
-        <input message="CA keystore filename (default $JBOSS_HOME/server/default/conf/server.p12):" addproperty="ejbca.KS" defaultvalue="${jboss.conf.dir}/server.p12" />
-        <input message="CA keystore password:" addproperty="ejbca.KSPWD" />
-        <java classname="org.ejbca.ui.cli.admin.Upgrade" fork="true">
-            <sysproperty key="ejbcaOS" value="${ejbca.OS}" />
-            <sysproperty key="ejbcaURL" value="${ejbca.URL}" />
-            <sysproperty key="ejbcaDB" value="${ejbca.DB}" />
-            <sysproperty key="ejbcaDS" value="${ejbca.DS}" />
-            <sysproperty key="ejbcaCA" value="${ejbca.CA}" />
-            <sysproperty key="ejbcaKS" value="${ejbca.KS}" />
-            <sysproperty key="ejbcaKSPWD" value="${ejbca.KSPWD}" />
+        <!-- <input message="Data source (default java:/EjbcaDS):" addproperty="ejbca.DS" defaultvalue="java:/EjbcaDS" /> -->
+        <java classname="org.ejbca.ui.cli.Upgrade" fork="true">
+            <!-- <sysproperty key="ejbcaDS" value="${ejbca.DS}" /> -->
             <classpath>
-                <pathelement location="." />
-                <pathelement location="${adminjar}" />
+                <pathelement location="./bin" />
+                <pathelement location="${build}" />
                 <fileset dir="${jboss.home}/client" includes="**/*.jar" />
                 <fileset dir="${lib}" includes="**/*.jar" />
             </classpath>

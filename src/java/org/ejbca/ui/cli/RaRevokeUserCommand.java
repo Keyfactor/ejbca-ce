@@ -15,8 +15,8 @@ package org.ejbca.ui.cli;
 
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.model.ra.UserDataVO;
 
-import se.anatom.ejbca.common.UserDataVO;
 
 
 
@@ -24,7 +24,7 @@ import se.anatom.ejbca.common.UserDataVO;
 /**
  * Revokes a user in the database, and also revokes all the users certificates.
  *
- * @version $Id: RaRevokeUserCommand.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: RaRevokeUserCommand.java,v 1.2 2006-01-26 14:17:57 anatom Exp $
  */
 public class RaRevokeUserCommand extends BaseRaAdminCommand {
     /**

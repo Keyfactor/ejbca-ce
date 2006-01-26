@@ -61,16 +61,16 @@ import java.util.HashMap;
  * @ejb.home
  *   generate="local"
  *   local-extends="javax.ejb.EJBLocalHome"
- *   local-class="org.ejbca.core.model.ca.publisher.PublisherDataLocalHome"
+ *   local-class="org.ejbca.core.ejb.ca.publisher.PublisherDataLocalHome"
  *
  * @ejb.interface
  *   generate="local"
  *   local-extends="javax.ejb.EJBLocalObject"
- *   local-class="org.ejbca.core.model.ca.publisher.PublisherDataLocal"
+ *   local-class="org.ejbca.core.ejb.ca.publisher.PublisherDataLocal"
  *
  * @ejb.finder
  *   description="findByName"
- *   signature="org.ejbca.core.model.ca.publisher.PublisherDataLocal findByName(java.lang.String name)"
+ *   signature="org.ejbca.core.ejb.ca.publisher.PublisherDataLocal findByName(java.lang.String name)"
  *   query="SELECT OBJECT(a) from PublisherDataBean a WHERE a.name=?1"
  *
  * @ejb.finder

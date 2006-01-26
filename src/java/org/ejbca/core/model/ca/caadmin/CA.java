@@ -51,17 +51,17 @@ import org.ejbca.core.model.ca.catoken.HardCATokenManager;
 import org.ejbca.core.model.ca.catoken.NullCAToken;
 import org.ejbca.core.model.ca.catoken.SoftCAToken;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
-import se.anatom.ejbca.common.UserDataVO;
 
 
 
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: CA.java,v 1.2 2006-01-26 14:17:58 anatom Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 

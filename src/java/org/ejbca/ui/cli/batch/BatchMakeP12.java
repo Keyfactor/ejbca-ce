@@ -49,11 +49,11 @@ import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserAdminConstants;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
 import org.ejbca.util.P12toPEM;
 
-import se.anatom.ejbca.common.UserDataVO;
 
 
 
@@ -61,7 +61,7 @@ import se.anatom.ejbca.common.UserDataVO;
  * This class generates keys and request certificates for all users with status NEW. The result is
  * generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.1 2006-01-17 20:31:52 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.2 2006-01-26 14:17:58 anatom Exp $
  */
 public class BatchMakeP12 {
     /**

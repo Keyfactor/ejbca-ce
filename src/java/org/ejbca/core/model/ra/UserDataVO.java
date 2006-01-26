@@ -11,22 +11,19 @@
  *                                                                       *
  *************************************************************************/
  
-package se.anatom.ejbca.common;
+package org.ejbca.core.model.ra;
 
 import java.io.Serializable;
 import java.util.Date;
 
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.util.StringTools;
 
 
 /**
- * TODO: remove this whole class method for EJBCA 3.3.
- * 
  * Holds admin data collected from UserData in the database.
  *
- * @version $Id: UserDataVO.java,v 1.3 2006-01-26 14:18:20 anatom Exp $
+ * @version $Id: UserDataVO.java,v 1.1 2006-01-26 14:17:58 anatom Exp $
  */
 public class UserDataVO implements Serializable {
 
@@ -73,8 +70,11 @@ public class UserDataVO implements Serializable {
      * @param tokentype DOCUMENT ME!
      * @param hardtokenissuerid DOCUMENT ME!
      */
-    public UserDataVO(String user, String dn, int caid, String subjectaltname, String email, int status, int type, int endentityprofileid, int certificateprofileid,
-                         Date timecreated, Date timemodified, int tokentype, int hardtokenissuerid, ExtendedInformation extendedinfo) {
+    public UserDataVO(String user, String dn, int caid, 
+            String subjectaltname, String email, int status, 
+            int type, int endentityprofileid, int certificateprofileid,
+            Date timecreated, Date timemodified, int tokentype, 
+            int hardtokenissuerid, ExtendedInformation extendedinfo) {
         this.username=StringTools.strip(user);
         this.password=null;
         this.subjectDN=dn;
@@ -89,6 +89,7 @@ public class UserDataVO implements Serializable {
         this.timemodified=timemodified;
         this.tokentype = tokentype;
         this.hardtokenissuerid = hardtokenissuerid;
+        this.extendedinformation = extendedinfo;
     }
     public void setUsername(String user) { this.username=StringTools.strip(user);}
     public String getUsername() {return username;}

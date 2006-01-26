@@ -11,18 +11,19 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.core.ejb.log;
+package se.anatom.ejbca.log;
 
 import javax.ejb.CreateException;
 
 import org.ejbca.core.ejb.BaseEntityBean;
-import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.core.model.log.LogEntry;
 
 
 
 
 /**
+ * TODO: remove this whole class method for EJBCA 3.3.
+ * 
  * Entity bean should not be used directly, use though Session beans. Entity Bean representing the
  * log configuration data. Information stored:
  * <pre>
@@ -31,18 +32,18 @@ import org.ejbca.core.model.log.LogEntry;
  * logentryrownumber is the number of the last row number in the log entry database.
  * </pre>
  *
- * @version $Id: LogConfigurationDataBean.java,v 1.2 2006-01-26 14:14:30 anatom Exp $
+ * @version $Id: OldLogConfigurationDataBean.java,v 1.1 2006-01-26 14:18:20 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a Log Entry with accompanying data"
- *   display-name="LogConfigurationDataEB"
- *   name="LogConfigurationData"
+ *   display-name="OldLogConfigurationDataEB"
+ *   name="OldLogConfigurationData"
  *   view-type="local"
  *   type="CMP"
  *   reentrant="False"
  *   cmp-version="2.x"
  *   transaction-type="Container"
- *   schema="LogConfigurationDataBean"
+ *   schema="OldLogConfigurationDataBean"
  *   primkey-field="id"
  *
  * @ejb.pk
@@ -54,20 +55,25 @@ import org.ejbca.core.model.log.LogEntry;
  * @ejb.home
  *   generate="local"
  *   local-extends="javax.ejb.EJBLocalHome"
- *   local-class="org.ejbca.core.ejb.log.LogConfigurationDataLocalHome"
+ *   local-class="se.anatom.ejbca.log.OldLogConfigurationDataLocalHome"
  *
  * @ejb.interface
  *   generate="local"
  *   local-extends="javax.ejb.EJBLocalObject"
- *   local-class="org.ejbca.core.ejb.log.LogConfigurationDataLocal"
+ *   local-class="se.anatom.ejbca.log.OldLogConfigurationDataLocal"
  *
+ * @ejb.finder
+ *   description="findAll"
+ *   signature="java.util.Collection findAll()"
+ *   query="SELECT OBJECT(a) from OldLogConfigurationDataBean a"
+ *   
  * @ejb.transaction
  *    type="Supports"
  *
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"
  */
-public abstract class LogConfigurationDataBean extends BaseEntityBean {
+public abstract class OldLogConfigurationDataBean extends BaseEntityBean {
 
     /**
      * @ejb.pk-field
@@ -83,6 +89,7 @@ public abstract class LogConfigurationDataBean extends BaseEntityBean {
 
     /**
      * @ejb.persistence
+     * @ejb.interface-method view-type="local"
      * @weblogic.ora.columntyp@
      */
     public abstract LogConfiguration getLogConfiguration();
@@ -94,12 +101,12 @@ public abstract class LogConfigurationDataBean extends BaseEntityBean {
 
     /**
      * @ejb.persistence
+     * @ejb.interface-method view-type="local"
      */
     public abstract int getLogEntryRowNumber();
 
     /**
      * @ejb.persistence
-     * @ejb.interface-method view-type="local"
      */
     public abstract void setLogEntryRowNumber(int logEntryRowNumber);
 

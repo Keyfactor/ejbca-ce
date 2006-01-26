@@ -35,8 +35,8 @@ import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.core.model.ra.UserDataVO;
 
-import se.anatom.ejbca.common.UserDataVO;
 
 
 
@@ -64,7 +64,7 @@ import se.anatom.ejbca.common.UserDataVO;
  * @ejb.interface
  *   generate="none"
  *   
- * @version $Id: RemoteAuthenticationSessionBean.java,v 1.1 2006-01-17 20:31:52 anatom Exp $
+ * @version $Id: RemoteAuthenticationSessionBean.java,v 1.2 2006-01-26 14:17:58 anatom Exp $
  */
 public class RemoteAuthenticationSessionBean extends BaseSessionBean {
     private static String REMOTE_PROTOCOL_VER = "1.0";

@@ -59,11 +59,11 @@ import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.StringTools;
 
-import se.anatom.ejbca.common.UserDataVO;
 
 
 
@@ -72,7 +72,7 @@ import se.anatom.ejbca.common.UserDataVO;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.1 2006-01-17 20:30:05 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.2 2006-01-26 14:14:30 anatom Exp $
  * @ejb.bean display-name="CertificateStoreSB"
  * name="CertificateStoreSession"
  * view-type="both"
@@ -173,7 +173,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     private CRLDataLocalHome crlHome = null;
     
     /**
-     * The home interface of CRL entity bean
+     * The home interface of CertReqHistory entity bean
      */
     private CertReqHistoryDataLocalHome certReqHistoryHome = null;
     

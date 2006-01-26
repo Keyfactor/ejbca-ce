@@ -20,9 +20,9 @@ import java.util.Iterator;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
 
-import se.anatom.ejbca.common.UserDataVO;
 
 
 
@@ -30,7 +30,7 @@ import se.anatom.ejbca.common.UserDataVO;
 /**
  * Re-publishes the certificates of all users beloinging to a particular CA.
  *
- * @version $Id: CARepublishCommand.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: CARepublishCommand.java,v 1.2 2006-01-26 14:17:57 anatom Exp $
  */
 public class CARepublishCommand extends BaseCaAdminCommand {
     /**

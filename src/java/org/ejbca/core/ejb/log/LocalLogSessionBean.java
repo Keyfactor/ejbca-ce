@@ -35,11 +35,8 @@ import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.ILogDevice;
 import org.ejbca.core.model.log.LogConfiguration;
-import org.ejbca.core.model.log.LogConfigurationDataLocal;
-import org.ejbca.core.model.log.LogConfigurationDataLocalHome;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
-import org.ejbca.core.model.log.LogEntryDataLocalHome;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.query.IllegalQueryException;
@@ -114,7 +111,7 @@ import org.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.1 2006-01-17 20:26:30 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.2 2006-01-26 14:14:30 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 

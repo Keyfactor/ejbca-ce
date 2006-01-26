@@ -44,6 +44,7 @@ import org.apache.batik.transcoder.print.PrintTranscoder;
 import org.apache.batik.util.XMLResourceDescriptor;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -51,7 +52,6 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.svg.SVGRectElement;
 import org.w3c.dom.svg.SVGTextElement;
 
-import se.anatom.ejbca.common.UserDataVO;
 
 
 
@@ -61,7 +61,7 @@ import se.anatom.ejbca.common.UserDataVO;
  * It replaces all occurrenses of specified variables in the images 
  * with the corresponding userdata.
  *
- * @version $Id: SVGImageManipulator.java,v 1.1 2006-01-17 20:31:52 anatom Exp $
+ * @version $Id: SVGImageManipulator.java,v 1.2 2006-01-26 14:17:58 anatom Exp $
  */
 public class SVGImageManipulator {
 	/**

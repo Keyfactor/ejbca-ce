@@ -48,11 +48,11 @@ import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
 
-import se.anatom.ejbca.common.UserDataVO;
 
 
 
@@ -78,7 +78,7 @@ import se.anatom.ejbca.common.UserDataVO;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.2 2006-01-26 14:18:20 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(CertReqServlet.class);

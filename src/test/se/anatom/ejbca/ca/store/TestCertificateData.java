@@ -36,17 +36,17 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
 
-import se.anatom.ejbca.common.UserDataVO;
 
 
 
 /**
  * Tests certificate store.
  *
- * @version $Id: TestCertificateData.java,v 1.7 2006-01-17 20:33:58 anatom Exp $
+ * @version $Id: TestCertificateData.java,v 1.8 2006-01-26 14:18:20 anatom Exp $
  */
 public class TestCertificateData extends TestCase {
 

@@ -11,31 +11,25 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.core.model.log;
+package se.anatom.ejbca.log;
 
 import java.io.Serializable;
 import java.util.HashMap;
 
+import org.ejbca.core.model.log.LogEntry;
+
 
 /**
+ * TODO: remove this whole class method for EJBCA 3.3.
+ * 
  * Class containing the log configuration data. Tells which events should be logged and if internal
  * log database and/or external logging device should be used.
  *
- * @version $Id: LogConfiguration.java,v 1.2 2006-01-26 14:17:58 anatom Exp $
+ * @version $Id: LogConfiguration.java,v 1.12 2006-01-26 14:18:20 anatom Exp $
  */
 public class LogConfiguration implements Serializable {
-    
-    /**
-     * Determines if a de-serialized file is compatible with this class.
-     *
-     * Maintainers must change this value if and only if the new version
-     * of this class is not compatible with old versions. See Sun docs
-     * for <a href=http://java.sun.com/products/jdk/1.1/docs/guide
-     * /serialization/spec/version.doc.html> details. </a>
-     *
-     */
     private static final long serialVersionUID = -6349974447455748715L;
-    
+
     // Public constants
     // Constructors
     public LogConfiguration() {
@@ -51,14 +45,6 @@ public class LogConfiguration implements Serializable {
         for (int i = 0; i < LogEntry.EVENTNAMES_ERROR.length; i++) {
             configurationdata.put(new Integer(i + LogEntry.EVENT_ERROR_BOUNDRARY), Boolean.TRUE);
         }
-    }
-    /** Used for upgrading from EJBCA 3.1.x to 3.2.x.
-     * TODO: remove this whole class method for EJBCA 3.3.
-     */
-    public LogConfiguration(boolean usedb, boolean useext, HashMap data) {
-        this.configurationdata = data;
-        this.uselogdb = usedb;
-        this.useexternaldevices = useext;
     }
 
     // Public Methods
@@ -134,6 +120,14 @@ public class LogConfiguration implements Serializable {
             return LogEntry.EVENTNAMES_ERROR[event];
         }
         return LogEntry.EVENTNAMES_INFO[event];
+    }
+    /** Returns the complete map. Used for upgrading from EJBCA 3.1.x to 3.2.x.
+     * TODO: remove this whole class method for EJBCA 3.3.
+     * 
+     * @return HashMap revealing internal implementation
+     */
+    public HashMap getConfigurationData() {
+        return this.configurationdata;
     }
 
     // Private fields

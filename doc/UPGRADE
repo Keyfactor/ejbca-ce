@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.12 2006-01-17 08:58:58 anatom Exp $
+$Id: UPGRADE,v 1.13 2006-01-26 14:13:51 anatom Exp $
 
 UPGRADE
 =======
@@ -13,20 +13,24 @@ From EJBCA 3.1.x to EJBCA 3.2
 -----------------------------
 Backup your database first! If the upgrade fails, you can always go back to the earlier version.
 
-For a quick-and-dirty upgrade of the database if you have 
-NOT done any special Log Configurations and only used the default, and you DO NOT mind deleting the 
-EJBCA log entries from the database, i.e. you are not interested in the log history.
-If the above two conditions are met, issue the following two commands to your database:
+1. Copy ejbca.properties from the earlier installation. 
+2. Copy the directory 'p12' from the earlier installation. 
+3. Shut down JBoss and do 'ant deploy' (or deploywithjbossservice) with the new version.
+4. Start up JBoss.
+5. Issue the command 'ant upgrade' from EJBCA_HOME. This will make the neccesary database updates.
+
+If you don't want to do step 5 above (doing step 5 is the recommended way though) and instead want a 
+quick-and-dirty upgrade of the database, do this instead of step 5:
+- if you have NOT done any special Log Configurations and only used the default, 
+- and you DO NOT mind deleting the EJBCA log entries from the database, i.e. you are not interested in the log history,
+- and you DO NOT mind deleting your complete Certificate request history.
+
+If the above three conditions are met, issue the following three commands to your database:
 -----
 delete from LogConfigurationData;
 delete from LogEntryData;
+delete from CertReqHistoryData;
 -----
-
-Keep/copy ejbca.properties from the earlier installation, 
-copy the directory 'p12' from the earlier installation and 'ant deploy' 
-(or deploywithjbossservice) this new one.
-
-TODO: Database upgrade
 
 From EJBCA 3.1.x to EJBCA 3.1.x
 -------------------------------

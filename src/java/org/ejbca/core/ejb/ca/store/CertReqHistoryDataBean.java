@@ -24,9 +24,9 @@ import javax.ejb.EJBException;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.BaseEntityBean;
 import org.ejbca.core.model.ca.store.CertReqHistory;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
 
-import se.anatom.ejbca.common.UserDataVO;
 
 
 
@@ -44,7 +44,7 @@ import se.anatom.ejbca.common.UserDataVO;
  * UserDataVO (userAdminData)
  * </pre>
  *
- * @version $Id: CertReqHistoryDataBean.java,v 1.1 2006-01-17 20:30:05 anatom Exp $
+ * @version $Id: CertReqHistoryDataBean.java,v 1.2 2006-01-26 14:14:30 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity containing historical record over data user to generate a users certificate"
  * display-name="CertReqHistoryDataEB"

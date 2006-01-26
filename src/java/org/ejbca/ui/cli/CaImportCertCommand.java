@@ -22,10 +22,10 @@ import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.FileTools;
 
-import se.anatom.ejbca.common.UserDataVO;
 
 
 
@@ -34,7 +34,7 @@ import se.anatom.ejbca.common.UserDataVO;
  * Imports a certificate file in the database.
  *
  * @author Marco Ferrante, (c) 2005 CSITA - University of Genoa (Italy)
- * @version $Id: CaImportCertCommand.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: CaImportCertCommand.java,v 1.2 2006-01-26 14:17:57 anatom Exp $
  */
 public class CaImportCertCommand extends BaseCaAdminCommand {
 	/**

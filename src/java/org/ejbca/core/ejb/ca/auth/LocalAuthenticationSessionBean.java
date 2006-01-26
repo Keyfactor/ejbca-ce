@@ -34,8 +34,8 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.model.ra.UserDataVO;
 
-import se.anatom.ejbca.common.UserDataVO;
 
 
 
@@ -43,7 +43,7 @@ import se.anatom.ejbca.common.UserDataVO;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.1 2006-01-17 20:30:04 anatom Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.2 2006-01-26 14:14:31 anatom Exp $
  *
  * @ejb.bean
  *   display-name="AuthenticationSB"

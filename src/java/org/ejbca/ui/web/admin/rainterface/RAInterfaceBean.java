@@ -47,6 +47,7 @@ import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
@@ -54,14 +55,13 @@ import org.ejbca.util.CertTools;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.query.Query;
 
-import se.anatom.ejbca.common.UserDataVO;
 
 
 /**
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.1 2006-01-17 20:32:20 anatom Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.2 2006-01-26 14:18:20 anatom Exp $
  */
 public class RAInterfaceBean implements java.io.Serializable {
     

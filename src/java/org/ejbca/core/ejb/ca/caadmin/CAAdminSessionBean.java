@@ -81,6 +81,7 @@ import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.protocol.ExtendedPKCS10CertificationRequest;
 import org.ejbca.core.protocol.IRequestMessage;
 import org.ejbca.core.protocol.IResponseMessage;
@@ -89,13 +90,12 @@ import org.ejbca.core.protocol.X509ResponseMessage;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
 
-import se.anatom.ejbca.common.UserDataVO;
 
 
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.1 2006-01-17 20:30:04 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.2 2006-01-26 14:14:30 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"

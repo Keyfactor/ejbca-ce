@@ -30,8 +30,8 @@ import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.UserDataVO;
 
-import se.anatom.ejbca.common.UserDataVO;
 
 
 
@@ -39,7 +39,7 @@ import se.anatom.ejbca.common.UserDataVO;
  * A class used as an interface between Apply jsp pages and ejbca functions.
  *
  * @author Philip Vendil
- * @version $Id: ApplyBean.java,v 1.1 2006-01-17 20:30:56 anatom Exp $
+ * @version $Id: ApplyBean.java,v 1.2 2006-01-26 14:14:31 anatom Exp $
  */
 public class ApplyBean implements java.io.Serializable {
     /**

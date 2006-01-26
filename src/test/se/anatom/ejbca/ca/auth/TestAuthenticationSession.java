@@ -37,16 +37,16 @@ import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
 
-import se.anatom.ejbca.common.UserDataVO;
 
 /**
  * Tests authentication session used by signer.
  *
- * @version $Id: TestAuthenticationSession.java,v 1.8 2006-01-17 20:33:42 anatom Exp $
+ * @version $Id: TestAuthenticationSession.java,v 1.9 2006-01-26 14:18:20 anatom Exp $
  */
 public class TestAuthenticationSession extends TestCase {
     private static Logger log = Logger.getLogger(TestAuthenticationSession.class);

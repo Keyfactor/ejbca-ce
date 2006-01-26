@@ -59,12 +59,12 @@ import java.util.Date;
  * @ejb.home
  *   generate="local"
  *   local-extends="javax.ejb.EJBLocalHome"
- *   local-class="org.ejbca.core.model.log.LogEntryDataLocalHome"
+ *   local-class="org.ejbca.core.ejb.log.LogEntryDataLocalHome"
  *
  * @ejb.interface
  *   generate="local"
  *   local-extends="javax.ejb.EJBLocalObject"
- *   local-class="org.ejbca.core.model.log.LogEntryDataLocal"
+ *   local-class="org.ejbca.core.ejb.log.LogEntryDataLocal"
  *
  * @ejb.transaction
  *    type="Supports"
@@ -72,7 +72,7 @@ import java.util.Date;
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"
  *   
- * @version $Id: LogEntryDataBean.java,v 1.1 2006-01-17 20:26:30 anatom Exp $
+ * @version $Id: LogEntryDataBean.java,v 1.2 2006-01-26 14:14:30 anatom Exp $
  */
 public abstract class LogEntryDataBean extends BaseEntityBean {
 

@@ -35,15 +35,15 @@ import org.bouncycastle.ocsp.OCSPException;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException;
 import org.ejbca.core.model.ca.certificateprofiles.OCSPSignerCertificateProfile;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.Base64;
 import org.ejbca.util.KeyTools;
 
-import se.anatom.ejbca.common.UserDataVO;
 
 
 /** Handles and maintains the CA -part of the OCSP functionality
  * 
- * @version $Id: OCSPCAService.java,v 1.1 2006-01-17 20:30:56 anatom Exp $
+ * @version $Id: OCSPCAService.java,v 1.2 2006-01-26 14:17:58 anatom Exp $
  */
 public class OCSPCAService extends ExtendedCAService implements java.io.Serializable{
 

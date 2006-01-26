@@ -16,7 +16,8 @@ package org.ejbca.ui.cli;
 import java.util.Collection;
 import java.util.Iterator;
 
-import se.anatom.ejbca.common.UserDataVO;
+import org.ejbca.core.model.ra.UserDataVO;
+
 
 
 
@@ -24,7 +25,7 @@ import se.anatom.ejbca.common.UserDataVO;
 /**
  * List users with specified status in the database.
  *
- * @version $Id: RaListUsersCommand.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: RaListUsersCommand.java,v 1.2 2006-01-26 14:17:57 anatom Exp $
  *
  * @see org.ejbca.core.ejb.ra.UserDataLocal
  */

@@ -15,7 +15,8 @@ package org.ejbca.core.model.ca.store;
 import java.io.Serializable;
 import java.util.Date;
 
-import se.anatom.ejbca.common.UserDataVO;
+import org.ejbca.core.model.ra.UserDataVO;
+
 
 
 
@@ -24,7 +25,7 @@ import se.anatom.ejbca.common.UserDataVO;
  * CertReqHistory Entity Bean. See constructor for details of its fields.
  * 
  * @author Philip Vendil
- * @version $Id: CertReqHistory.java,v 1.1 2006-01-17 20:31:52 anatom Exp $
+ * @version $Id: CertReqHistory.java,v 1.2 2006-01-26 14:17:58 anatom Exp $
  * @see org.ejbca.core.ejb.ca.store.CertReqHistoryDataBean  
  */
 

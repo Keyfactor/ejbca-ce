@@ -58,10 +58,10 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.core.model.ra.UserAdminConstants;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
 
-import se.anatom.ejbca.common.UserDataVO;
 
 
 /**

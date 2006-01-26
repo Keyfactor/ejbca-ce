@@ -17,7 +17,8 @@ import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.io.IOException;
 
-import se.anatom.ejbca.common.UserDataVO;
+import org.ejbca.core.model.ra.UserDataVO;
+
 
 
 
@@ -27,7 +28,7 @@ import se.anatom.ejbca.common.UserDataVO;
  * Interface contating methods that need to be implementet in order 
  * to have a hard token profile contain PIN Envelope settings.
  * 
- * @version $Id: IPINEnvelopeSettings.java,v 1.1 2006-01-17 20:31:52 anatom Exp $
+ * @version $Id: IPINEnvelopeSettings.java,v 1.2 2006-01-26 14:17:58 anatom Exp $
  */
 
 public interface IPINEnvelopeSettings {

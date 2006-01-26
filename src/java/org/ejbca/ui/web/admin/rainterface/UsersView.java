@@ -19,14 +19,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import se.anatom.ejbca.common.UserDataVO;
+import org.ejbca.core.model.ra.UserDataVO;
+
 
 
 
 /**
  * A class representing a set of users w
  * @author  philip
- * @version $Id: UsersView.java,v 1.1 2006-01-17 20:32:20 anatom Exp $
+ * @version $Id: UsersView.java,v 1.2 2006-01-26 14:18:20 anatom Exp $
  */
 public class UsersView implements java.io.Serializable {
         

@@ -16,17 +16,17 @@ package org.ejbca.ui.web.admin.rainterface;
 import java.util.Date;
 import java.util.HashMap;
 
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 import org.ejbca.util.StringTools;
 
-import se.anatom.ejbca.common.UserDataVO;
 
 
 
 /**
  * A class representing a web interface view of a user in the ra user database.
  *
- * @version $Id: UserView.java,v 1.1 2006-01-17 20:32:20 anatom Exp $
+ * @version $Id: UserView.java,v 1.2 2006-01-26 14:18:20 anatom Exp $
  */
 public class UserView implements java.io.Serializable, Cloneable, Comparable {
     // Public constants.

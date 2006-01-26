@@ -29,14 +29,14 @@ import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.model.ra.UserDataVO;
 
-import se.anatom.ejbca.common.UserDataVO;
 
 
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestUserData.java,v 1.5 2006-01-17 20:34:15 anatom Exp $
+ * @version $Id: TestUserData.java,v 1.6 2006-01-26 14:18:20 anatom Exp $
  */
 public class TestUserData extends TestCase {
 

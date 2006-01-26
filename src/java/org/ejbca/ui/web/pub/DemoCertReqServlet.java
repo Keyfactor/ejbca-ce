@@ -43,10 +43,10 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.StringTools;
 
-import se.anatom.ejbca.common.UserDataVO;
 
 
 
@@ -88,7 +88,7 @@ import se.anatom.ejbca.common.UserDataVO;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.2 2006-01-26 14:18:20 anatom Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 

@@ -68,6 +68,7 @@ import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.core.protocol.IRequestMessage;
 import org.ejbca.core.protocol.IResponseMessage;
@@ -75,7 +76,6 @@ import org.ejbca.core.protocol.ResponseStatus;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
-import se.anatom.ejbca.common.UserDataVO;
 
 
 /**

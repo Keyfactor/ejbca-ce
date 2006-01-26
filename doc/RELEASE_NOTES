@@ -1,10 +1,11 @@
-EJBCA 3.2
----------
-This is a release with new features and an internal restucturing of the code base.
+EJBCA 3.2.0
+-----------
+This is a release with new enterprise features and an internal restucturing of the code base.
 Read the changelog for details.
 
 There are minor database upgrades in this version (from 3.1.x). 
-See UPGRADE for instruction how to upgrade your database.
+See doc/UPGRADE for instruction how to upgrade your database.
+You MUST do that!
 
 Otherwise simply keep/copy ejbca.properties from the earlier installation, 
 copy the directory 'p12' from the earlier installation and 'ant deploy' 

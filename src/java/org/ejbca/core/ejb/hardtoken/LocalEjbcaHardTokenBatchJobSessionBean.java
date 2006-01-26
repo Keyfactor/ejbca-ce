@@ -31,9 +31,9 @@ import org.ejbca.core.model.hardtoken.UnavailableTokenException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.JDBCUtil;
 
-import se.anatom.ejbca.common.UserDataVO;
 
 
 /**

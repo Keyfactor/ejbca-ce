@@ -96,9 +96,9 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
 
-import se.anatom.ejbca.common.UserDataVO;
 
 
 
@@ -106,7 +106,7 @@ import se.anatom.ejbca.common.UserDataVO;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.2 2006-01-21 11:49:22 anatom Exp $
+ * @version $Id: X509CA.java,v 1.3 2006-01-26 14:17:58 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
