@@ -52,7 +52,7 @@ import java.util.Hashtable;
 /**
  * A response message for scep (pkcs7).
  *
- * @version $Id: ScepResponseMessage.java,v 1.1 2006-01-17 20:28:06 anatom Exp $
+ * @version $Id: ScepResponseMessage.java,v 1.2 2006-01-30 06:31:12 herrvendil Exp $
  */
 public class ScepResponseMessage implements IResponseMessage, Serializable {
     static final long serialVersionUID = 2016710353393853878L;
@@ -196,7 +196,11 @@ public class ScepResponseMessage implements IResponseMessage, Serializable {
             if (status.equals(ResponseStatus.SUCCESS)) {
                 log.debug("Creating a STATUS_OK message.");
             } else {
-                log.debug("Creating a STATUS_FAILED message.");
+            	if (status.equals(ResponseStatus.FAILURE)) {
+                    log.debug("Creating a STATUS_FAILED message.");
+                } else {
+                    log.debug("Creating a STATUS_PENDING message.");
+                }               
             }
 
             CMSProcessable msg;

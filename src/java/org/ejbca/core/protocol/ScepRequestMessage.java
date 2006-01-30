@@ -24,6 +24,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -65,7 +66,7 @@ import org.ejbca.util.CertTools;
  * Class to handle SCEP request messages sent to the CA. 
  * TODO: don't forget extensions, e.g. KeyUsage requested by end entity 
  *
- * @version $Id: ScepRequestMessage.java,v 1.1 2006-01-17 20:28:06 anatom Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.2 2006-01-30 06:31:13 herrvendil Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage, Serializable {
     static final long serialVersionUID = -235623330828902051L;
@@ -98,6 +99,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
      */
     private int messageType = 0;
     public static int SCEP_TYPE_PKCSREQ = 19;
+    public static int SCEP_TYPE_GETCERTINITIAL = 20; // Used when request is in pending state.
     public static int SCEP_TYPE_GETCRL = 22;
     public static int SCEP_TYPE_GETCERT = 21;
 
@@ -142,6 +144,8 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
 
     /** preferred digest algorithm to use in replies, if applicable */
     private transient String preferredDigestAlg = CMSSignedDataGenerator.DIGEST_MD5;
+
+	private transient X509Certificate signercert;
 
     /**
      * Constructs a new SCEP/PKCS7 message handler object.
@@ -201,6 +205,16 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
                     dOut.writeObject(dercert);
                     if (bOut.size() > 0) {
                         requestKeyInfo = bOut.toByteArray();
+                        //Create Certificate used for debugging
+                        try {
+							signercert = CertTools.getCertfromByteArray(requestKeyInfo);
+							log.debug("requestKeyInfo is DN=" + signercert.getSubjectDN().toString() +
+									", Serial=" + signercert.getSerialNumber().toString(16) +
+									", IssuerDN="+ signercert.getIssuerDN().toString());
+						} catch (CertificateException e) {
+							log.error("Error parsing requestKeyInfo : ", e);
+						}
+                        
                     }
                 }
             }
@@ -238,8 +252,9 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
             }
 
             // If this is a PKCSReq
-            if ((messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) || (messageType == ScepRequestMessage.SCEP_TYPE_GETCRL)) {
+            if ((messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) || (messageType == ScepRequestMessage.SCEP_TYPE_GETCRL) || (messageType == ScepRequestMessage.SCEP_TYPE_GETCERTINITIAL)) {
                 // Extract the contents, which is an encrypted PKCS10 if messageType == 19
+                // , and an encrypted issuer and subject if messageType == 20 (not extracted)
                 // and an encrypted IssuerAndSerialNumber if messageType == 22
                 ci = sd.getEncapContentInfo();
                 ctoid = ci.getContentType().getId();
@@ -263,6 +278,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
                             IssuerAndSerialNumber iasn = IssuerAndSerialNumber.getInstance(rid.getId());
                             issuerDN = iasn.getName().toString();
                             log.debug("IssuerDN: " + issuerDN);
+                            log.debug("SerialNumber: " + iasn.getSerialNumber().getValue().toString(16));
                         }
                     } else {
                         errorText = "EncapsulatedContentInfo does not contain PKCS7 envelopedData: ";
@@ -315,6 +331,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
 
         while (it.hasNext()) {
             RecipientInformation recipient = (RecipientInformation) it.next();
+            log.debug("Privatekey : " + privateKey.getAlgorithm());
             decBytes = recipient.getContent(privateKey, jceProvider);
             break;
         }
@@ -648,6 +665,14 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
     	return preferredDigestAlg;
     }
     
+    /**
+     * Method returning the certificate used to sign the SCEP_TYPE_PKCSREQ pkcs7 request.
+     * 
+     * @return The certificate used for signing or null if it doesn't exist or not been initialized.
+     */
+    public X509Certificate getSignerCert(){
+    	return signercert;
+    }
     
 
     //
