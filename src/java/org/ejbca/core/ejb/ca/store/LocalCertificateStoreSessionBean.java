@@ -33,6 +33,7 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 
+import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
@@ -72,7 +73,7 @@ import org.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.2 2006-01-26 14:14:30 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.3 2006-01-30 21:39:13 primelars Exp $
  * @ejb.bean display-name="CertificateStoreSB"
  * name="CertificateStoreSession"
  * view-type="both"
@@ -155,7 +156,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  */
-public class LocalCertificateStoreSessionBean extends BaseSessionBean {
+public class LocalCertificateStoreSessionBean extends BaseSessionBean implements CertificateDataUtil.Client {
 
     /**
      * The home interface of Certificate entity bean
@@ -764,20 +765,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public Certificate findCertificateByFingerprint(Admin admin, String fingerprint) {
-        debug(">findCertificateByFingerprint()");
-        Certificate ret = null;
-
-        try {
-            CertificateDataLocal res = certHome.findByPrimaryKey(new CertificateDataPK(fingerprint));
-            ret = res.getCertificate();
-            debug("<findCertificateByFingerprint()");
-        } catch (FinderException fe) {
-            // Return null;
-        } catch (Exception e) {
-            log.error("Error finding certificate with fp: " + fingerprint);
-            throw new EJBException(e);
-        }
-        return ret;
+        return CertificateDataUtil.findCertificateByFingerprint(admin, fingerprint, certHome, this);
     } // findCertificateByFingerprint
 
     /**
@@ -849,72 +837,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public Collection findCertificatesByType(Admin admin, int type, String issuerDN) {
-        debug(">findCertificatesByType()");
-        if (null == admin
-                || type <= 0
-                || type > CertificateDataBean.CERTTYPE_SUBCA + CertificateDataBean.CERTTYPE_ENDENTITY + CertificateDataBean.CERTTYPE_ROOTCA) {
-            throw new IllegalArgumentException();
-        }
-        StringBuffer ctypes = new StringBuffer();
-        if ((type & CertificateDataBean.CERTTYPE_SUBCA) > 0) {
-            ctypes.append(CertificateDataBean.CERTTYPE_SUBCA);
-        }
-        if ((type & CertificateDataBean.CERTTYPE_ENDENTITY) > 0) {
-            if (ctypes.length() > 0) {
-                ctypes.append(", ");
-            }
-            ctypes.append(CertificateDataBean.CERTTYPE_ENDENTITY);
-        }
-        if ((type & CertificateDataBean.CERTTYPE_ROOTCA) > 0) {
-            if (ctypes.length() > 0) {
-                ctypes.append(", ");
-            }
-            ctypes.append(CertificateDataBean.CERTTYPE_ROOTCA);
-        }
-
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet result = null;
-        try {
-            ArrayList vect;
-// Status 20 = CertificateDataBean.CERT_ACTIVE
-            StringBuffer stmt = new StringBuffer("SELECT DISTINCT fingerprint FROM CertificateData WHERE status = 20 AND ");
-            stmt.append(" type IN (");
-            stmt.append(ctypes.toString());
-            stmt.append(')');
-            if (null != issuerDN && issuerDN.length() > 0) {
-                String dn = CertTools.stringToBCDNString(issuerDN);
-                dn = StringTools.strip(dn);
-                if (log.isDebugEnabled()) {
-                    debug("findCertificatesByType() : Looking for cert with (transformed)DN: " + dn);
-                }
-                stmt.append(" AND issuerDN = '");
-                stmt.append(dn);
-                stmt.append('\'');
-            }
-            if (log.isDebugEnabled()) {
-                debug("findCertificatesByType() : executing SQL statement\n"
-                        + stmt.toString());
-            }
-            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            ps = con.prepareStatement(stmt.toString());
-            result = ps.executeQuery();
-
-            vect = new ArrayList();
-            while (result.next()) {
-                Certificate cert = findCertificateByFingerprint(admin, result.getString(1));
-                if (cert != null) {
-                    vect.add(cert);
-                }
-            }
-
-            debug("<findCertificatesByType()");
-            return vect;
-        } catch (Exception e) {
-            throw new EJBException(e);
-        } finally {
-            JDBCUtil.close(con, ps, result);
-        }
+        return CertificateDataUtil.findCertificatesByType(admin, type, issuerDN, certHome, this);
     } // findCertificatesByType
 
     /**
@@ -1209,35 +1132,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public RevokedCertInfo isRevoked(Admin admin, String issuerDN, BigInteger serno) {
-        if (log.isDebugEnabled()) {
-            debug(">isRevoked(), dn:" + issuerDN + ", serno=" + serno);
-        }
-        // First make a DN in our well-known format
-        String dn = CertTools.stringToBCDNString(issuerDN);
-
-        try {
-            Collection coll = certHome.findByIssuerDNSerialNumber(dn, serno.toString());
-            if (coll != null) {
-                if (coll.size() > 1)
-                    getLogSession().log(admin, issuerDN.hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_DATABASE, "Error in database, more than one certificate has the same Issuer : " + issuerDN + " and serialnumber "
-                            + serno.toString(16) + ".");
-                Iterator iter = coll.iterator();
-                if (iter.hasNext()) {
-                    RevokedCertInfo revinfo = null;
-                    CertificateDataLocal data = (CertificateDataLocal) iter.next();
-                    revinfo = new RevokedCertInfo(serno, new Date(data.getRevocationDate()), data.getRevocationReason());
-                    // Make sure we have it as NOT revoked if it isn't
-                    if (data.getStatus() != CertificateDataBean.CERT_REVOKED) {
-                        revinfo.setReason(RevokedCertInfo.NOT_REVOKED);
-                    }
-                    debug("<isRevoked() returned " + ((data.getStatus() == CertificateDataBean.CERT_REVOKED) ? "yes" : "no"));
-                    return revinfo;
-                }
-            }
-        } catch (Exception e) {
-            throw new EJBException(e);
-        }
-        return null;
+        return CertificateDataUtil.isRevoked(admin, issuerDN, serno, certHome, this);
     } //isRevoked
 
     /**
@@ -1965,4 +1860,19 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         return foundfree;
     } // isFreeCertificateProfileId
 
+    /* (non-Javadoc)
+     * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Client#getLogger()
+     */
+    public Logger getLogger() {
+        return log;
+    }
+
+    /* (non-Javadoc)
+     * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Client#log(org.ejbca.core.model.log.Admin, int, int, java.util.Date, java.lang.String, java.security.cert.X509Certificate, int, java.lang.String)
+     */
+    public void log(Admin admin, int caid, int module, Date time, String username,
+                    X509Certificate certificate, int event, String comment) {
+        getLogSession().log(admin, module, LogEntry.MODULE_CA, new java.util.Date(),
+                            null, null, LogEntry.EVENT_ERROR_DATABASE, comment);
+    }
 } // CertificateStoreSessionBean

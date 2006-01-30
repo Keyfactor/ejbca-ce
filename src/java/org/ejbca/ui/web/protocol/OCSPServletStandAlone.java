@@ -1,8 +1,17 @@
 package org.ejbca.ui.web.protocol;
 
 import java.math.BigInteger;
+import java.security.cert.X509Certificate;
 import java.util.Collection;
+import java.util.Date;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+
+import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.ca.store.CertificateDataLocalHome;
+import org.ejbca.core.ejb.ca.store.CertificateDataUtil;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
@@ -46,20 +55,61 @@ import org.ejbca.core.model.log.Admin;
  *   
  *
  */
-public class OCSPServletStandAlone extends OCSPServletBase {
+public class OCSPServletStandAlone extends OCSPServletBase implements CertificateDataUtil.Client {
 
-    Collection findCertificatesByType(Admin adm, int i, String issuerDN) {
-        // TODO Auto-generated method stub
-        return null;
+    /**
+     * The home interface of Certificate entity bean
+     */
+    private CertificateDataLocalHome certHome = null;
+
+    /* (non-Javadoc)
+     * @see javax.servlet.Servlet#init(javax.servlet.ServletConfig)
+     */
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+        certHome = (CertificateDataLocalHome)ServiceLocator.getInstance().getLocalHome(CertificateDataLocalHome.COMP_NAME);
     }
 
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.web.protocol.OCSPServletBase#findCertificatesByType(org.ejbca.core.model.log.Admin, int, java.lang.String)
+     */
+    Collection findCertificatesByType(Admin adm, int type, String issuerDN) {
+        return CertificateDataUtil.findCertificatesByType(adm, type, issuerDN, certHome, this);
+    }
+
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.web.protocol.OCSPServletBase#extendedService(org.ejbca.core.model.log.Admin, int, org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest)
+     */
     OCSPCAServiceResponse extendedService(Admin m_adm2, int caid, OCSPCAServiceRequest request) throws CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException {
         // TODO Auto-generated method stub
         return null;
     }
 
-    RevokedCertInfo isRevoked(Admin m_adm2, String name, BigInteger serialNumber) {
-        // TODO Auto-generated method stub
-        return null;
+    /* (non-Javadoc)
+     * @see org.ejbca.ui.web.protocol.OCSPServletBase#isRevoked(org.ejbca.core.model.log.Admin, java.lang.String, java.math.BigInteger)
+     */
+    RevokedCertInfo isRevoked(Admin admin, String issuerDN, BigInteger serialNumber) {
+        return CertificateDataUtil.isRevoked(admin, issuerDN, serialNumber, certHome, this);
+    }
+
+    /* (non-Javadoc)
+     * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Client#debug(java.lang.String)
+     */
+    public void debug(String s) {
+        m_log.debug(s);
+    }
+
+    /* (non-Javadoc)
+     * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Client#getLogger()
+     */
+    public Logger getLogger() {
+        return m_log;
+    }
+
+    /* (non-Javadoc)
+     * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Client#log(org.ejbca.core.model.log.Admin, int, int, java.util.Date, java.lang.String, java.security.cert.X509Certificate, int, java.lang.String)
+     */
+    public void log( Admin admin, int caid, int module, Date time, String username,
+                     X509Certificate certificate, int event, String comment ) {
     }
 }
