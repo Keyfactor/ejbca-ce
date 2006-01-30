@@ -76,8 +76,6 @@ import org.ejbca.core.protocol.ResponseStatus;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
-
-
 /**
  * Creates and signs certificates.
  *
@@ -692,46 +690,9 @@ public class RSASignSessionBean extends BaseSessionBean {
         UserDataVO data = null;
         IResponseMessage ret = null;            
         try {
-            // See if we can get issuerDN directly from request
-            if (req.getIssuerDN() != null) {
-                cadata = cadatahome.findByPrimaryKey(new Integer(req.getIssuerDN().hashCode()));
-                debug("Using CA (from issuerDN) with id: " + cadata.getCaId() + " and DN: " + cadata.getSubjectDN());
-            } else if (req.getUsername() != null) {
-                // See if we can get username and password directly from request
-                String username = req.getUsername();
-                String password = req.getPassword();
-                data = authUser(admin, username, password);
-                cadata = cadatahome.findByPrimaryKey(new Integer(data.getCAId()));
-                debug("Using CA (from username) with id: " + cadata.getCaId() + " and DN: " + cadata.getSubjectDN());
-            } else {
-                throw new CADoesntExistsException();
-            }
-        } catch (javax.ejb.FinderException fe) {
-            error("Can not find CA Id from issuerDN: " + req.getIssuerDN() + " or username: " + req.getUsername());
-            getLogSession().log(admin, -1, LogEntry.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Invalid CA Id", fe);
-            throw new CADoesntExistsException(fe);
-        }
-        try {
+        	cadata = getCAFromRequest(admin, req);
             CA ca = cadata.getCA();
             CAToken catoken = ca.getCAToken();
-
-            if (ca.getStatus() != SecConst.CA_ACTIVE) {
-                getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Signing CA " + cadata.getSubjectDN() + " isn't active.");
-                throw new EJBException("Signing CA " + cadata.getSubjectDN() + " isn't active.");
-            }
-
-            // Check that CA hasn't expired.
-            X509Certificate cacert = (X509Certificate) ca.getCACertificate();
-            try {
-                cacert.checkValidity();
-            } catch (CertificateExpiredException cee) {
-                // Signers Certificate has expired.
-                cadata.setStatus(SecConst.CA_EXPIRED);
-                getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Signing CA " + cadata.getSubjectDN() + " has expired", cee);
-                throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " has expired");
-            } catch (CertificateNotYetValidException cve) {
-                throw new CADoesntExistsException(cve);
-            }
             
             // See if we need some key material to decrypt request
             if (req.requireKeyInfo()) {
@@ -810,6 +771,151 @@ public class RSASignSessionBean extends BaseSessionBean {
             throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " is offline.");
         }
         debug("<createCertificate(IRequestMessage)");
+        return ret;
+    }
+    
+    /**
+     * Method that just decrypts and verifies a request and should be used in those cases
+     * a when encrypted information needs to be extracted and presented to an RA for approval.
+     *
+     * @param admin         Information about the administrator or admin preforming the event.
+     * @param req           a Certification Request message, containing the public key to be put in the
+     *                      created certificate. Currently no additional parameters in requests are considered!
+     * 
+     * @return A decrypted and verified IReqeust message
+     * @throws AuthStatusException           If the users status is incorrect.
+     * @throws AuthLoginException            If the password is incorrect.
+     * @throws IllegalKeyException           if the public key is of wrong type.
+     * @throws CADoesntExistsException       if the targeted CA does not exist
+     * @throws SignRequestException          if the provided request is invalid.
+     * @throws SignRequestSignatureException if the the request couldn't be verified.
+     * @ejb.permission unchecked="true"
+     * @ejb.interface-method view-type="both"
+     * @see se.anatom.ejbca.protocol.IRequestMessage
+     * @see se.anatom.ejbca.protocol.IResponseMessage
+     * @see se.anatom.ejbca.protocol.X509ResponseMessage
+     */
+    public IRequestMessage decryptAndVerifyRequest(Admin admin, IRequestMessage req) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException {
+        debug(">decryptAndVerifyRequest(IRequestMessage)");
+        // Get CA that will receive request
+        CADataLocal cadata = null;
+            
+        try {
+        	cadata = getCAFromRequest(admin, req);
+            CA ca = cadata.getCA();
+            CAToken catoken = ca.getCAToken();
+            
+            // See if we need some key material to decrypt request
+            if (req.requireKeyInfo()) {
+                // You go figure...scep encrypts message with the public CA-cert
+                req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getProvider());
+            }
+            // Verify the request
+            if (req.verify() == false) {
+                getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "POPO verification failed.");
+                throw new SignRequestSignatureException("Verification of signature (popo) on request failed.");
+            }
+  
+        } catch (AuthStatusException se) {
+            throw se;
+        } catch (AuthLoginException le) {
+            throw le;
+        } catch (IllegalKeyStoreException e) {
+            throw new IllegalKeyException(e);
+        } catch (UnsupportedEncodingException e) {
+            throw new CADoesntExistsException(e);
+        } catch (NoSuchProviderException e) {
+            log.error("NoSuchProvider provider: ", e);
+        } catch (InvalidKeyException e) {
+            log.error("Invalid key in request: ", e);
+        } catch (NoSuchAlgorithmException e) {
+            log.error("No such algorithm: ", e);
+        }  catch (CATokenOfflineException ctoe) {
+            log.error("CA Token is Offline: ", ctoe);
+            cadata.setStatus(SecConst.CA_OFFLINE);
+            getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Signing CA " + cadata.getSubjectDN() + " is offline.", ctoe);
+            throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " is offline.");
+        }
+        debug("<decryptAndVerifyRequest(IRequestMessage)");
+        return req;
+    }
+    
+    /**
+     * Method that generates a request failed response message. The request
+     * should already have been decrypted and verified.
+     *
+     * @param admin         Information about the administrator or admin preforming the event.
+     * @param req           a Certification Request message, containing the public key to be put in the
+     *                      created certificate. Currently no additional parameters in requests are considered!
+
+     * @param responseClass The implementation class that will be used as the response message.
+     * 
+     * @return A decrypted and verified IReqeust message
+     * @throws AuthStatusException           If the users status is incorrect.
+     * @throws AuthLoginException            If the password is incorrect.
+     * @throws CADoesntExistsException       if the targeted CA does not exist
+     * @throws SignRequestException          if the provided request is invalid.
+     * @throws SignRequestSignatureException if the the request couldn't be verified.
+     * @throws AuthLoginException 
+     * @throws AuthStatusException 
+     * @throws IllegalKeyException 
+     * @throws CADoesntExistsException 
+     * @throws SignRequestSignatureException 
+     * @ejb.permission unchecked="true"
+     * @ejb.interface-method view-type="both"
+     * @see se.anatom.ejbca.protocol.IRequestMessage
+     * @see se.anatom.ejbca.protocol.IResponseMessage
+     * @see se.anatom.ejbca.protocol.X509ResponseMessage
+     */
+    public IResponseMessage createRequestFailedResponse(Admin admin, IRequestMessage req,  Class responseClass) throws  AuthLoginException, AuthStatusException, IllegalKeyException, CADoesntExistsException, SignRequestSignatureException {
+        debug(">createRequestFailedResponse(IRequestMessage)");
+        IResponseMessage ret = null;            
+        CADataLocal cadata = null;
+        try {
+        	cadata = getCAFromRequest(admin, req);
+            CA ca = cadata.getCA();
+            CAToken catoken = ca.getCAToken();
+         
+            // See if we need some key material to decrypt request
+            if (req.requireKeyInfo()) {
+                // You go figure...scep encrypts message with the public CA-cert
+                req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getProvider());
+            }
+            // Verify the request
+            if (req.verify() == false) {
+                getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "POPO verification failed.");
+                throw new SignRequestSignatureException("Verification of signature (popo) on request failed.");
+            }
+            
+            //Create the response message with all nonces and checks etc
+            ret = createResponseMessage(responseClass, req, ca, catoken);
+            
+            ret.setStatus(ResponseStatus.FAILURE);
+            ret.setFailInfo(FailInfo.BAD_REQUEST);
+            ret.create();
+        } catch (AuthStatusException se) {
+            throw se;
+        } catch (AuthLoginException le) {
+            throw le;
+        } catch (IllegalKeyStoreException e) {
+            throw new IllegalKeyException(e);
+        } catch (UnsupportedEncodingException e) {
+            throw new CADoesntExistsException(e);
+        } catch (NoSuchProviderException e) {
+            log.error("NoSuchProvider provider: ", e);
+        } catch (InvalidKeyException e) {
+            log.error("Invalid key in request: ", e);
+        } catch (NoSuchAlgorithmException e) {
+            log.error("No such algorithm: ", e);
+        } catch (IOException e) {
+            log.error("Cannot create response message: ", e);
+        } catch (CATokenOfflineException ctoe) {
+            log.error("CA Token is Offline: ", ctoe);
+            cadata.setStatus(SecConst.CA_OFFLINE);
+            getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Signing CA " + cadata.getSubjectDN() + " is offline.", ctoe);
+            throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " is offline.");
+        }
+        debug("<createRequestFailedResponse(IRequestMessage)");
         return ret;
     }
 
@@ -917,6 +1023,57 @@ public class RSASignSessionBean extends BaseSessionBean {
         }
         debug("<getCRL(IRequestMessage)");
         return ret;
+    }
+    
+    /**
+     * Help Method that extracts the CA specified in the request.
+     * 
+     */
+    private CADataLocal getCAFromRequest(Admin admin, IRequestMessage req) throws AuthStatusException, AuthLoginException, CADoesntExistsException, UnsupportedEncodingException{
+    	CADataLocal cadata = null;
+    	UserDataVO data = null;
+        try {
+            // See if we can get issuerDN directly from request
+            if (req.getIssuerDN() != null) {
+                cadata = cadatahome.findByPrimaryKey(new Integer(req.getIssuerDN().hashCode()));
+                debug("Using CA (from issuerDN) with id: " + cadata.getCaId() + " and DN: " + cadata.getSubjectDN());
+            } else if (req.getUsername() != null) {
+                // See if we can get username and password directly from request
+                String username = req.getUsername();
+                String password = req.getPassword();
+                data = authUser(admin, username, password);
+                cadata = cadatahome.findByPrimaryKey(new Integer(data.getCAId()));
+                debug("Using CA (from username) with id: " + cadata.getCaId() + " and DN: " + cadata.getSubjectDN());
+            } else {
+                throw new CADoesntExistsException();
+            }
+        } catch (javax.ejb.FinderException fe) {
+            error("Can not find CA Id from issuerDN: " + req.getIssuerDN() + " or username: " + req.getUsername());
+            getLogSession().log(admin, -1, LogEntry.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Invalid CA Id", fe);
+            throw new CADoesntExistsException(fe);
+        }
+        
+        CA ca = cadata.getCA();
+
+        if (ca.getStatus() != SecConst.CA_ACTIVE) {
+            getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Signing CA " + cadata.getSubjectDN() + " isn't active.");
+            throw new EJBException("Signing CA " + cadata.getSubjectDN() + " isn't active.");
+        }
+
+        // Check that CA hasn't expired.
+        X509Certificate cacert = (X509Certificate) ca.getCACertificate();
+        try {
+            cacert.checkValidity();
+        } catch (CertificateExpiredException cee) {
+            // Signers Certificate has expired.
+            cadata.setStatus(SecConst.CA_EXPIRED);
+            getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Signing CA " + cadata.getSubjectDN() + " has expired", cee);
+            throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " has expired");
+        } catch (CertificateNotYetValidException cve) {
+            throw new CADoesntExistsException(cve);
+        }
+        
+        return cadata;
     }
 
     private IResponseMessage createResponseMessage(Class responseClass, IRequestMessage req, CA ca, CAToken catoken) throws CATokenOfflineException {
