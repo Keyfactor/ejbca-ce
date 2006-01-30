@@ -61,7 +61,7 @@ import org.ejbca.util.query.Query;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.2 2006-01-26 14:18:20 anatom Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.3 2006-01-30 06:29:48 herrvendil Exp $
  */
 public class RAInterfaceBean implements java.io.Serializable {
     
@@ -378,7 +378,7 @@ public class RAInterfaceBean implements java.io.Serializable {
     }
 
     public UserView[] filterByQuery(Query query, int index, int size) throws Exception {
-      Collection userlist = adminsession.query(administrator, query, informationmemory.getUserDataQueryCAAuthoorizationString(), informationmemory.getUserDataQueryEndEntityProfileAuthorizationString());
+      Collection userlist = adminsession.query(administrator, query, informationmemory.getUserDataQueryCAAuthoorizationString(), informationmemory.getUserDataQueryEndEntityProfileAuthorizationString(),0);
       users.setUsers(userlist, informationmemory.getCAIdToNameMap());
 
       return users.getUsers(index,size);

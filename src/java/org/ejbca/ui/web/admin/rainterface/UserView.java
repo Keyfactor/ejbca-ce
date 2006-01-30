@@ -16,6 +16,7 @@ package org.ejbca.ui.web.admin.rainterface;
 import java.util.Date;
 import java.util.HashMap;
 
+import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 import org.ejbca.util.StringTools;
@@ -26,7 +27,7 @@ import org.ejbca.util.StringTools;
 /**
  * A class representing a web interface view of a user in the ra user database.
  *
- * @version $Id: UserView.java,v 1.2 2006-01-26 14:18:20 anatom Exp $
+ * @version $Id: UserView.java,v 1.3 2006-01-30 06:29:48 herrvendil Exp $
  */
 public class UserView implements java.io.Serializable, Cloneable, Comparable {
     // Public constants.
@@ -100,7 +101,8 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
     public int getCAId() {return userdata.getCAId();}
     public void setCAId(int caid) { userdata.setCAId(caid);}
     public String getCAName() { return caname;}
-
+    public void setExtendedInformation(ExtendedInformation extinfo) { userdata.setExtendedinformation(extinfo);}
+    public ExtendedInformation getExtendedInformation() { return userdata.getExtendedinformation();}
     
     public String getSubjectDNField(int parameter, int number){
       return subjectdnfields.getField(parameter,number);

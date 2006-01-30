@@ -13,18 +13,21 @@
 
 package org.ejbca.core.ejb.ra;
 
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashMap;
 
 import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.ejb.BaseEntityBean;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformation;
+import org.ejbca.core.model.ra.SCEPRAExtendedInformation;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.StringTools;
@@ -57,7 +60,7 @@ import org.ejbca.util.StringTools;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.2 2006-01-21 12:20:56 anatom Exp $
+ * @version $Id: UserDataBean.java,v 1.3 2006-01-30 06:30:02 herrvendil Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a Log Entry with accompanying data"
  * display-name="UserDataEB"
@@ -108,6 +111,7 @@ import org.ejbca.util.StringTools;
 public abstract class UserDataBean extends BaseEntityBean {
 
     private static Logger log = Logger.getLogger(UserDataBean.class);
+
 
     /**
      * @ejb.pk-field
@@ -324,19 +328,19 @@ public abstract class UserDataBean extends BaseEntityBean {
     public abstract void setHardTokenIssuerId(int hardtokenissuerid);
 
     /**
-     * Non-searchable information about a user. for future use.
+     * Non-searchable information about a user.
      *
      * @ejb.persistence
      * @weblogic.ora.columntyp@
      */
-    public abstract HashMap getExtendedInformationData();
+    public abstract String getExtendedInformationData();
 
     /**
-     * Non-searchable information about a user. for future use.
+     * Non-searchable information about a user.
      *
      * @ejb.persistence
      */
-    public abstract void setExtendedInformationData(HashMap data);
+    public abstract void setExtendedInformationData(String data);
 
 
     // Reserved for future use.
@@ -436,12 +440,7 @@ public abstract class UserDataBean extends BaseEntityBean {
      * @ejb.interface-method
      */
     public ExtendedInformation getExtendedInformation() {
-        ExtendedInformation returnval = null;
-        if (getExtendedInformationData() != null) {
-            returnval = new ExtendedInformation();
-            returnval.loadData(getExtendedInformationData());
-        }
-        return returnval;
+        return getExtendedInformation(getExtendedInformationData());
     }
 
     /**
@@ -449,7 +448,19 @@ public abstract class UserDataBean extends BaseEntityBean {
      * @ejb.interface-method
      */
     public void setExtendedInformation(ExtendedInformation extendedinformation) {
-        setExtendedInformationData((HashMap) extendedinformation.saveData());
+    	if(extendedinformation != null){
+    		java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+    		
+    		java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
+    		encoder.writeObject(extendedinformation.saveData());
+    		encoder.close();
+    		try {
+    			setExtendedInformationData(baos.toString("UTF8"));
+    		} catch (UnsupportedEncodingException e) {
+    			throw new EJBException("Problems storing extended information for user :" + getUsername(),e);
+    		}
+    		
+    	}
     }
     
     //
@@ -497,5 +508,31 @@ public abstract class UserDataBean extends BaseEntityBean {
 
     public void ejbPostCreate(String username, String password, String dn, int caid) {
         // Do nothing. Required.
+    }
+    
+    /**
+     * Help Method used to create an ExtendedInformation from String representation.
+     * Used when creating an ExtendedInformation from queries.
+     */
+    public static ExtendedInformation getExtendedInformation(String extendedinfostring) {
+        ExtendedInformation returnval = null;
+        if (extendedinfostring != null) {
+            java.beans.XMLDecoder decoder;
+            try {
+            	decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(extendedinfostring.getBytes("UTF8")));
+            	
+            	HashMap data = (HashMap) decoder.readObject();
+            	decoder.close();
+            	int type = ((Integer) data.get(ExtendedInformation.TYPE)).intValue();
+            	switch(type){
+            	  case SCEPRAExtendedInformation.TYPE_SCEPRA :
+            		returnval = (ExtendedInformation) UserDataBean.class.getClassLoader().loadClass(SCEPRAExtendedInformation.class.getName()).newInstance();            	
+              		returnval.loadData(data);
+            	}            	
+            }catch (Exception e) {
+            	throw new EJBException("Problems generating extended information from String",e);
+            }
+        }
+        return returnval;
     }
 }

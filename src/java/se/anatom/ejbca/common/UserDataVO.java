@@ -26,7 +26,7 @@ import org.ejbca.util.StringTools;
  * 
  * Holds admin data collected from UserData in the database.
  *
- * @version $Id: UserDataVO.java,v 1.3 2006-01-26 14:18:20 anatom Exp $
+ * @version $Id: UserDataVO.java,v 1.4 2006-01-30 06:30:02 herrvendil Exp $
  */
 public class UserDataVO implements Serializable {
 
@@ -89,6 +89,7 @@ public class UserDataVO implements Serializable {
         this.timemodified=timemodified;
         this.tokentype = tokentype;
         this.hardtokenissuerid = hardtokenissuerid;
+        this.extendedinformation = extendedinfo;
     }
     public void setUsername(String user) { this.username=StringTools.strip(user);}
     public String getUsername() {return username;}

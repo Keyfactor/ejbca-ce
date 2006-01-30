@@ -24,11 +24,13 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
  * like a image, in an effort to minimize the need for database alterations
  *
  * @author  Philip Vendil
- * @version $Id: ExtendedInformation.java,v 1.1 2006-01-17 20:28:07 anatom Exp $
+ * @version $Id: ExtendedInformation.java,v 1.2 2006-01-30 06:29:48 herrvendil Exp $
  */
 public class ExtendedInformation extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
-    public static final float LATEST_VERSION = 0;
+    public static final float LATEST_VERSION = 1;    
+    
+    public static final String TYPE = "type";
 
     // Public constants
 
@@ -37,7 +39,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     // Public methods.
     /** Creates a new instance of EndEntity Profile */
     public ExtendedInformation() {
-      super();
+      super();      
     }
 
     
@@ -67,6 +69,26 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
         // New version of the class, upgrade
         data.put(VERSION, new Float(LATEST_VERSION));
       }
+    }
+    
+    /**
+     * Method that returns the classpath to the this or inheriting classes.
+     * @return String containing the classpath.
+     */
+    public int getType(){
+    	return ((Integer) data.get(TYPE)).intValue();
+    }
+    
+    /**
+     * Method used to specify which kind of object that should be created during
+     * deserialization process.
+     * 
+     * Inheriting class should call 'setClassPath(this) in it's constructor.
+     * 
+     * @param object
+     */
+    protected void setType(int type){
+       data.put(TYPE,new Integer(type));	
     }
 
 }
