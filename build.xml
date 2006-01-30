@@ -23,6 +23,7 @@
 	<property name="tmp" value="./tmp" />
     <property name="bin" value="./${tmp}/bin" />
     <property name="build" value="${bin}/classes" />
+    <property name="ocsp-build" location="${bin}/ocsp-classes"/>
     <property name="lib" value="lib" />
 	<property name="preprocessed" value="${tmp}/preprocessed"/>
 
@@ -30,6 +31,8 @@
     <property name="src.java" value="${src}/java" />
     <property name="src.gen" value="${bin}/gensrc" />
     <property name="src.dd" value="${bin}/dd" />
+    <property name="ocsp-src.gen" value="${bin}/ocsp-gensrc" />
+    <property name="ocsp-src.dd" value="${bin}/ocsp-dd" />
     
     <property name="test.dir" value="${bin}/junit" />
     <property name="test.src.dir" location="${src}/test" />
@@ -50,6 +53,8 @@
     <property name="status.src" value="${src}/publicweb/status" />
     <property name="statuswar" value="${dist.dir}/status.war" />
 
+    <property name="ocspwar" value="${dist.dir}/ocsp.war" />
+
     <property name="adminweb.src" value="${src}/adminweb" />
     <property name="adminweb.build" value="${tmp}/adminweb.war" />    
     <property name="adminwebwar" value="${dist.dir}/adminweb.war" />
@@ -61,6 +66,7 @@
     <property name="webdd.src" value="${src}/deploy/web" />
     <property name="eardd.src" value="${src}/deploy/ear" />
     <property name="caear" value="${dist.dir}/${app.name}.ear" />
+    <property name="ocspear" value="${dist.dir}/ocsp.ear" />
 
 	<property name="createcrlservice.name" value="crlcreateservice.jar" />
     <property name="createcrlservice.build" value="${tmp}/${createcrlservice.name}" />
@@ -179,6 +185,7 @@ web.contentencoding    = ${web.contentencoding}
         <tstamp/>
         <!-- Create the build directory structure used by compile -->
         <mkdir dir="${build}"/>
+        <mkdir dir="${ocsp-build}"/>
         <mkdir dir="${dist.dir}/${lib}"/>
     </target>
 
@@ -188,9 +195,12 @@ web.contentencoding    = ${web.contentencoding}
     <target name="clean">
         <!-- Delete the ${build} and ${dist.dir} directory trees -->
         <delete dir="${build}" />
+        <delete dir="${ocsp-build}" />
         <delete dir="${dist.dir}" />
         <delete dir="${src.gen}" />
         <delete dir="${src.dd}" />
+        <delete dir="${ocsp-src.gen}" />
+        <delete dir="${ocsp-src.dd}" />
         <delete dir="${apidoc}" />
         <delete dir="${tmp}"/>
     </target>
@@ -270,6 +280,79 @@ web.contentencoding    = ${web.contentencoding}
         </webdoclet>
     </target>
 	
+    <!-- =================================================================== -->
+    <!-- Autogenerate all ejb interfaces and deployment descriptors          -->
+    <!-- =================================================================== -->
+    <target name="ocsp-run-xdoc" depends="init, preprocess">
+        <taskdef name="ejbdoclet" classname="xdoclet.modules.ejb.EjbDocletTask">
+            <classpath refid="xdoclet.classpath" />
+        </taskdef>
+        <taskdef name="webdoclet" classname="xdoclet.modules.web.WebDocletTask">
+            <classpath refid="xdoclet.classpath" />
+        </taskdef>
+    	<!-- Copy XDoclet merge files to handle database specific settings -->
+        <ejb-merge-copy database="${database.name}" overwrite="true" />
+        <ejbdoclet force="false" destdir="${ocsp-src.gen}" ejbspec="2.0" excludedtags="@version,@author">
+            <fileset dir="${src.java}">
+                <include name="**/CertificateDataBean.java" />
+                <!--include name="**/RSASignSessionBean.java" />
+                <include name="**/LocalCertificateStoreSessionBean.java" />
+                <include name="**/LocalAuthenticationSessionBean.java" />
+                <include name="**/CADataBean.java" />
+                <include name="**/LocalLogSessionBean.java" />
+                <include name="**/CertificateProfileDataBean.java" />
+                <include name="**/CertReqHistoryDataBean.java" />
+                <include name="**/CRLDataBean.java" />
+                <include name="**/LocalAuthorizationSessionBean.java" />
+                <include name="**/LocalPublisherSessionBean.java" />
+                <include name="**/PublisherDataBean.java" />
+                <include name="**/CAAdminSessionBean.java" /-->
+            </fileset>
+            <remoteinterface />
+            <homeinterface />
+            <localinterface />
+            <localhomeinterface />
+            <entitypk />
+            <session />
+            <deploymentdescriptor destdir="${ocsp-src.dd}/META-INF" validatexml="false" />
+             <jboss version="3.2" 
+                unauthenticatedPrincipal="nobody" 
+                xmlencoding="UTF-8" 
+                validatexml="false" 
+                destdir="${ocsp-src.dd}/META-INF" 
+                mergeDir="${ejbdd.src}/merge"
+                datasource="${datasource.jndi-name-prefix}${datasource.jndi-name}" 
+                datasourcemapping="${datasource.mapping}" />
+            <weblogic version="8.1" 
+                xmlencoding="UTF-8" 
+                destdir="${ocsp-src.dd}/META-INF" 
+                validatexml="false" 
+                datasource="${datasource.jndi-name}" 
+                persistence="weblogic"
+                createTables="Disabled" />
+<!--            
+            <sunone version="7.0" 
+                xmlencoding="UTF-8" 
+                destdir="${ocsp-src.dd}/META-INF" 
+                validatexml="false" />
+            <jonas version="3.0" 
+                xmlencoding="UTF-8" 
+                destdir="${ocsp-src.dd}/META-INF" 
+                validatexml="false" /> 
+-->                
+        </ejbdoclet>
+        <webdoclet force="true" destdir="${ocsp-src.gen}" excludedtags="@version,@author">
+            <fileset dir="${src.java}">
+                <include name="**/protocol/OCSPServletStandAlone.java" />
+            </fileset>
+            <deploymentdescriptor destdir="${ocsp-src.dd}/status/WEB-INF"
+             servletspec="2.3"
+             sessiontimeout="30" 
+             description="OCSP responder" 
+             validatexml="false" />
+        </webdoclet>
+    </target>
+	
 	<!--
 	  Preprocesses EJBCA by replacing tags with correct version and application texts.
 	-->
@@ -339,8 +422,31 @@ web.contentencoding    = ${web.contentencoding}
         <javac destdir="${build}" debug="on" includeantruntime="no" encoding="iso8859-1">
             <classpath refid="compile.classpath" />
             <exclude name="**/appserver/**" />
+            <exclude name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java" />
             <src path="${src.java}" />
             <src path="${src.gen}" />
+        </javac>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Compile ocsp resonder java sources                                  -->
+    <!-- =================================================================== -->
+    <target name="ocsp-compile" depends="ocsp-run-xdoc">
+        <javac srcdir="${src.java}:${ocsp-src.gen}" destdir="${ocsp-build}" debug="on" includeantruntime="no" encoding="iso8859-1">
+            <classpath refid="compile.classpath" />
+            <include name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java" />
+            <include name="org/ejbca/core/ejb/ca/store/CertificateDataBean.java" />
+            <!--include name="org/ejbca/core/ejb/ca/store/CertificateStoreSessionSession.java" />
+            <include name="org/ejbca/core/ejb/ca/store/CertificateDataLocal.java" /-->
+            <include name="org/ejbca/core/ejb/ca/store/CertificateDataLocalHome.java" />
+            <!--include name="org/ejbca/core/ejb/ca/sign/RSASignSessionSession.java" />
+            <include name="org/ejbca/core/ejb/ca/store/CertificateStoreSessionSession.java" />
+            <include name="org/ejbca/core/ejb/ca/caadmin/CertificateProfileDataBean.java" />
+            <include name="org/ejbca/core/ejb/ca/publisher/PublisherDataBean.java" />
+            <include name="org/ejbca/core/ejb/ca/publisher/PublisherDataLocalHome.java" />
+            <include name="org/ejbca/core/ejb/ca/store/CertReqHistoryDataBean.java" />
+            <include name="org/ejbca/core/ejb/ca/store/CRLDataBean.java" />
+            <include name="org/ejbca/core/ejb/ca/publisher/PublisherSessionSession.java" /-->
         </javac>
     </target>
 
@@ -363,9 +469,18 @@ web.contentencoding    = ${web.contentencoding}
     <target name="status.war" depends="compile">
         <war destfile="${statuswar}" webxml="${src.dd}/status/WEB-INF/web.xml">
             <fileset dir="${status.src}" excludes="WEB-INF/web.xml" />
-            <classes dir="${build}">
+            <!--classes dir="${build}">
                 <include name="se/anatom/ejbca/protocol/OCSPServlet*.class" />
-         	</classes>
+         	</classes-->
+        </war>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Build standalone ocsp part                                          -->
+    <!-- =================================================================== -->
+    <target name="ocsp.war" depends="ocsp-compile">
+        <war destfile="${ocspwar}" webxml="${ocsp-src.dd}/status/WEB-INF/web.xml">
+            <fileset dir="${status.src}" excludes="WEB-INF/web.xml" />
         </war>
     </target>
 
@@ -454,6 +569,25 @@ web.contentencoding    = ${web.contentencoding}
     </target>
     
     <!-- =================================================================== -->
+    <!-- Build ocsp ejb part                                                    -->
+    <!-- =================================================================== -->
+    <target name="ocsp-ejb.jar" depends="ocsp-compile" description="Creates master ocsp-ejb.jar">
+    <!-- create empty direktory for HW tokens if not existing -->
+        <jar jarfile="${dist.dir}/ocsp-ejb.jar">
+            <manifest>
+                <!-- todo: autogenerate this from a fileset -->
+                <attribute name="Class-Path" value="${jar.extclasspath}" />
+            </manifest>
+            <fileset dir="${ocsp-src.dd}">
+            	<exclude name="WEB-INF/**"/>
+            	<exclude name="status/**"/>
+            </fileset>
+            <fileset dir="${ocsp-build}"/>
+            <fileset dir="${src}/log"/>
+        </jar>
+    </target>
+    
+    <!-- =================================================================== -->
     <!-- Build CA-ear                                                        -->
     <!-- =================================================================== -->
     <target name="ca.ear" depends="apply.war, status.war, webdist.war, adminweb.war, publicwebroot.war, ejbca-ejb.jar">
@@ -461,6 +595,27 @@ web.contentencoding    = ${web.contentencoding}
             <fileset dir="${eardd.src}">
                 <exclude name="META-INF/application.xml" />
             </fileset>
+            <fileset dir=".">
+                <include name="${lib}/bcmail-jdk${java.ver}.jar" />
+                <include name="${lib}/bcprov-jdk${java.ver}.jar" />
+                <include name="${lib}/log4j-1.2.7.jar" />
+                <include name="${lib}/ldap.jar" />
+                <include name="${lib}/commons-lang-2.0.jar" />
+                <include name="${lib}/commons-collections.jar" />
+                <include name="${lib}/commons-fileupload-1.0.jar" />
+            </fileset>
+            <fileset dir="${dist.dir}">
+                <include name="*-ejb.jar" />
+                <include name="*.war" />
+            </fileset>
+	</ear>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Build OCSP-ear                                                        -->
+    <!-- =================================================================== -->
+    <target name="ocsp.ear" depends="ocsp.war, ocsp-ejb.jar">
+        <ear destfile="${ocspear}" appxml="${eardd.src}/META-INF/ocsp.xml"> 
             <fileset dir=".">
                 <include name="${lib}/bcmail-jdk${java.ver}.jar" />
                 <include name="${lib}/bcprov-jdk${java.ver}.jar" />
@@ -584,6 +739,9 @@ web.contentencoding    = ${web.contentencoding}
     <!-- Deploy EJBCA ear to JBoss                                               -->
     <!-- ======================================================================= -->
     <target name="deploy" depends="build">
+        <antcall target="j2ee:deploy" />
+    </target>
+    <target name="ocsp-deploy" depends="ocsp.ear">
         <antcall target="j2ee:deploy" />
     </target>
 
