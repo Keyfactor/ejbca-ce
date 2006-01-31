@@ -73,7 +73,7 @@ import org.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.4 2006-01-31 18:44:24 primelars Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.5 2006-01-31 19:08:34 primelars Exp $
  * @ejb.bean display-name="CertificateStoreSB"
  * name="CertificateStoreSession"
  * view-type="both"
@@ -1885,7 +1885,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
          * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Client#debug(java.lang.String)
          */
         public void debug(String s) {
-            debug(s);
+            LocalCertificateStoreSessionBean.this.debug(s);
         }
     }
 } // CertificateStoreSessionBean

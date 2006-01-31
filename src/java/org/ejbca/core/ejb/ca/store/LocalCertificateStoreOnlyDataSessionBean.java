@@ -16,7 +16,7 @@ import org.ejbca.core.model.log.Admin;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreOnlyDataSessionBean.java,v 1.1 2006-01-31 18:44:24 primelars Exp $
+ * @version $Id: LocalCertificateStoreOnlyDataSessionBean.java,v 1.2 2006-01-31 19:08:34 primelars Exp $
  * @ejb.bean display-name="CertificateStoreOnlyDataSB"
  * name="CertificateStoreOnlyDataSession"
  * view-type="both"
@@ -166,7 +166,7 @@ public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
          * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Client#debug(java.lang.String)
          */
         public void debug(String s) {
-            debug(s);
+            LocalCertificateStoreOnlyDataSessionBean.this.debug(s);
         }
     }
 
