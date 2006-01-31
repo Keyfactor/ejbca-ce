@@ -30,7 +30,7 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 /** Class to execute a file full of sql commands. Useful for running update scripts.
- * @version $Id: SqlExecutor.java,v 1.1 2006-01-17 20:32:19 anatom Exp $
+ * @version $Id: SqlExecutor.java,v 1.2 2006-01-31 19:52:49 anatom Exp $
  */
 public class SqlExecutor {
     static Logger log = Logger.getLogger(SqlExecutor.class);
@@ -55,9 +55,9 @@ public class SqlExecutor {
     public SqlExecutor(Connection connection, boolean continueOnSQLError) {
         log.debug("> SqlExecutor(" + connection + "," + continueOnSQLError+ ")");
         con = connection;
-        try {
-            con.setAutoCommit(false);            
-        } catch (SQLException ignore) {}
+//        try {
+//            con.setAutoCommit(false);            
+//        } catch (SQLException ignore) {}
         this.continueOnSqlError = continueOnSQLError;
         log.debug("< SqlExecutor()");
     }
@@ -169,7 +169,9 @@ public class SqlExecutor {
         return res;
     } // executeCommand
     
-    public void commit() throws SQLException {
+  /* commit and rollback commands not needed when running inside a session bean that handles transactions for us */
+  /*  
+  public void commit() throws SQLException {
         log.debug("> commit");
         if (con != null)
             con.commit();
@@ -188,5 +190,5 @@ public class SqlExecutor {
         }
         log.debug("< rollback");
     }
-    
+    */    
 }

@@ -25,7 +25,7 @@ import org.ejbca.core.ejb.upgrade.IUpgradeSessionRemote;
 /**
  * Implements call to the upgrade function
  *
- * @version $Id: Upgrade.java,v 1.2 2006-01-26 14:17:57 anatom Exp $
+ * @version $Id: Upgrade.java,v 1.3 2006-01-31 19:52:49 anatom Exp $
  */
 public class Upgrade extends BaseCommand {
 
@@ -40,6 +40,8 @@ public class Upgrade extends BaseCommand {
         debug(">upgrade");
         
         boolean ret = false;
+        String database = System.getProperty("ejbcaDB");
+        debug("ejbcaDB="+database);
         
         // Check prerequisited
         if (!appServerRunning()) {
@@ -49,7 +51,8 @@ public class Upgrade extends BaseCommand {
        // Upgrade the database
        try {
           IUpgradeSessionRemote upgradesession = getUpgradeSessionRemote();
-          String[] args = null;
+          String[] args = new String[1];
+          args[0] = database;
           ret = upgradesession.upgrade(administrator, args);
        } catch (Exception e) {
            error("Can't upgrade: ", e);

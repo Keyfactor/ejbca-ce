@@ -14,6 +14,9 @@
 package org.ejbca.core.ejb.upgrade;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -32,13 +35,14 @@ import org.ejbca.core.ejb.log.LogConfigurationDataLocal;
 import org.ejbca.core.ejb.log.LogConfigurationDataLocalHome;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.JDBCUtil;
+import org.ejbca.util.SqlExecutor;
 
 import se.anatom.ejbca.log.OldLogConfigurationDataLocal;
 import se.anatom.ejbca.log.OldLogConfigurationDataLocalHome;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.2 2006-01-26 14:14:31 anatom Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.3 2006-01-31 19:52:49 anatom Exp $
  * @ejb.bean
  *   display-name="UpgradeSB"
  *   name="UpgradeSession"
@@ -155,12 +159,21 @@ public class UpgradeSessionBean extends BaseSessionBean {
      */
     public boolean upgrade(Admin admin, String[] args) {
         debug(">upgrade("+admin.toString()+")");
+        String dbtype = null;
+        if (args.length > 0) {
+            dbtype = args[0];
+            debug("Database type="+dbtype);
+        }
 
         if (!preCheck()) {
         	info("preCheck failed, no upgrade performed.");
             return false;
         }
 
+        if (!migradeDatabase(dbtype)) {
+        	return false;
+        }
+        
         if (!upgradeUserDataVO()) {
             return false;
         }
@@ -177,6 +190,41 @@ public class UpgradeSessionBean extends BaseSessionBean {
         debug("<upgrade()");
         return true;
     }
+
+
+    /** 
+     * @ejb.interface-method
+     */
+	public boolean migradeDatabase(String dbtype) {
+		error("(this is not an error) Starting upgrade from ejbca 3.1.x to ejbca 3.2.x");
+        // Fetch the resource file with SQL to modify the database tables
+        InputStream in = this.getClass().getResourceAsStream("/31_32/31_32-upgrade-"+dbtype+".sql");
+        if (in == null) {
+        	error("Can not read resource for database type '"+dbtype+"', this database probably does not need table definition changes.");
+        	// no error
+        	return true;
+        }
+
+        // Migrate database tables to new columns etc
+        Connection con = null;
+        info("Start migration of database.");
+        try {
+            InputStreamReader inreader = new InputStreamReader(in);
+            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
+            SqlExecutor sqlex = new SqlExecutor(con, false);
+            sqlex.runCommands(inreader);
+        } catch (SQLException e) {
+            error("SQL error during database migration: ", e);
+            return false;
+        } catch (IOException e) {
+            error("IO error during database migration: ", e);
+            return false;
+        } finally {
+            JDBCUtil.close(con);
+        }
+        error("(this is not an error) Finished migrating database.");
+        return true;
+	}
 
     /** 
      * @ejb.interface-method
