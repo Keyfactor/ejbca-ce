@@ -299,18 +299,7 @@ web.contentencoding    = ${web.contentencoding}
         <ejbdoclet force="false" destdir="${ocsp-src.gen}" ejbspec="2.0" excludedtags="@version,@author">
             <fileset dir="${src.java}">
                 <include name="**/CertificateDataBean.java" />
-                <!--include name="**/RSASignSessionBean.java" />
-                <include name="**/LocalCertificateStoreSessionBean.java" />
-                <include name="**/LocalAuthenticationSessionBean.java" />
-                <include name="**/CADataBean.java" />
-                <include name="**/LocalLogSessionBean.java" />
-                <include name="**/CertificateProfileDataBean.java" />
-                <include name="**/CertReqHistoryDataBean.java" />
-                <include name="**/CRLDataBean.java" />
-                <include name="**/LocalAuthorizationSessionBean.java" />
-                <include name="**/LocalPublisherSessionBean.java" />
-                <include name="**/PublisherDataBean.java" />
-                <include name="**/CAAdminSessionBean.java" /-->
+                <include name="**/LocalCertificateStoreOnlyDataSessionBean.java" />
             </fileset>
             <remoteinterface />
             <homeinterface />
@@ -441,18 +430,8 @@ web.contentencoding    = ${web.contentencoding}
         <javac srcdir="${src.java}:${ocsp-src.gen}" destdir="${ocsp-build}" debug="on" includeantruntime="no" encoding="iso8859-1">
             <classpath refid="compile.classpath" />
             <include name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java" />
-            <include name="org/ejbca/core/ejb/ca/store/CertificateDataBean.java" />
-            <!--include name="org/ejbca/core/ejb/ca/store/CertificateStoreSessionSession.java" />
-            <include name="org/ejbca/core/ejb/ca/store/CertificateDataLocal.java" /-->
-            <include name="org/ejbca/core/ejb/ca/store/CertificateDataLocalHome.java" />
-            <!--include name="org/ejbca/core/ejb/ca/sign/RSASignSessionSession.java" />
-            <include name="org/ejbca/core/ejb/ca/store/CertificateStoreSessionSession.java" />
-            <include name="org/ejbca/core/ejb/ca/caadmin/CertificateProfileDataBean.java" />
-            <include name="org/ejbca/core/ejb/ca/publisher/PublisherDataBean.java" />
-            <include name="org/ejbca/core/ejb/ca/publisher/PublisherDataLocalHome.java" />
-            <include name="org/ejbca/core/ejb/ca/store/CertReqHistoryDataBean.java" />
-            <include name="org/ejbca/core/ejb/ca/store/CRLDataBean.java" />
-            <include name="org/ejbca/core/ejb/ca/publisher/PublisherSessionSession.java" /-->
+            <include name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionSession.java" />
+            <include name="org/ejbca/core/ejb/ca/store/ICertificateStoreOnlyDataSessionHome.java" />
         </javac>
     </target>
 
@@ -475,9 +454,6 @@ web.contentencoding    = ${web.contentencoding}
     <target name="status.war" depends="compile">
         <war destfile="${statuswar}" webxml="${src.dd}/status/WEB-INF/web.xml">
             <fileset dir="${status.src}" excludes="WEB-INF/web.xml" />
-            <!--classes dir="${build}">
-                <include name="se/anatom/ejbca/protocol/OCSPServlet*.class" />
-         	</classes-->
         </war>
     </target>
 	
