@@ -52,6 +52,9 @@
 
     <property name="status.src" value="${src}/publicweb/status" />
     <property name="statuswar" value="${dist.dir}/status.war" />
+	
+    <property name="healthcheck.src" value="${src}/publicweb/healthcheck" />
+    <property name="healthcheckwar" value="${dist.dir}/healthcheck.war" />
 
     <property name="ocspwar" value="${dist.dir}/ocsp.war" />
 
@@ -260,6 +263,7 @@ web.contentencoding    = ${web.contentencoding}
             <fileset dir="${src.java}">
                 <include name="**/*Servlet.java" />
                 <exclude name="**/protocol/*Servlet.java" />
+            	<exclude name="**/HealthCheckServlet.java" />
             </fileset>
             <deploymentdescriptor destdir="${src.dd}/WEB-INF"
              servletspec="2.3"
@@ -396,6 +400,8 @@ web.contentencoding    = ${web.contentencoding}
         <copy file="src/java/org/ejbca/core/model/ca/caadmin/ExtendedX509Util.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/caadmin/ExtendedX509Util.java" overwrite="true" failonerror="false"/>
         <copy file="src/java/org/ejbca/core/model/ca/caadmin/ExtendedX509V3CertificateGenerator.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/caadmin/ExtendedX509V3CertificateGenerator.java" overwrite="true" failonerror="false"/>
 		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@ejbca.version@" value="${app.version}"/>	
+		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name-prefix@" value="${datasource.jndi-name-prefix}"/>	
+		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name@" value="${datasource.jndi-name}"/>	
 	</target>
 	<!--
 	  EJBCA need to be run before the app.server (or the webapp) is fully ssl configured with the keystore
@@ -472,6 +478,16 @@ web.contentencoding    = ${web.contentencoding}
             <!--classes dir="${build}">
                 <include name="se/anatom/ejbca/protocol/OCSPServlet*.class" />
          	</classes-->
+        </war>
+    </target>
+	
+    <!-- =================================================================== -->
+    <!-- Build health check part                                                                                                                             -->
+    <!-- =================================================================== -->
+    <target name="healthcheck.war" depends="compile">
+        <war destfile="${healthcheckwar}" webxml="${healthcheck.src}/WEB-INF/web.xml">
+            <fileset dir="${healthcheck.src}" excludes="WEB-INF/web.xml" />
+
         </war>
     </target>
 
@@ -590,7 +606,7 @@ web.contentencoding    = ${web.contentencoding}
     <!-- =================================================================== -->
     <!-- Build CA-ear                                                        -->
     <!-- =================================================================== -->
-    <target name="ca.ear" depends="apply.war, status.war, webdist.war, adminweb.war, publicwebroot.war, ejbca-ejb.jar">
+    <target name="ca.ear" depends="apply.war, status.war, healthcheck.war, webdist.war, adminweb.war, publicwebroot.war, ejbca-ejb.jar">
         <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml"> 
             <fileset dir="${eardd.src}">
                 <exclude name="META-INF/application.xml" />

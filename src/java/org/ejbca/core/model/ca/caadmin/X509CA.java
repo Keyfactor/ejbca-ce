@@ -106,7 +106,7 @@ import org.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.3 2006-01-26 14:17:58 anatom Exp $
+ * @version $Id: X509CA.java,v 1.4 2006-01-31 14:34:50 herrvendil Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -252,7 +252,6 @@ public class X509CA extends CA implements Serializable {
             CMSSignedData s = gen.generate(msg, true, getCAToken().getProvider());
             return s.getEncoded();
         } catch (CATokenOfflineException e) {
-        	this.setStatus(SecConst.CA_OFFLINE);
         	throw new javax.ejb.EJBException(e);        	
         } catch (Exception e) {
             throw new javax.ejb.EJBException(e);
@@ -382,9 +381,7 @@ public class X509CA extends CA implements Serializable {
                 new SubjectPublicKeyInfo(
                     (ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN).getEncoded())).readObject());
              }catch(CATokenOfflineException e){
-                 log.debug("X509CA : Setting STATUS OFFLINE " + this.getName());    
-                 this.setStatus(SecConst.CA_OFFLINE);
-                 log.debug("X509CA : New STATUS  " + this.getStatus());
+                 log.debug("X509CA : CA Token Offline Exception ");                
                  throw new CATokenOfflineException(e.getMessage()); 
             }
             AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
@@ -519,8 +516,7 @@ public class X509CA extends CA implements Serializable {
            cert = certgen.generateX509Certificate(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), 
                                             getCAToken().getProvider());
          }catch(CATokenOfflineException e){
-             log.debug("X509CA : Setting STATUS OFFLINE");
-             this.setStatus(SecConst.CA_OFFLINE);
+             log.debug("X509CA : CA Token STATUS OFFLINE");
              throw e; 
          }
         
@@ -572,7 +568,6 @@ public class X509CA extends CA implements Serializable {
         try{
         	crl = crlgen.generateX509CRL(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CRLSIGN),getCAToken().getProvider());
         }catch(CATokenOfflineException e){
-        	this.setStatus(SecConst.CA_OFFLINE);
         	throw e; 
         }                        
         // Verify before sending back
@@ -635,7 +630,6 @@ public class X509CA extends CA implements Serializable {
               } catch (OCSPException ocspe) {
                   throw new ExtendedCAServiceRequestException(ocspe);                  
               } catch (CATokenOfflineException ctoe) {
-              	this.setStatus(SecConst.CA_OFFLINE);
               	throw new ExtendedCAServiceRequestException(ctoe);
 			}
           } else {
@@ -661,10 +655,8 @@ public class X509CA extends CA implements Serializable {
 			ed = edGen.generate(
 					new CMSProcessableByteArray(baos.toByteArray()), CMSEnvelopedDataGenerator.AES256_CBC,"BC");
 		} catch (CATokenOfflineException ctoe) {
-			this.setStatus(SecConst.CA_OFFLINE);
           	throw ctoe;	 	
 		} catch (Exception e) {
-            setStatus(SecConst.CA_OFFLINE);
             log.error("-encryptKeys: ", e);
             throw new IOException(e.getMessage());        
 		}
@@ -684,7 +676,6 @@ public class X509CA extends CA implements Serializable {
     	  byte[] recdata = recipient.getContent(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT),getCAToken().getProvider());
     	  ois = new ObjectInputStream(new ByteArrayInputStream(recdata));
     	}catch(CATokenOfflineException e){
-    		setStatus(SecConst.CA_OFFLINE);
     		throw e;
     	}
     	    	    	

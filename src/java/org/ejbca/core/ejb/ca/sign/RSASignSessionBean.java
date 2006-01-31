@@ -766,7 +766,6 @@ public class RSASignSessionBean extends BaseSessionBean {
             log.error("Cannot create response message: ", e);
         } catch (CATokenOfflineException ctoe) {
             log.error("CA Token is Offline: ", ctoe);
-            cadata.setStatus(SecConst.CA_OFFLINE);
             getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Signing CA " + cadata.getSubjectDN() + " is offline.", ctoe);
             throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " is offline.");
         }
@@ -832,7 +831,6 @@ public class RSASignSessionBean extends BaseSessionBean {
             log.error("No such algorithm: ", e);
         }  catch (CATokenOfflineException ctoe) {
             log.error("CA Token is Offline: ", ctoe);
-            cadata.setStatus(SecConst.CA_OFFLINE);
             getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Signing CA " + cadata.getSubjectDN() + " is offline.", ctoe);
             throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " is offline.");
         }
@@ -911,7 +909,6 @@ public class RSASignSessionBean extends BaseSessionBean {
             log.error("Cannot create response message: ", e);
         } catch (CATokenOfflineException ctoe) {
             log.error("CA Token is Offline: ", ctoe);
-            cadata.setStatus(SecConst.CA_OFFLINE);
             getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Signing CA " + cadata.getSubjectDN() + " is offline.", ctoe);
             throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " is offline.");
         }
@@ -1017,7 +1014,6 @@ public class RSASignSessionBean extends BaseSessionBean {
             log.error("Cannot create response message: ", e);
         } catch (CATokenOfflineException ctoe) {
             log.error("CA Token is Offline: ", ctoe);
-            cadata.setStatus(SecConst.CA_OFFLINE);
             getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_GETLASTCRL, "Signing CA " + cadata.getSubjectDN() + " is offline.", ctoe);
             throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " is offline.");
         }
@@ -1169,7 +1165,6 @@ public class RSASignSessionBean extends BaseSessionBean {
                 crl = (X509CRL) ca.generateCRL(certs, number);
             } catch (CATokenOfflineException ctoe) {
                 log.error("CA Token is Offline: ", ctoe);
-                cadata.setStatus(SecConst.CA_OFFLINE);
                 getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECRL, "Signing CA " + cadata.getSubjectDN() + " is offline.", ctoe);
                 throw new EJBException("Signing CA " + cadata.getSubjectDN() + " is offline.");
             }
@@ -1344,7 +1339,6 @@ public class RSASignSessionBean extends BaseSessionBean {
         } catch (IllegalKeyException ke) {
             throw ke;
         } catch (CATokenOfflineException ctoe) {
-            ca.setStatus(SecConst.CA_OFFLINE);
             throw new EJBException("Error CA Token is Offline", ctoe);
         } catch (Exception e) {
             log.error(e);

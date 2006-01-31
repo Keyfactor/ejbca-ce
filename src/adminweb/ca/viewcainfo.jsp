@@ -52,8 +52,8 @@ function viewocspcert(){
 
   <h2 align="center"><%= ejbcawebbean.getText("CAINFORMATION") %></h2>
   <!-- <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html")  + "#viewendentity"%>")'>
-    <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
-  </div>
+    <u><%= ejbcawebbean.getText("HELP") %></u> </A> 
+  </div>-->
   <%if(viewcainfohelper.generalerrormessage != null){%>
   <div align="center"><h4 id="alert"><%=ejbcawebbean.getText(viewcainfohelper.generalerrormessage) %></h4></div> 
   <% } 
@@ -76,7 +76,7 @@ function viewocspcert(){
       </tr>    
       <% } %>
      
-     <% if(viewcainfohelper.can_activate && viewcainfohelper.ishardcatoken && viewcainfohelper.status == SecConst.CA_OFFLINE){ %> 
+     <% if(viewcainfohelper.can_activate && viewcainfohelper.ishardcatoken && (viewcainfohelper.status == SecConst.CA_OFFLINE || viewcainfohelper.hardtokenoffline)){ %> 
      <tr id="Row<%=(row++)%2%>">
   	    <td width="<%=columnwidth%>"></td>
 	    <td>

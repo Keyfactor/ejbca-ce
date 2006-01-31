@@ -1,50 +1,7 @@
 <?xml version = '1.0' encoding = 'ISO-8859-1'?>
 <!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" "http://java.sun.com/dtd/web-app_2_3.dtd">
 <web-app>
-    <display-name>CA status information</display-name>
-    <servlet>
-        <servlet-name>OCSPServlet</servlet-name>
-        <display-name>OCSPServlet</display-name>
-        <servlet-class>org.ejbca.ui.web.protocol.OCSPServlet</servlet-class>
-        <init-param>
-            <param-name>SignatureAlgorithm</param-name>
-            <param-value>SHA1WithRSA</param-value>
-            <description>Algorithm used by server to generate signature on OCSP responses</description>
-        </init-param>
-        <init-param>
-            <param-name>enforceRequestSigning</param-name>
-            <param-value>false</param-value>
-            <description>
-                If set to true the servlet will enforce OCSP request signing.
-            </description>
-        </init-param>
-        <init-param>
-            <param-name>useCASigningCert</param-name>
-            <param-value>true</param-value>
-            <description>
-                If set to true the OCSP reponses will be signed directly by the CAs certificate
-                instead of the CAs OCSP responder.
-            </description>
-        </init-param>
-        <init-param>
-            <param-name>includeCertChain</param-name>
-            <param-value>true</param-value>
-            <description>
-                If set to true the certificate chain will be returned with the OCSP response.
-            </description>
-        </init-param>
-        <init-param>
-            <param-name>defaultResponderID</param-name>
-            <param-value>CN=TestCA,O=AnaTom,C=SE</param-value>
-            <description>
-                Specifies the subject of a certificate which is used to
-                identifiy the responder which will generate responses when no
-                real CA can be found from the request. This is used to generate 
-                'unknown' responses when a request is received for a certificate 
-                that is not signed by any CA on this server.
-            </description>
-        </init-param>
-    </servlet>
+    <display-name>CA Health Check Configuration</display-name>
     <servlet>
         <servlet-name>EJBCAHealthCheckServlet</servlet-name>
         <display-name>EJBCAHealthCheckServlet</display-name>
@@ -73,21 +30,29 @@
             <param-name>MinimumFreeMemory</param-name>
             <param-value>0</param-value>
             <description>
-                Parameter to set the number of bytes of memory that must be free before removing 
+                Parameter to set the number of Mega Bytes of memory that must be free before removing 
                 the node out of the cluster.
+            </description>
+        </init-param>
+        <init-param>
+            <param-name>CheckPublishers</param-name>
+            <param-value>true</param-value>
+            <description>
+                Parameter indication if a test connection should be performed to
+                all the publishers. 
             </description>
         </init-param>
         <!-- TextResponse specific init parameters -->
         <init-param>
             <param-name>OKMessage</param-name>
-            <param-value>EJBCAOK</param-value>
+            <param-value>ALLOK</param-value>
             <description>
                 Text string used to say that every thing is ok with this node.
             </description>
         </init-param>
         <init-param>
             <param-name>SendServerError</param-name>
-            <param-value>false</param-value>
+            <param-value>true</param-value>
             <description>
                Parameter saying if a errorcode 500 should be sent in case of error.
             </description>
@@ -103,21 +68,14 @@
         </init-param> -->
     </servlet>
     <servlet-mapping>
-        <servlet-name>OCSPServlet</servlet-name>
-        <url-pattern>/ocsp</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
         <servlet-name>EJBCAHealthCheckServlet</servlet-name>
         <url-pattern>/ejbcahealth</url-pattern>
     </servlet-mapping>
-
-  <ejb-local-ref>
-    <ejb-ref-name>ejb/CertificateStoreSessionLocal</ejb-ref-name>
-    <ejb-ref-type>Session</ejb-ref-type>
-    <local-home>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome</local-home>
-    <local>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal</local>
-    <ejb-link>CertificateStoreSession</ejb-link>
-  </ejb-local-ref>
+  <env-entry>
+    <env-entry-name>DataSource</env-entry-name>
+    <env-entry-value>@datasource.jndi-name-prefix@@datasource.jndi-name@</env-entry-value>
+    <env-entry-type>java.lang.String</env-entry-type>
+  </env-entry>
   <ejb-local-ref>
     <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
     <ejb-ref-type>Session</ejb-ref-type>
@@ -126,11 +84,11 @@
     <ejb-link>CAAdminSession</ejb-link>
   </ejb-local-ref>
   <ejb-local-ref>
-    <ejb-ref-name>ejb/SignSessionLocal</ejb-ref-name>
-    <ejb-ref-type>Session</ejb-ref-type>
-    <local-home>org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome</local-home>
-    <local>org.ejbca.core.ejb.ca.sign.ISignSessionLocal</local>
-    <ejb-link>RSASignSession</ejb-link>
+    <ejb-ref-name>ejb/IPublisherSessionLocal</ejb-ref-name>
+    <ejb-ref-type>PublisherSessionLocal</ejb-ref-type>
+    <local-home>org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome</local-home>
+    <local>org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal</local>
+    <ejb-link>PublisherSession</ejb-link>
   </ejb-local-ref>
     
 </web-app>

@@ -1,5 +1,6 @@
 package org.ejbca.ui.web.pub.cluster;
 
+import java.sql.Connection;
 import java.util.Iterator;
 
 import javax.ejb.EJBException;
@@ -9,13 +10,19 @@ import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.JNDINames;
+import org.ejbca.core.ejb.ServiceLocatorException;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.catoken.CATokenInfo;
+import org.ejbca.core.model.ca.catoken.HardCATokenInfo;
+import org.ejbca.core.model.ca.catoken.IHardCAToken;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.util.JDBCUtil;
 
 
 
@@ -40,21 +47,28 @@ public class EJBCAHealthCheck implements IHealthCheck {
 	private Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 	
 	private int minfreememory = 0;
+	private boolean checkPublishers = false;
 	
 	public void init(ServletConfig config) {
-		minfreememory = Integer.parseInt(config.getInitParameter("MinimumFreeMemory"));
+		minfreememory = Integer.parseInt(config.getInitParameter("MinimumFreeMemory")) * 1024 * 1024;
+		if(config.getInitParameter("CheckPublishers") != null){
+			checkPublishers = config.getInitParameter("CheckPublishers").equalsIgnoreCase("TRUE");
+		}
 	}
 
 	
 	public String checkHealth(HttpServletRequest request) {
-		
+		log.debug("Starting HealthCheck health check requested by : " + request.getRemoteAddr());
 		String errormessage = "";
 		
 		errormessage += checkMemory();				
 		errormessage += checkDB();		
-		errormessage += checkCAs();		
-		errormessage += checkPublishers();
-				
+		errormessage += checkCAs();	
+		
+		if(checkPublishers){
+		  errormessage += checkPublishers();
+		}
+		
 		if(errormessage.equals("")){
 			// everything seems ok.
 			errormessage = null;
@@ -65,7 +79,7 @@ public class EJBCAHealthCheck implements IHealthCheck {
 	
 	private String checkMemory(){
 		String retval = "";
-        if(minfreememory < Runtime.getRuntime().freeMemory()){
+        if(minfreememory >= Runtime.getRuntime().freeMemory()){
           retval = "\nError Virtual Memory is about to run out, currently free memory :" + Runtime.getRuntime().freeMemory();	
         }		
 		
@@ -73,10 +87,15 @@ public class EJBCAHealthCheck implements IHealthCheck {
 	}
 	
 	private String checkDB(){
-
-		
-		
-		return "";
+		String retval = "";
+		try{	
+		  Connection con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
+		  JDBCUtil.close(con);
+		}catch(ServiceLocatorException e){
+			retval = "\nError creating connection to EJBCA Database.";
+			log.error("Error creating connection to EJBCA Database.",e);
+		}
+		return retval;
 	}
 	
 	private String checkCAs(){
@@ -84,10 +103,12 @@ public class EJBCAHealthCheck implements IHealthCheck {
 		Iterator iter = getCAAdminSession().getAvailableCAs(admin).iterator();
 		while(iter.hasNext()){
 			CAInfo cainfo = getCAAdminSession().getCAInfo(admin,((Integer) iter.next()).intValue());
-			cainfo.getStatus();
-		}
-		
-		
+			CATokenInfo tokeninfo = cainfo.getCATokenInfo(); 
+			if(tokeninfo instanceof HardCATokenInfo && ((HardCATokenInfo) tokeninfo).getCATokenStatus() == IHardCAToken.STATUS_OFFLINE){
+				retval +="\n Error CA Token is disconnected " + cainfo.getName();
+				log.error("Error CA Token is disconnected " + cainfo.getName());
+			}
+		}				
 		return retval;
 	}
 	

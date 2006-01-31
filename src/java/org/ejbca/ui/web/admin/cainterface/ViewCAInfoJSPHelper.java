@@ -23,6 +23,7 @@ import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.catoken.HardCATokenInfo;
+import org.ejbca.core.model.ca.catoken.IHardCAToken;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 
 
@@ -30,7 +31,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Contains help methods used to parse a viewcainfo jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: ViewCAInfoJSPHelper.java,v 1.1 2006-01-17 20:28:08 anatom Exp $
+ * @version $Id: ViewCAInfoJSPHelper.java,v 1.2 2006-01-31 14:34:51 herrvendil Exp $
  */
 public class ViewCAInfoJSPHelper implements java.io.Serializable {
 		 
@@ -101,7 +102,9 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
     	      if(request.getParameter(BUTTON_ACTIVATE) != null &&
     	      	 can_activate &&
     	      	 ishardcatoken &&
-				 status == SecConst.CA_OFFLINE){
+				 ((status == SecConst.CA_OFFLINE) ||
+				   (status == SecConst.CA_ACTIVE && 
+				   ((HardCATokenInfo) cainfo.getCAInfo().getCATokenInfo()).getCATokenStatus() == IHardCAToken.STATUS_OFFLINE))){
     	         
     	         String authorizationcode = request.getParameter(PASSWORD_AUTHENTICATIONCODE);
     	         if(authorizationcode != null && !authorizationcode.trim().equals("")){
@@ -140,6 +143,7 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
     	      status = cainfo.getCAInfo().getStatus();
   	       	  if( cainfo.getCAInfo().getCATokenInfo() instanceof HardCATokenInfo ){
 	      		ishardcatoken = true;
+	      		hardtokenoffline = ((HardCATokenInfo) cainfo.getCAInfo().getCATokenInfo()).getCATokenStatus() == IHardCAToken.STATUS_OFFLINE;
 	      	  }
     	      ocspcert = cainfo.getOCSPSignerCertificate();
     	    } catch(AuthorizationDeniedException e){
@@ -169,6 +173,7 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
     public boolean  ishardcatoken = false;
     public CAInfoView cainfo = null;
     public  int status = 0; 
+    public boolean hardtokenoffline = false;
     public  int caid = 0; 
     public  X509Certificate ocspcert = null;
     

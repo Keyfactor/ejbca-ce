@@ -32,6 +32,12 @@ applications for enrollment, distribution and administration.
     </module>
     <module>
         <web>
+            <web-uri>healthcheck.war</web-uri>
+            <context-root>/@ejbca@/publicweb/healthcheck</context-root>
+        </web>
+    </module>
+    <module>
+        <web>
             <web-uri>webdist.war</web-uri>
             <context-root>/@ejbca@/publicweb/webdist</context-root>
         </web>

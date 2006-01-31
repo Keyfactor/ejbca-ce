@@ -95,7 +95,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.2 2006-01-26 14:14:30 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.3 2006-01-31 14:34:51 herrvendil Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -566,10 +566,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
                 cadata.setStatus(SecConst.CA_EXPIRED);
             }
             authorizedToCA(admin,cadata.getCaId().intValue());
-            CATokenInfo catokeninfo = cadata.getCA().getCAToken().getCATokenInfo();
-            if(catokeninfo instanceof HardCATokenInfo && ((HardCATokenInfo) catokeninfo).getCATokenStatus() == IHardCAToken.STATUS_OFFLINE){
-                cadata.setStatus(SecConst.CA_OFFLINE);
-            }
+
             cainfo = cadata.getCA().getCAInfo();
         } catch(javax.ejb.FinderException fe) {             
             // ignore
@@ -598,10 +595,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
             if(cadata.getStatus() == SecConst.CA_ACTIVE && new Date(cadata.getExpireTime()).before(new Date())){
                 cadata.setStatus(SecConst.CA_EXPIRED);
             }
-            CATokenInfo catokeninfo = cadata.getCA().getCAToken().getCATokenInfo();
-            if(catokeninfo instanceof HardCATokenInfo && ((HardCATokenInfo) catokeninfo).getCATokenStatus() == IHardCAToken.STATUS_OFFLINE){
-                cadata.setStatus(SecConst.CA_OFFLINE);
-            }
+
             cainfo = cadata.getCA().getCAInfo();
         } catch(javax.ejb.FinderException fe) {
             // ignore
@@ -721,8 +715,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
                     getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error: cannot create certificate request for internal CA");
                     throw new EJBException(new EjbcaException("Error: cannot create certificate request for internal CA"));
                 }
-            }catch(CATokenOfflineException e) {
-                ca.setStatus(SecConst.CA_OFFLINE);
+            }catch(CATokenOfflineException e) {                
                 getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error when creating certificate request",e);
                 throw e;
             }
@@ -812,7 +805,6 @@ public class CAAdminSessionBean extends BaseSessionBean {
     							ocspcertificate.add(((OCSPCAServiceInfo) ca.getExtendedCAServiceInfo(OCSPCAService.TYPE)).getOCSPSignerCertificatePath().get(0));
     							getSignSession().publishCACertificate(admin, ocspcertificate, ca.getCRLPublishers(), CertificateDataBean.CERTTYPE_ENDENTITY);
     						}catch(CATokenOfflineException e){
-    							ca.setStatus(SecConst.CA_OFFLINE);
     							getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"Couldn't Initialize ExternalCAService.",e);
     							throw e;
     						}catch(Exception fe){
@@ -832,7 +824,6 @@ public class CAAdminSessionBean extends BaseSessionBean {
     			}
 
     		}catch(CATokenOfflineException e){
-    			ca.setStatus(SecConst.CA_OFFLINE);
     			getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error: can't recieve certificate responce for internal CA", e);
     			throw e;
     		}
@@ -922,7 +913,6 @@ public class CAAdminSessionBean extends BaseSessionBean {
     			    getSignSession().publishCACertificate(admin, ca.getCertificateChain(), ca.getCRLPublishers(), CertificateDataBean.CERTTYPE_SUBCA);
 
     			}catch(CATokenOfflineException e){
-    				signca.setStatus(SecConst.CA_OFFLINE);
     				getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Couldn't Process  CA.",e);
     				throw e;
     			}
@@ -967,6 +957,11 @@ public class CAAdminSessionBean extends BaseSessionBean {
     	try{
     		cadata = this.cadatahome.findByPrimaryKey(new Integer(caid));
     		CA ca = cadata.getCA();
+    		
+    		if(ca.getStatus() == SecConst.CA_OFFLINE){
+    			throw new CATokenOfflineException("CA is set to Offline, please activate before renewing it.");
+    		}
+    		
     		try{
     			// if issuer is insystem CA or selfsigned, then generate new certificate.
     			if(ca.getSignedBy() != CAInfo.SIGNEDBYEXTERNALCA){
@@ -1048,7 +1043,6 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
 
     		}catch(CATokenOfflineException e){
-    			ca.setStatus(SecConst.CA_OFFLINE);
     			getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Couldn't Renew CA.",e);
     			throw e;
     		}
@@ -1320,7 +1314,19 @@ public class CAAdminSessionBean extends BaseSessionBean {
     			throw new CATokenAuthenticationFailedException("Error when trying to activate CA with caid " + caid + ". CA activation not available.");
     		}
     		CADataLocal cadata = cadatahome.findByPrimaryKey(new Integer(caid));
-    		if(cadata.getStatus() == SecConst.CA_OFFLINE){
+    		boolean cATokenDisconnected = false;
+    		try{
+    		  if(cadata.getCA().getCAToken().getCATokenInfo() instanceof HardCATokenInfo){
+    			if(((HardCATokenInfo) cadata.getCA().getCAToken().getCATokenInfo()).getCATokenStatus() == IHardCAToken.STATUS_OFFLINE){
+    				cATokenDisconnected = true;
+    			}
+    		  }
+    		}catch (IllegalKeyStoreException e) {
+               log.error("Error reading CATokenInfo when trying to activate CAToken",e);
+			} catch (UnsupportedEncodingException e) {
+	           log.error("Error reading CATokenInfo when trying to activate CAToken",e);
+			}
+    		if(cadata.getStatus() == SecConst.CA_OFFLINE || cATokenDisconnected){
         		try {
     				cadata.getCA().getCAToken().activate(authorizationcode);
     				cadata.setStatus(SecConst.CA_ACTIVE);

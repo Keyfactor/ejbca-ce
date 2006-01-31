@@ -42,7 +42,7 @@ import org.ejbca.util.CertTools;
  * to the url defined in web.xml.
  *
  * @author Philip Vendil
- * @version $Id: HealthCheckServlet.java,v 1.1 2006-01-30 06:29:12 herrvendil Exp $
+ * @version $Id: HealthCheckServlet.java,v 1.2 2006-01-31 14:34:51 herrvendil Exp $
  */
 public class HealthCheckServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(HealthCheckServlet.class);
@@ -50,6 +50,8 @@ public class HealthCheckServlet extends HttpServlet {
     private IHealthCheck healthcheck = null;
     private IHealthResponse healthresponse = null;
 
+    private String[] authIPs = null; 
+    
     /**
      * Servlet init
      *
@@ -64,6 +66,12 @@ public class HealthCheckServlet extends HttpServlet {
             // Install BouncyCastle provider
             CertTools.installBCProvider();
 
+            String authIPString = config.getInitParameter("AuthorizedIPs");
+            if(authIPString != null){
+            	authIPs = authIPString.split(";");
+            }
+            
+            
             healthcheck = (IHealthCheck) HealthCheckServlet.class.getClassLoader().loadClass(config.getInitParameter("HealthCheckClassPath")).newInstance();
             healthcheck.init(config);
             
@@ -110,7 +118,25 @@ public class HealthCheckServlet extends HttpServlet {
     }
     
     private void check(HttpServletRequest request, HttpServletResponse response){
-      healthresponse.respond(healthcheck.checkHealth(request),response);	
+    	
+      boolean authorizedIP = false;
+      String remoteIP = request.getRemoteAddr();
+      if(authIPs != null){
+    	  for(int i=0; i < authIPs.length ; i++){
+    		  if(remoteIP.equals(authIPs[i])){
+    			  authorizedIP = true;
+    		  }
+    	  }
+      }else{
+    	  authorizedIP = true;
+      }
+      
+      if(authorizedIP){    	
+        healthresponse.respond(healthcheck.checkHealth(request),response);
+      }else{
+    	  healthresponse.respond("ERROR : Healthcheck request recieved from an non authorized IP.",response);
+    	  log.error("ERROR : Healthcheck request recieved from an non authorized IP.");
+      }
     }
 
 }
