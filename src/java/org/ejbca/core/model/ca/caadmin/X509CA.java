@@ -20,11 +20,15 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SignatureException;
 import java.security.cert.CRL;
+import java.security.cert.CRLException;
 import java.security.cert.CertStore;
 import java.security.cert.Certificate;
 import java.security.cert.CollectionCertStoreParameters;
@@ -106,7 +110,7 @@ import org.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.4 2006-01-31 14:34:50 herrvendil Exp $
+ * @version $Id: X509CA.java,v 1.5 2006-01-31 15:08:17 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -128,9 +132,6 @@ public class X509CA extends CA implements Serializable {
     protected static final String DEFAULTCRLDISTPOINT            = "defaultcrldistpoint";
     protected static final String DEFAULTOCSPSERVICELOCATOR      = "defaultocspservicelocator";
 
-    /** OID used for creating MS Templates */
-    protected static final String OID_MSTEMPLATE = "1.3.6.1.4.1.311.20.2";
-      
     // Public Methods
     /** Creates a new instance of CA, this constuctor should be used when a new CA is created */
     public X509CA(X509CAInfo cainfo) {
@@ -381,8 +382,8 @@ public class X509CA extends CA implements Serializable {
                 new SubjectPublicKeyInfo(
                     (ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN).getEncoded())).readObject());
              }catch(CATokenOfflineException e){
-                 log.debug("X509CA : CA Token Offline Exception ");                
-                 throw new CATokenOfflineException(e.getMessage()); 
+                 log.debug("X509CA: CA Token Offline Exception: ", e);                
+                 throw e; 
             }
             AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
             certgen.addExtension(
@@ -446,7 +447,7 @@ public class X509CA extends CA implements Serializable {
          // Microsoft Template
          if (certProfile.getUseMicrosoftTemplate() == true) {
              String mstemplate = certProfile.getMicrosoftTemplate();             
-             DERObjectIdentifier oid = new DERObjectIdentifier(OID_MSTEMPLATE);                           
+             DERObjectIdentifier oid = new DERObjectIdentifier(CertTools.OID_MSTEMPLATE);                           
              certgen.addExtension(oid, false, new DERIA5String(mstemplate));             
          }
          
@@ -516,7 +517,7 @@ public class X509CA extends CA implements Serializable {
            cert = certgen.generateX509Certificate(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), 
                                             getCAToken().getProvider());
          }catch(CATokenOfflineException e){
-             log.debug("X509CA : CA Token STATUS OFFLINE");
+             log.debug("X509CA : CA Token STATUS OFFLINE: ", e);
              throw e; 
          }
         
@@ -528,7 +529,8 @@ public class X509CA extends CA implements Serializable {
     }
 
     
-    public CRL generateCRL(Vector certs, int crlnumber) throws Exception {
+    public CRL generateCRL(Vector certs, int crlnumber) 
+    throws CATokenOfflineException, IllegalKeyStoreException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
         final String sigAlg= getCAToken().getCATokenInfo().getSignatureAlgorithm();
 
         Date thisUpdate = new Date();
@@ -565,11 +567,7 @@ public class X509CA extends CA implements Serializable {
         }
         
         X509CRL crl;
-        try{
-        	crl = crlgen.generateX509CRL(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CRLSIGN),getCAToken().getProvider());
-        }catch(CATokenOfflineException e){
-        	throw e; 
-        }                        
+        crl = crlgen.generateX509CRL(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CRLSIGN),getCAToken().getProvider());
         // Verify before sending back
         crl.verify(getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CRLSIGN));
 
@@ -654,8 +652,6 @@ public class X509CA extends CA implements Serializable {
 			edGen.addKeyTransRecipient( this.getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_KEYENCRYPT), this.keyId);
 			ed = edGen.generate(
 					new CMSProcessableByteArray(baos.toByteArray()), CMSEnvelopedDataGenerator.AES256_CBC,"BC");
-		} catch (CATokenOfflineException ctoe) {
-          	throw ctoe;	 	
 		} catch (Exception e) {
             log.error("-encryptKeys: ", e);
             throw new IOException(e.getMessage());        
@@ -665,19 +661,15 @@ public class X509CA extends CA implements Serializable {
 		return ed.getEncoded(); 
     }
     
-    public KeyPair decryptKeys(byte[] data) throws Exception{
+    public KeyPair decryptKeys(byte[] data) throws Exception {
     	CMSEnvelopedData ed = new CMSEnvelopedData(data);   	    	
     	     
 		RecipientInformationStore  recipients = ed.getRecipientInfos();           	
     	Iterator    it =  recipients.getRecipients().iterator();
     	RecipientInformation   recipient = (RecipientInformation) it.next();
     	ObjectInputStream ois = null;
-    	try{
-    	  byte[] recdata = recipient.getContent(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT),getCAToken().getProvider());
-    	  ois = new ObjectInputStream(new ByteArrayInputStream(recdata));
-    	}catch(CATokenOfflineException e){
-    		throw e;
-    	}
+    	byte[] recdata = recipient.getContent(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT),getCAToken().getProvider());
+    	ois = new ObjectInputStream(new ByteArrayInputStream(recdata));
     	    	    	
     	return (KeyPair) ois.readObject();  
     }
