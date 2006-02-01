@@ -17,13 +17,14 @@ import java.io.Serializable;
 import java.util.Date;
 
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.util.StringTools;
 
 
 /**
  * Holds admin data collected from UserData in the database.
  *
- * @version $Id: UserDataVO.java,v 1.1 2006-01-26 14:17:58 anatom Exp $
+ * @version $Id: UserDataVO.java,v 1.2 2006-02-01 09:14:04 herrvendil Exp $
  */
 public class UserDataVO implements Serializable {
 
@@ -70,11 +71,8 @@ public class UserDataVO implements Serializable {
      * @param tokentype DOCUMENT ME!
      * @param hardtokenissuerid DOCUMENT ME!
      */
-    public UserDataVO(String user, String dn, int caid, 
-            String subjectaltname, String email, int status, 
-            int type, int endentityprofileid, int certificateprofileid,
-            Date timecreated, Date timemodified, int tokentype, 
-            int hardtokenissuerid, ExtendedInformation extendedinfo) {
+    public UserDataVO(String user, String dn, int caid, String subjectaltname, String email, int status, int type, int endentityprofileid, int certificateprofileid,
+                         Date timecreated, Date timemodified, int tokentype, int hardtokenissuerid, ExtendedInformation extendedinfo) {
         this.username=StringTools.strip(user);
         this.password=null;
         this.subjectDN=dn;
