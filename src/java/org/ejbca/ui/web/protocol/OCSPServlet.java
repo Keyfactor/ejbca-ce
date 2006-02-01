@@ -87,7 +87,7 @@ import org.ejbca.core.model.log.Admin;
  *  local="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
  *
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson
- * @version  $Id: OCSPServlet.java,v 1.3 2006-01-30 07:57:53 primelars Exp $
+ * @version  $Id: OCSPServlet.java,v 1.4 2006-02-01 22:34:54 primelars Exp $
  */
 public class OCSPServlet extends OCSPServletBase {
 
@@ -121,5 +121,9 @@ public class OCSPServlet extends OCSPServletBase {
 
     RevokedCertInfo isRevoked(Admin adm, String name, BigInteger serialNumber) {
         return m_certStore.isRevoked(adm, name, serialNumber);
+    }
+
+    void loadPrivateKeys(Admin adm) {
+        // not used by this servlet
     }
 } // OCSPServlet

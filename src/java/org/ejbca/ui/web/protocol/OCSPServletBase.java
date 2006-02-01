@@ -71,7 +71,7 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
 /*
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson
- * @version  $Id: OCSPServletBase.java,v 1.1 2006-01-30 07:57:53 primelars Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.2 2006-02-01 22:34:54 primelars Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
@@ -81,7 +81,7 @@ abstract class OCSPServletBase extends HttpServlet {
 
     private String m_sigAlg;
     private boolean m_reqMustBeSigned;
-    private Collection m_cacerts = null;
+    Collection m_cacerts = null;
     /** Cache time counter */
     private long m_certValidTo = 0;
     /** Cached list of cacerts is valid 5 minutes */
@@ -101,20 +101,16 @@ abstract class OCSPServletBase extends HttpServlet {
 
     /** Loads cacertificates but holds a cache so it's reloaded only every five minutes is needed.
      */
-    protected synchronized void loadCertificates()
-            throws IOException {
+    protected synchronized void loadCertificates() throws IOException, ServletException {
         // Kolla om vi har en cachad collection och om den inte ?r f?r gammal
         if (m_cacerts != null && m_certValidTo > new Date().getTime()) {
             return;
         }
-        try {
-            m_cacerts = findCertificatesByType(m_adm, CertificateDataBean.CERTTYPE_SUBCA + CertificateDataBean.CERTTYPE_ROOTCA, null);
-            m_certValidTo = new Date().getTime() + VALID_TIME;
-        } catch (Exception e) {
-            m_log.error("Unable to load CA certificates from CA store.", e);
-            throw new IOException(e.toString());
-        }
+        m_cacerts = findCertificatesByType(m_adm, CertificateDataBean.CERTTYPE_SUBCA + CertificateDataBean.CERTTYPE_ROOTCA, null);
+        loadPrivateKeys(m_adm);
+        m_certValidTo = new Date().getTime() + VALID_TIME;
     }
+    abstract void loadPrivateKeys(Admin adm) throws ServletException, IOException;
 
     abstract Collection findCertificatesByType(Admin adm, int i, String issuerDN);
 
@@ -225,16 +221,17 @@ abstract class OCSPServletBase extends HttpServlet {
         }
         return res;
     }
+    int getCaid( X509Certificate cacert ) {
+        return CertTools.stringToBCDNString(cacert.getSubjectDN().toString()).hashCode();
+    }
 
     protected BasicOCSPResp signOCSPResponse(BasicOCSPRespGenerator basicRes, X509Certificate cacert)
             throws CADoesntExistsException, ExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException {
         // Find the OCSP signing key and cert for the issuer
-        String issuerdn = CertTools.stringToBCDNString(cacert.getSubjectDN().toString());
-        int caid = issuerdn.hashCode();
         BasicOCSPResp retval = null;
         {
             // Call extended CA services to get our OCSP stuff
-            OCSPCAServiceResponse caserviceresp = extendedService(m_adm, caid, new OCSPCAServiceRequest(basicRes, m_sigAlg, m_useCASigningCert, m_includeChain));
+            OCSPCAServiceResponse caserviceresp = extendedService(m_adm, getCaid(cacert), new OCSPCAServiceRequest(basicRes, m_sigAlg, m_useCASigningCert, m_includeChain));
             // Now we can use the returned OCSPServiceResponse to get private key and cetificate chain to sign the ocsp response
             Collection coll = caserviceresp.getOCSPSigningCertificateChain();
             m_log.debug("Cert chain for OCSP signing is of size " + coll.size());
