@@ -28,7 +28,7 @@
         <!-- EJBCAHealthCheck specific init parameters -->
         <init-param>
             <param-name>MinimumFreeMemory</param-name>
-            <param-value>0</param-value>
+            <param-value>1</param-value>
             <description>
                 Parameter to set the number of Mega Bytes of memory that must be free before removing 
                 the node out of the cluster.
@@ -59,7 +59,7 @@
         </init-param>
        <!-- 
         <init-param>
-            <param-name>customErrorMessage</param-name>
+            <param-name>CustomErrorMessage</param-name>
             <param-value>EJBCANOTOK</param-value>
             <description>
                 Uncomment this parameter if you want a static error message instead of 
