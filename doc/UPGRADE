@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.13 2006-01-26 14:13:51 anatom Exp $
+$Id: UPGRADE,v 1.14 2006-02-01 09:30:33 anatom Exp $
 
 UPGRADE
 =======
@@ -30,6 +30,7 @@ If the above three conditions are met, issue the following three commands to you
 delete from LogConfigurationData;
 delete from LogEntryData;
 delete from CertReqHistoryData;
+alter table UserData modify extendedInformationData LONGTEXT; (if using MySQL, see src/upgrade/31_32 for commands for your specific database)
 -----
 
 From EJBCA 3.1.x to EJBCA 3.1.x

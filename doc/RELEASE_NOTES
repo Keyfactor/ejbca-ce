@@ -3,7 +3,7 @@ EJBCA 3.2.0
 This is a release with new enterprise features and an internal restucturing of the code base.
 Read the changelog for details.
 
-There are minor database upgrades in this version (from 3.1.x). 
+There are database upgrades in this version (from 3.1.x). 
 See doc/UPGRADE for instruction how to upgrade your database.
 You MUST do that!
 
