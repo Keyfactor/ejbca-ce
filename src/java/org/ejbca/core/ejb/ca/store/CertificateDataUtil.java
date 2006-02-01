@@ -31,7 +31,7 @@ import org.ejbca.util.StringTools;
  *
  */
 public class CertificateDataUtil {
-    public interface Client {
+    public interface Adapter {
         void debug( String s );
         Logger getLogger();
         void log(Admin admin, int caid, int module, Date time, String username,
@@ -39,18 +39,18 @@ public class CertificateDataUtil {
     }
     public static Certificate findCertificateByFingerprint(Admin admin, String fingerprint,
                                                            CertificateDataLocalHome certHome,
-                                                           Client client) {
-        client.debug(">findCertificateByFingerprint()");
+                                                           Adapter adapter) {
+        adapter.debug(">findCertificateByFingerprint()");
         Certificate ret = null;
 
         try {
             CertificateDataLocal res = certHome.findByPrimaryKey(new CertificateDataPK(fingerprint));
             ret = res.getCertificate();
-            client.debug("<findCertificateByFingerprint()");
+            adapter.debug("<findCertificateByFingerprint()");
         } catch (FinderException fe) {
             // Return null;
         } catch (Exception e) {
-            client.getLogger().error("Error finding certificate with fp: " + fingerprint);
+            adapter.getLogger().error("Error finding certificate with fp: " + fingerprint);
             throw new EJBException(e);
         }
         return ret;
@@ -58,8 +58,8 @@ public class CertificateDataUtil {
 
     public static Collection findCertificatesByType(Admin admin, int type, String issuerDN,
                                                     CertificateDataLocalHome certHome,
-                                                    Client client) {
-        client.debug(">findCertificatesByType()");
+                                                    Adapter adapter) {
+        adapter.debug(">findCertificatesByType()");
         if (null == admin
                 || type <= 0
                 || type > CertificateDataBean.CERTTYPE_SUBCA + CertificateDataBean.CERTTYPE_ENDENTITY + CertificateDataBean.CERTTYPE_ROOTCA) {
@@ -95,15 +95,15 @@ public class CertificateDataUtil {
             if (null != issuerDN && issuerDN.length() > 0) {
                 String dn = CertTools.stringToBCDNString(issuerDN);
                 dn = StringTools.strip(dn);
-                if (client.getLogger().isDebugEnabled()) {
-                    client.debug("findCertificatesByType() : Looking for cert with (transformed)DN: " + dn);
+                if (adapter.getLogger().isDebugEnabled()) {
+                    adapter.debug("findCertificatesByType() : Looking for cert with (transformed)DN: " + dn);
                 }
                 stmt.append(" AND issuerDN = '");
                 stmt.append(dn);
                 stmt.append('\'');
             }
-            if (client.getLogger().isDebugEnabled()) {
-                client.debug("findCertificatesByType() : executing SQL statement\n"
+            if (adapter.getLogger().isDebugEnabled()) {
+                adapter.debug("findCertificatesByType() : executing SQL statement\n"
                         + stmt.toString());
             }
             con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
@@ -113,13 +113,13 @@ public class CertificateDataUtil {
             vect = new ArrayList();
             while (result.next()) {
                 Certificate cert = findCertificateByFingerprint(admin, result.getString(1),
-                                                                certHome, client);
+                                                                certHome, adapter);
                 if (cert != null) {
                     vect.add(cert);
                 }
             }
 
-            client.debug("<findCertificatesByType()");
+            adapter.debug("<findCertificatesByType()");
             return vect;
         } catch (Exception e) {
             throw new EJBException(e);
@@ -129,9 +129,9 @@ public class CertificateDataUtil {
     } // findCertificatesByType
 
     static public RevokedCertInfo isRevoked(Admin admin, String issuerDN, BigInteger serno,
-                                            CertificateDataLocalHome certHome, Client client) {
-        if (client.getLogger().isDebugEnabled()) {
-            client.debug(">isRevoked(), dn:" + issuerDN + ", serno=" + serno);
+                                            CertificateDataLocalHome certHome, Adapter adapter) {
+        if (adapter.getLogger().isDebugEnabled()) {
+            adapter.debug(">isRevoked(), dn:" + issuerDN + ", serno=" + serno);
         }
         // First make a DN in our well-known format
         String dn = CertTools.stringToBCDNString(issuerDN);
@@ -140,10 +140,10 @@ public class CertificateDataUtil {
             Collection coll = certHome.findByIssuerDNSerialNumber(dn, serno.toString());
             if (coll != null) {
                 if (coll.size() > 1)
-                    client.log(admin, issuerDN.hashCode(), LogEntry.MODULE_CA, new java.util.Date(),
-                               null, null, LogEntry.EVENT_ERROR_DATABASE,
-                               "Error in database, more than one certificate has the same Issuer : " +
-                               issuerDN + " and serialnumber " + serno.toString(16) + ".");
+                    adapter.log(admin, issuerDN.hashCode(), LogEntry.MODULE_CA, new java.util.Date(),
+                                null, null, LogEntry.EVENT_ERROR_DATABASE,
+                                "Error in database, more than one certificate has the same Issuer : " +
+                                issuerDN + " and serialnumber " + serno.toString(16) + ".");
                 Iterator iter = coll.iterator();
                 if (iter.hasNext()) {
                     RevokedCertInfo revinfo = null;
@@ -153,7 +153,7 @@ public class CertificateDataUtil {
                     if (data.getStatus() != CertificateDataBean.CERT_REVOKED) {
                         revinfo.setReason(RevokedCertInfo.NOT_REVOKED);
                     }
-                    client.debug("<isRevoked() returned " + ((data.getStatus() == CertificateDataBean.CERT_REVOKED) ? "yes" : "no"));
+                    adapter.debug("<isRevoked() returned " + ((data.getStatus() == CertificateDataBean.CERT_REVOKED) ? "yes" : "no"));
                     return revinfo;
                 }
             }

@@ -73,7 +73,7 @@ import org.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.5 2006-01-31 19:08:34 primelars Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.6 2006-02-01 11:01:06 primelars Exp $
  * @ejb.bean display-name="CertificateStoreSB"
  * name="CertificateStoreSession"
  * view-type="both"
@@ -194,11 +194,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      */
     private IPublisherSessionLocal publishersession = null;
 
-    final private CertificateDataUtil.Client client;
+    final private CertificateDataUtil.Adapter adapter;
     
     public LocalCertificateStoreSessionBean() {
         super();
-        client = new MyClient();
+        adapter = new MyAdapter();
     }
     
     /**
@@ -771,7 +771,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public Certificate findCertificateByFingerprint(Admin admin, String fingerprint) {
-        return CertificateDataUtil.findCertificateByFingerprint(admin, fingerprint, certHome, client);
+        return CertificateDataUtil.findCertificateByFingerprint(admin, fingerprint, certHome, adapter);
     } // findCertificateByFingerprint
 
     /**
@@ -843,7 +843,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public Collection findCertificatesByType(Admin admin, int type, String issuerDN) {
-        return CertificateDataUtil.findCertificatesByType(admin, type, issuerDN, certHome, client);
+        return CertificateDataUtil.findCertificatesByType(admin, type, issuerDN, certHome, adapter);
     } // findCertificatesByType
 
     /**
@@ -1138,7 +1138,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public RevokedCertInfo isRevoked(Admin admin, String issuerDN, BigInteger serno) {
-        return CertificateDataUtil.isRevoked(admin, issuerDN, serno, certHome, client);
+        return CertificateDataUtil.isRevoked(admin, issuerDN, serno, certHome, adapter);
     } //isRevoked
 
     /**
@@ -1866,23 +1866,23 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         return foundfree;
     } // isFreeCertificateProfileId
 
-    private class MyClient implements CertificateDataUtil.Client {
+    private class MyAdapter implements CertificateDataUtil.Adapter {
         /* (non-Javadoc)
-         * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Client#getLogger()
+         * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#getLogger()
          */
         public Logger getLogger() {
             return log;
         }
         /* (non-Javadoc)
-         * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Client#log(org.ejbca.core.model.log.Admin, int, int, java.util.Date, java.lang.String, java.security.cert.X509Certificate, int, java.lang.String)
+         * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#log(org.ejbca.core.model.log.Admin, int, int, java.util.Date, java.lang.String, java.security.cert.X509Certificate, int, java.lang.String)
          */
         public void log(Admin admin, int caid, int module, Date time, String username,
                         X509Certificate certificate, int event, String comment) {
-            getLogSession().log(admin, module, LogEntry.MODULE_CA, new java.util.Date(),
-                                null, null, LogEntry.EVENT_ERROR_DATABASE, comment);
+            getLogSession().log(admin, caid, module, new java.util.Date(),
+                                username, certificate, event, comment);
         }
         /* (non-Javadoc)
-         * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Client#debug(java.lang.String)
+         * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#debug(java.lang.String)
          */
         public void debug(String s) {
             LocalCertificateStoreSessionBean.this.debug(s);
