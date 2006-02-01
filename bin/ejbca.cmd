@@ -8,14 +8,13 @@ if "%JAVA_HOME%" == "" (
     
 rem Which command are we running?
 set class_name=""
-if "%1" == "batch" set class_name=se.anatom.ejbca.batch.BatchMakeP12
-if "%1" == "ca" set class_name=se.anatom.ejbca.admin.ca
-if "%1" == "jobrunner" set class_name=se.anatom.ejbca.util.JobRunner
-if "%1" == "ra" set class_name=se.anatom.ejbca.admin.ra
-if "%1" == "setup" set class_name=se.anatom.ejbca.admin.setup
-if "%1" == "template" set class_name=se.anatom.ejbca.admin.SVGTemplatePrinter
+if "%1" == "batch" set class_name=org.ejbca.ui.cli.batch.BatchMakeP12
+if "%1" == "ca" set class_name=org.ejbca.ui.cli.ca
+if "%1" == "ra" set class_name=org.ejbca.ui.cli.ra
+if "%1" == "setup" set class_name=org.ejbca.ui.cli.setup
+if "%1" == "template" set class_name=org.ejbca.ui.cli.SVGTemplatePrinter
 if %class_name% == "" (
-    echo "Usage: %0 [batch|ca|ra|setup|template|jobrunner] options"
+    echo "Usage: %0 [batch|ca|ra|setup|template] options"
 	echo For options information, specify a command directive
     goto end
 )
