@@ -53,7 +53,7 @@ import org.ejbca.util.CertTools;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.1 2006-01-17 20:32:19 anatom Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.2 2006-02-02 10:08:40 herrvendil Exp $
  */
 public class EjbcaWebBean implements java.io.Serializable {
 
@@ -93,6 +93,7 @@ public class EjbcaWebBean implements java.io.Serializable {
     private boolean                        errorpage_initialized=false;
     private Boolean[]                      raauthorized;
     private Admin                          administrator;
+    private String                         requestServerName;
 
     
 
@@ -141,9 +142,12 @@ public class EjbcaWebBean implements java.io.Serializable {
     	certificates = (X509Certificate[]) request.getAttribute( "javax.servlet.request.X509Certificate" );
     	if(certificates == null) throw new AuthenticationFailedException("Client certificate required.");
 
+    	
     	String userdn = "";
     	
     	if(!initialized){
+    		requestServerName = getRequestServerName(request);
+    		
     		administrator = new Admin(certificates[0]) ;
     		
     		commonInit();
@@ -194,7 +198,25 @@ public class EjbcaWebBean implements java.io.Serializable {
     }
 
 
-    public GlobalConfiguration initialize_errorpage(HttpServletRequest request) throws Exception{
+    /**
+     * Method that returns the servername, extracted from the HTTPServlet Request, 
+     * no protocol, port or application path is returned
+     * @return the server name requested
+     */
+    private String getRequestServerName(HttpServletRequest request) {    	
+    	String requestURL = request.getRequestURL().toString();
+    	
+    	// Remove https://
+    	requestURL = requestURL.substring(8);
+    	int firstSlash = requestURL.indexOf(":");
+    	// Remove port and application path
+    	requestURL =requestURL.substring(0,firstSlash);
+		
+		return requestURL;
+	}
+
+
+	public GlobalConfiguration initialize_errorpage(HttpServletRequest request) throws Exception{
 
       if(!errorpage_initialized){
               
@@ -333,7 +355,7 @@ public class EjbcaWebBean implements java.io.Serializable {
       return returnval;
     }
 
-    public String getBaseUrl(){return globalconfiguration.getBaseUrl();}
+    public String getBaseUrl(){return globalconfiguration.getBaseUrl(requestServerName);}
 
     /* Returns the current admins preference */
     public AdminPreference getAdminPreference() throws Exception{

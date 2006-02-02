@@ -17,7 +17,7 @@ package org.ejbca.ui.cli;
 /**
  * Implements the setup command line interface
  *
- * @version $Id: setup.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: setup.java,v 1.2 2006-02-02 10:08:39 herrvendil Exp $
  */
 public class setup {
     /**
@@ -32,7 +32,7 @@ public class setup {
             if (cmd != null) {
                 cmd.execute();
             } else {
-                System.out.println("Usage: SETUP setbaseurl <computername> <applicationpath>");
+                System.out.println("Usage: SETUP setdefaultbaseurl <computername> <applicationpath>");
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());            

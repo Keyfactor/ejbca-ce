@@ -18,7 +18,7 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
 /**
  * This is a  class containing global configuration parameters.
  *
- * @version $Id: GlobalConfiguration.java,v 1.1 2006-01-17 20:31:52 anatom Exp $
+ * @version $Id: GlobalConfiguration.java,v 1.2 2006-02-02 10:08:39 herrvendil Exp $
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
 
@@ -128,6 +128,14 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
       return data.get(AVAILABLELANGUAGES)!=null;
     }
 
+    /** Method used by the Admin GUI. */
+    public   String getBaseUrl(String requestServerName) {    
+    	return (String) data.get(GlobalConfiguration.PRIVATEPROTOCOL) + "://" + 
+    	            requestServerName + ":" +
+    	           (String) data.get(GlobalConfiguration.PRIVATEPORT) + "/" +
+    	           (String) data.get(GlobalConfiguration.APPLICATIONPATH);
+   }
+    
     public   String getBaseUrl() {    
     	return (String) data.get(GlobalConfiguration.PRIVATEPROTOCOL) + "://" + 
     	           (String) data.get(GlobalConfiguration.COMPUTERNAME) + ":" +

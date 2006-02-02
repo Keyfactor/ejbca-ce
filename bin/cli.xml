@@ -89,7 +89,7 @@ java.trustpassword  : ${java.trustpassword}
     </target>
 
 	<target name="ejbca:adminweb">
-		<ejbca:cli name="setup" arg="setbaseurl ${httpsserver.hostname} ${app.name}"/>
+		<ejbca:cli name="setup" arg="setdefaultbaseurl ${httpsserver.hostname} ${app.name}"/>
 		
 		<ejbca:cli name="ra" arg='adduser tomcat ${httpsserver.password} "${httpsserver.dn}" null ${ca.name} null 1 JKS'/>
 		<ejbca:cli name="ra" arg="setclearpwd tomcat ${httpsserver.password}"/>

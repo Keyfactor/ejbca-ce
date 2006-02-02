@@ -22,7 +22,7 @@ import org.ejbca.core.model.log.Admin;
 /**
  * Sets the base url of the web interface
  *
- * @version $Id: SetupSetBaseURLCommand.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: SetupSetBaseURLCommand.java,v 1.2 2006-02-02 10:08:39 herrvendil Exp $
  */
 public class SetupSetBaseURLCommand extends BaseAdminCommand {
     /**
@@ -42,7 +42,7 @@ public class SetupSetBaseURLCommand extends BaseAdminCommand {
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         if (args.length < 3) {
-	       throw new IllegalAdminCommandException("Usage: SETUP setbaseurl <computername> <applicationpath>\n" + 
+	       throw new IllegalAdminCommandException("Usage: SETUP setdefaultbaseurl <computername> <applicationpath>\n" + 
 	       		                                                               "Example: setup setbaseurl localhost ejbca \n\n");	       
 	    }	
         try {            
