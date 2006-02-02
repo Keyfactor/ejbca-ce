@@ -42,7 +42,7 @@ import org.ejbca.util.CertTools;
  * to the url defined in web.xml.
  *
  * @author Philip Vendil
- * @version $Id: HealthCheckServlet.java,v 1.2 2006-01-31 14:34:51 herrvendil Exp $
+ * @version $Id: HealthCheckServlet.java,v 1.3 2006-02-02 10:13:06 herrvendil Exp $
  */
 public class HealthCheckServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(HealthCheckServlet.class);
@@ -134,7 +134,12 @@ public class HealthCheckServlet extends HttpServlet {
       if(authorizedIP){    	
         healthresponse.respond(healthcheck.checkHealth(request),response);
       }else{
-    	  healthresponse.respond("ERROR : Healthcheck request recieved from an non authorized IP.",response);
+    	  try {
+			response.sendError(HttpServletResponse.SC_UNAUTHORIZED,"ERROR : Healthcheck request recieved from an non authorized IP.");
+		} catch (IOException e) {
+			log.error("ERROR : Problems generating unauthorized http response.");
+		}
+    	  
     	  log.error("ERROR : Healthcheck request recieved from an non authorized IP.");
       }
     }
