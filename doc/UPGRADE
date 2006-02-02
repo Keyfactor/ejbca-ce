@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.14 2006-02-01 09:30:33 anatom Exp $
+$Id: UPGRADE,v 1.15 2006-02-02 11:08:57 anatom Exp $
 
 UPGRADE
 =======
@@ -13,11 +13,13 @@ From EJBCA 3.1.x to EJBCA 3.2
 -----------------------------
 Backup your database first! If the upgrade fails, you can always go back to the earlier version.
 
-1. Copy ejbca.properties from the earlier installation. 
-2. Copy the directory 'p12' from the earlier installation. 
-3. Shut down JBoss and do 'ant deploy' (or deploywithjbossservice) with the new version.
-4. Start up JBoss.
-5. Issue the command 'ant upgrade' from EJBCA_HOME. This will make the neccesary database updates.
+1. Copy ejbca.properties from the earlier installation.
+2. Merge changes from ejbca.properties.sample into your ejbca.properties, 
+   specially datasource.jndi-name and datasource.jndi-name-prefix if you changed them from the default values.
+3. Copy the directory 'p12' from the earlier installation. 
+4. Shut down JBoss and do 'ant deploy' (or deploywithjbossservice) with the new version.
+5. Start up JBoss.
+6. Issue the command 'ant upgrade' from EJBCA_HOME. This will make the neccesary database updates.
 
 If you don't want to do step 5 above (doing step 5 is the recommended way though) and instead want a 
 quick-and-dirty upgrade of the database, do this instead of step 5:
@@ -38,8 +40,10 @@ From EJBCA 3.1.x to EJBCA 3.1.x
 See release notes for details between certain versions. 
 Normally upgrades within a major release are plug-in upgrades.
 
-Otherwise simply keep/copy ejbca.properties from the earlier installation, 
-copy the directory 'p12' from the earlier installation and 'ant deploy' 
+Otherwise simply keep/copy ejbca.properties from the earlier installation.
+Merge changes from ejbca.properties.sample into your ejbca.properties, 
+specially datasource.jndi-name and datasource.jndi-name-prefix if you changed them from the default values.
+Copy the directory 'p12' from the earlier installation and 'ant deploy' 
 (or deploywithjbossservice) this new one.
 
 From EJBCA 3.0.x to EJBCA 3.1

@@ -7,8 +7,10 @@ There are database upgrades in this version (from 3.1.x).
 See doc/UPGRADE for instruction how to upgrade your database.
 You MUST do that!
 
-Otherwise simply keep/copy ejbca.properties from the earlier installation, 
-copy the directory 'p12' from the earlier installation and 'ant deploy' 
+Otherwise simply keep/copy ejbca.properties from the earlier installation.
+Merge changes from ejbca.properties.sample into your ejbca.properties, 
+specially datasource.jndi-name and datasource.jndi-name-prefix if you changed them from the default values.
+Copy the directory 'p12' from the earlier installation and 'ant deploy' 
 (or deploywithjbossservice) this new one.
 
 EJBCA V3.1.4
@@ -17,11 +19,13 @@ This is a minor release with some new features and some bugfixes.
 Read the changelog for details.
 
 This is a plugin-upgrade from 3.1.3. Except for the following:
-If you changed 'datasource.jndi-name' from the default value i ejbca.properties,
-edit you ejbca.properties and add 'java:/' in front of your old value.
+Merge changes from ejbca.properties.sample into your ejbca.properties, 
+specially datasource.jndi-name and datasource.jndi-name-prefix if you changed them from the default values.
 
-Otherwise simply keep/copy ejbca.properties from the earlier installation, 
-copy the directory 'p12' from the earlier installation and 'ant deploy' 
+Otherwise simply keep/copy ejbca.properties from the earlier installation.
+Merge changes from ejbca.properties.sample into your ejbca.properties, 
+specially datasource.jndi-name and datasource.jndi-name-prefix if you changed them from the default values.
+Copy the directory 'p12' from the earlier installation and 'ant deploy' 
 (or deploywithjbossservice) this new one.
 
 EJBCA V3.1.3
