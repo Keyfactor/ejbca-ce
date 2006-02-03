@@ -21,6 +21,7 @@ import java.util.Map;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.BasicOCSPRespGenerator;
 import org.bouncycastle.ocsp.OCSPException;
@@ -65,9 +66,11 @@ import org.ejbca.core.model.log.Admin;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silvén PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.5 2006-02-03 10:09:52 anatom Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.6 2006-02-03 11:39:13 primelars Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase {
+
+    static private Logger m_log = Logger.getLogger(OCSPServletStandAlone.class);
 
     private ICertificateStoreOnlyDataSessionLocal mCertStore;
     private String mSoftKeyStoreDirectoryName;
@@ -113,12 +116,13 @@ public class OCSPServletStandAlone extends OCSPServletBase {
         }
     }
     void loadPrivateKeys(Admin adm) throws ServletException, IOException {
+        mSignEntity.clear();
         File dir = new File(mSoftKeyStoreDirectoryName);
-        if ( dir.isDirectory()==false )
-            new ServletException(mSoftKeyStoreDirectoryName + " is not a directory.");
+        if ( dir==null || dir.isDirectory()==false )
+            throw new ServletException(dir.getCanonicalPath() + " is not a directory.");
         File files[] = dir.listFiles();
-        if ( files.length==0 )
-            throw new ServletException("No files in mKey direktory: " + mSoftKeyStoreDirectoryName);
+        if ( files==null || files.length==0 )
+            throw new ServletException("No files in soft key directory: " + dir.getCanonicalPath());
         for ( int i=0; i<files.length; i++ ) {
             final String fileName = files[i].getCanonicalPath();
             final Enumeration eAlias;
@@ -129,7 +133,7 @@ public class OCSPServletStandAlone extends OCSPServletBase {
                     tmpKeyStore = KeyStore.getInstance("JKS");
                     tmpKeyStore.load(new FileInputStream(fileName), mStorePassword);
                 } catch( IOException e ) {
-                    tmpKeyStore = KeyStore.getInstance("PKCS12");
+                    tmpKeyStore = KeyStore.getInstance("PKCS12", "BC");
                     tmpKeyStore.load(new FileInputStream(fileName), mStorePassword);
                 }
                 keyStore = tmpKeyStore;
@@ -161,7 +165,7 @@ public class OCSPServletStandAlone extends OCSPServletBase {
                         X509Certificate current = cert;
                         while( true ) {
                             list.add(current);
-                            if ( (current.getIssuerX500Principal())==current.getSubjectX500Principal() ) {
+                            if ( current.getIssuerX500Principal().equals(current.getSubjectX500Principal()) ) {
                                 chain = (X509Certificate[])list.toArray(new X509Certificate[0]);
                                 break;
                             }
@@ -169,7 +173,9 @@ public class OCSPServletStandAlone extends OCSPServletBase {
                             boolean isNotFound = true;
                             while( isNotFound && j.hasNext() ) {
                                 X509Certificate target = (X509Certificate)j.next();
-                                if ( current.getIssuerX500Principal()==target.getSubjectX500Principal() ) {
+                                m_log.debug( "curent issuer '" + current.getIssuerX500Principal()
+                                             + "'. target subject: '" + target.getSubjectX500Principal() + "'.");
+                                if ( current.getIssuerX500Principal().equals(target.getSubjectX500Principal()) ) {
                                     current = target;
                                     isNotFound = false;
                                 }
@@ -190,7 +196,7 @@ public class OCSPServletStandAlone extends OCSPServletBase {
             }
         }
         if ( mSignEntity.size()==0 )
-            m_log.error("No valid keys in direktory " + mSoftKeyStoreDirectoryName);
+            throw new ServletException("No valid keys in directory " + dir.getCanonicalPath());
     }
 
     private class SigningEntity {
@@ -203,9 +209,12 @@ public class OCSPServletStandAlone extends OCSPServletBase {
         OCSPCAServiceResponse sign( OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException {
             final BasicOCSPRespGenerator ocsprespgen = ((OCSPCAServiceRequest)request).getOCSPrespGenerator();
             final String sigAlg = ((OCSPCAServiceRequest)request).getSigAlg();
+            m_log.debug("signing algorithm: "+sigAlg);
             final X509Certificate[] chain = ((OCSPCAServiceRequest)request).includeChain() ? mChain : null;
             try {
                 final BasicOCSPResp ocspresp = ocsprespgen.generate(sigAlg, mKey, chain, new Date(), "BC" );
+                m_log.debug("The OCSP response is "
+                            + (ocspresp.verify(chain[0].getPublicKey(), "BC") ? "" : "NOT ") + "verifying.");
                 return new OCSPCAServiceResponse(ocspresp, chain == null ? null : Arrays.asList(chain));             
             } catch (OCSPException ocspe) {
                 throw new ExtendedCAServiceRequestException(ocspe);
@@ -225,7 +234,7 @@ public class OCSPServletStandAlone extends OCSPServletBase {
         if ( se!=null )
             return se.sign(request);
         else
-            throw new ExtendedCAServiceNotActiveException("no ocsp signing mKey for cert "+caid);
+            throw new ExtendedCAServiceNotActiveException("no ocsp signing key for caid "+caid);
     }
 
     RevokedCertInfo isRevoked(Admin adm, String name, BigInteger serialNumber) {

@@ -93,11 +93,11 @@ import org.ejbca.util.CertTools;
  *   
  *   
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson
- * @version  $Id: OCSPServletBase.java,v 1.3 2006-02-03 10:09:52 anatom Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.4 2006-02-03 11:39:13 primelars Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
-    static Logger m_log = Logger.getLogger(OCSPServletBase.class);
+    static private Logger m_log = Logger.getLogger(OCSPServletBase.class);
 
     private Admin m_adm;
 
@@ -264,67 +264,60 @@ abstract class OCSPServletBase extends HttpServlet {
 
     abstract OCSPCAServiceResponse extendedService(Admin m_adm2, int caid, OCSPCAServiceRequest request) throws CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException;
 
-    public void init(ServletConfig config)
-            throws ServletException {
+    public void init(ServletConfig config) throws ServletException {
         super.init(config);
-
-        try {
-            m_adm = new Admin(Admin.TYPE_INTERNALUSER);
-            
-            // Parameters for OCSP signing (private) key
-            m_sigAlg = config.getInitParameter("SignatureAlgorithm");
-            if (StringUtils.isEmpty(m_sigAlg)) {
-                m_log.error("Signature algorithm not defined in initialization parameters.");
-                throw new ServletException("Missing signature algorithm in initialization parameters.");
-            }
-            m_defaultResponderId = config.getInitParameter("defaultResponderID");
-            if (StringUtils.isEmpty(m_defaultResponderId)) {
-                m_log.error("Default responder id not defined in initialization parameters.");
-                throw new ServletException("Missing default responder id in initialization parameters.");
-            }
-            String initparam = config.getInitParameter("enforceRequestSigning");
-            if (m_log.isDebugEnabled()) {
-                m_log.debug("Enforce request signing : '"
+        
+        m_adm = new Admin(Admin.TYPE_INTERNALUSER);
+        
+        // Parameters for OCSP signing (private) key
+        m_sigAlg = config.getInitParameter("SignatureAlgorithm");
+        if (StringUtils.isEmpty(m_sigAlg)) {
+            m_log.error("Signature algorithm not defined in initialization parameters.");
+            throw new ServletException("Missing signature algorithm in initialization parameters.");
+        }
+        m_defaultResponderId = config.getInitParameter("defaultResponderID");
+        if (StringUtils.isEmpty(m_defaultResponderId)) {
+            m_log.error("Default responder id not defined in initialization parameters.");
+            throw new ServletException("Missing default responder id in initialization parameters.");
+        }
+        String initparam = config.getInitParameter("enforceRequestSigning");
+        if (m_log.isDebugEnabled()) {
+            m_log.debug("Enforce request signing : '"
                         + (StringUtils.isEmpty(initparam) ? "<not set>" : initparam)
                         + "'");
+        }
+        m_reqMustBeSigned = true;
+        if (!StringUtils.isEmpty(initparam)) {
+            if (initparam.equalsIgnoreCase("false")
+                    || initparam.equalsIgnoreCase("no")) {
+                m_reqMustBeSigned = false;
             }
-            m_reqMustBeSigned = true;
-            if (!StringUtils.isEmpty(initparam)) {
-                if (initparam.equalsIgnoreCase("false")
-                        || initparam.equalsIgnoreCase("no")) {
-                    m_reqMustBeSigned = false;
-                }
-            }
-            initparam = config.getInitParameter("useCASigningCert");
-            if (m_log.isDebugEnabled()) {
-                m_log.debug("Use CA signing cert : '"
+        }
+        initparam = config.getInitParameter("useCASigningCert");
+        if (m_log.isDebugEnabled()) {
+            m_log.debug("Use CA signing cert : '"
                         + (StringUtils.isEmpty(initparam) ? "<not set>" : initparam)
                         + "'");
+        }
+        m_useCASigningCert = false;
+        if (!StringUtils.isEmpty(initparam)) {
+            if (initparam.equalsIgnoreCase("true")
+                    || initparam.equalsIgnoreCase("yes")) {
+                m_useCASigningCert = true;
             }
-            m_useCASigningCert = false;
-            if (!StringUtils.isEmpty(initparam)) {
-                if (initparam.equalsIgnoreCase("true")
-                        || initparam.equalsIgnoreCase("yes")) {
-                    m_useCASigningCert = true;
-                }
-            }
-            initparam = config.getInitParameter("includeCertChain");
-            if (m_log.isDebugEnabled()) {
-                m_log.debug("Include certificate chain: '"
+        }
+        initparam = config.getInitParameter("includeCertChain");
+        if (m_log.isDebugEnabled()) {
+            m_log.debug("Include certificate chain: '"
                         + (StringUtils.isEmpty(initparam) ? "<not set>" : initparam)
                         + "'");
+        }
+        m_includeChain = true;
+        if (!StringUtils.isEmpty(initparam)) {
+            if (initparam.equalsIgnoreCase("false")
+                    || initparam.equalsIgnoreCase("no")) {
+                m_includeChain = false;
             }
-            m_includeChain = true;
-            if (!StringUtils.isEmpty(initparam)) {
-                if (initparam.equalsIgnoreCase("false")
-                        || initparam.equalsIgnoreCase("no")) {
-                    m_includeChain = false;
-                }
-            }
-
-        } catch (Exception e) {
-            m_log.error("Unable to initialize OCSPServlet.", e);
-            throw new ServletException(e);
         }
     }
 
@@ -550,9 +543,9 @@ abstract class OCSPServletBase extends HttpServlet {
                 BasicOCSPResp basicresp = signOCSPResponse(basicRes, cacert);
                 ocspresp = res.generate(OCSPRespGenerator.SIG_REQUIRED, basicresp);
             } catch (Exception e) {
-                m_log.error("Unable to handle OCSP request.", e);
                 if (e instanceof ServletException)
                     throw (ServletException) e;
+                m_log.error("Unable to handle OCSP request.", e);
                 // generate the signed response object
                 BasicOCSPResp basicresp = signOCSPResponse(basicRes, cacert);
                 ocspresp = res.generate(OCSPRespGenerator.INTERNAL_ERROR, basicresp);

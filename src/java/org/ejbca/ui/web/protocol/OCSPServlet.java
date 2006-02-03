@@ -19,6 +19,7 @@ import java.util.Collection;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
+import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
@@ -66,9 +67,11 @@ import org.ejbca.core.model.log.Admin;
  *  local="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
  *
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson
- * @version  $Id: OCSPServlet.java,v 1.5 2006-02-03 10:09:52 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.6 2006-02-03 11:39:13 primelars Exp $
  */
 public class OCSPServlet extends OCSPServletBase {
+
+    static private Logger m_log = Logger.getLogger(OCSPServlet.class);
 
     private ICertificateStoreSessionLocal m_certStore;
     private ISignSessionLocal m_signsession = null;
