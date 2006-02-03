@@ -35,7 +35,7 @@ import org.bouncycastle.jce.X509Principal;
 /**
  * Class copied from BC where RSASSA-PSS support is added.
  * 
- * @version $Id: ExtendedPKCS10CertificationRequest.java,v 1.1 2006-01-17 20:28:06 anatom Exp $
+ * @version $Id: ExtendedPKCS10CertificationRequest.java,v 1.2 2006-02-03 10:08:45 anatom Exp $
  */
 public class ExtendedPKCS10CertificationRequest
     extends CertificationRequest
@@ -301,14 +301,11 @@ public class ExtendedPKCS10CertificationRequest
 
         try
         {
-        	System.out.println("First signature test"); 
         	if(sigAlgId.getObjectId().getId().equals(OID_RSASSA_PSS)){        		
         			sig = Signature.getInstance("SHA256withRSAandMGF1",provider);        		
         	}else{
               sig = Signature.getInstance(sigAlgId.getObjectId().getId(), provider);
         	}  
-            
-        	System.out.println("Result " + sig.getAlgorithm()); 
         }
         catch (NoSuchAlgorithmException e)
         {
