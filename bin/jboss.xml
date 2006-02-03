@@ -73,7 +73,6 @@
 			</filterchain>
         </copy>
         
-        <!-- configure the jetty bundle -->	
 	</target>
 
 	<target name="j2ee:deploy" description="Deploy the application" depends="j2ee:configure">
@@ -87,10 +86,23 @@
             </filterchain>
         </copy>
     	<copy todir="${jboss.farm.dir}">
-    		<fileset dir="${dist.dir}" includes="*.ear"/>
+    		<fileset dir="${dist.dir}" includes="ejbca.ear"/>
     	</copy>
 	</target>
 
+	<target name="j2ee:deployocsp" description="Deploy the standalone OCSP reponder" depends="j2ee:configure">
+        <copy todir="${jboss.farm.dir}" overwrite="true">
+            <fileset dir="src/appserver/jboss">
+            	<include name="ejbca-ds.xml"/>
+            </fileset>
+            <filterchain>
+                <expandproperties/>
+            </filterchain>
+        </copy>
+    	<copy todir="${jboss.farm.dir}">
+    		<fileset dir="${dist.dir}" includes="ocsp.ear"/>
+    	</copy>
+	</target>
 
 
 

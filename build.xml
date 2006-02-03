@@ -275,6 +275,7 @@ web.contentencoding    = ${web.contentencoding}
         <webdoclet force="true" destdir="${src.gen}" excludedtags="@version,@author">
             <fileset dir="${src.java}">
                 <include name="**/protocol/OCSPServlet.java" />
+                <include name="**/protocol/OCSPServletBase.java" />
             </fileset>
             <deploymentdescriptor destdir="${src.dd}/status/WEB-INF"
              servletspec="2.3"
@@ -337,11 +338,12 @@ web.contentencoding    = ${web.contentencoding}
         <webdoclet force="true" destdir="${ocsp-src.gen}" excludedtags="@version,@author">
             <fileset dir="${src.java}">
                 <include name="**/protocol/OCSPServletStandAlone.java" />
+                <include name="**/protocol/OCSPServletBase.java" />
             </fileset>
             <deploymentdescriptor destdir="${ocsp-src.dd}/status/WEB-INF"
              servletspec="2.3"
              sessiontimeout="30" 
-             description="OCSP responder" 
+             description="OCSP responder standalone" 
              validatexml="false" />
         </webdoclet>
     </target>
@@ -735,7 +737,7 @@ web.contentencoding    = ${web.contentencoding}
         <antcall target="j2ee:deploy" />
     </target>
     <target name="ocsp-deploy" depends="ocsp.ear">
-        <antcall target="j2ee:deploy" />
+        <antcall target="j2ee:deployocsp" />
     </target>
 
     <!--
