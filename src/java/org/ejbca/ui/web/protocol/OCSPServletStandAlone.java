@@ -45,26 +45,6 @@ import org.ejbca.core.model.log.Admin;
  *
  * @web.servlet-mapping url-pattern = "/ocsp"
  *
- * @web.servlet-init-param description="Algorithm used by server to generate signature on OCSP responses"
- *   name="SignatureAlgorithm"
- *   value="SHA1WithRSA"
- *   
- * @web.servlet-init-param description="If set to true the servlet will enforce OCSP request signing"
- *   name="enforceRequestSigning"
- *   value="false"
- *   
- * @web.servlet-init-param description="If set to true the certificate chain will be returned with the OCSP response"
- *   name="includeCertChain"
- *   value="true"
- *   
- * @web.servlet-init-param description="If set to true the OCSP reponses will be signed directly by the CAs certificate instead of the CAs OCSP responder"
- *   name="useCASigningCert"
- *   value="${ocsp.usecasigningcert}"
- *   
- * @web.servlet-init-param description="Specifies the subject of a certificate which is used to identifiy the responder which will generate responses when no real CA can be found from the request. This is used to generate 'unknown' responses when a request is received for a certificate that is not signed by any CA on this server"
- *   name="defaultResponderID"
- *   value="${ocsp.defaultresponder}"
- *
  * @web.servlet-init-param description="Directory name of the soft keystores. The signing keys will be fetched from all files in this directory. Valid formats of the files are JKS and PKCS12 (p12)."
  *   name="softKeyDirectoryName"
  *   value="./softKeys"
@@ -85,7 +65,7 @@ import org.ejbca.core.model.log.Admin;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silvén PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.4 2006-02-01 22:34:54 primelars Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.5 2006-02-03 10:09:52 anatom Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase {
 

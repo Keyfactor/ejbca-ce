@@ -69,9 +69,31 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
-/*
+
+/**
+ * @web.servlet-init-param description="Algorithm used by server to generate signature on OCSP responses"
+ *   name="SignatureAlgorithm"
+ *   value="SHA1WithRSA"
+ *   
+ * @web.servlet-init-param description="If set to true the servlet will enforce OCSP request signing"
+ *   name="enforceRequestSigning"
+ *   value="false"
+ *   
+ * @web.servlet-init-param description="If set to true the certificate chain will be returned with the OCSP response"
+ *   name="includeCertChain"
+ *   value="true"
+ *   
+ * @web.servlet-init-param description="If set to true the OCSP reponses will be signed directly by the CAs certificate instead of the CAs OCSP responder"
+ *   name="useCASigningCert"
+ *   value="${ocsp.usecasigningcert}"
+ *   
+ * @web.servlet-init-param description="Specifies the subject of a certificate which is used to identifiy the responder which will generate responses when no real CA can be found from the request. This is used to generate 'unknown' responses when a request is received for a certificate that is not signed by any CA on this server"
+ *   name="defaultResponderID"
+ *   value="${ocsp.defaultresponder}"
+ *   
+ *   
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson
- * @version  $Id: OCSPServletBase.java,v 1.2 2006-02-01 22:34:54 primelars Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.3 2006-02-03 10:09:52 anatom Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
