@@ -18,9 +18,20 @@ import java.io.Serializable;
 /**
  * Holds nonsensitive information about a CAToken.
  *
- * @version $Id: CATokenInfo.java,v 1.1 2006-01-17 20:31:51 anatom Exp $
+ * @version $Id: CATokenInfo.java,v 1.2 2006-02-03 12:01:00 anatom Exp $
  */
 public abstract class CATokenInfo implements Serializable {
+
+    /**
+     * Determines if a de-serialized file is compatible with this class.
+     *
+     * Maintainers must change this value if and only if the new version
+     * of this class is not compatible with old versions. See Sun docs
+     * for <a href=http://java.sun.com/products/jdk/1.1/docs/guide
+     * /serialization/spec/version.doc.html> details. </a>
+     *
+     */
+    private static final long serialVersionUID = -8484441028763008079L;
 
     public static final String SIGALG_SHA1_WITH_RSA = "SHA1WithRSA";
     public static final String SIGALG_SHA256_WITH_RSA = "SHA256WithRSA";
