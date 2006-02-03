@@ -3,17 +3,12 @@
 	<classpathentry kind="src" path="src/java"/>
 	<classpathentry kind="src" path="tmp/bin/gensrc"/>
 	<classpathentry kind="src" path="src/test"/>
-	<classpathentry kind="lib" path="lib/ext/junit-3.8.1.jar"/>
 	<classpathentry kind="lib" path="lib/ldap.jar"/>
-	<classpathentry kind="lib" path="lib/ext/servlet-2.3.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.7.jar"/>
-	<classpathentry kind="lib" path="lib/ext/mail.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/bcmail-jdk14.jar"/>
 	<classpathentry kind="lib" path="lib/commons-collections.jar"/>
 	<classpathentry kind="lib" path="lib/commons-fileupload-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang-2.0.jar"/>
-	<classpathentry kind="lib" path="lib/ext/httpunit.jar"/>
 	<classpathentry kind="lib" path="lib/batik-xml.jar"/>
 	<classpathentry kind="lib" path="lib/batik-dom.jar"/>
 	<classpathentry kind="lib" path="lib/batik-svg-dom.jar"/>
@@ -23,7 +18,14 @@
 	<classpathentry kind="lib" path="lib/batik-transcoder.jar"/>
 	<classpathentry kind="lib" path="lib/batik-util.jar"/>
 	<classpathentry kind="lib" path="lib/batik-css.jar"/>
+	<classpathentry kind="lib" path="lib/ext/junit-3.8.1.jar"/>
+	<classpathentry kind="lib" path="lib/ext/servlet-2.3.jar"/>
+	<classpathentry kind="lib" path="lib/ext/mail.jar"/>
+	<classpathentry kind="lib" path="lib/ext/httpunit.jar"/>
+	<classpathentry kind="lib" path="lib/ext/nekohtml.jar"/>
+	<classpathentry kind="lib" path="lib/ext/xerces_2_3_0.jar"/>
 	<classpathentry kind="lib" path="lib/bcprov-jdk14.jar"/>
+	<classpathentry kind="lib" path="lib/bcmail-jdk14.jar"/>
 	<classpathentry kind="var" path="JBOSS_HOME/client/jboss-j2ee.jar"/>
 	<classpathentry kind="var" path="JBOSS_HOME/client/jbossall-client.jar"/>
 	<classpathentry kind="var" path="JBOSS_HOME/lib/jboss-system.jar"/>
