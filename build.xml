@@ -897,7 +897,7 @@ web.contentencoding    = ${web.contentencoding}
             <report format="frames" todir="${test.dir}/reports/html" />
         </junitreport>
     </target>
-    
+
     <target name="test:runweb" depends="test:compile,j2ee:assert-run" description="run JUnit web testcases">
         <delete dir="${test.dir}/web/reports" />
         <mkdir dir="${test.dir}/web/reports/html" />
@@ -914,6 +914,31 @@ web.contentencoding    = ${web.contentencoding}
                     <include name="**/protocol/ProtocolScepHttpTest*" />
                     <include name="**/protocol/ProtocolOcspHttpTest*" />
                     <include name="**/webdist/WebdistHttpTest*" />
+                </fileset>
+            </batchtest>
+        </junit>
+        <junitreport todir="${test.dir}/web/reports">
+            <fileset dir="${test.dir}/web/reports">
+                <include name="TEST-*.xml" />
+            </fileset>
+            <report format="frames" todir="${test.dir}/web/reports/html" />
+        </junitreport>
+    </target>
+
+    <target name="test:runocsp" depends="test:compile,j2ee:assert-run" description="run JUnit web testcases">
+        <delete dir="${test.dir}/web/reports" />
+        <mkdir dir="${test.dir}/web/reports/html" />
+        <junit printsummary="yes" haltonfailure="no">
+			<sysproperty key="testtype" value="WEB"/>
+            <classpath>
+                <path refid="test.compile.classpath" />
+                <path location="${test.dir}" />
+            </classpath>
+            <formatter type="xml" />
+        	<!-- we must use fork=yes or the BC JCE won't be authenticated due to some problem with ant classloading -->
+            <batchtest fork="yes" todir="${test.dir}/web/reports">
+                <fileset dir="${test.dir}">
+                    <include name="**/protocol/ProtocolOcspHttpStandaloneTest*" />
                 </fileset>
             </batchtest>
         </junit>

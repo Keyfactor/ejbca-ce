@@ -93,7 +93,7 @@ import org.ejbca.util.CertTools;
  *   
  *   
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson
- * @version  $Id: OCSPServletBase.java,v 1.4 2006-02-03 11:39:13 primelars Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.5 2006-02-04 21:39:07 primelars Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
@@ -244,7 +244,9 @@ abstract class OCSPServletBase extends HttpServlet {
         return res;
     }
     int getCaid( X509Certificate cacert ) {
-        return CertTools.stringToBCDNString(cacert.getSubjectDN().toString()).hashCode();
+        int result = CertTools.stringToBCDNString(cacert.getSubjectDN().toString()).hashCode();
+        m_log.debug( cacert.getSubjectDN() + " has caid: " + result );
+        return result;
     }
 
     protected BasicOCSPResp signOCSPResponse(BasicOCSPRespGenerator basicRes, X509Certificate cacert)

@@ -75,10 +75,10 @@ import com.meterware.httpunit.WebResponse;
 public class ProtocolOcspHttpTest extends TestCase {
     private static Logger log = Logger.getLogger(ProtocolOcspHttpTest.class);
 
-    private static final String httpReqPath = "http://127.0.0.1:8080/ejbca";
-    private static final String resourceOcsp = "publicweb/status/ocsp";
+    protected final String httpReqPath;
+    protected final String resourceOcsp;
 
-    private static byte[] unknowncacertBytes = Base64.decode(("MIICLDCCAZWgAwIBAgIIbzEhUVZYO3gwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE" +
+    protected static byte[] unknowncacertBytes = Base64.decode(("MIICLDCCAZWgAwIBAgIIbzEhUVZYO3gwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE" +
             "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDcw" +
             "OTEyNDc1OFoXDTA0MDgxNTEyNTc1OFowLzEPMA0GA1UEAxMGVGVzdENBMQ8wDQYD" +
             "VQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMIGdMA0GCSqGSIb3DQEBAQUAA4GLADCB" +
@@ -94,11 +94,11 @@ public class ProtocolOcspHttpTest extends TestCase {
     private static Context ctx;
     private static ISignSessionHome home;
     private static ISignSessionRemote remote;
-    private ICertificateStoreSessionHome storehome;
+    protected ICertificateStoreSessionHome storehome;
     private static IUserAdminSessionRemote usersession;
-    private static int caid = 0;
-    private static Admin admin;
-    private static X509Certificate cacert = null;
+    protected static int caid = 0;
+    protected static Admin admin;
+    protected static X509Certificate cacert = null;
     private static X509Certificate ocspTestCert = null;
     private static X509Certificate unknowncacert = null;
 
@@ -113,9 +113,24 @@ public class ProtocolOcspHttpTest extends TestCase {
 
 
     public ProtocolOcspHttpTest(String name) {
-        super(name);
+        this(name,"http://127.0.0.1:8080/ejbca", "publicweb/status/ocsp");
     }
 
+    protected  ProtocolOcspHttpTest(String name, String reqP, String res) {
+        super(name);
+        httpReqPath = reqP;
+        resourceOcsp = res;
+    }
+
+    protected void setCAID(ICAAdminSessionRemote casession) throws RemoteException {
+        Collection caids = casession.getAvailableCAs(admin);
+        Iterator iter = caids.iterator();
+        if (iter.hasNext()) {
+            caid = ((Integer) iter.next()).intValue();
+        } else {
+            assertTrue("No active CA! Must have at least one active CA to run tests!", false);
+        }
+    }
     protected void setUp() throws Exception {
         log.debug(">setUp()");
 
@@ -131,13 +146,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         Object obj = ctx.lookup("CAAdminSession");
         ICAAdminSessionHome cahome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICAAdminSessionHome.class);
         ICAAdminSessionRemote casession = cahome.create();
-        Collection caids = casession.getAvailableCAs(admin);
-        Iterator iter = caids.iterator();
-        if (iter.hasNext()) {
-            caid = ((Integer) iter.next()).intValue();
-        } else {
-            assertTrue("No active CA! Must have at least one active CA to run tests!", false);
-        }
+        setCAID(casession);
         CAInfo cainfo = casession.getCAInfo(admin, caid);
         Collection certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
@@ -345,7 +354,7 @@ public class ProtocolOcspHttpTest extends TestCase {
     // Private helper methods
     //
     
-    private SingleResp sendOCSPPost(byte[] ocspPackage) throws IOException, OCSPException, NoSuchProviderException {
+    protected SingleResp sendOCSPPost(byte[] ocspPackage) throws IOException, OCSPException, NoSuchProviderException {
         // POST the OCSP request
         URL url = new URL(httpReqPath + '/' + resourceOcsp);
         HttpURLConnection con = (HttpURLConnection)url.openConnection();
