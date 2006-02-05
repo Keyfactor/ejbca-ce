@@ -117,6 +117,8 @@
     <property name="ca.ocspkeystorepass" value="foo123"/>
     <property name="ocsp.defaultresponder" value="CN=AdminCA1,O=${app.name.cap} Sample,C=SE"/>
     <property name="ocsp.usecasigningcert" value="true"/>
+    <property name="ocsp.extensionoid" value=""/>
+    <property name="ocsp.extensionclass" value=""/>
     <property name="datasource.jndi-name" value="EjbcaDS" />
     <property name="datasource.jndi-name-prefix" value="java:/" />
     <property name="database.name" value="hsqldb" />
@@ -159,6 +161,8 @@ ca.keystorepass        = ${ca.keystorepass}
 ca.ocspkeystorepass    = ${ca.ocspkeystorepass}
 ocsp.defaultresponder  = ${ocsp.defaultresponder}
 ocsp.usecasigningcert  = ${ocsp.usecasigningcert}
+ocsp.extensionoid      = ${ocsp.extensionoid}
+ocsp.extensionclass    = ${ocsp.extensionclass}
 datasource.jndi-name   = ${datasource.jndi-name}
 datasource.jndi-name-prefix = ${datasource.jndi-name-prefix}
 database.name          = ${database.name}
