@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.34 2006-01-22 13:59:37 primelars Exp $
+# $Id: ejbca.properties.sample,v 1.35 2006-02-05 17:13:54 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -47,16 +47,6 @@ ca.validity=3650
 # Type your policy id or use '2.5.29.32.0' for 'any policy' (rfc3280) or 'null' for no policy at all.
 ca.policy=null
 
-# Specifies the subject of a certificate which is used to identifiy the 
-# responder which will generate responses when no real CA can be found from the request. 
-# This is used to generate 'unknown' responses when a request is received for a certificate 
-# that is not signed by any CA on this server. Recommended to use same as ca.dn.
-ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
-
-#If set to true the OCSP reponses will be signed directly by the CAs certificate instead 
-# of the CAs OCSP responder. Default true.
-ocsp.usecasigningcert=true
-
 # This password is used internally to protect CA keystores in database (i.e. the CAs private key).
 # foo123 is to keep compatibility with default installations of EJBCA 3.0, please change this if possible
 # If upgrading, you should take this value from src/ca/ca/META-INF/ejb-jar.xml -> keyStorePass. 
@@ -69,6 +59,31 @@ ca.keystorepass=foo123
 # The default value is the same for convenience.
 ca.ocspkeystorepass=foo123
 #ca.ocspkeystorepass=ocsp!secret!
+
+# ------------ OCSP configuration ---------------------
+
+# Specifies the subject of a certificate which is used to identifiy the 
+# responder which will generate responses when no real CA can be found from the request. 
+# This is used to generate 'unknown' responses when a request is received for a certificate 
+# that is not signed by any CA on this server. Recommended to use same as ca.dn.
+ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
+
+# If set to true the OCSP reponses will be signed directly by the CAs certificate instead 
+# of the CAs OCSP responder. Default true.
+ocsp.usecasigningcert=true
+
+# Specifies OCSP extension oids that will result in a call to an extension class, 
+# separate multiple entries with ;"
+# Example value: 2.16.578.1.16.3.2
+# Default: nothing 
+ocsp.extensionoid=
+
+# Specifies classes implementing OCSP extensions matching oids above, 
+# separate multiple entries with ;"
+# Example value: org.ejbca.core.protocol.ocsp.OCSPUnidExtension
+# Default: nothing
+ocsp.extensionclass=
+
 
 # ------------ Web GUI configuration ---------------------
 # When upgrading, the important options are:
