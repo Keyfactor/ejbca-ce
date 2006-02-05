@@ -56,6 +56,37 @@ public class CertificateDataUtil {
         return ret;
     } // findCertificateByFingerprint
 
+    public static Certificate findCertificateByIssuerAndSerno(Admin admin, String issuerDN, BigInteger serno, CertificateDataLocalHome certHome, Adapter adapter) {
+        if (adapter.getLogger().isDebugEnabled()) {
+        	adapter.debug(">findCertificateByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno);
+        }
+        // First make a DN in our well-known format
+        String dn = CertTools.stringToBCDNString(issuerDN);
+        dn = StringTools.strip(dn);
+        if (adapter.getLogger().isDebugEnabled()) {
+        	adapter.debug("Looking for cert with (transformed)DN: " + dn);
+        }
+        try {
+            Collection coll = certHome.findByIssuerDNSerialNumber(dn, serno.toString());
+            Certificate ret = null;
+            if (coll != null) {
+                if (coll.size() > 1)
+                    adapter.log(admin, issuerDN.hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_DATABASE, "Error in database, more than one certificate has the same Issuer : " + issuerDN + " and serialnumber "
+                            + serno.toString(16) + ".");
+                Iterator iter = coll.iterator();
+                if (iter.hasNext()) {
+                    ret = ((CertificateDataLocal) iter.next()).getCertificate();
+                }
+            }
+            if (adapter.getLogger().isDebugEnabled()) {
+            	adapter.debug("<findCertificateByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno);
+            }
+            return ret;
+        } catch (Exception fe) {
+            throw new EJBException(fe);
+        }
+    } //findCertificateByIssuerAndSerno
+
     public static Collection findCertificatesByType(Admin admin, int type, String issuerDN,
                                                     CertificateDataLocalHome certHome,
                                                     Adapter adapter) {

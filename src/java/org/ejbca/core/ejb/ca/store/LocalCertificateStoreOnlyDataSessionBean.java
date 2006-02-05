@@ -2,6 +2,7 @@ package org.ejbca.core.ejb.ca.store;
 
 import java.math.BigInteger;
 import java.security.Security;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
@@ -16,7 +17,7 @@ import org.ejbca.core.model.log.Admin;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreOnlyDataSessionBean.java,v 1.3 2006-02-01 11:01:06 primelars Exp $
+ * @version $Id: LocalCertificateStoreOnlyDataSessionBean.java,v 1.4 2006-02-05 15:51:02 anatom Exp $
  * @ejb.bean display-name="CertificateStoreOnlyDataSB"
  * name="CertificateStoreOnlyDataSession"
  * view-type="both"
@@ -76,6 +77,19 @@ public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
     public RevokedCertInfo isRevoked(Admin admin, String issuerDN, BigInteger serno) {
         return CertificateDataUtil.isRevoked(admin, issuerDN, serno, certHome, adapter);
     } //isRevoked
+
+    /**
+     * Finds a certificate specified by issuer DN and serial number.
+     *
+     * @param admin    Administrator performing the operation
+     * @param issuerDN issuer DN of the desired certificate.
+     * @param serno    serial number of the desired certificate!
+     * @return Certificate if found or null
+     * @ejb.interface-method
+     */
+    public Certificate findCertificateByIssuerAndSerno(Admin admin, String issuerDN, BigInteger serno) {
+    	return CertificateDataUtil.findCertificateByIssuerAndSerno(admin, issuerDN, serno, certHome, adapter);
+    } //findCertificateByIssuerAndSerno
 
     /**
      * Lists all active (status = 20) certificates of a specific type and if

@@ -14,6 +14,7 @@
 package org.ejbca.ui.web.protocol;
 
 import java.math.BigInteger;
+import java.security.cert.Certificate;
 import java.util.Collection;
 
 import javax.servlet.ServletConfig;
@@ -67,7 +68,7 @@ import org.ejbca.core.model.log.Admin;
  *  local="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
  *
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson
- * @version  $Id: OCSPServlet.java,v 1.6 2006-02-03 11:39:13 primelars Exp $
+ * @version  $Id: OCSPServlet.java,v 1.7 2006-02-05 15:51:02 anatom Exp $
  */
 public class OCSPServlet extends OCSPServletBase {
 
@@ -93,19 +94,23 @@ public class OCSPServlet extends OCSPServletBase {
         }
     }
 
-    Collection findCertificatesByType(Admin adm, int i, String issuerDN) {
+    protected Collection findCertificatesByType(Admin adm, int i, String issuerDN) {
         return m_certStore.findCertificatesByType(adm, i, issuerDN);
     }
 
-    OCSPCAServiceResponse extendedService(Admin adm, int caid, OCSPCAServiceRequest request) throws CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException {
+    protected Certificate findCertificateByIssuerAndSerno(Admin adm, String issuer, BigInteger serno) {
+        return m_certStore.findCertificateByIssuerAndSerno(adm, issuer, serno);
+    }
+    
+    protected OCSPCAServiceResponse extendedService(Admin adm, int caid, OCSPCAServiceRequest request) throws CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException {
         return (OCSPCAServiceResponse)m_signsession.extendedService(adm, caid, request);
     }
 
-    RevokedCertInfo isRevoked(Admin adm, String name, BigInteger serialNumber) {
+    protected RevokedCertInfo isRevoked(Admin adm, String name, BigInteger serialNumber) {
         return m_certStore.isRevoked(adm, name, serialNumber);
     }
 
-    void loadPrivateKeys(Admin adm) {
+    protected void loadPrivateKeys(Admin adm) {
         // not used by this servlet
     }
 } // OCSPServlet

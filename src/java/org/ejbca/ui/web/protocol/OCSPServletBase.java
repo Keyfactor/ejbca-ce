@@ -18,10 +18,14 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 
@@ -68,6 +72,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.protocol.ocsp.IOCSPExtension;
 import org.ejbca.util.CertTools;
 
 /**
@@ -91,9 +96,16 @@ import org.ejbca.util.CertTools;
  *   name="defaultResponderID"
  *   value="${ocsp.defaultresponder}"
  *   
+ * @web.servlet-init-param description="Specifies OCSP extension oids that will result in a call to an extension class, separate multiple entries with ;"
+ *   name="extensionOid"
+ *   value="${ocsp.extensionoid}"
+ *   
+ * @web.servlet-init-param description="Specifies classes implementing OCSP extensions matching oids above, separate multiple entries with ;"
+ *   name="extensionClass"
+ *   value="${ocsp.extensionclass}"
  *   
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson
- * @version  $Id: OCSPServletBase.java,v 1.5 2006-02-04 21:39:07 primelars Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.6 2006-02-05 15:51:02 anatom Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
@@ -120,7 +132,12 @@ abstract class OCSPServletBase extends HttpServlet {
      * Defined in web.xml
      */
     private boolean m_includeChain;
-
+    /** Configures OCSP extensions, these init-params are optional
+     */
+    private Collection m_extensionOids = new ArrayList();
+    private Collection m_extensionClasses = new ArrayList();
+    private HashMap m_extensionMap = null;
+    
     /** Loads cacertificates but holds a cache so it's reloaded only every five minutes is needed.
      */
     protected synchronized void loadCertificates() throws IOException, ServletException {
@@ -132,9 +149,15 @@ abstract class OCSPServletBase extends HttpServlet {
         loadPrivateKeys(m_adm);
         m_certValidTo = new Date().getTime() + VALID_TIME;
     }
-    abstract void loadPrivateKeys(Admin adm) throws ServletException, IOException;
+    abstract protected void loadPrivateKeys(Admin adm) throws ServletException, IOException;
 
-    abstract Collection findCertificatesByType(Admin adm, int i, String issuerDN);
+    abstract protected Collection findCertificatesByType(Admin adm, int i, String issuerDN);
+
+    abstract protected Certificate findCertificateByIssuerAndSerno(Admin adm, String issuerDN, BigInteger serno);
+
+    abstract protected OCSPCAServiceResponse extendedService(Admin m_adm2, int caid, OCSPCAServiceRequest request) throws CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException;
+
+    abstract protected RevokedCertInfo isRevoked(Admin m_adm2, String name, BigInteger serialNumber);
 
     protected X509Certificate findCAByHash(CertificateID certId, Collection certs) throws OCSPException {
         if (null == certId) {
@@ -198,25 +221,36 @@ abstract class OCSPServletBase extends HttpServlet {
         return null;
     }
 
+    /** returns an HashTable of responseExtensions to be added to the BacisOCSPResponseGenerator with
+     * <code>
+     * X509Extensions exts = new X509Extensions(table);
+     * basicRes.setResponseExtensions(responseExtensions);
+     * </code>
+     * 
+     * @param req OCSPReq
+     * @return a Hashtable, can be empty nut not null
+     */
+    private Hashtable getStandardResponseExtensions(OCSPReq req) {
+        X509Extensions reqexts = req.getRequestExtensions();
+        Hashtable table = new Hashtable();
+        if (reqexts != null) {
+        	// Table of extensions to include in the response
+            X509Extension ext = reqexts.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
+            if (null != ext) {
+                //m_log.debug("Found extension Nonce");
+                table.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
+            }
+        }
+    	return table;
+    }
     protected BasicOCSPRespGenerator createOCSPResponse(OCSPReq req, X509Certificate cacert) throws OCSPException, NotSupportedException {
         if (null == req) {
             throw new IllegalArgumentException();
         }
         BasicOCSPRespGenerator res = new BasicOCSPRespGenerator(cacert.getPublicKey());
-        DERObjectIdentifier id_pkix_ocsp_nonce = new DERObjectIdentifier(OCSPObjectIdentifiers.pkix_ocsp + ".2");
-        DERObjectIdentifier id_pkix_ocsp_response = new DERObjectIdentifier(OCSPObjectIdentifiers.pkix_ocsp + ".4");
-        DERObjectIdentifier id_pkix_ocsp_basic = new DERObjectIdentifier(OCSPObjectIdentifiers.pkix_ocsp + ".1");
         X509Extensions reqexts = req.getRequestExtensions();
         if (reqexts != null) {
-            X509Extension ext = reqexts.getExtension(id_pkix_ocsp_nonce);
-            if (null != ext) {
-                //m_log.debug("Found extension Nonce");
-                Hashtable table = new Hashtable();
-                table.put(id_pkix_ocsp_nonce, ext);
-                X509Extensions exts = new X509Extensions(table);
-                res.setResponseExtensions(exts);
-            }
-            ext = reqexts.getExtension(id_pkix_ocsp_response);
+        	X509Extension ext = reqexts.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_response);
             if (null != ext) {
                 //m_log.debug("Found extension AcceptableResponses");
                 ASN1OctetString oct = ext.getValue();
@@ -227,7 +261,7 @@ abstract class OCSPServletBase extends HttpServlet {
                     while (en.hasMoreElements()) {
                         DERObjectIdentifier oid = (DERObjectIdentifier) en.nextElement();
                         //m_log.debug("Found oid: "+oid.getId());
-                        if (oid.equals(id_pkix_ocsp_basic)) {
+                        if (oid.equals(OCSPObjectIdentifiers.id_pkix_ocsp_basic)) {
                             // This is the response type we support, so we are happy! Break the loop.
                             supportsResponseType = true;
                             m_log.debug("Response type supported: " + oid.getId());
@@ -243,13 +277,14 @@ abstract class OCSPServletBase extends HttpServlet {
         }
         return res;
     }
-    int getCaid( X509Certificate cacert ) {
+    
+    protected int getCaid( X509Certificate cacert ) {
         int result = CertTools.stringToBCDNString(cacert.getSubjectDN().toString()).hashCode();
         m_log.debug( cacert.getSubjectDN() + " has caid: " + result );
         return result;
     }
 
-    protected BasicOCSPResp signOCSPResponse(BasicOCSPRespGenerator basicRes, X509Certificate cacert)
+    private BasicOCSPResp signOCSPResponse(BasicOCSPRespGenerator basicRes, X509Certificate cacert)
             throws CADoesntExistsException, ExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException {
         // Find the OCSP signing key and cert for the issuer
         BasicOCSPResp retval = null;
@@ -263,8 +298,6 @@ abstract class OCSPServletBase extends HttpServlet {
         }
         return retval;
     }
-
-    abstract OCSPCAServiceResponse extendedService(Admin m_adm2, int caid, OCSPCAServiceRequest request) throws CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException;
 
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
@@ -320,6 +353,43 @@ abstract class OCSPServletBase extends HttpServlet {
                     || initparam.equalsIgnoreCase("no")) {
                 m_includeChain = false;
             }
+        }
+        String extensionOid = null;
+        String extensionClass = null;
+		extensionOid = config.getInitParameter("extensionOid");
+        if (StringUtils.isEmpty(extensionOid)) {
+            m_log.info("ExtensionOid not defined in initialization parameters.");
+        } else {
+        	String[] oids = extensionOid.split(";");
+        	m_extensionOids = Arrays.asList(oids);
+        	
+        }
+        extensionClass = config.getInitParameter("extensionClass");
+        if (StringUtils.isEmpty(extensionClass)) {
+            m_log.info("ExtensionClass not defined in initialization parameters.");
+        } else {
+        	String[] classes = extensionClass.split(";");
+        	m_extensionClasses = Arrays.asList(classes);        	
+        }
+        // Check that we have the same amount of extension oids as classes
+        if (m_extensionClasses.size() != m_extensionOids.size()) {
+            throw new ServletException("Number of extension classes does not match no of extension oids.");        	
+        }
+        // Init extensions
+        Iterator iter = m_extensionClasses.iterator();
+        Iterator iter2 = m_extensionOids.iterator();
+        m_extensionMap = new HashMap();
+        while (iter.hasNext()) {
+        	String clazz = (String)iter.next();
+        	String oid = (String)iter2.next();
+        	IOCSPExtension ext = null;
+        	try {
+        		 ext = (IOCSPExtension)Class.forName(clazz).newInstance();
+        	} catch (Exception e) {
+        		m_log.error("Cann not create extension with class "+clazz, e);
+        		continue;
+        	}
+        	m_extensionMap.put(oid,ext);
         }
     }
 
@@ -438,6 +508,7 @@ abstract class OCSPServletBase extends HttpServlet {
                     throw new MalformedRequestException(msg);
                 }
                 m_log.debug("The OCSP request contains " + requests.length + " simpleRequests.");
+                Hashtable responseExtensions = null; 
                 for (int i = 0; i < requests.length; i++) {
                     CertificateID certId = requests[i].getCertID();
                     boolean unknownCA = false; // if the certId was issued by an unknown CA
@@ -469,6 +540,8 @@ abstract class OCSPServletBase extends HttpServlet {
                                 m_log.debug("Signing OCSP response with OCSP signer of CA: " + cacert.getSubjectDN().getName());
                             }
                         }
+                        // Add standard response extensions
+                        responseExtensions = getStandardResponseExtensions(req);
                     } else if (cacert == null) {
                         final String msg = "Unable to find CA certificate by issuer name hash: " + Hex.encode(certId.getIssuerNameHash()) + ", or even the default responder: " + m_defaultResponderId;
                         m_log.error(msg);
@@ -524,9 +597,43 @@ abstract class OCSPServletBase extends HttpServlet {
                                 new CRLReason(rci.getReason())));
                         basicRes.addResponse(certId, certStatus);
                     }
+                    // Look for extension OIDs
+                    Iterator iter = m_extensionOids.iterator();
+                    while (iter.hasNext()) {
+                    	String oidstr = (String)iter.next();
+                    	DERObjectIdentifier oid = new DERObjectIdentifier(oidstr);
+                        X509Extensions reqexts = req.getRequestExtensions();
+                        X509Extension ext = reqexts.getExtension(oid);
+                        if (null != ext) {
+                        	// We found an extension, call the extenstion class
+                        	if (m_log.isDebugEnabled()) {
+                        		m_log.debug("Found OCSP extension oid: "+oidstr);
+                        	}
+                        	IOCSPExtension extObj = (IOCSPExtension)m_extensionMap.get(oidstr);
+                        	if (extObj != null) {
+                        		// Find the certificate from the certId
+                        		X509Certificate cert = null;
+                        		cert = (X509Certificate)findCertificateByIssuerAndSerno(m_adm, cacert.getSubjectDN().getName(), certId.getSerialNumber());
+                        		if (cert != null) {
+                        			// Call the OCSP extension
+                                	Hashtable retext = extObj.process(request, cert);
+                                	if (retext != null) {
+                                		// Add the returned X509Extensions to the responseExtension we will add to the basic OCSP response
+                                		responseExtensions.putAll(retext);
+                                	} else {
+                                		m_log.error("En error occured when processing OCSP extensions class: "+extObj.getClass().getName()+", error code="+extObj.getLastErrorCode());
+                                	}
+                        		}
+                        	}
+                        }
+                    }
+                    
                 }
                 if ((basicRes != null) && (cacert != null)) {
-                    // generate the signed response object
+                	// Add responseExtensions
+                	X509Extensions exts = new X509Extensions(responseExtensions);
+                	basicRes.setResponseExtensions(exts);
+                	// generate the signed response object
                     BasicOCSPResp basicresp = signOCSPResponse(basicRes, cacert);
                     ocspresp = res.generate(OCSPRespGenerator.SUCCESSFUL, basicresp);
                 } else {
@@ -577,5 +684,4 @@ abstract class OCSPServletBase extends HttpServlet {
         m_log.debug("<service()");
     }
 
-    abstract RevokedCertInfo isRevoked(Admin m_adm2, String name, BigInteger serialNumber);
 } // OCSPServlet

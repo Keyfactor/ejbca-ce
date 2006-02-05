@@ -73,7 +73,7 @@ import org.ejbca.util.StringTools;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.6 2006-02-01 11:01:06 primelars Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.7 2006-02-05 15:51:02 anatom Exp $
  * @ejb.bean display-name="CertificateStoreSB"
  * name="CertificateStoreSession"
  * view-type="both"
@@ -536,28 +536,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public Certificate findCertificateByIssuerAndSerno(Admin admin, String issuerDN, BigInteger serno) {
-        debug(">findCertificateByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno);
-        // First make a DN in our well-known format
-        String dn = CertTools.stringToBCDNString(issuerDN);
-        dn = StringTools.strip(dn);
-        debug("Looking for cert with (transformed)DN: " + dn);
-        try {
-            Collection coll = certHome.findByIssuerDNSerialNumber(dn, serno.toString());
-            Certificate ret = null;
-            if (coll != null) {
-                if (coll.size() > 1)
-                    getLogSession().log(admin, issuerDN.hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_DATABASE, "Error in database, more than one certificate has the same Issuer : " + issuerDN + " and serialnumber "
-                            + serno.toString(16) + ".");
-                Iterator iter = coll.iterator();
-                if (iter.hasNext()) {
-                    ret = ((CertificateDataLocal) iter.next()).getCertificate();
-                }
-            }
-            debug("<findCertificateByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno);
-            return ret;
-        } catch (Exception fe) {
-            throw new EJBException(fe);
-        }
+    	return CertificateDataUtil.findCertificateByIssuerAndSerno(admin, issuerDN, serno, certHome, adapter);
     } //findCertificateByIssuerAndSerno
 
     /**

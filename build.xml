@@ -917,7 +917,8 @@ web.contentencoding    = ${web.contentencoding}
                 <fileset dir="${test.dir}">
                     <include name="**/protocol/ProtocolScepHttpTest*" />
                     <include name="**/protocol/ProtocolOcspHttpTest*" />
-                    <include name="**/webdist/WebdistHttpTest*" />
+                    <exclude name="**/protocol/ProtocolLookupServerHttpTest*" />
+                	<include name="**/webdist/WebdistHttpTest*" />
                 </fileset>
             </batchtest>
         </junit>

@@ -28,6 +28,7 @@ import java.security.NoSuchProviderException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.Collection;
+import java.util.Hashtable;
 import java.util.Iterator;
 
 import javax.ejb.DuplicateKeyException;
@@ -38,6 +39,12 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
+import org.bouncycastle.asn1.x509.X509Extension;
+import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.CertificateID;
 import org.bouncycastle.ocsp.OCSPException;
@@ -248,10 +255,14 @@ public class ProtocolOcspHttpTest extends TestCase {
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
+        Hashtable exts = new Hashtable();
+        X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
+        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
+        gen.setRequestExtensions(new X509Extensions(exts));
         OCSPReq req = gen.generate();
 
         // Send the request and receive a singleResponse
-        SingleResp singleResp = sendOCSPPost(req.getEncoded());
+        SingleResp singleResp = sendOCSPPost(req.getEncoded(), "123456789");
         
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
@@ -276,7 +287,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         OCSPReq req = gen.generate();
 
         // Send the request and receive a singleResponse
-        SingleResp singleResp = sendOCSPPost(req.getEncoded());
+        SingleResp singleResp = sendOCSPPost(req.getEncoded(), null);
 
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
@@ -300,7 +311,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         OCSPReq req = gen.generate();
         
         // Send the request and receive a singleResponse
-        SingleResp singleResp = sendOCSPPost(req.getEncoded());
+        SingleResp singleResp = sendOCSPPost(req.getEncoded(), null);
 
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), new BigInteger("1"));
@@ -321,7 +332,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         OCSPReq req = gen.generate();
         
         // Send the request and receive a singleResponse
-        SingleResp singleResp = sendOCSPPost(req.getEncoded());
+        SingleResp singleResp = sendOCSPPost(req.getEncoded(), null);
 
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), new BigInteger("1"));
@@ -354,7 +365,7 @@ public class ProtocolOcspHttpTest extends TestCase {
     // Private helper methods
     //
     
-    protected SingleResp sendOCSPPost(byte[] ocspPackage) throws IOException, OCSPException, NoSuchProviderException {
+    protected SingleResp sendOCSPPost(byte[] ocspPackage, String nonce) throws IOException, OCSPException, NoSuchProviderException {
         // POST the OCSP request
         URL url = new URL(httpReqPath + '/' + resourceOcsp);
         HttpURLConnection con = (HttpURLConnection)url.openConnection();
@@ -386,8 +397,16 @@ public class ProtocolOcspHttpTest extends TestCase {
         X509Certificate[] chain = brep.getCerts("BC");
         boolean verify = brep.verify(chain[0].getPublicKey(), "BC");
         assertTrue("Response failed to verify.", verify);
+        // Check nonce (if we sent one)
+        if (nonce != null) {
+        	byte[] noncerep = brep.getExtensionValue(OCSPObjectIdentifiers.id_pkix_ocsp_nonce.getId());
+        	assertNotNull(noncerep);
+        	ASN1InputStream ain = new ASN1InputStream(noncerep);
+        	ASN1OctetString oct = ASN1OctetString.getInstance(ain.readObject());
+        	assertEquals(nonce, new String(oct.getOctets()));
+        }
         SingleResp[] singleResps = brep.getResponses();
-        assertEquals("No of SingResps shoudl be 1.", singleResps.length, 1);
+        assertEquals("No of SingResps should be 1.", singleResps.length, 1);
         SingleResp singleResp = singleResps[0];
         return singleResp;
     }

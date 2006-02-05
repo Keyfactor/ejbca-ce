@@ -7,6 +7,7 @@ import java.math.BigInteger;
 import java.security.KeyStore;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,7 +67,7 @@ import org.ejbca.core.model.log.Admin;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silvén PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.6 2006-02-03 11:39:13 primelars Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.7 2006-02-05 15:51:02 anatom Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase {
 
@@ -115,7 +116,8 @@ public class OCSPServletStandAlone extends OCSPServletBase {
             throw new ServletException(e);
         }
     }
-    void loadPrivateKeys(Admin adm) throws ServletException, IOException {
+    
+    protected void loadPrivateKeys(Admin adm) throws ServletException, IOException {
         mSignEntity.clear();
         File dir = new File(mSoftKeyStoreDirectoryName);
         if ( dir==null || dir.isDirectory()==false )
@@ -224,11 +226,15 @@ public class OCSPServletStandAlone extends OCSPServletBase {
         }
     }
 
-    Collection findCertificatesByType(Admin adm, int type, String issuerDN) {
+    protected Collection findCertificatesByType(Admin adm, int type, String issuerDN) {
         return mCertStore.findCertificatesByType(adm, type, issuerDN);
     }
 
-    OCSPCAServiceResponse extendedService(Admin adm, int caid, OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException,
+    protected Certificate findCertificateByIssuerAndSerno(Admin adm, String issuer, BigInteger serno) {
+        return mCertStore.findCertificateByIssuerAndSerno(adm, issuer, serno);
+    }
+    
+    protected OCSPCAServiceResponse extendedService(Admin adm, int caid, OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException,
                                                                                                     ExtendedCAServiceNotActiveException {
         SigningEntity se =(SigningEntity)mSignEntity.get(new Integer(caid));
         if ( se!=null )
@@ -237,7 +243,7 @@ public class OCSPServletStandAlone extends OCSPServletBase {
             throw new ExtendedCAServiceNotActiveException("no ocsp signing key for caid "+caid);
     }
 
-    RevokedCertInfo isRevoked(Admin adm, String name, BigInteger serialNumber) {
+    protected RevokedCertInfo isRevoked(Admin adm, String name, BigInteger serialNumber) {
         return mCertStore.isRevoked(adm, name, serialNumber);
     }
 
