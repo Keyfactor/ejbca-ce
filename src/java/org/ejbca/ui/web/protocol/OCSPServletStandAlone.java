@@ -67,7 +67,7 @@ import org.ejbca.core.model.log.Admin;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silvén PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.7 2006-02-05 15:51:02 anatom Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.8 2006-02-06 08:59:35 anatom Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase {
 
@@ -209,10 +209,10 @@ public class OCSPServletStandAlone extends OCSPServletBase {
             mKey = k;
         }
         OCSPCAServiceResponse sign( OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException {
-            final BasicOCSPRespGenerator ocsprespgen = ((OCSPCAServiceRequest)request).getOCSPrespGenerator();
-            final String sigAlg = ((OCSPCAServiceRequest)request).getSigAlg();
+            final BasicOCSPRespGenerator ocsprespgen = (request).getOCSPrespGenerator();
+            final String sigAlg = (request).getSigAlg();
             m_log.debug("signing algorithm: "+sigAlg);
-            final X509Certificate[] chain = ((OCSPCAServiceRequest)request).includeChain() ? mChain : null;
+            final X509Certificate[] chain = (request).includeChain() ? mChain : null;
             try {
                 final BasicOCSPResp ocspresp = ocsprespgen.generate(sigAlg, mKey, chain, new Date(), "BC" );
                 m_log.debug("The OCSP response is "
@@ -237,10 +237,10 @@ public class OCSPServletStandAlone extends OCSPServletBase {
     protected OCSPCAServiceResponse extendedService(Admin adm, int caid, OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException,
                                                                                                     ExtendedCAServiceNotActiveException {
         SigningEntity se =(SigningEntity)mSignEntity.get(new Integer(caid));
-        if ( se!=null )
-            return se.sign(request);
-        else
-            throw new ExtendedCAServiceNotActiveException("no ocsp signing key for caid "+caid);
+        if ( se!=null ) {
+            return se.sign(request);            
+        }
+        throw new ExtendedCAServiceNotActiveException("no ocsp signing key for caid "+caid);
     }
 
     protected RevokedCertInfo isRevoked(Admin adm, String name, BigInteger serialNumber) {
