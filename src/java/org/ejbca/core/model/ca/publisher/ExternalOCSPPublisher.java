@@ -6,19 +6,19 @@ package org.ejbca.core.model.ca.publisher;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.JDBCUtil;
 
 /**
  * @author lars
@@ -26,9 +26,8 @@ import org.ejbca.util.CertTools;
  */
 public class ExternalOCSPPublisher implements ICustomPublisher {
 
-    private Connection connection;
-    private PublisherException savedException;
     private static Logger log = Logger.getLogger(ExternalOCSPPublisher.class);
+    private String dataSource;
 
     /**
      * 
@@ -41,54 +40,30 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
      * @see se.anatom.ejbca.ca.publisher.ICustomPublisher#init(java.util.Properties)
      */
     public void init(Properties properties) {
-        try {
-            if ( connection!=null )
-                connection.close();
-            connection = DriverManager.getConnection(properties.getProperty("url"),
-                                                     properties.getProperty("name"),
-                                                     properties.getProperty("password"));
-            savedException = null;
-        } catch (SQLException e) {
-            connection = null;
-            savedException = new PublisherException("Exception during initialization caused by "+e.getMessage());
-            savedException.initCause(e);
-            log.error("not possible to get sql coennection", e);
-        }
-        if ( connection!=null && savedException==null ) {
-            final String sqlCommand  =
-                "CREATE TABLE CertificateData ( "+
-                "fingerprint varchar(250) binary NOT NULL default '', "+
-                "base64Cert text, "+
-                "subjectDN varchar(250) binary default NULL, "+
-                "issuerDN varchar(250) binary default NULL, "+
-                "cAFingerprint varchar(250) binary default NULL, "+
-                "serialNumber varchar(250) binary default NULL, "+
-                "status int(11) NOT NULL default '0', "+
-                "type int(11) NOT NULL default '0', "+
-                "username varchar(250) binary default NULL, "+
-                "expireDate bigint(20) NOT NULL default '0', "+
-                "revocationDate bigint(20) NOT NULL default '0', "+
-                "revocationReason int(11) NOT NULL default '0', "+
-                "PRIMARY KEY  (fingerprint) ) TYPE=MyISAM;";
-            try {
-                execute(sqlCommand);
-            } catch (PublisherException e) {
-                log.debug("Table allready created.",e);
-            }
-        }
+        dataSource = properties.getProperty("dataSource");
+        log.debug("dataSource='"+dataSource+"'.");
     }
 
-    private void execute(String sqlCommand) throws PublisherException {
-        if ( sqlCommand!=null ) {
-            Statement statement = null;
+    private interface Preparer {
+        void prepare(PreparedStatement ps) throws Exception;
+    }
+    private void execute(String sqlCommandTemplate, Preparer preparer) throws PublisherException {
+        if ( sqlCommandTemplate!=null ) {
+            Connection connection = null;
+            ResultSet result = null;
+            PreparedStatement ps = null;
             try {
-                statement = connection.createStatement();
-                statement.execute(sqlCommand);
-            } catch (SQLException e) {
+                connection = ServiceLocator.getInstance().getDataSource(dataSource).getConnection();
+                ps = connection.prepareStatement(sqlCommandTemplate);
+                preparer.prepare(ps);
+                if ( ps.execute() )
+                    result = ps.getResultSet();
+            } catch (Exception e) {
                 StringWriter sw = new StringWriter();
                 PrintWriter pw = new PrintWriter(sw);
                 pw.println("Exception during execution of:");
-                pw.println("  "+sqlCommand);
+                if ( ps!=null )
+                    pw.println("  "+ps);
                 pw.println("See cause of exception.");
                 pw.flush();
                 PublisherException pe = new PublisherException(sw.toString());
@@ -96,20 +71,40 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
                 log.debug("execute error cause:", e);
                 throw pe;
             } finally {
-                try {
-                    if ( statement!=null )
-                        statement.close();
-                } catch (SQLException e) {
-                    log.debug("error when closing", e);
-                }
+                JDBCUtil.close(connection, ps, result);
             }
         }
     }
-    void check() throws PublisherException {
-        if ( savedException!=null )
-            throw savedException;
-        if ( connection==null )
-            throw new PublisherException("not initialized");
+
+    private class StoreCertPreparer implements Preparer {
+        final Certificate incert;
+        final String username;
+        final String cafp;
+        final int status;
+        final int type;
+        StoreCertPreparer(Certificate ic,
+                          String un, String cf, int s, int t) {
+            super();
+            incert = ic;
+            username = un;
+            cafp = cf;
+            status = s;
+            type = t;
+        }
+        public void prepare(PreparedStatement ps) throws Exception {
+            ps.setString(1,CertTools.getFingerprintAsString((X509Certificate)incert));
+            ps.setString(2, new String(Base64.encode(incert.getEncoded(), true)));
+            ps.setString(3, CertTools.getSubjectDN((X509Certificate)incert));
+            ps.setString(4, CertTools.getIssuerDN((X509Certificate)incert));
+            ps.setString(5, cafp);
+            ps.setString(6, ((X509Certificate)incert).getSerialNumber().toString());
+            ps.setInt(7, status);
+            ps.setInt(8, type);
+            ps.setString(9, username);
+            ps.setLong(10, ((X509Certificate)incert).getNotAfter().getTime());
+            ps.setLong(11, -1);
+            ps.setInt(12, -1);
+        }
     }
     /* (non-Javadoc)
      * @see se.anatom.ejbca.ca.publisher.ICustomPublisher#storeCertificate(se.anatom.ejbca.log.Admin, java.security.cert.Certificate, java.lang.String, java.lang.String, java.lang.String, int, int, se.anatom.ejbca.ra.ExtendedInformation)
@@ -119,27 +114,8 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
                                     String cafp, int status, int type,
                                     ExtendedInformation extendedinformation)
                                                                             throws PublisherException {
-        check();
-        final String sqlCommand;
-        try {
-            sqlCommand =
-                "INSERT INTO CertificateData VALUES ('" +
-                CertTools.getFingerprintAsString((X509Certificate)incert) + "','" +
-                new String(Base64.encode(incert.getEncoded(), true)) + "','" +
-                CertTools.getSubjectDN((X509Certificate)incert) + "','" +
-                CertTools.getIssuerDN((X509Certificate)incert) + "','" +
-                cafp + "','" +
-                ((X509Certificate)incert).getSerialNumber() + "'," +
-                status + "," +
-                type + ",'" +
-                username + "'," +
-                ((X509Certificate)incert).getNotAfter().getTime() +",-1,-1);";
-        } catch (CertificateEncodingException e) {
-            PublisherException pe = new PublisherException("Encoding error. See cause.");
-            savedException.initCause(e);
-            throw pe;
-        }
-        execute(sqlCommand);
+        execute( "INSERT INTO CertificateData VALUES (?,?,?,?,?,?,?,?,?,?,?,?);",
+                 new StoreCertPreparer(incert, username, cafp, status, type) );
         return true;
     }
 
@@ -148,39 +124,46 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
      */
     public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number)
                                                                                throws PublisherException {
-        return false;
+        return true;
     }
 
+    class RevokePreparer implements Preparer {
+        final Certificate cert;
+        final int reason;
+        RevokePreparer(Certificate c, int r) {
+            cert = c;
+            reason = r;
+        }
+        public void prepare(PreparedStatement ps) throws Exception {
+            ps.setInt(1, 40);
+            ps.setLong(2, System.currentTimeMillis());
+            ps.setInt(3, reason);
+            ps.setString(4, CertTools.getFingerprintAsString((X509Certificate)cert));
+        }
+    }
     /* (non-Javadoc)
      * @see se.anatom.ejbca.ca.publisher.ICustomPublisher#revokeCertificate(se.anatom.ejbca.log.Admin, java.security.cert.Certificate, int)
      */
     public void revokeCertificate(Admin admin, Certificate cert, int reason)
                                                                             throws PublisherException {
-        check();
-        String sqlCommand =
-            "UPDATE CertificateData SET status=40, revocationDate=" +
-            System.currentTimeMillis() + ", revocationReason=" +
-            reason + " WHERE fingerprint='" +
-            CertTools.getFingerprintAsString((X509Certificate)cert) + "';";
-        execute(sqlCommand);
+        execute( "UPDATE CertificateData SET status=?, revocationDate=?, revocationReason=? WHERE fingerprint=?;",
+                 new RevokePreparer(cert, reason));
     }
 
+    private class DoNothingPreparer implements Preparer {
+        public void prepare(PreparedStatement ps) {
+        }
+    }
     /* (non-Javadoc)
      * @see se.anatom.ejbca.ca.publisher.ICustomPublisher#testConnection(se.anatom.ejbca.log.Admin)
      */
     public void testConnection(Admin admin) throws PublisherConnectionException {
         try {
-            check();
+            execute("UNLOCK TABLES;", new DoNothingPreparer());
         } catch (PublisherException e) {
             final PublisherConnectionException pce = new PublisherConnectionException("Connection in init failed: "+e.getMessage());
             pce.initCause(e);
             throw pce;
         }
     }
-    protected void finalize() throws Throwable {
-        if ( connection!=null )
-            connection.close();
-        super.finalize();
-    }
-
 }

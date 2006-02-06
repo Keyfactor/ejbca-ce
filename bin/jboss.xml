@@ -79,6 +79,7 @@
         <copy todir="${jboss.farm.dir}" overwrite="true">
             <fileset dir="src/appserver/jboss">
             	<include name="ejbca-ds.xml"/>
+                <include name="ocsp-ds.xml"/>
             	<include name="ejbca-mail-service.xml"/>
             </fileset>
             <filterchain>
