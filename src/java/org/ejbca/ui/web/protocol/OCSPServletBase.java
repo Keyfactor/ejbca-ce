@@ -109,7 +109,7 @@ import org.ejbca.util.CertTools;
  *   value="${ocsp.uniddatsource}"
  *   
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson
- * @version  $Id: OCSPServletBase.java,v 1.8 2006-02-06 09:08:26 anatom Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.9 2006-02-06 12:01:06 anatom Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
@@ -575,6 +575,7 @@ abstract class OCSPServletBase extends HttpServlet {
                     if (null != rci && rci.getReason() == RevokedCertInfo.NOT_REVOKED) {
                         rci = null;
                     }
+                    CertificateStatus certStatus = null; // null mean good
                     if (null == rci) {
                         rci = isRevoked(m_adm, cacert.getSubjectDN().getName(), certId.getSerialNumber());
                         if (null == rci) {
@@ -583,7 +584,6 @@ abstract class OCSPServletBase extends HttpServlet {
                                     + " from issuer '" + cacert.getSubjectDN().getName() + "'");
                             basicRes.addResponse(certId, new UnknownStatus());
                         } else {
-                            CertificateStatus certStatus = null; // null mean good
                             if (rci.getReason() != RevokedCertInfo.NOT_REVOKED) {
                                 certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(rci.getRevocationDate()),
                                         new CRLReason(rci.getReason())));
@@ -598,7 +598,7 @@ abstract class OCSPServletBase extends HttpServlet {
                             basicRes.addResponse(certId, certStatus);
                         }
                     } else {
-                        CertificateStatus certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(rci.getRevocationDate()),
+                        certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(rci.getRevocationDate()),
                                 new CRLReason(rci.getReason())));
                         basicRes.addResponse(certId, certStatus);
                     }
@@ -621,7 +621,7 @@ abstract class OCSPServletBase extends HttpServlet {
                         		cert = (X509Certificate)findCertificateByIssuerAndSerno(m_adm, cacert.getSubjectDN().getName(), certId.getSerialNumber());
                         		if (cert != null) {
                         			// Call the OCSP extension
-                                	Hashtable retext = extObj.process(request, cert);
+                                	Hashtable retext = extObj.process(request, cert, certStatus);
                                 	if (retext != null) {
                                 		// Add the returned X509Extensions to the responseExtension we will add to the basic OCSP response
                                 		responseExtensions.putAll(retext);

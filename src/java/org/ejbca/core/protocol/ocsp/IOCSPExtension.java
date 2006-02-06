@@ -6,10 +6,12 @@ import java.util.Hashtable;
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 
+import org.bouncycastle.ocsp.CertificateStatus;
+
 /** Interface that must be implemented by OCSP extensions that are added to the OCSPServlet
  * 
  * @author tomas
- * @version $Id: IOCSPExtension.java,v 1.1 2006-02-05 15:51:02 anatom Exp $
+ * @version $Id: IOCSPExtension.java,v 1.2 2006-02-06 12:01:04 anatom Exp $
  * @see org.ejbca.ui.web.protocol.OCSPServlet
  *
  */
@@ -27,7 +29,7 @@ public interface IOCSPExtension {
 	 * @param cert X509Certificate the caller asked for in the OCSP request
 	 * @return Hashtable with X509Extensions <String oid, X509Extension ext> that will be added to responseExtensions by OCSP responder, or null if an error occurs
 	 */
-	public Hashtable process(HttpServletRequest request, X509Certificate cert);
+	public Hashtable process(HttpServletRequest request, X509Certificate cert, CertificateStatus status);
 	
 	/** Returns the last error that occured during process(), when process returns null
 	 * 

@@ -39,6 +39,8 @@ import javax.naming.NamingException;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
@@ -48,16 +50,20 @@ import org.bouncycastle.ocsp.OCSPException;
 import org.bouncycastle.ocsp.OCSPReq;
 import org.bouncycastle.ocsp.OCSPReqGenerator;
 import org.bouncycastle.ocsp.OCSPResp;
+import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.SingleResp;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertificateDataPK;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.protocol.ocsp.FnrFromUnidExtension;
@@ -66,9 +72,8 @@ import org.ejbca.util.CertTools;
 /** Tests http pages of ocsp lookup server.
  * This test requires a lot of setup. 
  * - The lookup service must be active
- * - There must be a database for the unid-fnr mapping
- * - You must have a CA that has issued certificates with serialNumber in the DN matching the unid
- * - You should have four certificates:
+ * - There must be a database for the unid-fnr mapping with the mapping 123456789, 654321
+ * - You must have a CA that has issued certificates with serialNumber in the DN matching the unid 123456789
  * - You also need a keystore issued by the CA for TLS communication, the keystore cert must be configured in the lookup extension as trusted
  *    - /lookup-kstrust.p12 (password lookup)
  * - You also need a keystore as above but not configured as trusted in the lookup extension
@@ -89,10 +94,11 @@ public class ProtocolLookupServerHttpTest extends TestCase {
     protected static int caid = 0;
     protected static Admin admin;
     private static X509Certificate cacert = null;
+    private static X509Certificate ocspTestCert = null;
     private static KeyStore kstrust = null;
     private static KeyStore ksnotrust = null;
-
-
+    private static KeyPair keys = null;
+    
     public ProtocolLookupServerHttpTest(String name)  throws Exception {
         this(name,"http://127.0.0.1:8080/ejbca", "publicweb/status/ocsp");
     }
@@ -115,7 +121,7 @@ public class ProtocolLookupServerHttpTest extends TestCase {
 			ksnotrust.load(fis, "lookup".toCharArray());
 			fis.close();
 		} catch (Exception e) {
-			log.error("Exception during construction: ", e);
+			//log.error("Exception during construction: ", e);
 			//assertTrue(e.getMessage(), false);
 		}
         admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
@@ -142,6 +148,7 @@ public class ProtocolLookupServerHttpTest extends TestCase {
         IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
         usersession = userhome.create();
 
+        keys = genKeys();
 
     }
 
@@ -208,14 +215,12 @@ public class ProtocolLookupServerHttpTest extends TestCase {
         if (userExists) {
             log.debug("User unidtest already exists.");
             usersession.changeUser(admin, "unidtest", "foo123", "C=SE,O=AnaTom,surname=Jansson,serialNumber=123456789,CN=UNIDTest",null,"unidtest@anatom.se",false, SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW, caid);
-            //usersession.setUserStatus(admin,"ocsptest",UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
         // Generate certificate for the new user
-        KeyPair keys = genKeys();
 
         // user that we know exists...
-        X509Certificate ocspTestCert = (X509Certificate) remote.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
+        ocspTestCert = (X509Certificate) remote.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
         assertNotNull("Misslyckades skapa cert", ocspTestCert);
 
         // And an OCSP request
@@ -227,8 +232,12 @@ public class ProtocolLookupServerHttpTest extends TestCase {
         gen.setRequestExtensions(new X509Extensions(exts));
         OCSPReq req = gen.generate();
 
-        // Send the request and receive a singleResponse
-        SingleResp singleResp = sendOCSPPost(req.getEncoded());
+        // Send the request and receive a BasicResponse
+        BasicOCSPResp brep = sendOCSPPost(req.getEncoded());
+        assertEquals(getFnr(brep), "654321");
+        SingleResp[] singleResps = brep.getResponses();
+        assertEquals("No of SingResps shoudl be 1.", singleResps.length, 1);
+        SingleResp singleResp = singleResps[0];
         
         CertificateID certId = singleResp.getCertID();
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
@@ -236,36 +245,126 @@ public class ProtocolLookupServerHttpTest extends TestCase {
         assertEquals("Status is not null (good)", status, null);
     }
 
+    /** Tests ocsp message with bad status and a valid unid
+     * @throws Exception error
+     */
+    public void test02OcspBadWithFnr() throws Exception {
+        CertificateDataPK pk = new CertificateDataPK();
+        pk.fingerprint = CertTools.getFingerprintAsString(ocspTestCert);
+        ICertificateStoreSessionRemote store = storehome.create();
+        store.revokeCertificate(admin, ocspTestCert,null,RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+
+        // And an OCSP request
+        OCSPReqGenerator gen = new OCSPReqGenerator();
+        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
+        Hashtable exts = new Hashtable();
+        X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("123456789")));
+        exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
+        gen.setRequestExtensions(new X509Extensions(exts));
+        OCSPReq req = gen.generate();
+
+        // Send the request and receive a BasicResponse
+        BasicOCSPResp brep = sendOCSPPost(req.getEncoded());
+        // When a certificate is revoked the FNR must not be returned
+        assertEquals(getFnr(brep), null);
+        SingleResp[] singleResps = brep.getResponses();
+        assertEquals("No of SingResps shoudl be 1.", singleResps.length, 1);
+        SingleResp singleResp = singleResps[0];
+        
+        CertificateID certId = singleResp.getCertID();
+        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
+        Object status = singleResp.getCertStatus();
+        assertTrue("Status is not RevokedStatus", status instanceof RevokedStatus);
+        RevokedStatus rev = (RevokedStatus) status;
+        assertTrue("Status does not have reason", rev.hasRevocationReason());
+        int reason = rev.getRevocationReason();
+        assertEquals("Wrong revocation reason", reason, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+    }
+
     /** Tests ocsp message with good status and invalid unid
      * @throws Exception error
      */
-    public void test02OcspGoodWithNoFnr() throws Exception {
+    public void test03OcspGoodWithNoFnr() throws Exception {
+        // Change uses to a Unid that we don't have mapping for
+        usersession.changeUser(admin, "unidtest", "foo123", "C=SE,O=AnaTom,surname=Jansson,serialNumber=12345678,CN=UNIDTest",null,"unidtest@anatom.se",false, SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW, caid);
+        log.debug("Reset status to NEW");
+        // Generate certificate for the new/changed user
+        ocspTestCert = (X509Certificate) remote.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
+        assertNotNull("Misslyckades skapa cert", ocspTestCert);
+
+        // And an OCSP request
+        OCSPReqGenerator gen = new OCSPReqGenerator();
+        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
+        Hashtable exts = new Hashtable();
+        X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("123456789")));
+        exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
+        gen.setRequestExtensions(new X509Extensions(exts));
+        OCSPReq req = gen.generate();
+
+        // Send the request and receive a BasicResponse
+        BasicOCSPResp brep = sendOCSPPost(req.getEncoded());
+        assertEquals(getFnr(brep), null);
+        SingleResp[] singleResps = brep.getResponses();
+        assertEquals("No of SingResps shoudl be 1.", singleResps.length, 1);
+        SingleResp singleResp = singleResps[0];
+        
+        CertificateID certId = singleResp.getCertID();
+        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
+        Object status = singleResp.getCertStatus();
+        assertEquals("Status is not null (good)", status, null);
     }
 
     /** Tests ocsp message with good status but no serialNnumber in the DN
      * @throws Exception error
      */
-    public void test03OcspGoodNoSerialNo() throws Exception {
+    public void test04OcspGoodNoSerialNo() throws Exception {
+        // Change uses to not have any serialNumber
+        usersession.changeUser(admin, "unidtest", "foo123", "C=SE,O=AnaTom,surname=Jansson,CN=UNIDTest",null,"unidtest@anatom.se",false, SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW, caid);
+        log.debug("Reset status to NEW");
+        // Generate certificate for the new/changed user
+        ocspTestCert = (X509Certificate) remote.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
+        assertNotNull("Misslyckades skapa cert", ocspTestCert);
+
+        // And an OCSP request
+        OCSPReqGenerator gen = new OCSPReqGenerator();
+        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
+        Hashtable exts = new Hashtable();
+        X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("123456789")));
+        exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
+        gen.setRequestExtensions(new X509Extensions(exts));
+        OCSPReq req = gen.generate();
+
+        // Send the request and receive a BasicResponse
+        BasicOCSPResp brep = sendOCSPPost(req.getEncoded());
+        assertEquals(getFnr(brep), null);
+        SingleResp[] singleResps = brep.getResponses();
+        assertEquals("No of SingResps shoudl be 1.", singleResps.length, 1);
+        SingleResp singleResp = singleResps[0];
+        
+        CertificateID certId = singleResp.getCertID();
+        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
+        Object status = singleResp.getCertStatus();
+        assertEquals("Status is not null (good)", status, null);
     }
 
     /** test a lookup request with regular http, should not work
      * 
      * @throws Exception
      */
-    public void test04HttpNotAuthorized() throws Exception {
+    public void test05HttpNotAuthorized() throws Exception {
     }
 
     /** test a lookup message from an untrusted requestor, shoudl not work
      * 
      * @throws Exception
      */
-    public void test05HttpsNotAuthorized() throws Exception {
+    public void test06HttpsNotAuthorized() throws Exception {
     }
     //
     // Private helper methods
     //
     
-    private SingleResp sendOCSPPost(byte[] ocspPackage) throws IOException, OCSPException, NoSuchProviderException {
+    private BasicOCSPResp sendOCSPPost(byte[] ocspPackage) throws IOException, OCSPException, NoSuchProviderException {
         // POST the OCSP request
         URL url = new URL(httpReqPath + '/' + resourceOcsp);
         HttpURLConnection con = (HttpURLConnection)url.openConnection();
@@ -297,9 +396,19 @@ public class ProtocolLookupServerHttpTest extends TestCase {
         X509Certificate[] chain = brep.getCerts("BC");
         boolean verify = brep.verify(chain[0].getPublicKey(), "BC");
         assertTrue("Response failed to verify.", verify);
-        SingleResp[] singleResps = brep.getResponses();
-        assertEquals("No of SingResps shoudl be 1.", singleResps.length, 1);
-        SingleResp singleResp = singleResps[0];
-        return singleResp;
+        return brep;
+    }
+
+    private String getFnr(BasicOCSPResp brep) throws IOException {
+        byte[] fnrrep = brep.getExtensionValue(FnrFromUnidExtension.FnrFromUnidOid.getId());
+        if (fnrrep == null) {
+            return null;            
+        }
+        assertNotNull(fnrrep);
+        ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(fnrrep));
+        ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
+        aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
+        FnrFromUnidExtension fnrobj = FnrFromUnidExtension.getInstance(aIn.readObject());
+        return fnrobj.getFnr();
     }
 }

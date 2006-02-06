@@ -15,6 +15,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.X509Extension;
+import org.bouncycastle.ocsp.CertificateStatus;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
@@ -22,7 +23,7 @@ import org.ejbca.util.JDBCUtil;
 /** OCSP extension used to map a UNID to a Fnr, OID for this extension is 2.16.578.1.16.3.2
  * 
  * @author tomas
- * @version $Id: OCSPUnidExtension.java,v 1.3 2006-02-06 09:08:26 anatom Exp $
+ * @version $Id: OCSPUnidExtension.java,v 1.4 2006-02-06 12:01:04 anatom Exp $
  *
  */
 public class OCSPUnidExtension implements IOCSPExtension {
@@ -38,7 +39,7 @@ public class OCSPUnidExtension implements IOCSPExtension {
 	 */
 	public void init(ServletConfig config) {
 		// Datasource
-		dataSourceJndi = config.getInitParameter("extensionDataSource");
+		dataSourceJndi = config.getInitParameter("unidDataSource");
         if (StringUtils.isEmpty(dataSourceJndi)) {
             m_log.error("unidDataSource init-parameter must be set!");
             throw new IllegalArgumentException("unidDataSource init-parameter must be set!");
@@ -49,22 +50,29 @@ public class OCSPUnidExtension implements IOCSPExtension {
 	 * 
 	 * @param request HttpServletRequest that can be used to find out information about caller, TLS certificate etc.
 	 * @param cert X509Certificate the caller asked for in the OCSP request
+     * @param status CertificateStatus the status the certificate has according to the OCSP responder, null means the cert is good
 	 * @return X509Extension that will be added to responseExtensions by OCSP responder, or null if an error occurs
 	 */
-	public Hashtable process(HttpServletRequest request, X509Certificate cert) {
+	public Hashtable process(HttpServletRequest request, X509Certificate cert, CertificateStatus status) {
         m_log.debug(">process()");
         // Check authorization first
         if (!checkAuthorization(request)) {
         	errCode = OCSPUnidResponse.ERROR_UNAUTHORIZED;
         	return null;
         }
+        // If the certificate is revoked, we must not return an FNR
+        if (status != null) {
+            errCode = OCSPUnidResponse.ERROR_CERT_REVOKED;
+            return null;
+        }
 		Connection con = null;
 		PreparedStatement ps = null;
 		ResultSet result = null;
     	String fnr = null;
+        String sn = null;
         try {
         	// The Unis is in the DN component serialNumber
-        	String sn = CertTools.getPartFromDN(cert.getSubjectDN().getName(), "SN");
+        	sn = CertTools.getPartFromDN(cert.getSubjectDN().getName(), "SN");
         	if (sn != null) {
         		m_log.debug("Found serialNumber: "+sn);
         		try {
@@ -94,6 +102,7 @@ public class OCSPUnidExtension implements IOCSPExtension {
         
         // Construct the response extentsion if we found a mapping
         if (fnr == null) {
+            m_log.error("No Fnr mapping exists for UNID "+sn);
         	errCode = OCSPUnidResponse.ERROR_NO_FNR_MAPPING;
         	return null;
         	
