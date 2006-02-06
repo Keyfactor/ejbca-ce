@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.36 2006-02-06 09:08:24 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.37 2006-02-06 09:35:50 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -19,7 +19,7 @@ jboss.home=${env.JBOSS_HOME}
 
 # which java version to use 14 for 1.4 and 15 for 1.5
 # default: 14
-java.ver =14
+java.ver=14
 
 # ------------ Basic CA configuration ---------------------
 # When upgrading, the important options are:
@@ -86,7 +86,7 @@ ocsp.usecasigningcert=true
 
 # Datasource for Unid-Fnr mapping OCSP extension.
 # No default value, must be set if the extension is used
-#ocsp.uniddatsource
+#ocsp.uniddatsource=
 
 # ------------ Web GUI configuration ---------------------
 # When upgrading, the important options are:
