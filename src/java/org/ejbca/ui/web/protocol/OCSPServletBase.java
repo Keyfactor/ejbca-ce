@@ -105,11 +105,11 @@ import org.ejbca.util.CertTools;
  *   value="${ocsp.extensionclass}"
  *   
  * @web.servlet-init-param description="Specifies classes implementing OCSP extensions matching oids above, separate multiple entries with ;"
- *   name="extensionDataSource"
- *   value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
+ *   name="unidDataSource"
+ *   value="${ocsp.uniddatsource}"
  *   
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson
- * @version  $Id: OCSPServletBase.java,v 1.7 2006-02-05 17:13:54 anatom Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.8 2006-02-06 09:08:26 anatom Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
@@ -391,7 +391,7 @@ abstract class OCSPServletBase extends HttpServlet {
         		 ext = (IOCSPExtension)Class.forName(clazz).newInstance();
         		 ext.init(config);
         	} catch (Exception e) {
-        		m_log.error("Cann not create extension with class "+clazz, e);
+        		m_log.error("Can not create extension with class "+clazz, e);
         		continue;
         	}
         	m_extensionMap.put(oid,ext);

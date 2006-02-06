@@ -11,6 +11,7 @@ import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.X509Extension;
@@ -21,7 +22,7 @@ import org.ejbca.util.JDBCUtil;
 /** OCSP extension used to map a UNID to a Fnr, OID for this extension is 2.16.578.1.16.3.2
  * 
  * @author tomas
- * @version $Id: OCSPUnidExtension.java,v 1.2 2006-02-05 17:13:52 anatom Exp $
+ * @version $Id: OCSPUnidExtension.java,v 1.3 2006-02-06 09:08:26 anatom Exp $
  *
  */
 public class OCSPUnidExtension implements IOCSPExtension {
@@ -38,6 +39,10 @@ public class OCSPUnidExtension implements IOCSPExtension {
 	public void init(ServletConfig config) {
 		// Datasource
 		dataSourceJndi = config.getInitParameter("extensionDataSource");
+        if (StringUtils.isEmpty(dataSourceJndi)) {
+            m_log.error("unidDataSource init-parameter must be set!");
+            throw new IllegalArgumentException("unidDataSource init-parameter must be set!");
+        }
 	}
 	
 	/** Called by OCSP responder when the configured extension is found in the request.

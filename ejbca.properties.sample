@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.35 2006-02-05 17:13:54 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.36 2006-02-06 09:08:24 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -76,14 +76,17 @@ ocsp.usecasigningcert=true
 # separate multiple entries with ;"
 # Example value: 2.16.578.1.16.3.2
 # Default: nothing 
-ocsp.extensionoid=
+#ocsp.extensionoid=
 
 # Specifies classes implementing OCSP extensions matching oids above, 
 # separate multiple entries with ;"
 # Example value: org.ejbca.core.protocol.ocsp.OCSPUnidExtension
 # Default: nothing
-ocsp.extensionclass=
+#ocsp.extensionclass=
 
+# Datasource for Unid-Fnr mapping OCSP extension.
+# No default value, must be set if the extension is used
+#ocsp.uniddatsource
 
 # ------------ Web GUI configuration ---------------------
 # When upgrading, the important options are:

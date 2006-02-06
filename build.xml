@@ -119,6 +119,7 @@
     <property name="ocsp.usecasigningcert" value="true"/>
     <property name="ocsp.extensionoid" value=""/>
     <property name="ocsp.extensionclass" value=""/>
+    <property name="ocsp.uniddatsource" value=""/>
     <property name="datasource.jndi-name" value="EjbcaDS" />
     <property name="datasource.jndi-name-prefix" value="java:/" />
     <property name="database.name" value="hsqldb" />
