@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.38 2006-02-07 13:10:39 primelars Exp $
+# $Id: ejbca.properties.sample,v 1.39 2006-02-07 14:45:35 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -59,46 +59,6 @@ ca.keystorepass=foo123
 # The default value is the same for convenience.
 ca.ocspkeystorepass=foo123
 #ca.ocspkeystorepass=ocsp!secret!
-
-# ------------ OCSP configuration ---------------------
-
-# Specifies the subject of a certificate which is used to identifiy the 
-# responder which will generate responses when no real CA can be found from the request. 
-# This is used to generate 'unknown' responses when a request is received for a certificate 
-# that is not signed by any CA on this server. Recommended to use same as ca.dn.
-ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
-
-# If set to true the OCSP reponses will be signed directly by the CAs certificate instead 
-# of the CAs OCSP responder. Default true.
-ocsp.usecasigningcert=true
-
-# Specifies OCSP extension oids that will result in a call to an extension class, 
-# separate multiple entries with ;"
-# Example value: 2.16.578.1.16.3.2
-# Default: nothing 
-#ocsp.extensionoid=
-
-# Specifies classes implementing OCSP extensions matching oids above, 
-# separate multiple entries with ;"
-# Example value: org.ejbca.core.protocol.ocsp.OCSPUnidExtension
-# Default: nothing
-#ocsp.extensionclass=
-
-# Datasource for Unid-Fnr mapping OCSP extension.
-# No default value, must be set if the extension is used
-#ocsp.uniddatsource=
-
-# The ocsp.softKeys.* preferences has a meaning only to the OCSP responder.
-
-# Directory containing soft keys for the container.
-#ocsp.softKeys.dir=./softKeys
-
-# The password for the all the soft keys of the OCSP responder. All keys must have the same password.
-#ocsp.softKeys.keyPassword=foo123
-
-# The password to all soft keystores. If the keystore is created by EJBCA then this password is equal to 
-# the key password above. If it is equal you do not have to define it.
-#ocsp.softKeys.storePassword=foo123
 
 
 # ------------ Web GUI configuration ---------------------
@@ -218,7 +178,56 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 #database.password=ejbca
 #database.password=postgres
 
-# ------------ mail configuration ---------------------
+# ------------ OCSP configuration ---------------------
+
+# Specifies the subject of a certificate which is used to identifiy the 
+# responder which will generate responses when no real CA can be found from the request. 
+# This is used to generate 'unknown' responses when a request is received for a certificate 
+# that is not signed by any CA on this server. Recommended to use same as ca.dn.
+ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
+
+# If set to true the OCSP reponses will be signed directly by the CAs certificate instead 
+# of the CAs OCSP responder. Default true.
+ocsp.usecasigningcert=true
+
+# Specifies OCSP extension oids that will result in a call to an extension class, 
+# separate multiple entries with ;"
+# Leave out if you do not know what this is.
+# Example value: 2.16.578.1.16.3.2
+# Default: nothing 
+#ocsp.extensionoid=
+
+# Specifies classes implementing OCSP extensions matching oids above, 
+# separate multiple entries with ;"
+# Leave out if you do not know what this is.
+# Example value: org.ejbca.core.protocol.ocsp.OCSPUnidExtension
+# Default: nothing
+#ocsp.extensionclass=
+
+# Datasource for Unid-Fnr mapping OCSP extension. 
+# Leave out if you do not know what this is.
+# No default value, must be set if the extension is used
+#ocsp.uniddatsource=
+
+# Directory containing certificates of trusted entities allowed to query for Fnrs. 
+# Leave out if you do not know what this is.
+# No default value, must be set if the extension is used
+#ocsp.unidtrustdir=
+
+# The ocsp.softKeys.* preferences has a meaning only to the External OCSP responder.
+# Please read the doc/howto/HOWTO-OCSP-RESPONDER.txt for inforamtion.
+
+# Directory containing soft keys for the container.
+#ocsp.softKeys.dir=./softKeys
+
+# The password for the all the soft keys of the OCSP responder. All keys must have the same password.
+#ocsp.softKeys.keyPassword=foo123
+
+# The password to all soft keystores. If the keystore is created by EJBCA then this password is equal to 
+# the key password above. If it is equal you do not have to define it.
+#ocsp.softKeys.storePassword=foo123
+
+# ------------ Mail configuration ---------------------
 
 # Used to send notification email from the RA.
 # See ${ejbca.home}/src/appserver/ejbca-mail-service.xml
@@ -274,7 +283,7 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 # Default: ./hwtoken
 #hwtoken_classes=../primeCard/caTokenClasses-1.5-3.2
 
-#------------------- OCSC publisher db configuration------------------------------
+#------------------- OCSP publisher db configuration------------------------------
 # All these "ocsp-database.*" properties is used to configure the connection to the database that the
 # ExternalOCSPPublisher will publish to. Please read the doc/howto/HOWTO-OCSP-RESPONDER.txt for inforamtion.
 # If no ExternalOCSPPublisher will be used these properties should not be configured.
@@ -284,7 +293,7 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 
 # Database connection url.
 # This is the URL used to connect to the database, used to configure a new datasource in JBoss.
-#ocsp-database.url=jdbc:mysql://larslap.mine.nu:3306/ejbca3
+#ocsp-database.url=jdbc:mysql://127.0.0.1:3306/ejbca
 #ocsp-database.url=jdbc:postgresql://127.0.0.1/ejbca
 #ocsp-database.url=jdbc:microsoft:sqlserver://localhost:1433;DatabaseName=ejbca
 #ocsp-database.url=jdbc:oracle:thin:@127.0.0.1:1521:ejbca
@@ -299,9 +308,7 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 #ocsp-database.driver=com.ddtek.jdbc.oracle.OracleDriver
 
 # Database username.
-#ocsp-database.username=ejbca3
-#ocsp-database.username=postgres
+#ocsp-database.username=ejbca
 
 # Database password.
-#ocsp-database.password=dub-h4
-#ocsp-database.password=postgres
+#ocsp-database.password=ejbca
