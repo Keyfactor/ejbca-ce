@@ -79,7 +79,6 @@
         <copy todir="${jboss.farm.dir}" overwrite="true">
             <fileset dir="src/appserver/jboss">
             	<include name="ejbca-ds.xml"/>
-                <include name="ocsp-ds.xml"/>
             	<include name="ejbca-mail-service.xml"/>
             </fileset>
             <filterchain>
@@ -89,6 +88,17 @@
     	<copy todir="${jboss.farm.dir}">
     		<fileset dir="${dist.dir}" includes="ejbca.ear"/>
     	</copy>
+	</target>
+
+	<target name="j2ee:deploywithexternalocsp" description="Deploy the application" depends="j2ee:deploy">
+        <copy todir="${jboss.farm.dir}" overwrite="true">
+            <fileset dir="src/appserver/jboss">
+                <include name="ocsp-ds.xml"/>
+            </fileset>
+            <filterchain>
+                <expandproperties/>
+            </filterchain>
+        </copy>
 	</target>
 
 	<target name="j2ee:deployocsp" description="Deploy the standalone OCSP reponder" depends="j2ee:configure">

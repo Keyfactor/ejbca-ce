@@ -34,7 +34,9 @@ import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.util.CertTools;
 
-/** Tests http pages of ocsp
+/** Tests http pages of a standalone ocsp
+ * To run this test you must create a user named ocspTest that has at least two certificates and
+ * at least one of them must be revoked.
  **/
 public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
     private static Logger log = Logger.getLogger(ProtocolOcspHttpStandaloneTest.class);
@@ -84,7 +86,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
     }
     private X509Certificate getTestCert( boolean isRevoked ) throws RemoteException, CreateException {
         ICertificateStoreSessionRemote store = storehome.create();
-        Collection certs = store.findCertificatesByUsername(admin, "ocspTest4");
+        Collection certs = store.findCertificatesByUsername(admin, "ocspTest");
         Iterator i = certs.iterator();
         while ( i.hasNext() ) {
             X509Certificate cert = (X509Certificate)i.next();
