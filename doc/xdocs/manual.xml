@@ -1387,13 +1387,13 @@ Otherwise you will have to add it using something like:
 First get the CA cert:
 </p>
 <source>
-bin/ejbca.sh ca getrootcert MyCA -der
+bin/ejbca.sh ca getrootcert MyCA myca.der -der
 </source>
 <p>
 Then add it to the java trust store:
 </p>
 <source>
-keytool -import -trustcacert -alias MyCA -keystore $JAVA_HOME/jre/lib/security/cacerts -password changeit
+keytool -import -trustcacert -alias MyCA -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit -file myca.der
 </source>
 <p>
 A guide for configuring OpenLDAP on Solaris can be found at
