@@ -61,14 +61,13 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
             } catch (Exception e) {
                 StringWriter sw = new StringWriter();
                 PrintWriter pw = new PrintWriter(sw);
-                pw.println("Exception during execution of:");
+                pw.println("OCSP publishing is not working.");
                 if ( ps!=null )
-                    pw.println("  "+ps);
-                pw.println("See cause of exception.");
+                    pw.println(" Error during execution of:" +ps);
                 pw.flush();
                 PublisherException pe = new PublisherException(sw.toString());
                 pe.initCause(e);
-                log.debug("execute error cause:", e);
+                log.debug(sw.toString(), e);
                 throw pe;
             } finally {
                 JDBCUtil.close(connection, ps, result);

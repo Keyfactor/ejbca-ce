@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.37 2006-02-06 09:35:50 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.38 2006-02-07 13:10:39 primelars Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -87,6 +87,19 @@ ocsp.usecasigningcert=true
 # Datasource for Unid-Fnr mapping OCSP extension.
 # No default value, must be set if the extension is used
 #ocsp.uniddatsource=
+
+# The ocsp.softKeys.* preferences has a meaning only to the OCSP responder.
+
+# Directory containing soft keys for the container.
+#ocsp.softKeys.dir=./softKeys
+
+# The password for the all the soft keys of the OCSP responder. All keys must have the same password.
+#ocsp.softKeys.keyPassword=foo123
+
+# The password to all soft keystores. If the keystore is created by EJBCA then this password is equal to 
+# the key password above. If it is equal you do not have to define it.
+#ocsp.softKeys.storePassword=foo123
+
 
 # ------------ Web GUI configuration ---------------------
 # When upgrading, the important options are:
@@ -260,3 +273,35 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 # If the directory is not existing an empty directory will be created.
 # Default: ./hwtoken
 #hwtoken_classes=../primeCard/caTokenClasses-1.5-3.2
+
+#------------------- OCSC publisher db configuration------------------------------
+# All these "ocsp-database.*" properties is used to configure the connection to the database that the
+# ExternalOCSPPublisher will publish to. Please read the doc/howto/HOWTO-OCSP-RESPONDER.txt for inforamtion.
+# If no ExternalOCSPPublisher will be used these properties should not be configured.
+
+# jndi name of the datasource to use in deployment descriptors of ejbs.
+#ocsp-datasource.jndi-name=OcspDS
+
+# Database connection url.
+# This is the URL used to connect to the database, used to configure a new datasource in JBoss.
+#ocsp-database.url=jdbc:mysql://larslap.mine.nu:3306/ejbca3
+#ocsp-database.url=jdbc:postgresql://127.0.0.1/ejbca
+#ocsp-database.url=jdbc:microsoft:sqlserver://localhost:1433;DatabaseName=ejbca
+#ocsp-database.url=jdbc:oracle:thin:@127.0.0.1:1521:ejbca
+#ocsp-database.url=jdbc:datadirect:oracle://127.0.0.1:1521;SID=ejbca
+
+# JDBC driver classname.
+# The J2EE server needs to be configured with the appropriate JDBC driver for the selected database
+#ocsp-database.driver=com.mysql.jdbc.Driver
+#ocsp-database.driver=org.postgresql.Driver
+#ocsp-database.driver=com.microsoft.jdbc.sqlserver.SQLServerDriver
+#ocsp-database.driver=oracle.jdbc.driver.OracleDriver
+#ocsp-database.driver=com.ddtek.jdbc.oracle.OracleDriver
+
+# Database username.
+#ocsp-database.username=ejbca3
+#ocsp-database.username=postgres
+
+# Database password.
+#ocsp-database.password=dub-h4
+#ocsp-database.password=postgres

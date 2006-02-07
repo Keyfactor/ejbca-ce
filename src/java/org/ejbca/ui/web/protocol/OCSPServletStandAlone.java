@@ -49,15 +49,15 @@ import org.ejbca.core.model.log.Admin;
  *
  * @web.servlet-init-param description="Directory name of the soft keystores. The signing keys will be fetched from all files in this directory. Valid formats of the files are JKS and PKCS12 (p12)."
  *   name="softKeyDirectoryName"
- *   value="./softKeys"
+ *   value="${ocsp.softKeys.dir}"
  *
  * @web.servlet-init-param description="Signing key password. Must be same for all signing keys."
  *   name="keyPassword"
- *   value="foo123"
+ *   value="${ocsp.softKeys.keyPassword}"
  *
  * @web.servlet-init-param description="Keystore password. Keystore password for all keystores in the keystore directory."
  *   name="storePassword"
- *   value="foo123"
+ *   value="${ocsp.softKeys.storePassword}"
  *
  * @web.ejb-local-ref
  *  name="ejb/CertificateStoreOnlyDataSessionLocal"
@@ -67,7 +67,7 @@ import org.ejbca.core.model.log.Admin;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silvén PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.8 2006-02-06 08:59:35 anatom Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.9 2006-02-07 13:10:39 primelars Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase {
 

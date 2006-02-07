@@ -84,7 +84,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
     }
     private X509Certificate getTestCert( boolean isRevoked ) throws RemoteException, CreateException {
         ICertificateStoreSessionRemote store = storehome.create();
-        Collection certs = store.findCertificatesByUsername(admin, "ocspTest");
+        Collection certs = store.findCertificatesByUsername(admin, "ocspTest4");
         Iterator i = certs.iterator();
         while ( i.hasNext() ) {
             X509Certificate cert = (X509Certificate)i.next();
