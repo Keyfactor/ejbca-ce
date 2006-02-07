@@ -741,6 +741,9 @@ web.contentencoding    = ${web.contentencoding}
     <target name="deploy" depends="build">
         <antcall target="j2ee:deploy" />
     </target>
+    <target name="deploywithexternalocsp" depends="build">
+        <antcall target="j2ee:deploywithexternalocsp" />
+    </target>
     <target name="ocsp-deploy" depends="ocsp.ear">
         <antcall target="j2ee:deployocsp" />
     </target>
