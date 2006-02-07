@@ -39,7 +39,7 @@ import org.bouncycastle.jce.interfaces.*;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.1 2006-01-17 20:32:19 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.2 2006-02-07 13:55:15 anatom Exp $
  */
 public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);
@@ -278,13 +278,16 @@ public class KeyTools {
      * @param keyStore the keystore, which has been loaded and opened.
      * @param privateKeyAlias the alias of the privatekey for which the certchain belongs.
      *
-     * @return array of Certificate, length of array is 0 if no certificates are found.
+     * @return array of Certificate, or null if no certificates are found.
      */
     public static Certificate[] getCertChain(KeyStore keyStore, String privateKeyAlias)
         throws KeyStoreException {
         log.debug(">getCertChain: alias='" + privateKeyAlias + "'");
 
         Certificate[] certchain = keyStore.getCertificateChain(privateKeyAlias);
+        if (certchain == null) {
+            return null;
+        }
         log.debug("Certchain retrieved from alias '" + privateKeyAlias + "' has length " +
             certchain.length);
 
