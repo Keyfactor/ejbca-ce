@@ -390,6 +390,7 @@ web.contentencoding    = ${web.contentencoding}
 		        <replacestring from="@ejbca@" to="${app.name}"/>
 		    	<replacestring from="@EJBCA@" to="${app.name.cap}"/>
 		    	<replacestring from="@weblogic.ora.columntyp@" to="${weblogic-oracle-columntype}"/>
+				<replacestring from="@page.encoding@" to="${web.contentencoding}"/>
 			</tokenfilter>
 			</filterchain>
 	    </copy>

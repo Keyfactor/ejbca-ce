@@ -71,6 +71,12 @@
         <servlet-name>EJBCAHealthCheckServlet</servlet-name>
         <url-pattern>/ejbcahealth</url-pattern>
     </servlet-mapping>
+   <env-entry>
+      <description>Default content encoding used to decode form posts</description>
+      <env-entry-name>contentEncoding</env-entry-name>
+      <env-entry-value>@page.encoding@</env-entry-value>
+      <env-entry-type>java.lang.String</env-entry-type>
+   </env-entry>
   <env-entry>
     <env-entry-name>DataSource</env-entry-name>
     <env-entry-value>@datasource.jndi-name-prefix@@datasource.jndi-name@</env-entry-value>

@@ -12,9 +12,17 @@
         <servlet-class>org.ejbca.ui.web.pub.CertDistServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-	<servlet-name>CertDist</servlet-name>
-	<url-pattern>/certdist</url-pattern>
+	    <servlet-name>CertDist</servlet-name>
+	    <url-pattern>/certdist</url-pattern>
     </servlet-mapping>
+
+   <env-entry>
+      <description><![CDATA[Default content encoding used to decode form posts]]></description>
+      <env-entry-name>contentEncoding</env-entry-name>
+      <env-entry-value>@page.encoding@</env-entry-value>
+      <env-entry-type>java.lang.String</env-entry-type>
+   </env-entry>
+
   <ejb-local-ref>
     <ejb-ref-name>ejb/SignSessionLocal</ejb-ref-name>
     <ejb-ref-type>Session</ejb-ref-type>
