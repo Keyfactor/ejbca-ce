@@ -64,6 +64,8 @@ import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.x509.AccessDescription;
+import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.GeneralName;
@@ -74,6 +76,7 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.x509.X509NameTokenizer;
+import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.MonetaryValue;
 import org.bouncycastle.asn1.x509.qualified.QCStatement;
@@ -88,7 +91,7 @@ import org.bouncycastle.x509.X509V3CertificateGenerator;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.4 2006-02-08 11:19:18 anatom Exp $
+ * @version $Id: CertTools.java,v 1.5 2006-02-08 20:22:33 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -1257,6 +1260,40 @@ public class CertTools {
             throw new CertificateParsingException(e.toString());
         }
         return null;
+    }
+    
+    /** Returns OCSP URL that is inside AuthorithInformationAccess extension, or null.
+     * 
+     * @param cert
+     * @return
+     * @throws CertificateParsingException
+     */
+    public static String getAuthorityInformationAccessOcspUrl(X509Certificate cert)
+        throws CertificateParsingException {
+            try {
+                DERObject obj = getExtensionValue(cert, X509Extensions.AuthorityInfoAccess.getId());
+                if (obj == null) {
+                    return null;
+                }
+                AuthorityInformationAccess aia = AuthorityInformationAccess.getInstance(obj);
+                AccessDescription[] ad = aia.getAccessDescriptions();
+                if ( (ad == null) || (ad.length < 1) ) {
+                	return null;
+                }
+                if (!ad[0].getAccessMethod().equals(X509ObjectIdentifiers.ocspAccessMethod)) {
+                	return null;
+                }
+                GeneralName gn = ad[0].getAccessLocation();
+                if (gn.getTagNo() != 6) {
+                	return null;
+                }
+                DERIA5String str = DERIA5String.getInstance(gn.getDERObject());
+                return str.getString();
+            }
+            catch (Exception e) {
+                log.error("Error parsing AuthorityInformationAccess", e);
+                throw new CertificateParsingException(e.toString());
+            }
     }
 
     /**

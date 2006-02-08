@@ -40,17 +40,28 @@ import org.ejbca.util.JDBCUtil;
 /** ASN.1 OCSP extension used to map a UNID to a Fnr, OID for this extension is 2.16.578.1.16.3.2
  * 
  * @author tomas
- * @version $Id: OCSPUnidExtension.java,v 1.6 2006-02-08 11:21:38 anatom Exp $
+ * @version $Id: OCSPUnidExtension.java,v 1.7 2006-02-08 20:22:30 anatom Exp $
  *
  */
 public class OCSPUnidExtension implements IOCSPExtension {
 
     static private final Logger m_log = Logger.getLogger(OCSPUnidExtension.class);
 
+	/** Constants capturing the possible error returned by the Unid-Fnr OCSP Extension 
+	 * 
+	 */
+	public static final int ERROR_NO_ERROR = 0;
+	public static final int ERROR_UNKNOWN = 1;
+	public static final int ERROR_UNAUTHORIZED = 2;
+	public static final int ERROR_NO_FNR_MAPPING = 3;
+	public static final int ERROR_NO_SERIAL_IN_DN = 4;
+	public static final int ERROR_SERVICE_UNAVAILABLE = 5;
+    public static final int ERROR_CERT_REVOKED = 6;
+    
     private String dataSourceJndi;
     private Hashtable trustedCerts = new Hashtable();
     private X509Certificate cacert = null;
-    private int errCode = OCSPUnidResponse.ERROR_NO_ERROR;
+    private int errCode = OCSPUnidExtension.ERROR_NO_ERROR;
     
 	/** Called after construction
 	 * 
@@ -126,12 +137,12 @@ public class OCSPUnidExtension implements IOCSPExtension {
         m_log.debug(">process()");
         // Check authorization first
         if (!checkAuthorization(request)) {
-        	errCode = OCSPUnidResponse.ERROR_UNAUTHORIZED;
+        	errCode = OCSPUnidExtension.ERROR_UNAUTHORIZED;
         	return null;
         }
         // If the certificate is revoked, we must not return an FNR
         if (status != null) {
-            errCode = OCSPUnidResponse.ERROR_CERT_REVOKED;
+            errCode = OCSPUnidExtension.ERROR_CERT_REVOKED;
             return null;
         }
 		Connection con = null;
@@ -148,7 +159,7 @@ public class OCSPUnidExtension implements IOCSPExtension {
         			con = ServiceLocator.getInstance().getDataSource(dataSourceJndi).getConnection();
         		} catch (SQLException e) {
         			m_log.error("Got SQL exception when looking up databasource for Unid-Fnr mapping: ", e);
-        			errCode = OCSPUnidResponse.ERROR_SERVICE_UNAVAILABLE;
+        			errCode = OCSPUnidExtension.ERROR_SERVICE_UNAVAILABLE;
         			return null;
         		}
                 ps = con.prepareStatement("select fnr from UnidFnrMapping where unid=?");
@@ -159,7 +170,7 @@ public class OCSPUnidExtension implements IOCSPExtension {
                 }
         	} else {
         		m_log.error("Did not find a serialNumber in DN: "+cert.getSubjectDN().getName());
-        		errCode = OCSPUnidResponse.ERROR_NO_SERIAL_IN_DN;
+        		errCode = OCSPUnidExtension.ERROR_NO_SERIAL_IN_DN;
         		return null;
         	}
             m_log.debug("<process()");
@@ -172,7 +183,7 @@ public class OCSPUnidExtension implements IOCSPExtension {
         // Construct the response extentsion if we found a mapping
         if (fnr == null) {
             m_log.error("No Fnr mapping exists for UNID "+sn);
-        	errCode = OCSPUnidResponse.ERROR_NO_FNR_MAPPING;
+        	errCode = OCSPUnidExtension.ERROR_NO_FNR_MAPPING;
         	return null;
         	
         }

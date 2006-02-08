@@ -23,34 +23,41 @@ import org.bouncycastle.ocsp.UnknownStatus;
 /** Class holding data returned by the OCSPUnidExtension
  * 
  * @author tomas
- * @version $Id: OCSPUnidResponse.java,v 1.3 2006-02-08 07:31:46 anatom Exp $
+ * @version $Id: OCSPUnidResponse.java,v 1.4 2006-02-08 20:22:30 anatom Exp $
  *
  */
 public class OCSPUnidResponse {
 	
-	/** Constants capturing the possible error returned
-	 * 
-	 */
 	public static final int ERROR_NO_ERROR = 0;
 	public static final int ERROR_UNKNOWN = 1;
 	public static final int ERROR_UNAUTHORIZED = 2;
-	public static final int ERROR_NO_FNR_MAPPING = 3;
-	public static final int ERROR_NO_SERIAL_IN_DN = 4;
-	public static final int ERROR_SERVICE_UNAVAILABLE = 5;
-    public static final int ERROR_CERT_REVOKED = 6;
+	public static final int ERROR_NO_RESPONSE = 3;
+	public static final int ERROR_INVALID_SIGNATURE = 4;
 
 	/*
 	 * Private vaiables
 	 */
 	private OCSPResp resp = null;
 	private String fnr = null;
-	private int errcode = ERROR_NO_ERROR;
-
-	public int getErrcode() {
-		return errcode;
+	private int httpReturnCode = 200;
+	private int errCode = OCSPUnidResponse.ERROR_NO_ERROR;
+	
+	public OCSPUnidResponse() {
 	}
-	public void setErrcode(int errcode) {
-		this.errcode = errcode;
+	public OCSPUnidResponse(OCSPResp ocspresp) {
+		this.resp = ocspresp;
+	}
+	public int getHttpReturnCode() {
+		return httpReturnCode;
+	}
+	public void setHttpReturnCode(int code) {
+		httpReturnCode = code;
+	}
+	public int getErrorCode() {
+		return errCode;
+	}
+	public void setErrorCode(int code) {
+		errCode = code;
 	}
 	public String getFnr() {
 		return fnr;

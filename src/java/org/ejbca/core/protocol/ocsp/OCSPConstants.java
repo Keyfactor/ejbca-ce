@@ -16,7 +16,7 @@ package org.ejbca.core.protocol.ocsp;
 /**
  * 
  * @author tomasg
- * @version $Id: OCSPConstants.java,v 1.2 2006-02-08 07:31:47 anatom Exp $
+ * @version $Id: OCSPConstants.java,v 1.3 2006-02-08 20:22:30 anatom Exp $
  */
 public class OCSPConstants {
 
@@ -26,5 +26,6 @@ public class OCSPConstants {
     public static final int OCSP_GOOD = 1;
     public static final int OCSP_REVOKED = 2;
     public static final int OCSP_UNKNOWN = 3;
+
 
 }
