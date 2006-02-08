@@ -49,7 +49,7 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.2 2006-02-01 11:18:30 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.3 2006-02-08 11:18:50 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
@@ -262,13 +262,13 @@ public class LdapPublisher extends BasePublisher {
                 LDAPModification[] mods = new LDAPModification[modSet.size()]; 
                 mods = (LDAPModification[])modSet.toArray(mods);
                 lc.modify(dn, mods);
-                log.info("\nModified object: " + dn + " successfully.");  
+                log.debug("Modified object: " + dn + " successfully.");  
             } else {
                 if(this.getCreateNonExisingUsers()){     
                   if (oldEntry == null) {                  	
                     newEntry = new LDAPEntry(dn, attributeSet);
                     lc.add(newEntry);
-                    log.info("\nAdded object: " + dn + " successfully.");
+                    log.debug("Added object: " + dn + " successfully.");
                   }
                 }  
             }
@@ -380,10 +380,10 @@ public class LdapPublisher extends BasePublisher {
                 LDAPModification[] mods = new LDAPModification[modSet.size()]; 
                 mods = (LDAPModification[])modSet.toArray(mods);
                 lc.modify(dn, mods);
-                log.debug("\nModified object: " + dn + " successfully.");
+                log.debug("Modified object: " + dn + " successfully.");
             } else {
                 lc.add(newEntry);
-                log.debug("\nAdded object: " + dn + " successfully.");                
+                log.debug("Added object: " + dn + " successfully.");                
             }
         } catch (LDAPException e) {
             log.error("Error storing CRL (" + getCRLAttribute() + ") in LDAP (" + getCAObjectClass() + "): ", e);
