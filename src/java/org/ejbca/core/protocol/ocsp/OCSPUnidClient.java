@@ -66,7 +66,7 @@ import org.ejbca.util.KeyTools;
  * 3.There was no Unid in the certificate (serialNumber DN component)
  *
  * @author Tomas Gustavsson, PrimeKey Solutions AB
- * @version $Id: OCSPUnidClient.java,v 1.3 2006-02-08 20:22:30 anatom Exp $
+ * @version $Id: OCSPUnidClient.java,v 1.4 2006-02-08 20:28:49 anatom Exp $
  *
  */
 public class OCSPUnidClient {
@@ -121,10 +121,13 @@ public class OCSPUnidClient {
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, cert.getSerialNumber()));
-        Hashtable exts = new Hashtable();
-        X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("1")));
-        exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
-        gen.setRequestExtensions(new X509Extensions(exts));
+        // Don't bother adding Unid extension of we are not using client authentication
+        if (ks != null) {
+            Hashtable exts = new Hashtable();
+            X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("1")));
+            exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
+            gen.setRequestExtensions(new X509Extensions(exts));        	
+        }
         OCSPReq req = gen.generate();
 
         // Send the request and receive a BasicResponse
