@@ -1,5 +1,5 @@
 <%@ page pageEncoding="ISO-8859-1"%>
-<%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.security.cert.*,org.ejbca.core.ejb.ca.sign.*,org.ejbca.core.ejb.ca.caadmin.*,org.ejbca.core.model.ca.caadmin.*,org.ejbca.core.model.log.Admin"%>
+<%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.net.URLEncoder,java.security.cert.*,org.ejbca.core.ejb.ca.sign.*,org.ejbca.core.ejb.ca.caadmin.*,org.ejbca.core.model.ca.caadmin.*,org.ejbca.core.model.log.Admin"%>
 
 <HTML>
 <HEAD>
@@ -33,7 +33,7 @@ try  {
         String issuerdn = null;
         if (chainiter.hasNext()) {
         	X509Certificate cert = (X509Certificate)chainiter.next();
-        	issuerdn = cert.getSubjectDN().getName();
+        	issuerdn = URLEncoder.encode(cert.getSubjectDN().getName(), "UTF-8");
         }
         if (chain.size() == 0) {
 %>
@@ -50,9 +50,10 @@ try  {
             chainiter = chain.iterator();
             while (chainiter.hasNext()) {
             	X509Certificate cert = (X509Certificate)chainiter.next();
+            	String subjectdn = URLEncoder.encode(cert.getSubjectDN().getName(), "UTF-8");
 %>
 </div>
-  <div align="center"><a href="certdist?cmd=cacert&issuer=<%= issuerdn %>&level=<%= i %>"><%= cert.getSubjectDN().getName() %></a>, <a href="certdist?cmd=ocspcert&issuer=<%= cert.getSubjectDN().getName() %>">OCSPResponder certificate</a></div>
+  <div align="center"><a href="certdist?cmd=cacert&issuer=<%= issuerdn %>&level=<%= i %>"><%= cert.getSubjectDN().getName() %></a>, <a href="certdist?cmd=ocspcert&issuer=<%= subjectdn %>">OCSPResponder certificate</a></div>
 <div align="center">
 <%
 				i++;
@@ -68,9 +69,10 @@ try  {
             chainiter = chain.iterator();
             while (chainiter.hasNext()) {
             	X509Certificate cert = (X509Certificate)chainiter.next();
+            	String subjectdn = URLEncoder.encode(cert.getSubjectDN().getName(), "UTF-8");
 %>
 </div>
-  <div align="center"><a href="certdist?cmd=nscacert&issuer=<%= issuerdn %>&level=<%= i %>"><%= cert.getSubjectDN().getName() %></a>, <a href="certdist?cmd=nsocspcert&issuer=<%= cert.getSubjectDN().getName() %>">OCSPResponder certificate</a></div>
+  <div align="center"><a href="certdist?cmd=nscacert&issuer=<%= issuerdn %>&level=<%= i %>"><%= cert.getSubjectDN().getName() %></a>, <a href="certdist?cmd=nsocspcert&issuer=<%= subjectdn %>">OCSPResponder certificate</a></div>
 <div align="center">
 <%
                 i++;
@@ -86,9 +88,10 @@ try  {
             chainiter = chain.iterator();
             while (chainiter.hasNext()) {
             	X509Certificate cert = (X509Certificate)chainiter.next();
+            	String subjectdn = URLEncoder.encode(cert.getSubjectDN().getName(), "UTF-8");
 %>
 </div>
-  <div align="center"><a href="certdist?cmd=iecacert&issuer=<%= issuerdn %>&level=<%= i %>"><%= cert.getSubjectDN().getName() %></a>, <a href="certdist?cmd=ieocspcert&issuer=<%= cert.getSubjectDN().getName() %>">OCSPResponder certificate</a></div>
+  <div align="center"><a href="certdist?cmd=iecacert&issuer=<%= issuerdn %>&level=<%= i %>"><%= cert.getSubjectDN().getName() %></a>, <a href="certdist?cmd=ieocspcert&issuer=<%= subjectdn %>">OCSPResponder certificate</a></div>
 <div align="center">
 <%
                 i++;

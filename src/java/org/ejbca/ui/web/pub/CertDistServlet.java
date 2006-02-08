@@ -64,7 +64,7 @@ import org.ejbca.util.CertTools;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.2 2006-02-08 20:54:22 anatom Exp $
  */
 public class CertDistServlet extends HttpServlet {
 
@@ -183,7 +183,7 @@ public class CertDistServlet extends HttpServlet {
                 return;
             }
         } else if (command.equalsIgnoreCase(COMMAND_CERT) || command.equalsIgnoreCase(COMMAND_LISTCERT)) {
-            String dn = req.getParameter(SUBJECT_PROPERTY);
+        	String dn = java.net.URLDecoder.decode(req.getParameter(SUBJECT_PROPERTY),"UTF-8");
             if (dn == null) {
                 log.debug("Bad request, no 'subject' arg to 'lastcert' or 'listcert' command.");
                 res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usage command=lastcert/listcert?subject=<subjectdn>.");
