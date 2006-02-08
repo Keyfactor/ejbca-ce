@@ -31,7 +31,7 @@ Building and configuring the Responder.
 ---------------------------------------
 The responder is configured as EJBCA is configured. Only the preferences ocsp.* and httpsserver.*
 and datasource.* and database.* are relevant to the responder but you may keep ejbca.properties
-from the EJBCA setup since definitions of other properties does no har. But the ocsp.softKeys.*
+from the EJBCA setup since definitions of other properties does no harm. But the ocsp.softKeys.*
 prefernces that has no meaning for EJBCA has also to be configured, please read description of
 these properties in ejbca.properties.samples.
 
@@ -64,3 +64,14 @@ mysqldump --compress ejbca_db CertificateData | mysql -h 'ocspResponder' ejbca_d
 3. Check that the publishing is working before allowing issuing and revoking.
 
 
+Running several responders.
+--------------------------
+In many case it is desirable to have several responders on different computers . This is easily
+achieved if it is an mysql database that EJBCA is publishing to (see section "Building and
+configuring EJBCA"). All you have to do is to set up the publishing database as a master. Then one
+slave data base is created on each computer that should host a responder.
+How to do it is described in the mysql documentation. Depending on which which version you are using
+please read one of the followings:
+http://dev.mysql.com/doc/refman/4.1/en/replication-howto.html
+http://dev.mysql.com/doc/refman/5.0/en/replication-howto.html
+http://dev.mysql.com/doc/refman/5.1/en/replication-howto.html
