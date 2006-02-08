@@ -5,3 +5,4 @@ out
 ejbca.properties
 velocity.log
 hwtoken
+ocsp-dist

@@ -111,7 +111,7 @@
             </filterchain>
         </copy>
     	<copy todir="${jboss.farm.dir}">
-    		<fileset dir="${dist.dir}" includes="ocsp.ear"/>
+    		<fileset dir="${ocsp-dist.dir}" includes="ejbca.ear"/>
     	</copy>
 	</target>
 

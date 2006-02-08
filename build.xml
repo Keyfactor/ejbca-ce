@@ -37,6 +37,7 @@
     <property name="test.dir" value="${bin}/junit" />
     <property name="test.src.dir" location="${src}/test" />
     <property name="dist.dir" location="dist" />
+    <property name="ocsp-dist.dir" location="ocsp-dist" />
     <property name="hwtoken_classes" value="hwtoken"/>
     <property name="hwtoken.class.dir" location="${hwtoken_classes}" />
     <property name="apidoc" value="./doc/api" />
@@ -56,7 +57,7 @@
     <property name="healthcheck.src" value="${src}/publicweb/healthcheck" />
     <property name="healthcheckwar" value="${dist.dir}/healthcheck.war" />
 
-    <property name="ocspwar" value="${dist.dir}/ocsp.war" />
+    <property name="ocspwar" value="${ocsp-dist.dir}/status.war" />
 
     <property name="adminweb.src" value="${src}/adminweb" />
     <property name="adminweb.build" value="${tmp}/adminweb.war" />    
@@ -68,8 +69,9 @@
     <property name="ejbdd.src" value="${src}/deploy/ejb" />
     <property name="webdd.src" value="${src}/deploy/web" />
     <property name="eardd.src" value="${src}/deploy/ear" />
+    <property name="ocsp-eardd.src" value="${src}/deploy/ocsp-ear" />
     <property name="caear" value="${dist.dir}/${app.name}.ear" />
-    <property name="ocspear" value="${dist.dir}/ocsp.ear" />
+    <property name="ocspear" value="${ocsp-dist.dir}/${app.name}.ear" />
 
 	<property name="createcrlservice.name" value="crlcreateservice.jar" />
     <property name="createcrlservice.build" value="${tmp}/${createcrlservice.name}" />
@@ -195,6 +197,7 @@ web.contentencoding    = ${web.contentencoding}
         <mkdir dir="${build}"/>
         <mkdir dir="${ocsp-build}"/>
         <mkdir dir="${dist.dir}/${lib}"/>
+        <mkdir dir="${ocsp-dist.dir}"/>
     </target>
 
     <!-- =================================================================== -->
@@ -205,6 +208,7 @@ web.contentencoding    = ${web.contentencoding}
         <delete dir="${build}" />
         <delete dir="${ocsp-build}" />
         <delete dir="${dist.dir}" />
+        <delete dir="${ocsp-dist.dir}" />
         <delete dir="${src.gen}" />
         <delete dir="${src.dd}" />
         <delete dir="${ocsp-src.gen}" />
@@ -477,7 +481,7 @@ web.contentencoding    = ${web.contentencoding}
     <!-- =================================================================== -->
     <!-- Build standalone ocsp part                                          -->
     <!-- =================================================================== -->
-    <target name="ocsp.war" depends="ocsp-compile">
+    <target name="ocsp-war" depends="ocsp-compile">
         <war destfile="${ocspwar}" webxml="${ocsp-src.dd}/status/WEB-INF/web.xml">
             <fileset dir="${status.src}" excludes="WEB-INF/web.xml" />
         </war>
@@ -570,9 +574,9 @@ web.contentencoding    = ${web.contentencoding}
     <!-- =================================================================== -->
     <!-- Build ocsp ejb part                                                    -->
     <!-- =================================================================== -->
-    <target name="ocsp-ejb.jar" depends="ocsp-compile" description="Creates master ocsp-ejb.jar">
+    <target name="ocsp-jar" depends="ocsp-compile" description="Creates master ejbca-ejb.jar ocsp">
     <!-- create empty direktory for HW tokens if not existing -->
-        <jar jarfile="${dist.dir}/ocsp-ejb.jar">
+        <jar jarfile="${ocsp-dist.dir}/ejbca-ejb.jar">
             <manifest>
                 <!-- todo: autogenerate this from a fileset -->
                 <attribute name="Class-Path" value="${jar.extclasspath}" />
@@ -613,8 +617,8 @@ web.contentencoding    = ${web.contentencoding}
     <!-- =================================================================== -->
     <!-- Build OCSP-ear                                                        -->
     <!-- =================================================================== -->
-    <target name="ocsp.ear" depends="ocsp.war, ocsp-ejb.jar">
-        <ear destfile="${ocspear}" appxml="${eardd.src}/META-INF/ocsp.xml"> 
+    <target name="ocsp-ear" depends="ocsp-war, ocsp-jar">
+        <ear destfile="${ocspear}" appxml="${ocsp-eardd.src}/META-INF/application.xml"> 
             <fileset dir=".">
                 <include name="${lib}/bcmail-jdk${java.ver}.jar" />
                 <include name="${lib}/bcprov-jdk${java.ver}.jar" />
@@ -624,7 +628,7 @@ web.contentencoding    = ${web.contentencoding}
                 <include name="${lib}/commons-collections.jar" />
                 <include name="${lib}/commons-fileupload-1.0.jar" />
             </fileset>
-            <fileset dir="${dist.dir}">
+            <fileset dir="${ocsp-dist.dir}">
                 <include name="*-ejb.jar" />
                 <include name="*.war" />
             </fileset>
@@ -744,7 +748,7 @@ web.contentencoding    = ${web.contentencoding}
     <target name="deploywithexternalocsp" depends="build">
         <antcall target="j2ee:deploywithexternalocsp" />
     </target>
-    <target name="ocsp-deploy" depends="ocsp.ear">
+    <target name="ocsp-deploy" depends="ocsp-ear">
         <antcall target="j2ee:deployocsp" />
     </target>
 

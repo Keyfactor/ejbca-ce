@@ -8,11 +8,11 @@
     <display-name>OCSP responder</display-name>
     <description>OCSP responder</description>
     <module>
-        <ejb>ocsp-ejb.jar</ejb>
+        <ejb>ejbca-ejb.jar</ejb>
     </module>
     <module>
         <web>
-            <web-uri>ocsp.war</web-uri>
+            <web-uri>status.war</web-uri>
             <context-root>/@ejbca@/publicweb/status</context-root>
         </web>
     </module>
