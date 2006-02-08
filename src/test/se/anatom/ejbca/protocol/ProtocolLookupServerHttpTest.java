@@ -21,20 +21,30 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.rmi.RemoteException;
+import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
-import java.security.NoSuchProviderException;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 
 import javax.ejb.DuplicateKeyException;
 import javax.naming.Context;
 import javax.naming.NamingException;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManagerFactory;
 
 import junit.framework.TestCase;
 
@@ -68,6 +78,7 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.protocol.ocsp.FnrFromUnidExtension;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.KeyTools;
 
 /** Tests http pages of ocsp lookup server.
  * This test requires a lot of setup. 
@@ -78,11 +89,23 @@ import org.ejbca.util.CertTools;
  *    - /lookup-kstrust.p12 (password lookup)
  * - You also need a keystore as above but not configured as trusted in the lookup extension
  *    - /lookup-ksnotrust.p12 (password lookup)
+ * - The CA-certificate issuing the two keystores should be configured in ejbca.properties
+ *    
+ * Simply create two new users with batch generation and PKCS12 keystores in ejbca and issue their keystores.
+ * The SSL certificate used for JBoss must be issued by the same CA that creates lookup-kstrust.p12.
+ * 
+ * The database table for the UnidFnrMapping should look like (MySQL):
+ * CREATE TABLE UnidFnrMapping(
+ *   unid varchar(250) NOT NULL DEFAULT '',
+ *   fnr varchar(250) NOT NULL DEFAULT '',
+ *   PRIMARY KEY (unid)
+ * ); 
+ * 
  **/
 public class ProtocolLookupServerHttpTest extends TestCase {
     private static Logger log = Logger.getLogger(ProtocolLookupServerHttpTest.class);
 
-    private final String httpReqPath;
+    private String httpReqPath;
     private final String resourceOcsp;
 
 
@@ -95,12 +118,10 @@ public class ProtocolLookupServerHttpTest extends TestCase {
     protected static Admin admin;
     private static X509Certificate cacert = null;
     private static X509Certificate ocspTestCert = null;
-    private static KeyStore kstrust = null;
-    private static KeyStore ksnotrust = null;
     private static KeyPair keys = null;
     
     public ProtocolLookupServerHttpTest(String name)  throws Exception {
-        this(name,"http://127.0.0.1:8080/ejbca", "publicweb/status/ocsp");
+        this(name,"https://127.0.0.1:8443/ejbca", "publicweb/status/ocsp");
     }
 
     public ProtocolLookupServerHttpTest(String name, String reqP, String res) throws Exception {
@@ -111,19 +132,6 @@ public class ProtocolLookupServerHttpTest extends TestCase {
         // Install BouncyCastle provider
         CertTools.installBCProvider();
         
-        try {
-			kstrust = KeyStore.getInstance("PKCS12", "BC");
-			FileInputStream fis = new FileInputStream("/lookup-kstrust.p12");
-			kstrust.load(fis, "lookup".toCharArray());
-			fis.close();
-			ksnotrust = KeyStore.getInstance("PKCS12", "BC");
-			fis = new FileInputStream("/lookup-ksnotrust.p12");
-			ksnotrust.load(fis, "lookup".toCharArray());
-			fis.close();
-		} catch (Exception e) {
-			//log.error("Exception during construction: ", e);
-			//assertTrue(e.getMessage(), false);
-		}
         admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
 
         ctx = getInitialContext();
@@ -233,10 +241,10 @@ public class ProtocolLookupServerHttpTest extends TestCase {
         OCSPReq req = gen.generate();
 
         // Send the request and receive a BasicResponse
-        BasicOCSPResp brep = sendOCSPPost(req.getEncoded());
+        BasicOCSPResp brep = sendOCSPPost(req.getEncoded(), true);
         assertEquals(getFnr(brep), "654321");
         SingleResp[] singleResps = brep.getResponses();
-        assertEquals("No of SingResps shoudl be 1.", singleResps.length, 1);
+        assertEquals("No of SingResps should be 1.", singleResps.length, 1);
         SingleResp singleResp = singleResps[0];
         
         CertificateID certId = singleResp.getCertID();
@@ -264,11 +272,11 @@ public class ProtocolLookupServerHttpTest extends TestCase {
         OCSPReq req = gen.generate();
 
         // Send the request and receive a BasicResponse
-        BasicOCSPResp brep = sendOCSPPost(req.getEncoded());
+        BasicOCSPResp brep = sendOCSPPost(req.getEncoded(), true);
         // When a certificate is revoked the FNR must not be returned
         assertEquals(getFnr(brep), null);
         SingleResp[] singleResps = brep.getResponses();
-        assertEquals("No of SingResps shoudl be 1.", singleResps.length, 1);
+        assertEquals("No of SingResps should be 1.", singleResps.length, 1);
         SingleResp singleResp = singleResps[0];
         
         CertificateID certId = singleResp.getCertID();
@@ -302,10 +310,10 @@ public class ProtocolLookupServerHttpTest extends TestCase {
         OCSPReq req = gen.generate();
 
         // Send the request and receive a BasicResponse
-        BasicOCSPResp brep = sendOCSPPost(req.getEncoded());
+        BasicOCSPResp brep = sendOCSPPost(req.getEncoded(), true);
         assertEquals(getFnr(brep), null);
         SingleResp[] singleResps = brep.getResponses();
-        assertEquals("No of SingResps shoudl be 1.", singleResps.length, 1);
+        assertEquals("No of SingResps should be 1.", singleResps.length, 1);
         SingleResp singleResp = singleResps[0];
         
         CertificateID certId = singleResp.getCertID();
@@ -335,10 +343,44 @@ public class ProtocolLookupServerHttpTest extends TestCase {
         OCSPReq req = gen.generate();
 
         // Send the request and receive a BasicResponse
-        BasicOCSPResp brep = sendOCSPPost(req.getEncoded());
+        BasicOCSPResp brep = sendOCSPPost(req.getEncoded(), true);
         assertEquals(getFnr(brep), null);
         SingleResp[] singleResps = brep.getResponses();
-        assertEquals("No of SingResps shoudl be 1.", singleResps.length, 1);
+        assertEquals("No of SingResps should be 1.", singleResps.length, 1);
+        SingleResp singleResp = singleResps[0];
+        
+        CertificateID certId = singleResp.getCertID();
+        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
+        Object status = singleResp.getCertStatus();
+        assertEquals("Status is not null (good)", status, null);
+    }
+
+    /** test a lookup message from an untrusted requestor, should not work
+     * 
+     * @throws Exception
+     */
+    public void test05HttpsNotAuthorized() throws Exception {
+        // Change uses to a Unid that is OK
+        usersession.changeUser(admin, "unidtest", "foo123", "C=SE,O=AnaTom,surname=Jansson,serialNumber=123456789,CN=UNIDTest",null,"unidtest@anatom.se",false, SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW, caid);
+        log.debug("Reset status to NEW");
+        // Generate certificate for the new/changed user
+        ocspTestCert = (X509Certificate) remote.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
+        assertNotNull("Misslyckades skapa cert", ocspTestCert);
+
+        // And an OCSP request
+        OCSPReqGenerator gen = new OCSPReqGenerator();
+        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
+        Hashtable exts = new Hashtable();
+        X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("123456789")));
+        exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
+        gen.setRequestExtensions(new X509Extensions(exts));
+        OCSPReq req = gen.generate();
+
+        // Send the request and receive a BasicResponse
+        BasicOCSPResp brep = sendOCSPPost(req.getEncoded(), false);
+        assertEquals(getFnr(brep), null);
+        SingleResp[] singleResps = brep.getResponses();
+        assertEquals("No of SingResps should be 1.", singleResps.length, 1);
         SingleResp singleResp = singleResps[0];
         
         CertificateID certId = singleResp.getCertID();
@@ -351,23 +393,48 @@ public class ProtocolLookupServerHttpTest extends TestCase {
      * 
      * @throws Exception
      */
-    public void test05HttpNotAuthorized() throws Exception {
+    public void test06HttpNotAuthorized() throws Exception {
+        // Change to use plain http, we should be able to get a OCSP response, but the FNR mapping 
+        // will not be returned bacuse it requires https with client authentication
+        httpReqPath = "http://127.0.0.1:8080/ejbca";
+        // Change uses to a Unid that is OK
+        usersession.changeUser(admin, "unidtest", "foo123", "C=SE,O=AnaTom,surname=Jansson,serialNumber=123456789,CN=UNIDTest",null,"unidtest@anatom.se",false, SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW, caid);
+        log.debug("Reset status to NEW");
+        // Generate certificate for the new/changed user
+        ocspTestCert = (X509Certificate) remote.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
+        assertNotNull("Misslyckades skapa cert", ocspTestCert);
+
+        // And an OCSP request
+        OCSPReqGenerator gen = new OCSPReqGenerator();
+        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
+        Hashtable exts = new Hashtable();
+        X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("123456789")));
+        exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
+        gen.setRequestExtensions(new X509Extensions(exts));
+        OCSPReq req = gen.generate();
+
+        // Send the request and receive a BasicResponse
+        BasicOCSPResp brep = sendOCSPPost(req.getEncoded(), true);
+        assertEquals(getFnr(brep), null);
+        SingleResp[] singleResps = brep.getResponses();
+        assertEquals("No of SingResps should be 1.", singleResps.length, 1);
+        SingleResp singleResp = singleResps[0];
+        
+        CertificateID certId = singleResp.getCertID();
+        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
+        Object status = singleResp.getCertStatus();
+        assertEquals("Status is not null (good)", status, null);
     }
 
-    /** test a lookup message from an untrusted requestor, shoudl not work
-     * 
-     * @throws Exception
-     */
-    public void test06HttpsNotAuthorized() throws Exception {
-    }
     //
     // Private helper methods
     //
     
-    private BasicOCSPResp sendOCSPPost(byte[] ocspPackage) throws IOException, OCSPException, NoSuchProviderException {
+    private BasicOCSPResp sendOCSPPost(byte[] ocspPackage, boolean trust) throws IOException, OCSPException, GeneralSecurityException {
         // POST the OCSP request
         URL url = new URL(httpReqPath + '/' + resourceOcsp);
-        HttpURLConnection con = (HttpURLConnection)url.openConnection();
+        //HttpURLConnection con = (HttpURLConnection)url.openConnection();
+        HttpURLConnection con = (HttpURLConnection)getUrlConnection(url, trust);
         // we are going to do a POST
         con.setDoOutput(true);
         con.setRequestMethod("POST");
@@ -411,4 +478,66 @@ public class ProtocolLookupServerHttpTest extends TestCase {
         FnrFromUnidExtension fnrobj = FnrFromUnidExtension.getInstance(aIn.readObject());
         return fnrobj.getFnr();
     }
+    
+    private SSLSocketFactory getSSLFactory(boolean trust) throws GeneralSecurityException, IOException {
+        log.debug(">getSSLFactory()");
+
+        String trustp12 = "/lookup-kstrust.p12";
+        if (!trust) trustp12 = "/lookup-ksnotrust.p12";
+        char[] passphrase = "lookup".toCharArray();
+        
+        SSLContext ctx = SSLContext.getInstance("TLS");
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+
+        // Put the key and certs in the user keystore
+        KeyStore ks = KeyStore.getInstance("PKCS12", "BC");
+        ks.load(new FileInputStream(trustp12), passphrase);
+        kmf.init(ks, passphrase);
+
+        // Now make a truststore to verify the server
+        KeyStore trustks = KeyStore.getInstance("jks");
+        trustks.load(null, "foo123".toCharArray());
+        // add trusted CA cert
+        Enumeration en = ks.aliases();
+        String alias = (String)en.nextElement();
+        Certificate[] certs = KeyTools.getCertChain(ks, alias);
+        trustks.setCertificateEntry("trusted", certs[certs.length-1]);
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
+        tmf.init(trustks);
+
+        ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+
+        log.debug("<getSSLFactory()");
+        return ctx.getSocketFactory();
+    }
+
+    /**
+     * 
+     * @param url
+     * @param trust should be set to false when we want to use an un-trusted keystore
+     * @return URLConnection
+     * @throws IOException
+     * @throws GeneralSecurityException
+     */
+    private URLConnection getUrlConnection(URL url, boolean trust) throws IOException, GeneralSecurityException {
+        log.debug(">getUrlConnection( URL url )");
+        log.debug(" - url=" + url);
+        URLConnection orgcon = url.openConnection();
+        log.debug(orgcon.getClass());
+        if (orgcon instanceof HttpsURLConnection) {
+            HttpsURLConnection con = (HttpsURLConnection) orgcon;
+            con.setHostnameVerifier(new SimpleVerifier());
+            con.setSSLSocketFactory(getSSLFactory(trust));
+        } else
+            log.debug("getUrlConnection(): Ingen HttpsUrlConnection!");
+        log.debug("<getUrlConnection() --> " + orgcon);
+        return orgcon;
+    }
+
+    class SimpleVerifier implements HostnameVerifier {
+        public boolean verify(String hostname, SSLSession session) {
+            return true;
+        }
+    }
+    
 }

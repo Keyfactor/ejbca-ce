@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.40 2006-02-07 17:02:37 primelars Exp $
+# $Id: ejbca.properties.sample,v 1.41 2006-02-08 11:21:38 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -213,6 +213,11 @@ ocsp.usecasigningcert=true
 # Leave out if you do not know what this is.
 # No default value, must be set if the extension is used
 #ocsp.unidtrustdir=
+
+# File containing the CA-certificate, in PEM format, that signed the trusted clients. 
+# Leave out if you do not know what this is.
+# No default value, must be set if the extension is used
+#ocsp.unidcacert=
 
 # The ocsp.softKeys.* preferences has a meaning only to the External OCSP responder.
 # Please read the doc/howto/HOWTO-OCSP-RESPONDER.txt for inforamtion.

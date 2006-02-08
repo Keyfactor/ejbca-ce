@@ -21,7 +21,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Hashtable;
 
 import javax.ejb.EJBException;
@@ -41,7 +40,7 @@ import org.ejbca.util.JDBCUtil;
 /** ASN.1 OCSP extension used to map a UNID to a Fnr, OID for this extension is 2.16.578.1.16.3.2
  * 
  * @author tomas
- * @version $Id: OCSPUnidExtension.java,v 1.5 2006-02-08 07:31:46 anatom Exp $
+ * @version $Id: OCSPUnidExtension.java,v 1.6 2006-02-08 11:21:38 anatom Exp $
  *
  */
 public class OCSPUnidExtension implements IOCSPExtension {
@@ -49,7 +48,8 @@ public class OCSPUnidExtension implements IOCSPExtension {
     static private final Logger m_log = Logger.getLogger(OCSPUnidExtension.class);
 
     private String dataSourceJndi;
-    private ArrayList trustedCerts = new ArrayList();
+    private Hashtable trustedCerts = new Hashtable();
+    private X509Certificate cacert = null;
     private int errCode = OCSPUnidResponse.ERROR_NO_ERROR;
     
 	/** Called after construction
@@ -86,7 +86,8 @@ public class OCSPUnidExtension implements IOCSPExtension {
                     byte[] bytes = FileTools.getBytesFromPEM(FileTools.readFiletoBuffer(fileName),
                             "-----BEGIN CERTIFICATE-----", "-----END CERTIFICATE-----");
                     X509Certificate cert = CertTools.getCertfromByteArray(bytes);
-                    trustedCerts.add(cert);
+                    String key = CertTools.getIssuerDN(cert)+";"+cert.getSerialNumber().toString(16);
+                    trustedCerts.put(key,cert);
                 } catch (CertificateException e) {
                     m_log.error("Error reading "+fileName+" from trustDir: ", e);
                 } catch (IOException e) {
@@ -94,8 +95,22 @@ public class OCSPUnidExtension implements IOCSPExtension {
                 }
             }
         } catch (IOException e) {
-            m_log.error("Error reading files from tustDir: ", e);
-            throw new IllegalArgumentException("Error reading files from tustDir: "+e.getMessage());
+            m_log.error("Error reading files from trustDir: ", e);
+            throw new IllegalArgumentException("Error reading files from trustDir: "+e.getMessage());
+        }
+        String cacertfile = config.getInitParameter("unidCACert");
+        if (StringUtils.isEmpty(cacertfile)) {
+            m_log.error("unidCACert init-parameter must be set!");
+            throw new IllegalArgumentException("unidCACert init-parameter must be set!");
+        }
+        try {
+            byte[] bytes = FileTools.getBytesFromPEM(FileTools
+                    .readFiletoBuffer(cacertfile),
+                    "-----BEGIN CERTIFICATE-----", "-----END CERTIFICATE-----");
+            cacert = CertTools.getCertfromByteArray(bytes);
+        } catch (Exception e) {
+            m_log.error("Error reading file from cacertfile: ", e);
+            throw new IllegalArgumentException("Error reading files from cacertfile: "+e.getMessage());
         }
 
 	}
@@ -191,7 +206,21 @@ public class OCSPUnidExtension implements IOCSPExtension {
             return false;
         }
         // Check if the certificate is authorized to access the Fnr
-		// TODO:
-		return true;
+        String key = CertTools.getIssuerDN(cert)+";"+cert.getSerialNumber().toString(16);
+        Object found = trustedCerts.get(key);
+        if (found != null) {
+            // If we found in the hashmap the same key with issuer and serialnumber, we know we got it. 
+            // Just verify it as well to be damn sure
+            try {
+                cert.verify(cacert.getPublicKey());
+            } catch (Exception e) {
+                m_log.error("Exception when trying to verify client certificate: ", e);
+                return false;
+            }
+            // If verify was succesful we know if was good!
+            return true;
+        }
+        m_log.error("Got request with untrusted client cert from (ip;fqdn): "+request.getRemoteAddr()+"; "+request.getRemoteHost());
+		return false;
 	}
 }

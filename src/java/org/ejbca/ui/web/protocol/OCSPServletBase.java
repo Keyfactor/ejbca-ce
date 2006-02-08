@@ -112,8 +112,13 @@ import org.ejbca.util.CertTools;
  *   name="unidTrustDir"
  *   value="${ocsp.unidtrustdir}"
  *   
- * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson
- * @version  $Id: OCSPServletBase.java,v 1.10 2006-02-08 07:31:49 anatom Exp $
+ * @web.servlet-init-param description="File containing the CA-certificate, in PEM format, that signed the trusted clients."
+ *   name="unidCACert"
+ *   value="${ocsp.unidcacert}"
+ *   
+ * @author Thomas Meckel (Ophios GmbH)
+ * @author Tomas Gustavsson
+ * @version  $Id: OCSPServletBase.java,v 1.11 2006-02-08 11:21:38 anatom Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
