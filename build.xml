@@ -923,6 +923,7 @@ web.contentencoding    = ${web.contentencoding}
                     <include name="**/protocol/ProtocolScepHttpTest*" />
                     <include name="**/protocol/ProtocolOcspHttpTest*" />
                     <exclude name="**/protocol/ProtocolLookupServerHttpTest*" />
+                    <exclude name="**/protocol/ProtocolOcspHttpStandaloneTest*" />
                 	<include name="**/webdist/WebdistHttpTest*" />
                 </fileset>
             </batchtest>

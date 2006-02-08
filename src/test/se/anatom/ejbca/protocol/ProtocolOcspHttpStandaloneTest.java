@@ -37,10 +37,16 @@ import org.ejbca.util.CertTools;
 /** Tests http pages of a standalone ocsp
  * To run this test you must create a user named ocspTest that has at least two certificates and
  * at least one of them must be revoked.
+ * 
+ * Change the adress 127.0.0.1 to where you standalone OCSP server is running.
+ * Change caid to the CA that ocspTest blongs to
  **/
 public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
-    private static Logger log = Logger.getLogger(ProtocolOcspHttpStandaloneTest.class);
+    private static final Logger log = Logger.getLogger(ProtocolOcspHttpStandaloneTest.class);
 
+    private static final int myCaId = 1584670546;
+    private static final String myOcspIp = "127.0.0.1";
+    
     public static void main(String args[]) {
         junit.textui.TestRunner.run(suite());
     }
@@ -52,11 +58,11 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
 
 
     public ProtocolOcspHttpStandaloneTest(String name) {
-        super(name, "http://larslap.mine.nu:8080/ejbca", "publicweb/status/ocsp");
+        super(name, "http://"+myOcspIp+":8080/ejbca", "publicweb/status/ocsp");
     }
 
     protected void setCAID(ICAAdminSessionRemote casession) {
-        caid = 1584670546;
+        caid = myCaId;
     }
     
     public void test01Access() throws Exception {
