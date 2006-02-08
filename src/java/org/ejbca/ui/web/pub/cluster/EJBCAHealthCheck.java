@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
 package org.ejbca.ui.web.pub.cluster;
 
 import java.sql.Connection;
@@ -37,7 +50,7 @@ import org.ejbca.util.JDBCUtil;
  * * All Publishers can establish connection
  * 
  * @author Philip Vendil
- * $id$
+ * @version $Id: EJBCAHealthCheck.java,v 1.3 2006-02-08 07:31:48 anatom Exp $
  */
 
 public class EJBCAHealthCheck implements IHealthCheck {

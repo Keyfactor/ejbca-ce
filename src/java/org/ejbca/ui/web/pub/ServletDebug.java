@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * Prints debug info back to browser client
+ * @version $Id: ServletDebug.java,v 1.2 2006-02-08 07:31:48 anatom Exp $
  */
 public class ServletDebug {
     private final ByteArrayOutputStream buffer;

@@ -45,11 +45,24 @@ import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.X509Principal;
 
 
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
 /**
  * class to produce an X.509 Version 3 certificate, this is a copy of the bc class X509V3CertificateGenerator but can also issue certificates
  * using the RSASSA-PSS algorithm.This class should only be used for proof of concept
  * 
- * @version $Id: ExtendedX509V3CertificateGenerator.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: ExtendedX509V3CertificateGenerator.java,v 1.2 2006-02-08 07:31:48 anatom Exp $
  */
 public class ExtendedX509V3CertificateGenerator
 {

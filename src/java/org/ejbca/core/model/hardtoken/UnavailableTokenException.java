@@ -23,6 +23,7 @@ package org.ejbca.core.model.hardtoken;
  * An exception thrown when issuer got a token is it's queue that isn't available to it.
  *
  * @author  Philip Vendil
+ * @version $Id: UnavailableTokenException.java,v 1.2 2006-02-08 07:31:49 anatom Exp $
  */
 public class UnavailableTokenException extends java.lang.Exception {
     

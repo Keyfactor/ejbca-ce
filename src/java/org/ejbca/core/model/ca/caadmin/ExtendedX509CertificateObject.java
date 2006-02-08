@@ -52,9 +52,22 @@ import org.bouncycastle.jce.X509Principal;
 import org.bouncycastle.jce.interfaces.PKCS12BagAttributeCarrier;
 import org.bouncycastle.util.encoders.Hex;
 
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
 /** Class copied from BouncyCastle and extended to supoprt RSA-DSS signatures
  * 
- * @version $Id: ExtendedX509CertificateObject.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: ExtendedX509CertificateObject.java,v 1.2 2006-02-08 07:31:48 anatom Exp $
  *
  */ 
 public class ExtendedX509CertificateObject

@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
 package org.ejbca.util;
 
 import javax.ejb.EJBLocalHome;
@@ -14,6 +27,8 @@ import java.util.Random;
  * I just adapted it from what was used inside an EJB to get something more generic.
  * Ideally a more full featured sequence generator should be used such as the one
  * from OpenSymphony OSCore or from EJB Design Pattern.
+ * 
+ * @version $Id: SimpleSequenceGenerator.java,v 1.2 2006-02-08 07:31:48 anatom Exp $
  *
  */
 public class SimpleSequenceGenerator {

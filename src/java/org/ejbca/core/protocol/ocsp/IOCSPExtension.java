@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
 package org.ejbca.core.protocol.ocsp;
 
 import java.security.cert.X509Certificate;
@@ -11,7 +24,7 @@ import org.bouncycastle.ocsp.CertificateStatus;
 /** Interface that must be implemented by OCSP extensions that are added to the OCSPServlet
  * 
  * @author tomas
- * @version $Id: IOCSPExtension.java,v 1.2 2006-02-06 12:01:04 anatom Exp $
+ * @version $Id: IOCSPExtension.java,v 1.3 2006-02-08 07:31:47 anatom Exp $
  * @see org.ejbca.ui.web.protocol.OCSPServlet
  *
  */

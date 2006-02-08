@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
 package org.ejbca.ui.web.pub.cluster;
 
 import java.io.IOException;
@@ -18,7 +31,7 @@ import org.apache.log4j.Logger;
  * CustomErrorMsg : Send a static predefined errormessage instead of the on created by the healthchecker.
  * 
  * @author Philip Vendil
- * $Id: TextResponse.java,v 1.1 2006-01-31 14:34:50 herrvendil Exp $
+ * @version $Id: TextResponse.java,v 1.2 2006-02-08 07:31:48 anatom Exp $
  *
  */
 public class TextResponse implements IHealthResponse {

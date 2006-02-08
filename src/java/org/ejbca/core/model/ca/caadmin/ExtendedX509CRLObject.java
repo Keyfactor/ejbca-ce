@@ -36,6 +36,19 @@ import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.jce.X509Principal;
 import org.bouncycastle.jce.provider.X509CRLEntryObject;
 
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
 /**
  * The following extensions are listed in RFC 2459 as relevant to CRLs
  *
@@ -45,7 +58,7 @@ import org.bouncycastle.jce.provider.X509CRLEntryObject;
  * Delta CRL Indicator (critical)
  * Issuing Distribution Point (critical)
  * 
- * @version $Id: ExtendedX509CRLObject.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: ExtendedX509CRLObject.java,v 1.2 2006-02-08 07:31:48 anatom Exp $
  */
 public class ExtendedX509CRLObject
     extends X509CRL

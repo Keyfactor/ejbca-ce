@@ -108,8 +108,12 @@ import org.ejbca.util.CertTools;
  *   name="unidDataSource"
  *   value="${ocsp.uniddatsource}"
  *   
+ * @web.servlet-init-param description="Directory containing certificates of trusted entities allowed to query for Fnrs."
+ *   name="unidTrustDir"
+ *   value="${ocsp.unidtrustdir}"
+ *   
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson
- * @version  $Id: OCSPServletBase.java,v 1.9 2006-02-06 12:01:06 anatom Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.10 2006-02-08 07:31:49 anatom Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 

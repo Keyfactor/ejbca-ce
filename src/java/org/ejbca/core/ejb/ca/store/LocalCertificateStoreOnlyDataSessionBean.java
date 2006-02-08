@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
 package org.ejbca.core.ejb.ca.store;
 
 import java.math.BigInteger;
@@ -17,7 +30,6 @@ import org.ejbca.core.model.log.Admin;
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalCertificateStoreOnlyDataSessionBean.java,v 1.4 2006-02-05 15:51:02 anatom Exp $
  * @ejb.bean display-name="CertificateStoreOnlyDataSB"
  * name="CertificateStoreOnlyDataSession"
  * view-type="both"
@@ -50,6 +62,8 @@ import org.ejbca.core.model.log.Admin;
  * local-extends="javax.ejb.EJBLocalObject"
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionRemote"
+ * 
+ * @version $Id: LocalCertificateStoreOnlyDataSessionBean.java,v 1.5 2006-02-08 07:31:49 anatom Exp $
  */
 public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
 

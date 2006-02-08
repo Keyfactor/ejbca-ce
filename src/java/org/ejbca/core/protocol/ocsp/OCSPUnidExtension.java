@@ -1,10 +1,27 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
 package org.ejbca.core.protocol.ocsp;
 
+import java.io.File;
+import java.io.IOException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Hashtable;
 
 import javax.ejb.EJBException;
@@ -18,12 +35,13 @@ import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.ocsp.CertificateStatus;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.FileTools;
 import org.ejbca.util.JDBCUtil;
 
-/** OCSP extension used to map a UNID to a Fnr, OID for this extension is 2.16.578.1.16.3.2
+/** ASN.1 OCSP extension used to map a UNID to a Fnr, OID for this extension is 2.16.578.1.16.3.2
  * 
  * @author tomas
- * @version $Id: OCSPUnidExtension.java,v 1.4 2006-02-06 12:01:04 anatom Exp $
+ * @version $Id: OCSPUnidExtension.java,v 1.5 2006-02-08 07:31:46 anatom Exp $
  *
  */
 public class OCSPUnidExtension implements IOCSPExtension {
@@ -31,6 +49,7 @@ public class OCSPUnidExtension implements IOCSPExtension {
     static private final Logger m_log = Logger.getLogger(OCSPUnidExtension.class);
 
     private String dataSourceJndi;
+    private ArrayList trustedCerts = new ArrayList();
     private int errCode = OCSPUnidResponse.ERROR_NO_ERROR;
     
 	/** Called after construction
@@ -44,6 +63,41 @@ public class OCSPUnidExtension implements IOCSPExtension {
             m_log.error("unidDataSource init-parameter must be set!");
             throw new IllegalArgumentException("unidDataSource init-parameter must be set!");
         }
+        String trustDir = config.getInitParameter("unidTrustDir");
+        if (StringUtils.isEmpty(trustDir)) {
+            m_log.error("unidTrustDir init-parameter must be set!");
+            throw new IllegalArgumentException("unidTrustDir init-parameter must be set!");
+        }
+        // read all files from trustDir, expect that they are PEM formatted certificates
+        File dir = new File(trustDir);
+        try {
+            if (dir == null || dir.isDirectory() == false) {
+                m_log.error(dir.getCanonicalPath()+ " is not a directory.");
+                throw new IllegalArgumentException(dir.getCanonicalPath()+ " is not a directory.");                
+            }
+            File files[] = dir.listFiles();
+            if (files == null || files.length == 0) {
+                m_log.error("No files in trustDir directory: "+ dir.getCanonicalPath());                
+            }
+            for ( int i=0; i<files.length; i++ ) {
+                final String fileName = files[i].getCanonicalPath();
+                // Read the file, don't stop completely if one file has errors in it
+                try {
+                    byte[] bytes = FileTools.getBytesFromPEM(FileTools.readFiletoBuffer(fileName),
+                            "-----BEGIN CERTIFICATE-----", "-----END CERTIFICATE-----");
+                    X509Certificate cert = CertTools.getCertfromByteArray(bytes);
+                    trustedCerts.add(cert);
+                } catch (CertificateException e) {
+                    m_log.error("Error reading "+fileName+" from trustDir: ", e);
+                } catch (IOException e) {
+                    m_log.error("Error reading "+fileName+" from trustDir: ", e);
+                }
+            }
+        } catch (IOException e) {
+            m_log.error("Error reading files from tustDir: ", e);
+            throw new IllegalArgumentException("Error reading files from tustDir: "+e.getMessage());
+        }
+
 	}
 	
 	/** Called by OCSP responder when the configured extension is found in the request.
@@ -125,6 +179,18 @@ public class OCSPUnidExtension implements IOCSPExtension {
 	// Private methods
 	//
 	boolean checkAuthorization(HttpServletRequest request) {
+        X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+        if (certs == null) {
+            m_log.error("Got request without client authentication from (ip;fqdn): "+request.getRemoteAddr()+"; "+request.getRemoteHost());
+            return false;
+        }
+        // The entitys certificate is nr 0
+        X509Certificate cert = certs[0];
+        if (cert == null) {
+            m_log.error("Got request without client authentication from (ip;fqdn): "+request.getRemoteAddr()+"; "+request.getRemoteHost());
+            return false;
+        }
+        // Check if the certificate is authorized to access the Fnr
 		// TODO:
 		return true;
 	}

@@ -23,6 +23,7 @@ package org.ejbca.core.model.hardtoken;
  * An exception thrown when someone tries to remove or change a hard token that doesn't exits
  *
  * @author  Philip Vendil
+ * @version $Id: HardTokenDoesntExistsException.java,v 1.2 2006-02-08 07:31:49 anatom Exp $
  */
 public class HardTokenDoesntExistsException extends java.lang.Exception {
     

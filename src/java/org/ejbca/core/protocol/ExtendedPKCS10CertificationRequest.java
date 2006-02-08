@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
 package org.ejbca.core.protocol;
 
 import java.io.ByteArrayInputStream;
@@ -35,7 +48,7 @@ import org.bouncycastle.jce.X509Principal;
 /**
  * Class copied from BC where RSASSA-PSS support is added.
  * 
- * @version $Id: ExtendedPKCS10CertificationRequest.java,v 1.2 2006-02-03 10:08:45 anatom Exp $
+ * @version $Id: ExtendedPKCS10CertificationRequest.java,v 1.3 2006-02-08 07:31:49 anatom Exp $
  */
 public class ExtendedPKCS10CertificationRequest
     extends CertificationRequest

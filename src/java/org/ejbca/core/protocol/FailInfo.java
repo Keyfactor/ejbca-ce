@@ -12,9 +12,9 @@
  *************************************************************************/
  
 /**
- * $Header: /home/tomas/Dev/cvs2svn/ejbca-cvsbackup/ejbca/src/java/org/ejbca/core/protocol/FailInfo.java,v 1.1 2006-01-17 20:28:06 anatom Exp $
- * $Revision: 1.1 $
- * $Date: 2006-01-17 20:28:06 $
+ * $Header: /home/tomas/Dev/cvs2svn/ejbca-cvsbackup/ejbca/src/java/org/ejbca/core/protocol/FailInfo.java,v 1.2 2006-02-08 07:31:49 anatom Exp $
+ * $Revision: 1.2 $
+ * $Date: 2006-02-08 07:31:49 $
  *
  */
 package org.ejbca.core.protocol;
@@ -25,6 +25,7 @@ import java.io.Serializable;
  * Encapsulates the possible values for the failinfo part of a SCEP FAILURE response.
  *
  * @author Jon Barber (jon.barber@acm.org)
+ * @version $Id: FailInfo.java,v 1.2 2006-02-08 07:31:49 anatom Exp $
  */
 
 public class FailInfo implements Serializable {
