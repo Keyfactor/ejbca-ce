@@ -118,7 +118,7 @@ import org.ejbca.util.CertTools;
  *   
  * @author Thomas Meckel (Ophios GmbH)
  * @author Tomas Gustavsson
- * @version  $Id: OCSPServletBase.java,v 1.11 2006-02-08 11:21:38 anatom Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.12 2006-02-08 20:28:32 anatom Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
@@ -617,28 +617,30 @@ abstract class OCSPServletBase extends HttpServlet {
                     	String oidstr = (String)iter.next();
                     	DERObjectIdentifier oid = new DERObjectIdentifier(oidstr);
                         X509Extensions reqexts = req.getRequestExtensions();
-                        X509Extension ext = reqexts.getExtension(oid);
-                        if (null != ext) {
-                        	// We found an extension, call the extenstion class
-                        	if (m_log.isDebugEnabled()) {
-                        		m_log.debug("Found OCSP extension oid: "+oidstr);
-                        	}
-                        	IOCSPExtension extObj = (IOCSPExtension)m_extensionMap.get(oidstr);
-                        	if (extObj != null) {
-                        		// Find the certificate from the certId
-                        		X509Certificate cert = null;
-                        		cert = (X509Certificate)findCertificateByIssuerAndSerno(m_adm, cacert.getSubjectDN().getName(), certId.getSerialNumber());
-                        		if (cert != null) {
-                        			// Call the OCSP extension
-                                	Hashtable retext = extObj.process(request, cert, certStatus);
-                                	if (retext != null) {
-                                		// Add the returned X509Extensions to the responseExtension we will add to the basic OCSP response
-                                		responseExtensions.putAll(retext);
-                                	} else {
-                                		m_log.error("En error occured when processing OCSP extensions class: "+extObj.getClass().getName()+", error code="+extObj.getLastErrorCode());
-                                	}
-                        		}
-                        	}
+                        if (reqexts != null) {
+                            X509Extension ext = reqexts.getExtension(oid);
+                            if (null != ext) {
+                            	// We found an extension, call the extenstion class
+                            	if (m_log.isDebugEnabled()) {
+                            		m_log.debug("Found OCSP extension oid: "+oidstr);
+                            	}
+                            	IOCSPExtension extObj = (IOCSPExtension)m_extensionMap.get(oidstr);
+                            	if (extObj != null) {
+                            		// Find the certificate from the certId
+                            		X509Certificate cert = null;
+                            		cert = (X509Certificate)findCertificateByIssuerAndSerno(m_adm, cacert.getSubjectDN().getName(), certId.getSerialNumber());
+                            		if (cert != null) {
+                            			// Call the OCSP extension
+                                    	Hashtable retext = extObj.process(request, cert, certStatus);
+                                    	if (retext != null) {
+                                    		// Add the returned X509Extensions to the responseExtension we will add to the basic OCSP response
+                                    		responseExtensions.putAll(retext);
+                                    	} else {
+                                    		m_log.error("En error occured when processing OCSP extensions class: "+extObj.getClass().getName()+", error code="+extObj.getLastErrorCode());
+                                    	}
+                            		}
+                            	}
+                            }                        	
                         }
                     }
                     
