@@ -75,7 +75,7 @@
         
 	</target>
 
-	<target name="j2ee:deploy" description="Deploy the application" depends="j2ee:configure">
+	<target name="j2ee:deployBase" description="Deploy the application" depends="j2ee:configure">
         <copy todir="${jboss.farm.dir}" overwrite="true">
             <fileset dir="src/appserver/jboss">
             	<include name="ejbca-ds.xml"/>
@@ -90,7 +90,7 @@
     	</copy>
 	</target>
 
-	<target name="j2ee:deploywithexternalocsp" description="Deploy the application" depends="j2ee:deploy">
+	<target name="j2ee:deploy" if="ocsp-datasource.jndi-name" description="Deploy the application" depends="j2ee:deployBase">
         <copy todir="${jboss.farm.dir}" overwrite="true">
             <fileset dir="src/appserver/jboss">
                 <include name="ocsp-ds.xml"/>
