@@ -88,7 +88,7 @@ import org.bouncycastle.x509.X509V3CertificateGenerator;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.3 2006-01-31 15:07:44 anatom Exp $
+ * @version $Id: CertTools.java,v 1.4 2006-02-08 11:19:18 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -485,7 +485,7 @@ public class CertTools {
      * Gets subject or issuer DN in the format we are sure about (BouncyCastle),supporting UTF8.
      *
      * @param cert X509Certificate
-     * @param which DOCUMENT ME!
+     * @param which 1 = subjectDN, anything else = issuerDN
      *
      * @return String containing the DN.
      */
