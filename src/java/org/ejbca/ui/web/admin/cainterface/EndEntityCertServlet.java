@@ -25,10 +25,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
+import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.rainterface.CertificateView;
 import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
-import org.ejbca.ui.web.pub.RequestHelper;
 import org.ejbca.ui.web.pub.ServletUtils;
 import org.ejbca.util.Base64;
 
@@ -44,7 +44,7 @@ import org.ejbca.util.Base64;
  * cert, nscert and iecert also takes  parameters issuer and certificatesn were issuer is the DN of issuer and certificate serienumber 
  * is in hex format.
  *
- * @version $Id: EndEntityCertServlet.java,v 1.1 2006-01-17 20:28:08 anatom Exp $
+ * @version $Id: EndEntityCertServlet.java,v 1.2 2006-02-09 08:45:22 anatom Exp $
  *
  * @web.servlet name = "EndEntityCert"
  *              display-name = "EndEntityCertServlet"

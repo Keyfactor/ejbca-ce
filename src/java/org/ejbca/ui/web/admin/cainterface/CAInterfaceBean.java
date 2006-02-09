@@ -57,11 +57,11 @@ import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.ExtendedPKCS10CertificationRequest;
+import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
 import org.ejbca.ui.web.admin.rainterface.CertificateView;
 import org.ejbca.ui.web.admin.rainterface.RevokedInfoView;
-import org.ejbca.ui.web.pub.RequestHelper;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
@@ -70,7 +70,7 @@ import org.ejbca.util.CertTools;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.1 2006-01-17 20:28:08 anatom Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.2 2006-02-09 08:45:22 anatom Exp $
  */
 public class CAInterfaceBean implements java.io.Serializable {
 

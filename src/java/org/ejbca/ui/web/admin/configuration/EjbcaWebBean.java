@@ -23,7 +23,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ServiceLocatorException;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
@@ -53,7 +52,7 @@ import org.ejbca.util.CertTools;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.2 2006-02-02 10:08:40 herrvendil Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.3 2006-02-09 08:45:22 anatom Exp $
  */
 public class EjbcaWebBean implements java.io.Serializable {
 
@@ -572,24 +571,5 @@ public class EjbcaWebBean implements java.io.Serializable {
     
     public Admin getAdminObject(){
     	return this.administrator;    
-    }
-
-    /** Returns the default content encoding used in JSPs. Reads the env-entry contentEncoding from web.xml.
-     * 
-     * @return The content encoding set in the webs env-entry java:comp/env/contentEncoding, or ISO-8859-1 (default), never returns null.
-     */
-    public String getDefaultContentEncoding() {
-        String ret = null;
-        try {
-            ret = ServiceLocator.getInstance().getString("java:comp/env/contentEncoding");            
-        } catch (ServiceLocatorException e) {
-            log.debug("Can not find any default content encoding, using hard default ISO-8859-1.");
-            ret = "ISO-8859-1";            
-        }
-        if (ret == null) {
-            log.debug("Can not find any default content encoding, using hard default ISO-8859-1.");
-            ret = "ISO-8859-1";
-        } 
-        return ret;
     }
 }

@@ -30,8 +30,8 @@ import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.protocol.ExtendedPKCS10CertificationRequest;
+import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
-import org.ejbca.ui.web.pub.RequestHelper;
 import org.ejbca.ui.web.pub.ServletUtils;
 
 /**
@@ -43,7 +43,7 @@ import org.ejbca.ui.web.pub.ServletUtils;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: CACertReqServlet.java,v 1.1 2006-01-17 20:28:08 anatom Exp $
+ * @version $Id: CACertReqServlet.java,v 1.2 2006-02-09 08:45:22 anatom Exp $
  * 
  * @web.servlet name = "CACertReq"
  *              display-name = "CACertReqServlet"

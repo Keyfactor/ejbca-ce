@@ -19,10 +19,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.ejbca.ui.web.RequestHelper;
+
 
 /**
  * Prints debug info back to browser client
- * @version $Id: ServletDebug.java,v 1.2 2006-02-08 07:31:48 anatom Exp $
+ * @version $Id: ServletDebug.java,v 1.3 2006-02-09 08:45:22 anatom Exp $
  */
 public class ServletDebug {
     private final ByteArrayOutputStream buffer;

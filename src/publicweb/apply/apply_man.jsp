@@ -1,4 +1,4 @@
-<%@ page language="Java" import="org.ejbca.ui.web.pub.RequestHelper"%>
+<%@ page language="Java" import="org.ejbca.ui.web.RequestHelper"%>
 
 <HTML>
 <HEAD>

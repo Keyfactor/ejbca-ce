@@ -27,7 +27,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
@@ -44,6 +43,7 @@ import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.StringTools;
 
@@ -88,7 +88,7 @@ import org.ejbca.util.StringTools;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.2 2006-01-26 14:18:20 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.3 2006-02-09 08:45:22 anatom Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
@@ -162,16 +162,7 @@ public class DemoCertReqServlet extends HttpServlet {
     }
 
      Admin admin = new Admin(Admin.TYPE_RACOMMANDLINE_USER, request.getRemoteAddr());
-     RequestHelper helper = new RequestHelper(admin, debug);
-     String encoding = request.getCharacterEncoding();
-     if(StringUtils.isEmpty(encoding)) {
-         encoding = RequestHelper.getDefaultContentEncoding();
-         log.debug("Setting encoding to default value: "+encoding);
-         request.setCharacterEncoding(encoding);
-     } else {
-         log.debug("Setting encoding to value from request: "+encoding);
-         request.setCharacterEncoding(encoding);         
-     }
+     RequestHelper.setDefaultCharacterEncoding(request);
 
       String dn = null;
       dn = request.getParameter("user");
@@ -282,6 +273,7 @@ public class DemoCertReqServlet extends HttpServlet {
       throw new ServletException("Error adding user: ", e);
     }
 
+    RequestHelper helper = new RequestHelper(admin, debug);
     try {
         if (type == 1) {
               byte[] certs = helper.nsCertRequest(signsession, reqBytes, username, password);

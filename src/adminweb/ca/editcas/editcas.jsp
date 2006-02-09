@@ -648,7 +648,7 @@
             }  
             opstr.close();                
                                          
-            PKCS10RequestMessage certreq = org.ejbca.ui.web.pub.RequestHelper.genPKCS10RequestMessageFromPEM(ostr.toByteArray());
+            PKCS10RequestMessage certreq = org.ejbca.ui.web.RequestHelper.genPKCS10RequestMessageFromPEM(ostr.toByteArray());
             
              if (certreq != null) {               
                cabean.savePKCS10RequestData(certreq.getCertificationRequest());                                
