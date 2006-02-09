@@ -3,6 +3,7 @@
 # This file is for running the stand-alone OCSP client.
 # Build with 'ant ocspclient.jar' and unpack the resulting zip file
 # in a directory of your choice. Run this command from within that directory.
+# When running ocsp from EJBCA you can use 'ejbca.sh ocsp instead'.
 
 # OS specific support.
 cygwin=false;
@@ -16,11 +17,7 @@ if [ -f $JAVA_HOME ]; then
     exit 1
 fi
 
-EJBCA_HOME=..
-if [ ! -x ocsp.sh ]
-then
 EJBCA_HOME=.
-fi
 # Check that classes exist
 if [ ! -f ${EJBCA_HOME}/ocspclient.jar ]
 then    

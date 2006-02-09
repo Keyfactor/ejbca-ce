@@ -675,6 +675,16 @@ web.contentencoding    = ${web.contentencoding}
             	<include name="log4j*.jar" />
             </fileset>
         </copy>
+    	<zip destfile="${ocsp-dist.dir}/ocspclient.zip">
+            <fileset dir="${ocsp-dist.dir}">
+            	<include name="lib/*.jar"/>
+            	<include name="log4j.properties" />
+            	<include name="ocspclient.jar" />
+            </fileset>
+            <fileset dir="${mainbin}">
+            	<include name="ocsp.sh"/>
+            </fileset>
+    	</zip>
     </target>
 	
     <!-- ===================================================================
