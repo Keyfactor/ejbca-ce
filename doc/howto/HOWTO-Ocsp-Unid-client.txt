@@ -1,0 +1,22 @@
+This file describes how to build and use the stand alone OCSP and Lookup server client.
+
+Setting up the OCSP and Lookup server:
+-------------------------------------
+See HOWTO-OCSP-RESPONDER.txt for information how to install and configure external OCSP responders and the Lookup server.
+
+Building the OCSP/Lookup client.
+-------------------------------
+Run the command 'ant ocspclient.jar.
+In the directory 'ocsp-dist' there is now a file called ocspclient.zip. This file can be moved to 
+some other place and unzipped. It will unzip several files in the directory where you run the unzip command.
+You can use it as a command line client by running 'ocsp-sh'. You can link to it and use the API by including 
+the ocsplient.jar and the jar files in the 'lib' subdirectory in your build and class path.
+
+Using the API
+-------------
+To learn the API by looking at the source code, since it is included. The client API is in the class 
+org.ejbca.core.protocol.ocsp.OCSPUnidClient.
+The command line client can serve as a good sample for using the API and it is in the class
+org.ejbca.ui.cli.Ocsp.
+
+
