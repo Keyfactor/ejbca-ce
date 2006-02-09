@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
  * and the development was sponsored by Linagora (www.linagora.com).
  * 
  * @author Lars Silvén
- * @version $Id: NFastCAToken.java,v 1.2 2006-02-09 12:30:46 anatom Exp $
+ * @version $Id: NFastCAToken.java,v 1.3 2006-02-09 12:38:25 anatom Exp $
  */
 public class NFastCAToken implements IHardCAToken {
 
@@ -96,8 +96,8 @@ public class NFastCAToken implements IHardCAToken {
                 mKeys.put(keyAliases[i], keyPair);
             }
         } catch( Exception e ) {
-            CATokenAuthenticationFailedException t =
-                new CATokenAuthenticationFailedException();
+            log.error("Authentication failed: ", e);
+            CATokenAuthenticationFailedException t = new CATokenAuthenticationFailedException();
             t.initCause(e);
             mKeys = null;
             throw t;
