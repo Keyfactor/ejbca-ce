@@ -30,7 +30,7 @@ import org.ejbca.util.StringTools;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.16 2006-01-22 09:04:11 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.17 2006-02-09 11:01:26 anatom Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);
@@ -128,6 +128,26 @@ public class TestCertTools extends TestCase {
     		+"4GiFY+NnNp9Dvf6mOYTXLxsOc+093S7uK2ohhq99aYCkzJmrngtrImtKi0y/LMjq"
     		+"oviMCQmzMLY2Ifcw+CsOyQZx7nxwafZ7BAzm6vIvSeiIe3VlskRGzYDM66NJJNNo"
     		+"C2HsPA==").getBytes());
+
+    private static byte[] aiaCert = Base64.decode(
+            ("MIIDTTCCAjWgAwIBAgIIepmLoJzsjC8wDQYJKoZIhvcNAQEFBQAwNzERMA8GA1UE"
+            +"AxMIQWRtaW5DQTExFTATBgNVBAoTDEVKQkNBIFNhbXBsZTELMAkGA1UEBhMCU0Uw"
+            +"HhcNMDYwMjA5MTA0OTA1WhcNMDgwMjA5MTA1OTA1WjAqMQ0wCwYDVQQDEwRmb280"
+            +"MQwwCgYDVQQKEwNGb28xCzAJBgNVBAYTAlNFMIGfMA0GCSqGSIb3DQEBAQUAA4GN"
+            +"ADCBiQKBgQCSsptDGz1XODuTKBGGCY/Y6B6bfw22LVxaIbCx9Ih+qghlwJ2HYRcl"
+            +"OpyGiMMsiTZADH4hL8WRam/8aq0x45YfQ8wSdxUkWSoVL0oahAbvY4h5J4S0hLrv"
+            +"8Z9CVcUvuH/StTtWHOh4af0klTvLwcnyGhswkSrwM8a3grQvGSIN5wIDAQABo4Ht"
+            +"MIHqMAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgWgMDsGA1UdJQQ0MDIGCCsG"
+            +"AQUFBwMBBggrBgEFBQcDAgYIKwYBBQUHAwQGCCsGAQUFBwMFBggrBgEFBQcDBzAd"
+            +"BgNVHQ4EFgQUCFwQPEQjTdWh27GEMxmV/onyADgwHwYDVR0jBBgwFoAUB/2KRYNO"
+            +"ZxRDkJ5oChjNeXgwtCcwTQYIKwYBBQUHAQEEQTA/MD0GCCsGAQUFBzABhjFodHRw"
+            +"Oi8vbG9jYWxob3N0OjgwODAvZWpiY2EvcHVibGljd2ViL3N0YXR1cy9vY3NwMA0G"
+            +"CSqGSIb3DQEBBQUAA4IBAQAe6ild0bNz6wD0bPhuumG5j5+9rDaPFebaYqV/AoEU"
+            +"4kovLzvqhPqUR/zQOEx9SSFFs+pxY6YMYDYha7mFrjpCSWr9wGNyv4BRAOMAl2YX"
+            +"P3DfYh/etqUySTuYLzDi65SOSRuvYPP9jJPWt0Ucsm10A10yqJITcAFVajTfNj0r"
+            +"WtTQ4Hbz/U5xkThvzCcx9Z3vIg1k0b5i3qs0JlDFxdWnTGCAn0TGBdsFFvAcSlJR"
+            +"UBSOmiFi7edaayqV8qMyNirSA2tOdOzcTr8zyGfozaHRVmMqTmpSOe1t/LyIK5uh"
+            +"tjsFYZQuz5pxRzvzXKmhKwzRTaJLPezBsIvhIZh41qTu").getBytes());
 
     /**
      * Creates a new TestCertTools object.
@@ -592,5 +612,10 @@ public class TestCertTools extends TestCase {
       assertTrue(ids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_LimiteValue.getId()));
       String limit = CertTools.getQcStatementValueLimit(cert2);
       assertEquals("50000 SEK", limit);
+  }
+  public void test15AiaOcspUri() throws Exception {
+      X509Certificate cert = CertTools.getCertfromByteArray(aiaCert);
+      //System.out.println(cert);
+      assertEquals("http://localhost:8080/ejbca/publicweb/status/ocsp", CertTools.getAuthorityInformationAccessOcspUrl(cert));
   }
 }
