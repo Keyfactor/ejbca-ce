@@ -24,8 +24,11 @@
     <property name="bin" value="./${tmp}/bin" />
     <property name="build" value="${bin}/classes" />
     <property name="ocsp-build" location="${bin}/ocsp-classes"/>
+    <property name="ocsp-client.build" location="${bin}/ocspclient" />
     <property name="lib" value="lib" />
 	<property name="preprocessed" value="${tmp}/preprocessed"/>
+	<property name="mainsrc" value="src"/>
+	<property name="mainbin" value="bin"/>
 
     <property name="src" value="${preprocessed}" />
     <property name="src.java" value="${src}/java" />
@@ -38,6 +41,7 @@
     <property name="test.src.dir" location="${src}/test" />
     <property name="dist.dir" location="dist" />
     <property name="ocsp-dist.dir" location="ocsp-dist" />
+	
     <property name="hwtoken_classes" value="hwtoken"/>
     <property name="hwtoken.class.dir" location="${hwtoken_classes}" />
     <property name="apidoc" value="./doc/api" />
@@ -79,6 +83,7 @@
     <property name="createcrlservicejar" value="${dist.dir}/${createcrlservice.name}" />
 
     <property name="jar.extclasspath" value="lib/bcmail-jdk${java.ver}.jar lib/bcprov-jdk${java.ver}.jar lib/log4j-1.2.7.jar lib/ldap.jar lib/commons-lang-2.0.jar lib/commons-collections.jar lib/commons-fileupload-1.0.jar"/>
+    <property name="jar.ocspclientclasspath" value="lib/bcprov-jdk${java.ver}.jar lib/log4j-1.2.7.jar ./"/>
 
     <path id="ext.classpath">
         <fileset dir="lib/ext" includes="*.jar" />
@@ -198,6 +203,7 @@ web.contentencoding    = ${web.contentencoding}
         <mkdir dir="${ocsp-build}"/>
         <mkdir dir="${dist.dir}/${lib}"/>
         <mkdir dir="${ocsp-dist.dir}"/>
+        <mkdir dir="${ocsp-client.build}"/>
     </target>
 
     <!-- =================================================================== -->
@@ -213,6 +219,7 @@ web.contentencoding    = ${web.contentencoding}
         <delete dir="${src.dd}" />
         <delete dir="${ocsp-src.gen}" />
         <delete dir="${ocsp-src.dd}" />
+        <delete dir="${ocsp-client.build}" />
         <delete dir="${apidoc}" />
         <delete dir="${tmp}"/>
     </target>
@@ -444,6 +451,7 @@ web.contentencoding    = ${web.contentencoding}
             <include name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java" />
             <include name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionSession.java" />
             <include name="org/ejbca/core/ejb/ca/store/ICertificateStoreOnlyDataSessionHome.java" />
+            <include name="org/ejbca/core/protocol/ocsp/OCSPUnidExtension.java" />
         </javac>
     </target>
 
@@ -576,7 +584,6 @@ web.contentencoding    = ${web.contentencoding}
     <!-- Build ocsp ejb part                                                    -->
     <!-- =================================================================== -->
     <target name="ocsp-jar" depends="ocsp-compile" description="Creates master ejbca-ejb.jar ocsp">
-    <!-- create empty direktory for HW tokens if not existing -->
         <jar jarfile="${ocsp-dist.dir}/ejbca-ejb.jar">
             <manifest>
                 <!-- todo: autogenerate this from a fileset -->
@@ -636,6 +643,40 @@ web.contentencoding    = ${web.contentencoding}
 	</ear>
     </target>
 
+    <!-- =================================================================== -->
+    <!-- Build ocsp client part                                              -->
+    <!-- =================================================================== -->
+    <target name="ocspclient.jar" depends="init" description="Creates jar for ocspclient">
+        <javac destdir="${ocsp-client.build}" srcdir="${mainsrc}/java" debug="on" includeantruntime="no" encoding="iso8859-1">
+            <classpath refid="compile.classpath" />
+        	<include name="org/ejbca/ui/cli/Ocsp.java"/>
+        </javac>
+        <jar jarfile="${ocsp-dist.dir}/ocspclient.jar">
+        	<manifest>
+        	    <attribute name="Built-By" value="${user.name}"/>
+        	    <section name="OCSPUnidClient">
+        	      <attribute name="Implementation-Title" value="OCSPUnidClient"/>
+        	      <attribute name="Implementation-Version" value="${app.version} ${TODAY}"/> 
+        	      <attribute name="Implementation-Vendor" value="PrimeKey Solutions."/>
+        	    </section>
+                <attribute name="Class-Path" value="${jar.ocspclientclasspath}" />
+                <attribute name="Main-Class" value="org.ejbca.ui.cli.Ocsp" />
+        	  </manifest>
+            <fileset dir="${ocsp-client.build}"/>
+        </jar>
+        <copy todir="${ocsp-dist.dir}">
+            <fileset dir="${mainbin}">
+            	<include name="log4j.properties"/>
+            </fileset>
+        </copy>
+        <copy todir="${ocsp-dist.dir}/lib">
+            <fileset dir="${lib}">
+            	<include name="bcprov*.jar"/>
+            	<include name="log4j*.jar" />
+            </fileset>
+        </copy>
+    </target>
+	
     <!-- ===================================================================
          Build documentation website from doc/xdocs
          =================================================================== -->

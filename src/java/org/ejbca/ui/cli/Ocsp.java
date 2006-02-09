@@ -23,9 +23,9 @@ import org.ejbca.util.FileTools;
 /**
  * Implements the OCSP simple query command line query interface
  *
- * @version $Id: Ocsp.java,v 1.2 2006-02-09 11:17:50 anatom Exp $
+ * @version $Id: Ocsp.java,v 1.3 2006-02-09 17:58:54 anatom Exp $
  */
-public class Ocsp extends BaseCommand {
+public class Ocsp {
     /**
      * @param args command line arguments
      */
