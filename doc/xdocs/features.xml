@@ -10,14 +10,13 @@
     <p>Built on the J2EE 1.3 (EJB 2.0) specification.</p>
 <ul>
 <li>Flexible, component based architecture.</li>
-<li>Multiple levels of CAs.</li>
 <li>Multiple CAs and levels of CAs, build a complete infrastructure (or several) within one instance of EJBCA.</li>
 <li>Supports SHA-1 or SHA-256 as hash algorithm and RSA as public key algorithm for digtal signatures.</li>
 <li>Standalone or integrated in any J2EE application.</li>
 <li>Simple installation and configuration.</li>
 <li>Powerful Web based administration GUI using strong authentication.</li>
 <li>Command line administration for scripts etc.</li>
-<li>Modular API for HSMs. Support for nCipher HSM sponsored by Linagora.</li>
+<li>Modular API for HSMs. Built in support for nCipher HSM (sponsored by Linagora), PrimeCardHSM and Eracom (now SafeNet).</li>
 <li>Individual enrollment or batch production of certificates.</li>
 <li>Server and client certificates can be exported as PKCS12, JKS or PEM.</li>
 <li>Browser enrollment with Netscape, Mozilla, IE, etc.</li>
@@ -25,20 +24,22 @@
 <li>E-mail notification to new users added by RA.</li>
 <li>Random or manual password for initial user authentication.</li>
 <li>Hard token module for integrating with hard token issuing system (smart cards).</li>
-<li>Supports the Simple Certificate Enrollment Protocol (SCEP).</li>
-<li>Multiple levels of administrators with specified privileges and user groups. Configurable certificate profiles for different types and contents of certificates.</li>
+<li>Multiple levels of administrators with specified privileges and user groups.</li>
+<li>Configurable certificate profiles for different types and contents of certificates.</li>
 <li>Configurable entity profiles for different types of users.</li>
+<li>Supports the Simple Certificate Enrollment Protocol (SCEP).</li>
 <li>Follows X509 and PKIX (RFC3280) standards where applicable.</li>
-<li>Qualified Certificate Statement (RFC3739).</li>
+<li>Qualified Certificate Statement (RFC3739) for issuing EU/ETSI qualified certificates.</li>
+<li>Supports the Online Certificate Status Protocol (OCSP), including AIA-extension.</li>
+<li>OCSP responder can run integrated with EJBCA or stand alone (clustered) for security, high-performance and high-availability.</li>
 <li>Revocation and Certificate Revocation Lists (CRLs).</li>
-<li>Fully supports the Online Certificate Status Protocol (OCSP), including AIA-extension.</li>
-<li>CRL creation and URL-based CRLDistribution Points according to RFC3280. Stores Certificates and CRLs in any SQL database (handled by application server).</li>
+<li>CRL creation and URL-based CRLDistribution Points according to RFC3280. Stores Certificates and CRLs in SQL database, LDAP and/or other custom data source.</li>
 <li>Optional multiple publishers for publishing certificates and CRLs in LDAP. Several flexible standard publishers exist to meet different demands.</li>
 <li>Supports authentication and publishing of certificates to Microsoft Active Directory.</li>
 <li>Component based architecture for publishing certificates and CRLs to different sources.</li>
 <li>Key recovery module to store private keys for recovery for selected users and certificates.</li>
 <li>Component based architecture for various authorization methods of entities when issuing certificates.</li>
-<li>Easy to integrate into large applications for optimal integration into bussiness process.</li>
+<li>Easy to integrate into large java applications for optimal integration into bussiness process.</li>
 <li>Deploys easily in a clustered high availability environment.</li>
 </ul>    
 
