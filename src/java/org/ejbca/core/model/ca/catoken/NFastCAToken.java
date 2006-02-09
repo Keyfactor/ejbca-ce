@@ -34,7 +34,7 @@ import org.apache.log4j.Logger;
  * and the development was sponsored by Linagora (www.linagora.com).
  * 
  * @author Lars Silvén
- * @version $Id: NFastCAToken.java,v 1.3 2006-02-09 12:38:25 anatom Exp $
+ * @version $Id: NFastCAToken.java,v 1.4 2006-02-09 12:39:37 anatom Exp $
  */
 public class NFastCAToken implements IHardCAToken {
 
@@ -66,7 +66,7 @@ public class NFastCAToken implements IHardCAToken {
 
     public void init(Properties properties, String signaturealgorithm) {
         if (log.isDebugEnabled()) {
-            log.debug("Properties: "+properties.toString());
+            log.debug("Properties: "+properties != null ? properties.toString() : "null");
             log.debug("Signaturealg: "+signaturealgorithm);
         }
         keyStrings = new KeyStrings(properties);
