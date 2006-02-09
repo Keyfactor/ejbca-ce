@@ -5,7 +5,7 @@ Building and configuring EJBCA.
 -------------------------------
 EJBCA should be configured as for any other installation but you must also set all preferences
 (ocsp-database.*) of the responder data base. The responder database is the master database of all
-the responders. Then EJBCA is built with the command: ant deploywithexternalocsp
+the responders. Then EJBCA is built with the command: ant deploy
 
 When EJBCA has been started you have to add a new publisher. As a superuser you add this publisher
 on the "Edit Publishers" page in the admin GUI. Use publisher type "Custom Publisher". And these
