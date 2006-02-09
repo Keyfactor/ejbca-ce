@@ -1,4 +1,5 @@
 <%@ page pageEncoding="ISO-8859-1"%>
+<%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.math.BigInteger,org.ejbca.core.ejb.ca.store.*,org.ejbca.core.model.ca.crl.RevokedCertInfo,org.bouncycastle.util.encoders.Hex, org.ejbca.core.model.log.Admin"%>
 <html>
 <head><title>@EJBCA@ - Check revocation</title>

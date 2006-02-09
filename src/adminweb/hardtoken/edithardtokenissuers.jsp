@@ -1,4 +1,5 @@
 <%@ page pageEncoding="ISO-8859-1"%>
+<%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.SecConst
                ,org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer, org.ejbca.core.model.hardtoken.HardTokenIssuerData, org.ejbca.core.model.hardtoken.HardTokenIssuerExistsException,
                org.ejbca.core.model.hardtoken.HardTokenIssuerDoesntExistsException,  org.ejbca.ui.web.admin.rainterface.CertificateView, org.ejbca.core.model.authorization.AdminGroup"%>

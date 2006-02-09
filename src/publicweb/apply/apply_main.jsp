@@ -1,4 +1,5 @@
 <%@ page pageEncoding="ISO-8859-1"%>
+<%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.security.cert.*,
                                  org.ejbca.core.model.log.Admin, org.ejbca.core.model.ApplyBean, org.ejbca.core.model.SecConst"%>
 

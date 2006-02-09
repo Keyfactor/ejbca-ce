@@ -1,4 +1,5 @@
 <%@ page pageEncoding="ISO-8859-1"%>
+<%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@ page language="Java" import="org.ejbca.core.ejb.ca.sign.*,org.ejbca.core.model.log.Admin,java.util.Collection"%>
 
 <HEAD><TITLE>@EJBCA@ Certificate enroll</TITLE></HEAD>

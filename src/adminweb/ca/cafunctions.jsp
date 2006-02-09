@@ -1,4 +1,5 @@
 <%@ page pageEncoding="ISO-8859-1"%>
+<%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page errorPage="/errorpage.jsp"  import=" java.util.*, java.security.cert.Certificate, java.security.cert.X509Certificate,org.ejbca.core.model.ra.raadmin.GlobalConfiguration,
                                               org.ejbca.core.model.ca.store.CRLInfo, org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.core.model.SecConst"%>
 <html>

@@ -1,5 +1,5 @@
 <%@ page pageEncoding="ISO-8859-1"%>
-
+<%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page isErrorPage="true" import="org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.authorization.AuthorizationDeniedException,
                                    org.ejbca.core.model.authorization.AuthenticationFailedException"%>
 

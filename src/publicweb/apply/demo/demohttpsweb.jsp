@@ -1,4 +1,5 @@
 <%@ page pageEncoding="ISO-8859-1"%>
+<%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page  errorPage="error.jsp" import="org.ejbca.util.CertTools, java.security.cert.*" %>
 <html>
 <%   // Initialize environment
