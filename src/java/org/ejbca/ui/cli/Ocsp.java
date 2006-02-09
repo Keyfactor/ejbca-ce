@@ -15,7 +15,6 @@ package org.ejbca.ui.cli;
 
 import java.security.cert.X509Certificate;
 
-import org.ejbca.core.protocol.ocsp.OCSPConstants;
 import org.ejbca.core.protocol.ocsp.OCSPUnidClient;
 import org.ejbca.core.protocol.ocsp.OCSPUnidResponse;
 import org.ejbca.util.CertTools;
@@ -24,7 +23,7 @@ import org.ejbca.util.FileTools;
 /**
  * Implements the OCSP simple query command line query interface
  *
- * @version $Id: Ocsp.java,v 1.1 2006-02-08 20:23:03 anatom Exp $
+ * @version $Id: Ocsp.java,v 1.2 2006-02-09 11:17:50 anatom Exp $
  */
 public class Ocsp extends BaseCommand {
     /**
@@ -38,7 +37,8 @@ public class Ocsp extends BaseCommand {
                 System.out.println("Usage 2: OCSP OCSPUrl CertificateFileName CA-certificateFileName");
                 System.out.println("Keystore should be a PKCS12.");
                 System.out.println("OCSPUrl is like: http://127.0.0.1:8080/ejbca/publicweb/status/ocsp or https://127.0.0.1:8443/ejbca/publicweb/status/ocsp");
-                System.out.println("OCSP response status is: GOOD="+OCSPConstants.OCSP_GOOD+", REVOKED="+OCSPConstants.OCSP_REVOKED+", UNKNOWN="+OCSPConstants.OCSP_UNKNOWN);
+                System.out.println("OCSP response status is: GOOD="+OCSPUnidResponse.OCSP_GOOD+", REVOKED="+OCSPUnidResponse.OCSP_REVOKED+", UNKNOWN="+OCSPUnidResponse.OCSP_UNKNOWN);
+                System.out.println("OcspUrl can be set to 'null', in that case the program looks for an AIA extension containing the OCSP URI.");
                 return;
             }
             String ksfilename = null;
@@ -57,6 +57,9 @@ public class Ocsp extends BaseCommand {
                 ocspurl = args[0];
                 certfilename = args[1];
                 cacertfilename = args[2];            	
+            }
+            if (ocspurl.equals("null")) {
+                ocspurl = null;
             }
             CertTools.installBCProvider();
             byte[] bytes = FileTools.getBytesFromPEM(FileTools.readFiletoBuffer(certfilename),

@@ -66,7 +66,7 @@ import org.ejbca.util.KeyTools;
  * 3.There was no Unid in the certificate (serialNumber DN component)
  *
  * @author Tomas Gustavsson, PrimeKey Solutions AB
- * @version $Id: OCSPUnidClient.java,v 1.4 2006-02-08 20:28:49 anatom Exp $
+ * @version $Id: OCSPUnidClient.java,v 1.5 2006-02-09 11:17:49 anatom Exp $
  *
  */
 public class OCSPUnidClient {
@@ -115,9 +115,19 @@ public class OCSPUnidClient {
 	 * @param cert X509Certificate to query, the DN should contain serialNumber which is Unid to be looked up
 	 * @param cacert CA certificate that issued the certificate to be queried
 	 * @param getfnr if we should ask for a Unid-Fnr mapping or only query the OCSP server
-	 * @return OCSPUnidResponse conatining the response and the fnr or null and an error code
+	 * @return OCSPUnidResponse conatining the response and the fnr, can contain and an error code and the fnr can be null, never returns null.
 	 */
 	public OCSPUnidResponse lookup(X509Certificate cert, X509Certificate cacert, boolean getfnr) throws OCSPException, IOException, GeneralSecurityException {
+        // See if we must try to get the ocsprul from the cert
+        if (httpReqPath == null) {
+            httpReqPath = CertTools.getAuthorityInformationAccessOcspUrl(cert);
+            // If we didn't pass a url to the constructor and the cert does not have the URL, we will fail...
+            if (httpReqPath == null) {
+                OCSPUnidResponse ret = new OCSPUnidResponse();
+                ret.setErrorCode(OCSPUnidResponse.ERROR_NO_OCSP_URI);
+                return ret;
+            }
+        }
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, cert.getSerialNumber()));
