@@ -11,6 +11,7 @@
     int matchwith, matchtype;
     String matchvalue = null;
 
+    RequestHelper.setDefaultCharacterEncoding(request);
 
     if( request.getParameter(BUTTON_ADD_ADMINENTITY) != null ){
          // Add given admin entity.

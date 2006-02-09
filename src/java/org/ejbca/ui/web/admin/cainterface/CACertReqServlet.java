@@ -43,7 +43,7 @@ import org.ejbca.ui.web.pub.ServletUtils;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: CACertReqServlet.java,v 1.2 2006-02-09 08:45:22 anatom Exp $
+ * @version $Id: CACertReqServlet.java,v 1.3 2006-02-09 10:05:38 anatom Exp $
  * 
  * @web.servlet name = "CACertReq"
  *              display-name = "CACertReqServlet"
@@ -142,6 +142,7 @@ public class CACertReqServlet extends HttpServlet {
         String command;
         // Keep this for logging.
         String remoteAddr = req.getRemoteAddr();
+        RequestHelper.setDefaultCharacterEncoding(req);
         command = req.getParameter(COMMAND_PROPERTY_NAME);
         if (command == null)
             command = "";

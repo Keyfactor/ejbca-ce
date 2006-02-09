@@ -43,6 +43,7 @@ import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
+import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 import org.ejbca.ui.web.admin.rainterface.UserView;
@@ -108,7 +109,7 @@ import org.ejbca.util.StringTools;
  * 
  *
  * @author Ville Skyttä
- * @version $Id: AdminCertReqServlet.java,v 1.1 2006-01-17 20:28:08 anatom Exp $
+ * @version $Id: AdminCertReqServlet.java,v 1.2 2006-02-09 10:05:38 anatom Exp $
  * 
  * @web.servlet name = "AdminCertReq"
  *              display-name = "AdminCertReqServlet"
@@ -189,6 +190,8 @@ public class AdminCertReqServlet extends HttpServlet {
         
         Admin admin = new Admin(certs[0]);
         
+        RequestHelper.setDefaultCharacterEncoding(request);
+
         byte[] buffer = pkcs10Bytes(request.getParameter("pkcs10req"));
         if (buffer == null) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid request, missing 'pkcs10req'!");

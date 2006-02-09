@@ -1,6 +1,6 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@ page contentType="text/html; charset=@page.encoding@" %>
-<%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.security.cert.*,
+<%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.security.cert.*,org.ejbca.ui.web.RequestHelper,
                                  org.ejbca.core.model.log.Admin, org.ejbca.core.model.ApplyBean, org.ejbca.core.model.SecConst"%>
 
 <HTML>
@@ -34,6 +34,7 @@
   int[] availablekeylengths = null;
   int caid =0;
 
+  RequestHelper.setDefaultCharacterEncoding(request);
 try  {
    if( request.getParameter(ACTION) != null){
      if( request.getParameter(ACTION).equals(ACTION_GENERATETOKEN)){

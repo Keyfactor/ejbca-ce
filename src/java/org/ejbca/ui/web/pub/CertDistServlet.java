@@ -43,6 +43,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
@@ -64,7 +65,7 @@ import org.ejbca.util.CertTools;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.2 2006-02-08 20:54:22 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.3 2006-02-09 10:05:38 anatom Exp $
  */
 public class CertDistServlet extends HttpServlet {
 
@@ -147,6 +148,7 @@ public class CertDistServlet extends HttpServlet {
         String remoteAddr = req.getRemoteAddr();
         Admin administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteAddr);
 
+        RequestHelper.setDefaultCharacterEncoding(req);
         String issuerdn = null; 
         if(req.getParameter(ISSUER_PROPERTY) != null){
           issuerdn = java.net.URLDecoder.decode(req.getParameter(ISSUER_PROPERTY),"UTF-8");

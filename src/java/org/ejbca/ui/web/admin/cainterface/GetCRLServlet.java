@@ -28,6 +28,7 @@ import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.pub.ServletUtils;
 import org.ejbca.util.CertTools;
@@ -41,7 +42,7 @@ import org.ejbca.util.CertTools;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: GetCRLServlet.java,v 1.1 2006-01-17 20:28:08 anatom Exp $
+ * @version $Id: GetCRLServlet.java,v 1.2 2006-02-09 10:05:38 anatom Exp $
  * 
  * @web.servlet name = "GetCRL"
  *              display-name = "GetCRLServlet"
@@ -107,6 +108,7 @@ public class GetCRLServlet extends HttpServlet {
            throw new java.io.IOException("Authorization Denied");
         }
 
+        RequestHelper.setDefaultCharacterEncoding(req);
         String issuerdn = null; 
         if(req.getParameter(ISSUER_PROPERTY) != null){
           issuerdn = java.net.URLDecoder.decode(req.getParameter(ISSUER_PROPERTY),"UTF-8");

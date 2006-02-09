@@ -13,13 +13,20 @@
  
 package org.ejbca.ui.web.admin.hardtokeninterface;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.fileupload.*;
+import org.apache.commons.fileupload.DiskFileUpload;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadBase;
+import org.apache.commons.fileupload.FileUploadException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.hardtoken.HardTokenProfileExistsException;
 import org.ejbca.core.model.hardtoken.profiles.EIDProfile;
@@ -34,6 +41,7 @@ import org.ejbca.core.model.hardtoken.profiles.IPINEnvelopeSettings;
 import org.ejbca.core.model.hardtoken.profiles.IReceiptSettings;
 import org.ejbca.core.model.hardtoken.profiles.IVisualLayoutSettings;
 import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
+import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 
 
@@ -41,7 +49,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Contains help methods used to parse a hard token profile jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditHardTokenProfileJSPHelper.java,v 1.1 2006-01-17 20:26:30 anatom Exp $
+ * @version $Id: EditHardTokenProfileJSPHelper.java,v 1.2 2006-02-09 10:05:37 anatom Exp $
  */
 public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 	
@@ -148,6 +156,12 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 	  
       boolean buttonupload = false;
       String filename = null;
+
+      try {
+        RequestHelper.setDefaultCharacterEncoding(request);
+    } catch (UnsupportedEncodingException e1) {
+        // ignore
+    }
 
 	  if(FileUploadBase.isMultipartContent(request)){
 	  	try{     	  	

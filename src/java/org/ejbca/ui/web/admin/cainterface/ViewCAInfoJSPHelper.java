@@ -24,6 +24,7 @@ import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.catoken.HardCATokenInfo;
 import org.ejbca.core.model.ca.catoken.IHardCAToken;
+import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 
 
@@ -31,7 +32,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Contains help methods used to parse a viewcainfo jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: ViewCAInfoJSPHelper.java,v 1.2 2006-01-31 14:34:51 herrvendil Exp $
+ * @version $Id: ViewCAInfoJSPHelper.java,v 1.3 2006-02-09 10:05:38 anatom Exp $
  */
 public class ViewCAInfoJSPHelper implements java.io.Serializable {
 		 
@@ -81,7 +82,9 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
     	  activationmessage = null;
     	  ishardcatoken = false;
     	 
-    	  if( request.getParameter(CA_PARAMETER) != null ){
+          RequestHelper.setDefaultCharacterEncoding(request);
+
+          if( request.getParameter(CA_PARAMETER) != null ){
     	    caid = Integer.parseInt(request.getParameter(CA_PARAMETER));
     	             	    
     	    if(request.getParameter(BUTTON_ACTIVATE) != null || request.getParameter(BUTTON_MAKEOFFLINE) != null){

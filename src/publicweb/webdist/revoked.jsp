@@ -1,11 +1,14 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@ page contentType="text/html; charset=@page.encoding@" %>
-<%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.math.BigInteger,org.ejbca.core.ejb.ca.store.*,org.ejbca.core.model.ca.crl.RevokedCertInfo,org.bouncycastle.util.encoders.Hex, org.ejbca.core.model.log.Admin"%>
+<%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.math.BigInteger,org.ejbca.core.ejb.ca.store.*,org.ejbca.core.model.ca.crl.RevokedCertInfo,org.bouncycastle.util.encoders.Hex, org.ejbca.core.model.log.Admin,org.ejbca.ui.web.RequestHelper"%>
 <html>
 <head><title>@EJBCA@ - Check revocation</title>
 <link rel="stylesheet" href="indexmall.css" type="text/css">
 </head>
 <body>
+<%
+  RequestHelper.setDefaultCharacterEncoding(request);
+%>
 <div align="center"><span class="titel">Check certificate with issuer</span> '<%=request.getParameter("issuer")%>' 
   <span class="titel">and serial number </span>'<%=request.getParameter("serno")%>'. 
 </div>

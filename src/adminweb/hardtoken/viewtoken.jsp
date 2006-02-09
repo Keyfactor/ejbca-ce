@@ -1,7 +1,7 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page errorPage="/errorpage.jsp"  import="java.util.Iterator, org.ejbca.ui.web.admin.configuration.EjbcaWebBean, org.ejbca.core.model.ra.raadmin.GlobalConfiguration, 
-                 org.ejbca.ui.web.admin.hardtokeninterface.HardTokenView,
+    org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.hardtokeninterface.HardTokenView,
                  org.ejbca.ui.web.admin.rainterface.RevokedInfoView" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -49,6 +49,8 @@
 
   String   username = null;
   String   tokensn  = null;
+
+  RequestHelper.setDefaultCharacterEncoding(request);
 
   if(request.getParameter(BUTTON_VIEW_PREVIOUS) != null){
     String indexstring = request.getParameter(INDEX_PARAMETER);

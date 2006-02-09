@@ -1,4 +1,6 @@
-
+<%@ page pageEncoding="ISO-8859-1"%>
+<%@ page contentType="text/html; charset=@page.encoding@" %>
+<%@ page language="Java" import="org.ejbca.ui.web.RequestHelper"%>
 
 <HEAD>
 <TITLE>@EJBCA@ IE Certificate Enroll</TITLE>
@@ -28,6 +30,7 @@ Welcome to certificate enrollment. <BR>
 
     <INPUT TYPE="hidden" NAME="<%=HIDDEN_BROWSER%>" VALUE="<%= BROWSER_UNKNOWN %>">
 <%
+RequestHelper.setDefaultCharacterEncoding(request);
 //  Give the possibility to force a specific browser type
 String forcedBrowser = request.getParameter(FORCE_BROWSER);
 if (forcedBrowser != null) {

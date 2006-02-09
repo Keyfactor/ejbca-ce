@@ -1,7 +1,7 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page  errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.ui.web.admin.rainterface.UserView,
-                 org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.UserDataConstants,
+    org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.UserDataConstants,
                  javax.ejb.CreateException, java.rmi.RemoteException, org.ejbca.core.model.ra.raadmin.DNFieldExtractor, org.ejbca.core.model.ra.UserDataVO, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, 
                  org.ejbca.core.model.hardtoken.HardTokenIssuer, org.ejbca.core.model.hardtoken.HardTokenIssuerData,   org.ejbca.core.model.SecConst, org.ejbca.util.StringTools" %>
 <html> 
@@ -142,6 +142,8 @@
   int[] fielddata = null;
 
   HashMap caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
+
+  RequestHelper.setDefaultCharacterEncoding(request);
 
   if( request.getParameter(ACTION) != null){
     if(request.getParameter(ACTION).equals(ACTION_CHANGEPROFILE)){

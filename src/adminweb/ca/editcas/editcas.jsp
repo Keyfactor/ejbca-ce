@@ -1,7 +1,7 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, java.io.*, org.apache.commons.fileupload.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.SecConst, org.ejbca.util.FileTools, org.ejbca.util.CertTools, org.ejbca.core.model.authorization.AuthorizationDeniedException,
-               org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.caadmin.CAInfo, org.ejbca.core.model.ca.caadmin.X509CAInfo, org.ejbca.core.model.ca.catoken.CATokenInfo, org.ejbca.core.model.ca.catoken.SoftCATokenInfo, org.ejbca.ui.web.admin.cainterface.CADataHandler,
+    org.ejbca.ui.web.RequestHelper, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.caadmin.CAInfo, org.ejbca.core.model.ca.caadmin.X509CAInfo, org.ejbca.core.model.ca.catoken.CATokenInfo, org.ejbca.core.model.ca.catoken.SoftCATokenInfo, org.ejbca.ui.web.admin.cainterface.CADataHandler,
                org.ejbca.ui.web.admin.rainterface.RevokedInfoView, org.ejbca.ui.web.admin.configuration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.ejbca.core.protocol.ExtendedPKCS10CertificationRequest, 
                org.ejbca.core.protocol.PKCS10RequestMessage, org.ejbca.core.model.ca.caadmin.CAExistsException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.model.ca.catoken.CATokenOfflineException, org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException,
                org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, org.ejbca.core.model.ca.catoken.HardCATokenManager, org.ejbca.core.model.ca.catoken.AvailableHardCAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo"%>
@@ -156,6 +156,8 @@
 
 
 <%
+  RequestHelper.setDefaultCharacterEncoding(request);
+
    if(FileUpload.isMultipartContent(request)){     
      errorrecievingfile = true;
      DiskFileUpload upload = new DiskFileUpload();

@@ -13,6 +13,7 @@
 
 package org.ejbca.ui.web.admin.cainterface;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,6 +27,7 @@ import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
+import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 
 
@@ -33,7 +35,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Contains help methods used to parse a publisher jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditPublisherJSPHelper.java,v 1.1 2006-01-17 20:28:08 anatom Exp $
+ * @version $Id: EditPublisherJSPHelper.java,v 1.2 2006-02-09 10:05:38 anatom Exp $
  */
 public class EditPublisherJSPHelper implements java.io.Serializable {
 
@@ -131,6 +133,11 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
         PublisherDataHandler handler  = cabean.getPublisherDataHandler();
         String action = null;
 
+        try {
+            RequestHelper.setDefaultCharacterEncoding(request);
+        } catch (UnsupportedEncodingException e1) {
+            // itgnore
+        }
         action = request.getParameter(ACTION);
         if( action != null){
             if( action.equals(ACTION_EDIT_PUBLISHERS)){

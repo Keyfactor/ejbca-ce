@@ -14,6 +14,7 @@
     String mode = MODE_BASIC;
 
     
+    RequestHelper.setDefaultCharacterEncoding(request);
 
     if(request.getParameter(MODE) == null || request.getParameter(MODE).equals(MODE_BASIC)){
        // Always start with basic mode

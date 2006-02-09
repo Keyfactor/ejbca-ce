@@ -1,7 +1,7 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.core.model.ra.raadmin.GlobalConfiguration, 
-                 org.ejbca.ui.web.admin.rainterface.SortBy,org.ejbca.ui.web.admin.loginterface.LogEntryView,org.ejbca.ui.web.admin.loginterface.LogEntriesView,
+    org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.SortBy,org.ejbca.ui.web.admin.loginterface.LogEntryView,org.ejbca.ui.web.admin.loginterface.LogEntriesView,
              org.ejbca.ui.web.admin.loginterface.LogInterfaceBean, org.ejbca.core.model.log.Admin" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -75,6 +75,7 @@
   int record   = 0;
   int size = ejbcawebbean.getLogEntriesPerPage();
 
+  RequestHelper.setDefaultCharacterEncoding(request);
 
   if(request.getParameter(USER_PARAMETER) != null){
     username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");

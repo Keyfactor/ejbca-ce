@@ -44,7 +44,7 @@ import org.ejbca.util.Base64;
  * cert, nscert and iecert also takes  parameters issuer and certificatesn were issuer is the DN of issuer and certificate serienumber 
  * is in hex format.
  *
- * @version $Id: EndEntityCertServlet.java,v 1.2 2006-02-09 08:45:22 anatom Exp $
+ * @version $Id: EndEntityCertServlet.java,v 1.3 2006-02-09 10:05:38 anatom Exp $
  *
  * @web.servlet name = "EndEntityCert"
  *              display-name = "EndEntityCertServlet"
@@ -114,6 +114,7 @@ public class EndEntityCertServlet extends HttpServlet {
            throw new java.io.IOException("Authorization Denied");
         }
         
+        RequestHelper.setDefaultCharacterEncoding(req);
         String issuerdn = req.getParameter(ISSUER_PROPERTY);        
         String certificatesn = req.getParameter(CERTIFICATEDN_PROPERTY);
 

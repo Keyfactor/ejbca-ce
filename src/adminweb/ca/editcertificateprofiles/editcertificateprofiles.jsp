@@ -1,7 +1,7 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.SecConst, org.ejbca.core.model.authorization.AuthorizationDeniedException,
-               org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, org.ejbca.ui.web.admin.cainterface.CertificateProfileDataHandler, 
+    org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, org.ejbca.ui.web.admin.cainterface.CertificateProfileDataHandler, 
                org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException, org.ejbca.ui.web.admin.rainterface.CertificateView, org.ejbca.core.model.ra.raadmin.DNFieldExtractor"%>
 
 <html>
@@ -122,6 +122,7 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
 <body>
 
 <%  // Determine action 
+  RequestHelper.setDefaultCharacterEncoding(request);
   if( request.getParameter(ACTION) != null){
     if( request.getParameter(ACTION).equals(ACTION_EDIT_CERTIFICATEPROFILES)){
       if( request.getParameter(BUTTON_EDIT_CERTIFICATEPROFILES) != null){

@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.ejbca.ui.web.RequestHelper;
 
 
 /**
@@ -56,7 +57,7 @@ import org.apache.log4j.Logger;
  * </p>
  *
  * @author Original code by Peter Neemeth
- * @version $Id: RemoteVerifyServlet.java,v 1.1 2006-01-17 20:31:52 anatom Exp $
+ * @version $Id: RemoteVerifyServlet.java,v 1.2 2006-02-09 10:05:37 anatom Exp $
  */
 public class RemoteVerifyServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(RemoteVerifyServlet.class);
@@ -277,6 +278,7 @@ public class RemoteVerifyServlet extends HttpServlet {
         out.print("You called from " + remoteAddr);
         out.println(" using " + method + " as method.");
 
+        RequestHelper.setDefaultCharacterEncoding(req);
         try {
             Map params = req.getParameterMap();
 

@@ -24,6 +24,7 @@ import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 
@@ -33,7 +34,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Helper class for the View End Entity Page, parses the request and performs apporiate actions.
  * 
  * @author Philip Vendil
- * @version $Id: ViewEndEntityHelper.java,v 1.1 2006-01-17 20:32:20 anatom Exp $
+ * @version $Id: ViewEndEntityHelper.java,v 1.2 2006-02-09 10:05:37 anatom Exp $
  */
 
 public class ViewEndEntityHelper implements java.io.Serializable{
@@ -141,6 +142,7 @@ public class ViewEndEntityHelper implements java.io.Serializable{
     	  notauthorized = false;
     	  profilenotfound = true;
     	  
+          RequestHelper.setDefaultCharacterEncoding(request);
     	  String action = request.getParameter(ACTION);
     	  if( action == null  && request.getParameter(TIMESTAMP_PARAMETER) != null &&  request.getParameter(USER_PARAMETER) != null){    		  
     		  username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");

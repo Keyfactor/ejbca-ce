@@ -1,7 +1,7 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, 
-                org.ejbca.core.model.ra.raadmin.AdminPreference, org.ejbca.ui.web.admin.configuration.GlobalConfigurationDataHandler,
+    org.ejbca.ui.web.RequestHelper,org.ejbca.core.model.ra.raadmin.AdminPreference, org.ejbca.ui.web.admin.configuration.GlobalConfigurationDataHandler,
                 org.ejbca.ui.web.admin.configuration.WebLanguages"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -47,7 +47,9 @@
 
   String forwardurl = "/" + globalconfiguration .getMainFilename(); 
 
-    // Determine action 
+  RequestHelper.setDefaultCharacterEncoding(request);
+
+  // Determine action 
   if( request.getParameter(BUTTON_CANCEL) != null){
        // Cancel current values and go back to old ones.
        ejbcawebbean.reloadGlobalConfiguration ();

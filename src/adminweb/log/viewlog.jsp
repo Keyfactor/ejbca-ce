@@ -1,7 +1,7 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, 
-                 org.ejbca.ui.web.admin.rainterface.SortBy,org.ejbca.ui.web.admin.loginterface.LogEntryView,
+    org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.SortBy,org.ejbca.ui.web.admin.loginterface.LogEntryView,
                  org.ejbca.ui.web.admin.loginterface.LogInterfaceBean, org.ejbca.core.model.log.LogEntry, org.ejbca.core.model.log.Admin, org.ejbca.core.model.ra.raadmin.AdminPreference,
                  javax.ejb.CreateException, java.rmi.RemoteException, org.ejbca.util.query.*, java.util.Calendar, java.util.Date, java.text.DateFormat, java.util.Locale,
                  java.util.HashMap, java.util.Collection, java.util.Iterator, java.util.TreeMap, org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper" %>
@@ -129,6 +129,8 @@
   final String VIEWUSER_LINK            = globalconfiguration.getBaseUrl() + globalconfiguration.getRaPath() + "/viewendentity.jsp";
 
   final String[] ADMINTYPES             = Admin.ADMINTYPETEXTS;
+
+  RequestHelper.setDefaultCharacterEncoding(request);
 
   String oldaction        = OLD_ACTION_NOACTION; 
   String oldactionvalue   = request.getParameter(OLD_ACTION_VALUE);

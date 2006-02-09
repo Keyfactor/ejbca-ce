@@ -1,7 +1,7 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.authorization.AuthorizationDeniedException,
-                 org.ejbca.ui.web.admin.rainterface.UserView, org.ejbca.ui.web.admin.rainterface.SortBy,org.ejbca.ui.web.admin.rainterface.RevokedInfoView,
+    org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.UserView, org.ejbca.ui.web.admin.rainterface.SortBy,org.ejbca.ui.web.admin.rainterface.RevokedInfoView,
                  org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.core.model.ra.UserDataConstants,org.ejbca.core.model.ra.raadmin.AdminPreference, org.ejbca.core.model.ra.raadmin.DNFieldExtractor,
                  javax.ejb.CreateException, java.rmi.RemoteException, org.ejbca.util.query.*, java.util.*, java.text.DateFormat" %>
 <html>
@@ -134,6 +134,8 @@
   final String EDITUSER_LINK            = globalconfiguration.getBaseUrl() + globalconfiguration.getRaPath() + "/editendentity.jsp";
   final String VIEWHISTORY_LINK         = globalconfiguration.getBaseUrl() + globalconfiguration.getRaPath() + "/viewhistory.jsp";
   final String VIEWTOKEN_LINK           = globalconfiguration.getBaseUrl() + globalconfiguration.getAdminWebPath() + "hardtoken/viewtoken.jsp";
+
+  RequestHelper.setDefaultCharacterEncoding(request);
 
   String oldaction        = OLD_ACTION_NOACTION; 
   String oldactionvalue   = null;
