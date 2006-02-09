@@ -30,7 +30,7 @@ administrator, who can be found on the sourceforge project page.
 <li>Magnus Broqvist, magnus(at)han.pp.se, initial P12toPEM implementation.</li>
 <li>Slava Sklarewski, Slava.Sklarewski(at)de.gi-de.com, data flow diagram.</li>
 <li>Leonardo Souza Mario Bueno, isbueno(at)users.sourceforge.net, patch for request template path.</li>
-<li>Jean Ye, zhjeanye(at)pub.zhuhai.gd.cn, support for Sybase, intial support for Active Directory, EJBCA 3.1 on Weblogic 8.1, port of EJBCA 2 to Java 1.2/EJB 1.0, suggestions and bugfixes. Quick guide for setting up a CA.</li>
+<li>Jean Ye, zhjeanye(at)pub.zhuhai.gd.cn, support for Sybase, intial support for Active Directory, EJBCA 3.1 on Weblogic 8.1, port of EJBCA 2 to Java 1.2/EJB 1.0, suggestions and bugfixes. Quick guide for setting up a CA. Improved internationalization support.</li>
 <li>Lars Silven, lars(at)primekey.se, external connection to smart card personalisation, various additions.</li>
 <li>Gösta Bäckström, gosta.backstrom(at)goyada.com, initial PKCS7 to browsers.</li>
 <li>Ville Skyttä, ville.skytta(at)secgo.com, AdminCertReqServlet, various patches</li>
