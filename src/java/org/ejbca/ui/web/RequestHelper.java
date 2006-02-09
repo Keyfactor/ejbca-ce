@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
  
-package org.ejbca.ui.web.pub;
+package org.ejbca.ui.web;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -19,13 +19,16 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -37,6 +40,8 @@ import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
+import org.ejbca.ui.web.pub.ServletDebug;
+import org.ejbca.ui.web.pub.ServletUtils;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.FileTools;
@@ -44,7 +49,7 @@ import org.ejbca.util.FileTools;
 /**
  * Helper class for hadnling certificate request from browsers or general PKCS#10
  * 
- * @version $Id: RequestHelper.java,v 1.2 2006-02-08 07:31:48 anatom Exp $
+ * @version $Id: RequestHelper.java,v 1.1 2006-02-09 08:43:16 anatom Exp $
  */
 public class RequestHelper {
     private static Logger log = Logger.getLogger(RequestHelper.class);
@@ -390,4 +395,24 @@ public class RequestHelper {
         return ret;
     }
     
+    /** Sets the default character encoding for decoding post and get parameters. 
+     * First tries to get the character encoding from the request, if the browser is so kind to tell us which it is using, which it never does...
+     * Otherwise, when the browser is silent, it sets the character encoding to the same encoding that we use to display the pages.
+     * 
+     * @param request HttpServletRequest   
+     * @throws UnsupportedEncodingException 
+     * 
+     */
+    public static void setDefaultCharacterEncoding(HttpServletRequest request) throws UnsupportedEncodingException {
+        String encoding = request.getCharacterEncoding();
+        if(StringUtils.isEmpty(encoding)) {
+            encoding = RequestHelper.getDefaultContentEncoding();
+            log.debug("Setting encoding to default value: "+encoding);
+            request.setCharacterEncoding(encoding);
+        } else {
+            log.debug("Setting encoding to value from request: "+encoding);
+            request.setCharacterEncoding(encoding);         
+        }        
+    }
+        
 }
