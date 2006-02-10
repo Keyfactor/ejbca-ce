@@ -579,6 +579,25 @@ web.contentencoding    = ${web.contentencoding}
             <fileset dir="${hwtoken.class.dir}"/>
         </jar>
     </target>
+	
+        <!-- =================================================================== -->
+        <!-- Build ejbca util part                                                    -->
+        <!-- =================================================================== -->
+        <target name="ejbca-util.jar" depends="compile" description="Creates ejbca util classes for use in other projects.jar">
+        <!-- create empty direktory for HW tokens if not existing -->
+            <jar jarfile="${dist.dir}/ejbca-util.jar">
+                <manifest>
+                    <!-- todo: autogenerate this from a fileset -->
+                    <attribute name="Class-Path" value="" />
+                </manifest>
+                <fileset dir="${src.dd}">
+                	<include name="org/ejbca/util/**"/>
+                </fileset>
+                <fileset dir="${build}"/>
+
+            </jar>
+        </target>    	
+	
     
     <!-- =================================================================== -->
     <!-- Build ocsp ejb part                                                    -->
@@ -601,7 +620,7 @@ web.contentencoding    = ${web.contentencoding}
     <!-- =================================================================== -->
     <!-- Build CA-ear                                                        -->
     <!-- =================================================================== -->
-    <target name="ca.ear" depends="apply.war, status.war, healthcheck.war, webdist.war, adminweb.war, publicwebroot.war, ejbca-ejb.jar">
+    <target name="ca.ear" depends="apply.war, status.war, healthcheck.war, webdist.war, adminweb.war, publicwebroot.war, ejbca-ejb.jar, ejbca-util.jar">
         <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml"> 
             <fileset dir="${eardd.src}">
                 <exclude name="META-INF/application.xml" />
