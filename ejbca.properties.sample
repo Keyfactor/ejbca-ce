@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.41 2006-02-08 11:21:38 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.42 2006-02-10 08:46:49 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -128,6 +128,7 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 
 # The database name selected for deployment, used to copy XDoclet merge files.
 # All supported databases are defined below, others can easily be added
+# See the document doc/howto/HOWTO-database.txt for database specifics and tips and tricks.
 # Default: hsqldb
 #database.name=mysql
 #database.name=postgres
@@ -135,6 +136,7 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 #database.name=oracle
 #database.name=sapdb
 #database.name=sybase
+#database.name=informix
 
 # The datasource mapping selected for deployment.
 # The J2EE server needs to be configured with the appropriate datasource mapping. 
@@ -149,6 +151,8 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 #datasource.mapping=Oracle9i
 #datasource.mapping=SapDB
 #datasource.mapping=Sybase
+#datasource.mapping=Informix92
+#datasource.mapping=InformixDB
 
 # Database connection url.
 # This is the URL used to connect to the database, used to configure a new datasource in JBoss.
@@ -158,6 +162,7 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 #database.url=jdbc:microsoft:sqlserver://localhost:1433;DatabaseName=ejbca
 #database.url=jdbc:oracle:thin:@127.0.0.1:1521:ejbca
 #database.url=jdbc:datadirect:oracle://127.0.0.1:1521;SID=ejbca
+#database.url=jdbc:informix-sqli://127.0.0.1:1533/ejbca
 
 # JDBC driver classname.
 # The J2EE server needs to be configured with the appropriate JDBC driver for the selected database
@@ -167,6 +172,7 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 #database.driver=com.microsoft.jdbc.sqlserver.SQLServerDriver
 #database.driver=oracle.jdbc.driver.OracleDriver
 #database.driver=com.ddtek.jdbc.oracle.OracleDriver
+#database.driver=com.informix.jdbc.IfxDriver
 
 # Database username.
 # Default: sa (works with hsqldb)

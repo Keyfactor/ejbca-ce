@@ -161,6 +161,11 @@ EJBCA have been tested with Informix 9.2.
 The default mapping in JBoss, InformixDB, does not work for Informix 9.2, so you should use Informix92 in ejbca.properties and do the following:
 Add the mappings from doc/howto/informix-jbossmappings.txt to JBOSS_HOME/server/default/conf/standardjbosscmp-jdbc.xml.
 
+Some Informix database modifications need to be done to be able to insert
+BLOB and TEXT data (which is required by EJBCA):
+You must generate a dbspace of the SmartBlobSpace kind for storing the
+TEXT data type attributes. This require the generation of a Unix RAW
+filesystem and then create the sbspace. After that, change the database
+configuration to recognize the new data space.
+
 Informix JDBC driver: ??
-
-

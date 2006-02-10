@@ -151,7 +151,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.8 2006-02-08 07:31:49 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.9 2006-02-10 08:41:06 anatom Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
@@ -348,7 +348,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         dn = StringTools.strip(dn);
         try {
             con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            ps = con.prepareStatement("select fingerprint from CertificateData where issuerDN=? ORDER BY expireDate DESC");
+            ps = con.prepareStatement("select fingerprint, expireDate from CertificateData where issuerDN=? ORDER BY expireDate DESC");
             ps.setString(1, dn);
             result = ps.executeQuery();
             ArrayList vect = new ArrayList();
@@ -380,7 +380,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             // This should only list a few thousend certificates at a time, in case there
             // are really many revoked certificates after some time...
             con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            ps = con.prepareStatement("select fingerprint from CertificateData where status=? and issuerDN=? ORDER BY expireDate DESC");
+            ps = con.prepareStatement("select fingerprint, expireDate from CertificateData where status=? and issuerDN=? ORDER BY expireDate DESC");
             ps.setInt(1, CertificateDataBean.CERT_REVOKED);
             ps.setString(2, dn);
             result = ps.executeQuery();
@@ -1047,23 +1047,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         String dn = CertTools.stringToBCDNString(issuerDN);
         try {
             final StringBuffer sb = new StringBuffer();
-
-            /*
-             * tmeckel:
-             * why commented out refer to 'findCertificateByIssuerAndSernos'
-            CollectionUtils.forAllDo(sernos, new Closure() {
-                                                public void execute(Object input) {
-                                                    if (null != input) {
-                                                        sb.append(", ");
-                                                        sb.append(input.toString());
-                                                    }
-                                                }} );
-            */
             {
                 Iterator iter = sernos.iterator();
                 while (iter.hasNext()) {
                     sb.append(", '");
-// Make sure this is really a BigInteger passed in as (untrusted param)
+                    // Make sure this is really a BigInteger passed in as (untrusted param)
                     BigInteger serno = (BigInteger) iter.next();
                     sb.append(serno.toString());
                     sb.append("'");
@@ -1076,15 +1064,16 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
              */
             sb.delete(0, ", ".length());
             con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            ps = con.prepareStatement("SELECT DISTINCT serialNumber, revocationDate, revocationReason, status"
-                    + " FROM CertificateData WHERE"
-                    + " issuerDN = '" + dn + "'"
-                    + " AND serialNumber IN (" + sb.toString() + ")");
+            ps = con.prepareStatement(
+                    "SELECT DISTINCT serialNumber, revocationDate, revocationReason, status "+
+                    "FROM CertificateData WHERE issuerDN = ? " +
+                    "AND serialNumber IN (" + sb.toString() + ")");
+            ps.setString(1, dn);
             result = ps.executeQuery();
 
             vect = new ArrayList();
             while (result.next()) {
-                RevokedCertInfo info = new RevokedCertInfo(new BigInteger(result.getBytes(1)), new Date(result.getLong(2)), result.getInt(3));
+                RevokedCertInfo info = new RevokedCertInfo(new BigInteger(result.getString(1).getBytes()), new Date(result.getLong(2)), result.getInt(3));
                 // Backwards compatibility, handle databases that did not have NOT_REVOKED
                 if (result.getInt(4) != CertificateDataBean.CERT_REVOKED) {
                     info.setReason(RevokedCertInfo.NOT_REVOKED);
