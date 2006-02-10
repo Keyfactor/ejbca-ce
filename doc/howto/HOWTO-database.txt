@@ -8,6 +8,8 @@ The following databases have in some stage been tested with EJBCA:
 * MySQL (http://www.mysql.com/)
 * Oracle 8i and 9i (http://www.oracle.com/)
 * Sybase
+* MS-SQL2000
+* Informix 9.2
 
 Unless you are adventurous and know what you're doing, it is recommended to define
 another datasource for ejbca and not reconfigure DefaultDS with another database
@@ -151,3 +153,14 @@ There is also an open source JDBC driver at:
 http://jtds.sourceforge.net/
 This driver is not tested by us (yet), but it has received very good reviews as beeing much better than Microsofts
 driver, so I suggest you take it for a spin.
+
+Informix specifics
+------------------
+EJBCA have been tested with Informix 9.2.
+
+The default mapping in JBoss, InformixDB, does not work for Informix 9.2, so you should use Informix92 in ejbca.properties and do the following:
+Add the mappings from doc/howto/informix-jbossmappings.txt to JBOSS_HOME/server/default/conf/standardjbosscmp-jdbc.xml.
+
+Informix JDBC driver: ??
+
+
