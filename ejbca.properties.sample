@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.42 2006-02-10 08:46:49 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.43 2006-02-10 14:56:26 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -162,7 +162,7 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 #database.url=jdbc:microsoft:sqlserver://localhost:1433;DatabaseName=ejbca
 #database.url=jdbc:oracle:thin:@127.0.0.1:1521:ejbca
 #database.url=jdbc:datadirect:oracle://127.0.0.1:1521;SID=ejbca
-#database.url=jdbc:informix-sqli://127.0.0.1:1533/ejbca
+#database.url=jdbc:informix-sqli://127.0.0.1:1525/ejbca:informixserver=mydbservername;DBDATE=DMY4/;
 
 # JDBC driver classname.
 # The J2EE server needs to be configured with the appropriate JDBC driver for the selected database

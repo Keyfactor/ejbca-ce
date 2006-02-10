@@ -156,7 +156,8 @@ driver, so I suggest you take it for a spin.
 
 Informix specifics
 ------------------
-EJBCA have been tested with Informix 9.2.
+EJBCA have been tested Informix Dynamic Server 9.21.HC4
+JDBC Driver: IBM Informix JDBC Driver for IBM Informix Dynamic Server 3.00.JC3
 
 The default mapping in JBoss, InformixDB, does not work for Informix 9.2, so you should use Informix92 in ejbca.properties and do the following:
 Add the mappings from doc/howto/informix-jbossmappings.txt to JBOSS_HOME/server/default/conf/standardjbosscmp-jdbc.xml.
@@ -168,4 +169,6 @@ TEXT data type attributes. This require the generation of a Unix RAW
 filesystem and then create the sbspace. After that, change the database
 configuration to recognize the new data space.
 
-Informix JDBC driver: ??
+Informix JDBC driver:
+http://www14.software.ibm.com/webapp/download/product.jsp?id=MCOS-5MKKAB&s=z&cat=&S_TACT=TrialsAndBetas&S_CMP=
+
