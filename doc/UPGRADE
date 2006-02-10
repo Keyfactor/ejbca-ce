@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.15 2006-02-02 11:08:57 anatom Exp $
+$Id: UPGRADE,v 1.16 2006-02-10 15:02:11 anatom Exp $
 
 UPGRADE
 =======
@@ -12,6 +12,7 @@ software. See doc/RELEASE_NOTES for info about such upgrades.
 From EJBCA 3.1.x to EJBCA 3.2
 -----------------------------
 Backup your database first! If the upgrade fails, you can always go back to the earlier version.
+(If you are using weblogic, first copy weblogic.jar to EJBCA_HOME/lib)
 
 1. Copy ejbca.properties from the earlier installation.
 2. Merge changes from ejbca.properties.sample into your ejbca.properties, 
@@ -34,6 +35,7 @@ delete from LogEntryData;
 delete from CertReqHistoryData;
 alter table UserData modify extendedInformationData LONGTEXT; (if using MySQL, see src/upgrade/31_32 for commands for your specific database)
 -----
+
 
 From EJBCA 3.1.x to EJBCA 3.1.x
 -------------------------------
