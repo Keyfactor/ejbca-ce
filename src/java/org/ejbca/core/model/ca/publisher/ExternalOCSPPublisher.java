@@ -30,7 +30,7 @@ import org.ejbca.util.JDBCUtil;
 
 /**
  * @author lars
- * @version $Id: ExternalOCSPPublisher.java,v 1.5 2006-02-11 08:45:56 anatom Exp $
+ * @version $Id: ExternalOCSPPublisher.java,v 1.6 2006-02-11 11:31:38 anatom Exp $
  *
  */
 public class ExternalOCSPPublisher implements ICustomPublisher {
@@ -125,11 +125,11 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
         return true;
     }
 
-    /* (non-Javadoc)
+    /* Does nothing, this publisher only publishes Certificates.
      * @see se.anatom.ejbca.ca.publisher.ICustomPublisher#storeCRL(se.anatom.ejbca.log.Admin, byte[], java.lang.String, int)
      */
     public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number)
-                                                                               throws PublisherException {
+    throws PublisherException {
         return true;
     }
 
