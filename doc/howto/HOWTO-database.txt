@@ -96,7 +96,7 @@ Typically for postgres: 'createdb -U postgres ejbca "database for ejbca"' will c
 a database named 'ejbca' with description "database for ejbca" and with user postgres.
 
 Typically for mysql: 'mysqladmin create ejbca' will create the database. 
-Start 'mysql -u root mysql' and create the user with "grant all on ejbca.* to ejbca@'<host>' identified by '<pwd>'".
+Start 'mysql -u root mysql' and create the user with "grant all on ejbca.* to ejbca@'<host>' identified by '<pwd>';".
 
 3. Put the JDBC driver for the database in <jboss-home>/server/default/lib/ (or replace default if you are running 
    another JBoss target, perhaps all?).
