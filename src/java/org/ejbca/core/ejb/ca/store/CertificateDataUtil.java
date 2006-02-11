@@ -39,7 +39,7 @@ import org.ejbca.util.StringTools;
 /** Common code between CertificateStoreSessionBean and CertificateStoreOnlyDataSessionBean
  * 
  * @author lars
- * @version $Id: CertificateDataUtil.java,v 1.4 2006-02-08 07:31:49 anatom Exp $
+ * @version $Id: CertificateDataUtil.java,v 1.5 2006-02-11 11:31:19 anatom Exp $
  *
  */
 public class CertificateDataUtil {
@@ -200,6 +200,7 @@ public class CertificateDataUtil {
                     return revinfo;
                 }
             }
+            adapter.debug("<isRevoked() did not find certificate with dn "+dn+" and serno "+serno.toString());
         } catch (Exception e) {
             throw new EJBException(e);
         }
