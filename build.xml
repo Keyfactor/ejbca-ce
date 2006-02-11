@@ -496,10 +496,6 @@ web.contentencoding    = ${web.contentencoding}
     <!-- =================================================================== -->
     <target name="ocsp-war" depends="ocsp-compile">
         <war destfile="${ocspwar}" webxml="${ocsp-src.dd}/status/WEB-INF/web.xml">
-            <manifest>
-                <!-- todo: autogenerate this from a fileset -->
-                <attribute name="Class-Path" value="${jar.extclasspath}" />
-            </manifest>
             <fileset dir="${status.src}" excludes="WEB-INF/web.xml" />
         </war>
     </target>
