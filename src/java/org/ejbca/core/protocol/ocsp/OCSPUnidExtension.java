@@ -40,7 +40,7 @@ import org.ejbca.util.JDBCUtil;
 /** ASN.1 OCSP extension used to map a UNID to a Fnr, OID for this extension is 2.16.578.1.16.3.2
  * 
  * @author tomas
- * @version $Id: OCSPUnidExtension.java,v 1.7 2006-02-08 20:22:30 anatom Exp $
+ * @version $Id: OCSPUnidExtension.java,v 1.8 2006-02-11 10:44:17 anatom Exp $
  *
  */
 public class OCSPUnidExtension implements IOCSPExtension {
@@ -80,6 +80,7 @@ public class OCSPUnidExtension implements IOCSPExtension {
             throw new IllegalArgumentException("unidTrustDir init-parameter must be set!");
         }
         // read all files from trustDir, expect that they are PEM formatted certificates
+        CertTools.installBCProvider();
         File dir = new File(trustDir);
         try {
             if (dir == null || dir.isDirectory() == false) {
