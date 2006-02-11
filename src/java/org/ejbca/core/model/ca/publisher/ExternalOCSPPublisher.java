@@ -1,10 +1,18 @@
-/**
- * 
- */
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
 package org.ejbca.core.model.ca.publisher;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.sql.Connection;
@@ -22,6 +30,7 @@ import org.ejbca.util.JDBCUtil;
 
 /**
  * @author lars
+ * @version $Id: ExternalOCSPPublisher.java,v 1.5 2006-02-11 08:45:56 anatom Exp $
  *
  */
 public class ExternalOCSPPublisher implements ICustomPublisher {
@@ -46,6 +55,7 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
 
     private interface Preparer {
         void prepare(PreparedStatement ps) throws Exception;
+        String getInfoString();
     }
     private void execute(String sqlCommandTemplate, Preparer preparer) throws PublisherException {
         if ( sqlCommandTemplate!=null ) {
@@ -59,15 +69,9 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
                 if ( ps.execute() )
                     result = ps.getResultSet();
             } catch (Exception e) {
-                StringWriter sw = new StringWriter();
-                PrintWriter pw = new PrintWriter(sw);
-                pw.println("OCSP publishing is not working.");
-                if ( ps!=null )
-                    pw.println(" Error during execution of:" +ps);
-                pw.flush();
-                PublisherException pe = new PublisherException(sw.toString());
+                log.error("EXTERNAL OCSP ERROR, publishing is not working for - "+preparer.getInfoString()+": ", e);
+                PublisherException pe = new PublisherException("EXTERNAL OCSP ERROR, publishing is not working");
                 pe.initCause(e);
-                log.debug(sw.toString(), e);
                 throw pe;
             } finally {
                 JDBCUtil.close(connection, ps, result);
@@ -104,6 +108,9 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
             ps.setLong(11, -1);
             ps.setInt(12, -1);
         }
+        public String getInfoString() {
+        	return "Store:, Username: "+username+", Issuer:"+CertTools.getIssuerDN((X509Certificate)incert)+", Serno: "+((X509Certificate)incert).getSerialNumber().toString()+", Subject: "+CertTools.getSubjectDN((X509Certificate)incert);
+        }
     }
     /* (non-Javadoc)
      * @see se.anatom.ejbca.ca.publisher.ICustomPublisher#storeCertificate(se.anatom.ejbca.log.Admin, java.security.cert.Certificate, java.lang.String, java.lang.String, java.lang.String, int, int, se.anatom.ejbca.ra.ExtendedInformation)
@@ -113,7 +120,7 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
                                     String cafp, int status, int type,
                                     ExtendedInformation extendedinformation)
                                                                             throws PublisherException {
-        execute( "INSERT INTO CertificateData VALUES (?,?,?,?,?,?,?,?,?,?,?,?);",
+        execute( "INSERT INTO CertificateData (fingerprint,base64Cert,subjectDN,issuerDN,cAFingerprint,serialNumber,status,type,username,expireDate,revocationDate,revocationReason) VALUES (?,?,?,?,?,?,?,?,?,?,?,?);",
                  new StoreCertPreparer(incert, username, cafp, status, type) );
         return true;
     }
@@ -139,6 +146,10 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
             ps.setInt(3, reason);
             ps.setString(4, CertTools.getFingerprintAsString((X509Certificate)cert));
         }
+        public String getInfoString() {
+        	return "Revoke:, Issuer:"+CertTools.getIssuerDN((X509Certificate)cert)+", Serno: "+((X509Certificate)cert).getSerialNumber().toString()+", Subject: "+CertTools.getSubjectDN((X509Certificate)cert);
+        	
+        }
     }
     /* (non-Javadoc)
      * @see se.anatom.ejbca.ca.publisher.ICustomPublisher#revokeCertificate(se.anatom.ejbca.log.Admin, java.security.cert.Certificate, int)
@@ -151,6 +162,9 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
 
     private class DoNothingPreparer implements Preparer {
         public void prepare(PreparedStatement ps) {
+        }
+        public String getInfoString() {
+        	return null;
         }
     }
     /* (non-Javadoc)

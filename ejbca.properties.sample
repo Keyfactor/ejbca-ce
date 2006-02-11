@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.43 2006-02-10 14:56:26 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.44 2006-02-11 08:46:04 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -229,14 +229,17 @@ ocsp.usecasigningcert=true
 # Please read the doc/howto/HOWTO-OCSP-RESPONDER.txt for inforamtion.
 
 # Directory containing soft keys for the container.
-ocsp.softKeys.dir=./softKeys
+# Default: ./softKeys
+#ocsp.softKeys.dir=./softKeys
 
 # The password for the all the soft keys of the OCSP responder. All keys must have the same password.
-ocsp.softKeys.keyPassword=foo123
+# Default: foo123
+#ocsp.softKeys.keyPassword=foo123
 
 # The password to all soft keystores. If the keystore is created by EJBCA then this password is equal to 
 # the key password above. If it is equal you may leave it empty but you can not remove it.
-ocsp.softKeys.storePassword=
+# Default: empty
+#ocsp.softKeys.storePassword=
 
 # ------------ Mail configuration ---------------------
 
@@ -319,7 +322,7 @@ ocsp.softKeys.storePassword=
 #ocsp-database.driver=com.ddtek.jdbc.oracle.OracleDriver
 
 # Database username.
-#ocsp-database.username=ejbca
+#ocsp-database.username=ocsp
 
 # Database password.
-#ocsp-database.password=ejbca
+#ocsp-database.password=ocsp
