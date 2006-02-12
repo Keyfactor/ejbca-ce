@@ -27,10 +27,13 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.log.LogConfigurationDataLocal;
 import org.ejbca.core.ejb.log.LogConfigurationDataLocalHome;
 import org.ejbca.core.model.log.Admin;
@@ -42,7 +45,7 @@ import se.anatom.ejbca.log.OldLogConfigurationDataLocalHome;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.3 2006-01-31 19:52:49 anatom Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.4 2006-02-12 10:37:39 anatom Exp $
  * @ejb.bean
  *   display-name="UpgradeSB"
  *   name="UpgradeSession"
@@ -88,6 +91,14 @@ import se.anatom.ejbca.log.OldLogConfigurationDataLocalHome;
  *   business="se.anatom.ejbca.log.LogConfigurationDataLocal"
  *   link="OldLogConfigurationData"
  * 
+ * @ejb.ejb-external-ref
+ *   description="The CA Admin Session"
+ *   view-type="local"
+ *   ejb-name="CAAdminSessionLocal"
+ *   type="Session"
+ *   home="se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome"
+ *   business="se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal"
+ *   link="CAAdminSession"
  */
 public class UpgradeSessionBean extends BaseSessionBean {
 
@@ -96,6 +107,10 @@ public class UpgradeSessionBean extends BaseSessionBean {
 
     private  OldLogConfigurationDataLocalHome oldLogHome = null;
     private  LogConfigurationDataLocalHome logHome = null;
+    /** The local interface of the ca admin session bean */
+    private ICAAdminSessionLocal caadminsession = null;
+    private Admin administrator = null;
+    
     /**
      * Default create for SessionBean without any creation Arguments.
      *
@@ -108,6 +123,20 @@ public class UpgradeSessionBean extends BaseSessionBean {
         
     }
 
+    /** 
+     * Gets connection to ca admin session bean
+     */
+    private ICAAdminSessionLocal getCaAdminSession() {
+        if(caadminsession == null){
+          try{
+              ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome)getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
+              caadminsession = caadminsessionhome.create();
+          }catch(Exception e){
+             throw new EJBException(e);
+          }
+        }
+        return caadminsession;
+    } //getCaAdminSession
 
     /** Runs a preCheck to see if an upgrade is possible
      *
@@ -159,6 +188,8 @@ public class UpgradeSessionBean extends BaseSessionBean {
      */
     public boolean upgrade(Admin admin, String[] args) {
         debug(">upgrade("+admin.toString()+")");
+        this.administrator = admin;
+        
         String dbtype = null;
         if (args.length > 0) {
             dbtype = args[0];
@@ -173,7 +204,10 @@ public class UpgradeSessionBean extends BaseSessionBean {
         if (!migradeDatabase(dbtype)) {
         	return false;
         }
-        
+
+        if (!upgradeHardTokenClassPath()) {
+        	return false;
+        }
         if (!upgradeUserDataVO()) {
             return false;
         }
@@ -227,6 +261,25 @@ public class UpgradeSessionBean extends BaseSessionBean {
 	}
 
     /** 
+     * @ejb.interface-method
+     */
+	public boolean upgradeHardTokenClassPath() {
+		try {
+			ICAAdminSessionLocal casession = getCaAdminSession(); 
+	        Collection caids = casession.getAvailableCAs(administrator);
+	        Iterator iter = caids.iterator();
+	        if (iter.hasNext()) {
+	            int caid = ((Integer) iter.next()).intValue();
+	            casession.upgradeFromOldCAHSMKeyStore(administrator, caid);
+	        }			
+		} catch (Exception e) {
+			error("Error upgrading hard token class path: ", e);
+			return false;
+		}
+        return true;
+	}
+
+	/** 
      * @ejb.interface-method
      */
     public ArrayList logConfStep1() {

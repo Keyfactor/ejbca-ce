@@ -95,7 +95,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.3 2006-01-31 14:34:51 herrvendil Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.4 2006-02-12 10:37:39 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -1108,15 +1108,62 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // revokeCA
 
     /**
-     * Method that should be used when upgrading from a older version of EJBCA. i.e. >3.0
+     * Method that should be used when upgrading from EJBCA 3.1 to EJBCA 3.2, changes class name of 
+     * nCipher HardToken HSMs after code re-structure.
      *
-     * @param a byte array of old server p12 file.
-     * @param keystorepass used to unlock the keystore.
-     * @param privkeypass used to unlock the private key.
+     * @param admin Administrator probably Admin.TYPE_CACOMMANDLINE_USER
+     * @param caid id of CA to upgrade
      * 
      * @ejb.interface-method
      */
-    public void upgradeFromOldCAKeyStore(Admin admin, String caname, byte[] p12file, char[] keystorepass,
+    public void upgradeFromOldCAHSMKeyStore(Admin admin, int caid){
+        try{
+            // check authorization
+            if(admin.getAdminType() !=  Admin.TYPE_CACOMMANDLINE_USER)
+              getAuthorizationSession().isAuthorizedNoLog(admin,"/super_administrator");
+
+            CADataLocal cadata = cadatahome.findByPrimaryKey(Integer.valueOf(caid));
+            CA ca = cadata.getCA();
+            CAToken token = ca.getCAToken();
+            CATokenInfo tokeninfo = token.getCATokenInfo();
+            HardCATokenInfo htokeninfo = null;
+            if (tokeninfo instanceof HardCATokenInfo) {
+            	error("(this is not an error) Found hard token for ca with id: "+caid);
+				htokeninfo = (HardCATokenInfo)tokeninfo;	
+			} else {
+            	error("(this is not an error) No need to update soft token for ca with id: "+caid);
+			}
+            if (htokeninfo != null) {
+            	if (htokeninfo.getClassPath().equals("se.anatom.ejbca.ca.caadmin.hardcatokens.NFastCAToken") 
+            			|| htokeninfo.getClassPath().equals("se.primeKey.caToken.nFast.NFastCAToken")) {
+            		htokeninfo.setClassPath("org.ejbca.core.model.ca.catoken.NFastCAToken");
+                	error("(this is not an error) Update catoken classpath for ca with id: "+caid);
+            		token.updateCATokenInfo(htokeninfo);
+            		ca.setCAToken(token);
+            		cadata.setCA(ca);
+            	}
+            }            
+        }catch(Exception e){
+        	error("An error occured when trying to upgrade hard token classpath: ", e);
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"An error occured when trying to upgrade hard token classpath", e);
+            throw new EJBException(e);
+        }
+
+    } // upgradeFromOldCAHSMKeyStore
+
+    /**
+     * Method that is used to create a new CA from an imported keystore from another type of CA, for example OpenSSL.
+     *
+     * @param admin Administrator
+     * @param caname the CA-name (human readable) the newly created CA will get
+     * @param p12file a byte array of old server p12 file.
+     * @param keystorepass used to unlock the keystore.
+     * @param privkeypass used to unlock the private key.
+     * @param privatekeyalias the alias for the private key in the keystore.
+     * 
+     * @ejb.interface-method
+     */
+    public void importCAFromKeyStore(Admin admin, String caname, byte[] p12file, char[] keystorepass,
                                          char[] privkeypass, String privatekeyalias){
         try{
             // check authorization
@@ -1259,7 +1306,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
             throw new EJBException(e);
         }
 
-    } // upgradeFromOldCAKeyStore
+    } // importCAFromKeyStore
 
     /**
      *  Method returning a Collection of Certificate of all CA certificates known to the system.
