@@ -23,8 +23,7 @@ Merge changes from ejbca.properties.sample into your ejbca.properties,
 specially datasource.jndi-name and datasource.jndi-name-prefix if you changed them from the default values.
 
 Otherwise simply keep/copy ejbca.properties from the earlier installation.
-Merge changes from ejbca.properties.sample into your ejbca.properties, 
-specially datasource.jndi-name and datasource.jndi-name-prefix if you changed them from the default values.
+Merge changes from ejbca.properties.sample into your ejbca.properties.
 Copy the directory 'p12' from the earlier installation and 'ant deploy' 
 (or deploywithjbossservice) this new one.
 
