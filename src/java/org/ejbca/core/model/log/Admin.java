@@ -32,7 +32,7 @@ import org.ejbca.util.CertTools;
  * Data contained in the class is preferbly
  *
  * @author TomSelleck
- * @version $Id: Admin.java,v 1.1 2006-01-17 20:28:08 anatom Exp $
+ * @version $Id: Admin.java,v 1.2 2006-02-12 10:36:44 anatom Exp $
  */
 public class Admin implements Serializable {
 
@@ -53,7 +53,7 @@ public class Admin implements Serializable {
                                                          AdminEntity.SPECIALADMIN_CACOMMANDLINEADMIN, AdminEntity.SPECIALADMIN_BATCHCOMMANDLINEADMIN,
                                                          AdminEntity.SPECIALADMIN_INTERNALUSER};
 
-    private int type;
+    private int type = -1;
     private String data;
     private X509Certificate certificate;
 
@@ -101,6 +101,12 @@ public class Admin implements Serializable {
         if (type == TYPE_CLIENTCERT_USER)
             returnval = CertTools.getIssuerDN(certificate).hashCode();
         return returnval;
+    }
+    public String toString() {
+    	if ((type > -1) && (type < ADMINTYPETEXTS.length-1)) {
+        	return ADMINTYPETEXTS[type];    		
+    	}
+    	return "UNKNOWN";
     }
 
 }
