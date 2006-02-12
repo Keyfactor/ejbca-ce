@@ -3,7 +3,7 @@
 <%@ page language="Java" import="org.ejbca.ui.web.RequestHelper"%>
 
 <HEAD>
-<TITLE>@EJBCA@ IE Certificate Enroll</TITLE>
+<TITLE>@EJBCA@ Certificate Enroll</TITLE>
 
  
 <link rel="stylesheet" href="../indexmall.css" type="text/css">
