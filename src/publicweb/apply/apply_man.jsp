@@ -1,3 +1,5 @@
+<%@ page pageEncoding="ISO-8859-1"%>
+<%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@ page language="Java" import="org.ejbca.ui.web.RequestHelper"%>
 
 <HTML>
@@ -16,27 +18,6 @@ Welcome to certificate enrollment. <BR>
 <!-- If you haven't done so already, you should first fetch the CA certificate(s).
 
 <P>Fetch CA certificates: -->
-<%
-/*try  {
-    InitialContext ctx = new InitialContext();
-    ISignSessionHome home = home = (ISignSessionHome) PortableRemoteObject.narrow(
-            ctx.lookup("RSASignSession"), ISignSessionHome.class );
-    ISignSessionRemote ss = home.create();
-    Collection chain = ss.getCertificateChain(new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr()), caid);
-    if (chain.size() == 0) {
-        out.println("No CA certificates exist");
-    } else {
-        out.println("<li><a href=\"../webdist/certdist?cmd=cacert&level=0&caid="+caid+"\">Root CA</a></li>");
-        if (chain.length > 1) {
-            for (int i=chain.length-1;i>0;i--) {
-                out.println("<li><a href=\"../webdist/certdist?cmd=cacert&level="+i+"&caid="+caid+"\">CA</a></li>");
-            }
-        }
-    }
-} catch(Exception ex) {
-    ex.printStackTrace();
-} */                                            
-%>
 <hr>
 <FORM NAME="EJBCA" ACTION="certreq" ENCTYPE=x-www-form-encoded METHOD=POST>
  Please give your username and password, paste the PEM-formated PKCS10 certification request into the field below and

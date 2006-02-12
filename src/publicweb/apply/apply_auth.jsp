@@ -1,7 +1,3 @@
-<%@ page pageEncoding="ISO-8859-1"%>
-<%@ page contentType="text/html; charset=@page.encoding@" %>
-<%@ page language="Java" import="org.ejbca.ui.web.RequestHelper"%>
-
 <HEAD>
 <TITLE>@EJBCA@ Certificate Enroll</TITLE>
 
