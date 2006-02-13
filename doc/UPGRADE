@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.16 2006-02-10 15:02:11 anatom Exp $
+$Id: UPGRADE,v 1.17 2006-02-13 08:22:42 anatom Exp $
 
 UPGRADE
 =======
@@ -33,7 +33,7 @@ If the above three conditions are met, issue the following three commands to you
 delete from LogConfigurationData;
 delete from LogEntryData;
 delete from CertReqHistoryData;
-alter table UserData modify extendedInformationData LONGTEXT; (if using MySQL, see src/upgrade/31_32 for commands for your specific database)
+alter table UserData modify extendedInformationData LONGTEXT; (if NOT using MySQL, see src/upgrade/31_32 for commands for your specific database)
 -----
 
 
