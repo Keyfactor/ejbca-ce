@@ -1,6 +1,6 @@
 EJBCA on Fedora core 4, simple howto
 =====================================
-$Id: EJBCA_on_Fedora_core4.txt,v 1.1 2006-02-13 12:03:17 anatom Exp $
+$Id: EJBCA_on_Fedora_core4.txt,v 1.2 2006-02-13 12:03:38 anatom Exp $
 EJBCA version: 3.1.x/3.2.x
 Contributed by: Yovko Ilchev Yovkov, yyovkov(at)yyovkov.net 
 
@@ -13,6 +13,7 @@ helpful staff, just will write down the steps of "works for me" howto:
 1. Install Fedora Core 4 minimal with mysql, postgresql and apache server
 
 2. From http://www.jpackage.org/ download and compile java (http://www.jpackage.org/rpm.php?id=3319)
+
 3. Install the next packages with yum:
 shell# yum install unixODBC-devel \
 	xorg-x11-deprecated-libs \
