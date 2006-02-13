@@ -30,7 +30,7 @@ import javax.ejb.EJBException;
  * HardCATokenContainer is a class managing the persistent storage of a hardcatoken publisher.
  * 
  *
- * @version $Id: HardCATokenContainer.java,v 1.1 2006-01-17 20:31:51 anatom Exp $
+ * @version $Id: HardCATokenContainer.java,v 1.2 2006-02-13 19:15:45 anatom Exp $
  */
 public class HardCATokenContainer extends CAToken{
 	private IHardCAToken hardcatoken = null; 
@@ -81,9 +81,10 @@ public class HardCATokenContainer extends CAToken{
 	 * Updates the hardcatoken configuration
 	 */
 	public void updateCATokenInfo(CATokenInfo catokeninfo) {
-		if(getClassPath() == null)
-		  this.setClassPath(((HardCATokenInfo)catokeninfo).getClassPath());	
-		
+		// We must be able to upgrade class path
+		if (((HardCATokenInfo)catokeninfo).getClassPath() != null) {
+			  this.setClassPath(((HardCATokenInfo)catokeninfo).getClassPath());			
+		}
 		if(getSignatureAlgorithm() == null)
 		  this.setSignatureAlgorithm(catokeninfo.getSignatureAlgorithm());
 		

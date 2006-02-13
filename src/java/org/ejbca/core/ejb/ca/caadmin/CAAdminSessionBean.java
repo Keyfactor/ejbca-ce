@@ -95,7 +95,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.7 2006-02-13 18:21:49 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.8 2006-02-13 19:15:43 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -1134,15 +1134,16 @@ public class CAAdminSessionBean extends BaseSessionBean {
             	error("(this is not an error) No need to update soft token for ca with id: "+caid);
 			}
             if (htokeninfo != null) {
-            	if (htokeninfo.getClassPath().equals("se.anatom.ejbca.ca.caadmin.hardcatokens.NFastCAToken") 
-            			|| htokeninfo.getClassPath().equals("se.primeKey.caToken.nFast.NFastCAToken")) {
+            	String oldtoken = htokeninfo.getClassPath();
+            	if (oldtoken.equals("se.anatom.ejbca.ca.caadmin.hardcatokens.NFastCAToken") 
+            			|| oldtoken.equals("se.primeKey.caToken.nFast.NFastCAToken")) {
             		htokeninfo.setClassPath("org.ejbca.core.model.ca.catoken.NFastCAToken");
-                	error("(this is not an error) Updated catoken classpath ("+htokeninfo.getClassPath()+") for ca with id: "+caid);
+                	error("(this is not an error) Updated catoken classpath ("+oldtoken+") for ca with id: "+caid);
             		token.updateCATokenInfo(htokeninfo);
             		ca.setCAToken(token);
             		cadata.setCA(ca);
             	} else {
-                	error("(this is not an error) Ne need to update catoken classpath ("+htokeninfo.getClassPath()+") for ca with id: "+caid);            		
+                	error("(this is not an error) Ne need to update catoken classpath ("+oldtoken+") for ca with id: "+caid);            		
             	}
             }            
         }catch(Exception e){
