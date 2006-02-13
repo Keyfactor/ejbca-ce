@@ -1,0 +1,130 @@
+<!--
+Add this mapping to the standardjbosscmp-jdbc.xml file
+-->
+
+      <type-mapping>
+         <name>Informix92</name>
+         <row-locking-template>select ?1 from ?2 where ?3 order by ?4 for update</row-locking-template>
+         <pk-constraint-template>PRIMARY KEY (?2) CONSTRAINT ?1</pk-constraint-template>
+         <fk-constraint-template>ALTER TABLE ?1 ADD CONSTRAINT FOREIGN KEY (?3) REFERENCES ?4 (?5) CONSTRAINT ?2</fk-constraint-template>
+         <alias-header-prefix>t</alias-header-prefix>
+         <alias-header-suffix>_</alias-header-suffix>
+         <alias-max-length>32</alias-max-length>
+         <subquery-supported>true</subquery-supported>
+<!--GAB         
+         <true-mapping>1</true-mapping>
+         <false-mapping>0</false-mapping>
+-->
+         <true-mapping>'t'</true-mapping>
+         <false-mapping>'f'</false-mapping>
+
+         <function-mapping>
+            <function-name>count</function-name>
+            <function-sql>count(?1)</function-sql>
+         </function-mapping>
+
+         <mapping>
+            <java-type>java.lang.Character</java-type>
+            <jdbc-type>CHAR</jdbc-type>
+            <sql-type>CHAR(1)</sql-type>
+         </mapping>
+
+         <mapping>
+            <java-type>java.lang.String</java-type>
+            <jdbc-type>VARCHAR</jdbc-type>
+            <sql-type>VARCHAR(255,0)</sql-type>
+         </mapping>
+
+         <mapping>
+            <java-type>java.math.BigDecimal</java-type>
+            <jdbc-type>NUMERIC</jdbc-type>
+            <sql-type>DECIMAL</sql-type>
+         </mapping>
+
+<!--GAB
+         <mapping>
+            <java-type>java.lang.Boolean</java-type>
+            <jdbc-type>BIT</jdbc-type>
+            <sql-type>SMALLINT</sql-type>
+         </mapping>
+-->
+         <mapping>
+            <java-type>java.lang.Boolean</java-type>
+            <jdbc-type>BIT</jdbc-type>
+            <sql-type>BOOLEAN</sql-type>
+         </mapping>
+
+         <mapping>
+            <java-type>java.lang.Integer</java-type>
+            <jdbc-type>INTEGER</jdbc-type>
+            <sql-type>INTEGER</sql-type>
+         </mapping>
+
+         <mapping>
+            <java-type>java.lang.Long</java-type>
+            <jdbc-type>BIGINT</jdbc-type>
+            <sql-type>NUMERIC(18,0)</sql-type>
+         </mapping>
+
+         <mapping>
+            <java-type>java.lang.Float</java-type>
+            <jdbc-type>REAL</jdbc-type>
+            <sql-type>FLOAT</sql-type>
+         </mapping>
+
+         <mapping>
+            <java-type>java.lang.Double</java-type>
+            <jdbc-type>DOUBLE</jdbc-type>
+            <sql-type>DOUBLE PRECISION</sql-type>
+         </mapping>
+
+         <mapping>
+            <java-type>java.lang.Byte</java-type>
+            <jdbc-type>TINYINT</jdbc-type>
+            <sql-type>SMALLINT</sql-type>
+         </mapping>
+
+         <mapping>
+            <java-type>java.lang.Short</java-type>
+            <jdbc-type>SMALLINT</jdbc-type>
+            <sql-type>SMALLINT</sql-type>
+         </mapping>
+
+         <mapping>
+            <java-type>java.util.Date</java-type>
+            <jdbc-type>TIMESTAMP</jdbc-type>
+            <sql-type>DATETIME YEAR TO FRACTION(3)</sql-type>
+         </mapping>
+
+         <mapping>
+            <java-type>java.sql.Date</java-type>
+            <jdbc-type>DATE</jdbc-type>
+            <sql-type>DATE</sql-type>
+         </mapping>
+
+         <mapping>
+            <java-type>java.sql.Time</java-type>
+            <jdbc-type>TIME</jdbc-type>
+            <sql-type>TIME</sql-type>
+         </mapping>
+
+         <mapping>
+            <java-type>java.sql.Timestamp</java-type>
+            <jdbc-type>TIMESTAMP</jdbc-type>
+            <sql-type>DATETIME YEAR TO FRACTION(3)</sql-type>
+         </mapping>
+
+<!--GAB
+         <mapping>
+            <java-type>java.lang.Object</java-type>
+            <jdbc-type>BLOB</jdbc-type>
+            <sql-type>BLOB</sql-type>
+         </mapping>
+-->
+
+         <mapping>
+            <java-type>java.lang.Object</java-type>
+            <jdbc-type>VARBINARY</jdbc-type>
+            <sql-type>BLOB</sql-type>
+         </mapping>
+      </type-mapping>
