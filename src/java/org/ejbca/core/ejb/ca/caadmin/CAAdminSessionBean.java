@@ -95,7 +95,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.4 2006-02-12 10:37:39 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.5 2006-02-13 08:30:26 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -1122,7 +1122,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
             if(admin.getAdminType() !=  Admin.TYPE_CACOMMANDLINE_USER)
               getAuthorizationSession().isAuthorizedNoLog(admin,"/super_administrator");
 
-            CADataLocal cadata = cadatahome.findByPrimaryKey(Integer.valueOf(caid));
+            CADataLocal cadata = cadatahome.findByPrimaryKey(new Integer(caid));
             CA ca = cadata.getCA();
             CAToken token = ca.getCAToken();
             CATokenInfo tokeninfo = token.getCATokenInfo();
