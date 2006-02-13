@@ -111,7 +111,7 @@ import org.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.2 2006-01-26 14:14:30 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.3 2006-02-13 10:48:18 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 
@@ -264,19 +264,19 @@ public class LocalLogSessionBean extends BaseSessionBean {
     /**
      * Log everything in the database using the log entity bean
      */
-    private void logDB(Admin admin, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment)
-            throws EJBException {
+    private void logDB(Admin admin, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment) {
         try {
             String uid = certificate == null ? null : certificate.getSerialNumber().toString(16) + "," + certificate.getIssuerDN().toString();
             Integer id = getAndIncrementRowCount();
             logentryhome.create(id, admin.getAdminType(), admin.getAdminData(), caid, module, time, username, uid, event, comment);
         } catch (DuplicateKeyException e) {
             // FIXME we are losing a db audit entry in this case, what do we do ?
-            log.error("DuplicateKeyException during log, missing log entry: ", e);
+            log.error("ERROR MISSING LOG ENTRY: DuplicateKeyException during log, missing log entry: ", e);
             getAndIncrementRowCount();
         } catch (CreateException e) {
-            log.error("CreateException during log, missing log entry: ", e);
-            throw new EJBException(e);
+            // FIXME we are losing a db audit entry in this case, what do we do ?
+            log.error("ERROR MISSING LOG ENTRY: DuplicateKeyException during log, missing log entry: ", e);
+            getAndIncrementRowCount();
         }
     }
 
