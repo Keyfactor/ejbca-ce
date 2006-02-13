@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.44 2006-02-11 08:46:04 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.45 2006-02-13 08:34:08 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -102,10 +102,10 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 # If you are not sure that you know how to add a new language (languagefile.XX.properties etc), 
 # we suggest you stick with the default the first time you install if you wan't to add your own language.
 # Otherwise you may not be able to log in to the admin-GUI.
-# Default: EN,FR,IT,ES,SE 
-#web.availablelanguages=EN,FR,IT,ES,SE
+# Default: EN,FR,IT,ES,SE,ZN
+#web.availablelanguages=EN,FR,IT,ES,SE,ZN
 
-# Default content encoding used to display JSP pages, for example ISO-8859-1 or UTF-8.
+# Default content encoding used to display JSP pages, for example ISO-8859-1, UTF-8 or GBK.
 # Default: ISO-8859-1
 #web.contentencoding=ISO-8859-1
 

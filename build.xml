@@ -148,12 +148,12 @@
     <property name="mail.smtp.host" value="localhost" />
     <property name="mail.smtp.auth" value="false" />
     <property name="mail.subject" value="Retrieve your certificate" />
-    <property name="mail.message" value="Hello $CN$NL$NL This is a notification. $NL$NL Your username: $Username$NL password: $Password$NL$NL Your are NOT supposed to go and fetch your certificate, this is only a test." />
+    <property name="mail.message" value="Hello ${CN}${NL}${NL} This is a notification. ${NL}${NL} Your username: ${USERNAME}${NL} password: ${PASSWORD}${NL}${NL} Your are NOT supposed to go and fetch your certificate, this is only a test." />
     <property name="mail.debug" value="false" />
     <property name="httpserver.pubhttp" value="8080" />
     <property name="httpserver.pubhttps" value="8442" />
     <property name="httpserver.privhttps" value="8443" />
-    <property name="web.availablelanguages" value="EN,FR,IT,ES,SE" />
+    <property name="web.availablelanguages" value="EN,FR,IT,ES,SE,ZN" />
     <property name="web.contentencoding" value="ISO-8859-1" />
 
     <!-- =================================================================== -->
