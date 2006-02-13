@@ -1,3 +1,22 @@
+3.1.4
+---
+Bug
+
+    * [ECA-193] - reentrant property of Entity beans is "false" instead of "False", breaks Weblogic
+    * [ECA-194] - Fix deployment descriptors to work with Weblogic 8.1
+    * [ECA-196] - wrong size of some PrimeCard printouts
+    * [ECA-198] - Private fields in CMP beans are not cached in Weblogic
+    * [ECA-199] - Weblogic/Oracle can not use DISTINCT in SQL with LONG columns
+    * [ECA-201] - DataSource jndi name must be EjbcaDS not java:/EjbcaDS in Weblogic
+    * [ECA-211] - Unable to reload existing session
+
+Improvement
+
+    * [ECA-197] - Some entity beans does not define transacton settings in ejb-jar.xml
+    * [ECA-204] - possibility to include classes for HW token in the ear file
+    * [ECA-222] - Make installation done with ealy pre-release of nCipher support work out-of-the-box
+    * [ECA-226] - Improved error logging for nCipher HSMs
+
 3.1.3
 ---
 Bug
