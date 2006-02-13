@@ -1,0 +1,118 @@
+EJBCA on Fedora core 4, simple howto
+=====================================
+$Id: EJBCA_on_Fedora_core4.txt,v 1.1 2006-02-13 12:03:17 anatom Exp $
+EJBCA version: 3.1.x/3.2.x
+Contributed by: Yovko Ilchev Yovkov, yyovkov(at)yyovkov.net 
+
+NOTE: This guide is not updated with the frequency of the official User Guide, 
+so please go there first.
+
+I will not show you the link and the places were I have found this
+helpful staff, just will write down the steps of "works for me" howto:
+
+1. Install Fedora Core 4 minimal with mysql, postgresql and apache server
+
+2. From http://www.jpackage.org/ download and compile java (http://www.jpackage.org/rpm.php?id=3319)
+3. Install the next packages with yum:
+shell# yum install unixODBC-devel \
+	xorg-x11-deprecated-libs \
+	alsa-lib \
+	ttmkfontdir \
+	chkfontpath \
+	libxslt \
+	vim-enhanced \
+	mysql-connector-java \
+	ant \
+	samba-client
+
+vim-enhanced is just for color view of the config files
+
+4. Setup the environment:
+4.1 Create java.sh (or somithing like this) file which will export needed variables in shell environment:
+shell # vim /etc/profile.d/java.sh
+
+--- cut ---
+#!/bin/bash
+JAVA_HOME=/usr/lib/jvm/java-1.5.0-sun-1.5.0.06
+JBOSS_HOME=/opt/jboss
+CLASSPATH=$CLASSPATH:/usr/lib/jvm/jre-1.5.0-sun/lib/ext
+PATH=$PATH:/usr/lib/jvm/java-1.5.0-sun-1.5.0.06/bin
+
+export JAVA_HOME JBOSS_HOME CLASSPATH
+--- cut ---
+
+
+4.2 Change the permissions of the file to be executable
+	shell # chmod +x vim /etc/profile.d/java.sh
+
+4.4 Create user ejbca
+	shell # useradd -M -d /opt/ejbca/ -u 499 ejbca
+
+4.3 Log off and log in to be sure that the changes a applied 
+
+5. Start JBOSS
+5.1. Unarchive jboss
+	shell # tar jxvf jboss-4.0.3SP1.tar.bz2 -C /opt
+	shell # mv /opt/jboss-4.0.3SP1 /opt/boss
+
+5.2 Init scrip create
+	go to the /opt/jboss/bin directory and copy file jboss_init_redhat.sh
+to jboss_init_fedora.sh
+	Edit jboss_init_fedora.sh file and make the next changes:
+
+--- change ---
+(line 26)
+JBOSS_HOME=${JBOSS_HOME:-"/usr/local/jboss"}
+	to
+JBOSS_HOME=${JBOSS_HOME:-"/opt/jboss"}
+
+(line 29)
+JAVAPTH=${JAVAPTH:-"/usr/local/jdk/bin"}
+	to
+JAVAPTH=${JAVAPTH:-"/usr/lib/jvm/java-1.5.0-sun-1.5.0.06/bin"}
+
+(line 52)
+JBOSSUS=${JBOSSUS:-"jboss"}
+	to
+JBOSSUS=${JBOSSUS:-"ejbca"}
+--- change ---
+
+5.3 change ownership
+	shell # chown -R ejbca:ejbca /opt/jboss
+
+5.4 Run jboss server
+	shell # sh /opt/jboss/bin/jboss_init_fedora.sh start
+
+6. Prepare ejbca
+6.1 Unzip ejbca
+	shell # cd /opt
+	shell # unzip <path/to/file>/ejbca_3_1_3.zip
+6.2 Create properties file:
+	shell # cp ejbca.properties.sample ejbca.properties
+6.3 Edit properties file
+Here is not my strong part, but for test as is written in documentation defaults will be OK. 
+It is good idea to change the next line at least:
+
+shell # vim ejbca.properties
+
+--- change ---
+(line 22)
+java.ver=14
+	to
+java.ver=15
+--- cnage ---
+
+6.4 Change ownership
+	shell # chown -R ejbca:ejbca /opt/ejbca
+
+7. Compile
+Now you must su - to ejbca user
+	shell # su - ejbca
+And start to compile the software
+	ejbca $ ant bootstrap
+	ejbca $ ant install
+
+Everything should be OK.
+
+I hope this steps are not wrong and will be helpful for somebody
+
