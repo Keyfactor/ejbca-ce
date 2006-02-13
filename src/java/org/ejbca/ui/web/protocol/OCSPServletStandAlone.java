@@ -80,11 +80,11 @@ import org.ejbca.core.model.log.Admin;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silvén PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.10 2006-02-08 07:31:49 anatom Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.11 2006-02-13 16:55:39 anatom Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase {
 
-    static private Logger m_log = Logger.getLogger(OCSPServletStandAlone.class);
+    static final protected Logger m_log = Logger.getLogger(OCSPServletStandAlone.class);
 
     private ICertificateStoreOnlyDataSessionLocal mCertStore;
     private String mSoftKeyStoreDirectoryName;

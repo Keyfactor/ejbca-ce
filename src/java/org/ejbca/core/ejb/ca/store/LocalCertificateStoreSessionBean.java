@@ -151,7 +151,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.9 2006-02-10 08:41:06 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.10 2006-02-13 16:55:38 anatom Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
@@ -214,7 +214,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     /**
      * Gets connection to log session bean
      */
-    private ILogSessionLocal getLogSession() {
+    protected ILogSessionLocal getLogSession() {
         if (logsession == null) {
             try {
                 ILogSessionLocalHome home = (ILogSessionLocalHome) getLocator().getLocalHome(ILogSessionLocalHome.COMP_NAME);
