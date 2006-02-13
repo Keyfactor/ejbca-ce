@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.46 2006-02-13 09:31:06 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.47 2006-02-13 19:34:56 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -49,13 +49,13 @@ ca.policy=null
 
 # This password is used internally to protect CA keystores in database (i.e. the CAs private key).
 # foo123 is to keep compatibility with default installations of EJBCA 3.0, please change this if possible
-# If upgrading, you should take this value from src/ca/ca/META-INF/ejb-jar.xml -> keyStorePass. 
+# If upgrading from EJBCA 3.0.x, you should take this value from src/ca/ca/META-INF/ejb-jar.xml -> keyStorePass. 
 # The default value is the same for convenience.
 ca.keystorepass=foo123
 #ca.keystorepass=!secret!
 
 # Password user to protect OCSP keystores in the database (CAs OCSP signer certificate).
-# If upgrading, you should take this value from src/ca/ca/META-INF/ejb-jar.xml -> OCSPKeyStorePass. 
+# If upgrading from EJBCA 3.0.x, you should take this value from src/ca/ca/META-INF/ejb-jar.xml -> OCSPKeyStorePass. 
 # The default value is the same for convenience.
 ca.ocspkeystorepass=foo123
 #ca.ocspkeystorepass=ocsp!secret!
@@ -75,7 +75,7 @@ superadmin.password=ejbca
 # The password used to protect the web servers SSL keystore.
 # Choose a good password here.
 # If upgrading from EJBCA 3.1, enter here the password found in 
-#   $JBOSS_HOME/server/default/deploy/jbossweb-tomcat50.sar/server.xml
+#   $JBOSS_HOME/server/default/deploy/jbossweb-tomcat55.sar/server.xml
 #   under the section about 'HTTPS Connector...', the password is in attribute 'keystorePass=...'.
 httpsserver.password=serverpwd
 
