@@ -51,8 +51,10 @@
        catokentype = CATokenInfo.CATOKENTYPE_HSM;
        catokenpath = ((HardCATokenInfo  ) catokeninfo).getClassPath();
        AvailableHardCAToken availablecatoken = HardCATokenManager.instance().getAvailableHardCAToken(catokenpath); 
+       if(availablecatoken==null)
+         throw new Exception("HardCAToken with classpath "+catokenpath+" is not available.");
        if(!availablecatoken.isUsed())
-         throw new Exception("HardCAToken is not used, configuration error");
+         throw new Exception("HardCAToken is not used, configuration error.");
       if(availablecatoken.isTranslateable()){
         catokentext =  ejbcawebbean.getText(availablecatoken.getName());
       }else{
