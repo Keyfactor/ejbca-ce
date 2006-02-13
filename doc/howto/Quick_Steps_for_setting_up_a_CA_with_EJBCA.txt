@@ -1,6 +1,10 @@
 Quick Steps for setting up a CA with EJBCA
 ==========================================
-Contributed by Jean Ye, Zhuhai, China.
+EJBCA version: 3.1.x/3.2.x
+Contributed by: Jean Ye, Zhuhai, China.
+
+NOTE: This guide is not updated with the frequency of the official User Guide, 
+so please go there first.
 
 0.install
 Read ejbca/doc/howto/INSTALL-guide.txt and online user guide and other howtos for reference.
