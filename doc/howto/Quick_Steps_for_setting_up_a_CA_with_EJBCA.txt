@@ -1,5 +1,6 @@
 Quick Steps for setting up a CA with EJBCA
 ==========================================
+$Id: Quick_Steps_for_setting_up_a_CA_with_EJBCA.txt,v 1.3 2006-02-13 12:01:32 anatom Exp $
 EJBCA version: 3.1.x/3.2.x
 Contributed by: Jean Ye, Zhuhai, China.
 
