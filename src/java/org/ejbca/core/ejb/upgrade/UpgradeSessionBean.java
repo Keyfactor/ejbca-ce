@@ -45,7 +45,7 @@ import se.anatom.ejbca.log.OldLogConfigurationDataLocalHome;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.4 2006-02-12 10:37:39 anatom Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.5 2006-02-13 19:16:37 anatom Exp $
  * @ejb.bean
  *   display-name="UpgradeSB"
  *   name="UpgradeSession"
@@ -268,7 +268,7 @@ public class UpgradeSessionBean extends BaseSessionBean {
 			ICAAdminSessionLocal casession = getCaAdminSession(); 
 	        Collection caids = casession.getAvailableCAs(administrator);
 	        Iterator iter = caids.iterator();
-	        if (iter.hasNext()) {
+	        while (iter.hasNext()) {
 	            int caid = ((Integer) iter.next()).intValue();
 	            casession.upgradeFromOldCAHSMKeyStore(administrator, caid);
 	        }			
