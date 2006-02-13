@@ -95,7 +95,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.6 2006-02-13 17:31:39 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.7 2006-02-13 18:21:49 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -1137,7 +1137,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
             	if (htokeninfo.getClassPath().equals("se.anatom.ejbca.ca.caadmin.hardcatokens.NFastCAToken") 
             			|| htokeninfo.getClassPath().equals("se.primeKey.caToken.nFast.NFastCAToken")) {
             		htokeninfo.setClassPath("org.ejbca.core.model.ca.catoken.NFastCAToken");
-                	error("(this is not an error) Update catoken classpath ("+htokeninfo.getClassPath()+") for ca with id: "+caid);
+                	error("(this is not an error) Updated catoken classpath ("+htokeninfo.getClassPath()+") for ca with id: "+caid);
             		token.updateCATokenInfo(htokeninfo);
             		ca.setCAToken(token);
             		cadata.setCA(ca);
