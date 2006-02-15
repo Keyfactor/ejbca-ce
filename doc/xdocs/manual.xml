@@ -701,7 +701,25 @@ can be set as OCSP signer in 'Privacy &amp; Security->Validation'. You can do th
 (http://<i>hostname</i>:8080/ejbca/publicweb/webdist/cacert.jsp).
 </p><p>
 In doc/samples there is a sample how to check revocation with OCSP using the new APIs in JDK 1.5.
-</p></section>
+</p>
+
+<subsection name="Stand-alone OCSP responder">
+<p>
+You can set up separated OCSP responders in EJBCA. Using this you can isolate the CA from the Internet and still be
+able to answer OCSP request. You can set up firewalls so that only outgoing traffic is allowed from the CA, and
+nothing to the CA.
+</p><p>
+Separated OCSP responders is also good when you don't require high-preformance clustering for the CA, but you do need
+high-performance for the OCSP responders. This should be a usual setup, if the CA only issues certificates once every year
+for one million users, this does not put much pressure on the CA, but the OCSP responders can be put under high load continuously.
+</p>
+<p>
+See the document doc/howto/HOWTO-OCSP-RESPONDER.txt form information how to set up stand-alone, separated OCSP responders.
+<br></br>
+See the image HOWTO-OCSP-RESPONDER.jpg for an overview of a sample setup.
+</p>
+</subsection>
+</section>
 
 <section name="Key recovery">
 <p>

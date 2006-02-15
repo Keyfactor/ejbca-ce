@@ -3,6 +3,17 @@ This file describes how to configure ant start the OCSP responder.
 Setting up external OCSP responders
 ===================================
 
+Introduction
+------------
+You can set up separated OCSP responders in EJBCA. Using this you can isolate the CA from the Internet and still be
+able to answer OCSP request. You can set up firewalls so that only outgoing traffic is allowed from the CA, and
+nothing to the CA.
+Separated OCSP responders is also good when you don't require high-preformance clustering for the CA, but you do need
+high-performance for the OCSP responders. This should be a usual setup, if the CA only issues certificates once every year
+for one million users, this does not put much pressure on the CA, but the OCSP responders can be put under high load continuously.
+
+See the image HOWTO-OCSP-RESPONDER.jpg for an overview of a sample setup.
+
 Building and configuring EJBCA.
 -------------------------------
 EJBCA should be configured as for any other installation but you must also set all preferences
@@ -180,3 +191,14 @@ Security of the lookup server.
 -----------------------------
 the lookup server always checks that eash client is using TLS with client authentication and that the certificate is valid and is one
 of the certificates placed in the directory pointed to by 'ocsp.unidtrustdir'. If these conditions are not met, no Fnr is returned.
+
+Logging
+-------
+The OCSP Unid extension logs using Log4j to the JBoss server.log. The JBoss server log is located in 
+JBOSS_HOME/server/default/log/server.log and the logging is configured in JBOSS_HOME/server/default/conf/log4j.xml.
+If you for example want to configure so the OCSP Unid extension logging is sent to syslog, you need to know the
+class patch of the OCSP Unid extension:
+org.ejbca.core.protocol.ocsp.OCSPUnidExtension
+and the log level:
+INFO, for request logging
+ERROR, for error logging
