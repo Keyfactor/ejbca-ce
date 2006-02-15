@@ -202,6 +202,7 @@ public class TestCertificateRetrival extends TestCase {
         assertTrue("failed to list certs", certfps.size() != 0);
 
         Iterator iter = certfps.iterator();
+        boolean found = false;
         while (iter.hasNext()) {
             Object obj = iter.next();
             if (!(obj instanceof X509Certificate)) {
@@ -209,7 +210,13 @@ public class TestCertificateRetrival extends TestCase {
                         + "Class of returned object '" + obj.getClass().getName() + "'"
                         , false);
             }
+            X509Certificate cert = (X509Certificate)obj;
+            String fp = CertTools.getFingerprintAsString(cert);
+            if (fp.equals(subCaFp)) {
+                found = true;
+            }
         }
+        assertTrue(found);
         m_log.debug("<test02FindCACertificates()");
     }
 
@@ -222,12 +229,29 @@ public class TestCertificateRetrival extends TestCase {
 
         ICertificateStoreSessionRemote store = m_storehome.create();
 
-        // List all certificates to see
+        // List all certificates to see, but only from our test certificates issuer, or we might get OutOfMemmory if there are plenty of certs
         Collection certfps = store.findCertificatesByType(admin
                 , CertificateDataBean.CERTTYPE_ENDENTITY
-                , null);
+                , "CN=Subordinate CA,O=Anatom,ST=Some-State,C=SE");
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
+
+        Iterator iter = certfps.iterator();
+        boolean found = false;
+        while (iter.hasNext()) {
+            Object obj = iter.next();
+            if (!(obj instanceof X509Certificate)) {
+                assertTrue("method 'findCertificatesByType' does not return X509Certificate objects.\n"
+                        + "Class of returned object '" + obj.getClass().getName() + "'"
+                        , false);
+            }
+            X509Certificate cert = (X509Certificate)obj;
+            String fp = CertTools.getFingerprintAsString(cert);
+            if (fp.equals(endEntityFp)) {
+                found = true;
+            }
+        }
+        assertTrue(found);
 
         m_log.debug("<test03FindEndEntityCertificates()");
     }
@@ -247,6 +271,23 @@ public class TestCertificateRetrival extends TestCase {
                 , null);
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
+
+        Iterator iter = certfps.iterator();
+        boolean found = false;
+        while (iter.hasNext()) {
+            Object obj = iter.next();
+            if (!(obj instanceof X509Certificate)) {
+                assertTrue("method 'findCertificatesByType' does not return X509Certificate objects.\n"
+                        + "Class of returned object '" + obj.getClass().getName() + "'"
+                        , false);
+            }
+            X509Certificate cert = (X509Certificate)obj;
+            String fp = CertTools.getFingerprintAsString(cert);
+            if (fp.equals(rootCaFp)) {
+                found = true;
+            }
+        }
+        assertTrue(found);
 
         m_log.debug("<test04FindRootCertificates()");
     }
@@ -298,6 +339,7 @@ public class TestCertificateRetrival extends TestCase {
      *
      * @throws Exception error
      */
+    /* Don't run this test since it can lookup a looot of certs and you will get an OutOfMemoryException
     public void test06RetriveAllCertificates() throws Exception {
         m_log.debug(">test06CertificatesByIssuer()");
         ICertificateStoreSessionRemote store = m_storehome.create();
@@ -314,7 +356,7 @@ public class TestCertificateRetrival extends TestCase {
             assertTrue("Unable to find all test certificates.", certfps.contains(iter.next()));
         }
         m_log.debug("<test06CertificatesByIssuer()");
-    }
+    } */
 
     /**
      *
