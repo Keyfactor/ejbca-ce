@@ -808,9 +808,11 @@ See HardCATokenSample and/or DummyHardCAToken for samples.
 Unlike the sample addAvailableHardCAToken() must be called with use=true, or
 the token will not be usable in EJBCA (as the flag suggests).
 </p><p>
-EJBCA has build-in support for the nCipher NFast HSM.
+EJBCA 3.1 and later has build-in support for the nCipher NFast HSM.
 </p><p>
-EJBCA 3.2 also has an implementation for the Eracom HSM.
+EJBCA 3.2 and later also has an implementation for the Eracom HSM.
+</p><p>
+PrimeKey Solutions sell a module called PrimeCardHSM that implements a flexible HSM using low cost smart cards. 
 </p>
 <subsection name="nCipher NFast">
 <p>
@@ -872,7 +874,7 @@ defaultKey rootCRLSign
 </source>
 </subsection>
 
-<subsection name="Eracom HSM (EJBCA 3.2)">
+<subsection name="Eracom HSM">
 <p>
 Follow these steps to create a CA that is using a Eracom HSM:
 </p>
