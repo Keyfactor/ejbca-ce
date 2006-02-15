@@ -77,7 +77,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.3 2006-01-30 06:30:51 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.4 2006-02-15 00:15:47 herrvendil Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -282,7 +282,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             if (profileid == SecConst.EMPTY_ENDENTITYPROFILE && (rights.equals(AvailableAccessRules.CREATE_RIGHTS) || rights.equals(AvailableAccessRules.EDIT_RIGHTS)))
                 returnval = authorizationsession.isAuthorizedNoLog(admin, "/super_administrator");
             else
-                returnval = authorizationsession.isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + profileid + rights);
+                returnval = authorizationsession.isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + profileid + rights) &&
+                            authorizationsession.isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_RAFUNCTIONALITY + rights);
         } catch (AuthorizationDeniedException e) {
         }
         return returnval;

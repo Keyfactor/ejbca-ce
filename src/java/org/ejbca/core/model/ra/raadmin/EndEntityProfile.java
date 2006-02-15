@@ -31,7 +31,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * of ejbca web interface.
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.1 2006-01-17 20:31:52 anatom Exp $
+ * @version $Id: EndEntityProfile.java,v 1.2 2006-02-15 00:15:56 herrvendil Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -96,6 +96,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 
     public static final String TRUE  = "true";
     public static final String FALSE = "false";
+    
+
 
     // Constants used with field ordering
     public static final int FIELDTYPE = 0;
@@ -406,6 +408,22 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     public void setNotificationMessage(String message){
     	data.put(NOTIFICATIONMESSAGE, message);
     }
+    
+    /**
+     * @return indicationg if the keyreccovered certificate should be reused or not.
+     */
+    public boolean getReUseKeyRevoceredCertificate(){
+    	if(data.get(REUSECERTIFICATE) == null){
+    		return false;
+    	}
+    	
+    	return ((Boolean) data.get(REUSECERTIFICATE)).booleanValue();
+    }
+    
+    public void setReUseKeyRevoceredCertificate(boolean reuse){
+    	data.put(REUSECERTIFICATE, new Boolean(reuse));
+    }
+    
     
     
     /** A function that takes an fieldid pointing to a coresponding id in UserView and DnFieldExctractor.
@@ -889,6 +907,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     private static final String NOTIFICATIONSENDER     = "NOTIFICATIONSENDER";
     private static final String NOTIFICATIONSUBJECT    = "NOTIFICATIONSSUBJECT";
     private static final String NOTIFICATIONMESSAGE   = "NOTIFICATIONSMESSAGE";
+
+    private static final String REUSECERTIFICATE = "REUSECERTIFICATE";
     // Private fields.
 
 

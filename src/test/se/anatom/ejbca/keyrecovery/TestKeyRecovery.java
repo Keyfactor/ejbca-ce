@@ -40,7 +40,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Tests the key recovery modules.
  *
- * @version $Id: TestKeyRecovery.java,v 1.3 2006-01-17 20:34:16 anatom Exp $
+ * @version $Id: TestKeyRecovery.java,v 1.4 2006-02-15 00:15:56 herrvendil Exp $
  */
 public class TestKeyRecovery extends TestCase {
     private static Logger log = Logger.getLogger(TestKeyRecovery.class);
@@ -141,7 +141,7 @@ public class TestKeyRecovery extends TestCase {
         assertTrue("Couldn't mark user for recovery in database", !cacheAdmin.isUserMarked(admin, user));
         cacheAdmin.markAsRecoverable(admin, cert);
         assertTrue("Couldn't mark user for recovery in database", cacheAdmin.isUserMarked(admin, user));
-        KeyRecoveryData data = cacheAdmin.keyRecovery(admin, user);
+        KeyRecoveryData data = cacheAdmin.keyRecovery(admin, user, SecConst.EMPTY_ENDENTITYPROFILE);
 
         assertTrue("Couldn't recover keys from database", Arrays.equals(data.getKeyPair().getPrivate().getEncoded(), keypair.getPrivate().getEncoded()));
 

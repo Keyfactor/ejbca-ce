@@ -33,6 +33,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionHome;
+import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionHome;
@@ -46,9 +50,11 @@ import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
+import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
@@ -79,7 +85,7 @@ import org.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.4 2006-02-09 10:05:38 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.5 2006-02-15 00:15:55 herrvendil Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(CertReqServlet.class);
@@ -87,6 +93,8 @@ public class CertReqServlet extends HttpServlet {
     private IUserAdminSessionHome useradminhome = null;
     private IRaAdminSessionHome raadminhome = null;
     private IKeyRecoverySessionHome keyrecoveryhome = null;
+	private ICAAdminSessionHome caadminhome = null;
+	private IAuthenticationSessionHome authhome = null;
     private byte[] bagattributes = "Bag Attributes\n".getBytes();
     private byte[] friendlyname = "    friendlyName: ".getBytes();
     private byte[] subject = "subject=/".getBytes();
@@ -96,6 +104,7 @@ public class CertReqServlet extends HttpServlet {
     private byte[] beginPrivateKey = "-----BEGIN PRIVATE KEY-----".getBytes();
     private byte[] endPrivateKey = "-----END PRIVATE KEY-----".getBytes();
     private byte[] NL = "\n".getBytes();
+
 
     /**
      * Servlet init
@@ -121,6 +130,10 @@ public class CertReqServlet extends HttpServlet {
                              ctx.lookup("RaAdminSession"), IRaAdminSessionHome.class );            
             keyrecoveryhome = (IKeyRecoverySessionHome) PortableRemoteObject.narrow(
                              ctx.lookup("KeyRecoverySession"), IKeyRecoverySessionHome.class );
+            
+            caadminhome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CAAdminSession"), ICAAdminSessionHome.class);
+            
+            authhome = (IAuthenticationSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("AuthenticationSession"), IAuthenticationSessionHome.class);
         } catch( Exception e ) {
             throw new ServletException(e);
         }
@@ -184,22 +197,22 @@ public class CertReqServlet extends HttpServlet {
                 throw new ObjectNotFoundException();
             }
 
-            boolean savekeys = data.getKeyRecoverable() && usekeyrecovery;
+            boolean savekeys = data.getKeyRecoverable() && usekeyrecovery &&  (data.getStatus() != UserDataConstants.STATUS_KEYRECOVERY);
             boolean loadkeys = (data.getStatus() == UserDataConstants.STATUS_KEYRECOVERY) &&
                 usekeyrecovery;
 
             // get users Token Type.
             tokentype = data.getTokenType();
             if(tokentype == SecConst.TOKEN_SOFT_P12){
-              KeyStore ks = generateToken(administrator, username, password, data.getCAId(), keylength, false, loadkeys, savekeys);
+              KeyStore ks = generateToken(administrator, username, password, data.getCAId(), keylength, false, loadkeys, savekeys, data.getEndEntityProfileId());
               sendP12Token(ks, username, password, response);
             }
             if(tokentype == SecConst.TOKEN_SOFT_JKS){
-              KeyStore ks = generateToken(administrator, username, password, data.getCAId(), keylength, true, loadkeys, savekeys);
+              KeyStore ks = generateToken(administrator, username, password, data.getCAId(), keylength, true, loadkeys, savekeys, data.getEndEntityProfileId());
               sendJKSToken(ks, username, password, response);
             }
             if(tokentype == SecConst.TOKEN_SOFT_PEM){
-              KeyStore ks = generateToken(administrator, username, password, data.getCAId(), keylength, false, loadkeys, savekeys);
+              KeyStore ks = generateToken(administrator, username, password, data.getCAId(), keylength, false, loadkeys, savekeys, data.getEndEntityProfileId());
               sendPEMTokens(ks, username, password, response);
             }
             if(tokentype == SecConst.TOKEN_SOFT_BROWSERGEN){
@@ -461,22 +474,48 @@ public class CertReqServlet extends HttpServlet {
     }
 
 
-    private KeyStore generateToken(Admin administrator, String username, String password, int caid, int keylength, boolean createJKS, boolean loadkeys, boolean savekeys)
+    private KeyStore generateToken(Admin administrator, String username, String password, int caid, int keylength, boolean createJKS, 
+    		                       boolean loadkeys, boolean savekeys, int endEntityProfileId)
        throws Exception{
+    	
+    	
+         KeyRecoveryData keyData = null;
          KeyPair rsaKeys = null;
+         boolean reusecertificate = false;
          if(loadkeys){
+        	 
+           IRaAdminSessionRemote raadminsession = raadminhome.create();
+           EndEntityProfile endEntityProfile = raadminsession.getEndEntityProfile(administrator, endEntityProfileId);
+           reusecertificate = endEntityProfile.getReUseKeyRevoceredCertificate();
+        	 
            // used saved keys.
            IKeyRecoverySessionRemote keyrecoverysession = keyrecoveryhome.create();
-           rsaKeys = (keyrecoverysession.keyRecovery(administrator, username)).getKeyPair();
+           keyData = (keyrecoverysession.keyRecovery(administrator, username, endEntityProfileId));
+           rsaKeys = keyData.getKeyPair();
+           
+           if(reusecertificate){
+        	   keyrecoverysession.unmarkUser(administrator,username);
+           }
          }
          else{
            // generate new keys.
            rsaKeys = KeyTools.genKeys(keylength);
          }
-
+         
          ISignSessionRemote signsession = signsessionhome.create();
-         X509Certificate cert = (X509Certificate)signsession.createCertificate(administrator, username, password, rsaKeys.getPublic());
-
+         X509Certificate cert = null;
+         if(reusecertificate){
+        	 cert = (X509Certificate) keyData.getCertificate();
+             ICAAdminSessionRemote caadminsession = caadminhome.create();
+             boolean finishUser = caadminsession.getCAInfo(administrator,caid).getFinishUser();
+             if(finishUser){
+           	  IAuthenticationSessionRemote authsession = authhome.create();
+           	  authsession.finishUser(administrator, username, password);
+             }
+        	 
+         }else{        	 
+             cert = (X509Certificate)signsession.createCertificate(administrator, username, password, rsaKeys.getPublic());	 
+         }
 
         // Make a certificate chain from the certificate and the CA-certificate
         Certificate[] cachain = (Certificate[]) signsession.getCertificateChain(administrator, caid).toArray(new Certificate[0]);

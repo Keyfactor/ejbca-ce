@@ -23,12 +23,16 @@ import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 
 import org.ejbca.core.ejb.BaseSessionBean;
+import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
+import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
+import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceResponse;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
@@ -41,7 +45,7 @@ import org.ejbca.util.CertTools;
  * Stores key recovery data. Uses JNDI name for datasource as defined in env 'Datasource' in
  * ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.1 2006-01-17 20:30:05 anatom Exp $
+ * @version $Id: LocalKeyRecoverySessionBean.java,v 1.2 2006-02-15 00:15:56 herrvendil Exp $
  *
  * @ejb.bean
  *   display-name="Stores key recovery data"
@@ -87,6 +91,15 @@ import org.ejbca.util.CertTools;
  *   home="org.ejbca.core.model.ca.store.ICertificateStoreSessionLocalHome"
  *   business="org.ejbca.core.model.ca.store.ICertificateStoreSessionLocal"
  *   link="CertificateStoreSession"
+ *   
+ * @ejb.ejb-external-ref
+ *   description="The Authorization session bean"
+ *   view-type="local"
+ *   ejb-name="AuthorizationSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
+ *   business="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
+ *   link="AuthorizationSession"
  *
  * @ejb.ejb-external-ref
  *   description="The log session bean"
@@ -124,8 +137,47 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
     /** The local interface of certificate store session bean */
     private ICertificateStoreSessionLocal certificatestoresession = null;
 
-    /** The remote interface of  log session bean */
+    /** The local interface of  log session bean */
     private ILogSessionLocal logsession = null;
+
+    /** The local interface of  authorization session bean */
+	private IAuthorizationSessionLocal authorizationsession;
+	
+	
+	/**
+	 * Method checking the following authorizations:
+	 * 
+	 * If /superadmin -> true
+	 * 
+	 * Other must have both
+	 * AvailableAccessRules.
+	 *  /ra_functionality/keyrecovery
+	 *  and /endentityprofilesrules/<endentityprofile>/ keyrecovery
+	 *  
+	 * 
+	 * @param admin
+	 * @param profileid end entity profile
+	 * @return true if the admin is authorized to keyrecover
+	 * @throws AuthorizationDeniedException if administrator isn't authorized.
+	 */
+    private boolean authorizedToKeyRecover(Admin admin, int profileid) throws AuthorizationDeniedException{
+        boolean returnval = false;
+        try{
+        	authorizationsession.isAuthorizedNoLog(admin, "/super_administrator");
+        	returnval = true;
+        }catch(AuthorizationDeniedException e){}
+        
+        if(admin.getAdminType() == Admin.TYPE_PUBLIC_WEB_USER){
+        	returnval = true; // Special Case, public web use should be able to key recover
+        }
+        	
+        if(!returnval){
+        	returnval = authorizationsession.isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + profileid + AvailableAccessRules.KEYRECOVERY_RIGHTS) &&
+        	authorizationsession.isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_KEYRECOVERY);                         
+        }
+        	
+        return returnval;
+    }
 
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -146,6 +198,9 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
             ISignSessionLocalHome signsessionhome = (ISignSessionLocalHome) getLocator().getLocalHome(ISignSessionLocalHome.COMP_NAME);
             signsession = signsessionhome.create();
+            
+            IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) getLocator().getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
+            authorizationsession = authorizationsessionhome.create();
 
             debug("<ejbCreate()");
         } catch (Exception e) {
@@ -325,58 +380,63 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      * Returns the keyrecovery data for a user. Observe only one certificates key can be recovered
      * for every user at the time.
      *
-     * @param admin DOCUMENT ME!
-     * @param username DOCUMENT ME!
+     * @param admin 
+     * @param username
+     * @param endentityprofileid, the end entity profile id the user belongs to.
      *
      * @return the marked keyrecovery data  or null if no recoverydata can be found.
+     * @throws AuthorizationDeniedException 
      *
      * @throws EJBException if a communication or other error occurs.
      *
      * @ejb.interface-method view-type="both"
      */
-    public KeyRecoveryData keyRecovery(Admin admin, String username) {
+    public KeyRecoveryData keyRecovery(Admin admin, String username, int endEntityProfileId) throws AuthorizationDeniedException {
         debug(">keyRecovery(user: " + username + ")");
 
         KeyRecoveryData returnval = null;
         KeyRecoveryDataLocal krd = null;
         X509Certificate certificate = null;
-
-        try {
-            Collection result = keyrecoverydatahome.findByUserMark(username);
-            Iterator i = result.iterator();
-
-            try {
-                while (i.hasNext()) {
-                    krd = (KeyRecoveryDataLocal) i.next();
-
-                    if (returnval == null) {
-                        int caid = krd.getIssuerDN().hashCode();
-
-                        KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) signsession.extendedService(admin, caid,
-                                new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_DECRYPTKEYS, krd.getKeyDataAsByteArray()));
-                        KeyPair keys = response.getKeyPair();
-                        certificate = (X509Certificate) certificatestoresession
-                        .findCertificateByIssuerAndSerno(admin,
-                                krd.getIssuerDN(), krd.getCertificateSN());
-                        returnval = new KeyRecoveryData(krd.getCertificateSN(), krd.getIssuerDN(),
-                                krd.getUsername(), krd.getMarkedAsRecoverable(), keys, certificate);
-
-                        
-                    }
-
-                    // krd.setMarkedAsRecoverable(false);
-                }
-
-                logsession.log(admin, admin.getCaId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
-                        username, certificate, LogEntry.EVENT_INFO_KEYRECOVERY,
-                        "Keydata for user: " + username + " have been sent for key recovery.");
-            } catch (Exception e) {
-                log.error("-keyRecovery: ", e);
-                logsession.log(admin, admin.getCaId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
-                        username, null, LogEntry.EVENT_ERROR_KEYRECOVERY,
-                        "Error when trying to revover key data.");
-            }
-        } catch (FinderException e) {
+        
+        if(authorizedToKeyRecover(admin, endEntityProfileId)){
+        	
+        	try {
+        		Collection result = keyrecoverydatahome.findByUserMark(username);
+        		Iterator i = result.iterator();
+        		
+        		try {
+        			while (i.hasNext()) {
+        				krd = (KeyRecoveryDataLocal) i.next();
+        				
+        				if (returnval == null) {
+        					int caid = krd.getIssuerDN().hashCode();
+        					
+        					KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) signsession.extendedService(admin, caid,
+        							new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_DECRYPTKEYS, krd.getKeyDataAsByteArray()));
+        					KeyPair keys = response.getKeyPair();
+        					certificate = (X509Certificate) certificatestoresession
+        					.findCertificateByIssuerAndSerno(admin,
+        							krd.getIssuerDN(), krd.getCertificateSN());
+        					returnval = new KeyRecoveryData(krd.getCertificateSN(), krd.getIssuerDN(),
+        							krd.getUsername(), krd.getMarkedAsRecoverable(), keys, certificate);
+        					
+        					
+        				}
+        				
+        				// krd.setMarkedAsRecoverable(false);
+        			}
+        			
+        			logsession.log(admin, admin.getCaId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
+        					username, certificate, LogEntry.EVENT_INFO_KEYRECOVERY,
+        					"Keydata for user: " + username + " have been sent for key recovery.");
+        		} catch (Exception e) {
+        			log.error("-keyRecovery: ", e);
+        			logsession.log(admin, admin.getCaId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
+        					username, null, LogEntry.EVENT_ERROR_KEYRECOVERY,
+        			"Error when trying to revover key data.");
+        		}
+        	} catch (FinderException e) {
+        	}
         }
 
         debug("<keyRecovery()");

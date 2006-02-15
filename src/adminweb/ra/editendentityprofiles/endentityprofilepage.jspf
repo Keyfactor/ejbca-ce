@@ -156,6 +156,7 @@ function checkallfields(){
       <% if(globalconfiguration.getEnableKeyRecovery()){ %>
       document.editprofile.<%= CHECKBOX_REQUIRED_KEYRECOVERABLE %>.disabled = false;
       document.editprofile.<%= CHECKBOX_KEYRECOVERABLE %>.disabled = false;
+      document.editprofile.<%=CHECKBOX_REUSECERTIFICATE%>.disabled = false;
       <% } %>
       document.editprofile.<%= CHECKBOX_REQUIRED_SENDNOTIFICATION %>.disabled = false;
       document.editprofile.<%= CHECKBOX_SENDNOTIFICATION %>.disabled = false;      
@@ -180,6 +181,20 @@ function checkusecheckbox(usefield, value, required){
     reqbox.disabled = true;
   }
 }
+
+<% if(globalconfiguration.getEnableKeyRecovery()){ %> 
+
+function checkkeyrecusebox(){
+
+  if(document.editprofile.<%=CHECKBOX_USE_KEYRECOVERABLE%>.checked){
+    document.editprofile.<%=CHECKBOX_REUSECERTIFICATE%>.disabled = false;
+  }else{
+    document.editprofile.<%=CHECKBOX_REUSECERTIFICATE%>.disabled = true;
+    document.editprofile.<%=CHECKBOX_REUSECERTIFICATE%>.checked = false;
+  }
+}
+
+<% } %>
 
 function usenotificationchange(){
   if(document.editprofile.<%=CHECKBOX_USE_SENDNOTIFICATION%>.checked){
@@ -768,10 +783,15 @@ function checkuseemailfield(){
       <td width="70%"> 
         <% used = profiledata.getUse(EndEntityProfile.KEYRECOVERABLE,0); %>
          <%= ejbcawebbean.getText("USE") %> 
-        <input type="checkbox" name="<%=CHECKBOX_USE_KEYRECOVERABLE %>" value="<%=CHECKBOX_VALUE %>" onclick="checkusecheckbox('<%=CHECKBOX_USE_KEYRECOVERABLE %>', '<%=CHECKBOX_KEYRECOVERABLE%>', '<%=CHECKBOX_REQUIRED_KEYRECOVERABLE %>')"
+        <input type="checkbox" name="<%=CHECKBOX_USE_KEYRECOVERABLE %>" value="<%=CHECKBOX_VALUE %>" onclick="checkusecheckbox('<%=CHECKBOX_USE_KEYRECOVERABLE %>', '<%=CHECKBOX_KEYRECOVERABLE%>', '<%=CHECKBOX_REQUIRED_KEYRECOVERABLE %>'); checkkeyrecusebox()"
            <% if(used)
                  out.write("CHECKED");
-           %>><br>
+           %>>
+           <%= ejbcawebbean.getText("REUSEOLDCERTIFICATE") %> 
+           <input type="checkbox" name="<%=CHECKBOX_REUSECERTIFICATE%>" value="<%=CHECKBOX_VALUE %>" <% if(!used) out.write(" disabled "); %>
+           <% if(profiledata.getReUseKeyRevoceredCertificate() && used)
+                   out.write("CHECKED");
+           %> <br>
         <%= ejbcawebbean.getText("DEFAULT") %> 
         <input type="checkbox" name="<%=CHECKBOX_KEYRECOVERABLE%>" value="<%=CHECKBOX_VALUE %>" <% if(!used) out.write(" disabled "); %>
            <% if(profiledata.getValue(EndEntityProfile.KEYRECOVERABLE,0) != null && used)
