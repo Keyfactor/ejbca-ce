@@ -40,7 +40,7 @@ import org.ejbca.util.JDBCUtil;
 /** ASN.1 OCSP extension used to map a UNID to a Fnr, OID for this extension is 2.16.578.1.16.3.2
  * 
  * @author tomas
- * @version $Id: OCSPUnidExtension.java,v 1.8 2006-02-11 10:44:17 anatom Exp $
+ * @version $Id: OCSPUnidExtension.java,v 1.9 2006-02-15 09:27:09 anatom Exp $
  *
  */
 public class OCSPUnidExtension implements IOCSPExtension {
@@ -135,7 +135,9 @@ public class OCSPUnidExtension implements IOCSPExtension {
 	 * @return X509Extension that will be added to responseExtensions by OCSP responder, or null if an error occurs
 	 */
 	public Hashtable process(HttpServletRequest request, X509Certificate cert, CertificateStatus status) {
-        m_log.debug(">process()");
+        if (m_log.isDebugEnabled()) {
+            m_log.debug(">process()");            
+        }
         // Check authorization first
         if (!checkAuthorization(request)) {
         	errCode = OCSPUnidExtension.ERROR_UNAUTHORIZED;
@@ -155,7 +157,10 @@ public class OCSPUnidExtension implements IOCSPExtension {
         	// The Unis is in the DN component serialNumber
         	sn = CertTools.getPartFromDN(cert.getSubjectDN().getName(), "SN");
         	if (sn != null) {
-        		m_log.debug("Found serialNumber: "+sn);
+                if (m_log.isDebugEnabled()) {
+                    m_log.debug("Found serialNumber: "+sn);                    
+                }
+                m_log.info("Got request (ip;fqdn): "+request.getRemoteAddr()+"; "+request.getRemoteHost()+" for Fnr mapping to Unid: "+sn);
         		try {
         			con = ServiceLocator.getInstance().getDataSource(dataSourceJndi).getConnection();
         		} catch (SQLException e) {
@@ -174,7 +179,9 @@ public class OCSPUnidExtension implements IOCSPExtension {
         		errCode = OCSPUnidExtension.ERROR_NO_SERIAL_IN_DN;
         		return null;
         	}
-            m_log.debug("<process()");
+            if (m_log.isDebugEnabled()) {
+                m_log.debug("<process()");
+            }
         } catch (Exception e) {
             throw new EJBException(e);
         } finally {
