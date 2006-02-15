@@ -52,6 +52,7 @@ import org.ejbca.core.model.ca.certificateprofiles.HardTokenAuthCertificateProfi
 import org.ejbca.core.model.ca.certificateprofiles.HardTokenAuthEncCertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.HardTokenEncCertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.HardTokenSignCertificateProfile;
+import org.ejbca.core.model.ca.certificateprofiles.OCSPSignerCertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.RootCACertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CRLInfo;
@@ -151,7 +152,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.10 2006-02-13 16:55:38 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.11 2006-02-15 00:34:43 herrvendil Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
@@ -1464,8 +1465,10 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         HashSet authorizedcaids = new HashSet(getAuthorizationSession().getAuthorizedCAIds(admin));
 
         // Add fixed certificate profiles.
-        if (certprofiletype == 0 || certprofiletype == CertificateDataBean.CERTTYPE_ENDENTITY || certprofiletype == CertificateDataBean.CERTTYPE_HARDTOKEN)
+        if (certprofiletype == 0 || certprofiletype == CertificateDataBean.CERTTYPE_ENDENTITY || certprofiletype == CertificateDataBean.CERTTYPE_HARDTOKEN){
             returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_ENDUSER));
+            returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_OCSPSIGNER));
+        }
         if (certprofiletype == 0 || certprofiletype == CertificateDataBean.CERTTYPE_SUBCA)
             returnval.add(new Integer(SecConst.CERTPROFILE_FIXED_SUBCA));
         if (certprofiletype == 0 || certprofiletype == CertificateDataBean.CERTTYPE_ROOTCA)
@@ -1528,6 +1531,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 CACertificateProfile.CERTIFICATEPROFILENAME);
         returnval.put(new Integer(SecConst.CERTPROFILE_FIXED_ROOTCA),
                 RootCACertificateProfile.CERTIFICATEPROFILENAME);
+        
+        returnval.put(new Integer(SecConst.CERTPROFILE_FIXED_OCSPSIGNER),
+                OCSPSignerCertificateProfile.CERTIFICATEPROFILENAME);
 
         returnval.put(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH),
                 HardTokenAuthCertificateProfile.CERTIFICATEPROFILENAME);
@@ -1566,6 +1572,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         if (certificateprofilename.equals(CACertificateProfile.CERTIFICATEPROFILENAME))
             return new CACertificateProfile();
 
+        if (certificateprofilename.equals(OCSPSignerCertificateProfile.CERTIFICATEPROFILENAME))
+            return new OCSPSignerCertificateProfile();
+        
         if (certificateprofilename.equals(RootCACertificateProfile.CERTIFICATEPROFILENAME))
             return new RootCACertificateProfile();
 
