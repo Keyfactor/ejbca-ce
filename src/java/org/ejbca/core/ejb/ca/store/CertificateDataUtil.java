@@ -39,7 +39,7 @@ import org.ejbca.util.StringTools;
 /** Common code between CertificateStoreSessionBean and CertificateStoreOnlyDataSessionBean
  * 
  * @author lars
- * @version $Id: CertificateDataUtil.java,v 1.5 2006-02-11 11:31:19 anatom Exp $
+ * @version $Id: CertificateDataUtil.java,v 1.6 2006-02-15 08:53:11 anatom Exp $
  *
  */
 public class CertificateDataUtil {
@@ -130,8 +130,8 @@ public class CertificateDataUtil {
         ResultSet result = null;
         try {
             ArrayList vect;
-// Status 20 = CertificateDataBean.CERT_ACTIVE
-            StringBuffer stmt = new StringBuffer("SELECT DISTINCT fingerprint FROM CertificateData WHERE status = 20 AND ");
+            // Status 20 = CertificateDataBean.CERT_ACTIVE
+            StringBuffer stmt = new StringBuffer("SELECT DISTINCT fingerprint FROM CertificateData WHERE status = "+CertificateDataBean.CERT_ACTIVE+" AND ");
             stmt.append(" type IN (");
             stmt.append(ctypes.toString());
             stmt.append(')');
