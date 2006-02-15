@@ -40,7 +40,7 @@ import org.ejbca.util.JDBCUtil;
 /** ASN.1 OCSP extension used to map a UNID to a Fnr, OID for this extension is 2.16.578.1.16.3.2
  * 
  * @author tomas
- * @version $Id: OCSPUnidExtension.java,v 1.9 2006-02-15 09:27:09 anatom Exp $
+ * @version $Id: OCSPUnidExtension.java,v 1.10 2006-02-15 14:14:28 anatom Exp $
  *
  */
 public class OCSPUnidExtension implements IOCSPExtension {
@@ -160,7 +160,7 @@ public class OCSPUnidExtension implements IOCSPExtension {
                 if (m_log.isDebugEnabled()) {
                     m_log.debug("Found serialNumber: "+sn);                    
                 }
-                m_log.info("Got request (ip;fqdn): "+request.getRemoteAddr()+"; "+request.getRemoteHost()+" for Fnr mapping to Unid: "+sn);
+                m_log.info("Got request (ip;fqdn): "+request.getRemoteAddr()+"; "+request.getRemoteHost()+" for Fnr mapping to Unid="+sn);
         		try {
         			con = ServiceLocator.getInstance().getDataSource(dataSourceJndi).getConnection();
         		} catch (SQLException e) {
@@ -195,6 +195,7 @@ public class OCSPUnidExtension implements IOCSPExtension {
         	return null;
         	
         }
+        m_log.info("Returned response to (ip;fqdn): "+request.getRemoteAddr()+"; "+request.getRemoteHost()+" with Fnr="+fnr+" for Unid="+sn);
         FnrFromUnidExtension ext = new FnrFromUnidExtension(fnr);
         Hashtable ret = new Hashtable();
         ret.put(FnrFromUnidExtension.FnrFromUnidOid, new X509Extension(false, new DEROctetString(ext)));
