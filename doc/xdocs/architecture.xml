@@ -6,12 +6,23 @@
   </properties>
 
 <body>
-  <section name="Architecture">
+  <section name="Internal architecture">
     <p>
     	The following diagram is a very rough schema of the current architecture of EJBCA.
     </p>
     <p>
     <img src="images/architecture.gif" alt="EJBCA architecture" />
+    </p>
+  </section>
+  <section name="Sample setup architecture">
+    <p>
+    	The following diagram shows a good example setup of a secured CA with external OCSP responders
+    	and an external RA server that receives certificate requests. The request are periodically 
+    	pulled by the CA and responses returned to the external RA. 
+    	No network traffic flows from the right the left across FW2.
+    </p>
+    <p>
+    <img src="images/sample-full-setup.jpg" alt="EJBCA sample setup" />
     </p>
   </section>
 
