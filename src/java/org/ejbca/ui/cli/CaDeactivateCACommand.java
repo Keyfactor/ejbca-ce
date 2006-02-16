@@ -13,6 +13,7 @@
  
 package org.ejbca.ui.cli;
 
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.catoken.HardCATokenInfo;
 
@@ -23,7 +24,7 @@ import org.ejbca.core.model.ca.catoken.HardCATokenInfo;
 /**
  * Makes the specified HSM CA offline.
  *
- * @version $Id: CaDeactivateCACommand.java,v 1.1 2006-02-16 05:51:43 herrvendil Exp $
+ * @version $Id: CaDeactivateCACommand.java,v 1.2 2006-02-16 07:50:58 herrvendil Exp $
  */
 public class CaDeactivateCACommand extends BaseCaAdminCommand {
     /**
@@ -63,8 +64,11 @@ public class CaDeactivateCACommand extends BaseCaAdminCommand {
             	return;
             }
             
-            getCAAdminSessionRemote().deactivateCAToken(administrator, cainfo.getCAId());                        
-            
+            if(cainfo.getStatus() == SecConst.CA_ACTIVE){
+              getCAAdminSessionRemote().deactivateCAToken(administrator, cainfo.getCAId());                        
+            }else{
+            	getOutputStream().println("Error: CA or CAToken must be active to be put offline.");
+            }
  
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
