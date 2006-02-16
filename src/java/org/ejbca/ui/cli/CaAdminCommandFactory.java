@@ -16,7 +16,7 @@ package org.ejbca.ui.cli;
 /**
  * Factory for CA Admin Commands.
  *
- * @version $Id: CaAdminCommandFactory.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: CaAdminCommandFactory.java,v 1.2 2006-02-16 05:51:43 herrvendil Exp $
  */
 public class CaAdminCommandFactory {
     /**
@@ -61,7 +61,12 @@ public class CaAdminCommandFactory {
             return new CaImportCertCommand(args);
         } else if (args[0].equals("republish")) {
             return new CARepublishCommand(args);
-        } else {
+        } else if (args[0].equals("activateca")) {
+            return new CaActivateCACommand(args);           
+        } else if (args[0].equals("deactivateca")) {
+            return new CaDeactivateCACommand(args);            
+        }
+        else {
             return null;
         }
     }
