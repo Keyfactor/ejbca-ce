@@ -125,8 +125,8 @@
                                             logbean.initialize(request,ejbcawebbean);
                                             
 
-  final String VIEWCERT_LINK            = globalconfiguration.getBaseUrl() + globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";  
-  final String VIEWUSER_LINK            = globalconfiguration.getBaseUrl() + globalconfiguration.getRaPath() + "/viewendentity.jsp";
+  final String VIEWCERT_LINK            = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";  
+  final String VIEWUSER_LINK            = ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath() + "/viewendentity.jsp";
 
   final String[] ADMINTYPES             = Admin.ADMINTYPETEXTS;
 

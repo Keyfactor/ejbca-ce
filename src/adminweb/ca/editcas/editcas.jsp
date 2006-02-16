@@ -129,7 +129,7 @@
   String THIS_FILENAME            =  globalconfiguration.getCaPath()  + "/editcas/editcas.jsp";
   String action = "";
 
-  final String VIEWCERT_LINK            = globalconfiguration.getBaseUrl() + globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
+  final String VIEWCERT_LINK            = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
   
   boolean issuperadministrator = false;
   boolean editca = false;

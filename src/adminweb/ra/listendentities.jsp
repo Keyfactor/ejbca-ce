@@ -128,12 +128,12 @@
   // Initialize environment.
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/ra_functionality/view_end_entity"); 
                                             rabean.initialize(request, ejbcawebbean);
-  final String VIEWCERT_LINK            = globalconfiguration.getBaseUrl() + globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
+  final String VIEWCERT_LINK            = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
   
-  final String VIEWUSER_LINK            = globalconfiguration.getBaseUrl() + globalconfiguration.getRaPath() + "/viewendentity.jsp";
-  final String EDITUSER_LINK            = globalconfiguration.getBaseUrl() + globalconfiguration.getRaPath() + "/editendentity.jsp";
-  final String VIEWHISTORY_LINK         = globalconfiguration.getBaseUrl() + globalconfiguration.getRaPath() + "/viewhistory.jsp";
-  final String VIEWTOKEN_LINK           = globalconfiguration.getBaseUrl() + globalconfiguration.getAdminWebPath() + "hardtoken/viewtoken.jsp";
+  final String VIEWUSER_LINK            = ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath() + "/viewendentity.jsp";
+  final String EDITUSER_LINK            = ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath() + "/editendentity.jsp";
+  final String VIEWHISTORY_LINK         = ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath() + "/viewhistory.jsp";
+  final String VIEWTOKEN_LINK           = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "hardtoken/viewtoken.jsp";
 
   RequestHelper.setDefaultCharacterEncoding(request);
 

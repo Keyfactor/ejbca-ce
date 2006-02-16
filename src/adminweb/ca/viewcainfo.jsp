@@ -16,7 +16,7 @@
                                             cabean.initialize(request, ejbcawebbean);
   String THIS_FILENAME                    = globalconfiguration.getCaPath()  + "/viewcainfo.jsp";
 
-  final String VIEWCERT_LINK            = globalconfiguration.getBaseUrl() + globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
+  final String VIEWCERT_LINK            = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
 
   viewcainfohelper.initialize(request, ejbcawebbean, cabean);
   viewcainfohelper.parseRequest(request);

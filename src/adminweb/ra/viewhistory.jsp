@@ -58,8 +58,8 @@
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/ra_functionality/view_end_entity_history"); 
                                             rabean.initialize(request, ejbcawebbean);
                                             logbean.initialize(request,ejbcawebbean);
-  final String VIEWCERT_LINK            = globalconfiguration.getBaseUrl() + globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
-  final String VIEWUSER_LINK            = globalconfiguration.getBaseUrl() + globalconfiguration.getAdminWebPath() + "ra/viewendentity.jsp";
+  final String VIEWCERT_LINK            = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
+  final String VIEWUSER_LINK            = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "ra/viewendentity.jsp";
 
   String sortby         = SORTBY_TIME_DEC;
 

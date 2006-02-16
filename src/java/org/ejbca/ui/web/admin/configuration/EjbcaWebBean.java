@@ -52,7 +52,7 @@ import org.ejbca.util.CertTools;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.3 2006-02-09 08:45:22 anatom Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.4 2006-02-16 05:05:07 herrvendil Exp $
  */
 public class EjbcaWebBean implements java.io.Serializable {
 
@@ -397,11 +397,11 @@ public class EjbcaWebBean implements java.io.Serializable {
       String preferedfilename = "/" + globalconfiguration.getHelpPath()+"/"
                                 + helpfile + "." + prefered + "." + postfix;
 
-      String preferedurl = globalconfiguration .getBaseUrl() + globalconfiguration .getAdminWebPath()
+      String preferedurl = getBaseUrl() + globalconfiguration .getAdminWebPath()
                           + globalconfiguration .getHelpPath()+"/"
                           + helpfile + "." + prefered + "." + postfix;
 
-      String secondaryurl = globalconfiguration .getBaseUrl() + globalconfiguration .getAdminWebPath()
+      String secondaryurl = getBaseUrl() + globalconfiguration .getAdminWebPath()
                           + globalconfiguration .getHelpPath()+"/"
                           + helpfile + "." + secondary + "." + postfix;
 
@@ -454,28 +454,28 @@ public class EjbcaWebBean implements java.io.Serializable {
       String secondaryfilename = "/" + globalconfiguration .getImagesPath()+"/"
                                  + imagefile + "." + secondary + "." + postfix;
 
-       String preferedthemeurl = globalconfiguration .getBaseUrl() + globalconfiguration .getAdminWebPath()
+       String preferedthemeurl = getBaseUrl() + globalconfiguration .getAdminWebPath()
                           + globalconfiguration .getImagesPath()+"/"
                           + imagefile + "." + theme + "." + prefered + "." + postfix;
 
-      String secondarythemeurl = globalconfiguration .getBaseUrl() + globalconfiguration .getAdminWebPath()
+      String secondarythemeurl = getBaseUrl() + globalconfiguration .getAdminWebPath()
                           + globalconfiguration .getImagesPath()+"/"
                           + imagefile + "." + theme + "." + secondary + "." + postfix;
 
-      String imagethemeurl     = globalconfiguration .getBaseUrl()  + globalconfiguration .getAdminWebPath()
+      String imagethemeurl     = getBaseUrl()  + globalconfiguration .getAdminWebPath()
                           + globalconfiguration .getImagesPath()+"/"
                           + imagefile + "." + theme + "." + postfix;
 
 
-      String preferedurl = globalconfiguration .getBaseUrl() + globalconfiguration .getAdminWebPath()
+      String preferedurl = getBaseUrl() + globalconfiguration .getAdminWebPath()
                           + globalconfiguration .getImagesPath()+"/"
                           + imagefile + "." + prefered + "." + postfix;
 
-      String secondaryurl = globalconfiguration .getBaseUrl() + globalconfiguration .getAdminWebPath()
+      String secondaryurl = getBaseUrl() + globalconfiguration .getAdminWebPath()
                           + globalconfiguration .getImagesPath()+"/"
                           + imagefile + "." + secondary + "." + postfix;
 
-      String imageurl     = globalconfiguration .getBaseUrl()  + globalconfiguration .getAdminWebPath()
+      String imageurl     = getBaseUrl()  + globalconfiguration .getAdminWebPath()
                           + globalconfiguration .getImagesPath()+"/"
                           + imagefile + "."  + postfix;
       if(this.getClass().getResourceAsStream(preferedthemefilename) != null)

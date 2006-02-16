@@ -81,8 +81,8 @@
                                             if(globalconfiguration.getIssueHardwareTokens())
                                               tokenbean.initialize(request, ejbcawebbean);
 
-  final String VIEWUSER_LINK            = globalconfiguration.getBaseUrl() + globalconfiguration.getRaPath()  + "/viewendentity.jsp";
-  final String EDITUSER_LINK            = globalconfiguration.getBaseUrl() + globalconfiguration.getRaPath()  + "/editendentity.jsp";
+  final String VIEWUSER_LINK            = ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()  + "/viewendentity.jsp";
+  final String EDITUSER_LINK            = ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()  + "/editendentity.jsp";
 
   String THIS_FILENAME             =  globalconfiguration.getRaPath()  + "/addendentity.jsp";
   EndEntityProfile  profile        = null;
