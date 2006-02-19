@@ -2,7 +2,7 @@
   int[] adresslabeltypes = {IAdressLabelSettings.ADRESSLABELTYPE_NONE, IAdressLabelSettings.ADRESSLABELTYPE_GENERAL};
   String[] adresslabeltypetexts = {"NONE","GENERALLABEL"};
 
-  IAdressLabelSettings adresslabelprofile = (IAdressLabelSettings) helper.profiledata;
+  IAdressLabelSettings adresslabelprofile = (IAdressLabelSettings) edithardtokenprofile.profiledata;
 %>
    <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top"> 

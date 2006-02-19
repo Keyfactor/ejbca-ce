@@ -17,7 +17,7 @@
   String[] keytexts = {"RSA1024BIT", "RSA2048BIT"};
 
   int maxpinlength = 8; 
-  EnhancedEIDProfile curprofile = (EnhancedEIDProfile) helper.profiledata;
+  EnhancedEIDProfile curprofile = (EnhancedEIDProfile) edithardtokenprofile.profiledata;
 
 %>
 

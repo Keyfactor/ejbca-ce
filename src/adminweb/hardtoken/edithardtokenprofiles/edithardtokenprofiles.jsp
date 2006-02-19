@@ -8,7 +8,7 @@
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="hardtokenbean" scope="session" class="org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean" />
-<jsp:useBean id="helper" scope="session" class="org.ejbca.ui.web.admin.hardtokeninterface.EditHardTokenProfileJSPHelper" />
+<jsp:useBean id="edithardtokenprofile" scope="session" class="org.ejbca.ui.web.admin.hardtokeninterface.EditHardTokenProfileJSPHelper" />
 
 <% 
 
@@ -18,7 +18,7 @@
 
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AvailableAccessRules.HARDTOKEN_EDITHARDTOKENPROFILES); 
                                             hardtokenbean.initialize(request, ejbcawebbean); 
-                                            helper.initialize(ejbcawebbean, hardtokenbean);
+                                            edithardtokenprofile.initialize(ejbcawebbean, hardtokenbean);
   String THIS_FILENAME            =  globalconfiguration.getHardTokenPath()  + "/edithardtokenprofiles/edithardtokenprofiles.jsp";
   
 
@@ -37,7 +37,7 @@
 
 <%  // Determine action 
 
-  includefile = helper.parseRequest(request);
+  includefile = edithardtokenprofile.parseRequest(request);
 
  // Include page
   if( includefile.equals("hardtokenprofilepage.jspf")){ 

@@ -2,7 +2,7 @@
   int[] receipttypes = {IReceiptSettings.RECEIPTTYPE_NONE, IReceiptSettings.RECEIPTTYPE_GENERAL};
   String[] receipttypetexts = {"NONE","GENERALRECEIPT"};
 
-  IReceiptSettings receiptprofile = (IReceiptSettings) helper.profiledata;
+  IReceiptSettings receiptprofile = (IReceiptSettings) edithardtokenprofile.profiledata;
 %>
    <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top"> 

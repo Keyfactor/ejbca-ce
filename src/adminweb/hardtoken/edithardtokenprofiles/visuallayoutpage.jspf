@@ -2,7 +2,7 @@
   int[] visualtypes = {IVisualLayoutSettings.VISUALLAYOUTTYPE_NONE, IVisualLayoutSettings.VISUALLAYOUTTYPE_GENERALLABEL, IVisualLayoutSettings.VISUALLAYOUTTYPE_GENERALCARDPRINTER};
   String[] visualtypetexts = {"NONE","GENERALLABEL", "GENERALCARDPRINTER"};
 
-  IVisualLayoutSettings visprofile = (IVisualLayoutSettings) helper.profiledata;
+  IVisualLayoutSettings visprofile = (IVisualLayoutSettings) edithardtokenprofile.profiledata;
 %>
    <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top"> 

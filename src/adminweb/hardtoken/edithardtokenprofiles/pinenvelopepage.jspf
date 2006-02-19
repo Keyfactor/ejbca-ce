@@ -2,7 +2,7 @@
   int[] envelopetypes = {IPINEnvelopeSettings.PINENVELOPETYPE_NONE, IPINEnvelopeSettings.PINENVELOPETYPE_GENERALENVELOBE};
   String[] envelopetypetexts = {"NONE","GENERALENVELOPE"};
 
-  IPINEnvelopeSettings envprofile = (IPINEnvelopeSettings) helper.profiledata;
+  IPINEnvelopeSettings envprofile = (IPINEnvelopeSettings) edithardtokenprofile.profiledata;
 %>
    <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top"> 

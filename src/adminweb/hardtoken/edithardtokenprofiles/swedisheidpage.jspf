@@ -13,7 +13,7 @@
 
   int maxpinlength = 8;
 
-  SwedishEIDProfile curprofile = (SwedishEIDProfile) helper.profiledata;
+  SwedishEIDProfile curprofile = (SwedishEIDProfile) edithardtokenprofile.profiledata;
 
 %>
 

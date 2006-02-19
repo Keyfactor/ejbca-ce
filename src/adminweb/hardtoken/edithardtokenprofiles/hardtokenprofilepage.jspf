@@ -1,5 +1,5 @@
 <%               
-  HardTokenProfile profiledata = helper.profiledata;
+  HardTokenProfile profiledata = edithardtokenprofile.profiledata;
    
 
   TreeMap authorizedcas = ejbcawebbean.getInformationMemory().getCANames();
@@ -18,7 +18,7 @@
 <SCRIPT language="JavaScript">
 <!--  
 
-   <% if(helper.profiledata instanceof EnhancedEIDProfile){ %>
+   <% if(edithardtokenprofile.profiledata instanceof EnhancedEIDProfile){ %>
 function checkkeyrecfield(usefield, criticalfield){
   var usebox = eval("document.editprofile." + usefield);
   var cribox = eval("document.editprofile." + criticalfield);
@@ -35,7 +35,7 @@ function checkkeyrecfield(usefield, criticalfield){
 function checkallfields(){
     var illegalfields = 0;
 
-    <% if(helper.profiledata instanceof IPINEnvelopeSettings){ %>
+    <% if(edithardtokenprofile.profiledata instanceof IPINEnvelopeSettings){ %>
    if((document.editprofile.<%= EditHardTokenProfileJSPHelper.TEXTFIELD_VISUALVALIDITY %>.value == "")){
       alert("<%= ejbcawebbean.getText("VISUALVALCANNOTBEEMPTY") %>");
       illegalfields++;
@@ -60,12 +60,12 @@ function checkallfields(){
 <div align="center"> 
   <h2><%= ejbcawebbean.getText("EDITHARDTOKENPROF") %><br>
   </h2>
-  <h3><%= ejbcawebbean.getText("HARDTOKENPROFILE")+ " : " + helper.profilename %> </h3>
-  <% if(helper.fileuploadsuccess){
-     helper.fileuploadsuccess = false;%>
+  <h3><%= ejbcawebbean.getText("HARDTOKENPROFILE")+ " : " + edithardtokenprofile.profilename %> </h3>
+  <% if(edithardtokenprofile.fileuploadsuccess){
+     edithardtokenprofile.fileuploadsuccess = false;%>
   <h3><%= ejbcawebbean.getText("TEMPLATEUPLOADSUCCESSFUL")%> </h3>
-  <% }if(helper.fileuploadfailed){ 
-        helper.fileuploadfailed = false;%> 
+  <% }if(edithardtokenprofile.fileuploadfailed){ 
+        edithardtokenprofile.fileuploadfailed = false;%> 
   <h3><%= ejbcawebbean.getText("TEMPLATEUPLOADFAILED") %> </h3>
   <% } %>
 </div>
@@ -88,19 +88,19 @@ function checkallfields(){
         <%= ejbcawebbean.getText("NAME") %>
       </td>
       <td width="50%"> 
-        <%= helper.profilename%>
+        <%= edithardtokenprofile.profilename%>
       </td>
     </tr>
     <form name="profiletype" method="post" action="<%=THIS_FILENAME %>">
       <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.ACTION %>' value='<%=EditHardTokenProfileJSPHelper.ACTION_CHANGE_PROFILETYPE %>'>
-      <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.HIDDEN_HARDTOKENPROFILENAME %>' value='<%=helper.profilename %>'>
+      <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.HIDDEN_HARDTOKENPROFILENAME %>' value='<%=edithardtokenprofile.profilename %>'>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("HARDTOKENTYPE") %>
       </td>
       <td width="50%">
         <select name="<%=EditHardTokenProfileJSPHelper.SELECT_HARDTOKENTYPE%>" size="1" onchange='document.profiletype.submit()'>
-           <%  int currenttype = helper.getProfileType(); 
+           <%  int currenttype = edithardtokenprofile.getProfileType(); 
                for(int i=0; i<hardtokentypes.length;i++){ %>
            <option  value="<%= hardtokentypes[i] %>" 
               <% if(hardtokentypes[i] == currenttype) out.write(" selected "); %>> 
@@ -115,8 +115,8 @@ function checkallfields(){
    <table width="100%" border="0" cellspacing="3" cellpadding="3">
    <form name="editprofile" method="post" action="<%=THIS_FILENAME %>">
     <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.ACTION %>' value='<%=EditHardTokenProfileJSPHelper.ACTION_EDIT_HARDTOKENPROFILE %>'>
-    <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.HIDDEN_HARDTOKENPROFILENAME %>' value='<%=helper.profilename %>'>
-    <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.HIDDEN_HARDTOKENTYPE %>' value='<%=helper.getProfileType() %>'>
+    <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.HIDDEN_HARDTOKENPROFILENAME %>' value='<%=edithardtokenprofile.profilename %>'>
+    <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.HIDDEN_HARDTOKENTYPE %>' value='<%=edithardtokenprofile.getProfileType() %>'>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right">         
          &nbsp;
@@ -125,19 +125,19 @@ function checkallfields(){
          &nbsp;  
       </td>
     </tr>
-    <% if(helper.profiledata instanceof SwedishEIDProfile){%>
+    <% if(edithardtokenprofile.profiledata instanceof SwedishEIDProfile){%>
          <%@ include file="swedisheidpage.jspf" %> 
     <% }
-       if(helper.profiledata instanceof EnhancedEIDProfile){%>
+       if(edithardtokenprofile.profiledata instanceof EnhancedEIDProfile){%>
          <%@ include file="enhancedeidpage.jspf" %> 
     <% }
-       if(helper.profiledata instanceof IPINEnvelopeSettings){%>
+       if(edithardtokenprofile.profiledata instanceof IPINEnvelopeSettings){%>
          <%@ include file="pinenvelopepage.jspf" %> 
     <% }
-       if(helper.profiledata instanceof IVisualLayoutSettings){%>
+       if(edithardtokenprofile.profiledata instanceof IVisualLayoutSettings){%>
        <%@ include file="visuallayoutpage.jspf" %> 
     <% }     
-       if(helper.profiledata instanceof IPINEnvelopeSettings){%>
+       if(edithardtokenprofile.profiledata instanceof IPINEnvelopeSettings){%>
     <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top"> 
         <div align="right"> 
@@ -146,14 +146,14 @@ function checkallfields(){
       </td>
       <td width="50%" valign="top"> 
          <input type="text" name="<%=EditHardTokenProfileJSPHelper.TEXTFIELD_VISUALVALIDITY%>" size="5" maxlength="5" 
-                value='<%= ((IPINEnvelopeSettings) helper.profiledata).getVisualValidity()%>'>                    
+                value='<%= ((IPINEnvelopeSettings) edithardtokenprofile.profiledata).getVisualValidity()%>'>                    
       </td>
     </tr>
     <% }   
-       if(helper.profiledata instanceof IReceiptSettings){%>
+       if(edithardtokenprofile.profiledata instanceof IReceiptSettings){%>
        <%@ include file="receiptpage.jspf" %> 
     <% }
-       if(helper.profiledata instanceof IAdressLabelSettings){%>
+       if(edithardtokenprofile.profiledata instanceof IAdressLabelSettings){%>
        <%@ include file="adresslabelpage.jspf" %> 
     <%  } %>     
     <tr  id="Row<%=row++%2%>"> 
@@ -178,7 +178,7 @@ function checkallfields(){
       </td>
       <td width="50%">
         <input type="text" name="<%=EditHardTokenProfileJSPHelper.TEXTFIELD_SNPREFIX%>" size="6" maxlength="6" 
-               value='<%= helper.profiledata.getHardTokenSNPrefix()%>'>
+               value='<%= edithardtokenprofile.profiledata.getHardTokenSNPrefix()%>'>
       </td>
     </tr>
     <!--<tr  id="Row<%=row++%2%>"> 
@@ -189,13 +189,13 @@ function checkallfields(){
         <select name="<%=EditHardTokenProfileJSPHelper.SELECT_NUMOFTOKENCOPIES%>" size="1"  >
            <%   for(int i=1; i<5;i++){ %>
            <option  value="<%= i %>" 
-              <% if(helper.profiledata.getNumberOfCopies() == i) out.write(" selected "); %>> 
+              <% if(edithardtokenprofile.profiledata.getNumberOfCopies() == i) out.write(" selected "); %>> 
               <%= i %>
            </option>
            <%   } %> 
         </select> &nbsp;<%= ejbcawebbean.getText("USEIDENTICALPINS") %> &nbsp;
           <input type="checkbox" name="<%= EditHardTokenProfileJSPHelper.CHECKBOX_USEIDENTICALPINS %>" value="<%=EditHardTokenProfileJSPHelper.CHECKBOX_VALUE %>" 
-           <%  if(helper.profiledata.getGenerateIdenticalPINForCopies())
+           <%  if(edithardtokenprofile.profiledata.getGenerateIdenticalPINForCopies())
                  out.write("CHECKED");
            %>> 
       </td>
@@ -206,7 +206,7 @@ function checkallfields(){
       </td>
       <td width="50%">
           <input type="checkbox" name="<%= EditHardTokenProfileJSPHelper.CHECKBOX_EREASBLE %>" value="<%=EditHardTokenProfileJSPHelper.CHECKBOX_VALUE %>" 
-           <%  if(helper.profiledata.getEreasableToken())
+           <%  if(edithardtokenprofile.profiledata.getEreasableToken())
                  out.write("CHECKED");
            %>>  
       </td>
