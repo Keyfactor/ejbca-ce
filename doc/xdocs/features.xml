@@ -15,6 +15,7 @@
 <li>Standalone or integrated in any J2EE application.</li>
 <li>Simple installation and configuration.</li>
 <li>Powerful Web based administration GUI using strong authentication.</li>
+<li>Administration GUI available in several languages.</li>
 <li>Command line administration for scripts etc.</li>
 <li>Modular API for HSMs. Built in support for nCipher HSM (sponsored by Linagora), PrimeCardHSM and Eracom (now SafeNet).</li>
 <li>Individual enrollment or batch production of certificates.</li>
