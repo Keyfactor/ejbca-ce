@@ -52,7 +52,7 @@ import org.ejbca.util.CertTools;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.4 2006-02-16 05:05:07 herrvendil Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.5 2006-02-19 17:03:41 herrvendil Exp $
  */
 public class EjbcaWebBean implements java.io.Serializable {
 
@@ -207,8 +207,8 @@ public class EjbcaWebBean implements java.io.Serializable {
     	
     	// Remove https://
     	requestURL = requestURL.substring(8);
-    	int firstSlash = requestURL.indexOf(":");
-    	// Remove port and application path
+    	int firstSlash = requestURL.indexOf("/");
+    	// Remove application path
     	requestURL =requestURL.substring(0,firstSlash);
 		
 		return requestURL;
