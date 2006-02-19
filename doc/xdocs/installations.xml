@@ -40,6 +40,18 @@
 	</p>
 	</subsection>
 
+	<subsection name="Ministry of finances, France">
+	<p>
+	<ul>
+	<li>Location: France</li>
+    <li>Installed by: <a href="http://www.linagora.fr/">Linagora S.A</a></li>
+    <li>Trade of Industry: Taxation (Public Sector)</li>
+    <li>Solution: Operational since october 2005. 3 CA and 1 sub CA. Issues soft tokens (pkcs12) for servers, issues certificates to users using browsers for authentication.</li>
+    <li>Count of Users: Up to 40000 in the first phase</li>
+    </ul>
+	</p>
+	</subsection>
+
 	<subsection name="KG Knutsson AB">
 	<p>
 	<ul>
