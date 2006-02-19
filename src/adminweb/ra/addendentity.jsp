@@ -1026,7 +1026,7 @@ function checkallfields(){
            <select name="<%= SELECT_SUBJECTDN + i %>" size="1" tabindex="<%=tabindex++%>">
                <% if( options != null){
                     for(int j=0;j < options.length;j++){ %>
-             <option value="<%=options[j].trim()%>" <% if( lastselectedsubjectdns != null) 
+             <option value="<%=options[j].trim()%>" <% if( lastselectedsubjectdns != null && lastselectedsubjectdns[i] != null) 
                                                          if(lastselectedsubjectdns[i].equals(options[j])) out.write(" selected "); %>> 
                 <%=options[j].trim()%>
              </option>                
@@ -1080,7 +1080,7 @@ function checkallfields(){
            <select name="<%= SELECT_SUBJECTALTNAME + i %>" size="1" tabindex="<%=tabindex++%>">
                <% if( options != null){
                     for(int j=0;j < options.length;j++){ %>
-             <option value="<%=options[j].trim()%>" <% if( lastselectedsubjectaltnames != null) 
+             <option value="<%=options[j].trim()%>" <% if( lastselectedsubjectaltnames != null &&  lastselectedsubjectaltnames[i] != null) 
                                                          if(lastselectedsubjectaltnames[i].equals(options[j])) out.write(" selected "); %>> 
                 <%=options[j].trim()%>
              </option>                

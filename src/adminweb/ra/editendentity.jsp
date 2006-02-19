@@ -251,12 +251,12 @@
                  value = request.getParameter(SELECT_SUBJECTALTNAME+i);
                  if(value !=null){
                    if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.UPN){
-                     if(request.getParameter(TEXTFIELD_UPNNAME+i) != null){
+                     if(request.getParameter(TEXTFIELD_UPNNAME+i) != null && !value.trim().equals("")){
                        value = request.getParameter(TEXTFIELD_UPNNAME+i)+ "@" + value;
                      } 
                    }
-                   value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.SUBJECTALTNAME[profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]) - DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY] +value);
                    if(!value.equals("")){
+                       value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.SUBJECTALTNAME[profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]) - DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY] +value);                  	   
                      if(subjectaltname.equals(""))
                        subjectaltname = value;
                      else
