@@ -40,6 +40,8 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
+import org.ejbca.core.model.ca.catoken.HardCATokenInfo;
+import org.ejbca.core.model.ca.catoken.IHardCAToken;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CRLInfo;
 import org.ejbca.core.model.log.Admin;
@@ -51,7 +53,7 @@ import org.ejbca.util.CertTools;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.1 2006-01-17 20:30:05 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.2 2006-02-23 15:09:32 herrvendil Exp $
  * @ejb.bean
  *   description="Session bean handling hard token data, both about hard tokens and hard token issuers."
  *   display-name="CreateCRLSB"
@@ -260,7 +262,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     			try{
     			   CAInfo cainfo = caadmin.getCAInfo(admin, caid);
     			   if (cainfo instanceof X509CAInfo) {
-    			       if (cainfo.getStatus() == SecConst.CA_OFFLINE) {
+    			       if (cainfo.getStatus() == SecConst.CA_OFFLINE )  {
     			           log.error("CA "+cainfo.getName()+", "+caid+" is off-line. CRL can not be created!");
     			       } else {
     			           CRLInfo crlinfo = store.getLastCRLInfo(admin,cainfo.getSubjectDN());
@@ -273,7 +275,6 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     		    }catch(Exception e) {
                     error("Error generating CRLs: ", e);
     		    	logsession.log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,e.getMessage());
-    		    	throw new EJBException(e);
     		    }
     		}
     	} catch (Exception e) {
