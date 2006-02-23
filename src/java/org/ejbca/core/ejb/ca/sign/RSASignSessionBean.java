@@ -1118,14 +1118,15 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @param caid Id of the CA which CRL should be created.
      * @param certs vector of RevokedCertInfo object.
      * @return The newly created CRL in DER encoded byte form or null, use CerlTools.getCRLfromByteArray to convert to X509CRL.
+     * @throws CATokenOfflineException 
      * @ejb.interface-method view-type="both"
      */
-    public byte[] createCRL(Admin admin, int caid, Vector certs) {
+    public byte[] createCRL(Admin admin, int caid, Vector certs) throws CATokenOfflineException {
         debug(">createCRL()");
         byte[] crlBytes;
+        CADataLocal cadata = null;
         try {
             // get CA
-            CADataLocal cadata = null;
             try {
                 cadata = cadatahome.findByPrimaryKey(new Integer(caid));
             } catch (javax.ejb.FinderException fe) {
@@ -1161,13 +1162,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             // Get number of last CRL and increase by 1
             int number = certificateStore.getLastCRLNumber(admin, ca.getSubjectDN()) + 1;
             X509CRL crl = null;
-            try {
-                crl = (X509CRL) ca.generateCRL(certs, number);
-            } catch (CATokenOfflineException ctoe) {
-                log.error("CA Token is Offline: ", ctoe);
-                getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECRL, "Signing CA " + cadata.getSubjectDN() + " is offline.", ctoe);
-                throw new EJBException("Signing CA " + cadata.getSubjectDN() + " is offline.");
-            }
+            crl = (X509CRL) ca.generateCRL(certs, number);
             getLogSession().log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_CREATECRL, "Number :" + number);
 
             // Store CRL in the database
@@ -1178,6 +1173,14 @@ public class RSASignSessionBean extends BaseSessionBean {
             pub.storeCRL(admin, ca.getCRLPublishers(), crl.getEncoded(), fingerprint, number);
 
             crlBytes = crl.getEncoded();
+        } catch (CATokenOfflineException ctoe) {
+            String cadn = null;
+            if (cadata != null) {
+                cadn = cadata.getSubjectDN();
+            }
+            log.error("CA Token is Offline for CA " + cadn+": ", ctoe);
+            getLogSession().log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECRL, "Signing CA " + cadn + " is offline.", ctoe);
+            throw ctoe;
         } catch (Exception e) {
             getLogSession().log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECRL, "");
             throw new EJBException(e);

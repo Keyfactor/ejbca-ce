@@ -102,7 +102,7 @@ public class CRLCreateThread extends Thread
                        this.createcrlsession.createCRLs(administrator, m_pollTime+CRLOVERLAPTIME);
                    log.debug("CRLCreateThread: createCRLs");
                }catch(Exception e){
-                   throw new EJBException(e);
+                   log.error("Error generating CRLs: ", e);
                }       	    
            }catch( InterruptedException e){}
        }        
