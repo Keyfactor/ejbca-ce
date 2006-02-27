@@ -1,3 +1,3 @@
 web.xml is generated automagically by XDoclet from tags in *Servlet.java in 
-src/java/se/anatom/ejbca/webdist/cainterface. Primarily CACertServlet.java.
+src/java/org/ejbca/ui/web/admin/cainterface. Primarily CACertServlet.java.
 See build.xml for all the gory details...

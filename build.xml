@@ -465,10 +465,6 @@ web.contentencoding    = ${web.contentencoding}
     <target name="apply.war" depends="compile" description="build the jar file">
         <war destfile="${applywar}" webxml="${apply.src}/WEB-INF/web.xml">
             <fileset dir="${apply.src}" excludes="WEB-INF/web.xml" />
-            <classes dir="${build}">
-                <include name="se/anatom/ejbca/protocol/ScepServlet*" />
-                <include name="se/anatom/ejbca/apply/**" />
-         	</classes>
         </war>
     </target>
 
@@ -506,10 +502,6 @@ web.contentencoding    = ${web.contentencoding}
     <target name="sampleauth.war" depends="compile">
         <war destfile="${sampleauthwar}" webxml="${sampleauth.src}/WEB-INF/web.xml">
             <fileset dir="${sampleauth.src}" excludes="WEB-INF/web.xml" />
-            <classes dir="${build}">
-                <include name="se/anatom/ejbca/samples/AuthResult*.class" />
-                <include name="se/anatom/ejbca/samples/RemoteVerify*.class" />
-         	</classes>
         </war>
     </target>
 
@@ -519,9 +511,6 @@ web.contentencoding    = ${web.contentencoding}
     <target name="webdist.war" depends="compile">
         <war destfile="${webdistwar}" webxml="${webdist.src}/WEB-INF/web.xml">
             <fileset dir="${webdist.src}" excludes="WEB-INF/web.xml" />
-            <classes dir="${build}">
-                <include name="se/anatom/ejbca/webdist/**" />
-         	</classes>
         </war>
     </target>
 
@@ -546,10 +535,6 @@ web.contentencoding    = ${web.contentencoding}
                 <exclude name="WEB-INF/*-service.xml" />
                 <exclude name="WEB-INF/web.xml"/>
             </fileset>
-            <classes dir="${build}">
-                <include name="se/anatom/ejbca/webdist/**" />
-                <include name="se/anatom/ejbca/apply/**" />
-         	</classes>
         </war>
     </target>
 
@@ -773,9 +758,9 @@ web.contentencoding    = ${web.contentencoding}
         </copy>
         <copy todir="${createcrlservice.build}">
             <fileset dir="${build}">
-                <include name="se/anatom/ejbca/appserver/jboss/CRLCreate*.class" />
-                <include name="se/anatom/ejbca/ca/crl/ICreateCRL*.class" />
-                <include name="se/anatom/ejbca/log/Admin.class" />
+                <include name="org/ejbca/appserver/jboss/CRLCreate*.class" />
+                <include name="org/ejbca/core/ejb/ca/crl/ICreateCRL*.class" />
+                <include name="org/ejbca/core/model/log/Admin.class" />
                 <exclude name="se/anatom/ejbca/**/*Test*" />
             </fileset>
         </copy>
@@ -796,14 +781,14 @@ web.contentencoding    = ${web.contentencoding}
     <!-- =================================================================== -->
     <!--Deploy EJBCA with Jboss Specific Services inside the ear file.       -->
     <!-- =================================================================== -->
-    <target name="deploywithjbossservices" depends="jbossservices">    	
+    <target name="deploywithjbossservices" depends="jbossservices, ca.ear">    	
         <copy todir="${tmp}" overwrite="false">
         	<fileset dir="${eardd.src}">
         	   <include name="META-INF/jboss-app.xml" />
         	</fileset> 
     	</copy>
     	<replace file="${tmp}/META-INF/jboss-app.xml" token="!--@crlcreateservice.jar@-->" value="module>&lt;service>crlcreateservice.jar&lt;/service>&lt;/module>"/>
-        <ear update="true" destfile="${caear}"  > 
+        <ear update="true" destfile="${caear}" > 
             <fileset dir="${tmp}">
                 <include name="META-INF/jboss-app.xml" />
             </fileset>
@@ -880,14 +865,14 @@ web.contentencoding    = ${web.contentencoding}
 
             <!-- compile the module -->
             <javac srcdir="${src.java}" classpathref="compile.classpath" destdir="${build}" debug="on" includeantruntime="no" encoding="iso8859-1">
-                <include name="se/anatom/ejbca/@{name}/**" />
+                <include name="org/ejbca/@{name}/**" />
                 <classpath path="${build}" />
             </javac>
 
             <!-- copy the appropriate classes -->
             <copy todir="${@{name}.build.dir}">
                 <fileset dir="${build}">
-                    <include name="se/anatom/ejbca/@{name}/**" />
+                    <include name="org/ejbca/@{name}/**" />
                 </fileset>
                 <!-- add extra classes, in case it is not enough -->
                 <filesets />
