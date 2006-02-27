@@ -50,6 +50,7 @@ import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CRLInfo;
@@ -70,7 +71,7 @@ import org.ejbca.util.CertTools;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.2 2006-02-09 08:45:22 anatom Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.3 2006-02-27 10:55:32 anatom Exp $
  */
 public class CAInterfaceBean implements java.io.Serializable {
 
@@ -231,7 +232,7 @@ public class CAInterfaceBean implements java.io.Serializable {
       certificateprofiles.cloneCertificateProfile(originalname, newname);
     }    
       
-    public void createCRL(String issuerdn)  throws RemoteException, NamingException, CreateException  {      
+    public void createCRL(String issuerdn)  throws RemoteException, NamingException, CreateException, CATokenOfflineException  {      
       InitialContext jndicontext = new InitialContext();
       ICreateCRLSessionHome home  = (ICreateCRLSessionHome)javax.rmi.PortableRemoteObject.narrow( jndicontext.lookup("CreateCRLSession") , ICreateCRLSessionHome.class );
       home.create().run(administrator, issuerdn);
