@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
@@ -65,7 +66,7 @@ import org.ejbca.util.CertTools;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.3 2006-02-09 10:05:38 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.4 2006-02-27 11:37:56 anatom Exp $
  */
 public class CertDistServlet extends HttpServlet {
 
@@ -89,6 +90,7 @@ public class CertDistServlet extends HttpServlet {
     private static final String SERNO_PROPERTY = "serno";
     private static final String LEVEL_PROPERTY = "level";
     private static final String MOZILLA_PROPERTY = "moz";
+    private static final String FORMAT_PROPERTY = "format";
 
     private ICertificateStoreSessionLocalHome storehome = null;
     private ISignSessionLocalHome signhome = null;
@@ -158,7 +160,8 @@ public class CertDistServlet extends HttpServlet {
 		if(req.getParameter(CAID_PROPERTY) != null){
 		  caid = Integer.parseInt(req.getParameter(CAID_PROPERTY));
 		}    
-        
+        // See if the client wants the response cert or CRL in PEM format (default is DER)
+        String format = req.getParameter(FORMAT_PROPERTY); 
         command = req.getParameter(COMMAND_PROPERTY_NAME);
         if (command == null)
             command = "";
@@ -171,13 +174,17 @@ public class CertDistServlet extends HttpServlet {
                 // We must remove cache headers for IE
                 ServletUtils.removeCacheHeaders(res);
                 String moz = req.getParameter(MOZILLA_PROPERTY);
+                String filename = CertTools.getPartFromDN(dn,"CN")+".crl";
                 if ((moz == null) || !moz.equalsIgnoreCase("y")) {
-                    String filename = CertTools.getPartFromDN(dn,"CN")+".crl";
                     res.setHeader("Content-disposition", "attachment; filename=" +  filename);                    
                 }
                 res.setContentType("application/x-x509-crl");
-                res.setContentLength(crl.length);
-                res.getOutputStream().write(crl);
+                if (StringUtils.equals(format, "PEM")) {
+                    RequestHelper.sendNewB64File(Base64.encode(crl, true), res, filename, RequestHelper.BEGIN_CRL_WITH_NL, RequestHelper.END_CRL_WITH_NL);
+                } else {
+                    res.setContentLength(crl.length);
+                    res.getOutputStream().write(crl);                    
+                }
                 log.debug("Sent latest CRL to client at " + remoteAddr);
             } catch (Exception e) {
                 log.debug("Error sending latest CRL to " + remoteAddr+": ", e);
@@ -216,8 +223,12 @@ public class CertDistServlet extends HttpServlet {
                         ServletUtils.removeCacheHeaders(res);
                         res.setHeader("Content-disposition", "attachment; filename=" +  filename);
                         res.setContentType("application/octet-stream");
-                        res.setContentLength(cert.length);
-                        res.getOutputStream().write(cert);
+                        if (StringUtils.equals(format, "PEM")) {
+                            RequestHelper.sendNewB64File(Base64.encode(cert, true), res, filename, RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);
+                        } else {
+                            res.setContentLength(cert.length);
+                            res.getOutputStream().write(cert);
+                        }
                         log.debug("Sent latest certificate for '"+dn+"' to client at " + remoteAddr);
 
                     } else {

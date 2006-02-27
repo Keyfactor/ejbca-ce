@@ -49,7 +49,7 @@ import org.ejbca.util.FileTools;
 /**
  * Helper class for hadnling certificate request from browsers or general PKCS#10
  * 
- * @version $Id: RequestHelper.java,v 1.1 2006-02-09 08:43:16 anatom Exp $
+ * @version $Id: RequestHelper.java,v 1.2 2006-02-27 11:37:58 anatom Exp $
  */
 public class RequestHelper {
     private static Logger log = Logger.getLogger(RequestHelper.class);
@@ -66,6 +66,8 @@ public class RequestHelper {
 	public static final  String END_CERTIFICATE                    = "-----END CERTIFICATE-----";    
 	public static final  String BEGIN_CERTIFICATE_WITH_NL = "-----BEGIN CERTIFICATE-----\n";
 	public static final  String END_CERTIFICATE_WITH_NL    = "\n-----END CERTIFICATE-----\n";
+    public static final  String BEGIN_CRL_WITH_NL = "-----BEGIN X509 CRL-----\n";
+    public static final  String END_CRL_WITH_NL    = "\n-----END X509 CRL-----\n";
 
 	public static final  String BEGIN_PKCS7  = "-----BEGIN PKCS7-----\n";
 	public static final  String END_PKCS7     = "\n-----END PKCS7-----\n";	
@@ -281,12 +283,14 @@ public class RequestHelper {
      *
      * @param b64cert base64 encoded certificate to be returned
      * @param out output stream to send to
+     * @param filename filename sent as 'Content-disposition' header 
      * @param beginKey, String contaitning key information, ie BEGIN_CERTIFICATE_WITH_NL or BEGIN_PKCS7_WITH_NL
      * @param beginKey, String contaitning key information, ie END_CERTIFICATE_WITH_NL or END_PKCS7_WITH_NL
+     * @throws IOException 
      * @throws Exception on error
      */
-    public static void sendNewB64Cert(byte[] b64cert, HttpServletResponse out, String beginKey, String endKey)
-        throws Exception {
+    public static void sendNewB64File(byte[] b64cert, HttpServletResponse out, String filename, String beginKey, String endKey) 
+    throws IOException {
         if (b64cert.length == 0) {
             log.error("0 length certificate can not be sent to client!");
             return;
@@ -297,7 +301,7 @@ public class RequestHelper {
 
         // Set content-type to general file
         out.setContentType("application/octet-stream");        
-        out.setHeader("Content-disposition", "filename=cert.pem");
+        out.setHeader("Content-disposition", "filename="+filename);
 
         out.setContentLength(b64cert.length + beginKey.length() + endKey.length());
 
@@ -308,7 +312,20 @@ public class RequestHelper {
         os.write(endKey.getBytes());
         out.flushBuffer();
         log.debug("Sent reply to client");
-        log.debug(new String(b64cert));
+        log.debug(new String(b64cert));        
+    }
+    /**
+     * Sends back certificate as binary file (application/octet-stream)
+     *
+     * @param b64cert base64 encoded certificate to be returned
+     * @param out output stream to send to
+     * @param beginKey, String contaitning key information, ie BEGIN_CERTIFICATE_WITH_NL or BEGIN_PKCS7_WITH_NL
+     * @param beginKey, String contaitning key information, ie END_CERTIFICATE_WITH_NL or END_PKCS7_WITH_NL
+     * @throws Exception on error
+     */
+    public static void sendNewB64Cert(byte[] b64cert, HttpServletResponse out, String beginKey, String endKey)
+        throws IOException {
+        RequestHelper.sendNewB64File(b64cert, out, "cert.pem", beginKey, endKey);
     } // sendNewB64Cert
 
     /**
