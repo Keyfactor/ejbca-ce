@@ -22,6 +22,7 @@ elif [ "$1" = "ra" ] ; then
 elif [ "$1" = "setup" ] ; then
 	class_name=org.ejbca.ui.cli.setup
 elif [ "$1" = "template" ] ; then
+        CP=:${EJBCA_HOME}/lib/ext/xerces_2_3_0.jar
 	class_name=org.ejbca.ui.cli.SVGTemplatePrinter
 elif [ "$1" = "ocsp" ] ; then
 	class_name=org.ejbca.ui.cli.Ocsp
@@ -60,7 +61,7 @@ then
 fi
 
 # library classpath
-CP="$EJBCA_HOME/tmp/bin/classes"
+CP="$EJBCA_HOME/tmp/bin/classes"$CP
 for i in "${J2EE_DIR}"/*.jar
 do
 	CP="$i":"$CP"

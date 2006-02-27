@@ -49,6 +49,7 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.svg.SVGDocument;
 import org.w3c.dom.svg.SVGRectElement;
 import org.w3c.dom.svg.SVGTextElement;
 
@@ -61,7 +62,7 @@ import org.w3c.dom.svg.SVGTextElement;
  * It replaces all occurrenses of specified variables in the images 
  * with the corresponding userdata.
  *
- * @version $Id: SVGImageManipulator.java,v 1.2 2006-01-26 14:17:58 anatom Exp $
+ * @version $Id: SVGImageManipulator.java,v 1.3 2006-02-27 22:58:31 primelars Exp $
  */
 public class SVGImageManipulator {
 	/**
@@ -174,10 +175,6 @@ public class SVGImageManipulator {
       String hardtokensnwithoutprefix = hardtokensn.substring(this.hardtokensnprefix.length());
       String copyoftokensnwithoutprefix = copyoftokensn.substring(this.hardtokensnprefix.length());
 
-
-      // Clone document
-      Node originaldokument = svgdoc.cloneNode(true);
-      
       // Get Text rows
       process( "text", userdata, dnfields, pincodes, pukcodes,
 	  			hardtokensn, hardtokensnwithoutprefix,
@@ -196,23 +193,14 @@ public class SVGImageManipulator {
        */
 	  insertImage(userdata); // special dravel for demo
       
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();     
-      
-      // Write it to stream.
-      	  
-	  PrintTranscoder t = new PrintTranscoder(); 
-	  TranscoderInput input = new TranscoderInput(svgdoc);			  
-	  TranscoderOutput output = new TranscoderOutput(baos);
-		
-	  // save the image
-	 
+      final SVGDocument clone = (SVGOMDocument)svgdoc.cloneNode(true);
+      PrintTranscoder t = new PrintTranscoder();
+	  TranscoderInput input = new TranscoderInput(clone);
+	  TranscoderOutput output = new TranscoderOutput(new ByteArrayOutputStream());
 	  t.transcode(input, output);
+      final String aDoNot = clone.getRootElement().getAttribute("doNotScaleToPage").trim();
+	      t.addTranscodingHint(PrintTranscoder.KEY_SCALE_TO_PAGE, new Boolean(aDoNot==null||aDoNot==""));
 
-	  t.addTranscodingHint(PrintTranscoder.KEY_SCALE_TO_PAGE, new Boolean(true));
-	         	  	  	   	 
-      // Reuse original document
-      svgdoc = (SVGOMDocument) originaldokument;
-              
       return t;
     }
 
@@ -361,9 +349,9 @@ public class SVGImageManipulator {
     }
 
     // Private Variables
-    private SVGOMDocument svgdoc;
-    private long validityms;    
-    private String hardtokensnprefix;    
+    final private SVGOMDocument svgdoc;
+    final private long validityms;    
+    final private String hardtokensnprefix;    
 
     
 }

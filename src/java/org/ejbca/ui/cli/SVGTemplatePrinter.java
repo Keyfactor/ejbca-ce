@@ -50,14 +50,14 @@ public class SVGTemplatePrinter {
 	
 	private static final String USERDATAFILENAME = "src/cli/svgtemplateprinttester.properties";
 	
-	private SVGImageManipulator imagemanipulator = null;
-	private PrintService printservice = null;
+	final private SVGImageManipulator imagemanipulator;
+	final private PrintService printservice;
 	
-	private UserDataVO userdata = null;
-	private String[] pins = new String[2];
-	private String[] puks = new String[2];
-	private String hardtokensn = "";
-	private String copyofhardtokensn = "";
+	final private UserDataVO userdata;
+	final private String[] pins = new String[2];
+	final private String[] puks = new String[2];
+	final private String hardtokensn;
+	final private String copyofhardtokensn;
 	
 	public SVGTemplatePrinter(String templatefilename, String printer) throws Exception{
 		Properties data = new Properties();
@@ -82,17 +82,16 @@ public class SVGTemplatePrinter {
 		// Read the tempate file.
 		 imagemanipulator = new SVGImageManipulator( new InputStreamReader(new FileInputStream(templatefilename), "UTF-8"), validity, hardtokensnprefix);
 		
-		// Setup the printer.
-		 PrintRequestAttributeSet pras = new HashPrintRequestAttributeSet();
-		 DocFlavor flavor = DocFlavor.BYTE_ARRAY.AUTOSENSE;
-		 PrintService printService[] =  PrintServiceLookup.lookupPrintServices(flavor, pras);		 
-		 for(int i=0;i<printService.length;i++){		 
-		 	if(printer.trim().equalsIgnoreCase(printService[i].getName())){
-		 		printservice = printService[i];	
-		 	}		 	
-		 }		 		
-	}			
-	
+         {  // Setup the printer.
+             PrintRequestAttributeSet pras = new HashPrintRequestAttributeSet();
+             DocFlavor flavor = DocFlavor.BYTE_ARRAY.AUTOSENSE;
+             PrintService printService[] =  PrintServiceLookup.lookupPrintServices(flavor, pras);
+             int i = 0;
+             while ( i<printService.length && !printer.trim().equalsIgnoreCase(printService[i].getName()) )
+                 i++;
+             printservice = i<printService.length ? printService[i] : null;
+         }
+    }
 	public void print() throws Exception{
 	   if(printservice != null){
 	   	  PrinterJob job = PrinterJob.getPrinterJob();
@@ -102,14 +101,12 @@ public class SVGTemplatePrinter {
 	   	  Paper paper = new Paper();
 	   	  paper.setSize(pf.getWidth(), pf.getHeight());
 	   	  paper.setImageableArea(0.0,0.0,pf.getWidth(), pf.getHeight());
+          System.out.println("height: "+pf.getHeight()+" width: "+pf.getWidth());
 	   	  
 	   	  pf.setPaper(paper);	   	  
 	   	  job.setPrintable(imagemanipulator.print(userdata,pins,puks,hardtokensn, copyofhardtokensn),pf);	   	  
 	   	  
 	   	  job.print();	   	  	   	  	   	  	   	 
-	   	  		   	  
-	   	  
-	   	  Thread.sleep(10000);	   	
 	   }else{
 	      System.out.println("Error: Couldn't find printer.");		  	   	
 	   }			   	   
