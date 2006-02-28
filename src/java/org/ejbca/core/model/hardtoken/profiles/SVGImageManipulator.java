@@ -62,7 +62,7 @@ import org.w3c.dom.svg.SVGTextElement;
  * It replaces all occurrenses of specified variables in the images 
  * with the corresponding userdata.
  *
- * @version $Id: SVGImageManipulator.java,v 1.3 2006-02-27 22:58:31 primelars Exp $
+ * @version $Id: SVGImageManipulator.java,v 1.4 2006-02-28 18:36:55 primelars Exp $
  */
 public class SVGImageManipulator {
 	/**
@@ -175,15 +175,16 @@ public class SVGImageManipulator {
       String hardtokensnwithoutprefix = hardtokensn.substring(this.hardtokensnprefix.length());
       String copyoftokensnwithoutprefix = copyoftokensn.substring(this.hardtokensnprefix.length());
 
+      final SVGOMDocument clone = (SVGOMDocument)svgdoc.cloneNode(true);
       // Get Text rows
       process( "text", userdata, dnfields, pincodes, pukcodes,
 	  			hardtokensn, hardtokensnwithoutprefix,
 				copyoftokensn, copyoftokensnwithoutprefix,
-				startdate, enddate);			  
+				startdate, enddate, clone);
       process( "svg:text", userdata, dnfields, pincodes, pukcodes,
 	  			hardtokensn, hardtokensnwithoutprefix,
 				copyoftokensn, copyoftokensnwithoutprefix,
-				startdate, enddate);			  
+				startdate, enddate, clone);
                        
       // Add Image
       /**
@@ -191,9 +192,8 @@ public class SVGImageManipulator {
         addImage(userdata);       
       } 
        */
-	  insertImage(userdata); // special dravel for demo
-      
-      final SVGDocument clone = (SVGOMDocument)svgdoc.cloneNode(true);
+	  insertImage(userdata, clone); // special dravel for demo
+
       PrintTranscoder t = new PrintTranscoder();
 	  TranscoderInput input = new TranscoderInput(clone);
 	  TranscoderOutput output = new TranscoderOutput(new ByteArrayOutputStream());
@@ -208,9 +208,9 @@ public class SVGImageManipulator {
     		DNFieldExtractor dnfields, String[] pincodes, String[] pukcodes,
     		String hardtokensn, String hardtokensnwithoutprefix,
     		String copyoftokensn, String copyoftokensnwithoutprefix,
-    		String startdate, String enddate){
+    		String startdate, String enddate, SVGDocument clone){
     	Collection texts = new ArrayList();
-    	NodeList list = svgdoc.getDocumentElement().getElementsByTagName(tagName);	  
+    	NodeList list = clone.getDocumentElement().getElementsByTagName(tagName);
     	int numberofelements = list.getLength();	  
     	for(int i=0; i<numberofelements; i++){
     		Node node = list.item(i);		  
@@ -298,7 +298,7 @@ public class SVGImageManipulator {
 
 
     // Private Methods
-    private void insertImage(UserDataVO userdata) throws FileNotFoundException, IOException{
+    private void insertImage(UserDataVO userdata, SVGOMDocument clone) throws FileNotFoundException, IOException{
     	log.debug(">insertImage("+userdata != null ? userdata.getUsername() : "null"+")");
     	int imgx = 0;
     	int imgy = 0;
@@ -307,7 +307,7 @@ public class SVGImageManipulator {
     	
     	String transform = null;
     	// Get image info from template
-    	NodeList list = svgdoc.getDocumentElement().getElementsByTagName("rect");
+    	NodeList list = clone.getDocumentElement().getElementsByTagName("rect");
     	int numberofelements = list.getLength();
     	for(int i=0; i<numberofelements; i++){
     		Node node = list.item(i);		  
@@ -330,10 +330,10 @@ public class SVGImageManipulator {
     		// TODO: get image.
     		BufferedImage image = null;
     		
-    		SVGOMImageElement imageelement = new SVGOMImageElement("", svgdoc); 
+    		SVGOMImageElement imageelement = new SVGOMImageElement("", clone);
     		SimpleImageHandler imagehandler = new SimpleImageHandler(new ImageHandlerBase64Encoder());
     		
-    		SVGGeneratorContext svgcxt = SVGGeneratorContext.createDefault(svgdoc);
+    		SVGGeneratorContext svgcxt = SVGGeneratorContext.createDefault(clone);
     		
     		imagehandler.handleImage((RenderedImage) image, imageelement,  
     				imgx, imgy, 
@@ -343,7 +343,7 @@ public class SVGImageManipulator {
     		if(transform != null && !transform.equals(""))
     			imageelement.setAttribute("transform", transform); 
     		
-    		svgdoc.getRootElement().appendChild(imageelement);
+    		clone.getRootElement().appendChild(imageelement);
     	}
     	
     }
