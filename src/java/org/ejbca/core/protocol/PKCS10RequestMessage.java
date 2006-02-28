@@ -14,7 +14,6 @@
 package org.ejbca.core.protocol;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -45,9 +44,9 @@ import org.ejbca.util.CertTools;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.1 2006-01-17 20:28:06 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.2 2006-02-28 08:25:28 anatom Exp $
  */
-public class PKCS10RequestMessage implements IRequestMessage, Serializable {
+public class PKCS10RequestMessage implements IRequestMessage {
     static final long serialVersionUID = 3597275157018205136L;
 
     private static Logger log = Logger.getLogger(PKCS10RequestMessage.class);

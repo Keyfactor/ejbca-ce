@@ -13,6 +13,23 @@
 
 package org.ejbca.core.protocol;
 
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.cert.CRL;
+import java.security.cert.CertStore;
+import java.security.cert.CertStoreException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CollectionCertStoreParameters;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Hashtable;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
@@ -31,30 +48,12 @@ import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.cert.CRL;
-import java.security.cert.CertStore;
-import java.security.cert.CertStoreException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CollectionCertStoreParameters;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Hashtable;
-
 /**
  * A response message for scep (pkcs7).
  *
- * @version $Id: ScepResponseMessage.java,v 1.2 2006-01-30 06:31:12 herrvendil Exp $
+ * @version $Id: ScepResponseMessage.java,v 1.3 2006-02-28 08:25:28 anatom Exp $
  */
-public class ScepResponseMessage implements IResponseMessage, Serializable {
+public class ScepResponseMessage implements IResponseMessage {
     static final long serialVersionUID = 2016710353393853878L;
 
     private static Logger log = Logger.getLogger(ScepResponseMessage.class);

@@ -14,6 +14,7 @@
 package org.ejbca.core.protocol;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -39,9 +40,9 @@ import java.security.cert.X509Certificate;
  * byte[] responseMessage = resp.getResponseMessage(); 
  * </code>
  *
- * @version $Id: IResponseMessage.java,v 1.1 2006-01-17 20:28:06 anatom Exp $
+ * @version $Id: IResponseMessage.java,v 1.2 2006-02-28 08:25:28 anatom Exp $
  */
-public interface IResponseMessage {
+public interface IResponseMessage extends Serializable {
 
     /**
      * Sets the complete certificate in the response message.

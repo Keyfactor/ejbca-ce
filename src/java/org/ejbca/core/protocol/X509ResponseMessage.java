@@ -15,7 +15,6 @@ package org.ejbca.core.protocol;
 
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -32,9 +31,9 @@ import org.ejbca.util.CertTools;
 /**
  * A response message consisting of a single X509 Certificate.
  *
- * @version $Id: X509ResponseMessage.java,v 1.1 2006-01-17 20:28:06 anatom Exp $
+ * @version $Id: X509ResponseMessage.java,v 1.2 2006-02-28 08:25:28 anatom Exp $
  */
-public class X509ResponseMessage implements IResponseMessage, Serializable {
+public class X509ResponseMessage implements IResponseMessage {
     static final long serialVersionUID = -2157072605987735912L;
 
     /** Certificate to be in response message, */

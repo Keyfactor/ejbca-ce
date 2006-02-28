@@ -16,7 +16,6 @@ package org.ejbca.core.protocol;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
@@ -66,9 +65,9 @@ import org.ejbca.util.CertTools;
  * Class to handle SCEP request messages sent to the CA. 
  * TODO: don't forget extensions, e.g. KeyUsage requested by end entity 
  *
- * @version $Id: ScepRequestMessage.java,v 1.2 2006-01-30 06:31:13 herrvendil Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.3 2006-02-28 08:25:28 anatom Exp $
  */
-public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage, Serializable {
+public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage {
     static final long serialVersionUID = -235623330828902051L;
 
     private static Logger log = Logger.getLogger(ScepRequestMessage.class);

@@ -13,6 +13,7 @@
 
 package org.ejbca.core.protocol;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -26,9 +27,9 @@ import java.security.cert.X509Certificate;
  * Base interface for request messages sent to the CA. Implementors of this interface must also
  * implement Serializable if they are to be sent to any EJB bussiness methods.
  *
- * @version $Id: IRequestMessage.java,v 1.1 2006-01-17 20:28:06 anatom Exp $
+ * @version $Id: IRequestMessage.java,v 1.2 2006-02-28 08:25:28 anatom Exp $
  */
-public interface IRequestMessage {
+public interface IRequestMessage extends Serializable {
     /**
      * Get the username used to request a certificate from EJBCA.
      *
