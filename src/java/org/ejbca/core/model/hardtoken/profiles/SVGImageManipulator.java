@@ -62,7 +62,7 @@ import org.w3c.dom.svg.SVGTextElement;
  * It replaces all occurrenses of specified variables in the images 
  * with the corresponding userdata.
  *
- * @version $Id: SVGImageManipulator.java,v 1.4 2006-02-28 18:36:55 primelars Exp $
+ * @version $Id: SVGImageManipulator.java,v 1.5 2006-03-01 11:14:56 primelars Exp $
  */
 public class SVGImageManipulator {
 	/**
@@ -198,9 +198,11 @@ public class SVGImageManipulator {
 	  TranscoderInput input = new TranscoderInput(clone);
 	  TranscoderOutput output = new TranscoderOutput(new ByteArrayOutputStream());
 	  t.transcode(input, output);
-      final String aDoNot = clone.getRootElement().getAttribute("doNotScaleToPage").trim();
-	      t.addTranscodingHint(PrintTranscoder.KEY_SCALE_TO_PAGE, new Boolean(aDoNot==null||aDoNot==""));
-
+	  {
+		  final String aDoNot = clone.getRootElement().getAttribute("doNotScaleToPage");
+		  t.addTranscodingHint( PrintTranscoder.KEY_SCALE_TO_PAGE,
+		                        new Boolean(aDoNot==null||aDoNot.trim().length()<=0) );
+	  }
       return t;
     }
 
