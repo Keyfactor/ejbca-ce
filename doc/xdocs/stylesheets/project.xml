@@ -24,8 +24,9 @@
                 <item name="Tutorials and more"   href="http://docs.primekey.se/"/>
                 <item name="Howto"                href="/howto.html"/>
                 <item name="Security"		  href="/security.html"/>
-                <item name="References"           href="/references.html"/>
                 <item name="Changelog"            href="http://jira.primekey.se/browse/ECA?report=com.atlassian.jira.plugin.system.project:changelog-panel"/>
+                <item name="References"           href="/references.html"/>
+                <item name="Release cycle"        href="/releasecycle.html"/>
             </menu>
 
             <menu name="Download">
