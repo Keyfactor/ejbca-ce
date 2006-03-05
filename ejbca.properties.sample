@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.47 2006-02-13 19:34:56 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.48 2006-03-05 08:14:00 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -301,6 +301,7 @@ ocsp.usecasigningcert=true
 # All these "ocsp-database.*" properties is used to configure the connection to the database that the
 # ExternalOCSPPublisher will publish to. Please read the doc/howto/HOWTO-OCSP-RESPONDER.txt for inforamtion.
 # If no ExternalOCSPPublisher will be used these properties should not be configured.
+# Note that the External OCSP responder itself uses the configuration options database.*.
 
 # jndi name of the datasource to use in deployment descriptors of ejbs.
 #ocsp-datasource.jndi-name=OcspDS
