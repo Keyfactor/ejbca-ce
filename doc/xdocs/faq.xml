@@ -7,6 +7,20 @@
 
   <faqsection title="About this FAQ">
     <faq>
+      <question>How can I run JBoss as a service in Windows?</question>
+      <answer>
+	      <p>There is documentation over at JBoss for several different options:
+	      <br></br>
+	      <a href="http://wiki.jboss.org/wiki/Wiki.jsp?page=RunJBossAsAServiceOnWindows">http://wiki.jboss.org/wiki/Wiki.jsp?page=RunJBossAsAServiceOnWindows</a>
+	      </p>
+	      <p>In short summary there are a couple of tools: <br></br>
+	      <a href="http://javaservice.objectweb.org/">JavaService</a>
+	      <br></br>       
+	      <a href="http://wrapper.tanukisoftware.org/doc/english/integrate-simple-win.html">Java Service Wrapper</a>
+	      </p>
+      </answer>
+    </faq>
+    <faq>
       <question>Enroll manually for a server - why are my PKCS10  DN fields Ignored?</question>
       <answer>
         <p>
