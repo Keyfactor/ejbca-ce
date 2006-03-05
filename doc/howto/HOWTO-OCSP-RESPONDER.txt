@@ -202,3 +202,11 @@ org.ejbca.core.protocol.ocsp.OCSPUnidExtension
 and the log level:
 INFO, for request logging
 ERROR, for error logging
+
+Lookup server client library
+----------------------------
+There is a client library available. Build it with 'ant ocspclient.jar'. If will create a zip file in ocsp-dist/ocspclient.zip.
+You can unpack this zip file on any remote machine and use the API in the class org.ejbca.core.protocol.ocsp.OCSPUnidClient. 
+There is also a small command line client you can use for testing ocsp.sh. the class org.ejbca.ui.cli.Ocsp is a good simple example of
+how the API can be used.
+
