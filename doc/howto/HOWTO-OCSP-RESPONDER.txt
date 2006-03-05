@@ -213,4 +213,6 @@ There is a client library available. Build it with 'ant ocspclient.jar'. If will
 You can unpack this zip file on any remote machine and use the API in the class org.ejbca.core.protocol.ocsp.OCSPUnidClient. 
 There is also a small command line client you can use for testing ocsp.sh. the class org.ejbca.ui.cli.Ocsp is a good simple example of
 how the API can be used.
-
+For the Unid Lookup part, you must use https with a client certificate with the ocsp client. If you use http with a client certificate
+and the OCSP responder is set up to answer Lookup requests, the OCSP client will returns the Fnr. The Fnr will be returned if the certificate 
+contains a Unid in the SN component of the SubjectDN, and the Unid has a valid mapping to an Fnr in the OCSP responders Fnr-Unid mapping database.
