@@ -110,7 +110,9 @@ in the distribution.
 Note that the installation must be done with a user with privileges to write to JBOSS_HOME and subdirs. 
 </p><p>
 1) Set the environment variable JBOSS_HOME to where your JBoss is installed,
-example /opt/jboss-4.0.2.
+example /opt/jboss-4.0.2 or C:/jboss-4.0.3SP1. 
+<br></br>Note that you may have to use forward slashes on Windows instead of the 
+usual backward slashes, if you get errors about invalid jboss.home during install, you need forward slashes.
 </p><p>
 2) Copy ejbca.properties.sample to ejbca.properties and customize if needed.
 The default values works fine for a test installaton. 
