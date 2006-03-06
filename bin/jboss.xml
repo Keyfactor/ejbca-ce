@@ -9,9 +9,6 @@
 	<property name="jboss.farm.dir" location="${jboss.server.home.dir}/${jboss.farm.name}"/>
 	<property name="jboss.deploy.dir" location="${jboss.server.home.dir}/deploy"/>
 	<property name="keystore.file" value="conf/keystore/keystore.jks"/>
-
-    <!-- FIXME: It must match the password in cli.xml !! -->
-    <property name="httpsserver.password" value="serverpwd"/>
 	
 	<!--
 	 Do not configure the servlet container, deploys blindly ears

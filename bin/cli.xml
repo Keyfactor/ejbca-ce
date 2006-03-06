@@ -43,7 +43,6 @@
         <property name="ca.policy" value="null"/>
         <property name="httpsserver.hostname" value="localhost"/>
         <property name="httpsserver.dn" value="CN=localhost,O=${app.name.cap} Sample,C=SE"/>
-        <property name="httpsserver.password" value="serverpwd"/>
 		<property name="superadmin.password" value="ejbca"/>
         <property name="java.trustpassword" value="changeit"/>
     </target>
@@ -56,7 +55,6 @@
         <input message="Please enter the CA policy id (default, no policy) ?" addproperty="ca.policy" defaultvalue="null"/>
         <input message="Please enter the server httpsserver.hostname (default 'localhost') ?" addproperty="httpsserver.hostname" defaultvalue="localhost"/>
         <input message="Please enter the server dn (default: CN=localhost,O=${app.name.cap} Sample,C=SE) ?" addproperty="httpsserver.dn" defaultvalue="CN=localhost,O=${app.name.cap} Sample,C=SE"/>
-        <input message="Please enter the server keystore password (default: serverpwd) ?" addproperty="httpsserver.password" defaultvalue="serverpwd"/>
         <input message="Please enter the superadmin password (default: ${app.name}) ?" addproperty="superadmin.password" defaultvalue="${app.name}"/>
         <input message="Please enter the CA certificate password (default: changeit) ?" addproperty="java.trustpassword" defaultvalue="changeit"/>
     </target>
