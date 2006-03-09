@@ -95,7 +95,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.9 2006-03-09 09:28:34 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.10 2006-03-09 10:09:41 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -1313,6 +1313,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
     /**
      *  Method returning a Collection of Certificate of all CA certificates known to the system.
+     *  Certificates for External CAs or CAs that are awaiting certificate response are not returned, because we don't have certificates for them.
+     *  Uses getAvailableCAs to list CAs.
      *  
      * @ejb.transaction type="Supports"
      * @ejb.interface-method
@@ -1321,21 +1323,23 @@ public class CAAdminSessionBean extends BaseSessionBean {
       ArrayList returnval = new ArrayList();
 
       try{
-        Collection result = cadatahome.findAll();
-        Iterator iter = result.iterator();
-        while(iter.hasNext()){
-           CADataLocal cadatalocal = (CADataLocal) iter.next();
-           CA ca = cadatalocal.getCA();
-           if (log.isDebugEnabled()) {
-               debug("Getting certificate chain for CA: "+ca.getName()+", "+ca.getCAId());               
-           }
-           returnval.add(ca.getCACertificate());
-        }
-      }catch(javax.ejb.FinderException fe){}
-        catch(UnsupportedEncodingException uee){
-        	throw new EJBException(uee);
-        }
-
+          Collection caids = getAvailableCAs(admin);
+          Iterator iter = caids.iterator();
+          while(iter.hasNext()){
+              Integer caid = (Integer)iter.next();
+              CADataLocal cadata = cadatahome.findByPrimaryKey(caid);
+              CA ca = cadata.getCA();
+              if (log.isDebugEnabled()) {
+                  debug("Getting certificate chain for CA: "+ca.getName()+", "+ca.getCAId());               
+              }
+              returnval.add(ca.getCACertificate());
+          }
+      }catch(javax.ejb.FinderException fe) {
+          error("Can't find CA: ", fe);
+      } catch(UnsupportedEncodingException uee){
+          throw new EJBException(uee);
+      }
+      
       return returnval;
     } // getAllCACertificates
 
