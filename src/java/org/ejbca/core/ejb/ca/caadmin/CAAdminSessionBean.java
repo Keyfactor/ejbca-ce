@@ -95,7 +95,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.8 2006-02-13 19:15:43 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.9 2006-03-09 09:28:34 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -1325,7 +1325,11 @@ public class CAAdminSessionBean extends BaseSessionBean {
         Iterator iter = result.iterator();
         while(iter.hasNext()){
            CADataLocal cadatalocal = (CADataLocal) iter.next();
-           returnval.add(cadatalocal.getCA().getCACertificate());
+           CA ca = cadatalocal.getCA();
+           if (log.isDebugEnabled()) {
+               debug("Getting certificate chain for CA: "+ca.getName()+", "+ca.getCAId());               
+           }
+           returnval.add(ca.getCACertificate());
         }
       }catch(javax.ejb.FinderException fe){}
         catch(UnsupportedEncodingException uee){
