@@ -205,7 +205,8 @@ There are additional documentation and administrative tutorial movies at <a href
 </subsection>
 <subsection name="Administrating EJBCA">
 <p>
-You can administrate EJBCA using a web browser and the admin-GUI, this is the easiest way.
+You can administrate EJBCA using a web browser and the admin-GUI, this is the easiest way. 
+The admin-GUI requires SSL with authentication using client certificate, i.e. strong authentication.
 </p><p>
 You can also use the command line interface (cli) which is called by 'bin/ejbca.sh'. 
 If you call ejbca.sh you get a list of available commands, and you can get help for all commands by calling
@@ -216,6 +217,31 @@ bin/ejbca.sh ca
 bin/ejbca.sh ra adduser
 etc etc
 </source>
+</subsection>
+<subsection name="SSL certificate expire">
+<p>
+The SSL certificate used for SSL in JBoss (SSL is used for the admin-GUI) is stored in JBOSS_HOME/server/default/conf/keystore.jks.
+The default validity time for the SSL certificate is two years. When this expire, you must generate a new one. 
+</p><p>
+You can do this throught the admin-GUI by:
+<ol>
+<li>Go to 'List/Edit End Entities' and search for user 'tomcat'.</li>
+<li>'Edit_End_Entity' and set the 'Password' to the same as httpsserver.password in your ejbca.properties and 'Status' to 'New'.</li>
+<li>Open up a command line in EJBCA_HOME and run 'bin/ejbca.sh batch'.</li>
+<li>Copy EJBCA_HOME/p12/tomcat.jks to JBOSS_HOME/server/default/conf/keystore.jks, or run 'ant deploy'. Ant deploy will do some other things as well, so if you are not sure, just copy the file.</li>
+<li>Restart JBoss.</li>
+</ol>
+</p>
+<p>
+You can also do everything using the CLI:
+<ol>
+<li>bin/ejbca.sh ra setuserstatus tomcat 10</li>
+<li>bin/ejbca.sh ra setclearpwd tomcat &lt;password from httpsserver.password&gt;</li>
+<li>bin/ejbca.sh batch</li>
+<li>cp p12/tomcat.jks $JBOSS_HOME/server/default/conf/keystore.jks</li>
+<li>Restart JBoss.</li>
+</ol>
+</p>
 </subsection>
 <subsection name="Creating more CAs">
 <p>
