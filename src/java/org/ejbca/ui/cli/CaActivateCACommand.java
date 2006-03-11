@@ -13,6 +13,8 @@
  
 package org.ejbca.ui.cli;
 
+import java.rmi.UnmarshalException;
+
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.catoken.HardCATokenInfo;
@@ -25,7 +27,7 @@ import org.ejbca.core.model.ca.catoken.IHardCAToken;
 /**
  * Activates the specified HSM CA.
  *
- * @version $Id: CaActivateCACommand.java,v 1.2 2006-02-16 07:50:58 herrvendil Exp $
+ * @version $Id: CaActivateCACommand.java,v 1.3 2006-03-11 17:58:34 anatom Exp $
  */
 public class CaActivateCACommand extends BaseCaAdminCommand {
     /**
@@ -69,8 +71,15 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
             
             // Check that CA has correct status.
             if(cainfo.getStatus() == SecConst.CA_OFFLINE || 
-            	(cainfo.getStatus() == SecConst.CA_ACTIVE && ((HardCATokenInfo)cainfo.getCATokenInfo()).getCATokenStatus() == IHardCAToken.STATUS_OFFLINE)){           
-              getCAAdminSessionRemote().activateCAToken(administrator, cainfo.getCAId(), authorizationcode);                        
+            		(cainfo.getStatus() == SecConst.CA_ACTIVE && ((HardCATokenInfo)cainfo.getCATokenInfo()).getCATokenStatus() == IHardCAToken.STATUS_OFFLINE)) {
+            	try {
+                	getCAAdminSessionRemote().activateCAToken(administrator, cainfo.getCAId(), authorizationcode);            		
+            	} catch (UnmarshalException e) {
+            		// If we gat a classnotfound we are probably getting an error back from the token, 
+            		// with a class we don't have here at the CLI. It is probably invalid PIN
+            		getOutputStream().println("Error returned, did you enter the correct PIN?");
+            		getOutputStream().println(e.getMessage());
+            	}
             }else{
             	getOutputStream().println("Error: CA or CAToken must be offline to be activated.");
             }
