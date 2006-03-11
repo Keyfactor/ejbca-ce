@@ -1142,7 +1142,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             }
             if (ca.getStatus() != SecConst.CA_ACTIVE) {
                 getLogSession().log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Signing CA " + cadata.getSubjectDN() + " isn't active.");
-                throw new EJBException("Signing CA " + cadata.getSubjectDN() + " isn't active.");
+                throw new CATokenOfflineException("Signing CA " + cadata.getSubjectDN() + " isn't active.");
             }
 
             // Check that CA hasn't expired.
