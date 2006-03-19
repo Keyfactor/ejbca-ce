@@ -16,7 +16,7 @@ package org.ejbca.ui.cli;
 /**
  * Factory for General Setup Commands.
  *
- * @version $Id: SetupCommandFactory.java,v 1.2 2006-02-02 10:08:39 herrvendil Exp $
+ * @version $Id: SetupCommandFactory.java,v 1.3 2006-03-19 09:44:36 anatom Exp $
  */
 public class SetupCommandFactory {
     /**
@@ -39,6 +39,9 @@ public class SetupCommandFactory {
 
         if (args[0].equals("setdefaultbaseurl")) {
             return new SetupSetBaseURLCommand(args);
+        }
+        if (args[0].equals("initializehardtokenissuing")) {
+        	return new InitializeHardTokenIssuing(args);
         }
         return null;
     } // getCommand
