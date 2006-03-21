@@ -173,7 +173,8 @@ the key and certificate for the server.
 You should use these parameters (where differing from default) when issuing keystores to the TLS servers:
 Batch generation
 JKS files
-Extended key usage 'TLS server'
+Key usage: Digital Signature, Key Encipherment
+Extended key usage: 'TLS server'
 
 The Common Name (CN) for a TLS server should be the same as the machines fully qualified DNS name used to call the server. 
 For example 'CN=ocsp.primekey.se'.The other DN components you can choose freely.
@@ -182,6 +183,9 @@ Once the JKS keystore is issued you can configure TLS on the OCSP server in the 
 It is configured in the file JBOSS_HOME/server/default/deploy/jbossweb-tomcat55.sar/server.xml.
 The Connectors for port 8442 and 8443 is the TLS configuration.
 The keystoreFile and the keystorePass are important to get right.
+It is easiest if you put the keystore for the TLS server in the file p12/tomcat.jks on the external OCSP responder.
+When doing this it should be deployed correctly when using 'ant ocsp-deploy', and you don't have to change the server.xml file which is 
+over-written by 'ant ocsp-deploy'.
 
 You must create a new java trusted keystore with the commands:
 bin/ejbca.sh ca getrootcert AdminCA1 ca.crt -der
