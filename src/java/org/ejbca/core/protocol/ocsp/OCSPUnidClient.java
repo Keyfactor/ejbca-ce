@@ -66,7 +66,7 @@ import org.ejbca.util.KeyTools;
  * 3.There was no Unid in the certificate (serialNumber DN component)
  *
  * @author Tomas Gustavsson, PrimeKey Solutions AB
- * @version $Id: OCSPUnidClient.java,v 1.6 2006-03-17 09:07:30 anatom Exp $
+ * @version $Id: OCSPUnidClient.java,v 1.7 2006-03-21 08:53:16 anatom Exp $
  *
  */
 public class OCSPUnidClient {
@@ -130,8 +130,17 @@ public class OCSPUnidClient {
         }
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, cert.getSerialNumber()));
-        // Don't bother adding Unid extension of we are not using client authentication
+        CertificateID certId = new CertificateID(CertificateID.HASH_SHA1, cacert, cert.getSerialNumber());
+//        System.out.println("Generating CertificateId:\n"
+//                + " Hash algorithm : '" + certId.getHashAlgOID() + "'\n"
+//                + " CA certificate\n"
+//                + "      CA SubjectDN: '" + cacert.getSubjectDN().getName() + "'\n"
+//                + "      SerialNumber: '" + cacert.getSerialNumber().toString(16) + "'\n"
+//                + " CA certificate hashes\n"
+//                + "      Name hash : '" + new String(Hex.encode(certId.getIssuerNameHash())) + "'\n"
+//                + "      Key hash  : '" + new String(Hex.encode(certId.getIssuerKeyHash())) + "'\n");
+        gen.addRequest(certId);
+        // Don't bother adding Unid extension if we are not using client authentication
         if (ks != null) {
             Hashtable exts = new Hashtable();
             X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("1")));
