@@ -118,7 +118,7 @@ import org.ejbca.util.CertTools;
  *   
  * @author Thomas Meckel (Ophios GmbH)
  * @author Tomas Gustavsson
- * @version  $Id: OCSPServletBase.java,v 1.12 2006-02-08 20:28:32 anatom Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.13 2006-03-21 08:58:22 anatom Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
@@ -187,24 +187,31 @@ abstract class OCSPServletBase extends HttpServlet {
             if (m_log.isDebugEnabled()) {
                 m_log.debug("Comparing the following certificate hashes:\n"
                         + " Hash algorithm : '" + certId.getHashAlgOID() + "'\n"
+                        + " CA certificate\n"
+                        + "      CA SubjectDN: '" + cacert.getSubjectDN().getName() + "'\n"
+                        + "      SerialNumber: '" + cacert.getSerialNumber().toString(16) + "'\n"
                         + " CA certificate hashes\n"
-                        + "      Name hash : '" + Hex.encode(issuerId.getIssuerNameHash()) + "'\n"
-                        + "      Key hash  : '" + Hex.encode(issuerId.getIssuerKeyHash()) + "'\n"
+                        + "      Name hash : '" + new String(Hex.encode(issuerId.getIssuerNameHash())) + "'\n"
+                        + "      Key hash  : '" + new String(Hex.encode(issuerId.getIssuerKeyHash())) + "'\n"
                         + " OCSP certificate hashes\n"
-                        + "      Name hash : '" + Hex.encode(certId.getIssuerNameHash()) + "'\n"
-                        + "      Key hash  : '" + Hex.encode(certId.getIssuerKeyHash()) + "'\n");
+                        + "      Name hash : '" + new String(Hex.encode(certId.getIssuerNameHash())) + "'\n"
+                        + "      Key hash  : '" + new String(Hex.encode(certId.getIssuerKeyHash())) + "'\n");
             }
             if ((issuerId.toASN1Object().getIssuerNameHash().equals(certId.toASN1Object().getIssuerNameHash()))
                     && (issuerId.toASN1Object().getIssuerKeyHash().equals(certId.toASN1Object().getIssuerKeyHash()))) {
-                m_log.debug("Found matching CA-cert with:\n"
-                        + "      Name hash : '" + Hex.encode(issuerId.getIssuerNameHash()) + "'\n"
-                        + "      Key hash  : '" + Hex.encode(issuerId.getIssuerKeyHash()) + "'\n");
+                if (m_log.isDebugEnabled()) {
+                    m_log.debug("Found matching CA-cert with:\n"
+                            + "      Name hash : '" + new String(Hex.encode(issuerId.getIssuerNameHash())) + "'\n"
+                            + "      Key hash  : '" + new String(Hex.encode(issuerId.getIssuerKeyHash())) + "'\n");                    
+                }
                 return cacert;
             }
         }
-        m_log.debug("Did not find matching CA-cert for:\n"
-                + "      Name hash : '" + Hex.encode(certId.getIssuerNameHash()) + "'\n"
-                + "      Key hash  : '" + Hex.encode(certId.getIssuerKeyHash()) + "'\n");
+        if (m_log.isDebugEnabled()) {
+            m_log.debug("Did not find matching CA-cert for:\n"
+                    + "      Name hash : '" + new String(Hex.encode(certId.getIssuerNameHash())) + "'\n"
+                    + "      Key hash  : '" + new String(Hex.encode(certId.getIssuerKeyHash())) + "'\n");            
+        }
         return null;
     }
 
@@ -470,7 +477,7 @@ abstract class OCSPServletBase extends HttpServlet {
                         X509Certificate cert = (X509Certificate) iter.next();
                         certInfo.append(cert.getSubjectDN().getName());
                         certInfo.append(',');
-                        certInfo.append(cert.getSerialNumber().toString());
+                        certInfo.append(cert.getSerialNumber().toString(16));
                         certInfo.append('\n');
                     }
                     m_log.debug("Found the following CA certificates : \n"
@@ -557,12 +564,12 @@ abstract class OCSPServletBase extends HttpServlet {
                         // Add standard response extensions
                         responseExtensions = getStandardResponseExtensions(req);
                     } else if (cacert == null) {
-                        final String msg = "Unable to find CA certificate by issuer name hash: " + Hex.encode(certId.getIssuerNameHash()) + ", or even the default responder: " + m_defaultResponderId;
+                        final String msg = "Unable to find CA certificate by issuer name hash: " + new String(Hex.encode(certId.getIssuerNameHash())) + ", or even the default responder: " + m_defaultResponderId;
                         m_log.error(msg);
                         continue;
                     }
                     if (unknownCA == true) {
-                        final String msg = "Unable to find CA certificate by issuer name hash: " + Hex.encode(certId.getIssuerNameHash()) + ", using the default reponder to send 'UnknownStatus'";
+                        final String msg = "Unable to find CA certificate by issuer name hash: " + new String(Hex.encode(certId.getIssuerNameHash())) + ", using the default reponder to send 'UnknownStatus'";
                         m_log.info(msg);
                         // If we can not find the CA, answer UnknowStatus
                         basicRes.addResponse(certId, new UnknownStatus());
@@ -588,9 +595,11 @@ abstract class OCSPServletBase extends HttpServlet {
                     if (null == rci) {
                         rci = isRevoked(m_adm, cacert.getSubjectDN().getName(), certId.getSerialNumber());
                         if (null == rci) {
-                            m_log.debug("Unable to find revocation information for certificate with serial '"
-                                    + certId.getSerialNumber() + "'"
-                                    + " from issuer '" + cacert.getSubjectDN().getName() + "'");
+                            if (m_log.isDebugEnabled()) {
+                                m_log.debug("Unable to find revocation information for certificate with serial '"
+                                        + certId.getSerialNumber() + "'"
+                                        + " from issuer '" + cacert.getSubjectDN().getName() + "'");                                
+                            }
                             basicRes.addResponse(certId, new UnknownStatus());
                         } else {
                             if (rci.getReason() != RevokedCertInfo.NOT_REVOKED) {
