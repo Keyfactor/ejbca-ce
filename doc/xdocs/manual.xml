@@ -1675,6 +1675,15 @@ user.</li>
 
 <subsection name="Other Configuration">
 <p>
+To setup an initial hard token issuer with alias 'local' and queue the admin user for card issuing:
+</p>
+<source>
+bin/ejbca.sh setup initializehardtokenissuing &lt;caname&gt;
+Ex: bin/ejbca.sh setup initializehardtokenissuing AdminCA1
+</source>
+<p>
+This is a utility function to quickly an easily issue an initial administration smart card.
+</p><p>
 If you want to change the baseurl of the admin-web after installation use the command:
 </p>
 <source>
@@ -1682,6 +1691,8 @@ bin/ejbca.sh setup setbaseurl computername applicationpath
 Ex: bin/ejbca.sh setup setbaseurl localhost ejbca
 </source>
 <p>
+You should never have to do this in version >= 3.2.
+</p><p>
 To change ports (default public http=8080, public https=8442, private https=8443) you must edit 
 ejbca.properties. Change the properties httpserver.pubhttp, httpserver.pubhttps and httpserver.privhttps.
 After changing, run 'ant deploy' and re-start the application server.
