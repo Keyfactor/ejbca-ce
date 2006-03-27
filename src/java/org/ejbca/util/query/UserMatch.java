@@ -23,7 +23,7 @@ package org.ejbca.util.query;
  * function is getQueryString which returns a fragment of SQL statment.
  *
  * @author TomSelleck
- * @version $Id: UserMatch.java,v 1.1 2006-01-17 20:32:19 anatom Exp $
+ * @version $Id: UserMatch.java,v 1.2 2006-03-27 08:09:19 herrvendil Exp $
  *
  * @see org.ejbca.util.query.BasicMatch
  * @see org.ejbca.util.query.TimeMatch
@@ -39,6 +39,7 @@ public class UserMatch extends BasicMatch {
     public static final int MATCH_WITH_CERTIFICATEPROFILE  = 4; // Matches the certificatetype id not name.
     public static final int MATCH_WITH_CA                  = 5; // Matches the CA id not CA name.
 	public static final int MATCH_WITH_TOKEN               = 6;
+	public static final int MATCH_WITH_DN                  = 7;
     // Subject DN fields.
     public static final int MATCH_WITH_UID              = 100;
     public static final int MATCH_WITH_COMMONNAME       = 101;
@@ -87,7 +88,7 @@ public class UserMatch extends BasicMatch {
         this.matchtype = matchtype;
         this.matchvalue = matchvalue;
 
-        if ((matchwith >= MATCH_WITH_STATUS) && (matchwith <= MATCH_WITH_CERTIFICATEPROFILE)) {
+        if ((matchwith >= MATCH_WITH_STATUS) && (matchwith <= MATCH_WITH_CA)) {
             new Integer(matchvalue);
         }
     }
@@ -105,13 +106,28 @@ public class UserMatch extends BasicMatch {
             returnval = MATCH_WITH_SUBJECTDN + " LIKE '%" +
                 MATCH_WITH_SUBJECTDN_NAMES[matchwith - 100] + matchvalue + "%'";
         } else {
-            if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
-                returnval = MATCH_WITH_SQLNAMES[matchwith] + " = '" + matchvalue + "'";
-            }
-
-            if (matchtype == BasicMatch.MATCH_TYPE_BEGINSWITH) {
-                returnval = MATCH_WITH_SQLNAMES[matchwith] + " LIKE '" + matchvalue + "%'";
-            }
+        	if(matchwith == MATCH_WITH_DN){
+        		if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
+        			returnval = MATCH_WITH_SUBJECTDN + " = '" + matchvalue + "'";
+        		}
+        		
+        		if (matchtype == BasicMatch.MATCH_TYPE_BEGINSWITH) {
+        			returnval = MATCH_WITH_SUBJECTDN + " LIKE '" + matchvalue + "%'";
+        		} 
+        		
+        		if (matchtype == BasicMatch.MATCH_TYPE_CONTAINS) {
+        			returnval = MATCH_WITH_SUBJECTDN + " LIKE '%" + matchvalue + "%'";
+        		} 
+        		
+        	}else{
+        		if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
+        			returnval = MATCH_WITH_SQLNAMES[matchwith] + " = '" + matchvalue + "'";
+        		}
+        		
+        		if (matchtype == BasicMatch.MATCH_TYPE_BEGINSWITH) {
+        			returnval = MATCH_WITH_SQLNAMES[matchwith] + " LIKE '" + matchvalue + "%'";
+        		}
+        	}
         }
 
         return returnval;
