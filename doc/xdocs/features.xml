@@ -15,7 +15,7 @@
 <li>Standalone or integrated in any J2EE application.</li>
 <li>Simple installation and configuration.</li>
 <li>Powerful Web based administration GUI using strong authentication.</li>
-<li>Administration GUI available in several languages.</li>
+<li>Administration GUI available in several languages - english, french, italian, spanish, swedish and chinese.</li>
 <li>Command line administration for scripts etc.</li>
 <li>Modular API for HSMs. Built in support for nCipher HSM (sponsored by Linagora), PrimeCardHSM and Eracom (now SafeNet).</li>
 <li>Individual enrollment or batch production of certificates.</li>
@@ -33,6 +33,7 @@
 <li>Qualified Certificate Statement (RFC3739) for issuing EU/ETSI qualified certificates.</li>
 <li>Supports the Online Certificate Status Protocol (OCSP), including AIA-extension.</li>
 <li>OCSP responder can run integrated with EJBCA or stand alone (clustered) for security, high-performance and high-availability.</li>
+<li>Simple OCSP client in pure java.</li>
 <li>Revocation and Certificate Revocation Lists (CRLs).</li>
 <li>CRL creation and URL-based CRLDistribution Points according to RFC3280. Stores Certificates and CRLs in SQL database, LDAP and/or other custom data source.</li>
 <li>Optional multiple publishers for publishing certificates and CRLs in LDAP. Several flexible standard publishers exist to meet different demands.</li>

@@ -7,7 +7,7 @@ See HOWTO-OCSP-RESPONDER.txt for information how to install and configure extern
 
 Building the OCSP/Lookup client.
 -------------------------------
-Run the command 'ant ocspclient.jar.
+Run the command 'ant ocspclient.jar'.
 In the directory 'ocsp-dist' there is now a file called ocspclient.zip. This file can be moved to 
 some other place and unzipped. It will unzip several files in the directory where you run the unzip command.
 You can use it as a command line client by running 'ocsp.sh'. You can link to it and use the API by including 

@@ -751,11 +751,23 @@ high-performance for the OCSP responders. This should be a usual setup, if the C
 for one million users, this does not put much pressure on the CA, but the OCSP responders can be put under high load continuously.
 </p>
 <p>
-See the document doc/howto/HOWTO-OCSP-RESPONDER.txt form information how to set up stand-alone, separated OCSP responders.
+See the document doc/howto/HOWTO-OCSP-RESPONDER.txt for information how to set up stand-alone, separated OCSP responders.
 <br></br>
 See the image HOWTO-OCSP-RESPONDER.jpg for an overview of a sample setup.
 </p>
 </subsection>
+
+<subsection name="Simple OCSP client">
+<p>
+You can build a simple OCSP client with 'ant ocspclient.jar'. This will place ocspclient.zip in the directory EJBCA_HOME/ocsp-dist. 
+You can unzip this file and use the 'ocsp.sh' shell script on Linux/Unix. You can also use the API directly from your 
+java program.
+</p>
+<p>
+See the document doc/howto/HOWTO-OCSP-Unid-client.txt for information how to use the simple OCSP client.
+</p>
+</subsection>
+
 </section>
 
 <section name="Key recovery">
