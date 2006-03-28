@@ -581,10 +581,12 @@ web.contentencoding    = ${web.contentencoding}
                     <!-- todo: autogenerate this from a fileset -->
                     <attribute name="Class-Path" value="" />
                 </manifest>
-                <fileset dir="${src.dd}">
+                <fileset dir="${build}">
                 	<include name="org/ejbca/util/**"/>
+                	<include name="**/*Exception*"/>
+                	<include name="**/SecConst*"/>
                 </fileset>
-                <fileset dir="${build}"/>
+                <fileset dir="${src.gen}"/>
 
             </jar>
         </target>    	
