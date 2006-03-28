@@ -13,9 +13,8 @@ specially datasource.jndi-name and datasource.jndi-name-prefix if you changed th
 Copy the directory 'p12' from the earlier installation and 'ant deploy' 
 (or deploywithjbossservice) this new one.
 
-Because there are binary files in EJBCA_HOME/lib that has changed the patch from version 3.1.3 to 3.2.0
-does not patch everything needed. If you use that patch, you can use the patch and then you must manually 
-replace the jar-files from the full distribution.
+Because there are binary files in EJBCA_HOME/lib and many massive changes there is no patch file for upgrading
+EJBCA 3.1.3 to 3.2.0. Use the full package from EJBCA 3.2.0 and follow the upgrade instructions.
 
 EJBCA V3.1.4
 ------------

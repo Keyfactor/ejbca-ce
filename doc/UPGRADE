@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.17 2006-02-13 08:22:42 anatom Exp $
+$Id: UPGRADE,v 1.18 2006-03-28 16:37:43 anatom Exp $
 
 UPGRADE
 =======
@@ -22,8 +22,8 @@ Backup your database first! If the upgrade fails, you can always go back to the 
 5. Start up JBoss.
 6. Issue the command 'ant upgrade' from EJBCA_HOME. This will make the neccesary database updates.
 
-If you don't want to do step 5 above (doing step 5 is the recommended way though) and instead want a 
-quick-and-dirty upgrade of the database, do this instead of step 5:
+If you don't want to do step 6 above (doing step 6 is the recommended way though) and instead want a 
+quick-and-dirty upgrade of the database, do this instead of step 6:
 - if you have NOT done any special Log Configurations and only used the default, 
 - and you DO NOT mind deleting the EJBCA log entries from the database, i.e. you are not interested in the log history,
 - and you DO NOT mind deleting your complete Certificate request history.

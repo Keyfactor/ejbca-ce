@@ -1,3 +1,66 @@
+3.2.0
+---
+New Feature
+
+    * [ECA-89] - New LdapSearchPublisher, obtain LDAP DN from directory server, using UID attribute, with LdapPublisher
+    * [ECA-179] - Support Qualified Certificate Statement (RFC3739)
+    * [ECA-190] - LDAP search cababilities in AD Publisher
+    * [ECA-192] - Support for Eracom HSM (now SafeNet)
+    * [ECA-208] - Swedish Translation of Admin-GUI
+    * [ECA-220] - OCSP extension mechanism
+    * [ECA-221] - Possibility to run OCSP responder(s) separated from CA
+    * [ECA-224] - Support for Informix 9.2 database
+    * [ECA-225] - Chinese translation of Admin-GUI
+    * [ECA-228] - Key Recovery of soft tokens should support reuse of certificates
+    * [ECA-229] - Make OCSPSignerCertificateProfile Visible
+    * [ECA-239] - possible to select if a printout should be "scaled to page" or not.
+    * [ECA-245] - Utility script to initialize creation of administrator token
+    * [ECA-195] - CLI function to activate HSM CAs
+    * [ECA-216] - CRL in PEM format since OpenVPN requires PEM format
+
+Bug
+
+    * [ECA-66] - Certificate fingerprint (hex encoding)
+    * [ECA-134] - Not possible to select 'no value' when a dn value is set in entity profile
+    * [ECA-137] - AdminGUI not working on different machines in a multi-machine environment
+    * [ECA-152] - ejbca-ejb.jar contains web.xmls
+    * [ECA-164] - Spelling error in language file
+    * [ECA-184] - EJBCA changed the order of issuer's subject DN when creating a certificate
+    * [ECA-202] - Too long primary keys when using UTF-8 encoding in MySQL
+    * [ECA-203] - Exception when accesing adminGUI due to duplicate log entries
+    * [ECA-205] - server.xml contains some static fields that should be taken form ejbca.properties
+    * [ECA-209] - Weblogic/Oracle needs special deployment descriptors for LONG columns
+    * [ECA-210] - In edit CA page will 'Edit' and 'Delete' action generate nullpointer when spacevalue is selected
+    * [ECA-223] - Links not URLEncoded on public page for downloading CA-cert
+    * [ECA-227] - Testscript causes OutOfMemory exception
+    * [ECA-230] - After enabling "issue hardware token" in sys config you need to manually reload menu-frame
+    * [ECA-231] - Edit hardwaretoken is broken
+    * [ECA-235] - ant deploywithjbossservices messes up EJBCA
+    * [ECA-237] - Generate CRL on off-line CA gives exception
+    * [ECA-240] - All hard token CAs are displayed as online after ejbca start
+    * [ECA-241] - Userdefined text in enhanced eid hard token profile misspelled
+    * [ECA-242] - getAllCACertificates fails when there are external CAs waiting for certificate
+    * [ECA-243] - Install script error when JBoss runs on nonstandard ports
+    * [ECA-247] - ejbca does not set a CA to offline when the HW has been reseted.
+
+Task
+
+    * [ECA-83] - Upgrade to the lastest ldap.jar
+    * [ECA-212] - Make database upgrade script for EJBCA 3.1.x to 3.2.x
+
+Improvement
+
+    * [ECA-60] - Move CDP to CA.jsp page instead of Certificate Profile
+    * [ECA-85] - Restructure source tree
+    * [ECA-93] - link from admin-GUI to public index page
+    * [ECA-158] - Wrong default CRL distribution point
+    * [ECA-206] - Remove internal implementation of Hex and use only bouncycastle
+    * [ECA-214] - Refactor addUser, changeUser to take UserDataVO as parameter
+    * [ECA-217] - Change column type for extendedInformationData in UserDataBean table
+    * [ECA-218] - Make pageEncoding in JSP pages same as web.contentencoding
+    * [ECA-219] - Change BaseURL behaviour to work with multi-machine setups
+    * [ECA-246] - Small fix to UserMatch, possible to search for subjectDN contains data from future webservice interface.
+
 3.1.4
 ---
 Bug
