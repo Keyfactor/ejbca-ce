@@ -586,6 +586,7 @@ web.contentencoding    = ${web.contentencoding}
                 	<include name="**/*Exception**"/>
                 	<include name="**/SecConst**"/>
                 	<include name="**/IAdminCommand**"/>
+                	<include name="**/UserDoesntFullfillEndEntityProfile**"/>
                 </fileset>
                 
 
