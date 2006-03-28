@@ -583,10 +583,11 @@ web.contentencoding    = ${web.contentencoding}
                 </manifest>
                 <fileset dir="${build}">
                 	<include name="org/ejbca/util/**"/>
-                	<include name="**/*Exception*"/>
-                	<include name="**/SecConst*"/>
+                	<include name="**/*Exception**"/>
+                	<include name="**/SecConst**"/>
+                	<include name="**/IAdminCommand**"/>
                 </fileset>
-                <fileset dir="${src.gen}"/>
+                
 
             </jar>
         </target>    	
