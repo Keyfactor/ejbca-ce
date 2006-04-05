@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.18 2006-03-28 16:37:43 anatom Exp $
+$Id: UPGRADE,v 1.19 2006-04-05 07:58:50 anatom Exp $
 
 UPGRADE
 =======
@@ -13,6 +13,11 @@ From EJBCA 3.1.x to EJBCA 3.2
 -----------------------------
 Backup your database first! If the upgrade fails, you can always go back to the earlier version.
 (If you are using weblogic, first copy weblogic.jar to EJBCA_HOME/lib)
+
+The upgrade can consume a lot of memory if you have many users and certificates. You should make sure that your
+memory parameters (-Xms and -Xmx) are sufficient. For 200.000 users it should be enough with '-Xms128m -Xmx512m', 
+but in general you should consider using -Xmx1024m to be future proof. 
+For JBoss these parameters are normally set in JBOSS_HOME/bin/run.conf.
 
 1. Copy ejbca.properties from the earlier installation.
 2. Merge changes from ejbca.properties.sample into your ejbca.properties, 

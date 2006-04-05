@@ -103,6 +103,25 @@ upgrades much much harder.</li>
 For information about installing JDBC drivers for other databases, see the document <i>'doc/howto/HOWTO-database.txt'</i>
 in the distribution.
 </p>
+
+<subsubsection name="Memory configuration">
+<p>
+The memory parameters for Java is by default configured very low, for JBoss it is set by default to allow
+a maximum memory usage of 128mb, which is way too low. We recomend that you configure your java memory arguments to
+at least '-Xms128m -Xmx512m'. 
+For JBoss this is done in JBOSS_HOME/bin/run.conf where the line:
+</p>
+<source>
+JAVA_OPTS="-server -Xms128m -Xmx128m"
+</source>
+<p>
+should be changed to:
+</p>
+<source>
+JAVA_OPTS="-server -Xms128m -Xmx512m"
+</source>
+</subsubsection>
+
 </subsection>
 
 <subsection name="Install">
