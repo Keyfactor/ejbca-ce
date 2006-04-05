@@ -45,7 +45,7 @@ import se.anatom.ejbca.log.OldLogConfigurationDataLocalHome;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.5 2006-02-13 19:16:37 anatom Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.6 2006-04-05 09:07:34 anatom Exp $
  * @ejb.bean
  *   display-name="UpgradeSB"
  *   name="UpgradeSession"
@@ -183,6 +183,8 @@ public class UpgradeSessionBean extends BaseSessionBean {
 
     /** Upgrades the database
      * @ejb.interface-method
+     * @jboss.method-attributes transaction-timeout="3600"
+     * 
      * @param admin
      * @return true or false if upgrade was done or not
      */
@@ -228,6 +230,8 @@ public class UpgradeSessionBean extends BaseSessionBean {
 
     /** 
      * @ejb.interface-method
+     * @jboss.method-attributes transaction-timeout="3600"
+     * 
      */
 	public boolean migradeDatabase(String dbtype) {
 		error("(this is not an error) Starting upgrade from ejbca 3.1.x to ejbca 3.2.x");
@@ -262,6 +266,8 @@ public class UpgradeSessionBean extends BaseSessionBean {
 
     /** 
      * @ejb.interface-method
+     * @jboss.method-attributes transaction-timeout="3600"
+     * 
      */
 	public boolean upgradeHardTokenClassPath() {
 		try {
@@ -281,6 +287,8 @@ public class UpgradeSessionBean extends BaseSessionBean {
 
 	/** 
      * @ejb.interface-method
+     * @jboss.method-attributes transaction-timeout="3600"
+     * 
      */
     public ArrayList logConfStep1() {
         ArrayList datas = new ArrayList();
@@ -305,6 +313,8 @@ public class UpgradeSessionBean extends BaseSessionBean {
 
     /** 
      * @ejb.interface-method
+     * @jboss.method-attributes transaction-timeout="3600"
+     * 
      */
     public boolean logConfStep2(ArrayList datas) {
         try {
@@ -323,6 +333,8 @@ public class UpgradeSessionBean extends BaseSessionBean {
     }
     /** 
      * @ejb.interface-method
+     * @jboss.method-attributes transaction-timeout="3600"
+     * 
      */
     public boolean logConfStep3(ArrayList datas) {
         try {
@@ -345,6 +357,7 @@ public class UpgradeSessionBean extends BaseSessionBean {
         } 
         return true;
     }
+    
     private boolean upgradeUserDataVO() {
         PreparedStatement ps1 = null;
         PreparedStatement ps2 = null;
@@ -413,6 +426,7 @@ public class UpgradeSessionBean extends BaseSessionBean {
         error("(this is not an error) migrated "+count+" UserDataVO");
         return true;
     }
+    
     private org.ejbca.core.model.ra.UserDataVO createNewUserDataVO(se.anatom.ejbca.common.UserDataVO old) {
         org.ejbca.core.model.ra.UserDataVO ret = new org.ejbca.core.model.ra.UserDataVO(
                 old.getUsername(), old.getDN(), old.getCAId(),
