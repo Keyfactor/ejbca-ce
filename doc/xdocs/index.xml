@@ -13,11 +13,11 @@
     </note>
     <p>
     EJBCA 3.1 and later contains support for nCipher HSM. The development of this functionality was sponsored by 
-    Linagora, <a href="http://www.linagora.com/">www.linagora.com</a>
+    Linagora, <a href="http://www.linagora.com/">www.linagora.com</a>.
     </p>
     <p>
     New features in EJBCA 3.2 such as QC statement and external OCSP responders was sponsored by 
-    CTec Security Solutions, <a href="http://www.commguard.com/">http://www.commguard.com/</a>
+    CTec Security Solutions, <a href="http://www.commguard.com/">http://www.commguard.com/</a>.
     </p>
   </section>
 
