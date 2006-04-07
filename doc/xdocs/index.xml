@@ -29,7 +29,7 @@ standalone or integrated in any J2EE application.
 </p>
 <p>
 EJBCA is an enterprise class PKI, meaning that you can use EJBCA to build a complete PKI infrastructure for your organisation.
-If you only want to issue a few singe certificates for testing, there are probably options that will get you started quicker, 
+If you only want to issue a few single certificates for testing, there are probably options that will get you started quicker, 
 but if you want a serious PKI we recommend EJBCA.
 </p>
 <p>
