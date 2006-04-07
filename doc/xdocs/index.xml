@@ -41,7 +41,7 @@ You can use EJBCA to issue certificates for different purposes such as:
 <li>Signing and enrypting email.</li>
 <li>VPN connections by issuing certificates to your VPN routers such as OpenVPN, Cisco, Juniper etc.</li>
 <li>Client VPN access with certificates in users VPN clients.</li>
-<li>Single-sign on by using a single certificate to secure logon to web applications.</li>
+<li>Single sign-on by using a single certificate to secure logon to web applications.</li>
 <li>Creating signed documents.</li>
 <li>Issue citizen certificates for access to government resourses, used in passports etc.</li>
 <li>... and many many more ...</li>
