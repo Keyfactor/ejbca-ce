@@ -1,6 +1,6 @@
 EJBCA on Fedora core 4, simple howto
 =====================================
-$Id: EJBCA_on_Fedora_core4.txt,v 1.4 2006-02-17 15:33:41 anatom Exp $
+$Id: EJBCA_on_Fedora_core4.txt,v 1.5 2006-04-11 11:08:11 anatom Exp $
 EJBCA version: 3.1.x/3.2.x
 Contributed by: Yovko Ilchev Yovkov, yyovkov(at)yyovkov.net 
 
@@ -8,7 +8,7 @@ NOTE: This guide is not updated with the frequency of the official User Guide,
 so please go there first.
 
 I will not show you the link and the places were I have found this
-helpful staff, just will write down the steps of "works for me" howto:
+helpful stuff, just will write down the steps of "works for me" howto:
 
 1. Install Fedora Core 4 minimal with mysql, postgresql and apache
 server
