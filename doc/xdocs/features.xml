@@ -31,7 +31,7 @@
 <li>Supports the Simple Certificate Enrollment Protocol (SCEP).</li>
 <li>Follows X509 and PKIX (RFC3280) standards where applicable.</li>
 <li>Qualified Certificate Statement (RFC3739) for issuing EU/ETSI qualified certificates.</li>
-<li>Supports the Online Certificate Status Protocol (OCSP), including AIA-extension.</li>
+<li>Supports the Online Certificate Status Protocol (OCSP - RFC2560), including AIA-extension.</li>
 <li>OCSP responder can run integrated with EJBCA or stand alone (clustered) for security, high-performance and high-availability.</li>
 <li>Simple OCSP client in pure java.</li>
 <li>Revocation and Certificate Revocation Lists (CRLs).</li>
