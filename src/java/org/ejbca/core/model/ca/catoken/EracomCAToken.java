@@ -25,13 +25,12 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
-
-/** This class implements supprot for the Eracom HSM for storing CA keys. 
+/** This class implements support for the Eracom HSM for storing CA keys. 
  * The implementation was done by AdNovum Informatik AG and contributed by Philipp Faerber, philipp.faerber(at)adnovum.ch
  * The Eracom HSM is special in such way as the provider is ERACOM.<slot id>.
  * 
  * @author AdNovum Informatik AG
- * @version $Id: EracomCAToken.java,v 1.1 2006-01-17 20:31:51 anatom Exp $
+ * @version $Id: EracomCAToken.java,v 1.2 2006-04-18 12:36:38 anatom Exp $
  */
 public class EracomCAToken implements IHardCAToken {
     /** Log4j instance */
@@ -41,7 +40,6 @@ public class EracomCAToken implements IHardCAToken {
     protected String m_slotId;
     protected KeyStore m_keyStore = null;    
     protected boolean m_authenticated = false;    
-    protected boolean m_offline = false;
     private   String m_authenticationCode = null;
     
     /** The constructor of HardCAToken should throw an InstantiationException is the token can not
@@ -65,9 +63,13 @@ public class EracomCAToken implements IHardCAToken {
     /**
      * This method should initalize this plug-in with the properties configured in the adminweb-GUI.
      * Expected properties are:
-     *  - slot
-     *  - keylabel
-     *  - pin
+     * 
+     *  slot=<number of slot containing the key material>
+     *  
+     *  keylabel=<the label to identify the key within the slot>
+     *  
+     *  [optional] pin=<the PIN for the slot if you want to enable auto-activation>
+     *  
      */
     public void init(Properties properties, String signaturealgorithm) {
         log.debug("Init()");
@@ -85,9 +87,8 @@ public class EracomCAToken implements IHardCAToken {
 //            throw new IllegalArgumentException("No key-pair label property 'keylabel' specified.");
         }
         
-        /* this is a work-around, as specifying
-         * the pin via authentication code field does not work. So we
-         * pass it as a property. */
+        /* this allows to save the PIN in the database as property so we don't have to reenter
+         * it on restart. Use this only if the DB is well protected ! */
         m_authenticationCode = properties.getProperty("pin");
         if (m_authenticationCode != null) {
             log.info("Authentication code has been specified via property.");
@@ -100,10 +101,10 @@ public class EracomCAToken implements IHardCAToken {
      * Should return a reference to the private key.
      */
     public PrivateKey getPrivateKey(int purpose) throws CATokenOfflineException {
-        log.debug("getPrivateSignKey()");
+        log.debug("getPrivateSignKey("+purpose+"), auth="+m_authenticated);
         
-        if(m_offline || !m_authenticated) {
-            throw new CATokenOfflineException();
+        if(!m_authenticated) {
+            autoActivate();            
         }
 
         Exception e = null;
@@ -133,15 +134,28 @@ public class EracomCAToken implements IHardCAToken {
         return privKey;
     }
     
+    private void autoActivate() throws CATokenOfflineException {
+        if(m_authenticationCode!=null) {
+            try {
+                activate(m_authenticationCode);
+            }
+            catch (CATokenAuthenticationFailedException e) {
+                log.error("auto-activation of Eracom HSM failed: ", e);
+                throw new CATokenOfflineException();
+            }
+        } else {
+            throw new CATokenOfflineException();
+        }
+    }
+    
     /**
      * Should return a reference to the public key.
      */
     public PublicKey getPublicKey(int purpose) throws CATokenOfflineException {
-        log.debug("getPublicSignKey(), offline="+m_offline+", auth="+m_authenticated);
-        if(m_offline || !m_authenticated) {
-            throw new CATokenOfflineException();
-        }
-        
+        log.debug("getPublicSignKey(), auth="+m_authenticated);
+        if(!m_authenticated) {
+            autoActivate();            
+        }        
         Exception e = null;
         PublicKey pubKey = null;
         try {
@@ -192,12 +206,9 @@ public class EracomCAToken implements IHardCAToken {
      */
     public void activate(String authenticationcode) throws CATokenAuthenticationFailedException, CATokenOfflineException {
         log.debug("EracomCAToken.activate()");
-        if (m_offline) {
-            throw new CATokenOfflineException();
-        }
-
+        
         if (authenticationcode == null) {
-            log.info("AuthenticationCode is null, skipping activation.");
+            log.error("AuthenticationCode is null, skipping activation.");
         }
 		else {
 			try {
@@ -205,17 +216,15 @@ public class EracomCAToken implements IHardCAToken {
 				Class cl = Class.forName("au.com.eracom.crypto.provider.slot"+m_slotId+".ERACOMProvider");
 				Provider prov = (Provider)cl.newInstance();
 				Security.addProvider(prov);
-				
+				String pin0 = (authenticationcode.length()==0) ? "":authenticationcode.charAt(0)+"...";
 				m_keyStore = KeyStore.getInstance("CRYPTOKI", "ERACOM."+m_slotId);
-				m_keyStore.load(null, authenticationcode.toCharArray());
-				
+                log.info("Loading key from slot"+m_slotId+" using pin "+pin0);
+				m_keyStore.load(null, authenticationcode.toCharArray());				
 				m_authenticated = true;
-				m_offline = false;
 			}
 			catch (Exception e) {
 				m_authenticated = false;
-				m_offline = true;
-				log.error("Failed to initialize Eracom provider keystore '"+m_slotId+"'.", e);
+				log.error("Failed to initialize Eracom provider slot '"+m_slotId+"'.", e);
 				throw new CATokenAuthenticationFailedException("Failed to initialize Eracom provider keystore '"+m_slotId+"'.");
 			}
 		}
@@ -225,9 +234,8 @@ public class EracomCAToken implements IHardCAToken {
      * @see org.ejbca.core.model.ca.catoken.IHardCAToken#deactivate()
      */
     public boolean deactivate() {
-        log.debug("HardCATokenEracom: deactivate");
+        log.debug("EracomCAToken.deactivate");
         m_authenticated = false;
-        m_offline = true;
         
         m_keyStore = null;
         
@@ -235,6 +243,7 @@ public class EracomCAToken implements IHardCAToken {
     }
     
 	public int getCATokenStatus() {
-        return IHardCAToken.STATUS_ACTIVE;
+        log.debug("Eracom "+m_slotId+" status="+(m_authenticated?"ACTIVE":"OFFLINE"));
+        return  m_authenticated ? IHardCAToken.STATUS_ACTIVE : IHardCAToken.STATUS_OFFLINE;
 	}
 }
