@@ -944,24 +944,100 @@ defaultKey rootCRLSign
 
 <subsection name="Eracom HSM">
 <p>
-Follow these steps to create a CA that is using a Eracom HSM:
+Follow these steps to create a CA that is using a Eracom HSM (tested with Eracom ProtectServer Orange (csa8000) external):
 </p>
-<strong>1. Create keys that should be used on the HSM</strong>
+<strong>1. Install the Eracom software</strong>
 <p>
 </p>
-<strong>2. Copy files that implements the Eracom HSM Token functionality to JBoss</strong>
+<strong>2. Create the required slots</strong>
 <p>
-The destination is the deploy directory of the application server (server/default/deploy in jboss).
+Create the required slots (one PIN per slot) and keys (with keylabels) using the Eracom tools or your own java classes.
 </p>
-<strong>3. Make EJBCA aware of the Eracom HSM</strong>
 <p>
-Restart the application server.
+Sample Slot Initialization:
+<ol>
+   <li>ctconf -x
+<br></br>
+      'tamper' HSM, erases complete key store memory</li>
+   <li>ctconf
+<br></br>
+      sets Administrator SO and Administrator PINs (first use of ctconf after tamper)</li>
+   <li>ctconf -fF
+<br></br>
+      set FIPS 140-2 compliant mode</li>
+   <li>ctconf -c2
+<br></br>
+      create 2 new user slots</li>
+   <li>ctstat
+<br></br>
+      list user slots (for verification)</li>
+   <li>ctconf -n 0
+<br></br>
+      label: userpki, initialize slot 0, set slot's SO PIN</li>
+   <li>ctconf -n 1
+<br></br>
+      label: serverpki, initialize slot 1, set slot's SO PIN</li>
+   <li>ctkmu p -s 0
+<br></br>
+      set user PIN slot 0</li>
+   <li>ctkmu p -s 1
+<br></br>
+      set user PIN slot 1</li>
+</ol>
 </p>
-<strong>4. Create a new CA in the web GUI of EJBCA</strong>
 <p>
-Choose Eracom as "CA Token Type".
+  Key generation
+<br></br>
+   ( Use the samples / tools provided with the Eracom software.)
+<br></br>
+   ( You can write a helper app using the Eracom crytoki interface )
+</p>
+<p>
+  Key Backup
+<br></br>
+   ( Make key backups on smart cards as described.)
+</p>
+<strong>3. Make sure the required Eracom Java Security Provider is on the classpath</strong>
+<p>
+For example, for WEBLOGIC, add:
+<br></br>
+WEBLOGIC_CLASSPATH=${WEBLOGIC_CLASSPATH}:...:/opt/Eracom/lib/jprov.jar
+</p>
+<strong>4. Add the native library dir for HSM communication to your path</strong>
+<p>
+The native library dir is where libjcprov.so and libcryptoki.so are located.
+</p>
+<source>
+LD_LIBRARY_PATH=/opt/Eracom/lib
+export LD_LIBRARY_PATH
+</source>
+<p>
+<strong>5. If you use an external HSM, set its hostname/IP-Adress as unix environment variable</strong>
+</p>
+<source>
+CT_SERVER=eracom
+export CT_SERVER
+</source>
+<p>
+<strong>6. Start the J2EE container</strong>
+</p>
+<p>
+<strong>7. Create a new CA</strong>
 </p><p>
-Enter the properties that is used to configure the Eracom HSM.
+Create a CA with "CA Token Type" = Eracom, the type should appear automatically in the list when the Eracom 
+keystore classes are found.
+</p>
+<p>
+Fill in the hard token properties:
+</p>
+<source>
+slot=1
+keylabel=cakey1
+pin=secret
+</source>
+<p>
+Note: The pin is optional. If set, the CAToken will try to use it for automatic activation
+of the slot in case of a container restart.
 </p>
 </subsection>
 </section>
