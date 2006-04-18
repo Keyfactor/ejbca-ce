@@ -10,6 +10,17 @@ does not need to be tracked in jira.
 If submitting patches to ejbca comitters, they should be able to create jira
 issues if none exist.
 
+Sending patches
+===============
+If you are not a comitter in CVS we are glad to accept patches. You can send us patches either 
+in diff format (cvs diff) or created with Eclipse.
+You can also send us you complete files that you changed, we can see the diffs in Eclipse.
+
+Please follow these simple guidelines when submitting patches:
+- Keep the patch limited, only change the parts related to your patch.
+- Do not change other lines, such as whitespace, adding line breaks to java doc etc. 
+  It will make it very very hard for us to review the patch.
+  
 Checking in to CVS
 ==================
 When checking in to CVS, make sure the following conditions are met:
@@ -216,14 +227,14 @@ CVS
 
 All files should have the below part in the initial class comment:
 
-@version $Id: DEVELOP,v 1.6 2005-08-07 06:44:57 anatom Exp $
+@version $Id: DEVELOP,v 1.7 2006-04-18 10:46:03 anatom Exp $
 
 Example:
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
- * @version $Id: DEVELOP,v 1.6 2005-08-07 06:44:57 anatom Exp $
+ * @version $Id: DEVELOP,v 1.7 2006-04-18 10:46:03 anatom Exp $
  */
 
 All java files should include the following header as the first lines in the file:

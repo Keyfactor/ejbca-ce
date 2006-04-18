@@ -16,6 +16,9 @@
     </ul>
     See <a href="contact.html">contact &amp; support</a> for ways to contact EJBCA.
     </p>  
+    <p>
+    If you contribute code read the file doc/developer/DEVELOP in the distribution for developer information.
+    </p>
   </section>
   <section name="Donations">
     <p>
