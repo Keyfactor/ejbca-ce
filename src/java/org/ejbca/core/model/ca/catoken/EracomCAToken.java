@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
  * The Eracom HSM is special in such way as the provider is ERACOM.<slot id>.
  * 
  * @author AdNovum Informatik AG
- * @version $Id: EracomCAToken.java,v 1.2 2006-04-18 12:36:38 anatom Exp $
+ * @version $Id: EracomCAToken.java,v 1.3 2006-04-19 07:59:29 anatom Exp $
  */
 public class EracomCAToken implements IHardCAToken {
     /** Log4j instance */
@@ -72,15 +72,16 @@ public class EracomCAToken implements IHardCAToken {
      *  
      */
     public void init(Properties properties, String signaturealgorithm) {
-        log.debug("Init()");
+        log.debug("init()");
 
         m_slotId = properties.getProperty("slot");
+        log.debug("slot: "+m_slotId);
         if (m_slotId == null) {
             log.error("No slot id (property 'slot') specified for Eracom HSM, will fail to initialize provider.");
         }
 
         m_keyLabel = properties.getProperty("keylabel");
-        log.debug(m_keyLabel);
+        log.debug("keylabel: "+m_keyLabel);
         if (m_keyLabel == null) {
             log.error("No keylabel specified for key-pair on Eracom HSM slot "+m_slotId+", will not be able to create CA.");
 //          we must not (?) throw exceptions in init function!
@@ -216,9 +217,8 @@ public class EracomCAToken implements IHardCAToken {
 				Class cl = Class.forName("au.com.eracom.crypto.provider.slot"+m_slotId+".ERACOMProvider");
 				Provider prov = (Provider)cl.newInstance();
 				Security.addProvider(prov);
-				String pin0 = (authenticationcode.length()==0) ? "":authenticationcode.charAt(0)+"...";
 				m_keyStore = KeyStore.getInstance("CRYPTOKI", "ERACOM."+m_slotId);
-                log.info("Loading key from slot"+m_slotId+" using pin "+pin0);
+                log.debug("Loading key from slot"+m_slotId+" using pin.");
 				m_keyStore.load(null, authenticationcode.toCharArray());				
 				m_authenticated = true;
 			}
