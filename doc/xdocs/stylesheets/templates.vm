@@ -209,8 +209,8 @@
       	<td>EJBCA - The J2EE Certificate Authority</td>
       	<td style="text-align:right">
       	<div class="searchcaption">
-		Search ejbca.sourceforge.net for:<br />
-		<form id="searchForm" target="_blank" onsubmit="q.value = query.value + ' site:ejbca.sourceforge.net'" action="http://www.google.com/search" method="get">
+		Search ejbca.org for:<br />
+		<form id="searchForm" target="_blank" onsubmit="q.value = query.value + ' site:ejbca.org'" action="http://www.google.com/search" method="get">
 		<input name="q" type="hidden">
 		<nobr>
 		<div style="height: 18px">
