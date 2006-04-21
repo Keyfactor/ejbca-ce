@@ -57,14 +57,18 @@ import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.CRLDistPoint;
 import org.bouncycastle.asn1.x509.CRLNumber;
+import org.bouncycastle.asn1.x509.DisplayText;
 import org.bouncycastle.asn1.x509.DistributionPoint;
 import org.bouncycastle.asn1.x509.DistributionPointName;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.PolicyInformation;
+import org.bouncycastle.asn1.x509.PolicyQualifierId;
+import org.bouncycastle.asn1.x509.PolicyQualifierInfo;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x509.UserNotice;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
@@ -110,7 +114,7 @@ import org.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.5 2006-01-31 15:08:17 anatom Exp $
+ * @version $Id: X509CA.java,v 1.6 2006-04-21 12:26:59 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -400,7 +404,8 @@ public class X509CA extends CA implements Serializable {
         
         // Certificate Policies
          if (certProfile.getUseCertificatePolicies() == true) {
-                 PolicyInformation pi = new PolicyInformation(new DERObjectIdentifier(certProfile.getCertificatePolicyId()));
+                 PolicyInformation pi = getPolicyInformation(certProfile.getCertificatePolicyId(), certProfile.getCpsUrl(), certProfile.getUserNoticeText());
+                 
                  DERSequence seq = new DERSequence(pi);
                  certgen.addExtension(X509Extensions.CertificatePolicies.getId(),
                          certProfile.getCertificatePoliciesCritical(), seq);
@@ -674,5 +679,33 @@ public class X509CA extends CA implements Serializable {
     	return (KeyPair) ois.readObject();  
     }
     
+    
+    /**
+     * Obtains the Policy Notice
+     * 
+     * @param policyOID,
+     *          OID of the policy
+     * @param cps,
+     *          url to cps document
+     * @param unotice,
+     *          user notice text
+     * @return
+     */
+    private PolicyInformation getPolicyInformation(String policyOID, String cps, String unotice) {
+        
+        DEREncodableVector qualifiers = new DEREncodableVector();
+        if (!StringUtils.isEmpty(unotice)) {
+            UserNotice un = new UserNotice(null, new DisplayText(DisplayText.CONTENT_TYPE_UTF8STRING, unotice));
+            PolicyQualifierInfo pqiUNOTICE = new PolicyQualifierInfo(PolicyQualifierId.id_qt_unotice, un);
+            qualifiers.add(pqiUNOTICE);
+        }
+        if (!StringUtils.isEmpty(cps)) {
+            PolicyQualifierInfo pqiCPS = new PolicyQualifierInfo(cps);
+            qualifiers.add(pqiCPS);
+        }
+        PolicyInformation policyInformation = new PolicyInformation(new DERObjectIdentifier(policyOID), new DERSequence(qualifiers));
+        
+        return policyInformation;
+    }
     
 }

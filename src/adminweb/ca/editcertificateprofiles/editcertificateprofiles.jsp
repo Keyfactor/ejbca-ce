@@ -32,7 +32,11 @@
  
   static final String TEXTFIELD_VALIDITY               = "textfieldvalidity";
   static final String TEXTFIELD_CRLDISTURI             = "textfieldcrldisturi";
+
   static final String TEXTFIELD_CERTIFICATEPOLICYID    = "textfieldcertificatepolicyid";
+  static final String TEXTFIELD_POLICYNOTICE_CPSURL    = "textfielpolicynoticedcpsurl";
+  static final String TEXTAREA_POLICYNOTICE_UNOTICE    = "textareapolicynoticeunotice";
+	
   static final String TEXTFIELD_OCSPSERVICELOCATOR     = "textfieldocspservicelocatoruri";
   static final String TEXTFIELD_CNPOSTFIX              = "textfieldcnpostfix";
   static final String TEXTFIELD_PATHLENGTHCONSTRAINT   = "textfieldpathlengthconstraint";
@@ -359,25 +363,40 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
 
              use = false;
              value = request.getParameter(CHECKBOX_USECERTIFICATEPOLICIES);
-             if(value != null){
+             if(value != null) {
                  use = value.equals(CHECKBOX_VALUE);
                  certificateprofiledata.setUseCertificatePolicies(use);
                  value = request.getParameter(CHECKBOX_CERTIFICATEPOLICIESCRITICAL); 
-                 if(value != null)
-                   certificateprofiledata.setCertificatePoliciesCritical(value.equals(CHECKBOX_VALUE)); 
-                 else
-                   certificateprofiledata.setCertificatePoliciesCritical(false); 
+                 if(value != null) {
+				   certificateprofiledata.setCertificatePoliciesCritical(value.equals(CHECKBOX_VALUE)); 
+                 } else {
+					 certificateprofiledata.setCertificatePoliciesCritical(false); 
+				 }
 
-                 value = request.getParameter(TEXTFIELD_CERTIFICATEPOLICYID);
-                 if(value != null){
-                   value=value.trim();
-                   certificateprofiledata.setCertificatePolicyId(value);
-                 } 
-             }
-             else{
+				 value = request.getParameter(TEXTFIELD_CERTIFICATEPOLICYID);
+				 if(value != null){
+				   value = value.trim();
+				   certificateprofiledata.setCertificatePolicyId(value);
+				 }
+						
+					value = request.getParameter(TEXTFIELD_POLICYNOTICE_CPSURL);
+					if( value != null && !"".equals(value) ){
+						value = value.trim();
+						certificateprofiledata.setCpsUrl(value);
+					}
+						
+					value = request.getParameter(TEXTAREA_POLICYNOTICE_UNOTICE);
+					if( value != null && !"".equals(value) ){
+						value = value.trim();
+						certificateprofiledata.setUserNoticeText(value);
+					}
+ 
+            } else{
                  certificateprofiledata.setUseCertificatePolicies(false);
                  certificateprofiledata.setCertificatePoliciesCritical(false); 
                  certificateprofiledata.setCertificatePolicyId("");
+                 certificateprofiledata.setCpsUrl("");
+                 certificateprofiledata.setUserNoticeText("");
              } 
 
               String[] values = request.getParameterValues(SELECT_AVAILABLEBITLENGTHS); 

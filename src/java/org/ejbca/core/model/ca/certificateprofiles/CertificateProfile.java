@@ -14,6 +14,8 @@
 package org.ejbca.core.model.ca.certificateprofiles;
 
 import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,12 +34,12 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.2 2006-01-21 11:49:21 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.3 2006-04-21 12:26:59 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
     // Default Values
-    public static final float LATEST_VERSION = (float) 15.0;
+    public static final float LATEST_VERSION = (float) 16.0;
 
     /** KeyUsage constants */
     public static final int DIGITALSIGNATURE = 0;
@@ -108,6 +110,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USECERTIFICATEPOLICIES         = "usecertificatepolicies";
     protected static final String CERTIFICATEPOLICIESCRITICAL    = "certificatepoliciescritical";
     protected static final String CERTIFICATEPOLICYID            = "certificatepolicyid";
+    /** Policy Notice Url to CPS field alias in the data structure */
+    protected static final String POLICY_NOTICE_CPS_URL 		 = "policynoticecpsurl";    
+    /** Policy Notice User Notice field alias in the data structure */
+    protected static final String POLICY_NOTICE_UNOTICE_TEXT 	 = "policynoticeunoticetext";
     protected static final String AVAILABLEBITLENGTHS            = "availablebitlengths";
     protected static final String KEYUSAGE                       = "keyusage";
     protected static final String MINIMUMAVAILABLEBITLENGTH      = "minimumavailablebitlength";
@@ -143,6 +149,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String QCETSIVALUELIMITEXP            = "qcetsivaluelimitexp";
     protected static final String QCETSIVALUELIMITCURRENCY       = "qcetsivaluelimitcurrency";
     protected static final String USEQCETSISIGNATUREDEVICE       = "useqcetsisignaturedevice";
+    
      
     // Public Methods
 
@@ -298,6 +305,32 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(CERTIFICATEPOLICYID,"");
       else
         data.put(CERTIFICATEPOLICYID,policyid);
+    }
+    public String getCpsUrl() {
+        return (String) data.get(POLICY_NOTICE_CPS_URL);
+    }
+    public void setCpsUrl(String cpsUrl) {
+        try {
+            if (!StringUtils.isEmpty(cpsUrl)) {
+                // Test that it is a valid url
+                new URL(cpsUrl);  
+                data.put(POLICY_NOTICE_CPS_URL, cpsUrl);
+            } else {
+                data.put(POLICY_NOTICE_CPS_URL, "");                
+            }
+        } catch (MalformedURLException muex) {
+            log.error("CPS url has incorrect format.", muex);
+        }
+    }
+    public String getUserNoticeText() {
+        return (String) data.get(POLICY_NOTICE_UNOTICE_TEXT);
+    }
+    public void setUserNoticeText(String userNoticeText) {
+        if(userNoticeText == null) {
+            data.put(POLICY_NOTICE_UNOTICE_TEXT, "");             
+        } else {
+            data.put(POLICY_NOTICE_UNOTICE_TEXT, userNoticeText);            
+        }
     }
 
     public int getType(){ return ((Integer) data.get(TYPE)).intValue(); }
@@ -718,8 +751,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
        return LATEST_VERSION;
     }
 
-    /** Implemtation of UpgradableDataHashMap function upgrade. */
-
+    /** 
+     * Implemtation of UpgradableDataHashMap function upgrade. 
+     */
     public void upgrade(){
         log.debug(">upgrade");
         if(LATEST_VERSION != getVersion()){
@@ -789,8 +823,15 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             	setUseDefaultOCSPServiceLocator(false);
             }
             
+            if (data.get(POLICY_NOTICE_UNOTICE_TEXT) == null) {
+                setUserNoticeText(null); // This actually isn't nessecary but for the principle we do it
+            }
+            if (data.get(POLICY_NOTICE_CPS_URL) == null) {
+                setCpsUrl(null); // This actually isn't nessecary but for the principle we do it
+            }
+            
         }
         log.debug("<upgrade");
     }
-
+    
 }

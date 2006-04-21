@@ -241,13 +241,18 @@ function checkusecertificatepoliciesfield(){
   if(document.editcertificateprofile.<%=CHECKBOX_USECERTIFICATEPOLICIES %>.checked){
     document.editcertificateprofile.<%= CHECKBOX_CERTIFICATEPOLICIESCRITICAL %>.disabled = false;
     document.editcertificateprofile.<%= TEXTFIELD_CERTIFICATEPOLICYID %>.disabled = false;
-
+	document.editcertificateprofile.<%= TEXTFIELD_POLICYNOTICE_CPSURL %>.disabled = false;
+	document.editcertificateprofile.<%= TEXTAREA_POLICYNOTICE_UNOTICE %>.disabled = false;
   }
   else{
     document.editcertificateprofile.<%= CHECKBOX_CERTIFICATEPOLICIESCRITICAL %>.disabled = true;
     document.editcertificateprofile.<%= CHECKBOX_CERTIFICATEPOLICIESCRITICAL %>.checked = false;
     document.editcertificateprofile.<%= TEXTFIELD_CERTIFICATEPOLICYID %>.disabled = true;
     document.editcertificateprofile.<%= TEXTFIELD_CERTIFICATEPOLICYID %>.value = "";
+	document.editcertificateprofile.<%= TEXTFIELD_POLICYNOTICE_CPSURL %>.disabled = true;
+	document.editcertificateprofile.<%= TEXTFIELD_POLICYNOTICE_CPSURL %>.value = "";	
+	document.editcertificateprofile.<%= TEXTAREA_POLICYNOTICE_UNOTICE %>.disabled = true;
+	document.editcertificateprofile.<%= TEXTAREA_POLICYNOTICE_UNOTICE %>.value = "";		
   }
 }
 
@@ -563,16 +568,22 @@ function checkallfields(){
                        out.write(" value=\"" + globalconfiguration.getStandardOCSPServiceLocatorURI()+ "\"");%>>
       </td>
     </tr>
-    <tr  id="Row<%=row++%2%>"> 
+    <tr  id="Row<%=row%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("CERTIFICATEPOLICIES") %> <br>  <%= ejbcawebbean.getText("CERTIFICATEPOLICIESCRIT") %> <br> <%= ejbcawebbean.getText("CERTIFICATEPOLICYID") %>
-
+        <%= ejbcawebbean.getText("CERTIFICATEPOLICIES") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USECERTIFICATEPOLICIES %>" onClick="checkusecertificatepoliciesfield()" value="<%=CHECKBOX_VALUE %>" 
            <% if(certificateprofiledata.getUseCertificatePolicies())
                  out.write("CHECKED");
-           %>> <br> 
+           %>>
+      </td>
+    </tr>
+    <tr  id="Row<%=row%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("CERTIFICATEPOLICIESCRIT") %>
+      </td>
+      <td width="50%">
           <input type="checkbox" name="<%=CHECKBOX_CERTIFICATEPOLICIESCRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
            <%
                if(!certificateprofiledata.getUseCertificatePolicies())
@@ -580,12 +591,43 @@ function checkallfields(){
                else
                  if(certificateprofiledata.getCertificatePoliciesCritical())
                  out.write("CHECKED");
-           %>> <br> 
+           %>> 
+      </td>
+    </tr>
+    <tr  id="Row<%=row%2%>"> 
+      <td width="50%"  align="right"> 
+      <%= ejbcawebbean.getText("CERTIFICATEPOLICYID") %>
+      </td>
+      <td width="50%">
            <input type="text" name="<%=TEXTFIELD_CERTIFICATEPOLICYID%>" size="60" maxlength="255" 
            <%       if(!certificateprofiledata.getUseCertificatePolicies())
                       out.write(" disabled "); 
                     else 
                       out.write(" value=\"" + certificateprofiledata.getCertificatePolicyId() + "\""); %>>
+      </td>
+    </tr>
+    <tr  id="Row<%=row%2%>"> 
+      <td width="50%"  align="right"> 
+      <%= ejbcawebbean.getText("CPSURL") %>
+      </td>
+      <td width="50%">
+           <input type="text" name="<%=TEXTFIELD_POLICYNOTICE_CPSURL%>" size="60" maxlength="255" 
+           <%       if(!certificateprofiledata.getUseCertificatePolicies())
+                      out.write(" disabled "); 
+                    else 
+                      out.write(" value=\"" + certificateprofiledata.getCpsUrl() + "\""); %>>
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+      <%= ejbcawebbean.getText("USERNOTICE") %>
+      </td>
+      <td width="50%">
+           <input type="text" name="<%=TEXTAREA_POLICYNOTICE_UNOTICE%>" size="60" maxlength="255" 
+           <%       if(!certificateprofiledata.getUseCertificatePolicies())
+                      out.write(" disabled "); 
+                    else 
+                      out.write(" value=\"" + certificateprofiledata.getUserNoticeText() + "\""); %>>
       </td>
     </tr>
     <tr  id="Row<%=row%2%>"> 
