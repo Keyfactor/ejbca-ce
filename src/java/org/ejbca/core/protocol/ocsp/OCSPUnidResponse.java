@@ -23,26 +23,48 @@ import org.bouncycastle.ocsp.UnknownStatus;
 /** Class holding data returned by the OCSPUnidExtension
  * 
  * @author tomas
- * @version $Id: OCSPUnidResponse.java,v 1.5 2006-02-09 11:17:49 anatom Exp $
+ * @version $Id: OCSPUnidResponse.java,v 1.6 2006-04-28 07:29:27 anatom Exp $
  *
  */
 public class OCSPUnidResponse {
 	
-    /** Constants capturing the OCSP response status 
-     * 
+    /** Constants capturing the OCSP response status. 
+     * These are the return codes defined in the RFC. 
+     * The codes are just used for simple access to the OCSP return value. 
      */
     public static final int OCSP_GOOD = 1;
     public static final int OCSP_REVOKED = 2;
     public static final int OCSP_UNKNOWN = 3;
 
+    //
+    // Constants for error status
+    //
     /**
-     * Constants for error status
+     * This is the standard code when no error occurred. Ideally this should always be the returned value.
      */
     public static final int ERROR_NO_ERROR = 0;
+    /**
+     * An unknown error has occurred (for example internal server error on the OCSP responder) .
+     */
 	public static final int ERROR_UNKNOWN = 1;
+    /**
+     * You are not authorized to perform a FNR/UNID lookup.
+     */
 	public static final int ERROR_UNAUTHORIZED = 2;
+    /**
+     * There was no response from the server.
+     */
 	public static final int ERROR_NO_RESPONSE = 3;
+    /**
+     * This error is returned when the signature of the OCSP-response sent by the server has an invalid 
+     * signature. This should typically never happen unless the OCSP-server is compromised in someway, 
+     * a fake OCSP-server is installed or something went wrong with the communication so the response 
+     * was truncated.
+     */
 	public static final int ERROR_INVALID_SIGNATURE = 4;
+    /**
+     * You did not specify a URI in the call, and there is not one embedded in the certificate.
+     */
     public static final int ERROR_NO_OCSP_URI = 5;
 
 	/*
