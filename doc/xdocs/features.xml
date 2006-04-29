@@ -22,6 +22,7 @@
 <li>Server and client certificates can be exported as PKCS12, JKS or PEM.</li>
 <li>Browser enrollment with Netscape, Mozilla, IE, etc.</li>
 <li>Enrollment for other applications through open APIs and tools.</li>
+<li>Enrollment generating complete OpenVPN installers for VPN users.</li>
 <li>E-mail notification to new users added by RA.</li>
 <li>Random or manual password for initial user authentication.</li>
 <li>Hard token module for integrating with hard token issuing system (smart cards).</li>
