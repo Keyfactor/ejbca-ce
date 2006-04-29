@@ -33,7 +33,7 @@ try  {
 <HR>
 <FORM ACTION="certreq" ENCTYPE=x-www-form-encoded METHOD="POST">
 
-Please choose keylength, then click OK to fetch your certificate.<BR>
+Please choose keylength, then click OK to fetch your key store.<BR>
 	<INPUT NAME=user TYPE="hidden" VALUE="<%=username%>">
 	<INPUT NAME=password TYPE="hidden"  VALUE="<%=password%>">
 Key length 
@@ -44,7 +44,10 @@ Key length
            </option>
            <% } %>
            </SELECT>
-     
+<p>
+Optional selections:<br>
+<INPUT TYPE=CHECKBOX NAME="openvpn">Create an OpenVPN installer. This options requires special configuration on the CA.
+<p>
 <INPUT type="submit" value="OK">
 
 </FORM>

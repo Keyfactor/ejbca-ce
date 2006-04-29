@@ -14,7 +14,12 @@
 package org.ejbca.ui.web.pub;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.KeyStore;
@@ -32,6 +37,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionHome;
 import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionRemote;
@@ -85,7 +91,7 @@ import org.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.5 2006-02-15 00:15:55 herrvendil Exp $
+ * @version $Id: CertReqServlet.java,v 1.6 2006-04-29 10:41:07 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(CertReqServlet.class);
@@ -158,6 +164,7 @@ public class CertReqServlet extends HttpServlet {
             String username = request.getParameter("user");
             String password = request.getParameter("password");
             String keylengthstring = request.getParameter("keylength");
+            String openvpn = request.getParameter("openvpn");
 			int keylength = 1024;
 			
             int resulttype = 0;
@@ -205,6 +212,9 @@ public class CertReqServlet extends HttpServlet {
             tokentype = data.getTokenType();
             if(tokentype == SecConst.TOKEN_SOFT_P12){
               KeyStore ks = generateToken(administrator, username, password, data.getCAId(), keylength, false, loadkeys, savekeys, data.getEndEntityProfileId());
+              if (StringUtils.equals(openvpn, "on")) {            	  
+                  sendOpenVPNToken(ks, username, password, response);
+              }
               sendP12Token(ks, username, password, response);
             }
             if(tokentype == SecConst.TOKEN_SOFT_JKS){
@@ -335,6 +345,94 @@ public class CertReqServlet extends HttpServlet {
     }
 
     // doGet
+    /**
+     * method to create an install package for OpenVPN including keys and send to user.
+     * Contributed by: Jon Bendtsen, jon.bendtsen(at)laerdal.dk
+     */
+    private void sendOpenVPNToken(KeyStore ks, String username, String kspassword, HttpServletResponse out) throws Exception {
+    	ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    	ks.store(buffer, kspassword.toCharArray());
+    	
+    	File fout = new File("/usr/local/tmp/" + username + ".p12");
+    	FileOutputStream certfile = new FileOutputStream(fout);
+    	
+    	Enumeration en = ks.aliases();
+    	String alias = (String)en.nextElement();
+    	// Then get the certificates
+    	Certificate[] certs = KeyTools.getCertChain(ks, alias);
+    	// The first  one (certs[0]) is the users cert and the last
+    	// one (certs [certs.lenght-1]) is the CA-cert
+    	X509Certificate x509cert = (X509Certificate) certs[0];
+    	String IssuerDN = x509cert.getIssuerDN().toString();
+    	String SubjectDN = x509cert.getSubjectDN().toString();
+    	
+    	// export the users certificate to file
+    	buffer.writeTo(certfile);
+    	buffer.flush();
+    	buffer.close();
+    	certfile.close();
+    	
+    	// run shell script, which will also remove the created files
+    	// parameters are the username, IssuerDN and SubjectDN
+    	// IssuerDN and SubjectDN will be used to select the right
+    	// openvpn configuration file
+    	// they have to be written to stdin of the script to support
+    	// spaces in the username, IssuerDN or SubjectDN
+    	Runtime rt = Runtime.getRuntime();
+    	if (rt==null) {
+    		log.error("getRuntime failed. null pointer");
+    	} else {
+    		Process p = rt.exec("/usr/local/ejbca/bin/mk_openvpn_" + "windows_installer.sh");
+    		if (p==null) {
+    			log.error("execution of openvpn windows" + " installer script failed. Null pointer");
+    		} else {
+    			OutputStream pstdin = p.getOutputStream();
+    			PrintStream stdoutp = new PrintStream(pstdin);
+    			stdoutp.println(username);
+    			stdoutp.println(IssuerDN);
+    			stdoutp.println(SubjectDN);
+    			stdoutp.flush();
+    			stdoutp.close();
+    			pstdin.close();
+    			int exitVal = p.waitFor();
+    			if (exitVal != 0) {
+        			log.error("Openvpn windows installer script exitValue: " + exitVal);    				
+    			} else {
+        			log.debug("Openvpn windows installer script exitValue: " + exitVal);    				
+    			}
+    		}
+    	}
+    	
+    	// we ought to check if the script was okay or not, but in a little
+    	// while we will look for the openvpn-gui-install-$username.exe
+    	// and fail there if the script failed. Also, one could question
+    	// what to do if it did fail, serve the user the certificate?
+    	
+    	// sending the OpenVPN windows installer
+    	String filename = "openvpn-gui-install-" + username + ".exe";
+    	File fin =  new File("/usr/local/tmp/" + filename);
+    	FileInputStream vpnfile = new FileInputStream(fin);
+    	
+    	out.setContentType("application/x-msdos-program");
+    	out.setHeader("Content-disposition", "filename=" + filename);
+    	int filesize=0;
+    	byte[] buf = new byte[4096];    	
+    	for(;;) {
+    		int count = vpnfile.read(buf);
+    		if (count == -1) {
+    			break;
+    		}
+    		filesize = count + filesize;
+    		// is this too late to set the filesize?
+    		out.setContentLength(filesize);
+    		out.getOutputStream().write(buf);
+    	}
+    	vpnfile.close();
+    	// delete OpenVPN windows installer, the script will delete cert.
+    	fin.delete();
+    	out.flushBuffer();    	
+    } // sendOpenVPNToken
+    
     private void sendP12Token(KeyStore ks, String username, String kspassword,
         HttpServletResponse out) throws Exception {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
