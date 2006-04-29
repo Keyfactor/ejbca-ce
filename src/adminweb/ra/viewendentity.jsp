@@ -115,7 +115,7 @@
          for(int i = 0; i < subjectfieldsize; i++){
         	 viewendentityhelper.fielddata = viewendentityhelper.profile.getSubjectAltNameFieldsInOrder(i);
             int fieldtype = viewendentityhelper.fielddata[EndEntityProfile.FIELDTYPE];
-            if(fieldtype != EndEntityProfile.OTHERNAME && fieldtype != EndEntityProfile.X400ADDRESS && fieldtype != EndEntityProfile.DIRECTORYNAME && 
+            if(fieldtype != EndEntityProfile.OTHERNAME && fieldtype != EndEntityProfile.X400ADDRESS &&
                fieldtype != EndEntityProfile.EDIPARTNAME && fieldtype != EndEntityProfile.REGISTEREDID ){ // Not implemented yet.
             	viewendentityhelper.fieldvalue = viewendentityhelper.userdata.getSubjectAltNameField(EndEntityProfile.profileFieldIdToUserFieldIdMapper(viewendentityhelper.fielddata[EndEntityProfile.FIELDTYPE]),viewendentityhelper.fielddata[EndEntityProfile.NUMBER]);
          %>

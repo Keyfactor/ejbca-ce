@@ -31,12 +31,12 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * of ejbca web interface.
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.2 2006-02-15 00:15:56 herrvendil Exp $
+ * @version $Id: EndEntityProfile.java,v 1.3 2006-04-29 09:33:03 anatom Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
     private static Logger log = Logger.getLogger(EndEntityProfile.class);
-    public static final float LATEST_VERSION = 4;
+    public static final float LATEST_VERSION = 5;
 
     // Public constants
     // Type of data constants.
@@ -135,8 +135,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
           	 i != OTHERNAME &&
 			 i != X400ADDRESS &&
 			 i != EDIPARTNAME &&
-			 i != REGISTEREDID &&
-			 i != DIRECTORYNAME ){	
+			 i != REGISTEREDID ){	
              addField(i);
              setValue(i,0,"");
              setRequired(i,0,false);
@@ -715,7 +714,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
                 }               
                 data.put(NUMBERARRAY,numberoffields);                
             }
-            
+            // Support for DirectoryName altname field in profile version 5
+            if (getVersion() < 5) {
+                addField(DIRECTORYNAME);
+                setValue(DIRECTORYNAME,0,"");
+                setRequired(DIRECTORYNAME,0,false);
+                setUse(DIRECTORYNAME,0,true);
+                setModifyable(DIRECTORYNAME,0,true);            	
+            }
             data.put(VERSION, new Float(LATEST_VERSION));
         }
         log.debug("<upgrade");

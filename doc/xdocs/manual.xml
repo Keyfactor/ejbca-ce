@@ -1759,7 +1759,7 @@ uri=http://<i>whatever</i>, iPAddress=10.56.32.245"
 The full list is: otherName, rfc822Name, dNSName, x400Address,
 directoryName,
 ediPartyName, uniformResourceIdentifier, iPAddress, registeredID
-Only rfc822Name, dNSName, iPAddress and uniformResourceIdentifier (uri) is
+Only rfc822Name, dNSName, iPAddress, uniformResourceIdentifier (uri) and directoryName is
 supported at the moment. Also the MS UPN and GUID are supported.</li>
 <li>deluser - removes a user from the database, any issued
 certificates remain  active and present in the database.</li>

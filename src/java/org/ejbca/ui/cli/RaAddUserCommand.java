@@ -44,7 +44,7 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 /**
  * Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.2 2006-04-29 09:33:03 anatom Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
 	
@@ -133,7 +133,10 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 getOutputStream().println("");
                 getOutputStream().println("DN is of form \"C=SE, O=MyOrg, OU=MyOrgUnit, CN=MyName\" etc.");
                 getOutputStream().println(
-                    "SubjectAltName is of form \"rfc822Name=<email>, dNSName=<host name>, uri=<http://host.com/>, ipaddress=<address>, guid=<globally unique id>\"");
+                    "SubjectAltName is of form \"rfc822Name=<email>, dNSName=<host name>, uri=<http://host.com/>, ipaddress=<address>, guid=<globally unique id>, directoryName=<LDAP escaped DN>\"");
+                getOutputStream().println("An LDAP escaped DN is for example:");
+                getOutputStream().println("DN: CN=Tomas Gustavsson, O=PrimeKey Solutions, C=SE");
+                getOutputStream().println("LDAP escaped DN: CN=Tomas Gustavsson\\, O=PrimeKey Solutions\\, C=SE");
 
                 if (usekeyrecovery) {
                     getOutputStream().println(

@@ -24,7 +24,7 @@
                                  //,EndEntityProfile.OTHERNAME
                                  ,EndEntityProfile.UNIFORMRESOURCEID
                                  //,EndEntityProfile.X400ADDRESS
-                                 //,EndEntityProfile.DIRECTORYNAME
+                                 ,EndEntityProfile.DIRECTORYNAME
                                  //,EndEntityProfile.EDIPARTNAME
                                  //,EndEntityProfile.REGISTEREDID
                                  ,EndEntityProfile.UPN
@@ -463,7 +463,7 @@ function checkuseemailfield(){
        for(int i=0; i < numberofsubjectdnfields; i++){
          fielddata =  profiledata.getSubjectAltNameFieldsInOrder(i);
          int fieldtype = fielddata[EndEntityProfile.FIELDTYPE];
-         if(fieldtype != EndEntityProfile.OTHERNAME && fieldtype != EndEntityProfile.X400ADDRESS && fieldtype != EndEntityProfile.DIRECTORYNAME && 
+         if(fieldtype != EndEntityProfile.OTHERNAME && fieldtype != EndEntityProfile.X400ADDRESS && 
             fieldtype != EndEntityProfile.EDIPARTNAME && fieldtype != EndEntityProfile.REGISTEREDID ){
     %>
     <tr  id="Row<%=row++%2%>"> 

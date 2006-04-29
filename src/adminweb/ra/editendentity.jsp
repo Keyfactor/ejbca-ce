@@ -601,7 +601,7 @@ function checkallfields(){
        for(int i=0; i < profile.getSubjectAltNameFieldOrderLength(); i++){
          fielddata = profile.getSubjectAltNameFieldsInOrder(i);
          int fieldtype = fielddata[EndEntityProfile.FIELDTYPE];
-         if(fieldtype != EndEntityProfile.OTHERNAME && fieldtype != EndEntityProfile.X400ADDRESS && fieldtype != EndEntityProfile.DIRECTORYNAME && 
+         if(fieldtype != EndEntityProfile.OTHERNAME && fieldtype != EndEntityProfile.X400ADDRESS && 
             fieldtype != EndEntityProfile.EDIPARTNAME && fieldtype != EndEntityProfile.REGISTEREDID ){ // Not implemented yet.
            if(fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.RFC822NAME){
              if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.UPN){%>
@@ -968,7 +968,7 @@ function checkUseInBatch(){
        <% for(int i=0; i < numberofsubjectaltnamefields; i++){
             fielddata = profile.getSubjectAltNameFieldsInOrder(i);
             int fieldtype = fielddata[EndEntityProfile.FIELDTYPE];
-            if(fieldtype != EndEntityProfile.OTHERNAME && fieldtype != EndEntityProfile.X400ADDRESS && fieldtype != EndEntityProfile.DIRECTORYNAME && 
+            if(fieldtype != EndEntityProfile.OTHERNAME && fieldtype != EndEntityProfile.X400ADDRESS && 
                fieldtype != EndEntityProfile.EDIPARTNAME && fieldtype != EndEntityProfile.REGISTEREDID ){ // Not implemented yet.%>
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right"><%= ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %></td>
