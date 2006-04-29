@@ -19,6 +19,10 @@ import java.util.Collection;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.DEREncodable;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 import org.bouncycastle.util.encoders.Hex;
@@ -26,11 +30,13 @@ import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.StringTools;
 
+import com.novell.ldap.LDAPDN;
+
 
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.17 2006-02-09 11:01:26 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.18 2006-04-29 09:32:24 anatom Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);
@@ -89,6 +95,8 @@ public class TestCertTools extends TestCase {
              +"YmKglnd5BIUBPO9LOryyHlSRTID5z0UgDlrTAaNYuN8QOYF+DZEQxm4bSXTDooGX"
              +"rHjSjn/7Urb31CXWAxq0Zhk3fg==").getBytes());
     
+    private static byte[] altNameCertWithDirectoryName = Base64.decode(("MIIFkjCCBPugAwIBAgIIBzGqGNsLMqwwDQYJKoZIhvcNAQEFBQAwWTEYMBYGA1UEAwwPU1VCX0NBX1dJTkRPV1MzMQ8wDQYDVQQLEwZQS0lHVkExHzAdBgNVBAoTFkdlbmVyYWxpdGF0IFZhbGVuY2lhbmExCzAJBgNVBAYTAkVTMB4XDTA2MDQyMTA5NDQ0OVoXDTA4MDQyMDA5NTQ0OVowcTEbMBkGCgmSJomT8ixkAQETC3Rlc3REaXJOYW1lMRQwEgYDVQQDEwt0ZXN0RGlyTmFtZTEOMAwGA1UECxMFbG9nb24xHzAdBgNVBAoTFkdlbmVyYWxpdGF0IFZhbGVuY2lhbmExCzAJBgNVBAYTAkVTMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCDLxMhz40RxCm21HoCBNa9x1UyPmhVkPdtt2V7dixgjOYz+ffKeebjn/jSd4nfXgd7fxpzezB8t673F2OtC3ENl1zek5Msj2KoinVu8vvZ78KMRq/H1rDFguhjSL0o19Cpob0qQFB/ukPZMNoKBNnMVnR1C4juB1eJVXWmHyJxIwIDAQABo4IDSTCCA0UwDAYDVR0TAQH/BAIwADAOBgNVHQ8BAf8EBAMCBaAwMwYDVR0lBCwwKgYIKwYBBQUHAwIGCCsGAQUFBwMEBggrBgEFBQcDBwYKKwYBBAGCNxQCAjAdBgNVHQ4EFgQUZz4hrh3dr6VWvEbAPe8pg7szNi4wHwYDVR0jBBgwFoAUTuOaap9UBpQ8dqwOufYoOQucfUowXAYDVR0RBFUwU6QhMB8xHTAbBgNVBAMMFHRlc3REaXJOYW1lfGRpcnxuYW1loC4GCisGAQQBgjcUAgOgIAwedGVzdERpck5hbWVAamFtYWRvci5wa2kuZ3ZhLmVzMIIBtgYDVR0gBIIBrTCCAakwggGlBgsrBgEEAb9VAwoBADCCAZQwggFeBggrBgEFBQcCAjCCAVAeggFMAEMAZQByAHQAaQBmAGkAYwBhAGQAbwAgAHIAZQBjAG8AbgBvAGMAaQBkAG8AIABkAGUAIABFAG4AdABpAGQAYQBkACAAZQB4AHAAZQBkAGkAZABvACAAcABvAHIAIABsAGEAIABBAHUAdABvAHIAaQBkAGEAZAAgAGQAZQAgAEMAZQByAHQAaQBmAGkAYwBhAGMAaQDzAG4AIABkAGUAIABsAGEAIABDAG8AbQB1AG4AaQB0AGEAdAAgAFYAYQBsAGUAbgBjAGkAYQBuAGEAIAAoAFAAbAAuACAATQBhAG4AaQBzAGUAcwAgADEALgAgAEMASQBGACAAUwA0ADYAMQAxADAAMAAxAEEAKQAuACAAQwBQAFMAIAB5ACAAQwBQACAAZQBuACAAaAB0AHQAcAA6AC8ALwB3AHcAdwAuAGEAYwBjAHYALgBlAHMwMAYIKwYBBQUHAgEWJGh0dHA6Ly93d3cuYWNjdi5lcy9sZWdpc2xhY2lvbl9jLmh0bTBDBgNVHR8EPDA6MDigNqA0hjJodHRwOi8vemFyYXRob3MuamFtYWRvci5ndmEuZXMvU1VCX0NBX1dJTkRPV1MzLmNybDBTBggrBgEFBQcBAQRHMEUwQwYIKwYBBQUHMAGGN2h0dHA6Ly91bGlrLnBraS5ndmEuZXM6ODA4MC9lamJjYS9wdWJsaWN3ZWIvc3RhdHVzL29jc3AwDQYJKoZIhvcNAQEFBQADgYEASofgaj06BOE847RTEgVba52lmPWADgeWxKHZAk1t9LdNzuFJ8B/SC3gi0rsAA/lQGSd4WzPbkmJKkVZ6Q9ybpqg4AJRaIZBkoQw1KNXPYAcgt5XLeIhUACdKIPhfPQr+vQtaC1wi5xV8EBCLpLmpzN9bpZdze/724UB4Y94KhII=").getBytes());
+
     /** The reference certificate from RFC3739 */
     private static byte[] qcRefCert = Base64.decode(
             ("MIIDEDCCAnmgAwIBAgIESZYC0jANBgkqhkiG9w0BAQUFADBIMQswCQYDVQQGEwJE"
@@ -376,6 +384,28 @@ public class TestCertTools extends TestCase {
         log.debug("bcdn1: " + bcdn1);
         assertEquals(bcdn1,
                 "CN=CommonName,SN=SerialNumber,GIVENNAME=GivenName,INITIALS=Initials,SURNAME=SurName,OU=OrgUnit,O=Org,C=SE");
+
+        dn1 = "CN=CommonName, O=Org, OU=OrgUnit, SerialNumber=SerialNumber, SurName=SurName, GivenName=GivenName, Initials=Initials, C=SE, 1.1.1.1=1111Oid, 2.2.2.2=2222Oid";
+        bcdn1 = CertTools.stringToBCDNString(dn1);
+        log.debug("dn1: " + dn1);
+        log.debug("bcdn1: " + bcdn1);
+        assertEquals(bcdn1,
+                "CN=CommonName,SN=SerialNumber,GIVENNAME=GivenName,INITIALS=Initials,SURNAME=SurName,OU=OrgUnit,O=Org,C=SE,2.2.2.2=2222Oid,1.1.1.1=1111Oid");
+
+        dn1 = "CN=CommonName, 3.3.3.3=3333Oid,O=Org, OU=OrgUnit, SerialNumber=SerialNumber, SurName=SurName, GivenName=GivenName, Initials=Initials, C=SE, 1.1.1.1=1111Oid, 2.2.2.2=2222Oid";
+        bcdn1 = CertTools.stringToBCDNString(dn1);
+        log.debug("dn1: " + dn1);
+        log.debug("bcdn1: " + bcdn1);
+        assertEquals(bcdn1,
+                "CN=CommonName,SN=SerialNumber,GIVENNAME=GivenName,INITIALS=Initials,SURNAME=SurName,OU=OrgUnit,O=Org,C=SE,2.2.2.2=2222Oid,1.1.1.1=1111Oid,3.3.3.3=3333Oid");
+
+        dn1 = "CN=CommonName, 3.3.3.3=3333Oid,O=Org, K=KKK, OU=OrgUnit, SerialNumber=SerialNumber, SurName=SurName, GivenName=GivenName, Initials=Initials, C=SE, 1.1.1.1=1111Oid, 2.2.2.2=2222Oid";
+        bcdn1 = CertTools.stringToBCDNString(dn1);
+        log.debug("dn1: " + dn1);
+        log.debug("bcdn1: " + bcdn1);
+        assertEquals(bcdn1,
+                "CN=CommonName,SN=SerialNumber,GIVENNAME=GivenName,INITIALS=Initials,SURNAME=SurName,OU=OrgUnit,O=Org,C=SE,2.2.2.2=2222Oid,1.1.1.1=1111Oid,3.3.3.3=3333Oid");
+
         log.debug("<test04DNComponents()");
     }
 
@@ -618,4 +648,39 @@ public class TestCertTools extends TestCase {
       //System.out.println(cert);
       assertEquals("http://localhost:8080/ejbca/publicweb/status/ocsp", CertTools.getAuthorityInformationAccessOcspUrl(cert));
   }
+  public void test16GetSubjectAltNameStringWithDirectoryName() throws Exception {
+        log.debug(">test16GetSubjectAltNameStringWithDirectoryName()");
+
+        X509Certificate cer = CertTools.getCertfromByteArray(altNameCertWithDirectoryName);
+        String altNames = CertTools.getSubjectAlternativeName(cer);
+        log.debug(altNames);
+        
+        String name = CertTools.getPartFromDN(altNames, CertTools.UPN);
+        assertEquals("testDirName@jamador.pki.gva.es", name);
+        assertEquals("testDirName@jamador.pki.gva.es", CertTools.getUPNAltName(cer));
+        
+        name = CertTools.getPartFromDN(altNames, CertTools.DIRECTORYNAME);
+        assertEquals("CN=testDirName|dir|name", name);
+        assertEquals(name.substring("CN=".length()), new X509Name("CN=testDirName|dir|name").getValues().get(0));
+        
+        String altName = "rfc822name=foo@bar.se, uri=http://foo.bar.se, directoryName="+LDAPDN.escapeRDN("CN=testDirName, O=Foo, OU=Bar, C=SE")+", dnsName=foo.bar.se";
+        GeneralNames san = CertTools.getGeneralNamesFromAltName(altName);  
+        GeneralName[] gns = san.getNames();
+        boolean found = false;
+        for (int i = 0;i < gns.length; i++) {
+            int tag = gns[i].getTagNo();
+            if (tag == 4) {
+                found = true;
+                DEREncodable enc = gns[i].getName();
+                X509Name dir = (X509Name)enc;
+                String str = dir.toString();
+                log.debug("DirectoryName: "+str);
+                assertEquals("CN=testDirName,O=Foo,OU=Bar,C=SE", str);
+            }
+            
+        }
+        assertTrue(found);
+        log.debug("<test16GetSubjectAltNameStringWithDirectoryName()");
+      }  
+
 }

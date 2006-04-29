@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
@@ -86,12 +87,13 @@ import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
+import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 
 
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.5 2006-02-08 20:22:33 anatom Exp $
+ * @version $Id: CertTools.java,v 1.6 2006-04-29 09:32:32 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -103,6 +105,7 @@ public class CertTools {
     public static final String URI = "uniformResourceIdentifier";
     public static final String URI1 = "uri";
     public static final String IPADDR = "iPAddress";
+    public static final String DIRECTORYNAME = "directoryName";
 
     /** Microsoft altName for windows smart card logon */
     public static final String UPN = "upn";
@@ -116,7 +119,7 @@ public class CertTools {
     public static final String QCSTATEMENTS_OBJECTID = "1.3.6.1.5.5.7.1.3";
     /** OID used for creating MS Templates */
     public static final String OID_MSTEMPLATE = "1.3.6.1.4.1.311.20.2";
-      
+          
     
     private static final String[] EMAILIDS = { EMAIL, EMAIL1, EMAIL2, EMAIL3 };
     /** ObjectID for unstructuredName DN attribute */
@@ -175,85 +178,72 @@ public class CertTools {
     } // getOid
 
     /**
-     * Creates a (Bouncycastle) X509Name object from a string with a DN. Known OID (with order)
-     * are: <code> EmailAddress, UID, CN, SN (SerialNumber), GivenName, Initials, SurName, T, OU,
+     * Creates a (Bouncycastle) X509Name object from a string with a DN. Known OID
+     * (with order) are:
+     * <code> EmailAddress, UID, CN, SN (SerialNumber), GivenName, Initials, SurName, T, OU,
      * O, L, ST, DC, C </code>
-     * To change order edit 'dnObjects' in this source file.
-     * Important NOT to mess with the ordering within this class, since cert vierification 
-     * on some clients (IE :-() might depend on order.
-     *
-     * @param dn String containing DN that will be transformed into X509Name, The DN string has the
-     *        format "CN=zz,OU=yy,O=foo,C=SE". Unknown OIDs in the string will be silently
-     *        dropped.
-     *
+     * To change order edit 'dnObjects' in this source file. Important NOT to mess
+     * with the ordering within this class, since cert vierification on some
+     * clients (IE :-() might depend on order.
+     * 
+     * @param dn
+     *          String containing DN that will be transformed into X509Name, The
+     *          DN string has the format "CN=zz,OU=yy,O=foo,C=SE". Unknown OIDs in
+     *          the string will be added to the end positions of OID array.
+     * 
      * @return X509Name or null if input is null
      */
     public static X509Name stringToBcX509Name(String dn) {
-        //log.debug(">stringToBcX509Name: " + dn);
-        if (dn == null) return null;
-        // first make two vectors, one with all the C, O, OU etc specifying
-        // the order and one holding the actual values
-        ArrayList oldordering = new ArrayList();
-        ArrayList oldvalues = new ArrayList();
-        X509NameTokenizer xt = new X509NameTokenizer(dn);
 
-        while (xt.hasMoreTokens()) {
-            // This is a pair (CN=xx)
-            String pair = xt.nextToken();
-            int ix = pair.indexOf("=");
+      // log.debug(">stringToBcX509Name: " + dn);
+      if (dn == null)
+        return null;
 
-            if (ix != -1) {
-                // make lower case so we can easily compare later
-                oldordering.add(pair.substring(0, ix).toLowerCase());
-                oldvalues.add(pair.substring(ix + 1));
-            } else {
-                // Huh, what's this?
-            }
+      Vector defaultOrdering = new Vector();
+      Vector values = new Vector();
+      X509NameTokenizer xt = new X509NameTokenizer(dn);
+
+      while (xt.hasMoreTokens()) {
+        // This is a pair (CN=xx)
+        String pair = xt.nextToken();
+        int ix = pair.indexOf("=");
+
+        if (ix != -1) {
+          String key = pair.substring(0, ix).toLowerCase();
+          String val = pair.substring(ix + 1);
+
+          // -- First search the OID by name in declared OID's
+          DERObjectIdentifier oid = getOid(key);
+
+          try {
+              // -- If isn't declared, we try to create it
+              if (oid == null) {
+                oid = new DERObjectIdentifier(key);
+              }
+              defaultOrdering.add(oid);
+              values.add(val);              
+          } catch (IllegalArgumentException e) {
+              // If it is not an OID we will ignore it
+              log.warn("Unknown DN component ignored and silently dropped: " + oid);
+          }
+
+        } else {
+            log.warn("Huh, what's this? DN: " + dn+" PAIR: "+pair);
         }
+      }
 
-        // Now in the specified order, move from oldordering to newordering,
-        // reshuffling as we go along
-        Vector ordering = new Vector();
-        Vector values = new Vector();
-        int index = -1;
+      X509Name x509Name = new X509Name(defaultOrdering, values);
 
-        for (int i = 0; i < dNObjects.length; i++) {
-            //log.debug("Looking for "+dNObjects[i]);
-            String object = dNObjects[i];
+      //-- Reorder fields
+      X509Name orderedX509Name = getOrderedX509Name(x509Name, getDefaultX509FieldOrder());
 
-            while ((index = oldordering.indexOf(object)) != -1) {
-                //log.debug("Found 1 "+object+" at index " + index);
-                DERObjectIdentifier oid = getOid(object);
-
-                if (oid != null) {
-                    //log.debug("Added "+object+", "+oldvalues.elementAt(index));
-                    ordering.add(oid);
-
-                    // remove from the old vectors, so we start clean the next round
-                    values.add(oldvalues.remove(index));
-                    oldordering.remove(index);
-                    index = -1;
-                }
-            }
-        }
-
-        /*
-        if (log.isDebugEnabled()) {
-            Iterator i1 = ordering.iterator();
-            Iterator i2 = values.iterator();
-            log.debug("Order: ");
-            while (i1.hasNext()) {
-                log.debug(((DERObjectIdentifier)i1.next()).getId());
-            }
-            log.debug("Values: ");
-            while (i2.hasNext()) {
-                log.debug((String)i2.next());
-            }
-        } */
-
-        //log.debug("<stringToBcX509Name");
-        return new X509Name(ordering, values);
+      log.debug("<stringToBcX509Name");
+      return orderedX509Name;
+      
+      
     } // stringToBcX509Name
+    
+
 
     /**
      * Every DN-string should look the same. Creates a name string ordered and looking like we want
@@ -959,14 +949,14 @@ public class CertTools {
 	 * 
 	 * SubjectAltName is of form \"rfc822Name=<email>,
 	 * dNSName=<host name>, uniformResourceIdentifier=<http://host.com/>,
-	 * iPAddress=<address>, guid=<globally unique id>
+	 * iPAddress=<address>, guid=<globally unique id>, directoryName=<CN=testDirName|dir|name>
      * 
-     * Supported altNames are upn, rfc822Name, uniformResourceIdentifier, dNSName, iPAddress, 
+     * Supported altNames are upn, rfc822Name, uniformResourceIdentifier, dNSName, iPAddress, directoryName
 	 *
 	 * @author Marco Ferrante, (c) 2005 CSITA - University of Genoa (Italy)
      * @author Tomas Gustavsson
 	 * @param certificate containing alt names
-	 * @return String containing altNames of form "rfc822Name=email, dNSName=hostname, uniformResourceIdentifier=uri, iPAddress=ip, upn=upn" or null if no altNames exist. Values in returned String is from CertTools constants. AltNames not supported are simply not shown in the resulting string.  
+	 * @return String containing altNames of form "rfc822Name=email, dNSName=hostname, uniformResourceIdentifier=uri, iPAddress=ip, upn=upn, directoryName=CN=testDirName|dir|name" or null if no altNames exist. Values in returned String is from CertTools constants. AltNames not supported are simply not shown in the resulting string.  
 	 * @throws java.lang.Exception
 	 */
 	public static String getSubjectAlternativeName(X509Certificate certificate) throws Exception {
@@ -1003,7 +993,7 @@ public class CertTools {
                     break;
                 case 3: // SubjectAltName of type x400Address not supported
                     break;
-                case 4: // SubjectAltName of type directoryName not supported
+                case 4: result += append + CertTools.DIRECTORYNAME+"=" + (String)value;
                     break;
                 case 5: // SubjectAltName of type ediPartyName not supported
                     break;
@@ -1162,6 +1152,7 @@ public class CertTools {
      * @param value the DEREncodable value as returned by GeneralName.getName()
      * @return String in form rfc822Name=<email> or uri=<uri> etc 
      * @throws IOException 
+     * @see #getSubjectAlternativeName
      */
     private static String getGeneralNameString(int tag, DEREncodable value) throws IOException {
         String ret = null;
@@ -1566,6 +1557,12 @@ public class CertTools {
         }
     }
 
+    /**
+     * From an altName string as defined in getSubjectAlternativeName 
+     * @param altName
+     * @return ASN.1 GeneralNames
+     * @see #getSubjectAlternativeName
+     */
     public static GeneralNames getGeneralNamesFromAltName(String altName) {
         DEREncodableVector vec = new DEREncodableVector();
         // TODO: should support several emails as well, just like for dns etc
@@ -1582,6 +1579,13 @@ public class CertTools {
                 GeneralName gn = new GeneralName(2, new DERIA5String((String)iter.next()));
                 vec.add(gn);
             }
+        }
+        
+        String directoryName = getDirectoryStringFromAltName(altName);
+        if (directoryName != null) {
+          X509Name x509DirectoryName = new X509Name(directoryName);
+          GeneralName gn = new GeneralName(4, x509DirectoryName);
+          vec.add(gn);
         }
                                 
         ArrayList uri = CertTools.getPartsFromDN(altName, CertTools.URI);
@@ -1649,4 +1653,138 @@ public class CertTools {
         }
         return ret;
     }
+    
+    
+    /**
+     * Obtains a Vector with the DERObjectIdentifiers for 
+     * dNObjects names.
+     * 
+     * @return Vector with DERObjectIdentifiers defining the known order we require
+     */
+    private static Vector getDefaultX509FieldOrder(){
+      Vector fieldOrder = new Vector();
+      for (int i = 0; i < dNObjects.length; i++) {
+          fieldOrder.add(getOid(dNObjects[i]));
+      }
+      return fieldOrder;
+    }
+    
+    /**
+     * Obtain a X509Name reordered, if some fields from original X509Name 
+     * doesn't appear in "ordering" parameter, they will be added at end 
+     * in the original order.
+     *   
+     * @param x509Name the X509Name that is unordered 
+     * @param ordering Vector of DERObjectIdentifier defining the desired order of components
+     * @return X509Name with ordered conmponents according to the orcering vector
+     */
+    private static X509Name getOrderedX509Name( X509Name x509Name, Vector ordering ){
+        
+        //-- Null prevent
+        if ( ordering == null ){ ordering = new Vector(); }
+        
+        //-- New order for the X509 Fields
+        Vector newOrdering  = new Vector();
+        Vector newValues    = new Vector();
+        
+        Hashtable ht = new Hashtable();
+        Iterator it = ordering.iterator();
+        
+        //-- Add ordered fields
+        while( it.hasNext() ){
+            DERObjectIdentifier oid = (DERObjectIdentifier) it.next();
+            
+            if ( !ht.containsKey(oid) ){
+                Vector valueList = getX509NameFields(x509Name, oid);
+                //-- Only add the OID if has not null value
+                if ( valueList != null ){
+                    Iterator itVals = valueList.iterator();
+                    while( itVals.hasNext() ){
+                        Object value = itVals.next();
+                        ht.put(oid, value);
+                        newOrdering.add(oid);
+                        newValues.add(value);
+                    }
+                }
+            } // if ht.containsKey
+        } // while it.hasNext
+        
+        Vector allOids    = x509Name.getOIDs();
+        
+        //-- Add unespected fields to the end
+        for ( int i=0; i<allOids.size(); i++ ) {
+            
+            DERObjectIdentifier oid = (DERObjectIdentifier) allOids.get(i);
+            
+            
+            if ( !ht.containsKey(oid) ){
+                Vector valueList = getX509NameFields(x509Name, oid);
+                
+                //-- Only add the OID if has not null value
+                if ( valueList != null ){
+                    Iterator itVals = valueList.iterator();
+                    
+                    while( itVals.hasNext() ){
+                        Object value = itVals.next();
+                        ht.put(oid, value);
+                        newOrdering.add(oid);
+                        newValues.add(value);
+                        log.debug("added --> " + oid + " val: " + value);
+                    }
+                }
+            } 
+        } 
+        
+        //-- Create X509Name with the ordered fields
+        X509Name orderedName = new X509Name(newOrdering, newValues);
+        
+        return orderedName;
+    }
+    
+    
+    /**
+     * Obtain the values for a DN field from X509Name, or null in case
+     * of the field does not exist.
+     * 
+     * @param name
+     * @param id
+     * @return
+     */
+    private static Vector getX509NameFields( X509Name name, DERObjectIdentifier id ){
+      
+      Vector oids = name.getOIDs();
+      Vector values = name.getValues();
+      Vector vRet = null;
+      
+      for ( int i=0; i<oids.size(); i++ ){
+        
+        if ( id.equals(oids.elementAt(i)) ){
+          if ( vRet == null ){ vRet = new Vector(); }
+          vRet.add(values.get(i));
+        }
+        
+      }
+      
+      return vRet;
+      
+    }
+    
+    
+    /**
+     * Obtain the directory string for the directoryName generation
+     * form the Subject Alternative Name String.
+     * 
+     * @param altName
+     * @return
+     */
+    private static String getDirectoryStringFromAltName(String altName) {
+      
+    	DNFieldExtractor dnfe = new DNFieldExtractor(altName, DNFieldExtractor.TYPE_SUBJECTALTNAME);
+    	String directoryName = dnfe.getField(DNFieldExtractor.DIRECTORYNAME, 0);
+    	
+    	/** TODO: Validate or restrict the directoryName Fields? */
+      
+    	return ( "".equals(directoryName) ? null : directoryName );
+    }
+    
 } // CertTools
