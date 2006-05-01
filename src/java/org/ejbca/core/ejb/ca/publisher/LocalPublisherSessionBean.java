@@ -70,9 +70,13 @@ import org.ejbca.core.model.ra.ExtendedInformation;
  *   type="java.lang.String"
  *   value=""
  *
- * @ejb.ejb-ref view-type="local"
- *   ejb-name="PublisherData"
- *   ref-name="ejb/PublisherDataLocal"
+ * @ejb.ejb-external-ref description="The Publisher entity bean"
+ *   view-type="local"
+ *   ejb-name="PublisherDataLocal"
+ *   type="Entity"
+ *   home="org.ejbca.core.ejb.ca.publisher.PublisherDataLocalHome"
+ *   business="org.ejbca.core.ejb.ca.publisher.PublisherDataLocal"
+ *   link="PublisherData"
  *
  * @ejb.ejb-external-ref description="The Authorization Session Bean"
  *   view-type="local"
