@@ -95,7 +95,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.11 2006-04-27 13:59:41 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.12 2006-05-01 17:56:01 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -1487,7 +1487,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
           CADataLocal cadata = (CADataLocal) iter.next();
           Iterator pubiter = cadata.getCA().getCRLPublishers().iterator();
           while(pubiter.hasNext()){
-            returnval = returnval || (((Integer) pubiter.next()).intValue() == publisherid);
+        	  Integer pubInt = (Integer)pubiter.next();
+        	  returnval = returnval || (pubInt.intValue() == publisherid);
           }
         }
       }catch(javax.ejb.FinderException fe){}
