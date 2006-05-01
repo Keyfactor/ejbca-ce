@@ -254,7 +254,10 @@ web.contentencoding    = ${web.contentencoding}
             <localhomeinterface />
             <entitypk />
             <session />
-            <deploymentdescriptor destdir="${src.dd}/META-INF" validatexml="false" />
+            <deploymentdescriptor 
+            	destdir="${src.dd}/META-INF" 
+            	validatexml="false" 
+            	useIds="true"/>
              <jboss version="3.2" 
                 unauthenticatedPrincipal="nobody" 
                 xmlencoding="UTF-8" 
@@ -265,12 +268,17 @@ web.contentencoding    = ${web.contentencoding}
                 datasourcemapping="${datasource.mapping}" />
             <weblogic version="8.1" 
                 xmlencoding="UTF-8" 
-                destdir="${src.dd}/META-INF" 
                 validatexml="false" 
+                destdir="${src.dd}/META-INF" 
                 datasource="${datasource.jndi-name}" 
                 persistence="weblogic"
                 createTables="Disabled" />
 <!--            
+            <websphere
+                xmlencoding="UTF-8" 
+                validatexml="false" 
+            	useIds="true"
+                destdir="${src.dd}/META-INF" />
             <sunone version="7.0" 
                 xmlencoding="UTF-8" 
                 destdir="${src.dd}/META-INF" 
