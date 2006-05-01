@@ -34,7 +34,7 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.4 2006-04-21 12:31:15 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.5 2006-05-01 14:20:00 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
@@ -155,6 +155,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     /**
      * Creates a new instance of CertificateProfile
+     * 
+     * These settings are general for all sub-profiles, only differing values are overridden
+     * in the sub-profiles. If changing any present value here you must therefore go through all
+     * sub-profiles and add an override there.
+     * I.e. only add new values here, don't change any present settings.
      */
     public CertificateProfile() {
       setCertificateVersion(VERSION_X509V3);

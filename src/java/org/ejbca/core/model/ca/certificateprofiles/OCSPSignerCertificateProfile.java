@@ -18,7 +18,7 @@ import java.util.ArrayList;
 /**
  * OCSPSignerCertificateProfile is a class defining the fixed characteristics of an enduser certificate type
  *
- * @version $Id: OCSPSignerCertificateProfile.java,v 1.1 2006-01-17 20:31:51 anatom Exp $
+ * @version $Id: OCSPSignerCertificateProfile.java,v 1.2 2006-05-01 14:20:00 anatom Exp $
  */
 public class OCSPSignerCertificateProfile extends CertificateProfile{
 
@@ -27,40 +27,15 @@ public class OCSPSignerCertificateProfile extends CertificateProfile{
     public static final String CERTIFICATEPROFILENAME =  "OCSPSIGNER";
 
     // Public Methods
-    /** Creates a certificate with the characteristics of an end user. */
+    /** Creates a certificate with the characteristics of an end user. 
+     * General options are set in the superclass's default contructor that is called automatically.
+     * You can override the general options by defining them again with different parameters here.
+     */
     public OCSPSignerCertificateProfile() {
-
-      setCertificateVersion(VERSION_X509V3);
-      setValidity(730);
-
-      setUseBasicConstraints(true);
-      setBasicConstraintsCritical(true);
-
-
-      setUseSubjectKeyIdentifier(true);
-      setSubjectKeyIdentifierCritical(false);
-
-      setUseAuthorityKeyIdentifier(true);
-      setAuthorityKeyIdentifierCritical(false);
-
-      setUseSubjectAlternativeName(true);
-      setSubjectAlternativeNameCritical(false);
-
-      setUseCRLDistributionPoint(false);
-      setCRLDistributionPointCritical(false);
-      setCRLDistributionPointURI("");
-
-      setUseCertificatePolicies(false);
-      setCertificatePoliciesCritical(false);
-      setCertificatePolicyId("2.5.29.32.0");
 
       setType(TYPE_ENDENTITY);
 
-      int[] bitlengths = {512,1024,2048,4096};
-      setAvailableBitLengths(bitlengths);
-
-      // Standard key usages for end users are: digitalSignature | keyEncipherment or nonRepudiation
-      // Default key usage is digitalSignature | keyEncipherment
+      // Default key usage for an OCSP signer is digitalSignature
       // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
       setUseKeyUsage(true);
       setKeyUsage(new boolean[9]);
@@ -73,10 +48,6 @@ public class OCSPSignerCertificateProfile extends CertificateProfile{
       setExtendedKeyUsage(eku);
       setExtendedKeyUsageCritical(false);
       
-      ArrayList availablecas = new ArrayList();
-      availablecas.add(new Integer(ANYCA));
-      setAvailableCAs(availablecas);      
-      setPublisherList(new ArrayList());
     }
 
     // Public Methods.
