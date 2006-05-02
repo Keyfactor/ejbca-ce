@@ -95,7 +95,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.12 2006-05-01 17:56:01 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.13 2006-05-02 12:22:18 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -794,29 +794,27 @@ public class CAAdminSessionBean extends BaseSessionBean {
     					cadata.setExpireTime(((X509Certificate) cacert).getNotAfter().getTime());
     				}
 
-    				if(cadata.getStatus() ==SecConst.CA_ACTIVE){
-    					// activate External CA Services
-    					Iterator iter = ca.getExternalCAServiceTypes().iterator();
-    					while(iter.hasNext()){
-    						int type = ((Integer) iter.next()).intValue();
-    						try{
-    							ca.initExternalService(type, ca);
-    							ArrayList ocspcertificate = new ArrayList();
-    							ocspcertificate.add(((OCSPCAServiceInfo) ca.getExtendedCAServiceInfo(OCSPCAService.TYPE)).getOCSPSignerCertificatePath().get(0));
-    							getSignSession().publishCACertificate(admin, ocspcertificate, ca.getCRLPublishers(), CertificateDataBean.CERTTYPE_ENDENTITY);
-    						}catch(CATokenOfflineException e){
-    							getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"Couldn't Initialize ExternalCAService.",e);
-    							throw e;
-    						}catch(Exception fe){
-    							getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"Couldn't Initialize ExternalCAService.",fe);
-    							throw new EJBException(fe);
-    						}
-    					}
-    					//  create initial CRL
-    					this.getCRLCreateSession().run(admin,ca.getSubjectDN());
+    				// activate External CA Services
+    				Iterator iter = ca.getExternalCAServiceTypes().iterator();
+    				while(iter.hasNext()){
+    				    int type = ((Integer) iter.next()).intValue();
+    				    try{
+    				        ca.initExternalService(type, ca);
+    				        ArrayList ocspcertificate = new ArrayList();
+    				        ocspcertificate.add(((OCSPCAServiceInfo) ca.getExtendedCAServiceInfo(OCSPCAService.TYPE)).getOCSPSignerCertificatePath().get(0));
+    				        getSignSession().publishCACertificate(admin, ocspcertificate, ca.getCRLPublishers(), CertificateDataBean.CERTTYPE_ENDENTITY);
+    				    }catch(CATokenOfflineException e){
+    				        getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"Couldn't Initialize ExternalCAService.",e);
+    				        throw e;
+    				    }catch(Exception fe){
+    				        getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"Couldn't Initialize ExternalCAService.",fe);
+    				        throw new EJBException(fe);
+    				    }
     				}
-
+                    // Save CA
     				cadata.setCA(ca);
+                    //  create initial CRL
+                    this.getCRLCreateSession().run(admin,ca.getSubjectDN());
     			}else{
     				// Cannot create certificate request for internal CA
     				getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error: can't recieve certificate responce for internal CA");
