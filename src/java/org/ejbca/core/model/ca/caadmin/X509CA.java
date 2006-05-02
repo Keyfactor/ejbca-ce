@@ -114,7 +114,7 @@ import org.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.7 2006-05-02 13:26:10 anatom Exp $
+ * @version $Id: X509CA.java,v 1.8 2006-05-02 13:29:34 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -695,6 +695,7 @@ public class X509CA extends CA implements Serializable {
         
         DEREncodableVector qualifiers = new DEREncodableVector();
         if (!StringUtils.isEmpty(unotice)) {
+            // Normally we would just use 'DisplayText(unotice)' here. IE has problems with UTF8 though, so lets stick with BMSSTRING to satisfy Bills sick needs.
             UserNotice un = new UserNotice(null, new DisplayText(DisplayText.CONTENT_TYPE_BMPSTRING, unotice));
             PolicyQualifierInfo pqiUNOTICE = new PolicyQualifierInfo(PolicyQualifierId.id_qt_unotice, un);
             qualifiers.add(pqiUNOTICE);
