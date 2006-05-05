@@ -22,11 +22,13 @@ import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.PublicKey;
 import java.security.Security;
+import java.security.Signature;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.SecConst;
 
 
 /** This class implements support for the nCipher nFast HSM for storing CA keys.
@@ -34,7 +36,7 @@ import org.apache.log4j.Logger;
  * and the development was sponsored by Linagora (www.linagora.com).
  * 
  * @author Lars Silvén
- * @version $Id: NFastCAToken.java,v 1.4 2006-02-09 12:39:37 anatom Exp $
+ * @version $Id: NFastCAToken.java,v 1.5 2006-05-05 14:36:59 herrvendil Exp $
  */
 public class NFastCAToken implements IHardCAToken {
 
@@ -92,12 +94,13 @@ public class NFastCAToken implements IHardCAToken {
                                                 authCode.toCharArray());
                 PublicKey publicK =
                     keyStore.getCertificate(keyAliases[i]).getPublicKey();
+                
                 KeyPair keyPair = new KeyPair(publicK, privateK);
                 mKeys.put(keyAliases[i], keyPair);
             }
         } catch( Exception e ) {
             log.error("Authentication failed: ", e);
-            CATokenAuthenticationFailedException t = new CATokenAuthenticationFailedException();
+            CATokenAuthenticationFailedException t = new CATokenAuthenticationFailedException(e.getMessage());
             t.initCause(e);
             mKeys = null;
             throw t;
@@ -138,17 +141,29 @@ public class NFastCAToken implements IHardCAToken {
 	 * @see org.ejbca.core.model.ca.caadmin.IHardCAToken#getCATokenStatus()
 	 */
 	public int getCATokenStatus() {
+		int retval = IHardCAToken.STATUS_ACTIVE;
 		String strings[] = keyStrings.getAllStrings();
         if (strings == null) {
             return IHardCAToken.STATUS_OFFLINE;
         }
 		int i=0;
-		while( strings!=null && i<strings.length && mKeys!=null && mKeys.get(strings[i])!=null ) {
+		while( strings!=null && i<strings.length && mKeys!=null && mKeys.get(strings[i])!=null ) {		
             i++;            
         }
 		if (i < strings.length) {
-            return IHardCAToken.STATUS_OFFLINE;            
+            retval = IHardCAToken.STATUS_OFFLINE;            
         }
-        return IHardCAToken.STATUS_ACTIVE;
+		//Check that that the testkey is usable by doing a test signature.
+		try{
+		  Signature signature = Signature.getInstance("SHA1withRSA", getProvider()); 
+	      signature.initSign( getPrivateKey(SecConst.CAKEYPURPOSE_KEYTEST) ); 
+	      signature.update( "Test".getBytes() ); 	       	      	      
+	      signature.sign(); 
+		}catch(Throwable th){
+			log.error("Error testing activation of nfast", th);
+			retval = IHardCAToken.STATUS_OFFLINE;     
+		}
+		
+        return retval;
 	}
 }

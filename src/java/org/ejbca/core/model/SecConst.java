@@ -25,7 +25,7 @@ package org.ejbca.core.model;
  * types. Constants for Token Types Token type is constructed of integer constants since only one
  * token type can be generated.
  *
- * @version $Id: SecConst.java,v 1.1 2006-01-17 20:30:56 anatom Exp $
+ * @version $Id: SecConst.java,v 1.2 2006-05-05 14:36:58 herrvendil Exp $
  */
 public class SecConst extends Object {
     // User types
@@ -122,6 +122,7 @@ public class SecConst extends Object {
     public static final int CAKEYPURPOSE_CERTSIGN   = 1;
     public static final int CAKEYPURPOSE_CRLSIGN    = 2;
     public static final int CAKEYPURPOSE_KEYENCRYPT = 3;
+    public static final int CAKEYPURPOSE_KEYTEST    = 4;
 
     /**
      * Prevents creation of new SecConst

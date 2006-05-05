@@ -24,13 +24,14 @@ import org.ejbca.core.model.SecConst;
 
 /**
  * 
- * @version $Id: KeyStrings.java,v 1.1 2006-01-17 20:31:51 anatom Exp $
+ * @version $Id: KeyStrings.java,v 1.2 2006-05-05 14:36:59 herrvendil Exp $
 */
 public class KeyStrings {
     
     final private String CAKEYPURPOSE_CERTSIGN_STRING = "certSignKey";
     final private String CAKEYPURPOSE_CRLSIGN_STRING = "crlSignKey";
     final private String CAKEYPURPOSE_KEYENCRYPT_STRING = "keyEncryptKey";
+    final private String CAKEYPURPOSE_TESTKEY_STRING = "testKey";
     final private String CAKEYPURPOSE_DEFAULT_STRING = "defaultKey";
     final private Map map;
     final String defaultKeyS;
@@ -50,6 +51,9 @@ public class KeyStrings {
         addKey(CAKEYPURPOSE_KEYENCRYPT_STRING,
                SecConst.CAKEYPURPOSE_KEYENCRYPT,
                properties);
+        addKey(CAKEYPURPOSE_TESTKEY_STRING,
+                SecConst.CAKEYPURPOSE_KEYTEST,
+                properties);
     }
     private void addKey(String keyS, int keyI,
                         Properties properties) {
@@ -73,7 +77,9 @@ public class KeyStrings {
     public String[] getAllStrings() {
         Set set = new HashSet();
         set.addAll(map.values());
-        set.add(defaultKeyS);
+        if(defaultKeyS != null){
+          set.add(defaultKeyS);
+        }
         return (String[])set.toArray(new String[0]);
     }
 }

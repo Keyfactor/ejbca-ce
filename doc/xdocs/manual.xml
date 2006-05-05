@@ -884,9 +884,58 @@ PrimeKey Solutions sell a module called PrimeCardHSM that implements a flexible 
 </p>
 <subsection name="nCipher NFast">
 <p>
-Follow these steps to create a CA that is using a NFast card:
+Follow these steps to create a CA that is using a nFast card:
 </p>
-<strong>1. Create keys that should be used on the NFast card</strong>
+<strong>1. Install the nFast card</strong>
+<p>
+Make sure you have all necessary software and drivers installed and created
+the user and group nfast. In Linux should the software be installed to /opt/nfast or the location environment variable NFAST_HOME is pointing to.
+</p>
+<p>
+login as the nfast user.
+</p>
+<p>
+Set the nCipher box to initialization mode by setting the switch to mode 'I'.
+</p>
+<p>
+Clear the nCipher box by pressing the reset button on the device
+</p>
+<p>
+Goto the NFAST_HOME directory and use 'bin/enquiry' to check the status of the nchiper box. Check that the mode is in 
+'pre-initialization mode' and not in 'operational'.
+</p>
+<p>
+Create the security world with the command :
+</p>
+<source>
+bin/new-world -i -m 1 -Q K/N 
+</source>
+<p>
+Where K/N stands for the number of administration cards required and N for the total number of administration cards to generate.
+</p>
+<p>
+Change mode on the switch on the device to mode 'O'.
+</p>
+<p>
+Press the 'Clear' button again.
+</p>
+<p>
+Check with 'enquiry' that the mode have changed to 'Operational'
+</p>
+<p>
+Create the Operator cards with the command 
+</p>
+<source>
+'bin/createocs -m -Q 1/N -N OperatorCards -M'
+</source>
+<p>
+Where N is the number of cards to generate.
+</p>
+<p>
+Enable java library communication with the nfast server by the command 'bin/config-serverstartup -s'
+and '/etc/init.d/nfast restart'
+</p>
+<strong>2. Create keys that should be used on the NFast card</strong>
 <p>
 You may use the java keytool. It is advisable to define an alias for using the tool for keystores on the NFast:
 </p>
@@ -900,7 +949,23 @@ alias keyToolHSM='java -cp /opt/nfast/java/classes/rsaprivenc.jar:/opt/nfast/jav
 Then the keyToolHSM alias could be used to manage keys on the NFast card in exactly the same way as soft keys are managed by keytool.
 All keys for one CA should be in the same keystore. Different CAs may share the same keystore but may also have different keystores.
 </p>
-<strong>2. Copy files to jboss that implements the nCipher CA Token functionality to JBoss</strong>
+<p>
+Generate the signing key using the command :
+</p>
+<source>
+keyToolHSM -genkey -alias signKey -keyalg RSA -keysize 4096 -keystore 'keystore filename' -storepass 'PIN to OperatorCard'
+</source>
+<p>
+Enter any data as DN in the certificate request and use the same password to protect the key
+</p>
+<p>
+Generate the encryption key using the same command with alias 'encKey' if you shall use key recovery.
+</p>
+<p>
+Finally it's recommended that you generate a test key, used to check the status of the HSM by EJBCA.
+This key can be smaller (512 bit) to enhance performance.
+</p>
+<strong>3. Copy files to jboss that implements the nCipher CA Token functionality to JBoss</strong>
 <p>
 The file are copied from the dist directory. The destination is the deploy directory of the application server (server/default/deploy in jboss).
 The files to be copied are:
@@ -911,11 +976,11 @@ jutil.jar kmcsp.jar kmjava.jar nfjava.jar rsaprivenc.jar
 <p>
 You could also make links if you prefer that.
 </p>
-<strong>3. Make EJBCA aware of the NFast HSM</strong>
+<strong>4. Make EJBCA aware of the NFast HSM</strong>
 <p>
 Restart the application server.
 </p>
-<strong>4. Create a new CA in the web GUI of EJBCA</strong>
+<strong>5. Create a new CA in the web GUI of EJBCA</strong>
 <p>
 Choose NFastCAToken as "CA Token Type".
 </p><p>
@@ -924,11 +989,16 @@ Define which keys in the keystore that should be used and the purpose of these k
 </p><p>
 Use one row for each definition. Begin the row with a key word. It is one row for the keystore and one for each key definition. Key word and value is separated by one or more spaces.
 A row with the keyword keyStore must always be present.
+You may omitt defaultKey if you want to be sure that the right key is used but then 
+must all the other keys be specified. It's recommended that the certificate and crl signing keys
+are linked to the same key since different keys are rarely supported by verifying applications.
+</p><p>
 The keywords for keys that can be used are:
 <ul>
 <li>certSignKey   - the key to be used when signing certificates </li>
 <li>crlSignKey    - the key to be used when signing CLSs </li>
 <li>keyEncryptKey - the key to be used for key encryption and decryption.</li>
+<li>testKey       - the key to be used by HSM status checks.</li>
 <li>defaultKey    - the key to be used when no other key is defined for a purpose. If this is the only definition then this key will be used for all purposes.</li>
 </ul>
 </p>
