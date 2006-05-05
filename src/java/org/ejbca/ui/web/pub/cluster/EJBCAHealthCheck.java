@@ -14,6 +14,7 @@
 package org.ejbca.ui.web.pub.cluster;
 
 import java.sql.Connection;
+import java.sql.Statement;
 import java.util.Iterator;
 
 import javax.ejb.EJBException;
@@ -24,11 +25,11 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JNDINames;
-import org.ejbca.core.ejb.ServiceLocatorException;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.HardCATokenInfo;
@@ -50,7 +51,7 @@ import org.ejbca.util.JDBCUtil;
  * * All Publishers can establish connection
  * 
  * @author Philip Vendil
- * @version $Id: EJBCAHealthCheck.java,v 1.3 2006-02-08 07:31:48 anatom Exp $
+ * @version $Id: EJBCAHealthCheck.java,v 1.4 2006-05-05 14:19:51 herrvendil Exp $
  */
 
 public class EJBCAHealthCheck implements IHealthCheck {
@@ -60,10 +61,12 @@ public class EJBCAHealthCheck implements IHealthCheck {
 	private Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 	
 	private int minfreememory = 0;
+	private String checkDBString = null;
 	private boolean checkPublishers = false;
 	
 	public void init(ServletConfig config) {
 		minfreememory = Integer.parseInt(config.getInitParameter("MinimumFreeMemory")) * 1024 * 1024;
+		checkDBString = config.getInitParameter("checkDBString");
 		if(config.getInitParameter("CheckPublishers") != null){
 			checkPublishers = config.getInitParameter("CheckPublishers").equalsIgnoreCase("TRUE");
 		}
@@ -74,12 +77,14 @@ public class EJBCAHealthCheck implements IHealthCheck {
 		log.debug("Starting HealthCheck health check requested by : " + request.getRemoteAddr());
 		String errormessage = "";
 		
-		errormessage += checkMemory();				
-		errormessage += checkDB();		
-		errormessage += checkCAs();	
+		errormessage += checkDB();
+		if(errormessage.equals("")){
+		  errormessage += checkMemory();								
+		  errormessage += checkCAs();	
 		
-		if(checkPublishers){
-		  errormessage += checkPublishers();
+		  if(checkPublishers){
+		    errormessage += checkPublishers();
+		  }
 		}
 		
 		if(errormessage.equals("")){
@@ -103,8 +108,10 @@ public class EJBCAHealthCheck implements IHealthCheck {
 		String retval = "";
 		try{	
 		  Connection con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
+		  Statement statement = con.createStatement();
+		  statement.execute(checkDBString);		  
 		  JDBCUtil.close(con);
-		}catch(ServiceLocatorException e){
+		}catch(Exception e){
 			retval = "\nError creating connection to EJBCA Database.";
 			log.error("Error creating connection to EJBCA Database.",e);
 		}
@@ -117,9 +124,11 @@ public class EJBCAHealthCheck implements IHealthCheck {
 		while(iter.hasNext()){
 			CAInfo cainfo = getCAAdminSession().getCAInfo(admin,((Integer) iter.next()).intValue());
 			CATokenInfo tokeninfo = cainfo.getCATokenInfo(); 
-			if(tokeninfo instanceof HardCATokenInfo && ((HardCATokenInfo) tokeninfo).getCATokenStatus() == IHardCAToken.STATUS_OFFLINE){
-				retval +="\n Error CA Token is disconnected " + cainfo.getName();
-				log.error("Error CA Token is disconnected " + cainfo.getName());
+			if(cainfo.getStatus() == SecConst.CA_ACTIVE){
+			  if(tokeninfo instanceof HardCATokenInfo && ((HardCATokenInfo) tokeninfo).getCATokenStatus() == IHardCAToken.STATUS_OFFLINE){
+				retval +="\n Error CA Token is disconnected, CA Name : " + cainfo.getName();
+				log.error("Error CA Token is disconnected, CA Name : " + cainfo.getName());
+			  }
 			}
 		}				
 		return retval;

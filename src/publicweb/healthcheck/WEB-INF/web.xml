@@ -35,8 +35,16 @@
             </description>
         </init-param>
         <init-param>
+            <param-name>checkDBString</param-name>
+            <param-value>Select 1</param-value>
+            <description>
+                Parameter indicating the string that should be used to do 
+                a minimal check that the database is working.
+            </description>
+        </init-param>
+        <init-param>
             <param-name>CheckPublishers</param-name>
-            <param-value>true</param-value>
+            <param-value>false</param-value>
             <description>
                 Parameter indication if a test connection should be performed to
                 all the publishers. 
