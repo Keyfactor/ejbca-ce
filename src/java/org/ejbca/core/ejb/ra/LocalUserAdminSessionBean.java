@@ -77,7 +77,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.4 2006-02-15 00:15:47 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.5 2006-05-06 09:19:49 herrvendil Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -821,6 +821,8 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile {
         } catch (ObjectNotFoundException oe) {
             throw new EJBException(oe);
         }
+        // Check that the user have revokation rigths.
+        authorizationsession.isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_REVOKEENDENTITY);
 
         int caid = data.getCaId();
         if (!authorizedToCA(admin, caid)) {
