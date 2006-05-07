@@ -31,7 +31,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * of ejbca web interface.
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.3 2006-04-29 09:33:03 anatom Exp $
+ * @version $Id: EndEntityProfile.java,v 1.4 2006-05-07 07:13:15 herrvendil Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -423,7 +423,22 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     	data.put(REUSECERTIFICATE, new Boolean(reuse));
     }
     
+    /**
+     * @return indicationg if the profile checks should be reversed or not.
+     * default is false.
+     */
+    public boolean getReverseFieldChecks(){
+    	if(data.get(REVERSEFFIELDCHECKS) == null){
+    		return false;
+    	}
+    	
+    	return ((Boolean) data.get(REVERSEFFIELDCHECKS)).booleanValue();
+    }
     
+    public void setReverseFieldChecks(boolean reverse){
+    	data.put(REVERSEFFIELDCHECKS, new Boolean(reverse));
+    }
+        
     
     /** A function that takes an fieldid pointing to a coresponding id in UserView and DnFieldExctractor.
      *  For example : profileFieldIdToUserFieldIdMapper(EndEntityProfile.COMMONNAME) returns DnFieldExctractor.COMMONNAME.
@@ -503,20 +518,38 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
       // Check contents of Subject DN fields.
       int[] subjectdnfieldnumbers = subjectdnfields.getNumberOfFields();
       for(int i = 0; i < DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY; i++){
-        for(int j=0; j < subjectdnfieldnumbers[i]; j++){
-          checkIfDataFullfillProfile(DNEXTRATORTOPROFILEMAPPER[i],j,subjectdnfields.getField(i,j), DNEXTRATORTOPROFILEMAPPERTEXTS[i], email);
-        }
+    	  if(getReverseFieldChecks()){
+    		  int nof = subjectdnfieldnumbers[i];
+    		  for(int j=getNumberOfField(DNEXTRATORTOPROFILEMAPPER[i]) -1; j >= 0; j--){    			 
+    			  checkIfDataFullfillProfile(DNEXTRATORTOPROFILEMAPPER[i],j,subjectdnfields.getField(i,--nof), DNEXTRATORTOPROFILEMAPPERTEXTS[i], email);
+    		  }   		
+    	  }else{
+    		  for(int j=0; j < subjectdnfieldnumbers[i]; j++){
+    			  checkIfDataFullfillProfile(DNEXTRATORTOPROFILEMAPPER[i],j,subjectdnfields.getField(i,j), DNEXTRATORTOPROFILEMAPPERTEXTS[i], email);
+    		  }
+    	  }
       }
        // Check contents of Subject Alternative Name fields.
       int[] subjectaltnamesnumbers = subjectaltnames.getNumberOfFields();
       for(int i = DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY; i < DNFieldExtractor.NUMBEROFFIELDS; i++){
-        for(int j=0; j < subjectaltnamesnumbers[i-DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY]; j++){
-          if(i == DNFieldExtractor.UPN){
-          	checkIfDomainFullfillProfile(UPN,j,subjectaltnames.getField(i,j),"UPN");
-          }else{
-            checkIfDataFullfillProfile(DNEXTRATORTOPROFILEMAPPER[i],j,subjectaltnames.getField(i,j), DNEXTRATORTOPROFILEMAPPERTEXTS[i], email);
-          }   
-        }
+    	  if(getReverseFieldChecks()){
+    		  int nof = subjectaltnamesnumbers[i-DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY];
+    		  for(int j=getNumberOfField(DNEXTRATORTOPROFILEMAPPER[i]) -1; j >= 0; j--){
+    			  if(i == DNFieldExtractor.UPN){
+    				  checkIfDomainFullfillProfile(UPN,j,subjectaltnames.getField(i,--nof),"UPN");
+    			  }else{
+    				  checkIfDataFullfillProfile(DNEXTRATORTOPROFILEMAPPER[i],j,subjectaltnames.getField(i,--nof), DNEXTRATORTOPROFILEMAPPERTEXTS[i], email);
+    			  }   
+    		  }    		      		  
+    	  }else{
+    		  for(int j=0; j < subjectaltnamesnumbers[i-DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY]; j++){
+    			  if(i == DNFieldExtractor.UPN){
+    				  checkIfDomainFullfillProfile(UPN,j,subjectaltnames.getField(i,j),"UPN");
+    			  }else{
+    				  checkIfDataFullfillProfile(DNEXTRATORTOPROFILEMAPPER[i],j,subjectaltnames.getField(i,j), DNEXTRATORTOPROFILEMAPPERTEXTS[i], email);
+    			  }   
+    		  }
+    	  }
       }
 
    // Check for administrator flag.
@@ -813,27 +846,61 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 
         // Check if all required subjectdn fields exists.
         for(int i = 0; i < SUBJECTDNFIELDS.length; i++){
-          size = getNumberOfField(SUBJECTDNFIELDS[i]);
-          for(int j = 0; j < size; j++){
-            if(isRequired(SUBJECTDNFIELDS[i],j))
-              if(subjectdnfields.getField(SUBJECTDNFIELDEXTRACTORNAMES[i],j).trim().equals(""))
-                throw new UserDoesntFullfillEndEntityProfile("Subject DN field '" + SUBJECTDNFIELDNAMES[i] + "' must exist.");
-          }
+        	if(getReverseFieldChecks()){
+        		int nof = subjectdnfields.getNumberOfFields(SUBJECTDNFIELDEXTRACTORNAMES[i]);
+        	    int numRequiredFields = getNumberOfRequiredFields(SUBJECTDNFIELDS[i]);
+        	    if(nof < numRequiredFields){
+        	      throw new UserDoesntFullfillEndEntityProfile("Subject DN field '" + SUBJECTDNFIELDNAMES[i] + "' must exist.");
+        	    }
+        	}else{
+               size = getNumberOfField(SUBJECTDNFIELDS[i]);
+               for(int j = 0; j < size; j++){
+               if(isRequired(SUBJECTDNFIELDS[i],j))
+                 if(subjectdnfields.getField(SUBJECTDNFIELDEXTRACTORNAMES[i],j).trim().equals(""))
+                  throw new UserDoesntFullfillEndEntityProfile("Subject DN field '" + SUBJECTDNFIELDNAMES[i] + "' must exist.");
+               }
+            }
         }
+        
+        
 
          // Check if all required subject alternate name fields exists.
         for(int i = 0; i < SUBJECTALTNAMEFIELDS.length; i++){
-          size = getNumberOfField(SUBJECTALTNAMEFIELDS[i]);
-          for(int j = 0; j < size; j++){
-            if(isRequired(SUBJECTALTNAMEFIELDS[i],j))
-              if(subjectaltnames.getField(SUBJECTALTNAMEFIELDEXTRACTORNAMES[i],j).trim().equals(""))
-                throw new UserDoesntFullfillEndEntityProfile("Subject Alterntive Name field '" + SUBJECTALTNAMEFIELDNAMES[i] + "' must exist.");
-          }
+        	if(getReverseFieldChecks()){
+        		int nof = subjectaltnames.getNumberOfFields(SUBJECTALTNAMEFIELDEXTRACTORNAMES[i]);
+        		int numRequiredFields = getNumberOfRequiredFields(SUBJECTALTNAMEFIELDS[i]);
+        		if(nof < numRequiredFields){
+        			throw new UserDoesntFullfillEndEntityProfile("Subject DN field '" + SUBJECTALTNAMEFIELDS[i] + "' must exist.");
+        		}
+        	}else{
+        		size = getNumberOfField(SUBJECTALTNAMEFIELDS[i]);
+        		for(int j = 0; j < size; j++){
+        			if(isRequired(SUBJECTALTNAMEFIELDS[i],j))
+        				if(subjectaltnames.getField(SUBJECTALTNAMEFIELDEXTRACTORNAMES[i],j).trim().equals(""))
+        					throw new UserDoesntFullfillEndEntityProfile("Subject Alterntive Name field '" + SUBJECTALTNAMEFIELDNAMES[i] + "' must exist.");
+        		}
+        	}
         }
     }
 
+  /**
+   * Method calculating the number of required fields of on kind that is configured for this profile.
+   * @param field, one of the field constants
+   * @return The number of required fields of that kind.
+   */
+    private int getNumberOfRequiredFields(int field) {
+    	int retval = 0;
+    	int size = getNumberOfField(field);
+    	for(int j = 0; j < size; j++){
+    		if(isRequired(field,j)){
+    			retval++;
+    		}
+    	}   	
+    	
+    	return retval;
+    }
 
-    private void  checkIfForIllegalNumberOfFields(DNFieldExtractor subjectdnfields, DNFieldExtractor subjectaltnames) throws UserDoesntFullfillEndEntityProfile{
+	private void  checkIfForIllegalNumberOfFields(DNFieldExtractor subjectdnfields, DNFieldExtractor subjectaltnames) throws UserDoesntFullfillEndEntityProfile{
 
         // Check number of subjectdn fields.
         for(int i = 0; i < SUBJECTDNFIELDS.length; i++){
@@ -915,6 +982,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     private static final String NOTIFICATIONMESSAGE   = "NOTIFICATIONSMESSAGE";
 
     private static final String REUSECERTIFICATE = "REUSECERTIFICATE";
+    private static final String REVERSEFFIELDCHECKS = "REVERSEFFIELDCHECKS"; 
     // Private fields.
 
 

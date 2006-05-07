@@ -515,6 +515,17 @@ function checkuseemailfield(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
+        &nbsp
+      </td>
+      <td width="25%"  align="right"> 
+            <%= ejbcawebbean.getText("REVERSEFIELDCHECKS") %> 
+      </td>
+      <td width="70%">                   
+        <input type="checkbox" name="<%=CHECKBOX_REVERSEFIELDCHECKS %>" value="<%=CHECKBOX_VALUE %>"   <% if(profiledata.getReverseFieldChecks()) out.write("CHECKED"); %>>          
+      </td> 
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="5%" valign="top">
          &nbsp;
       </td>
       <td width="25%" align="right"> 

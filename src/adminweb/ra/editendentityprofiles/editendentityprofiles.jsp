@@ -47,6 +47,7 @@
   static final String CHECKBOX_ADMINISTRATOR              = "checkboxadministrator";
   static final String CHECKBOX_KEYRECOVERABLE             = "checkboxkeyrecoverable";
   static final String CHECKBOX_REUSECERTIFICATE           = "checkboxreusecertificate";
+  static final String CHECKBOX_REVERSEFIELDCHECKS         = "checkboxreversefieldchecks";
   static final String CHECKBOX_SENDNOTIFICATION           = "checkboxsendnotification";
 
   static final String CHECKBOX_REQUIRED_USERNAME          = "checkboxrequiredusername";
@@ -259,6 +260,8 @@
              profiledata.setValue(EndEntityProfile.CLEARTEXTPASSWORD, 0  ,request.getParameter(CHECKBOX_CLEARTEXTPASSWORD));
              profiledata.setRequired(EndEntityProfile.CLEARTEXTPASSWORD, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REQUIRED_CLEARTEXTPASSWORD))); 
              profiledata.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_USE_CLEARTEXTPASSWORD))); 
+             
+             profiledata.setReverseFieldChecks(ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REVERSEFIELDCHECKS)));
 
              numberofsubjectdnfields = profiledata.getSubjectDNFieldOrderLength();
 
