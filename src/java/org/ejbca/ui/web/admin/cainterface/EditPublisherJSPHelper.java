@@ -35,7 +35,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Contains help methods used to parse a publisher jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditPublisherJSPHelper.java,v 1.2 2006-02-09 10:05:38 anatom Exp $
+ * @version $Id: EditPublisherJSPHelper.java,v 1.3 2006-05-12 13:22:50 anatom Exp $
  */
 public class EditPublisherJSPHelper implements java.io.Serializable {
 
@@ -95,6 +95,7 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
     public static final String CHECKBOX_LDAPUSESSL             = "checkboxldapusessl";
     public static final String CHECKBOX_LDAPCREATENONEXISTING  = "checkboxldapcreatenonexisting";
     public static final String CHECKBOX_LDAPMODIFYEXISTING     = "checkboxldapmodifyexisting";
+    public static final String CHECKBOX_LDAPADDMULTIPLECERTIFICATES= "checkboxaldapddmultiplecertificates";
     public static final String SELECT_LDAPUSEFIELDINLDAPDN     = "selectldapusefieldsinldapdn";
 
     public static final String CHECKBOX_ADUSEPASSWORD          = "checkboxadusepassword";
@@ -324,6 +325,11 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                                 else
                                     ldappublisher.setModifyExistingUsers(false);
 
+                                value = request.getParameter(CHECKBOX_LDAPADDMULTIPLECERTIFICATES);
+                                if(value != null)
+                                    ldappublisher.setAddMultipleCertificates(value.equals(CHECKBOX_VALUE));
+                                else
+                                    ldappublisher.setAddMultipleCertificates(false);
 
                                 String[] values = request.getParameterValues(SELECT_LDAPUSEFIELDINLDAPDN);
                                 if(values != null){

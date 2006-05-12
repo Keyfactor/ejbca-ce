@@ -30,8 +30,6 @@ public class LdapSearchPublisher extends LdapPublisher {
 	private static final Logger log = Logger.getLogger(LdapSearchPublisher.class);
 	
 	
-	public static final float LATEST_VERSION = 1;
-	
 	public static final int TYPE_LDAPSEARCHPUBLISHER = 4;
 		
 	// Default Values
@@ -148,7 +146,7 @@ public class LdapSearchPublisher extends LdapPublisher {
 					log.debug("LdapSearchPublisher: No matches found using filter: " +searchFilter + ". Using DN: " + dn);
 				}
 			}
-			// try to read the old objectLeo, compuesta por la plantilla
+			// try to read the old object
 			try {
 				oldEntry = lc.read(dn);
 			} catch (LDAPException e) {
@@ -226,11 +224,16 @@ public class LdapSearchPublisher extends LdapPublisher {
 				attribute = getUserCertAttribute();
 				LDAPAttribute certAttr = new LDAPAttribute(getUserCertAttribute(), incert.getEncoded());
 				if (oldEntry != null) {
-					modSet.add(new LDAPModification(LDAPModification.REPLACE, certAttr));
-					log.debug("LdapSearchPublisher: Se reajusta informacion del LDAP. Se actualiza el certificado del usuario: " +certAttr);
+                    if (getAddMultipleCertificates()) {
+                        modSet.add(new LDAPModification(LDAPModification.ADD, certAttr));                        
+                        log.debug("LdapSearchPublisher: replaced certificate in user entry:" + certAttr);
+                    } else {
+                        modSet.add(new LDAPModification(LDAPModification.REPLACE, certAttr));                                            
+                        log.debug("LdapSearchPublisher: appended new certificate in user entry:" + certAttr);
+                    }
 				} else {
 					attributeSet.add(certAttr);
-					log.debug("LdapSearchPublisher: Se incluira el certificado del usuario:" + certAttr);
+					log.debug("LdapSearchPublisher: added new certificate to user entry:" + certAttr);
 				}
 			} catch (CertificateEncodingException e) {
 				log.error("LdapSearchPublisher: Error encoding certificate when storing in LDAP: ",e);

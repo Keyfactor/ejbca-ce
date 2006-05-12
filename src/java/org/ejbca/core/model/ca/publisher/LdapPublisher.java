@@ -49,7 +49,7 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.3 2006-02-08 11:18:50 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.4 2006-05-12 13:22:50 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
@@ -57,7 +57,7 @@ public class LdapPublisher extends BasePublisher {
 	
 	protected static byte[] fakecrl = null;
 	
-	public static final float LATEST_VERSION = 1;
+	public static final float LATEST_VERSION = 3;
 	
 	public static final int TYPE_LDAPPUBLISHER = 2;
 		
@@ -88,6 +88,7 @@ public class LdapPublisher extends BasePublisher {
     protected static final String CRLATTRIBUTE             = "crlattribute";
     protected static final String ARLATTRIBUTE             = "arlattribute";
     protected static final String USEFIELDINLDAPDN         = "usefieldsinldapdn";
+    protected static final String ADDMULTIPLECERTIFICATES  = "addmultiplecertificates";
     
     
     public LdapPublisher(){
@@ -109,6 +110,8 @@ public class LdapPublisher extends BasePublisher {
         setCRLAttribute(DEFAULT_CRLATTRIBUTE);
         setARLAttribute(DEFAULT_ARLATTRIBUTE);     
         setUseFieldInLdapDN(new ArrayList());
+        // By default use only one certificate for each user
+        setAddMultipleCertificates(false); 
         
         if(fakecrl == null){          
 		  try {
@@ -212,9 +215,16 @@ public class LdapPublisher extends BasePublisher {
             	attribute = getUserCertAttribute();
                 LDAPAttribute certAttr = new LDAPAttribute(getUserCertAttribute(), incert.getEncoded());
                 if (oldEntry != null) {
-                    modSet.add(new LDAPModification(LDAPModification.REPLACE, certAttr));                    
+                    if (getAddMultipleCertificates()) {
+                        modSet.add(new LDAPModification(LDAPModification.ADD, certAttr));                        
+                        log.debug("LdapSearchPublisher: replaced certificate in user entry:" + certAttr);
+                    } else {
+                        modSet.add(new LDAPModification(LDAPModification.REPLACE, certAttr));                                            
+                        log.debug("LdapSearchPublisher: appended new certificate in user entry:" + certAttr);
+                    }
                 } else {
                     attributeSet.add(certAttr);
+                    log.debug("LdapSearchPublisher: added new certificate to user entry:" + certAttr);
                 }
             } catch (CertificateEncodingException e) {
                 log.error("Error encoding certificate when storing in LDAP: ", e);
@@ -465,13 +475,18 @@ public class LdapPublisher extends BasePublisher {
             log.debug("Removing end user certificate from " + getHostname());
 
             if (oldEntry != null) {            	
-                // TODO: Are we the correct type objectclass?
-                modSet = getModificationSet(oldEntry, certdn, false, true);
-                LDAPAttribute attr = new LDAPAttribute(getUserCertAttribute());
-                modSet.add(new LDAPModification(LDAPModification.DELETE, attr));
+                // Don't try to remove the cert if there does not exist any
+                LDAPAttribute oldAttr = oldEntry.getAttribute(getUserCertAttribute());
+                if (oldAttr != null) {
+                    modSet = getModificationSet(oldEntry, certdn, false, true);
+                    LDAPAttribute attr = new LDAPAttribute(getUserCertAttribute());
+                    modSet.add(new LDAPModification(LDAPModification.DELETE, attr));                    
+                } else {
+                    log.info("Trying to remove certificate from LDAP, but no certificate attribute exists in the entry.");
+                }
             }else{
-                log.error("Certificate doesn't exist in database");            
-                throw new PublisherException("Certificate doesn't exist in database");            
+                log.error("Entry holding certificate doesn't exist in LDAP");            
+                throw new PublisherException("Certificate doesn't exist in LDAP");            
             }
         } else  {
             log.debug("Not removing CA certificate from " + getHostname() + "Because of object class restrictions.");
@@ -782,7 +797,21 @@ public class LdapPublisher extends BasePublisher {
     public void setUseFieldInLdapDN(Collection usefieldinldapdn){
     	data.put(USEFIELDINLDAPDN, usefieldinldapdn);
     }    
-	
+
+    /**
+     *  Returns true if multiple certificates should be appended to existing user entries, instead of replacing.
+     */    
+    public boolean getAddMultipleCertificates (){
+        return ((Boolean) data.get(ADDMULTIPLECERTIFICATES)).booleanValue();
+    }
+    /**
+     *  Sets if multiple certificates should be appended to existing user entries, instead of replacing.
+     */        
+    public void setAddMultipleCertificates (boolean appendcerts){
+        data.put(ADDMULTIPLECERTIFICATES, Boolean.valueOf(appendcerts)); 
+    }
+
+
 	
     // Private methods
     /**
@@ -1068,5 +1097,20 @@ public class LdapPublisher extends BasePublisher {
 		return LATEST_VERSION;
 	}
 	
+    /** 
+     * Implemtation of UpgradableDataHashMap function upgrade. 
+     */
+    public void upgrade() {
+        log.debug(">upgrade");
+        if(LATEST_VERSION != getVersion()) {
+            // New version of the class, upgrade
+            log.info("Upgrading LdapPublisher with version "+getVersion());
+            if(data.get(ADDMULTIPLECERTIFICATES) == null) {
+                setAddMultipleCertificates(false);                
+            }
+            data.put(VERSION, new Float(LATEST_VERSION));
+        }
+        log.debug("<upgrade");
+    }
 
 }

@@ -1239,10 +1239,14 @@ Generic parameters to LDAP Publisher:
 <li>'Login DN' is the DN of a user on the LDAP server with permissions to add
 and update enties.</li>
 <li>'Login Password' is the password for the user above.</li>
-<li>'Modify Existing Users' defines if attributes (such as email) in existing LDAP objects are replaced with new values
-when an entry is updated with a new certificate.</li>
 <li>'Create Nonexisting Users' defines if an LDAP object should be created by EJBCA if there is no existing object 
 when EJBCA publishes the certificate.</li>
+<li>'Modify Existing Users' defines if attributes (such as email) in existing LDAP objects are replaced with new values
+when an entry is updated with a new certificate.</li>
+<li>'Add multiple certificates per user' defines if we should use multiple certificate entries for each user or only one.
+Default only one certificate is added to a user entry in LDAP and if the user gets a new certificate the old one is deleted and replaced with the new one.
+If this checkbox is checked certificates are instead appended in LDAP so each user can have multiple certificate entries in LDAP.
+Make sure your applications can handle this before enabling this option. Revoking a user will remove all certificates entries for the user.</li>
 <li>'User Object Class' is the objectclass for the LDAP entries for users,
 where user certificates are published. The entry is hierarchical separated by ';' to
 build a structure like:
