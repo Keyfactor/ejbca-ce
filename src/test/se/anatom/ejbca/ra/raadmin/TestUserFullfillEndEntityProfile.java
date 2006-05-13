@@ -13,9 +13,6 @@
 
 package se.anatom.ejbca.ra.raadmin;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
-
 import junit.framework.TestCase;
 
 import org.apache.log4j.Level;
@@ -53,14 +50,6 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
     protected void tearDown() throws Exception {
     }
 
-    private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
-
-        return null;
-    }
-
-
-    
     /**
      * Test the profile fulfilling rutines
      *
