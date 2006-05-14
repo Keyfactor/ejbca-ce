@@ -308,14 +308,14 @@ function checkallfields(){
          illegalfields++;
       }
     }
-        
+        /*
     if(document.editcertificateprofile.<%=CHECKBOX_USEQCSTATEMENT%>.checked){
       if(document.editcertificateprofile.<%= TEXTFIELD_QCSSEMANTICSID %>.value == "" &&
          document.editcertificateprofile.<%= TEXTFIELD_QCSTATEMENTRANAME %>.value == ""){
           alert("<%= ejbcawebbean.getText("QCFIELDCANNOTBEEMTPY") %>");
           illegalfields++;        
       }
-    }
+    } */
 
     if(!document.editcertificateprofile.<%=TEXTFIELD_QCETSIVALUELIMIT%>.disabled){
       if(!checkfieldfordecimalnumbers("document.editcertificateprofile.<%=TEXTFIELD_QCETSIVALUELIMIT%>","<%= ejbcawebbean.getText("ONLYDECINETSIVALUELIMIT") %>")){
