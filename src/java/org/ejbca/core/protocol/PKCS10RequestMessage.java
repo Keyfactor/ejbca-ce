@@ -44,9 +44,18 @@ import org.ejbca.util.CertTools;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.2 2006-02-28 08:25:28 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.3 2006-05-15 16:31:28 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage {
+    /**
+     * Determines if a de-serialized file is compatible with this class.
+     *
+     * Maintainers must change this value if and only if the new version
+     * of this class is not compatible with old versions. See Sun docs
+     * for <a href=http://java.sun.com/products/jdk/1.1/docs/guide
+     * /serialization/spec/version.doc.html> details. </a>
+     *
+     */
     static final long serialVersionUID = 3597275157018205136L;
 
     private static Logger log = Logger.getLogger(PKCS10RequestMessage.class);

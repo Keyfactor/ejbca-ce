@@ -35,10 +35,19 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Contains help methods used to parse a publisher jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditPublisherJSPHelper.java,v 1.4 2006-05-13 10:14:38 anatom Exp $
+ * @version $Id: EditPublisherJSPHelper.java,v 1.5 2006-05-15 16:31:33 anatom Exp $
  */
 public class EditPublisherJSPHelper implements java.io.Serializable {
 
+    /**
+     * Determines if a de-serialized file is compatible with this class.
+     *
+     * Maintainers must change this value if and only if the new version
+     * of this class is not compatible with old versions. See Sun docs
+     * for <a href=http://java.sun.com/products/jdk/1.1/docs/guide
+     * /serialization/spec/version.doc.html> details. </a>
+     *
+     */
 	private static final long serialVersionUID = 436830207093078432L;
 	
     public static final String ACTION                              = "action";

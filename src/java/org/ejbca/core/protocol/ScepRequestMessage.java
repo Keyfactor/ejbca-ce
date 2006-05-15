@@ -65,10 +65,19 @@ import org.ejbca.util.CertTools;
  * Class to handle SCEP request messages sent to the CA. 
  * TODO: don't forget extensions, e.g. KeyUsage requested by end entity 
  *
- * @version $Id: ScepRequestMessage.java,v 1.3 2006-02-28 08:25:28 anatom Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.4 2006-05-15 16:31:28 anatom Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage {
-    static final long serialVersionUID = -235623330828902051L;
+    /**
+     * Determines if a de-serialized file is compatible with this class.
+     *
+     * Maintainers must change this value if and only if the new version
+     * of this class is not compatible with old versions. See Sun docs
+     * for <a href=http://java.sun.com/products/jdk/1.1/docs/guide
+     * /serialization/spec/version.doc.html> details. </a>
+     *
+     */
+	static final long serialVersionUID = -235623330828902051L;
 
     private static Logger log = Logger.getLogger(ScepRequestMessage.class);
 
