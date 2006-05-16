@@ -1,3 +1,10 @@
+EJBCA 3.2.1
+-----------
+This is a minor release with one new features and some bugfixes.
+Read the changelog for details.
+
+This is a plug-in upgrade from 3.2.0. See UPGRADE for the simple instructions.
+
 EJBCA 3.2.0
 -----------
 This is a release with new enterprise features and an internal restucturing of the code base.
