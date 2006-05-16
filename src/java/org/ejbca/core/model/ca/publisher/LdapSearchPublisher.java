@@ -52,7 +52,7 @@ public class LdapSearchPublisher extends LdapPublisher {
 	public boolean storeCertificate(Admin admin, Certificate incert,
 			String username, String password, String cafp, int status, int type,
 			ExtendedInformation extendedinformation) throws PublisherException {
-		log.debug("LdapSearchPublisher: >storeCertificate(username=" + username +")");
+		log.debug(">storeCertificate(username=" + username +")");
 		int searchScope = LDAPConnection.SCOPE_ONE;
 		int ldapVersion = LDAPConnection.LDAP_V3;
 		String searchbasedn = getSearchBaseDN();
@@ -71,18 +71,20 @@ public class LdapSearchPublisher extends LdapPublisher {
 		try {
 			// Extract the users DN from the cert.
 			certdn = CertTools.getSubjectDN( (X509Certificate) incert);
-			log.debug( "LdapSearchPublisher: Construyendo DN a partir del formulario para " + username);
+			log.debug( "Construyendo DN a partir del formulario para " + username);
 			dn = constructLDAPDN(certdn);
-			log.debug("LdapSearchPublisher: LDAP DN for user " +username +" is " + dn);
+			log.debug("LDAP DN for user " +username +" is " + dn);
 		} catch (Exception e) {
-			log.error("LdapSearchPublisher: Error decoding input certificate: ", e);
+			log.error("Error decoding input certificate: ", e);
 			throw new PublisherException("Error decoding input certificate.");
 		}
 		
 		// Extract the users email from the cert.
 		String email = CertTools.getEMailAddress((X509Certificate)incert);
 		
-		// Check if the entry is already present, first, defined filter will be used. As second option, it check if the entry had been created in other session. We will update it with the new certificate and update LDAP entry if we apporve it
+		// Check if the entry is already present, first, defined filter will be used. 
+        // As second option, it check if the entry had been created in other session. 
+        // We will update it with the new certificate and update LDAP entry if we approve it
 		LDAPEntry oldEntry = null;
 		
 		// PARTE 1: Search for an existing entry in the LDAP directory
@@ -90,15 +92,15 @@ public class LdapSearchPublisher extends LdapPublisher {
 		//  Si no existe, se añadirá toda una entrada LDAP nueva (PARTE 2)
 		try {
 			// connect to the server
-			log.debug("LdapSearchPublisher: Conectando con " + getHostname());
+			log.debug("Connecting to " + getHostname());
 			lc.connect(getHostname(), Integer.parseInt(getPort()));
 			// authenticate to the server
-			log.debug("LdapSearchPublisher: Realizando BIND con DN " + getLoginDN());
+			log.debug("Logging in with BIND DN " + getLoginDN());
 			lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));
 			// Filtro estático:
 			//searchFilter = "(&(objectclass=person)(uid=" + username + "))";
 			String searchFilter = getSearchFilter();
-			log.debug("LdapSearchPublisher: Usando filtro de busqueda " +searchFilter);
+			log.debug("Compiling search filter: " +searchFilter);
 			if (username != null) {
 				Pattern USER = Pattern.compile("\\$USERNAME", Pattern.CASE_INSENSITIVE);
 				searchFilter = USER.matcher(searchFilter).replaceAll(username);
@@ -119,10 +121,10 @@ public class LdapSearchPublisher extends LdapPublisher {
 				Pattern C = Pattern.compile("\\$C", Pattern.CASE_INSENSITIVE);
 				searchFilter = C.matcher(searchFilter).replaceAll(CertTools.getPartFromDN(dn, "C"));
 			}
-			log.debug("LdapSearchPublisher: Resulting search filter " + searchFilter);
+			log.debug("Resulting search filter " + searchFilter);
 			searchScope = LDAPConnection.SCOPE_SUB;
 			attributeOnly = true;
-			log.debug("LdapSearchPublisher: Making SRCH with BaseDN " + getSearchBaseDN() + " and filter " + searchFilter);
+			log.debug("Making SRCH with BaseDN " + getSearchBaseDN() + " and filter " + searchFilter);
 			searchbasedn = getSearchBaseDN();
 			LDAPSearchResults searchResults = lc.search(searchbasedn, // container to search
 					searchScope, // search scope
@@ -132,18 +134,18 @@ public class LdapSearchPublisher extends LdapPublisher {
 			// try to read the old object
 			if (searchResults.getCount() == 1) {
 				oldEntry = searchResults.next();
-				log.debug("LdapSearchPublisher: Found one match with filter: "+searchFilter+", match with DN: " + oldEntry.getDN());
+				log.debug("Found one match with filter: "+searchFilter+", match with DN: " + oldEntry.getDN());
 				dn = oldEntry.getDN();
 			} else {
 				if (searchResults.getCount() > 1) {
-					log.debug("LdapSearchPublisher: Found " +searchResults.getCount() +" matches with filter" + searchFilter +
+					log.debug("Found " +searchResults.getCount() +" matches with filter" + searchFilter +
 							". Se usara el SubjectDN del certificado como DN para la nueva entrada LDAP: " +dn);
 					// Si queremos abortar la operación ante varias coincidencias
 					//new PublisherException("LdapSearchPublisher: Se han encontrado " +
 					//                       searchResults.getCount() +
 					//    " entradas usando el filtro " + searchFilter + ". Se aborta la operacion");
 				} else {
-					log.debug("LdapSearchPublisher: No matches found using filter: " +searchFilter + ". Using DN: " + dn);
+					log.debug("No matches found using filter: " +searchFilter + ". Using DN: " + dn);
 				}
 			}
 			// try to read the old object
@@ -151,17 +153,17 @@ public class LdapSearchPublisher extends LdapPublisher {
 				oldEntry = lc.read(dn);
 			} catch (LDAPException e) {
 				if (e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
-					log.info("LdapSearchPublisher: No old entry exist for '" + dn + "'.");
+					log.info("No old entry exist for '" + dn + "'.");
 				} else {
-					log.info("LdapSearchPublisher: Existe la entrada '" + dn + "', coincidente con el SubjectDN del usuario enrolado.");
+					log.info("Existe la entrada '" + dn + "', coincidente con el SubjectDN del usuario enrolado.");
 				}
 			}
 		} catch (LDAPException e) {
 			if (e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
-				log.info("LdapSearchPublisher: No old entry exist for '" + dn + "'.");
+				log.info("No old entry exist for '" + dn + "'.");
 			} else {
-				log.error("LdapSearchPublisher: Error binding to and reading from LDAP server: ", e);
-				throw new PublisherException("LdapSearchPublisher: Error binding to and reading from LDAP server.");
+				log.error("Error binding to and reading from LDAP server: ", e);
+				throw new PublisherException("Error binding to and reading from LDAP server.");
 			}
         } catch (UnsupportedEncodingException e) {
             log.error("Can't decode password for LDAP login: "+getLoginPassword(), e);
@@ -171,7 +173,7 @@ public class LdapSearchPublisher extends LdapPublisher {
 			try {
 				lc.disconnect();
 			} catch (LDAPException e) {
-				log.error("LdapSearchPublisher: LDAP disconnection failed: ", e);
+				log.error("LDAP disconnection failed: ", e);
 			}
 		}
 		
@@ -185,22 +187,22 @@ public class LdapSearchPublisher extends LdapPublisher {
 		String objectclass = null;
 		
 		if (type == CertificateDataBean.CERTTYPE_ENDENTITY) {
-			log.debug("LdapSearchPublisher: Publishing end user certificate to " +getHostname());
+			log.debug("Publishing end user certificate to " +getHostname());
 			// Llevo a cabo la elaboración de la entrada LDAP resultante final con los atributos dados mediante el subjectDN del certificado
 			
 			if ( (oldEntry != null) && getModifyExistingUsers()) {
 				// TODO: Are we the correct type objectclass?
-				log.debug("LdapSearchPublisher: Se reajusta informacion LDAP de " + getHostname() + ". Prevalece la info del subject DN del certificado.");
+				log.debug("Se reajusta informacion LDAP de " + getHostname() + ". Prevalece la info del subject DN del certificado.");
 				modSet = getModificationSet(oldEntry, certdn, true, true);
 			} else {
 				if (oldEntry != null) {
 					// Omito los cambios en el modSet a aplicar a la entrada LDAP
-					log.debug("LdapSearchPublisher: Se omite informacion del subject DN del certificado. Prevalece informacion LDAP de " +getHostname());
+					log.debug("Se omite informacion del subject DN del certificado. Prevalece informacion LDAP de " +getHostname());
 					modSet = getModificationSet(oldEntry, certdn, false, true);
 				} else {
 					objectclass = getUserObjectClass(); // just used for logging
 					attributeSet = getAttributeSet(incert, getUserObjectClass(), certdn, true, true, password, extendedinformation);
-					log.debug("LdapSearchPublisher: Se creara una nueva entrada con las clases " + objectclass);
+					log.debug("Se creara una nueva entrada con las clases " + objectclass);
 				}
 			}
 			// Llevo a cabo la elaboración de la entrada LDAP resultante final con el atributo mail
@@ -208,13 +210,13 @@ public class LdapSearchPublisher extends LdapPublisher {
 				LDAPAttribute mailAttr = new LDAPAttribute("mail", email);
 				if (oldEntry == null) {
 					attributeSet.add(mailAttr);
-					log.debug("LdapSearchPublisher: Including email in the new entry: "+email);
+					log.debug("Including email in the new entry: "+email);
 				} else {
 					if (getModifyExistingUsers()) {
 						modSet.add(new LDAPModification(LDAPModification.REPLACE, mailAttr));
-						log.debug("LdapSearchPublisher: Changing information in ldap, replacing email with new value: " +email);
+						log.debug("Changing information in ldap, replacing email with new value: " +email);
 					} else {
-						log.debug("LdapSearchPublisher: not changing existing email.");
+						log.debug("Not changing existing email.");
 					}
 				}
 			}
@@ -226,22 +228,21 @@ public class LdapSearchPublisher extends LdapPublisher {
 				if (oldEntry != null) {
                     if (getAddMultipleCertificates()) {
                         modSet.add(new LDAPModification(LDAPModification.ADD, certAttr));                        
-                        log.debug("LdapSearchPublisher: replaced certificate in user entry:" + certAttr);
+                        log.debug("Replaced certificate in user entry:" + certAttr);
                     } else {
                         modSet.add(new LDAPModification(LDAPModification.REPLACE, certAttr));                                            
-                        log.debug("LdapSearchPublisher: appended new certificate in user entry:" + certAttr);
+                        log.debug("Appended new certificate in user entry:" + certAttr);
                     }
 				} else {
 					attributeSet.add(certAttr);
-					log.debug("LdapSearchPublisher: added new certificate to user entry:" + certAttr);
+					log.debug("Added new certificate to user entry:" + certAttr);
 				}
 			} catch (CertificateEncodingException e) {
-				log.error("LdapSearchPublisher: Error encoding certificate when storing in LDAP: ",e);
-				throw new PublisherException(
-				"Error encoding certificate when storing in LDAP.");
+				log.error("Error encoding certificate when storing in LDAP: ",e);
+				throw new PublisherException("Error encoding certificate when storing in LDAP.");
 			}
 		} else if ( (type == CertificateDataBean.CERTTYPE_SUBCA) || (type == CertificateDataBean.CERTTYPE_ROOTCA)) {
-			log.debug("LdapSearchPublisher: Publishing CA certificate to " +getHostname());
+			log.debug("Publishing CA certificate to " +getHostname());
 			
 			if (oldEntry != null) {
 				modSet = getModificationSet(oldEntry, certdn, false, false);
@@ -265,11 +266,11 @@ public class LdapSearchPublisher extends LdapPublisher {
 					log.debug("Added (fake) attribute for CRL and ARL.");
 				}
 			} catch (CertificateEncodingException e) {
-				log.error("LdapSearchPublisher: Error encoding certificate when storing in LDAP: ", e);
+				log.error("Error encoding certificate when storing in LDAP: ", e);
 				throw new PublisherException("Error encoding certificate when storing in LDAP.");
 			}
 		} else {
-			log.info("LdapSearchPublisher: Certificate of type '" + type +"' will not be published.");
+			log.info("Certificate of type '" + type +"' will not be published.");
 			throw new PublisherException("Certificate of type '" + type +"' will not be published.");
 		}
 		
@@ -284,12 +285,12 @@ public class LdapSearchPublisher extends LdapPublisher {
                 LDAPModification[] mods = new LDAPModification[modSet.size()]; 
                 mods = (LDAPModification[])modSet.toArray(mods);
 				lc.modify(dn, mods);
-				log.info("LdapSearchPublisher: Modified object: " + dn + " successfully.");
+				log.info("Modified object: " + dn + " successfully.");
 			} else {
 				if (this.getCreateNonExisingUsers()) {
 						newEntry = new LDAPEntry(dn, attributeSet);
 						lc.add(newEntry);
-						log.info("LdapPublisher: Added object: " + dn + " successfully.");
+						log.info("Added object: " + dn + " successfully.");
 				}
 			}
 		} catch (LDAPException e) {
@@ -303,7 +304,7 @@ public class LdapSearchPublisher extends LdapPublisher {
 			try {
 				lc.disconnect();
 			} catch (LDAPException e) {
-				log.error("LdapSearchPublisher: LDAP disconnection failed: ", e);
+				log.error("LDAP disconnection failed: ", e);
 			}
 		}
 		log.debug("<storeCertificate()");
