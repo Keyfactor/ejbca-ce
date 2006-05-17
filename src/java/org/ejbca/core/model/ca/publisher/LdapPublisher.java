@@ -49,7 +49,7 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.4 2006-05-12 13:22:50 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.5 2006-05-17 13:10:28 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
@@ -57,7 +57,7 @@ public class LdapPublisher extends BasePublisher {
 	
 	protected static byte[] fakecrl = null;
 	
-	public static final float LATEST_VERSION = 3;
+	public static final float LATEST_VERSION = 4;
 	
 	public static final int TYPE_LDAPPUBLISHER = 2;
 		
@@ -89,7 +89,7 @@ public class LdapPublisher extends BasePublisher {
     protected static final String ARLATTRIBUTE             = "arlattribute";
     protected static final String USEFIELDINLDAPDN         = "usefieldsinldapdn";
     protected static final String ADDMULTIPLECERTIFICATES  = "addmultiplecertificates";
-    
+    protected static final String REMOVEREVOKED            = "removerevoked";    
     
     public LdapPublisher(){
     	super();
@@ -111,7 +111,8 @@ public class LdapPublisher extends BasePublisher {
         setARLAttribute(DEFAULT_ARLATTRIBUTE);     
         setUseFieldInLdapDN(new ArrayList());
         // By default use only one certificate for each user
-        setAddMultipleCertificates(false); 
+        setAddMultipleCertificates(false);
+        setRemoveRevokedCertificates(true);
         
         if(fakecrl == null){          
 		  try {
@@ -420,6 +421,12 @@ public class LdapPublisher extends BasePublisher {
 	 */    
 	public void revokeCertificate(Admin admin, Certificate cert, int reason) throws PublisherException{
         log.debug(">revokeCertificate()");
+        // Check first if we should do anything then revoking
+        if ( getRemoveRevokedCertificates() != true ){
+            log.debug("The configuration for the publisher '" + getDescription() + "' does not allow removing of certificates.");
+            return;
+        }
+
         int ldapVersion = LDAPConnection.LDAP_V3;
         LDAPConnection lc = null;
         if(getUseSSL()){
@@ -811,6 +818,18 @@ public class LdapPublisher extends BasePublisher {
         data.put(ADDMULTIPLECERTIFICATES, Boolean.valueOf(appendcerts)); 
     }
 
+    public void setRemoveRevokedCertificates( boolean removerevoked ){
+        data.put(REMOVEREVOKED, Boolean.valueOf(removerevoked));  
+    }
+    
+    public boolean getRemoveRevokedCertificates(){
+        boolean removerevoked = true; //-- default value
+        if ( data.get(REMOVEREVOKED) != null ) {
+            removerevoked = ((Boolean)data.get(REMOVEREVOKED)).booleanValue();
+        }
+        return removerevoked;
+    }
+    
 
 	
     // Private methods
@@ -1107,6 +1126,9 @@ public class LdapPublisher extends BasePublisher {
             log.info("Upgrading LdapPublisher with version "+getVersion());
             if(data.get(ADDMULTIPLECERTIFICATES) == null) {
                 setAddMultipleCertificates(false);                
+            }
+            if(data.get(REMOVEREVOKED) == null) {
+                setRemoveRevokedCertificates(true);                
             }
             data.put(VERSION, new Float(LATEST_VERSION));
         }

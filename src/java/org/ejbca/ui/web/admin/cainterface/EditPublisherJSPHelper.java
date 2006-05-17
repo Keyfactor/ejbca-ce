@@ -35,7 +35,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Contains help methods used to parse a publisher jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditPublisherJSPHelper.java,v 1.5 2006-05-15 16:31:33 anatom Exp $
+ * @version $Id: EditPublisherJSPHelper.java,v 1.6 2006-05-17 13:10:28 anatom Exp $
  */
 public class EditPublisherJSPHelper implements java.io.Serializable {
 
@@ -107,6 +107,7 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
     public static final String CHECKBOX_LDAPCREATENONEXISTING  = "checkboxldapcreatenonexisting";
     public static final String CHECKBOX_LDAPMODIFYEXISTING     = "checkboxldapmodifyexisting";
     public static final String CHECKBOX_LDAPADDMULTIPLECERTIFICATES= "checkboxaldapddmultiplecertificates";
+    public static final String CHECKBOX_LDAP_REVOKE_REMOVECERTIFICATE = "checkboxldaprevokeremovecertificate";
     public static final String SELECT_LDAPUSEFIELDINLDAPDN     = "selectldapusefieldsinldapdn";
 
     public static final String CHECKBOX_ADUSEPASSWORD          = "checkboxadusepassword";
@@ -341,6 +342,12 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                                     ldappublisher.setAddMultipleCertificates(value.equals(CHECKBOX_VALUE));
                                 else
                                     ldappublisher.setAddMultipleCertificates(false);
+
+                                value = request.getParameter(CHECKBOX_LDAP_REVOKE_REMOVECERTIFICATE);
+                                if(value != null)
+                                    ldappublisher.setRemoveRevokedCertificates(value.equals(CHECKBOX_VALUE));
+                                else
+                                    ldappublisher.setRemoveRevokedCertificates(false);
 
                                 String[] values = request.getParameterValues(SELECT_LDAPUSEFIELDINLDAPDN);
                                 if(values != null){
