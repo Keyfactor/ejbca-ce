@@ -66,7 +66,7 @@ import org.ejbca.util.CertTools;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.4 2006-02-27 11:37:56 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.5 2006-05-17 07:49:57 anatom Exp $
  */
 public class CertDistServlet extends HttpServlet {
 
@@ -154,6 +154,7 @@ public class CertDistServlet extends HttpServlet {
         String issuerdn = null; 
         if(req.getParameter(ISSUER_PROPERTY) != null){
           issuerdn = java.net.URLDecoder.decode(req.getParameter(ISSUER_PROPERTY),"UTF-8");
+          issuerdn = CertTools.stringToBCDNString(issuerdn);
         }    
         
 		int caid = 0; 
