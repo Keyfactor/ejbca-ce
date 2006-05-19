@@ -21,6 +21,7 @@ import javax.ejb.CreateException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.BaseEntityBean;
+import org.ejbca.core.model.UpgradeableDataHashMap;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CA;
@@ -41,7 +42,7 @@ import org.ejbca.core.model.ca.caadmin.X509CA;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.1 2006-01-17 20:30:04 anatom Exp $
+ * @version $Id: CADataBean.java,v 1.2 2006-05-19 13:25:08 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a publisher"
@@ -173,13 +174,20 @@ public abstract class CADataBean extends BaseEntityBean {
         java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
         HashMap data = (HashMap) decoder.readObject();
         decoder.close();
-             
+        
+        // If CA-data is upgraded we want to save the new data, so we must get the old version before loading the data 
+        // and perhaps upgrading
+        float oldversion = ((Float) data.get(UpgradeableDataHashMap.VERSION)).floatValue();
         switch(((Integer)(data.get(CA.CATYPE))).intValue()){
             case CAInfo.CATYPE_X509:
-              ca = new X509CA(data, this);
-              break;
-        }      
-      return ca;              
+                ca = new X509CA(data, this);
+                break;
+        }
+        // Compare old version with current version and save the data if there has been a change
+        if ( (ca != null) && (Float.compare(oldversion, ca.getVersion()) != 0) ) {
+            setCA(ca);
+        }
+        return ca;              
     }
     
     /** 

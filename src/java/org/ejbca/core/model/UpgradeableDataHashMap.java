@@ -21,7 +21,7 @@ import java.util.HashMap;
  * UpgradeableDataHashMap is an class implementing the IUpgradeableData intended to be extended by
  * classes saving it's data to a database in BLOB form.
  *
- * @version $Id: UpgradeableDataHashMap.java,v 1.1 2006-01-17 20:30:56 anatom Exp $
+ * @version $Id: UpgradeableDataHashMap.java,v 1.2 2006-05-19 13:25:11 anatom Exp $
  *
  * @see org.ejbca.core.model.IUpgradeableData
  */
@@ -79,5 +79,5 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, java.i
     public abstract void upgrade();
 
     protected HashMap data;
-    protected static final String VERSION = "version";
+    public static final String VERSION = "version";
 }
