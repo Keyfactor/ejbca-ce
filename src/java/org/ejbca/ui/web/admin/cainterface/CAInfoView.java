@@ -32,7 +32,7 @@ import org.ejbca.ui.web.admin.rainterface.RevokedInfoView;
 /**
  * A class representing a view of a CA Information view..
  *
- * @version $Id: CAInfoView.java,v 1.2 2006-01-31 14:34:51 herrvendil Exp $
+ * @version $Id: CAInfoView.java,v 1.3 2006-05-19 13:33:19 anatom Exp $
  */
 public class CAInfoView implements java.io.Serializable, Cloneable {
     // Public constants.
@@ -48,14 +48,16 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
    public static int DESCRIPTION             = 8;
    
    public static int CRLPERIOD               = 10;
-   public static int CRLPUBLISHERS           = 11;
+   public static int CRLISSUEINTERVAL        = 11;
+   
+   public static int CRLPUBLISHERS           = 12;
    
    public static int OCSP                    = 13;
   
     
    public static String[] X509CA_CAINFODATATEXTS = {"NAME","SUBJECTDN","SUBJECTALTNAME","CATYPE","",
                                                     "EXPIRES","STATUS","CATOKENSTATUS","DESCRIPTION","", "CRLPERIOD", 
-                                                    "CRLPUBLISHERS", "", "OCSPSERVICE"};
+                                                    "CRLISSUEINTERVAL", "CRLPUBLISHERS", "", "OCSPSERVICE"};
    
    private String[] cainfodata = null;
    private String[] cainfodatatexts = null;
@@ -128,6 +130,7 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
 		cainfodata[9]          = "&nbsp;"; // blank line
 
         cainfodata[CRLPERIOD] = Integer.toString(((X509CAInfo) cainfo).getCRLPeriod());
+        cainfodata[CRLISSUEINTERVAL] = Integer.toString(((X509CAInfo) cainfo).getCRLIssueInterval());
         
 		cainfodata[CRLPUBLISHERS] = "";
         Iterator iter = ((X509CAInfo) cainfo).getCRLPublishers().iterator();
