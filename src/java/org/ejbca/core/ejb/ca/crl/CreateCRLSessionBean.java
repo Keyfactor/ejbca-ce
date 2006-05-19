@@ -52,7 +52,7 @@ import org.ejbca.util.CertTools;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.3 2006-02-23 15:55:57 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.4 2006-05-19 10:52:47 anatom Exp $
  * @ejb.bean
  *   description="Session bean handling hard token data, both about hard tokens and hard token issuers."
  *   display-name="CreateCRLSB"
@@ -241,7 +241,10 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     
     /**
      * Method that checks if there are any CRLs needed to be updated and then creates their
-     * CRLs. A CRL is created if the current one expires within the crloverlaptime (milliseconds).
+     * CRLs. A CRL is created:
+     * 1. if the current CRL expires within the crloverlaptime (milliseconds)
+     * 2. if a crl issue interval is defined (>0) a CRL is issued when this interval has passed, even if the current CRL is still valid
+     *  
      * This method can be called by a scheduler or a service.
      *
      * @param admin administrator performing the task
@@ -269,10 +272,27 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     			       } else {
     			           try {
     			               CRLInfo crlinfo = store.getLastCRLInfo(admin,cainfo.getSubjectDN());
-    			               if ((currenttime.getTime() + crloverlaptime) >= crlinfo.getExpireDate().getTime()) {
+                               // CRL issueinterval in hours. If this is 0, we should only issue a CRL when
+                               // the old one is about to expire, i.e. when currenttime + overlaptime > expiredate
+                               // if isseuinterval is > 0 we wil issue a new CRL when currenttime > createtime + issueinterval
+    			               int crlissueinterval = cainfo.getCRLIssueInterval();
+                               long nextUpdate = crlinfo.getExpireDate().getTime(); // Default if crlissueinterval == 0
+                               long overlap = crloverlaptime; // Default if crlissueinterval == 0
+                               if (crlissueinterval > 0) {
+                                   long u = crlinfo.getCreateDate().getTime() + ( crlissueinterval * 60 * 60 * 1000);
+                                   // If this period for some reason (we missed to issue some?) is larger than when the CRL expires,
+                                   // we need to issue one when the CRL expires
+                                   if ((u + overlap) < nextUpdate) {
+                                       nextUpdate = u;
+                                       // When we issue CRLs before the real expiration date we don't use overlap
+                                       overlap = 0;
+                                   }
+                               }
+    			               if ((currenttime.getTime() + overlap) >= nextUpdate) {
     			                   this.run(admin, cainfo.getSubjectDN());
     			                   createdcrls++;
     			               }
+    			               
     			           } catch (CATokenOfflineException e) {
                                log.error("CA token for CA "+cainfo.getName()+", "+caid+" is off-line. CRL can not be created!");
     			           }
@@ -300,5 +320,4 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     }
 
 }
-
 

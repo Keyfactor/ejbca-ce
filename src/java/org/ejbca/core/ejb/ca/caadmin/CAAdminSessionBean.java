@@ -95,7 +95,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.13 2006-05-02 12:22:18 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.14 2006-05-19 10:52:47 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -270,19 +270,18 @@ public class CAAdminSessionBean extends BaseSessionBean {
                 getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"Error when creating CA token.",e);
                 throw new EJBException(e);
             }
-        }
-        if(catokeninfo instanceof HardCATokenInfo){
-        	catoken = new HardCATokenContainer();
-        	((HardCATokenContainer) catoken).updateCATokenInfo(catokeninfo);
-        	try{
-        		catoken.activate(((HardCATokenInfo) catokeninfo).getAuthenticationCode());
-        	}catch(CATokenAuthenticationFailedException ctaf){
-        		getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"Error when creating hard CA token. Authorization code was wrong.",ctaf);
-        		throw ctaf;
-        	}catch(CATokenOfflineException ctoe){
-        		getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"Error when creating hard CA token. CA token is offline.",ctoe);
-        		throw ctoe;
-        	}
+        } else if(catokeninfo instanceof HardCATokenInfo){
+            catoken = new HardCATokenContainer();
+            ((HardCATokenContainer) catoken).updateCATokenInfo(catokeninfo);
+            try{
+                catoken.activate(((HardCATokenInfo) catokeninfo).getAuthenticationCode());
+            }catch(CATokenAuthenticationFailedException ctaf){
+                getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"Error when creating hard CA token. Authorization code was wrong.",ctaf);
+                throw ctaf;
+            }catch(CATokenOfflineException ctoe){
+                getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"Error when creating hard CA token. CA token is offline.",ctoe);
+                throw ctoe;
+            }
         }
 
         // Create CA
@@ -1261,6 +1260,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
                                                -1, null, // revokationreason, revokationdate
                                                "", // PolicyId
                                                24, // CRLPeriod
+                                               0, // CRLIssuePeriod
                                                new ArrayList(),
                                                true, // Authority Key Identifier
                                                false, // Authority Key Identifier Critical

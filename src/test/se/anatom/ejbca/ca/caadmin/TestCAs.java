@@ -40,7 +40,7 @@ import org.ejbca.core.model.log.Admin;
 /**
  * Tests the ca data entity bean.
  *
- * @version $Id: TestCAs.java,v 1.6 2006-01-17 20:33:57 anatom Exp $
+ * @version $Id: TestCAs.java,v 1.7 2006-05-19 10:52:47 anatom Exp $
  */
 public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -134,6 +134,7 @@ public class TestCAs extends TestCase {
                     -1, null,
                     null, // PolicyId
                     24, // CRLPeriod
+                    0, // CRLIssueInterval
                     new ArrayList(),
                     true, // Authority Key Identifier
                     false, // Authority Key Identifier Critical

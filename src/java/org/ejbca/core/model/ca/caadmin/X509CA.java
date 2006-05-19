@@ -114,14 +114,14 @@ import org.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.8 2006-05-02 13:29:34 anatom Exp $
+ * @version $Id: X509CA.java,v 1.9 2006-05-19 10:52:47 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
     private static final Logger log = Logger.getLogger(X509CA.class);
 
     // Default Values
-    public static final float LATEST_VERSION = 2;
+    public static final float LATEST_VERSION = 3;
 
     private byte[]  keyId = new byte[] { 1, 2, 3, 4, 5 };
     
@@ -226,7 +226,7 @@ public class X509CA extends CA implements Serializable {
     	                
       return new X509CAInfo(getSubjectDN(), getName(), getStatus(), getSubjectAltName() ,getCertificateProfileId(),  
                     getValidity(), getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(),
-                    getCAToken().getCATokenInfo(), getDescription(), getRevokationReason(), getRevokationDate(), getPolicyId(), getCRLPeriod(), getCRLPublishers(),
+                    getCAToken().getCATokenInfo(), getDescription(), getRevokationReason(), getRevokationDate(), getPolicyId(), getCRLPeriod(), getCRLIssueInterval(), getCRLPublishers(),
                     getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(),
                     getUseCRLNumber(), getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultOCSPServiceLocator(), getFinishUser(), externalcaserviceinfos); 
     }
@@ -584,19 +584,23 @@ public class X509CA extends CA implements Serializable {
        return LATEST_VERSION;
     }
 
-    /** Implemtation of UpgradableDataHashMap function upgrade. */
-
+    /** Implemtation of UpgradableDataHashMap function upgrade. 
+     */
     public void upgrade(){
-      if(LATEST_VERSION != getVersion()){
-        // New version of the class, upgrade
-    	  
-    	  if(data.get(DEFAULTOCSPSERVICELOCATOR) == null){
-    		  setDefaultCRLDistPoint("");
-    		  setDefaultOCSPServiceLocator("");
-    	  }
+        if(LATEST_VERSION != getVersion()){
+            // New version of the class, upgrade
+            log.info("Upgrading X509CA with version "+getVersion());
 
-        data.put(VERSION, new Float(LATEST_VERSION));
-      }  
+            if(data.get(DEFAULTOCSPSERVICELOCATOR) == null){
+                setDefaultCRLDistPoint("");
+                setDefaultOCSPServiceLocator("");
+            }
+            if(data.get(CRLISSUEINTERVAL) == null){
+                setCRLIssueInterval(0);
+            }
+            
+            data.put(VERSION, new Float(LATEST_VERSION));
+        }  
     }
 
     /** 

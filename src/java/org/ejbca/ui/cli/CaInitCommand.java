@@ -35,7 +35,7 @@ import org.ejbca.util.StringTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.2 2006-05-19 10:52:47 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
@@ -113,6 +113,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                                              -1, null,
                                              policyId, // PolicyId
                                              24, // CRLPeriod
+                                             0, // CRLIssueInterval
                                              new ArrayList(),
                                              true, // Authority Key Identifier
                                              false, // Authority Key Identifier Critical

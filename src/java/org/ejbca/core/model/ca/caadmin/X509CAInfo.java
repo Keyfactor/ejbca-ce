@@ -24,7 +24,7 @@ import org.ejbca.util.StringTools;
 /**
  * Holds nonsensitive information about a X509CA.
  *
- * @version $Id: X509CAInfo.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: X509CAInfo.java,v 1.2 2006-05-19 10:52:47 anatom Exp $
  */
 public class X509CAInfo extends CAInfo{
    
@@ -42,7 +42,7 @@ public class X509CAInfo extends CAInfo{
      */
     public X509CAInfo(String subjectdn, String name, int status, String subjectaltname, int certificateprofileid, 
                     int validity, Date expiretime, int catype, int signedby, Collection certificatechain, 
-                    CATokenInfo catokeninfo, String description, int revokationreason, Date revokationdate, String policyid, int crlperiod, Collection crlpublishers,
+                    CATokenInfo catokeninfo, String description, int revokationreason, Date revokationdate, String policyid, int crlperiod, int crlIssueInterval, Collection crlpublishers,
                     boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
                     boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultocspservicelocator, boolean finishuser,
                     Collection extendedcaserviceinfos) {
@@ -61,6 +61,7 @@ public class X509CAInfo extends CAInfo{
         this.revokationdate = revokationdate;
         this.policyid = policyid;
         this.crlperiod = crlperiod;
+        this.crlIssueInterval = crlIssueInterval;
         this.crlpublishers = crlpublishers;
         this.useauthoritykeyidentifier = useauthoritykeyidentifier;
         this.authoritykeyidentifiercritical = authoritykeyidentifiercritical;
@@ -78,7 +79,7 @@ public class X509CAInfo extends CAInfo{
      * Constructor that should be used when updating CA data.
      */
     public X509CAInfo(int caid, int validity, CATokenInfo catokeninfo, String description,
-                      int crlperiod, Collection crlpublishers,
+                      int crlperiod, int crlIssueInterval, Collection crlpublishers,
                       boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
                       boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultocspservicelocator, 
                       boolean finishuser, Collection extendedcaserviceinfos) {        
@@ -87,6 +88,7 @@ public class X509CAInfo extends CAInfo{
         this.catokeninfo = catokeninfo; 
         this.description = description;        
         this.crlperiod = crlperiod;
+        this.crlIssueInterval = crlIssueInterval;
         this.crlpublishers = crlpublishers;
         this.useauthoritykeyidentifier = useauthoritykeyidentifier;
         this.authoritykeyidentifiercritical = authoritykeyidentifiercritical;

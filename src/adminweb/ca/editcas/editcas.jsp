@@ -61,6 +61,7 @@
   static final String TEXTFIELD_SUBJECTDN             = "textfieldsubjectdn";
   static final String TEXTFIELD_SUBJECTALTNAME        = "textfieldsubjectaltname";  
   static final String TEXTFIELD_CRLPERIOD             = "textfieldcrlperiod";
+  static final String TEXTFIELD_CRLISSUEINTERVAL      = "textfieldcrlissueinterval";
   static final String TEXTFIELD_DESCRIPTION           = "textfielddescription";
   static final String TEXTFIELD_VALIDITY              = "textfieldvalidity";
   static final String TEXTFIELD_POLICYID              = "textfieldpolicyid";
@@ -324,6 +325,7 @@
                  policyid = null; 
 
               int crlperiod = Integer.parseInt(request.getParameter(TEXTFIELD_CRLPERIOD));
+              int crlIssueInterval = Integer.parseInt(request.getParameter(TEXTFIELD_CRLISSUEINTERVAL));
 
               boolean useauthoritykeyidentifier = false;
               boolean authoritykeyidentifiercritical = false;
@@ -387,7 +389,7 @@
                                                         certprofileid, validity, 
                                                         null, catype, signedby,
                                                         null, catoken, description, -1, null,
-                                                        policyid, crlperiod, crlpublishers, 
+                                                        policyid, crlperiod, crlIssueInterval, crlpublishers, 
                                                         useauthoritykeyidentifier, 
                                                         authoritykeyidentifiercritical,
                                                         usecrlnumber, 
@@ -418,7 +420,7 @@
                                                         certprofileid, validity,
                                                         null, catype, CAInfo.SIGNEDBYEXTERNALCA,
                                                         null, catoken, description, -1, null, 
-                                                        policyid, crlperiod, crlpublishers, 
+                                                        policyid, crlperiod, crlIssueInterval, crlpublishers, 
                                                         useauthoritykeyidentifier, 
                                                         authoritykeyidentifiercritical,
                                                         usecrlnumber, 
@@ -477,6 +479,7 @@
               // Edit X509 CA data              
               
               int crlperiod = Integer.parseInt(request.getParameter(TEXTFIELD_CRLPERIOD));
+              int crlIssueInterval = Integer.parseInt(request.getParameter(TEXTFIELD_CRLISSUEINTERVAL));
 
               boolean useauthoritykeyidentifier = false;
               boolean authoritykeyidentifiercritical = false;
@@ -544,7 +547,7 @@
              if(crlperiod != 0){
                X509CAInfo x509cainfo = new X509CAInfo(caid, validity,
                                                       catoken, description, 
-                                                      crlperiod, crlpublishers, 
+                                                      crlperiod, crlIssueInterval, crlpublishers, 
                                                       useauthoritykeyidentifier, 
                                                       authoritykeyidentifiercritical,
                                                       usecrlnumber, 
@@ -716,6 +719,7 @@
                  policyid = null; 
 
               int crlperiod = 0;
+              int crlIssueInterval = 0;
 
               boolean useauthoritykeyidentifier = false;
               boolean authoritykeyidentifiercritical = false;              
@@ -732,7 +736,7 @@
                                                         certprofileid, validity, 
                                                         null, catype, signedby,
                                                         null, null, description, -1, null,
-                                                        policyid, crlperiod, crlpublishers, 
+                                                        policyid, crlperiod, crlIssueInterval, crlpublishers, 
                                                         useauthoritykeyidentifier, 
                                                         authoritykeyidentifiercritical,
                                                         usecrlnumber, 
@@ -834,4 +838,3 @@
 
 </body>
 </html>
-

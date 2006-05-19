@@ -25,7 +25,7 @@ import org.ejbca.util.CertTools;
 /**
  * Gets and prints info about the CA.
  *
- * @version $Id: CaInfoCommand.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: CaInfoCommand.java,v 1.2 2006-05-19 10:52:47 anatom Exp $
  */
 public class CaInfoCommand extends BaseCaAdminCommand {
     /**
@@ -55,7 +55,8 @@ public class CaInfoCommand extends BaseCaAdminCommand {
                                     
             getOutputStream().println("CA name: " + caname);
             getOutputStream().println("CA ID: " + cainfo.getCAId());
-            getOutputStream().println("CA CRL Period: " + cainfo.getCRLPeriod());
+            getOutputStream().println("CA CRL Expiration Period: " + cainfo.getCRLPeriod());
+            getOutputStream().println("CA CRL Issue Interval: " + cainfo.getCRLIssueInterval());
             getOutputStream().println("CA Description: " + cainfo.getDescription());
             getOutputStream().println("\n");
             

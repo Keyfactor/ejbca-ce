@@ -579,7 +579,22 @@ function checkallfields(){
             <% if(editca) out.write(" value='" + x509cainfo.getCRLPeriod()+ "'");%>>
            <% } %> 
       </td>
-    </tr>     
+    </tr>
+
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("CRLISSUEINTERVAL") %> (<%= ejbcawebbean.getText("HOURS") %>)
+      </td>
+      <td width="50%">
+           <% if(isexternal){
+                out.write("" + x509cainfo.getCRLIssueInterval());
+              }else{ %>
+         <input type="text" name="<%=TEXTFIELD_CRLISSUEINTERVAL%>" size="40" maxlength="255"
+            <% if(editca) { out.write(" value='" + x509cainfo.getCRLIssueInterval()+ "'"); }%>>
+           <% } %> 
+      </td>
+    </tr>
+
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 
         <%= ejbcawebbean.getText("CRLPUBLISHERS") %> <br>&nbsp;
