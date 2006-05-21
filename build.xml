@@ -1090,6 +1090,7 @@ web.contentencoding    = ${web.contentencoding}
 		    	<exclude name="**/*.class" />
 		    	<exclude name=".classpath" />
 		    	<exclude name=".project" />
+		    	<exclude name="**/.cvsignore" />
 		    </zipfileset>
 		  </zip>
 	</target>
