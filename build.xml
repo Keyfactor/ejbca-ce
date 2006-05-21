@@ -1074,6 +1074,26 @@ web.contentencoding    = ${web.contentencoding}
         </sequential>
     </macrodef>    
 	
+	<target name="ziprelease">
+		<antcall target="clean" />
+        <input message="Version tag for zipfile (ex 3_2_1):" addproperty="ejbca.zipversion" /> 
+		<zip destfile="../ejbca_${ejbca.zipversion}.zip">
+		    <zipfileset dir="." prefix="ejbca"> 
+		    	<include name="**/**" />
+		    	<exclude name="**/CVS/**" />
+		    	<exclude name="tmp/**" />
+		    	<exclude name="dist/**" />
+		    	<exclude name="ocsp-dist/**" />
+		    	<exclude name="out/**" />
+		    	<exclude name="p12/**" />
+		    	<exclude name="hwtoken/**" />
+		    	<exclude name="**/*.class" />
+		    	<exclude name=".classpath" />
+		    	<exclude name=".project" />
+		    </zipfileset>
+		  </zip>
+	</target>
+		
 	<!--
         Target that finds duplicated code. 
         You must install jar files from pmd.sourceforge.net in ANT_HOME/lib so the taskdef finds the class
