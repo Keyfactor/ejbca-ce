@@ -21,12 +21,23 @@ import java.util.HashMap;
  * UpgradeableDataHashMap is an class implementing the IUpgradeableData intended to be extended by
  * classes saving it's data to a database in BLOB form.
  *
- * @version $Id: UpgradeableDataHashMap.java,v 1.2 2006-05-19 13:25:11 anatom Exp $
+ * @version $Id: UpgradeableDataHashMap.java,v 1.3 2006-05-21 16:57:37 anatom Exp $
  *
  * @see org.ejbca.core.model.IUpgradeableData
  */
 public abstract class UpgradeableDataHashMap implements IUpgradeableData, java.io.Serializable {
     /**
+     * Determines if a de-serialized file is compatible with this class.
+     *
+     * Maintainers must change this value if and only if the new version
+     * of this class is not compatible with old versions. See Sun docs
+     * for <a href=http://java.sun.com/products/jdk/1.1/docs/guide
+     * /serialization/spec/version.doc.html> details. </a>
+     *
+     */
+	private static final long serialVersionUID = -1766329888474901945L;
+	
+	/**
      * Creates a new UpgradeableDataHashMap object.
      */
     public UpgradeableDataHashMap() {
