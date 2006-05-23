@@ -300,6 +300,7 @@ web.contentencoding    = ${web.contentencoding}
              sessiontimeout="30" 
              description="EJBCA Administration web" 
              mergeDir="${webdd.src}/merge"
+             distributable="false"
              validatexml="false" />
         </webdoclet>
         <webdoclet force="true" destdir="${src.gen}" excludedtags="@version,@author">
@@ -311,6 +312,7 @@ web.contentencoding    = ${web.contentencoding}
              servletspec="2.3"
              sessiontimeout="30" 
              description="OCSP responder" 
+             distributable="false" 	
              validatexml="false" />
         </webdoclet>
     </target>
