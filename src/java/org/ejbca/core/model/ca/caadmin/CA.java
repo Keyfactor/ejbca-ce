@@ -61,7 +61,7 @@ import org.ejbca.util.CertTools;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.3 2006-05-19 10:52:47 anatom Exp $
+ * @version $Id: CA.java,v 1.4 2006-05-26 17:23:28 anatom Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -87,7 +87,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	protected static final String REVOKATIONDATE                 = "revokationdate";
     protected static final String CERTIFICATEPROFILEID           = "certificateprofileid";
     protected static final String CRLPERIOD                      = "crlperiod";
-    protected static final String CRLISSUEINTERVAL          	 = "crlIssueInterval";
+    protected static final String CRLISSUEINTERVAL               = "crlIssueInterval";
+    protected static final String CRLOVERLAPTIME                 = "crlOverlapTime";
     protected static final String CRLPUBLISHERS                  = "crlpublishers";
 	protected static final String FINISHUSER                     = "finishuser";
 	protected static final String REQUESTCERTCHAIN               = "requestcertchain";
@@ -108,6 +109,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
        data.put(CERTIFICATEPROFILEID, new Integer(cainfo.getCertificateProfileId()));
        setCRLPeriod(cainfo.getCRLPeriod());
        setCRLIssueInterval(cainfo.getCRLIssueInterval());
+       setCRLOverlapTime(cainfo.getCRLOverlapTime());
        setCRLPublishers(cainfo.getCRLPublishers());
        setFinishUser(cainfo.getFinishUser());
        
@@ -193,6 +195,9 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     public int  getCRLIssueInterval(){return ((Integer)data.get(CRLISSUEINTERVAL)).intValue();}
     public void setCRLIssueInterval(int crlIssueInterval) {data.put(CRLISSUEINTERVAL, new Integer(crlIssueInterval));}
     
+    public int  getCRLOverlapTime(){return ((Integer)data.get(CRLOVERLAPTIME)).intValue();}
+    public void setCRLOverlapTime(int crlOverlapTime) {data.put(CRLOVERLAPTIME, new Integer(crlOverlapTime));}
+
     public Collection  getCRLPublishers(){return ((Collection)data.get(CRLPUBLISHERS));}
     public void setCRLPublishers(Collection crlpublishers) {data.put(CRLPUBLISHERS, crlpublishers);}    
     
@@ -334,6 +339,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
       data.put(DESCRIPTION, cainfo.getDescription());      
       data.put(CRLPERIOD, new Integer(cainfo.getCRLPeriod()));
 	  data.put(CRLISSUEINTERVAL, new Integer(cainfo.getCRLIssueInterval()));
+	  data.put(CRLOVERLAPTIME, new Integer(cainfo.getCRLOverlapTime()));
 	  data.put(CRLPUBLISHERS, cainfo.getCRLPublishers());
 	  getCAToken().updateCATokenInfo(cainfo.getCATokenInfo());
       setFinishUser(cainfo.getFinishUser());

@@ -32,32 +32,38 @@ import org.ejbca.ui.web.admin.rainterface.RevokedInfoView;
 /**
  * A class representing a view of a CA Information view..
  *
- * @version $Id: CAInfoView.java,v 1.3 2006-05-19 13:33:19 anatom Exp $
+ * @version $Id: CAInfoView.java,v 1.4 2006-05-26 17:23:28 anatom Exp $
  */
 public class CAInfoView implements java.io.Serializable, Cloneable {
     // Public constants.
 
-   public static int NAME                    = 0;  
-   public static int SUBJECTDN               = 1;   
-   public static int SUBJECTALTNAME          = 2;
-   public static int CATYPE                  = 3;
+   public static final int NAME                    = 0;  
+   public static final int SUBJECTDN               = 1;   
+   public static final int SUBJECTALTNAME          = 2;
+   public static final int CATYPE                  = 3;
    
-   public static int EXPIRETIME              = 5;
-   public static int STATUS                  = 6;
-   public static int CATOKEN_STATUS          = 7;
-   public static int DESCRIPTION             = 8;
+   private static final int CASPACER              = 4;
    
-   public static int CRLPERIOD               = 10;
-   public static int CRLISSUEINTERVAL        = 11;
+   public static final int EXPIRETIME              = 5;
+   public static final int STATUS                  = 6;
+   public static final int CATOKEN_STATUS          = 7;
+   public static final int DESCRIPTION             = 8;
    
-   public static int CRLPUBLISHERS           = 12;
+   private static final int CRLSPACER              = 9;
    
-   public static int OCSP                    = 13;
+   public static final int CRLPERIOD               = 10;
+   public static final int CRLISSUEINTERVAL        = 11;
+   public static final int CRLOVERLAPTIME          = 12;
+   public static final int CRLPUBLISHERS           = 13;
+   
+   private static final int OCSPSPACER             = 14;
+   
+   public static final int OCSP                    = 15;
   
     
    public static String[] X509CA_CAINFODATATEXTS = {"NAME","SUBJECTDN","SUBJECTALTNAME","CATYPE","",
                                                     "EXPIRES","STATUS","CATOKENSTATUS","DESCRIPTION","", "CRLPERIOD", 
-                                                    "CRLISSUEINTERVAL", "CRLPUBLISHERS", "", "OCSPSERVICE"};
+                                                    "CRLISSUEINTERVAL", "CRLOVERLAPTIME", "CRLPUBLISHERS", "", "OCSPSERVICE"};
    
    private String[] cainfodata = null;
    private String[] cainfodatatexts = null;
@@ -83,7 +89,7 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
         cainfodata[SUBJECTALTNAME] = ((X509CAInfo) cainfo).getSubjectAltName();
         cainfodata[NAME]       = cainfo.getName();
         cainfodata[CATYPE]     = ejbcawebbean.getText("X509");
-        cainfodata[4]          = "&nbsp;"; // blank line
+        cainfodata[CASPACER]          = "&nbsp;"; // blank line
         if(cainfo.getExpireTime() == null)
 		  cainfodata[EXPIRETIME] = "";
 		else
@@ -127,10 +133,11 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
         
         cainfodata[DESCRIPTION] = cainfo.getDescription();
         
-		cainfodata[9]          = "&nbsp;"; // blank line
+		cainfodata[CRLSPACER]          = "&nbsp;"; // blank line
 
         cainfodata[CRLPERIOD] = Integer.toString(((X509CAInfo) cainfo).getCRLPeriod());
         cainfodata[CRLISSUEINTERVAL] = Integer.toString(((X509CAInfo) cainfo).getCRLIssueInterval());
+        cainfodata[CRLOVERLAPTIME] = Integer.toString(((X509CAInfo) cainfo).getCRLOverlapTime());
         
 		cainfodata[CRLPUBLISHERS] = "";
         Iterator iter = ((X509CAInfo) cainfo).getCRLPublishers().iterator();
@@ -143,7 +150,7 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
 			cainfodata[CRLPUBLISHERS] = cainfodata[CRLPUBLISHERS] + ", " +
 			                                               (String) publishersidtonamemap.get(iter.next());
         
-		cainfodata[12]          = "&nbsp;"; // blank line
+		cainfodata[OCSPSPACER]          = "&nbsp;"; // blank line
 		
 		boolean active = false;		
 		iter = ((X509CAInfo) cainfo).getExtendedCAServiceInfos().iterator();

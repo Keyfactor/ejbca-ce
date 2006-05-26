@@ -42,8 +42,7 @@ public class CRLCreateThread extends Thread
   private static final int CHECK_15MIN    = 4;
   private static final int CHECK_1MIN      = 5;
 
-  /** We may create new CRLs if the cuurent one expires within this overlap time (milliseconds) */
-  private static final long  CRLOVERLAPTIME = 10*60*1000; 
+  /** We may create new CRLs if the current one expires within this the confiured overlap time + the pollTime */
   private long m_pollTime = 1*60*1000; // Default polltime is 1 minute
   
   private boolean run = false;
@@ -96,10 +95,10 @@ public class CRLCreateThread extends Thread
                try{      
                    if(run)	
                        // Create a new CRL if the old one expires within our polltime + an overlap time, so a CRL is always created
-                       // at least 10 minutes before the old one expires.
+                       // at least the configured (in CA configuration) overlap time minutes before the old one expires.
                        // In this way we will in the worst case get the overlap time as the time 
                        // when applications can get the new CRL before the old one expires.
-                       this.createcrlsession.createCRLs(administrator, m_pollTime+CRLOVERLAPTIME);
+                       this.createcrlsession.createCRLs(administrator, m_pollTime);
                    log.debug("CRLCreateThread: createCRLs");
                }catch(Exception e){
                    log.error("Error generating CRLs: ", e);

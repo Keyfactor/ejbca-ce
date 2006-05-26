@@ -95,7 +95,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.14 2006-05-19 10:52:47 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.15 2006-05-26 17:23:28 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -1261,6 +1261,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
                                                "", // PolicyId
                                                24, // CRLPeriod
                                                0, // CRLIssuePeriod
+                                               10, // CRLOverlapTime
                                                new ArrayList(),
                                                true, // Authority Key Identifier
                                                false, // Authority Key Identifier Critical

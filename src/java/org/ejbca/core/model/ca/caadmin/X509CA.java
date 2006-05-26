@@ -114,14 +114,14 @@ import org.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.9 2006-05-19 10:52:47 anatom Exp $
+ * @version $Id: X509CA.java,v 1.10 2006-05-26 17:23:28 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
     private static final Logger log = Logger.getLogger(X509CA.class);
 
     // Default Values
-    public static final float LATEST_VERSION = 3;
+    public static final float LATEST_VERSION = 4;
 
     private byte[]  keyId = new byte[] { 1, 2, 3, 4, 5 };
     
@@ -226,7 +226,7 @@ public class X509CA extends CA implements Serializable {
     	                
       return new X509CAInfo(getSubjectDN(), getName(), getStatus(), getSubjectAltName() ,getCertificateProfileId(),  
                     getValidity(), getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(),
-                    getCAToken().getCATokenInfo(), getDescription(), getRevokationReason(), getRevokationDate(), getPolicyId(), getCRLPeriod(), getCRLIssueInterval(), getCRLPublishers(),
+                    getCAToken().getCATokenInfo(), getDescription(), getRevokationReason(), getRevokationDate(), getPolicyId(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(), getCRLPublishers(),
                     getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(),
                     getUseCRLNumber(), getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultOCSPServiceLocator(), getFinishUser(), externalcaserviceinfos); 
     }
@@ -591,12 +591,16 @@ public class X509CA extends CA implements Serializable {
             // New version of the class, upgrade
             log.info("Upgrading X509CA with version "+getVersion());
 
-            if(data.get(DEFAULTOCSPSERVICELOCATOR) == null){
+            if (data.get(DEFAULTOCSPSERVICELOCATOR) == null) {
                 setDefaultCRLDistPoint("");
                 setDefaultOCSPServiceLocator("");
             }
-            if(data.get(CRLISSUEINTERVAL) == null){
+            if (data.get(CRLISSUEINTERVAL) == null) {
                 setCRLIssueInterval(0);
+            }
+            if (data.get(CRLOVERLAPTIME) == null) {
+            	// Default value 10 minutes
+            	setCRLOverlapTime(10);
             }
             
             data.put(VERSION, new Float(LATEST_VERSION));

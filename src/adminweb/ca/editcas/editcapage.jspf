@@ -596,6 +596,20 @@ function checkallfields(){
     </tr>
 
     <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("CRLOVERLAPTIME") %> (<%= ejbcawebbean.getText("MINUTES") %>)
+      </td>
+      <td width="50%">
+           <% if(isexternal){
+                out.write("" + x509cainfo.getCRLOverlapTime());
+              }else{ %>
+         <input type="text" name="<%=TEXTFIELD_CRLOVERLAPTIME%>" size="40" maxlength="255"
+            <% if(editca) { out.write(" value='" + x509cainfo.getCRLOverlapTime()+ "'"); }%>>
+           <% } %> 
+      </td>
+    </tr>
+
+    <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 
         <%= ejbcawebbean.getText("CRLPUBLISHERS") %> <br>&nbsp;
       </td>

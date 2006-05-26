@@ -62,6 +62,7 @@
   static final String TEXTFIELD_SUBJECTALTNAME        = "textfieldsubjectaltname";  
   static final String TEXTFIELD_CRLPERIOD             = "textfieldcrlperiod";
   static final String TEXTFIELD_CRLISSUEINTERVAL      = "textfieldcrlissueinterval";
+  static final String TEXTFIELD_CRLOVERLAPTIME        = "textfieldcrloverlaptime";
   static final String TEXTFIELD_DESCRIPTION           = "textfielddescription";
   static final String TEXTFIELD_VALIDITY              = "textfieldvalidity";
   static final String TEXTFIELD_POLICYID              = "textfieldpolicyid";
@@ -326,6 +327,7 @@
 
               int crlperiod = Integer.parseInt(request.getParameter(TEXTFIELD_CRLPERIOD));
               int crlIssueInterval = Integer.parseInt(request.getParameter(TEXTFIELD_CRLISSUEINTERVAL));
+              int crlOverlapTime = Integer.parseInt(request.getParameter(TEXTFIELD_CRLOVERLAPTIME));
 
               boolean useauthoritykeyidentifier = false;
               boolean authoritykeyidentifiercritical = false;
@@ -389,7 +391,7 @@
                                                         certprofileid, validity, 
                                                         null, catype, signedby,
                                                         null, catoken, description, -1, null,
-                                                        policyid, crlperiod, crlIssueInterval, crlpublishers, 
+                                                        policyid, crlperiod, crlIssueInterval, crlOverlapTime, crlpublishers, 
                                                         useauthoritykeyidentifier, 
                                                         authoritykeyidentifiercritical,
                                                         usecrlnumber, 
@@ -420,7 +422,7 @@
                                                         certprofileid, validity,
                                                         null, catype, CAInfo.SIGNEDBYEXTERNALCA,
                                                         null, catoken, description, -1, null, 
-                                                        policyid, crlperiod, crlIssueInterval, crlpublishers, 
+                                                        policyid, crlperiod, crlIssueInterval, crlOverlapTime, crlpublishers, 
                                                         useauthoritykeyidentifier, 
                                                         authoritykeyidentifiercritical,
                                                         usecrlnumber, 
@@ -480,6 +482,7 @@
               
               int crlperiod = Integer.parseInt(request.getParameter(TEXTFIELD_CRLPERIOD));
               int crlIssueInterval = Integer.parseInt(request.getParameter(TEXTFIELD_CRLISSUEINTERVAL));
+              int crlOverlapTime = Integer.parseInt(request.getParameter(TEXTFIELD_CRLOVERLAPTIME));
 
               boolean useauthoritykeyidentifier = false;
               boolean authoritykeyidentifiercritical = false;
@@ -547,7 +550,7 @@
              if(crlperiod != 0){
                X509CAInfo x509cainfo = new X509CAInfo(caid, validity,
                                                       catoken, description, 
-                                                      crlperiod, crlIssueInterval, crlpublishers, 
+                                                      crlperiod, crlIssueInterval, crlOverlapTime, crlpublishers, 
                                                       useauthoritykeyidentifier, 
                                                       authoritykeyidentifiercritical,
                                                       usecrlnumber, 
@@ -720,6 +723,7 @@
 
               int crlperiod = 0;
               int crlIssueInterval = 0;
+              int crlOverlapTime = 10;
 
               boolean useauthoritykeyidentifier = false;
               boolean authoritykeyidentifiercritical = false;              
@@ -736,7 +740,7 @@
                                                         certprofileid, validity, 
                                                         null, catype, signedby,
                                                         null, null, description, -1, null,
-                                                        policyid, crlperiod, crlIssueInterval, crlpublishers, 
+                                                        policyid, crlperiod, crlIssueInterval, crlOverlapTime, crlpublishers, 
                                                         useauthoritykeyidentifier, 
                                                         authoritykeyidentifiercritical,
                                                         usecrlnumber, 

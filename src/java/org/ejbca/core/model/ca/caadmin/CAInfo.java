@@ -22,7 +22,7 @@ import org.ejbca.core.model.ca.catoken.CATokenInfo;
 /**
  * Holds nonsensitive information about a CA.
  *
- * @version $Id: CAInfo.java,v 1.2 2006-05-19 10:52:47 anatom Exp $
+ * @version $Id: CAInfo.java,v 1.3 2006-05-26 17:23:28 anatom Exp $
  */
 public abstract class CAInfo implements Serializable {
 
@@ -59,6 +59,7 @@ public abstract class CAInfo implements Serializable {
     protected int certificateprofileid;
     protected int crlperiod;
     protected int crlIssueInterval = 0;
+    protected int crlOverlapTime = 10;
     protected Collection crlpublishers;  
 	protected boolean finishuser;  
 	protected Collection extendedcaserviceinfos;
@@ -96,8 +97,11 @@ public abstract class CAInfo implements Serializable {
     public void setCRLPeriod(int crlperiod){ this.crlperiod=crlperiod;}
     
     public int getCRLIssueInterval(){ return crlIssueInterval;}
-    public void setCRLIssueInterval(int crlIssueInterval){ this.crlIssueInterval = crlIssueInterval;}
+    public void setCRLIssueInterval(int crlissueinterval){ this.crlIssueInterval = crlissueinterval;}
   
+    public int getCRLOverlapTime(){ return crlOverlapTime;}
+    public void setCRLOverlapTime(int crloverlaptime){ this.crlOverlapTime = crloverlaptime;}
+
     public Collection getCRLPublishers(){ return crlpublishers;}
     public void setCRLPublishers(Collection crlpublishers){this.crlpublishers=crlpublishers;}    
     	
