@@ -534,6 +534,12 @@ web.contentencoding    = ${web.contentencoding}
         <copy todir="${adminweb.build}">
             <fileset dir="${adminweb.src}" />
         </copy>
+    	<delete file="${adminweb.build}/languages/languagefile.zh.properties"/>
+    	<native2ascii encoding="GBK" 
+    		src="${adminweb.src}/languages" 
+    		dest="${adminweb.build}/languages"
+    		includes="languagefile.zh.properties" 
+    	/>
         <copy todir="${adminweb.build}/WEB-INF">
             <fileset dir="${src.dd}/WEB-INF" />
         </copy>
