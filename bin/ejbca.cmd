@@ -14,8 +14,9 @@ if "%1" == "ra" set class_name=org.ejbca.ui.cli.ra
 if "%1" == "setup" set class_name=org.ejbca.ui.cli.setup
 if "%1" == "template" set class_name=org.ejbca.ui.cli.SVGTemplatePrinter
 if "%1" == "ocsp" set class_name=org.ejbca.ui.cli.Ocsp
+if "%1" == "asn1dump" set class_name=org.ejbca.ui.cli.Asn1Dump
 if %class_name% == "" (
-    echo "Usage: %0 [batch|ca|ra|setup|template|ocsp] options"
+    echo "Usage: %0 [batch|ca|ra|setup|template|ocsp|asn1dump] options"
 	echo For options information, specify a command directive
     goto end
 )

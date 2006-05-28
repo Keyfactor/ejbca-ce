@@ -26,8 +26,10 @@ elif [ "$1" = "template" ] ; then
 	class_name=org.ejbca.ui.cli.SVGTemplatePrinter
 elif [ "$1" = "ocsp" ] ; then
 	class_name=org.ejbca.ui.cli.Ocsp
+elif [ "$1" = "asn1dump" ] ; then
+	class_name=org.ejbca.ui.cli.Asn1Dump
 else
-	echo "Usage: $0 [batch|ca|ra|setup|template|ocsp] options"
+	echo "Usage: $0 [batch|ca|ra|setup|template|ocsp|asn1dump] options"
 	echo "For options information, specify a command directive"
 	exit 1
 fi
