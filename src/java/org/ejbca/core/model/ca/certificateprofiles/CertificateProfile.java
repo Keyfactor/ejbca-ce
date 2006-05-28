@@ -34,12 +34,12 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.6 2006-05-28 14:21:08 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.7 2006-05-28 16:22:42 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
     // Default Values
-    public static final float LATEST_VERSION = (float) 17.0;
+    public static final float LATEST_VERSION = (float) 18.0;
 
     /** KeyUsage constants */
     public static final int DIGITALSIGNATURE = 0;
@@ -152,6 +152,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USEQCCUSTOMSTRING              = "useqccustomstring";
     protected static final String QCCUSTOMSTRINGOID              = "qccustomstringoid";
     protected static final String QCCUSTOMSTRINGTEXT             = "qccustomstringtext";
+    protected static final String USESUBJECTDIRATTRIBUTES        = "usesubjectdirattributes";
     
      
     // Public Methods
@@ -759,6 +760,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(QCCUSTOMSTRINGTEXT,qccustomstringtext);
     }
 
+    public boolean getUseSubjectDirAttributes(){ return ((Boolean) data.get(USESUBJECTDIRATTRIBUTES)).booleanValue(); }
+    public void setUseSubjectDirAttributes(boolean useqcstatement) { data.put(USESUBJECTDIRATTRIBUTES, Boolean.valueOf(useqcstatement));}
+
     public Object clone() throws CloneNotSupportedException {
       CertificateProfile clone = new CertificateProfile();
       HashMap clonedata = (HashMap) clone.saveData();
@@ -860,6 +864,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             	setUseQCCustomString(false);
             	setQCCustomStringOid(null);
             	setQCCustomStringText(null);
+            }
+            if (data.get(USESUBJECTDIRATTRIBUTES) == null) {
+            	setUseSubjectDirAttributes(false);
             }
             
         }

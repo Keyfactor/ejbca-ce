@@ -53,6 +53,7 @@ import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.x509.Attribute;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
@@ -115,7 +116,7 @@ import org.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.11 2006-05-28 14:21:11 anatom Exp $
+ * @version $Id: X509CA.java,v 1.12 2006-05-28 16:22:43 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -533,6 +534,22 @@ public class X509CA extends CA implements Serializable {
                  certgen.addExtension(CertTools.QCSTATEMENTS_OBJECTID, certProfile.getQCStatementCritical(), new DERSequence(vec));                 
              }
          }
+         
+         // Subject Directory Attributes
+         if (certProfile.getUseSubjectDirAttributes() == true) {
+        	 // Subject Directory Attributes is a sequence of Attribute
+        	 ArrayList attribute = new ArrayList();
+        	 // TODO: get the attributes from ExtendedInformation
+        	 DEREncodableVector vec = new DEREncodableVector();
+        	 Iterator iter = attribute.iterator();
+        	 while (iter.hasNext()) {
+        		 Attribute a = (Attribute)iter.next();
+        		 vec.add(a);
+        	 }
+        	 // Subject Directory Attributes must always be non-critical
+        	 certgen.addExtension(X509Extensions.SubjectDirectoryAttributes, false, new DERSequence(vec));                 
+        	 
+         }         
 		          
          X509Certificate cert;
          try{

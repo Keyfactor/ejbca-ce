@@ -58,6 +58,7 @@
   static final String CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL     = "checkboxauthoritykeyidentifiercritical";
   static final String CHECKBOX_SUBJECTALTERNATIVENAME             = "checkboxsubjectalternativename";
   static final String CHECKBOX_SUBJECTALTERNATIVENAMECRITICAL     = "checkboxsubjectalternativenamecritical";
+  static final String CHECKBOX_SUBJECTDIRATTRIBUTES               = "checksubjectdirattributes";
   static final String CHECKBOX_CRLDISTRIBUTIONPOINT               = "checkboxcrldistributionpoint";
   static final String CHECKBOX_USEDEFAULTCRLDISTRIBUTIONPOINT     = "checkboxusedefaultcrldistributionpoint";
   static final String CHECKBOX_CRLDISTRIBUTIONPOINTCRITICAL       = "checkboxcrldistributionpointcritical";
@@ -332,6 +333,13 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
              else{
                  certificateprofiledata.setUseSubjectAlternativeName(false);
                  certificateprofiledata.setSubjectAlternativeNameCritical(false); 
+             }
+
+             value = request.getParameter(CHECKBOX_SUBJECTDIRATTRIBUTES);
+             if(value != null){                  
+                  certificateprofiledata.setUseSubjectDirAttributes(value.equals(CHECKBOX_VALUE));
+             } else {
+                 certificateprofiledata.setUseSubjectDirAttributes(false);
              }
 
              use = false;

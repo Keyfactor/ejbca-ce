@@ -518,6 +518,18 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("SUBJECTDIRATTRIBUTES") %>
+
+      </td>
+      <td width="50%">
+           <input type="checkbox" name="<%=CHECKBOX_SUBJECTDIRATTRIBUTES %>" value="<%=CHECKBOX_VALUE %>" 
+           <% if(certificateprofiledata.getUseSubjectDirAttributes())
+                 out.write("CHECKED");
+           %>> 
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("CRLDISTPOINT") %> <br>  <%= ejbcawebbean.getText("CRLDISTPOINTCRITICAL") %> <br> <%= ejbcawebbean.getText("USEDEFAULTCRLDISTPOINT") %> <br> <%= ejbcawebbean.getText("CRLDISTPOINTURI") %>
 
       </td>
