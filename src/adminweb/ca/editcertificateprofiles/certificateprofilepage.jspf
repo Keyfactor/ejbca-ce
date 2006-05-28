@@ -119,6 +119,7 @@ function checkuseqcstatementfield(){
     document.editcertificateprofile.<%= CHECKBOX_USEQCETSIQCCOMPLIANCE %>.disabled = false;
     document.editcertificateprofile.<%= CHECKBOX_USEQCETSIVALUELIMIT %>.disabled = false;
     document.editcertificateprofile.<%= CHECKBOX_USEQCETSISIGNATUREDEVICE %>.disabled = false;
+    document.editcertificateprofile.<%= CHECKBOX_USEQCCUSTOMSTRING %>.disabled = false;
   }
   else{
     document.editcertificateprofile.<%= CHECKBOX_QCSTATEMENTCRITICAL %>.disabled = true;
@@ -135,12 +136,16 @@ function checkuseqcstatementfield(){
     document.editcertificateprofile.<%= CHECKBOX_USEQCETSIVALUELIMIT %>.checked = false;
     document.editcertificateprofile.<%= CHECKBOX_USEQCETSISIGNATUREDEVICE %>.disabled = true;
     document.editcertificateprofile.<%= CHECKBOX_USEQCETSISIGNATUREDEVICE %>.checked = false;
+    document.editcertificateprofile.<%= CHECKBOX_USEQCCUSTOMSTRING %>.disabled = true;
+    document.editcertificateprofile.<%= CHECKBOX_USEQCCUSTOMSTRING %>.checked = false;
     document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMIT %>.disabled = true;
     document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITEXP %>.disabled = true;
     document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITCUR %>.disabled = true;
     document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMIT %>.value = "";
     document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITEXP %>.value = "";
     document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITCUR %>.value = "";
+    document.editcertificateprofile.<%= TEXTFIELD_QCCUSTOMSTRINGOID %>.value = "";
+    document.editcertificateprofile.<%= TEXTFIELD_QCCUSTOMSTRINGTEXT %>.value = "";
   }
 }
 
@@ -157,6 +162,19 @@ function checkuseetsivaluelimitfield(){
     document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMIT %>.value = "";
     document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITEXP %>.value = "";
     document.editcertificateprofile.<%= TEXTFIELD_QCETSIVALUELIMITCUR %>.value = "";
+  }
+}
+
+function checkuseqccustomstring(){
+  if(document.editcertificateprofile.<%=CHECKBOX_USEQCCUSTOMSTRING %>.checked){    
+    document.editcertificateprofile.<%= TEXTFIELD_QCCUSTOMSTRINGOID %>.disabled = false;
+    document.editcertificateprofile.<%= TEXTFIELD_QCCUSTOMSTRINGTEXT %>.disabled = false;
+  }
+  else{
+    document.editcertificateprofile.<%= TEXTFIELD_QCCUSTOMSTRINGOID %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_QCCUSTOMSTRINGTEXT %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_QCCUSTOMSTRINGOID %>.value = "";
+    document.editcertificateprofile.<%= TEXTFIELD_QCCUSTOMSTRINGTEXT %>.value = "";
   }
 }
 
@@ -308,14 +326,6 @@ function checkallfields(){
          illegalfields++;
       }
     }
-        /*
-    if(document.editcertificateprofile.<%=CHECKBOX_USEQCSTATEMENT%>.checked){
-      if(document.editcertificateprofile.<%= TEXTFIELD_QCSSEMANTICSID %>.value == "" &&
-         document.editcertificateprofile.<%= TEXTFIELD_QCSTATEMENTRANAME %>.value == ""){
-          alert("<%= ejbcawebbean.getText("QCFIELDCANNOTBEEMTPY") %>");
-          illegalfields++;        
-      }
-    } */
 
     if(!document.editcertificateprofile.<%=TEXTFIELD_QCETSIVALUELIMIT%>.disabled){
       if(!checkfieldfordecimalnumbers("document.editcertificateprofile.<%=TEXTFIELD_QCETSIVALUELIMIT%>","<%= ejbcawebbean.getText("ONLYDECINETSIVALUELIMIT") %>")){
@@ -757,6 +767,41 @@ function checkallfields(){
 
       </td>
     </tr>                     
+
+    <tr  id="Row<%=row%2%>"> 
+      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("USEQCCUSTOMSTRING") %> </td>
+      <td width="50%" valign="top"><input type="checkbox" name="<%=CHECKBOX_USEQCCUSTOMSTRING %>" onClick="checkuseqccustomstring()" value="<%=CHECKBOX_VALUE %>" 
+           <%
+               if(!certificateprofiledata.getUseQCStatement())
+                 out.write(" disabled "); 
+               else
+                 if(certificateprofiledata.getUseQCCustomString())
+                   out.write("CHECKED");
+           %>>
+
+      </td>
+    </tr>
+    <tr  id="Row<%=row%2%>"> 
+      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("QCCUSTOMSTRINGOID") %> </td>
+      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCCUSTOMSTRINGOID %>" size="10" maxlength="255" 
+           <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCCustomString())
+                      out.write(" disabled "); 
+                    else 
+                      out.write(" value=\"" + certificateprofiledata.getQCCustomStringOid() + "\""); %>>
+
+      </td>
+    </tr>     
+    <tr  id="Row<%=row%2%>"> 
+      <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("QCCUSTOMSTRINGTEXT") %> </td>
+      <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCCUSTOMSTRINGTEXT %>" size="10" maxlength="255" 
+           <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCCustomString())
+                      out.write(" disabled "); 
+                    else 
+                      out.write(" value=\"" + certificateprofiledata.getQCCustomStringText() + "\""); %>>
+
+      </td>
+    </tr>  
+
     <tr  id="Row<%=row++%2%>">
     	<td width="50%" valign="top" align="right"></td>
     	<td width="50%" valign="top" align="right"></td>

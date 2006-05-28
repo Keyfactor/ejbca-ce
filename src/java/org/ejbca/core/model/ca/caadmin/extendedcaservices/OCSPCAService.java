@@ -43,7 +43,7 @@ import org.ejbca.util.KeyTools;
 
 /** Handles and maintains the CA -part of the OCSP functionality
  * 
- * @version $Id: OCSPCAService.java,v 1.2 2006-01-26 14:17:58 anatom Exp $
+ * @version $Id: OCSPCAService.java,v 1.3 2006-05-28 14:21:11 anatom Exp $
  */
 public class OCSPCAService extends ExtendedCAService implements java.io.Serializable{
 
@@ -236,7 +236,7 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 	}
 
 	public void upgrade() {
-		if(LATEST_VERSION != getVersion()){
+    	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
 		  // New version of the class, upgrade
 
 		  data.put(VERSION, new Float(LATEST_VERSION));

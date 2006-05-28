@@ -34,12 +34,12 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.5 2006-05-01 14:20:00 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.6 2006-05-28 14:21:08 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
     // Default Values
-    public static final float LATEST_VERSION = (float) 16.0;
+    public static final float LATEST_VERSION = (float) 17.0;
 
     /** KeyUsage constants */
     public static final int DIGITALSIGNATURE = 0;
@@ -149,6 +149,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String QCETSIVALUELIMITEXP            = "qcetsivaluelimitexp";
     protected static final String QCETSIVALUELIMITCURRENCY       = "qcetsivaluelimitcurrency";
     protected static final String USEQCETSISIGNATUREDEVICE       = "useqcetsisignaturedevice";
+    protected static final String USEQCCUSTOMSTRING              = "useqccustomstring";
+    protected static final String QCCUSTOMSTRINGOID              = "qccustomstringoid";
+    protected static final String QCCUSTOMSTRINGTEXT             = "qccustomstringtext";
     
      
     // Public Methods
@@ -738,7 +741,24 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
     public boolean getUseQCEtsiSignatureDevice(){ return ((Boolean) data.get(USEQCETSISIGNATUREDEVICE)).booleanValue(); }
     public void setUseQCEtsiSignatureDevice(boolean useqcetsisignaturedevice) { data.put(USEQCETSISIGNATUREDEVICE, Boolean.valueOf(useqcetsisignaturedevice));}
-    
+
+    public boolean getUseQCCustomString(){ return ((Boolean) data.get(USEQCCUSTOMSTRING)).booleanValue(); }
+    public void setUseQCCustomString(boolean useqccustomstring) { data.put(USEQCCUSTOMSTRING, Boolean.valueOf(useqccustomstring));}
+    public String getQCCustomStringOid(){ return (String) data.get(QCCUSTOMSTRINGOID); }
+    public void setQCCustomStringOid(String qccustomstringoid) {
+      if(qccustomstringoid==null)
+        data.put(QCCUSTOMSTRINGOID,"");
+      else
+        data.put(QCCUSTOMSTRINGOID,qccustomstringoid);
+    }
+    public String getQCCustomStringText(){ return (String) data.get(QCCUSTOMSTRINGTEXT); }
+    public void setQCCustomStringText(String qccustomstringtext) {
+      if(qccustomstringtext==null)
+        data.put(QCCUSTOMSTRINGTEXT,"");
+      else
+        data.put(QCCUSTOMSTRINGTEXT,qccustomstringtext);
+    }
+
     public Object clone() throws CloneNotSupportedException {
       CertificateProfile clone = new CertificateProfile();
       HashMap clonedata = (HashMap) clone.saveData();
@@ -763,7 +783,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public void upgrade(){
         log.debug(">upgrade");
-        if(LATEST_VERSION != getVersion()){
+    	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // New version of the class, upgrade
             log.info("upgrading certificateprofile with version "+getVersion());
 
@@ -835,6 +855,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             }
             if (data.get(POLICY_NOTICE_CPS_URL) == null) {
                 setCpsUrl(null); // This actually isn't nessecary but for the principle we do it
+            }
+            if (data.get(USEQCCUSTOMSTRING) == null) {
+            	setUseQCCustomString(false);
+            	setQCCustomStringOid(null);
+            	setQCCustomStringText(null);
             }
             
         }

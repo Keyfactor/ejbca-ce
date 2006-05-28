@@ -23,7 +23,7 @@ import org.ejbca.core.model.SecConst;
 /**
  * EnhancedEIDProfile with three certificates and key recovery functionallity
  * 
- * @version $Id: EnhancedEIDProfile.java,v 1.1 2006-01-17 20:31:52 anatom Exp $
+ * @version $Id: EnhancedEIDProfile.java,v 1.2 2006-05-28 14:21:11 anatom Exp $
  */
 public class EnhancedEIDProfile extends EIDProfile {
 						
@@ -142,27 +142,27 @@ public class EnhancedEIDProfile extends EIDProfile {
 	}
 
 	public void upgrade(){
-	  if(LATEST_VERSION != getVersion()){
-		  // New version of the class, upgrade
-	    super.upgrade();
-	    
-	    if(data.get(MINIMUMPINLENGTH) == null){
-	  	  ArrayList minpinlength = new ArrayList(NUMBEROFCERTIFICATES);
-		  minpinlength.add(new Integer(4));
-		  minpinlength.add(new Integer(4));
-		  minpinlength.add(new Integer(0));
-		  data.put(MINIMUMPINLENGTH, minpinlength);
-	    }
-
-	    if(data.get(REUSEOLDCERTIFICATE) == null){
-		  ArrayList reuseoldcertificate = new ArrayList(NUMBEROFCERTIFICATES);
-		  reuseoldcertificate.add(Boolean.FALSE);
-		  reuseoldcertificate.add(Boolean.FALSE);
-		  reuseoldcertificate.add(Boolean.FALSE);
-		  data.put(REUSEOLDCERTIFICATE, reuseoldcertificate);
-	    }
-	    
-	    data.put(VERSION, new Float(LATEST_VERSION));
-	  }   
+		if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
+			// New version of the class, upgrade
+			super.upgrade();
+			
+			if(data.get(MINIMUMPINLENGTH) == null){
+				ArrayList minpinlength = new ArrayList(NUMBEROFCERTIFICATES);
+				minpinlength.add(new Integer(4));
+				minpinlength.add(new Integer(4));
+				minpinlength.add(new Integer(0));
+				data.put(MINIMUMPINLENGTH, minpinlength);
+			}
+			
+			if(data.get(REUSEOLDCERTIFICATE) == null){
+				ArrayList reuseoldcertificate = new ArrayList(NUMBEROFCERTIFICATES);
+				reuseoldcertificate.add(Boolean.FALSE);
+				reuseoldcertificate.add(Boolean.FALSE);
+				reuseoldcertificate.add(Boolean.FALSE);
+				data.put(REUSEOLDCERTIFICATE, reuseoldcertificate);
+			}
+			
+			data.put(VERSION, new Float(LATEST_VERSION));
+		}   
 	}    
 }

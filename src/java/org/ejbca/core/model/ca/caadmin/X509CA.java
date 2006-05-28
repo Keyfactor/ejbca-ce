@@ -52,6 +52,7 @@ import org.bouncycastle.asn1.DEREncodableVector;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
@@ -114,7 +115,7 @@ import org.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.10 2006-05-26 17:23:28 anatom Exp $
+ * @version $Id: X509CA.java,v 1.11 2006-05-28 14:21:11 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -506,6 +507,22 @@ public class X509CA extends CA implements Serializable {
             	 qc = new QCStatement(ETSIQCObjectIdentifiers.id_etsi_qcs_QcSSCD);
                  qcs.add(qc);
              }
+             // Custom UTF8String QC-statement:
+ 			 // qcStatement-YourCustom QC-STATEMENT ::= { SYNTAX YourCustomUTF8String
+			 //   IDENTIFIED BY youroid }
+			 //   -- This statement gives you the possibility to define your own QC-statement
+			 //   -- using an OID and a simple UTF8String, with describing text. A sample text could for example be:
+			 //   -- This certificate, according to Act. No. xxxx Electronic Signature Law is a qualified electronic certificate
+			 //
+			 // YourCustomUTF8String ::= UTF8String
+             if (certProfile.getUseQCCustomString()) {
+            	 if (!StringUtils.isEmpty(certProfile.getQCCustomStringOid()) && !StringUtils.isEmpty(certProfile.getQCCustomStringText())) {
+            		 DERUTF8String str = new DERUTF8String(certProfile.getQCCustomStringText());
+            		 DERObjectIdentifier oid = new DERObjectIdentifier(certProfile.getQCCustomStringOid());
+                	 qc = new QCStatement(oid, str);
+                     qcs.add(qc);            		 
+            	 }
+             }
              if (qcs.size() >  0) {
                  DEREncodableVector vec = new DEREncodableVector();
                  Iterator iter = qcs.iterator();
@@ -529,7 +546,6 @@ public class X509CA extends CA implements Serializable {
         // Verify before returning
         cert.verify(getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN));
         log.debug(">X509CA: generate certificate, CA "+ this.getCAId() + " for DN=" + subject.getDN());
-            
       return cert;                                                                                        
     }
 
@@ -587,7 +603,7 @@ public class X509CA extends CA implements Serializable {
     /** Implemtation of UpgradableDataHashMap function upgrade. 
      */
     public void upgrade(){
-        if(LATEST_VERSION != getVersion()){
+    	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // New version of the class, upgrade
             log.info("Upgrading X509CA with version "+getVersion());
 

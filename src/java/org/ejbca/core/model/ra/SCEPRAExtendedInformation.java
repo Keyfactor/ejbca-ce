@@ -61,10 +61,10 @@ public class SCEPRAExtendedInformation extends ExtendedInformation {
 	 * @see se.anatom.ejbca.ra.ExtendedInformation#upgrade()
 	 */
 	public void upgrade() {
-	  if(LATEST_VERSION != getVersion()){
-	        
-	      data.put(VERSION, new Float(LATEST_VERSION));
-	  }
+		if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
+			
+			data.put(VERSION, new Float(LATEST_VERSION));
+		}
 	}
 	
 }

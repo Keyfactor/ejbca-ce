@@ -21,7 +21,7 @@ import java.util.HashMap;
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: NullCAToken.java,v 1.1 2006-01-17 20:31:51 anatom Exp $
+ * @version $Id: NullCAToken.java,v 1.2 2006-05-28 14:21:11 anatom Exp $
  */
 public class NullCAToken extends CAToken implements java.io.Serializable{
 
@@ -90,11 +90,11 @@ public class NullCAToken extends CAToken implements java.io.Serializable{
     /** Implemtation of UpgradableDataHashMap function upgrade. */
 
     public void upgrade(){
-      if(LATEST_VERSION != getVersion()){
-        // New version of the class, upgrade
-
-        data.put(VERSION, new Float(LATEST_VERSION));
-      }  
+    	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
+    		// New version of the class, upgrade
+    		
+    		data.put(VERSION, new Float(LATEST_VERSION));
+    	}  
     }
 
 	/** 

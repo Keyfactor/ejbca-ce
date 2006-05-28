@@ -17,7 +17,7 @@ package org.ejbca.core.model.ca.certificateprofiles;
 /**
  * RootCACertificateProfile is a class defining the fixed characteristics of a root ca certificate profile.
  *
- * @version $Id: RootCACertificateProfile.java,v 1.2 2006-05-01 14:20:00 anatom Exp $
+ * @version $Id: RootCACertificateProfile.java,v 1.3 2006-05-28 14:21:08 anatom Exp $
  */
 public class RootCACertificateProfile extends CertificateProfile{
 
@@ -46,10 +46,10 @@ public class RootCACertificateProfile extends CertificateProfile{
     // Public Methods.
 
     public void upgrade(){
-      if(LATEST_VERSION != getVersion()){
-        // New version of the class, upgrade
-          super.upgrade();  			      
-      }
+    	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
+    		// New version of the class, upgrade
+    		super.upgrade();  			      
+    	}
     }
     // Private fields.
 }

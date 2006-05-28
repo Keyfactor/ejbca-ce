@@ -24,7 +24,7 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
  * like a image, in an effort to minimize the need for database alterations
  *
  * @author  Philip Vendil
- * @version $Id: ExtendedInformation.java,v 1.2 2006-01-30 06:29:48 herrvendil Exp $
+ * @version $Id: ExtendedInformation.java,v 1.3 2006-05-28 14:21:11 anatom Exp $
  */
 public class ExtendedInformation extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -65,10 +65,10 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     /** Implemtation of UpgradableDataHashMap function upgrade. */
 
     public void upgrade(){
-      if(LATEST_VERSION != getVersion()){
-        // New version of the class, upgrade
-        data.put(VERSION, new Float(LATEST_VERSION));
-      }
+    	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
+    		// New version of the class, upgrade
+    		data.put(VERSION, new Float(LATEST_VERSION));
+    	}
     }
     
     /**

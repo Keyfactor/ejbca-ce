@@ -31,7 +31,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * of ejbca web interface.
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.4 2006-05-07 07:13:15 herrvendil Exp $
+ * @version $Id: EndEntityProfile.java,v 1.5 2006-05-28 14:21:11 anatom Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -712,7 +712,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 
     public void upgrade() {
         log.debug(">upgrade");
-        if(LATEST_VERSION != getVersion()){
+    	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
             log.info("upgrading entityprofile with version "+getVersion());
             // New version of the class, upgrade
             if(getVersion() < 1){

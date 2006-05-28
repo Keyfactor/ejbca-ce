@@ -18,7 +18,7 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
 /**
  * This is a  class containing global configuration parameters.
  *
- * @version $Id: GlobalConfiguration.java,v 1.3 2006-02-19 17:11:25 herrvendil Exp $
+ * @version $Id: GlobalConfiguration.java,v 1.4 2006-05-28 14:21:11 anatom Exp $
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
 
@@ -278,16 +278,14 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     /** Implemtation of UpgradableDataHashMap function upgrade. */
 
     public void upgrade(){
-      if(LATEST_VERSION != getVersion()){
-        // New version of the class, upgrade
-        if(data.get(HARDTOKEN_PATH) == null){
-          data.put(HARDTOKEN_PATH, ((String) data.get(ADMINPATH) + "hardtoken"));
-        }
-
-        data.put(VERSION, new Float(LATEST_VERSION));
-
-
-      }
+    	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
+    		// New version of the class, upgrade
+    		if(data.get(HARDTOKEN_PATH) == null){
+    			data.put(HARDTOKEN_PATH, ((String) data.get(ADMINPATH) + "hardtoken"));
+    		}
+    		
+    		data.put(VERSION, new Float(LATEST_VERSION));    		
+    	}
     }
 
     // Private fields.

@@ -45,6 +45,8 @@
   static final String TEXTFIELD_QCETSIVALUELIMIT       = "textfieldqcetsivaluelimit";
   static final String TEXTFIELD_QCETSIVALUELIMITEXP    = "textfieldqcetsivaluelimitexp";
   static final String TEXTFIELD_QCETSIVALUELIMITCUR    = "textfieldqcetsivaluelimitcur";
+  static final String TEXTFIELD_QCCUSTOMSTRINGOID      = "textfieldqccustomstringoid";
+  static final String TEXTFIELD_QCCUSTOMSTRINGTEXT     = "textfieldqccustomstringtext";
   
   static final String CHECKBOX_BASICCONSTRAINTS                   = "checkboxbasicconstraints";
   static final String CHECKBOX_BASICCONSTRAINTSCRITICAL           = "checkboxbasicconstraintscritical";
@@ -77,6 +79,7 @@
   static final String CHECKBOX_USEQCETSIQCCOMPLIANCE              = "checkqcetsiqcompliance";
   static final String CHECKBOX_USEQCETSIVALUELIMIT                = "checkqcetsivaluelimit";
   static final String CHECKBOX_USEQCETSISIGNATUREDEVICE           = "checkqcetsisignaturedevice";
+  static final String CHECKBOX_USEQCCUSTOMSTRING                  = "checkqccustomstring";
 
   static final String SELECT_AVAILABLEBITLENGTHS                  = "selectavailablebitlengths";
   static final String SELECT_KEYUSAGE                             = "selectkeyusage";
@@ -589,6 +592,9 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
              certificateprofiledata.setQCEtsiValueLimit(0);
              certificateprofiledata.setQCEtsiValueLimitExp(0);
              certificateprofiledata.setQCEtsiValueLimitCurrency("");
+             certificateprofiledata.setUseQCCustomString(false);
+             certificateprofiledata.setQCCustomStringOid("");
+             certificateprofiledata.setQCCustomStringText("");
              
              value = request.getParameter(CHECKBOX_USEQCSTATEMENT);
              if(value != null){                  
@@ -617,6 +623,12 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
                        certificateprofiledata.setQCEtsiValueLimit(new Integer(request.getParameter(TEXTFIELD_QCETSIVALUELIMIT)).intValue());
                        certificateprofiledata.setQCEtsiValueLimitExp(new Integer(request.getParameter(TEXTFIELD_QCETSIVALUELIMITEXP)).intValue());  
                        certificateprofiledata.setQCEtsiValueLimitCurrency(request.getParameter(TEXTFIELD_QCETSIVALUELIMITCUR));                                                                    
+                     }                     
+                     value = request.getParameter(CHECKBOX_USEQCCUSTOMSTRING);
+                     if(value != null) {
+                       certificateprofiledata.setUseQCCustomString(value.equals(CHECKBOX_VALUE));
+                       certificateprofiledata.setQCCustomStringOid(request.getParameter(TEXTFIELD_QCCUSTOMSTRINGOID));
+                       certificateprofiledata.setQCCustomStringText(request.getParameter(TEXTFIELD_QCCUSTOMSTRINGTEXT));  
                      }                     
                      certificateprofiledata.setQCSemanticsId(request.getParameter(TEXTFIELD_QCSSEMANTICSID));
                      certificateprofiledata.setQCStatementRAName(request.getParameter(TEXTFIELD_QCSTATEMENTRANAME));

@@ -49,7 +49,7 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.5 2006-05-17 13:10:28 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.6 2006-05-28 14:21:11 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
@@ -1121,7 +1121,7 @@ public class LdapPublisher extends BasePublisher {
      */
     public void upgrade() {
         log.debug(">upgrade");
-        if(LATEST_VERSION != getVersion()) {
+    	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // New version of the class, upgrade
             log.info("Upgrading LdapPublisher with version "+getVersion());
             if(data.get(ADDMULTIPLECERTIFICATES) == null) {
