@@ -1,3 +1,22 @@
+3.2.1
+---
+New Feature
+
+    * [ECA-263] - Alternitive way of checking end entity profile data
+
+Bug
+
+    * [ECA-139] - It is not possible to use a HSM to sign a pkcs10 req to an external root CA.
+    * [ECA-259] - Exception when importing certificate signed by external CA
+    * [ECA-264] - Remove field restrictions for QC statement
+    * [ECA-273] - Jboss 4.0.4 throws tomcat clustering exceptions with distributable tag in web.xml
+
+Improvement
+
+    * [ECA-265] - Allow ':' in username and DN
+    * [ECA-269] - Web-encoded characters in spanish language file
+    * [ECA-270] - Public web cert dist sensitive to DN order
+
 3.2.0
 ---
 New Feature
