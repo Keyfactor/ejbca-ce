@@ -39,6 +39,7 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -55,17 +56,23 @@ import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DEREncodableVector;
+import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.DERString;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.AccessDescription;
+import org.bouncycastle.asn1.x509.Attribute;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
@@ -74,6 +81,7 @@ import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.PolicyInformation;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.x509.X509NameTokenizer;
@@ -93,7 +101,7 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.6 2006-04-29 09:32:32 anatom Exp $
+ * @version $Id: CertTools.java,v 1.7 2006-05-29 17:26:19 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -115,6 +123,33 @@ public class CertTools {
     public static final String GUID = "guid";
     /** ObjectID for upn altName for windows domain controller guid */
     public static final String GUID_OBJECTID = "1.3.6.1.4.1.311.25.1";
+    /** Object id id-pkix */
+    public static final String id_pkix = "1.3.6.1.5.5.7";
+    /** Object id id-pda */
+    public static final String id_pda = id_pkix + ".9";
+    /** Object id id-pda-dateOfBirth 
+     * DateOfBirth ::= GeneralizedTime
+     */
+    public static final String id_pda_dateOfBirth = id_pda + ".1"; 
+    /** Object id id-pda-placeOfBirth 
+     * PlaceOfBirth ::= DirectoryString 
+     */
+    public static final String id_pda_placeOfBirth = id_pda + ".2"; 
+    /** Object id id-pda-gender
+     *  Gender ::= PrintableString (SIZE(1))
+     *          -- "M", "F", "m" or "f"
+     */
+    public static final String id_pda_gender = id_pda + ".3"; 
+    /** Object id id-pda-countryOfCitizenship
+     * CountryOfCitizenship ::= PrintableString (SIZE (2))
+     *                      -- ISO 3166 Country Code 
+     */
+    public static final String id_pda_countryOfCitizenship = id_pda + ".4"; 
+    /** Object id id-pda-countryOfResidence
+     * CountryOfResidence ::= PrintableString (SIZE (2))
+     *                    -- ISO 3166 Country Code 
+     */
+    public static final String id_pda_countryOfResidence = id_pda + ".5"; 
     /** Object id for qcStatements Extension */
     public static final String QCSTATEMENTS_OBJECTID = "1.3.6.1.5.5.7.1.3";
     /** OID used for creating MS Templates */
@@ -1011,7 +1046,233 @@ public class CertTools {
         return result;            
 	}
 
-    /** Returns all the 'statementId' defined in the QCStatement extension (rfc3739).
+    /**
+     * From an altName string as defined in getSubjectAlternativeName 
+     * @param altName
+     * @return ASN.1 GeneralNames
+     * @see #getSubjectAlternativeName
+     */
+    public static GeneralNames getGeneralNamesFromAltName(String altName) {
+        DEREncodableVector vec = new DEREncodableVector();
+        // TODO: should support several emails as well, just like for dns etc
+        String email = CertTools.getEmailFromDN(altName);
+        if (email != null) {
+            GeneralName gn = new GeneralName(1, new DERIA5String(email));
+            vec.add(gn);
+        }
+        
+        ArrayList dns = CertTools.getPartsFromDN(altName, CertTools.DNS);
+        if (!dns.isEmpty()) {            
+            Iterator iter = dns.iterator();
+            while (iter.hasNext()) {
+                GeneralName gn = new GeneralName(2, new DERIA5String((String)iter.next()));
+                vec.add(gn);
+            }
+        }
+        
+        String directoryName = getDirectoryStringFromAltName(altName);
+        if (directoryName != null) {
+          X509Name x509DirectoryName = new X509Name(directoryName);
+          GeneralName gn = new GeneralName(4, x509DirectoryName);
+          vec.add(gn);
+        }
+                                
+        ArrayList uri = CertTools.getPartsFromDN(altName, CertTools.URI);
+        if (!uri.isEmpty()) {            
+            Iterator iter = uri.iterator();
+            while (iter.hasNext()) {
+                GeneralName gn = new GeneralName(6, new DERIA5String((String)iter.next()));
+                vec.add(gn);
+            }
+        }
+
+        uri = CertTools.getPartsFromDN(altName, CertTools.URI1);
+        if (!uri.isEmpty()) {            
+            Iterator iter = uri.iterator();
+            while (iter.hasNext()) {
+                GeneralName gn = new GeneralName(6, new DERIA5String((String)iter.next()));
+                vec.add(gn);
+            }
+        }
+        
+                
+        ArrayList ipstr = CertTools.getPartsFromDN(altName, CertTools.IPADDR);
+        if (!ipstr.isEmpty()) {            
+            Iterator iter = ipstr.iterator();
+            while (iter.hasNext()) {
+                byte[] ipoctets = StringTools.ipStringToOctets((String)iter.next());
+                GeneralName gn = new GeneralName(7, new DEROctetString(ipoctets));
+                vec.add(gn);
+            }
+        }
+                    
+        ArrayList upn =  CertTools.getPartsFromDN(altName, CertTools.UPN);
+        if (!upn.isEmpty()) {            
+            Iterator iter = upn.iterator();             
+            while (iter.hasNext()) {
+                ASN1EncodableVector v = new ASN1EncodableVector();
+                v.add(new DERObjectIdentifier(CertTools.UPN_OBJECTID));
+                v.add(new DERTaggedObject(true, 0, new DERUTF8String((String)iter.next())));
+                //GeneralName gn = new GeneralName(new DERSequence(v), 0);
+                DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
+                vec.add(gn);
+            }
+        }
+        
+        
+        ArrayList guid =  CertTools.getPartsFromDN(altName, CertTools.GUID);
+        if (!guid.isEmpty()) {            
+            Iterator iter = guid.iterator();                
+            while (iter.hasNext()) {                    
+                ASN1EncodableVector v = new ASN1EncodableVector();
+                byte[] guidbytes = Hex.decode((String)iter.next());
+                if (guidbytes != null) {
+                    v.add(new DERObjectIdentifier(CertTools.GUID_OBJECTID));
+                    v.add(new DERTaggedObject(true, 0, new DEROctetString(guidbytes)));
+                    DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
+                    vec.add(gn);                    
+                } else {
+                    log.error("Cannot decode hexadecimal guid: "+guid);
+                }
+            }
+        }
+        GeneralNames ret = null; 
+        if (vec.size() > 0) {
+            ret = new GeneralNames(new DERSequence(vec));
+        }
+        return ret;
+    }
+    
+	/**
+	 * SubjectDirectoryAttributes ::= SEQUENCE SIZE (1..MAX) OF Attribute
+	 *
+	 * Attribute ::= SEQUENCE {
+     *  type AttributeType,
+     *  values SET OF AttributeValue }
+     *  -- at least one value is required
+     * 
+     * AttributeType ::= OBJECT IDENTIFIER
+     * AttributeValue ::= ANY
+     * 
+	 * SubjectDirectoryAttributes is of form 
+	 * dateOfBirth=<19590927>, placeOfBirth=<string>, gender<M/F>, countryOfCitizenship<two letter ISO3166> and countryOfResidence=<two letter ISO3166>
+     * 
+     * Supported subjectDirectoryAttributes are the ones above 
+	 *
+	 * @param certificate containing subject directory attributes
+	 * @return String containing directoryAttributes of form the form specified above or null if no directoryAttributes exist. 
+	 *   Values in returned String is from CertTools constants. 
+	 *   DirectoryAttributes not supported are simply not shown in the resulting string.  
+	 * @throws java.lang.Exception
+	 */
+	public static String getSubjectDirectoryAttributes(X509Certificate certificate) throws Exception {
+		log.debug("Search for SubjectAltName");
+        DERObject obj = getExtensionValue(certificate, X509Extensions.SubjectDirectoryAttributes.getId());
+        if (obj == null) {
+            return null;
+        }
+        ASN1Sequence seq = (ASN1Sequence)obj;
+        
+        String result = null;
+        String prefix = "";
+		SimpleDateFormat dateF = new SimpleDateFormat("yyyyMMddHHmmss");
+        for (int i = 0; i < seq.size(); i++) {
+        	Attribute attr = Attribute.getInstance(seq.getObjectAt(i));
+        	if (result != null) {
+        		prefix = ", ";
+        	}
+        	if (attr.getAttrType().getId().equals(id_pda_dateOfBirth)) {
+        		ASN1Set set = attr.getAttrValues();
+        		// Come on, we'll only allow one dateOfBirth, we're not allowing such frauds with multiple birth dates
+        		DERGeneralizedTime time = DERGeneralizedTime.getInstance(set.getObjectAt(0));
+        		Date date = time.getDate();
+        		String dateStr = dateF.format(date) +"Z";
+        		result += prefix + "dateOfBirth="+dateStr; 
+        	}
+        	if (attr.getAttrType().getId().equals(id_pda_placeOfBirth)) {
+        		ASN1Set set = attr.getAttrValues();
+        		// same here only one placeOfBirth
+        		String pb = ((DERString)set.getObjectAt(0)).getString();
+        		result += prefix + "placeOfBirth="+pb;        			
+        	}
+        	if (attr.getAttrType().getId().equals(id_pda_gender)) {
+        		ASN1Set set = attr.getAttrValues();
+        		// same here only one gender
+        		String g = ((DERString)set.getObjectAt(0)).getString();
+        		result += prefix + "gender="+g;        			
+        	}
+        	if (attr.getAttrType().getId().equals(id_pda_countryOfCitizenship)) {
+        		ASN1Set set = attr.getAttrValues();
+        		// same here only one citizenship
+        		String g = ((DERString)set.getObjectAt(0)).getString();
+        		result += prefix + "countryOfCitizenship="+g;        			
+        	}
+        	if (attr.getAttrType().getId().equals(id_pda_countryOfResidence)) {
+        		ASN1Set set = attr.getAttrValues();
+        		// same here only one residence
+        		String g = ((DERString)set.getObjectAt(0)).getString();
+        		result += prefix + "countryOfResidence="+g;        			
+        	}
+        }
+
+        if (StringUtils.isEmpty(result)) {
+            return null;
+        }
+        return result;            
+	}
+
+    /**
+     * From subjectDirAttributes string as defined in getSubjectDirAttribute 
+     * @param string of SubjectDirectoryAttributes
+     * @return A Collection of ASN.1 Attribute (org.bouncycastle.asn1.x509), or an empty Collection, never null
+     * @see #getSubjectDirectoryAttributes(X509Certificate)
+     */
+    public static Collection getSubjectDirectoryAttributes(String dirAttr) {
+    	ArrayList ret = new ArrayList();
+    	Attribute attr = null;
+        String value = CertTools.getPartFromDN(dirAttr, "countryOfResidence");
+        if (!StringUtils.isEmpty(value)) {
+        	DEREncodableVector vec = new DEREncodableVector();
+        	vec.add(new DERPrintableString(value));
+        	attr = new Attribute(new DERObjectIdentifier(id_pda_countryOfResidence),new DERSet(vec));
+        	ret.add(attr);
+        }
+        value = CertTools.getPartFromDN(dirAttr, "countryOfCitizenship");
+        if (!StringUtils.isEmpty(value)) {
+        	DEREncodableVector vec = new DEREncodableVector();
+        	vec.add(new DERPrintableString(value));
+        	attr = new Attribute(new DERObjectIdentifier(id_pda_countryOfCitizenship),new DERSet(vec));
+        	ret.add(attr);
+        }
+        value = CertTools.getPartFromDN(dirAttr, "gender");
+        if (!StringUtils.isEmpty(value)) {
+        	DEREncodableVector vec = new DEREncodableVector();
+        	vec.add(new DERPrintableString(value));
+        	attr = new Attribute(new DERObjectIdentifier(id_pda_gender),new DERSet(vec));
+        	ret.add(attr);
+        }
+        value = CertTools.getPartFromDN(dirAttr, "placeOfBirth");
+        if (!StringUtils.isEmpty(value)) {
+        	DEREncodableVector vec = new DEREncodableVector();
+        	X509DefaultEntryConverter conv = new X509DefaultEntryConverter();
+        	DERObject obj = conv.getConvertedValue(new DERObjectIdentifier(id_pda_placeOfBirth), value);
+        	vec.add(obj);
+        	attr = new Attribute(new DERObjectIdentifier(id_pda_placeOfBirth),new DERSet(vec));
+        	ret.add(attr);
+        }        
+        // dateOfBirth that is a GeneralizedTime
+        // The correct format for this is YYYYMMDDHHMMSSZ
+        value = CertTools.getPartFromDN(dirAttr, "dateOfBirth");
+        if (!StringUtils.isEmpty(value)) {
+        	DEREncodableVector vec = new DEREncodableVector();
+        	vec.add(new DERGeneralizedTime(value));
+        	attr = new Attribute(new DERObjectIdentifier(id_pda_dateOfBirth),new DERSet(vec));
+        	ret.add(attr);
+        }
+        return ret;
+    }
+    
+	/** Returns all the 'statementId' defined in the QCStatement extension (rfc3739).
      * 
      * @param cert Certificate containing the extension
      * @return Collection of String with the oid, for example "1.1.1.2", or empty Collection if no identifier is found, never returns null.
@@ -1292,6 +1553,9 @@ public class CertTools {
      */
     private static DERObject getExtensionValue(X509Certificate cert, String oid)
       throws IOException {
+    	if (cert == null) {
+    		return null;
+    	}
         byte[] bytes = cert.getExtensionValue(oid);
         if (bytes == null) {
             return null;
@@ -1557,104 +1821,6 @@ public class CertTools {
         }
     }
 
-    /**
-     * From an altName string as defined in getSubjectAlternativeName 
-     * @param altName
-     * @return ASN.1 GeneralNames
-     * @see #getSubjectAlternativeName
-     */
-    public static GeneralNames getGeneralNamesFromAltName(String altName) {
-        DEREncodableVector vec = new DEREncodableVector();
-        // TODO: should support several emails as well, just like for dns etc
-        String email = CertTools.getEmailFromDN(altName);
-        if (email != null) {
-            GeneralName gn = new GeneralName(1, new DERIA5String(email));
-            vec.add(gn);
-        }
-        
-        ArrayList dns = CertTools.getPartsFromDN(altName, CertTools.DNS);
-        if (!dns.isEmpty()) {            
-            Iterator iter = dns.iterator();
-            while (iter.hasNext()) {
-                GeneralName gn = new GeneralName(2, new DERIA5String((String)iter.next()));
-                vec.add(gn);
-            }
-        }
-        
-        String directoryName = getDirectoryStringFromAltName(altName);
-        if (directoryName != null) {
-          X509Name x509DirectoryName = new X509Name(directoryName);
-          GeneralName gn = new GeneralName(4, x509DirectoryName);
-          vec.add(gn);
-        }
-                                
-        ArrayList uri = CertTools.getPartsFromDN(altName, CertTools.URI);
-        if (!uri.isEmpty()) {            
-            Iterator iter = uri.iterator();
-            while (iter.hasNext()) {
-                GeneralName gn = new GeneralName(6, new DERIA5String((String)iter.next()));
-                vec.add(gn);
-            }
-        }
-
-        uri = CertTools.getPartsFromDN(altName, CertTools.URI1);
-        if (!uri.isEmpty()) {            
-            Iterator iter = uri.iterator();
-            while (iter.hasNext()) {
-                GeneralName gn = new GeneralName(6, new DERIA5String((String)iter.next()));
-                vec.add(gn);
-            }
-        }
-        
-                
-        ArrayList ipstr = CertTools.getPartsFromDN(altName, CertTools.IPADDR);
-        if (!ipstr.isEmpty()) {            
-            Iterator iter = ipstr.iterator();
-            while (iter.hasNext()) {
-                byte[] ipoctets = StringTools.ipStringToOctets((String)iter.next());
-                GeneralName gn = new GeneralName(7, new DEROctetString(ipoctets));
-                vec.add(gn);
-            }
-        }
-                    
-        ArrayList upn =  CertTools.getPartsFromDN(altName, CertTools.UPN);
-        if (!upn.isEmpty()) {            
-            Iterator iter = upn.iterator();             
-            while (iter.hasNext()) {
-                ASN1EncodableVector v = new ASN1EncodableVector();
-                v.add(new DERObjectIdentifier(CertTools.UPN_OBJECTID));
-                v.add(new DERTaggedObject(true, 0, new DERUTF8String((String)iter.next())));
-                //GeneralName gn = new GeneralName(new DERSequence(v), 0);
-                DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
-                vec.add(gn);
-            }
-        }
-        
-        
-        ArrayList guid =  CertTools.getPartsFromDN(altName, CertTools.GUID);
-        if (!guid.isEmpty()) {            
-            Iterator iter = guid.iterator();                
-            while (iter.hasNext()) {                    
-                ASN1EncodableVector v = new ASN1EncodableVector();
-                byte[] guidbytes = Hex.decode((String)iter.next());
-                if (guidbytes != null) {
-                    v.add(new DERObjectIdentifier(CertTools.GUID_OBJECTID));
-                    v.add(new DERTaggedObject(true, 0, new DEROctetString(guidbytes)));
-                    DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
-                    vec.add(gn);                    
-                } else {
-                    log.error("Cannot decode hexadecimal guid: "+guid);
-                }
-            }
-        }
-        GeneralNames ret = null; 
-        if (vec.size() > 0) {
-            ret = new GeneralNames(new DERSequence(vec));
-        }
-        return ret;
-    }
-    
-    
     /**
      * Obtains a Vector with the DERObjectIdentifiers for 
      * dNObjects names.

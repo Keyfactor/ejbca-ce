@@ -116,7 +116,7 @@ import org.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.12 2006-05-28 16:22:43 anatom Exp $
+ * @version $Id: X509CA.java,v 1.13 2006-05-29 17:26:17 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -537,11 +537,12 @@ public class X509CA extends CA implements Serializable {
          
          // Subject Directory Attributes
          if (certProfile.getUseSubjectDirAttributes() == true) {
-        	 // Subject Directory Attributes is a sequence of Attribute
-        	 ArrayList attribute = new ArrayList();
         	 // TODO: get the attributes from ExtendedInformation
+        	 String dirAttrString = null;
+        	 // Subject Directory Attributes is a sequence of Attribute
+        	 Collection attr = CertTools.getSubjectDirectoryAttributes(dirAttrString);
         	 DEREncodableVector vec = new DEREncodableVector();
-        	 Iterator iter = attribute.iterator();
+        	 Iterator iter = attr.iterator();
         	 while (iter.hasNext()) {
         		 Attribute a = (Attribute)iter.next();
         		 vec.add(a);
