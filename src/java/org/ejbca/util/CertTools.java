@@ -101,7 +101,7 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.7 2006-05-29 17:26:19 anatom Exp $
+ * @version $Id: CertTools.java,v 1.8 2006-05-30 07:28:50 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -1155,7 +1155,7 @@ public class CertTools {
      * AttributeValue ::= ANY
      * 
 	 * SubjectDirectoryAttributes is of form 
-	 * dateOfBirth=<19590927>, placeOfBirth=<string>, gender<M/F>, countryOfCitizenship<two letter ISO3166> and countryOfResidence=<two letter ISO3166>
+	 * dateOfBirth=<19590927>, placeOfBirth=<string>, gender=<M/F>, countryOfCitizenship=<two letter ISO3166>, countryOfResidence=<two letter ISO3166>
      * 
      * Supported subjectDirectoryAttributes are the ones above 
 	 *
@@ -1173,12 +1173,12 @@ public class CertTools {
         }
         ASN1Sequence seq = (ASN1Sequence)obj;
         
-        String result = null;
+        String result = "";
         String prefix = "";
-		SimpleDateFormat dateF = new SimpleDateFormat("yyyyMMddHHmmss");
+		SimpleDateFormat dateF = new SimpleDateFormat("yyyyMMdd");
         for (int i = 0; i < seq.size(); i++) {
         	Attribute attr = Attribute.getInstance(seq.getObjectAt(i));
-        	if (result != null) {
+        	if (!StringUtils.isEmpty(result)) {
         		prefix = ", ";
         	}
         	if (attr.getAttrType().getId().equals(id_pda_dateOfBirth)) {
@@ -1186,7 +1186,7 @@ public class CertTools {
         		// Come on, we'll only allow one dateOfBirth, we're not allowing such frauds with multiple birth dates
         		DERGeneralizedTime time = DERGeneralizedTime.getInstance(set.getObjectAt(0));
         		Date date = time.getDate();
-        		String dateStr = dateF.format(date) +"Z";
+        		String dateStr = dateF.format(date);
         		result += prefix + "dateOfBirth="+dateStr; 
         	}
         	if (attr.getAttrType().getId().equals(id_pda_placeOfBirth)) {
@@ -1261,13 +1261,18 @@ public class CertTools {
         	ret.add(attr);
         }        
         // dateOfBirth that is a GeneralizedTime
-        // The correct format for this is YYYYMMDDHHMMSSZ
+        // The correct format for this is YYYYMMDD, it will be padded to YYYYMMDD120000Z
         value = CertTools.getPartFromDN(dirAttr, "dateOfBirth");
         if (!StringUtils.isEmpty(value)) {
-        	DEREncodableVector vec = new DEREncodableVector();
-        	vec.add(new DERGeneralizedTime(value));
-        	attr = new Attribute(new DERObjectIdentifier(id_pda_dateOfBirth),new DERSet(vec));
-        	ret.add(attr);
+            if (value.length() == 8) {
+                value += "120000Z"; // standard format according to rfc3739
+                DEREncodableVector vec = new DEREncodableVector();
+                vec.add(new DERGeneralizedTime(value));
+                attr = new Attribute(new DERObjectIdentifier(id_pda_dateOfBirth),new DERSet(vec));
+                ret.add(attr);                
+            } else {
+                log.error("Wrong length of data for 'dateOfBirth', should be of format YYYYMMDD, skipping...");
+            }
         }
         return ret;
     }
