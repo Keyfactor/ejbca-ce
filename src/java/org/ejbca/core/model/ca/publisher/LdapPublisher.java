@@ -49,7 +49,7 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.6 2006-05-28 14:21:11 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.7 2006-05-31 11:25:33 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
@@ -397,8 +397,8 @@ public class LdapPublisher extends BasePublisher {
                 log.debug("Added object: " + dn + " successfully.");                
             }
         } catch (LDAPException e) {
-            log.error("Error storing CRL (" + getCRLAttribute() + ") in LDAP (" + getCAObjectClass() + "): ", e);
-            throw new PublisherException("Error storing CRL (" + getCRLAttribute() + ") in LDAP (" + getCAObjectClass() + "): ");                        
+            log.error("Error storing CRL (" + getCRLAttribute() + ") in LDAP (" + getCAObjectClass() + ") for DN (" + dn + "): ", e);
+            throw new PublisherException("Error storing CRL (" + getCRLAttribute() + ") in LDAP (" + getCAObjectClass() + ") for DN (" + dn + ").");                        
         } catch (UnsupportedEncodingException e) {
             log.error("Can't decode password for LDAP login: "+getLoginPassword(), e);
             throw new PublisherException("Can't decode password when storing (" + getCRLAttribute() + ") in LDAP (" + getCAObjectClass() + ") for DN (" + dn + ").");            
