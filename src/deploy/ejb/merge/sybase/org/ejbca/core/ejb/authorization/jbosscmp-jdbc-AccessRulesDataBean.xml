@@ -1,5 +1,6 @@
 <cmp-field>
-  <field-name>PK</field-name>
+  <field-name>primKey</field-name>
+  <column-name>pK</column-name>
 </cmp-field>
 <cmp-field>
   <field-name>accessRule</field-name>
