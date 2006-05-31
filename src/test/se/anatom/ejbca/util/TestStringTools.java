@@ -22,7 +22,7 @@ import org.ejbca.util.StringTools;
 /**
  * Tests the StringTools class .
  *
- * @version $Id: TestStringTools.java,v 1.6 2006-01-17 20:34:15 anatom Exp $
+ * @version $Id: TestStringTools.java,v 1.7 2006-05-31 08:02:30 anatom Exp $
  */
 public class TestStringTools extends TestCase {
     private static Logger log = Logger.getLogger(TestStringTools.class);
@@ -72,7 +72,7 @@ public class TestStringTools extends TestCase {
     	String strip1 = "foo$bar:far%";
     	String stripped = StringTools.strip(strip1);
     	assertTrue("String has chars that should be stripped!", StringTools.hasSqlStripChars(strip1));
-    	assertEquals("String not stripped correctly!", stripped, "foo/bar/far/");
+    	assertEquals("String not stripped correctly!", stripped, "foo/bar:far/");
 		log.debug("<test03Strip()");
     }
     public void test04Strip() throws Exception {
