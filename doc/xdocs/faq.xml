@@ -7,6 +7,18 @@
 
   <faqsection title="About this FAQ">
     <faq>
+      <question>During the build process I get errors like:
+      BUILD FAILED
+      /usr/ejbca/build.xml:789: java.lang.ExceptionInInitializerError
+      </question>
+      <answer>
+      <p>
+      You probably have ant installed from Fedora or Suse. Those pre-installations does not contain all default ant 
+      modules. Either add modules to the installed ant, or download the latest ant from http://ant.apache.org/.
+      </p>
+      </answer>
+    </faq>
+    <faq>
       <question>How can I run JBoss as a service in Windows?</question>
       <answer>
 	      <p>There is documentation over at JBoss for several different options:
