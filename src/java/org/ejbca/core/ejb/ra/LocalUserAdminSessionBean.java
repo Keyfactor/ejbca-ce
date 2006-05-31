@@ -77,7 +77,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.5 2006-05-06 09:19:49 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.6 2006-05-31 12:00:09 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -1193,11 +1193,27 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile {
 
                 // Assemble result.
                 while (rs.next() && returnval.size() <= fetchsize) {
-                	String extendedInformation = rs.getString(15);
-                    UserDataVO data = new UserDataVO(rs.getString(1), rs.getString(2), rs.getInt(14), rs.getString(3), rs.getString(4), rs.getInt(5), rs.getInt(6)
-                            , rs.getInt(10), rs.getInt(11), new java.util.Date(rs.getLong(8)), new java.util.Date(rs.getLong(9)), rs.getInt(12), rs.getInt(13),
+                    // Read the variables in order, some databases (i.e. MS-SQL) 
+                    // seems to not like out-of-order read of columns (i.e. nr 15 before nr 1) 
+                    String user = rs.getString(1);
+                    String dn = rs.getString(2);
+                    String subaltname = rs.getString(3);
+                    String email = rs.getString(4);
+                    int status = rs.getInt(5);
+                    int type = rs.getInt(6);
+                    String pwd = rs.getString(7);
+                    Date timecreated = new java.util.Date(rs.getLong(8));
+                    Date timemodified = new java.util.Date(rs.getLong(9));
+                    int eprofileid = rs.getInt(10);
+                    int cprofileid = rs.getInt(11);
+                    int tokentype = rs.getInt(12);
+                    int tokenissuerid = rs.getInt(13);
+                    int caid = rs.getInt(14);
+                    String extendedInformation = rs.getString(15);
+                    UserDataVO data = new UserDataVO(user, dn, caid, subaltname, email, status, type
+                            , eprofileid, cprofileid, timecreated, timemodified, tokentype, tokenissuerid,
 							UserDataBean.getExtendedInformation(extendedInformation));
-                    data.setPassword(rs.getString(7));
+                    data.setPassword(pwd);
 
                     if (!onlybatchusers || (data.getPassword() != null && data.getPassword().length() > 0))
                         returnval.add(data);
