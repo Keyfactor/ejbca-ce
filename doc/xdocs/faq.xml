@@ -13,9 +13,64 @@
       </question>
       <answer>
       <p>
-      You probably have ant installed from Fedora or Suse. Those pre-installations does not contain all default ant 
-      modules. Either add modules to the installed ant, or download the latest ant from http://ant.apache.org/.
+      You probably have ant pre-installed as a package from Fedora or Suse. Those pre-installations does not contain all default ant 
+      modules. You need the "optional tasks" included in the official ant distribution. 
+      Either add modules to the installed ant, or download the latest ant from http://ant.apache.org/.
       </p>
+      <p>
+      A simple fix is to change the /etc/ant.conf to point to your user installed ant (in /your/ant/home). Change from:
+      </p>
+      <pre>
+#
+# ant.conf (Ant 1.6.x)
+# JPackage Project (http://www.jpackage.org/)
+#
+
+# Validate --noconfig setting in case being invoked
+# from pre Ant 1.6.x environment
+if [ -z "$no_config" ] ; then
+  no_config=true
+fi
+
+# Setup ant configuration
+if $no_config ; then
+  # Disable RPM layout
+  rpm_mode=false
+else
+  # Use RPM layout
+  rpm_mode=true
+
+  # ANT_HOME for rpm layout
+  ANT_HOME=/usr/share/ant
+fi
+      </pre>
+      <p>
+      to this
+      </p>
+      <pre>
+#
+# ant.conf (Ant 1.6.x)
+# JPackage Project (http://www.jpackage.org/)
+#
+
+# Validate --noconfig setting in case being invoked
+# from pre Ant 1.6.x environment
+if [ -z "$no_config" ] ; then
+  no_config=true
+fi
+
+# Setup ant configuration
+if $no_config ; then
+  # Disable RPM layout
+  rpm_mode=false
+else
+  # Use RPM layout
+  rpm_mode=false
+
+  # ANT_HOME for rpm layout
+  ANT_HOME=/your/ant/home
+fi      
+      </pre>
       </answer>
     </faq>
     <faq>
