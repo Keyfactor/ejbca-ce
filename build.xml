@@ -599,11 +599,16 @@ web.contentencoding    = ${web.contentencoding}
                 </manifest>
                 <fileset dir="${build}">
                 	<include name="org/ejbca/util/**"/>
+                	<include name="org/ejbca/core/model/**"/>
                 	<include name="**/*Exception**"/>
                 	<include name="**/SecConst**"/>
                 	<include name="**/IAdminCommand**"/>
                 	<include name="**/UserDoesntFullfillEndEntityProfile**"/>
                 	<include name="**/RevokedCertInfo**"/>
+                	<include name="**/SernoGenerator.*"/>
+                	<include name="**/ISernoGenerator.*"/>
+                    <include name="**/BaseEntityBean.*" />
+                    <include name="**/BaseSessionBean.*" /> 
                 </fileset>
                 
 
