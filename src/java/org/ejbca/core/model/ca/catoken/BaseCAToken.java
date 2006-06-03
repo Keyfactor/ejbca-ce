@@ -31,12 +31,9 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.model.SecConst;
 
 
-/** This class implements support for the nCipher nFast HSM for storing CA keys.
- * This implementation was done by PrimeKey Solutions AB (www.primekey.se) in 2005 
- * and the development was sponsored by Linagora (www.linagora.com).
- * 
- * @author Lars Silvén
- * @version $Id: BaseCAToken.java,v 1.1 2006-06-03 21:46:39 primelars Exp $
+/**
+ * @author lars
+ *
  */
 public abstract class BaseCAToken implements IHardCAToken {
 
