@@ -24,6 +24,7 @@
   static final String TEXTFIELD_CONFIRMPASSWORD   = "textfieldconfirmpassword";
   static final String TEXTFIELD_SUBJECTDN         = "textfieldsubjectdn";
   static final String TEXTFIELD_SUBJECTALTNAME    = "textfieldsubjectaltname";
+  static final String TEXTFIELD_SUBJECTDIRATTR    = "textfieldsubjectdirattr";
   static final String TEXTFIELD_EMAIL             = "textfieldemail";
   static final String TEXTFIELD_EMAILDOMAIN       = "textfieldemaildomain";
   static final String TEXTFIELD_UPNNAME           = "textfieldupnnamne";
@@ -36,6 +37,7 @@
   static final String SELECT_CONFIRMPASSWORD      = "selectconfirmpassword";
   static final String SELECT_SUBJECTDN            = "selectsubjectdn";
   static final String SELECT_SUBJECTALTNAME       = "selectsubjectaltname";
+  static final String SELECT_SUBJECTDIRATTR       = "selectsubjectdirattr";
   static final String SELECT_EMAILDOMAIN          = "selectemaildomain";
   static final String SELECT_HARDTOKENISSUER      = "selecthardtokenissuer";
   static final String SELECT_CHANGE_STATUS        = "selectchangestatus"; 
@@ -44,6 +46,7 @@
   static final String CHECKBOX_CLEARTEXTPASSWORD          = "checkboxcleartextpassword";
   static final String CHECKBOX_SUBJECTDN                  = "checkboxsubjectdn";
   static final String CHECKBOX_SUBJECTALTNAME             = "checkboxsubjectaltname";
+  static final String CHECKBOX_SUBJECTDIRATTR             = "checkboxsubjectdirattr";
   static final String CHECKBOX_ADMINISTRATOR              = "checkboxadministrator";
   static final String CHECKBOX_KEYRECOVERABLE             = "checkboxkeyrecoverable";
   static final String CHECKBOX_SENDNOTIFICATION           = "checkboxsendnotification";
@@ -55,6 +58,7 @@
   static final String CHECKBOX_REQUIRED_CLEARTEXTPASSWORD = "checkboxrequiredcleartextpassword";
   static final String CHECKBOX_REQUIRED_SUBJECTDN         = "checkboxrequiredsubjectdn";
   static final String CHECKBOX_REQUIRED_SUBJECTALTNAME    = "checkboxrequiredsubjectaltname";
+  static final String CHECKBOX_REQUIRED_SUBJECTDIRATTR    = "checkboxrequiredsubjectdirattr";
   static final String CHECKBOX_REQUIRED_EMAIL             = "checkboxrequiredemail";
   static final String CHECKBOX_REQUIRED_ADMINISTRATOR     = "checkboxrequiredadministrator";
   static final String CHECKBOX_REQUIRED_KEYRECOVERABLE    = "checkboxrequiredkeyrecoverable";
@@ -78,7 +82,8 @@
                                 "GIVENNAME2", "INITIALS", "SURNAME","TITLE","ORGANIZATIONUNIT","ORGANIZATION",
                                 "LOCALE","STATE","DOMAINCOMPONENT","COUNTRY",
                                 "RFC822NAME", "DNSNAME", "IPADDRESS", "OTHERNAME", "UNIFORMRESOURCEID", "X400ADDRESS", "DIRECTORYNAME",
-                                "EDIPARTNAME", "REGISTEREDID","","","","","","","","","","","UPN", "","","UNSTRUCTUREDADDRESS", "UNSTRUCTUREDNAME","GUID"};
+                                "EDIPARTNAME", "REGISTEREDID","","","","","","","","","","","UPN", "","","UNSTRUCTUREDADDRESS", "UNSTRUCTUREDNAME","GUID"
+                                ,"DATEOFBIRTH", "PLACEOFBIRTH", "GENDER", "COUNTRYOFCITIZENSHIP", "COUNTRYOFRESIDENCE"};
 
   String THIS_FILENAME             =  globalconfiguration.getRaPath()  + "/editendentity.jsp";
   String username                  = null;
@@ -267,6 +272,35 @@
                
                newuser.setSubjectAltName(subjectaltname);
 
+               String subjectdirattr = "";
+               int numberofsubjectdirattrfields = profile.getSubjectDirAttrFieldOrderLength();
+               for(int i=0; i < numberofsubjectdirattrfields; i++){
+                   fielddata = profile.getSubjectDirAttrFieldsInOrder(i); 
+                   value = request.getParameter(TEXTFIELD_SUBJECTDIRATTR+i);
+                 if(value !=null){
+                   value=value.trim(); 
+                   if(!value.equals("")){
+                     value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.SUBJECTDIRATTR[profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]) - DNFieldExtractor.SUBJECTDIRATTRBOUNDRARY] +value);
+                     if(subjectdirattr.equals(""))
+                       subjectdirattr = value;
+                     else
+                       subjectdirattr += ", " +value;
+
+                   }
+                 }
+                 value = request.getParameter(SELECT_SUBJECTDIRATTR+i);
+                 if(value !=null){
+                   if(!value.equals("")){
+                     value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.SUBJECTDIRATTR[profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]) - DNFieldExtractor.SUBJECTDIRATTRBOUNDRARY] +value);
+                     if(subjectdirattr.equals(""))
+                       subjectdirattr = value;
+                     else
+                       subjectdirattr += ", " + value;
+                     
+                  }
+                 }
+               }
+               newuser.setSubjectDirAttributes(subjectdirattr);
 
                value = request.getParameter(CHECKBOX_ADMINISTRATOR);
                if(value !=null){
@@ -1028,8 +1062,49 @@ function checkUseInBatch(){
 	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_SUBJECTALTNAME + i %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])) out.write(" CHECKED "); %>></td>
       </tr>
      <%   }
-        }%> 
+        }
+        
+        int numberofsubjectdirattrfields = profile.getSubjectDirAttrFieldOrderLength();
+        if(numberofsubjectdirattrfields > 0){
+%> 
+      <tr id="Row<%=(row++)%2%>">
+	<td align="right"><b><%= ejbcawebbean.getText("SUBJECTDIRATTRFIELDS") %></b></td>
+	<td>&nbsp;</td>
+	<td></td>
+       </tr>
+       <% }
+          for(int i=0; i < numberofsubjectdirattrfields; i++){
+            fielddata = profile.getSubjectDirAttrFieldsInOrder(i);  
+            int fieldtype = fielddata[EndEntityProfile.FIELDTYPE];
+			{ %>
        <tr id="Row<%=(row++)%2%>">
+	 <td align="right"><%= ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %></td>
+	 <td>      
+          <%
+               if(!profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ 
+                 String[] options = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]).split(EndEntityProfile.SPLITCHAR);
+                %>
+           <select name="<%= SELECT_SUBJECTDIRATTR + i %>" size="1" tabindex="<%=tabindex++%>">
+               <% if( options != null){
+                    for(int j=0;j < options.length;j++){ %>
+             <option value="<%=options[j].trim()%>" <%  if(userdata.getSubjectDirAttributeField(profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]).equals(options[j].trim())) out.write(" selected "); %>> 
+                <%=options[j].trim()%>
+             </option>                
+               <%   }
+                  }
+                %>
+           </select>
+           <% }else{ %>
+             <input type="text" name="<%= TEXTFIELD_SUBJECTDIRATTR + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value="<%= userdata.getSubjectDirAttributeField(profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]) %>">
+           <% } 
+           %>
+        </td>
+	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_SUBJECTDIRATTR + i %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])) out.write(" CHECKED "); %>></td>
+      </tr>
+     <%  } 
+       } %> 
+        
+     <tr id="Row<%=(row++)%2%>">
 	 <td>&nbsp;</td>
 	 <td>&nbsp;</td>
 	 <td>&nbsp;</td>

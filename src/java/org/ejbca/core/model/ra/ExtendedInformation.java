@@ -16,6 +16,7 @@ package org.ejbca.core.model.ra;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
 import org.ejbca.core.model.UpgradeableDataHashMap;
 
 
@@ -24,13 +25,20 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
  * like a image, in an effort to minimize the need for database alterations
  *
  * @author  Philip Vendil
- * @version $Id: ExtendedInformation.java,v 1.3 2006-05-28 14:21:11 anatom Exp $
+ * @version $Id: ExtendedInformation.java,v 1.4 2006-06-03 18:10:48 anatom Exp $
  */
 public class ExtendedInformation extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
+    private static final Logger log = Logger.getLogger(ExtendedInformation.class);
 
     public static final float LATEST_VERSION = 1;    
+
+    public static final int TYPE_BASIC = 0;
+    public static final int TYPE_SCEPRA = 1;
     
     public static final String TYPE = "type";
+
+    // protected fields.
+    protected static final String SUBJECTDIRATTRIBUTES = "subjectdirattributes";
 
     // Public constants
 
@@ -39,9 +47,23 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     // Public methods.
     /** Creates a new instance of EndEntity Profile */
     public ExtendedInformation() {
-      super();      
+    	setType(TYPE_BASIC);
+    	data.put(SUBJECTDIRATTRIBUTES, "");
     }
 
+    public String getSubjectDirectoryAttributes(){ 
+    	String ret = (String) data.get(SUBJECTDIRATTRIBUTES);
+    	if (ret == null) {
+    		ret = "";
+    	}
+    	return ret;
+    }
+    public void setSubjectDirectoryAttributes(String subjdirattr) {
+      if(subjdirattr==null)
+        data.put(SUBJECTDIRATTRIBUTES,"");
+      else
+        data.put(SUBJECTDIRATTRIBUTES,subjdirattr);
+    }
     
     public Object clone() throws CloneNotSupportedException {
       ExtendedInformation clone = new ExtendedInformation();
@@ -67,6 +89,12 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     public void upgrade(){
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
     		// New version of the class, upgrade
+    		log.info("Upgrading extended information with version "+getVersion());
+    		
+            if(data.get(SUBJECTDIRATTRIBUTES) == null){
+                data.put(SUBJECTDIRATTRIBUTES, "");   
+            }            
+
     		data.put(VERSION, new Float(LATEST_VERSION));
     	}
     }

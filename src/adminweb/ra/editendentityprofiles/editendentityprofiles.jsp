@@ -37,6 +37,7 @@
   static final String TEXTFIELD_PASSWORD             = "textfieldpassword";
   static final String TEXTFIELD_SUBJECTDN            = "textfieldsubjectdn";
   static final String TEXTFIELD_SUBJECTALTNAME       = "textfieldsubjectaltname";
+  static final String TEXTFIELD_SUBJECTDIRATTR       = "textfieldsubjectdirattr";
   static final String TEXTFIELD_EMAIL                = "textfieldemail";
   static final String TEXTFIELD_NOTIFICATIONSENDER   = "textfieldnotificationsender";
   static final String TEXTFIELD_NOTIFICATIONSUBJECT  = "textfieldnotificationsubject";
@@ -55,6 +56,7 @@
   static final String CHECKBOX_REQUIRED_CLEARTEXTPASSWORD = "checkboxrequiredcleartextpassword";
   static final String CHECKBOX_REQUIRED_SUBJECTDN         = "checkboxrequiredsubjectdn";
   static final String CHECKBOX_REQUIRED_SUBJECTALTNAME    = "checkboxrequiredsubjectaltname";
+  static final String CHECKBOX_REQUIRED_SUBJECTDIRATTR    = "checkboxrequiredsubjectdirattr";
   static final String CHECKBOX_REQUIRED_EMAIL             = "checkboxrequiredemail";
   static final String CHECKBOX_REQUIRED_ADMINISTRATOR     = "checkboxrequiredadministrator";
   static final String CHECKBOX_REQUIRED_SENDNOTIFICATION  = "checkboxrequiredsendnotification";
@@ -65,6 +67,7 @@
   static final String CHECKBOX_MODIFYABLE_PASSWORD          = "checkboxmodifyablepassword";
   static final String CHECKBOX_MODIFYABLE_SUBJECTDN         = "checkboxmodifyablesubjectdn";
   static final String CHECKBOX_MODIFYABLE_SUBJECTALTNAME    = "checkboxmodifyablesubjectaltname";
+  static final String CHECKBOX_MODIFYABLE_SUBJECTDIRATTR    = "checkboxmodifyablesubjectdirattr";
   static final String CHECKBOX_MODIFYABLE_EMAIL             = "checkboxmodifyableemail";
 
 
@@ -102,6 +105,10 @@
   static final String BUTTON_ADDSUBJECTALTNAME              = "buttonaddsubjectaltname";
   static final String CHECKBOX_SELECTSUBJECTALTNAME         = "checkboxselectsubjectaltname";
 
+  static final String SELECT_ADDSUBJECTDIRATTR              = "selectaddsubjectdirattr";
+  static final String BUTTON_DELETESUBJECTDIRATTR           = "buttondeletesubjectdirattr";
+  static final String BUTTON_ADDSUBJECTDIRATTR              = "buttonaddsubjectdirattr";
+  static final String CHECKBOX_SELECTSUBJECTDIRATTR         = "checkboxselectsubjectdirattr";
 
   static final String SELECT_TYPE                         = "selecttype";
   String profile = null;
@@ -120,6 +127,7 @@
 
   int numberofsubjectdnfields=0;
   int numberofsubjectaltnamefields=0;
+  int numberofsubjectdirattrfields=0;
   String value=null;
   EndEntityProfile profiledata=null;
   int[] fielddata = null;
@@ -241,7 +249,9 @@
               request.getParameter(BUTTON_DELETESUBJECTDN) != null ||
               request.getParameter(BUTTON_ADDSUBJECTDN) != null ||
               request.getParameter(BUTTON_DELETESUBJECTALTNAME) != null ||
-              request.getParameter(BUTTON_ADDSUBJECTALTNAME) != null){
+              request.getParameter(BUTTON_ADDSUBJECTALTNAME) != null ||
+              request.getParameter(BUTTON_DELETESUBJECTDIRATTR) != null ||
+              request.getParameter(BUTTON_ADDSUBJECTDIRATTR) != null){
                
              profiledata = ejbcarabean.getTemporaryEndEntityProfile();
              if(profiledata == null){
@@ -285,6 +295,16 @@
                                         ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_MODIFYABLE_SUBJECTALTNAME + i)));
              } 
             
+             numberofsubjectdirattrfields = profiledata.getSubjectDirAttrFieldOrderLength();
+
+             for(int i=0; i < numberofsubjectdirattrfields; i ++){
+                fielddata = profiledata.getSubjectDirAttrFieldsInOrder(i);
+                profiledata.setValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER] , request.getParameter(TEXTFIELD_SUBJECTDIRATTR + i));                
+                profiledata.setRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER] , 
+                                        ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REQUIRED_SUBJECTDIRATTR + i)));
+                profiledata.setModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER] , 
+                                        ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_MODIFYABLE_SUBJECTDIRATTR + i)));
+             } 
 
              profiledata.setValue(EndEntityProfile.EMAIL, 0,request.getParameter(TEXTFIELD_EMAIL));
              profiledata.setRequired(EndEntityProfile.EMAIL, 0,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_REQUIRED_EMAIL)));
@@ -432,6 +452,26 @@
                  profiledata.addField(Integer.parseInt(value));                
                }                       
              }
+             
+             if(request.getParameter(BUTTON_DELETESUBJECTDIRATTR) != null){             
+               numberofsubjectdirattrfields = profiledata.getSubjectDirAttrFieldOrderLength();
+               int pointer = 0;
+               for(int i=0; i < numberofsubjectdirattrfields; i++){
+                 if(ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_SELECTSUBJECTDIRATTR+i))){
+                   fielddata = profiledata.getSubjectDirAttrFieldsInOrder(pointer);  
+                   profiledata.removeField(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]);
+                 }
+                 else
+                   pointer++;
+               }             
+             }
+             if(request.getParameter(BUTTON_ADDSUBJECTDIRATTR) != null){             
+               value = request.getParameter(SELECT_ADDSUBJECTDIRATTR);
+               if(value!=null){
+                 profiledata.addField(Integer.parseInt(value));                
+               }                       
+             }
+             
              includefile="endentityprofilepage.jspf";
              ejbcarabean.setTemporaryEndEntityProfile(profiledata);
            

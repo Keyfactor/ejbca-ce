@@ -77,7 +77,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.6 2006-05-31 12:00:09 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.7 2006-06-03 18:10:48 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -353,7 +353,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
             // Check if user fulfills it's profile.
             try {
-                profile.doesUserFullfillEndEntityProfile(userdata.getUsername(), userdata.getPassword(), dn, userdata.getSubjectAltName(), userdata.getEmail(), userdata.getCertificateProfileId(), clearpwd,
+                profile.doesUserFullfillEndEntityProfile(userdata.getUsername(), userdata.getPassword(), dn, userdata.getSubjectAltName(), userdata.getExtendedinformation().getSubjectDirectoryAttributes(), userdata.getEmail(), userdata.getCertificateProfileId(), clearpwd,
                         (type & SecConst.USER_ADMINISTRATOR) != 0, (type & SecConst.USER_KEYRECOVERABLE) != 0, (type & SecConst.USER_SENDNOTIFICATION) != 0,
                         userdata.getTokenType(), userdata.getHardTokenIssuerId(), userdata.getCAId());
             } catch (UserDoesntFullfillEndEntityProfile udfp) {
@@ -480,7 +480,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile {
         // Check if user fulfills it's profile.
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
             try {
-                profile.doesUserFullfillEndEntityProfileWithoutPassword(userdata.getUsername(), dn, userdata.getSubjectAltName(), userdata.getEmail(), userdata.getCertificateProfileId(),
+                profile.doesUserFullfillEndEntityProfileWithoutPassword(userdata.getUsername(), dn, userdata.getSubjectAltName(), userdata.getExtendedinformation().getSubjectDirectoryAttributes(), userdata.getEmail(), userdata.getCertificateProfileId(),
                         (type & SecConst.USER_ADMINISTRATOR) != 0, (type & SecConst.USER_KEYRECOVERABLE) != 0, (type & SecConst.USER_SENDNOTIFICATION) != 0,
                         userdata.getTokenType(), userdata.getHardTokenIssuerId(), userdata.getCAId());
             } catch (UserDoesntFullfillEndEntityProfile udfp) {

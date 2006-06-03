@@ -61,7 +61,7 @@ import org.ejbca.util.query.Query;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.3 2006-01-30 06:29:48 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.4 2006-06-03 18:10:46 anatom Exp $
  */
 public class RAInterfaceBean implements java.io.Serializable {
     
@@ -126,12 +126,13 @@ public class RAInterfaceBean implements java.io.Serializable {
         log.debug(">addUser()");
         
         if(userdata.getEndEntityProfileId() != 0){
-           adminsession.addUser(administrator, userdata.getUsername(), userdata.getPassword(), userdata.getSubjectDN(), userdata.getSubjectAltName()
-                               ,userdata.getEmail(), userdata.getClearTextPassword(), userdata.getEndEntityProfileId(),
-                                userdata.getCertificateProfileId(), userdata.getType(),
-                                userdata.getTokenType(), userdata.getHardTokenIssuerId(), userdata.getCAId());
-           addedusermemory.addUser(userdata);
-
+        	UserDataVO uservo = new UserDataVO(userdata.getUsername(), userdata.getSubjectDN(), userdata.getCAId(), userdata.getSubjectAltName(), 
+        			userdata.getEmail(), UserDataConstants.STATUS_NEW, userdata.getType(), userdata.getEndEntityProfileId(), userdata.getCertificateProfileId(),
+        			null,null, userdata.getTokenType(), userdata.getHardTokenIssuerId(), null);
+        	uservo.setPassword(userdata.getPassword());
+        	uservo.setExtendedinformation(userdata.getExtendedInformation());
+        	adminsession.addUser(administrator, uservo, userdata.getClearTextPassword());
+        	addedusermemory.addUser(userdata);
         } else {
             log.debug("=addUser(): profile id not set, user not created");
         }
@@ -227,11 +228,13 @@ public class RAInterfaceBean implements java.io.Serializable {
         addedusermemory.changeUser(userdata);
         if(userdata.getPassword() != null && userdata.getPassword().trim().equals(""))
           userdata.setPassword(null);
+    	UserDataVO uservo = new UserDataVO(userdata.getUsername(), userdata.getSubjectDN(), userdata.getCAId(), userdata.getSubjectAltName(), 
+    			userdata.getEmail(), UserDataConstants.STATUS_NEW, userdata.getType(), userdata.getEndEntityProfileId(), userdata.getCertificateProfileId(),
+    			null,null, userdata.getTokenType(), userdata.getHardTokenIssuerId(), null);
+    	uservo.setPassword(userdata.getPassword());
+    	uservo.setExtendedinformation(userdata.getExtendedInformation());
+    	adminsession.changeUser(administrator, uservo, userdata.getClearTextPassword());
 
-        adminsession.changeUser(administrator, userdata.getUsername(), userdata.getPassword(), userdata.getSubjectDN(), userdata.getSubjectAltName(),
-                                userdata.getEmail(),  userdata.getClearTextPassword(), userdata.getEndEntityProfileId(),
-                                userdata.getCertificateProfileId(), userdata.getType(),
-                                userdata.getTokenType(), userdata.getHardTokenIssuerId(), userdata.getStatus(), userdata.getCAId());
         log.debug("<changeUserData()");
     }
 

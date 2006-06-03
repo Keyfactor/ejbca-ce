@@ -23,7 +23,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 /**
  * Find details of a user in the database.
  *
- * @version $Id: RaFindUserCommand.java,v 1.2 2006-01-26 14:17:57 anatom Exp $
+ * @version $Id: RaFindUserCommand.java,v 1.3 2006-06-03 18:10:46 anatom Exp $
  */
 public class RaFindUserCommand extends BaseRaAdminCommand {
     /**
@@ -59,6 +59,8 @@ public class RaFindUserCommand extends BaseRaAdminCommand {
                     getOutputStream().println("username=" + data.getUsername());
                     getOutputStream().println("password=" + data.getPassword());
                     getOutputStream().println("dn: \"" + data.getDN() + "\"");
+                    getOutputStream().println("altName: \"" + data.getSubjectAltName() + "\"");
+                    getOutputStream().println("directoryAttributes: \"" + data.getExtendedinformation().getSubjectDirectoryAttributes() + "\"");
                     getOutputStream().println("email=" + data.getEmail());
                     getOutputStream().println("status=" + data.getStatus());
                     getOutputStream().println("type=" + data.getType());

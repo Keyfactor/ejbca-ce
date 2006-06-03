@@ -13,8 +13,6 @@ public class SCEPRAExtendedInformation extends ExtendedInformation {
 		
     public static final float LATEST_VERSION = 0;
     
-    public static final int TYPE_SCEPRA = 1;
-
     private static final String SCEPREQUEST = "sceprequest";
     private static final String USER        = "user";
 

@@ -125,7 +125,33 @@
          </td>
        </tr>
        <%   }
-          }%>  
+          }
+          subjectfieldsize = viewendentityhelper.profile.getSubjectDirAttrFieldOrderLength();
+          if(subjectfieldsize > 0){
+       %>
+       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
+       </tr>
+       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
+	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("SUBJECTDIRATTRFIELDS") %></td>
+	 <td>
+         </td>
+       </tr>
+      <% }
+         for(int i = 0; i < subjectfieldsize; i++){
+        	 viewendentityhelper.fielddata = viewendentityhelper.profile.getSubjectDirAttrFieldsInOrder(i);
+            int fieldtype = viewendentityhelper.fielddata[EndEntityProfile.FIELDTYPE];
+          	viewendentityhelper.fieldvalue = viewendentityhelper.userdata.getSubjectDirAttributeField(EndEntityProfile.profileFieldIdToUserFieldIdMapper(viewendentityhelper.fielddata[EndEntityProfile.FIELDTYPE]),viewendentityhelper.fielddata[EndEntityProfile.NUMBER]);
+         %>
+       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
+	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText(ViewEndEntityHelper.subjectfieldtexts[viewendentityhelper.fielddata[EndEntityProfile.FIELDTYPE]]) %></td>
+	 <td><% if(viewendentityhelper.fieldvalue != null) out.write(viewendentityhelper.fieldvalue); %> 
+         </td>
+       </tr>
+       <% } %>  
+          
+          
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	 <td>&nbsp;</td>
 	 <td>&nbsp;</td>

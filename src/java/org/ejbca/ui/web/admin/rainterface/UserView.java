@@ -27,7 +27,7 @@ import org.ejbca.util.StringTools;
 /**
  * A class representing a web interface view of a user in the ra user database.
  *
- * @version $Id: UserView.java,v 1.3 2006-01-30 06:29:48 herrvendil Exp $
+ * @version $Id: UserView.java,v 1.4 2006-06-03 18:10:46 anatom Exp $
  */
 public class UserView implements java.io.Serializable, Cloneable, Comparable {
     // Public constants.
@@ -37,6 +37,7 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
       userdata.setType(1);
       subjectdnfields = new DNFieldExtractor("", DNFieldExtractor.TYPE_SUBJECTDN);
       subjectaltnames = new DNFieldExtractor("", DNFieldExtractor.TYPE_SUBJECTALTNAME);
+      subjectdirattrs = new DNFieldExtractor("", DNFieldExtractor.TYPE_SUBJECTDIRATTR);
    }
 
 
@@ -45,6 +46,7 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
       this.caname = (String) caidtonamemap.get(new Integer(newuserdata.getCAId()));
       subjectdnfields = new DNFieldExtractor(userdata.getDN(), DNFieldExtractor.TYPE_SUBJECTDN);
       subjectaltnames = new DNFieldExtractor(userdata.getSubjectAltName(), DNFieldExtractor.TYPE_SUBJECTALTNAME);
+      subjectdirattrs = new DNFieldExtractor(userdata.getExtendedinformation().getSubjectDirectoryAttributes(), DNFieldExtractor.TYPE_SUBJECTDIRATTR);
       setCommonName(); 
 
       cleartextpwd = userdata.getPassword() != null;
@@ -66,6 +68,14 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
       subjectaltnames.setDN(subjectaltname, DNFieldExtractor.TYPE_SUBJECTALTNAME);
     }
     public String getSubjectAltName() {return userdata.getSubjectAltName();}
+
+    public void setSubjectDirAttributes( String subjectdirattr) {
+    	ExtendedInformation ext = userdata.getExtendedinformation();
+    	ext.setSubjectDirectoryAttributes(subjectdirattr);
+        userdata.setExtendedinformation(ext);
+        subjectdirattrs.setDN(subjectdirattr, DNFieldExtractor.TYPE_SUBJECTDIRATTR);
+      }
+      public String getSubjectDirAttributes() {return userdata.getExtendedinformation().getSubjectDirectoryAttributes();}
 
     public void setEmail(String email) { userdata.setEmail(email);}
     public String getEmail() {return userdata.getEmail();}
@@ -112,6 +122,9 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
       return subjectaltnames.getField(parameter,number);
     }
     
+    public String getSubjectDirAttributeField(int parameter, int number){
+        return subjectdirattrs.getField(parameter,number);
+      }
     /**
      * getCommonName is a special function used in list end entity gui to display names in cases not a CN field exists in dn only, surname and givennamn
      */
@@ -196,6 +209,7 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
     private UserDataVO userdata;
     private DNFieldExtractor subjectdnfields;
     private DNFieldExtractor subjectaltnames;
+    private DNFieldExtractor subjectdirattrs;
     private String commonname = "";
     private String caname;
     private boolean cleartextpwd;

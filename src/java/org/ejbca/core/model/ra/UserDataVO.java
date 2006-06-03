@@ -24,7 +24,7 @@ import org.ejbca.util.StringTools;
 /**
  * Holds admin data collected from UserData in the database.
  *
- * @version $Id: UserDataVO.java,v 1.2 2006-02-01 09:14:04 herrvendil Exp $
+ * @version $Id: UserDataVO.java,v 1.3 2006-06-03 18:10:48 anatom Exp $
  */
 public class UserDataVO implements Serializable {
 
@@ -155,6 +155,10 @@ public class UserDataVO implements Serializable {
 	 * @return Returns the extendedinformation.
 	 */
 	public ExtendedInformation getExtendedinformation() {
+		// If there is no extended information for this user, we return a new emtpy one
+		if (extendedinformation == null) {
+			return new ExtendedInformation();
+		}
 		return extendedinformation;
 	}
 	/**

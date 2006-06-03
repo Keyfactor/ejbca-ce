@@ -16,7 +16,7 @@ package org.ejbca.ui.cli;
 /**
  * Factory for RA Admin Commands.
  *
- * @version $Id: RaAdminCommandFactory.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: RaAdminCommandFactory.java,v 1.2 2006-06-03 18:10:46 anatom Exp $
  */
 public class RaAdminCommandFactory {
     /**
@@ -59,6 +59,8 @@ public class RaAdminCommandFactory {
             return new RaKeyRecoverCommand(args);
         } else if (args[0].equals("keyrecovernewest")) {
             return new RaKeyRecoverNewestCommand(args);
+        } else if (args[0].equals("setsubjectdirattr")) {
+            return new RaSetSubjDirAttrCommand(args);
         } else {
             return null;
         }

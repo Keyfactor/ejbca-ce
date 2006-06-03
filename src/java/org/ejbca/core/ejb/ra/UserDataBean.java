@@ -60,7 +60,7 @@ import org.ejbca.util.StringTools;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.5 2006-02-01 12:10:53 anatom Exp $
+ * @version $Id: UserDataBean.java,v 1.6 2006-06-03 18:10:48 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a Log Entry with accompanying data"
  * display-name="UserDataEB"
@@ -524,9 +524,15 @@ public abstract class UserDataBean extends BaseEntityBean {
             	decoder.close();
             	int type = ((Integer) data.get(ExtendedInformation.TYPE)).intValue();
             	switch(type){
-            	  case SCEPRAExtendedInformation.TYPE_SCEPRA :
+            	  case ExtendedInformation.TYPE_SCEPRA :
             		returnval = (ExtendedInformation) UserDataBean.class.getClassLoader().loadClass(SCEPRAExtendedInformation.class.getName()).newInstance();            	
               		returnval.loadData(data);
+              		break;
+            	  case ExtendedInformation.TYPE_BASIC :
+              		returnval = (ExtendedInformation) UserDataBean.class.getClassLoader().loadClass(ExtendedInformation.class.getName()).newInstance();            	
+              		returnval.loadData(data);
+              		break;
+
             	}            	
             }catch (Exception e) {
             	throw new EJBException("Problems generating extended information from String",e);

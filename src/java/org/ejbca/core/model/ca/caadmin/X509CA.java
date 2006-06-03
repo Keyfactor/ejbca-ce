@@ -116,7 +116,7 @@ import org.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.13 2006-05-29 17:26:17 anatom Exp $
+ * @version $Id: X509CA.java,v 1.14 2006-06-03 18:10:47 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -537,18 +537,20 @@ public class X509CA extends CA implements Serializable {
          
          // Subject Directory Attributes
          if (certProfile.getUseSubjectDirAttributes() == true) {
-        	 // TODO: get the attributes from ExtendedInformation
-        	 String dirAttrString = null;
-        	 // Subject Directory Attributes is a sequence of Attribute
-        	 Collection attr = CertTools.getSubjectDirectoryAttributes(dirAttrString);
-        	 DEREncodableVector vec = new DEREncodableVector();
-        	 Iterator iter = attr.iterator();
-        	 while (iter.hasNext()) {
-        		 Attribute a = (Attribute)iter.next();
-        		 vec.add(a);
+        	 // Get the attributes from ExtendedInformation
+        	 String dirAttrString = subject.getExtendedinformation().getSubjectDirectoryAttributes();
+        	 if (StringUtils.isNotEmpty(dirAttrString)) {
+            	 // Subject Directory Attributes is a sequence of Attribute
+            	 Collection attr = CertTools.getSubjectDirectoryAttributes(dirAttrString);
+            	 DEREncodableVector vec = new DEREncodableVector();
+            	 Iterator iter = attr.iterator();
+            	 while (iter.hasNext()) {
+            		 Attribute a = (Attribute)iter.next();
+            		 vec.add(a);
+            	 }        		 
+            	 // Subject Directory Attributes must always be non-critical
+            	 certgen.addExtension(X509Extensions.SubjectDirectoryAttributes, false, new DERSequence(vec));                 
         	 }
-        	 // Subject Directory Attributes must always be non-critical
-        	 certgen.addExtension(X509Extensions.SubjectDirectoryAttributes, false, new DERSequence(vec));                 
         	 
          }         
 		          

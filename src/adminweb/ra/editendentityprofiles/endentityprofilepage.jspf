@@ -10,7 +10,8 @@
                                  "GIVENNAME2", "INITIALS", "SURNAME","TITLE","ORGANIZATIONUNIT","ORGANIZATION",
                                 "LOCALE","STATE","DOMAINCOMPONENT","COUNTRY"
                                 , "RFC822NAME", "DNSNAME", "IPADDRESS", "OTHERNAME", "UNIFORMRESOURCEID", "X400ADDRESS", "DIRECTORYNAME"
-                                ,"EDIPARTNAME", "REGISTEREDID","","","","","","","","","","","UPNDOMAIN", "","", "UNSTRUCTUREDADDRESS", "UNSTRUCTUREDNAME","GUID"};
+                                ,"EDIPARTNAME", "REGISTEREDID","","","","","","","","","","","UPNDOMAIN", "","", "UNSTRUCTUREDADDRESS", "UNSTRUCTUREDNAME","GUID"
+                                ,"DATEOFBIRTH", "PLACEOFBIRTH", "GENDER", "COUNTRYOFCITIZENSHIP", "COUNTRYOFRESIDENCE"};
 
    int[] subjectdnfields = {EndEntityProfile.OLDDNE,EndEntityProfile.UID,EndEntityProfile.COMMONNAME,EndEntityProfile.SN
                            ,EndEntityProfile.GIVENNAME,EndEntityProfile.INITIALS,EndEntityProfile.SURNAME
@@ -30,6 +31,11 @@
                                  ,EndEntityProfile.UPN
                                  ,EndEntityProfile.GUID};
 
+   int[] subjectdirattrfields = {EndEntityProfile.DATEOFBIRTH
+                                 ,EndEntityProfile.PLACEOFBIRTH
+                                 ,EndEntityProfile.GENDER
+                                 ,EndEntityProfile.COUNTRYOFCITIZENSHIP
+                                 ,EndEntityProfile.COUNTRYOFRESIDENCE};
 
    String[] tokentexts = RAInterfaceBean.tokentexts;
    int[] tokenids = RAInterfaceBean.tokenids;
@@ -556,6 +562,71 @@ function checkuseemailfield(){
            %>> 
       </td>
     </tr>
+    
+
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="5%" valign="top">
+        <%= ejbcawebbean.getText("SELECTFORREMOVAL") %>
+      </td>
+      <td width="25%"  align="right"> 
+        <%= ejbcawebbean.getText("SUBJECTDIRATTRFIELDS") %> <br>&nbsp;
+      </td>
+      <td width="70%"> 
+        <select name="<%=SELECT_ADDSUBJECTDIRATTR %>" size="1" >
+            <% 
+               for(int i=0; i < subjectdirattrfields.length; i++){ %>
+           <option  value='<%= subjectdirattrfields[i]%>'><%= ejbcawebbean.getText(subjectfieldtexts[subjectdirattrfields[i]]) %>
+           </option>
+            <% }%>
+        </select>
+        &nbsp;<input type="submit" name="<%= BUTTON_ADDSUBJECTDIRATTR %>" value="<%= ejbcawebbean.getText("ADD") %>"> 
+      </td> 
+    </tr>
+    <% numberofsubjectdnfields = profiledata.getSubjectDirAttrFieldOrderLength();
+       for(int i=0; i < numberofsubjectdnfields; i++){
+         fielddata =  profiledata.getSubjectDirAttrFieldsInOrder(i);
+         int fieldtype = fielddata[EndEntityProfile.FIELDTYPE];
+         {
+    %>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="5%" valign="top">
+        <input type="checkbox" name="<%=CHECKBOX_SELECTSUBJECTDIRATTR + i %>" value="<%=CHECKBOX_VALUE %>">      
+      </td>
+      <td width="25%" align="right"> 
+        <%= ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %> <br>&nbsp;
+      </td>
+      <td width="70%"> 
+        <input type="text" name="<%=TEXTFIELD_SUBJECTDIRATTR + i%>" size="40" maxlength="1024" 
+           value="<% if(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) != null) out.write(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER])); %>"><br>
+
+        <%= ejbcawebbean.getText("REQUIRED") %>
+        <input type="checkbox" name="<%=CHECKBOX_REQUIRED_SUBJECTDIRATTR + i %>" value="<%=CHECKBOX_VALUE %>"
+           <% if(profiledata.isRequired(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]))
+                 out.write("CHECKED");
+           %>> 
+        &nbsp;&nbsp;<%= ejbcawebbean.getText("MODIFYABLE") %> 
+        <input type="checkbox" name="<%=CHECKBOX_MODIFYABLE_SUBJECTDIRATTR + i %>" value="<%=CHECKBOX_VALUE %>" 
+           <% if(profiledata.isModifyable(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]))
+                 out.write("CHECKED");
+           %>> 
+      </td>
+    </tr>
+   <%   }
+      }%>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="5%" valign="top">
+        <input type="submit" name="<%= BUTTON_DELETESUBJECTDIRATTR %>" value="<%= ejbcawebbean.getText("REMOVE") %>">
+      </td>
+      <td width="25%"  align="right"> 
+           &nbsp;&nbsp;
+      </td>
+      <td width="70%"> 
+        &nbsp;&nbsp;
+      </td> 
+    </tr>
+    
+    
+    
     <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
          &nbsp;

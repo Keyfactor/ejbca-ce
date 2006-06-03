@@ -21,17 +21,18 @@ import org.ietf.ldap.LDAPDN;
 
 
 /**
- * A class used to retrieve different fields from a Distiguished Name or Subject Alternate Name
- * strings.
+ * A class used to retrieve different fields from a Distiguished Name or Subject Alternate Name 
+ * or Subject Directory Attributes strings.
  *
  * @author Philip Vendil
- * @version $Id: DNFieldExtractor.java,v 1.1 2006-01-17 20:31:52 anatom Exp $
+ * @version $Id: DNFieldExtractor.java,v 1.2 2006-06-03 18:10:47 anatom Exp $
  */
 public class DNFieldExtractor implements java.io.Serializable {
     private static Logger log = Logger.getLogger(DNFieldExtractor.class);
     // Public constants
     public static final int TYPE_SUBJECTDN = 0;
     public static final int TYPE_SUBJECTALTNAME = 1;
+    public static final int TYPE_SUBJECTDIRATTR = 2;
 
     // Subject DN Fields.
     public static final int E = 0;
@@ -64,7 +65,17 @@ public class DNFieldExtractor implements java.io.Serializable {
     public static final int UPN = 25;
     public static final int GUID = 26;
     public static final int SUBJECTALTERNATIVENAMEBOUNDRARY = 16;
-    public static final int NUMBEROFFIELDS = 27;
+    
+    // Subject Directory Attributes
+    public static final int DATEOFBIRTH  = 27;
+    public static final int PLACEOFBIRTH = 28;
+    public static final int GENDER       = 29;
+    public static final int COUNTRYOFCITIZENSHIP = 30;
+    public static final int COUNTRYOFRESIDENCE   = 31;
+    public static final int SUBJECTDIRATTRBOUNDRARY = 27;
+    
+    public static final int NUMBEROFFIELDS = 32;
+    
     public static final String[] SUBJECTDNFIELDS = {
         "E=", "UID=", "CN=", "SN=", "GIVENNAME=", "INITIALS=", "SURNAME=", "T=", "OU=", "O=", "L=",
         "ST=", "DC=", "C=", "UNSTRUCTUREDADDRESS=", "UNSTRUCTUREDNAME="
@@ -75,6 +86,10 @@ public class DNFieldExtractor implements java.io.Serializable {
         "EDIPARTNAME=", "UNIFORMRESOURCEIDENTIFIER=", "REGISTEREDID=", "UPN=",  "GUID="
     };
 
+    public static final String[] SUBJECTDIRATTR = {
+        "DATEOFBIRTH=", "PLACEOFBIRTH=", "GENDER=", "COUNTRYOFCITIZENSHIP=", "COUNTRYOFRESIDENCE="
+    };
+    
     // Constants used with field ordering
     public static final int FIELDTYPE = 0;
     public static final int NUMBER = 1;
@@ -103,9 +118,14 @@ public class DNFieldExtractor implements java.io.Serializable {
         if (type == TYPE_SUBJECTDN) {        	
             fieldnumbers = new int[SUBJECTDNFIELDS.length];
             fields = SUBJECTDNFIELDS;
-        } else {
+        } else if (type == TYPE_SUBJECTALTNAME){
             fieldnumbers = new int[SUBJECTALTNAME.length];
             fields = SUBJECTALTNAME;
+        } else if (type == TYPE_SUBJECTDIRATTR){
+            fieldnumbers = new int[SUBJECTDIRATTR.length];
+            fields = SUBJECTDIRATTR;
+        } else {
+        	fields = new String[]{};
         }
 
         if ((dn != null) && !dn.equalsIgnoreCase("null")) {
@@ -128,8 +148,11 @@ public class DNFieldExtractor implements java.io.Serializable {
 
                             if (type == TYPE_SUBJECTDN) {
                                 dnfields.put(new Integer((j * BOUNDRARY) + fieldnumbers[j]), rdn);
-                            } else {
+                            } else if (type == TYPE_SUBJECTALTNAME) {
                                 dnfields.put(new Integer(((j + SUBJECTALTERNATIVENAMEBOUNDRARY) * BOUNDRARY) +
+                                        fieldnumbers[j]), rdn);
+                            } else if (type == TYPE_SUBJECTDIRATTR) {
+                                dnfields.put(new Integer(((j + SUBJECTDIRATTRBOUNDRARY) * BOUNDRARY) +
                                         fieldnumbers[j]), rdn);
                             }
                             fieldnumbers[j]++;
@@ -144,10 +167,14 @@ public class DNFieldExtractor implements java.io.Serializable {
 				illegal = true;
                 if (type == TYPE_SUBJECTDN) {
                     dnfields.put(new Integer((CN * BOUNDRARY)), "Illegal DN : " + dn);
-                } else {
+                } else if (type == TYPE_SUBJECTALTNAME){
                     dnfields.put(new Integer(
                             ((RFC822NAME + SUBJECTALTERNATIVENAMEBOUNDRARY) * BOUNDRARY)),
                         "Illegal Subjectaltname : " + dn);
+                } else if (type == TYPE_SUBJECTDIRATTR){
+                    dnfields.put(new Integer(
+                            ((PLACEOFBIRTH + SUBJECTDIRATTRBOUNDRARY) * BOUNDRARY)),
+                        "Illegal Subjectdirectory attribute : " + dn);
                 }
             }
         } else {
@@ -204,8 +231,10 @@ public class DNFieldExtractor implements java.io.Serializable {
 
         if (type == TYPE_SUBJECTDN) {
             returnval = fieldnumbers[field];
-        } else {
+        } else if (type == TYPE_SUBJECTALTNAME) {
             returnval = fieldnumbers[field - OTHERNAME];
+        } else if (type == TYPE_SUBJECTDIRATTR) {
+            returnval = fieldnumbers[field - DATEOFBIRTH];
         }
 
         return returnval;

@@ -34,7 +34,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Helper class for the View End Entity Page, parses the request and performs apporiate actions.
  * 
  * @author Philip Vendil
- * @version $Id: ViewEndEntityHelper.java,v 1.2 2006-02-09 10:05:37 anatom Exp $
+ * @version $Id: ViewEndEntityHelper.java,v 1.3 2006-06-03 18:10:46 anatom Exp $
  */
 
 public class ViewEndEntityHelper implements java.io.Serializable{
@@ -64,9 +64,10 @@ public class ViewEndEntityHelper implements java.io.Serializable{
         "GIVENNAME2", "INITIALS", "SURNAME","TITLE","ORGANIZATIONUNIT","ORGANIZATION",
         "LOCALE","STATE","DOMAINCOMPONENT","COUNTRY",
         "RFC822NAME", "DNSNAME", "IPADDRESS", "OTHERNAME", "UNIFORMRESOURCEID", "X400ADDRESS", "DIRECTORYNAME",
-        "EDIPARTNAME", "REGISTEREDID","","","","","","","","","","","UPN", "", "", "UNSTRUCTUREDADDRESS", "UNSTRUCTUREDNAME","GUID"};
+        "EDIPARTNAME", "REGISTEREDID","","","","","","","","","","","UPN", "", "", "UNSTRUCTUREDADDRESS", "UNSTRUCTUREDNAME","GUID"
+        ,"DATEOFBIRTH", "PLACEOFBIRTH", "GENDER", "COUNTRYOFCITIZENSHIP", "COUNTRYOFRESIDENCE"};
 	
-	public static final   int[] statusids            = {UserDataConstants.STATUS_NEW ,UserDataConstants.STATUS_FAILED, UserDataConstants.STATUS_INITIALIZED, UserDataConstants.STATUS_INPROCESS
+	public static final   int[] statusids = {UserDataConstants.STATUS_NEW ,UserDataConstants.STATUS_FAILED, UserDataConstants.STATUS_INITIALIZED, UserDataConstants.STATUS_INPROCESS
         , UserDataConstants.STATUS_GENERATED, UserDataConstants.STATUS_REVOKED , UserDataConstants.STATUS_HISTORICAL, UserDataConstants.STATUS_KEYRECOVERY};
 	
 	public static final   String[] statustexts         = {"STATUSNEW", "STATUSFAILED", "STATUSINITIALIZED", "STATUSINPROCESS", "STATUSGENERATED", "STATUSREVOKED", "STATUSHISTORICAL", "STATUSKEYRECOVERY"};
