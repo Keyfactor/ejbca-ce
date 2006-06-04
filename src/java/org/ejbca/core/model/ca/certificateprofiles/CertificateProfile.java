@@ -34,12 +34,23 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.8 2006-06-01 12:47:08 herrvendil Exp $
+ * @version $Id: CertificateProfile.java,v 1.9 2006-06-04 10:57:17 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
     // Default Values
     public static final float LATEST_VERSION = (float) 18.0;
+
+    /**
+     * Determines if a de-serialized file is compatible with this class.
+     *
+     * Maintainers must change this value if and only if the new version
+     * of this class is not compatible with old versions. See Sun docs
+     * for <a href=http://java.sun.com/products/jdk/1.1/docs/guide
+     * /serialization/spec/version.doc.html> details. </a>
+     *
+     */
+    private static final long serialVersionUID = -8069608639716545201L;
 
     /** KeyUsage constants */
     public static final int DIGITALSIGNATURE = 0;
@@ -241,6 +252,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       setQCEtsiValueLimit(0);
       setQCEtsiValueLimitExp(0);
       setQCEtsiValueLimitCurrency(null);
+      setUseQCCustomString(false);
+      setQCCustomStringOid(null);
+      setQCCustomStringText(null);
       
       setUseSubjectDirAttributes(false);
       
