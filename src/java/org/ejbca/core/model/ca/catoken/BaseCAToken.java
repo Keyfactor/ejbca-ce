@@ -33,7 +33,7 @@ import org.ejbca.core.model.SecConst;
 
 /**
  * @author lars
- *
+ * @version $Id: BaseCAToken.java,v 1.3 2006-06-04 09:18:34 anatom Exp $
  */
 public abstract class BaseCAToken implements IHardCAToken {
 
