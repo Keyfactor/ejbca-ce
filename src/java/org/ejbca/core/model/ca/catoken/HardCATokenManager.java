@@ -24,7 +24,7 @@ import org.apache.log4j.Logger;
  * Each HardCaToken plug-in should register itself by using the method register.
  * The CA keeps a registry of CA tokens created here.
  * 
- * @version $Id: HardCATokenManager.java,v 1.2 2006-01-22 08:30:24 anatom Exp $
+ * @version $Id: HardCATokenManager.java,v 1.3 2006-06-04 13:02:43 primelars Exp $
  * 
  */
 public class HardCATokenManager {
@@ -49,6 +49,7 @@ public class HardCATokenManager {
         HardCATokenManager.instance().addAvailableHardCAToken("org.ejbca.core.model.ca.catoken.NFastCAToken", "NFastCAToken", false, true);
         HardCATokenManager.instance().addAvailableHardCAToken("se.primeKey.caToken.card.PrimeCAToken", "PrimeCAToken", false, true);
         HardCATokenManager.instance().addAvailableHardCAToken("org.ejbca.core.model.ca.catoken.EracomCAToken", "Eracom", false, true);
+        HardCATokenManager.instance().addAvailableHardCAToken("org.ejbca.core.model.ca.catoken.SafeNetLunaCAToken", "SafeNetLunaCAToken", false, true);
         HardCATokenManager.instance().addAvailableHardCAToken("org.ejbca.core.model.ca.catoken.DummyHardCAToken", "DummyHardCAToken", false, false);
         HardCATokenManager.instance().addAvailableHardCAToken("org.ejbca.core.model.ca.catoken.HardCATokenSample", "HardCATokenSample", false, false);
     }

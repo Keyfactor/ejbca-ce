@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author lars
- * @version $Id: SafeNetLunaCAToken.java,v 1.2 2006-06-04 09:18:34 anatom Exp $
+ * @version $Id: SafeNetLunaCAToken.java,v 1.3 2006-06-04 13:02:43 primelars Exp $
  *
  */
 public class SafeNetLunaCAToken extends BaseCAToken implements IHardCAToken {
@@ -27,7 +27,7 @@ public class SafeNetLunaCAToken extends BaseCAToken implements IHardCAToken {
     /** Log4j instance */
     private static final Logger log = Logger.getLogger(SafeNetLunaCAToken.class);
 
-    static final private String SLOT_LABEL_KEY = "slotLabelKey";
+    static final private String SLOT_LABEL_KEY = "slotLabel";
     static final private String PROVIDER_NAME = "LunaJCAProvider";
     static final private String PROVIDER_CLASS = "com.chrysalisits.crypto.LunaJCAProvider"; 
 
