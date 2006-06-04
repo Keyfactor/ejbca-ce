@@ -1880,6 +1880,16 @@ ejbca.properties. Change the properties httpserver.pubhttp, httpserver.pubhttps 
 After changing, run 'ant deploy' and re-start the application server.
 </p></subsection>
 
+<subsection name="Asn1Dump">
+<p>
+You can make an asn1 dump of a certificate in order to study the asn1 produced:
+</p>
+<source>
+bin/ejbca.sh asn1dump &lt;filename-of-pem-encoded-certs or filename-of-der-encoded-asn1&gt;
+Ex: bin/ejbca.sh asn1dump adminca1.pem
+</source>
+</subsection>
+
 <subsection name="Configuring Publishers (LDAP)">
 <p>
 LDAP setup is explained in HOWTO-LDAP.txt
