@@ -32,6 +32,8 @@ import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.cert.QCStatementExtension;
+import org.ejbca.util.cert.SubjectDirAttrExtension;
 
 
 
@@ -40,7 +42,7 @@ import org.ejbca.util.CertTools;
  * by JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: CertificateView.java,v 1.2 2006-01-21 12:20:56 anatom Exp $
+ * @version $Id: CertificateView.java,v 1.3 2006-06-04 10:08:43 anatom Exp $
  */
 public class CertificateView implements java.io.Serializable {
 
@@ -276,6 +278,17 @@ public class CertificateView implements java.io.Serializable {
       return certificate;
     }
     
+    public String getSubjectDirAttr() {
+    	if(subjectaltnamestring == null) {
+    		try {
+    			subjectdirattrstring = SubjectDirAttrExtension.getSubjectDirectoryAttributes(certificate);
+    		} catch (Exception e) {
+    			subjectdirattrstring = e.getMessage();		
+    		}
+    	}
+    	return subjectdirattrstring;
+    }
+    
     public String getSubjectAltName() {
       if(subjectaltnamestring == null){      	
         try {
@@ -355,11 +368,21 @@ public class CertificateView implements java.io.Serializable {
       return subjectaltnamestring; 	
     }
 
+    public boolean hasQcStatement() {
+    	boolean ret = false; 
+    	try {
+			ret = QCStatementExtension.hasQcStatement(certificate);
+		} catch (IOException e) {
+			ret = false;
+		}
+		return ret;
+    }
     // Private fields
     private X509Certificate  certificate;
     private DNFieldExtractor subjectdnfieldextractor, issuerdnfieldextractor;
     private RevokedInfoView  revokedinfo;
     private String           username;
     private String           subjectaltnamestring;
+    private String           subjectdirattrstring;
     private static HashMap   extendedkeyusageoidtotextmap;
 }

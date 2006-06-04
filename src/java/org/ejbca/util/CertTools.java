@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.math.BigInteger;
 import java.net.URL;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
@@ -39,7 +38,6 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -51,28 +49,21 @@ import java.util.Vector;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DEREncodableVector;
-import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSequence;
-import org.bouncycastle.asn1.DERSet;
-import org.bouncycastle.asn1.DERString;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.AccessDescription;
-import org.bouncycastle.asn1.x509.Attribute;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
@@ -81,16 +72,10 @@ import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.PolicyInformation;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.x509.X509NameTokenizer;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
-import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
-import org.bouncycastle.asn1.x509.qualified.MonetaryValue;
-import org.bouncycastle.asn1.x509.qualified.QCStatement;
-import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
-import org.bouncycastle.asn1.x509.qualified.SemanticsInformation;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
@@ -101,7 +86,7 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.8 2006-05-30 07:28:50 anatom Exp $
+ * @version $Id: CertTools.java,v 1.9 2006-06-04 10:08:45 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -165,7 +150,7 @@ public class CertTools {
     /**
      * inhibits creation of new CertTools
      */
-    private CertTools() {
+    protected CertTools() {
     }
 
     /** BC X509Name contains some lookup tables that could maybe be used here. */
@@ -1143,265 +1128,6 @@ public class CertTools {
         return ret;
     }
     
-	/**
-	 * SubjectDirectoryAttributes ::= SEQUENCE SIZE (1..MAX) OF Attribute
-	 *
-	 * Attribute ::= SEQUENCE {
-     *  type AttributeType,
-     *  values SET OF AttributeValue }
-     *  -- at least one value is required
-     * 
-     * AttributeType ::= OBJECT IDENTIFIER
-     * AttributeValue ::= ANY
-     * 
-	 * SubjectDirectoryAttributes is of form 
-	 * dateOfBirth=<19590927>, placeOfBirth=<string>, gender=<M/F>, countryOfCitizenship=<two letter ISO3166>, countryOfResidence=<two letter ISO3166>
-     * 
-     * Supported subjectDirectoryAttributes are the ones above 
-	 *
-	 * @param certificate containing subject directory attributes
-	 * @return String containing directoryAttributes of form the form specified above or null if no directoryAttributes exist. 
-	 *   Values in returned String is from CertTools constants. 
-	 *   DirectoryAttributes not supported are simply not shown in the resulting string.  
-	 * @throws java.lang.Exception
-	 */
-	public static String getSubjectDirectoryAttributes(X509Certificate certificate) throws Exception {
-		log.debug("Search for SubjectAltName");
-        DERObject obj = getExtensionValue(certificate, X509Extensions.SubjectDirectoryAttributes.getId());
-        if (obj == null) {
-            return null;
-        }
-        ASN1Sequence seq = (ASN1Sequence)obj;
-        
-        String result = "";
-        String prefix = "";
-		SimpleDateFormat dateF = new SimpleDateFormat("yyyyMMdd");
-        for (int i = 0; i < seq.size(); i++) {
-        	Attribute attr = Attribute.getInstance(seq.getObjectAt(i));
-        	if (!StringUtils.isEmpty(result)) {
-        		prefix = ", ";
-        	}
-        	if (attr.getAttrType().getId().equals(id_pda_dateOfBirth)) {
-        		ASN1Set set = attr.getAttrValues();
-        		// Come on, we'll only allow one dateOfBirth, we're not allowing such frauds with multiple birth dates
-        		DERGeneralizedTime time = DERGeneralizedTime.getInstance(set.getObjectAt(0));
-        		Date date = time.getDate();
-        		String dateStr = dateF.format(date);
-        		result += prefix + "dateOfBirth="+dateStr; 
-        	}
-        	if (attr.getAttrType().getId().equals(id_pda_placeOfBirth)) {
-        		ASN1Set set = attr.getAttrValues();
-        		// same here only one placeOfBirth
-        		String pb = ((DERString)set.getObjectAt(0)).getString();
-        		result += prefix + "placeOfBirth="+pb;        			
-        	}
-        	if (attr.getAttrType().getId().equals(id_pda_gender)) {
-        		ASN1Set set = attr.getAttrValues();
-        		// same here only one gender
-        		String g = ((DERString)set.getObjectAt(0)).getString();
-        		result += prefix + "gender="+g;        			
-        	}
-        	if (attr.getAttrType().getId().equals(id_pda_countryOfCitizenship)) {
-        		ASN1Set set = attr.getAttrValues();
-        		// same here only one citizenship
-        		String g = ((DERString)set.getObjectAt(0)).getString();
-        		result += prefix + "countryOfCitizenship="+g;        			
-        	}
-        	if (attr.getAttrType().getId().equals(id_pda_countryOfResidence)) {
-        		ASN1Set set = attr.getAttrValues();
-        		// same here only one residence
-        		String g = ((DERString)set.getObjectAt(0)).getString();
-        		result += prefix + "countryOfResidence="+g;        			
-        	}
-        }
-
-        if (StringUtils.isEmpty(result)) {
-            return null;
-        }
-        return result;            
-	}
-
-    /**
-     * From subjectDirAttributes string as defined in getSubjectDirAttribute 
-     * @param string of SubjectDirectoryAttributes
-     * @return A Collection of ASN.1 Attribute (org.bouncycastle.asn1.x509), or an empty Collection, never null
-     * @see #getSubjectDirectoryAttributes(X509Certificate)
-     */
-    public static Collection getSubjectDirectoryAttributes(String dirAttr) {
-    	ArrayList ret = new ArrayList();
-    	Attribute attr = null;
-        String value = CertTools.getPartFromDN(dirAttr, "countryOfResidence");
-        if (!StringUtils.isEmpty(value)) {
-        	DEREncodableVector vec = new DEREncodableVector();
-        	vec.add(new DERPrintableString(value));
-        	attr = new Attribute(new DERObjectIdentifier(id_pda_countryOfResidence),new DERSet(vec));
-        	ret.add(attr);
-        }
-        value = CertTools.getPartFromDN(dirAttr, "countryOfCitizenship");
-        if (!StringUtils.isEmpty(value)) {
-        	DEREncodableVector vec = new DEREncodableVector();
-        	vec.add(new DERPrintableString(value));
-        	attr = new Attribute(new DERObjectIdentifier(id_pda_countryOfCitizenship),new DERSet(vec));
-        	ret.add(attr);
-        }
-        value = CertTools.getPartFromDN(dirAttr, "gender");
-        if (!StringUtils.isEmpty(value)) {
-        	DEREncodableVector vec = new DEREncodableVector();
-        	vec.add(new DERPrintableString(value));
-        	attr = new Attribute(new DERObjectIdentifier(id_pda_gender),new DERSet(vec));
-        	ret.add(attr);
-        }
-        value = CertTools.getPartFromDN(dirAttr, "placeOfBirth");
-        if (!StringUtils.isEmpty(value)) {
-        	DEREncodableVector vec = new DEREncodableVector();
-        	X509DefaultEntryConverter conv = new X509DefaultEntryConverter();
-        	DERObject obj = conv.getConvertedValue(new DERObjectIdentifier(id_pda_placeOfBirth), value);
-        	vec.add(obj);
-        	attr = new Attribute(new DERObjectIdentifier(id_pda_placeOfBirth),new DERSet(vec));
-        	ret.add(attr);
-        }        
-        // dateOfBirth that is a GeneralizedTime
-        // The correct format for this is YYYYMMDD, it will be padded to YYYYMMDD120000Z
-        value = CertTools.getPartFromDN(dirAttr, "dateOfBirth");
-        if (!StringUtils.isEmpty(value)) {
-            if (value.length() == 8) {
-                value += "120000Z"; // standard format according to rfc3739
-                DEREncodableVector vec = new DEREncodableVector();
-                vec.add(new DERGeneralizedTime(value));
-                attr = new Attribute(new DERObjectIdentifier(id_pda_dateOfBirth),new DERSet(vec));
-                ret.add(attr);                
-            } else {
-                log.error("Wrong length of data for 'dateOfBirth', should be of format YYYYMMDD, skipping...");
-            }
-        }
-        return ret;
-    }
-    
-	/** Returns all the 'statementId' defined in the QCStatement extension (rfc3739).
-     * 
-     * @param cert Certificate containing the extension
-     * @return Collection of String with the oid, for example "1.1.1.2", or empty Collection if no identifier is found, never returns null.
-     * @throws IOException if there is a problem parsing the certificate
-     */
-    public static Collection getQcStatementIds(X509Certificate cert) throws IOException {
-        ArrayList ret = new ArrayList();
-        DERObject obj = getExtensionValue(cert, QCSTATEMENTS_OBJECTID);
-        if (obj == null) {
-            return ret;
-        }
-        ASN1Sequence seq = (ASN1Sequence)obj;
-        for (int i = 0; i < seq.size(); i++) {
-            QCStatement qc = QCStatement.getInstance(seq.getObjectAt(i));
-            DERObjectIdentifier oid = qc.getStatementId();
-            if (oid != null) {
-                ret.add(oid.getId());
-            }        	
-        }
-        return ret;
-    }
-    /** Returns the value limit ETSI QCStatement if present.
-     * 
-     * @param cert X509Certificate possibly containing the QCStatement extension
-     * @return String with the value and currency (ex '50000 SEK')or null if the extension is not present
-     * @throws IOException if there is a problem parsing the certificate
-     */
-    public static String getQcStatementValueLimit(X509Certificate cert) throws IOException {
-    	String ret = null;
-        DERObject obj = getExtensionValue(cert, QCSTATEMENTS_OBJECTID);
-        if (obj == null) {
-            return null;
-        }
-        ASN1Sequence seq = (ASN1Sequence)obj;
-        MonetaryValue mv = null;
-        // Look through all the QCStatements na dsee if we have a stadard ETSI LimitValue
-        for (int i = 0; i < seq.size(); i++) {
-            QCStatement qc = QCStatement.getInstance(seq.getObjectAt(i));
-            DERObjectIdentifier oid = qc.getStatementId();
-            if (oid != null) {
-            	if (oid.equals(ETSIQCObjectIdentifiers.id_etsi_qcs_LimiteValue)) {
-                    // We MAY have a MonetaryValue object here
-                    ASN1Encodable enc = qc.getStatementInfo();
-                    if (enc != null) {
-                    	mv = MonetaryValue.getInstance(enc);
-                        // We can break the loop now, we got it!
-                        break;
-                    }
-            	}
-            }        	
-        }
-        if (mv != null) {
-        	BigInteger amount = mv.getAmount();
-        	BigInteger exp = mv.getExponent();
-        	BigInteger ten = BigInteger.valueOf(10);
-        	// A possibly gotcha here if the monetary value is larger than what fits in a long...
-        	long value = amount.longValue() * (ten.pow(exp.intValue())).longValue();
-        	if (value < 0) {
-        		log.error("ETSI LimitValue amount is < 0.");
-        	}
-        	String curr = mv.getCurrency().getAlphabetic();
-        	if (curr == null) {
-        		log.error("ETSI LimitValue currency is null");
-        	}
-        	if ( (value >= 0) && (curr != null) ) {
-        		ret = value + " "+curr;
-        	}
-        }
-    	return ret;
-    	
-    }
-    /** Returns the 'NameRegistrationAuthorities' defined in the QCStatement extension (rfc3739).
-     * 
-     * @param cert Certificate containing the extension
-     * @return String with for example 'rfc822Name=foo2bar.se, rfc822Name=bar2foo.se' etc. Supports email, dns and uri name, or null of no RAs are found.
-     * @throws IOException if there is a problem parsing the certificate
-     */
-    public static String getQcStatementAuthorities(X509Certificate cert) throws IOException {
-        String ret = null;
-        DERObject obj = getExtensionValue(cert, QCSTATEMENTS_OBJECTID);
-        if (obj == null) {
-            return null;
-        }
-        ASN1Sequence seq = (ASN1Sequence)obj;
-        SemanticsInformation si = null;
-        // Look through all the QCStatements na dsee if we have a stadard RFC3739 pkixQCSyntax
-        for (int i = 0; i < seq.size(); i++) {
-            QCStatement qc = QCStatement.getInstance(seq.getObjectAt(i));
-            DERObjectIdentifier oid = qc.getStatementId();
-            if (oid != null) {
-            	if (oid.equals(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v1) || oid.equals(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2)) {
-                    // We MAY have a SemanticsInformation object here
-                    ASN1Encodable enc = qc.getStatementInfo();
-                    if (enc != null) {
-                        si = SemanticsInformation.getInstance(enc);
-                        // We can break the loop now, we got it!
-                        break;
-                    }
-            	}
-            }        	
-        }
-        if (si != null) {
-            GeneralName[] gns = si.getNameRegistrationAuthorities();
-            if (gns == null) {
-                return null;
-            }
-            StringBuffer strBuf = new StringBuffer(); 
-            for (int i = 0; i < gns.length; i++) {
-                GeneralName gn = gns[i];
-                if (strBuf.length() != 0) {
-                    // Append comma so we get nice formatting if there are more than one authority
-                    strBuf.append(", ");
-                }
-                String str = getGeneralNameString(gn.getTagNo(), gn.getName());
-                if (str != null) {
-                    strBuf.append(str);
-                }
-            }
-            if (strBuf.length() > 0) {
-                ret = strBuf.toString();
-            }
-        }
-        return ret;
-    }
     /**
      * GeneralName ::= CHOICE {
      * otherName                       [0]     OtherName,
@@ -1420,7 +1146,7 @@ public class CertTools {
      * @throws IOException 
      * @see #getSubjectAlternativeName
      */
-    private static String getGeneralNameString(int tag, DEREncodable value) throws IOException {
+    protected static String getGeneralNameString(int tag, DEREncodable value) throws IOException {
         String ret = null;
         switch (tag) {
         case 0: ASN1Sequence seq = getAltnameSequence(value.getDERObject().getEncoded());
@@ -1556,7 +1282,7 @@ public class CertTools {
     /**
      * Return an Extension DERObject from a certificate
      */
-    private static DERObject getExtensionValue(X509Certificate cert, String oid)
+    protected static DERObject getExtensionValue(X509Certificate cert, String oid)
       throws IOException {
     	if (cert == null) {
     		return null;

@@ -55,12 +55,13 @@ import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.cert.QCStatementExtension;
 
 
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.10 2006-01-22 09:49:56 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.11 2006-06-04 10:08:45 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -577,13 +578,13 @@ public class TestSignSession extends TestCase {
 //        fos.close();
         String dn = cert.getSubjectDN().getName();
         assertEquals(CertTools.stringToBCDNString("cn=qc,c=SE"), CertTools.stringToBCDNString(dn));
-        assertEquals("rfc822name=qc@primekey.se", CertTools.getQcStatementAuthorities(cert));
-        Collection ids = CertTools.getQcStatementIds(cert);
+        assertEquals("rfc822name=qc@primekey.se", QCStatementExtension.getQcStatementAuthorities(cert));
+        Collection ids = QCStatementExtension.getQcStatementIds(cert);
         assertTrue(ids.contains(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v1.getId()));
         assertTrue(ids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcCompliance.getId()));
         assertTrue(ids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcSSCD.getId()));
         assertTrue(ids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_LimiteValue.getId()));
-        String limit = CertTools.getQcStatementValueLimit(cert);
+        String limit = QCStatementExtension.getQcStatementValueLimit(cert);
         assertEquals("50000 SEK", limit);
 
         // Clean up

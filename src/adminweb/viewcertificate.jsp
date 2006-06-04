@@ -214,7 +214,7 @@
 
 
   int row = 0; 
-  int columnwidth = 150;
+  int columnwidth = 170;
 %>
 <head>
   <title><%= globalconfiguration.getEjbcaTitle() %></title>
@@ -339,6 +339,14 @@ function confirmrepublish(){
          </td>
        </tr>
        <tr id="Row<%=(row++)%2%>">
+	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("SUBDIRATTR") %></td>
+	 <td><% if(certificatedata.getSubjectDirAttr() == null)
+                  out.write(ejbcawebbean.getText("NONE"));
+                else
+                  out.write(certificatedata.getSubjectDirAttr());%> 
+         </td>
+       </tr>
+       <tr id="Row<%=(row++)%2%>">
 	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("PUBLICKEY") %></td>
 	 <td><%= certificatedata.getPublicKeyAlgorithm() %> <% if(certificatedata.getPublicKeyLength() != null){
                                                                  out.write(" ( " + certificatedata.getPublicKeyLength() + ejbcawebbean.getText("BITS") + ")");  
@@ -423,6 +431,16 @@ function confirmrepublish(){
                 }                
                 if(extendedkeyusage == null || extendedkeyusage.length == 0)
                   out.write(ejbcawebbean.getText("NOEXTENDEDKEYUSAGESPECIFIED"));                       
+%>
+         </td>
+       </tr>
+       <tr id="Row<%=(row++)%2%>">
+	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("QUALIFIEDCERTSTATEMENT") %></td>
+	 <td><% if (certificatedata.hasQcStatement()) {
+		 out.write(ejbcawebbean.getText("YES"));
+	 } else {
+		 out.write(ejbcawebbean.getText("NO"));
+	 }
 %>
          </td>
        </tr>

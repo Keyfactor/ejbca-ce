@@ -108,6 +108,7 @@ import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.cert.SubjectDirAttrExtension;
 
 
 
@@ -116,7 +117,7 @@ import org.ejbca.util.CertTools;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.14 2006-06-03 18:10:47 anatom Exp $
+ * @version $Id: X509CA.java,v 1.15 2006-06-04 10:08:43 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -541,7 +542,7 @@ public class X509CA extends CA implements Serializable {
         	 String dirAttrString = subject.getExtendedinformation().getSubjectDirectoryAttributes();
         	 if (StringUtils.isNotEmpty(dirAttrString)) {
             	 // Subject Directory Attributes is a sequence of Attribute
-            	 Collection attr = CertTools.getSubjectDirectoryAttributes(dirAttrString);
+            	 Collection attr = SubjectDirAttrExtension.getSubjectDirectoryAttributes(dirAttrString);
             	 DEREncodableVector vec = new DEREncodableVector();
             	 Iterator iter = attr.iterator();
             	 while (iter.hasNext()) {

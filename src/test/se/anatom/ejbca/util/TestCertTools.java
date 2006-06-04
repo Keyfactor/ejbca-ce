@@ -29,6 +29,8 @@ import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.StringTools;
+import org.ejbca.util.cert.QCStatementExtension;
+import org.ejbca.util.cert.SubjectDirAttrExtension;
 
 import com.novell.ldap.LDAPDN;
 
@@ -36,7 +38,7 @@ import com.novell.ldap.LDAPDN;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.20 2006-05-30 07:28:47 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.21 2006-06-04 10:08:44 anatom Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);
@@ -696,17 +698,17 @@ public class TestCertTools extends TestCase {
   public void test14QCStatement()  throws Exception {
       X509Certificate cert = CertTools.getCertfromByteArray(qcRefCert);
       //System.out.println(cert);
-      assertEquals("rfc822name=municipality@darmstadt.de", CertTools.getQcStatementAuthorities(cert));
-      Collection ids = CertTools.getQcStatementIds(cert);
+      assertEquals("rfc822name=municipality@darmstadt.de", QCStatementExtension.getQcStatementAuthorities(cert));
+      Collection ids = QCStatementExtension.getQcStatementIds(cert);
       assertTrue(ids.contains(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2.getId()));
       X509Certificate cert2 = CertTools.getCertfromByteArray(qcPrimeCert);
-      assertEquals("rfc822name=qc@primekey.se", CertTools.getQcStatementAuthorities(cert2));
-      ids = CertTools.getQcStatementIds(cert2);
+      assertEquals("rfc822name=qc@primekey.se", QCStatementExtension.getQcStatementAuthorities(cert2));
+      ids = QCStatementExtension.getQcStatementIds(cert2);
       assertTrue(ids.contains(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v1.getId()));
       assertTrue(ids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcCompliance.getId()));
       assertTrue(ids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_QcSSCD.getId()));
       assertTrue(ids.contains(ETSIQCObjectIdentifiers.id_etsi_qcs_LimiteValue.getId()));
-      String limit = CertTools.getQcStatementValueLimit(cert2);
+      String limit = QCStatementExtension.getQcStatementValueLimit(cert2);
       assertEquals("50000 SEK", limit);
   }
   public void test15AiaOcspUri() throws Exception {
@@ -752,10 +754,10 @@ public class TestCertTools extends TestCase {
   public void test17SubjectDirectoryAttributes() throws Exception {
       log.debug(">test17SubjectDirectoryAttributes()");
       X509Certificate cer = CertTools.getCertfromByteArray(subjDirAttrCert);
-      String ret = CertTools.getSubjectDirectoryAttributes(cer);
+      String ret = SubjectDirAttrExtension.getSubjectDirectoryAttributes(cer);
       assertEquals("countryOfCitizenship=TR", ret);
       cer = CertTools.getCertfromByteArray(subjDirAttrCert2);
-      ret = CertTools.getSubjectDirectoryAttributes(cer);
+      ret = SubjectDirAttrExtension.getSubjectDirectoryAttributes(cer);
       assertEquals("countryOfResidence=SE, countryOfCitizenship=SE, gender=M, placeOfBirth=Stockholm, dateOfBirth=19710425", ret);
       log.debug("<test17SubjectDirectoryAttributes()");
 	  
