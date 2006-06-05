@@ -113,6 +113,12 @@ JDBC driver: mysql-connector-java-3.0.x.jar (preferably 3.0.9 or higher).
 
 Download JDBC driver for mySQL from http://www.mysql.com/
 
+If you use JDBC-driver 3.1.x you may have to add "?useServerPrepStmts=false" to the database connect url in 
+ejbca.properties, i.e.:
+#database.url=jdbc:mysql://127.0.0.1:3306/ejbca?useServerPrepStmts=false
+You will need this if you get errors with "Incorrect arguments to mysql_stmt_execute" when doing install of EJBCA.
+This problem seems to affect the combination of MySQL 4.x with Connector/J 3.1.x.
+
 Sometimes there can be problems with MySQL related to case sensitivity of database tables.
 If you run into this see:
 http://mysqld.active-venture.com/Name_case_sensitivity.html
