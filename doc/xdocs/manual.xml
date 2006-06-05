@@ -1018,6 +1018,7 @@ Follow these steps to create a CA that is using a Eracom HSM (tested with Eracom
 </p>
 <strong>1. Install the Eracom software</strong>
 <p>
+You need an access library (ex ETnethsm), the Toolkit C runtime and the Toolkit J runtime.
 </p>
 <strong>2. Create the required slots</strong>
 <p>
@@ -1067,7 +1068,7 @@ Sample Slot Initialization:
 <br></br>
    ( Make key backups on smart cards as described.)
 </p>
-<strong>3. Make sure the required Eracom Java Security Provider is on the classpath</strong>
+<strong>3. Make sure the required Eracom Java Security Provider (jprov) is on the classpath</strong>
 <p>
 For example, for WEBLOGIC, add:
 <br></br>
@@ -1081,6 +1082,10 @@ The native library dir is where libjcprov.so and libcryptoki.so are located.
 LD_LIBRARY_PATH=/opt/Eracom/lib
 export LD_LIBRARY_PATH
 </source>
+<p>
+For Windows this is done by adding the location where DLLs are located to the system path. 
+This is normally done by the installer programs.
+</p>
 <p>
 <strong>5. If you use an external HSM, set its hostname/IP-Adress as unix environment variable</strong>
 </p>
