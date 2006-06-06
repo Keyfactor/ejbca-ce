@@ -1719,7 +1719,7 @@ If you change to UFT-8 to handle your char set, perhaps you must also specify th
 connection should use UTF-8.
 For MySQL this can be done in the <i>connection-url</i> in your datasource description 
 (JBOSS_HOME/server/default/deploy/ejbca-ds.xml):
-jdbc:mysql://yourhost/ejbca?useUnicode=true&amp;characterEncoding=UTF-8
+jdbc:mysql://yourhost/ejbca?characterEncoding=UTF-8
 </p><p>
 For some languages (for example Chinese) the java scripts in the admin GUI will fail to recognize
 the characters when doing checks for allowed characters in DN etc.

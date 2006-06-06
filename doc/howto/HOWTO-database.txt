@@ -124,6 +124,10 @@ If you run into this see:
 http://mysqld.active-venture.com/Name_case_sensitivity.html
 http://dev.mysql.com/doc/refman/4.1/en/name-case-sensitivity.html
 
+To use UTF-8 encoding in the database, which may be nessecary to get your national characters to work, you may have to 
+use the following option to hte mysql connect string:
+jdbc:mysql://127.0.0.1:3306/ejbca?characterEncoding=UTF-8
+
 PostgreSQL specifics
 --------------------
 EJBCA have been tested with PostgreSQL 7.2 and 8.0.
