@@ -71,8 +71,10 @@ import org.bouncycastle.asn1.x509.PolicyQualifierInfo;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.UserNotice;
+import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.asn1.x509.X509NameEntryConverter;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.Iso4217CurrencyCode;
@@ -109,6 +111,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.cert.SubjectDirAttrExtension;
+import org.ejbca.util.cert.UTF8EntryConverter;
 
 
 
@@ -117,7 +120,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.15 2006-06-04 10:08:43 anatom Exp $
+ * @version $Id: X509CA.java,v 1.16 2006-06-06 15:31:08 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -311,7 +314,14 @@ public class X509CA extends CA implements Serializable {
         	altName = certProfile.createSubjectAltNameSubSet(altName);
         }
         
-        certgen.setSubjectDN(CertTools.stringToBcX509Name(dn));
+        X509NameEntryConverter converter = null;
+        boolean alwaysUseUTF8SubjectDNString = false;
+        if (alwaysUseUTF8SubjectDNString) {
+        	converter = new UTF8EntryConverter();
+        } else {
+        	converter = new X509DefaultEntryConverter();
+        }
+        certgen.setSubjectDN(CertTools.stringToBcX509Name(dn, converter));
         // We must take the issuer DN directly from the CA-certificate otherwise we risk re-ordering the DN
         // which many applications do not like.
         X509Certificate cacert = (X509Certificate)getCACertificate();

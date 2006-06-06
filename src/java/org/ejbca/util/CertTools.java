@@ -72,8 +72,10 @@ import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.PolicyInformation;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.asn1.x509.X509NameEntryConverter;
 import org.bouncycastle.asn1.x509.X509NameTokenizer;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
 import org.bouncycastle.jce.X509KeyUsage;
@@ -86,7 +88,7 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.9 2006-06-04 10:08:45 anatom Exp $
+ * @version $Id: CertTools.java,v 1.10 2006-06-06 15:31:09 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -197,6 +199,22 @@ public class CertTools {
         return (DERObjectIdentifier) oids.get(o.toLowerCase());
     } // getOid
 
+    /** See stringToBcX509Name(String, X509NameEntryConverter), this method uses the default BC converter (X509DefaultEntryConverter)
+     * @see #stringToBcX509Name(String, X509NameEntryConverter)
+     * @param dn
+     * @param dn
+     *          String containing DN that will be transformed into X509Name, The
+     *          DN string has the format "CN=zz,OU=yy,O=foo,C=SE". Unknown OIDs in
+     *          the string will be added to the end positions of OID array.
+     * 
+     * @return X509Name or null if input is null
+     */
+    public static X509Name stringToBcX509Name(String dn) {
+    	X509NameEntryConverter converter = new X509DefaultEntryConverter();
+    	return stringToBcX509Name(dn, converter);
+    	
+    	
+    }
     /**
      * Creates a (Bouncycastle) X509Name object from a string with a DN. Known OID
      * (with order) are:
@@ -213,7 +231,7 @@ public class CertTools {
      * 
      * @return X509Name or null if input is null
      */
-    public static X509Name stringToBcX509Name(String dn) {
+    public static X509Name stringToBcX509Name(String dn, X509NameEntryConverter converter) {
 
       // log.debug(">stringToBcX509Name: " + dn);
       if (dn == null)
@@ -252,10 +270,10 @@ public class CertTools {
         }
       }
 
-      X509Name x509Name = new X509Name(defaultOrdering, values);
+      X509Name x509Name = new X509Name(defaultOrdering, values, converter);
 
       //-- Reorder fields
-      X509Name orderedX509Name = getOrderedX509Name(x509Name, getDefaultX509FieldOrder());
+      X509Name orderedX509Name = getOrderedX509Name(x509Name, getDefaultX509FieldOrder(), converter);
 
       log.debug("<stringToBcX509Name");
       return orderedX509Name;
@@ -1575,7 +1593,7 @@ public class CertTools {
      * @param ordering Vector of DERObjectIdentifier defining the desired order of components
      * @return X509Name with ordered conmponents according to the orcering vector
      */
-    private static X509Name getOrderedX509Name( X509Name x509Name, Vector ordering ){
+    private static X509Name getOrderedX509Name( X509Name x509Name, Vector ordering, X509NameEntryConverter converter ){
         
         //-- Null prevent
         if ( ordering == null ){ ordering = new Vector(); }
@@ -1633,7 +1651,7 @@ public class CertTools {
         } 
         
         //-- Create X509Name with the ordered fields
-        X509Name orderedName = new X509Name(newOrdering, newValues);
+        X509Name orderedName = new X509Name(newOrdering, newValues, converter);
         
         return orderedName;
     }
