@@ -40,7 +40,7 @@ import org.ejbca.core.model.log.Admin;
 /**
  * Tests the ca data entity bean.
  *
- * @version $Id: TestCAs.java,v 1.8 2006-05-26 17:23:27 anatom Exp $
+ * @version $Id: TestCAs.java,v 1.9 2006-06-06 17:14:29 anatom Exp $
  */
 public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -144,7 +144,9 @@ public class TestCAs extends TestCase {
                     null, // defaultcrldistpoint 
                     null, // defaultocsplocator
                     true, // Finish User
-                    extendedcaservices);
+                    extendedcaservices,
+                    false // use default utf8 settings
+                    );
 
 
             cacheAdmin.createCA(admin, cainfo);

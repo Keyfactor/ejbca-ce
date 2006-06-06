@@ -120,14 +120,14 @@ import org.ejbca.util.cert.UTF8EntryConverter;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.16 2006-06-06 15:31:08 anatom Exp $
+ * @version $Id: X509CA.java,v 1.17 2006-06-06 17:14:29 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
     private static final Logger log = Logger.getLogger(X509CA.class);
 
     // Default Values
-    public static final float LATEST_VERSION = 4;
+    public static final float LATEST_VERSION = 5;
 
     private byte[]  keyId = new byte[] { 1, 2, 3, 4, 5 };
     
@@ -141,6 +141,7 @@ public class X509CA extends CA implements Serializable {
     protected static final String CRLNUMBERCRITICAL              = "crlnumbercritical";
     protected static final String DEFAULTCRLDISTPOINT            = "defaultcrldistpoint";
     protected static final String DEFAULTOCSPSERVICELOCATOR      = "defaultocspservicelocator";
+    protected static final String ALWAYSUSEUTF8SUBJECTDN         = "alwaysuseutf8subjectdn";
 
     // Public Methods
     /** Creates a new instance of CA, this constuctor should be used when a new CA is created */
@@ -156,9 +157,10 @@ public class X509CA extends CA implements Serializable {
       setDefaultCRLDistPoint(cainfo.getDefaultCRLDistPoint());
       setDefaultOCSPServiceLocator(cainfo.getDefaultOCSPServiceLocator());
       setFinishUser(cainfo.getFinishUser());
+      setAlwaysUseUTF8SubjectDN(cainfo.getAlwaysUseUTF8SubjectDN());
       
       data.put(CA.CATYPE, new Integer(CAInfo.CATYPE_X509));
-      data.put(VERSION, new Float(LATEST_VERSION));      
+      data.put(VERSION, new Float(LATEST_VERSION));   
     }
     
    /** Constructor used when retrieving existing X509CA from database. */
@@ -209,7 +211,15 @@ public class X509CA extends CA implements Serializable {
     		data.put(DEFAULTOCSPSERVICELOCATOR, defaultocsplocator);
     	}     
     }
-    
+
+    public boolean  getAlwaysUseUTF8SubjectDN(){
+        return ((Boolean)data.get(ALWAYSUSEUTF8SUBJECTDN)).booleanValue();
+      }
+      public void setAlwaysUseUTF8SubjectDN(boolean alwaysuseutf8) {
+        data.put(ALWAYSUSEUTF8SUBJECTDN, Boolean.valueOf(alwaysuseutf8));
+      }
+
+
     
     public void updateCA(CAInfo cainfo) throws Exception{
       super.updateCA(cainfo); 
@@ -221,6 +231,7 @@ public class X509CA extends CA implements Serializable {
       setCRLNumberCritical(info.getCRLNumberCritical());
       setDefaultCRLDistPoint(info.getDefaultCRLDistPoint());
       setDefaultOCSPServiceLocator(info.getDefaultOCSPServiceLocator());
+      setAlwaysUseUTF8SubjectDN(info.getAlwaysUseUTF8SubjectDN());
     }
     
     public CAInfo getCAInfo() throws Exception{
@@ -234,7 +245,7 @@ public class X509CA extends CA implements Serializable {
                     getValidity(), getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(),
                     getCAToken().getCATokenInfo(), getDescription(), getRevokationReason(), getRevokationDate(), getPolicyId(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(), getCRLPublishers(),
                     getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(),
-                    getUseCRLNumber(), getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultOCSPServiceLocator(), getFinishUser(), externalcaserviceinfos); 
+                    getUseCRLNumber(), getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultOCSPServiceLocator(), getFinishUser(), externalcaserviceinfos, getAlwaysUseUTF8SubjectDN()); 
     }
 
 
@@ -315,8 +326,7 @@ public class X509CA extends CA implements Serializable {
         }
         
         X509NameEntryConverter converter = null;
-        boolean alwaysUseUTF8SubjectDNString = false;
-        if (alwaysUseUTF8SubjectDNString) {
+        if (getAlwaysUseUTF8SubjectDN()) {
         	converter = new UTF8EntryConverter();
         } else {
         	converter = new X509DefaultEntryConverter();
@@ -327,7 +337,7 @@ public class X509CA extends CA implements Serializable {
         X509Certificate cacert = (X509Certificate)getCACertificate();
         if (cacert == null) {
         	// This will be an initial root CA, since no CA-certificate exists
-            X509Name caname = CertTools.stringToBcX509Name(getSubjectDN());
+            X509Name caname = CertTools.stringToBcX509Name(getSubjectDN(), converter);
             certgen.setIssuerDN(caname);
         } else {
             certgen.setIssuerDN(cacert.getSubjectX500Principal());        	
@@ -648,6 +658,10 @@ public class X509CA extends CA implements Serializable {
             if (data.get(CRLOVERLAPTIME) == null) {
             	// Default value 10 minutes
             	setCRLOverlapTime(10);
+            }
+            if (data.get(ALWAYSUSEUTF8SUBJECTDN) == null) {
+            	// Default value false (as before)
+            	setAlwaysUseUTF8SubjectDN(false);
             }
             
             data.put(VERSION, new Float(LATEST_VERSION));

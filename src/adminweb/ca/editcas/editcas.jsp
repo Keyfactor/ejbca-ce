@@ -76,6 +76,8 @@
   static final String CHECKBOX_USECRLNUMBER                       = "checkboxusecrlnumber";
   static final String CHECKBOX_CRLNUMBERCRITICAL                  = "checkboxcrlnumbercritical";
   static final String CHECKBOX_FINISHUSER                         = "checkboxfinishuser";
+  static final String CHECKBOX_USEUTF8SUBJECTDN                   = "checkboxuseutf8subjectdn";
+  
   static final String CHECKBOX_ACTIVATEOCSPSERVICE                = "checkboxactivateocspservice";  
   
   static final String HIDDEN_CATOKEN                              = "hiddencatoken";  
@@ -326,9 +328,15 @@
                  policyid = null; 
 
               int crlperiod = Integer.parseInt(request.getParameter(TEXTFIELD_CRLPERIOD));
-              int crlIssueInterval = Integer.parseInt(request.getParameter(TEXTFIELD_CRLISSUEINTERVAL));
-              int crlOverlapTime = Integer.parseInt(request.getParameter(TEXTFIELD_CRLOVERLAPTIME));
-
+              int crlIssueInterval = 0;
+              String crlissueint = request.getParameter(TEXTFIELD_CRLISSUEINTERVAL);
+              if (crlissueint != null && !crlissueint.trim().equals(""))
+                  crlIssueInterval = Integer.parseInt(crlissueint);
+              int crlOverlapTime = 0;
+              String crloverlapint = request.getParameter(TEXTFIELD_CRLOVERLAPTIME);
+              if (crloverlapint != null && !crloverlapint.trim().equals(""))
+            	  crlOverlapTime = Integer.parseInt(crloverlapint);
+              
               boolean useauthoritykeyidentifier = false;
               boolean authoritykeyidentifiercritical = false;
               String value = request.getParameter(CHECKBOX_AUTHORITYKEYIDENTIFIER);
@@ -362,6 +370,11 @@
              value = request.getParameter(CHECKBOX_FINISHUSER);
              if(value != null)
                finishuser = value.equals(CHECKBOX_VALUE);         
+
+             boolean alwaysuseuft8subjectdn = false;
+             value = request.getParameter(CHECKBOX_USEUTF8SUBJECTDN);
+             if(value != null)
+            	 alwaysuseuft8subjectdn = value.equals(CHECKBOX_VALUE);         
 
              String[] values = request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
              ArrayList crlpublishers = new ArrayList(); 
@@ -398,7 +411,8 @@
                                                         crlnumbercritical, 
                                                         defaultcrldistpoint,
                                                         defaultocsplocator,
-                                                        finishuser, extendedcaservices);
+                                                        finishuser, extendedcaservices,
+                                                        alwaysuseuft8subjectdn);
                  try{
                    cadatahandler.createCA((CAInfo) x509cainfo);
                  }catch(CAExistsException caee){
@@ -429,7 +443,8 @@
                                                         crlnumbercritical, 
                                                         defaultcrldistpoint,
                                                         defaultocsplocator,
-                                                        finishuser, extendedcaservices);
+                                                        finishuser, extendedcaservices,
+                                                        alwaysuseuft8subjectdn);
                  cabean.saveRequestInfo(x509cainfo);                
                  filemode = MAKEREQUESTMODE;
                  includefile="recievefile.jspf"; 
@@ -520,6 +535,11 @@
              if(value != null)
                finishuser = value.equals(CHECKBOX_VALUE);         
 
+             boolean  alwaysuseuft8subjectdn = false;
+             value = request.getParameter(CHECKBOX_USEUTF8SUBJECTDN);
+             if(value != null)
+            	 alwaysuseuft8subjectdn = value.equals(CHECKBOX_VALUE);         
+
              String[] values = request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
              ArrayList crlpublishers = new ArrayList(); 
              if(values != null){
@@ -557,7 +577,8 @@
                                                       crlnumbercritical, 
                                                       defaultcrldistpoint,
                                                       defaultocsplocator,
-                                                      finishuser,extendedcaservices);
+                                                      finishuser,extendedcaservices,
+                                                      alwaysuseuft8subjectdn);
                  
                cadatahandler.editCA((CAInfo) x509cainfo);
                  
@@ -732,6 +753,7 @@
               boolean crlnumbercritical = false;
                                                                       
               boolean finishuser = false;
+              boolean alwaysuseuft8subjectdn = false;
               ArrayList crlpublishers = new ArrayList(); 
               
              if(!illegaldnoraltname){
@@ -747,7 +769,8 @@
                                                         crlnumbercritical, 
                                                         "","",
                                                         finishuser, 
-                                                        new ArrayList());
+                                                        new ArrayList(),
+                                                        alwaysuseuft8subjectdn);
                  try{
                    ExtendedPKCS10CertificationRequest req = cabean.getPKCS10RequestData(); 
                    java.security.cert.Certificate result = cadatahandler.processRequest(x509cainfo, new PKCS10RequestMessage(req));

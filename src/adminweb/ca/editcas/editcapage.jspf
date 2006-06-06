@@ -392,6 +392,16 @@ function checkallfields(){
         <% } %>
       </td>
     </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("USEUTF8SUBJECTDN") %>
+      </td>
+      <td width="50%"> 
+        <input type="checkbox" name="<%=CHECKBOX_USEUTF8SUBJECTDN %>" value="<%=CHECKBOX_VALUE %>" 
+            <% if((editca && x509cainfo.getAlwaysUseUTF8SubjectDN()))
+                 out.write("CHECKED");%>>         
+      </td>
+    </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("SIGNEDBY") %>
