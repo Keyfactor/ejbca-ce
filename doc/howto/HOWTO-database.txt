@@ -107,7 +107,7 @@ Start 'mysql -u root mysql' and create the user with "grant all on ejbca.* to ej
 
 MySQL specifics
 ---------------
-EJBCA have been tested with MySQL 3 and 4.
+EJBCA have been tested with MySQL 3, 4 and 5.
 
 JDBC driver: mysql-connector-java-3.0.x.jar (preferably 3.0.9 or higher).
 
