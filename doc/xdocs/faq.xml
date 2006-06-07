@@ -7,6 +7,28 @@
 
   <faqsection title="About this FAQ">
     <faq>
+      <question>
+      I get strange errors during 'ant bootstrap' or 'ant install'.
+      </question>
+      <answer>
+      <p>
+      This is most usually due to a database configuration error. In the server log (JBOSS_HOME/server/default/log/server.log)
+      you will probably see some SQLException errors. You should:
+      </p>
+      <ul>
+      <li>Make sure the settings in ejbca.properties is correct</li>
+      <li>Stop JBoss</li>
+      <li>Drop the old database and create a new one</li>
+      <li>Do 'ant clean' and 'ant bootstrap' again</li>
+      <li>Start JBoss</li>
+      </ul>
+      <p>
+      Follow the configuration and troubleshooting section in doc/howto/HOWTO-database.txt.
+      </p>
+      </answer>
+    </faq>
+    
+    <faq>
       <question>During the build process I get errors like:
       BUILD FAILED
       /usr/ejbca/build.xml:789: java.lang.ExceptionInInitializerError
