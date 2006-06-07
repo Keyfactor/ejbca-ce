@@ -26,6 +26,12 @@ Check out: <a href="http://wiki.jboss.org/wiki/Wiki.jsp?page=SecureJBoss">Secure
 <p>You should at least disable the public admin console by removing jmx-console.war, management/console-mgr.sar and 
 jbossweb-tomcat55.sar/ROOT.war from deploy.
 </p>
+<p>Alternatively protect it with a password set in
+jboss/server/default/deploy/management/console-mgr.sar/web-console.war/WEB-INF/classes/web-console-users.properties
+</p>
+<p>You should also make sure all sensitive files can only be read by the JBoss user. These files are for example the server.xml 
+file where the password for the SSL keystores are stored.
+</p>
 </section>
 
 <section name="Setting up SSL">
