@@ -1,0 +1,201 @@
+package org.ejbca.ui.cli;
+
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.KeyStore;
+import java.security.Provider;
+import java.security.Security;
+import java.util.Date;
+
+import com.chrysalisits.crypto.LunaCertificateX509;
+import com.chrysalisits.crypto.LunaTokenManager;
+
+public class LunaKeyTool {
+    private static String SHELL_COMMAND = "keyTool";
+    private static String GENERATE_SWITCH = "generate";
+    private static String DELETE_SWITCH = "delete";
+    private static String getPassword(String args[]) {
+        return args[args.length-1];
+    }
+    private static String getSlotLabel(String args[], int slotLabelIndex) {
+        if ( args.length>1+slotLabelIndex )
+            return args[slotLabelIndex];
+        else
+            return null;
+    }
+    private static void loginToHSM(LunaTokenManager tokenManager, String args[], int slotLabelIndex) {
+//      String password = "px4X-/AGX-G49T-MXR7";
+        String tokenlabel;
+        try {
+            Provider prov = (Provider)Class.forName("com.chrysalisits.crypto.LunaJCAProvider").newInstance();        
+            Security.addProvider( prov );
+            // Get the number of slots available with tokens present
+            // and print the slot number and the label of the token in the
+            // slot
+            /*
+             Since your system may have more than one Luna SA partition or
+             Luna HSM, it may be important for your application to see
+             which partitions or HSMs are available and to choose (or allow
+             a user to choose) one with which to perform cryptographic calls.
+             
+             Luna SA partitions and HSMs are based on PKCS#11 (cryptoki)
+             "slots" and "tokens". PKCS#11 uses a slot/token relationship to
+             represent a standardized abstraction layer in software or
+             hardware security devices. A device may have many slots and each
+             slot may or may not have a token present in it. Luna SA
+             partitions are represented as slots with a token present. Luna
+             HSMs come in card readers with a set number of slots. Tokens
+             will only appear present in the software if they are physically
+             present in the slot of the card reader.
+             
+             For more information about the Slot/Token relationship please
+             see the PKCS#11 v2.01 specification from the RSA website
+             (www.rsa.com).
+             */
+            System.out.println("Number of Slots: " + tokenManager.GetNumberOfSlots());
+            for(int i = 1; i < tokenManager.GetNumberOfSlots() + 1;i++)
+            {
+                // Since it is possible to have a slot without a token present
+                // check to see if there is a token present
+                if(tokenManager.IsTokenPresent(i) == true)
+                {
+                    tokenlabel = tokenManager.GetTokenLabel(i);
+                    // Each Luna SA partiton or HSM has a label that is created
+                    // during setup of the HSM. Labels are commonly used to
+                    // distinguish one partition or HSM from another.
+                    System.out.println("Slot: " + i + " Token Label: " + tokenlabel);
+                }
+            }
+            // Login to the HSM
+            /*
+             This method unlocks the token for use.  There are multiple
+             methods available within the TokenManager class to login
+             to the HSM:
+             
+             Login to the first available partition:
+             Login(String password)
+             
+             Login to the partition at the specified slot:
+             Login(int slot, String password)
+             
+             Login to the partition with the specified label:
+             Login(String TokenLabel, String password)
+             
+             The password argument is the challenge password for the
+             Luna SA partition or HSM. (Applications generally ask for
+             password information interactively from the user.)
+             */
+            String slotLabel = getSlotLabel(args, slotLabelIndex);
+            if ( slotLabel!=null )
+                tokenManager.Login(slotLabel, getPassword(args));
+            else
+                tokenManager.Login(getPassword(args));
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+    }
+    /**
+     * @param args
+     */
+    public static void main(String[] args) {
+        // Initialize the TokenManager class
+        /*
+           This class is used for general access to the Luna HSM and is not
+           part of the normal JCE/JCA.  This class is required to access the
+           HSM as it contains the methods for logging in and out of the HSM
+           and slot/token management.
+
+           See the Luna developers reference guide for information on
+           alternatives to using the LunaTokenManager class.
+        */
+        if ( args.length > 0 && args[0].toLowerCase().trim().equals(GENERATE_SWITCH))
+            generate(args);
+        else if ( args.length > 0 && args[0].toLowerCase().trim().equals(DELETE_SWITCH))
+            delete(args);
+        else
+            System.out.println("Use \"" + SHELL_COMMAND+" "+GENERATE_SWITCH+"\" or \"" +
+                               SHELL_COMMAND+" "+DELETE_SWITCH+"\".");
+     }
+    private static void delete(String[] args) {
+        if ( args.length < 3 ) {
+            System.out.println(SHELL_COMMAND + " "+ args[0] +
+                               " <key entry name> [<partition label>] <partition password>");
+            return;
+        }
+        final String keyEntryName = args[1];
+        LunaTokenManager tokenManager = LunaTokenManager.getInstance();
+        loginToHSM(tokenManager, args, 2);
+        try {
+            final KeyStore lunaKS = KeyStore.getInstance("Luna");
+            lunaKS.load(null, null);
+            // Save the Certificate to the Luna KeyStore
+            System.out.println("Deleting certificate with entry "+keyEntryName+" via KeyStore");
+            lunaKS.deleteEntry(keyEntryName);
+            lunaKS.store(null, null);
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+        } finally {
+            tokenManager.Logout();
+        }
+    }
+    private static void generate(String[] args) {
+        if ( args.length < 4 ) {
+            System.out.println(SHELL_COMMAND + " " + args[0] +
+                               " <key entry name> <key size> [<partition label>] <partition password>");
+            return;
+        }
+        final String keyEntryName = args[1];
+        final int keySize = Integer.parseInt(args[2].trim());
+        final LunaTokenManager tokenManager = LunaTokenManager.getInstance();
+        loginToHSM(tokenManager, args, 3);
+        try {
+            // Generate the RSA Keypair
+            /*
+             This method will use the Luna JCA Key Pair generator if the
+             LunaJCA provider is at the top of your provider list. See the
+             example ProviderList.java for more information.
+             */
+            final KeyPair keyPair; {
+                final KeyPairGenerator keyPairgen = KeyPairGenerator.getInstance("RSA",
+                                                                                 "LunaJCAProvider");
+                keyPairgen.initialize(keySize);
+                keyPair = keyPairgen.generateKeyPair();
+            }
+            LunaCertificateX509[] certChain = new LunaCertificateX509[1];
+            String subjectname = "CN=some guy, L=around, C=US";
+            BigInteger serialNumber = new BigInteger("12345");
+            Date notBefore = new Date();
+            Date notAfter = new Date(notBefore.getTime() + 1000000000);
+            /*
+             The LunaCertificateX509 class has a special method that allows
+             you to self-sign a certificate.
+             */
+            certChain[0] = (LunaCertificateX509)LunaCertificateX509.SelfSign(keyPair, subjectname, serialNumber, notBefore,
+                                                                             notAfter);
+            
+            // Open a Luna Keystore to store the certificates and key
+            // created. See KeyStoreLunaDemo.java for more information on Luna
+            // keystores and their use. 
+            System.out.println("Loading Luna Keystore");
+            {
+                final KeyStore lunaKS = KeyStore.getInstance("Luna");
+                lunaKS.load(null, null);
+                // Save the Certificate to the Luna KeyStore
+                System.out.println("Storing certificate with entry "+keyEntryName+" via KeyStore");
+                lunaKS.setKeyEntry(keyEntryName, keyPair.getPrivate(), null, certChain);
+                lunaKS.store(null, null);
+                /*
+                 An important note with respect to saving a certchain and
+                 the associate private key is that when the deleteEntry method
+                 is called it will delete the private key as well as the
+                 cert chain.
+                 */
+            }
+        } catch (Exception e) {
+            e.printStackTrace(System.out);
+        } finally {
+            tokenManager.Logout();
+        }
+    }
+}

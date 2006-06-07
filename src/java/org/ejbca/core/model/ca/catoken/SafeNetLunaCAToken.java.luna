@@ -17,9 +17,11 @@ import java.security.KeyStore;
 
 import org.apache.log4j.Logger;
 
+import com.chrysalisits.crypto.LunaTokenManager;
+
 /**
  * @author lars
- * @version $Id: SafeNetLunaCAToken.java,v 1.3 2006-06-04 13:02:43 primelars Exp $
+ * @version $Id: SafeNetLunaCAToken.java.luna,v 1.1 2006-06-07 16:15:58 primelars Exp $
  *
  */
 public class SafeNetLunaCAToken extends BaseCAToken implements IHardCAToken {
@@ -36,7 +38,14 @@ public class SafeNetLunaCAToken extends BaseCAToken implements IHardCAToken {
     }
 
     public void activate(String authCode)
-        throws CATokenOfflineException, CATokenAuthenticationFailedException {
+    throws CATokenOfflineException, CATokenAuthenticationFailedException {
+        final LunaTokenManager tokenManager = LunaTokenManager.getInstance();
+        if ( !tokenManager.isLoggedIn() ) {
+            if ( sSlotLabel!=null && sSlotLabel.length()>0 )
+                tokenManager.Login(sSlotLabel, authCode);
+            else
+                tokenManager.Login(authCode);
+        }
         try {
             KeyStore keyStore = KeyStore.getInstance("Luna"); 
             keyStore.load(null, authCode.toCharArray());
@@ -49,5 +58,4 @@ public class SafeNetLunaCAToken extends BaseCAToken implements IHardCAToken {
             throw t;
         }
     }
-
 }
