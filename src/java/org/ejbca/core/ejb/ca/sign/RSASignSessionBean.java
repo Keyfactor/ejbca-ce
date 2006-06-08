@@ -854,11 +854,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @throws CADoesntExistsException       if the targeted CA does not exist
      * @throws SignRequestException          if the provided request is invalid.
      * @throws SignRequestSignatureException if the the request couldn't be verified.
-     * @throws AuthLoginException 
-     * @throws AuthStatusException 
      * @throws IllegalKeyException 
-     * @throws CADoesntExistsException 
-     * @throws SignRequestSignatureException 
      * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
      * @see se.anatom.ejbca.protocol.IRequestMessage
