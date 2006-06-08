@@ -12,7 +12,7 @@ import com.chrysalisits.crypto.LunaCertificateX509;
 import com.chrysalisits.crypto.LunaTokenManager;
 
 public class LunaKeyTool {
-    private static String SHELL_COMMAND = "keyTool";
+    private static String SHELL_COMMAND = "lunaHSM";
     private static String GENERATE_SWITCH = "generate";
     private static String DELETE_SWITCH = "delete";
     private static String getPassword(String args[]) {

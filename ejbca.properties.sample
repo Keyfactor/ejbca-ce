@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.48 2006-03-05 08:14:00 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.49 2006-06-08 09:22:31 primelars Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -296,6 +296,9 @@ ocsp.usecasigningcert=true
 # If the directory is not existing an empty directory will be created.
 # Default: ./hwtoken
 #hwtoken_classes=../primeCard/caTokenClasses-1.5-3.2
+
+# Define this property when luna HW token should be used.
+hsm.luna=X
 
 #------------------- OCSP publisher db configuration------------------------------
 # All these "ocsp-database.*" properties is used to configure the connection to the database that the

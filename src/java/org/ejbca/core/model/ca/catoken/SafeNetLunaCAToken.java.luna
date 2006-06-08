@@ -21,7 +21,7 @@ import com.chrysalisits.crypto.LunaTokenManager;
 
 /**
  * @author lars
- * @version $Id: SafeNetLunaCAToken.java.luna,v 1.1 2006-06-07 16:15:58 primelars Exp $
+ * @version $Id: SafeNetLunaCAToken.java.luna,v 1.2 2006-06-08 09:22:31 primelars Exp $
  *
  */
 public class SafeNetLunaCAToken extends BaseCAToken implements IHardCAToken {
@@ -31,16 +31,30 @@ public class SafeNetLunaCAToken extends BaseCAToken implements IHardCAToken {
 
     static final private String SLOT_LABEL_KEY = "slotLabel";
     static final private String PROVIDER_NAME = "LunaJCAProvider";
-    static final private String PROVIDER_CLASS = "com.chrysalisits.crypto.LunaJCAProvider"; 
+    static final private String PROVIDER_CLASS = "com.chrysalisits.crypto.LunaJCAProvider";
 
+    static int nrActivatedLunaToken = 0;
+    boolean isActivated;
+
+    /**
+     * @throws InstantiationException
+     * @throws IllegalAccessException
+     */
     public SafeNetLunaCAToken() throws InstantiationException, IllegalAccessException {
         super(PROVIDER_CLASS, PROVIDER_NAME, SLOT_LABEL_KEY);
+        isActivated = false;
     }
 
+    /* (non-Javadoc)
+     * @see org.ejbca.core.model.ca.catoken.IHardCAToken#activate(java.lang.String)
+     */
     public void activate(String authCode)
     throws CATokenOfflineException, CATokenAuthenticationFailedException {
+        if ( isActivated )
+            return;
         final LunaTokenManager tokenManager = LunaTokenManager.getInstance();
         if ( !tokenManager.isLoggedIn() ) {
+            nrActivatedLunaToken = 0;
             if ( sSlotLabel!=null && sSlotLabel.length()>0 )
                 tokenManager.Login(sSlotLabel, authCode);
             else
@@ -48,8 +62,8 @@ public class SafeNetLunaCAToken extends BaseCAToken implements IHardCAToken {
         }
         try {
             KeyStore keyStore = KeyStore.getInstance("Luna"); 
-            keyStore.load(null, authCode.toCharArray());
-            setKeys(keyStore, authCode);
+            keyStore.load(null, null);
+            setKeys(keyStore, null);
         } catch( Exception e ) {
             log.error("Authentication failed: ", e);
             CATokenAuthenticationFailedException t = new CATokenAuthenticationFailedException(e.getMessage());
@@ -57,5 +71,20 @@ public class SafeNetLunaCAToken extends BaseCAToken implements IHardCAToken {
             deactivate();
             throw t;
         }
+        nrActivatedLunaToken++;
+        isActivated = true;
+    }
+    /* (non-Javadoc)
+     * @see org.ejbca.core.model.ca.catoken.IHardCAToken#deactivate()
+     */
+    public boolean deactivate(){
+        nrActivatedLunaToken--;
+        isActivated = false;
+        final LunaTokenManager tokenManager = LunaTokenManager.getInstance();
+        if ( nrActivatedLunaToken<1 && tokenManager.isLoggedIn() ) {
+            tokenManager.Logout();
+            log.info("Logged off");
+        }
+        return super.deactivate();
     }
 }
