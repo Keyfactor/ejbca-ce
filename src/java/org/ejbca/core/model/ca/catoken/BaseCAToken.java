@@ -33,7 +33,7 @@ import org.ejbca.core.model.SecConst;
 
 /**
  * @author lars
- * @version $Id: BaseCAToken.java,v 1.3 2006-06-04 09:18:34 anatom Exp $
+ * @version $Id: BaseCAToken.java,v 1.4 2006-06-08 12:19:19 primelars Exp $
  */
 public abstract class BaseCAToken implements IHardCAToken {
 
@@ -71,7 +71,7 @@ public abstract class BaseCAToken implements IHardCAToken {
         for ( int i=0; i<keyAliases.length; i++ ) {
             PrivateKey privateK =
                 (PrivateKey)keyStore.getKey(keyAliases[i],
-                                            authCode.toCharArray());
+                                            authCode!=null ? authCode.toCharArray():null);
             PublicKey publicK =
                 keyStore.getCertificate(keyAliases[i]).getPublicKey();
             
