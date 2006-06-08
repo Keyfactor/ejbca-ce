@@ -34,7 +34,7 @@ import org.ejbca.util.FileTools;
  * Imports a certificate file in the database.
  *
  * @author Marco Ferrante, (c) 2005 CSITA - University of Genoa (Italy)
- * @version $Id: CaImportCertCommand.java,v 1.2 2006-01-26 14:17:57 anatom Exp $
+ * @version $Id: CaImportCertCommand.java,v 1.3 2006-06-08 14:45:05 anatom Exp $
  */
 public class CaImportCertCommand extends BaseCaAdminCommand {
 	/**
@@ -68,7 +68,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 				getOutputStream().print(info.getName());
 			}
 		} catch (Exception e) {
-			System.out.print("<unable to fetch available CA>");
+			getOutputStream().print("<unable to fetch available CA>");
 		}
 		getOutputStream().println();
 		getOutputStream().println("  Status: ACTIVE, REVOKED");

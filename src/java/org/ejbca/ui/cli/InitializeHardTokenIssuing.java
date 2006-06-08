@@ -60,7 +60,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  * After run have been executed should it be easy to run primecard locally to just issue the first card.
  * 
  * @author Philip Vendil
- * @version $Id: InitializeHardTokenIssuing.java,v 1.1 2006-03-19 09:44:36 anatom Exp $
+ * @version $Id: InitializeHardTokenIssuing.java,v 1.2 2006-06-08 14:45:04 anatom Exp $
  *
  */
 public class InitializeHardTokenIssuing extends BaseAdminCommand {
@@ -108,7 +108,7 @@ public class InitializeHardTokenIssuing extends BaseAdminCommand {
 	 * 
 	 */				
 	private void runSetup(String caname) throws Exception{
-		System.out.println("Adding Hard Token Super Administrator .....\n\n");
+		getOutputStream().println("Adding Hard Token Super Administrator .....\n\n");
 		int caid = this.getCAAdminSession().getCAInfo(administrator, caname).getCAId();
 		int admingroupid  = getAuthorizationSession().getAdminGroup(administrator, "Temporary Super Administrator Group", caid).getAdminGroupId();
 		
@@ -119,7 +119,7 @@ public class InitializeHardTokenIssuing extends BaseAdminCommand {
 		createSuperAdminTokenUser(caid);
 		addSuperAdminTokenUserToTemporarySuperAdminGroup(caid);
 		
-		System.out.print("A hard token Administrator have been added.\n\n" +
+		getOutputStream().print("A hard token Administrator have been added.\n\n" +
 				         "In order to issue the card. Startup PrimeCard in local mode using\n" +
 						 "the alias 'local'. Then insert an empty token.\n" + 
 				         "This Administrator is also a super administrator for the EJBCA installation.\n");

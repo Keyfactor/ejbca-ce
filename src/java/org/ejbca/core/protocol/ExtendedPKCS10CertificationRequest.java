@@ -30,6 +30,7 @@ import java.util.Hashtable;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
@@ -48,11 +49,13 @@ import org.bouncycastle.jce.X509Principal;
 /**
  * Class copied from BC where RSASSA-PSS support is added.
  * 
- * @version $Id: ExtendedPKCS10CertificationRequest.java,v 1.3 2006-02-08 07:31:49 anatom Exp $
+ * @version $Id: ExtendedPKCS10CertificationRequest.java,v 1.4 2006-06-08 14:45:05 anatom Exp $
  */
 public class ExtendedPKCS10CertificationRequest
     extends CertificationRequest
 {
+    private static Logger log = Logger.getLogger(ExtendedPKCS10CertificationRequest.class);
+
     private static Hashtable            algorithms = new Hashtable();
     private static Hashtable            oids = new Hashtable();
     
@@ -327,11 +330,11 @@ public class ExtendedPKCS10CertificationRequest
             //
             if (oids.get(sigAlgId.getObjectId().getId()) != null)
             {
-            	System.out.println("No such algorithm next try"); 
+            	log.info("No such algorithm next try"); 
                 String  signatureAlgorithm = (String)oids.get(sigAlgId.getObjectId().getId());
-            	System.out.println("Foung algorithm" +signatureAlgorithm);
+            	log.info("Found algorithm" +signatureAlgorithm);
                 sig = Signature.getInstance(signatureAlgorithm, provider);
-            	System.out.println("Found following " + sig.getAlgorithm());
+            	log.info("Found following " + sig.getAlgorithm());
             }
         }
 

@@ -40,7 +40,7 @@ import org.ejbca.util.CertTools;
 /**
  * Base for CA commands, contains comom functions for CA operations
  *
- * @version $Id: BaseCaAdminCommand.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: BaseCaAdminCommand.java,v 1.2 2006-06-08 14:45:05 anatom Exp $
  */
 public abstract class BaseCaAdminCommand extends BaseAdminCommand {
     /** Private key alias in PKCS12 keystores */
@@ -101,11 +101,10 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
 
         ExtendedPKCS10CertificationRequest req2 = new ExtendedPKCS10CertificationRequest(bOut.toByteArray());
         boolean verify = req2.verify();
-        System.out.println("Verify returned " + verify);
+        getOutputStream().println("Verify returned " + verify);
 
         if (verify == false) {
-            System.out.println("Aborting!");
-
+            getOutputStream().println("Aborting!");
             return;
         }
 
@@ -114,7 +113,7 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
         os1.write(Base64.encode(bOut.toByteArray()));
         os1.write("\n-----END CERTIFICATE REQUEST-----\n".getBytes());
         os1.close();
-        System.out.println("CertificationRequest '" + reqfile + "' generated successfully.");
+        getOutputStream().println("CertificationRequest '" + reqfile + "' generated successfully.");
         debug("<makeCertRequest: dn='" + dn + "', reqfile='" + reqfile + "'.");
     } // makeCertRequest
 
@@ -132,10 +131,10 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
                         "CertificateStoreSession"), ICertificateStoreSessionHome.class);
               ICertificateStoreSessionRemote storeremote = storehome.create();
               int number = storeremote.getLastCRLNumber(administrator, issuerdn);
-              System.out.println("CRL with number " + number + " generated.");
+              getOutputStream().println("CRL with number " + number + " generated.");
             }else{
             	int createdcrls = home.create().createCRLs(administrator);
-            	System.out.println("  " + createdcrls + " CRLs have been created.");	
+            	getOutputStream().println("  " + createdcrls + " CRLs have been created.");	
             }
         } catch (Exception e) {
             error("Error while getting certficate chain from CA.", e);
