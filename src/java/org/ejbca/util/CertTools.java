@@ -88,7 +88,7 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.10 2006-06-06 15:31:09 anatom Exp $
+ * @version $Id: CertTools.java,v 1.11 2006-06-08 15:02:43 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -228,7 +228,7 @@ public class CertTools {
      *          String containing DN that will be transformed into X509Name, The
      *          DN string has the format "CN=zz,OU=yy,O=foo,C=SE". Unknown OIDs in
      *          the string will be added to the end positions of OID array.
-     * 
+     * @param converter BC converter for DirectoryStrings, that determines which encoding is chosen
      * @return X509Name or null if input is null
      */
     public static X509Name stringToBcX509Name(String dn, X509NameEntryConverter converter) {

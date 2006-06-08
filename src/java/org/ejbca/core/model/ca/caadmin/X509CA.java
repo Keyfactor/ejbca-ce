@@ -120,7 +120,7 @@ import org.ejbca.util.cert.UTF8EntryConverter;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.17 2006-06-06 17:14:29 anatom Exp $
+ * @version $Id: X509CA.java,v 1.18 2006-06-08 15:02:42 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -426,13 +426,17 @@ public class X509CA extends CA implements Serializable {
         }
         
         // Certificate Policies
-         if (certProfile.getUseCertificatePolicies() == true) {
-                 PolicyInformation pi = getPolicyInformation(certProfile.getCertificatePolicyId(), certProfile.getCpsUrl(), certProfile.getUserNoticeText());
-                 
-                 DERSequence seq = new DERSequence(pi);
-                 certgen.addExtension(X509Extensions.CertificatePolicies.getId(),
-                         certProfile.getCertificatePoliciesCritical(), seq);
-         }
+        if (certProfile.getUseCertificatePolicies() == true) {
+            int displayencoding = DisplayText.CONTENT_TYPE_BMPSTRING;
+            if (getAlwaysUseUTF8SubjectDN()) {
+                displayencoding = DisplayText.CONTENT_TYPE_UTF8STRING;
+            }
+            PolicyInformation pi = getPolicyInformation(certProfile.getCertificatePolicyId(), certProfile.getCpsUrl(), certProfile.getUserNoticeText(), displayencoding);
+            
+            DERSequence seq = new DERSequence(pi);
+            certgen.addExtension(X509Extensions.CertificatePolicies.getId(),
+                    certProfile.getCertificatePoliciesCritical(), seq);
+        }
 
          // CRL Distribution point URI
          if (certProfile.getUseCRLDistributionPoint() == true) {
@@ -562,7 +566,7 @@ public class X509CA extends CA implements Serializable {
         	 String dirAttrString = subject.getExtendedinformation().getSubjectDirectoryAttributes();
         	 if (StringUtils.isNotEmpty(dirAttrString)) {
             	 // Subject Directory Attributes is a sequence of Attribute
-            	 Collection attr = SubjectDirAttrExtension.getSubjectDirectoryAttributes(dirAttrString);
+            	 Collection attr = SubjectDirAttrExtension.getSubjectDirectoryAttributes(dirAttrString, converter);
             	 DEREncodableVector vec = new DEREncodableVector();
             	 Iterator iter = attr.iterator();
             	 while (iter.hasNext()) {
@@ -758,14 +762,17 @@ public class X509CA extends CA implements Serializable {
      *          url to cps document
      * @param unotice,
      *          user notice text
+     * @param displayencoding,
+     *          the encoding used for UserNotice text, DisplayText.CONTENT_TYPE_BMPSTRING, CONTENT_TYPE_UTF8STRING, CONTENT_TYPE_IA5STRING or CONTENT_TYPE_VISIBLESTRING 
+     *          
      * @return
      */
-    private PolicyInformation getPolicyInformation(String policyOID, String cps, String unotice) {
+    private PolicyInformation getPolicyInformation(String policyOID, String cps, String unotice, int displayencoding) {
         
         DEREncodableVector qualifiers = new DEREncodableVector();
         if (!StringUtils.isEmpty(unotice)) {
             // Normally we would just use 'DisplayText(unotice)' here. IE has problems with UTF8 though, so lets stick with BMSSTRING to satisfy Bills sick needs.
-            UserNotice un = new UserNotice(null, new DisplayText(DisplayText.CONTENT_TYPE_BMPSTRING, unotice));
+            UserNotice un = new UserNotice(null, new DisplayText(displayencoding, unotice));
             PolicyQualifierInfo pqiUNOTICE = new PolicyQualifierInfo(PolicyQualifierId.id_qt_unotice, un);
             qualifiers.add(pqiUNOTICE);
         }

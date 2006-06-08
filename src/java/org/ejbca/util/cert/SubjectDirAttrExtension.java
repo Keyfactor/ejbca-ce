@@ -20,6 +20,7 @@ import org.bouncycastle.asn1.DERString;
 import org.bouncycastle.asn1.x509.Attribute;
 import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
 import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.X509NameEntryConverter;
 import org.ejbca.util.CertTools;
 
 public class SubjectDirAttrExtension extends CertTools {
@@ -113,10 +114,11 @@ public class SubjectDirAttrExtension extends CertTools {
     /**
      * From subjectDirAttributes string as defined in getSubjectDirAttribute 
      * @param string of SubjectDirectoryAttributes
+     * @param converter BC converter for DirectoryStrings, that determines which encoding is chosen
      * @return A Collection of ASN.1 Attribute (org.bouncycastle.asn1.x509), or an empty Collection, never null
      * @see #getSubjectDirectoryAttributes(X509Certificate)
      */
-    public static Collection getSubjectDirectoryAttributes(String dirAttr) {
+    public static Collection getSubjectDirectoryAttributes(String dirAttr, X509NameEntryConverter converter) {
     	ArrayList ret = new ArrayList();
     	Attribute attr = null;
         String value = CertTools.getPartFromDN(dirAttr, "countryOfResidence");
