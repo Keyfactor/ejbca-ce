@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.50 2006-06-08 13:13:30 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.51 2006-06-08 13:53:12 primelars Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -299,7 +299,8 @@ ocsp.usecasigningcert=true
 
 # Define this property when Luna HW token should be used.
 # You must have the Luna jars available in the build classpath (lib) when enabling this option.
-hsm.luna=X
+# Any value of the property will compile with Luna support. No Luna if undefined.
+#hsm.luna=X
 
 #------------------- OCSP publisher db configuration------------------------------
 # All these "ocsp-database.*" properties is used to configure the connection to the database that the
