@@ -21,7 +21,7 @@ import com.chrysalisits.crypto.LunaTokenManager;
 
 /**
  * @author lars
- * @version $Id: SafeNetLunaCAToken.java.luna,v 1.3 2006-06-08 12:45:32 primelars Exp $
+ * @version $Id: SafeNetLunaCAToken.java.luna,v 1.4 2006-06-08 21:16:57 primelars Exp $
  *
  */
 public class SafeNetLunaCAToken extends BaseCAToken implements IHardCAToken {
@@ -33,7 +33,7 @@ public class SafeNetLunaCAToken extends BaseCAToken implements IHardCAToken {
     static final private String PROVIDER_NAME = "LunaJCAProvider";
     static final private String PROVIDER_CLASS = "com.chrysalisits.crypto.LunaJCAProvider";
 
-    static int nrActivatedLunaToken = 0;
+    static int nrActivatedLunaTokens = 0;
     boolean isActivated;
 
     /**
@@ -54,7 +54,7 @@ public class SafeNetLunaCAToken extends BaseCAToken implements IHardCAToken {
         final LunaTokenManager tokenManager = LunaTokenManager.getInstance();
         try {
             if ( !tokenManager.isLoggedIn() ) {
-                nrActivatedLunaToken = 0;
+                nrActivatedLunaTokens = 0;
                 if ( sSlotLabel!=null && sSlotLabel.length()>0 )
                     tokenManager.Login(sSlotLabel, authCode);
                 else
@@ -70,20 +70,34 @@ public class SafeNetLunaCAToken extends BaseCAToken implements IHardCAToken {
             deactivate();
             throw t;
         }
-        nrActivatedLunaToken++;
+        nrActivatedLunaTokens++;
         isActivated = true;
     }
     /* (non-Javadoc)
      * @see org.ejbca.core.model.ca.catoken.IHardCAToken#deactivate()
      */
     public boolean deactivate(){
-        nrActivatedLunaToken--;
-        isActivated = false;
-        final LunaTokenManager tokenManager = LunaTokenManager.getInstance();
-        if ( nrActivatedLunaToken<1 && tokenManager.isLoggedIn() ) {
-            tokenManager.Logout();
-            log.info("Logged off");
+        if ( isActivated ) {
+            nrActivatedLunaTokens--;
+            isActivated = false;
+            final LunaTokenManager tokenManager = LunaTokenManager.getInstance();
+            if ( nrActivatedLunaTokens<1 && tokenManager.isLoggedIn() ) {
+                tokenManager.Logout();
+                log.info("Logged off");
+            }
         }
         return super.deactivate();
+    }
+    public int getCATokenStatus() {
+        if ( !isActivated )
+            return IHardCAToken.STATUS_OFFLINE;
+        final LunaTokenManager tokenManager = LunaTokenManager.getInstance();
+        if ( tokenManager.isLoggedIn() )
+            return IHardCAToken.STATUS_ACTIVE;
+        else {
+            isActivated = false;
+            super.deactivate();
+            return IHardCAToken.STATUS_OFFLINE;
+        }
     }
 }
