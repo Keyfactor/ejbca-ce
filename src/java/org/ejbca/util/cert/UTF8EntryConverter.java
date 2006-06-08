@@ -18,6 +18,7 @@ import java.io.IOException;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.x509.X509NameEntryConverter;
@@ -27,7 +28,7 @@ import org.bouncycastle.asn1.x509.X509NameEntryConverter;
  * used the create Subject DNs in Bouncycastle. 
  * Basically copied from BC's file X509DefaultEntryConverter.
  * 
- * @version $Id: UTF8EntryConverter.java,v 1.1 2006-06-06 15:31:09 anatom Exp $
+ * @version $Id: UTF8EntryConverter.java,v 1.2 2006-06-08 17:22:10 anatom Exp $
  */
 public class UTF8EntryConverter extends X509NameEntryConverter
 {
@@ -53,9 +54,15 @@ public class UTF8EntryConverter extends X509NameEntryConverter
 			{
 				throw new RuntimeException("can't recode value for oid " + oid.getId());
 			}
-		}
-		else if (oid.equals(X509Name.EmailAddress))
-		{
+		// These values are defined in X520, rfc1279 or elsewhere to 
+	    // definately not be UTF8String
+		} else if (oid.equals(X509Name.EmailAddress)) {
+			return new DERIA5String(value);
+		} else if (oid.equals(X509Name.C)) {
+			return new DERPrintableString(value);
+		} else if (oid.equals(X509Name.SN)) {
+			return new DERPrintableString(value);
+		} else if (oid.equals(X509Name.DC)) {
 			return new DERIA5String(value);
 		}
 		return new DERUTF8String(value);
