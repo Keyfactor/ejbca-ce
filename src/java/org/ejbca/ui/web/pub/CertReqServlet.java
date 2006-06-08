@@ -91,7 +91,7 @@ import org.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.6 2006-04-29 10:41:07 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.7 2006-06-08 14:45:34 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(CertReqServlet.class);
@@ -291,7 +291,7 @@ public class CertReqServlet extends HttpServlet {
             debug.printDebugInfo();
             return;
         } catch (SignRequestSignatureException se) {
-            log.debug("Invalid signature on certificate request!");
+            log.error("Invalid signature on certificate request:", se);
             debug.printMessage("Invalid signature on certificate request!");
             debug.printMessage("Please supply a correctly signed request.");
             debug.printDebugInfo();
