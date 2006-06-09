@@ -473,7 +473,7 @@ HOURLY  =  At XX:00 every hour.
 <subsection name="Cron job">
 <p>
 The second way is to have a cron job or equivalent call 'bin/ejbca.sh ca createcrl'.
-The 'createcrl' command will then check all active CAs if there is a need to update their CRLs, 
+The 'createcrl' command will then check all active CAs if it is a need to update their CRLs, 
 otherwise nothing is done. 
 </p><p>
 If you want to force CRL generation for a CA, use 'bin/ejbca.sh ca createcrl <i>caname</i>'
@@ -624,7 +624,7 @@ JBOSS_HOME/server/default/deploy/jbossweb-tomcat50.sar/service.xml (or similar d
 <li>The certificate profile used by the SCEP CA must include the key usages KeyEncipherment and DataEncipherment, otherwise PIX will 
 not be able to verify/decrypt encrypted SCEP messages. This is not in the default certificate profile for CAs. Create a new certificate profile before 
 creating the Scep CA, you can use ROOTCA as template for the new certificate profile.</li>
-<li>When enrolling for certificate using SCEP with for example a Cisco PIX there is a 'ca_nickname'. This nickname 
+<li>When enrolling for certificate using SCEP with for example a Cisco PIX it is a 'ca_nickname'. This nickname 
 should be the CA-name as defined when creating the CA in EJBCA. For example 'vpnca'.</li>
 <li>Only use lower-case names when creating the CA in EJBCA, since PIX will change the CA name VpnCA to vpnca when enrolling.</li>
 <li>The username in EJBCA must be the name the PIX identifies itself with <i>name</i>.<i>domain</i>, example pix.primekey.se.</li>
@@ -717,7 +717,7 @@ containing the requested status information back to the client.
 The client uses this status information to determine whether the certificate is valid for use or revoked.
 </p>
 <p>
-There is an OCSP servlet receiving requests on http://localhost:8080/ejbca/publicweb/status/ocsp. The 
+It is an OCSP servlet receiving requests on http://localhost:8080/ejbca/publicweb/status/ocsp. The 
 servlet can process requests for certificates signed by a CA running in EJBCA, as long as the CAs OCSP 
 service has not been deactivated. 
 </p><p>
@@ -767,7 +767,7 @@ If using a dedicated OCSP responder certificate, this certificate must be import
 can be set as OCSP signer in 'Privacy &amp; Security->Validation'. You can do this through 'View Certificates' in EJBCA 
 (http://<i>hostname</i>:8080/ejbca/publicweb/webdist/cacert.jsp).
 </p><p>
-In doc/samples there is a sample how to check revocation with OCSP using the new APIs in JDK 1.5.
+In doc/samples it is a sample how to check revocation with OCSP using the new APIs in JDK 1.5.
 </p>
 
 <subsection name="Stand-alone OCSP responder">
@@ -1023,6 +1023,76 @@ defaultKey rootCRLSign
 </source>
 </subsection>
 
+<subsection name="SafeNet Luna SA HSM">
+<p>
+Follow these steps to create a CA that is using a Luna SA HSM:
+</p>
+<strong>1. Install the Luna SA HSM</strong>
+<p>
+The host that CA is running on must be a client to the HSM. This client should be assigned to a partition of the HSM.
+It is only possible for the CA to use one partition. The reason for this limitation is that a client can only be logged in to a partition at a time.
+</p>
+<p>
+Do the setup according the documentation from SafeNet. After "Assign a Client to a Partition" is done you should check that you have access to a partition with the "vtl verify" command. The label of the partition returned in the response should be used later as 'slotLabel'.
+</p>
+<strong>2. Build EJBCA</strong>
+<p>
+Do the following:
+<ul>
+<li>1. Put LunaJCASP.jar from SafeNet in $EJBCA_HOME/lib and in $JBOSS_HOME/server/default/lib</li>
+<li>2. Define the property 'hsm.luna' in ejbca.properties (see uncommented line in ejbca.properties.samles).</li>
+<li>3. ant deploy</li>
+</ul>
+</p>
+<strong>3. Create keys that should be used on the Luna SA HSM</strong>
+<p>
+Use the tool $EJBCA_HOME/bin/lunaHSM':
+</p>
+<source>lunaHSM generate 'key alias' 'key size' ['partition label'] 'partition password'</source>
+<p>
+'partition label' has to bu used if there are more than one partitions assigned to the client. Only one partition may be used for EJBCA.
+</p>
+<p>
+At least one key should be generated for each CA in EJBCA. Maybe several if different keys for different purposes are used. When referring to a key in EJBCA the 'key alias' is used.
+</p>
+<strong>4. Make EJBCA aware of the Luna SA HSM</strong>
+<p>
+Restart the application server.
+</p>
+<strong>5. Create a new CA in the web GUI of EJBCA</strong>
+<p>
+Choose SafeNetLunaCAToken as "CA Token Type".
+</p><p>
+Define which keys in the that should be used and the purpose of these keys. If more than one partition is assigned to the client the label of this partition has to be defined too.
+</p><p>
+Use one row for each definition. Begin the row with a key word. It is one row for the 'partition label' (may be omitted if only one partition) and one for each key definition. Key word and value is separated by one or more spaces.
+</p><p>
+'slotLabel' (if present) defines the 'partition label' of the partition to be used.
+A row with the keyword 'slotLabel' must be present if more than on partition is assigned to the client with the name of the label of the used partition.
+</p><p>
+The keywords for keys that can be used are:
+<ul>
+<li>certSignKey   - the key to be used when signing certificates </li>
+<li>crlSignKey    - the key to be used when signing CLSs </li>
+<li>keyEncryptKey - the key to be used for key encryption and decryption.</li>
+<li>defaultKey    - the key to be used when no other key is defined for a purpose. If this is the only definition then this key will be used for all purposes.</li>
+</ul>
+You may omit defaultKey if you want to be sure that the right key is used but then must all the other keys be specified. It's recommended that the certificate and CRL signing keys are linked to the same key since different keys are rarely supported by verifying applications.
+</p>
+<p>
+Example:
+</p>
+<source>
+slotLabel p1
+certSignKey rootCertSign
+defaultKey rootCRLSign
+</source>
+<strong>Note.</strong>
+<p>
+When activating Luna CAs in EJBCA the given password is only validated for the first one that is activated. When this first CA is activated a login is performed to the used partition. Logout from the partition is performed when all Luna CAs in EJBCA has been deactivated.
+</p>
+</subsection>
+
 <subsection name="Eracom HSM">
 <p>
 Follow these steps to create a CA that is using a Eracom HSM (tested with Eracom ProtectServer Orange (csa8000) external):
@@ -1255,7 +1325,7 @@ Generic parameters to LDAP Publisher:
 <li>'Login DN' is the DN of a user on the LDAP server with permissions to add
 and update enties.</li>
 <li>'Login Password' is the password for the user above.</li>
-<li>'Create Nonexisting Users' defines if an LDAP object should be created by EJBCA if there is no existing object 
+<li>'Create Nonexisting Users' defines if an LDAP object should be created by EJBCA if it is no existing object 
 when EJBCA publishes the certificate.</li>
 <li>'Modify Existing Users' defines if attributes (such as email) in existing LDAP objects are replaced with new values
 when an entry is updated with a new certificate.</li>
@@ -1424,7 +1494,7 @@ profiles and multiple publishers you might consider writing a custom publisher t
 handles things directly according to you demands.
 </p><p>
 Look in the directory src/java/org/ejbca/core/model/ca/publishers for more
-information about writing your own solution. There is an empty custom publisher called
+information about writing your own solution. It is an empty custom publisher called
 DummyCustomPublisher.java that can be extended.
 </p>
 </subsubsection>
@@ -1432,7 +1502,7 @@ DummyCustomPublisher.java that can be extended.
 <subsubsection name="What EJBCA stores/creates/modifies">
 <p>
 Apart from the DN in the entry a number of attributes are also stored, some
-are required by schema, some are optional. EJBCA find attributes in the certificate, if there is an
+are required by schema, some are optional. EJBCA find attributes in the certificate, if it is an
 OU (organizational unit) in the certificate EJBCA uses that to populate the OU attribute in the ldap
 entry.
 </p><p>
@@ -1660,7 +1730,7 @@ A guide for configuring OpenLDAP on Solaris can be found at
 
 <subsection name="Extra device schema">
 <p>
-To store certificates for devices (e.g. routers, toasters etc) in LDAP there
+To store certificates for devices (e.g. routers, toasters etc) in LDAP it
 is no really suitable standard object class. inetOrgPerson requires surnames
 etc, and the device objectclass does not include a certifictae attribute.
 </p><p>
@@ -1711,7 +1781,7 @@ directory will be imported.
 Fixed profiles will not be imported, they will simply be skipped during import.
 If a profiles with the same name as the one beeing imported already exist, the profiles will not be imported.
 </p><p>
-Import of profiles try to keep the same profile id. If there already exist a profile with the same id in the database, 
+Import of profiles try to keep the same profile id. If it already exist a profile with the same id in the database, 
 you might have to edit the filename to choose another id. This can only be done if it is a new profile. 
 The reason the id is kept is that there are references to the profile id from users beloinging to the profile.
 </p><p>
@@ -1727,7 +1797,7 @@ change the default page encoding in 'web.contentencoding' (in ejbca.properties f
 to for example UTF-8 instead of the default ISO-8859-1.
 </p><p>
 Displaying, receiving, decoding and storing different char sets is rather complicated and the 
-architecture is multilayered. There is the web browser, application server, database and 
+architecture is multilayered. There are the web browser, application server, database and 
 operating system, all working together.
 If you change to UFT-8 to handle your char set, perhaps you must also specify that the database 
 connection should use UTF-8.
@@ -1990,7 +2060,7 @@ so you can add a subdir under there.
 
 <section name="Using the demo servlet">
 <p>
-There is a demo servlet that will accept any incoming post, create a user with a unique username, and instantly
+It is a demo servlet that will accept any incoming post, create a user with a unique username, and instantly
 send back a certificate. The entity- and certificate profiles used are sent as parameters in the post.
 
 To set up the demo servlet:
@@ -2002,7 +2072,7 @@ To set up the demo servlet:
 <li>If using UTF-8 to display the web-page containing the demo form to the users, change ISO-8859-1 to UTF-8 for the env-entry 'contentEncoding'. Otherwise national characters in names will be encoded/displayed incorrectly in the certificates.</li>
 <li>Deploy with 'ant deploy'.</li>
 <li>Create an end entity profile and a certificate profile that should be used for the demo certificates.</li>
-<li>Create a demo apply page containing something similar to the sample form below for Mozilla/Firefox. There sre some demo_xx scripts under src/publicweb/apply.</li>
+<li>Create a demo apply page containing something similar to the sample form below for Mozilla/Firefox. There are some demo_xx scripts under src/publicweb/apply.</li>
 </ol>
 <source>
 &lt;form name="demoreq" action="http://127.0.0.1:8080/ejbca/publicweb/apply/democertreq" method="post">
