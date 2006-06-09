@@ -1639,6 +1639,9 @@ Then add it to the java trust store:
 keytool -import -trustcacert -alias MyCA -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit -file myca.der
 </source>
 <p>
+You have to re-start JBoss after adding anything to the java trust store.
+</p>
+<p>
 A guide for configuring OpenLDAP on Solaris can be found at
 <a href="http://www.bolthole.com/solaris/LDAP.html">bolthole.com</a>
 </p>
