@@ -71,7 +71,18 @@ JBoss's root is
  unix notation, e.g. 'ejbca.sh' for the executable command files.
  The same command files are available for windows as cmd-files,
  e.g. 'ejbca.cmd.'
-</p></subsection>
+</p>
+        <p>
+        Java 1.5.0<br/>
+        Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files 5.0
+        <br/><a href="http://java.sun.com/j2se/1.5.0/download.jsp">http://java.sun.com/j2se/1.5.0/download.jsp</a>
+        </p>
+        <p>
+        Java 1.4.2<br/>
+        Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files 1.4.2
+        <br/><a href="http://java.sun.com/j2se/1.4.2/download.html">http://java.sun.com/j2se/1.4.2/download.html</a>
+        </p>
+</subsection>
 
 <subsection name="Configure">
 <p>
