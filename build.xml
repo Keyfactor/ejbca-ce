@@ -1095,7 +1095,7 @@ web.contentencoding    = ${web.contentencoding}
 		<antcall target="clean" />
         <input message="Version tag for zipfile (ex 3_2_1):" addproperty="ejbca.zipversion" /> 
 		<zip destfile="../ejbca_${ejbca.zipversion}.zip">
-		    <zipfileset dir="." prefix="ejbca"> 
+		    <zipfileset dir="." prefix="ejbca" filemode="600" dirmode="700"> 
 		    	<include name="**/**" />
 		    	<exclude name="**/CVS/**" />
 		    	<exclude name="tmp/**" />
@@ -1108,6 +1108,10 @@ web.contentencoding    = ${web.contentencoding}
 		    	<exclude name=".classpath" />
 		    	<exclude name=".project" />
 		    	<exclude name="**/.cvsignore" />
+		    	<exclude name="**/*.sh" />
+		    </zipfileset>
+		    <zipfileset dir="." prefix="ejbca" filemode="700" dirmode="700"> 
+		    	<include name="**/*.sh" />
 		    </zipfileset>
 		  </zip>
 	</target>
