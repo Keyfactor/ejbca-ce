@@ -50,6 +50,7 @@ import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
+import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
@@ -77,7 +78,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.7 2006-06-03 18:10:48 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.8 2006-06-12 10:36:25 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -797,7 +798,13 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile {
             }
         }
 
-        Collection publishers = this.certificatesession.getCertificateProfile(admin, data.getCertificateProfileId()).getPublisherList();
+        CertificateProfile prof = this.certificatesession.getCertificateProfile(admin, data.getCertificateProfileId());
+        Collection publishers;
+        if (prof == null) {
+            publishers = new ArrayList();
+        } else {
+            publishers = prof.getPublisherList();
+        }
         setUserStatus(admin, username, UserDataConstants.STATUS_REVOKED);
         certificatesession.setRevokeStatus(admin, username, publishers, reason);
         logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_INFO_REVOKEDENDENTITY, "");
