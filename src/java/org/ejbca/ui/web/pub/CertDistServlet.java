@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.math.BigInteger;
+import java.net.URLEncoder;
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
@@ -66,7 +67,7 @@ import org.ejbca.util.CertTools;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.5 2006-05-17 07:49:57 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.6 2006-06-12 10:35:35 anatom Exp $
  */
 public class CertDistServlet extends HttpServlet {
 
@@ -253,7 +254,7 @@ public class CertDistServlet extends HttpServlet {
                         pout.println("NotAfter:"+notAfter.toString());
                         pout.println("Serial number:"+serno.toString());
                         pout.println("</pre>");
-                        pout.println("<a href=\"certdist?cmd=revoked&issuer="+issuer+"&serno="+serno.toString()+"\">Check if certificate is revoked</a>");
+                        pout.println("<a href=\"certdist?cmd=revoked&issuer="+URLEncoder.encode(issuer, "UTF-8")+"&serno="+serno.toString()+"\">Check if certificate is revoked</a>");
                         pout.println("<hr>");
 
                     }
