@@ -1050,15 +1050,20 @@ Use the tool $EJBCA_HOME/bin/lunaHSM':
 </p>
 <source>lunaHSM generate 'key alias' 'key size' ['partition label'] 'partition password'</source>
 <p>
-'partition label' has to bu used if there are more than one partitions assigned to the client. Only one partition may be used for EJBCA.
-</p>
-<p>
+'partition label' has to bu used if there are more than one partitions assigned to the client. Only CAs from the same partition may be activated at a time.
+</p><p>
+When using the tool the directory of the file libLunaAPI.so must be in LD_LIBRARY_PATH. 
+</p><p>
 At least one key should be generated for each CA in EJBCA. Maybe several if different keys for different purposes are used. When referring to a key in EJBCA the 'key alias' is used.
 </p>
 <strong>4. Make EJBCA aware of the Luna SA HSM</strong>
 <p>
-Restart the application server.
+Do the following:
 </p>
+<ul>
+<li>1. Stop the application server.</li>
+<li>2. Start the application server with the directory of the file libLunaAPI.so in LD_LIBRARY_PATH.</li>
+</ul>
 <strong>5. Create a new CA in the web GUI of EJBCA</strong>
 <p>
 Choose SafeNetLunaCAToken as "CA Token Type".
@@ -1089,7 +1094,9 @@ defaultKey rootCRLSign
 </source>
 <strong>Note.</strong>
 <p>
-When activating Luna CAs in EJBCA the given password is only validated for the first one that is activated. When this first CA is activated a login is performed to the used partition. Logout from the partition is performed when all Luna CAs in EJBCA has been deactivated.
+When activating Luna CAs in EJBCA the given password is only validated for the first one that is activated. When this first CA is activated a login is performed to the used partition. Logout from the partition is performed when all Luna CAs in EJBCA for a partition has been deactivated.
+</p><p>
+Different partitions may be used for different CAs. But only CAs from one partition may be activated at a certain time.
 </p>
 </subsection>
 
