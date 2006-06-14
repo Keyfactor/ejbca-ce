@@ -17,16 +17,16 @@
     See <a href="contact.html">contact &amp; support</a> for ways to contact EJBCA.
     </p>  
     <p>
-    If you contribute code read the file doc/developer/DEVELOP in the distribution for developer information.
+    If you contribute code, read the file doc/developer/DEVELOP in the distribution for developer information.
     </p>
   </section>
   <section name="Donations">
     <p>
     You can donate to EJBCA in a number of ways:
     <ul>
+    <li>By purchasing an Enterprise Support contract. We have ready-made support programs for you. Contact the project admins at <a href="contact.html">contact &amp; support</a>, or see <a href="http://www.primekey.se/">www.primekey.se</a>.</li>
+    <li>By hiring us for integration, or sponsoring development of new features. Contact the project admins at <a href="contact.html">contact &amp; support</a>.</li>
     <li>Through <a href="http://sourceforge.net/donate/index.php?group_id=39716">Donations</a>.</li>
-    <li>By hiring someone for integration or sponsoring development of features. Contact the project admins at <a href="contact.html">contact &amp; support</a>.</li>
-    <li>By hiring us for support. We have ready-made support programs for you. Contact the project admins at <a href="contact.html">contact &amp; support</a>.</li>
     </ul>
     </p>
   </section>
