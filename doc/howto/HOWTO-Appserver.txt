@@ -2,7 +2,7 @@
 CONFIGURING Weblogic
 ====================
 
-Note: EJBCA should work fine with Weblogic 7.x/8.x
+Note: EJBCA should work fine with Weblogic 7.x/8.x/9.x
 
 1. Edit ejbca.properties, it's important to at least set up the database parameters.
 Make special note to:
@@ -73,6 +73,19 @@ This should make the admin-GUI work, note to install the  Unlimited Strength Jur
 for both sun's JDK and BEA's JDK first before installation.
 If installing with Oracle, perhaps you need to replace jdbc driver at weblogic_home\server\lib, weblogic_home\server\ext\jdbc\oracle\920, 10g 
 all to 10.1.0.2, in my case which is Oracle 9.2.0.
+
+TransactionTimeoutException in Weblogic
+---------------------------------------
+If you are running on a not-so-fast machine, you may experience TransationTimeoutException during 'ant install'.
+This is due to that it takes a long time for RSA key generation.
+
+To configure the transaction timeout to a larger value in weblogic:
+1. logon to Weblogic Console with IE, for example, http://localhost:7001/console
+2. click "Services" at the left "Domain Structure" navigation frame to expand the service list.
+3. click "JTA" to display the JTA property setting page at right content frame.
+4. update the first property "Timeout Seconds" to a ratinal value that is enough to execute EJBCA installation
+   (about 100s to finish the whole installation).
+
 
 JBOSS
 =====
