@@ -1040,7 +1040,7 @@ Do the setup according the documentation from SafeNet. After "Assign a Client to
 Do the following:
 <ul>
 <li>1. Put LunaJCASP.jar from SafeNet in $EJBCA_HOME/lib and in $JBOSS_HOME/server/default/lib</li>
-<li>2. Define the property 'hsm.luna' in ejbca.properties (see uncommented line in ejbca.properties.samles).</li>
+<li>2. Define the property 'hsm.luna' in ejbca.properties (see uncommented line in ejbca.properties.sample).</li>
 <li>3. ant deploy</li>
 </ul>
 </p>
@@ -1050,9 +1050,9 @@ Use the tool $EJBCA_HOME/bin/lunaHSM':
 </p>
 <source>lunaHSM generate 'key alias' 'key size' ['partition label'] 'partition password'</source>
 <p>
-'partition label' has to bu used if there are more than one partitions assigned to the client. Only CAs from the same partition may be activated at a time.
+'partition label' has to be used if there are more than one partitions assigned to the client. Only CAs from the same partition may be activated at a time.
 </p><p>
-When using the tool the directory of the file libLunaAPI.so must be in LD_LIBRARY_PATH. 
+When using the tool, the directory of the file libLunaAPI.so must be in LD_LIBRARY_PATH. 
 </p><p>
 At least one key should be generated for each CA in EJBCA. Maybe several if different keys for different purposes are used. When referring to a key in EJBCA the 'key alias' is used.
 </p>
@@ -1082,7 +1082,7 @@ The keywords for keys that can be used are:
 <li>keyEncryptKey - the key to be used for key encryption and decryption.</li>
 <li>defaultKey    - the key to be used when no other key is defined for a purpose. If this is the only definition then this key will be used for all purposes.</li>
 </ul>
-You may omit defaultKey if you want to be sure that the right key is used but then must all the other keys be specified. It's recommended that the certificate and CRL signing keys are linked to the same key since different keys are rarely supported by verifying applications.
+You may omit defaultKey if you want to be sure that the right key is used, but then all the other keys must be specified. It's recommended that the certificate and CRL signing keys are linked to the same key since different keys are rarely supported by verifying applications.
 </p>
 <p>
 Example:
