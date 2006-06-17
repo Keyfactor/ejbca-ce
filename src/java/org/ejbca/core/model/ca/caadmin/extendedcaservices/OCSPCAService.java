@@ -13,6 +13,7 @@
  
 package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 
+import java.io.UnsupportedEncodingException;
 import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.NoSuchProviderException;
@@ -43,7 +44,7 @@ import org.ejbca.util.KeyTools;
 
 /** Handles and maintains the CA -part of the OCSP functionality
  * 
- * @version $Id: OCSPCAService.java,v 1.3 2006-05-28 14:21:11 anatom Exp $
+ * @version $Id: OCSPCAService.java,v 1.4 2006-06-17 13:08:31 herrvendil Exp $
  */
 public class OCSPCAService extends ExtendedCAService implements java.io.Serializable{
 
@@ -78,8 +79,8 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 
 	  data.put(KEYSIZE, new Integer(info.getKeySize()));
 	  data.put(KEYALGORITHM, info.getKeyAlgorithm());
-	  data.put(SUBJECTDN, info.getSubjectDN());
-	  data.put(SUBJECTALTNAME, info.getSubjectAltName());                       
+	  setSubjectDN(info.getSubjectDN());
+	  setSubjectAltName(info.getSubjectAltName());                       
 	  setStatus(serviceinfo.getStatus());
         
       data.put(VERSION, new Float(LATEST_VERSION));
@@ -106,8 +107,8 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
             this.ocspsigningkey = (PrivateKey) keystore.getKey(PRIVATESIGNKEYALIAS, null);
             this.ocspcertificatechain =  Arrays.asList(keystore.getCertificateChain(PRIVATESIGNKEYALIAS));      
             this.info = new OCSPCAServiceInfo(getStatus(),
-                                              (String) data.get(SUBJECTDN),
-                                              (String) data.get(SUBJECTALTNAME), 
+                                              getSubjectDN(),
+                                              getSubjectAltName(), 
                                               ((Integer) data.get(KEYSIZE)).intValue(), 
                                               (String) data.get(KEYALGORITHM),
                                               this.ocspcertificatechain);
@@ -167,8 +168,8 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
       
 	 setStatus(info.getStatus());
 	 this.info = new OCSPCAServiceInfo(info.getStatus(),
-									  (String) data.get(SUBJECTDN),
-									  (String) data.get(SUBJECTALTNAME), 
+									  getSubjectDN(),
+									  getSubjectAltName(), 
 									  ((Integer) data.get(KEYSIZE)).intValue(), 
 									  (String) data.get(KEYALGORITHM),
 	                                   ocspcertificatechain);
@@ -189,8 +190,8 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
    	    	 
    	   // Only status is updated
 	   this.info = new OCSPCAServiceInfo(serviceinfo.getStatus(),
-										  (String) data.get(SUBJECTDN),
-										  (String) data.get(SUBJECTALTNAME), 
+										  getSubjectDN(),
+										  getSubjectAltName(), 
 										  ((Integer) data.get(KEYSIZE)).intValue(), 
 										  (String) data.get(KEYALGORITHM),
 	                                      this.ocspcertificatechain);
@@ -249,8 +250,8 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 	public ExtendedCAServiceInfo getExtendedCAServiceInfo() {		
 		if(info == null)
 		  info = new OCSPCAServiceInfo(getStatus(),
-		                              (String) data.get(SUBJECTDN),
-		                              (String) data.get(SUBJECTALTNAME), 
+		                              getSubjectDN(),
+		                              getSubjectAltName(), 
 		                              ((Integer) data.get(KEYSIZE)).intValue(), 
 		                              (String) data.get(KEYALGORITHM),
 		                              this.ocspcertificatechain);
@@ -258,6 +259,55 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 		return this.info;
 	}
     
+	
+	public String getSubjectDN(){
+		String retval = null;
+		String str = (String)data.get(SUBJECTDN);
+		 try {
+			retval = new String(Base64.decode((str).getBytes("UTF-8")));
+		} catch (UnsupportedEncodingException e) {
+			m_log.error("Could not decode OCSP data from Base64",e);
+		} catch (ArrayIndexOutOfBoundsException e) {
+			// This is an old CA, where it's not Base64encoded
+			m_log.debug("Old non base64 encoded DN: "+str);
+			retval = str; 
+		}
+		
+		return retval;		 
+	}
     
+	public void setSubjectDN(String dn){
+		
+		 try {
+			data.put(SUBJECTDN,new String(Base64.encode(dn.getBytes("UTF-8"),false)));
+		} catch (UnsupportedEncodingException e) {
+			m_log.error("Could not encode OCSP data from Base64",e);
+		}
+	}
+	
+	public String getSubjectAltName(){
+		String retval = null;
+		String str= (String) data.get(SUBJECTALTNAME);
+		 try {
+			retval = new String(Base64.decode((str).getBytes("UTF-8")));
+		} catch (UnsupportedEncodingException e) {
+			m_log.error("Could not decode OCSP data from Base64",e);
+		} catch (ArrayIndexOutOfBoundsException e) {
+			// This is an old CA, where it's not Base64encoded
+			m_log.debug("Old non base64 encoded altname: "+str);
+			retval = str; 
+		}
+		
+		return retval;		 
+	}
+    
+	public void setSubjectAltName(String dn){
+		
+		 try {
+			data.put(SUBJECTALTNAME,new String(Base64.encode(dn.getBytes("UTF-8"), false)));
+		} catch (UnsupportedEncodingException e) {
+			m_log.error("Could not encode OCSP data from Base64",e);
+		}
+	}
 }
 
