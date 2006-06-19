@@ -120,7 +120,7 @@ import org.ejbca.util.cert.UTF8EntryConverter;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.19 2006-06-08 17:51:09 anatom Exp $
+ * @version $Id: X509CA.java,v 1.20 2006-06-19 14:06:17 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -299,6 +299,15 @@ public class X509CA extends CA implements Serializable {
           val = certProfile.getValidity();
         
         lastDate.setTime(lastDate.getTime() + ( val * 24 * 60 * 60 * 1000));
+        X509Certificate cacert = (X509Certificate)getCACertificate();
+        // If our desired after date is after the CA expires, we will not allow this
+        // The CA will only issue certificates with maximum the same validity time as it-self
+        if (cacert != null) {
+            if (lastDate.after(cacert.getNotAfter())) {
+                log.info("Limiting validity of certificate because requested validity is beyond CA validity");
+                lastDate = cacert.getNotAfter();
+            }            
+        }
         ExtendedX509V3CertificateGenerator certgen = new ExtendedX509V3CertificateGenerator();
         // Serialnumber is random bits, where random generator is initialized by the
         // serno generator.
@@ -334,7 +343,6 @@ public class X509CA extends CA implements Serializable {
         certgen.setSubjectDN(CertTools.stringToBcX509Name(dn, converter));
         // We must take the issuer DN directly from the CA-certificate otherwise we risk re-ordering the DN
         // which many applications do not like.
-        X509Certificate cacert = (X509Certificate)getCACertificate();
         if (cacert == null) {
         	// This will be an initial root CA, since no CA-certificate exists
             X509Name caname = CertTools.stringToBcX509Name(getSubjectDN(), converter);
