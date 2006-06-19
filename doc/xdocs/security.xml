@@ -93,9 +93,19 @@ See this <a href="http://www.javaworld.com/javaworld/jw-08-2001/jw-0831-jaas_p.h
 <section name="File permission">
 <p>
 The application server should be run as a special user. Files should be protected 
-so the ONLY the user running the application server can access them.
+so the ONLY the user running the application server can access them. 
 </p><p>
-
+By default JBoss is probably unpacked with read access to all, you should issue:
+</p>
+<source>
+umask 077
+chmod -R go-rwx *
+</source>
+<p>
+In the JBOSS_HOME directory, to make the files readable only by the jboss user, and make this the default permission
+for files copied here.
+</p>
+<p>
 If PKCS12 files are generated for users, the subdirectory ('p12') where
 they are stored and the generated files should be protected in the same way.
 </p></section>

@@ -46,6 +46,7 @@
 		<fail message="Missing JKS password '${httpsserver.password}'" unless="httpsserver.password.present"/>
 
 		<copy file="p12/tomcat.jks" tofile="${jboss.server.home.dir}/${keystore.file}"/>
+		<chmod file="${jboss.server.home.dir}/${keystore.file}" perm="600"/>
 
 		
         <!-- detect jboss web version -->
@@ -69,6 +70,7 @@
 			</tokenfilter>
 			</filterchain>
         </copy>
+		<chmod file="${tomcat.dir}/server.xml" perm="600"/>
         
 	</target>
 
@@ -82,9 +84,13 @@
                 <expandproperties/>
             </filterchain>
         </copy>
-    	<copy todir="${jboss.farm.dir}">
+		<chmod file="${jboss.farm.dir}/ejbca-ds.xml" perm="600"/>
+		<chmod file="${jboss.farm.dir}/ejbca-mail-service.xml" perm="600"/>
+
+		<copy todir="${jboss.farm.dir}">
     		<fileset dir="${dist.dir}" includes="ejbca.ear"/>
     	</copy>
+		<chmod file="${dist.dir}/ejbca.ear" perm="600"/>
 	</target>
 
 	<target name="j2ee:deploy" if="ocsp-datasource.jndi-name" description="Deploy the application" depends="j2ee:deployBase">
@@ -96,6 +102,7 @@
                 <expandproperties/>
             </filterchain>
         </copy>
+		<chmod file="${jboss.farm.dir}/ocsp-ds.xml" perm="600"/>
 	</target>
 
 	<target name="j2ee:deployocsp" description="Deploy the standalone OCSP reponder" depends="j2ee:configure">
@@ -107,9 +114,12 @@
                 <expandproperties/>
             </filterchain>
         </copy>
+		<chmod file="${jboss.farm.dir}/ejbca-ds.xml" perm="600"/>
+		
     	<copy todir="${jboss.farm.dir}">
     		<fileset dir="${ocsp-dist.dir}" includes="ejbca.ear"/>
     	</copy>
+		<chmod file="${jboss.farm.dir}/ejbca.ear" perm="600"/>
 	</target>
 
 
