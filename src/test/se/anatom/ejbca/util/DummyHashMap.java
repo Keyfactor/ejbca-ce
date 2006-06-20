@@ -1,18 +1,10 @@
-/*
- * Created on 2005-mar-08
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
 package se.anatom.ejbca.util;
 
 import java.util.HashMap;
 
 /**
  * @author tomasg
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * @version $Id: DummyHashMap.java,v 1.2 2006-06-20 13:06:43 anatom Exp $
  */
 public class DummyHashMap extends HashMap {
     public Object get(Object key) {
