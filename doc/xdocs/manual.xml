@@ -1799,18 +1799,24 @@ This is not ideal, but it is a consequence of how the authorization system works
 
 <section name="Internationalization">
 <p>
-To customize EJBCA admin GUI for your languages special characters you may have to 
+To customize EJBCA admin GUI for your languages special characters you will probably have to 
 change the default page encoding in 'web.contentencoding' (in ejbca.properties file) 
 to for example UTF-8 instead of the default ISO-8859-1.
 </p><p>
 Displaying, receiving, decoding and storing different char sets is rather complicated and the 
 architecture is multilayered. There are the web browser, application server, database and 
 operating system, all working together.
-If you change to UFT-8 to handle your char set, perhaps you must also specify that the database 
+If you change to UFT-8 to handle your char set, you must probably also specify that the database 
 connection should use UTF-8.
 For MySQL this can be done in the <i>connection-url</i> in your datasource description 
 (JBOSS_HOME/server/default/deploy/ejbca-ds.xml):
 jdbc:mysql://yourhost/ejbca?characterEncoding=UTF-8
+</p><p>
+You will also want to configure the database, for example in my.cnf, to use UTF-8.
+</p><p>
+You also want to configure your machine to use the locale you are using, otherwise some encoding/decoding to the database
+may get mixed up and throw a lot of errors (java XML decoding). 
+For example in SUSE this is done with 'yast' and in Debian it is done with 'dpkg-reconfigure locales'.
 </p><p>
 For some languages (for example Chinese) the java scripts in the admin GUI will fail to recognize
 the characters when doing checks for allowed characters in DN etc.
