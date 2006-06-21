@@ -13,6 +13,7 @@
  
 package org.ejbca.util;
 
+import java.io.UnsupportedEncodingException;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
@@ -21,7 +22,7 @@ import org.apache.log4j.Logger;
 /**
  * This class implements some utility functions that are useful when handling Strings.
  *
- * @version $Id: StringTools.java,v 1.2 2006-05-12 13:17:36 anatom Exp $
+ * @version $Id: StringTools.java,v 1.3 2006-06-21 14:54:56 anatom Exp $
  */
 public class StringTools {
     private static Logger log = Logger.getLogger(StringTools.class);
@@ -175,4 +176,59 @@ public class StringTools {
         log.error("Not a IPv4 or IPv6 address.");
         return null;
     }
+    
+    /** Takes input and converts to Base64 on the format
+     * "B64:<base64 endoced string>", if the string is not null or empty.
+     * 
+     * @param s String to base64 encode
+     * @return Base64 encoded string, or original string if it was null or empty
+     */
+    public static String putBase64String(String s) {
+        if (StringUtils.isEmpty(s)) {
+            return s;
+        }
+        if (s.startsWith("B64:")) {
+            // Only encode once
+            return s;
+        }
+        String n = null;
+        try {
+            // Since we used getBytes(s, "UTF-8") in this method, we must use UTF-8 when doing the reverse in another method
+            n="B64:"+new String(Base64.encode(s.getBytes("UTF-8"), false));
+        } catch (UnsupportedEncodingException e) {
+            // Do nothing
+            n=s;
+        }
+        return n;
+        
+    }
+
+    /** Takes input and converts from Base64 if the string begins with B64:, i.e. is on format
+     * "B64:<base64 endoced string>".
+     * 
+     * @param s String to Base64 decode
+     * @return Base64 decoded string, or original string if it was not base 64 encoded
+     */
+    public static String getBase64String(String s) {
+        if (StringUtils.isEmpty(s)) {
+            return s;
+        }
+        String s1 = null;
+        if (s.startsWith("B64:")) {
+            s1 = s.substring(4);
+            String n = null;
+            try {
+                // Since we used getBytes(s, "UTF-8") in the method putBase64String, we must use UTF-8 when doing the reverse
+                n = new String(Base64.decode(s1.getBytes("UTF-8")), "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                n = s;
+            } catch (ArrayIndexOutOfBoundsException e) {
+                // We get this if we try to decode something that is not base 64
+                n = s;
+            }
+            return n;
+        }
+        return s;
+    }
+
 } // StringTools

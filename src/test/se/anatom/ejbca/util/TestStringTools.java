@@ -22,7 +22,7 @@ import org.ejbca.util.StringTools;
 /**
  * Tests the StringTools class .
  *
- * @version $Id: TestStringTools.java,v 1.7 2006-05-31 08:02:30 anatom Exp $
+ * @version $Id: TestStringTools.java,v 1.8 2006-06-21 14:54:56 anatom Exp $
  */
 public class TestStringTools extends TestCase {
     private static Logger log = Logger.getLogger(TestStringTools.class);
@@ -82,5 +82,16 @@ public class TestStringTools extends TestCase {
         assertTrue("String has chars that should be stripped!", StringTools.hasSqlStripChars(strip1));
         assertEquals("String not stripped correctly!", stripped, "CN=foo, O=Acme\\, Inc, OU=/////bar");
         log.debug("<test04Strip()");
+    }
+    public void testBase64() throws Exception {
+        String s1 = "C=SE, O=abc, CN=def";
+        String b1 = StringTools.putBase64String(s1);
+        String s2 = StringTools.getBase64String(b1);
+        assertEquals(s2,s1);
+
+        s1 = "C=SE, O=ÅÄÖ, CN=åäö";
+        b1 = StringTools.putBase64String(s1);
+        s2 = StringTools.getBase64String(b1);
+        assertEquals(s2,s1);
     }
 }
