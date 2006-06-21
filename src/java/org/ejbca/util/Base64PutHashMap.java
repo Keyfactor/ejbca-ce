@@ -4,12 +4,14 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+
 
 /** An implementation of HashMap that base64 encodes all String's that you 'put', 
  * it encodes them to form "B64:<base64 encoded string>". It only encodes objects of type String.
  * 
  * @author tomasg
- * @version $Id: Base64PutHashMap.java,v 1.1 2006-06-20 13:06:43 anatom Exp $
+ * @version $Id: Base64PutHashMap.java,v 1.2 2006-06-21 10:46:44 anatom Exp $
  */
 public class Base64PutHashMap extends HashMap {
     public Base64PutHashMap() {
@@ -19,8 +21,14 @@ public class Base64PutHashMap extends HashMap {
         super(m);
     }
     public Object put(Object key, Object value) {
+        if (value == null) {
+            return super.put(key, value);
+        }
         if (value instanceof String) {
             String s = (String) value;
+            if (StringUtils.isEmpty(s)) {
+                return super.put(key,s);
+            }
             if (s.startsWith("B64:")) {
                 // Only encode once
                 return super.put(key, value);
