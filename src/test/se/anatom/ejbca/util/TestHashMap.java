@@ -5,16 +5,17 @@ import java.util.HashMap;
 
 import junit.framework.TestCase;
 
+import org.apache.log4j.Logger;
 import org.ejbca.util.Base64GetHashMap;
 import org.ejbca.util.Base64PutHashMap;
 
 /** Tests Base64 HashMap XML encoding and decoding
  * 
  * @author tomasg
- * @version $Id: TestHashMap.java,v 1.2 2006-06-21 10:46:55 anatom Exp $
+ * @version $Id: TestHashMap.java,v 1.3 2006-06-21 10:57:41 anatom Exp $
  */
 public class TestHashMap extends TestCase {
-    //private static final Logger log = Logger.getLogger(TestHashMap.class);
+    private static final Logger log = Logger.getLogger(TestHashMap.class);
 
     public TestHashMap(String name) {
         super(name);
@@ -77,12 +78,14 @@ public class TestHashMap extends TestCase {
         assertTrue(false);
     }
     public void test01HashMapStrangeCharsSafe() throws Exception {
+        HashMap h = new HashMap();
+        h.put("foo0", Boolean.valueOf(false));
+        h.put("foo1", "\0001\0002fooString");
+        h.put("foo2", new Integer(2));
+        h.put("foo3", Boolean.valueOf(true));
+        h.put("foo4", "");
         HashMap a = new Base64PutHashMap();
-        a.put("foo0", Boolean.valueOf(false));
-        a.put("foo1", "\0001\0002fooString");
-        a.put("foo2", new Integer(2));
-        a.put("foo3", Boolean.valueOf(true));
-        a.put("foo4", "");
+        a.putAll(h);
         
         // Write to XML
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -90,7 +93,7 @@ public class TestHashMap extends TestCase {
         encoder.writeObject(a);
         encoder.close();
         String data = baos.toString("UTF8");
-        //log.error(data);
+        log.error(data);
 
         try {
             java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(data.getBytes("UTF8")));
@@ -108,12 +111,14 @@ public class TestHashMap extends TestCase {
         }
     }
     public void test01HashMapNormalCharsSafe() throws Exception {
+        HashMap h = new HashMap();
+        h.put("foo0", Boolean.valueOf(false));
+        h.put("foo1", "fooString");
+        h.put("foo2", new Integer(2));
+        h.put("foo3", Boolean.valueOf(true));
+        h.put("foo4", "");
         HashMap a = new Base64PutHashMap();
-        a.put("foo0", Boolean.valueOf(false));
-        a.put("foo1", "fooString");
-        a.put("foo2", new Integer(2));
-        a.put("foo3", Boolean.valueOf(true));
-        a.put("foo4", "");
+        a.putAll(h);
         
         // Write to XML
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
