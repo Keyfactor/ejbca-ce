@@ -120,7 +120,7 @@ import org.ejbca.util.cert.UTF8EntryConverter;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.20 2006-06-19 14:06:17 anatom Exp $
+ * @version $Id: X509CA.java,v 1.21 2006-06-21 18:55:13 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -392,12 +392,15 @@ public class X509CA extends CA implements Serializable {
             while (iter.hasNext()) {
                 usage.add(new DERObjectIdentifier((String)iter.next()));
             }
-            ExtendedKeyUsage eku = new ExtendedKeyUsage(usage);
-            // Extended Key Usage may be either critical or non-critical
-            certgen.addExtension(
-                X509Extensions.ExtendedKeyUsage.getId(),
-                certProfile.getExtendedKeyUsageCritical(),
-                eku);
+            // Don't add empty key usage extension
+            if (!usage.isEmpty()) {
+                ExtendedKeyUsage eku = new ExtendedKeyUsage(usage);
+                // Extended Key Usage may be either critical or non-critical
+                certgen.addExtension(
+                    X509Extensions.ExtendedKeyUsage.getId(),
+                    certProfile.getExtendedKeyUsageCritical(),
+                    eku);            	
+            }
         }
         // Subject key identifier
         if (certProfile.getUseSubjectKeyIdentifier() == true) {
