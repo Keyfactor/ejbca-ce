@@ -34,7 +34,9 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
-
+/**
+ * @version $Id: TestCertificateRetrival.java,v 1.7 2006-06-21 08:52:25 anatom Exp $
+ */
 public class TestCertificateRetrival extends TestCase {
 
     static byte[] testrootcert = Base64.decode(("MIICnTCCAgagAwIBAgIBADANBgkqhkiG9w0BAQQFADBEMQswCQYDVQQGEwJTRTET"
@@ -82,6 +84,7 @@ public class TestCertificateRetrival extends TestCase {
     private Context m_ctx;
     private ICertificateStoreSessionHome m_storehome;
     private HashSet m_certs;
+    private HashSet m_certfps;
     private String rootCaFp = null;
     private String subCaFp = null;
     private String endEntityFp = null;
@@ -100,6 +103,7 @@ public class TestCertificateRetrival extends TestCase {
                             + ((X509Certificate) obj).getSubjectDN());
                     m_log.debug("   IssuerDN  : "
                             + ((X509Certificate) obj).getIssuerDN());
+                    //System.out.println(((X509Certificate) obj).getIssuerDN().getName()+";"+((X509Certificate) obj).getSerialNumber().toString(16)+";"+CertTools.getFingerprintAsString((X509Certificate) obj));
                 } else {
                     m_log.warn("Object in collection is not a X509Certificate.");
                 }
@@ -136,8 +140,11 @@ public class TestCertificateRetrival extends TestCase {
         X509Certificate cert;
         Admin adm = new Admin(Admin.TYPE_INTERNALUSER);
         m_certs = new HashSet();
+        m_certfps = new HashSet();
         cert = CertTools.getCertfromByteArray(testrootcert);
         m_certs.add(cert);
+        m_certfps.add(CertTools.getFingerprintAsString(cert));
+        //System.out.println(cert.getIssuerDN().getName()+";"+cert.getSerialNumber().toString(16)+";"+CertTools.getFingerprintAsString(cert));
         rootCaFp = CertTools.getFingerprintAsString(cert);
         try {
             if (store.findCertificateByFingerprint(adm, rootCaFp) == null) {
@@ -150,6 +157,8 @@ public class TestCertificateRetrival extends TestCase {
             }
             cert = CertTools.getCertfromByteArray(testcacert);
             m_certs.add(cert);
+            m_certfps.add(CertTools.getFingerprintAsString(cert));
+            //System.out.println(cert.getIssuerDN().getName()+";"+cert.getSerialNumber().toString(16)+";"+CertTools.getFingerprintAsString(cert));
             subCaFp = CertTools.getFingerprintAsString(cert);
             if (store.findCertificateByFingerprint(adm, subCaFp) == null) {
                 store.storeCertificate(adm
@@ -161,6 +170,8 @@ public class TestCertificateRetrival extends TestCase {
             }
             cert = CertTools.getCertfromByteArray(testcert);
             m_certs.add(cert);
+            m_certfps.add(CertTools.getFingerprintAsString(cert));
+            //System.out.println(cert.getIssuerDN().getName()+";"+cert.getSerialNumber().toString(16)+";"+CertTools.getFingerprintAsString(cert));
             endEntityFp = CertTools.getFingerprintAsString(cert);
             if (store.findCertificateByFingerprint(adm, endEntityFp) == null) {
                 store.storeCertificate(adm
@@ -331,7 +342,7 @@ public class TestCertificateRetrival extends TestCase {
         dumpCertificates(certfps);
         assertTrue("failed to list certs", certfps.size() == 1);
         assertTrue("Unable to find test certificate."
-                , m_certs.contains(certfps.iterator().next()));
+                , m_certfps.contains(CertTools.getFingerprintAsString((X509Certificate)certfps.iterator().next())));
         m_log.debug("<test05CertificatesByIssuerAndSernos()");
     }
 
