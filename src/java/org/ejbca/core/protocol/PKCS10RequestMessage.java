@@ -36,7 +36,7 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
-import org.bouncycastle.cms.CMSSignedDataGenerator;
+import org.bouncycastle.cms.CMSSignedGenerator;
 import org.ejbca.util.CertTools;
 
 
@@ -44,7 +44,7 @@ import org.ejbca.util.CertTools;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.3 2006-05-15 16:31:28 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.4 2006-06-22 07:41:51 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage {
     /**
@@ -73,7 +73,7 @@ public class PKCS10RequestMessage implements IRequestMessage {
     protected boolean includeCACert = true;
 
     /** preferred digest algorithm to use in replies, if applicable */
-    private transient String preferredDigestAlg = CMSSignedDataGenerator.DIGEST_SHA1;
+    private transient String preferredDigestAlg = CMSSignedGenerator.DIGEST_SHA1;
 
     /** The pkcs10 request message, not serialized. */
     protected transient ExtendedPKCS10CertificationRequest pkcs10 = null;

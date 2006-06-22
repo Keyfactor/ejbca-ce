@@ -45,13 +45,14 @@ import org.bouncycastle.cms.CMSProcessable;
 import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
+import org.bouncycastle.cms.CMSSignedGenerator;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
 /**
  * A response message for scep (pkcs7).
  *
- * @version $Id: ScepResponseMessage.java,v 1.4 2006-05-15 16:31:28 anatom Exp $
+ * @version $Id: ScepResponseMessage.java,v 1.5 2006-06-22 07:41:51 anatom Exp $
  */
 public class ScepResponseMessage implements IResponseMessage {
     /**
@@ -107,7 +108,7 @@ public class ScepResponseMessage implements IResponseMessage {
     private transient boolean includeCACert = true;
 
     /** Default digest algorithm for SCEP response message, can be overridden */
-    private transient String digestAlg = CMSSignedDataGenerator.DIGEST_MD5;
+    private transient String digestAlg = CMSSignedGenerator.DIGEST_MD5;
     /**
      * Sets the complete certificate in the response message.
      *

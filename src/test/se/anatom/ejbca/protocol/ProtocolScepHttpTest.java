@@ -59,7 +59,7 @@ import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSProcessable;
 import org.bouncycastle.cms.CMSSignedData;
-import org.bouncycastle.cms.CMSSignedDataGenerator;
+import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.cms.SignerId;
@@ -244,11 +244,11 @@ public class ProtocolScepHttpTest extends TestCase {
         
         // Pre-generate key for all requests to speed things up a bit
         keys = KeyTools.genKeys(512);
-        byte[] msgBytes = genScepRequest(false, CMSSignedDataGenerator.DIGEST_SHA1);
+        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes, false);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, false, CMSSignedDataGenerator.DIGEST_SHA1, false);
+        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false);
         log.debug("<test03ScepRequestOKSHA1()");
     }
 
@@ -262,11 +262,11 @@ public class ProtocolScepHttpTest extends TestCase {
         
         // Pre-generate key for all requests to speed things up a bit
         keys = KeyTools.genKeys(512);
-        byte[] msgBytes = genScepRequest(false, CMSSignedDataGenerator.DIGEST_MD5);
+        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_MD5);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes, false);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, false, CMSSignedDataGenerator.DIGEST_MD5, false);
+        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, false, CMSSignedGenerator.DIGEST_MD5, false);
         log.debug("<test04ScepRequestOKMD5()");
     }
 
@@ -277,11 +277,11 @@ public class ProtocolScepHttpTest extends TestCase {
 
         createScepUser();
         
-        byte[] msgBytes = genScepRequest(false, CMSSignedDataGenerator.DIGEST_SHA1);
+        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1);
         // Send message with GET
         byte[] retMsg = sendScep(true, msgBytes, false);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, false, CMSSignedDataGenerator.DIGEST_SHA1, false);
+        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, false);
         log.debug(">test05ScepRequestPostOK()");
     }
 
@@ -292,11 +292,11 @@ public class ProtocolScepHttpTest extends TestCase {
 
         createScepUser();
         
-        byte[] msgBytes = genScepRequest(false, CMSSignedDataGenerator.DIGEST_SHA1);
+        byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1);
         // Send message with GET
         byte[] retMsg = sendScep(true, msgBytes, true);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, false, CMSSignedDataGenerator.DIGEST_SHA1, true);
+        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, false, CMSSignedGenerator.DIGEST_SHA1, true);
         log.debug(">test06ScepRequestPostOKNoCA()");
     }
 
@@ -331,11 +331,11 @@ public class ProtocolScepHttpTest extends TestCase {
 
     public void test08ScepGetCrl() throws Exception {
         log.debug(">test08ScepGetCrl()");
-        byte[] msgBytes = genScepRequest(true, CMSSignedDataGenerator.DIGEST_SHA1);
+        byte[] msgBytes = genScepRequest(true, CMSSignedGenerator.DIGEST_SHA1);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes, false);
         assertNotNull(retMsg);
-        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, true, CMSSignedDataGenerator.DIGEST_SHA1, false);
+        checkScepResponse(retMsg, "C=SE,O=PrimeKey,CN=sceptest", senderNonce, transId, true, CMSSignedGenerator.DIGEST_SHA1, false);
         log.debug(">test08ScepGetCrl()");
     }
     public void test09ScepGetCACaps() throws Exception {

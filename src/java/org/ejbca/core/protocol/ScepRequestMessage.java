@@ -52,7 +52,7 @@ import org.bouncycastle.asn1.cms.SignerInfo;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSSignedData;
-import org.bouncycastle.cms.CMSSignedDataGenerator;
+import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.cms.SignerInformation;
@@ -65,7 +65,7 @@ import org.ejbca.util.CertTools;
  * Class to handle SCEP request messages sent to the CA. 
  * TODO: don't forget extensions, e.g. KeyUsage requested by end entity 
  *
- * @version $Id: ScepRequestMessage.java,v 1.4 2006-05-15 16:31:28 anatom Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.5 2006-06-22 07:41:51 anatom Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage {
     /**
@@ -151,7 +151,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
     private transient IssuerAndSerialNumber issuerAndSerno = null;
 
     /** preferred digest algorithm to use in replies, if applicable */
-    private transient String preferredDigestAlg = CMSSignedDataGenerator.DIGEST_MD5;
+    private transient String preferredDigestAlg = CMSSignedGenerator.DIGEST_MD5;
 
 	private transient X509Certificate signercert;
 
