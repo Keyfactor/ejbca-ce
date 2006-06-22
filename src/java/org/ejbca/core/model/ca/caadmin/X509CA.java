@@ -88,6 +88,7 @@ import org.bouncycastle.cms.CMSProcessable;
 import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
+import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.jce.X509KeyUsage;
@@ -120,7 +121,7 @@ import org.ejbca.util.cert.UTF8EntryConverter;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.21 2006-06-21 18:55:13 anatom Exp $
+ * @version $Id: X509CA.java,v 1.22 2006-06-22 07:40:41 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -269,7 +270,7 @@ public class X509CA extends CA implements Serializable {
             CMSProcessable msg = new CMSProcessableByteArray("EJBCA".getBytes());
             CertStore certs = CertStore.getInstance("Collection", new CollectionCertStoreParameters(certList), "BC");
             CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
-            gen.addSigner(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), (X509Certificate)getCACertificate(), CMSSignedDataGenerator.DIGEST_SHA1);
+            gen.addSigner(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), (X509Certificate)getCACertificate(), CMSSignedGenerator.DIGEST_SHA1);
             gen.addCertificatesAndCRLs(certs);
             CMSSignedData s = gen.generate(msg, true, getCAToken().getProvider());
             return s.getEncoded();
@@ -437,7 +438,7 @@ public class X509CA extends CA implements Serializable {
         }
         
         // Certificate Policies
-        if (certProfile.getUseCertificatePolicies() == true) {
+        if ( (certProfile.getUseCertificatePolicies() == true) && (StringUtils.isNotEmpty(certProfile.getCertificatePolicyId())) ) {
             int displayencoding = DisplayText.CONTENT_TYPE_BMPSTRING;
             if (getAlwaysUseUTF8SubjectDN()) {
                 displayencoding = DisplayText.CONTENT_TYPE_UTF8STRING;
@@ -781,17 +782,22 @@ public class X509CA extends CA implements Serializable {
     private PolicyInformation getPolicyInformation(String policyOID, String cps, String unotice, int displayencoding) {
         
         DEREncodableVector qualifiers = new DEREncodableVector();
-        if (!StringUtils.isEmpty(unotice)) {
+        if (!StringUtils.isEmpty(unotice.trim())) {
             // Normally we would just use 'DisplayText(unotice)' here. IE has problems with UTF8 though, so lets stick with BMSSTRING to satisfy Bills sick needs.
             UserNotice un = new UserNotice(null, new DisplayText(displayencoding, unotice));
             PolicyQualifierInfo pqiUNOTICE = new PolicyQualifierInfo(PolicyQualifierId.id_qt_unotice, un);
             qualifiers.add(pqiUNOTICE);
         }
-        if (!StringUtils.isEmpty(cps)) {
+        if (!StringUtils.isEmpty(cps.trim())) {
             PolicyQualifierInfo pqiCPS = new PolicyQualifierInfo(cps);
             qualifiers.add(pqiCPS);
         }
-        PolicyInformation policyInformation = new PolicyInformation(new DERObjectIdentifier(policyOID), new DERSequence(qualifiers));
+        PolicyInformation policyInformation = null;
+        if (qualifiers.size() > 0) {
+            policyInformation = new PolicyInformation(new DERObjectIdentifier(policyOID), new DERSequence(qualifiers));            
+        } else {
+            policyInformation = new PolicyInformation(new DERObjectIdentifier(policyOID));
+        }
         
         return policyInformation;
     }
