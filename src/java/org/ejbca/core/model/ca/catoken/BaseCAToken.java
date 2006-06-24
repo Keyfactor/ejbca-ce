@@ -33,7 +33,7 @@ import org.ejbca.core.model.SecConst;
 
 /**
  * @author lars
- * @version $Id: BaseCAToken.java,v 1.4 2006-06-08 12:19:19 primelars Exp $
+ * @version $Id: BaseCAToken.java,v 1.5 2006-06-24 21:38:56 primelars Exp $
  */
 public abstract class BaseCAToken implements IHardCAToken {
 
@@ -54,7 +54,7 @@ public abstract class BaseCAToken implements IHardCAToken {
         sProviderName = pn;
         sSlotLabelKey = slk;
         try {
-            Provider prov = (Provider)Class.forName(providerClassName).newInstance();        
+            Provider prov = (Provider)Class.forName(providerClassName).newInstance();
             Security.addProvider( prov );            
         } catch (ClassNotFoundException e) {
             throw new InstantiationException("Class not found: "+providerClassName);
@@ -65,6 +65,13 @@ public abstract class BaseCAToken implements IHardCAToken {
     protected String sSlotLabel;
     private Map mKeys;
 
+    /**
+     * @param keyStore
+     * @param authCode
+     * @throws KeyStoreException
+     * @throws NoSuchAlgorithmException
+     * @throws UnrecoverableKeyException
+     */
     protected void setKeys(KeyStore keyStore, String authCode) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException {
         String keyAliases[] = keyStrings.getAllStrings();
         mKeys = new Hashtable();
@@ -72,12 +79,22 @@ public abstract class BaseCAToken implements IHardCAToken {
             PrivateKey privateK =
                 (PrivateKey)keyStore.getKey(keyAliases[i],
                                             authCode!=null ? authCode.toCharArray():null);
-            PublicKey publicK =
-                keyStore.getCertificate(keyAliases[i]).getPublicKey();
-            
+            PublicKey publicK = readPublicKey(keyStore, keyAliases[i]);
             KeyPair keyPair = new KeyPair(publicK, privateK);
             mKeys.put(keyAliases[i], keyPair);
         }
+    }
+
+    /**
+     * @param keyStore
+     * @param alias
+     * @return
+     * @throws KeyStoreException
+     * @throws NoSuchAlgorithmException
+     * @throws UnrecoverableKeyException
+     */
+    protected PublicKey readPublicKey(KeyStore keyStore, String alias) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException {
+        return keyStore.getCertificate(alias).getPublicKey();
     }
 
     /* (non-Javadoc)
