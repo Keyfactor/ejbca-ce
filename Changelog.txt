@@ -1,3 +1,18 @@
+3.2.2
+---
+Improvement
+
+    * [ECA-282] - Distribute files with stricter permissions
+    * [ECA-286] - Remove logging in publisher.getAuthorizedPublisher calls
+    * [ECA-295] - Allow dot in username
+
+Bug
+
+    * [ECA-202] - Too long primary keys when using UTF-8 encoding in MySQL
+    * [ECA-277] - Error deploying on MS-SQL and Sybase
+    * [ECA-278] - SQLException on MS-SQL
+    * [ECA-283] - Web enrollment with Eracom HSM fails
+
 3.2.1
 ---
 New Feature

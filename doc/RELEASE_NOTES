@@ -1,3 +1,10 @@
+EJBCA 3.2.2
+-----------
+This is a minor release with minor improvements and some bugfixes, mostly for MS-SQL.
+Read the changelog for details.
+
+This is a plug-in upgrade from 3.2.1. See UPGRADE for the simple instructions.
+
 EJBCA 3.2.1
 -----------
 This is a minor release with one new features and some bugfixes.

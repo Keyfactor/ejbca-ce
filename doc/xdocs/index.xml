@@ -8,7 +8,11 @@
 <body>
   <section name="Latest News">
     <note>
-    EJBCA 3.2.1 is now available for <a
+    EJBCA 3.2.2 is now available for <a
+    href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=108797">download</a>.
+    </note>
+    <note>
+    EJBCA 3.3beta is now available for <a
     href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=108797">download</a>.
     </note>
     <p>
@@ -18,6 +22,11 @@
     <p>
     New features in EJBCA 3.2 such as QC statement and external OCSP responders was sponsored by 
     CTec Security Solutions, <a href="http://www.commguard.com/">http://www.commguard.com/</a>.
+    </p>
+    <p>
+    EJBCA 3.3 and later contains support for LunaHSM (SafeNet). The development of this functionality was sponsored 
+    by Atos Origin <a href="http://www.fr.atosorigin.com/fr-fr">http://www.fr.atosorigin.com/fr-fr</a> and done with 
+    the support of Linagora <a href="http://www.linagora.com">http://www.linagora.com</a>.
     </p>
   </section>
 
