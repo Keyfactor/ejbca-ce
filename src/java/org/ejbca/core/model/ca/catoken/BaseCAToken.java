@@ -33,7 +33,7 @@ import org.ejbca.core.model.SecConst;
 
 /**
  * @author lars
- * @version $Id: BaseCAToken.java,v 1.5 2006-06-24 21:38:56 primelars Exp $
+ * @version $Id: BaseCAToken.java,v 1.6 2006-06-25 15:45:23 primelars Exp $
  */
 public abstract class BaseCAToken implements IHardCAToken {
 
@@ -64,6 +64,16 @@ public abstract class BaseCAToken implements IHardCAToken {
     private KeyStrings keyStrings;
     protected String sSlotLabel;
     private Map mKeys;
+	private String mAuthCode;
+
+    private void autoActivate() {
+        if ( mKeys==null && mAuthCode!=null )
+            try {
+                activate(mAuthCode);
+            } catch (Exception e) {
+                log.debug(e);
+            }
+    }
 
     /**
      * @param keyStore
@@ -108,6 +118,8 @@ public abstract class BaseCAToken implements IHardCAToken {
         keyStrings = new KeyStrings(properties);
         sSlotLabel = properties.getProperty(sSlotLabelKey);
         sSlotLabel = sSlotLabel!=null ? sSlotLabel.trim() : null;
+        mAuthCode = properties.getProperty("pin");
+        autoActivate();
     }
 
     /* (non-Javadoc)
@@ -129,6 +141,7 @@ public abstract class BaseCAToken implements IHardCAToken {
      */
     public PrivateKey getPrivateKey(int purpose)
         throws CATokenOfflineException {
+    	autoActivate();
         KeyPair keyPair = mKeys!=null ?
             (KeyPair)mKeys.get(keyStrings.getString(purpose)) :
             null;
@@ -142,6 +155,7 @@ public abstract class BaseCAToken implements IHardCAToken {
      */
     public PublicKey getPublicKey(int purpose)
         throws CATokenOfflineException {
+    	autoActivate();
         KeyPair keyPair = mKeys!=null ?
             (KeyPair)mKeys.get(keyStrings.getString(purpose)) :
             null;
@@ -161,6 +175,7 @@ public abstract class BaseCAToken implements IHardCAToken {
 	 * @see org.ejbca.core.model.ca.caadmin.IHardCAToken#getCATokenStatus()
 	 */
     public int getCATokenStatus() {
+    	autoActivate();
         {
             String strings[] = keyStrings.getAllStrings();
             int i=0;
