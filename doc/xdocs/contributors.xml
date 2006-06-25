@@ -42,7 +42,7 @@ administrator, who can be found on the sourceforge project page.
 <li>surd0007(at)yahoo.com.cn, Initial install guide.</li>
 <li>Mike Jackson, mj(at)sci.fi, Proper LDAP schema. Device certificate schemas.</li>
 <li>Stephane Bailliez, stephane(at)bearaway.org, Patches all over, XDoclet, new install, configure and cli for 3.1, web.</li>
-<li>Yannick Quenec'hdu, yquenechdu(at)linagora.com, French translation and some other pathes.</li>
+<li>Yannick Quenec'hdu, yquenechdu(at)linagora.com, French translation, help with SafeNet HSM and some other pathes.</li>
 <li>James A. Rome, jar(at)ornl.gov, Additional 'Use fields in DN' for publisher, JKStoPEM, lots of testing and input.</li>
 <li>Manuel Ruiz, mruiz(at)safa.es, Make admin commands flexible and usable from within java-code.</li>
 <li>Risto Laanoja, risto.laanoja(at)eyp.ee, Fix for integer overflow when setting CRLPeriod longer than 596 hours. Several instances of one altName and other patches. User authentication with JAAS/Kerberos.</li>
