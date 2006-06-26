@@ -13,14 +13,17 @@
 
 package org.ejbca.ui.web.protocol;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyStore;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,7 +34,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
+import javax.security.cert.CertificateException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
@@ -80,7 +83,7 @@ import org.ejbca.core.model.log.Admin;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silvén PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.11 2006-02-13 16:55:39 anatom Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.12 2006-06-26 13:40:21 primelars Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase {
 
@@ -129,7 +132,115 @@ public class OCSPServletStandAlone extends OCSPServletBase {
             throw new ServletException(e);
         }
     }
-    
+    private X509Certificate[] getCertificateChain(X509Certificate cert, Admin adm) {
+        RevokedCertInfo revokedInfo = isRevoked(adm, cert.getIssuerDN().getName(),
+                cert.getSerialNumber());
+        String sDebug = "Signing certificate with serial number "+cert.getSerialNumber() + " from issuer " + cert.getIssuerDN();
+        if ( revokedInfo==null ) {
+            m_log.error(sDebug + " can not be found.");
+            return null;
+        }
+        if ( revokedInfo.getReason()!=RevokedCertInfo.NOT_REVOKED ) {
+            m_log.error(sDebug + " revoked.");
+            return null;
+        }
+        X509Certificate chain[] = null; {
+            final List list = new ArrayList();
+            X509Certificate current = cert;
+            while( true ) {
+                list.add(current);
+                if ( current.getIssuerX500Principal().equals(current.getSubjectX500Principal()) ) {
+                    chain = (X509Certificate[])list.toArray(new X509Certificate[0]);
+                    break;
+                }
+                Iterator j = m_cacerts.iterator();
+                boolean isNotFound = true;
+                while( isNotFound && j.hasNext() ) {
+                    X509Certificate target = (X509Certificate)j.next();
+                    m_log.debug( "curent issuer '" + current.getIssuerX500Principal() +
+                            "'. target subject: '" + target.getSubjectX500Principal() + "'.");
+                    if ( current.getIssuerX500Principal().equals(target.getSubjectX500Principal()) ) {
+                        current = target;
+                        isNotFound = false;
+                    }
+                }
+                if ( isNotFound )
+                    break;
+            }
+        }
+        if ( chain==null ) {
+            m_log.error(sDebug + " certificate chain broken.");
+        }
+        return chain;
+    }
+    private boolean loadFromKeyStore(Admin adm, String fileName) {
+        final Enumeration eAlias;
+        final KeyStore keyStore;
+        try {
+            KeyStore tmpKeyStore;
+            try {
+                tmpKeyStore = KeyStore.getInstance("JKS");
+                tmpKeyStore.load(new FileInputStream(fileName), mStorePassword);
+            } catch( IOException e ) {
+                tmpKeyStore = KeyStore.getInstance("PKCS12", "BC");
+                tmpKeyStore.load(new FileInputStream(fileName), mStorePassword);
+            }
+            keyStore = tmpKeyStore;
+            eAlias = keyStore.aliases();
+        } catch( Exception e ) {
+            m_log.error("Unable to load file "+fileName+". Exception: "+e.getMessage());
+            return false;
+        }
+        while( eAlias.hasMoreElements() ) {
+            final String alias = (String)eAlias.nextElement();
+            try {
+                final PrivateKey privateKey = (PrivateKey)keyStore.getKey(alias, mKeyPassword);
+                if ( privateKey==null )
+                    continue;
+                final X509Certificate cert = (X509Certificate)keyStore.getCertificate(alias);
+                X509Certificate[] chain = getCertificateChain(cert, adm);
+                if ( cert==null )
+                    continue;
+                mSignEntity.put( new Integer(getCaid(chain[1])),
+                                 new SigningEntity(chain, privateKey) );
+            } catch (Exception e) {
+                m_log.error("Unable to get alias "+alias+" in file "+fileName+". Exception: "+e.getMessage());
+            }
+        }
+        return true;
+    }
+    private boolean loadFromKeyCards(Admin adm, String fileName) {
+        final CertificateFactory cf;
+        try {
+            cf = CertificateFactory.getInstance("X.509");
+        } catch (java.security.cert.CertificateException e) {
+           throw new Error(e);
+        }
+        boolean isSingle = true;
+        try {
+            final Collection c = cf.generateCertificates(new FileInputStream(fileName));
+            if ( c!=null && !c.isEmpty() ) {
+                Iterator i = c.iterator();
+                while (i.hasNext()) {
+                    Certificate cert = (Certificate)i.next();
+                }
+                isSingle = false;
+            }
+        } catch (Exception e) {
+            m_log.debug(e.getMessage());
+        }
+        if ( isSingle ) {
+            try {
+                BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileName));
+                while (bis.available() > 0) {
+                    Certificate cert = cf.generateCertificate(bis);
+                }
+            } catch( Exception e) {
+                m_log.debug(e.getMessage());
+            }
+        }
+        return true;
+    }
     protected void loadPrivateKeys(Admin adm) throws ServletException, IOException {
         mSignEntity.clear();
         File dir = new File(mSoftKeyStoreDirectoryName);
@@ -140,78 +251,11 @@ public class OCSPServletStandAlone extends OCSPServletBase {
             throw new ServletException("No files in soft key directory: " + dir.getCanonicalPath());
         for ( int i=0; i<files.length; i++ ) {
             final String fileName = files[i].getCanonicalPath();
-            final Enumeration eAlias;
-            final KeyStore keyStore;
-            try {
-                KeyStore tmpKeyStore;
-                try {
-                    tmpKeyStore = KeyStore.getInstance("JKS");
-                    tmpKeyStore.load(new FileInputStream(fileName), mStorePassword);
-                } catch( IOException e ) {
-                    tmpKeyStore = KeyStore.getInstance("PKCS12", "BC");
-                    tmpKeyStore.load(new FileInputStream(fileName), mStorePassword);
-                }
-                keyStore = tmpKeyStore;
-                eAlias = keyStore.aliases();
-            } catch( Exception e ) {
-                m_log.error("Unable to load file "+fileName+". Exception: "+e.getMessage());
-                continue;
-            }
-            while( eAlias.hasMoreElements() ) {
-                final String alias = (String)eAlias.nextElement();
-                try {
-                    final PrivateKey privateKey = (PrivateKey)keyStore.getKey(alias, mKeyPassword);
-                    if ( privateKey==null )
-                        continue;
-                    final X509Certificate cert = (X509Certificate)keyStore.getCertificate(alias);
-                    RevokedCertInfo revokedInfo = isRevoked(adm, cert.getIssuerDN().getName(),
-                                                            cert.getSerialNumber());
-                    String sDebug = "Signing certificate with serial number "+cert.getSerialNumber() + " from issuer " + cert.getIssuerDN();
-                    if ( revokedInfo==null ) {
-                        m_log.error(sDebug + " can not be found.");
-                        continue;
-                    }
-                    if ( revokedInfo.getReason()!=RevokedCertInfo.NOT_REVOKED ) {
-                        m_log.error(sDebug + " revoked.");
-                        continue;
-                    }
-                    X509Certificate chain[] = null; {
-                        final List list = new ArrayList();
-                        X509Certificate current = cert;
-                        while( true ) {
-                            list.add(current);
-                            if ( current.getIssuerX500Principal().equals(current.getSubjectX500Principal()) ) {
-                                chain = (X509Certificate[])list.toArray(new X509Certificate[0]);
-                                break;
-                            }
-                            Iterator j = m_cacerts.iterator();
-                            boolean isNotFound = true;
-                            while( isNotFound && j.hasNext() ) {
-                                X509Certificate target = (X509Certificate)j.next();
-                                m_log.debug( "curent issuer '" + current.getIssuerX500Principal()
-                                             + "'. target subject: '" + target.getSubjectX500Principal() + "'.");
-                                if ( current.getIssuerX500Principal().equals(target.getSubjectX500Principal()) ) {
-                                    current = target;
-                                    isNotFound = false;
-                                }
-                            }
-                            if ( isNotFound )
-                                break;
-                        }
-                    }
-                    if ( chain==null ) {
-                        m_log.error(sDebug + " certificate chain broken.");
-                        continue;
-                    }
-                    mSignEntity.put( new Integer(getCaid(chain[1])),
-                                     new SigningEntity(chain, privateKey) );
-                } catch (Exception e) {
-                    m_log.error("Unable to get alias "+alias+" in file "+fileName+". Exception: "+e.getMessage());
-                }
-            }
+            if ( !loadFromKeyStore(adm, fileName) )
+                loadFromKeyCards(adm, fileName);
+            if ( mSignEntity.size()==0 )
+                throw new ServletException("No valid keys in directory " + dir.getCanonicalPath());
         }
-        if ( mSignEntity.size()==0 )
-            throw new ServletException("No valid keys in directory " + dir.getCanonicalPath());
     }
 
     private class SigningEntity {
