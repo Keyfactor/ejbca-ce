@@ -61,7 +61,7 @@ import org.ejbca.util.CertTools;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.4 2006-05-26 17:23:28 anatom Exp $
+ * @version $Id: CA.java,v 1.5 2006-06-26 18:20:10 anatom Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -341,7 +341,11 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	  data.put(CRLISSUEINTERVAL, new Integer(cainfo.getCRLIssueInterval()));
 	  data.put(CRLOVERLAPTIME, new Integer(cainfo.getCRLOverlapTime()));
 	  data.put(CRLPUBLISHERS, cainfo.getCRLPublishers());
-	  getCAToken().updateCATokenInfo(cainfo.getCATokenInfo());
+      CAToken token = getCAToken();
+      if (token != null) {
+          token.updateCATokenInfo(cainfo.getCATokenInfo());
+          setCAToken(token);
+      }
       setFinishUser(cainfo.getFinishUser());
       
       Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
