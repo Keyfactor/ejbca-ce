@@ -376,6 +376,7 @@ web.contentencoding    = ${web.contentencoding}
              servletspec="2.3"
              sessiontimeout="30" 
              description="OCSP responder standalone" 
+             distributable="false"            	
              validatexml="false" />
         </webdoclet>
     </target>
@@ -613,6 +614,10 @@ web.contentencoding    = ${web.contentencoding}
                 	<include name="**/ISernoGenerator.*"/>
                     <include name="**/BaseEntityBean.*" />
                     <include name="**/BaseSessionBean.*" /> 
+                	<include name="**/ServiceLocator.*"/>
+                	<include name="**/JNDINames.*"/>
+                	<include name="**/HealthCheckServlet.*"/>                	
+                	<include name="org/ejbca/ui/web/pub/cluster/**"/>
                 </fileset>
                 
 
