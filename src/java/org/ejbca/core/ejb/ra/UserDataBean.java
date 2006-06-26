@@ -29,6 +29,8 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.SCEPRAExtendedInformation;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.util.Base64GetHashMap;
+import org.ejbca.util.Base64PutHashMap;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.StringTools;
 
@@ -60,7 +62,7 @@ import org.ejbca.util.StringTools;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.6 2006-06-03 18:10:48 anatom Exp $
+ * @version $Id: UserDataBean.java,v 1.7 2006-06-26 08:02:13 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a Log Entry with accompanying data"
  * display-name="UserDataEB"
@@ -448,10 +450,13 @@ public abstract class UserDataBean extends BaseEntityBean {
      */
     public void setExtendedInformation(ExtendedInformation extendedinformation) {
     	if(extendedinformation != null){
-    		java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-    		
+            // We must base64 encode string for UTF safety
+            HashMap a = new Base64PutHashMap();
+            a.putAll((HashMap)extendedinformation.saveData());
+
+            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
     		java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
-    		encoder.writeObject(extendedinformation.saveData());
+    		encoder.writeObject(a);
     		encoder.close();
     		try {
     			setExtendedInformationData(baos.toString("UTF8"));
@@ -520,8 +525,11 @@ public abstract class UserDataBean extends BaseEntityBean {
             try {
             	decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(extendedinfostring.getBytes("UTF8")));
             	
-            	HashMap data = (HashMap) decoder.readObject();
+            	HashMap h = (HashMap) decoder.readObject();
             	decoder.close();
+                // Handle Base64 encoded string values
+                HashMap data = new Base64GetHashMap(h);
+                
             	int type = ((Integer) data.get(ExtendedInformation.TYPE)).intValue();
             	switch(type){
             	  case ExtendedInformation.TYPE_SCEPRA :

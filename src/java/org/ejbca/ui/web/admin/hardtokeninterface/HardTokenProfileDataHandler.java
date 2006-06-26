@@ -14,6 +14,7 @@
 package org.ejbca.ui.web.admin.hardtokeninterface;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.HashSet;
 
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
@@ -27,12 +28,13 @@ import org.ejbca.core.model.hardtoken.profiles.EIDProfile;
 import org.ejbca.core.model.hardtoken.profiles.HardTokenProfile;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
+import org.ejbca.util.Base64PutHashMap;
 
 /**
  * A class handling the hardtoken profile data.
  *
  * @author  TomSelleck
- * @version $Id: HardTokenProfileDataHandler.java,v 1.1 2006-01-17 20:26:30 anatom Exp $
+ * @version $Id: HardTokenProfileDataHandler.java,v 1.2 2006-06-26 08:02:12 anatom Exp $
  */
 public class HardTokenProfileDataHandler implements Serializable {
 
@@ -205,23 +207,25 @@ public class HardTokenProfileDataHandler implements Serializable {
     private boolean checkXMLEncoding(HardTokenProfile profile) {
         boolean success = false;
         try{
-    	
-		  java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-
-		  java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
-		  encoder.writeObject(profile.saveData());
-		  encoder.close();
-          String data = baos.toString("UTF8");
-		  java.beans.XMLDecoder decoder =
-				new java.beans.XMLDecoder(
-						new java.io.ByteArrayInputStream(data.getBytes("UTF8")));
-		  decoder.readObject();
-		  decoder.close();
-		  
-		  success = true;
-		} catch (Exception e) {
-          success = false;  
-		}
+            
+            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+            
+            // We must base64 encode string for UTF safety
+            HashMap a = new Base64PutHashMap();
+            a.putAll((HashMap)profile.saveData());
+            java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
+            encoder.writeObject(a);
+            encoder.close();
+            String data = baos.toString("UTF8");
+            java.beans.XMLDecoder decoder = new java.beans.XMLDecoder(
+                        new java.io.ByteArrayInputStream(data.getBytes("UTF8")));
+            decoder.readObject();
+            decoder.close();
+            
+            success = true;
+        } catch (Exception e) {
+            success = false;  
+        }
 
 		return success;
 	}

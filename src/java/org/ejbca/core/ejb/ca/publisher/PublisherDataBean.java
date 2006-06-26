@@ -20,6 +20,8 @@ import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
+import org.ejbca.util.Base64GetHashMap;
+import org.ejbca.util.Base64PutHashMap;
 
 
 import javax.ejb.CreateException;
@@ -145,13 +147,14 @@ public abstract class PublisherDataBean extends BaseEntityBean {
         if (publisher == null) {
             java.beans.XMLDecoder decoder;
             try {
-                decoder =
-                        new java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
+                decoder = new java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
             } catch (UnsupportedEncodingException e) {
                 throw new EJBException(e);
             }
-            HashMap data = (HashMap) decoder.readObject();
+            HashMap h = (HashMap) decoder.readObject();
             decoder.close();
+            // Handle Base64 encoded string values
+            HashMap data = new Base64GetHashMap(h);
 
             switch (((Integer) (data.get(BasePublisher.TYPE))).intValue()) {
                 case LdapPublisher.TYPE_LDAPPUBLISHER:
@@ -180,10 +183,13 @@ public abstract class PublisherDataBean extends BaseEntityBean {
      * @ejb.interface-method view-type="local"
      */
     public void setPublisher(BasePublisher publisher) {
+        // We must base64 encode string for UTF safety
+        HashMap a = new Base64PutHashMap();
+        a.putAll((HashMap)publisher.saveData());
+        
         java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-
         java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
-        encoder.writeObject(publisher.saveData());
+        encoder.writeObject(a);
         encoder.close();
 
         try {

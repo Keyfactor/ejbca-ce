@@ -24,6 +24,8 @@ import org.ejbca.core.ejb.BaseEntityBean;
 import org.ejbca.core.model.hardtoken.profiles.EnhancedEIDProfile;
 import org.ejbca.core.model.hardtoken.profiles.HardTokenProfile;
 import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
+import org.ejbca.util.Base64GetHashMap;
+import org.ejbca.util.Base64PutHashMap;
 
 
 /** Entity bean should not be used directly, use though Session beans.
@@ -144,17 +146,15 @@ public abstract class HardTokenProfileDataBean extends BaseEntityBean {
         HardTokenProfile profile = null;
         java.beans.XMLDecoder decoder;
         try {
-            decoder =
-                new java.beans.XMLDecoder(
+            decoder = new java.beans.XMLDecoder(
                         new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
         } catch (UnsupportedEncodingException e) {
             throw new EJBException(e);
         }
-        
-        
-        HashMap data = (HashMap) decoder.readObject();
-        
+        HashMap h = (HashMap) decoder.readObject();
         decoder.close();
+        // Handle Base64 encoded string values
+        HashMap data = new Base64GetHashMap(h);
         
         switch (((Integer) (data.get(HardTokenProfile.TYPE))).intValue()) {
         case SwedishEIDProfile.TYPE_SWEDISHEID :
@@ -175,10 +175,13 @@ public abstract class HardTokenProfileDataBean extends BaseEntityBean {
      * @ejb.interface-method view-type="local"
      */
     public void setHardTokenProfile(HardTokenProfile hardtokenprofile){
+        // We must base64 encode string for UTF safety
+        HashMap a = new Base64PutHashMap();
+        a.putAll((HashMap)hardtokenprofile.saveData());
+        
 		java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-
 		java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
-		encoder.writeObject(hardtokenprofile.saveData());
+		encoder.writeObject(a);
 		encoder.close();
 
 		try {

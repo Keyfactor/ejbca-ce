@@ -25,6 +25,8 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CA;
+import org.ejbca.util.Base64GetHashMap;
+import org.ejbca.util.Base64PutHashMap;
 
 
 
@@ -42,7 +44,7 @@ import org.ejbca.core.model.ca.caadmin.X509CA;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.2 2006-05-19 13:25:08 anatom Exp $
+ * @version $Id: CADataBean.java,v 1.3 2006-06-26 08:02:13 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a publisher"
@@ -172,8 +174,10 @@ public abstract class CADataBean extends BaseEntityBean {
     public CA getCA() throws java.io.UnsupportedEncodingException{
         CA ca = null;
         java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
-        HashMap data = (HashMap) decoder.readObject();
+        HashMap h = (HashMap) decoder.readObject();
         decoder.close();
+        // Handle Base64 encoded string values
+        HashMap data = new Base64GetHashMap(h);
         
         // If CA-data is upgraded we want to save the new data, so we must get the old version before loading the data 
         // and perhaps upgrading
@@ -195,13 +199,16 @@ public abstract class CADataBean extends BaseEntityBean {
      * @ejb.interface-method
      */
     public void setCA(CA ca) throws UnsupportedEncodingException {
-       java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-       
-       java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
-       encoder.writeObject(ca.saveData());
-       encoder.close();
-       setData(baos.toString("UTF8"));
-       ca.setOwner(this);
+        // We must base64 encode string for UTF safety
+        HashMap a = new Base64PutHashMap();
+        a.putAll((HashMap)ca.saveData());
+        
+        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+        java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
+        encoder.writeObject(a);
+        encoder.close();
+        setData(baos.toString("UTF8"));
+        ca.setOwner(this);
     }   
     
 

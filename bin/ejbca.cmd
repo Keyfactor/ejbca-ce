@@ -44,7 +44,7 @@ rem library classpath
 set EJBCA_HOME=..
 rem It must work to call both as bin\ejbca.cmd or from within bin
 if not exist ejbca.cmd set EJBCA_HOME=.
-set EJBCA_CP=%EJBCA_HOME%\lib\ldap.jar;%EJBCA_HOME%\lib\log4j-1.2.7.jar;%EJBCA_HOME%\lib\bcprov-jdk14.jar;%EJBCA_HOME%\lib\bcmail-jdk14.jar
+set EJBCA_CP=%EJBCA_HOME%\lib\ldap.jar;%EJBCA_HOME%\lib\log4j-1.2.7.jar;%EJBCA_HOME%\lib\bcprov-jdk14.jar;%EJBCA_HOME%\lib\bcmail-jdk14.jar;%EJBCA_HOME%\lib\commons-lang-2.0.jar
 set CP=%EJBCA_HOME%\tmp\bin\classes
 
 rem check that we have built the classes

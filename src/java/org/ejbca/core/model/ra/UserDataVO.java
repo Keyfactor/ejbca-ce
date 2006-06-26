@@ -22,9 +22,9 @@ import org.ejbca.util.StringTools;
 
 
 /**
- * Holds admin data collected from UserData in the database.
+ * Holds admin data collected from UserData in the database. Strings are stored in Base64 encoded format to be safe for storing in database, xml etc.
  *
- * @version $Id: UserDataVO.java,v 1.3 2006-06-03 18:10:48 anatom Exp $
+ * @version $Id: UserDataVO.java,v 1.4 2006-06-26 08:02:13 anatom Exp $
  */
 public class UserDataVO implements Serializable {
 
@@ -73,34 +73,34 @@ public class UserDataVO implements Serializable {
      */
     public UserDataVO(String user, String dn, int caid, String subjectaltname, String email, int status, int type, int endentityprofileid, int certificateprofileid,
                          Date timecreated, Date timemodified, int tokentype, int hardtokenissuerid, ExtendedInformation extendedinfo) {
-        this.username=StringTools.strip(user);
-        this.password=null;
-        this.subjectDN=dn;
-        this.caid=caid;
-        this.subjectAltName=subjectaltname;
-        this.subjectEmail=email;
-        this.status=status;
-        this.type=type;
-        this.endentityprofileid=endentityprofileid;
-        this.certificateprofileid=certificateprofileid;
-        this.timecreated=timecreated;
-        this.timemodified=timemodified;
-        this.tokentype = tokentype;
-        this.hardtokenissuerid = hardtokenissuerid;
-        this.extendedinformation = extendedinfo;
+        setUsername(user);
+        setPassword(null);
+        setDN(dn);
+        setCAId(caid);
+        setSubjectAltName(subjectaltname);
+        setEmail(email);
+        setStatus(status);
+        setType(type);
+        setEndEntityProfileId(endentityprofileid);
+        setCertificateProfileId(certificateprofileid);
+        setTimeCreated(timecreated);
+        setTimeModified(timemodified);
+        setTokenType(tokentype);
+        setHardTokenIssuerId(hardtokenissuerid);
+        setExtendedinformation(extendedinfo);
     }
-    public void setUsername(String user) { this.username=StringTools.strip(user);}
-    public String getUsername() {return username;}
-    public void setDN(String dn) {this.subjectDN=dn;}
-    public String getDN() {return subjectDN;}
+    public void setUsername(String user) { this.username=StringTools.putBase64String(StringTools.strip(user));}
+    public String getUsername() {return StringTools.getBase64String(username);}
+    public void setDN(String dn) {this.subjectDN=StringTools.putBase64String(dn);}
+    public String getDN() {return StringTools.getBase64String(subjectDN);}
     public int getCAId(){return this.caid;}
     public void setCAId(int caid){this.caid=caid;}
-    public void setSubjectAltName( String subjectaltname) { this.subjectAltName=subjectaltname; }
-    public String getSubjectAltName() {return this.subjectAltName;}
-    public void setEmail(String email) {this.subjectEmail = email;}
-    public String getEmail() {return subjectEmail;}
-    public void setPassword(String pwd) {this.password = pwd;}
-    public String getPassword() {return password;}
+    public void setSubjectAltName( String subjectaltname) { this.subjectAltName=StringTools.putBase64String(subjectaltname); }
+    public String getSubjectAltName() {return StringTools.getBase64String(subjectAltName);}
+    public void setEmail(String email) {this.subjectEmail = StringTools.putBase64String(email);}
+    public String getEmail() {return StringTools.getBase64String(subjectEmail);}
+    public void setPassword(String pwd) {this.password = StringTools.putBase64String(pwd);}
+    public String getPassword() {return StringTools.getBase64String(password);}
     public void setStatus(int status) {this.status=status;}
     public int getStatus() {return status;}
     public void setType(int type) {this.type=type;}
