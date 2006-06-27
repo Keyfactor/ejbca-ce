@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.21 2006-06-25 16:06:29 anatom Exp $
+$Id: UPGRADE,v 1.22 2006-06-27 12:19:48 anatom Exp $
 
 UPGRADE
 =======
@@ -8,6 +8,16 @@ version of EJBCA to a new version.
 Upgrades within a major version, from 3.1.1 to 3.1.2 for example, are 
 usually plug-in upgrades and can be made simply by deploying the new 
 software. See doc/RELEASE_NOTES for info about such upgrades.
+
+If you use the patch file to upgrade use a command like:
+- Have old version of ejbca unzipped to directory ejbca.
+- Go to directory ejbca and apply patch with:
+- patch --strip=0 -u < ../patch-321_322.txt
+(change name of patch file depending on which version you are upgrading)
+
+After this you must do:
+- ant clean
+- ant deploy
 
 From EJBCA 3.2.x to EJBCA 3.3.x
 -------------------------------
