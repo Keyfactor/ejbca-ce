@@ -16,7 +16,6 @@ package org.ejbca.ui.web.protocol;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyStore;
@@ -34,7 +33,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import javax.security.cert.CertificateException;
+
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
@@ -75,6 +74,10 @@ import org.ejbca.core.model.log.Admin;
  *   name="storePassword"
  *   value="${ocsp.softKeys.storePassword}"
  *
+ * @web.servlet-init-param description="Keystore password. Keystore password for all keystores in the keystore directory."
+ *   name="hardTokenClassName"
+ *   value="${ocsp.hardToken.className}"
+ *
  * @web.ejb-local-ref
  *  name="ejb/CertificateStoreOnlyDataSessionLocal"
  *  type="Session"
@@ -83,7 +86,7 @@ import org.ejbca.core.model.log.Admin;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silvén PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.12 2006-06-26 13:40:21 primelars Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.13 2006-06-27 21:27:18 primelars Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase {
 
@@ -93,7 +96,8 @@ public class OCSPServletStandAlone extends OCSPServletBase {
     private String mSoftKeyStoreDirectoryName;
     private char mKeyPassword[];
     private char mStorePassword[];
-    private final Map mSignEntity;
+    private CardKeys mHardTokenObject;
+	private final Map mSignEntity;
 
     public OCSPServletStandAlone() {
         super();
@@ -117,6 +121,10 @@ public class OCSPServletStandAlone extends OCSPServletBase {
             {
                 final String storePassword = config.getInitParameter("storePassword");
                 mStorePassword = storePassword!=null ? storePassword.toCharArray() : null;
+            }
+            {
+            	final String hardTokenClassName = config.getInitParameter("hardTokenClassName");
+            	mHardTokenObject = (CardKeys)OCSPServletStandAlone.class.getClassLoader().loadClass(hardTokenClassName).newInstance();
             }
             if ( mStorePassword==null || mStorePassword.length==0 )
                 mStorePassword = mKeyPassword;
@@ -194,52 +202,63 @@ public class OCSPServletStandAlone extends OCSPServletBase {
         while( eAlias.hasMoreElements() ) {
             final String alias = (String)eAlias.nextElement();
             try {
-                final PrivateKey privateKey = (PrivateKey)keyStore.getKey(alias, mKeyPassword);
-                if ( privateKey==null )
-                    continue;
-                final X509Certificate cert = (X509Certificate)keyStore.getCertificate(alias);
-                X509Certificate[] chain = getCertificateChain(cert, adm);
-                if ( cert==null )
-                    continue;
-                mSignEntity.put( new Integer(getCaid(chain[1])),
-                                 new SigningEntity(chain, privateKey) );
+                putSignEntity((PrivateKey)keyStore.getKey(alias, mKeyPassword),
+                		(X509Certificate)keyStore.getCertificate(alias), adm);
             } catch (Exception e) {
                 m_log.error("Unable to get alias "+alias+" in file "+fileName+". Exception: "+e.getMessage());
             }
         }
         return true;
     }
+    private void putSignEntity( PrivateKey privateKey, X509Certificate cert, Admin adm ) {
+    	if ( privateKey!=null && cert!=null ) {
+    		X509Certificate[] chain = getCertificateChain(cert, adm);
+    		if ( chain!=null )
+    			mSignEntity.put( new Integer(getCaid(chain[1])),
+    					new SigningEntity(chain, privateKey) );
+    	}
+    }
     private boolean loadFromKeyCards(Admin adm, String fileName) {
-        final CertificateFactory cf;
-        try {
-            cf = CertificateFactory.getInstance("X.509");
-        } catch (java.security.cert.CertificateException e) {
-           throw new Error(e);
-        }
-        boolean isSingle = true;
-        try {
-            final Collection c = cf.generateCertificates(new FileInputStream(fileName));
-            if ( c!=null && !c.isEmpty() ) {
-                Iterator i = c.iterator();
-                while (i.hasNext()) {
-                    Certificate cert = (Certificate)i.next();
-                }
-                isSingle = false;
-            }
-        } catch (Exception e) {
-            m_log.debug(e.getMessage());
-        }
-        if ( isSingle ) {
-            try {
-                BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileName));
-                while (bis.available() > 0) {
-                    Certificate cert = cf.generateCertificate(bis);
-                }
-            } catch( Exception e) {
-                m_log.debug(e.getMessage());
-            }
-        }
-        return true;
+    	final CertificateFactory cf;
+    	try {
+    		cf = CertificateFactory.getInstance("X.509");
+    	} catch (java.security.cert.CertificateException e) {
+    		throw new Error(e);
+    	}
+    	boolean isSingle = true;
+    	try {
+    		final Collection c = cf.generateCertificates(new FileInputStream(fileName));
+    		if ( c!=null && !c.isEmpty() ) {
+    			Iterator i = c.iterator();
+    			while (i.hasNext()) {
+    				try {
+    					X509Certificate cert = (X509Certificate)i.next();
+    					putSignEntity(mHardTokenObject.getPrivateKey(cert.getPublicKey()), cert, adm);
+    				} catch( Exception e) {
+    					m_log.debug("1. "+e.getMessage());
+    				}
+    			}
+    			isSingle = false;
+    		}
+    	} catch (Exception e) {
+    		m_log.debug("2. "+e.getMessage());
+    	}
+    	if ( isSingle ) {
+    		try {
+    			BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileName));
+    			while (bis.available() > 0) {
+    				try {
+    					X509Certificate cert = (X509Certificate)cf.generateCertificate(bis);
+    					putSignEntity(mHardTokenObject.getPrivateKey(cert.getPublicKey()), cert, adm);
+    				} catch( Exception e) {
+    					m_log.debug("3. "+e.getMessage());
+    				}
+    			}
+    		} catch( Exception e) {
+    			m_log.debug("4. "+e.getMessage());
+    		}
+    	}
+    	return true;
     }
     protected void loadPrivateKeys(Admin adm) throws ServletException, IOException {
         mSignEntity.clear();
