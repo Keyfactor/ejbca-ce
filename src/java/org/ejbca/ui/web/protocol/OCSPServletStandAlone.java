@@ -86,7 +86,7 @@ import org.ejbca.core.model.log.Admin;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silvén PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.13 2006-06-27 21:27:18 primelars Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.14 2006-06-28 12:59:51 primelars Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase {
 
@@ -122,9 +122,13 @@ public class OCSPServletStandAlone extends OCSPServletBase {
                 final String storePassword = config.getInitParameter("storePassword");
                 mStorePassword = storePassword!=null ? storePassword.toCharArray() : null;
             }
-            {
+            if ( mHardTokenObject==null ) {
             	final String hardTokenClassName = config.getInitParameter("hardTokenClassName");
-            	mHardTokenObject = (CardKeys)OCSPServletStandAlone.class.getClassLoader().loadClass(hardTokenClassName).newInstance();
+                try {
+                    mHardTokenObject = (CardKeys)OCSPServletStandAlone.class.getClassLoader().loadClass(hardTokenClassName).newInstance();
+                } catch( ClassNotFoundException e) {
+                    m_log.debug(e.getMessage());
+                }
             }
             if ( mStorePassword==null || mStorePassword.length==0 )
                 mStorePassword = mKeyPassword;
