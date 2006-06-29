@@ -86,7 +86,7 @@ import org.ejbca.core.model.log.Admin;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silvén PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.14 2006-06-28 12:59:51 primelars Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.15 2006-06-29 05:54:45 primelars Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase {
 
@@ -123,12 +123,15 @@ public class OCSPServletStandAlone extends OCSPServletBase {
                 mStorePassword = storePassword!=null ? storePassword.toCharArray() : null;
             }
             if ( mHardTokenObject==null ) {
-            	final String hardTokenClassName = config.getInitParameter("hardTokenClassName");
-                try {
-                    mHardTokenObject = (CardKeys)OCSPServletStandAlone.class.getClassLoader().loadClass(hardTokenClassName).newInstance();
-                } catch( ClassNotFoundException e) {
-                    m_log.debug(e.getMessage());
-                }
+                final String hardTokenClassName = config.getInitParameter("hardTokenClassName");
+                if ( hardTokenClassName!=null && hardTokenClassName.length()>0 ) {
+                    try {
+                        mHardTokenObject = (CardKeys)OCSPServletStandAlone.class.getClassLoader().loadClass(hardTokenClassName).newInstance();
+                    } catch( ClassNotFoundException e) {
+                        m_log.info("Class " + hardTokenClassName + " could not be loaded.");
+                    }
+                } else
+                    m_log.info("No HW OCSP signing class defined.");
             }
             if ( mStorePassword==null || mStorePassword.length==0 )
                 mStorePassword = mKeyPassword;
@@ -276,9 +279,9 @@ public class OCSPServletStandAlone extends OCSPServletBase {
             final String fileName = files[i].getCanonicalPath();
             if ( !loadFromKeyStore(adm, fileName) )
                 loadFromKeyCards(adm, fileName);
-            if ( mSignEntity.size()==0 )
-                throw new ServletException("No valid keys in directory " + dir.getCanonicalPath());
         }
+        if ( mSignEntity.size()==0 )
+            throw new ServletException("No valid keys in directory " + dir.getCanonicalPath());
     }
 
     private class SigningEntity {

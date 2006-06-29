@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.51 2006-06-08 13:53:12 primelars Exp $
+# $Id: ejbca.properties.sample,v 1.52 2006-06-29 05:54:44 primelars Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -240,6 +240,15 @@ ocsp.usecasigningcert=true
 # the key password above. If it is equal you may leave it empty but you can not remove it.
 # Default: empty
 #ocsp.softKeys.storePassword=
+
+# The class that implements hardware signing of the OCSP response
+# Default: java.security.PrivateKey.CardKeysImpl
+ocsp.hardToken.className=se.primeKey.caToken.card.CardKeysImpl
+
+# Directory of classes implementing hardware signing of the OCSP response
+# Default ./ocspHardTokenClasses
+#ocspHardTokenClasses=../primeCard/ocspHardTokenClasses-1.5-3.2
+
 
 # ------------ Mail configuration ---------------------
 
