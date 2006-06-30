@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.52 2006-06-29 05:54:44 primelars Exp $
+# $Id: ejbca.properties.sample,v 1.53 2006-06-30 06:15:40 primelars Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -225,25 +225,25 @@ ocsp.usecasigningcert=true
 # No default value, must be set if the extension is used
 #ocsp.unidcacert=
 
-# The ocsp.softKeys.* preferences has a meaning only to the External OCSP responder.
+# The ocsp.keys.* preferences has a meaning only to the External OCSP responder.
 # Please read the doc/howto/HOWTO-OCSP-RESPONDER.txt for inforamtion.
 
 # Directory containing soft keys for the container.
-# Default: ./softKeys
-#ocsp.softKeys.dir=./softKeys
+# Default: ./keys
+#ocsp.keys.dir=./keys
 
 # The password for the all the soft keys of the OCSP responder. All keys must have the same password.
 # Default: foo123
-#ocsp.softKeys.keyPassword=foo123
+#ocsp.keys.keyPassword=foo123
 
 # The password to all soft keystores. If the keystore is created by EJBCA then this password is equal to 
-# the key password above. If it is equal you may leave it empty but you can not remove it.
+# the key password above. If it is equal you may leave it empty.
 # Default: empty
-#ocsp.softKeys.storePassword=
+#ocsp.keys.storePassword=
 
 # The class that implements hardware signing of the OCSP response
-# Default: java.security.PrivateKey.CardKeysImpl
-ocsp.hardToken.className=se.primeKey.caToken.card.CardKeysImpl
+# Default: se.primeKey.caToken.card.CardKeysImpl
+#ocsp.hardToken.className=se.primeKey.caToken.card.CardKeysImpl
 
 # Directory of classes implementing hardware signing of the OCSP response
 # Default ./ocspHardTokenClasses

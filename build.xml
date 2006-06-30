@@ -128,9 +128,9 @@
     <property name="ocsp.extensionclass" value=""/>
     <property name="ocsp.uniddatsource" value=""/>
     <property name="ocsp.unidcacert" value=""/>
-    <property name="ocsp.softKeys" value="./softKeys"/>
-    <property name="ocsp.softKeys.keyPassword" value="foo123"/>
-    <property name="ocsp.softKeys.storePassword" value=""/>
+    <property name="ocsp.keys.dir" value="./keys"/>
+    <property name="ocsp.keys.keyPassword" value="foo123"/>
+    <property name="ocsp.keys.storePassword" value=""/>
     <property name="ocsp.hardToken.className" value="se.primeKey.caToken.card.CardKeysImpl"/>
     <property name="ocspHardTokenClasses" value="ocspHardTokenClasses"/>
     <property name="ocsp.hardToken.classes" location="${ocspHardTokenClasses}"/>

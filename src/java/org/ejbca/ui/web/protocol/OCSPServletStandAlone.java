@@ -64,15 +64,15 @@ import org.ejbca.core.model.log.Admin;
  *
  * @web.servlet-init-param description="Directory name of the soft keystores. The signing keys will be fetched from all files in this directory. Valid formats of the files are JKS and PKCS12 (p12)."
  *   name="softKeyDirectoryName"
- *   value="${ocsp.softKeys.dir}"
+ *   value="${ocsp.keys.dir}"
  *
  * @web.servlet-init-param description="Signing key password. Must be same for all signing keys."
  *   name="keyPassword"
- *   value="${ocsp.softKeys.keyPassword}"
+ *   value="${ocsp.keys.keyPassword}"
  *
  * @web.servlet-init-param description="Keystore password. Keystore password for all keystores in the keystore directory."
  *   name="storePassword"
- *   value="${ocsp.softKeys.storePassword}"
+ *   value="${ocsp.keys.storePassword}"
  *
  * @web.servlet-init-param description="Keystore password. Keystore password for all keystores in the keystore directory."
  *   name="hardTokenClassName"
@@ -86,14 +86,14 @@ import org.ejbca.core.model.log.Admin;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silvén PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.15 2006-06-29 05:54:45 primelars Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.16 2006-06-30 06:15:40 primelars Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase {
 
     static final protected Logger m_log = Logger.getLogger(OCSPServletStandAlone.class);
 
     private ICertificateStoreOnlyDataSessionLocal mCertStore;
-    private String mSoftKeyStoreDirectoryName;
+    private String mKeystoreDirectoryName;
     private char mKeyPassword[];
     private char mStorePassword[];
     private CardKeys mHardTokenObject;
@@ -135,8 +135,8 @@ public class OCSPServletStandAlone extends OCSPServletBase {
             }
             if ( mStorePassword==null || mStorePassword.length==0 )
                 mStorePassword = mKeyPassword;
-            mSoftKeyStoreDirectoryName = config.getInitParameter("softKeyDirectoryName");
-            if ( mSoftKeyStoreDirectoryName!=null && mSoftKeyStoreDirectoryName.length()>0 )
+            mKeystoreDirectoryName = config.getInitParameter("softKeyDirectoryName");
+            if ( mKeystoreDirectoryName!=null && mKeystoreDirectoryName.length()>0 )
                 return; // the keys are soft.
             // add paramter initialization for HW keys here
             throw new ServletException("no valid keys spicified");
@@ -269,7 +269,7 @@ public class OCSPServletStandAlone extends OCSPServletBase {
     }
     protected void loadPrivateKeys(Admin adm) throws ServletException, IOException {
         mSignEntity.clear();
-        File dir = new File(mSoftKeyStoreDirectoryName);
+        File dir = new File(mKeystoreDirectoryName);
         if ( dir==null || dir.isDirectory()==false )
             throw new ServletException(dir.getCanonicalPath() + " is not a directory.");
         File files[] = dir.listFiles();
