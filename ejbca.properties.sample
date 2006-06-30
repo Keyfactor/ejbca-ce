@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.53 2006-06-30 06:15:40 primelars Exp $
+# $Id: ejbca.properties.sample,v 1.54 2006-06-30 17:06:58 primelars Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -240,6 +240,10 @@ ocsp.usecasigningcert=true
 # the key password above. If it is equal you may leave it empty.
 # Default: empty
 #ocsp.keys.storePassword=
+
+# The password for key stored on card
+# Default: empty
+ocsp.keys.cardPassword=6231
 
 # The class that implements hardware signing of the OCSP response
 # Default: se.primeKey.caToken.card.CardKeysImpl

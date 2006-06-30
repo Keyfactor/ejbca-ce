@@ -19,11 +19,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyStore;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -40,7 +40,6 @@ import javax.servlet.ServletException;
 import org.apache.log4j.Logger;
 import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.BasicOCSPRespGenerator;
-import org.bouncycastle.ocsp.OCSPException;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocalHome;
@@ -75,6 +74,10 @@ import org.ejbca.core.model.log.Admin;
  *   value="${ocsp.keys.storePassword}"
  *
  * @web.servlet-init-param description="Keystore password. Keystore password for all keystores in the keystore directory."
+ *   name="cardPassword"
+ *   value="${ocsp.keys.cardPassword}"
+ *
+ * @web.servlet-init-param description="Keystore password. Keystore password for all keystores in the keystore directory."
  *   name="hardTokenClassName"
  *   value="${ocsp.hardToken.className}"
  *
@@ -86,7 +89,7 @@ import org.ejbca.core.model.log.Admin;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silvén PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.16 2006-06-30 06:15:40 primelars Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.17 2006-06-30 17:06:59 primelars Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase {
 
@@ -125,11 +128,17 @@ public class OCSPServletStandAlone extends OCSPServletBase {
             if ( mHardTokenObject==null ) {
                 final String hardTokenClassName = config.getInitParameter("hardTokenClassName");
                 if ( hardTokenClassName!=null && hardTokenClassName.length()>0 ) {
-                    try {
-                        mHardTokenObject = (CardKeys)OCSPServletStandAlone.class.getClassLoader().loadClass(hardTokenClassName).newInstance();
-                    } catch( ClassNotFoundException e) {
-                        m_log.info("Class " + hardTokenClassName + " could not be loaded.");
-                    }
+                    String sCardPassword = config.getInitParameter("cardPassword");
+                    sCardPassword = sCardPassword!=null ? sCardPassword.trim() : null;
+                    if ( sCardPassword!=null && sCardPassword.length()>0 ) {
+                        try {
+                            mHardTokenObject = (CardKeys)OCSPServletStandAlone.class.getClassLoader().loadClass(hardTokenClassName).newInstance();
+                            mHardTokenObject.autenticate(sCardPassword);
+                        } catch( ClassNotFoundException e) {
+                            m_log.info("Class " + hardTokenClassName + " could not be loaded.");
+                        }
+                    } else
+                        m_log.info("No card password specified.");
                 } else
                     m_log.info("No HW OCSP signing class defined.");
             }
@@ -184,7 +193,7 @@ public class OCSPServletStandAlone extends OCSPServletBase {
             }
         }
         if ( chain==null ) {
-            m_log.error(sDebug + " certificate chain broken.");
+            m_log.debug(sDebug + " certificate chain broken.");
         }
         return chain;
     }
@@ -203,69 +212,95 @@ public class OCSPServletStandAlone extends OCSPServletBase {
             keyStore = tmpKeyStore;
             eAlias = keyStore.aliases();
         } catch( Exception e ) {
-            m_log.error("Unable to load file "+fileName+". Exception: "+e.getMessage());
+            m_log.debug("Unable to load file "+fileName+". Exception: "+e.getMessage());
             return false;
         }
         while( eAlias.hasMoreElements() ) {
             final String alias = (String)eAlias.nextElement();
             try {
-                putSignEntity((PrivateKey)keyStore.getKey(alias, mKeyPassword),
-                		(X509Certificate)keyStore.getCertificate(alias), adm);
+                putSignEntity(new PrivateKeyFactorySW((PrivateKey)keyStore.getKey(alias, mKeyPassword)),
+                		(X509Certificate)keyStore.getCertificate(alias), adm, "BC");
             } catch (Exception e) {
-                m_log.error("Unable to get alias "+alias+" in file "+fileName+". Exception: "+e.getMessage());
+                m_log.debug("Unable to get alias "+alias+" in file "+fileName+". Exception: "+e.getMessage());
             }
         }
         return true;
     }
-    private void putSignEntity( PrivateKey privateKey, X509Certificate cert, Admin adm ) {
-    	if ( privateKey!=null && cert!=null ) {
-    		X509Certificate[] chain = getCertificateChain(cert, adm);
-    		if ( chain!=null )
-    			mSignEntity.put( new Integer(getCaid(chain[1])),
-    					new SigningEntity(chain, privateKey) );
-    	}
+    private boolean putSignEntity( PrivateKeyFactory keyFactory, X509Certificate cert, Admin adm, String providerName ) {
+        if ( keyFactory!=null && cert!=null ) {
+            X509Certificate[] chain = getCertificateChain(cert, adm);
+            if ( chain!=null )
+                mSignEntity.put( new Integer(getCaid(chain[1])),
+                        new SigningEntity(chain, keyFactory, providerName) );
+            return true;
+        }
+        return false;
     }
-    private boolean loadFromKeyCards(Admin adm, String fileName) {
-    	final CertificateFactory cf;
-    	try {
-    		cf = CertificateFactory.getInstance("X.509");
-    	} catch (java.security.cert.CertificateException e) {
-    		throw new Error(e);
-    	}
-    	boolean isSingle = true;
-    	try {
-    		final Collection c = cf.generateCertificates(new FileInputStream(fileName));
-    		if ( c!=null && !c.isEmpty() ) {
-    			Iterator i = c.iterator();
-    			while (i.hasNext()) {
-    				try {
-    					X509Certificate cert = (X509Certificate)i.next();
-    					putSignEntity(mHardTokenObject.getPrivateKey(cert.getPublicKey()), cert, adm);
-    				} catch( Exception e) {
-    					m_log.debug("1. "+e.getMessage());
-    				}
-    			}
-    			isSingle = false;
-    		}
-    	} catch (Exception e) {
-    		m_log.debug("2. "+e.getMessage());
-    	}
-    	if ( isSingle ) {
-    		try {
-    			BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileName));
-    			while (bis.available() > 0) {
-    				try {
-    					X509Certificate cert = (X509Certificate)cf.generateCertificate(bis);
-    					putSignEntity(mHardTokenObject.getPrivateKey(cert.getPublicKey()), cert, adm);
-    				} catch( Exception e) {
-    					m_log.debug("3. "+e.getMessage());
-    				}
-    			}
-    		} catch( Exception e) {
-    			m_log.debug("4. "+e.getMessage());
-    		}
-    	}
-    	return true;
+    interface PrivateKeyFactory {
+        PrivateKey getKey() throws Exception;
+    }
+    private class PrivateKeyFactorySW implements PrivateKeyFactory {
+        final private PrivateKey privateKey;
+        PrivateKeyFactorySW( PrivateKey key) {
+            privateKey = key;
+        }
+        public PrivateKey getKey() throws Exception {
+            return privateKey;
+        }
+    }
+    private class PrivateKeyFactoryHW implements PrivateKeyFactory {
+        final private RSAPublicKey publicKey;
+        PrivateKeyFactoryHW( RSAPublicKey key) {
+            publicKey = key;
+        }
+        public PrivateKey getKey() throws Exception {
+            return mHardTokenObject.getPrivateKey(publicKey);
+        }
+    }
+    private boolean putSignEntityHW( X509Certificate cert, Admin adm, String sFile ) {
+        if ( cert!=null ) {
+            try {
+                PrivateKeyFactory keyFactory = new PrivateKeyFactoryHW((RSAPublicKey)cert.getPublicKey());
+                if ( keyFactory!=null ) {
+                    m_log.debug("HW key added. Cert from "+sFile+". DN: "+cert.getSubjectDN());
+                    return putSignEntity( keyFactory, cert, adm, "PrimeKey" );
+                }
+            } catch( Exception e) {
+                m_log.debug("Exception when fetching private key: ", e);
+            }
+            m_log.debug("Not possible to add HW key. Cert from "+sFile+". DN: "+cert.getSubjectDN());
+        } else
+            m_log.debug("File "+sFile+" has no cert.");
+        return false;
+    }
+    private void loadFromKeyCards(Admin adm, String fileName) {
+        final CertificateFactory cf;
+        try {
+            cf = CertificateFactory.getInstance("X.509");
+        } catch (java.security.cert.CertificateException e) {
+            throw new Error(e);
+        }
+        boolean isPEM = true;
+        try {// read certs from PKCS#7 file
+            final Collection c = cf.generateCertificates(new FileInputStream(fileName));
+            if ( c!=null && !c.isEmpty() ) {
+                Iterator i = c.iterator();
+                while (i.hasNext())
+                    isPEM = putSignEntityHW((X509Certificate)i.next(), adm, fileName+" PKCS#7");
+            }
+        } catch( Exception e) {
+            m_log.debug(fileName+" is not a PKCS#7 file: "+e);
+        }
+        if ( !isPEM ) {
+            // read concatinated cert in PEM format
+            try {
+            BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileName));
+            while (bis.available() > 0)
+                putSignEntityHW((X509Certificate)cf.generateCertificate(bis), adm, fileName+" PEM");
+            } catch( Exception e) {
+                m_log.debug(fileName+" is not a PEM file: "+e);
+            }
+        }
     }
     protected void loadPrivateKeys(Admin adm) throws ServletException, IOException {
         mSignEntity.clear();
@@ -283,13 +318,14 @@ public class OCSPServletStandAlone extends OCSPServletBase {
         if ( mSignEntity.size()==0 )
             throw new ServletException("No valid keys in directory " + dir.getCanonicalPath());
     }
-
     private class SigningEntity {
         final private X509Certificate mChain[];
-        final private PrivateKey mKey;
-        SigningEntity(X509Certificate c[], PrivateKey k) {
+        final private PrivateKeyFactory mKeyFactory;
+        final private String providerName;
+        SigningEntity(X509Certificate c[], PrivateKeyFactory f, String sName) {
             mChain = c;
-            mKey = k;
+            mKeyFactory = f;
+            providerName = sName;
         }
         OCSPCAServiceResponse sign( OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException {
             final BasicOCSPRespGenerator ocsprespgen = (request).getOCSPrespGenerator();
@@ -297,14 +333,12 @@ public class OCSPServletStandAlone extends OCSPServletBase {
             m_log.debug("signing algorithm: "+sigAlg);
             final X509Certificate[] chain = (request).includeChain() ? mChain : null;
             try {
-                final BasicOCSPResp ocspresp = ocsprespgen.generate(sigAlg, mKey, chain, new Date(), "BC" );
+                final BasicOCSPResp ocspresp = ocsprespgen.generate(sigAlg, mKeyFactory.getKey(), chain, new Date(), providerName );
                 m_log.debug("The OCSP response is "
-                            + (ocspresp.verify(chain[0].getPublicKey(), "BC") ? "" : "NOT ") + "verifying.");
+                        + (ocspresp.verify(chain[0].getPublicKey(), "BC") ? "" : "NOT ") + "verifying.");
                 return new OCSPCAServiceResponse(ocspresp, chain == null ? null : Arrays.asList(chain));             
-            } catch (OCSPException ocspe) {
-                throw new ExtendedCAServiceRequestException(ocspe);
-            } catch (NoSuchProviderException nspe) {
-                throw new ExtendedCAServiceRequestException(nspe);            
+            } catch (Exception e) {
+                throw new ExtendedCAServiceRequestException(e);
             }
         }
     }
@@ -329,5 +363,4 @@ public class OCSPServletStandAlone extends OCSPServletBase {
     protected RevokedCertInfo isRevoked(Admin adm, String name, BigInteger serialNumber) {
         return mCertStore.isRevoked(adm, name, serialNumber);
     }
-
 }
