@@ -42,7 +42,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * by JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: CertificateView.java,v 1.3 2006-06-04 10:08:43 anatom Exp $
+ * @version $Id: CertificateView.java,v 1.4 2006-07-02 10:00:10 anatom Exp $
  */
 public class CertificateView implements java.io.Serializable {
 
@@ -279,7 +279,7 @@ public class CertificateView implements java.io.Serializable {
     }
     
     public String getSubjectDirAttr() {
-    	if(subjectaltnamestring == null) {
+    	if(subjectdirattrstring == null) {
     		try {
     			subjectdirattrstring = SubjectDirAttrExtension.getSubjectDirectoryAttributes(certificate);
     		} catch (Exception e) {
