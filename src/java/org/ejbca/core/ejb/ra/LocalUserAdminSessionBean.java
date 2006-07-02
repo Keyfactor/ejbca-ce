@@ -78,7 +78,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.8 2006-06-12 10:36:25 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.9 2006-07-02 15:06:05 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -308,7 +308,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * @param endentityprofileid    the id number of the end entity profile bound to this user.
      * @param certificateprofileid  the id number of the certificate profile that should be
      *                              generated for the user.
-     * @param type                  of user i.e administrator, keyrecoverable and/or sendnotification
+     * @param type                  of user i.e administrator, keyrecoverable and/or sendnotification, from SecConst.
      * @param tokentype             the type of token to be generated, one of SecConst.TOKEN constants
      * @param hardwaretokenissuerid , if token should be hard, the id of the hard token issuer,
      *                              else 0.
@@ -358,7 +358,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
                         (type & SecConst.USER_ADMINISTRATOR) != 0, (type & SecConst.USER_KEYRECOVERABLE) != 0, (type & SecConst.USER_SENDNOTIFICATION) != 0,
                         userdata.getTokenType(), userdata.getHardTokenIssuerId(), userdata.getCAId());
             } catch (UserDoesntFullfillEndEntityProfile udfp) {
-                logsession.log(admin, userdata.getCAId(), LogEntry.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogEntry.EVENT_ERROR_ADDEDENDENTITY, "Userdata did not fullfill end entity profile. " + udfp.getMessage());
+                logsession.log(admin, userdata.getCAId(), LogEntry.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogEntry.EVENT_ERROR_ADDEDENDENTITY, "Userdata did not fullfill end entity profile, dn '"+dn+"'. " + udfp.getMessage());
                 throw new UserDoesntFullfillEndEntityProfile(udfp.getMessage());
             }
 
