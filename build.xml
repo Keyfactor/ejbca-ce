@@ -614,6 +614,7 @@ web.contentencoding    = ${web.contentencoding}
                 	<include name="**/IAdminCommand**"/>
                 	<include name="**/UserDoesntFullfillEndEntityProfile**"/>
                 	<include name="**/RevokedCertInfo**"/>
+                	<include name="**/ServiceLocator**"/>
                 	<include name="**/SernoGenerator.*"/>
                 	<include name="**/ISernoGenerator.*"/>
                     <include name="**/BaseEntityBean.*" />
