@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.54 2006-06-30 17:06:58 primelars Exp $
+# $Id: ejbca.properties.sample,v 1.55 2006-07-02 15:06:59 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -158,6 +158,7 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 # This is the URL used to connect to the database, used to configure a new datasource in JBoss.
 # Default: jdbc:hsqldb:${jboss.server.data.dir}${/}hypersonic${/}localDB
 #database.url=jdbc:mysql://127.0.0.1:3306/ejbca
+#database.url=jdbc:mysql://127.0.0.1:3306/ejbca?characterEncoding=UTF-8
 #database.url=jdbc:postgresql://127.0.0.1/ejbca
 #database.url=jdbc:microsoft:sqlserver://localhost:1433;DatabaseName=ejbca
 #database.url=jdbc:oracle:thin:@127.0.0.1:1521:ejbca
