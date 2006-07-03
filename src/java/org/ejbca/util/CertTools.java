@@ -88,7 +88,7 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.11 2006-06-08 15:02:43 anatom Exp $
+ * @version $Id: CertTools.java,v 1.12 2006-07-03 08:33:59 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -289,14 +289,18 @@ public class CertTools {
      *
      * @param dn String containing DN
      *
-     * @return String containing DN
+     * @return String containing DN, or null if input is null
      */
     public static String stringToBCDNString(String dn) {
         //log.debug(">stringToBcDNString: "+dn);
     	if (isDNReversed(dn)) {
     		dn = reverseDN(dn);
     	}
-        String ret = stringToBcX509Name(dn).toString();
+        String ret = null;
+        X509Name name = stringToBcX509Name(dn);
+        if (name != null) {
+            ret = name.toString();
+        }
         //log.debug("<stringToBcDNString: "+ret);
         return ret;
     }
