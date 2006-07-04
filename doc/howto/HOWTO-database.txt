@@ -128,6 +128,14 @@ To use UTF-8 encoding in the database, which may be nessecary to get your nation
 use the following option to hte mysql connect string:
 jdbc:mysql://127.0.0.1:3306/ejbca?characterEncoding=UTF-8
 
+There are also lots of settings that you can do in my.cnf:
+ character-set-server=utf8
+ default-collation=utf8_unicode_ci
+ default-character-set=utf8
+maybe you need them all, maybe you don't need any of them...try you way forward (starting with nothing) and
+try to add stuff if it doesn't work.
+
+
 PostgreSQL specifics
 --------------------
 EJBCA have been tested with PostgreSQL 7.2 and 8.0.
