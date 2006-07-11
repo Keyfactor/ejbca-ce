@@ -91,6 +91,34 @@
                   <%= certprof %>
                </option>
             <%}%>
+          </select>
+          <%= ejbcawebbean.getText("CERTIFICATEREWRITABLE") %> 
+          <input type="checkbox" name="<%= EditHardTokenProfileJSPHelper.CHECKBOX_CERTWRITABLE + "0" %>"  value="<%=EditHardTokenProfileJSPHelper.CHECKBOX_VALUE %>" 
+           <%  if(curprofile.getCertWritable(SwedishEIDProfile.CERTUSAGE_SIGN))
+                 out.write("CHECKED");
+           %>>          
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("CA") %>
+        </div>
+      </td>
+      <td width="50%" valign="top">   
+        <select name="<%=EditHardTokenProfileJSPHelper.SELECT_CA + "0"%>" size="1"  >       
+            <% int currentca = curprofile.getCAId(SwedishEIDProfile.CERTUSAGE_SIGN); %>
+               <option value="<%=EIDProfile.CAID_USEUSERDEFINED%>" <% if(EIDProfile.CAID_USEUSERDEFINED == currentca) out.write(" selected "); %>> 
+                  <%= ejbcawebbean.getText("USEUSERDEFINED") %>
+               </option>
+           <%  iter = authorizedcas.keySet().iterator();
+               while(iter.hasNext()){
+                 String caname = (String) iter.next();
+                 Integer caid = (Integer) authorizedcas.get(caname);%>
+              <option value="<%=caid.intValue()%>" <% if(caid.intValue() == currentca) out.write(" selected "); %>> 
+                  <%= caname %>
+               </option>
+            <%}%>
           </select>         
       </td>
     </tr>
@@ -153,6 +181,34 @@
                  Integer certprofid = (Integer) authorizedcertprofiles.get(certprof);%>
               <option value="<%=certprofid.intValue()%>" <% if(certprofid.intValue() == currentcert) out.write(" selected "); %>> 
                   <%= certprof %>
+               </option>
+            <%}%>
+          </select>
+          <%= ejbcawebbean.getText("CERTIFICATEREWRITABLE") %> 
+          <input type="checkbox" name="<%= EditHardTokenProfileJSPHelper.CHECKBOX_CERTWRITABLE + "1" %>"  value="<%=EditHardTokenProfileJSPHelper.CHECKBOX_VALUE %>" 
+           <%  if(curprofile.getCertWritable(SwedishEIDProfile.CERTUSAGE_AUTHENC))
+                 out.write("CHECKED");
+           %>>          
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("CA") %>
+        </div>
+      </td>
+      <td width="50%" valign="top">   
+        <select name="<%=EditHardTokenProfileJSPHelper.SELECT_CA + "1"%>" size="1"  >       
+            <% currentca = curprofile.getCAId(SwedishEIDProfile.CERTUSAGE_AUTHENC); %>
+               <option value="<%=EIDProfile.CAID_USEUSERDEFINED%>" <% if(EIDProfile.CAID_USEUSERDEFINED == currentca) out.write(" selected "); %>> 
+                  <%= ejbcawebbean.getText("USEUSERDEFINED") %>
+               </option>
+           <%  iter = authorizedcas.keySet().iterator();
+               while(iter.hasNext()){
+                 String caname = (String) iter.next();
+                 Integer caid = (Integer) authorizedcas.get(caname);%>
+              <option value="<%=caid.intValue()%>" <% if(caid.intValue() == currentca) out.write(" selected "); %>> 
+                  <%= caname %>
                </option>
             <%}%>
           </select>         

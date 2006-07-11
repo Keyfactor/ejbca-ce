@@ -95,7 +95,12 @@
                   <%= certprof %>
                </option>
             <%}%>
-          </select>         
+          </select>   
+          <%= ejbcawebbean.getText("CERTIFICATEREWRITABLE") %> 
+          <input type="checkbox" name="<%= EditHardTokenProfileJSPHelper.CHECKBOX_CERTWRITABLE + "0" %>"  value="<%=EditHardTokenProfileJSPHelper.CHECKBOX_VALUE %>" 
+           <%  if(curprofile.getCertWritable(EnhancedEIDProfile.CERTUSAGE_SIGN))
+                 out.write("CHECKED");
+           %>>     
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
@@ -182,7 +187,12 @@
                   <%= certprof %>
                </option>
             <%}%>
-          </select>         
+          </select>   
+          <%= ejbcawebbean.getText("CERTIFICATEREWRITABLE") %> 
+          <input type="checkbox" name="<%= EditHardTokenProfileJSPHelper.CHECKBOX_CERTWRITABLE + "1" %>"  value="<%=EditHardTokenProfileJSPHelper.CHECKBOX_VALUE %>" 
+           <%  if(curprofile.getCertWritable(EnhancedEIDProfile.CERTUSAGE_AUTH))
+                 out.write("CHECKED");
+           %>>       
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
@@ -269,7 +279,12 @@
                   <%= certprof %>
                </option>
             <%}%>
-          </select>         
+          </select>      
+          <%= ejbcawebbean.getText("CERTIFICATEREWRITABLE") %> 
+          <input type="checkbox" name="<%= EditHardTokenProfileJSPHelper.CHECKBOX_CERTWRITABLE + "2" %>"  value="<%=EditHardTokenProfileJSPHelper.CHECKBOX_VALUE %>" 
+           <%  if(curprofile.getCertWritable(EnhancedEIDProfile.CERTUSAGE_ENC))
+                 out.write("CHECKED");
+           %>>   
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 

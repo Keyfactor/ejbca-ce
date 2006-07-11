@@ -34,7 +34,7 @@ import org.ejbca.core.model.ca.caadmin.CAInfo;
  * of eidprofiles in the system.
  *  
  *
- * @version $Id: EIDProfile.java,v 1.1 2006-01-17 20:31:52 anatom Exp $
+ * @version $Id: EIDProfile.java,v 1.2 2006-07-11 13:03:04 herrvendil Exp $
  */
 public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	
@@ -49,6 +49,7 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	protected static final String REUSEOLDCERTIFICATE            = "reuseoldcertificate";
 	protected static final String MINIMUMKEYLENGTH               = "minimunkeylength";
 	protected static final String KEYTYPES                       = "keytypes";
+	protected static final String CERTWRITABLE                   = "certwritable";
 
   
 			
@@ -69,6 +70,16 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
     public int getCertificateProfileId(int certusage){return ((Integer) ((List) data.get(CERTIFICATEPROFILEID)).get(certusage)).intValue();}
 
 
+    /**
+     * Field indicating if a certificate should be set to rewritable on the token.
+     * 
+     * 
+     * @param certusage should be one of the CERTUSAGE_ constants.
+     * @return boolean indicating if the certificate should be rewritabes, if false 
+     * the certificate is written as read-only and cannot be renewed.
+     */
+    public boolean getCertWritable(int certusage){ return ((Boolean) ((List) data.get(CERTWRITABLE)).get(certusage)).booleanValue();}
+    
 	/**
 	 * Indicates which ca id that should be requested when
 	 * generating certificate of given certusage.
@@ -128,6 +139,16 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	  data.put(CERTIFICATEPROFILEID, list);
 	}
 
+	
+	/**
+	 * See above
+	 */
+    public void setCertWritable(int certusage, boolean certWritable){ 
+		List list = (List) data.get(CERTWRITABLE);	  
+		list.set(certusage, Boolean.valueOf(certWritable));
+		data.put(CERTWRITABLE, list);
+    }
+	
 	/**
 	 * See above
 	 */
@@ -205,7 +226,7 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	  		      
     public void upgrade(){
       // Perform upgrade functionality 
-      super.upgrade(); 
+      super.upgrade();             
     }
     
     // Protected methods

@@ -23,14 +23,14 @@ import org.ejbca.core.model.SecConst;
 /**
  * Hard token profile with a goal to fulfill Swedish EID standard.
  * 
- * @version $Id: SwedishEIDProfile.java,v 1.2 2006-05-28 14:21:11 anatom Exp $
+ * @version $Id: SwedishEIDProfile.java,v 1.3 2006-07-11 13:03:04 herrvendil Exp $
  */
 public class SwedishEIDProfile extends EIDProfile {
 		
 	// Public Constants
 	public static final int TYPE_SWEDISHEID = 1;
 	
-	public static final float LATEST_VERSION = 3;
+	public static final float LATEST_VERSION = 4;
 
     public static final int CERTUSAGE_SIGN    = 0;
 	public static final int CERTUSAGE_AUTHENC = 1;
@@ -62,10 +62,15 @@ public class SwedishEIDProfile extends EIDProfile {
 	  certprofileids.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN)); 
 	  certprofileids.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC));
 	  data.put(CERTIFICATEPROFILEID, certprofileids);
-	  	  
+	  
+	  ArrayList certWritable = new ArrayList(NUMBEROFCERTIFICATES);
+	  certWritable.add(Boolean.FALSE);
+	  certWritable.add(Boolean.FALSE);
+	  data.put(CERTWRITABLE, certWritable);
+	  
 	  ArrayList caids = new ArrayList(NUMBEROFCERTIFICATES);
-	  caids.add(new Integer(CAID_USEUSERDEFINED)); // Currently not used
-	  caids.add(new Integer(CAID_USEUSERDEFINED)); // Currently not used
+	  caids.add(new Integer(CAID_USEUSERDEFINED)); 
+	  caids.add(new Integer(CAID_USEUSERDEFINED)); 
 	  data.put(CAID, caids);    
 	  
 	  ArrayList pintypes = new ArrayList(NUMBEROFCERTIFICATES);
@@ -152,6 +157,13 @@ public class SwedishEIDProfile extends EIDProfile {
 				reuseoldcertificate.add(Boolean.FALSE);
 				reuseoldcertificate.add(Boolean.FALSE);			 
 				data.put(REUSEOLDCERTIFICATE, reuseoldcertificate);
+			}
+			
+			if(data.get(CERTWRITABLE) == null){
+				ArrayList certWritable = new ArrayList(NUMBEROFCERTIFICATES);
+				certWritable.add(Boolean.FALSE);
+				certWritable.add(Boolean.FALSE);
+				data.put(CERTWRITABLE, certWritable);				
 			}
 			
 			data.put(VERSION, new Float(LATEST_VERSION));

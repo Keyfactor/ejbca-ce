@@ -23,7 +23,7 @@ import org.ejbca.core.model.SecConst;
 /**
  * EnhancedEIDProfile with three certificates and key recovery functionallity
  * 
- * @version $Id: EnhancedEIDProfile.java,v 1.2 2006-05-28 14:21:11 anatom Exp $
+ * @version $Id: EnhancedEIDProfile.java,v 1.3 2006-07-11 13:03:04 herrvendil Exp $
  */
 public class EnhancedEIDProfile extends EIDProfile {
 						
@@ -31,7 +31,7 @@ public class EnhancedEIDProfile extends EIDProfile {
 	
 	public static final int TYPE_ENHANCEDEID = 2;
 	
-	public static final float LATEST_VERSION = 3;
+	public static final float LATEST_VERSION = 4;
 
     public static final int CERTUSAGE_SIGN    = 0;
 	public static final int CERTUSAGE_AUTH    = 1;
@@ -63,6 +63,12 @@ public class EnhancedEIDProfile extends EIDProfile {
 	  certprofileids.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH)); 
 	  certprofileids.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENENC)); 
 	  data.put(CERTIFICATEPROFILEID, certprofileids);
+	  
+	  ArrayList certWritable = new ArrayList(NUMBEROFCERTIFICATES);
+	  certWritable.add(Boolean.FALSE);
+	  certWritable.add(Boolean.FALSE);
+	  certWritable.add(Boolean.FALSE);
+	  data.put(CERTWRITABLE, certWritable);
 	  	  
 	  ArrayList caids = new ArrayList(NUMBEROFCERTIFICATES);
 	  caids.add(new Integer(CAID_USEUSERDEFINED)); 
@@ -160,6 +166,14 @@ public class EnhancedEIDProfile extends EIDProfile {
 				reuseoldcertificate.add(Boolean.FALSE);
 				reuseoldcertificate.add(Boolean.FALSE);
 				data.put(REUSEOLDCERTIFICATE, reuseoldcertificate);
+			}
+			
+			if(data.get(CERTWRITABLE) == null){
+				ArrayList certWritable = new ArrayList(NUMBEROFCERTIFICATES);
+				certWritable.add(Boolean.FALSE);
+				certWritable.add(Boolean.FALSE);
+				certWritable.add(Boolean.FALSE);
+				data.put(CERTWRITABLE, certWritable);				
 			}
 			
 			data.put(VERSION, new Float(LATEST_VERSION));
