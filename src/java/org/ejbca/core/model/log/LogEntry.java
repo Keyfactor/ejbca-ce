@@ -26,7 +26,7 @@ import java.util.Date;
  *  This is a  class containing information about one log event in the database. Used mainly during database queries by the web interface.
  *
  * @author  TomSelleck
- * @version $Id: LogEntry.java,v 1.1 2006-01-17 20:28:08 anatom Exp $
+ * @version $Id: LogEntry.java,v 1.2 2006-07-12 16:09:37 anatom Exp $
  */
 public class LogEntry implements Serializable {
 
@@ -69,6 +69,7 @@ public class LogEntry implements Serializable {
     public static final int EVENT_INFO_CAREVOKED = 32;
     public static final int EVENT_INFO_HARDTOKENPROFILEDATA = 33;
     public static final int EVENT_INFO_PUBLISHERDATA = 34;
+    public static final int EVENT_INFO_UNREVOKEDCERT = 35;
 
     // Error events. Important all id:s should map to the array EVENTNAMES_ERROR - EVENT_ERROR_BOUNDRARY.
     public static final int EVENT_ERROR_UNKNOWN = 1000;
@@ -127,7 +128,8 @@ public class LogEntry implements Serializable {
                                                     "EVENT_INFO_CREATECERTIFICATE", "EVENT_INFO_CREATECRL", "EVENT_INFO_ADMINISTRATORLOGGEDIN", "EVENT_INFO_AUTHORIZEDTORESOURCE",
                                                     "EVENT_INFO_PUBLICWEBUSERCONNECTED", "EVENT_INFO_HARDTOKEN_USERDATASENT", "EVENT_INFO_HARDTOKENGENERATED", "EVENT_INFO_HARDTOKENDATA",
                                                     "EVENT_INFO_HARDTOKENISSUERDATA", "EVENT_INFO_HARDTOKENCERTIFICATEMAP", "EVENT_INFO_KEYRECOVERY", "EVENT_INFO_NOTIFICATION",
-                                                    "EVENT_INFO_HARDTOKENVIEWED", "EVENT_INFO_CACREATED", "EVENT_INFO_CAEDITED", "EVENT_INFO_CAREVOKED", "EVENT_INFO_HARDTOKENPROFILEDATA", "EVENT_INFO_PUBLISHERDATA"};
+                                                    "EVENT_INFO_HARDTOKENVIEWED", "EVENT_INFO_CACREATED", "EVENT_INFO_CAEDITED", "EVENT_INFO_CAREVOKED", "EVENT_INFO_HARDTOKENPROFILEDATA", "EVENT_INFO_PUBLISHERDATA",
+                                                    "EVENT_INFO_UNREVOKEDCERT"};
 
 
     public static final String[] EVENTNAMES_ERROR = {"EVENT_ERROR_UNKNOWN", "EVENT_ERROR_ADDEDENDENTITY", "EVENT_ERROR_CHANGEDENDENTITY", "EVENT_ERROR_REVOKEDENDENTITY", "EVENT_ERROR_REVOKEDCERT",
