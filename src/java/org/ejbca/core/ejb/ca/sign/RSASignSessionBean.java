@@ -722,6 +722,13 @@ public class RSASignSessionBean extends BaseSessionBean {
                 if (reqpk == null) {
                     throw new InvalidKeyException("Key is null!");
                 }
+                // We need to make sure we use the users registered CA here
+                if (data.getCAId() != ca.getCAId()) {
+                	String msg = "CA from request ("+ca.getCAId()+") does not match users CA ("+data.getCAId()+")!";
+                    log.error(msg);
+                    throw new SignRequestException(msg);                	
+                }
+
                 Certificate cert = null;
                 cert = createCertificate(admin, data, ca, reqpk, keyUsage);
                 
