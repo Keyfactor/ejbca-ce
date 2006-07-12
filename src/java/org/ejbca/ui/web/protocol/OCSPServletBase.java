@@ -118,7 +118,7 @@ import org.ejbca.util.CertTools;
  *   
  * @author Thomas Meckel (Ophios GmbH)
  * @author Tomas Gustavsson
- * @version  $Id: OCSPServletBase.java,v 1.13 2006-03-21 08:58:22 anatom Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.14 2006-07-12 18:36:04 anatom Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
@@ -321,7 +321,7 @@ abstract class OCSPServletBase extends HttpServlet {
 
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        
+        CertTools.installBCProvider();
         m_adm = new Admin(Admin.TYPE_INTERNALUSER);
         
         // Parameters for OCSP signing (private) key
@@ -609,7 +609,9 @@ abstract class OCSPServletBase extends HttpServlet {
                                 certStatus = null;
                             }
                             if (m_log.isDebugEnabled()) {
-                                m_log.debug("Adding status information for certificate with serial '"
+                            	String status = "good";
+                            	if (certStatus != null) status ="revoked";
+                                m_log.debug("Adding status information ("+status+") for certificate with serial '"
                                         + certId.getSerialNumber() + "'"
                                         + " from issuer '" + cacert.getSubjectDN().getName() + "'");
                             }
