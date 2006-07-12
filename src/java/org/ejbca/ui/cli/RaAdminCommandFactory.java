@@ -16,7 +16,7 @@ package org.ejbca.ui.cli;
 /**
  * Factory for RA Admin Commands.
  *
- * @version $Id: RaAdminCommandFactory.java,v 1.2 2006-06-03 18:10:46 anatom Exp $
+ * @version $Id: RaAdminCommandFactory.java,v 1.3 2006-07-12 16:10:22 anatom Exp $
  */
 public class RaAdminCommandFactory {
     /**
@@ -55,6 +55,8 @@ public class RaAdminCommandFactory {
             return new RaListUsersCommand(args);
         } else if (args[0].equals("revokeuser")) {
             return new RaRevokeUserCommand(args);
+        } else if (args[0].equals("unrevokeuser")) {
+            return new RaUnRevokeUserCommand(args);
         } else if (args[0].equals("keyrecover")) {
             return new RaKeyRecoverCommand(args);
         } else if (args[0].equals("keyrecovernewest")) {

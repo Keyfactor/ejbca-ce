@@ -16,7 +16,7 @@ package org.ejbca.ui.cli;
 /**
  * Implements the RA command line interface
  *
- * @version $Id: ra.java,v 1.2 2006-06-03 18:10:46 anatom Exp $
+ * @version $Id: ra.java,v 1.3 2006-07-12 16:10:15 anatom Exp $
  */
 public class ra extends BaseCommand {
     /**
@@ -32,7 +32,7 @@ public class ra extends BaseCommand {
                 cmd.execute();
             } else {
                 System.out.println(
-                    "Usage: RA adduser | deluser | setpwd | setclearpwd | setuserstatus | finduser | listnewusers | listusers | revokeuser | keyrecover | keyrecovernewest | setsubjectdirattr");            }
+                    "Usage: RA adduser | deluser | setpwd | setclearpwd | setuserstatus | finduser | listnewusers | listusers | revokeuser | unrevokeuser | keyrecover | keyrecovernewest | setsubjectdirattr");            }
         } catch (Exception e) {
             System.out.println(e.getMessage());
             //e.printStackTrace();
