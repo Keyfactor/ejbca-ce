@@ -52,7 +52,7 @@ import org.ejbca.util.CertTools;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.5 2006-05-26 17:23:28 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.6 2006-07-12 16:04:15 anatom Exp $
  * @ejb.bean
  *   description="Session bean handling hard token data, both about hard tokens and hard token issuers."
  *   display-name="CreateCRLSB"
@@ -160,7 +160,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
 	 * CRL.
 	 *
 	 * @param admin administrator performing the task
-	 * @param issuerdn ofof the ca
+	 * @param issuerdn of the ca (normalized for EJBCA)
 	 *
 	 * @throws EJBException om ett kommunikations eller systemfel intr?ffar.
      * @ejb.interface-method
@@ -206,12 +206,14 @@ public class CreateCRLSessionBean extends BaseSessionBean {
             }
             ISignSessionLocal sign = signHome.create();
             byte[] crlBytes = sign.createCRL(admin, caid, certs);
-            X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
-            debug("Created CRL with expire date: "+crl.getNextUpdate());
+            if (log.isDebugEnabled()) {
+                X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
+                debug("Created CRL with expire date: "+crl.getNextUpdate());
+//                FileOutputStream fos = new FileOutputStream("c:\\java\\srvtestcrl.der");
+//                fos.write(crl.getEncoded());
+//                fos.close();
+            }
 
-            //FileOutputStream fos = new FileOutputStream("srvtestcrl.der");
-            //fos.write(crl.getEncoded());
-            //fos.close();
         } catch (CATokenOfflineException e) {
             throw e;            
         } catch (Exception e) {
