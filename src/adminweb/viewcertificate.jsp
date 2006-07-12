@@ -20,6 +20,7 @@
   static final String BUTTON_VIEW_PREVIOUS       = "buttonviewprevious"; 
   static final String BUTTON_VIEW_NEXT           = "buttonviewnext";
   static final String BUTTON_REVOKE              = "buttonrevoke";
+  static final String BUTTON_UNREVOKE            = "buttonunrevoke";
   static final String BUTTON_RECOVERKEY          = "buttonrekoverkey";
   static final String BUTTON_REPUBLISH           = "buttonrepublish";
 
@@ -142,6 +143,37 @@
      numberofcertificates = rabean.getNumberOfCertificates();
      certificatedata = rabean.getCertificate(currentindex);
    }
+	 //-- Pushed unrevoke button
+	if( (request.getParameter(BUTTON_UNREVOKE) != null) && request.getParameter(HIDDEN_INDEX)!= null && !cacerts){
+	
+		currentindex = Integer.parseInt(request.getParameter(HIDDEN_INDEX));
+		noparameter = false;
+		certificatedata = rabean.getCertificate(currentindex);
+
+		if(!cacerts && rabean.authorizedToRevokeCert(certificatedata.getUsername()) 
+			&& ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) && certificatedata.isRevoked()
+			&& "CERTIFICATEHOLD".equals(certificatedata.getRevokationReasons()[0])){
+				//-- call to unrevoke method
+				rabean.unrevokeCert(certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDN(), certificatedata.getUsername());
+		}
+		
+		try {
+			if(tokensn !=null) {
+				rabean.loadTokenCertificates(tokensn,username);
+			} else {
+				if(username != null) {
+					rabean.loadCertificates(username);
+				} else {
+					rabean.loadCertificates(new BigInteger(certificateserno,16), issuerdn);
+				}
+			}
+			notauthorized = false;
+		}catch(AuthorizationDeniedException e){}
+		
+		numberofcertificates = rabean.getNumberOfCertificates();
+		certificatedata = rabean.getCertificate(currentindex);
+	}
+   
    if(request.getParameter(BUTTON_RECOVERKEY) != null && request.getParameter(HIDDEN_INDEX)!= null && !cacerts){
      // Mark certificate for key recovery.
      currentindex = Integer.parseInt(request.getParameter(HIDDEN_INDEX));
@@ -214,7 +246,7 @@
 
 
   int row = 0; 
-  int columnwidth = 170;
+  int columnwidth = 150;
 %>
 <head>
   <title><%= globalconfiguration.getEjbcaTitle() %></title>
@@ -234,9 +266,15 @@ function confirmrevokation(){
   return returnval;
 }
 
+function confirmunrevokation(){
+  var returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREUNREVOKECERT") %>");
+  return returnval;
+}
+
 function confirmkeyrecovery(){
   return confirm("<%= ejbcawebbean.getText("AREYOUSUREKEYRECOVER") %>");
 }
+
 
 function confirmrepublish(){
   return confirm("<%= ejbcawebbean.getText("AREYOUSUREREPUBLISH") %>");
@@ -247,9 +285,11 @@ function confirmrepublish(){
 </head>
 <body >
   <h2 align="center"><%= ejbcawebbean.getText("VIEWCERTIFICATE") %></h2>
- <!-- <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("viewcertificate_help.html") %>")'>
-    <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
-  </div>
+ <!-- 
+  <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("viewcertificate_help.html") %>")'>
+    <u><%= ejbcawebbean.getText("HELP") %></u> </A>  
+  </div> 
+  -->
   <%if(noparameter){%>
   <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("YOUMUSTSPECIFYCERT") %></h4></div> 
   <% } 
@@ -511,18 +551,28 @@ function confirmrepublish(){
           </td>
           <td>
        <%  try{
-            if(!cacerts && rabean.authorizedToRevokeCert(certificatedata.getUsername()) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) 
-               && !certificatedata.isRevoked()){ %>
+            if(!cacerts && rabean.authorizedToRevokeCert(certificatedata.getUsername()) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS)){
+				if ( !certificatedata.isRevoked() ){
+					//-- Certificate can be revoked or suspended
+		%>    
         <input type="submit" name="<%=BUTTON_REVOKE %>" value="<%= ejbcawebbean.getText("REVOKE") %>"
                onClick='return confirmrevokation()'><br>
         <select name="<%=SELECT_REVOKE_REASON %>" >
           <% for(int i=0; i < RevokedInfoView.reasontexts.length; i++){ 
                if(i!= 7){%>
-               <option value='<%= i%>'><%= ejbcawebbean.getText(RevokedInfoView.reasontexts[i]) %></option>
+	               <option value='<%= i%>'><%= ejbcawebbean.getText(RevokedInfoView.reasontexts[i]) %></option>
           <%   } 
              }%>
         </select>
-         <% }
+<% 
+			  }else if ( certificatedata.isRevoked() && "CERTIFICATEHOLD".equals(certificatedata.getRevokationReasons()[0]) ){
+				//-- Certificate can be unrevoked
+%>
+				<input type="submit" name="<%=BUTTON_UNREVOKE %>" value="<%= ejbcawebbean.getText("UNREVOKE") %>"
+                onClick='return confirmunrevokation()'><br>	
+<%
+			  }
+		   }
          }catch(AuthorizationDeniedException ade){}%> 
           &nbsp;
           </td>

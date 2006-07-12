@@ -44,6 +44,7 @@ import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
+import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
@@ -61,7 +62,7 @@ import org.ejbca.util.query.Query;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.4 2006-06-03 18:10:46 anatom Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.5 2006-07-12 16:11:27 anatom Exp $
  */
 public class RAInterfaceBean implements java.io.Serializable {
     
@@ -221,6 +222,45 @@ public class RAInterfaceBean implements java.io.Serializable {
       return success;
     }
 
+    /** 
+     * Reactivates the certificate with certificate serno.
+     *
+     * @param serno serial number of certificate to reactivate.
+     * @param issuerdn the issuerdn of certificate to reactivate.
+     * @param username the username joined to the certificate.
+     * @return false if administrator wasn't authorized to unrevoke the given certificate.
+     */
+    public boolean unrevokeCert(BigInteger serno, String issuerdn, String username) throws Exception {
+      log.debug(">unrevokeCert()");
+      boolean success = true;
+      try{
+     	 
+     	 RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, issuerdn, serno);
+     	 
+     	 if ( revinfo != null && revinfo.getReason() == RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD ){
+     		 
+ 	    	 //-- Find the UserView for the username, we must change his status
+ 	    	 UserView userView = findUser(username);
+ 	    	 
+ 			 CertificateProfile certificateProfile = certificatesession.getCertificateProfile(administrator, userView.getCertificateProfileId());
+ 			 Collection publisherList = certificateProfile.getPublisherList();
+ 			
+ 			 //-- Try to change the certificate status
+ 			 certificatesession.setRevokeStatus(administrator, issuerdn, serno, publisherList, RevokedCertInfo.NOT_REVOKED);
+ 			
+ 	         if ( !certificatesession.checkIfAllRevoked(administrator, userView.getUsername()) ) {
+ 	        	 adminsession.setUserStatus(administrator, userView.getUsername(), UserDataConstants.STATUS_GENERATED);
+ 		     }
+ 		        
+     	 }
+   
+      }catch( AuthorizationDeniedException e){
+        success = false;
+      }
+      log.debug("<unrevokeCert(): " + success);
+      return success;
+    }
+    
     /* Changes the userdata  */
     public void changeUserData(UserView userdata) throws Exception {
         log.debug(">changeUserData()");
