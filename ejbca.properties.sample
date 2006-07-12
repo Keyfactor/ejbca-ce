@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.55 2006-07-02 15:06:59 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.56 2006-07-12 16:46:33 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -228,6 +228,11 @@ ocsp.usecasigningcert=true
 
 # The ocsp.keys.* preferences has a meaning only to the External OCSP responder.
 # Please read the doc/howto/HOWTO-OCSP-RESPONDER.txt for inforamtion.
+
+# If you are not using SSL on the external OCSP responder (normally not needed for OCSP), you should define
+# this property, e.g. remove the comment sign. See 'Configuring TLS on the Unid lookup server' in the Howto.
+# Note! If defining this property on the EJBCA server, SSL will not be configured there either, and the admin-GUI will not work.
+#j2ee.web-noconfigure=true
 
 # Directory containing soft keys for the container.
 # Default: ./keys
