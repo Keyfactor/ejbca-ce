@@ -11,7 +11,7 @@ import org.ejbca.util.Base64PutHashMap;
 /** Tests Base64 HashMap XML encoding and decoding
  * 
  * @author tomasg
- * @version $Id: TestHashMap.java,v 1.4 2006-06-21 14:54:56 anatom Exp $
+ * @version $Id: TestHashMap.java,v 1.5 2006-07-12 19:17:18 anatom Exp $
  */
 public class TestHashMap extends TestCase {
     //private static final Logger log = Logger.getLogger(TestHashMap.class);
@@ -71,7 +71,11 @@ public class TestHashMap extends TestCase {
             HashMap b = (HashMap) decoder.readObject();
             decoder.close();         
             assertEquals(((Boolean)b.get("foo0")).booleanValue(),false);
+        // We can get two different errors, I don't know if it is different java versions or what...
+        // The important thing is that we do expect an error to occur here
         } catch (ClassCastException e) {
+            return;
+        } catch (ArrayIndexOutOfBoundsException e) {
             return;
         }
         assertTrue(false);
