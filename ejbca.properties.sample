@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.57 2006-07-12 18:36:23 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.58 2006-07-13 20:23:47 primelars Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -234,8 +234,10 @@ ocsp.usecasigningcert=true
 # Note! If defining this property on the EJBCA server, SSL will not be configured there either, and the admin-GUI will not work.
 #j2ee.web-noconfigure=true
 
-# Directory containing soft keys for the container. The soft keys must be placed in this directory. 
-# Normally as with the default value, the target directory is actually JBOSS_HOME/bin/keys.
+# Directory containing soft keys or certificates for keys on cards. The soft keys are in jks or p12 format.
+# The certificates of the cards keys are in pem format. All CAs using the OCSP responser must have a soft
+# key or a certificate to a card key in this directory.
+# Normally as with the default value, the target directory is actually JBOSS_HOME/bin/keys if started in JBOSS_HOME.
 # Default: ./keys
 #ocsp.keys.dir=./keys
 
