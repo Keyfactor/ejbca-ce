@@ -887,9 +887,24 @@ See HardCATokenSample and/or DummyHardCAToken for samples.
 Unlike the sample addAvailableHardCAToken() must be called with use=true, or
 the token will not be usable in EJBCA (as the flag suggests).
 </p><p>
+When configuring a CA to use a HSM in the administration GUI it is a property field where properties unique to this very HSM is specified. All implemented HSM modules are using the same property keywords to define the identity and the purpose of the keys to be used. These keywords are:
+<ul>
+<li>certSignKey   - the key to be used when signing certificates </li>
+<li>crlSignKey    - the key to be used when signing CLSs </li>
+<li>keyEncryptKey - the key to be used for key encryption and decryption.</li>
+<li>testKey       - the key to be used by HSM status checks.</li>
+<li>defaultKey    - the key to be used when no other key is defined for a purpose. If this is the only definition then this key will be used for all purposes.</li>
+</ul>
+</p><p>
+You may omit defaultKey if you want to be sure that the right key is used, but then all the other keys must be specified. It's recommended that the certificate and CRL signing keys are linked to the same key since different keys are rarely supported by verifying applications.
+</p><p>
+When implementing support for a new HSM the 'KeyStrings' class could be used to manage the key properties described above. When it is an JCA/JCE API for the HSM it could also be wise to extend the BaseCAToken class.
+</p><p>
+Same activation code must be used for all keys used by a CA. To be able to automatically activate a CA the activation code may be specified in the property field with the keyword 'pin'. If this property is not specified then the CA has to be manually activated after each restart or redeployment of EJBCA. 
+</p><p>
 EJBCA 3.1 and later has build-in support for the nCipher NFast HSM.
 </p><p>
-EJBCA 3.2 and later also has an implementation for the Eracom HSM.
+EJBCA 3.2 and later also has an implementation for the Eracom HSM. The configuration was changed to 3.3.
 </p><p>
 PrimeKey Solutions sell a module called PrimeCardHSM that implements a flexible HSM using low cost smart cards. 
 </p>
@@ -1000,20 +1015,9 @@ Define which keys in the keystore that should be used and the purpose of these k
 </p><p>
 Use one row for each definition. Begin the row with a key word. It is one row for the keystore and one for each key definition. Key word and value is separated by one or more spaces.
 A row with the keyword keyStore must always be present.
-You may omitt defaultKey if you want to be sure that the right key is used but then 
-must all the other keys be specified. It's recommended that the certificate and crl signing keys
-are linked to the same key since different keys are rarely supported by verifying applications.
 </p><p>
-The keywords for keys that can be used are:
-<ul>
-<li>certSignKey   - the key to be used when signing certificates </li>
-<li>crlSignKey    - the key to be used when signing CLSs </li>
-<li>keyEncryptKey - the key to be used for key encryption and decryption.</li>
-<li>testKey       - the key to be used by HSM status checks.</li>
-<li>defaultKey    - the key to be used when no other key is defined for a purpose. If this is the only definition then this key will be used for all purposes.</li>
-</ul>
-</p>
-<p>
+The keys in the property field are defined by their keystore alias. See general text above about key definition.
+</p><p>
 Example:
 </p>
 <source>
@@ -1075,16 +1079,8 @@ Use one row for each definition. Begin the row with a key word. It is one row fo
 'slotLabel' (if present) defines the 'partition label' of the partition to be used.
 A row with the keyword 'slotLabel' must be present if more than on partition is assigned to the client with the name of the label of the used partition.
 </p><p>
-The keywords for keys that can be used are:
-<ul>
-<li>certSignKey   - the key to be used when signing certificates </li>
-<li>crlSignKey    - the key to be used when signing CLSs </li>
-<li>keyEncryptKey - the key to be used for key encryption and decryption.</li>
-<li>defaultKey    - the key to be used when no other key is defined for a purpose. If this is the only definition then this key will be used for all purposes.</li>
-</ul>
-You may omit defaultKey if you want to be sure that the right key is used, but then all the other keys must be specified. It's recommended that the certificate and CRL signing keys are linked to the same key since different keys are rarely supported by verifying applications.
-</p>
-<p>
+The keys in the property field are defined by their key alias. See general text above about key definition.
+</p><p>
 Example:
 </p>
 <source>
@@ -1189,14 +1185,15 @@ export CT_SERVER
 </p><p>
 Create a CA with "CA Token Type" = Eracom, the type should appear automatically in the list when the Eracom 
 keystore classes are found.
-</p>
-<p>
-Fill in the hard token properties:
+</p><p>
+The keys in the property field are defined by their key alias. See general text above about key definition.
+</p><p>
+Fill in the hard token properties. Example:
 </p>
 <source>
-slot=1
-keylabel=cakey1
-pin=secret
+slot 1
+defaultKey cakey1
+pin secret
 </source>
 <p>
 Note: The pin is optional. If set, the CAToken will try to use it for automatic activation
