@@ -89,7 +89,7 @@ import org.ejbca.core.model.log.Admin;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silvén PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.17 2006-06-30 17:06:59 primelars Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.18 2006-07-18 16:49:43 anatom Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase {
 
@@ -334,8 +334,10 @@ public class OCSPServletStandAlone extends OCSPServletBase {
             final X509Certificate[] chain = (request).includeChain() ? mChain : null;
             try {
                 final BasicOCSPResp ocspresp = ocsprespgen.generate(sigAlg, mKeyFactory.getKey(), chain, new Date(), providerName );
-                m_log.debug("The OCSP response is "
-                        + (ocspresp.verify(chain[0].getPublicKey(), "BC") ? "" : "NOT ") + "verifying.");
+                if (m_log.isDebugEnabled()) {
+                	m_log.debug("The OCSP response is "
+                			+ (ocspresp.verify(mChain[0].getPublicKey(), "BC") ? "" : "NOT ") + "verifying.");
+                }
                 return new OCSPCAServiceResponse(ocspresp, chain == null ? null : Arrays.asList(chain));             
             } catch (Exception e) {
                 throw new ExtendedCAServiceRequestException(e);

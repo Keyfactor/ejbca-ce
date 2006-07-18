@@ -39,7 +39,7 @@ import org.ejbca.util.StringTools;
 /** Common code between CertificateStoreSessionBean and CertificateStoreOnlyDataSessionBean
  * 
  * @author lars
- * @version $Id: CertificateDataUtil.java,v 1.6 2006-02-15 08:53:11 anatom Exp $
+ * @version $Id: CertificateDataUtil.java,v 1.7 2006-07-18 16:49:43 anatom Exp $
  *
  */
 public class CertificateDataUtil {
@@ -174,7 +174,7 @@ public class CertificateDataUtil {
     static public RevokedCertInfo isRevoked(Admin admin, String issuerDN, BigInteger serno,
                                             CertificateDataLocalHome certHome, Adapter adapter) {
         if (adapter.getLogger().isDebugEnabled()) {
-            adapter.debug(">isRevoked(), dn:" + issuerDN + ", serno=" + serno);
+            adapter.debug(">isRevoked(), dn:" + issuerDN + ", serno=" + serno.toString(16));
         }
         // First make a DN in our well-known format
         String dn = CertTools.stringToBCDNString(issuerDN);
@@ -196,11 +196,15 @@ public class CertificateDataUtil {
                     if (data.getStatus() != CertificateDataBean.CERT_REVOKED) {
                         revinfo.setReason(RevokedCertInfo.NOT_REVOKED);
                     }
-                    adapter.debug("<isRevoked() returned " + ((data.getStatus() == CertificateDataBean.CERT_REVOKED) ? "yes" : "no"));
+                    if (adapter.getLogger().isDebugEnabled()) {
+                    	adapter.debug("<isRevoked() returned " + ((data.getStatus() == CertificateDataBean.CERT_REVOKED) ? "yes" : "no"));
+                    }
                     return revinfo;
                 }
             }
-            adapter.debug("<isRevoked() did not find certificate with dn "+dn+" and serno "+serno.toString());
+            if (adapter.getLogger().isDebugEnabled()) {
+            	adapter.debug("<isRevoked() did not find certificate with dn "+dn+" and serno "+serno.toString(16));
+            }
         } catch (Exception e) {
             throw new EJBException(e);
         }

@@ -118,11 +118,11 @@ import org.ejbca.util.CertTools;
  *   
  * @author Thomas Meckel (Ophios GmbH)
  * @author Tomas Gustavsson
- * @version  $Id: OCSPServletBase.java,v 1.14 2006-07-12 18:36:04 anatom Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.15 2006-07-18 16:49:42 anatom Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
-    static private Logger m_log = Logger.getLogger(OCSPServletBase.class);
+    static private final Logger m_log = Logger.getLogger(OCSPServletBase.class);
 
     private Admin m_adm;
 
@@ -312,8 +312,10 @@ abstract class OCSPServletBase extends HttpServlet {
             // Call extended CA services to get our OCSP stuff
             OCSPCAServiceResponse caserviceresp = extendedService(m_adm, getCaid(cacert), new OCSPCAServiceRequest(basicRes, m_sigAlg, m_useCASigningCert, m_includeChain));
             // Now we can use the returned OCSPServiceResponse to get private key and cetificate chain to sign the ocsp response
-            Collection coll = caserviceresp.getOCSPSigningCertificateChain();
-            m_log.debug("Cert chain for OCSP signing is of size " + coll.size());
+            if (m_log.isDebugEnabled()) {
+                Collection coll = caserviceresp.getOCSPSigningCertificateChain();
+                m_log.debug("Cert chain for OCSP signing is of size " + coll.size());            	
+            }
             retval = caserviceresp.getBasicOCSPResp();
         }
         return retval;
@@ -453,7 +455,9 @@ abstract class OCSPServletBase extends HttpServlet {
 
     public void service(HttpServletRequest request, HttpServletResponse response, byte[] reqBytes)
             throws IOException, ServletException {
-        m_log.debug(">service()");
+        if (m_log.isDebugEnabled()) {
+        	m_log.debug(">service()");
+        }
         if ((reqBytes == null) || (reqBytes.length == 0)) {
             m_log.debug("No request bytes");
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "No request bytes.");
@@ -528,10 +532,15 @@ abstract class OCSPServletBase extends HttpServlet {
                     }
                     throw new MalformedRequestException(msg);
                 }
-                m_log.debug("The OCSP request contains " + requests.length + " simpleRequests.");
+                if (m_log.isDebugEnabled()) {
+                	m_log.debug("The OCSP request contains " + requests.length + " simpleRequests.");
+                }
                 Hashtable responseExtensions = null; 
                 for (int i = 0; i < requests.length; i++) {
                     CertificateID certId = requests[i].getCertID();
+                    if (m_log.isDebugEnabled()) {
+                        m_log.debug("Got OCSP request for certificate with serNo: "+certId.getSerialNumber().toString(16));                    	
+                    }
                     boolean unknownCA = false; // if the certId was issued by an unknown CA
                     // The algorithm here:
                     // We will sign the response with the CA that issued the first 
@@ -597,7 +606,7 @@ abstract class OCSPServletBase extends HttpServlet {
                         if (null == rci) {
                             if (m_log.isDebugEnabled()) {
                                 m_log.debug("Unable to find revocation information for certificate with serial '"
-                                        + certId.getSerialNumber() + "'"
+                                        + certId.getSerialNumber().toString(16) + "'"
                                         + " from issuer '" + cacert.getSubjectDN().getName() + "'");                                
                             }
                             basicRes.addResponse(certId, new UnknownStatus());
@@ -612,7 +621,7 @@ abstract class OCSPServletBase extends HttpServlet {
                             	String status = "good";
                             	if (certStatus != null) status ="revoked";
                                 m_log.debug("Adding status information ("+status+") for certificate with serial '"
-                                        + certId.getSerialNumber() + "'"
+                                        + certId.getSerialNumber().toString(16) + "'"
                                         + " from issuer '" + cacert.getSubjectDN().getName() + "'");
                             }
                             basicRes.addResponse(certId, certStatus);
@@ -708,7 +717,9 @@ abstract class OCSPServletBase extends HttpServlet {
             m_log.error("Error in CAs extended service: ", e);
             throw new ServletException(e);
         }
-        m_log.debug("<service()");
+        if (m_log.isDebugEnabled()) {
+        	m_log.debug("<service()");
+        }
     }
 
 } // OCSPServlet
