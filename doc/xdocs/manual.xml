@@ -710,6 +710,9 @@ CA Certificate
 
 <section name="Ocsp">
 <p>
+Note! Not many client handle external OCSP responders very well unforturnately. You should be aware of this.
+</p>
+<p>
 OCSP is used by PKI-clients to verify the validity of certificates in real-time. 
 This is done by sending a request for the status of a specific certificate to an OCSP responder. 
 The responer may or may not be the same as the CA. The OCSP responder sends a signed reply, 
@@ -795,6 +798,23 @@ java program.
 </p>
 <p>
 See the document doc/howto/HOWTO-OCSP-Unid-client.txt for information how to use the simple OCSP client.
+</p>
+</subsection>
+
+<subsection name="Adobe Acrobat Reader">
+<p>
+A good example of using OCSP is to check digitally signed PDF documents using Adobe Reader.
+</p>
+<p>
+To be able to verify certificates in Adobe Reader, you must first add the CA-certificate as trusted in Adobe Reader. 
+You can do that in the menu Document->Trusted Identities. Choose Certificates in the drop-down list and click 'Add contacts',
+now you can browse to the CA-certificate that you have downloaded in DER format (for example by choosing download to IE on the public EJBCA pages).
+The CA-certificate must have been saved with a name ending with '.cer'.
+After adding the new contact, you have to click 'Edit trust' and check at least 'Signatures and as trusted root' and 'Certified documents'.
+</p>
+<p>
+Certificates that have an 'OCSP service locator' will be verified agains the OCSP responder. 
+You can configure this in the certificate profile used to issue certificates.
 </p>
 </subsection>
 
