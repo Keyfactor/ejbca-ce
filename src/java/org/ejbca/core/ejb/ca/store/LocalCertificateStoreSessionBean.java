@@ -152,7 +152,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.12 2006-07-12 16:08:00 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.13 2006-07-19 14:03:34 anatom Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
@@ -837,7 +837,6 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      */
     public void setRevokeStatus(Admin admin, String username, Collection publishers, int reason) {
         debug(">setRevokeStatus(),  username=" + username);
-        X509Certificate certificate = null;
         // Strip dangerous chars
         username = StringTools.strip(username);
         try {
