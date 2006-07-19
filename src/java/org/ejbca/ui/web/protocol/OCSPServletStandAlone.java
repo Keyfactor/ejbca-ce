@@ -27,7 +27,6 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -39,7 +38,6 @@ import javax.servlet.ServletException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.ocsp.BasicOCSPResp;
-import org.bouncycastle.ocsp.BasicOCSPRespGenerator;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocalHome;
@@ -49,6 +47,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.protocol.ocsp.OCSPUtil;
 
 /** 
  * Servlet implementing server side of the Online Certificate Status Protocol (OCSP)
@@ -89,7 +88,7 @@ import org.ejbca.core.model.log.Admin;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silvén PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.18 2006-07-18 16:49:43 anatom Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.19 2006-07-19 14:05:46 anatom Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase {
 
@@ -328,16 +327,12 @@ public class OCSPServletStandAlone extends OCSPServletBase {
             providerName = sName;
         }
         OCSPCAServiceResponse sign( OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException {
-            final BasicOCSPRespGenerator ocsprespgen = (request).getOCSPrespGenerator();
-            final String sigAlg = (request).getSigAlg();
+        	X509Certificate signerCert = mChain[0];
+            final String sigAlg = request.getSigAlg();
             m_log.debug("signing algorithm: "+sigAlg);
-            final X509Certificate[] chain = (request).includeChain() ? mChain : null;
+            final X509Certificate[] chain = request.includeChain() ? mChain : null;
             try {
-                final BasicOCSPResp ocspresp = ocsprespgen.generate(sigAlg, mKeyFactory.getKey(), chain, new Date(), providerName );
-                if (m_log.isDebugEnabled()) {
-                	m_log.debug("The OCSP response is "
-                			+ (ocspresp.verify(mChain[0].getPublicKey(), "BC") ? "" : "NOT ") + "verifying.");
-                }
+                BasicOCSPResp ocspresp = OCSPUtil.generateBasicOCSPResp(request, sigAlg, signerCert, mKeyFactory.getKey(), providerName, chain);
                 return new OCSPCAServiceResponse(ocspresp, chain == null ? null : Arrays.asList(chain));             
             } catch (Exception e) {
                 throw new ExtendedCAServiceRequestException(e);

@@ -22,7 +22,6 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -31,12 +30,13 @@ import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.ocsp.BasicOCSPResp;
-import org.bouncycastle.ocsp.BasicOCSPRespGenerator;
 import org.bouncycastle.ocsp.OCSPException;
+import org.ejbca.core.model.ca.NotSupportedException;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException;
 import org.ejbca.core.model.ca.certificateprofiles.OCSPSignerCertificateProfile;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.core.protocol.ocsp.OCSPUtil;
 import org.ejbca.util.Base64;
 import org.ejbca.util.KeyTools;
 
@@ -44,7 +44,7 @@ import org.ejbca.util.KeyTools;
 
 /** Handles and maintains the CA -part of the OCSP functionality
  * 
- * @version $Id: OCSPCAService.java,v 1.4 2006-06-17 13:08:31 herrvendil Exp $
+ * @version $Id: OCSPCAService.java,v 1.5 2006-07-19 14:05:45 anatom Exp $
  */
 public class OCSPCAService extends ExtendedCAService implements java.io.Serializable{
 
@@ -212,21 +212,29 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
             throw new ExtendedCAServiceNotActiveException();                            
         }
         ExtendedCAServiceResponse returnval = null;
-        BasicOCSPRespGenerator ocsprespgen = ((OCSPCAServiceRequest)request).getOCSPrespGenerator();
-        String sigAlg = ((OCSPCAServiceRequest)request).getSigAlg();
-        boolean includeChain = ((OCSPCAServiceRequest)request).includeChain();
+    	X509Certificate signerCert = (X509Certificate)ocspcertificatechain.get(0);
+        OCSPCAServiceRequest ocspServiceReq = (OCSPCAServiceRequest)request;
+
+        String sigAlg = ocspServiceReq.getSigAlg();
+        boolean includeChain = ocspServiceReq.includeChain();
         X509Certificate[] chain = null;
         if (includeChain) {
             chain = (X509Certificate[])this.ocspcertificatechain.toArray(new X509Certificate[0]);
-        }
+        }        
         try {
-            BasicOCSPResp ocspresp = ocsprespgen.generate(sigAlg, this.ocspsigningkey, chain, new Date(), "BC" );
+        	BasicOCSPResp ocspresp = OCSPUtil.generateBasicOCSPResp(ocspServiceReq, sigAlg, signerCert, this.ocspsigningkey, "BC", chain);
             returnval = new OCSPCAServiceResponse(ocspresp, chain == null ? null : Arrays.asList(chain));             
         } catch (OCSPException ocspe) {
             throw new ExtendedCAServiceRequestException(ocspe);
         } catch (NoSuchProviderException nspe) {
             throw new ExtendedCAServiceRequestException(nspe);            
-        }
+        } catch (NotSupportedException e) {
+        	m_log.error("Request type not supported: ", e);
+        	throw new IllegalExtendedCAServiceRequestException(e);
+		} catch (IllegalArgumentException e) {
+        	m_log.error("IllegalArgumentException: ", e);
+        	throw new IllegalExtendedCAServiceRequestException(e);
+		}
         m_log.debug("<extendedService");		  		
 		return returnval;
 	}

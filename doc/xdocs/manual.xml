@@ -710,7 +710,7 @@ CA Certificate
 
 <section name="Ocsp">
 <p>
-Note! Not many client handle external OCSP responders very well unforturnately. You should be aware of this.
+Note! Some OCSP clients does not handle external OCSP responders very well unforturnately. You should be aware of this.
 </p>
 <p>
 OCSP is used by PKI-clients to verify the validity of certificates in real-time. 
@@ -745,7 +745,7 @@ Set this to the same DN as your initial Admin CA for example.</li>
 These values should be set during deployment of EJBCA. After the values have been edited, they are installed 
 with the 'ant deploy' command.
 </p><p>
-Example to generate an OCSP request using OpenSSL:
+Example to generate an OCSP request using OpenSSL (works with both internal and external OCSP responders):
 </p>
 <source>
 openssl ocsp -issuer Test-CA.pem -CAfile Test-CA.pem -cert Test.pem -req_text -url http://localhost:8080/ejbca/publicweb/status/ocsp
@@ -766,8 +766,8 @@ When the validation settings are set, Mozilla will query the OCSP server when fo
 certificate manager.
 An appropriate URL for validation is: http://<i>hostname</i>:8080/ejbca/publicweb/status/ocsp
 </p><p>
-If using a dedicated OCSP responder certificate, this certificate must be imported in Mozilla as a Trusted CA certificate, so it
-can be set as OCSP signer in 'Privacy &amp; Security->Validation'. You can do this through 'View Certificates' in EJBCA 
+If using a dedicated OCSP responder certificate, this certificate must probably not be imported in Mozilla as a Trusted CA certificate.
+But if you want to, you can do this through 'View Certificates' in EJBCA 
 (http://<i>hostname</i>:8080/ejbca/publicweb/webdist/cacert.jsp).
 </p><p>
 In doc/samples it is a sample how to check revocation with OCSP using the new APIs in JDK 1.5.
@@ -811,6 +811,7 @@ You can do that in the menu Document->Trusted Identities. Choose Certificates in
 now you can browse to the CA-certificate that you have downloaded in DER format (for example by choosing download to IE on the public EJBCA pages).
 The CA-certificate must have been saved with a name ending with '.cer'.
 After adding the new contact, you have to click 'Edit trust' and check at least 'Signatures and as trusted root' and 'Certified documents'.
+This works the same using both internal and external OCSP responders.
 </p>
 <p>
 Certificates that have an 'OCSP service locator' will be verified agains the OCSP responder. 

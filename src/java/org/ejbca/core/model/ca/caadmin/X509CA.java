@@ -93,11 +93,11 @@ import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.ocsp.BasicOCSPResp;
-import org.bouncycastle.ocsp.BasicOCSPRespGenerator;
 import org.bouncycastle.ocsp.OCSPException;
 import org.ejbca.core.ejb.ca.caadmin.CADataBean;
 import org.ejbca.core.ejb.ca.sign.SernoGenerator;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ca.NotSupportedException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest;
@@ -110,6 +110,7 @@ import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.core.protocol.ocsp.OCSPUtil;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.cert.SubjectDirAttrExtension;
 import org.ejbca.util.cert.UTF8EntryConverter;
@@ -121,7 +122,7 @@ import org.ejbca.util.cert.UTF8EntryConverter;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.22 2006-06-22 07:40:41 anatom Exp $
+ * @version $Id: X509CA.java,v 1.23 2006-07-19 14:05:46 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -692,34 +693,42 @@ public class X509CA extends CA implements Serializable {
           log.debug(">extendedService()");
           ExtendedCAServiceResponse returnval = null; 
           if(request instanceof OCSPCAServiceRequest) {
-              BasicOCSPRespGenerator ocsprespgen = ((OCSPCAServiceRequest)request).getOCSPrespGenerator();
-              String sigAlg = ((OCSPCAServiceRequest)request).getSigAlg();
-              boolean useCACert = ((OCSPCAServiceRequest)request).useCACert();
-              boolean includeChain = ((OCSPCAServiceRequest)request).includeChain();
+        	  X509Certificate[] signerChain = (X509Certificate[])getCertificateChain().toArray(new X509Certificate[0]);
+        	  X509Certificate signerCert = (X509Certificate)signerChain[0];
+        	  OCSPCAServiceRequest ocspServiceReq = (OCSPCAServiceRequest)request;
+              String sigAlg = ocspServiceReq.getSigAlg();
+              boolean useCACert = ocspServiceReq.useCACert();
+              boolean includeChain = ocspServiceReq.includeChain();
               PrivateKey pk = null;
               X509Certificate[] chain = null;
               try {
                   if (useCACert) {
                       pk = getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN);
                       if (includeChain) {
-                          chain = (X509Certificate[])getCertificateChain().toArray(new X509Certificate[0]);
+                          chain = signerChain;
                       } 
                   } else {
                       // Super class handles signing with the OCSP signing certificate
                       log.debug("<extendedService(super)");
                       return super.extendedService(request);                      
                   }
-                  BasicOCSPResp ocspresp = ocsprespgen.generate(sigAlg, pk, chain, new Date(), getCAToken().getProvider() );
+                  BasicOCSPResp ocspresp = OCSPUtil.generateBasicOCSPResp(ocspServiceReq, sigAlg, signerCert, pk, getCAToken().getProvider(), chain);
                   returnval = new OCSPCAServiceResponse(ocspresp, chain == null ? null : Arrays.asList(chain));              
               } catch (IllegalKeyStoreException ike) {
-                  throw new ExtendedCAServiceRequestException(ike);
+            	  throw new ExtendedCAServiceRequestException(ike);
               } catch (NoSuchProviderException nspe) {
-                  throw new ExtendedCAServiceRequestException(nspe);
+            	  throw new ExtendedCAServiceRequestException(nspe);
               } catch (OCSPException ocspe) {
-                  throw new ExtendedCAServiceRequestException(ocspe);                  
+            	  throw new ExtendedCAServiceRequestException(ocspe);                  
               } catch (CATokenOfflineException ctoe) {
-              	throw new ExtendedCAServiceRequestException(ctoe);
-			}
+            	  throw new ExtendedCAServiceRequestException(ctoe);
+              } catch (NotSupportedException e) {
+            	  log.error("Request type not supported: ", e);
+            	  throw new IllegalExtendedCAServiceRequestException(e);
+              } catch (IllegalArgumentException e) {
+            	  log.error("IllegalArgumentException: ", e);
+            	  throw new IllegalExtendedCAServiceRequestException(e);
+              }
           } else {
               log.debug("<extendedService(super)");
               return super.extendedService(request);
