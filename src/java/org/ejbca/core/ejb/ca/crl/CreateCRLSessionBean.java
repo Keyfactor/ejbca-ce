@@ -52,7 +52,7 @@ import org.ejbca.util.CertTools;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.6 2006-07-12 16:04:15 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.7 2006-07-20 09:13:27 anatom Exp $
  * @ejb.bean
  *   description="Session bean handling hard token data, both about hard tokens and hard token issuers."
  *   display-name="CreateCRLSB"
@@ -272,6 +272,9 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     			           log.error("CA "+cainfo.getName()+", "+caid+" is off-line. CRL can not be created!");
     			       } else {
     			           try {
+    			        	   if (log.isDebugEnabled()) {
+    			        		   log.debug("Checking to see if CA '"+cainfo.getName()+"' needs CRL generation.");
+    			        	   }
     			               CRLInfo crlinfo = store.getLastCRLInfo(admin,cainfo.getSubjectDN());
                                // CRL issueinterval in hours. If this is 0, we should only issue a CRL when
                                // the old one is about to expire, i.e. when currenttime + overlaptime > expiredate
