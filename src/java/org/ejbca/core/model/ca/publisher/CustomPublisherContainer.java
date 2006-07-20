@@ -32,7 +32,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
  * to store and retrieve custom publisher configuration to database.
  * 
  *
- * @version $Id: CustomPublisherContainer.java,v 1.1 2006-01-17 20:26:30 anatom Exp $
+ * @version $Id: CustomPublisherContainer.java,v 1.2 2006-07-20 17:45:19 herrvendil Exp $
  */
 public class CustomPublisherContainer extends BasePublisher{
 	private ICustomPublisher custompublisher = null; 
@@ -166,6 +166,15 @@ public class CustomPublisherContainer extends BasePublisher{
 	 */
 	public float getLatestVersion() {		
 		return LATEST_VERSION;
+	}
+
+	/**
+	 * Resets the current custom publisher
+	 * @see org.ejbca.core.model.UpgradeableDataHashMap#saveData()
+	 */
+	public Object saveData() {
+		this.custompublisher = null;
+		return super.saveData();
 	}
 	
 
