@@ -1,6 +1,8 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@ page contentType="text/html; charset=@page.encoding@" %>
-<%@page errorPage="errorpage.jsp" import="org.ejbca.core.model.ra.raadmin.GlobalConfiguration,org.ejbca.core.model.authorization.AuthorizationDeniedException"%>
+<%@page errorPage="errorpage.jsp" import="org.ejbca.core.model.ra.raadmin.GlobalConfiguration,
+                                          org.ejbca.core.model.authorization.AuthorizationDeniedException,
+                                          org.ejbca.core.model.authorization.AvailableAccessRules"%>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
@@ -22,6 +24,7 @@
                                                   + "/cafunctions.jsp";
   final String CA_CERTIFICATEPROFILELINK  = ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() 
                                                   + "/editcertificateprofiles/editcertificateprofiles.jsp";  
+  final String RA_EDITUSERDATASOURCESLINK =  ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()+"/edituserdatasources/edituserdatasources.jsp";
   final String RA_EDITPROFILESLINK      =  ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()+"/editendentityprofiles/editendentityprofiles.jsp";
   final String RA_ADDENDENTITYLINK      =  ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()+"/addendentity.jsp";
   final String RA_LISTENDENTITIESLINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()+"/listendentities.jsp";
@@ -50,6 +53,7 @@
   final String EDITCAS_RESOURCE                       = "/super_administrator";
   final String EDITPUBLISHERS_RESOURCE                = "/super_administrator";
   final String EDITCERTIFICATEPROFILES_RESOURCE       = "/ca_functionality/edit_certificate_profiles";
+  final String RAEDITUSERDATASOURCES_RESOURCE         = AvailableAccessRules.REGULAR_EDITUSERDATASOURCES;
   final String RAEDITENDENTITYPROFILES_RESOURCE       = "/ra_functionality/edit_end_entity_profiles";
   final String RAADDENDENTITY_RESOURCE                = "/ra_functionality/create_end_entity";
   final String RALISTEDITENDENTITY_RESOURCE           = "/ra_functionality/view_end_entity";
@@ -130,12 +134,23 @@
 
 <%    }
    }catch(AuthorizationDeniedException e){} 
+   // If authorized to edit the ra user data sources then display related links.
+   try{
+     if(ejbcawebbean.isAuthorizedNoLog(RAEDITUSERDATASOURCES_RESOURCE)){ 
+          raheaderprinted=true;%> 
+          <br>  
+          <%=ejbcawebbean.getText("RAFUNCTIONS")+"<br>" %>
+          &nbsp;&nbsp;<A href='<%= RA_EDITUSERDATASOURCESLINK %>' target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("EDITUSERDATASOURCES") %></a><br>
+
+<%   }
+  }catch(AuthorizationDeniedException e){}   
     // If authorized to edit the ra profiles then display related links.
     try{
-      if(ejbcawebbean.isAuthorizedNoLog(RAEDITENDENTITYPROFILES_RESOURCE)){ 
-           raheaderprinted=true;%> 
-           <br>  
-           <%=ejbcawebbean.getText("RAFUNCTIONS")+"<br>" %>
+      if(ejbcawebbean.isAuthorizedNoLog(RAEDITENDENTITYPROFILES_RESOURCE)){            
+            if(!raheaderprinted){
+              out.write("<br>" + ejbcawebbean.getText("RAFUNCTIONS")+"<br>"); 
+              raheaderprinted=true;
+            }  %>
            &nbsp;&nbsp;<A href='<%= RA_EDITPROFILESLINK %>' target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("EDITPROFILES") %></a><br>
 
 <%   }
