@@ -78,7 +78,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.10 2006-07-12 16:08:49 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.11 2006-07-20 17:40:55 herrvendil Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -925,13 +925,14 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile {
         } catch (FinderException e) {
             log.debug("Cannot find user with DN='" + dn + "'");
         }
-        if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
-            // Check if administrator is authorized to view user.
-            if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AvailableAccessRules.VIEW_RIGHTS))
-                throw new AuthorizationDeniedException("Administrator not authorized to view user.");
-        }
-
         if (data != null) {
+        	if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
+        		// Check if administrator is authorized to view user.
+        		if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AvailableAccessRules.VIEW_RIGHTS))
+        			throw new AuthorizationDeniedException("Administrator not authorized to view user.");
+        	}
+
+
             returnval = new UserDataVO(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), data.getStatus()
                     , data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId()
                     , new java.util.Date(data.getTimeCreated()), new java.util.Date(data.getTimeModified())
