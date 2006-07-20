@@ -760,7 +760,10 @@ function checkallfields(){
     <tr  id="Row<%=row++%2%>"> 
       <td width="49%" valign="top" align="right"></td>
       <td width="51%" valign="top">             
-        <input type="submit" name="<%= BUTTON_RENEWCA %>" onClick='return confirmrenewal()' value="<%= ejbcawebbean.getText("RENEWCA") %>" >
+        <input type="submit" name="<%= BUTTON_RENEWCA %>" onClick='return confirmrenewal()' value="<%= ejbcawebbean.getText("RENEWCA") %>" > 
+        <%     if(catokeninfo instanceof SoftCATokenInfo){ %>
+           &nbsp; <%= ejbcawebbean.getText("RENEWKEYS") %><input type="checkbox" name="<%=CHECKBOX_RENEWKEYS %>" value="<%=CHECKBOX_VALUE %>" 
+        <%  } %>
       </td>
     </tr>
         <% } %>   

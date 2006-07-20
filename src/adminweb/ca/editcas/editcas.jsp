@@ -2,7 +2,7 @@
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, java.io.*, org.apache.commons.fileupload.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.SecConst, org.ejbca.util.FileTools, org.ejbca.util.CertTools, org.ejbca.core.model.authorization.AuthorizationDeniedException,
     org.ejbca.ui.web.RequestHelper, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.caadmin.CAInfo, org.ejbca.core.model.ca.caadmin.X509CAInfo, org.ejbca.core.model.ca.catoken.CATokenInfo, org.ejbca.core.model.ca.catoken.SoftCATokenInfo, org.ejbca.ui.web.admin.cainterface.CADataHandler,
-               org.ejbca.ui.web.admin.rainterface.RevokedInfoView, org.ejbca.ui.web.admin.configuration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.ejbca.core.protocol.ExtendedPKCS10CertificationRequest, 
+               org.ejbca.ui.web.admin.rainterface.RevokedInfoView, org.ejbca.ui.web.admin.configuration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.ejbca.core.protocol.ExtendedPKCS10CertificationRequest, org.ejbca.core.EjbcaException,
                org.ejbca.core.protocol.PKCS10RequestMessage, org.ejbca.core.model.ca.caadmin.CAExistsException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.model.ca.catoken.CATokenOfflineException, org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException,
                org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, org.ejbca.core.model.ca.catoken.HardCATokenManager, org.ejbca.core.model.ca.catoken.AvailableHardCAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo"%>
 
@@ -79,6 +79,7 @@
   static final String CHECKBOX_USEUTF8SUBJECTDN                   = "checkboxuseutf8subjectdn";
   
   static final String CHECKBOX_ACTIVATEOCSPSERVICE                = "checkboxactivateocspservice";  
+  static final String CHECKBOX_RENEWKEYS                          = "checkboxrenewkeys";  
   
   static final String HIDDEN_CATOKEN                              = "hiddencatoken";  
   
@@ -124,6 +125,7 @@
   boolean  ocsprenewed          = false;
   boolean  catokenoffline       = false;
   boolean  catokenauthfailed    = false;
+  String errormessage = null;
   
 
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/super_administrator"); 
@@ -596,7 +598,11 @@
                if(request.getParameter(BUTTON_RENEWCA) != null){
                  int signedby = cadatahandler.getCAInfo(caid).getCAInfo().getSignedBy();
                  if(signedby != CAInfo.SIGNEDBYEXTERNALCA){
-                   cadatahandler.renewCA(caid, null);
+                   boolean reGenerateKeys = false;
+                   if(request.getParameter(CHECKBOX_RENEWKEYS) != null && catokentype == CATokenInfo.CATOKENTYPE_P12){
+                	   reGenerateKeys = request.getParameter(CHECKBOX_RENEWKEYS).equals(CHECKBOX_VALUE);                	   
+                   }
+                   cadatahandler.renewCA(caid, null, reGenerateKeys);
                    carenewed = true;
                  }else{                   
                    includefile="renewexternal.jspf"; 
@@ -637,17 +643,29 @@
                cabean.savePKCS10RequestData(certreq);     
                filemode = CERTREQGENMODE;
                includefile = "displayresult.jspf";
-             }catch(Exception e){  
-               cadatahandler.removeCA(caid); 
-               errorrecievingfile = true;
-               includefile="choosecapage.jspf";  
-             }
+             }catch(CATokenOfflineException e){  
+        	  includefile="choosecapage.jspf"; 
+        	  cadatahandler.removeCA(caid); 
+              throw e;
+             }catch(EjbcaException e){ 
+        	  includefile="choosecapage.jspf"; 
+        	  cadatahandler.removeCA(caid); 
+              errormessage = e.getMessage(); 
+             } catch(Exception e){   
+        	  includefile="choosecapage.jspf";
+        	  cadatahandler.removeCA(caid); 
+              errorrecievingfile = true; 
+             } 
            }catch(CAExistsException caee){
               caexists = true; 
            } 
-         }catch(Exception e){
-           errorrecievingfile = true; 
-         } 
+         }catch(CATokenOfflineException e){  
+          throw e;
+      }catch(EjbcaException e){ 
+          errormessage = e.getMessage(); 
+      } catch(Exception e){   
+          errorrecievingfile = true; 
+      } 
        }else{
          cabean.saveRequestInfo((CAInfo) null); 
        }
@@ -660,9 +678,13 @@
               cadatahandler.receiveResponse(caid, file);   
               caactivated = true;
             }           
-          }catch(Exception e){                       
-            errorrecievingfile = true; 
-          }  
+          }catch(CATokenOfflineException e){  
+              throw e;
+          }catch(EjbcaException e){ 
+              errormessage = e.getMessage(); 
+          } catch(Exception e){   
+              errorrecievingfile = true; 
+          } 
         }
       }
       if( action.equals(ACTION_PROCESSREQUEST)){       
@@ -796,10 +818,16 @@
                
            filemode = CERTREQGENMODE;
            includefile = "displayresult.jspf";
-          }catch(Exception e){
-           errorrecievingfile = true; 
-           includefile="choosecapage.jspf"; 
-          } 
+          }catch(CATokenOfflineException e){  
+        	  includefile="choosecapage.jspf"; 
+              throw e;
+          }catch(EjbcaException e){ 
+        	  includefile="choosecapage.jspf"; 
+              errormessage = e.getMessage(); 
+          } catch(Exception e){   
+        	  includefile="choosecapage.jspf"; 
+              errorrecievingfile = true; 
+          }  
         }else{
           cabean.saveRequestInfo((CAInfo) null); 
         }      
@@ -811,8 +839,12 @@
               cadatahandler.receiveResponse(caid, file);   
               carenewed = true;
             }           
-          }catch(Exception e){                       
-            errorrecievingfile = true; 
+          }catch(CATokenOfflineException e){                       
+              throw e;
+          }catch(EjbcaException e){                       
+              errormessage = e.getMessage(); 
+          } catch(Exception e){                       
+              errorrecievingfile = true; 
           }  
         }        
       }
