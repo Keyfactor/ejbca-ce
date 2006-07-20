@@ -48,7 +48,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @ejb.bean description="Session bean handling interface with ra authorization"
+ * @ejb.bean description="Session bean handling interface with publisher data"
  *   display-name="PublisherSessionSB"
  *   name="PublisherSession"
  *   jndi-name="PublisherSession"
@@ -65,10 +65,6 @@ import org.ejbca.core.model.ra.ExtendedInformation;
  *   type="java.lang.String"
  *   value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
  *
- * @ejb.env-entry description="Custom Available Access Rules, use ';' to separate multiple accessrules"
- *   name="CustomAvailableAccessRules"
- *   type="java.lang.String"
- *   value=""
  *
  * @ejb.ejb-external-ref description="The Publisher entity bean"
  *   view-type="local"
@@ -657,7 +653,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
             }
         }
         return new Integer(id);
-    } // findFreeHardTokenIssuerId
+    } // findFreePublisherId
 
 
 } // LocalPublisherSessionBean
