@@ -13,6 +13,7 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.KeyStore;
 import java.security.PrivateKey;
@@ -22,6 +23,8 @@ import java.security.cert.CertPathValidator;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.CertPathValidatorResult;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.CertificateNotYetValidException;
@@ -38,6 +41,7 @@ import java.util.Iterator;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
+import javax.ejb.FinderException;
 
 import org.bouncycastle.asn1.ASN1Set;
 import org.ejbca.core.EjbcaException;
@@ -95,7 +99,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.18 2006-07-02 15:06:06 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.19 2006-07-20 17:39:14 herrvendil Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -736,17 +740,18 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
     /**
      *  Receives a certificate response from an external CA and sets the newly created CAs status to active.
+     * @throws EjbcaException 
      *  
      * @ejb.interface-method
      */
-    public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
+    public void receiveResponse(Admin admin, int caid, IResponseMessage responsemessage) throws AuthorizationDeniedException, CertPathValidatorException, EjbcaException{
     	// check authorization
     	Certificate cacert = null;
     	// Check authorization
     	try{
     		getAuthorizationSession().isAuthorizedNoLog(admin,"/super_administrator");
     	}catch(AuthorizationDeniedException e){
-    		getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Not authorized to recieve certificate responce for CA",e);
+    		getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Not authorized to recieve certificate response for CA",e);
     		throw new AuthorizationDeniedException("Not authorized to recieve certificate responce for CA with caid = " + caid);
     	}
 
@@ -761,7 +766,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				cacert = ((X509ResponseMessage) responsemessage).getCertificate();
     			}else{
     				getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util. Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error: illegal response message.");
-    				throw new EJBException(new EjbcaException("Error: illegal response message."));
+    				throw new EjbcaException("Error: illegal response message.");
     			}
 
     			// if issuer is insystem CA or selfsigned, then generate new certificate.
@@ -771,7 +776,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				// Check that DN is the equals the request.
     				if(!CertTools.getSubjectDN((X509Certificate) cacert).equals(CertTools.stringToBCDNString(ca.getSubjectDN()))){
     					getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error: Subject DN of recieved certificate doesn't match request");
-    					throw new EJBException(new EjbcaException("Error: Subject DN of recieved certificate doesn't match request"));
+    					throw new EjbcaException("Error: Subject DN of recieved certificate doesn't match request");
     				}
 
     				ArrayList cachain = new ArrayList();
@@ -818,17 +823,29 @@ public class CAAdminSessionBean extends BaseSessionBean {
     			}else{
     				// Cannot create certificate request for internal CA
     				getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error: can't recieve certificate responce for internal CA");
-    				throw new EJBException(new EjbcaException("Error: can't recieve certificate responce for internal CA"));
+    				throw new EjbcaException("Error: can't recieve certificate response for internal CA");
     			}
 
     		}catch(CATokenOfflineException e){
     			getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error: can't recieve certificate responce for internal CA", e);
     			throw e;
-    		}
-    	}catch(Exception e){
+    		} catch (CertificateEncodingException e) {
+        		getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error: can't recieve certificate responce for internal CA", e);
+        		throw new EjbcaException(e.getMessage());
+			} catch (CertificateException e) {
+	    		getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error: can't recieve certificate responce for internal CA", e);
+	    		throw new EjbcaException(e.getMessage());
+			} catch (IOException e) {
+	    		getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error: can't recieve certificate responce for internal CA", e);
+	    		throw new EjbcaException(e.getMessage());
+			}
+    	}catch(FinderException e){
     		getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error: can't recieve certificate responce for internal CA", e);
-    		throw new EJBException(e);
-    	}
+    		throw new EjbcaException(e.getMessage());
+    	} catch (UnsupportedEncodingException e) {
+    		getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error: can't recieve certificate responce for internal CA", e);
+    		throw new EjbcaException(e.getMessage());
+		}
 
     	getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_INFO_CAEDITED,"Certificate responce recieved successfully");
     } // recieveResponse
@@ -935,10 +952,11 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * 
      *  @param certificateresponce should be set with new certificatechain if CA is signed by external
      *         RootCA, otherwise use the null value.
+     *  @param regenerateKeys, if true and the CA have a softCAToken the keys are regenerated before the certrequest.
      *          
      * @ejb.interface-method
      */
-    public void renewCA(Admin admin, int caid, IResponseMessage responsemessage)  throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
+    public void renewCA(Admin admin, int caid, IResponseMessage responsemessage, boolean regenerateKeys)  throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
     	debug(">CAAdminSession, renewCA(), caid=" + caid);
     	Collection cachain = null;
     	Certificate cacertificate = null;
@@ -956,8 +974,15 @@ public class CAAdminSessionBean extends BaseSessionBean {
     		cadata = this.cadatahome.findByPrimaryKey(new Integer(caid));
     		CA ca = cadata.getCA();
     		
+    		
     		if(ca.getStatus() == SecConst.CA_OFFLINE){
     			throw new CATokenOfflineException("CA is set to Offline, please activate before renewing it.");
+    		}
+    		
+    		CAToken caToken = ca.getCAToken();
+    		if(caToken instanceof SoftCAToken && regenerateKeys){
+    			((SoftCAToken) caToken).generateKeys(ca.getCAToken().getCATokenInfo());
+    			ca.setCAToken(caToken);
     		}
     		
     		try{
