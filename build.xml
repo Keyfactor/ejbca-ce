@@ -983,6 +983,7 @@ web.contentencoding    = ${web.contentencoding}
                     <!-- LotsosUsers creates LOOOOTS of users, only run once in a while -->
                     <exclude name="**/ra/TestAddLotsofUsers*" />
                     <exclude name="**/sign/TestSignLotsOfCerts*" />
+                    <include name="**/userdatasource/Test*" />
                     <include name="**/raadmin/Test*" />
                     <include name="**/auth/Test*" />
                     <include name="**/store/Test*" />

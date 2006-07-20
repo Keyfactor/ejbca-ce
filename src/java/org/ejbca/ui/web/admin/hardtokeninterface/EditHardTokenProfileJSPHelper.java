@@ -49,7 +49,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Contains help methods used to parse a hard token profile jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditHardTokenProfileJSPHelper.java,v 1.3 2006-07-11 13:03:15 herrvendil Exp $
+ * @version $Id: EditHardTokenProfileJSPHelper.java,v 1.4 2006-07-20 17:49:10 herrvendil Exp $
  */
 public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 	
@@ -372,15 +372,19 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 					 sweprof.setKeyType(SwedishEIDProfile.CERTUSAGE_SIGN, EIDProfile.KEYTYPE_RSA);
 					 sweprof.setKeyType(SwedishEIDProfile.CERTUSAGE_AUTHENC, EIDProfile.KEYTYPE_RSA);
 				   }
+				   value = request.getParameter(CHECKBOX_CERTWRITABLE);
+				   if(value != null){                              
+					   sweprof.setCertWritable(SwedishEIDProfile.CERTUSAGE_SIGN, value.equals(CHECKBOX_VALUE));
+					   sweprof.setCertWritable(SwedishEIDProfile.CERTUSAGE_AUTHENC, value.equals(CHECKBOX_VALUE));
+				   }else{
+					   sweprof.setCertWritable(SwedishEIDProfile.CERTUSAGE_SIGN, false);
+					   sweprof.setCertWritable(SwedishEIDProfile.CERTUSAGE_AUTHENC, false);
+				   }
 				   	  
                    value = request.getParameter(SELECT_CERTIFICATEPROFILE + "0");
                    if(value!= null)
                      sweprof.setCertificateProfileId(SwedishEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
-				   value = request.getParameter(CHECKBOX_CERTWRITABLE + "0");
-					if(value != null)                              
-						sweprof.setCertWritable(SwedishEIDProfile.CERTUSAGE_SIGN, value.equals(CHECKBOX_VALUE));
-					else
-						sweprof.setCertWritable(SwedishEIDProfile.CERTUSAGE_SIGN, false);
+				   
 				   value = request.getParameter(SELECT_CA + "0");
 				   if(value!= null)
 					   sweprof.setCAId(SwedishEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
@@ -394,11 +398,7 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 				   value = request.getParameter(SELECT_CERTIFICATEPROFILE + "1");
 				   if(value!= null)
 					   sweprof.setCertificateProfileId(SwedishEIDProfile.CERTUSAGE_AUTHENC, Integer.parseInt(value));
-				   value = request.getParameter(CHECKBOX_CERTWRITABLE + "1");
-				   if(value != null)                              
-					   sweprof.setCertWritable(SwedishEIDProfile.CERTUSAGE_AUTHENC, value.equals(CHECKBOX_VALUE));
-				   else
-					   sweprof.setCertWritable(SwedishEIDProfile.CERTUSAGE_AUTHENC, false);
+				   
 				   value = request.getParameter(SELECT_CA + "1");
 				   if(value!= null)
 					   sweprof.setCAId(SwedishEIDProfile.CERTUSAGE_AUTHENC, Integer.parseInt(value));					
@@ -425,14 +425,21 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 					 enhprof.setKeyType(EnhancedEIDProfile.CERTUSAGE_ENC, EIDProfile.KEYTYPE_RSA);
 				   }	  
 				   
+				   value = request.getParameter(CHECKBOX_CERTWRITABLE);
+				   if(value != null){                              
+					   enhprof.setCertWritable(EnhancedEIDProfile.CERTUSAGE_SIGN, value.equals(CHECKBOX_VALUE));
+					   enhprof.setCertWritable(EnhancedEIDProfile.CERTUSAGE_AUTH, value.equals(CHECKBOX_VALUE));
+					   enhprof.setCertWritable(EnhancedEIDProfile.CERTUSAGE_ENC, value.equals(CHECKBOX_VALUE));
+				   }else{
+					   enhprof.setCertWritable(EnhancedEIDProfile.CERTUSAGE_SIGN, false);
+					   enhprof.setCertWritable(EnhancedEIDProfile.CERTUSAGE_AUTH, false);
+					   enhprof.setCertWritable(EnhancedEIDProfile.CERTUSAGE_ENC, false);
+				   }
+				   
 				   value = request.getParameter(SELECT_CERTIFICATEPROFILE + "0");
 				   if(value!= null)
 					 enhprof.setCertificateProfileId(EnhancedEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
-				   value = request.getParameter(CHECKBOX_CERTWRITABLE + "0");
-					if(value != null)                              
-						enhprof.setCertWritable(EnhancedEIDProfile.CERTUSAGE_SIGN, value.equals(CHECKBOX_VALUE));
-					else
-						enhprof.setCertWritable(EnhancedEIDProfile.CERTUSAGE_SIGN, false);
+				   
 				   value = request.getParameter(SELECT_CA + "0");
 				   if(value!= null)
 					 enhprof.setCAId(EnhancedEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
@@ -447,11 +454,7 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 				   value = request.getParameter(SELECT_CERTIFICATEPROFILE + "1");
 				   if(value!= null)
 					 enhprof.setCertificateProfileId(EnhancedEIDProfile.CERTUSAGE_AUTH, Integer.parseInt(value));
-				   value = request.getParameter(CHECKBOX_CERTWRITABLE + "1");
-					if(value != null)                              
-						enhprof.setCertWritable(EnhancedEIDProfile.CERTUSAGE_AUTH, value.equals(CHECKBOX_VALUE));
-					else
-						enhprof.setCertWritable(EnhancedEIDProfile.CERTUSAGE_AUTH, false);
+				   
 				   value = request.getParameter(SELECT_CA + "1");
 				   if(value!= null)
 					 enhprof.setCAId(EnhancedEIDProfile.CERTUSAGE_AUTH, Integer.parseInt(value));
@@ -466,11 +469,7 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 				   value = request.getParameter(SELECT_CERTIFICATEPROFILE + "2");
 				   if(value!= null)
 					 enhprof.setCertificateProfileId(EnhancedEIDProfile.CERTUSAGE_ENC, Integer.parseInt(value));
-				   value = request.getParameter(CHECKBOX_CERTWRITABLE + "2");
-					if(value != null)                              
-						enhprof.setCertWritable(EnhancedEIDProfile.CERTUSAGE_ENC, value.equals(CHECKBOX_VALUE));
-					else
-						enhprof.setCertWritable(EnhancedEIDProfile.CERTUSAGE_ENC, false);
+				   
 				   value = request.getParameter(SELECT_CA + "2");
 				   if(value!= null)
 					 enhprof.setCAId(EnhancedEIDProfile.CERTUSAGE_ENC, Integer.parseInt(value));

@@ -26,7 +26,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 /**
  * 
  *
- * @version $Id: AvailableAccessRules.java,v 1.1 2006-01-17 20:30:56 anatom Exp $
+ * @version $Id: AvailableAccessRules.java,v 1.2 2006-07-20 17:42:53 herrvendil Exp $
  */
 public class AvailableAccessRules {
         
@@ -69,7 +69,8 @@ public class AvailableAccessRules {
     public static final String REGULAR_CREATECERTIFICATE                          = "/ca_functionality/create_certificate";
     public static final String REGULAR_STORECERTIFICATE                           = "/ca_functionality/store_certificate";    
     public static final String REGULAR_RAFUNCTIONALITY                            = "/ra_functionality";
-    public static final String REGULAR_EDITENDENTITYPROFILES                      = "/ra_functionality/edit_end_entity_profiles";    
+    public static final String REGULAR_EDITENDENTITYPROFILES                      = "/ra_functionality/edit_end_entity_profiles";
+    public static final String REGULAR_EDITUSERDATASOURCES                        = "/ra_functionality/edit_user_data_sources";
     public static final String REGULAR_VIEWENDENTITY                              = "/ra_functionality/view_end_entity";    
     public static final String REGULAR_CREATEENDENTITY                            = "/ra_functionality/create_end_entity";
     public static final String REGULAR_EDITENDENTITY                              = "/ra_functionality/edit_end_entity";
@@ -102,6 +103,7 @@ public class AvailableAccessRules {
                                                            REGULAR_STORECERTIFICATE,
                                                            REGULAR_RAFUNCTIONALITY, 
                                                            REGULAR_EDITENDENTITYPROFILES,
+                                                           REGULAR_EDITUSERDATASOURCES,                                                           
                                                            REGULAR_VIEWENDENTITY,
                                                            REGULAR_CREATEENDENTITY, 
                                                            REGULAR_EDITENDENTITY, 

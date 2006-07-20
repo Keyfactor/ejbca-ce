@@ -24,7 +24,7 @@ import org.ejbca.util.StringTools;
 /**
  * Holds admin data collected from UserData in the database. Strings are stored in Base64 encoded format to be safe for storing in database, xml etc.
  *
- * @version $Id: UserDataVO.java,v 1.5 2006-07-02 15:06:11 anatom Exp $
+ * @version $Id: UserDataVO.java,v 1.6 2006-07-20 17:46:51 herrvendil Exp $
  */
 public class UserDataVO implements Serializable {
 
@@ -89,6 +89,39 @@ public class UserDataVO implements Serializable {
         setHardTokenIssuerId(hardtokenissuerid);
         setExtendedinformation(extendedinfo);
     }
+    
+    /**
+     * Creates new UserDataVO. This constructor shouldonly be used from UserDataSource 
+     * implementations. Status and dates aren't used in these cases.
+     * 
+     * @param user 
+     * @param dn 
+     * @param subjectaltname 
+     * @param email 
+     * @param type one of SecConst.ENDUSER || ...
+     * @param endentityprofileid 
+     * @param certificateprofileid 
+     * @param tokentype 
+     * @param hardtokenissuerid 
+     * @param extendedinfo
+     */
+    public UserDataVO(String user, String dn, int caid, String subjectaltname, String email,  int type, int endentityprofileid, int certificateprofileid,
+                          int tokentype, int hardtokenissuerid, ExtendedInformation extendedinfo) {
+        setUsername(user);
+        setPassword(null);
+        setDN(dn);
+        setCAId(caid);
+        setSubjectAltName(subjectaltname);
+        setEmail(email);        
+        setType(type);
+        setEndEntityProfileId(endentityprofileid);
+        setCertificateProfileId(certificateprofileid);
+        setTokenType(tokentype);
+        setHardTokenIssuerId(hardtokenissuerid);
+        setExtendedinformation(extendedinfo);
+    }
+    
+    
     public void setUsername(String user) { this.username=StringTools.putBase64String(StringTools.strip(user));}
     public String getUsername() {return StringTools.getBase64String(username);}
     public void setDN(String dn) {this.subjectDN=StringTools.putBase64String(dn);}

@@ -41,6 +41,8 @@ import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
+import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocal;
+import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocalHome;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
@@ -62,7 +64,7 @@ import org.ejbca.util.query.Query;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.5 2006-07-12 16:11:27 anatom Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.6 2006-07-20 17:50:18 herrvendil Exp $
  */
 public class RAInterfaceBean implements java.io.Serializable {
     
@@ -113,7 +115,8 @@ public class RAInterfaceBean implements java.io.Serializable {
         IKeyRecoverySessionLocalHome keyrecoverysessionhome = (IKeyRecoverySessionLocalHome) locator.getLocalHome(IKeyRecoverySessionLocalHome.COMP_NAME);
         keyrecoverysession = keyrecoverysessionhome.create();
         
-        
+        IUserDataSourceSessionLocalHome userdatasourcesessionhome = (IUserDataSourceSessionLocalHome) locator.getLocalHome(IUserDataSourceSessionLocalHome.COMP_NAME);
+        userdatasourcesession = userdatasourcesessionhome.create();        
 
         initialized =true;
       } else {
@@ -269,7 +272,7 @@ public class RAInterfaceBean implements java.io.Serializable {
         if(userdata.getPassword() != null && userdata.getPassword().trim().equals(""))
           userdata.setPassword(null);
     	UserDataVO uservo = new UserDataVO(userdata.getUsername(), userdata.getSubjectDN(), userdata.getCAId(), userdata.getSubjectAltName(), 
-    			userdata.getEmail(), UserDataConstants.STATUS_NEW, userdata.getType(), userdata.getEndEntityProfileId(), userdata.getCertificateProfileId(),
+    			userdata.getEmail(), userdata.getStatus(), userdata.getType(), userdata.getEndEntityProfileId(), userdata.getCertificateProfileId(),
     			null,null, userdata.getTokenType(), userdata.getHardTokenIssuerId(), null);
     	uservo.setPassword(userdata.getPassword());
     	uservo.setExtendedinformation(userdata.getExtendedInformation());
@@ -378,7 +381,9 @@ public class RAInterfaceBean implements java.io.Serializable {
            try{
              X509Certificate next = (X509Certificate) iter.next();  
              user = adminsession.findUserBySubjectDN(administrator, CertTools.getSubjectDN(next), next.getIssuerDN().toString());
-             userlist.add(user);
+             if(user != null){
+               userlist.add(user);
+             }
            }catch(AuthorizationDeniedException e){}
         }
         users.setUsers(userlist, informationmemory.getCAIdToNameMap());
@@ -547,6 +552,8 @@ public class RAInterfaceBean implements java.io.Serializable {
         Collection certs = certificatesession.findCertificatesByUsername(administrator, username);    
         loadCertificateView(certs, username);
     }
+    
+
 
     public void loadTokenCertificates(String tokensn, String username) throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, FinderException{
         Collection certs = hardtokensession.findCertificatesInHardToken(administrator, tokensn);
@@ -787,6 +794,10 @@ public class RAInterfaceBean implements java.io.Serializable {
     public void setTemporaryEndEntityProfile(EndEntityProfile profile){
     	this.temporateendentityprofile = profile;
     }
+    
+    IUserDataSourceSessionLocal getUserDataSourceSession(){
+    	return userdatasourcesession;
+    }
 
     //
     // Private fields.
@@ -802,6 +813,7 @@ public class RAInterfaceBean implements java.io.Serializable {
     private IAuthorizationSessionLocal              authorizationsession;
     private IHardTokenSessionLocal                  hardtokensession;
     private IKeyRecoverySessionLocal               keyrecoverysession;
+    private IUserDataSourceSessionLocal            userdatasourcesession;
 
     private UsersView                           users;
     private CertificateView[]                  certificates;
