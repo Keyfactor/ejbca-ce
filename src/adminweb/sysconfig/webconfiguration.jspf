@@ -5,16 +5,17 @@
 <html>
 <head>
   <title><%= gc.getEjbcaTitle() %></title>
-  <link rel=STYLESHEET href="/<%= ejbcawebbean.getCssFile() %>">
-  <script language=javascript src="/<%= gc.getAdminWebPath() %>ejbcajslib.js"></script>
+  <base href="<%= ejbcawebbean.getBaseUrl() %>">
+  <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
+  <script language=javascript src="<%= globalconfiguration .getAdminWebPath() %>ejbcajslib.js"></script>
 </head>
 
 <body>
 <div align="center"> 
-  <h2>Ejbca Web Configuration <br>
+  <h2><%= ejbcawebbean.getText("EJBCAWEBCONFIGURATION") %> <br>
   </h2> 
 </div>
-<form name="webconfiguration" method="post" action="<%=THIS_FILENAME %>">
+<form name="webconfiguration" method="post" action="<%= globalconfiguration .getConfigPath() + "/" + THIS_FILENAME %>">
   <table width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr id="Row0"> 
       <td width="50%" valign="top"> 
@@ -29,8 +30,8 @@
     </tr>
     <tr id="Row0"> 
       <td width="50%" valign="top"> 
-        <h3>Title</h3>
-        <h5>The title of the site.</h5>
+        <h3><%= ejbcawebbean.getText("EJBCATITLE") %></h3>
+        <h5><%= ejbcawebbean.getText("EJBCATITLEHELP") %></h5>
       </td>
       <td width="50%" valign="top"> 
         <input type="text" name="<%=TEXTFIELD_TITLE %>" value="<%= gc.getEjbcaTitle() %>" maxlength="150" size="70">
@@ -38,9 +39,8 @@
     </tr>
     <tr id="Row1"> 
       <td width="49%" valign="top"> 
-        <h3>Head Banner</h3>
-        <h5>The name of the head banner jsp or html file. Must be put in the subdirectory 
-          '/banners'. </h5>
+        <h3><%= ejbcawebbean.getText("HEADBANNER") %></h3>
+        <h5><%= ejbcawebbean.getText("HEADBANNERHELP") %></h5>
       </td>
       <td width="51%" valign="top"> 
         <input type="text" name="<%=TEXTFIELD_HEADBANNER %>" value="<%= gc.getHeadBannerFilename() %>" maxlength="150" size="70">
@@ -48,9 +48,8 @@
     </tr>
     <tr id="Row0"> 
       <td width="49%" valign="top"> 
-        <h3>Foot Banner</h3>
-        <h5>The name of the foot banner jsp or html file. Must be put in the subdirectory 
-          '/banners'. </h5>
+        <h3><%= ejbcawebbean.getText("FOOTBANNER") %></h3>
+        <h5><%= ejbcawebbean.getText("FOOTBANNERHELP") %></h5>
       </td>
       <td width="51%" valign="top"> 
         <input type="text" name="<%=TEXTFIELD_FOOTBANNER %>" value="<%= gc.getFootBannerFilename() %>" maxlength="150" size="70">
@@ -71,8 +70,8 @@
 -->
     <tr id="Row1"> 
       <td width="49%" valign="top"> 
-        <h3>Enable End Entity Profile Limitations</h3>
-        <h5>Check this field if you want to use end entity access control. </h5>
+        <h3><%= ejbcawebbean.getText("ENABLEENDENTITYPROFILELIM") %></h3>
+        <h5><%= ejbcawebbean.getText("ENABLEENDENTITYPROFILHELP") %></h5>
       </td>
       <td width="51%" valign="top"> 
         <input type="checkbox" name="<%=CHECKBOX_ENABLEEEPROFILELIMITATIONS%>" value="<%=CHECKBOX_VALUE %>" 
@@ -82,7 +81,7 @@
     </tr>
     <tr id="Row0"> 
       <td width="49%" valign="top"> 
-        <h3>Enable Key Recovery</h3>
+        <h3><%= ejbcawebbean.getText("ENABLEKEYRECOVERY") %></h3>
         <h5>&nbsp; </h5>          
       </td>
       <td width="51%" valign="top"> 
@@ -93,8 +92,8 @@
     </tr>
     <tr id="Row1"> 
       <td width="49%" valign="top"> 
-        <h3>Issue Hardware Tokens</h3>
-        <h5>Check this field if it should be possible to issue hardware tokens. </h5>
+        <h3><%= ejbcawebbean.getText("ISSUEHARDWARETOKENS") %></h3>
+        <h5><%= ejbcawebbean.getText("ISSUEHARDWARETOKENSHELP") %></h5>
       </td>
       <td width="51%" valign="top"> 
         <input type="checkbox" name="<%=CHECKBOX_ISSUEHARDWARETOKENS%>" value="<%=CHECKBOX_VALUE %>" 
@@ -106,8 +105,8 @@
     <tr> 
       <td width="49%" valign="top">&nbsp;</td>
       <td width="51%" valign="top">
-        <input type="submit" name="<%= BUTTON_NEXT %>" value="Next">
-        <input type="submit" name="<%= BUTTON_CANCEL %>" value="Cancel">
+        <input type="submit" name="<%= BUTTON_NEXT %>" value="<%= ejbcawebbean.getText("NEXT") %>">
+        <input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
       </td>
     </tr>
   </table>
