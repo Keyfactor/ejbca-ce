@@ -1,0 +1,44 @@
+<%               
+  CustomUserDataSourceContainer customuserdatasource = (CustomUserDataSourceContainer) userdatasourcehelper.userdatasourcedata;
+%>
+   <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+         &nbsp;
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+         &nbsp;
+      </td>
+   </tr>
+   <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("CUSTOMUSERDATASOURCESETTINGS") %>:
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+         &nbsp;
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("CLASSPATH") %>
+        </div>
+      </td>
+      <td width="50%" valign="top">   
+        <input type="text" name="<%=EditUserDataSourceJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>" size="30" maxlength="255" 
+               value='<%= customuserdatasource.getClassPath()%>'>       
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("PROPERTIESOFCUSTOM") %>
+        </div>
+      </td>
+      <td width="50%" valign="top">          
+         <textarea name="<%=EditUserDataSourceJSPHelper.TEXTAREA_CUSTOMPROPERTIES%>" cols=40 rows=6><% out.write(customuserdatasource.getPropertyData());%></textarea>
+      </td>
+    </tr>

@@ -1,0 +1,190 @@
+<%               
+  BaseUserDataSource userdatasourcedata = userdatasourcehelper.userdatasourcedata;
+   
+
+  TreeMap authorizedcas = ejbcawebbean.getInformationMemory().getCANames();  
+  HashMap caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
+    
+  int[] userdatasourcetypes = {
+                          CustomUserDataSourceContainer.TYPE_CUSTOMUSERDATASOURCECONTAINER};
+  String[] userdatasourcetypetexts = {"CUSTOMUSERDATASOURCE"};
+
+  int row = 0;
+%>
+<SCRIPT language="JavaScript">
+<!--  
+
+function checkallfields(){
+    var illegalfields = 0;
+
+ <% if( userdatasourcedata instanceof CustomUserDataSourceContainer){ %>
+    if(document.edituserdatasource.<%=EditUserDataSourceJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>.value == ""){
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("CLASSPATH")%>");
+      illegalfields++;
+    }
+ <% } %>
+     return illegalfields == 0;  
+   } 
+
+
+-->
+
+</SCRIPT>
+<div align="center"> 
+  <h2><%= ejbcawebbean.getText("EDITUSERDATASOURCE") %><br>
+  </h2>
+  <h3><%= ejbcawebbean.getText("USERDATASOURCE")+ " : " + userdatasourcehelper.userdatasourcename %> </h3>
+<% if(userdatasourcehelper.connectionmessage){
+     userdatasourcehelper.connectionmessage = false;
+     if(userdatasourcehelper.connectionsuccessful){
+        userdatasourcehelper.connectionsuccessful = false;
+        out.write("<H3>" + ejbcawebbean.getText("CONTESTEDSUCESSFULLY") +"</H3>");
+     }else{
+       out.write("<H3>" + ejbcawebbean.getText("ERRORCONNECTINGTOPUB") + " : " + userdatasourcehelper.connectionerrormessage +"</H3>");
+     }
+   } %>
+</div>
+  <table width="100%" border="0" cellspacing="3" cellpadding="3">
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="left"> 
+          <h3>&nbsp;</h3>
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+        <div align="right">
+        <A href="<%=THIS_FILENAME %>"><u><%= ejbcawebbean.getText("BACKTOUSERDATASOURCES") %></u></A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+   <!--     <A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") + "#userdatasources"%>")'>
+        <u><%= ejbcawebbean.getText("HELP") %></u> </A></div> -->
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("NAME") %>
+      </td>
+      <td width="50%"> 
+        <%= userdatasourcehelper.userdatasourcename%>
+      </td>
+    </tr>
+    <form name="userdatasourcetype" method="post" action="<%=THIS_FILENAME %>">
+      <input type="hidden" name='<%= EditUserDataSourceJSPHelper.ACTION %>' value='<%=EditUserDataSourceJSPHelper.ACTION_CHANGE_USERDATASOURCETYPE %>'>
+      <input type="hidden" name='<%= EditUserDataSourceJSPHelper.HIDDEN_USERDATASOURCENAME %>' value='<%=userdatasourcehelper.userdatasourcename %>'>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("USERDATASOURCETYPE") %>
+      </td>
+      <td width="50%">
+        <select name="<%=EditUserDataSourceJSPHelper.SELECT_USERDATASOURCETYPE%>" size="1" onchange='document.userdatasourcetype.submit()'>
+           <%  int currenttype = userdatasourcehelper.getUserDataSourceType(); 
+               for(int i=0; i<userdatasourcetypes.length;i++){ %>
+           <option  value="<%= userdatasourcetypes[i] %>" 
+              <% if(userdatasourcetypes[i] == currenttype) out.write(" selected "); %>> 
+              <%= ejbcawebbean.getText(userdatasourcetypetexts[i]) %>
+           </option>
+           <%   } %> 
+        </select>
+      </td>
+    </tr>
+   </form>
+   </table>
+   <table width="100%" border="0" cellspacing="3" cellpadding="3">
+   <form name="edituserdatasource" method="post" action="<%=THIS_FILENAME %>">
+    <input type="hidden" name='<%= EditUserDataSourceJSPHelper.ACTION %>' value='<%=EditUserDataSourceJSPHelper.ACTION_EDIT_USERDATASOURCE %>'>
+    <input type="hidden" name='<%= EditUserDataSourceJSPHelper.HIDDEN_USERDATASOURCENAME %>' value='<%=userdatasourcehelper.userdatasourcename %>'>
+    <input type="hidden" name='<%= EditUserDataSourceJSPHelper.HIDDEN_USERDATASOURCETYPE %>' value='<%=userdatasourcehelper.getUserDataSourceType() %>'>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right">         
+         &nbsp;
+      </td>
+      <td width="50%">
+         &nbsp;  
+      </td>
+    </tr>
+    <% 
+       if(userdatasourcehelper.userdatasourcedata instanceof CustomUserDataSourceContainer){%>
+         <%@ include file="customuserdatasourcepage.jspf" %> 
+    <% } %>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right">         
+         &nbsp;
+      </td>
+      <td width="50%">
+         &nbsp;  
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right">         
+         <%= ejbcawebbean.getText("GENERALSETTINGS") %>:
+      </td>
+      <td width="50%">
+         &nbsp;  
+      </td>
+    </tr>
+        <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+         <%= ejbcawebbean.getText("MODIFYABLEFIELDS") %> 
+      </td>
+      <td width="50%"> 
+        <select name="<%=userdatasourcehelper.SELECT_MODIFYABLEFIELDS%>" size="7" multiple >
+           <% TreeMap modifyableFieldTexts = userdatasourcehelper.getModifyableFieldTexts(); 
+              Set modifiableFields = userdatasourcedata.getModifiableFields();
+              Iterator iter = modifyableFieldTexts.keySet().iterator(); 
+              while(iter.hasNext()){
+                  String text = (String) iter.next();
+                  Integer id = (Integer) modifyableFieldTexts.get(text);%>
+           <option  value="<%= id.intValue() %>" 
+              <%    if(modifiableFields.contains(id))
+                      out.write(" selected ");
+                  %>>
+              <%= text %>         
+           </option>  
+              <% } %>
+        </select>
+      </td>
+
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+        <%= ejbcawebbean.getText("APPLICABLECAS") %> <br>&nbsp;
+      </td>
+      <td width="50%"> 
+        <select name="<%=userdatasourcehelper.SELECT_APPLICABLECAS%>" size="7" multiple >
+           <% Collection usedcas = userdatasourcedata.getApplicableCAs(); 
+              if(userdatasourcehelper.issuperadministrator){ %>
+           <option  value="<%= BaseUserDataSource.ANYCA %>" 
+              <% if(usedcas.contains(new Integer(BaseUserDataSource.ANYCA)))
+                   out.write(" selected ");%>>
+              <%= ejbcawebbean.getText("ANYCA") %>         
+           </option>      
+           <%   }
+                iter = authorizedcas.keySet().iterator(); 
+                while(iter.hasNext()){
+                  String next = (String) iter.next(); 
+                  Integer caid = (Integer) authorizedcas.get(next);%>
+           <option  value="<%= caid.intValue() %>" 
+              <%    if(usedcas.contains(caid))
+                      out.write(" selected ");
+                  %>>
+              <%= next %>         
+           </option>  
+              <% } %>
+        </select>
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+         <%= ejbcawebbean.getText("DESCRIPTION") %> 
+      </td>
+      <td width="50%">        
+        <textarea name="<%=EditUserDataSourceJSPHelper.TEXTAREA_DESCRIPTION%>" cols=40 rows=6><% out.write(userdatasourcedata.getDescription());%></textarea>
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="49%" valign="top">&nbsp;</td>
+      <td width="51%" valign="top"> 
+        <input type="submit" name="<%= EditUserDataSourceJSPHelper.BUTTON_TESTCONNECTION %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVEANDTESTCONNECTION") %>">
+        <input type="submit" name="<%= EditUserDataSourceJSPHelper.BUTTON_SAVE %>" onClick='return checkallfields()' value="<%= ejbcawebbean.getText("SAVE") %>">
+        <input type="submit" name="<%= EditUserDataSourceJSPHelper.BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">
+      </td>
+    </tr>
+  </table>
+ </form>
