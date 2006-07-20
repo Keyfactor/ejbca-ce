@@ -26,7 +26,7 @@ import java.util.Date;
  *  This is a  class containing information about one log event in the database. Used mainly during database queries by the web interface.
  *
  * @author  TomSelleck
- * @version $Id: LogEntry.java,v 1.2 2006-07-12 16:09:37 anatom Exp $
+ * @version $Id: LogEntry.java,v 1.3 2006-07-20 17:45:56 herrvendil Exp $
  */
 public class LogEntry implements Serializable {
 
@@ -69,7 +69,9 @@ public class LogEntry implements Serializable {
     public static final int EVENT_INFO_CAREVOKED = 32;
     public static final int EVENT_INFO_HARDTOKENPROFILEDATA = 33;
     public static final int EVENT_INFO_PUBLISHERDATA = 34;
-    public static final int EVENT_INFO_UNREVOKEDCERT = 35;
+    public static final int EVENT_INFO_USERDATASOURCEDATA = 35;
+    public static final int EVENT_INFO_USERDATAFETCHED = 36;
+    public static final int EVENT_INFO_UNREVOKEDCERT = 37;
 
     // Error events. Important all id:s should map to the array EVENTNAMES_ERROR - EVENT_ERROR_BOUNDRARY.
     public static final int EVENT_ERROR_UNKNOWN = 1000;
@@ -107,6 +109,9 @@ public class LogEntry implements Serializable {
     public static final int EVENT_ERROR_CAREVOKED = 1032;
     public static final int EVENT_ERROR_HARDTOKENPROFILEDATA = 1033;
     public static final int EVENT_ERROR_PUBLISHERDATA = 1034;
+    public static final int EVENT_ERROR_USERDATASOURCEDATA = 1035;
+    public static final int EVENT_ERROR_USERDATAFETCHED = 1036;
+    public static final int EVENT_ERROR_UNREVOKEDCERT = 1037;
 
     // Indicates the module using the logsession bean.
     public static final int MODULE_CA = 0;
@@ -128,8 +133,8 @@ public class LogEntry implements Serializable {
                                                     "EVENT_INFO_CREATECERTIFICATE", "EVENT_INFO_CREATECRL", "EVENT_INFO_ADMINISTRATORLOGGEDIN", "EVENT_INFO_AUTHORIZEDTORESOURCE",
                                                     "EVENT_INFO_PUBLICWEBUSERCONNECTED", "EVENT_INFO_HARDTOKEN_USERDATASENT", "EVENT_INFO_HARDTOKENGENERATED", "EVENT_INFO_HARDTOKENDATA",
                                                     "EVENT_INFO_HARDTOKENISSUERDATA", "EVENT_INFO_HARDTOKENCERTIFICATEMAP", "EVENT_INFO_KEYRECOVERY", "EVENT_INFO_NOTIFICATION",
-                                                    "EVENT_INFO_HARDTOKENVIEWED", "EVENT_INFO_CACREATED", "EVENT_INFO_CAEDITED", "EVENT_INFO_CAREVOKED", "EVENT_INFO_HARDTOKENPROFILEDATA", "EVENT_INFO_PUBLISHERDATA",
-                                                    "EVENT_INFO_UNREVOKEDCERT"};
+                                                    "EVENT_INFO_HARDTOKENVIEWED", "EVENT_INFO_CACREATED", "EVENT_INFO_CAEDITED", "EVENT_INFO_CAREVOKED", "EVENT_INFO_HARDTOKENPROFILEDATA", 
+                                                    "EVENT_INFO_PUBLISHERDATA", "EVENT_INFO_USERDATASOURCEDATA", "EVENT_INFO_USERDATAFETCHED", "EVENT_INFO_UNREVOKEDCERT"};
 
 
     public static final String[] EVENTNAMES_ERROR = {"EVENT_ERROR_UNKNOWN", "EVENT_ERROR_ADDEDENDENTITY", "EVENT_ERROR_CHANGEDENDENTITY", "EVENT_ERROR_REVOKEDENDENTITY", "EVENT_ERROR_REVOKEDCERT",
@@ -140,7 +145,7 @@ public class LogEntry implements Serializable {
                                                      "EVENT_ERROR_PUBLICWEBUSERCONNECTED", "EVENT_ERROR_HARDTOKEN_USERDATASENT", "EVENT_ERROR_HARDTOKENGENERATED", "EVENT_ERROR_HARDTOKENDATA",
                                                      "EVENT_ERROR_HARDTOKENISSUERDATA", "EVENT_ERROR_HARDTOKENCERTIFICATEMAP", "EVENT_ERROR_KEYRECOVERY", "EVENT_ERROR_NOTIFICATION",
                                                      "EVENT_ERROR_HARDTOKENVIEWED", "EVENT_ERROR_CACREATED", "EVENT_ERROR_CAEDITED", "EVENT_ERROR_CAREVOKED", "EVENT_ERROR_HARDTOKENPROFILEDATA",
-                                                     "EVENT_ERROR_PUBLISHERDATA"};
+                                                     "EVENT_ERROR_PUBLISHERDATA", "EVENT_ERROR_USERDATASOURCEDATA", "EVENT_ERROR_USERDATAFETCHED", "EVENT_ERROR_UNREVOKEDCERT"};
 
     public static final String[] MODULETEXTS = {"CA", "RA", "LOG", "PUBLICWEB", "ADMINWEB", "HARDTOKEN", "KEYRECOVERY", "AUTHORIZATION"};
 
