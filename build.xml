@@ -61,6 +61,11 @@
     <property name="healthcheck.src" value="${src}/publicweb/healthcheck" />
     <property name="healthcheckwar" value="${dist.dir}/healthcheck.war" />
 
+    <property name="ocsphealthcheck.src" value="${src}/publicweb/ocsphealthcheck" />
+    <property name="ocsphealthcheckwar" value="${ocsp-dist.dir}/ocsphealthcheck.war" />
+
+
+	
     <property name="ocspwar" value="${ocsp-dist.dir}/status.war" />
 
     <property name="adminweb.src" value="${src}/adminweb" />
@@ -144,6 +149,12 @@
     <property name="database.username" value="sa" />
     <property name="database.password" value="" />
     <property name="weblogic-oracle-columntype" value="" />
+    <property name="healthcheck.amountfreemem" value="1" />
+    <property name="healthcheck.dbquery" value="Select 1 From CertificateData" />
+    <property name="healthcheck.authorizedips" value="127.0.0.1" />
+    <property name="ocsphealthcheck.amountfreemem" value="1" />
+    <property name="ocsphealthcheck.dbquery" value="Select 1 From CertificateData" />
+    <property name="ocsphealthcheck.authorizedips" value="127.0.0.1"/>
     <property name="mail.jndi-name" value="java:/EjbcaMail" />
     <property name="mail.from" value="ejbca-donotreply@domain.com" />
     <property name="mail.user" value="ejbca_user" />
@@ -435,6 +446,14 @@ web.contentencoding    = ${web.contentencoding}
 		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@ejbca.version@" value="${app.version}"/>	
 		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name-prefix@" value="${datasource.jndi-name-prefix}"/>	
 		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name@" value="${datasource.jndi-name}"/>	
+		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@healthcheck.amountfreemem@" value="${healthcheck.amountfreemem}"/>	
+		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@healthcheck.dbquery@" value="${healthcheck.dbquery}"/>	
+		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@healthcheck.authorizedips@" value="${healthcheck.authorizedips}"/>	
+		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name-prefix@" value="${datasource.jndi-name-prefix}"/>	
+		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name@" value="${datasource.jndi-name}"/>	
+		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.amountfreemem@" value="${ocsphealthcheck.amountfreemem}"/>	
+		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.dbquery@" value="${ocsphealthcheck.dbquery}"/>	
+		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.authorizedips@" value="${ocsphealthcheck.authorizedips}"/>	
 	</target>
 	<!--
 	  EJBCA need to be run before the app.server (or the webapp) is fully ssl configured with the keystore
@@ -477,6 +496,9 @@ web.contentencoding    = ${web.contentencoding}
             <include name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionSession.java" />
             <include name="org/ejbca/core/ejb/ca/store/ICertificateStoreOnlyDataSessionHome.java" />
             <include name="org/ejbca/core/protocol/ocsp/OCSPUnidExtension.java" />
+            <include name="org/ejbca/ui/web/pub/HealthCheckServlet.java" />
+            <include name="org/ejbca/ui/web/pub/cluster/TextResponse.java" />
+            <include name="org/ejbca/ui/web/pub/cluster/ExtOCSPHealthCheck.java" />
         </javac>
     </target>
 
@@ -507,6 +529,16 @@ web.contentencoding    = ${web.contentencoding}
 
         </war>
     </target>
+	
+    <!-- =================================================================== -->
+    <!-- Build ocsp health check part                                                                                                                             -->
+    <!-- =================================================================== -->
+    <target name="ocsphealthcheck.war" depends="ocsp-compile">
+        <war destfile="${ocsphealthcheckwar}" webxml="${ocsphealthcheck.src}/WEB-INF/web.xml">
+            <fileset dir="${ocsphealthcheck.src}" excludes="WEB-INF/web.xml" />
+
+        </war>
+    </target>	
 
     <!-- =================================================================== -->
     <!-- Build standalone ocsp part                                          -->
@@ -677,7 +709,7 @@ web.contentencoding    = ${web.contentencoding}
     <!-- =================================================================== -->
     <!-- Build OCSP-ear                                                        -->
     <!-- =================================================================== -->
-    <target name="ocsp-ear" depends="ocsp-war, ocsp-jar">
+    <target name="ocsp-ear" depends="ocsp-war, ocsp-jar, ocsphealthcheck.war">
         <ear destfile="${ocspear}" appxml="${ocsp-eardd.src}/META-INF/application.xml"> 
             <fileset dir=".">
                 <include name="${lib}/bcmail-jdk${java.ver}.jar" />

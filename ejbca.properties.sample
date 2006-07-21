@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.58 2006-07-13 20:23:47 primelars Exp $
+# $Id: ejbca.properties.sample,v 1.59 2006-07-21 17:56:45 herrvendil Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -324,6 +324,23 @@ ocsp.keys.cardPassword=6231
 # Any value of the property will compile with Luna support. No Luna if undefined.
 #hsm.luna=X
 
+#------------------- EJBCA Healthcheck settings -------------
+# Specifies the basic settings of the EJBCA Healtcheck servlet
+# for more detailed configuration edit the file src/publicweb/healthcheck/WEB-INF/web.xml
+#
+# Parameter specifying amount of free memory (Mb) before alarming
+# Default: 1
+#healthcheck.amountfreemem=1
+
+# Parameter specifying database test query string. Used to check that
+# the database is operational.
+# Default : Select 1 From CertificateData
+#healthcheck.dbquery=Select 1 From CertificateData
+
+# Parameter specifying IP addresses authorized to access the healthcheck
+# servlet. Use ';' for between multiple IPs. 
+#healthcheck.authorizedips=127.0.0.1
+
 #------------------- OCSP publisher db configuration------------------------------
 # All these "ocsp-database.*" properties is used to configure the connection to the database that the
 # ExternalOCSPPublisher will publish to. Please read the doc/howto/HOWTO-OCSP-RESPONDER.txt for inforamtion.
@@ -354,3 +371,20 @@ ocsp.keys.cardPassword=6231
 
 # Database password.
 #ocsp-database.password=ocsp
+
+#------------------- External OCSP Healthcheck settings -------------
+# Specifies the basic settings of the external OCSP Healtcheck servlet
+# for more detailed configuration edit the file src/publicweb/healthcheck/WEB-INF/web.xml
+#
+# Parameter specifying amount of free memory (Mb) before alarming
+# Default: 1
+#ocsphealthcheck.amountfreemem=1
+
+# Parameter specifying database test query string. Used to check that
+# the database is operational.
+# Default : Select 1 From CertificateData 
+#ocsphealthcheck.dbquery=Select 1 From CertificateData
+
+# Parameter specifying IP addresses authorized to access the healthcheck
+# servlet. Use ';' for between multiple IPs. 
+#ocsphealthcheckg.authorizedips=127.0.0.1
