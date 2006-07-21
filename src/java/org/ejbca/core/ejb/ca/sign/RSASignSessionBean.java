@@ -66,6 +66,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServi
 import org.ejbca.core.model.ca.catoken.CAToken;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -1220,7 +1221,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                 // Store cert in ca cert publishers.
                 IPublisherSessionLocal pub = publishHome.create();
                 if (usedpublishers != null)
-                    pub.storeCertificate(admin, usedpublishers, cacert, fingerprint, null, fingerprint, CertificateDataBean.CERT_ACTIVE, certtype, null);
+                    pub.storeCertificate(admin, usedpublishers, cacert, fingerprint, null, fingerprint, CertificateDataBean.CERT_ACTIVE, certtype, -1, RevokedCertInfo.NOT_REVOKED, null);
             }
         } catch (javax.ejb.CreateException ce) {
             throw new EJBException(ce);
@@ -1337,7 +1338,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                 // Store certificate in certificate profiles publishers.
                 IPublisherSessionLocal pub = publishHome.create();
                 if (certProfile.getPublisherList() != null)
-                    pub.storeCertificate(admin, certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), cafingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType(), data.getExtendedinformation());
+                    pub.storeCertificate(admin, certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), cafingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType(), -1, RevokedCertInfo.NOT_REVOKED, data.getExtendedinformation());
 
                 debug("<createCertificate(pk, ku)");
                 return cert;

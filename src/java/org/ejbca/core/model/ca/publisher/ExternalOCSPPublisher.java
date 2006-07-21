@@ -18,6 +18,7 @@ import java.security.cert.X509Certificate;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -30,7 +31,7 @@ import org.ejbca.util.JDBCUtil;
 
 /**
  * @author lars
- * @version $Id: ExternalOCSPPublisher.java,v 1.6 2006-02-11 11:31:38 anatom Exp $
+ * @version $Id: ExternalOCSPPublisher.java,v 1.7 2006-07-21 15:28:25 anatom Exp $
  *
  */
 public class ExternalOCSPPublisher implements ICustomPublisher {
@@ -85,14 +86,18 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
         final String cafp;
         final int status;
         final int type;
+        final long revocationDate;
+        final int reason;
         StoreCertPreparer(Certificate ic,
-                          String un, String cf, int s, int t) {
+                          String un, String cf, int s, long d, int r, int t) {
             super();
             incert = ic;
             username = un;
             cafp = cf;
             status = s;
             type = t;
+            revocationDate = d;
+            reason = r;
         }
         public void prepare(PreparedStatement ps) throws Exception {
             ps.setString(1,CertTools.getFingerprintAsString((X509Certificate)incert));
@@ -105,23 +110,33 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
             ps.setInt(8, type);
             ps.setString(9, username);
             ps.setLong(10, ((X509Certificate)incert).getNotAfter().getTime());
-            ps.setLong(11, -1);
-            ps.setInt(12, -1);
+            ps.setLong(11, revocationDate);
+            ps.setInt(12, reason);
         }
         public String getInfoString() {
         	return "Store:, Username: "+username+", Issuer:"+CertTools.getIssuerDN((X509Certificate)incert)+", Serno: "+((X509Certificate)incert).getSerialNumber().toString()+", Subject: "+CertTools.getSubjectDN((X509Certificate)incert);
         }
     }
+
     /* (non-Javadoc)
      * @see se.anatom.ejbca.ca.publisher.ICustomPublisher#storeCertificate(se.anatom.ejbca.log.Admin, java.security.cert.Certificate, java.lang.String, java.lang.String, java.lang.String, int, int, se.anatom.ejbca.ra.ExtendedInformation)
      */
     public boolean storeCertificate(Admin admin, Certificate incert,
                                     String username, String password,
-                                    String cafp, int status, int type,
+                                    String cafp, int status, int type, long revocationDate, int revocationReason,
                                     ExtendedInformation extendedinformation)
-                                                                            throws PublisherException {
-        execute( "INSERT INTO CertificateData (fingerprint,base64Cert,subjectDN,issuerDN,cAFingerprint,serialNumber,status,type,username,expireDate,revocationDate,revocationReason) VALUES (?,?,?,?,?,?,?,?,?,?,?,?);",
-                 new StoreCertPreparer(incert, username, cafp, status, type) );
+    throws PublisherException {
+    	try {
+    		execute( "INSERT INTO CertificateData (fingerprint,base64Cert,subjectDN,issuerDN,cAFingerprint,serialNumber,status,type,username,expireDate,revocationDate,revocationReason) VALUES (?,?,?,?,?,?,?,?,?,?,?,?);",
+    				new StoreCertPreparer(incert, username, cafp, status, revocationDate, revocationReason, type) );
+    	} catch (PublisherException e) {
+    		// If it is an SQL exception, we probably had a duplicate key, so we are actually trying to re-publish
+    		if (e.getCause() instanceof SQLException) {
+    			log.info("Duplicate entry, updating instead.");
+        		execute( "UPDATE CertificateData SET status=?, revocationDate=?, revocationReason=? WHERE fingerprint=?;",
+        				new RevokePreparer(incert, status, revocationDate, revocationReason) );
+			}
+    	}
         return true;
     }
 
@@ -136,13 +151,17 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
     class RevokePreparer implements Preparer {
         final Certificate cert;
         final int reason;
-        RevokePreparer(Certificate c, int r) {
+        final int status;
+        final long date;
+        RevokePreparer(Certificate c, int s, long d, int r) {
             cert = c;
             reason = r;
+            date = d;
+            status = s;
         }
         public void prepare(PreparedStatement ps) throws Exception {
-            ps.setInt(1, 40);
-            ps.setLong(2, System.currentTimeMillis());
+            ps.setInt(1, status);
+            ps.setLong(2, date);
             ps.setInt(3, reason);
             ps.setString(4, CertTools.getFingerprintAsString((X509Certificate)cert));
         }
@@ -157,7 +176,7 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
     public void revokeCertificate(Admin admin, Certificate cert, int reason)
                                                                             throws PublisherException {
         execute( "UPDATE CertificateData SET status=?, revocationDate=?, revocationReason=? WHERE fingerprint=?;",
-                 new RevokePreparer(cert, reason));
+                 new RevokePreparer(cert, 40, System.currentTimeMillis(), reason));
     }
 
     private class DoNothingPreparer implements Preparer {

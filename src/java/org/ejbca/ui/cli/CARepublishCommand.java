@@ -20,6 +20,8 @@ import java.util.Iterator;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
 
@@ -30,7 +32,7 @@ import org.ejbca.util.CertTools;
 /**
  * Re-publishes the certificates of all users beloinging to a particular CA.
  *
- * @version $Id: CARepublishCommand.java,v 1.2 2006-01-26 14:17:57 anatom Exp $
+ * @version $Id: CARepublishCommand.java,v 1.3 2006-07-21 15:28:26 anatom Exp $
  */
 public class CARepublishCommand extends BaseCaAdminCommand {
     /**
@@ -73,7 +75,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
                     if (cainfo.getSignedBy() == CAInfo.SELFSIGNED)
                         certtype = CertificateDataBean.CERTTYPE_ROOTCA;  
                     String fingerprint = CertTools.getFingerprintAsString(cacert);
-                    getPublisherSession().storeCertificate(administrator, capublishers, cacert, fingerprint, null , fingerprint, CertificateDataBean.CERT_ACTIVE, certtype, null);
+                    getPublisherSession().storeCertificate(administrator, capublishers, cacert, fingerprint, null , fingerprint, CertificateDataBean.CERT_ACTIVE, -1, RevokedCertInfo.NOT_REVOKED, certtype, null);
                     getOutputStream().println("Certificate published for "+caname);
                     if ( (crlbytes != null) && (crlbytes.length > 0) && (crlNumber > 0) ) {
                         getPublisherSession().storeCRL(administrator, capublishers, crlbytes, fingerprint, crlNumber);                        
@@ -123,7 +125,8 @@ public class CARepublishCommand extends BaseCaAdminCommand {
                             getOutputStream().println("Re-publishing user "+data.getUsername());
                             try {
                                 String fingerprint = CertTools.getFingerprintAsString(cert);
-                                getPublisherSession().storeCertificate(administrator, certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), fingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType(), null);                                
+                                CertificateInfo certinfo = getCertificateStoreSession().getCertificateInfo(administrator, fingerprint);
+                                getPublisherSession().storeCertificate(administrator, certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), fingerprint, certinfo.getStatus(), certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), null);                                
                             } catch (Exception e) {
                                 // catch failure to publish one user and continue with the rest
                                 error("Failed to publish certificate for user "+data.getUsername()+", continuing with next user.");

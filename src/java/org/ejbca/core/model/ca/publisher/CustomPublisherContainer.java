@@ -32,7 +32,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
  * to store and retrieve custom publisher configuration to database.
  * 
  *
- * @version $Id: CustomPublisherContainer.java,v 1.2 2006-07-20 17:45:19 herrvendil Exp $
+ * @version $Id: CustomPublisherContainer.java,v 1.3 2006-07-21 15:28:25 anatom Exp $
  */
 public class CustomPublisherContainer extends BasePublisher{
 	private ICustomPublisher custompublisher = null; 
@@ -94,8 +94,8 @@ public class CustomPublisherContainer extends BasePublisher{
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
 	 */    
-	public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, ExtendedInformation extendedinformation) throws PublisherException{
-		return this.getCustomPublisher().storeCertificate(admin,incert,username,password, cafp,status,type, extendedinformation);		
+	public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, ExtendedInformation extendedinformation) throws PublisherException{
+		return this.getCustomPublisher().storeCertificate(admin,incert,username,password, cafp,status,type, revocationDate, revocationReason, extendedinformation);		
 	}
 	
 	/**

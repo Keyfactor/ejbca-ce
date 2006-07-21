@@ -71,7 +71,7 @@ import org.ejbca.util.CertTools;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.3 2006-02-27 10:55:32 anatom Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.4 2006-07-21 15:28:26 anatom Exp $
  */
 public class CAInterfaceBean implements java.io.Serializable {
 
@@ -333,7 +333,7 @@ public class CAInterfaceBean implements java.io.Serializable {
 	    CertificateInfo certinfo = certificatesession.getCertificateInfo(administrator, CertTools.getFingerprintAsString(certificatedata.getCertificate()));
 	    if(certprofile.getPublisherList().size() > 0){
 	    	if(publishersession.storeCertificate(administrator, certprofile.getPublisherList(), certificatedata.getCertificate(), certreqhist.getUserDataVO().getUsername(), certreqhist.getUserDataVO().getPassword(),
-	    			certinfo.getCAFingerprint(), certinfo.getStatus() , certinfo.getType(), certreqhist.getUserDataVO().getExtendedinformation())){
+	    			certinfo.getCAFingerprint(), certinfo.getStatus() , certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certreqhist.getUserDataVO().getExtendedinformation())){
 	    		returnval = "CERTREPUBLISHEDSUCCESS";
 	    	}
 	    }else{

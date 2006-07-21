@@ -26,7 +26,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
  * I supposed to illustrat how to implement a custom publisher to EJBCA 3.
  *  
  *
- * @version $Id: DummyCustomPublisher.java,v 1.1 2006-01-17 20:26:30 anatom Exp $
+ * @version $Id: DummyCustomPublisher.java,v 1.2 2006-07-21 15:28:25 anatom Exp $
  */
 public class DummyCustomPublisher implements ICustomPublisher{
     		
@@ -49,7 +49,7 @@ public class DummyCustomPublisher implements ICustomPublisher{
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#storeCertificate(org.ejbca.core.model.log.Admin, java.security.cert.Certificate, java.lang.String, java.lang.String, int, int)
 	 */
-	public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, ExtendedInformation extendedinformation) throws PublisherException {
+	public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, ExtendedInformation extendedinformation) throws PublisherException {
         log.debug("DummyCustomPublisher, Storing Certificate for user: " + username);	
 		return true;
 	}

@@ -205,7 +205,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
-    public boolean storeCertificate(Admin admin, Collection publisherids, Certificate incert, String username, String password, String cafp, int status, int type, ExtendedInformation extendedinformation) {
+    public boolean storeCertificate(Admin admin, Collection publisherids, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, ExtendedInformation extendedinformation) {
         Iterator iter = publisherids.iterator();
         boolean returnval = true;
         while (iter.hasNext()) {
@@ -213,7 +213,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
             try {
                 PublisherDataLocal pdl = publisherhome.findByPrimaryKey(id);
                 try {
-                    returnval &= pdl.getPublisher().storeCertificate(admin, incert, username, password, cafp, status, type, extendedinformation);
+                    returnval &= pdl.getPublisher().storeCertificate(admin, incert, username, password, cafp, status, type, revocationDate, revocationReason, extendedinformation);
                     getLogSession().log(admin, (X509Certificate) incert, LogEntry.MODULE_CA, new java.util.Date(), username,
                             (X509Certificate) incert, LogEntry.EVENT_INFO_STORECERTIFICATE,
                             "Added object: " + ((X509Certificate) incert).getSubjectDN().toString() + " successfully to publisher " + pdl.getName() + ".");

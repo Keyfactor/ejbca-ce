@@ -37,7 +37,6 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
-
 import com.novell.ldap.LDAPAttribute;
 import com.novell.ldap.LDAPAttributeSet;
 import com.novell.ldap.LDAPConnection;
@@ -49,7 +48,7 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.7 2006-05-31 11:25:33 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.8 2006-07-21 15:28:25 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
@@ -133,7 +132,7 @@ public class LdapPublisher extends BasePublisher {
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
 	 */    
-	public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, ExtendedInformation extendedinformation) throws PublisherException{
+	public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, ExtendedInformation extendedinformation) throws PublisherException{
         log.debug(">storeCertificate(username="+username+")");
         int ldapVersion = LDAPConnection.LDAP_V3;
         LDAPConnection lc = null;

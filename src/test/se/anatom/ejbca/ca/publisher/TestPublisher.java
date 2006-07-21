@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionHome;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
@@ -39,7 +40,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests Publishers.
  *
- * @version $Id: TestPublisher.java,v 1.5 2006-01-17 20:33:58 anatom Exp $
+ * @version $Id: TestPublisher.java,v 1.6 2006-07-21 15:28:26 anatom Exp $
  */
 public class TestPublisher extends TestCase {
     
@@ -262,7 +263,7 @@ public class TestPublisher extends TestCase {
         ArrayList publishers = new ArrayList();
         publishers.add(new Integer(pub.getPublisherId(admin, "TESTNEWDUMMYCUSTOM")));
         
-        boolean ret = pub.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, CertificateDataBean.CERT_ACTIVE, CertificateDataBean.CERTTYPE_ENDENTITY, null);
+        boolean ret = pub.storeCertificate(new Admin(Admin.TYPE_INTERNALUSER), publishers, cert, "test05", "foo123", null, CertificateDataBean.CERT_ACTIVE, CertificateDataBean.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, null);
         assertTrue("Storing certificate to dummy publisher failed", ret);
         log.debug("<test07StoreCertToDummyr()");
     }

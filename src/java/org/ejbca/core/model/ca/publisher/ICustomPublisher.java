@@ -27,7 +27,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
  * Interface contating methods that need to be implementet in order 
  * to have a custom publisher. All Custom publishers must implement this interface.
  * 
- * @version $Id: ICustomPublisher.java,v 1.1 2006-01-17 20:26:30 anatom Exp $
+ * @version $Id: ICustomPublisher.java,v 1.2 2006-07-21 15:28:25 anatom Exp $
  */
 
 public interface ICustomPublisher {
@@ -41,7 +41,7 @@ public interface ICustomPublisher {
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
 	 */    
-	public abstract boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, ExtendedInformation extendedinformation)throws PublisherException;
+	public abstract boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, ExtendedInformation extendedinformation)throws PublisherException;
 	
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher

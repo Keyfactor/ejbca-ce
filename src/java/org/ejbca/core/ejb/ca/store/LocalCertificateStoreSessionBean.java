@@ -152,7 +152,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.13 2006-07-19 14:03:34 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.14 2006-07-21 15:28:25 anatom Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
@@ -932,7 +932,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             			throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Could not be republished, there are no publishers defined.");
             		}
             		boolean published = publishersession.storeCertificate(admin, certprofile.getPublisherList(), certificate, certreqhist.getUserDataVO().getUsername(), certreqhist.getUserDataVO().getPassword(),
-            				certinfo.getCAFingerprint(), certinfo.getStatus() , certinfo.getType(), certreqhist.getUserDataVO().getExtendedinformation());
+            				certinfo.getCAFingerprint(), certinfo.getStatus() , certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certreqhist.getUserDataVO().getExtendedinformation());
             		if ( !published ) {
             			throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Could not be republished.");
             		}                	  
