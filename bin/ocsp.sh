@@ -12,7 +12,7 @@ case "`uname`" in
 esac
 
 # Check that JAVA_HOME is set
-if [ -f $JAVA_HOME ]; then
+if [ -f "$JAVA_HOME" ]; then
     echo "You must set JAVA_HOME before running the OCSP cli."
     exit 1
 fi
