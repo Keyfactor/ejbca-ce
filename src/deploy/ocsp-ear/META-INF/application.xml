@@ -16,5 +16,11 @@
             <context-root>/@ejbca@/publicweb/status</context-root>
         </web>
     </module>
+    <module>
+        <web>
+            <web-uri>ocsphealthcheck.war</web-uri>
+            <context-root>/@ejbca@/publicweb/ocsphealthcheck</context-root>
+        </web>
+    </module>
 </application>
 

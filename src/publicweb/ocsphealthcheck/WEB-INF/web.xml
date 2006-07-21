@@ -1,15 +1,15 @@
 <?xml version = '1.0' encoding = 'ISO-8859-1'?>
 <!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" "http://java.sun.com/dtd/web-app_2_3.dtd">
 <web-app>
-    <display-name>CA Health Check Configuration</display-name>
+    <display-name>OCSP Health Check Configuration</display-name>
     <servlet>
-        <servlet-name>EJBCAHealthCheckServlet</servlet-name>
-        <display-name>EJBCAHealthCheckServlet</display-name>
+        <servlet-name>ExtOCSPHealthCheckServlet</servlet-name>
+        <display-name>ExtOCSPHealthCheckServlet</display-name>
         <servlet-class>org.ejbca.ui.web.pub.HealthCheckServlet</servlet-class>
         <!-- Required parameters -->
         <init-param>
             <param-name>HealthCheckClassPath</param-name>
-            <param-value>org.ejbca.ui.web.pub.cluster.EJBCAHealthCheck</param-value>
+            <param-value>org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck</param-value>
             <description>Class performing the healthcheck. Must implement the IHealthCheck interface.</description>
         </init-param>
         <init-param>
@@ -20,7 +20,7 @@
         <!-- Optional parameters -->
         <init-param>
             <param-name>AuthorizedIPs</param-name>
-            <param-value>@healthcheck.authorizedips@</param-value>
+            <param-value>@ocsphealthcheck.authorizedips@</param-value>
             <description>Specifies which remote IPs that may call this healthcheck servlet. Use ';' for between multiple IPs. 
                          Comment out this parameter to allow from all IPs.</description>
         </init-param>
@@ -28,7 +28,7 @@
         <!-- EJBCAHealthCheck specific init parameters -->
         <init-param>
             <param-name>MinimumFreeMemory</param-name>
-            <param-value>@healthcheck.amountfreemem@</param-value>
+            <param-value>@ocsphealthcheck.amountfreemem@</param-value>
             <description>
                 Parameter to set the number of Mega Bytes of memory that must be free before removing 
                 the node out of the cluster.
@@ -36,7 +36,7 @@
         </init-param>
         <init-param>
             <param-name>checkDBString</param-name>
-            <param-value>@healthcheck.dbquery@</param-value>
+            <param-value>@ocsphealthcheck.dbquery@</param-value>
             <description>
                 Parameter indicating the string that should be used to do 
                 a minimal check that the database is working.
@@ -76,27 +76,14 @@
         </init-param> -->
     </servlet>
     <servlet-mapping>
-        <servlet-name>EJBCAHealthCheckServlet</servlet-name>
-        <url-pattern>/ejbcahealth</url-pattern>
+        <servlet-name>ExtOCSPHealthCheckServlet</servlet-name>
+        <url-pattern>/extocsphealth</url-pattern>
     </servlet-mapping>
   <env-entry>
     <env-entry-name>DataSource</env-entry-name>
     <env-entry-value>@datasource.jndi-name-prefix@@datasource.jndi-name@</env-entry-value>
     <env-entry-type>java.lang.String</env-entry-type>
   </env-entry>
-  <ejb-local-ref>
-    <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
-    <ejb-ref-type>Session</ejb-ref-type>
-    <local-home>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome</local-home>
-    <local>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome</local>
-    <ejb-link>CAAdminSession</ejb-link>
-  </ejb-local-ref>
-  <ejb-local-ref>
-    <ejb-ref-name>ejb/IPublisherSessionLocal</ejb-ref-name>
-    <ejb-ref-type>PublisherSessionLocal</ejb-ref-type>
-    <local-home>org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome</local-home>
-    <local>org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal</local>
-    <ejb-link>PublisherSession</ejb-link>
-  </ejb-local-ref>
+
     
 </web-app>
