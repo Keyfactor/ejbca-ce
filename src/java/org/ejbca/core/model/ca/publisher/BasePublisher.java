@@ -27,7 +27,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
  * of publishers in the system.
  *  
  *
- * @version $Id: BasePublisher.java,v 1.2 2006-07-21 15:28:25 anatom Exp $
+ * @version $Id: BasePublisher.java,v 1.3 2006-07-23 10:31:22 anatom Exp $
  */
 public abstract class BasePublisher extends UpgradeableDataHashMap implements Serializable, Cloneable {
     // Default Values
@@ -67,7 +67,9 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
     // Abstact methods.
     
     /**
-     * Publishes a certificate to a certificate store.
+     * Publishes a certificate to a certificate store. If status is not active for the certificate, the publisher may choose
+     * to not publish the certificate, for instance if revoke removes a certificate from LDAP,
+     * re-publishing the certificate should not add it again if the status is revoked.
      *
      * @param incert The certificate to be stored.
      * @param chainfp Fingerprint (hex) of the CAs certificate.

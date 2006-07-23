@@ -15,7 +15,6 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.util.CertTools;
 
-
 import com.novell.ldap.LDAPAttribute;
 import com.novell.ldap.LDAPAttributeSet;
 import com.novell.ldap.LDAPConnection;
@@ -47,12 +46,20 @@ public class LdapSearchPublisher extends LdapPublisher {
 	// Public Methods
 	
 	/**
+	 * Publishes certificate in LDAP, if the certificate is not revoked. If the certifiate is revoked, nothing is done
+	 * and the publishing is counted as successful (i.e. returns true).
+	 * 
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
 	 */
 	public boolean storeCertificate(Admin admin, Certificate incert,
 			String username, String password, String cafp, int status, int type,
 			ExtendedInformation extendedinformation) throws PublisherException {
 		log.debug(">storeCertificate(username=" + username +")");
+        // Don't publish non-active certificates
+        if (status != CertificateDataBean.CERT_ACTIVE) {
+        	log.info("Not publishing revoked certificate, status="+status);
+        	return true;
+        }
 		int searchScope = LDAPConnection.SCOPE_ONE;
 		int ldapVersion = LDAPConnection.LDAP_V3;
 		String searchbasedn = getSearchBaseDN();

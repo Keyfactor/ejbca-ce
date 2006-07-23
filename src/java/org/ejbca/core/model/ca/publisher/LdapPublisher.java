@@ -48,7 +48,7 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.8 2006-07-21 15:28:25 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.9 2006-07-23 10:31:22 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
@@ -130,10 +130,18 @@ public class LdapPublisher extends BasePublisher {
    
     
 	/**
+	 * Publishes certificate in LDAP, if the certificate is not revoked. If the certifiate is revoked, nothing is done
+	 * and the publishing is counted as successful (i.e. returns true).
+	 * 
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
 	 */    
 	public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, ExtendedInformation extendedinformation) throws PublisherException{
         log.debug(">storeCertificate(username="+username+")");
+        // Don't publish non-active certificates
+        if (status != CertificateDataBean.CERT_ACTIVE) {
+        	log.info("Not publishing revoked certificate, status="+status);
+        	return true;
+        }
         int ldapVersion = LDAPConnection.LDAP_V3;
         LDAPConnection lc = null;
         if(getUseSSL()){

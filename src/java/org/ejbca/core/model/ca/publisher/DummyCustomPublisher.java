@@ -17,6 +17,7 @@ import java.security.cert.Certificate;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
 
@@ -26,7 +27,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
  * I supposed to illustrat how to implement a custom publisher to EJBCA 3.
  *  
  *
- * @version $Id: DummyCustomPublisher.java,v 1.2 2006-07-21 15:28:25 anatom Exp $
+ * @version $Id: DummyCustomPublisher.java,v 1.3 2006-07-23 10:31:22 anatom Exp $
  */
 public class DummyCustomPublisher implements ICustomPublisher{
     		
@@ -51,6 +52,10 @@ public class DummyCustomPublisher implements ICustomPublisher{
 	 */
 	public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, ExtendedInformation extendedinformation) throws PublisherException {
         log.debug("DummyCustomPublisher, Storing Certificate for user: " + username);	
+        // Don't publish non-active certificates
+        if (status != CertificateDataBean.CERT_ACTIVE) {
+        	return true;
+        }
 		return true;
 	}
 
