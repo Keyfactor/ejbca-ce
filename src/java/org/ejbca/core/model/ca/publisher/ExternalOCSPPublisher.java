@@ -31,7 +31,7 @@ import org.ejbca.util.JDBCUtil;
 
 /**
  * @author lars
- * @version $Id: ExternalOCSPPublisher.java,v 1.7 2006-07-21 15:28:25 anatom Exp $
+ * @version $Id: ExternalOCSPPublisher.java,v 1.8 2006-07-23 10:32:21 anatom Exp $
  *
  */
 public class ExternalOCSPPublisher implements ICustomPublisher {
@@ -134,7 +134,7 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
     		if (e.getCause() instanceof SQLException) {
     			log.info("Duplicate entry, updating instead.");
         		execute( "UPDATE CertificateData SET status=?, revocationDate=?, revocationReason=? WHERE fingerprint=?;",
-        				new RevokePreparer(incert, status, revocationDate, revocationReason) );
+        				new UpdatePreparer(incert, status, revocationDate, revocationReason) );
 			}
     	}
         return true;
@@ -148,12 +148,12 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
         return true;
     }
 
-    class RevokePreparer implements Preparer {
+    class UpdatePreparer implements Preparer {
         final Certificate cert;
         final int reason;
         final int status;
         final long date;
-        RevokePreparer(Certificate c, int s, long d, int r) {
+        UpdatePreparer(Certificate c, int s, long d, int r) {
             cert = c;
             reason = r;
             date = d;
@@ -176,7 +176,7 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
     public void revokeCertificate(Admin admin, Certificate cert, int reason)
                                                                             throws PublisherException {
         execute( "UPDATE CertificateData SET status=?, revocationDate=?, revocationReason=? WHERE fingerprint=?;",
-                 new RevokePreparer(cert, 40, System.currentTimeMillis(), reason));
+                 new UpdatePreparer(cert, 40, System.currentTimeMillis(), reason));
     }
 
     private class DoNothingPreparer implements Preparer {
