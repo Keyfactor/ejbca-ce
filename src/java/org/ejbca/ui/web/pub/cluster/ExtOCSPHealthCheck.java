@@ -36,15 +36,13 @@ import org.ejbca.util.JDBCUtil;
  * * All OCSPSignTokens are aktive if not set as offline.
  * 
  * @author Philip Vendil
- * @version $Id: ExtOCSPHealthCheck.java,v 1.1 2006-07-21 17:57:47 herrvendil Exp $
+ * @version $Id: ExtOCSPHealthCheck.java,v 1.2 2006-07-24 10:48:51 anatom Exp $
  */
 
 public class ExtOCSPHealthCheck implements IHealthCheck {
 	
 	private static Logger log = Logger.getLogger(ExtOCSPHealthCheck.class);
 
-	private Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
-	
 	private int minfreememory = 0;
 	private String checkDBString = null;
 	
