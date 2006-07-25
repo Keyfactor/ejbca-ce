@@ -91,7 +91,7 @@ import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silvén PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.20 2006-07-25 09:18:00 primelars Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.21 2006-07-25 20:34:58 primelars Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChecker {
 
@@ -240,28 +240,15 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         return false;
     }
     public String healtCheck() {
-    	try {
-    		loadCertificates();
-    	} catch (Exception e) {
-    		m_log.debug(e);
-    	}
-    	if ( m_cacerts==null ) {
-    		return "Not possible to load certificates";
-    	}    	
     	StringWriter sw = new StringWriter();
     	PrintWriter pw = new PrintWriter(sw);
-    	Iterator i = m_cacerts.iterator();
+    	Iterator i = mSignEntity.entrySet().iterator();
     	while ( i.hasNext() ) {
-    		X509Certificate caCert = (X509Certificate)i.next();
-    		SigningEntity signingEntity = (SigningEntity)mSignEntity.get(new Integer(getCaid(caCert)));
-    		if ( signingEntity==null ) {
+    		SigningEntity signingEntity = (SigningEntity)i.next();
+    		if ( !signingEntity.isOK() ) {
     			pw.println();
-    			String sError = "No OCSP signing key defined for CA: " + caCert.getSubjectDN();
-    			pw.print(sError);
-    			m_log.error(sError);
-    		} else if ( !signingEntity.isOK() ) {
-    			pw.println();
-    			String sError = "OCSP signing key not useable for CA: " + caCert.getSubjectDN();
+    			String sError = "OCSP signing key not useable for CA: " +
+    							signingEntity.getCertificateChain()[1].getSubjectDN();
     			pw.print(sError);
     			m_log.error(sError);
     		}
@@ -379,6 +366,9 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
 				m_log.debug("Exception thrown when accessing the private key", e);
 				return false;
 			}
+        }
+        X509Certificate[] getCertificateChain() {
+        	return mChain;
         }
     }
 
