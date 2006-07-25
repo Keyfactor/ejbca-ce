@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JNDINames;
-import org.ejbca.core.model.log.Admin;
+import org.ejbca.ui.web.protocol.IHealtChecker;
 import org.ejbca.util.JDBCUtil;
 
 
@@ -36,15 +36,19 @@ import org.ejbca.util.JDBCUtil;
  * * All OCSPSignTokens are aktive if not set as offline.
  * 
  * @author Philip Vendil
- * @version $Id: ExtOCSPHealthCheck.java,v 1.2 2006-07-24 10:48:51 anatom Exp $
+ * @version $Id: ExtOCSPHealthCheck.java,v 1.3 2006-07-25 09:18:00 primelars Exp $
  */
 
 public class ExtOCSPHealthCheck implements IHealthCheck {
 	
 	private static Logger log = Logger.getLogger(ExtOCSPHealthCheck.class);
+	private static IHealtChecker healtChecker;
 
 	private int minfreememory = 0;
 	private String checkDBString = null;
+	static public void setHealtChecker(IHealtChecker hc) {
+		healtChecker = hc;
+	}
 	
 	public void init(ServletConfig config) {
 		minfreememory = Integer.parseInt(config.getInitParameter("MinimumFreeMemory")) * 1024 * 1024;
@@ -95,23 +99,9 @@ public class ExtOCSPHealthCheck implements IHealthCheck {
 	}
 	
 	private String checkOCSPSignTokens(){
-		String retval = "";
-/*
- * Example code
- * 
- 		Iterator iter = getCAAdminSession().getAvailableCAs(admin).iterator();
-		while(iter.hasNext()){
-			CAInfo cainfo = getCAAdminSession().getCAInfo(admin,((Integer) iter.next()).intValue());
-			CATokenInfo tokeninfo = cainfo.getCATokenInfo(); 
-			if(cainfo.getStatus() == SecConst.CA_ACTIVE){
-			  if(tokeninfo instanceof HardCATokenInfo && ((HardCATokenInfo) tokeninfo).getCATokenStatus() == IHardCAToken.STATUS_OFFLINE){
-				retval +="\n Error CA Token is disconnected, CA Name : " + cainfo.getName();
-				log.error("Error CA Token is disconnected, CA Name : " + cainfo.getName());
-			  }
-			}
-		}*/				
-		return retval;
+		if ( healtChecker!=null )
+			return healtChecker.healtCheck();
+		else
+			return "No OCSP servlet started";
 	}
-		
-
 }

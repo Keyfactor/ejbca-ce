@@ -17,6 +17,8 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.math.BigInteger;
 import java.security.KeyStore;
 import java.security.PrivateKey;
@@ -48,6 +50,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
+import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
 
 /** 
  * Servlet implementing server side of the Online Certificate Status Protocol (OCSP)
@@ -88,9 +91,9 @@ import org.ejbca.core.protocol.ocsp.OCSPUtil;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silvén PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.19 2006-07-19 14:05:46 anatom Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.20 2006-07-25 09:18:00 primelars Exp $
  */
-public class OCSPServletStandAlone extends OCSPServletBase {
+public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChecker {
 
     static final protected Logger m_log = Logger.getLogger(OCSPServletStandAlone.class);
 
@@ -144,10 +147,11 @@ public class OCSPServletStandAlone extends OCSPServletBase {
             if ( mStorePassword==null || mStorePassword.length==0 )
                 mStorePassword = mKeyPassword;
             mKeystoreDirectoryName = config.getInitParameter("softKeyDirectoryName");
-            if ( mKeystoreDirectoryName!=null && mKeystoreDirectoryName.length()>0 )
-                return; // the keys are soft.
-            // add paramter initialization for HW keys here
-            throw new ServletException("no valid keys spicified");
+            if ( mKeystoreDirectoryName!=null && mKeystoreDirectoryName.length()>0 ) {
+                ExtOCSPHealthCheck.setHealtChecker(this);
+                return;
+            } else
+            	throw new ServletException("no valid keys spicified");
         } catch( ServletException e ) {
             throw e;
         } catch (Exception e) {
@@ -234,6 +238,36 @@ public class OCSPServletStandAlone extends OCSPServletBase {
             return true;
         }
         return false;
+    }
+    public String healtCheck() {
+    	try {
+    		loadCertificates();
+    	} catch (Exception e) {
+    		m_log.debug(e);
+    	}
+    	if ( m_cacerts==null ) {
+    		return "Not possible to load certificates";
+    	}    	
+    	StringWriter sw = new StringWriter();
+    	PrintWriter pw = new PrintWriter(sw);
+    	Iterator i = m_cacerts.iterator();
+    	while ( i.hasNext() ) {
+    		X509Certificate caCert = (X509Certificate)i.next();
+    		SigningEntity signingEntity = (SigningEntity)mSignEntity.get(new Integer(getCaid(caCert)));
+    		if ( signingEntity==null ) {
+    			pw.println();
+    			String sError = "No OCSP signing key defined for CA: " + caCert.getSubjectDN();
+    			pw.print(sError);
+    			m_log.error(sError);
+    		} else if ( !signingEntity.isOK() ) {
+    			pw.println();
+    			String sError = "OCSP signing key not useable for CA: " + caCert.getSubjectDN();
+    			pw.print(sError);
+    			m_log.error(sError);
+    		}
+    	}
+    	pw.flush();
+    	return sw.toString();
     }
     interface PrivateKeyFactory {
         PrivateKey getKey() throws Exception;
@@ -337,6 +371,14 @@ public class OCSPServletStandAlone extends OCSPServletBase {
             } catch (Exception e) {
                 throw new ExtendedCAServiceRequestException(e);
             }
+        }
+        boolean isOK() {
+        	try {
+				return mKeyFactory.getKey()!=null;
+			} catch (Exception e) {
+				m_log.debug("Exception thrown when accessing the private key", e);
+				return false;
+			}
         }
     }
 

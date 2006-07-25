@@ -481,6 +481,7 @@ web.contentencoding    = ${web.contentencoding}
             <classpath refid="compile.classpath" />
             <exclude name="**/appserver/**" />
             <exclude name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java" />
+            <exclude name="org/ejbca/ui/web/pub/cluster/ExtOCSPHealthCheck.java" />
             <src path="${src.java}" />
             <src path="${src.gen}" />
         </javac>
