@@ -122,7 +122,7 @@ import org.ejbca.util.cert.UTF8EntryConverter;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.23 2006-07-19 14:05:46 anatom Exp $
+ * @version $Id: X509CA.java,v 1.24 2006-07-26 21:41:27 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -694,7 +694,7 @@ public class X509CA extends CA implements Serializable {
           ExtendedCAServiceResponse returnval = null; 
           if(request instanceof OCSPCAServiceRequest) {
         	  X509Certificate[] signerChain = (X509Certificate[])getCertificateChain().toArray(new X509Certificate[0]);
-        	  X509Certificate signerCert = (X509Certificate)signerChain[0];
+        	  X509Certificate signerCert = signerChain[0];
         	  OCSPCAServiceRequest ocspServiceReq = (OCSPCAServiceRequest)request;
               String sigAlg = ocspServiceReq.getSigAlg();
               boolean useCACert = ocspServiceReq.useCACert();
