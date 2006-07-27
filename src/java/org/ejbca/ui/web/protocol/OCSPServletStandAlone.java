@@ -91,7 +91,7 @@ import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silvén PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.22 2006-07-27 06:56:24 primelars Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.23 2006-07-27 20:44:56 primelars Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChecker {
 
@@ -220,8 +220,10 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         while( eAlias.hasMoreElements() ) {
             final String alias = (String)eAlias.nextElement();
             try {
-                putSignEntity(new PrivateKeyFactorySW((PrivateKey)keyStore.getKey(alias, mKeyPassword)),
-                		(X509Certificate)keyStore.getCertificate(alias), adm, "BC");
+                final PrivateKey key = (PrivateKey)keyStore.getKey(alias, mKeyPassword);
+                final X509Certificate cert = (X509Certificate)keyStore.getCertificate(alias);
+                if ( key!=null && cert!=null )
+                    putSignEntity(new PrivateKeyFactorySW(key), cert, adm, "BC");
             } catch (Exception e) {
                 m_log.debug("Unable to get alias "+alias+" in file "+fileName+". Exception: "+e.getMessage());
             }
@@ -255,9 +257,8 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
                     pw.println();
 	    			String sError = "OCSP signing key not useable for CA \"" +
 	    							signingEntity.getCertificateChain()[1].getSubjectDN() +
-                                    "\". Key certificate \"" +
-                                    signingEntity.getCertificateChain()[1].getSubjectDN() +
-                                    "\".";
+                                    "\". Key certificate with serial number: " +
+                                    signingEntity.getCertificateChain()[0].getSerialNumber().toString(0x10);
 	    			pw.print(sError);
 	    			m_log.error(sError);
 	    		}
@@ -298,21 +299,15 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
 			return mHardTokenObject.isOK(publicKey);
 		}
     }
-    private boolean putSignEntityHW( X509Certificate cert, Admin adm, String sFile ) {
-        if ( cert!=null ) {
-            try {
-                PrivateKeyFactory keyFactory = new PrivateKeyFactoryHW((RSAPublicKey)cert.getPublicKey());
-                if ( keyFactory!=null ) {
-                    m_log.debug("HW key added. Cert from "+sFile+". DN: "+cert.getSubjectDN());
-                    return putSignEntity( keyFactory, cert, adm, "PrimeKey" );
-                }
-            } catch( Exception e) {
-                m_log.debug("Exception when fetching private key: ", e);
-            }
-            m_log.debug("Not possible to add HW key. Cert from "+sFile+". DN: "+cert.getSubjectDN());
+    private boolean putSignEntityHW( Object obj, Admin adm ) {
+        if ( obj!=null && obj instanceof X509Certificate ) {
+            X509Certificate cert = (X509Certificate)obj;
+            PrivateKeyFactory keyFactory = new PrivateKeyFactoryHW((RSAPublicKey)cert.getPublicKey());
+            putSignEntity( keyFactory, cert, adm, "PrimeKey" );
+            m_log.debug("HW key added. Serial number: "+cert.getSerialNumber().toString(0x10));
+            return true;
         } else
-            m_log.debug("File "+sFile+" has no cert.");
-        return false;
+            return false;
     }
     private void loadFromKeyCards(Admin adm, String fileName) {
         final CertificateFactory cf;
@@ -321,29 +316,32 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         } catch (java.security.cert.CertificateException e) {
             throw new Error(e);
         }
-        boolean isPEM = false;
+        String fileType = null;
         try {// read certs from PKCS#7 file
             final Collection c = cf.generateCertificates(new FileInputStream(fileName));
             if ( c!=null && !c.isEmpty() ) {
                 Iterator i = c.iterator();
                 while (i.hasNext()) {
-                    if ( putSignEntityHW((X509Certificate)i.next(), adm, fileName+" PKCS#7") )
-                        isPEM = true;
+                    if ( putSignEntityHW(i.next(), adm) )
+                        fileType = "PKCS#7";
                 }
             }
         } catch( Exception e) {
-            m_log.debug(fileName+" is not a PKCS#7 file: "+e);
         }
-        if ( !isPEM ) {
-            // read concatinated cert in PEM format
-            try {
-            BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileName));
-            while (bis.available() > 0)
-                putSignEntityHW((X509Certificate)cf.generateCertificate(bis), adm, fileName+" PEM");
-            } catch( Exception e) {
-                m_log.debug(fileName+" is not a PEM file: "+e);
+        if ( fileType==null ) {
+            try {// read concatinated cert in PEM format
+                BufferedInputStream bis = new BufferedInputStream(new FileInputStream(fileName));
+                while (bis.available() > 0) {
+                    if ( putSignEntityHW(cf.generateCertificate(bis), adm) )
+                        fileType="PEM";
+                }
+            } catch(Exception e){
             }
         }
+        if ( fileType!=null )
+            m_log.debug("Certificate(s) found in file "+fileName+" of "+fileType+".");
+        else
+            m_log.debug("File "+fileName+" has no cert.");
     }
     protected void loadPrivateKeys(Admin adm) throws ServletException, IOException {
         mSignEntity.clear();
