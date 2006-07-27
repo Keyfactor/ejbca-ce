@@ -91,7 +91,7 @@ import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silvén PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.21 2006-07-25 20:34:58 primelars Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.22 2006-07-27 06:56:24 primelars Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChecker {
 
@@ -164,11 +164,11 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
                 cert.getSerialNumber());
         String sDebug = "Signing certificate with serial number "+cert.getSerialNumber() + " from issuer " + cert.getIssuerDN();
         if ( revokedInfo==null ) {
-            m_log.error(sDebug + " can not be found.");
+            m_log.warn(sDebug + " can not be found.");
             return null;
         }
         if ( revokedInfo.getReason()!=RevokedCertInfo.NOT_REVOKED ) {
-            m_log.error(sDebug + " revoked.");
+            m_log.warn(sDebug + " revoked.");
             return null;
         }
         X509Certificate chain[] = null; {
@@ -195,9 +195,8 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
                     break;
             }
         }
-        if ( chain==null ) {
-            m_log.debug(sDebug + " certificate chain broken.");
-        }
+        if ( chain==null )
+        	m_log.warn(sDebug+" has no chain to a root CA.");
         return chain;
     }
     private boolean loadFromKeyStore(Admin adm, String fileName) {
@@ -215,7 +214,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
             keyStore = tmpKeyStore;
             eAlias = keyStore.aliases();
         } catch( Exception e ) {
-            m_log.debug("Unable to load file "+fileName+". Exception: "+e.getMessage());
+            m_log.debug("Unable to load key file "+fileName);
             return false;
         }
         while( eAlias.hasMoreElements() ) {
@@ -232,9 +231,14 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     private boolean putSignEntity( PrivateKeyFactory keyFactory, X509Certificate cert, Admin adm, String providerName ) {
         if ( keyFactory!=null && cert!=null ) {
             X509Certificate[] chain = getCertificateChain(cert, adm);
-            if ( chain!=null )
-                mSignEntity.put( new Integer(getCaid(chain[1])),
-                        new SigningEntity(chain, keyFactory, providerName) );
+            if ( chain!=null ) {
+                int caid = getCaid(chain[1]);
+                m_log.debug("CA with ID "+caid+" now has a OCSP signing key.");
+                SigningEntity oldSigningEntity = (SigningEntity)mSignEntity.get(new Integer(caid));
+                if ( oldSigningEntity!=null && !oldSigningEntity.getCertificateChain().equals(chain) )
+                	m_log.warn("New OCSP signing key for CA \""+chain[1].getSubjectDN()+"\". Key cert \""+chain[0].getSubjectDN()+"\".");
+                mSignEntity.put( new Integer(caid), new SigningEntity(chain, keyFactory, providerName) );
+            }
             return true;
         }
         return false;
@@ -242,22 +246,32 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     public String healtCheck() {
     	StringWriter sw = new StringWriter();
     	PrintWriter pw = new PrintWriter(sw);
-    	Iterator i = mSignEntity.entrySet().iterator();
-    	while ( i.hasNext() ) {
-    		SigningEntity signingEntity = (SigningEntity)i.next();
-    		if ( !signingEntity.isOK() ) {
-    			pw.println();
-    			String sError = "OCSP signing key not useable for CA: " +
-    							signingEntity.getCertificateChain()[1].getSubjectDN();
-    			pw.print(sError);
-    			m_log.error(sError);
-    		}
-    	}
+    	Iterator i = mSignEntity.values().iterator();
+        try {
+			loadCertificates();
+	    	while ( i.hasNext() ) {
+	    		SigningEntity signingEntity = (SigningEntity)i.next();
+	    		if ( !signingEntity.isOK() ) {
+                    pw.println();
+	    			String sError = "OCSP signing key not useable for CA \"" +
+	    							signingEntity.getCertificateChain()[1].getSubjectDN() +
+                                    "\". Key certificate \"" +
+                                    signingEntity.getCertificateChain()[1].getSubjectDN() +
+                                    "\".";
+	    			pw.print(sError);
+	    			m_log.error(sError);
+	    		}
+	    	}
+		} catch (Exception e) {
+			pw.print("Not possible to load signing certificates: " + e.getMessage());
+		}
     	pw.flush();
     	return sw.toString();
     }
     interface PrivateKeyFactory {
         PrivateKey getKey() throws Exception;
+
+		boolean isOK();
     }
     private class PrivateKeyFactorySW implements PrivateKeyFactory {
         final private PrivateKey privateKey;
@@ -267,6 +281,10 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         public PrivateKey getKey() throws Exception {
             return privateKey;
         }
+		public boolean isOK() {
+			// SW checked when initialized
+			return privateKey!=null;
+		}
     }
     private class PrivateKeyFactoryHW implements PrivateKeyFactory {
         final private RSAPublicKey publicKey;
@@ -276,6 +294,9 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         public PrivateKey getKey() throws Exception {
             return mHardTokenObject.getPrivateKey(publicKey);
         }
+		public boolean isOK() {
+			return mHardTokenObject.isOK(publicKey);
+		}
     }
     private boolean putSignEntityHW( X509Certificate cert, Admin adm, String sFile ) {
         if ( cert!=null ) {
@@ -300,13 +321,15 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         } catch (java.security.cert.CertificateException e) {
             throw new Error(e);
         }
-        boolean isPEM = true;
+        boolean isPEM = false;
         try {// read certs from PKCS#7 file
             final Collection c = cf.generateCertificates(new FileInputStream(fileName));
             if ( c!=null && !c.isEmpty() ) {
                 Iterator i = c.iterator();
-                while (i.hasNext())
-                    isPEM = putSignEntityHW((X509Certificate)i.next(), adm, fileName+" PKCS#7");
+                while (i.hasNext()) {
+                    if ( putSignEntityHW((X509Certificate)i.next(), adm, fileName+" PKCS#7") )
+                        isPEM = true;
+                }
             }
         } catch( Exception e) {
             m_log.debug(fileName+" is not a PKCS#7 file: "+e);
@@ -361,7 +384,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         }
         boolean isOK() {
         	try {
-				return mKeyFactory.getKey()!=null;
+				return mKeyFactory.isOK();
 			} catch (Exception e) {
 				m_log.debug("Exception thrown when accessing the private key", e);
 				return false;

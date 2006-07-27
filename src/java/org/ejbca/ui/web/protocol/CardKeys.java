@@ -20,4 +20,10 @@ public interface CardKeys {
      * @throws InterruptedException
      */
     void autenticate( String authCode) throws InterruptedException;
+	/**
+	 * Check if key is OK (verifies PIN).
+	 * @param publicKey 
+	 * @return
+	 */
+	boolean isOK(RSAPublicKey publicKey);
 }
