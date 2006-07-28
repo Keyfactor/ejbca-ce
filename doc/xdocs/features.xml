@@ -18,6 +18,7 @@
 <li>Administration GUI available in several languages - english, french, italian, spanish, swedish and chinese.</li>
 <li>Command line administration for scripts etc.</li>
 <li>Modular API for HSMs. Built in support for nCipher HSM (sponsored by Linagora), PrimeCardHSM and Eracom (now SafeNet).</li>
+<li>Supports different architectures; all-in-one, clustered, external RA, external OCSP, etc.</li>
 <li>Individual enrollment or batch production of certificates.</li>
 <li>Server and client certificates can be exported as PKCS12, JKS or PEM.</li>
 <li>Browser enrollment with Netscape, Mozilla, IE, etc.</li>
