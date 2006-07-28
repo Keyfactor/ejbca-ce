@@ -82,3 +82,6 @@ should be replaced with:
       </layout>
    </appender>
 -----
+
+replace the ip-address and port '127.0.0.1:8080' with the IP and port of your actual TSA.
+The TSA should listen on the HTTP protocol as defined in RFC 3161.
