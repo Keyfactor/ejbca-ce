@@ -1161,7 +1161,10 @@ web.contentencoding    = ${web.contentencoding}
 		    <zipfileset dir="." prefix="ejbca" filemode="700" dirmode="700"> 
 		    	<include name="**/*.sh" />
 		    </zipfileset>
-		  </zip>
+		</zip>
+        <checksum file="../ejbca_${ejbca.zipversion}.zip" algorithm="SHA1" forceOverwrite="yes"/>      
+        <checksum file="../ejbca_${ejbca.zipversion}.zip" algorithm="SHA1" property="ejbcaSHA1"/>      
+        <echo message="SHA1 checksum: ${ejbcaSHA1}" />     
 	</target>
 		
 	<!--
