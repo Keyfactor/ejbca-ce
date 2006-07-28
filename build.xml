@@ -83,9 +83,12 @@
     <property name="ocspear" value="${ocsp-dist.dir}/${app.name}.ear" />
 
 	<property name="createcrlservice.name" value="crlcreateservice.jar" />
-    <property name="createcrlservice.build" value="${tmp}/${createcrlservice.name}" />
-	
+    <property name="createcrlservice.build" value="${tmp}/${createcrlservice.name}" />	
     <property name="createcrlservicejar" value="${dist.dir}/${createcrlservice.name}" />
+
+    <property name="logsigning.name" value="ejbcalogsigning.jar" />
+    <property name="logsigning.build" value="${tmp}/${logsigning.name}" />  
+    <property name="logsigningjar" value="${dist.dir}/${logsigning.name}" />
 
     <property name="jar.extclasspath" value="lib/bcmail-jdk${java.ver}.jar lib/bcprov-jdk${java.ver}.jar lib/log4j-1.2.7.jar lib/ldap.jar lib/commons-lang-2.0.jar lib/commons-collections.jar lib/commons-fileupload-1.0.jar"/>
     <property name="jar.ocspclientclasspath" value="lib/bcprov-jdk${java.ver}.jar lib/log4j-1.2.7.jar ./"/>
@@ -812,6 +815,40 @@ web.contentencoding    = ${web.contentencoding}
     </target>
 
     <!-- =================================================================== -->
+    <!-- Build Signing log4j log appended for JBoss                          -->
+    <!-- =================================================================== -->
+    <target name="jbosslogsigning" depends="compile">
+        <path id="jbosslogsigning.classpath">
+        </path>
+        <javac srcdir="${src.java}" extdirs="${lib}" destdir="${build}" debug="on" encoding="iso8859-1">
+            <exclude name="**/CVS/**" />
+            <include name="**/appserver/jboss/SigningDailyRollingFileAppender*" />
+            <include name="**/appserver/jboss/RollingCalendar*" />
+            <include name="**/appserver/jboss/SignerThread*" />
+            <!-- appserver specific files are built separtely-->
+            <classpath refid="jbosslogsigning.classpath" />
+            <classpath refid="compile.classpath" />
+        </javac>
+
+        <mkdir dir="${logsigning.build}" />
+        <copy todir="${logsigning.build}">
+            <fileset dir="${build}">
+                <include name="org/ejbca/appserver/jboss/SigningDailyRollingFileAppender*.class" />
+                <include name="org/ejbca/appserver/jboss/RollingCalendar.class" />   
+                <include name="org/ejbca/appserver/jboss/SignerThread.class" />   
+                <include name="org/ejbca/util/CertTools*.class" />
+                <include name="org/ejbca/util/FileTools*.class" />
+                <exclude name="se/anatom/ejbca/**/*Test*" />
+            </fileset>
+        </copy>
+        <jar basedir="${logsigning.build}" jarfile="${logsigningjar}">
+            <manifest>
+                <attribute name="Class-Path" value="${jar.classpath}" />
+            </manifest>
+        </jar>
+    </target>
+
+    <!-- =================================================================== -->
     <!-- Build Jboss Specific Services                       -->
     <!-- =================================================================== -->
     <target name="jbossservices" depends="compile">
@@ -823,6 +860,8 @@ web.contentencoding    = ${web.contentencoding}
         <javac srcdir="${src.java}" extdirs="${lib}" destdir="${build}" debug="on" encoding="iso8859-1">
             <exclude name="**/CVS/**" />
             <include name="**/appserver/**" />
+            <exclude name="**/appserver/jboss/SigningDailyRollingFileAppender*" />
+            <exclude name="**/appserver/jboss/RollingCalendar*" />
             <!-- appserver specific files are built separtely-->
             <classpath refid="jbossservices.classpath" />
             <classpath refid="compile.classpath" />

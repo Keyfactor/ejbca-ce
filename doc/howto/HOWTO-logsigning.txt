@@ -1,0 +1,84 @@
+
+Enabling log signing in JBoss
+-----------------------------
+
+There is an impplementation that creates a signed time stamp, from a TSA, on JBoss log files
+when they are rolled-over. This can be every hour for example.
+
+- Stop JBoss
+- Issue the command: ant jbosslogsigning
+- Copy dist/ejbcalogsigning.jar to jboss.home/server/default/lib
+- Copy lib/bctsp-jdk<your java version> to jboss.home/server/default/lib
+- Copy lib/bcprov-jdk<your java version> to jboss.home/server/default/lib
+- Configure jboss.home/server/default/conf/log4j.xml, according to below
+- Start JBoss
+
+Logs will be rolled over at the selected interval, and a file with the same name as the log file, 
+with ending .tsp will be created. The tsp file contains the complete base64 encoded response from the TSA.
+
+Unforturnately you have to add bcprov to JBoss's lib directory. 
+This means that you have to keep this jar in sync with the EJBCA release, if you upgrade EJBCA.
+When upgrading EJBCA, you should also copy a new version of bcprov from EJBCA to JBoss's lib directory.
+
+If you happen to start up JBoss at exactly the time when a log file rollover occurs, it is normal in the 
+startup log with an error message like:
+  SigningDailyRollingFileAppender: No reply bytes received, is TSA down?
+The log appender should recover from this and resume normal opperations.
+
+The section:
+-----
+   <!-- A time/date based rolling appender -->
+   <appender name="FILE" class="org.jboss.logging.appender.DailyRollingFileAppender">
+      <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
+      <param name="File" value="${jboss.server.log.dir}/server.log"/>
+      <param name="Append" value="false"/>
+
+      <!-- Rollover at midnight each day -->
+      <param name="DatePattern" value="'.'yyyy-MM-dd"/>
+
+      <!-- Rollover at the top of each hour
+      <param name="DatePattern" value="'.'yyyy-MM-dd-HH"/>
+      -->
+
+      <layout class="org.apache.log4j.PatternLayout">
+         <!-- The default pattern: Date Priority [Category] Message\n -->
+         <param name="ConversionPattern" value="%d %-5p [%c] %m%n"/>
+
+         <!-- The full pattern: Date MS Priority [Category] (Thread:NDC) Message\n
+         <param name="ConversionPattern" value="%d %-5r %-5p [%c] (%t:%x) %m%n"/>
+          -->
+      </layout>
+   </appender>
+-----
+
+should be replaced with:
+-----
+   <!-- A time/date based rolling appender that signs rollev over log files using a time stamp server -->
+   <appender name="FILE" class="org.ejbca.appserver.jboss.SigningDailyRollingFileAppender">
+      <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
+      <param name="File" value="${jboss.server.log.dir}/server.log"/>
+      <param name="Append" value="false"/>
+      <param name="SignMethod" value="tsa"/>
+      <param name="TsaUrl" value="http://127.0.0.1:8080/signserver/tsa?signerId=1"/>
+
+      <!-- Rollover at midnight each day -->
+      <param name="DatePattern" value="'.'yyyy-MM-dd"/>
+
+      <!-- Rollover at the top of each hour
+      <param name="DatePattern" value="'.'yyyy-MM-dd-HH"/>
+      -->
+
+      <!-- Rollover at the beginning of every minute
+      <param name="DatePattern" value="'.'yyyy-MM-dd-HH-mm"/>
+      -->
+
+      <layout class="org.apache.log4j.PatternLayout">
+         <!-- The default pattern: Date Priority [Category] Message\n -->
+         <param name="ConversionPattern" value="%d %-5p [%c] %m%n"/>
+
+         <!-- The full pattern: Date MS Priority [Category] (Thread:NDC) Message\n
+         <param name="ConversionPattern" value="%d %-5r %-5p [%c] (%t:%x) %m%n"/>
+          -->
+      </layout>
+   </appender>
+-----
