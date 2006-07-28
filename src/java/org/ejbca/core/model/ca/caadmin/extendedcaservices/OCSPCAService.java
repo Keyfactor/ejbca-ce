@@ -38,13 +38,14 @@ import org.ejbca.core.model.ca.certificateprofiles.OCSPSignerCertificateProfile;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
 import org.ejbca.util.Base64;
+import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
 
 
 
-/** Handles and maintains the CA -part of the OCSP functionality
+/** Handles and maintains the CA-part of the OCSP functionality
  * 
- * @version $Id: OCSPCAService.java,v 1.5 2006-07-19 14:05:45 anatom Exp $
+ * @version $Id: OCSPCAService.java,v 1.6 2006-07-28 16:00:39 anatom Exp $
  */
 public class OCSPCAService extends ExtendedCAService implements java.io.Serializable{
 
@@ -71,7 +72,8 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
     
             
     public OCSPCAService(ExtendedCAServiceInfo serviceinfo)  {
-      m_log.debug("OCSPCAService : constructor " + serviceinfo.getStatus()); 	
+      m_log.debug("OCSPCAService : constructor " + serviceinfo.getStatus()); 
+      CertTools.installBCProvider();
 	  // Currently only RSA keys are supported
 	  OCSPCAServiceInfo info = (OCSPCAServiceInfo) serviceinfo;	
       data = new HashMap();   
@@ -87,6 +89,7 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
     }
     
     public OCSPCAService(HashMap data) throws IllegalArgumentException, IllegalKeyStoreException {
+      CertTools.installBCProvider();
       loadData(data);  
       if(data.get(OCSPKEYSTORE) != null){    
          // lookup keystore passwords      
