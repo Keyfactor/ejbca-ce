@@ -91,7 +91,7 @@ import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silvén PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.23 2006-07-27 20:44:56 primelars Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.24 2006-07-28 19:40:49 primelars Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChecker {
 
@@ -248,9 +248,9 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     public String healtCheck() {
     	StringWriter sw = new StringWriter();
     	PrintWriter pw = new PrintWriter(sw);
-    	Iterator i = mSignEntity.values().iterator();
         try {
 			loadCertificates();
+            Iterator i = mSignEntity.values().iterator();
 	    	while ( i.hasNext() ) {
 	    		SigningEntity signingEntity = (SigningEntity)i.next();
 	    		if ( !signingEntity.isOK() ) {
@@ -264,6 +264,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
 	    		}
 	    	}
 		} catch (Exception e) {
+            m_log.error("Not possible to load signing certificates.", e);
 			pw.print("Not possible to load signing certificates: " + e.getMessage());
 		}
     	pw.flush();
