@@ -85,3 +85,17 @@ should be replaced with:
 
 replace the ip-address and port '127.0.0.1:8080' with the IP and port of your actual TSA.
 The TSA should listen on the HTTP protocol as defined in RFC 3161.
+
+Verifying timestamps
+--------------------
+
+You can verify time stamps with a time stamp client, for example the one that comes with PrimeKeys TSA.
+
+> java -jar timeStampClient.jar  -verify -signerfile tsa1.pem -inrep server.log.2006-07-28-18-58.tsp
+Token was validated successfully.
+Token was generated on: Fri Jul 28 18:59:00 CEST 2006
+Token hash alg: SHA1
+MessageDigest=1a02dc7e05d06df45d2e0f74da502513852064d5
+
+> sha1sum server.log.2006-07-28-18-58
+1a02dc7e05d06df45d2e0f74da502513852064d5 *server.log.2006-07-28-18-58
