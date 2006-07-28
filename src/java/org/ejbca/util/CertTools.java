@@ -88,7 +88,7 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.12 2006-07-03 08:33:59 anatom Exp $
+ * @version $Id: CertTools.java,v 1.13 2006-07-28 17:42:24 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -586,10 +586,13 @@ public class CertTools {
     public static void installBCProvider() {
         if (Security.addProvider(new BouncyCastleProvider()) < 0) {
             // If already installed, remove so we can handle redeploy
-            Security.removeProvider("BC");
-            if (Security.addProvider(new BouncyCastleProvider()) < 0) {
-                log.error("Cannot even install BC provider again!");
-            }
+        	// Nope, we ignore re-deploy on this level, because it can happen
+        	// that the BC-provider is uninstalled, in just the second another
+        	// thread tries to use the provider, and then that request will fail.
+            //Security.removeProvider("BC");
+            //if (Security.addProvider(new BouncyCastleProvider()) < 0) {
+            //    log.error("Cannot even install BC provider again!");
+            //}
         }
     }
 
