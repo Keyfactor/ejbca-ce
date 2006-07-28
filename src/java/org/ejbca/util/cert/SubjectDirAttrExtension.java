@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
 package org.ejbca.util.cert;
 
 import java.security.cert.X509Certificate;
@@ -23,6 +36,12 @@ import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509NameEntryConverter;
 import org.ejbca.util.CertTools;
 
+/**
+ * A class for reading values from SubjectDirectoryAttributes extension.
+ *
+ * @author  Tomas Gustavsson
+ * @version $Id: SubjectDirAttrExtension.java,v 1.3 2006-07-28 07:14:16 anatom Exp $
+ */
 public class SubjectDirAttrExtension extends CertTools {
 
     private static Logger log = Logger.getLogger(SubjectDirAttrExtension.class);

@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
 package org.ejbca.util.cert;
 
 import java.io.ByteArrayInputStream;
@@ -13,6 +26,12 @@ import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.x509.CRLNumber;
 import org.bouncycastle.asn1.x509.X509Extensions;
 
+/**
+ * A class for reading values from CRL extensions.
+ *
+ * @author  Tomas Gustavsson
+ * @version $Id: CrlExtensions.java,v 1.2 2006-07-28 07:14:16 anatom Exp $
+ */
 public class CrlExtensions {
     private static Logger log = Logger.getLogger(CrlExtensions.class);
 

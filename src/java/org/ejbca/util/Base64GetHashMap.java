@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
 package org.ejbca.util;
 
 import java.util.HashMap;
@@ -9,7 +22,7 @@ import java.util.Map;
  * It only tries to decode objects of type String.
  *  
  * @author tomasg
- * @version $Id: Base64GetHashMap.java,v 1.3 2006-06-21 14:54:56 anatom Exp $
+ * @version $Id: Base64GetHashMap.java,v 1.4 2006-07-28 07:14:15 anatom Exp $
  */
 public class Base64GetHashMap extends HashMap {
     public Base64GetHashMap() {
