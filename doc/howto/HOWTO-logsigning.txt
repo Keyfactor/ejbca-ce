@@ -16,7 +16,8 @@ These are general ways, which works for any application that either uses syslog 
 Then there are application specific ways:
 - Implement a custom logger in EJBCA that signs each log row. Implementation of custom loggers are described
   in 'Appendixes->Log Configuration' on http://docs.primekey.se/.
-No such imelementation is done for the moment.
+No such imelementation is done for the moment. If every log row should be signed a separate key on a high-performance
+HSM is needed, several log rows per secons is normally issued when actions are done.
 
 This document describes the three first options.
 
