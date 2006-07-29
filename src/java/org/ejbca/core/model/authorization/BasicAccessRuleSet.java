@@ -17,7 +17,7 @@ package org.ejbca.core.model.authorization;
  * A class containing constats used when configuring Basic Access Rule Set 
  *
  * @author  herrvendil 
- * @version $Id: BasicAccessRuleSet.java,v 1.1 2006-01-17 20:30:56 anatom Exp $
+ * @version $Id: BasicAccessRuleSet.java,v 1.2 2006-07-29 11:26:36 herrvendil Exp $
  */
 public class BasicAccessRuleSet implements java.io.Serializable {
 
@@ -36,6 +36,7 @@ public class BasicAccessRuleSet implements java.io.Serializable {
     public static final int ENDENTITY_DELETE           = 64;
     public static final int ENDENTITY_REVOKE           = 128;
     public static final int ENDENTITY_KEYRECOVER       = 256;
+    public static final int ENDENTITY_APPROVE          = 512;
     
     public static final int ENDENTITYPROFILE_ALL  = 0;
     
@@ -50,7 +51,8 @@ public class BasicAccessRuleSet implements java.io.Serializable {
     
     public static final String[]  ENDENTITYRULETEXTS =  {"VIEWENDENTITYRULE","VIEWHISTORYRULE","VIEWHARDTOKENRULE",
     	                                                                                  "CREATEENDENTITYRULE","EDITENDENTITYRULE","DELETEENDENTITYRULE",
-																						  "REVOKEENDENTITYRULE", "KEYRECOVERENDENTITYRULE"};
+																						  "REVOKEENDENTITYRULE", "KEYRECOVERENDENTITYRULE",
+																						  "APPROVEENDENTITYRULE"};
     		
     public static final String[]  OTHERTEXTS = {"","VIEWLOG","ISSUEHARDTOKENS"};
         
@@ -87,6 +89,9 @@ public class BasicAccessRuleSet implements java.io.Serializable {
     	   case BasicAccessRuleSet.ENDENTITY_KEYRECOVER:
     	   	returnval = ENDENTITYRULETEXTS[7];
     	   	break;
+    	   case BasicAccessRuleSet.ENDENTITY_APPROVE:
+       	   	returnval = ENDENTITYRULETEXTS[8];
+       	   	break;
     	}
     	return returnval;
     }

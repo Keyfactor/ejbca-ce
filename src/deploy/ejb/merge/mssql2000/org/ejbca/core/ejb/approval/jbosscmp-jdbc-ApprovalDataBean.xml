@@ -1,0 +1,44 @@
+<cmp-field>
+  <field-name>id</field-name>
+</cmp-field>
+<cmp-field>
+  <field-name>approvalid</field-name>
+</cmp-field>
+<cmp-field>
+  <field-name>approvaltype</field-name>
+</cmp-field>
+<cmp-field>
+  <field-name>endentityprofileid</field-name>
+</cmp-field>
+<cmp-field>
+  <field-name>caid</field-name>
+</cmp-field>
+<cmp-field>
+  <field-name>reqadmincertissuerdn</field-name>
+</cmp-field>
+<cmp-field>
+  <field-name>reqadmincertsn</field-name>
+</cmp-field>
+<cmp-field>
+  <field-name>status</field-name>
+</cmp-field>
+<cmp-field>
+  <field-name>approvaldata</field-name>
+  <jdbc-type>LONGVARCHAR</jdbc-type>
+  <sql-type>TEXT</sql-type>
+</cmp-field>
+<cmp-field>
+  <field-name>requestdata</field-name>
+  <jdbc-type>LONGVARCHAR</jdbc-type>
+  <sql-type>TEXT</sql-type>
+</cmp-field>
+<cmp-field>
+  <field-name>requestdate</field-name>
+</cmp-field>
+<cmp-field>
+  <field-name>expiredate</field-name>
+</cmp-field>
+<cmp-field>
+  <field-name>remainingapprovals</field-name>
+</cmp-field>
+

@@ -23,7 +23,7 @@ import java.util.Iterator;
  * A class used as a help class for displaying and configuring basic access rules
  *
  * @author  herrvendil 
- * @version $Id: BasicAccessRuleSetEncoder.java,v 1.1 2006-01-17 20:30:56 anatom Exp $
+ * @version $Id: BasicAccessRuleSetEncoder.java,v 1.2 2006-07-29 11:26:36 herrvendil Exp $
  */
 public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 
@@ -368,6 +368,7 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 		availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_EDIT));
 		availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_DELETE));
 		availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_REVOKE));
+		availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_APPROVE));
 		if(usekeyrecovery)
 		  availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_KEYRECOVER));
 		
@@ -445,7 +446,11 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 				    if(ar.getAccessRule().equals(AvailableAccessRules.REGULAR_KEYRECOVERY)){				    	
 				    	currentendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_KEYRECOVER));							
 				    	endentityrules.put(general,  new Integer(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_KEYRECOVER));				    	
-				    }				    						
+				    }
+				    if(ar.getAccessRule().equals(AvailableAccessRules.REGULAR_APPORVEENDENTITY)){				    	
+				    	currentendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_APPROVE));							
+				    	endentityrules.put(general,  new Integer(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_APPROVE));				    	
+				    }
 				}else{
 				   this.forceadvanced = true;
 				   break;
@@ -495,6 +500,9 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 					}else						
 					if(ar.getAccessRule().endsWith(AvailableAccessRules.KEYRECOVERY_RIGHTS)){
 						currentval += BasicAccessRuleSet.ENDENTITY_KEYRECOVER;
+					}
+					if(ar.getAccessRule().endsWith(AvailableAccessRules.APPROVAL_RIGHTS)){
+						currentval += BasicAccessRuleSet.ENDENTITY_APPROVE;
 					}
 					endentityrules.put(profileid, new Integer(currentval));					
 				  }else{

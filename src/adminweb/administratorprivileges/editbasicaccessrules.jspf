@@ -115,7 +115,7 @@ function roleupdated(){
           document.basicrules.<%=SELECT_ENDENTITYRULES%>.options[i].value == <%=BasicAccessRuleSet.ENDENTITY_EDIT %> ||
           document.basicrules.<%=SELECT_ENDENTITYRULES%>.options[i].value == <%=BasicAccessRuleSet.ENDENTITY_DELETE %> ||
           document.basicrules.<%=SELECT_ENDENTITYRULES%>.options[i].value == <%=BasicAccessRuleSet.ENDENTITY_REVOKE %>)
-         document.basicrules.<%=SELECT_ENDENTITYRULES%>.options[i].selected=true;
+          document.basicrules.<%=SELECT_ENDENTITYRULES%>.options[i].selected=true;
        else
          document.basicrules.<%=SELECT_ENDENTITYRULES%>.options[i].selected=false;
     }

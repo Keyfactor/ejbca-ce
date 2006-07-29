@@ -33,13 +33,14 @@ import org.ejbca.util.StringTools;
  * statement.
  *
  * @author tomselleck
- * @version $Id: Query.java,v 1.1 2006-01-17 20:32:19 anatom Exp $
+ * @version $Id: Query.java,v 1.2 2006-07-29 11:26:37 herrvendil Exp $
  */
 public class Query implements java.io.Serializable {
     private static Logger log = Logger.getLogger(Query.class);
     // Public Constants.
     public static final int TYPE_LOGQUERY = 0;
     public static final int TYPE_USERQUERY = 1;
+    public static final int TYPE_APPROVALQUERY = 2;
     public static final int CONNECTOR_AND = 0;
     public static final int CONNECTOR_OR = 1;
     public static final int CONNECTOR_ANDNOT = 2;
@@ -130,6 +131,9 @@ public class Query implements java.io.Serializable {
         case TYPE_USERQUERY:
             matches.addElement(new UserMatch(matchwith, matchtype, matchvalue));
             break;
+        case TYPE_APPROVALQUERY:
+        	matches.addElement(new ApprovalMatch(matchwith, matchtype, matchvalue));
+        	break;
         }
         if (StringTools.hasSqlStripChars(matchvalue)) {
             hasIllegalSqlChars = true;
@@ -149,19 +153,10 @@ public class Query implements java.io.Serializable {
      */
     public void add(int matchwith, int matchtype, String matchvalue, int connector)
         throws NumberFormatException {
-        switch (this.type) {
-        case TYPE_LOGQUERY:
-            matches.addElement(new LogMatch(matchwith, matchtype, matchvalue));
-            break;
-        case TYPE_USERQUERY:
-            matches.addElement(new UserMatch(matchwith, matchtype, matchvalue));
-            break;
-        }
+        add(matchwith,matchtype,matchvalue);
         connectors.addElement(new Integer(connector));
 
-        if (StringTools.hasSqlStripChars(matchvalue)) {
-            hasIllegalSqlChars = true;
-        }
+ 
     }
 
     /**

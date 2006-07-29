@@ -26,7 +26,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 /**
  * 
  *
- * @version $Id: AvailableAccessRules.java,v 1.2 2006-07-20 17:42:53 herrvendil Exp $
+ * @version $Id: AvailableAccessRules.java,v 1.3 2006-07-29 11:26:36 herrvendil Exp $
  */
 public class AvailableAccessRules {
         
@@ -37,14 +37,14 @@ public class AvailableAccessRules {
     public static final String DELETE_RIGHTS  = "/delete_end_entity";
     public static final String REVOKE_RIGHTS  = "/revoke_end_entity";
     public static final String HISTORY_RIGHTS = "/view_end_entity_history";
-    
+    public static final String APPROVAL_RIGHTS = "/approve_end_entity";
 
     public static final String  HARDTOKEN_RIGHTS               = "/view_hardtoken";
 
     public static final String  KEYRECOVERY_RIGHTS             = "/keyrecovery";    
     
         // Endings used in profile authorizxation.
-    public static final String[]  ENDENTITYPROFILE_ENDINGS = {VIEW_RIGHTS,EDIT_RIGHTS,CREATE_RIGHTS,DELETE_RIGHTS,REVOKE_RIGHTS,HISTORY_RIGHTS};
+    public static final String[]  ENDENTITYPROFILE_ENDINGS = {VIEW_RIGHTS,EDIT_RIGHTS,CREATE_RIGHTS,DELETE_RIGHTS,REVOKE_RIGHTS,HISTORY_RIGHTS,APPROVAL_RIGHTS};
     
         // Name of end entity profile prefix directory in authorization module.
     public static final String    ENDENTITYPROFILEBASE            = "/endentityprofilesrules";
@@ -64,6 +64,7 @@ public class AvailableAccessRules {
     public static final String REGULAR_CABASICFUNCTIONS                           = "/ca_functionality/basic_functions";
     public static final String REGULAR_ACTIVATECA                                 = "/ca_functionality/basic_functions/activate_ca";    
     public static final String REGULAR_VIEWCERTIFICATE                            = "/ca_functionality/view_certificate";    
+    public static final String REGULAR_APPROVECAACTION                            = "/ca_functionality/approve_caaction";
     public static final String REGULAR_CREATECRL                                  = "/ca_functionality/create_crl";    
     public static final String REGULAR_EDITCERTIFICATEPROFILES                    = "/ca_functionality/edit_certificate_profiles";    
     public static final String REGULAR_CREATECERTIFICATE                          = "/ca_functionality/create_certificate";
@@ -77,6 +78,7 @@ public class AvailableAccessRules {
     public static final String REGULAR_DELETEENDENTITY                            = "/ra_functionality/delete_end_entity";
     public static final String REGULAR_REVOKEENDENTITY                            = "/ra_functionality/revoke_end_entity";    
     public static final String REGULAR_VIEWENDENTITYHISTORY                       = "/ra_functionality/view_end_entity_history";
+    public static final String REGULAR_APPORVEENDENTITY                           = "/ra_functionality/approve_end_entity";
     public static final String REGULAR_LOGFUNCTIONALITY                           = "/log_functionality"; 
     public static final String REGULAR_VIEWLOG                                    = "/log_functionality/view_log"; 
     public static final String REGULAR_LOGCONFIGURATION                           = "/log_functionality/edit_log_configuration"; 
@@ -101,6 +103,7 @@ public class AvailableAccessRules {
                                                            REGULAR_EDITCERTIFICATEPROFILES,                                                           
                                                            REGULAR_CREATECERTIFICATE,
                                                            REGULAR_STORECERTIFICATE,
+                                                           REGULAR_APPROVECAACTION,
                                                            REGULAR_RAFUNCTIONALITY, 
                                                            REGULAR_EDITENDENTITYPROFILES,
                                                            REGULAR_EDITUSERDATASOURCES,                                                           
@@ -110,6 +113,7 @@ public class AvailableAccessRules {
                                                            REGULAR_DELETEENDENTITY,
                                                            REGULAR_REVOKEENDENTITY,
                                                            REGULAR_VIEWENDENTITYHISTORY,
+                                                           REGULAR_APPORVEENDENTITY,
                                                            REGULAR_LOGFUNCTIONALITY,
                                                            REGULAR_VIEWLOG,
                                                            REGULAR_LOGCONFIGURATION,
