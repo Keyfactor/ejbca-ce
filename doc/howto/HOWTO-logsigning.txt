@@ -116,7 +116,8 @@ Enabling log signing using logrotate and TSA
 ============================================
 
 The same approach is taken for signing using the TSA server instead of openssl.
-In this example the timeStampClient and TSA from PrimeKey is used.
+In this example the timeStampClient and TSA from PrimeKey is used. 
+After building 'signserver' the timeStampClient.jar and other needed jar files is in the dist-client directory.
 
 The new logrotate configuration:
 
@@ -273,6 +274,7 @@ Verifying timestamps
 ====================
 
 You can verify time stamps with a time stamp client, for example the one that comes with PrimeKeys TSA.
+After building 'signserver' the timeStampClient.jar and other needed jar files is in the dist-client directory.
 
 > java -jar timeStampClient.jar -verify -signerfile tsa1.pem -inrep server.log.2006-07-28-18-58.tsp
 Token was validated successfully.
