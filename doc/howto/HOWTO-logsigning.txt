@@ -1,8 +1,188 @@
+(this information is also available on http://docs.primekey.se/)
 
-Enabling log signing in JBoss
------------------------------
+There are several ways to sign log files. 
+The most common is to sign the logs as they are beeing archived (rotated).
 
-There is an impplementation that creates a signed time stamp, from a TSA, on JBoss log files
+Some examples:
+
+- If logs are sent to syslog, the syslog rotation can sign files when they are rotated
+  - Using openssl
+  - Using a time stamp server (TSA)
+- If logs are stored by JBoss, a special log4j appender can be used to sign files when they are rotated
+  - Using a time stamp server (TSA)
+
+These are general ways, which works for any application that either uses syslog or JBoss.
+
+Then there are application specific ways:
+- Implement a custom logger in EJBCA that signs each log row. Implementation of custom loggers are described
+  in 'Appendixes->Log Configuration' on http://docs.primekey.se/.
+No such imelementation is done for the moment.
+
+This document describes the three first options.
+
+Enabling log signing using logrotate and openssl
+================================================
+
+Save and enable the below logrotate configuration for syslog, is should normaly be stored as the file syslog
+in the directory /etc/logrotate.d.
+If there is a previous configuration for syslog, you should remove this, perhaps merge some changes if you like.
+Syslog is normally not rotated in most linux distributions.
+
+After enabling the configuration you should make sure that logrotate is run as often as you like. Normally is is
+run every night. If you want to run it more often for syslog, you can add a crontab entry to run it every hour for example.
+In that cas call logrotate with the specified configuration file:
+    logrotate syslog.conf
+
+Note, that when stored in logrotate.d, the syslog configuration will be called when logrotate is normally run.
+    
+-----
+/var/log/syslog {
+    rotate 5
+    postrotate
+        /usr/bin/killall -HUP syslogd
+    endscript
+    lastaction
+        OPENSSL=/usr/bin/openssl
+        LOGFILE=/var/log/syslog
+        FILE="$LOGFILE.`date +%F.%H:%M:%S`.log"
+        SIGNATUREFILE="$FILE.sign"
+        cp $LOGFILE.1 "$FILE"
+        PRIVATEKEY="/etc/logsigner/qc1.priv"
+        $OPENSSL dgst -sign $PRIVATEKEY -sha1 $FILE > $SIGNATUREFILE
+    endscript
+}
+-----
+
+qc1.priv is the private key used for signing the logfile. 
+
+See the simple shell script below for 
+openssl command to convert a pkcs12 file to the public key and private key files that openssl uses 
+for signing and verifying.
+
+To verify, you can issue the command:
+    log-sign.sh verify qc1.pub syslog.2006-07-29.11\:06\:27.log syslog.2006-07-29.11\:06\:27.log.sign
+Where the dates and time correspond to the file you are verifying off-course.
+
+log.sign.sh is a simple shell script use to manually sign and verify files:
+-----
+#!/bin/bash
+
+# Openssl command for signing and verifying
+#openssl dgst -sign superadmin.key -sha1 test.txt > test.txt.sign
+#openssl dgst -verify superadmin.pubkey -signature test.txt.sign -sha1 test.txt
+
+# Openssl command to convert a p12 file to cert and key files in pem
+# First cert:
+#openssl pkcs12 -in qc1.p12 -nodes -nokeys -clcerts -out qc1.pem
+# Then public key
+#openssl x509 -in qc1.pem -pubkey -noout > qc1.pub
+# Then private key:
+#openssl pkcs12 -in qc1.p12 -nodes -nocerts -out qc1.priv
+
+OPENSSL=/usr/bin/openssl
+SCRIPTNAME=`basename $0`
+OPTION=$1
+DATE=`date +"%Y-%m-%d"`
+BACKUPDIR=signed_files
+
+if [ "$OPTION" = "sign" ]; then
+    PRIVATEKEY="$2"
+    FILE="$3"
+    SIGNATUREFILE="$4"
+    $OPENSSL dgst -sign $PRIVATEKEY -sha1 $FILE > $SIGNATUREFILE
+
+    exit 0
+
+elif [ "$OPTION" = "verify" ]; then
+    PUBLICKEY="$2"
+    FILE="$3"
+    SIGNATUREFILE="$4"
+
+    $OPENSSL dgst -verify $PUBLICKEY -signature $SIGNATUREFILE -sha1 $FILE
+    exit 0
+
+else
+    echo "Usage:"
+    echo "To sign files you have to edit the script and add the files you want signed."
+    echo "$SCRIPTNAME sign <path to private key> <path to file to sign> <path to signature>"
+    echo "$SCRIPTNAME verify <path to public key> <file that IS signed> <file which contains the signature>"
+    exit 0
+fi
+-----
+
+
+Enabling log signing using logrotate and TSA
+============================================
+
+The same approach is taken for signing using the TSA server instead of openssl.
+In this example the timeStampClient and TSA from PrimeKey is used.
+
+The new logrotate configuration:
+
+-----
+/var/log/syslog {
+    rotate 5
+    postrotate
+        /usr/bin/killall -HUP syslogd
+    endscript    
+    lastaction
+        TSACLIENTDIR=/home/tomas/dev/workspace/signserver/dist-client
+        LOGFILE=/var/log/syslog
+        FILE="$LOGFILE.`date +%F.%H:%M:%S`.log"
+        SIGNATUREFILE="$FILE.sign"
+        cp $LOGFILE.1 "$FILE"
+        PRIVATEKEY="/etc/logsigner/qc1.priv"
+        java -jar "$TSACLIENTDIR/timeStampClient.jar" -url "http://127.0.0.1:8080/signserver/tsa?signerId=1" -infile $FILE -outrep $SIGNATUREFILE -base64
+    endscript
+}
+-----
+
+Replace the ip-address and port (127.0.0.1:8080) with the ip and port of your actual TSA.
+
+And the new shell script for verification (or manual signing).
+log-sign-tsa.sh
+-----
+#!/bin/bash
+
+TSACLIENTDIR=/usr/local/signserver/dist-client
+SCRIPTNAME=`basename $0`
+OPTION=$1
+DATE=`date +"%Y-%m-%d"`
+
+if [ "$OPTION" = "sign" ]; then
+    FILE="$2"
+    SIGNATUREFILE="$3"
+    TSAURL="$4"
+    java -jar "$TSACLIENTDIR/timeStampClient.jar" -url $TSAURL -infile $FILE -outrep $SIGNATUREFILE -base64
+
+    exit 0
+
+elif [ "$OPTION" = "verify" ]; then
+    PUBLICKEY="$2"
+    FILE="$3"
+    SIGNATUREFILE="$4"
+    java -jar "$TSACLIENTDIR/timeStampClient.jar" -verify -inrep $SIGNATUREFILE -signerfile $PUBLICKEY
+    sha1sum $FILE
+
+    exit 0
+
+else
+    echo "Usage:"
+    echo "To sign files you have to edit the script and add the files you want signed."
+    echo "$SCRIPTNAME sign <path to file to sign> <path to signature> <url to tsa>"
+    echo "$SCRIPTNAME verify <path to PEM certificate of TSA> <file that IS signed> <file which contains the signature>"
+    exit 0
+fi
+-----
+
+When verifying the time stamp token, the sha1 hash from the time stamp token (signed) and the calculated sha1 hash of the file is printed.
+You must compare them manually.
+
+
+Enabling log signing using TSA in JBoss
+=======================================
+
+There is an implementation that creates a signed time stamp, from a TSA, on JBoss log files
 when they are rolled-over. This can be every hour for example.
 
 - Stop JBoss
@@ -16,6 +196,7 @@ when they are rolled-over. This can be every hour for example.
 Logs will be rolled over at the selected interval, and a file with the same name as the log file, 
 with ending .tsp will be created. The tsp file contains the complete base64 encoded response from the TSA.
 
+NOTE!!!
 Unforturnately you have to add bcprov to JBoss's lib directory. 
 This means that you have to keep this jar in sync with the EJBCA release, if you upgrade EJBCA.
 When upgrading EJBCA, you should also copy a new version of bcprov from EJBCA to JBoss's lib directory.
@@ -86,12 +267,13 @@ should be replaced with:
 replace the ip-address and port '127.0.0.1:8080' with the IP and port of your actual TSA.
 The TSA should listen on the HTTP protocol as defined in RFC 3161.
 
+
 Verifying timestamps
---------------------
+====================
 
 You can verify time stamps with a time stamp client, for example the one that comes with PrimeKeys TSA.
 
-> java -jar timeStampClient.jar  -verify -signerfile tsa1.pem -inrep server.log.2006-07-28-18-58.tsp
+> java -jar timeStampClient.jar -verify -signerfile tsa1.pem -inrep server.log.2006-07-28-18-58.tsp
 Token was validated successfully.
 Token was generated on: Fri Jul 28 18:59:00 CEST 2006
 Token hash alg: SHA1
@@ -99,3 +281,6 @@ MessageDigest=1a02dc7e05d06df45d2e0f74da502513852064d5
 
 > sha1sum server.log.2006-07-28-18-58
 1a02dc7e05d06df45d2e0f74da502513852064d5 *server.log.2006-07-28-18-58
+
+If the hashes from the time stamp token (MessageDigest) matches the hash from sha1sum, the file is verified, 
+i.e. has not been changed since the time stamp token was generated.
