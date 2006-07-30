@@ -44,7 +44,7 @@ import org.ejbca.util.Base64PutHashMap;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.3 2006-06-26 08:02:13 anatom Exp $
+ * @version $Id: CADataBean.java,v 1.4 2006-07-30 17:03:51 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a publisher"
@@ -54,7 +54,7 @@ import org.ejbca.util.Base64PutHashMap;
  *   local-jndi-name="CADataLocal"
  *   view-type="local"
  *   type="CMP"
- *   reentrant="False"
+ *   reentrant="True"
  *   cmp-version="2.x"
  *   transaction-type="Container"
  *   schema="CADataBean"
