@@ -28,12 +28,14 @@ import org.ejbca.core.ejb.log.ILogSessionRemote;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.util.query.BasicMatch;
+import org.ejbca.util.query.LogMatch;
 import org.ejbca.util.query.Query;
 
 /**
  * Tests the log modules entity and session beans.
  *
- * @version $Id: TestLog.java,v 1.4 2006-01-26 13:01:59 anatom Exp $
+ * @version $Id: TestLog.java,v 1.5 2006-07-30 18:19:03 herrvendil Exp $
  */
 public class TestLog extends TestCase {
     private static Logger log = Logger.getLogger(TestLog.class);
@@ -119,7 +121,7 @@ public class TestLog extends TestCase {
 
 
         Query query = new Query(Query.TYPE_LOGQUERY);
-        query.add(new Date(0), new Date());
+        query.add(LogMatch.MATCH_WITH_COMMENT,BasicMatch.MATCH_TYPE_EQUALS,"Test");
         Collection result = cacheAdmin.query(query, "", "caid=" + Integer.toString("CN=TEST".hashCode()));
         Iterator iter = result.iterator();
         boolean found = false;

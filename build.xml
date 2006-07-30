@@ -1066,6 +1066,7 @@ web.contentencoding    = ${web.contentencoding}
                     <include name="**/batch/Test*" />
                     <include name="**/log/Test*" />
                     <include name="**/keyrecovery/Test*" />
+                	<include name="**/approval/Test*" />
                     <include name="**/hardtoken/Test*" />
                     <exclude name="**/TestRunner*" />
                 </fileset>

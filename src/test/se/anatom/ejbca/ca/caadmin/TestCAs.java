@@ -36,11 +36,12 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.util.CertTools;
 
 /**
  * Tests the ca data entity bean.
  *
- * @version $Id: TestCAs.java,v 1.9 2006-06-06 17:14:29 anatom Exp $
+ * @version $Id: TestCAs.java,v 1.10 2006-07-30 18:19:02 herrvendil Exp $
  */
 public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -74,6 +75,8 @@ public class TestCAs extends TestCase {
 
             cacheAdmin = cacheHome.create();
         }
+        
+        CertTools.installBCProvider();
 
         log.debug("<setUp()");
     }

@@ -18,7 +18,8 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.math.BigInteger;
 import java.security.cert.X509Certificate;
-import java.sql.Date;
+import java.util.Date;
+
 
 import org.ejbca.util.CertTools;
 
@@ -36,10 +37,12 @@ import org.ejbca.util.CertTools;
  * Approvals is sorted by dates.
  * 
  * @author Philip Vendil
- * @version $Id: Approval.java,v 1.1 2006-07-29 11:26:35 herrvendil Exp $
+ * @version $Id: Approval.java,v 1.2 2006-07-30 18:19:02 herrvendil Exp $
  */
 
 public class Approval implements Comparable, Externalizable { 
+	
+	private static final long serialVersionUID = -1L;
 	
 	private static final int LATEST_VERSION = 1;
 
@@ -54,15 +57,19 @@ public class Approval implements Comparable, Externalizable {
     
 	/**
 	 * @param approved
-	 * @param approvalDate
+	 * @param apDate
 	 * @param comment
 	 */
-	public Approval(boolean approved, Date approvalDate, String comment) {
+	public Approval(String comment) {
 		super();
-		this.approved = approved;
-		this.approvalDate = approvalDate;
+		this.approvalDate = new Date();
 		this.comment = comment;
 	}
+	
+	/**
+	 * Constuctor used in externaliziation only
+	 */
+	public Approval(){}
 
 	/**
 	 * @return Returns the adminCertIssuerDN.
@@ -116,7 +123,8 @@ public class Approval implements Comparable, Externalizable {
 	 * 
 	 * 
 	 */
-	public void setApprovalCertificateAndUsername(X509Certificate approvalAdminCert, String username) {
+	public void setApprovalCertificateAndUsername(boolean approved, X509Certificate approvalAdminCert, String username) {
+		this.approved = approved;
 		this.adminCertSerialNumber = approvalAdminCert.getSerialNumber().toString(16);
 		this.adminCertIssuerDN = CertTools.getIssuerDN(approvalAdminCert);
 		this.username = username;
@@ -130,7 +138,7 @@ public class Approval implements Comparable, Externalizable {
 	}
 
 	public void writeExternal(ObjectOutput out) throws IOException {
-		out.write(LATEST_VERSION);
+		out.writeInt(LATEST_VERSION);
 		out.writeObject(this.adminCertIssuerDN);
 		out.writeObject(this.adminCertSerialNumber);
 		out.writeBoolean(this.approved);

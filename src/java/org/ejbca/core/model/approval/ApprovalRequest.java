@@ -42,33 +42,35 @@ import org.ejbca.util.CertTools;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalRequest.java,v 1.1 2006-07-29 11:26:35 herrvendil Exp $
+ * @version $Id: ApprovalRequest.java,v 1.2 2006-07-30 18:19:02 herrvendil Exp $
  */
 
 public abstract class ApprovalRequest implements  Externalizable { 
+	
+	private static final long serialVersionUID = -1L;
 	
 	private static final Logger log = Logger.getLogger(ApprovalRequest.class);
 	
 	private static final int LATEST_VERSION = 1;
 	
 	/**
-	 * Simple type means that the approver will only see new data about the
+	 * Simple request type means that the approver will only see new data about the
 	 * action and will not compare it to old data
 	 */
-	protected static final int TYPE_SIMPLE    = 1;
+	public static final int REQUESTTYPE_SIMPLE    = 1;
 	
 	/**
-	 * Comparing type means that the approving administrator have to
+	 * Comparing request type means that the approving administrator have to
 	 * compare old data with new data in the request.
 	 * 
 	 */
-	protected static final int TYPE_COMPARING = 2;
+	public static final int REQUESTTYPE_COMPARING = 2;
 
     private String requestAdminCert = null; // Base64 encoding of x509certificate
     
     private String requestSignature = null;
     
-    private int approvalRequestType = TYPE_SIMPLE;
+    private int approvalRequestType = REQUESTTYPE_SIMPLE;
     
     private int numOfRequiredApprovals = 0;
     
@@ -95,6 +97,12 @@ public abstract class ApprovalRequest implements  Externalizable {
 		this.numOfRequiredApprovals = numOfRequiredApprovals;
 		this.cAId = cAId;
 		this.endEntityProfileId = endEntityProfileId;
+	}
+	
+	/**
+	 * Constuctor used in externaliziation only
+	 */
+	public ApprovalRequest(){
 	}
 	
 	/**
@@ -141,13 +149,6 @@ public abstract class ApprovalRequest implements  Externalizable {
 	 */
 	public abstract String getOldRequestDataAsText();
 	
-	/**
-	 * Method that should return the name of the approval request.
-	 * 
-	 * This name should be in the language resources and is displayed
-	 * for the approving administrator.
-	 */
-	public abstract String getApprovalRequestName();
 
 	/**
 	 * Should return the time in second that the request should be valid
@@ -246,7 +247,7 @@ public abstract class ApprovalRequest implements  Externalizable {
 	
 
 	public void writeExternal(ObjectOutput out) throws IOException {
-		out.write(LATEST_VERSION);
+		out.writeInt(LATEST_VERSION);
 		out.writeObject(this.requestAdminCert);
 		out.writeObject(this.requestSignature);
 		out.writeInt(this.approvalRequestType);

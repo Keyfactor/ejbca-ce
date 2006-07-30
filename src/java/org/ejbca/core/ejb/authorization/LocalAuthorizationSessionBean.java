@@ -56,7 +56,7 @@ import org.ejbca.util.JDBCUtil;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.1 2006-01-17 20:30:04 anatom Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.2 2006-07-30 18:19:03 herrvendil Exp $
  *
  * @ejb.bean
  *   description="Session bean handling interface with ra authorization"
@@ -908,6 +908,18 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
     public boolean existsCAInRules(Admin admin, int caid) {
         return existsCAInAdminGroups(caid) && existsCAInAccessRules(caid);
+    } // existsCAInRules
+    
+    /**
+     * Method  to force an update of the autorization rules without any wait.
+     *
+     * @ejb.interface-method view-type="both"
+     * @ejb.transaction type="Supports"
+     */
+
+    public void forceRuleUpdate(Admin admin) {
+        signalForAuthorizationTreeUpdate();
+        updateAuthorizationTree();
     } // existsCAInRules
 
 

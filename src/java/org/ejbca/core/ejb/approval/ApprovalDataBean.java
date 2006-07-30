@@ -112,7 +112,7 @@ import org.ejbca.util.CertTools;
  *   jndi-name="${datasource.jndi-name}"
  *   
  * @author Philip Vendil
- * @version $Id: ApprovalDataBean.java,v 1.1 2006-07-29 11:26:39 herrvendil Exp $   
+ * @version $Id: ApprovalDataBean.java,v 1.2 2006-07-30 18:19:02 herrvendil Exp $   
  */
 public abstract class ApprovalDataBean extends BaseEntityBean {
 
@@ -323,7 +323,7 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
     
     
     
-    private Collection getApprovals() {    	
+    private Collection getApprovals() {   
     	return ApprovalDataUtil.getApprovals(getApprovaldata());
     }
     
@@ -344,8 +344,9 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
     			Approval next = (Approval) iter.next();
     			oos.writeObject(next);
     		}
+    		oos.flush();
     		
-    		setApprovaldata(new String(Base64.encode(baos.toByteArray())));
+    		setApprovaldata(new String(Base64.encode(baos.toByteArray(),false)));
     	} catch (IOException e) {
     		log.error("Error building approvals.",e);
     		throw new EJBException(e);
@@ -353,7 +354,7 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
     }
     
     private ApprovalRequest getApprovalRequest() {
-    	return ApprovalDataUtil.getApprovalRequest(getApprovaldata());
+    	return ApprovalDataUtil.getApprovalRequest(getRequestdata());
     }
     
     private void setApprovalRequest(ApprovalRequest approvalRequest){
@@ -361,8 +362,8 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();
     	ObjectOutputStream oos = new ObjectOutputStream(baos);
     	oos.writeObject(approvalRequest);
-    	
-    	setApprovaldata(new String(Base64.encode(baos.toByteArray())));
+    	oos.flush();
+    	setRequestdata(new String(Base64.encode(baos.toByteArray(),false)));
     	}catch(IOException e){
 			log.error("Error building approval request.",e);
 			throw new EJBException(e);   		
@@ -491,7 +492,7 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
     		throw new ApprovalException("Error already enough approvals have been done on this request.");
     	}
     		
-    	setRemainingapprovals(numberofapprovalsleft);
+    	setRemainingapprovals(0);
     	Collection approvals = getApprovals();
     	approvals.add(approval);
     	setApprovals(approvals);

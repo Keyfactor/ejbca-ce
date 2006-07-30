@@ -33,9 +33,12 @@ import org.ejbca.util.StringTools;
  * statement.
  *
  * @author tomselleck
- * @version $Id: Query.java,v 1.2 2006-07-29 11:26:37 herrvendil Exp $
+ * @version $Id: Query.java,v 1.3 2006-07-30 18:19:02 herrvendil Exp $
  */
 public class Query implements java.io.Serializable {
+	
+	private static final long serialVersionUID = -1L;
+	
     private static Logger log = Logger.getLogger(Query.class);
     // Public Constants.
     public static final int TYPE_LOGQUERY = 0;

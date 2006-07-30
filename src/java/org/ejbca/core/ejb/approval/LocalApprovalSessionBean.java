@@ -13,6 +13,7 @@
 
 package org.ejbca.core.ejb.approval;
 
+import java.math.BigInteger;
 import java.security.cert.X509Certificate;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -27,6 +28,7 @@ import java.util.Random;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.BaseSessionBean;
@@ -39,6 +41,7 @@ import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
+import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataUtil;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -269,6 +272,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
     	log.debug(">addApprovalRequest");
     	int approvalId = approvalRequest.generateApprovalId();
     	
+    	
         ApprovalDataVO data = findNonExpiredApprovalRequest(admin, approvalId);
         if(data != null){						
 			getLogSession().log(admin,approvalRequest.getCAId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREQUESTED,"Approval with id : " +approvalId +" already exists");
@@ -286,6 +290,38 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 		}
 		log.debug("<addApprovalRequest");
     }
+    
+
+    /**
+     * Method used to remove an approval from database.
+     * 
+     * @param id, the uniqu id of the approvalrequest, not the same as approvalId
+     *   
+     * @throws ApprovalException 
+     *   
+     * @ejb.interface-method view-type="both"
+     */
+     public void removeApprovalRequest(Admin admin, int id) throws ApprovalException{
+     	log.debug(">removeApprovalRequest");
+     	
+     	
+     	try {
+			ApprovalDataLocal adl = approvalHome.findByPrimaryKey(new Integer(id));
+			adl.remove();
+			getLogSession().log(admin,admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_INFO_APPROVALREQUESTED,"Approval with unique id : " + id +" removed successfully.");
+		} catch (FinderException e) {
+			getLogSession().log(admin,admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREQUESTED,"Error removing approvalrequest with unique id : " +id +", doesn't exist");
+ 			throw new ApprovalException("Error removing approvalrequest with unique id : " +id +", doesn't exist");
+		} catch (EJBException e) {
+			getLogSession().log(admin,admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREQUESTED,"Error removing approvalrequest with unique id : " +id);
+		    log.error("Error removing approval request",e);
+		} catch (RemoveException e) {
+			getLogSession().log(admin,admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREQUESTED,"Error removing approvalrequest with unique id : " +id);
+		    log.error("Error removing approval request",e);
+		}
+
+ 		log.debug("<removeApprovalRequest");
+     }
     
     /**
      * Method used to approve an approval requests.
@@ -312,12 +348,13 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
      * @throws AuthorizationDeniedException 
      * @throws ApprovalRequestDoesntExistException 
      * @throws ApprovalException 
+     * @throws AdminAlreadyApprovedRequestException 
      * 
     *   
     * @ejb.interface-method view-type="both"
      */
     public void approve(Admin admin, int approvalId, Approval approval) throws ApprovalRequestExpiredException, ApprovalRequestExecutionException, 
-                                                                               AuthorizationDeniedException,  ApprovalException{
+                                                                               AuthorizationDeniedException,  ApprovalException, AdminAlreadyApprovedRequestException{
     	log.debug(">approve");
     	ApprovalDataLocal adl;
 		try {
@@ -329,21 +366,28 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 		
 		// Check that the approvers username doesn't exists among the existing usernames.
     	X509Certificate approvingCert = admin.getAdminInformation().getX509Certificate();
+    	ApprovalDataVO data = adl.getApprovalDataVO();
 		String username = getCertificateStoreSession().findUsernameByCertSerno(admin,approvingCert.getSerialNumber(),CertTools.getIssuerDN(approvingCert));
-		if(username != null){
-			ApprovalDataVO data = adl.getApprovalDataVO();
+		
+        // Check that the approver isn't the same as requested the action.
+		String requsername = getCertificateStoreSession().findUsernameByCertSerno(admin,new BigInteger(data.getReqadmincertsn(),16),data.getReqadmincertissuerdn());
+		if(username.equals(requsername)){
+			getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALAPPROVED,"Error administrator have already approved, rejected or requested current request, approveId " + approvalId);
+			throw new AdminAlreadyApprovedRequestException("Error administrator have already approved, rejected or requested current request, approveId : " + approvalId);			
+		}
+		if(username != null && requsername != null){
 			Iterator iter = data.getApprovals().iterator();
 			while(iter.hasNext()){
 				Approval next = (Approval) iter.next();
 				if(next.getUsername().equals(username)){
-					getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALAPPROVED,"Error administrator have already approved or rejected current request, approveId ");
-					throw new ApprovalException("Error administrator have already approved or rejected current request, approveId : " + approvalId);					
+					getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALAPPROVED,"Error administrator have already approved or rejected current request, approveId " + approvalId);
+					throw new AdminAlreadyApprovedRequestException("Error administrator have already approved or rejected current request, approveId : " + approvalId);					
 				}
 			}
-			approval.setApprovalCertificateAndUsername(approvingCert,username);
+			approval.setApprovalCertificateAndUsername(true, approvingCert,username);
 		}else{
 			getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALAPPROVED,"Approval request with id : " +approvalId +", Error no username exists for the given approver certificate.");
-			throw new ApprovalException("Error no username exists for the given approver certificate");
+			throw new ApprovalException("Error no username exists for the given approver or requestor certificate");
 		}
 				
     	
@@ -384,12 +428,13 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
      * @throws AuthorizationDeniedException 
      * @throws ApprovalRequestDoesntExistException 
      * @throws ApprovalException 
+     * @throws AdminAlreadyApprovedRequestException 
      * 
-    *   
-    * @ejb.interface-method view-type="both"
+     *   
+     * @ejb.interface-method view-type="both"
      */
     public void reject(Admin admin, int approvalId, Approval approval) throws ApprovalRequestExpiredException,  
-                                                                               AuthorizationDeniedException,  ApprovalException{
+                                                                               AuthorizationDeniedException,  ApprovalException, AdminAlreadyApprovedRequestException{
     	log.debug(">reject");
     	ApprovalDataLocal adl;
 		try {
@@ -402,20 +447,26 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 		// Check that the approvers username doesn't exists among the existing usernames.
     	X509Certificate approvingCert = admin.getAdminInformation().getX509Certificate();
 		String username = getCertificateStoreSession().findUsernameByCertSerno(admin,approvingCert.getSerialNumber(),CertTools.getIssuerDN(approvingCert));
-		if(username != null){
-			ApprovalDataVO data = adl.getApprovalDataVO();
+		ApprovalDataVO data = adl.getApprovalDataVO();
+        // Check that the approver isn't the same as requested the action.
+		String requsername = getCertificateStoreSession().findUsernameByCertSerno(admin,new BigInteger(data.getReqadmincertsn(),16),data.getReqadmincertissuerdn());
+		if(username.equals(requsername)){
+			getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREJECTED,"Error administrator have already approved, rejected or requested current request, approveId ");
+			throw new AdminAlreadyApprovedRequestException("Error administrator have already approved, rejected or requested current request, approveId : " + approvalId);			
+		}
+		if(username != null && requsername != null){			
 			Iterator iter = data.getApprovals().iterator();
 			while(iter.hasNext()){
 				Approval next = (Approval) iter.next();
 				if(next.getUsername().equals(username)){
 					getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREJECTED,"Error administrator have already approved or rejected current request, approveId ");
-					throw new ApprovalException("Error administrator have already approved or rejected current request, approveId : " + approvalId);					
+					throw new AdminAlreadyApprovedRequestException("Error administrator have already approved or rejected current request, approveId : " + approvalId);					
 				}
 			}
-			approval.setApprovalCertificateAndUsername(approvingCert,username);
+			approval.setApprovalCertificateAndUsername(false, approvingCert,username);
 		}else{
 			getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREJECTED,"Approval request with id : " +approvalId +", Error no username exists for the given approver certificate.");
-			throw new ApprovalException("Error no username exists for the given approver certificate");
+			throw new ApprovalException("Error no username exists for the given approver or requestor certificate");
 		}
 				
     	
@@ -447,12 +498,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
     		if(retval.getCaid() != ApprovalDataVO.ANY_CA){
     			getAuthorizationSession().isAuthorized(admin,AvailableAccessRules.CAPREFIX + retval.getCaid());
     		}
-    		
-    		// Check that the admin and the approval is the same certificate
-    		if(admin.getAdminInformation().getX509Certificate().getSerialNumber().toString(16).equals(approval.getAdminCertSerialNumber()) &&
-    				CertTools.getIssuerDN(admin.getAdminInformation().getX509Certificate()).equals(approval.getAdminCertIssuerDN())){
-    			throw new AuthorizationDeniedException("The approval and admin certificates doesn't match.");
-    		}
+
 
 		} else {
 			throw new ApprovalException("Suitable approval with id : " + approvalId + " doesn't exist");
@@ -475,6 +521,8 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
      * @return the number of approvals left, 0 if approved othervis is the ApprovalDataVO.STATUS constants returned indicating the statys.
      * @throws ApprovalException if approvalId doesn't exists
      * @throws ApprovalRequestExpiredException Throws this exception one time if one of the approvals have expired, once notified it wount throw it anymore.
+     * 
+     * @ejb.interface-method view-type="both"
      */
     public int isApproved(Admin admin, int approvalId) throws ApprovalException, ApprovalRequestExpiredException{
     	log.debug(">isApproved, approvalId" + approvalId);
@@ -591,7 +639,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
         ArrayList returnval = new ArrayList();
         GlobalConfiguration globalconfiguration = getRAAdminSession().loadGlobalConfiguration(admin);
         RAAuthorization raauthorization = null;
-        String sqlquery = "select " + APPROVALDATA_COL + " from UserData where ";
+        String sqlquery = "select " + APPROVALDATA_COL + " from ApprovalData where ";
 
 
         // Check if query is legal.
@@ -630,14 +678,15 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
             if (authorizedtoanyprofile) {
                 // Construct SQL query.
                 con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
+                log.info(sqlquery);
 
                 ps = con.prepareStatement(sqlquery);
                 
                 // Execute query.
                 rs = ps.executeQuery();
-                rs.absolute(index+1);
+                rs.relative(index);
                 // Assemble result.
-                while (rs.next() && returnval.size() <= numberofrows) {
+                while (rs.next() && returnval.size() < numberofrows) {
                 	
                     // Read the variables in order, some databases (i.e. MS-SQL) 
                     // seems to not like out-of-order read of columns (i.e. nr 15 before nr 1)

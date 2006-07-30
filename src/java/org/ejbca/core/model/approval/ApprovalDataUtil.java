@@ -32,7 +32,7 @@ import org.ejbca.util.Base64;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalDataUtil.java,v 1.1 2006-07-29 11:26:35 herrvendil Exp $
+ * @version $Id: ApprovalDataUtil.java,v 1.2 2006-07-30 18:19:02 herrvendil Exp $
  */
 
 public class ApprovalDataUtil  { 
@@ -64,6 +64,7 @@ public class ApprovalDataUtil  {
     public static ApprovalRequest getApprovalRequest(String stringdata) {
     	ApprovalRequest retval = null;    	
     	try {
+    		
     		ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(Base64.decode(stringdata.getBytes())));
 			retval= (ApprovalRequest) ois.readObject();
 		} catch (IOException e) {

@@ -23,13 +23,15 @@ package org.ejbca.util.query;
  * LogMatch. Main function is getQueryString which is abstract and must be overloaded.
  *
  * @author tomselleck
- * @version $Id: BasicMatch.java,v 1.1 2006-01-17 20:32:19 anatom Exp $
+ * @version $Id: BasicMatch.java,v 1.2 2006-07-30 18:19:02 herrvendil Exp $
  *
  * @see org.ejbca.util.query.UserMatch
  * @see org.ejbca.util.query.TimeMatch
  * @see org.ejbca.util.query.LogMatch
  */
 public abstract class BasicMatch implements java.io.Serializable {
+	
+	private static final long serialVersionUID = -1L;
     // Public Constants
     public static final int MATCH_TYPE_EQUALS = 0;
     public static final int MATCH_TYPE_BEGINSWITH = 1;

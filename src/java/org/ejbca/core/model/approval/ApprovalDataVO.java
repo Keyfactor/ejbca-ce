@@ -27,11 +27,13 @@ import org.ejbca.core.model.SecConst;
  * requestdata, requestdate, expiredate, remainingapprovals
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalDataVO.java,v 1.1 2006-07-29 11:26:35 herrvendil Exp $
+ * @version $Id: ApprovalDataVO.java,v 1.2 2006-07-30 18:19:02 herrvendil Exp $
  */
 
 public class ApprovalDataVO implements Serializable { 	
 
+	private static final long serialVersionUID = -1L;
+	
 	// Status constants
 	public static final int STATUS_WAITINGFORAPPROVAL = -1;
 	public static final int STATUS_APPROVED           = 0;
@@ -42,9 +44,11 @@ public class ApprovalDataVO implements Serializable {
 	
 	
 	// Approval types
-	public static final int APPROVALTYPE_VIEWHARDTOKENDATA           = 0;
-		
-	public static final String[] APPROVALTYPENAMES = {"VIEWHARDTOKENDATA"};
+
+	public static final int APPROVALTYPE_DUMMY                       = 0;
+	public static final int APPROVALTYPE_VIEWHARDTOKENDATA           = 1;
+	
+	public static final String[] APPROVALTYPENAMES = {"DUMMY","VIEWHARDTOKENDATA"};
 	
 	/**
 	 * Used to indicate that the approcal is applicable to any ca.
