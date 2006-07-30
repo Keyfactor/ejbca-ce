@@ -111,7 +111,7 @@ import org.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.3 2006-02-13 10:48:18 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.4 2006-07-30 08:52:48 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 
@@ -395,7 +395,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
     } // saveLogConfiguration
 
 
-    private Integer getAndIncrementRowCount() {
+    private synchronized Integer getAndIncrementRowCount() {
         if (this.logconfigurationdata == null) {
             try {
                 logconfigurationdata = logconfigurationhome.findByPrimaryKey(new Integer(0));
