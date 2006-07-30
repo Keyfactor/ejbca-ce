@@ -19,7 +19,7 @@ import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 
 /** The ASN.1 extension with OID 2.16.578.1.16.3.2 used to request an FNR from a UNID 
- * and respond with the FNR.
+ * and respond with the FNR. When requesting, the fnr passed in the extension deas not matter, use 1.
  * 
  * id-fnrFromUnid OBJECT IDENTIFIER ::= { 2 16 578 1 16 3 2 }
  * 
@@ -28,7 +28,7 @@ import org.bouncycastle.asn1.DERObjectIdentifier;
  * Fnr ::= IA5String
  * 
  * @author tomas
- * @version $Id: FnrFromUnidExtension.java,v 1.2 2006-02-08 07:31:46 anatom Exp $
+ * @version $Id: FnrFromUnidExtension.java,v 1.3 2006-07-30 17:04:32 anatom Exp $
  *
  */
 public class FnrFromUnidExtension extends ASN1Encodable {

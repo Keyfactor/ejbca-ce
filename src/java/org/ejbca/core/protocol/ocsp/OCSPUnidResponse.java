@@ -23,7 +23,7 @@ import org.bouncycastle.ocsp.UnknownStatus;
 /** Class holding data returned by the OCSPUnidExtension
  * 
  * @author tomas
- * @version $Id: OCSPUnidResponse.java,v 1.6 2006-04-28 07:29:27 anatom Exp $
+ * @version $Id: OCSPUnidResponse.java,v 1.7 2006-07-30 17:04:32 anatom Exp $
  *
  */
 public class OCSPUnidResponse {
@@ -62,6 +62,17 @@ public class OCSPUnidResponse {
      * was truncated.
      */
 	public static final int ERROR_INVALID_SIGNATURE = 4;
+    /**
+     * This error is returned when the signerId in the OCSP-response sent by the server does not match
+     * the first certificate in the chain in the response. 
+     * This should typically never happen unless the OCSP-server is broken. 
+     */
+	public static final int ERROR_INVALID_SIGNERID = 5;
+    /**
+     * This error is returned when the OCSP signers certificate can not be verified using the CA-certificate.
+     * This should typically never happen unless the OCSP-server is broken or compromised. 
+     */
+	public static final int ERROR_INVALID_SIGNERCERT = 6;
     /**
      * You did not specify a URI in the call, and there is not one embedded in the certificate.
      */

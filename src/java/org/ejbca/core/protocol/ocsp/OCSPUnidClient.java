@@ -28,6 +28,8 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PublicKey;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -53,12 +55,14 @@ import org.bouncycastle.ocsp.OCSPException;
 import org.bouncycastle.ocsp.OCSPReq;
 import org.bouncycastle.ocsp.OCSPReqGenerator;
 import org.bouncycastle.ocsp.OCSPResp;
+import org.bouncycastle.ocsp.RespID;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
 
 /** A simple OCSP lookup client used to query the OCSPUnidExtension. Attributes needed to call the client is a keystore
  * issued from the same CA as has issued the TLS server certificate of the OCSP/Lookup server.
  * The keystore must be a PKCS#12 file.
+ * If a keystore is not used, regular OCSP requests can still be made, using normal http.
  * 
  * If requesting an Fnr and the fnr rturned is null, even though the OCSP code is good there can be several reasons:
  * 1.The client was not authorized to request an Fnr
@@ -66,7 +70,7 @@ import org.ejbca.util.KeyTools;
  * 3.There was no Unid in the certificate (serialNumber DN component)
  *
  * @author Tomas Gustavsson, PrimeKey Solutions AB
- * @version $Id: OCSPUnidClient.java,v 1.7 2006-03-21 08:53:16 anatom Exp $
+ * @version $Id: OCSPUnidClient.java,v 1.8 2006-07-30 17:04:32 anatom Exp $
  *
  */
 public class OCSPUnidClient {
@@ -77,9 +81,9 @@ public class OCSPUnidClient {
 	
 	/**  
 	 * 
-	 * @param ks KeyStore client keystore used to authenticate TLS client authentication
-	 * @param pwd String password for the key store 
-	 * @param ocspurl String url to the OCSP server, e.g. http://127.0.0.1:8080/ejbca/publicweb/status/ocsp 
+	 * @param ks KeyStore client keystore used to authenticate TLS client authentication, or null if TLS is not used
+	 * @param pwd String password for the key store, or null if no keystore is used
+	 * @param ocspurl String url to the OCSP server, or null if we should try to use the AIA extension from the cert; e.g. http://127.0.0.1:8080/ejbca/publicweb/status/ocsp (or https for TLS) 
 	 */
 	public OCSPUnidClient(KeyStore keystore, String pwd, String ocspurl) {
 		this.httpReqPath = ocspurl;
@@ -90,9 +94,9 @@ public class OCSPUnidClient {
 	
 	/** 
 	 * 
-	 * @param ksfilename String Filename of PKCS#12 keystore used to authenticate TLS client authentication
-	 * @param pwd String password for the key store 
-	 * @param ocspurl String url to the OCSP server, e.g. http://127.0.0.1:8080/ejbca/publicweb/status/ocsp
+	 * @param ksfilename String Filename of PKCS#12 keystore used to authenticate TLS client authentication, or null if TLS is not used
+	 * @param pwd String password for the key store,or null if no keystore is used 
+	 * @param ocspurl String url to the OCSP server, or null if we should try to use the AIA extension from the cert; e.g. http://127.0.0.1:8080/ejbca/publicweb/status/ocsp (or https for TLS)
 	 * @throws NoSuchProviderException 
 	 * @throws KeyStoreException 
 	 * @throws IOException 
@@ -141,7 +145,7 @@ public class OCSPUnidClient {
 //                + "      Key hash  : '" + new String(Hex.encode(certId.getIssuerKeyHash())) + "'\n");
         gen.addRequest(certId);
         // Don't bother adding Unid extension if we are not using client authentication
-        if (ks != null) {
+        if (getfnr && (ks != null)) {
             Hashtable exts = new Hashtable();
             X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("1")));
             exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
@@ -150,7 +154,7 @@ public class OCSPUnidClient {
         OCSPReq req = gen.generate();
 
         // Send the request and receive a BasicResponse
-        OCSPUnidResponse ret = sendOCSPPost(req.getEncoded());
+        OCSPUnidResponse ret = sendOCSPPost(req.getEncoded(), cacert);
         return ret;
 	}
 
@@ -158,7 +162,7 @@ public class OCSPUnidClient {
     // Private helper methods
     //
     
-    private OCSPUnidResponse sendOCSPPost(byte[] ocspPackage) throws IOException, OCSPException, GeneralSecurityException {
+    private OCSPUnidResponse sendOCSPPost(byte[] ocspPackage, X509Certificate cacert) throws IOException, OCSPException, GeneralSecurityException {
         // POST the OCSP request
         URL url = new URL(httpReqPath);
         HttpURLConnection con = (HttpURLConnection)getUrlConnection(url);
@@ -211,10 +215,23 @@ public class OCSPUnidClient {
         OCSPResp response = new OCSPResp(new ByteArrayInputStream(respBytes));
         BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
         X509Certificate[] chain = brep.getCerts("BC");
-        boolean verify = brep.verify(chain[0].getPublicKey(), "BC");
+        PublicKey signerPub = chain[0].getPublicKey();
+		RespID respId = new RespID(signerPub);
+		if (!brep.getResponderId().equals(respId)) {
+			// Response responderId does not match signer certificate responderId!
+			ret.setErrorCode(OCSPUnidResponse.ERROR_INVALID_SIGNERID);
+		}
+        boolean verify = brep.verify(signerPub, "BC");
         if (!verify) {
         	ret.setErrorCode(OCSPUnidResponse.ERROR_INVALID_SIGNATURE);
         	return ret;
+        }
+        // Also verify the signers certificate
+        try {
+            chain[0].verify(cacert.getPublicKey());        	 
+        } catch (SignatureException e) {
+        	ret.setErrorCode(OCSPUnidResponse.ERROR_INVALID_SIGNERCERT);
+        	return ret;        	
         }
         ret.setResp(response);
         String fnr = getFnr(brep);
