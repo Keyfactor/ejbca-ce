@@ -88,7 +88,7 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.13 2006-07-28 17:42:24 anatom Exp $
+ * @version $Id: CertTools.java,v 1.14 2006-07-30 11:08:18 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -607,8 +607,14 @@ public class CertTools {
      */
     public static Collection getCertsFromPEM(String certFile) throws IOException, CertificateException {
         log.debug(">getCertfromPEM: certFile=" + certFile);
-        InputStream inStrm = new FileInputStream(certFile);
-        Collection certs = getCertsFromPEM(inStrm);
+        InputStream inStrm = null;
+        Collection certs;
+		try {
+			inStrm = new FileInputStream(certFile);
+			certs = getCertsFromPEM(inStrm);
+		} finally {
+			if (inStrm != null) inStrm.close();
+		}
         log.debug("<getCertfromPEM: certFile=" + certFile);
         return certs;
     }
@@ -628,32 +634,42 @@ public class CertTools {
         ArrayList ret = new ArrayList();
         String beginKey = "-----BEGIN CERTIFICATE-----";
         String endKey = "-----END CERTIFICATE-----";
-        BufferedReader bufRdr = new BufferedReader(new InputStreamReader(certstream));
-        while (bufRdr.ready()) {
-            ByteArrayOutputStream ostr = new ByteArrayOutputStream();
-            PrintStream opstr = new PrintStream(ostr);
-            String temp;
-            while ((temp = bufRdr.readLine()) != null &&
-            !temp.equals(beginKey))
-                continue;
-            if (temp == null)
-                throw new IOException("Error in " + certstream.toString() + ", missing " + beginKey + " boundary");
-            while ((temp = bufRdr.readLine()) != null &&
-            !temp.equals(endKey))
-                opstr.print(temp);
-            if (temp == null)
-                throw new IOException("Error in " + certstream.toString() + ", missing " + endKey + " boundary");
-            opstr.close();
+        BufferedReader bufRdr = null;
+        ByteArrayOutputStream ostr = null;
+        PrintStream opstr = null;
+		try {
+			bufRdr = new BufferedReader(new InputStreamReader(certstream));
+			while (bufRdr.ready()) {
+				ostr = new ByteArrayOutputStream();
+				opstr = new PrintStream(ostr);
+				String temp;
+				while ((temp = bufRdr.readLine()) != null
+						&& !temp.equals(beginKey))
+					continue;
+				if (temp == null)
+					throw new IOException("Error in " + certstream.toString()
+							+ ", missing " + beginKey + " boundary");
+				while ((temp = bufRdr.readLine()) != null
+						&& !temp.equals(endKey))
+					opstr.print(temp);
+				if (temp == null)
+					throw new IOException("Error in " + certstream.toString()
+							+ ", missing " + endKey + " boundary");
+				opstr.close();
 
-            byte[] certbuf = Base64.decode(ostr.toByteArray());
-            ostr.close();
-            // Phweeew, were done, now decode the cert from file back to X509Certificate object
-            CertificateFactory cf = CertTools.getCertificateFactory();
-            X509Certificate x509cert = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(certbuf));
-            ret.add(x509cert);
-        }
-
-        log.debug("<getcertfromPEM:" + ret.size());
+				byte[] certbuf = Base64.decode(ostr.toByteArray());
+				ostr.close();
+				// Phweeew, were done, now decode the cert from file back to X509Certificate object
+				CertificateFactory cf = CertTools.getCertificateFactory();
+				X509Certificate x509cert = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(certbuf));
+				ret.add(x509cert);
+			}
+		} finally {
+			if (bufRdr != null) bufRdr.close();
+			if (opstr != null) opstr.close();
+			if (ostr != null) ostr.close();
+		}        
+		log.debug("<getcertfromPEM:" + ret.size());
         return ret;
     } // getCertsFromPEM
 
