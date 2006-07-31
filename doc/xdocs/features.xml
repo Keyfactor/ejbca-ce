@@ -44,6 +44,7 @@
 <li>Key recovery module to store private keys for recovery for selected users and certificates.</li>
 <li>Component based architecture for various authorization methods of entities when issuing certificates.</li>
 <li>Easy to integrate into large java applications for optimal integration into bussiness process.</li>
+<li>API for an external RA, restricting inbound traffic to CA</li>
 <li>Deploys easily in a clustered high availability environment.</li>
 <li>Supports many databases: Hypersoniq, MySQL, PostgreSQL, Orcale, MS-SQL2000, Sybase, Informix.</li>
 </ul>    

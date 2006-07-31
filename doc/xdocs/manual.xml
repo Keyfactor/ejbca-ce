@@ -821,6 +821,28 @@ You can configure this in the certificate profile used to issue certificates.
 
 </section>
 
+<section name="Ext RA API">
+<p>
+In some cases, for security reasons, is it preferable to deny all inbound traffic to the CA and instead let the CA 
+periodically fetch and process information from external trusted data sources. 
+</p>
+<p>
+The ExtRA API contains the most basic functions like:
+<ol>
+<li>Generate Certificate from PKCS10</li>
+<li>Generate PKCS12 for the end user</li>
+<li>KeyRecovery of the users key (if requested using PKCS12)</li>
+<li>Edit users</li>
+<li>Revoke Certificates</li>
+</ol>
+</p>
+<p>
+The external API is checked out separately from the CVS using the module name 'extra' 
+</p>
+<p>
+Documentation about the ExtRA API is in the doc subdirectory of the extra subproject. 
+</p>
+</section>
 <section name="Key recovery">
 <p>
 Key Recovery can be used to re-use or restore a users private key. To enable key recovery use the admin-GUI:
