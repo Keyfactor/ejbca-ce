@@ -53,7 +53,7 @@ import org.ejbca.util.cert.CrlExtensions;
 /**
  * Tests CRL session (agentrunner and certificatesession).
  *
- * @version $Id: TestCreateCRLSession.java,v 1.4 2006-07-12 16:18:52 anatom Exp $
+ * @version $Id: TestCreateCRLSession.java,v 1.5 2006-07-31 08:47:28 anatom Exp $
  */
 public class TestCreateCRLSession extends TestCase {
 
@@ -230,11 +230,13 @@ public class TestCreateCRLSession extends TestCase {
         assertNotNull("Could not get CRL", crl);
         X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
         Set revset = x509crl.getRevokedCertificates();
-        Iterator iter = revset.iterator();
-        while (iter.hasNext()) {
-            X509CRLEntry ce = (X509CRLEntry)iter.next(); 
-        	assertTrue(ce.getSerialNumber().compareTo(cert.getSerialNumber()) != 0);
-        }
+        if (revset != null) {
+            Iterator iter = revset.iterator();
+            while (iter.hasNext()) {
+                X509CRLEntry ce = (X509CRLEntry)iter.next(); 
+                assertTrue(ce.getSerialNumber().compareTo(cert.getSerialNumber()) != 0);
+            }            
+        } // If no revoked certificates exist at all, this test passed...
 
         storeremote.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
         // Create a new CRL again...
@@ -244,7 +246,7 @@ public class TestCreateCRLSession extends TestCase {
         assertNotNull("Could not get CRL", crl);
         x509crl = CertTools.getCRLfromByteArray(crl);
         revset = x509crl.getRevokedCertificates();
-        iter = revset.iterator();
+        Iterator iter = revset.iterator();
         boolean found = false;
         while (iter.hasNext()) {
             X509CRLEntry ce = (X509CRLEntry)iter.next(); 
