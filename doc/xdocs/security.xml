@@ -136,6 +136,25 @@ http://wiki.jboss.org/wiki/Wiki.jsp?page=EncryptingDataSourcePasswords</a>
 </p>
 </section>
 
+<section name="Other precautions">
+<p>
+Database transaction logs in MySQL:
+<br/>
+<a href="http://dev.mysql.com/doc/refman/5.0/en/binary-log.html">
+http://dev.mysql.com/doc/refman/5.0/en/binary-log.html</a>
+</p>
+<p>
+System accounting in Linux:
+<br/>
+See your distribution for details about their package, below are general links.
+<br/>
+<a href="http://www.nic.com/~dave/SecurityAdminGuide/SecurityAdminGuide-5.html">
+http://www.nic.com/~dave/SecurityAdminGuide/SecurityAdminGuide-5.html</a>
+<a href="http://www.hsc.fr/ressources/presentations/linux2000/linux2000-18.html.en">
+</a>
+</p>
+</section>
+
 </body>
 </document>
 
