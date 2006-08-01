@@ -1,7 +1,6 @@
 package se.anatom.ejbca.approval;
 
 import java.io.File;
-import java.rmi.RemoteException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
