@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.59 2006-07-21 17:56:45 herrvendil Exp $
+# $Id: ejbca.properties.sample,v 1.60 2006-08-01 14:00:01 primelars Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -260,7 +260,7 @@ ocsp.keys.cardPassword=6231
 
 # Directory of classes implementing hardware signing of the OCSP response
 # Default ./ocspHardTokenClasses
-#ocspHardTokenClasses=../primeCard/ocspHardTokenClasses-1.5-3.2
+#ocspHardTokenClasses=../primeCard/ocspHardTokenClasses-1.5
 
 
 # ------------ Mail configuration ---------------------
@@ -317,7 +317,7 @@ ocsp.keys.cardPassword=6231
 # The directory of the HW token classes. If this is an emty directory no HW token will be used.
 # If the directory is not existing an empty directory will be created.
 # Default: ./hwtoken
-#hwtoken_classes=../primeCard/caTokenClasses-1.5-3.2
+#hwtoken_classes=../primeCard/caTokenClasses-1.5
 
 # Define this property when Luna HW token should be used.
 # You must have the Luna jars available in the build classpath (lib) when enabling this option.
