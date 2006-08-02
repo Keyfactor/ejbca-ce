@@ -48,7 +48,7 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.9 2006-07-23 10:31:22 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.10 2006-08-02 07:22:40 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
@@ -280,13 +280,13 @@ public class LdapPublisher extends BasePublisher {
                 LDAPModification[] mods = new LDAPModification[modSet.size()]; 
                 mods = (LDAPModification[])modSet.toArray(mods);
                 lc.modify(dn, mods);
-                log.debug("Modified object: " + dn + " successfully.");  
+                log.info("LDAP CERT: Modified object: " + dn + " successfully.");  
             } else {
                 if(this.getCreateNonExisingUsers()){     
                   if (oldEntry == null) {                  	
                     newEntry = new LDAPEntry(dn, attributeSet);
                     lc.add(newEntry);
-                    log.debug("Added object: " + dn + " successfully.");
+                    log.info("LDAP CERT: Added object: " + dn + " successfully.");
                   }
                 }  
             }
@@ -398,10 +398,10 @@ public class LdapPublisher extends BasePublisher {
                 LDAPModification[] mods = new LDAPModification[modSet.size()]; 
                 mods = (LDAPModification[])modSet.toArray(mods);
                 lc.modify(dn, mods);
-                log.debug("Modified object: " + dn + " successfully.");
+                log.info("LDAP CRL: Modified object: " + dn + " successfully.");  
             } else {
                 lc.add(newEntry);
-                log.debug("Added object: " + dn + " successfully.");                
+                log.info("LDAP CRL: Added object: " + dn + " successfully.");  
             }
         } catch (LDAPException e) {
             log.error("Error storing CRL (" + getCRLAttribute() + ") in LDAP (" + getCAObjectClass() + ") for DN (" + dn + "): ", e);
@@ -525,7 +525,7 @@ public class LdapPublisher extends BasePublisher {
                 LDAPModification[] mods = new LDAPModification[modSet.size()]; 
                 mods = (LDAPModification[])modSet.toArray(mods);
                 lc.modify(dn, mods);
-                log.debug("\nRemoved certificate : " + dn + " successfully.");  
+                log.info("LDAP REVOKE: Removed certificate: " + dn + " successfully.");  
             }               
         } catch (LDAPException e) {
             log.error("Error when removing certificate from LDAP (" + dn + "): ", e);  
