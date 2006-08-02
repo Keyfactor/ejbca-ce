@@ -14,15 +14,36 @@
 package org.ejbca.util;
 
 import java.io.UnsupportedEncodingException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.regex.Pattern;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.crypto.Digest;
+import org.bouncycastle.crypto.PBEParametersGenerator;
+import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.bouncycastle.crypto.generators.PKCS12ParametersGenerator;
+import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.crypto.params.ParametersWithIV;
+import org.bouncycastle.util.encoders.Hex;
 
 /**
  * This class implements some utility functions that are useful when handling Strings.
  *
- * @version $Id: StringTools.java,v 1.3 2006-06-21 14:54:56 anatom Exp $
+ * @version $Id: StringTools.java,v 1.4 2006-08-02 11:23:22 anatom Exp $
  */
 public class StringTools {
     private static Logger log = Logger.getLogger(StringTools.class);
@@ -231,4 +252,105 @@ public class StringTools {
         return s;
     }
 
+    /** Makes a string "hard" to read. Does not provide any real security, but at
+     * least lets you hide passwords so that people with no malicious content don't 
+     * accidentaly stumble upon information they should not have.
+     * 
+     * @param s string to obfuscate
+     * @return an obfuscated string
+     */
+    public static String obfuscate(String s)
+    {
+        StringBuffer buf = new StringBuffer();
+        byte[] b = s.getBytes();
+        
+        synchronized(buf)
+        {
+            buf.append("OBF:");
+            for (int i=0;i<b.length;i++)
+               {
+                byte b1 = b[i];
+                byte b2 = b[s.length()-(i+1)];
+                int i1= b1+b2+127;
+                int i2= b1-b2+127;
+                int i0=i1*256+i2;
+                String x=Integer.toString(i0,36);
+
+                switch(x.length())
+                {
+                    case 1:buf.append('0');
+                       case 2:buf.append('0');
+                          case 3:buf.append('0');
+                             default:buf.append(x);
+                }
+            }
+            return buf.toString();
+        }
+    }
+    
+    /** Retrieves the clear text from a string obfuscated with the obfuscate methods
+     * 
+     * @param s obfuscated string, usually (bot not neccesarily) starts with OBF:
+     * @return plain text string
+     */
+    public static String deobfuscate(String s)
+    {
+        if (s.startsWith("OBF:"))
+            s=s.substring(4);
+        
+        byte[] b=new byte[s.length()/2];
+        int l=0;
+        for (int i=0;i<s.length();i+=4)
+           {
+            String x=s.substring(i,i+4);
+            int i0 = Integer.parseInt(x,36);
+            int i1=(i0/256);
+            int i2=(i0%256);
+            b[l++]=(byte)((i1+i2-254)/2);
+        }
+
+        return new String(b,0,l);
+    }
+    private static final String q = "OBF:1m0r1kmo1ioe1ia01j8z17y41l0q1abo1abm1abg1abe1kyc17ya1j631i5y1ik01kjy1lxf";
+    public static String pbeEncryptStringWithSha256Aes192(String in) throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, UnsupportedEncodingException {
+        Digest digest = new SHA256Digest();
+        final char[] p = deobfuscate(q).toCharArray();
+        String saltStr = "1958473059684739584hfurmaqiekcmq";
+        byte[] salt = saltStr.getBytes("UTF-8");
+        int    iCount = 100;
+        
+        PKCS12ParametersGenerator   pGen = new PKCS12ParametersGenerator(digest);
+        pGen.init(
+                PBEParametersGenerator.PKCS12PasswordToBytes(p),
+                salt,
+                iCount);
+        
+        ParametersWithIV params = (ParametersWithIV)pGen.generateDerivedParameters(192, 128);
+        SecretKeySpec   encKey = new SecretKeySpec(((KeyParameter)params.getParameters()).getKey(), "AES");
+        Cipher          c;
+        c = Cipher.getInstance("AES/CBC/PKCS7Padding", "BC");
+        c.init(Cipher.ENCRYPT_MODE, encKey, new IvParameterSpec(params.getIV()));
+        
+        byte[]          enc = c.doFinal(in.getBytes("UTF-8"));
+        
+        byte[] hex = Hex.encode(enc);
+        return new String(hex);
+    }
+    
+    public static String pbeDecryptStringWithSha256Aes192(String in) throws IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException, UnsupportedEncodingException {
+        final char[] p = deobfuscate(q).toCharArray();
+        String saltStr = "1958473059684739584hfurmaqiekcmq";
+        byte[] salt = saltStr.getBytes("UTF-8");
+        int    iCount = 100;
+
+        Cipher c = Cipher.getInstance("PBEWithSHA256And192BitAES-CBC-BC", "BC");
+        PBEKeySpec          keySpec = new PBEKeySpec(p, salt, iCount);
+        SecretKeyFactory    fact = SecretKeyFactory.getInstance("PBEWithSHA256And192BitAES-CBC-BC", "BC");
+        
+        c.init(Cipher.DECRYPT_MODE, fact.generateSecret(keySpec));
+        
+        byte[] dec = c.doFinal(Hex.decode(in.getBytes("UTF-8")));
+        return new String(dec);
+    }
+    
 } // StringTools

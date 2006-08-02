@@ -16,13 +16,14 @@ package se.anatom.ejbca.util;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.ejbca.util.CertTools;
 import org.ejbca.util.StringTools;
 
 
 /**
  * Tests the StringTools class .
  *
- * @version $Id: TestStringTools.java,v 1.8 2006-06-21 14:54:56 anatom Exp $
+ * @version $Id: TestStringTools.java,v 1.9 2006-08-02 11:23:21 anatom Exp $
  */
 public class TestStringTools extends TestCase {
     private static Logger log = Logger.getLogger(TestStringTools.class);
@@ -93,5 +94,16 @@ public class TestStringTools extends TestCase {
         b1 = StringTools.putBase64String(s1);
         s2 = StringTools.getBase64String(b1);
         assertEquals(s2,s1);
+    }
+    public void testObfuscate() throws Exception {
+        String obf = StringTools.obfuscate("foo123");
+        String deobf = StringTools.deobfuscate(obf);
+        assertEquals("foo123", deobf);
+    }
+    public void testPbe() throws Exception {
+        CertTools.installBCProvider();
+        String enc = StringTools.pbeEncryptStringWithSha256Aes192("foo123");
+        String dec = StringTools.pbeDecryptStringWithSha256Aes192(enc);
+        assertEquals("foo123", dec);
     }
 }
