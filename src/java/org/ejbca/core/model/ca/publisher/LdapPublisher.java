@@ -48,7 +48,7 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.10 2006-08-02 07:22:40 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.11 2006-08-03 14:51:58 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
@@ -143,20 +143,18 @@ public class LdapPublisher extends BasePublisher {
         	return true;
         }
         int ldapVersion = LDAPConnection.LDAP_V3;
-        LDAPConnection lc = null;
-        if(getUseSSL()){
-          lc = new LDAPConnection(new LDAPJSSESecureSocketFactory());
-        }else{
-          lc = new LDAPConnection();        
-        }
+        LDAPConnection lc = createLdapConnection();
+
         String dn = null;
         String certdn = null;
         try {
             // Extract the users DN from the cert.
         	certdn = CertTools.getSubjectDN((X509Certificate) incert);
+            log.debug( "Constructing DN for: " + username);
             dn = constructLDAPDN(certdn);
+            log.debug("LDAP DN for user " +username +" is " + dn);
         } catch (Exception e) {
-            log.error("Error decoding input certificate: ", e);            
+            log.error("LDAP ERROR: Error decoding input certificate: ", e);            
             throw new PublisherException("Error decoding input certificate.");            
         }
 
@@ -164,34 +162,9 @@ public class LdapPublisher extends BasePublisher {
         String email = CertTools.getEMailAddress((X509Certificate)incert);
 
         // Check if the entry is already present, we will update it with the new certificate.
-        LDAPEntry oldEntry = null;
+        LDAPEntry oldEntry = searchOldEntity(username, ldapVersion, lc, dn);
 
-        try {
-            // connect to the server
-            lc.connect(getHostname(), Integer.parseInt(getPort()));
-            // authenticate to the server
-            lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));
-            // try to read the old object
-            oldEntry = lc.read(dn);
-        } catch (LDAPException e) {
-            if (e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
-                log.debug("No old entry exist for '" + dn + "'.");
-            } else {
-                log.error("Error binding to and reading from LDAP server: ", e);
-                throw new PublisherException("Error binding to and reading from LDAP server.");                                
-            }
-        } catch (UnsupportedEncodingException e) {
-            log.error("Can't decode password for LDAP login: "+getLoginPassword(), e);
-            throw new PublisherException("Can't decode password for LDAP login: "+getLoginPassword());            
-        } finally {
-			// disconnect with the server
-			try {
-				lc.disconnect();
-			} catch (LDAPException e) {
-				log.error("LdapPublisher: LDAP disconnection failed: ", e);
-			}
-		}
-
+        // PART 2: Create LDAP entry
         LDAPEntry newEntry = null;
         ArrayList modSet = new ArrayList();
         LDAPAttributeSet attributeSet = null;
@@ -225,17 +198,17 @@ public class LdapPublisher extends BasePublisher {
                 if (oldEntry != null) {
                     if (getAddMultipleCertificates()) {
                         modSet.add(new LDAPModification(LDAPModification.ADD, certAttr));                        
-                        log.debug("LdapSearchPublisher: replaced certificate in user entry:" + certAttr);
+                        log.debug("Replaced certificate in user entry:" + certAttr);
                     } else {
                         modSet.add(new LDAPModification(LDAPModification.REPLACE, certAttr));                                            
-                        log.debug("LdapSearchPublisher: appended new certificate in user entry:" + certAttr);
+                        log.debug("Appended new certificate in user entry:" + certAttr);
                     }
                 } else {
                     attributeSet.add(certAttr);
-                    log.debug("LdapSearchPublisher: added new certificate to user entry:" + certAttr);
+                    log.debug("Added new certificate to user entry:" + certAttr);
                 }
             } catch (CertificateEncodingException e) {
-                log.error("Error encoding certificate when storing in LDAP: ", e);
+                log.error("LDAP ERROR: Error encoding certificate when storing in LDAP: ", e);
                 throw new PublisherException("Error encoding certificate when storing in LDAP.");                
             }
         } else if ((type == CertificateDataBean.CERTTYPE_SUBCA) || (type == CertificateDataBean.CERTTYPE_ROOTCA)) {
@@ -263,15 +236,16 @@ public class LdapPublisher extends BasePublisher {
                     log.debug("Added (fake) attribute for CRL and ARL.");
                 }
             } catch (CertificateEncodingException e) {
-                log.error("Error encoding certificate when storing in LDAP: ", e);
+                log.error("LDAP ERROR: Error encoding certificate when storing in LDAP: ", e);
                 throw new PublisherException("Error encoding certificate when storing in LDAP.");            
             }
         } else {
             log.info("Certificate of type '" + type + "' will not be published.");
             throw new PublisherException("Certificate of type '" + type + "' will not be published.");                      
         }
+
+        // PART 3: MODIFICATION AND ADDITION OF NEW USERS
         try {
-        
             lc.connect(getHostname(), Integer.parseInt(getPort()));
             // authenticate to the server
             lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));            
@@ -291,17 +265,17 @@ public class LdapPublisher extends BasePublisher {
                 }  
             }
         } catch (LDAPException e) {
-            log.error("Error storing certificate (" + attribute + ") in LDAP (" + objectclass + ") for DN (" + dn + "): ", e);  
+            log.error("LDAP ERROR: Error storing certificate (" + attribute + ") in LDAP (" + objectclass + ") for DN (" + dn + "): ", e);  
             throw new PublisherException("Error storing certificate (" + attribute + ") in LDAP (" + objectclass + ") for DN (" + dn + ").");            
         } catch (UnsupportedEncodingException e) {
-            log.error("Can't decode password for LDAP login: "+getLoginPassword(), e);
+            log.error("LDAP ERROR: Can't decode password for LDAP login: "+getLoginPassword(), e);
             throw new PublisherException("Can't decode password when storing (" + attribute + ") in LDAP (" + objectclass + ") for DN (" + dn + ").");            
         } finally {
 			// disconnect with the server
 			try {
 				lc.disconnect();
 			} catch (LDAPException e) {
-				log.error("LdapPublisher: LDAP disconnection failed: ", e);
+				log.error("LDAP ERROR: LdapPublisher: LDAP disconnection failed: ", e);
 			}
 		}
         log.debug("<storeCertificate()");
@@ -314,12 +288,8 @@ public class LdapPublisher extends BasePublisher {
 	 */    
 	public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number) throws PublisherException{
         int ldapVersion = LDAPConnection.LDAP_V3;
-        LDAPConnection lc = null;
-        if(getUseSSL()){
-          lc = new LDAPConnection(new LDAPJSSESecureSocketFactory());
-        }else{
-          lc = new LDAPConnection();        
-        }
+        LDAPConnection lc = createLdapConnection();
+
         X509CRL crl = null;
         String dn = null;
         String crldn = null;
@@ -329,37 +299,12 @@ public class LdapPublisher extends BasePublisher {
         	crldn = CertTools.getIssuerDN(crl);
             dn = constructLDAPDN(CertTools.getIssuerDN(crl));
         } catch (Exception e) {
-        	log.error("Error decoding input CRL: ", e);        	
+        	log.error("LDAP ERROR: Error decoding input CRL: ", e);        	
         	throw new PublisherException("Error decoding input CRL.");            
         }
 
         // Check if the entry is already present, we will update it with the new certificate.
-        LDAPEntry oldEntry = null;
-        try {
-            // connect to the server
-            lc.connect(getHostname(), Integer.parseInt(getPort()));
-            // authenticate to the server
-            lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));
-            // try to read the old object
-            oldEntry = lc.read(dn);
-        } catch (LDAPException e) {
-            if (e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
-                log.debug("No old entry exist for '" + dn + "'.");
-            } else {
-                log.error("Error binding to and reading from LDAP server: ", e);
-                throw new PublisherException("Error binding to and reading from LDAP server.");                
-            }
-        } catch (UnsupportedEncodingException e) {
-            log.error("Can't decode password for LDAP login: "+getLoginPassword(), e);
-            throw new PublisherException("Can't decode password for LDAP login: "+getLoginPassword());            
-        } finally {
-			// disconnect with the server
-			try {
-				lc.disconnect();
-			} catch (LDAPException e) {
-				log.error("LdapPublisher: LDAP disconnection failed: ", e);
-			}
-		}
+        LDAPEntry oldEntry = searchOldEntity(null, ldapVersion, lc, dn);
 
         LDAPEntry newEntry = null;
         ArrayList modSet = new ArrayList();
@@ -382,7 +327,7 @@ public class LdapPublisher extends BasePublisher {
                 attributeSet.add(arlAttr);
             }
         } catch (CRLException e) {
-            log.error("Error encoding CRL when storing in LDAP: ", e);
+            log.error("LDAP ERROR: Error encoding CRL when storing in LDAP: ", e);
             throw new PublisherException("Error encoding CRL when storing in LDAP.");            
         }
         if (oldEntry == null) {
@@ -404,26 +349,23 @@ public class LdapPublisher extends BasePublisher {
                 log.info("LDAP CRL: Added object: " + dn + " successfully.");  
             }
         } catch (LDAPException e) {
-            log.error("Error storing CRL (" + getCRLAttribute() + ") in LDAP (" + getCAObjectClass() + ") for DN (" + dn + "): ", e);
+            log.error("LDAP ERROR: Error storing CRL (" + getCRLAttribute() + ") in LDAP (" + getCAObjectClass() + ") for DN (" + dn + "): ", e);
             throw new PublisherException("Error storing CRL (" + getCRLAttribute() + ") in LDAP (" + getCAObjectClass() + ") for DN (" + dn + ").");                        
         } catch (UnsupportedEncodingException e) {
-            log.error("Can't decode password for LDAP login: "+getLoginPassword(), e);
+            log.error("LDAP ERROR: Can't decode password for LDAP login: "+getLoginPassword(), e);
             throw new PublisherException("Can't decode password when storing (" + getCRLAttribute() + ") in LDAP (" + getCAObjectClass() + ") for DN (" + dn + ").");            
         } finally {
 			// disconnect with the server
 			try {
 				lc.disconnect();
 			} catch (LDAPException e) {
-				log.error("LdapPublisher: LDAP disconnection failed: ", e);
+				log.error("LDAP ERROR: LdapPublisher: LDAP disconnection failed: ", e);
 			}
 		}
         return true;
     }
     
 	/**
-	 * OBSERVER This method haven't been tested
-	 * 
-	 * 
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
 	 */    
 	public void revokeCertificate(Admin admin, Certificate cert, int reason) throws PublisherException{
@@ -435,12 +377,8 @@ public class LdapPublisher extends BasePublisher {
         }
 
         int ldapVersion = LDAPConnection.LDAP_V3;
-        LDAPConnection lc = null;
-        if(getUseSSL()){
-          lc = new LDAPConnection(new LDAPJSSESecureSocketFactory());
-        }else{
-          lc = new LDAPConnection();        
-        }
+        LDAPConnection lc = createLdapConnection();
+
         String dn = null;
         String certdn = null;
         try {
@@ -448,40 +386,12 @@ public class LdapPublisher extends BasePublisher {
         	certdn = CertTools.getSubjectDN((X509Certificate) cert);
             dn = constructLDAPDN(certdn);
         } catch (Exception e) {
-            log.error("Error decoding input certificate: ", e);            
+            log.error("LDAP ERROR: Error decoding input certificate: ", e);            
             throw new PublisherException("Error decoding input certificate.");            
         }
 
-
         // Check if the entry is already present, we will update it with the new certificate.
-        LDAPEntry oldEntry = null;
-
-        try {
-            // connect to the server
-            lc.connect(getHostname(), Integer.parseInt(getPort()));
-            // authenticate to the server
-            lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));
-            // try to read the old object
-            oldEntry = lc.read(dn);
-        } catch (LDAPException e) {
-            if (e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
-                log.debug("No old entry exist for '" + dn + "'.");
-            } else {
-                log.error("Error binding to and reading from LDAP server: ", e);
-                throw new PublisherException("Error binding to and reading from LDAP server.");                                
-            }
-        } catch (UnsupportedEncodingException e) {
-            log.error("Can't decode password for LDAP login: "+getLoginPassword(), e);
-            throw new PublisherException("Can't decode password for LDAP login: "+getLoginPassword());            
-        } finally {
-			// disconnect with the server
-			try {
-				lc.disconnect();
-			} catch (LDAPException e) {
-				log.error("LdapPublisher: LDAP disconnection failed: ", e);
-			}
-		}
-
+        LDAPEntry oldEntry = searchOldEntity(null, ldapVersion, lc, dn);
         
         ArrayList modSet = new ArrayList();
                                 
@@ -499,7 +409,7 @@ public class LdapPublisher extends BasePublisher {
                     log.info("Trying to remove certificate from LDAP, but no certificate attribute exists in the entry.");
                 }
             }else{
-                log.error("Entry holding certificate doesn't exist in LDAP");            
+                log.error("LDAP ERROR: Entry holding certificate doesn't exist in LDAP");            
                 throw new PublisherException("Certificate doesn't exist in LDAP");            
             }
         } else  {
@@ -528,21 +438,54 @@ public class LdapPublisher extends BasePublisher {
                 log.info("LDAP REVOKE: Removed certificate: " + dn + " successfully.");  
             }               
         } catch (LDAPException e) {
-            log.error("Error when removing certificate from LDAP (" + dn + "): ", e);  
+            log.error("LDAP ERROR: Error when removing certificate from LDAP (" + dn + "): ", e);  
             throw new PublisherException("Error when removing certificate from LDAP (" + dn + ")");            
         } catch (UnsupportedEncodingException e) {
-            log.error("Can't decode password for LDAP login: "+getLoginPassword(), e);
+            log.error("LDAP ERROR: Can't decode password for LDAP login: "+getLoginPassword(), e);
             throw new PublisherException("Can't decode password for LDAP login: "+getLoginPassword());            
         } finally {
 			// disconnect with the server
 			try {
 				lc.disconnect();
 			} catch (LDAPException e) {
-				log.error("LdapPublisher: LDAP disconnection failed: ", e);
+				log.error("LDAP ERROR: LdapPublisher: LDAP disconnection failed: ", e);
 			}
 		}
         log.debug("<revokeCertificate()");
 	}
+
+    /** SearchOldEntity is the only method differing between regular ldap and ldap search publishers.
+     *  Aprat from how they find existing users, the publishing works the same.
+     */
+    protected LDAPEntry searchOldEntity(String username, int ldapVersion, LDAPConnection lc, String dn) throws PublisherException {
+        LDAPEntry oldEntry = null; // return value
+        try {
+            // connect to the server
+            lc.connect(getHostname(), Integer.parseInt(getPort()));
+            // authenticate to the server
+            lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));
+            // try to read the old object
+            oldEntry = lc.read(dn);
+        } catch (LDAPException e) {
+            if (e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
+                log.debug("No old entry exist for '" + dn + "'.");
+            } else {
+                log.error("LDAP ERROR: Error binding to and reading from LDAP server: ", e);
+                throw new PublisherException("Error binding to and reading from LDAP server.");                                
+            }
+        } catch (UnsupportedEncodingException e) {
+            log.error("LDAP ERROR: Can't decode password for LDAP login: "+getLoginPassword(), e);
+            throw new PublisherException("Can't decode password for LDAP login: "+getLoginPassword());            
+        } finally {
+			// disconnect with the server
+			try {
+				lc.disconnect();
+			} catch (LDAPException e) {
+				log.error("LDAP ERROR: LdapPublisher: LDAP disconnection failed: ", e);
+			}
+		}
+        return oldEntry;
+    }
     
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
@@ -586,6 +529,16 @@ public class LdapPublisher extends BasePublisher {
 			}
 		}
 	} 
+
+    protected LDAPConnection createLdapConnection() {
+        LDAPConnection lc;
+        if (getUseSSL()) {
+            lc = new LDAPConnection(new LDAPJSSESecureSocketFactory());
+        } else {
+            lc = new LDAPConnection();
+        }
+        return lc;
+    }
 
     /**
      *  Returns the hostname of ldap server.
