@@ -99,7 +99,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.19 2006-07-20 17:39:14 herrvendil Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.20 2006-08-03 14:50:25 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -605,7 +605,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
             // ignore
             log.debug("Can nog find CA with id: "+caid);
         } catch(Exception e){
-            log.error("Error getting CA info: ", e);
+            log.error("Error getting CA info for CA with id: "+caid, e);
             throw new EJBException(e);
         }        
         return cainfo;
