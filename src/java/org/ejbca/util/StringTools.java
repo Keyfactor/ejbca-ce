@@ -43,7 +43,7 @@ import org.bouncycastle.util.encoders.Hex;
 /**
  * This class implements some utility functions that are useful when handling Strings.
  *
- * @version $Id: StringTools.java,v 1.4 2006-08-02 11:23:22 anatom Exp $
+ * @version $Id: StringTools.java,v 1.5 2006-08-04 17:15:34 anatom Exp $
  */
 public class StringTools {
     private static Logger log = Logger.getLogger(StringTools.class);
@@ -278,10 +278,10 @@ public class StringTools {
 
                 switch(x.length())
                 {
-                    case 1:buf.append('0');
-                       case 2:buf.append('0');
-                          case 3:buf.append('0');
-                             default:buf.append(x);
+                case 1:buf.append('0'); break;
+                case 2:buf.append('0'); break;
+                case 3:buf.append('0'); break;
+                default:buf.append(x); break;
                 }
             }
             return buf.toString();
