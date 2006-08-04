@@ -35,7 +35,7 @@ import com.novell.ldap.LDAPEntry;
 /**
  * ActiveDirectoryPublisher is a class handling a publishing to Active Directory catalouges.  
  *
- * @version $Id: ActiveDirectoryPublisher.java,v 1.1 2006-01-17 20:26:30 anatom Exp $
+ * @version $Id: ActiveDirectoryPublisher.java,v 1.2 2006-08-04 07:39:51 anatom Exp $
  */
 public class ActiveDirectoryPublisher extends LdapPublisher{
 	
@@ -138,7 +138,7 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
     	data.put(USERDESCRIPTION, userdescription);	
     }
     
-    /**
+    /** Overrides getAttributeSet
      * Creates an LDAPAttributeSet.
      * 
      * @param cert is the certificate about to be published
@@ -226,7 +226,8 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
     } // getAttributeSet
 	
 	
-    /**
+    /** Overrides LdapPublisher.getModificationSet
+     * 
      * Creates an LDAPModificationSet.
      *
      * @param oldEntry the objectclass the attribute set should be of.
