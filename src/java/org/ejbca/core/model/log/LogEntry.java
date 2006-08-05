@@ -20,16 +20,35 @@
 package org.ejbca.core.model.log;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.Date;
+
+import org.bouncycastle.util.encoders.Hex;
+import org.ejbca.core.model.protect.Protectable;
+import org.ejbca.core.model.protect.TableVerifyResult;
 
 /**
  *  This is a  class containing information about one log event in the database. Used mainly during database queries by the web interface.
  *
  * @author  TomSelleck
- * @version $Id: LogEntry.java,v 1.4 2006-07-29 11:26:36 herrvendil Exp $
+ * @version $Id: LogEntry.java,v 1.5 2006-08-05 09:59:37 anatom Exp $
  */
-public class LogEntry implements Serializable {
+public class LogEntry implements Serializable, Protectable {
 
+    /**
+     * Determines if a de-serialized file is compatible with this class.
+     *
+     * Maintainers must change this value if and only if the new version
+     * of this class is not compatible with old versions. See Sun docs
+     * for <a href=http://java.sun.com/products/jdk/1.1/docs/guide
+     * /serialization/spec/version.doc.html> details. </a>
+     *
+     */
+	private static final long serialVersionUID = -1L;
+	
     // Public constants
 
     /*Possible log events, all information events should have an id below 1000 and all error events should have a id above 1000 */
@@ -162,7 +181,7 @@ public class LogEntry implements Serializable {
      *
      * @param admintype is pricipally the type of data stored in the admindata field, should be one of org.ejbca.core.model.log.Admin.TYPE_ constants.
      * @param admindata is the data identifying the administrator, should be certificate snr or ip-address when no certificate could be retrieved.
-     * @param module indicates from which module the event was logged. i.e RA, CA ....
+     * @param module indicates from which module the event was logged. i.e one of the constans LogEntry.MODULE_RA, LogEntry.MODULE_CA ....
      * @param time the time the event occured.
      * @param username the name of the user involved or null if no user is involved.
      * @param certificate the certificate involved in the event or null if no certificate is involved.
@@ -170,8 +189,9 @@ public class LogEntry implements Serializable {
      * @param comment comment of the event.
      */
 
-    public LogEntry(int admintype, String admindata, int caid, int module, Date time, String username, String certificatesnr, int event, String comment) {
-        this.admintype = admintype;
+    public LogEntry(int id, int admintype, String admindata, int caid, int module, Date time, String username, String certificatesnr, int event, String comment) {
+        this.id = id;
+    	this.admintype = admintype;
         this.admindata = admindata;
         this.caid = caid;
         this.module = module;
@@ -195,6 +215,10 @@ public class LogEntry implements Serializable {
         return EVENTNAMES_INFO[this.event];
     }
 
+
+	public int getId() {
+		return this.id;
+	}
 
     public int getAdminType() {
         return this.admintype;
@@ -232,9 +256,42 @@ public class LogEntry implements Serializable {
         return this.comment;
     }
 
+    public String getVerifyResult() {
+        return this.verifyResult;
+    }
+
+    public void setVerifyResult(String result) {
+        this.verifyResult=result;
+    }
+    
+    // 
+    // Protectable
+    //
+    public int getHashVersion() {
+    	return 1;
+    }
+    public String getDbKeyString() {
+    	return Integer.toString(id);
+    }
+    public String getEntryType() {
+    	return "LOGENTRY";
+    }
+    public String getHash() throws NoSuchAlgorithmException, NoSuchProviderException, UnsupportedEncodingException {
+    	StringBuffer buf = new StringBuffer();
+    	buf.append(id).append(admintype).append(admindata).append(caid).append(module).append(time.getTime()).
+    		append(username).append(certificatesnr).append(event).append(comment);
+        MessageDigest digest = MessageDigest.getInstance("SHA-256", "BC");
+        byte[] result = digest.digest(buf.toString().getBytes("UTF-8"));
+        return new String(Hex.encode(result));
+    }
+    public String getHash(int version) throws NoSuchAlgorithmException, NoSuchProviderException, UnsupportedEncodingException {
+    	return getHash();
+    }
+
     // Private methods
 
     // Private fields
+    private int id;
     private int admintype;
     private String admindata;
     private int caid;
@@ -244,5 +301,6 @@ public class LogEntry implements Serializable {
     private String certificatesnr;
     private int event;
     private String comment;
+    private String verifyResult = TableVerifyResult.VERIFY_DISABLED_MSG;
 
 }

@@ -72,7 +72,7 @@ import java.util.Date;
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"
  *   
- * @version $Id: LogEntryDataBean.java,v 1.2 2006-01-26 14:14:30 anatom Exp $
+ * @version $Id: LogEntryDataBean.java,v 1.3 2006-08-05 09:59:37 anatom Exp $
  */
 public abstract class LogEntryDataBean extends BaseEntityBean {
 
@@ -203,7 +203,7 @@ public abstract class LogEntryDataBean extends BaseEntityBean {
      * @return DOCUMENT ME!
      */
     public LogEntry getLogEntry() {
-        return new LogEntry(getAdminType(), getAdminData(), getCaId(), getModule(), getTimeAsDate(), getUsername(), getCertificateSNR(), getEvent(), getComment());
+        return new LogEntry(getId().intValue(), getAdminType(), getAdminData(), getCaId(), getModule(), getTimeAsDate(), getUsername(), getCertificateSNR(), getEvent(), getComment());
     }
 
     /**

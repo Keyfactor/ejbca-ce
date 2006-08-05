@@ -32,11 +32,14 @@ import javax.ejb.FinderException;
 import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
+import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
+import org.ejbca.core.ejb.protect.TableProtectSessionLocalHome;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.ILogDevice;
 import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.core.model.protect.TableVerifyResult;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.query.IllegalQueryException;
@@ -78,6 +81,11 @@ import org.ejbca.util.query.Query;
  *   type="java.lang.String"
  *   value="Log4j.properties"
  *
+ * @ejb.env-entry description="Enable or disable protection of logs, see HOWTO-logsigning.txt"
+ *   name="logSigning"
+ *   type="java.lang.String"
+ *   value="${protection.logsigning}"
+ *   
  * @ejb.ejb-external-ref
  *   description="The Log Entry Data entity bean"
  *   view-type="local"
@@ -96,6 +104,15 @@ import org.ejbca.util.query.Query;
  *   business="org.ejbca.core.ejb.log.LogConfigurationDataLocal"
  *   link="LogConfigurationData"
  *
+ * @ejb.ejb-external-ref
+ *   description="The table protection session bean"
+ *   view-type="local"
+ *   ejb-name="TableProtectSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.protect.TableProtectSessionLocalHome"
+ *   business="org.ejbca.core.ejb.protect.TableProtectSessionLocal"
+ *   link="TableProtectSession"
+ *   
  * @ejb.home
  *   extends="javax.ejb.EJBHome"
  *   local-extends="javax.ejb.EJBLocalHome"
@@ -111,13 +128,16 @@ import org.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.4 2006-07-30 08:52:48 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.5 2006-08-05 09:59:37 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 
     /** The home interface of  LogEntryData entity bean */
     private LogEntryDataLocalHome logentryhome;
 
+    /** The come interface of the protection session bean */
+    private TableProtectSessionLocalHome protecthome;
+    
     /** The home interface of  LogConfigurationData entity bean */
     private LogConfigurationDataLocalHome logconfigurationhome;
 
@@ -126,13 +146,16 @@ public class LocalLogSessionBean extends BaseSessionBean {
 
     private static final String LOGDEVICE_FACTORIES = "java:comp/env/logDeviceFactories";
     private static final String LOGDEVICE_PROPERTIES = "java:comp/env/logDevicePropertyFiles";
+    private static final String LOGSIGNING_PROPERTIES = "java:comp/env/logSigning";
 
     /** Collection of available log devices, i.e Log4j etc */
     private ArrayList logdevices;
+    /** If signing of logs is enabled of not, default not */
+    private boolean logsigning = false;
 
     /** Columns in the database used in select */
     private final String LOGENTRYDATA_TABLE = "LogEntryData";
-    private final String LOGENTRYDATA_COL = "adminType, adminData, caid, module, time, username, certificateSNR, event";
+    private final String LOGENTRYDATA_COL = "id, adminType, adminData, caid, module, time, username, certificateSNR, event";
     // Different column names is an unforturnalte workaround because of Orcale, you cannot have a column named 'comment' in Oracle.
     // The workaround 'comment_' was spread in the wild in 2005, so we have to use it so far.
     private final String LOGENTRYDATA_COL_COMMENT_OLD = "comment";
@@ -152,6 +175,11 @@ public class LocalLogSessionBean extends BaseSessionBean {
             // Get configuration of log device classes from ejb-jar.xml
             String factoryclassesstring = getLocator().getString(LOGDEVICE_FACTORIES);
             String propertyfilesstring = getLocator().getString(LOGDEVICE_PROPERTIES);
+            String sign = getLocator().getString(LOGSIGNING_PROPERTIES);
+            if (StringUtils.equalsIgnoreCase(sign, "true")) {
+            	logsigning = true;
+            	protecthome = (TableProtectSessionLocalHome) getLocator().getLocalHome(TableProtectSessionLocalHome.COMP_NAME);
+            }
 
             String[] propertyfiles = propertyfilesstring.split(";");
             Properties[] properties = new Properties[propertyfiles.length];
@@ -269,6 +297,11 @@ public class LocalLogSessionBean extends BaseSessionBean {
             String uid = certificate == null ? null : certificate.getSerialNumber().toString(16) + "," + certificate.getIssuerDN().toString();
             Integer id = getAndIncrementRowCount();
             logentryhome.create(id, admin.getAdminType(), admin.getAdminData(), caid, module, time, username, uid, event, comment);
+            if (logsigning) {
+                LogEntry le = new LogEntry(id.intValue(), admin.getAdminType(), admin.getAdminData(), caid, module, time, username, uid, event, comment);
+            	TableProtectSessionLocal protect = protecthome.create();
+            	protect.protect(admin, le);
+            }
         } catch (DuplicateKeyException e) {
             // FIXME we are losing a db audit entry in this case, what do we do ?
             log.error("ERROR MISSING LOG ENTRY: DuplicateKeyException during log, missing log entry: ", e);
@@ -326,8 +359,13 @@ public class LocalLogSessionBean extends BaseSessionBean {
             // Assemble result.
             ArrayList returnval = new ArrayList();
             while (rs.next() && returnval.size() <= LogConstants.MAXIMUM_QUERY_ROWCOUNT) {
-                LogEntry data = new LogEntry(rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getInt(4), new Date(rs.getLong(5)), rs.getString(6), rs.getString(7)
-                        , rs.getInt(8), rs.getString(9));
+                LogEntry data = new LogEntry(rs.getInt(1), rs.getInt(2), rs.getString(3), rs.getInt(4), rs.getInt(5), new Date(rs.getLong(6)), rs.getString(7), 
+                		rs.getString(8), rs.getInt(9), rs.getString(10));
+                if (logsigning) {
+                	TableProtectSessionLocal protect = protecthome.create();
+                	TableVerifyResult res = protect.verify(data);
+                	data.setVerifyResult(res.getResultConstant());
+                }
                 returnval.add(data);
             }
             return returnval;

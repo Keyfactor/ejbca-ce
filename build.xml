@@ -11,9 +11,10 @@
     <!-- Give user a chance to override without editing this file
        (and without typing -D each time it compiles it).
        First it checks your home directory for ejbca.properties
-       net it checks the properties file here. -->
+       next it checks the properties file here. -->
     <property file="${user.home}/${app.name}.properties" />
     <property file="${app.name}.properties" />
+    <property file="protection.properties" />
 	<property name="java.ver" value="14" />
 	
 
@@ -174,7 +175,14 @@
     <property name="httpsserver.password" value="serverpwd" />
     <property name="web.availablelanguages" value="EN,FR,IT,ES,SE,ZH" />
     <property name="web.contentencoding" value="ISO-8859-1" />
-
+    
+    <!-- Extra Protection settings for internal log signing etc -->
+    <property name="protection.enabled" value="false" />
+    <property name="protection.logsigning" value="false" />
+    <property name="protection.keyref" value="key1" />
+    <property name="protection.key" value="foo123" />
+    <property name="protection.keytype" value="HMAC" />
+    
     <!-- =================================================================== -->
     <!-- Build ALL                                                           -->
     <!-- =================================================================== -->
@@ -218,8 +226,14 @@ httpserver.privhttps   = ${httpserver.privhttps}
 httpsserver.password   = ${httpsserver.password}
 web.availablelanguages = ${web.availablelanguages}
 web.contentencoding    = ${web.contentencoding}
-
       </echo>
+<!--
+protection.enabled=${protection.enabled}
+protection.logsigning=${protection.logsigning}
+protection.keyref=${protection.keyref}
+protection.keytype=${protection.keytype}
+protection.key=${protection.key}
+-->   
         <!-- Create the time stamp -->
         <tstamp/>
         <!-- Create the build directory structure used by compile -->

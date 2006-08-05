@@ -88,7 +88,7 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.14 2006-07-30 11:08:18 anatom Exp $
+ * @version $Id: CertTools.java,v 1.15 2006-08-05 09:59:37 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -583,7 +583,7 @@ public class CertTools {
         return null;
     }
 
-    public static void installBCProvider() {
+    public static synchronized void installBCProvider() {
         if (Security.addProvider(new BouncyCastleProvider()) < 0) {
             // If already installed, remove so we can handle redeploy
         	// Nope, we ignore re-deploy on this level, because it can happen

@@ -198,7 +198,7 @@ function viewcert(row){
                    <%    }
                        } %>
     </td>
-    <td width="17%">
+    <td width="10%">
                    <% if(sortby.equals(SORTBY_ADMINDATA_ACC)){ %>
                           <input type="image" src='<%= ejbcawebbean.getImagefileInfix("downarrow.gif") %>' border="0" name="<%=SORTBY_ADMINDATA_DEC %>" value="submit" ><%= ejbcawebbean.getText("ADMINISTRATOR") %>              
                    <% }else{
@@ -271,6 +271,10 @@ function viewcert(row){
                    <%    }
                        } %>
     </td>
+    <td width="7%">
+                   <img src='<%= ejbcawebbean.getImagefileInfix("noarrow.gif") %>' border="0"><%= ejbcawebbean.getText("VERIFY") %>
+    </td>
+    
   </tr>
   <%     if(logentries == null || logentries.length == 0){     %>
   <tr id="LogTextRow0"> 
@@ -293,7 +297,7 @@ function viewcert(row){
        <input type="hidden" name='<%= HIDDEN_TIMESTAMP + i %>' value='<%=logentries[i].getTime().getTime() %>'>
     <td width="9%"><%= logentries[i].getValue(LogEntryView.TIME) %></td>
     <td width="7%"><%= ejbcawebbean.getText(ADMINTYPES[Integer.parseInt(logentries[i].getValue(LogEntryView.ADMINTYPE))]) %></td>
-    <td width="17%">
+    <td width="10%">
        <%  if(Integer.parseInt(logentries[i].getValue(LogEntryView.ADMINTYPE)) == Admin.TYPE_CLIENTCERT_USER) 
              if(logentries[i].getValue(LogEntryView.ADMINDATA).equals(""))
                 out.write(ejbcawebbean.getText("CERTIFICATENOTKNOWN"));
@@ -325,6 +329,7 @@ function viewcert(row){
                     <% } %>
     </td>
     <td width="18%"><%= logentries[i].getValue(LogEntryView.COMMENT) %></td>
+    <td width="7%"><%= logentries[i].getValue(LogEntryView.VERIFY) %></td>
   </tr>
  <%      }
        }%>

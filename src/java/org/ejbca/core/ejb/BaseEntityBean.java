@@ -16,17 +16,14 @@ package org.ejbca.core.ejb;
 
 import javax.ejb.EntityBean;
 import javax.ejb.EntityContext;
-import javax.ejb.EJBLocalHome;
-import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
-import org.ejbca.util.SimpleSequenceGenerator;
 
 
 /**
  * Base class for entity beans implementing required methods and helpers.
  *
- * @version $Id: BaseEntityBean.java,v 1.1 2006-01-17 20:30:04 anatom Exp $
+ * @version $Id: BaseEntityBean.java,v 1.2 2006-08-05 09:59:37 anatom Exp $
  */
 public class BaseEntityBean implements EntityBean {
 
@@ -167,17 +164,6 @@ public class BaseEntityBean implements EntityBean {
      */
     public void ejbRemove() {
         // Not implemented.
-    }
-
-    /**
-     * Return the next valid sequence this EJB primary key assuming the primary key
-     * is an Integer object (The findByPrimaryKey(Integer pk) should exist in the local home interface.
-     * @return the next valid sequence for that EJB primary key
-     * @throws EJBException if it cannot find a valid sequence count for that bean
-     */
-    protected Integer getNextSequence() throws EJBException {
-        EJBLocalHome home = ctx.getEJBLocalHome();
-        return SimpleSequenceGenerator.getNextCount(home);
     }
 
     /**

@@ -287,3 +287,51 @@ MessageDigest=1a02dc7e05d06df45d2e0f74da502513852064d5
 
 If the hashes from the time stamp token (MessageDigest) matches the hash from sha1sum, the file is verified, 
 i.e. has not been changed since the time stamp token was generated.
+
+
+Internal log signing in EJBCA
+=============================
+
+There is a mechanism for internal log signing in EJBCA. This mechanism stores an additional protection row in 
+the table TableProtectData, containing a HMAC of the row written to LogEntryData.
+If enabled the protection is verified and displayed when viewing log entrys in the admin-GUI.
+
+To enable, you must add a file protection.properties as defined below, and then doing
+'ant clean', 'and deploy'.
+
+-----
+#
+# $Id: HOWTO-logsigning.txt,v 1.7 2006-08-05 10:00:33 anatom Exp $
+#
+# This is a sample file to override properties used
+# during development (or deployment) of EJBCA
+# 
+# You should store this file as protection.properties (in the same place as ejbca.properties)
+# and customize at will.
+#
+
+# Enable protection altogether
+# Default: false
+#protection.enabled=false
+
+# Enable protection of internal database logs
+# Default: false
+#protection.logsigning=false
+
+# Reference to a key to be read, mostly enabled for future use when several different keys can be used
+# for different types of protection entries.
+# Default: key1
+#protection.keyref=key1
+
+# The key referenced above, can be a clear text key, an encrypted key or some other type,
+# depending on the value of protection.keytype.
+# Default: foo123
+#protection.key=foo123
+
+# The type of key, to be able to decode the value and use it.
+# Supported types are: 
+# HMAC, for a clear text password
+# ENCHMAC, for an encrypted password, created with 'bin/ejbca.sh encryptpwd'
+# Default: HMAC
+#protection.keytype=HMAC
+-----

@@ -27,7 +27,7 @@ import org.ejbca.ui.web.admin.rainterface.SortBy;
  * A class used as a help class for displaying LogEntries.
  *
  * @author  TomSelleck
- * @version $Id: LogEntryView.java,v 1.1 2006-01-17 20:32:20 anatom Exp $
+ * @version $Id: LogEntryView.java,v 1.2 2006-08-05 09:59:38 anatom Exp $
  */
 public class LogEntryView implements java.io.Serializable, Cloneable, Comparable {
     // Public constants.
@@ -42,11 +42,12 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
     public static final int CERTIFICATESERNO  = 8;
     public static final int EVENT             = 9;
     public static final int COMMENT           = 10;
+    public static final int VERIFY            = 11;
    
     public static final String TRUE = "T";
     public static final String FALSE = "F";
     
-    public static final int NUMBEROF_FIELDS=11;
+    public static final int NUMBEROF_FIELDS=12;
 
     
     /** Creates a new instance of UserView */
@@ -141,7 +142,8 @@ public class LogEntryView implements java.io.Serializable, Cloneable, Comparable
        else
          logentrydata[EVENT] = localerroreventnames[logentry.getEvent() - LogEntry.EVENT_ERROR_BOUNDRARY];         
        
-       logentrydata[COMMENT] = logentry.getComment();       
+       logentrydata[COMMENT] = logentry.getComment();  
+       logentrydata[VERIFY] = logentry.getVerifyResult();
     }
           
     public int compareTo(Object obj) {
