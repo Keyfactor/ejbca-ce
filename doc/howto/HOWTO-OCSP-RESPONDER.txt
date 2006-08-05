@@ -70,14 +70,15 @@ Card keys are created on the card with the "create CA Token on card" tool see th
 Select the choice for one authentication code for all keys on the card. If you want several OCSP responders with same
 keys then you may create several card with same keys. But note that no backup card is needed. If a card is lost or broken then
 simply make another one with new keys and revoke the old signing certificates.
-The certificates for the the keys are then fetched from the enrolment page of EJBCA with certificate request. There should be one
+The certificates for the the keys are then fetched from the enrollment page of EJBCA with certificate request. There should be one
 certificate request for each key. 
 'changePIN.sh createCertReqs' will create the requests, one for each key. Choose 'pem' format for
 the certificates and then just store these files in the 'ocsp.keys.dir' directory.
 The property 'ocsp.keys.cardPassword' should be set to the password of the card.
 
-The responder is then built and deployed with "ant ocsp-deploy". When the application server is then
-started it should just work.
+The responder is then built and deployed with:
+    ant ocsp-deploy
+When the application server is started it should just work.
 
 The database that OcspDS points to only have to contain the CertificateData table. This table is 
 created automatically by JBoss when it starts.
