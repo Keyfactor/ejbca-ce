@@ -84,7 +84,7 @@ import org.ejbca.util.query.Query;
  * @ejb.env-entry description="Enable or disable protection of logs, see HOWTO-logsigning.txt"
  *   name="logSigning"
  *   type="java.lang.String"
- *   value="${protection.logsigning}"
+ *   value="${protection.logprotect}"
  *   
  * @ejb.ejb-external-ref
  *   description="The Log Entry Data entity bean"
@@ -128,7 +128,7 @@ import org.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.5 2006-08-05 09:59:37 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.6 2006-08-05 10:29:52 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 

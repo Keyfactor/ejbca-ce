@@ -178,7 +178,7 @@
     
     <!-- Extra Protection settings for internal log signing etc -->
     <property name="protection.enabled" value="false" />
-    <property name="protection.logsigning" value="false" />
+    <property name="protection.logprotect" value="false" />
     <property name="protection.keyref" value="key1" />
     <property name="protection.key" value="foo123" />
     <property name="protection.keytype" value="HMAC" />
@@ -229,7 +229,7 @@ web.contentencoding    = ${web.contentencoding}
       </echo>
 <!--
 protection.enabled=${protection.enabled}
-protection.logsigning=${protection.logsigning}
+protection.logprotect=${protection.logprotect}
 protection.keyref=${protection.keyref}
 protection.keytype=${protection.keytype}
 protection.key=${protection.key}
@@ -365,6 +365,8 @@ protection.key=${protection.key}
             <fileset dir="${src.java}">
                 <include name="**/CertificateDataBean.java" />
                 <include name="**/LocalCertificateStoreOnlyDataSessionBean.java" />
+                <include name="**/TableProtectDataBean.java" />
+                <include name="**/TableProtectSessionBean.java" />
             </fileset>
             <remoteinterface />
             <homeinterface />
@@ -511,6 +513,7 @@ protection.key=${protection.key}
         <javac srcdir="${src.java}:${ocsp-src.gen}" destdir="${ocsp-build}" debug="on" includeantruntime="no" encoding="iso8859-1">
             <classpath refid="compile.classpath" />
             <include name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java" />
+            <include name="org/ejbca/core/ejb/protect/TableProtect*.java" />
             <include name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionSession.java" />
             <include name="org/ejbca/core/ejb/ca/store/ICertificateStoreOnlyDataSessionHome.java" />
             <include name="org/ejbca/core/protocol/ocsp/OCSPUnidExtension.java" />
@@ -684,7 +687,7 @@ protection.key=${protection.key}
     <!-- =================================================================== -->
     <!-- Build ocsp ejb part                                                    -->
     <!-- =================================================================== -->
-    <target name="ocsp-jar" depends="ocsp-compile" description="Creates master ejbca-ejb.jar ocsp">
+    <target name="ocsp-jar" depends="ocsp-compile" description="Creates master ejbca-ejb.jar for ocsp">
         <mkdir dir="${ocsp.hardToken.classes}"/>
         <jar jarfile="${ocsp-dist.dir}/ejbca-ejb.jar">
             <manifest>

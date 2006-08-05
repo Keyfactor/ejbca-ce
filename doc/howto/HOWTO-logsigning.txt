@@ -301,7 +301,7 @@ To enable, you must add a file protection.properties as defined below, and then 
 
 -----
 #
-# $Id: HOWTO-logsigning.txt,v 1.7 2006-08-05 10:00:33 anatom Exp $
+# $Id: HOWTO-logsigning.txt,v 1.8 2006-08-05 10:29:52 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -316,7 +316,7 @@ To enable, you must add a file protection.properties as defined below, and then 
 
 # Enable protection of internal database logs
 # Default: false
-#protection.logsigning=false
+#protection.logprotect=false
 
 # Reference to a key to be read, mostly enabled for future use when several different keys can be used
 # for different types of protection entries.
