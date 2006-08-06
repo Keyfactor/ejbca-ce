@@ -115,12 +115,21 @@ synchronisation is finished. This might be done by simply blocking the port to t
 
 2. On the host of ejbca the following commands can be used to make the synchronisation:
 
-mysqladmin -h 'ocspResponder' drop ejbca_db;
-mysqladmin -h 'ocspResponder' create ejbca_db;
-mysqldump --compress ejbca_db CertificateData | mysql -h 'ocspResponder' ejbca_db;
-mysqldump --compress ejbca_db TableProtectData| mysql -h 'ocspResponder' ejbca_db;
+Run on the OCSP responder machine (as root user in mysql):
+mysqladmin drop ejbca_db;
+mysqladmin create ejbca_db;
+This drops and re-created the ejbca database to clean it. Replace ejbca_db with the database name of your database.
 
+Run on the CA server:
+mysqldump -u ejbca -p --compress ejbca_db CertificateData > CertificateData.dat
+mysqldump -u ejbca -p --compress ejbca_db TableProtectData > TableProtectData.dat
+cat CertificateData.dat | mysql -h ocspresponder ejbca_db
+cat TableProtectData.dat | mysql -h ocspresponder ejbca_db
+
+Replace your the username ejbca with your username.
 ocspResponder is the external OCSP responder host.
+
+Note, that this can usually not be done from a windows machine, to a Linux machine, because windows is not case sensitive.
 
 3. Check that the publishing is working before allowing issuing and revoking.
 
