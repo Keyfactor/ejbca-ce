@@ -88,7 +88,7 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.15 2006-08-05 09:59:37 anatom Exp $
+ * @version $Id: CertTools.java,v 1.16 2006-08-06 12:36:17 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -1375,9 +1375,10 @@ public class CertTools {
      *
      * @param cert X509Certificate.
      *
-     * @return String containing hex format of SHA1 fingerprint.
+     * @return String containing hex format of SHA1 fingerprint, or null if input is null.
      */
     public static String getFingerprintAsString(X509Certificate cert) {
+    	if (cert == null) return null;
         try {
             byte[] res = generateSHA1Fingerprint(cert.getEncoded());
 
