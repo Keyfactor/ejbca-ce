@@ -117,6 +117,13 @@ be searched through the administration Web-GUI.
 2. Error and debug logs. These logs use Log4j and end up in a log file defined
 in JBoss.
 
+Use the Utils
+=============
+For the most mundane repetitive tasks there are usually util classes in either org.ejbca.util or in the apache
+commons classes that will help avoid the same code beeing copied everywhere. 
+
+Check them out and learn to use the utils!
+
 CA logs
 -------
 
@@ -227,14 +234,14 @@ CVS
 
 All files should have the below part in the initial class comment:
 
-@version $Id: DEVELOP,v 1.7 2006-04-18 10:46:03 anatom Exp $
+@version $Id: DEVELOP,v 1.8 2006-08-06 06:43:38 anatom Exp $
 
 Example:
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
- * @version $Id: DEVELOP,v 1.7 2006-04-18 10:46:03 anatom Exp $
+ * @version $Id: DEVELOP,v 1.8 2006-08-06 06:43:38 anatom Exp $
  */
 
 All java files should include the following header as the first lines in the file:
