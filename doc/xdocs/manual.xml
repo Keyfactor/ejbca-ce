@@ -1955,9 +1955,10 @@ caids (DNs) where you import the profiles.</li>
 A PKCS12 file can be generates from PEM files with openssl.</li>
 <li>importcert - creates a user and imports a certificate for him/her.</li>
 <li>republish - republishes certificates for a CA and all users. 
-Can be used to add a publisher to a CA after some time, and then publish all certs. Note, that this command 
-only published the last certificate issued for a user. It is as such not suitable for publishing to for example an 
-OCSP responder.</li>
+Can be used to add a publisher to a CA after some time, and then publish all certs. You can add the flag '-a'
+after the command to publish all certificates for all users. Note, that this command relies upon the publisher 
+for the users profiles to do it's job. So if you have changed profiles for users, the result may not be as expected, 
+but ut may be depending on how your profiles are constructed.</li>
 </ul>
 </p></subsection>
 

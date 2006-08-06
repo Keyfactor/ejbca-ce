@@ -17,10 +17,9 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.ejbca.core.ejb.ca.store.CertificateDataBean;
+import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
@@ -32,7 +31,7 @@ import org.ejbca.util.CertTools;
 /**
  * Re-publishes the certificates of all users beloinging to a particular CA.
  *
- * @version $Id: CARepublishCommand.java,v 1.3 2006-07-21 15:28:26 anatom Exp $
+ * @version $Id: CARepublishCommand.java,v 1.4 2006-08-06 13:27:18 anatom Exp $
  */
 public class CARepublishCommand extends BaseCaAdminCommand {
     /**
@@ -53,11 +52,18 @@ public class CARepublishCommand extends BaseCaAdminCommand {
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {
             if (args.length < 2) {
-                getOutputStream().println("Usage: CA republish <CA name>");
+                getOutputStream().println("Usage: CA republish <CA name> [-all]");
                 return;
             }
 
             String caname = args[1];
+            boolean addAll = false;
+            if (args.length == 3) {
+                String all = args[2];
+                if (StringUtils.equalsIgnoreCase(all, "-a")) {
+                	addAll = true;
+                }
+            }
                         
             // Get the CAs info and id
             CAInfo cainfo = getCAAdminSessionRemote().getCAInfo(administrator, caname);
@@ -71,11 +77,10 @@ public class CARepublishCommand extends BaseCaAdminCommand {
                 Collection capublishers = cainfo.getCRLPublishers();
                 // Store cert and CRL in ca publishers.
                 if(capublishers != null) {
-                    int certtype = CertificateDataBean.CERTTYPE_SUBCA;	
-                    if (cainfo.getSignedBy() == CAInfo.SELFSIGNED)
-                        certtype = CertificateDataBean.CERTTYPE_ROOTCA;  
                     String fingerprint = CertTools.getFingerprintAsString(cacert);
-                    getPublisherSession().storeCertificate(administrator, capublishers, cacert, fingerprint, null , fingerprint, CertificateDataBean.CERT_ACTIVE, -1, RevokedCertInfo.NOT_REVOKED, certtype, null);
+                    String username = getCertificateStoreSession().findUsernameByCertSerno(administrator, cacert.getSerialNumber(), cacert.getIssuerDN().getName());
+        		    CertificateInfo certinfo = getCertificateStoreSession().getCertificateInfo(administrator, fingerprint);
+        		    getPublisherSession().storeCertificate(administrator, capublishers, cacert, username, null, fingerprint, certinfo.getStatus(), certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), null);                                
                     getOutputStream().println("Certificate published for "+caname);
                     if ( (crlbytes != null) && (crlbytes.length > 0) && (crlNumber > 0) ) {
                         getPublisherSession().storeCRL(administrator, capublishers, crlbytes, fingerprint, crlNumber);                        
@@ -123,14 +128,16 @@ public class CARepublishCommand extends BaseCaAdminCommand {
                     if (cert != null) {
                         if(certProfile.getPublisherList() != null) {
                             getOutputStream().println("Re-publishing user "+data.getUsername());
-                            try {
-                                String fingerprint = CertTools.getFingerprintAsString(cert);
-                                CertificateInfo certinfo = getCertificateStoreSession().getCertificateInfo(administrator, fingerprint);
-                                getPublisherSession().storeCertificate(administrator, certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), fingerprint, certinfo.getStatus(), certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), null);                                
-                            } catch (Exception e) {
-                                // catch failure to publish one user and continue with the rest
-                                error("Failed to publish certificate for user "+data.getUsername()+", continuing with next user.");
+                            if (addAll) {
+                                getOutputStream().println("Re-publishing all certificates ("+certCol.size()+").");
+                            	Iterator i = certCol.iterator();
+                            	while (i.hasNext()) {
+                            		X509Certificate c = (X509Certificate)i.next();
+                                    publishCert(data, certProfile, c);
+                            	}
                             }
+                            // Publish the latest again, last to make sure that is the one stuck in LDAP for example
+                            publishCert(data, certProfile, cert);
                         } else {
                             getOutputStream().println("Not publishing user "+data.getUsername()+", no publisher in certificate profile.");
                         }
@@ -145,4 +152,15 @@ public class CARepublishCommand extends BaseCaAdminCommand {
             throw new ErrorAdminCommandException(e);
         }
     } // execute
+
+	private void publishCert(UserDataVO data, CertificateProfile certProfile, X509Certificate cert) {
+		try {
+		    String fingerprint = CertTools.getFingerprintAsString(cert);
+		    CertificateInfo certinfo = getCertificateStoreSession().getCertificateInfo(administrator, fingerprint);
+		    getPublisherSession().storeCertificate(administrator, certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), fingerprint, certinfo.getStatus(), certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), null);                                
+		} catch (Exception e) {
+		    // catch failure to publish one user and continue with the rest
+		    error("Failed to publish certificate for user "+data.getUsername()+", continuing with next user.");
+		}
+	}
 }
