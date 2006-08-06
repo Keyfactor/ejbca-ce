@@ -170,7 +170,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.15 2006-08-06 12:37:00 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.16 2006-08-06 15:48:48 anatom Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
@@ -1133,6 +1133,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * Retrieves the latest CRL issued by this CA.
      *
      * @param admin Administrator performing the operation
+     * @param issuerdn the CRL issuers DN (CAs subject DN)
      * @return X509CRL or null of no CRLs have been issued.
      * @ejb.interface-method
      */
@@ -1164,6 +1165,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * Retrieves the information about the lastest CRL issued by this CA.
      *
      * @param admin Administrator performing the operation
+     * @param issuerdn the CRL issuers DN (CAs subject DN)
      * @return CRLInfo of last CRL by CA.
      * @ejb.interface-method
      */
