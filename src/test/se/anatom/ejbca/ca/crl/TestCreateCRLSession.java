@@ -53,7 +53,7 @@ import org.ejbca.util.cert.CrlExtensions;
 /**
  * Tests CRL session (agentrunner and certificatesession).
  *
- * @version $Id: TestCreateCRLSession.java,v 1.5 2006-07-31 08:47:28 anatom Exp $
+ * @version $Id: TestCreateCRLSession.java,v 1.6 2006-08-06 13:38:28 anatom Exp $
  */
 public class TestCreateCRLSession extends TestCase {
 
@@ -246,6 +246,7 @@ public class TestCreateCRLSession extends TestCase {
         assertNotNull("Could not get CRL", crl);
         x509crl = CertTools.getCRLfromByteArray(crl);
         revset = x509crl.getRevokedCertificates();
+        assertNotNull(revset);
         Iterator iter = revset.iterator();
         boolean found = false;
         while (iter.hasNext()) {
@@ -257,6 +258,7 @@ public class TestCreateCRLSession extends TestCase {
         }
         assertTrue(found);
         
+        // Unrevoke the certificate that we just revoked
         storeremote.revokeCertificate(admin, cert, null, RevokedCertInfo.NOT_REVOKED);
         // Create a new CRL again...
         remote.run(admin, cadn);
@@ -265,15 +267,17 @@ public class TestCreateCRLSession extends TestCase {
         assertNotNull("Could not get CRL", crl);
         x509crl = CertTools.getCRLfromByteArray(crl);
         revset = x509crl.getRevokedCertificates();
-        iter = revset.iterator();
-        found = false;
-        while (iter.hasNext()) {
-            X509CRLEntry ce = (X509CRLEntry)iter.next(); 
-        	if (ce.getSerialNumber().compareTo(cert.getSerialNumber()) == 0) {
-        		found = true;
+        if (revset != null) {
+        	iter = revset.iterator();
+        	found = false;
+        	while (iter.hasNext()) {
+        		X509CRLEntry ce = (X509CRLEntry)iter.next(); 
+        		if (ce.getSerialNumber().compareTo(cert.getSerialNumber()) == 0) {
+        			found = true;
+        		}
         	}
-        }
-        assertFalse(found);
+        	assertFalse(found);
+        } // If no revoked certificates exist at all, this test passed...
 
         storeremote.revokeCertificate(admin, cert, null, RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE);
         // Create a new CRL again...
