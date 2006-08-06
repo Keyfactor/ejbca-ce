@@ -43,6 +43,24 @@
     </servlet>
 -->
 
+    <servlet>
+         <servlet-name>CardCertReqServlet</servlet-name>
+	     <display-name>CardCertReqServlet</display-name>
+         <servlet-class>org.ejbca.ui.web.pub.CardCertReqServlet</servlet-class>
+		<init-param>
+		  <param-name>responseTemplate</param-name>
+		  <param-value>cardCertInstT.html</param-value>
+		</init-param>
+		<init-param>
+		  <param-name>authCertProfile</param-name>
+		  <param-value>NetMakerAuth</param-value>
+		</init-param>
+		<init-param>    
+		  <param-name>signCertProfile</param-name>
+		  <param-value>NetMakerSign</param-value>
+		</init-param>
+    </servlet>
+
     <servlet-mapping>
       <servlet-name>CertReqServlet</servlet-name>
       <url-pattern>/certreq</url-pattern>
@@ -62,6 +80,11 @@
         <url-pattern>/democertreq</url-pattern>
     </servlet-mapping>
 -->
+
+    <servlet-mapping>
+      <servlet-name>CardCertReqServlet</servlet-name>
+      <url-pattern>/cardcertreq</url-pattern>
+    </servlet-mapping>
 
    <env-entry>
       <description><![CDATA[Default content encoding used to decode form posts]]></description>

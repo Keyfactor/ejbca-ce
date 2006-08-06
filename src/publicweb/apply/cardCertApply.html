@@ -1,0 +1,122 @@
+
+<html >
+<HEAD><TITLE>Kort Certifikatbegäran</TITLE>
+<META http-equiv=Content-Type content="text/html; charset=windows-1252">
+<SCRIPT language=VBScript>
+Function ControlExists(objectID)
+on error resume next
+ControlExists = IsObject(CreateObject(objectID))
+End Function
+</SCRIPT>
+
+<SCRIPT language=JavaScript>
+		     
+
+function myDeclare()
+{
+	if (navigator.appName.indexOf("Explorer") == -1)
+	{
+		explorer = false;
+		plugin = navigator.mimeTypes["application/x-iid"];
+	}
+	else
+	{
+		explorer = true;
+		plugin = ControlExists("IID.iIDCtl");
+	}
+	if (plugin)
+	{
+		if (explorer)
+			document.writeln("<OBJECT NAME='iID' CLASSID='CLSID:5BF56AD2-E297-416E-BC49-00B327C4426E' WIDTH=0 HEIGHT=0></OBJECT>");
+ 		else
+ 	 		document.writeln("<OBJECT NAME='iID' TYPE='application/x-iid' WIDTH=0 HEIGHT=0></OBJECT>");
+	}
+	else
+	{
+		document.writeln("Komponenten är inte installerad");
+	}
+}
+
+function generate_pkcs10()
+{
+    document.iID.SetProperty('Base64', 'true');
+    document.iID.SetProperty('URLEncode', 'false');
+    document.iID.SetProperty('Password', '');
+    document.iID.SetProperty('TokenLabel', "Prime EID IP1 (basic PIN)");
+    document.iID.SetProperty('Subject', "2.5.4.5=197205250777");
+    document.iID.SetProperty('KeyId', '45');
+
+	rv = document.iID.Invoke('CreateRequest');
+	if (rv == 0)
+		document.form1.authpkcs10.value = document.iID.GetProperty("Request");
+	else
+		document.form1.authpkcs10.value = rv;
+
+    document.iID.SetProperty('Base64', 'true');
+    document.iID.SetProperty('URLEncode', 'false');
+    document.iID.SetProperty('Password', '');
+    document.iID.SetProperty('TokenLabel', "Prime EID IP1 (signature PIN)");
+    document.iID.SetProperty('Subject', "2.5.4.5=197205250777");
+    document.iID.SetProperty('KeyId', '46');
+
+	rv = document.iID.Invoke('CreateRequest');
+	if (rv == 0)
+		document.form1.signpkcs10.value = document.iID.GetProperty("Request");
+	else
+		document.form1.signpkcs10.value = rv;
+		
+
+				
+	document.form1.submit();	
+}
+
+
+
+myDeclare();
+
+</SCRIPT>
+</HEAD>
+
+<BODY>
+
+<NOSCRIPT>
+<META content="MSHTML 6.00.2900.2523" name=GENERATOR>
+<B>Javascript is turned off or you don't have a browser that can handle 
+javascript.</B>
+</NOSCRIPT>
+
+
+<FORM name=form1 ACTION="cardcertreq" ENCTYPE=x-www-form-encoded METHOD=POST>
+
+<BR><BR><BR>
+
+<TD width=100>Användarnamn:</TD>
+<TD><INPUT size=70 name=user></TD>
+<BR><BR>
+<TABLE>
+  <TBODY>
+  <TR></TR>
+  <TR>
+    <TD width=100>Engångs Lösenord:</TD>
+    <TD><INPUT type=password size=70 name=password></TD>
+  </TR>
+  </TBODY>
+</TABLE>
+
+<TABLE>
+  <TBODY>
+  <TR>
+    <TD><INPUT onclick=generate_pkcs10() type=button value="Hämta Certifikat"> 
+    </TD>
+    <TD></TD>
+  </TR>
+  </TBODY>
+</TABLE>
+<BR><BR>
+<INPUT TYPE="hidden" name=authpkcs10>
+<INPUT TYPE="hidden" name=signpkcs10>
+
+
+</FORM></BODY>
+
+</html>
