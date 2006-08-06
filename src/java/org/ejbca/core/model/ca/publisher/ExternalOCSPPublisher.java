@@ -15,14 +15,17 @@ package org.ejbca.core.model.ca.publisher;
 
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.protect.TableProtectSessionHome;
+import org.ejbca.core.ejb.protect.TableProtectSessionRemote;
+import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.util.Base64;
@@ -31,13 +34,14 @@ import org.ejbca.util.JDBCUtil;
 
 /**
  * @author lars
- * @version $Id: ExternalOCSPPublisher.java,v 1.8 2006-07-23 10:32:21 anatom Exp $
+ * @version $Id: ExternalOCSPPublisher.java,v 1.9 2006-08-06 12:37:00 anatom Exp $
  *
  */
 public class ExternalOCSPPublisher implements ICustomPublisher {
 
     private static Logger log = Logger.getLogger(ExternalOCSPPublisher.class);
     private String dataSource;
+    private boolean protect = false;
 
     /**
      * 
@@ -51,36 +55,14 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
      */
     public void init(Properties properties) {
         dataSource = properties.getProperty("dataSource");
+        String prot = properties.getProperty("protect");
+        if (StringUtils.equalsIgnoreCase(prot, "true")) {
+        	protect = true;
+        }
         log.debug("dataSource='"+dataSource+"'.");
     }
 
-    private interface Preparer {
-        void prepare(PreparedStatement ps) throws Exception;
-        String getInfoString();
-    }
-    private void execute(String sqlCommandTemplate, Preparer preparer) throws PublisherException {
-        if ( sqlCommandTemplate!=null ) {
-            Connection connection = null;
-            ResultSet result = null;
-            PreparedStatement ps = null;
-            try {
-                connection = ServiceLocator.getInstance().getDataSource(dataSource).getConnection();
-                ps = connection.prepareStatement(sqlCommandTemplate);
-                preparer.prepare(ps);
-                if ( ps.execute() )
-                    result = ps.getResultSet();
-            } catch (Exception e) {
-                log.error("EXTERNAL OCSP ERROR, publishing is not working for - "+preparer.getInfoString()+": ", e);
-                PublisherException pe = new PublisherException("EXTERNAL OCSP ERROR, publishing is not working");
-                pe.initCause(e);
-                throw pe;
-            } finally {
-                JDBCUtil.close(connection, ps, result);
-            }
-        }
-    }
-
-    private class StoreCertPreparer implements Preparer {
+    protected class StoreCertPreparer implements JDBCUtil.Preparer {
         final Certificate incert;
         final String username;
         final String cafp;
@@ -100,18 +82,18 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
             reason = r;
         }
         public void prepare(PreparedStatement ps) throws Exception {
-            ps.setString(1,CertTools.getFingerprintAsString((X509Certificate)incert));
-            ps.setString(2, new String(Base64.encode(incert.getEncoded(), true)));
-            ps.setString(3, CertTools.getSubjectDN((X509Certificate)incert));
-            ps.setString(4, CertTools.getIssuerDN((X509Certificate)incert));
-            ps.setString(5, cafp);
-            ps.setString(6, ((X509Certificate)incert).getSerialNumber().toString());
-            ps.setInt(7, status);
-            ps.setInt(8, type);
-            ps.setString(9, username);
-            ps.setLong(10, ((X509Certificate)incert).getNotAfter().getTime());
-            ps.setLong(11, revocationDate);
-            ps.setInt(12, reason);
+            ps.setString(1, new String(Base64.encode(incert.getEncoded(), true)));
+            ps.setString(2, CertTools.getSubjectDN((X509Certificate)incert));
+            ps.setString(3, CertTools.getIssuerDN((X509Certificate)incert));
+            ps.setString(4, cafp);
+            ps.setString(5, ((X509Certificate)incert).getSerialNumber().toString());
+            ps.setInt(6, status);
+            ps.setInt(7, type);
+            ps.setString(8, username);
+            ps.setLong(9, ((X509Certificate)incert).getNotAfter().getTime());
+            ps.setLong(10, revocationDate);
+            ps.setInt(11, reason);
+            ps.setString(12,CertTools.getFingerprintAsString((X509Certificate)incert));
         }
         public String getInfoString() {
         	return "Store:, Username: "+username+", Issuer:"+CertTools.getIssuerDN((X509Certificate)incert)+", Serno: "+((X509Certificate)incert).getSerialNumber().toString()+", Subject: "+CertTools.getSubjectDN((X509Certificate)incert);
@@ -126,16 +108,56 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
                                     String cafp, int status, int type, long revocationDate, int revocationReason,
                                     ExtendedInformation extendedinformation)
     throws PublisherException {
+    	boolean fail = true;
+    	if (log.isDebugEnabled()) {
+    		String fingerprint = CertTools.getFingerprintAsString((X509Certificate)incert);
+    		log.debug("Publishing certificate with fingerprint "+fingerprint+", status "+status+", type "+type+" to external OCSP");
+    	}
+    	StoreCertPreparer prep = new StoreCertPreparer(incert, username, cafp, status, revocationDate, revocationReason, type); 
     	try {
-    		execute( "INSERT INTO CertificateData (fingerprint,base64Cert,subjectDN,issuerDN,cAFingerprint,serialNumber,status,type,username,expireDate,revocationDate,revocationReason) VALUES (?,?,?,?,?,?,?,?,?,?,?,?);",
-    				new StoreCertPreparer(incert, username, cafp, status, revocationDate, revocationReason, type) );
-    	} catch (PublisherException e) {
+    		JDBCUtil.execute( "INSERT INTO CertificateData (base64Cert,subjectDN,issuerDN,cAFingerprint,serialNumber,status,type,username,expireDate,revocationDate,revocationReason,fingerprint) VALUES (?,?,?,?,?,?,?,?,?,?,?,?);",
+    				prep, dataSource);
+    		fail = false;
+    	} catch (Exception e) {
     		// If it is an SQL exception, we probably had a duplicate key, so we are actually trying to re-publish
-    		if (e.getCause() instanceof SQLException) {
+    		if (e instanceof SQLException) {
     			log.info("Duplicate entry, updating instead.");
-        		execute( "UPDATE CertificateData SET status=?, revocationDate=?, revocationReason=? WHERE fingerprint=?;",
-        				new UpdatePreparer(incert, status, revocationDate, revocationReason) );
+    			//JDBCPreparer uprep = new UpdatePreparer(incert, status, revocationDate, revocationReason);
+    			StoreCertPreparer uprep = new StoreCertPreparer(incert, username, cafp, status, revocationDate, revocationReason, type); 
+    			try {
+        			JDBCUtil.execute( "UPDATE CertificateData SET base64Cert=?,subjectDN=?,issuerDN=?,cAFingerprint=?,serialNumber=?,status=?,type=?,username=?,expireDate=?,revocationDate=?,revocationReason=? WHERE fingerprint=?;",
+            				uprep, dataSource );
+            		fail = false;    				
+    			} catch (Exception ue) {
+    	            log.error("EXTERNAL OCSP ERROR, publishing is not working for - "+uprep.getInfoString()+": ", ue);
+    	            PublisherException pe = new PublisherException("EXTERNAL OCSP ERROR, publishing is not working");
+    	            pe.initCause(ue);
+    	            throw pe;				    				
+    			}
+			} else {
+	            log.error("EXTERNAL OCSP ERROR, publishing is not working for - "+prep.getInfoString()+": ", e);
+	            PublisherException pe = new PublisherException("EXTERNAL OCSP ERROR, publishing is not working");
+	            pe.initCause(e);
+	            throw pe;				
 			}
+    	}
+    	// If we managed to update the OCSP database, and protection is enabled, we have to update the protection database
+    	if (!fail && protect) {
+    		X509Certificate cert = (X509Certificate)incert;
+    		String fp = CertTools.getFingerprintAsString(cert);
+    		String serno = cert.getSerialNumber().toString();
+    		String issuer = CertTools.getIssuerDN(cert);
+    		String subject = CertTools.getSubjectDN(cert);
+    		long expire = cert.getNotAfter().getTime();
+    		CertificateInfo entry = new CertificateInfo(fp, cafp, serno, issuer, subject, status, type, expire, revocationDate, revocationReason);
+    		TableProtectSessionHome home = (TableProtectSessionHome)ServiceLocator.getInstance().getRemoteHome("TableProtectSession", TableProtectSessionHome.class);
+            try {
+				TableProtectSessionRemote remote = home.create();
+				remote.protectExternal(admin, entry, dataSource);
+			} catch (Exception e) {
+				log.error("PROTECT ERROR: Can not create TableProtectSession: ", e);
+			} 
+
     	}
         return true;
     }
@@ -148,7 +170,7 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
         return true;
     }
 
-    class UpdatePreparer implements Preparer {
+    protected class UpdatePreparer implements JDBCUtil.Preparer {
         final Certificate cert;
         final int reason;
         final int status;
@@ -173,13 +195,45 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
     /* (non-Javadoc)
      * @see se.anatom.ejbca.ca.publisher.ICustomPublisher#revokeCertificate(se.anatom.ejbca.log.Admin, java.security.cert.Certificate, int)
      */
-    public void revokeCertificate(Admin admin, Certificate cert, int reason)
-                                                                            throws PublisherException {
-        execute( "UPDATE CertificateData SET status=?, revocationDate=?, revocationReason=? WHERE fingerprint=?;",
-                 new UpdatePreparer(cert, 40, System.currentTimeMillis(), reason));
+    public void revokeCertificate(Admin admin, Certificate incert, int reason) throws PublisherException {
+    	if (log.isDebugEnabled()) {
+    		String fingerprint = CertTools.getFingerprintAsString((X509Certificate)incert);
+    		log.debug("Revoking certificate with fingerprint "+fingerprint+", reason "+reason+" in external OCSP");
+    	}
+    	boolean fail = true;
+    	long now = System.currentTimeMillis();
+    	UpdatePreparer prep = new UpdatePreparer(incert, 40, now, reason);
+    	try {
+			JDBCUtil.execute( "UPDATE CertificateData SET status=?, revocationDate=?, revocationReason=? WHERE fingerprint=?;",
+			         prep, dataSource);
+			fail = false;
+		} catch (Exception e) {
+            log.error("EXTERNAL OCSP ERROR, publishing is not working for - "+prep.getInfoString()+": ", e);
+            PublisherException pe = new PublisherException("EXTERNAL OCSP ERROR, publishing is not working");
+            pe.initCause(e);
+            throw pe;
+		}
+    	// If we managed to update the OCSP database, and protection is enabled, we have to update the protection database
+    	if (!fail && protect) {
+    		X509Certificate cert = (X509Certificate)incert;
+    		String fp = CertTools.getFingerprintAsString(cert);
+    		String serno = cert.getSerialNumber().toString();
+    		String issuer = CertTools.getIssuerDN(cert);
+    		String subject = CertTools.getSubjectDN(cert);
+    		long expire = cert.getNotAfter().getTime();
+    		// Cafp and type we don't have access to here, we don't use them so enter dummy values
+    		CertificateInfo entry = new CertificateInfo(fp, null, serno, issuer, subject, 40, SecConst.USER_ENDUSER, expire, now, reason);
+    		TableProtectSessionHome home = (TableProtectSessionHome)ServiceLocator.getInstance().getRemoteHome("TableProtectSession", TableProtectSessionHome.class);
+            try {
+				TableProtectSessionRemote remote = home.create();
+				remote.protectExternal(admin, entry, dataSource);
+			} catch (Exception e) {
+				log.error("PROTECT ERROR: Can not create TableProtectSession: ", e);
+			} 
+    	}
     }
 
-    private class DoNothingPreparer implements Preparer {
+    protected class DoNothingPreparer implements JDBCUtil.Preparer {
         public void prepare(PreparedStatement ps) {
         }
         public String getInfoString() {
@@ -191,8 +245,8 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
      */
     public void testConnection(Admin admin) throws PublisherConnectionException {
         try {
-            execute("UNLOCK TABLES;", new DoNothingPreparer());
-        } catch (PublisherException e) {
+        	JDBCUtil.execute("UNLOCK TABLES;", new DoNothingPreparer(), dataSource);
+        } catch (Exception e) {
             final PublisherConnectionException pce = new PublisherConnectionException("Connection in init failed: "+e.getMessage());
             pce.initCause(e);
             throw pce;

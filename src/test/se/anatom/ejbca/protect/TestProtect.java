@@ -13,6 +13,7 @@
 
 package se.anatom.ejbca.protect;
 
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -24,16 +25,23 @@ import javax.naming.NamingException;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.store.CertificateDataBean;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.ejb.protect.TableProtectSessionHome;
 import org.ejbca.core.ejb.protect.TableProtectSessionRemote;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.core.model.protect.TableVerifyResult;
+import org.ejbca.util.Base64;
+import org.ejbca.util.CertTools;
 
 /**
  * Tests the log modules entity and session beans.
  *
- * @version $Id: TestProtect.java,v 1.1 2006-08-05 09:59:53 anatom Exp $
+ * @version $Id: TestProtect.java,v 1.2 2006-08-06 12:38:09 anatom Exp $
  */
 public class TestProtect extends TestCase {
     private static Logger log = Logger.getLogger(TestProtect.class);
@@ -57,6 +65,7 @@ public class TestProtect extends TestCase {
 
     protected void setUp() throws Exception {
         log.debug(">setUp()");
+        CertTools.installBCProvider();
         if (cacheAdmin == null) {
             if (cacheHome == null) {
                 Context jndiContext = getInitialContext();
@@ -100,14 +109,14 @@ public class TestProtect extends TestCase {
      *
      * @throws Exception error
      */
-    public void test01Protect() throws Exception {
-        log.debug(">test01Protect()");
+    public void test01ProtectLogEntry() throws Exception {
+        log.debug(">test01ProtectLogEntry()");
         Iterator iter = entrys.iterator();
         while (iter.hasNext()) {
         	LogEntry le = (LogEntry)iter.next();
             cacheAdmin.protect(admin, le);        	
         }
-        log.debug("<test01Protect()");
+        log.debug("<test01ProtectLogEntry()");
     }
 
     /**
@@ -115,8 +124,8 @@ public class TestProtect extends TestCase {
      *
      * @throws Exception error
      */
-    public void test02Verify() throws Exception {
-        log.debug(">test02Verify()");
+    public void test02VerifyLogEntry() throws Exception {
+        log.debug(">test02VerifyLogEntry()");
         Iterator iter = entrys.iterator();
         while (iter.hasNext()) {
         	LogEntry le = (LogEntry)iter.next();
@@ -167,6 +176,99 @@ public class TestProtect extends TestCase {
             }
         }
         
-        log.debug("<test02Verify()");
+        log.debug("<test02VerifyLogEntry()");
     }
+    
+    /**
+     * tests verify protection for cert entrys
+     *
+     * @throws Exception error
+     */
+    public void test03VerifyCertEntry() throws Exception {
+        log.debug(">test03VerifyCertEntry()");
+        Context ctx = getInitialContext();
+        Object obj2 = ctx.lookup("CertificateStoreSession");
+        ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2,
+                ICertificateStoreSessionHome.class);
+        ICertificateStoreSessionRemote store = storehome.create();
+        X509Certificate cert = CertTools.getCertfromByteArray(testcert);
+        String endEntityFp = CertTools.getFingerprintAsString(cert);
+        if (store.findCertificateByFingerprint(admin, endEntityFp) == null) {
+            store.storeCertificate(admin
+                    , cert
+                    , "o=AnaTom,c=SE"
+                    , endEntityFp
+                    , CertificateDataBean.CERT_ACTIVE
+                    , CertificateDataBean.CERTTYPE_ENDENTITY);
+        }
+        CertificateInfo entry = store.getCertificateInfo(admin, endEntityFp);
+        entry.setFingerprint("1");
+        cacheAdmin.protect(admin, entry);        	        
+        TableVerifyResult res = cacheAdmin.verify(entry);
+        assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_SUCCESS);
+        entry.setStatus(RevokedCertInfo.REVOKATION_REASON_AACOMPROMISE);
+        res = cacheAdmin.verify(entry);
+        assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_FAILED);
+        cacheAdmin.protect(admin, entry);        	        
+        res = cacheAdmin.verify(entry);
+        assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_SUCCESS);
+        entry.setRevocationDate(new Date());
+        res = cacheAdmin.verify(entry);
+        assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_FAILED);
+        
+        log.debug("<test03VerifyCertEntry()");
+    }
+
+    /**
+     * tests verify protection for cert entrys in external db
+     *
+     * @throws Exception error
+     */
+    public void test04VerifyCertEntryExternal() throws Exception {
+        log.debug(">test04VerifyCertEntryExternal()");
+        String dataSource = "java:/EjbcaDS";
+        Context ctx = getInitialContext();
+        Object obj2 = ctx.lookup("CertificateStoreSession");
+        ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj2,
+                ICertificateStoreSessionHome.class);
+        ICertificateStoreSessionRemote store = storehome.create();
+        X509Certificate cert = CertTools.getCertfromByteArray(testcert);
+        String endEntityFp = CertTools.getFingerprintAsString(cert);
+        if (store.findCertificateByFingerprint(admin, endEntityFp) == null) {
+            store.storeCertificate(admin
+                    , cert
+                    , "o=AnaTom,c=SE"
+                    , endEntityFp
+                    , CertificateDataBean.CERT_ACTIVE
+                    , CertificateDataBean.CERTTYPE_ENDENTITY);
+        }
+        CertificateInfo entry = store.getCertificateInfo(admin, endEntityFp);
+        entry.setFingerprint("2");
+        cacheAdmin.protectExternal(admin, entry, dataSource);        	        
+        TableVerifyResult res = cacheAdmin.verify(entry);
+        assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_SUCCESS);
+        entry.setStatus(RevokedCertInfo.REVOKATION_REASON_AACOMPROMISE);
+        res = cacheAdmin.verify(entry);
+        assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_FAILED);
+        cacheAdmin.protectExternal(admin, entry, dataSource);        	        
+        res = cacheAdmin.verify(entry);
+        assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_SUCCESS);
+        entry.setRevocationDate(new Date());
+        res = cacheAdmin.verify(entry);
+        assertEquals(res.getResultCode(), TableVerifyResult.VERIFY_FAILED);
+        
+        log.debug("<test04VerifyCertEntryExternal()");
+    }
+
+    static byte[] testcert = Base64.decode(("MIICBDCCAW0CAQMwDQYJKoZIhvcNAQEEBQAwTDELMAkGA1UEBhMCU0UxEzARBgNV"
+            + "BAgTClNvbWUtU3RhdGUxDzANBgNVBAoTBkFuYXRvbTEXMBUGA1UEAxMOU3Vib3Jk"
+            + "aW5hdGUgQ0EwHhcNMDMwOTIyMDkxNTEzWhcNMTMwNDIyMDkxNTEzWjBJMQswCQYD"
+            + "VQQGEwJTRTETMBEGA1UECBMKU29tZS1TdGF0ZTEPMA0GA1UEChMGQW5hdG9tMRQw"
+            + "EgYDVQQDEwtGb29CYXIgVXNlcjCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEA"
+            + "xPpmVYVBzlGJxUfZa6IsHsk+HrMTbHWr/EUkiZIam95t+0SIFZHUers2PIv+GWVp"
+            + "TmH/FTXNWVWw+W6bFlb17rfbatAkVfAYuBGRh+nUS/CPTPNw1jDeCuZRweD+DCNr"
+            + "icx/svv0Hi/9scUqrADwtO2O7oBy7Lb/Vfa6BOnBdiECAwEAATANBgkqhkiG9w0B"
+            + "AQQFAAOBgQAo5RzuUkLdHdAyJIG2IRptIJDOa0xq8eH2Duw9Xa3ieI9+ogCNaqWy"
+            + "V5Oqx2lLsdn9CXxAwT/AsqwZ0ZFOJY1V2BgLTPH+vxnPOm0Xu61fl2XLtRBAycva"
+            + "9iknwKZ3PCILvA5qjL9VedxiFhcG/p83SnPOrIOdsHykMTvO8/j8mA==").getBytes());
 }

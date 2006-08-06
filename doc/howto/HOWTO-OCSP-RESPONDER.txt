@@ -118,6 +118,9 @@ synchronisation is finished. This might be done by simply blocking the port to t
 mysqladmin -h 'ocspResponder' drop ejbca_db;
 mysqladmin -h 'ocspResponder' create ejbca_db;
 mysqldump --compress ejbca_db CertificateData | mysql -h 'ocspResponder' ejbca_db;
+mysqldump --compress ejbca_db TableProtectData| mysql -h 'ocspResponder' ejbca_db;
+
+ocspResponder is the external OCSP responder host.
 
 3. Check that the publishing is working before allowing issuing and revoking.
 
@@ -230,3 +233,19 @@ ERROR, for error logging
 Lookup server client library
 ----------------------------
 See Howto-Ocsp-Unid-client.txt
+
+Using database integrity protection
+===================================
+Enable the basic support for database protection as described in HOWTO-logsigning.txt 
+(you don't have to enable log signing though).
+As a property in the ExternalOCSPPublisher you add the property:
+protect true
+
+Thats all there is to it. When EJBCA publishes certificate entrys to the OCSP responder database, it will also write 
+antries in the TableProtectData table. 
+If protection is enabled also on the External OCSP responder, it will log errors
+PROTECT ERROR
+if verification fails when it answers OCSP queries (this will slow it down a little bit).
+
+If protection is not enabled on the External OCSP responder, it will not verify the entries when answering OCSP queries, 
+a remote batch job can be used to verify the database integrity periodically instead.

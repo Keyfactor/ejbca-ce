@@ -14,17 +14,20 @@
 package org.ejbca.core.ejb.ca.store;
 
 import java.math.BigInteger;
-import java.security.Security;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
 
+import javax.ejb.CreateException;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.ejbca.core.ejb.BaseSessionBean;
+import org.ejbca.core.ejb.protect.TableProtectSessionLocalHome;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.util.CertTools;
 
 /**
  * Stores certificate and CRL in the local database using Certificate and CRL Entity Beans.
@@ -45,6 +48,11 @@ import org.ejbca.core.model.log.Admin;
  * type="java.lang.String"
  * value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
  *
+ * @ejb.env-entry description="Enable or disable protection of database entrys"
+ *   name="certSigning"
+ *   type="java.lang.String"
+ *   value="${protection.certprotect}"
+ *   
  * @ejb.ejb-external-ref description="The Certificate entity bean used to store and fetch certificates"
  * view-type="local"
  * ejb-name="CertificateDataLocal"
@@ -53,6 +61,15 @@ import org.ejbca.core.model.log.Admin;
  * business="org.ejbca.core.ejb.ca.store.CertificateDataLocal"
  * link="CertificateData"
  *
+ * @ejb.ejb-external-ref
+ *   description="The table protection session bean"
+ *   view-type="local"
+ *   ejb-name="TableProtectSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.protect.TableProtectSessionLocalHome"
+ *   business="org.ejbca.core.ejb.protect.TableProtectSessionLocal"
+ *   link="TableProtectSession"
+ *   
  * @ejb.home extends="javax.ejb.EJBHome"
  * local-extends="javax.ejb.EJBLocalHome"
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocalHome"
@@ -63,7 +80,7 @@ import org.ejbca.core.model.log.Admin;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreOnlyDataSessionBean.java,v 1.5 2006-02-08 07:31:49 anatom Exp $
+ * @version $Id: LocalCertificateStoreOnlyDataSessionBean.java,v 1.6 2006-08-06 12:37:00 anatom Exp $
  */
 public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
 
@@ -73,9 +90,12 @@ public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
     private CertificateDataLocalHome certHome = null;
     private final CertificateDataUtil.Adapter adapter;
 
+    /** The come interface of the protection session bean */
+    private TableProtectSessionLocalHome protecthome = null;
+    
     public LocalCertificateStoreOnlyDataSessionBean() {
         super();
-        Security.addProvider( new BouncyCastleProvider() );
+        CertTools.installBCProvider();
         adapter = new MyAdapter();
     }
 
@@ -89,7 +109,7 @@ public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public RevokedCertInfo isRevoked(Admin admin, String issuerDN, BigInteger serno) {
-        return CertificateDataUtil.isRevoked(admin, issuerDN, serno, certHome, adapter);
+        return CertificateDataUtil.isRevoked(admin, issuerDN, serno, certHome, protecthome, adapter);
     } //isRevoked
 
     /**
@@ -196,6 +216,12 @@ public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
         public void debug(String s) {
             LocalCertificateStoreOnlyDataSessionBean.this.debug(s);
         }
+        /* (non-Javadoc)
+         * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#error(java.lang.String)
+         */
+        public void error(String s) {
+            LocalCertificateStoreOnlyDataSessionBean.this.error(s);
+        }
     }
 
     /**
@@ -205,6 +231,10 @@ public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
      */
     public void ejbCreate() {
         certHome = (CertificateDataLocalHome) getLocator().getLocalHome(CertificateDataLocalHome.COMP_NAME);
+        String sign = getLocator().getString("java:comp/env/certSigning");
+        if (StringUtils.equalsIgnoreCase(sign, "true")) {
+        	protecthome = (TableProtectSessionLocalHome) getLocator().getLocalHome(TableProtectSessionLocalHome.COMP_NAME);
+        }
     }
 
 }

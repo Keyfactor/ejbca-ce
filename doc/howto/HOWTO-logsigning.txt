@@ -296,12 +296,23 @@ There is a mechanism for internal log signing in EJBCA. This mechanism stores an
 the table TableProtectData, containing a HMAC of the row written to LogEntryData.
 If enabled the protection is verified and displayed when viewing log entrys in the admin-GUI.
 
+The current implementation is rather simple:
+- The hmac key is configured in protection.properties
+- It is possible to encrypt the key using an internal encryption key, so that it is not accidentaly visible to administrators.
+- If the hmac key is not available, protection is disabled.
+- The mechanism is extensible, so other signing mechanisms can be added later, without the need to re-sign old entries.
+
+Errors creating protection info or verifying is logged in the server.log begining with:
+PROTECT ERROR
+
+This information can be used to monitor logs for protection errors.
+
 To enable, you must add a file protection.properties as defined below, and then doing
 'ant clean', 'and deploy'.
 
 -----
 #
-# $Id: HOWTO-logsigning.txt,v 1.8 2006-08-05 10:29:52 anatom Exp $
+# $Id: HOWTO-logsigning.txt,v 1.9 2006-08-06 12:38:09 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -318,6 +329,10 @@ To enable, you must add a file protection.properties as defined below, and then 
 # Default: false
 #protection.logprotect=false
 
+# Should we warn when verifying if a protection row is missing?
+# Default: true
+#protection.warnonmissingrow=true
+
 # Reference to a key to be read, mostly enabled for future use when several different keys can be used
 # for different types of protection entries.
 # Default: key1
@@ -330,8 +345,9 @@ To enable, you must add a file protection.properties as defined below, and then 
 
 # The type of key, to be able to decode the value and use it.
 # Supported types are: 
-# HMAC, for a clear text password
-# ENCHMAC, for an encrypted password, created with 'bin/ejbca.sh encryptpwd'
-# Default: HMAC
-#protection.keytype=HMAC
+# SOFT_HMAC, for a clear text password
+# ENC_SOFT_HMAC, for an encrypted password, created with 'bin/ejbca.sh encryptpwd'
+# Default: SOFT_HMAC
+#protection.keytype=SOFT_HMAC
 -----
+

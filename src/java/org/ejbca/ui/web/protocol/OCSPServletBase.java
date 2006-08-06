@@ -112,7 +112,7 @@ import org.ejbca.util.CertTools;
  *   
  * @author Thomas Meckel (Ophios GmbH)
  * @author Tomas Gustavsson
- * @version  $Id: OCSPServletBase.java,v 1.16 2006-07-19 14:05:46 anatom Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.17 2006-08-06 12:37:00 anatom Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
@@ -153,6 +153,9 @@ abstract class OCSPServletBase extends HttpServlet {
             return;
         }
         m_cacerts = findCertificatesByType(m_adm, CertificateDataBean.CERTTYPE_SUBCA + CertificateDataBean.CERTTYPE_ROOTCA, null);
+        if (m_log.isDebugEnabled()) {
+            m_log.debug("Loaded "+m_cacerts == null ? "0":m_cacerts.size()+" ca certificates");        	
+        }
         loadPrivateKeys(m_adm);
         m_certValidTo = new Date().getTime() + VALID_TIME;
     }

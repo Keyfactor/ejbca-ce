@@ -17,6 +17,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
@@ -33,11 +34,56 @@ import org.ejbca.core.ejb.ServiceLocatorException;
  * stress conditions, or simply exhaust database resources, so it is better to have some
  * warning than nothing at all.
  *
- * @version $Id: JDBCUtil.java,v 1.1 2006-01-17 20:32:19 anatom Exp $
+ * @version $Id: JDBCUtil.java,v 1.2 2006-08-06 12:37:01 anatom Exp $
  */
 public class JDBCUtil {
 
-    private static final Logger LOG = Logger.getLogger(JDBCUtil.class);
+    private static final Logger log = Logger.getLogger(JDBCUtil.class);
+    
+    public interface Preparer {
+    	void prepare(PreparedStatement ps) throws Exception;
+    	String getInfoString();
+    }
+    
+    public static void execute(String sqlCommandTemplate, Preparer preparer, String dataSource) throws Exception {
+        if ( sqlCommandTemplate!=null ) {
+            Connection connection = null;
+            ResultSet result = null;
+            PreparedStatement ps = null;
+            try {
+                connection = ServiceLocator.getInstance().getDataSource(dataSource).getConnection();
+                ps = connection.prepareStatement(sqlCommandTemplate);
+                preparer.prepare(ps);
+                if ( ps.execute() )
+                    result = ps.getResultSet();
+            } finally {
+                JDBCUtil.close(connection, ps, result);
+            }
+        }
+    }
+    public static String executeSelectString(String sqlCommandTemplate, Preparer preparer, String dataSource) throws Exception {
+    	String ret = null;
+        if ( sqlCommandTemplate!=null ) {
+            Connection connection = null;
+            ResultSet result = null;
+            PreparedStatement ps = null;
+            try {
+                connection = ServiceLocator.getInstance().getDataSource(dataSource).getConnection();
+                ps = connection.prepareStatement(sqlCommandTemplate);
+                preparer.prepare(ps);
+                if ( ps.execute() ) {
+                    result = ps.getResultSet();
+                    if (result.next()) {
+                    	ret = result.getString(1);
+                    }
+                }
+            } finally {
+                JDBCUtil.close(connection, ps, result);
+            }
+        }
+        return ret;
+    }
+
 
     /**
      * Return the requested datasource name. It assumes that the dsName returns a reference (java.lang.String)
@@ -79,7 +125,7 @@ public class JDBCUtil {
             try {
                 con.close();
             } catch (SQLException e) {
-                LOG.warn("Could not close connection", e);
+                log.warn("Could not close connection", e);
             }
     }
 
@@ -93,7 +139,7 @@ public class JDBCUtil {
             try {
                 rs.close();
             } catch (SQLException e) {
-                LOG.warn("Could not close ResultSet", e);
+                log.warn("Could not close ResultSet", e);
             }
     }
 
@@ -107,7 +153,7 @@ public class JDBCUtil {
             try {
                 ps.close();
             } catch (SQLException e) {
-                LOG.warn("Could not close PreparedStatement", e);
+                log.warn("Could not close PreparedStatement", e);
             }
     }
 

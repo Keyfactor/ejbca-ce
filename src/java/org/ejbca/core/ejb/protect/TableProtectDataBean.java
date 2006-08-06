@@ -73,13 +73,13 @@ import org.ejbca.core.ejb.BaseEntityBean;
  * query="SELECT OBJECT(a) from TableProtectDataBean a WHERE a.dbType=?1 AND a.dbKey=?2"
  *
 
- * @version $Id: TableProtectDataBean.java,v 1.1 2006-08-05 09:59:37 anatom Exp $
+ * @version $Id: TableProtectDataBean.java,v 1.2 2006-08-06 12:37:00 anatom Exp $
  */
 public abstract class TableProtectDataBean extends BaseEntityBean {
 
 	public static final String KEYTYPE_HMAC = "HMAC";
 	
-	private static final int CURRENT_VERSION = 1;
+	public static final int CURRENT_VERSION = 1;
 	
     /**
      * @ejb.pk-field
@@ -101,6 +101,7 @@ public abstract class TableProtectDataBean extends BaseEntityBean {
 
     /**
      * @ejb.persistence
+     * @ejb.interface-method view-type="local"
      */
     public abstract void setVersion(int version);
 
@@ -112,6 +113,7 @@ public abstract class TableProtectDataBean extends BaseEntityBean {
 
     /**
      * @ejb.persistence
+     * @ejb.interface-method view-type="local"
      */
     public abstract void setHashVersion(int version);
     
@@ -123,6 +125,7 @@ public abstract class TableProtectDataBean extends BaseEntityBean {
 
     /**
      * @ejb.persistence
+     * @ejb.interface-method view-type="local"
      */
     public abstract void setProtectionAlg(String alg);
 
@@ -134,6 +137,7 @@ public abstract class TableProtectDataBean extends BaseEntityBean {
 
     /**
      * @ejb.persistence
+     * @ejb.interface-method view-type="local"
      */
     public abstract void setHash(String hash);
 
@@ -145,6 +149,7 @@ public abstract class TableProtectDataBean extends BaseEntityBean {
 
     /**
      * @ejb.persistence
+     * @ejb.interface-method view-type="local"
      */
     public abstract void setSignature(String signature);
 
@@ -155,6 +160,7 @@ public abstract class TableProtectDataBean extends BaseEntityBean {
 
     /**
      * @ejb.persistence
+     * @ejb.interface-method view-type="local"
      */
     public abstract void setTime(long time);
 
@@ -166,6 +172,7 @@ public abstract class TableProtectDataBean extends BaseEntityBean {
 
     /** 
      * @ejb.persistence
+     * @ejb.interface-method view-type="local"
      */
     public abstract void setDbKey(String dbKey);
 
@@ -177,6 +184,7 @@ public abstract class TableProtectDataBean extends BaseEntityBean {
 
     /** 
      * @ejb.persistence
+     * @ejb.interface-method view-type="local"
      */
     public abstract void setDbType(String dbType);
 
@@ -188,6 +196,7 @@ public abstract class TableProtectDataBean extends BaseEntityBean {
 
     /**
      * @ejb.persistence
+     * @ejb.interface-method view-type="local"
      */
     public abstract void setKeyRef(String keyRef);
 
@@ -199,6 +208,7 @@ public abstract class TableProtectDataBean extends BaseEntityBean {
 
     /**
      * @ejb.persistence
+     * @ejb.interface-method view-type="local"
      */
     public abstract void setKeyType(String keyType);
 

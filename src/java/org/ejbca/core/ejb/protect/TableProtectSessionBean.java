@@ -17,6 +17,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.sql.PreparedStatement;
 import java.util.Date;
 
 import javax.crypto.Mac;
@@ -34,6 +35,7 @@ import org.ejbca.core.model.protect.Protectable;
 import org.ejbca.core.model.protect.TableVerifyResult;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.GUIDGenerator;
+import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.StringTools;
 
 
@@ -55,6 +57,11 @@ import org.ejbca.util.StringTools;
  *   name="enabled"
  *   type="java.lang.String"
  *   value="${protection.enabled}"
+ *   
+ * @ejb.env-entry description="If we should warn if a protection row is missing"
+ *   name="warnOnMissingRow"
+ *   type="java.lang.String"
+ *   value="${protection.warnonmissingrow}"
  *   
  * @ejb.env-entry description="Key (reference or actual key, depending on type) for protection"
  *   name="keyRef"
@@ -92,7 +99,7 @@ import org.ejbca.util.StringTools;
  *   local-class="org.ejbca.core.ejb.protect.TableProtectSessionLocal"
  *   remote-class="org.ejbca.core.ejb.protect.TableProtectSessionRemote"
  *
- * @version $Id: TableProtectSessionBean.java,v 1.1 2006-08-05 09:59:37 anatom Exp $
+ * @version $Id: TableProtectSessionBean.java,v 1.2 2006-08-06 12:37:00 anatom Exp $
  */
 public class TableProtectSessionBean extends BaseSessionBean {
 
@@ -101,10 +108,11 @@ public class TableProtectSessionBean extends BaseSessionBean {
     /** The home interface of  LogEntryData entity bean */
     private TableProtectDataLocalHome protectentryhome;
 
-    private String keyType;
-    private String keyRef;
-    private String key;
+    private String keyType = null;
+    private String keyRef = null;
+    private String key = null;
     boolean enabled = false;
+    boolean warnOnMissingRow = true;
     
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -116,20 +124,78 @@ public class TableProtectSessionBean extends BaseSessionBean {
             keyType = getLocator().getString("java:comp/env/keyType");
             keyRef = getLocator().getString("java:comp/env/keyRef");
             String tmpkey = getLocator().getString("java:comp/env/"+keyRef);
-            if (StringUtils.equalsIgnoreCase(keyType, "ENCHMAC")) {
+            if (StringUtils.equalsIgnoreCase(keyType, "ENC_SOFT_HMAC")) {
             	key = StringTools.pbeDecryptStringWithSha256Aes192(tmpkey);
             } else {
             	key = tmpkey;
             }
             String en = getLocator().getString("java:comp/env/enabled");
-            if (StringUtils.equalsIgnoreCase(en, "true")) {
+            if (StringUtils.equalsIgnoreCase(en, "true") && key != null) {
             	enabled = true;
+            }
+            String warn = getLocator().getString("java:comp/env/warnOnMissingRow");
+            if (StringUtils.equalsIgnoreCase(warn, "false")) {
+            	warnOnMissingRow = false;
             }
         } catch (Exception e) {
             throw new EJBException(e);
         }
     }
 
+
+    /**
+     * Store a protection entry in an external, remote database.
+     *
+     * @param admin the administrator performing the event.
+     * @param Protectable the object beeing protected
+     *
+     * @ejb.interface-method
+     * @ejb.transaction type="Required"
+     */
+    public void protectExternal(Admin admin, Protectable entry, String dataSource) {
+    	if (!enabled) {
+    		return;
+    	}
+    	int hashVersion = entry.getHashVersion();
+    	String dbKey = entry.getDbKeyString();
+    	String dbType = entry.getEntryType();
+		debug("Protecting entry, type: "+dbType+", with key: "+dbKey);
+    	String hash;
+    	try {
+    		hash = entry.getHash();
+    		String signature = createHmac(key, HMAC_ALG, hash);
+    		String id = null;
+    		try {
+    			SelectProtectPreparer prep = new SelectProtectPreparer(dbType, dbKey);
+        		id = JDBCUtil.executeSelectString("SELECT id FROM TableProtectData where dbType=? and dbKey=?",
+        				prep, dataSource );    			
+    		} catch (Exception e) {
+    			
+    		}
+    		if (id != null) {
+				info("PROTECT INFO: protection row for entry type: "+dbType+", with key: "+dbKey+" already exists, updating!");
+				ProtectPreparer uprep = new ProtectPreparer(id, TableProtectDataBean.CURRENT_VERSION, hashVersion, HMAC_ALG, hash, signature, (new Date()).getTime(), dbKey, dbType, keyRef,keyType);
+    			try {
+    				JDBCUtil.execute( "UPDATE TableProtectData SET version=?,hashVersion=?,protectionAlg=?,hash=?,signature=?,time=?,dbKey=?,dbType=?,keyRef=?,keyType=? WHERE id=?",
+    						uprep, dataSource );
+    			} catch (Exception ue) {
+    				error("PROTECT ERROR: can not create protection row for entry type: "+dbType+", with key: "+dbKey, ue);
+    			}
+			} else {
+	    		id = GUIDGenerator.generateGUID(this);
+	        	try {
+	        		ProtectPreparer prep = new ProtectPreparer(id, TableProtectDataBean.CURRENT_VERSION, hashVersion, HMAC_ALG, hash, signature, (new Date()).getTime(), dbKey, dbType, keyRef,keyType);
+	        		JDBCUtil.execute( "INSERT INTO TableProtectData (version,hashVersion,protectionAlg,hash,signature,time,dbKey,dbType,keyRef,keyType,id) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+	        				prep, dataSource );
+	        	} catch (Exception e) {
+					error("PROTECT ERROR: can not create protection row for entry type: "+dbType+", with key: "+dbKey, e);
+	        	}
+			} 
+    	} catch (Exception e) {
+    		error("PROTECT ERROR: can not create protection row for entry type: "+dbType+", with key: "+dbKey, e);
+    	}
+    }
+    
     /**
      * Store a protection entry.
      *
@@ -146,21 +212,36 @@ public class TableProtectSessionBean extends BaseSessionBean {
     	int hashVersion = entry.getHashVersion();
     	String dbKey = entry.getDbKeyString();
     	String dbType = entry.getEntryType();
-		try {
-			TableProtectDataLocal data = protectentryhome.findByDbTypeAndKey(dbType, dbKey);
-			if (data != null) {
-				error("PROTECT ERROR: protection row for entry type: "+dbType+", with key: "+dbKey+" already exists!");				
-			}
-		} catch (FinderException e1) {
-	    	try {
-	        	String hash = entry.getHash();
-	    		String signature = createHmac(key, HMAC_ALG, hash);
-	    		String id = GUIDGenerator.generateGUID(this);
-	    		protectentryhome.create(id, hashVersion, HMAC_ALG, hash, signature, new Date(), dbKey, dbType, keyRef, keyType);
-			} catch (Exception e) {
-				error("PROTECT ERROR: can not create protection row for entry type: "+dbType+", with key: "+dbKey, e);
-			}
-		}
+		debug("Protecting entry, type: "+dbType+", with key: "+dbKey);
+    	String hash;
+    	try {
+    		hash = entry.getHash();
+    		String signature = createHmac(key, HMAC_ALG, hash);
+    		String id = GUIDGenerator.generateGUID(this);
+    		try {
+    			TableProtectDataLocal data = protectentryhome.findByDbTypeAndKey(dbType, dbKey);
+    			if (data != null) {
+    				info("PROTECT INFO: protection row for entry type: "+dbType+", with key: "+dbKey+" already exists, updating!");
+    				data.setHashVersion(hashVersion);
+    				data.setHash(hash);
+    				data.setProtectionAlg(HMAC_ALG);
+    				data.setSignature(signature);
+    				data.setTime((new Date()).getTime());
+    				data.setDbKey(dbKey);
+    				data.setDbType(dbType);
+    				data.setKeyRef(keyRef);
+    				data.setKeyType(keyType);
+    			}
+    		} catch (FinderException e1) {
+    			try {
+    				protectentryhome.create(id, hashVersion, HMAC_ALG, hash, signature, new Date(), dbKey, dbType, keyRef, keyType);
+    			} catch (Exception e) {
+    				error("PROTECT ERROR: can not create protection row for entry type: "+dbType+", with key: "+dbKey, e);
+    			}
+    		}
+    	} catch (Exception e) {
+    		error("PROTECT ERROR: can not create protection row for entry type: "+dbType+", with key: "+dbKey, e);
+    	}
     } // protect
 
     /**
@@ -178,34 +259,44 @@ public class TableProtectSessionBean extends BaseSessionBean {
     	if (!enabled) {
     		return ret;
     	}
+    	String alg = HMAC_ALG;
     	String dbKey = entry.getDbKeyString();
     	String dbType = entry.getEntryType();
+		debug("Verifying entry, type: "+dbType+", with key: "+dbKey);
     	try {
     		TableProtectDataLocal data = protectentryhome.findByDbTypeAndKey(dbType, dbKey);
     		int hashVersion = data.getHashVersion();
     		String hash = entry.getHash(hashVersion);
     		if (!StringUtils.equals(keyRef, data.getKeyRef())) {
     			ret.setResultCode(TableVerifyResult.VERIFY_NO_KEY);    			
+    			error("PROTECT ERROR: verify failed for entry type: "+dbType+", with key: "+dbKey+". No key exists!");
+    		} else if (!StringUtils.equals(alg, data.getProtectionAlg())) {
+        			ret.setResultCode(TableVerifyResult.VERIFY_INCOMPATIBLE_ALG);    			
+        			error("PROTECT ERROR: verify failed for entry type: "+dbType+", with key: "+dbKey+". incompatible algorithm!");
     		} else {
         		// Create a new signature on the passed in object, and compare it with the one we have stored in the db'
     			if (log.isDebugEnabled()) {
         			log.debug("Hash is: "+hash);    				
     			}
-        		String signature = createHmac(key, HMAC_ALG, hash);
+        		String signature = createHmac(key, alg, hash);
     			if (log.isDebugEnabled()) {
         			log.debug("Signature is: "+signature);    				
     			}
         		if (!StringUtils.equals(signature, data.getSignature())) {
         			ret.setResultCode(TableVerifyResult.VERIFY_FAILED);
+        			error("PROTECT ERROR: verify failed for entry type: "+dbType+", with key: "+dbKey);
         		} else {
         			// This can actually never happen
             		if (!StringUtils.equals(hash, data.getHash())) {
             			ret.setResultCode(TableVerifyResult.VERIFY_WRONG_HASH);
+            			error("PROTECT ERROR: wrong hash for entry type: "+dbType+", with key: "+dbKey);
             		}    			
         		}    			
     		}
 		} catch (ObjectNotFoundException e) {
-			info("PROTECT ERROR: can not find protection row for entry type: "+dbType+", with key: "+dbKey);
+			if (warnOnMissingRow) {
+				error("PROTECT ERROR: can not find protection row for entry type: "+dbType+", with key: "+dbKey);				
+			}
 			ret.setResultCode(TableVerifyResult.VERIFY_NO_ROW);
 		}catch (Exception e) {
 			error("PROTECT ERROR: can not verify protection row for entry type: "+dbType+", with key: "+dbKey, e);
@@ -223,5 +314,68 @@ public class TableProtectSessionBean extends BaseSessionBean {
         byte[] out = mac.doFinal();
     	return new String(Hex.encode(out));
     }
-    
+
+    protected class SelectProtectPreparer implements JDBCUtil.Preparer {
+    	private final String dbType;
+    	private final String dbKey;
+		public SelectProtectPreparer(final String dbType, final String dbKey) {
+			super();
+			this.dbType = dbType;
+			this.dbKey = dbKey;
+		}
+		public void prepare(PreparedStatement ps) throws Exception {
+            ps.setString(1, dbType);
+            ps.setString(2, dbKey);
+		}
+        public String getInfoString() {
+        	return "Select:, dbKey:"+dbKey+", dbType: "+dbType;
+        }
+    }
+
+    protected class ProtectPreparer implements JDBCUtil.Preparer {
+        private final String id;
+        private final int version;
+        private final int hashVersion;
+        private final String alg;
+        private final String hash;
+        private final String signature;
+        private final long time;
+        private final String dbKey; 
+        private final String dbType; 
+        private final String keyRef; 
+        private final String keyType; 
+        
+        public ProtectPreparer(final String id, final int version, final int hashVersion, final String alg, final String hash, final String signature, final long time, final String dbKey, final String dbType, final String keyRef, final String keyType) {
+			super();
+			this.id = id;
+			this.version = version;
+			this.hashVersion = hashVersion;
+			this.alg = alg;
+			this.hash = hash;
+			this.signature = signature;
+			this.time = time;
+			this.dbKey = dbKey;
+			this.dbType = dbType;
+			this.keyRef = keyRef;
+			this.keyType = keyType;
+		}
+		public void prepare(PreparedStatement ps) throws Exception {
+            ps.setInt(1, version);
+            ps.setInt(2, hashVersion);
+            ps.setString(3, alg);
+            ps.setString(4, hash);
+            ps.setString(5, signature);
+            ps.setLong(6, time);
+            ps.setString(7, dbKey);
+            ps.setString(8, dbType);
+            ps.setString(9, keyRef);
+            ps.setString(10, keyType);
+            ps.setString(11,id);
+        }
+        public String getInfoString() {
+        	return "Store:, id: "+id+", dbKey:"+dbKey+", dbType: "+dbType;
+        }
+    }
+
+
 } // TableProtectSessionBean

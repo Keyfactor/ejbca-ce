@@ -13,6 +13,7 @@
 
 package se.anatom.ejbca.ca.store;
 
+import java.math.BigInteger;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,7 +36,7 @@ import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
 /**
- * @version $Id: TestCertificateRetrival.java,v 1.7 2006-06-21 08:52:25 anatom Exp $
+ * @version $Id: TestCertificateRetrival.java,v 1.8 2006-08-06 12:38:09 anatom Exp $
  */
 public class TestCertificateRetrival extends TestCase {
 
@@ -404,7 +405,7 @@ public class TestCertificateRetrival extends TestCase {
     public void test08LoadRevocationInfo() throws Exception {
         m_log.debug(">test08LoadRevocationInfo()");
 
-        Collection revstats;
+        ArrayList revstats = new ArrayList();
         X509Certificate rootcacert;
         X509Certificate subcacert;
         ICertificateStoreSessionRemote store = m_storehome.create();
@@ -415,14 +416,19 @@ public class TestCertificateRetrival extends TestCase {
         sernos.add(rootcacert.getSerialNumber());
         sernos.add(subcacert.getSerialNumber());
 
-        revstats = store.isRevoked(admin
-                , rootcacert.getSubjectDN().getName()
-                , sernos);
+        Iterator iter = sernos.iterator();
+        while (iter.hasNext()) {
+        	BigInteger bi = (BigInteger)iter.next();
+            RevokedCertInfo rev = store.isRevoked(admin
+                    , rootcacert.getSubjectDN().getName()
+                    , bi);
+            revstats.add(rev);
+        }
 
         assertNotNull("Unable to retrive certificate revocation status.", revstats);
         assertTrue("Method 'isRevoked' does not return status for ALL certificates.", revstats.size() >= 2);
 
-        Iterator iter = revstats.iterator();
+        iter = revstats.iterator();
         while (iter.hasNext()) {
             RevokedCertInfo rci = (RevokedCertInfo) iter.next();
             m_log.debug("Certificate revocation information:\n"

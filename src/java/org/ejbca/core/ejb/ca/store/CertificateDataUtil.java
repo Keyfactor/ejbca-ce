@@ -24,14 +24,19 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
+import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JNDINames;
+import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
+import org.ejbca.core.ejb.protect.TableProtectSessionLocalHome;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.core.model.protect.TableVerifyResult;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.StringTools;
@@ -39,12 +44,13 @@ import org.ejbca.util.StringTools;
 /** Common code between CertificateStoreSessionBean and CertificateStoreOnlyDataSessionBean
  * 
  * @author lars
- * @version $Id: CertificateDataUtil.java,v 1.7 2006-07-18 16:49:43 anatom Exp $
+ * @version $Id: CertificateDataUtil.java,v 1.8 2006-08-06 12:37:00 anatom Exp $
  *
  */
 public class CertificateDataUtil {
     public interface Adapter {
         void debug( String s );
+        void error( String s );
         Logger getLogger();
         void log(Admin admin, int caid, int module, Date time, String username,
                  X509Certificate certificate, int event, String comment);
@@ -172,7 +178,7 @@ public class CertificateDataUtil {
     } // findCertificatesByType
 
     static public RevokedCertInfo isRevoked(Admin admin, String issuerDN, BigInteger serno,
-                                            CertificateDataLocalHome certHome, Adapter adapter) {
+                                            CertificateDataLocalHome certHome, TableProtectSessionLocalHome protectHome, Adapter adapter) {
         if (adapter.getLogger().isDebugEnabled()) {
             adapter.debug(">isRevoked(), dn:" + issuerDN + ", serno=" + serno.toString(16));
         }
@@ -182,24 +188,39 @@ public class CertificateDataUtil {
         try {
             Collection coll = certHome.findByIssuerDNSerialNumber(dn, serno.toString());
             if (coll != null) {
-                if (coll.size() > 1)
+                if (coll.size() > 1) {
                     adapter.log(admin, issuerDN.hashCode(), LogEntry.MODULE_CA, new java.util.Date(),
                                 null, null, LogEntry.EVENT_ERROR_DATABASE,
                                 "Error in database, more than one certificate has the same Issuer : " +
                                 issuerDN + " and serialnumber " + serno.toString(16) + ".");
+                }
                 Iterator iter = coll.iterator();
                 if (iter.hasNext()) {
-                    RevokedCertInfo revinfo = null;
-                    CertificateDataLocal data = (CertificateDataLocal) iter.next();
-                    revinfo = new RevokedCertInfo(serno, new Date(data.getRevocationDate()), data.getRevocationReason());
-                    // Make sure we have it as NOT revoked if it isn't
-                    if (data.getStatus() != CertificateDataBean.CERT_REVOKED) {
-                        revinfo.setReason(RevokedCertInfo.NOT_REVOKED);
-                    }
-                    if (adapter.getLogger().isDebugEnabled()) {
-                    	adapter.debug("<isRevoked() returned " + ((data.getStatus() == CertificateDataBean.CERT_REVOKED) ? "yes" : "no"));
-                    }
-                    return revinfo;
+                	RevokedCertInfo revinfo = null;
+                	CertificateDataLocal data = (CertificateDataLocal) iter.next();
+                	if (protectHome != null) {
+                		CertificateInfo entry = new CertificateInfo(data.getFingerprint(), data.getCaFingerprint(), data.getSerialNumber(), data.getIssuerDN(), data.getSubjectDN(), data.getStatus(), data.getType(), data.getExpireDate(), data.getRevocationDate(), data.getRevocationReason());
+                		TableProtectSessionLocal protect;
+                		try {
+                			protect = protectHome.create();
+                			// The verify method will log failed verifies itself
+                			TableVerifyResult res = protect.verify(entry);
+                			if (res.getResultCode() != TableVerifyResult.VERIFY_SUCCESS) {
+                				//adapter.error("Verify failed, but we go on anyway.");
+                			}
+                		} catch (CreateException e) {
+                			adapter.error("PROTECT ERROR: Can not create TableProtectSession: "+e.getMessage());
+                		}
+                	}
+                	revinfo = new RevokedCertInfo(serno, new Date(data.getRevocationDate()), data.getRevocationReason());
+                	// Make sure we have it as NOT revoked if it isn't
+                	if (data.getStatus() != CertificateDataBean.CERT_REVOKED) {
+                		revinfo.setReason(RevokedCertInfo.NOT_REVOKED);
+                	}
+                	if (adapter.getLogger().isDebugEnabled()) {
+                		adapter.debug("<isRevoked() returned " + ((data.getStatus() == CertificateDataBean.CERT_REVOKED) ? "yes" : "no"));
+                	}
+                	return revinfo;
                 }
             }
             if (adapter.getLogger().isDebugEnabled()) {

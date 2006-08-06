@@ -91,7 +91,7 @@ import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silvén PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.24 2006-07-28 19:40:49 primelars Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.25 2006-08-06 12:37:00 anatom Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChecker {
 
@@ -171,29 +171,28 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
             m_log.warn(sDebug + " revoked.");
             return null;
         }
-        X509Certificate chain[] = null; {
-            final List list = new ArrayList();
-            X509Certificate current = cert;
-            while( true ) {
-                list.add(current);
-                if ( current.getIssuerX500Principal().equals(current.getSubjectX500Principal()) ) {
-                    chain = (X509Certificate[])list.toArray(new X509Certificate[0]);
-                    break;
-                }
-                Iterator j = m_cacerts.iterator();
-                boolean isNotFound = true;
-                while( isNotFound && j.hasNext() ) {
-                    X509Certificate target = (X509Certificate)j.next();
-                    m_log.debug( "curent issuer '" + current.getIssuerX500Principal() +
-                            "'. target subject: '" + target.getSubjectX500Principal() + "'.");
-                    if ( current.getIssuerX500Principal().equals(target.getSubjectX500Principal()) ) {
-                        current = target;
-                        isNotFound = false;
-                    }
-                }
-                if ( isNotFound )
-                    break;
-            }
+        X509Certificate chain[] = null;
+        final List list = new ArrayList();
+        X509Certificate current = cert;
+        while( true ) {
+        	list.add(current);
+        	if ( current.getIssuerX500Principal().equals(current.getSubjectX500Principal()) ) {
+        		chain = (X509Certificate[])list.toArray(new X509Certificate[0]);
+        		break;
+        	}
+        	Iterator j = m_cacerts.iterator();
+        	boolean isNotFound = true;
+        	while( isNotFound && j.hasNext() ) {
+        		X509Certificate target = (X509Certificate)j.next();
+        		m_log.debug( "curent issuer '" + current.getIssuerX500Principal() +
+        				"'. target subject: '" + target.getSubjectX500Principal() + "'.");
+        		if ( current.getIssuerX500Principal().equals(target.getSubjectX500Principal()) ) {
+        			current = target;
+        			isNotFound = false;
+        		}
+        	}
+        	if ( isNotFound )
+        		break;
         }
         if ( chain==null )
         	m_log.warn(sDebug+" has no chain to a root CA.");
@@ -214,7 +213,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
             keyStore = tmpKeyStore;
             eAlias = keyStore.aliases();
         } catch( Exception e ) {
-            m_log.debug("Unable to load key file "+fileName);
+            m_log.error("Unable to load key file "+fileName, e);
             return false;
         }
         while( eAlias.hasMoreElements() ) {
@@ -225,7 +224,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
                 if ( key!=null && cert!=null )
                     putSignEntity(new PrivateKeyFactorySW(key), cert, adm, "BC");
             } catch (Exception e) {
-                m_log.debug("Unable to get alias "+alias+" in file "+fileName+". Exception: "+e.getMessage());
+                m_log.error("Unable to get alias "+alias+" in file "+fileName+". Exception: ", e);
             }
         }
         return true;

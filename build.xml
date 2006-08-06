@@ -179,9 +179,10 @@
     <!-- Extra Protection settings for internal log signing etc -->
     <property name="protection.enabled" value="false" />
     <property name="protection.logprotect" value="false" />
+    <property name="protection.certprotect" value="false" />
     <property name="protection.keyref" value="key1" />
     <property name="protection.key" value="foo123" />
-    <property name="protection.keytype" value="HMAC" />
+    <property name="protection.keytype" value="SOFT_HMAC" />
     
     <!-- =================================================================== -->
     <!-- Build ALL                                                           -->
@@ -233,6 +234,7 @@ protection.logprotect=${protection.logprotect}
 protection.keyref=${protection.keyref}
 protection.keytype=${protection.keytype}
 protection.key=${protection.key}
+protection.certprotect=${protection.certprotect}
 -->   
         <!-- Create the time stamp -->
         <tstamp/>

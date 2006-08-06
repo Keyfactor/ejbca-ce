@@ -33,6 +33,7 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
@@ -42,6 +43,8 @@ import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
+import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
+import org.ejbca.core.ejb.protect.TableProtectSessionLocalHome;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.certificateprofiles.CACertificateProfile;
@@ -61,6 +64,7 @@ import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.core.model.protect.TableVerifyResult;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
@@ -85,6 +89,11 @@ import org.ejbca.util.StringTools;
  * type="java.lang.String"
  * value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
  *
+ * @ejb.env-entry description="Enable or disable protection of database entrys"
+ *   name="certSigning"
+ *   type="java.lang.String"
+ *   value="${protection.certprotect}"
+ *   
  * @ejb.ejb-external-ref description="The Certificate entity bean used to store and fetch certificates"
  * view-type="local"
  * ejb-name="CertificateDataLocal"
@@ -142,6 +151,15 @@ import org.ejbca.util.StringTools;
  * business="org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal"
  * link="PublisherSession"
  *
+ * @ejb.ejb-external-ref
+ *   description="The table protection session bean"
+ *   view-type="local"
+ *   ejb-name="TableProtectSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.protect.TableProtectSessionLocalHome"
+ *   business="org.ejbca.core.ejb.protect.TableProtectSessionLocal"
+ *   link="TableProtectSession"
+ *   
  * @ejb.home extends="javax.ejb.EJBHome"
  * local-extends="javax.ejb.EJBLocalHome"
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
@@ -152,7 +170,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.14 2006-07-21 15:28:25 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.15 2006-08-06 12:37:00 anatom Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
@@ -188,6 +206,12 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      */
     private IAuthorizationSessionLocal authorizationsession = null;
 
+    /** The come interface of the protection session bean */
+    private TableProtectSessionLocalHome protecthome = null;
+    
+    /** If protection of database entries are enabled of not, default not */
+    private boolean protect = false;
+    
     /**
      * The local interface of the publisher session bean
      */
@@ -210,6 +234,12 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         certHome = (CertificateDataLocalHome) getLocator().getLocalHome(CertificateDataLocalHome.COMP_NAME);
         certReqHistoryHome = (CertReqHistoryDataLocalHome) getLocator().getLocalHome(CertReqHistoryDataLocalHome.COMP_NAME);
         certprofilehome = (CertificateProfileDataLocalHome) getLocator().getLocalHome(CertificateProfileDataLocalHome.COMP_NAME);
+        String sign = getLocator().getString("java:comp/env/certSigning");
+        if (StringUtils.equalsIgnoreCase(sign, "true")) {
+        	protect = true;
+        	protecthome = (TableProtectSessionLocalHome) getLocator().getLocalHome(TableProtectSessionLocalHome.COMP_NAME);
+        }
+
     }
 
     /**
@@ -293,6 +323,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             data1.setStatus(status);
             data1.setType(type);
             getLogSession().log(admin, cert, LogEntry.MODULE_CA, new java.util.Date(), username, (X509Certificate) incert, LogEntry.EVENT_INFO_STORECERTIFICATE, "");
+            if (protect) {
+        		CertificateInfo entry = new CertificateInfo(data1.getFingerprint(), data1.getCaFingerprint(), data1.getSerialNumber(), data1.getIssuerDN(), data1.getSubjectDN(), data1.getStatus(), data1.getType(), data1.getExpireDate(), data1.getRevocationDate(), data1.getRevocationReason());
+            	TableProtectSessionLocal protect = protecthome.create();
+            	protect.protect(admin, entry);            	
+            }
         } catch (Exception e) {
             getLogSession().log(admin, (X509Certificate) incert, LogEntry.MODULE_CA, new java.util.Date(), username, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE, "");
             throw new EJBException(e);
@@ -900,11 +935,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             		&& (reason != RevokedCertInfo.NOT_REVOKED) && (reason != RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL) ) {
             	  rev.setStatus(CertificateDataBean.CERT_REVOKED);
             	  rev.setRevocationDate(new Date());
-            	  rev.setRevocationReason(reason);
+            	  rev.setRevocationReason(reason);            	  
             	  getLogSession().log(admin, certificate, LogEntry.MODULE_CA, new java.util.Date(), null, certificate, LogEntry.EVENT_INFO_REVOKEDCERT, ("Revoke reason: " + reason));
             	  // Revoke in all related publishers
             	  if (publishers != null) {
-            	    getPublisherSession().revokeCertificate(admin, publishers, certificate, reason);
+            		  getPublisherSession().revokeCertificate(admin, publishers, certificate, reason);
             	  }            	  
             } else if ( ((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL)) 
             		&& (rev.getRevocationReason() == RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD) ) {
@@ -945,6 +980,18 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             }else{
             	getLogSession().log(admin, certificate.getIssuerDN().hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, certificate, LogEntry.EVENT_INFO_NOTIFICATION, ("Ignored setRevokeStatus() request: " + serialNo) + " Current cert status: " + rev.getStatus() + " Revocation reason: " + reason);
             }
+            // Update database protection
+            if (protect) {
+        		CertificateInfo entry = new CertificateInfo(rev.getFingerprint(), rev.getCaFingerprint(), rev.getSerialNumber(), rev.getIssuerDN(), rev.getSubjectDN(), rev.getStatus(), rev.getType(), rev.getExpireDate(), rev.getRevocationDate(), rev.getRevocationReason());
+            	TableProtectSessionLocal protect;
+            	try {
+            		protect = protecthome.create();
+            		protect.protect(admin, entry);            	
+            	} catch (CreateException e) {
+            		error("PROTECT ERROR: Can not create TableProtectSession: ", e);
+            	}
+            }
+
         }
         
         debug("<setRevokeStatus(),  issuerdn=" + certificate.getIssuerDN() + ", serno=" + certificate.getSerialNumber());
@@ -1042,9 +1089,22 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                     certificate = (X509Certificate) j.next();
                     revpk.fingerprint = CertTools.getFingerprintAsString(certificate);
                     CertificateDataLocal rev = certHome.findByPrimaryKey(revpk);
+                    if (protect) {
+                		CertificateInfo entry = new CertificateInfo(rev.getFingerprint(), rev.getCaFingerprint(), rev.getSerialNumber(), rev.getIssuerDN(), rev.getSubjectDN(), rev.getStatus(), rev.getType(), rev.getExpireDate(), rev.getRevocationDate(), rev.getRevocationReason());
+                    	TableProtectSessionLocal protect;
+                    	try {
+                    		protect = protecthome.create();
+                    		// The verify method will log failed verifies itself
+                    		TableVerifyResult res = protect.verify(entry);
+                    		if (res.getResultCode() != TableVerifyResult.VERIFY_SUCCESS) {
+                    			//error("Verify failed, but we go on anyway.");
+                    		}
+                    	} catch (CreateException e) {
+                    		error("PROTECT ERROR: Can not create TableProtectSession: ", e);
+                    	}
+                    }
                     if (rev.getStatus() != CertificateDataBean.CERT_REVOKED) {
                         returnval = false;
-
                     }
                 }
             }
@@ -1056,88 +1116,6 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         return returnval;
     }
 
-
-    /**
-     * The method returns the revocation status for a list or certificate identified
-     * by the serialnumber.
-     *
-     * @param admin
-     * @param issuerDN the subjectDN of a CA certificate
-     * @param sernos a collection of certificate serialnumbers
-     * @return Collection a collection of {@link RevokedCertInfo} objects which
-     *         reflect the revocation status of the given certificates.
-     * @ejb.interface-method
-     */
-    public Collection isRevoked(Admin admin, String issuerDN, Collection sernos) {
-        if (log.isDebugEnabled()) {
-            debug(">isRevoked(), dn:" + issuerDN + ", no of sernos=" + sernos.size());
-        }
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet result = null;
-        ArrayList vect = null;
-
-        if (null == admin
-                || null == issuerDN || issuerDN.length() <= 0
-                || null == sernos) {
-            throw new IllegalArgumentException();
-        }
-
-        if (sernos.isEmpty()) {
-            return new ArrayList();
-        }
-
-        // First make a DN in our well-known format
-        String dn = CertTools.stringToBCDNString(issuerDN);
-        try {
-            final StringBuffer sb = new StringBuffer();
-            {
-                Iterator iter = sernos.iterator();
-                while (iter.hasNext()) {
-                    sb.append(", '");
-                    // Make sure this is really a BigInteger passed in as (untrusted param)
-                    BigInteger serno = (BigInteger) iter.next();
-                    sb.append(serno.toString());
-                    sb.append("'");
-                }
-            }
-            /*
-             * to save the repeating if-statement in the above
-             * Closure not to add ', ' as the first characters
-             * in the StringBuffer we remove the two chars here :)
-             */
-            sb.delete(0, ", ".length());
-            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-            ps = con.prepareStatement(
-                    "SELECT DISTINCT serialNumber, revocationDate, revocationReason, status "+
-                    "FROM CertificateData WHERE issuerDN = ? " +
-                    "AND serialNumber IN (" + sb.toString() + ")");
-            ps.setString(1, dn);
-            result = ps.executeQuery();
-
-            vect = new ArrayList();
-            while (result.next()) {
-                RevokedCertInfo info = new RevokedCertInfo(new BigInteger(result.getString(1).getBytes()), new Date(result.getLong(2)), result.getInt(3));
-                // Backwards compatibility, handle databases that did not have NOT_REVOKED
-                if (result.getInt(4) != CertificateDataBean.CERT_REVOKED) {
-                    info.setReason(RevokedCertInfo.NOT_REVOKED);
-                }
-                vect.add(info);
-            }
-
-        } catch (Exception e) {
-            error("Unable to load revoked certificates for issuer '"
-                    + issuerDN
-                    + "'"
-                    , e);
-            throw new EJBException(e);
-        } finally {
-            JDBCUtil.close(con, ps, result);
-        }
-        debug("<isRevoked()");
-        return vect;
-    } // isRevoked
-
     /**
      * Checks if a certificate is revoked.
      *
@@ -1148,7 +1126,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public RevokedCertInfo isRevoked(Admin admin, String issuerDN, BigInteger serno) {
-        return CertificateDataUtil.isRevoked(admin, issuerDN, serno, certHome, adapter);
+        return CertificateDataUtil.isRevoked(admin, issuerDN, serno, certHome, protecthome, adapter);
     } //isRevoked
 
     /**
@@ -1904,6 +1882,12 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
          */
         public void debug(String s) {
             LocalCertificateStoreSessionBean.this.debug(s);
+        }
+        /* (non-Javadoc)
+         * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#error(java.lang.String)
+         */
+        public void error(String s) {
+            LocalCertificateStoreSessionBean.this.error(s);        	
         }
     }
 } // CertificateStoreSessionBean
