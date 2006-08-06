@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.ca.sign;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -934,7 +935,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      *                                       the CA.
      * @ejb.interface-method view-type="both"
      */
-    public IResponseMessage getCRL(Admin admin, IRequestMessage req, Class responseClass) throws IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException {
+    public IResponseMessage getCRL(Admin admin, IRequestMessage req, Class responseClass) throws AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, UnsupportedEncodingException {
         debug(">getCRL(IRequestMessage)");
         IResponseMessage ret = null;
         ICertificateStoreSessionLocal certificateStore = null;
@@ -945,20 +946,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             throw new EJBException(e);
         }
         // Get CA that will receive request
-        CADataLocal cadata = null;
-        try {
-            // See if we can get issuerDN directly from request
-            if (req.getIssuerDN() != null) {
-                cadata = cadatahome.findByPrimaryKey(new Integer(req.getIssuerDN().hashCode()));
-                debug("Using CA (from issuerDN) with id: " + cadata.getCaId() + " and DN: " + cadata.getSubjectDN());
-            } else {
-                throw new CADoesntExistsException();
-            }
-        } catch (javax.ejb.FinderException fe) {
-            error("Can not find CA Id from issuerDN: " + req.getIssuerDN() + " or username: " + req.getUsername());
-            getLogSession().log(admin, -1, LogEntry.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogEntry.EVENT_ERROR_GETLASTCRL, "Invalid CA Id", fe);
-            throw new CADoesntExistsException(fe);
-        }
+        CADataLocal cadata = getCAFromRequest(admin, req);
         try {
             CA ca = cadata.getCA();
             CAToken catoken = ca.getCAToken();
@@ -991,7 +979,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             
             // Get the CRL, don't even bother digging into the encrypted CRLIssuerDN...since we already
             // know that we are the CA (SCEP is soooo stupid!)
-            byte[] crl = certificateStore.getLastCRL(admin, req.getIssuerDN());
+            byte[] crl = certificateStore.getLastCRL(admin, ca.getSubjectDN());
             if (crl != null) {
                 ret.setCrl(CertTools.getCRLfromByteArray(crl));
                 ret.setStatus(ResponseStatus.SUCCESS);
@@ -1035,7 +1023,21 @@ public class RSASignSessionBean extends BaseSessionBean {
         try {
             // See if we can get issuerDN directly from request
             if (req.getIssuerDN() != null) {
-                cadata = cadatahome.findByPrimaryKey(new Integer(req.getIssuerDN().hashCode()));
+            	String dn = req.getIssuerDN();
+            	debug("Got an issuerDN: "+dn);
+            	// If we have issuer and serialNo, we must find the CA certificate, to get the CAs subject name
+            	// If we don't have a serialNumber, we take a chance that it was actually the subjectDN (for example a RootCA)
+            	BigInteger serno = req.getSerialNo();
+            	if (serno != null) {
+            		debug("Got a serialNumber: "+serno.toString(16));
+                    ICertificateStoreSessionLocal certificateStore = storeHome.create();
+            		X509Certificate cert = (X509Certificate)certificateStore.findCertificateByIssuerAndSerno(admin, dn, serno);
+            		if (cert != null) {
+            			dn = cert.getSubjectDN().getName();
+            		}
+            	}
+            	debug("Using DN: "+dn);
+                cadata = cadatahome.findByPrimaryKey(new Integer(dn.hashCode()));
                 debug("Using CA (from issuerDN) with id: " + cadata.getCaId() + " and DN: " + cadata.getSubjectDN());
             } else if (req.getUsername() != null) {
                 // See if we can get username and password directly from request
@@ -1051,6 +1053,11 @@ public class RSASignSessionBean extends BaseSessionBean {
             error("Can not find CA Id from issuerDN: " + req.getIssuerDN() + " or username: " + req.getUsername());
             getLogSession().log(admin, -1, LogEntry.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Invalid CA Id", fe);
             throw new CADoesntExistsException(fe);
+        } catch (CreateException ce) {
+        	// Really fatal error
+            error("Can not find CA Id from issuerDN: " + req.getIssuerDN() + " or username: " + req.getUsername(), ce);        	
+            getLogSession().log(admin, -1, LogEntry.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Error looking up CA", ce);
+            throw new EJBException(ce);
         }
         
         CA ca = cadata.getCA();

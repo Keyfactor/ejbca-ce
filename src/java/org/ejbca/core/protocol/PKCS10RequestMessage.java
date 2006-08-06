@@ -44,7 +44,7 @@ import org.ejbca.util.CertTools;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.4 2006-06-22 07:41:51 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.5 2006-08-06 15:48:04 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage {
     /**
@@ -275,6 +275,16 @@ public class PKCS10RequestMessage implements IRequestMessage {
         return null;
     }
 
+    /**
+     * Gets the number (of CA cert) from IssuerAndSerialNumber. Combined with getIssuerDN to identify
+     * the CA-certificate of the CA the request is targeted for.
+     *
+     * @return serial number of CA certificate for CA issuing CRL or null.
+     */
+    public BigInteger getSerialNo() {
+    	return null;
+    }
+    
     /**
      * Gets the issuer DN (of CA cert) from IssuerAndSerialNumber when this is a CRL request.
      *

@@ -65,7 +65,7 @@ import org.ejbca.util.CertTools;
  * Class to handle SCEP request messages sent to the CA. 
  * TODO: don't forget extensions, e.g. KeyUsage requested by end entity 
  *
- * @version $Id: ScepRequestMessage.java,v 1.5 2006-06-22 07:41:51 anatom Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.6 2006-08-06 15:48:04 anatom Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage {
     /**
@@ -129,9 +129,13 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
     /** Error text */
     private String errorText = null;
     
-    /** Issuer DN the message is sent to (CAs DN), contained in the 
+    /** Issuer DN the message is sent to (CAs Issuer DN), contained in the 
      * request as recipientInfo.issuerAndSerialNumber in EnvelopeData part */
     private transient String issuerDN = null;
+    
+    /** SerialNumber of the CA cert of the CA the message is sent to, contained in the 
+     * request as recipientInfo.issuerAndSerialNumber in EnvelopeData part */
+    private transient BigInteger serialNo = null;
 
     /** Signed data, the whole enchilada to to speak... */
     private transient SignedData sd = null;
@@ -285,6 +289,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
                             RecipientIdentifier rid = recipientInfo.getRecipientIdentifier();
                             IssuerAndSerialNumber iasn = IssuerAndSerialNumber.getInstance(rid.getId());
                             issuerDN = iasn.getName().toString();
+                            serialNo = iasn.getSerialNumber().getValue();
                             log.debug("IssuerDN: " + issuerDN);
                             log.debug("SerialNumber: " + iasn.getSerialNumber().getValue().toString(16));
                         }
@@ -507,6 +512,18 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         return ret;
     }
 
+    /**
+     * Gets the issuer DN if contained in the request (the CA the request is targeted at).
+     *
+     * @return issuerDN of receiving CA or null.
+     */
+    public BigInteger getSerialNo() {
+        log.debug(">getSerialNo()");
+        // Use another method to do the decryption etc...
+        getIssuerDN();
+        return serialNo;
+    }
+    
     /**
      * Gets the issuer DN (of CA cert) from IssuerAndSerialNumber when this is a CRL request.
      *

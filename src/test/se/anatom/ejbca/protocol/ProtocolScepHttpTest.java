@@ -47,6 +47,7 @@ import javax.naming.NamingException;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Set;
@@ -186,8 +187,11 @@ public class ProtocolScepHttpTest extends TestCase {
         if (certs.size() > 0) {
             Iterator certiter = certs.iterator();
             X509Certificate cert = (X509Certificate) certiter.next();
-            // Make sure we have a BC certificate
-            cacert = CertTools.getCertfromByteArray(cert.getEncoded());
+            String subject = CertTools.getSubjectDN(cert);
+            if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
+                // Make sure we have a BC certificate
+                cacert = CertTools.getCertfromByteArray(cert.getEncoded());            	
+            }
         } else {
             log.error("NO CACERT for caid " + caid);
         }
@@ -545,20 +549,21 @@ public class ProtocolScepHttpTest extends TestCase {
                     if (mysubjectdn.equals(subjectdn)) {
                         // issued certificate
                         assertEquals(CertTools.stringToBCDNString("C=SE,O=PrimeKey,CN=sceptest"), subjectdn);
+                        assertEquals(cacert.getSubjectDN().getName(), retcert.getIssuerDN().getName());
                         retcert.verify(cacert.getPublicKey());
                         assertTrue(checkKeys(keys.getPrivate(), retcert.getPublicKey()));
                         verified = true;
                     } else {
                         // ca certificate
-                        assertEquals(cacert.getSubjectDN().getName(), retcert.getIssuerDN().getName());
-                        gotcacert = true;
+                        assertEquals(cacert.getSubjectDN().getName(), retcert.getSubjectDN().getName());
+                        gotcacert = true;                        	
                     }
                 }
                 assertTrue(verified);
                 if (noca) {
                 	assertFalse(gotcacert);
                 } else {
-                    assertTrue(gotcacert);                	
+                    assertTrue(gotcacert); 
                 }
             }
         }
