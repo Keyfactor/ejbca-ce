@@ -53,11 +53,11 @@
 		</init-param>
 		<init-param>
 		  <param-name>authCertProfile</param-name>
-		  <param-value>NetMakerAuth</param-value>
+		  <param-value>company A auth enc</param-value>
 		</init-param>
 		<init-param>    
 		  <param-name>signCertProfile</param-name>
-		  <param-value>NetMakerSign</param-value>
+		  <param-value>company A sign</param-value>
 		</init-param>
     </servlet>
 
