@@ -386,6 +386,14 @@ The best way to create server certificates is to generate a
 PKCS12, JKS or PEM file for the server, depending on what server it is.
 To do this:
 <ol>
+<li>
+Create desired profiles (the default entity and certificate profiles work fine, but are perhaps too generic).
+You certificate profile should have:<br/> 
+- KeyUsage: <i>Digital signature, Key encipherment</i><br/>
+- Extended key usage: <i>Server Authentication</i><br/>
+Your end entity should include the servers hostname (or *.domain.com) in the CommonName, and possibly 
+also as a DNSName in SubjectAlternativeNames. 
+</li>
 <li>Create a user with the admin_GUI or 'bin/ejbca.sh ra'. The DN for a server should have the
 domain name in
 CommonName (CN). Example DN for webserver: "C=SE,O=AnaTom,CN=
@@ -411,7 +419,12 @@ To generate JKS-files use token type JKS. The JKS-files will be stored in the
 subdirectory, 'p12' instead of PKCS12-files. The generated JKS-
 files can be used with Tomcat etc, and are protected (both private key password
 and keystore password) by the users password.
-</p><p>
+</p>
+<p>
+If the server generates the keys and a certificate request for you, you can use the 
+public enrollment web pages, 'manual for a server', to paste the request and receive the certificate.
+</p>
+<p>
 It is also possible to use openssl to transform a PKCS12 file to PEM-
 format.
 </p>
