@@ -48,7 +48,7 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.11 2006-08-03 14:51:58 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.12 2006-08-08 11:23:36 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
@@ -198,14 +198,14 @@ public class LdapPublisher extends BasePublisher {
                 if (oldEntry != null) {
                     if (getAddMultipleCertificates()) {
                         modSet.add(new LDAPModification(LDAPModification.ADD, certAttr));                        
-                        log.debug("Replaced certificate in user entry:" + certAttr);
+                        log.debug("Appended new certificate in user entry:" + username+": "+dn);
                     } else {
                         modSet.add(new LDAPModification(LDAPModification.REPLACE, certAttr));                                            
-                        log.debug("Appended new certificate in user entry:" + certAttr);
+                        log.debug("Replaced certificate in user entry:" + username+": "+dn);
                     }
                 } else {
                     attributeSet.add(certAttr);
-                    log.debug("Added new certificate to user entry:" + certAttr);
+                    log.debug("Added new certificate to user entry:" + username+": "+dn);
                 }
             } catch (CertificateEncodingException e) {
                 log.error("LDAP ERROR: Error encoding certificate when storing in LDAP: ", e);
