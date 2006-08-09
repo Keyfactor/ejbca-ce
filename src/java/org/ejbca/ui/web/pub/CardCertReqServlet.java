@@ -20,6 +20,9 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 import javax.ejb.ObjectNotFoundException;
 import javax.naming.InitialContext;
@@ -44,6 +47,7 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.IllegalKeyException;
 import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -76,7 +80,7 @@ import org.ejbca.util.CertTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CardCertReqServlet.java,v 1.3 2006-08-09 08:06:51 primelars Exp $
+ * @version $Id: CardCertReqServlet.java,v 1.4 2006-08-09 14:10:32 primelars Exp $
  */
 public class CardCertReqServlet extends HttpServlet {
 	private final static Logger log = Logger.getLogger(CardCertReqServlet.class);
@@ -122,9 +126,9 @@ public class CardCertReqServlet extends HttpServlet {
      */
     public void doPost(HttpServletRequest request, HttpServletResponse response)
     throws IOException, ServletException {
-        ServletDebug debug = new ServletDebug(request, response);
+        final ServletDebug debug = new ServletDebug(request, response);
         boolean usekeyrecovery = false;
-
+        
         try {
             Admin administrator = new Admin(Admin.TYPE_RACOMMANDLINE_USER);
             ICertificateStoreSessionRemote certificatestoresession = certificatestorehome.create();
@@ -144,31 +148,53 @@ public class CardCertReqServlet extends HttpServlet {
             ISignSessionRemote signsession = signsessionhome.create();
             log.debug("Got request for " + username + ".");
             debug.print("<h3>username: " + username + "</h3>");
-
+            
             final UserDataVO data = adminsession.findUser(administrator, username);
-            if (data == null)
-                throw new ObjectNotFoundException();
-
-            if ( data.getTokenType()== SecConst.TOKEN_SOFT_BROWSERGEN ) {
-                final String authReq = request.getParameter("authpkcs10");
-                final String signReq = request.getParameter("signpkcs10");
-
-                if ( authReq!=null && signReq!=null ) {
-                    final int authCertProfile = certificatestoresession.getCertificateProfileId(administrator, this.getInitParameter("authCertProfile"));
-                    final int signCertProfile = certificatestoresession.getCertificateProfileId(administrator, this.getInitParameter("signCertProfile"));
-                    // if not IE, check if it's manual request
-                    final byte[] authReqBytes = authReq.getBytes();
-                    final byte[] signReqBytes = signReq.getBytes();
-                    if ( authReqBytes!=null && signReqBytes!=null) {
-                        adminsession.changeUser(administrator,username,data.getPassword(),data.getDN(),data.getSubjectAltName(),data.getEmail(),false,data.getEndEntityProfileId(),authCertProfile,data.getType(),data.getTokenType(),data.getHardTokenIssuerId(),data.getStatus(),data.getCAId());
-                        final byte[] authb64cert=pkcs10CertRequest(administrator, signsession, authReqBytes, username, data.getPassword());                      
-                        adminsession.changeUser(administrator,username,data.getPassword(),data.getDN(),data.getSubjectAltName(),data.getEmail(),false,data.getEndEntityProfileId(),signCertProfile,data.getType(),data.getTokenType(),data.getHardTokenIssuerId(),UserDataConstants.STATUS_NEW,data.getCAId());
-                        final byte[] signb64cert=pkcs10CertRequest(administrator, signsession, signReqBytes, username, data.getPassword());
-                        
-                        sendCertificates(authb64cert, signb64cert, response.getOutputStream(),  getServletContext(), getInitParameter("responseTemplate"));
+            if ( data.getTokenType()!= SecConst.TOKEN_SOFT_BROWSERGEN )
+                return;
+            final X509Certificate notRevokedCerts[]; {
+                Set set = new HashSet();
+                for( Iterator i = certificatestoresession.findCertificatesByUsername(administrator, username).iterator(); i.hasNext(); ) {
+                    Object o = i.next();
+                    if ( o instanceof X509Certificate ) {
+                        X509Certificate cert = (X509Certificate)o;
+                        RevokedCertInfo rci=certificatestoresession.isRevoked(administrator, cert.getIssuerDN().getName(), cert.getSerialNumber());
+                        if ( rci!=null && rci.getReason()==RevokedCertInfo.NOT_REVOKED )
+                            set.add(cert);
                     }
                 }
+                notRevokedCerts = (X509Certificate[])set.toArray(new X509Certificate[0]);
             }
+            if (data == null)
+                throw new ObjectNotFoundException();
+            
+            final String authReq = request.getParameter("authpkcs10");
+            final String signReq = request.getParameter("signpkcs10");
+            
+            if ( authReq!=null && signReq!=null ) {
+                final int authCertProfile = certificatestoresession.getCertificateProfileId(administrator, this.getInitParameter("authCertProfile"));
+                final int signCertProfile = certificatestoresession.getCertificateProfileId(administrator, this.getInitParameter("signCertProfile"));
+                // if not IE, check if it's manual request
+                final byte[] authReqBytes = authReq.getBytes();
+                final byte[] signReqBytes = signReq.getBytes();
+                if ( authReqBytes!=null && signReqBytes!=null) {
+                    adminsession.changeUser(administrator,username,data.getPassword(),data.getDN(),data.getSubjectAltName(),
+                            data.getEmail(),false,data.getEndEntityProfileId(),authCertProfile,data.getType(),
+                            data.getTokenType(),data.getHardTokenIssuerId(),data.getStatus(),data.getCAId());
+                    final byte[] authb64cert=pkcs10CertRequest(administrator, signsession, authReqBytes, username, data.getPassword());                      
+                    adminsession.changeUser(administrator,username,data.getPassword(),data.getDN(),data.getSubjectAltName(),
+                            data.getEmail(),false,data.getEndEntityProfileId(),signCertProfile,data.getType(),
+                            data.getTokenType(),data.getHardTokenIssuerId(),UserDataConstants.STATUS_NEW,data.getCAId());
+                    final byte[] signb64cert=pkcs10CertRequest(administrator, signsession, signReqBytes, username, data.getPassword());
+                    
+                    sendCertificates(authb64cert, signb64cert, response.getOutputStream(),  getServletContext(),
+                            getInitParameter("responseTemplate"), notRevokedCerts);
+                }
+            }
+            for (int i=0; i<notRevokedCerts.length; i++)
+                adminsession.revokeCert(administrator, notRevokedCerts[i].getSerialNumber(),
+                                        notRevokedCerts[i].getIssuerDN().toString(), username,
+                                        RevokedCertInfo.REVOKATION_REASON_SUPERSEDED);
         } catch (ObjectNotFoundException oe) {
             log.debug("Non existent username!");
             debug.printMessage("Non existent username!");
@@ -261,12 +287,13 @@ public class CardCertReqServlet extends HttpServlet {
      * @param out utput stream to send to
      * @param sc serveltcontext
      * @param responseTemplate path to responseTemplate
+     * @param notRevokedCerts 
      * @param classid replace
      *
      * @throws Exception on error
      */
     private static void sendCertificates(byte[] authb64cert,byte[] signb64cert, OutputStream out, ServletContext sc,
-        String responseTemplate) throws Exception {
+        String responseTemplate, X509Certificate[] notRevokedCerts) throws Exception {
         if (authb64cert.length == 0 || signb64cert.length == 0) {
             log.error("0 length certificate can not be sent to  client!");
             return;
@@ -278,17 +305,16 @@ public class CardCertReqServlet extends HttpServlet {
 
         while (true) {
             String line = br.readLine();
-
-            if (line == null) {
+            if (line == null)
                 break;
-            }
-
-                line = line.replaceAll("ABCDEFG",new String(authb64cert));
-                line = line.replaceAll("HJIKLMN",new String(signb64cert));
-                ps.println(line);                
- 
+            line = line.replaceAll("ABCDEFG",new String(authb64cert));
+            line = line.replaceAll("HJIKLMN",new String(signb64cert));
+            if ( notRevokedCerts.length > 0 )
+                line = line.replaceAll("OPQRSTU",new String(Base64.encode(notRevokedCerts[0].getEncoded(),false)));
+            if ( notRevokedCerts.length > 1 )
+                line = line.replaceAll("VXYZ123",new String(Base64.encode(notRevokedCerts[1].getEncoded(),false)));
+            ps.println(line);
         }
-
         ps.close();
 
     } // sendCertificates
