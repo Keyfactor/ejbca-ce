@@ -23,7 +23,7 @@ package org.ejbca.util.query;
  * function is getQueryString which returns a fragment of SQL statment.
  *
  * @author TomSelleck
- * @version $Id: ApprovalMatch.java,v 1.1 2006-07-29 11:26:37 herrvendil Exp $
+ * @version $Id: ApprovalMatch.java,v 1.2 2006-08-09 07:29:48 herrvendil Exp $
  *
  * @see org.ejbca.util.query.BasicMatch
  * @see org.ejbca.util.query.TimeMatch
@@ -32,20 +32,21 @@ package org.ejbca.util.query;
 public class ApprovalMatch extends BasicMatch {
     // Public Constants
 
-    public static final int MATCH_WITH_APPROVALID                    = 0;
-    public static final int MATCH_WITH_APPROVALTYPE                  = 1;
-    public static final int MATCH_WITH_ENDENTITYPROFILEID            = 2;
-    public static final int MATCH_WITH_CAID                          = 3;
-    public static final int MATCH_WITH_REQUESTADMINCERTISSUERDN      = 4;
-    public static final int MATCH_WITH_REQUESTADMINCERTSERIALNUMBER  = 5;
-    public static final int MATCH_WITH_STATUS                        = 6; 
-    public static final int MATCH_WITH_REMAININGAPPROVALS            = 7;
+	public static final int MATCH_WITH_UNIQUEID                      = 0;
+    public static final int MATCH_WITH_APPROVALID                    = 1;
+    public static final int MATCH_WITH_APPROVALTYPE                  = 2;
+    public static final int MATCH_WITH_ENDENTITYPROFILEID            = 3;
+    public static final int MATCH_WITH_CAID                          = 4;
+    public static final int MATCH_WITH_REQUESTADMINCERTISSUERDN      = 5;
+    public static final int MATCH_WITH_REQUESTADMINCERTSERIALNUMBER  = 6;
+    public static final int MATCH_WITH_STATUS                        = 7; 
+    public static final int MATCH_WITH_REMAININGAPPROVALS            = 8;
 
     
 
 
     // Private Constants.
-    private static final String[] MATCH_WITH_SQLNAMES = {"approvalid", "approvaltype", "endentityprofileid", "caid"
+    static final String[] MATCH_WITH_SQLNAMES = {"id","approvalid", "approvaltype", "endentityprofileid", "caid"
                                                          , "reqadmincertissuerdn", "reqadmincertsn", "status", "remainingapprovals"}; // Represents the column names in approvals table.
    
     

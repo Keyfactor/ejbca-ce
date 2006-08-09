@@ -22,7 +22,7 @@ import org.ejbca.core.model.ca.catoken.CATokenInfo;
 /**
  * Holds nonsensitive information about a CA.
  *
- * @version $Id: CAInfo.java,v 1.3 2006-05-26 17:23:28 anatom Exp $
+ * @version $Id: CAInfo.java,v 1.4 2006-08-09 07:29:49 herrvendil Exp $
  */
 public abstract class CAInfo implements Serializable {
 
@@ -42,6 +42,15 @@ public abstract class CAInfo implements Serializable {
      * should be created
      */
     public static final int SPECIALCAIDBORDER = 10;    
+    
+    
+    /**
+     * Constants indicating approvalsettings for this CA
+     */
+    public static final int REQ_APPROVAL_ADDEDITENDENTITY = 1;
+    
+    public static final int[] AVAILABLE_APPROVALSETTINGS={REQ_APPROVAL_ADDEDITENDENTITY};
+    public static final String[] AVAILABLE_APPROVALSETTINGS_TEXTS={"APPROVEADDEDITENDENTITY"};
     
     protected String subjectdn;
     protected int caid;
@@ -63,6 +72,8 @@ public abstract class CAInfo implements Serializable {
     protected Collection crlpublishers;  
 	protected boolean finishuser;  
 	protected Collection extendedcaserviceinfos;
+	protected Collection approvalSettings;
+	protected int numOfReqApprovals;
     
     public CAInfo(){}
     
@@ -109,6 +120,38 @@ public abstract class CAInfo implements Serializable {
 	public void setFinishUser(boolean finishuser){ this.finishuser=finishuser;}
 	
 	public Collection getExtendedCAServiceInfos(){ return this.extendedcaserviceinfos;}
-	public void setExtendedCAServiceInfos(Collection extendedcaserviceinfos){ this.extendedcaserviceinfos = extendedcaserviceinfos;}     	
+	public void setExtendedCAServiceInfos(Collection extendedcaserviceinfos){ this.extendedcaserviceinfos = extendedcaserviceinfos;}
+
+	/**
+	 * Returns a collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which
+	 * action that requires approvals, default none 
+	 * 
+	 * Never null
+	 */
+	public Collection getApprovalSettings() {return approvalSettings;}
+	/**
+	 * Collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which
+	 * action that requires approvals
+	 */
+	public void setApprovalSettings(Collection approvalSettings) {this.approvalSettings = approvalSettings;}
+	
+	/**
+	 * Returns true if the action requires approvals.
+	 * @param action, on of the CAInfo.REQ_APPROVAL_ constants
+	 */
+	public boolean isApprovalRequired(int action){		
+		return approvalSettings.contains(new Integer(action));
+	}
+	
+	
+	/**
+	 * Returns the number of different administrators that needs to approve
+	 * an action, default 1.
+	 */
+	public int getNumOfReqApprovals() {return numOfReqApprovals;}
+	/**
+	 * The number of different administrators that needs to approve
+	 */
+	public void setNumOfReqApprovals(int numOfReqApprovals) {this.numOfReqApprovals = numOfReqApprovals;}     	
 	
 }

@@ -99,7 +99,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.20 2006-08-03 14:50:25 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.21 2006-08-09 07:29:49 herrvendil Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -1297,8 +1297,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
                                                "", // Default OCSP Service Locator                                               
                                                true, // Finish User
 			                                   extendedcaservices,
-			                                   false // use default utf8 settings
-			                                   );
+			                                   false, // use default utf8 settings
+			                                   new ArrayList(), // Approvals Settings
+			                                   1); 
 
             X509CA ca = new X509CA(cainfo);
             ca.setCAToken(catoken);

@@ -1,0 +1,10 @@
+
+    <filter-mapping>
+        <filter-name>extensionsFilter</filter-name>
+        <url-pattern>*.jsf</url-pattern>
+    </filter-mapping>
+
+	<filter-mapping>
+    	<filter-name>extensionsFilter</filter-name>
+	    <url-pattern>/faces/myFacesExtensionResource/*</url-pattern>
+	</filter-mapping>

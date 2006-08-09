@@ -23,7 +23,7 @@ package org.ejbca.util.query;
  * function is getQueryString which returns a fragment of SQL statment.
  *
  * @author TomSelleck
- * @version $Id: LogMatch.java,v 1.1 2006-01-17 20:32:19 anatom Exp $
+ * @version $Id: LogMatch.java,v 1.2 2006-08-09 07:29:48 herrvendil Exp $
  *
  * @see org.ejbca.util.query.BasicMatch
  * @see org.ejbca.util.query.TimeMatch
@@ -44,7 +44,7 @@ public class LogMatch extends BasicMatch {
 
 
     // Private Constants.
-    private static final String[] MATCH_WITH_SQLNAMES = {"username", "adminData", "adminData", "adminType"
+    static final String[] MATCH_WITH_SQLNAMES = {"username", "adminData", "adminData", "adminType"
                                                          , "certificateSNR", "comment", "event", "module", "caid"}; // Represents the column names in ra userdata table.
    
     

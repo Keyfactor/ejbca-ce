@@ -175,6 +175,8 @@
     <property name="httpsserver.password" value="serverpwd" />
     <property name="web.availablelanguages" value="EN,FR,IT,ES,SE,ZH" />
     <property name="web.contentencoding" value="ISO-8859-1" />
+	<property name="approval.defaultrequestvalidity" value="28800" />
+	<property name="approval.defaultapprovalvalidity" value="28800" />
     
     <!-- Extra Protection settings for internal log signing etc -->
     <property name="protection.enabled" value="false" />
@@ -227,6 +229,8 @@ httpserver.privhttps   = ${httpserver.privhttps}
 httpsserver.password   = ${httpsserver.password}
 web.availablelanguages = ${web.availablelanguages}
 web.contentencoding    = ${web.contentencoding}
+approval.defaultrequestvalidity = ${approval.defaultrequestvalidity}
+approval.defaultapprovalvalidity = ${approval.defaultapprovalvalidity}
       </echo>
 <!--
 protection.enabled=${protection.enabled}
@@ -335,7 +339,29 @@ protection.certprotect=${protection.certprotect}
              description="EJBCA Administration web" 
              mergeDir="${webdd.src}/merge"
              distributable="false"
-             validatexml="false" />
+             validatexml="false" >
+        	   <contextparam name="javax.faces.CONFIG_FILES" value="/WEB-INF/faces-config.xml"  />
+       	       <contextparam name="javax.faces.STATE_SAVING_METHOD" value="client" description="State saving method: 'client' or 'server' (= default) See JSF Specification 2.5.2"/>
+           	   <contextparam name="org.apache.myfaces.ALLOW_JAVASCRIPT" value="true" description="This parameter tells MyFaces if javascript code should be allowed in the
+          	     rendered HTML output.
+          	     If javascript is allowed, command_link anchors will have javascript code
+          	     that submits the corresponding form.
+          	     If javascript is not allowed, the state saving info and nested parameters
+          	     will be added as url parameters.
+          	     Default: 'true'"/>
+        	   <contextparam name="org.apache.myfaces.PRETTY_HTML" value="true" description="If true, rendered HTML code will be formatted, so that it is 'human readable'.
+          	     i.e. additional line separators and whitespace will be written, that do not
+          	     influence the HTML code.
+          	     Default: 'true'" />
+        	   <contextparam name="org.apache.myfaces.DETECT_JAVASCRIPT" value="false" />
+        	   <contextparam name="org.apache.myfaces.AUTO_SCROLL" value="true" description="If true, a javascript function will be rendered that is able to restore the
+        		  former vertical scroll on every request. Convenient feature if you have pages
+        		  with long lists and you do not want the browser page to always jump to the
+        		  top if you trigger a link or button action that stays on the same page.
+        		  Default: 'false'"/>
+         	   <contextparam name="facelets.LIBRARIES" value="/WEB-INF/tomahawk.taglib.xml"  />
+            	
+             </deploymentdescriptor>
         </webdoclet>
         <webdoclet force="true" destdir="${src.gen}" excludedtags="@version,@author">
             <fileset dir="${src.java}">
@@ -464,7 +490,9 @@ protection.certprotect=${protection.certprotect}
         <copy file="src/java/org/ejbca/core/model/ca/caadmin/ExtendedX509CRLObject.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/caadmin/ExtendedX509CRLObject.java" overwrite="true" failonerror="false"/>
         <copy file="src/java/org/ejbca/core/model/ca/caadmin/ExtendedX509Util.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/caadmin/ExtendedX509Util.java" overwrite="true" failonerror="false"/>
         <copy file="src/java/org/ejbca/core/model/ca/caadmin/ExtendedX509V3CertificateGenerator.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/caadmin/ExtendedX509V3CertificateGenerator.java" overwrite="true" failonerror="false"/>
-		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@ejbca.version@" value="${app.version}"/>	
+		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@ejbca.version@" value="${app.version}"/>
+		<replace file="${src.java}/org/ejbca/core/model/approval/ApprovalRequest.java" token="@approval.defaultrequestvalidity@" value="${approval.defaultrequestvalidity}"/>
+		<replace file="${src.java}/org/ejbca/core/model/approval/ApprovalRequest.java" token="@approval.defaultapprovalvalidity@" value="${approval.defaultapprovalvalidity}"/>
 		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name-prefix@" value="${datasource.jndi-name-prefix}"/>	
 		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name@" value="${datasource.jndi-name}"/>	
 		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@healthcheck.amountfreemem@" value="${healthcheck.amountfreemem}"/>	
@@ -607,8 +635,13 @@ protection.certprotect=${protection.certprotect}
         <copy todir="${adminweb.build}/WEB-INF">
             <fileset dir="${src.dd}/WEB-INF" />
         </copy>
-        
-    	<jsp-compile uriroot="${adminweb.build}" classpathref="compile.classpath"/>
+        <copy todir="${adminweb.build}/WEB-INF/lib">
+            <fileset dir="${lib}" >
+            	<include name="tomahawk-1.1.3.jar"/>
+            </fileset>
+        </copy>
+
+    	<jsp-compile uriroot="${adminweb.build}" classpathref="compile.classpath"/> 
         <war destfile="${adminwebwar}" webxml="${src.dd}/WEB-INF/web.xml">
             <manifest>
                 <attribute name="Class-Path" value="${jar.extclasspath}" />

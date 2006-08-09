@@ -61,7 +61,7 @@ import org.ejbca.util.CertTools;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.5 2006-06-26 18:20:10 anatom Exp $
+ * @version $Id: CA.java,v 1.6 2006-08-09 07:29:49 herrvendil Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -94,6 +94,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	protected static final String REQUESTCERTCHAIN               = "requestcertchain";
 	protected static final String EXTENDEDCASERVICES             = "extendedcaservices";
 	protected static final String EXTENDEDCASERVICE              = "extendedcaservice";
+	protected static final String APPROVALSETTINGS               = "approvalsettings";
+	protected static final String NUMBEROFREQAPPROVALS           = "numberofreqapprovals";
     
     // Public Methods
     /** Creates a new instance of CA, this constuctor should be used when a new CA is created */
@@ -124,6 +126,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	   	 }
 	   }
 	   data.put(EXTENDEDCASERVICES, extendedservicetypes);
+	   setApprovalSettings(cainfo.getApprovalSettings());
+	   setNumOfRequiredApprovals(cainfo.getNumOfReqApprovals());
     }
     
     /** Constructor used when retrieving existing CA from database. */
@@ -334,6 +338,47 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	
 	public void setFinishUser(boolean finishuser) {data.put(FINISHUSER, new Boolean(finishuser));}    
     
+	/**
+	 * Returns a collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which
+	 * action that requires approvals, default none 
+	 * 
+	 * Never null
+	 * @return
+	 */
+	public Collection getApprovalSettings(){
+		if(data.get(APPROVALSETTINGS) == null){
+			return new ArrayList();
+		}
+		
+		return (Collection) data.get(APPROVALSETTINGS);
+	}
+	
+	/**
+	 * Collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which
+	 * action that requires approvals
+	 */
+	public  void setApprovalSettings(Collection approvalSettings){
+       data.put(APPROVALSETTINGS,approvalSettings);
+	}
+	
+	/**
+	 * Returns the number of different administrators that needs to approve
+	 * an action, default 1.
+	 */
+	public int getNumOfRequiredApprovals(){
+		if(data.get(NUMBEROFREQAPPROVALS) == null){
+			return 1;
+		}		
+		return ((Integer) data.get(NUMBEROFREQAPPROVALS)).intValue();
+	}
+	
+	/**
+	 * The number of different administrators that needs to approve
+	 */
+    public void setNumOfRequiredApprovals(int numOfReqApprovals){
+    	data.put(NUMBEROFREQAPPROVALS,new Integer(numOfReqApprovals));
+    }
+	
     public void updateCA(CAInfo cainfo) throws Exception{            
       data.put(VALIDITY, new Integer(cainfo.getValidity()));                 
       data.put(DESCRIPTION, cainfo.getDescription());      
@@ -341,6 +386,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	  data.put(CRLISSUEINTERVAL, new Integer(cainfo.getCRLIssueInterval()));
 	  data.put(CRLOVERLAPTIME, new Integer(cainfo.getCRLOverlapTime()));
 	  data.put(CRLPUBLISHERS, cainfo.getCRLPublishers());
+	  data.put(APPROVALSETTINGS,cainfo.getApprovalSettings());
+	  data.put(NUMBEROFREQAPPROVALS,new Integer(cainfo.getNumOfReqApprovals()));
       CAToken token = getCAToken();
       if (token != null) {
           token.updateCATokenInfo(cainfo.getCATokenInfo());

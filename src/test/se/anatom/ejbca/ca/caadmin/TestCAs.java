@@ -41,7 +41,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the ca data entity bean.
  *
- * @version $Id: TestCAs.java,v 1.10 2006-07-30 18:19:02 herrvendil Exp $
+ * @version $Id: TestCAs.java,v 1.11 2006-08-09 07:26:50 herrvendil Exp $
  */
 public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -148,8 +148,9 @@ public class TestCAs extends TestCase {
                     null, // defaultocsplocator
                     true, // Finish User
                     extendedcaservices,
-                    false // use default utf8 settings
-                    );
+                    false, // use default utf8 settings
+                    new ArrayList(), // Approvals Settings
+                    1); // Number of Req approvals    
 
 
             cacheAdmin.createCA(admin, cainfo);

@@ -25,7 +25,7 @@ package org.ejbca.core.model;
  * types. Constants for Token Types Token type is constructed of integer constants since only one
  * token type can be generated.
  *
- * @version $Id: SecConst.java,v 1.2 2006-05-05 14:36:58 herrvendil Exp $
+ * @version $Id: SecConst.java,v 1.3 2006-08-09 07:29:49 herrvendil Exp $
  */
 public class SecConst extends Object {
     // User types
@@ -62,6 +62,10 @@ public class SecConst extends Object {
 
     /** All values equal or below this constant should be treated as a soft token. */
     public static final int TOKEN_SOFT = 100;
+    
+    public static final String[] TOKENTEXTS = {"TOKENSOFTBROWSERGEN","TOKENSOFTP12","TOKENSOFTJKS","TOKENSOFTPEM"};
+    
+    public static final int[]    TOKENIDS   = {SecConst.TOKEN_SOFT_BROWSERGEN,SecConst.TOKEN_SOFT_P12,SecConst.TOKEN_SOFT_JKS,SecConst.TOKEN_SOFT_PEM};
 
     /** Constant indicating a standard hard token, defined in scaper. */
     public static final int TOKEN_HARD_DEFAULT = 101;

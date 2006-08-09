@@ -118,7 +118,40 @@ import org.ejbca.util.query.Query;
  *   business="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal"
  *   link="RaAdminSession"
  *
+ * @ejb.ejb-external-ref
+ *   description="The Certificate Store session bean"
+ *   view-type="local"
+ *   ejb-name="HardTokenSessionLocal"
+ *   type="Entity"
+ *   home="org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocalHome"
+ *   business="org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal"
+ *   link="HardTokenSession"
  *
+ * @ejb.ejb-external-ref
+ *   description="The Key Recovery session bean"
+ *   view-type="local"
+ *   ejb-name="KeyRecoverySessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome"
+ *   business="org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal"
+ *   link="KeyRecoverySession"
+ *
+ * @ejb.ejb-external-ref description="The CAAdmin Session Bean"
+ *   view-type="local"
+ *   ejb-name="CAAdminSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
+ *   link="CAAdminSession"
+ *   
+ * @ejb.ejb-external-ref description="The user admin Session Bean"
+ *   view-type="local"
+ *   ejb-name="UserAdminSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ra.IUserAdminSessionLocal"
+ *   link="UserAdminSession"
+ *   
  * @ejb.ejb-external-ref description="The log session bean"
  *   view-type="local"
  *   ejb-name="LogSessionLocal"
@@ -492,7 +525,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
     		if(retval.getEndentityprofileid() == ApprovalDataVO.ANY_ENDENTITYPROFILE){
     			getAuthorizationSession().isAuthorized(admin,AvailableAccessRules.REGULAR_APPROVECAACTION);				
     		}else{
-    			getAuthorizationSession().isAuthorized(admin,AvailableAccessRules.REGULAR_APPORVEENDENTITY);
+    			getAuthorizationSession().isAuthorized(admin,AvailableAccessRules.REGULAR_APPROVEENDENTITY);
     			getAuthorizationSession().isAuthorized(admin,AvailableAccessRules.ENDENTITYPROFILEPREFIX + retval.getEndentityprofileid() + AvailableAccessRules.APPROVAL_RIGHTS);
     		}
     		if(retval.getCaid() != ApprovalDataVO.ANY_CA){
@@ -534,9 +567,9 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 			while(iter.hasNext()){
 				ApprovalDataLocal adl = (ApprovalDataLocal) iter.next();
 				retval = adl.isApproved();
-				if(retval != ApprovalDataVO.STATUS_EXPIRED && 
-				   retval != ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED && 
-				   retval != ApprovalDataVO.STATUS_EXECUTED ){
+				if(adl.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL ||
+				   adl.getStatus() == ApprovalDataVO.STATUS_APPROVED ||
+				   adl.getStatus() == ApprovalDataVO.STATUS_REJECTED ){
 					break;
 				}
 			}
@@ -574,9 +607,9 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 			while(iter.hasNext()){
 				ApprovalDataLocal next = (ApprovalDataLocal) iter.next();
 				ApprovalDataVO data = next.getApprovalDataVO();
-				if(data.getStatus() != ApprovalDataVO.STATUS_EXECUTED &&
-				   data.getStatus() != ApprovalDataVO.STATUS_EXPIRED &&
-				   data.getStatus() != ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED){
+				if(data.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL ||
+				   data.getStatus() == ApprovalDataVO.STATUS_APPROVED ||
+				   data.getStatus() == ApprovalDataVO.STATUS_REJECTED){
 					retval = next;
 				}
 				
@@ -624,19 +657,34 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
      * @param index where the resultset should start. 
      * objects only
      * @return a List of ApprovalDataVO, never null
+     * @throws AuthorizationDeniedException 
      * 
      * @ejb.transaction type="Supports"
      * @ejb.interface-method view-type="both"
      */
     
-    public List query(Admin admin, Query query, int index, int numberofrows) throws IllegalQueryException {
+    public List query(Admin admin, Query query, int index, int numberofrows) throws IllegalQueryException, AuthorizationDeniedException {
         debug(">query(): ");
-        boolean authorizedtoanyprofile = true;
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
+        
+        boolean authorizedToApproveCAActions = false; // i.e approvals with endentityprofile ApprovalDataVO.ANY_ENDENTITYPROFILE
+        boolean authorizedToApproveRAActions = false; // i.e approvals with endentityprofile not ApprovalDataVO.ANY_ENDENTITYPROFILE 
+        
+        try {
+			authorizedToApproveCAActions = getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_APPROVECAACTION);
+		} catch (AuthorizationDeniedException e1) {}
+        try {
+			authorizedToApproveRAActions = getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_APPROVEENDENTITY);
+		} catch (AuthorizationDeniedException e1) {
+		}
 
-        ArrayList returnval = new ArrayList();
+		if(!authorizedToApproveCAActions && !authorizedToApproveRAActions){
+			throw new AuthorizationDeniedException("Not authorized to query apporvals");
+		}
+		
+        ArrayList returnData = new ArrayList();
         GlobalConfiguration globalconfiguration = getRAAdminSession().loadGlobalConfiguration(admin);
         RAAuthorization raauthorization = null;
         String sqlquery = "select " + APPROVALDATA_COL + " from ApprovalData where ";
@@ -653,29 +701,39 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
         String caauthstring = raauthorization.getCAAuthorizationString();
         String endentityauth = "";
         if (globalconfiguration.getEnableEndEntityProfileLimitations()){
-        	endentityauth = raauthorization.getEndEntityProfileAuthorizationString();
+        	endentityauth = raauthorization.getEndEntityProfileAuthorizationString(true);
+        	if(authorizedToApproveCAActions && authorizedToApproveRAActions){
+        		endentityauth = raauthorization.getEndEntityProfileAuthorizationString(true);
+        		if(endentityauth != null){
+        		  endentityauth = "(" + raauthorization.getEndEntityProfileAuthorizationString(false) + " OR endEntityprofileId=" + ApprovalDataVO.ANY_ENDENTITYPROFILE + " ) ";
+        		}
+        	}else if (authorizedToApproveCAActions) {
+        		endentityauth = " endEntityprofileId=" + ApprovalDataVO.ANY_ENDENTITYPROFILE;
+			}else if (authorizedToApproveRAActions) {
+				endentityauth = raauthorization.getEndEntityProfileAuthorizationString(true);
+			}        	
+        	
         }
 
 
-        if (!caauthstring.trim().equals("") && query != null)
-            sqlquery = sqlquery + " AND " + caauthstring;
-        else
-            sqlquery = sqlquery + caauthstring;
-
-
-        if (globalconfiguration.getEnableEndEntityProfileLimitations()) {
-            if (caauthstring.trim().equals("") && query == null)
-                sqlquery = sqlquery + endentityauth;
-            else
-                sqlquery = sqlquery + " AND " + endentityauth;
-
-            if (endentityauth == null || endentityauth.trim().equals("")) {
-                authorizedtoanyprofile = false;
-            }
+        if (!caauthstring.trim().equals("") && query != null){
+          sqlquery = sqlquery + " AND " + caauthstring;
+        }else{
+          sqlquery = sqlquery + caauthstring;
         }
+
+        if(endentityauth != null){
+          if (caauthstring.trim().equals("") && query == null){
+        	sqlquery = sqlquery + endentityauth;
+          }else{
+          	sqlquery = sqlquery + " AND " + endentityauth;
+          }
+        }
+
+        
+
 
         try {
-            if (authorizedtoanyprofile) {
                 // Construct SQL query.
                 con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
                 log.info(sqlquery);
@@ -686,7 +744,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
                 rs = ps.executeQuery();
                 rs.relative(index);
                 // Assemble result.
-                while (rs.next() && returnval.size() < numberofrows) {
+                while (rs.next() && returnData.size() < numberofrows) {
                 	
                     // Read the variables in order, some databases (i.e. MS-SQL) 
                     // seems to not like out-of-order read of columns (i.e. nr 15 before nr 1)
@@ -709,11 +767,12 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
                 			                                 ApprovalDataUtil.getApprovalRequest(requestdatastring),
                 			                                 new Date(requestdate), new Date(expiredate), remainingapprovals); 
 
-                	returnval.add(data);
+                	returnData.add(data);
                 }
-            }
+            
+            
             debug("<query()");
-            return returnval;
+            return returnData;
 
         } catch (Exception e) {
             throw new EJBException(e);

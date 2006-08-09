@@ -15,6 +15,8 @@
 
   final String MAIN_LINK                =   ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() +globalconfiguration.getMainFilename();
 
+  final String APPROVAL_LINK            =   ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "approval/approveactionlist.jsf";
+  
   final String EDITCA_LINK              =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() 
                                                   + "/editcas/editcas.jsp";
   final String EDITPUBLISHERS_LINK      =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() 
@@ -200,11 +202,30 @@
 <%     }
       }catch(AuthorizationDeniedException e){}
     }
+   
+   // If authorized to approve data show related links
+   		boolean approveendentity = false;
+		boolean approvecaaction = false;
+		try{
+			approveendentity = ejbcawebbean.isAuthorizedNoLog(AvailableAccessRules.REGULAR_APPROVEENDENTITY);
+		}catch(AuthorizationDeniedException e){}
+		try{
+			approvecaaction = ejbcawebbean.isAuthorizedNoLog(AvailableAccessRules.REGULAR_APPROVECAACTION);
+		}catch(AuthorizationDeniedException e){}
+		if(approveendentity || approvecaaction){
+			logheaderprinted = true;%>
+   <br><%=ejbcawebbean.getText("SUPERVISIONFUNCTIONS") %><br> 		
+   &nbsp;&nbsp;<A href="<%= APPROVAL_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("APPROVEACTIONS") %></A>   	
+   <br>
+<%      }
+   
     // If authorized to view log then display related links.
     try{
       if(ejbcawebbean.isAuthorizedNoLog(LOGVIEW_RESOURCE)){
-        logheaderprinted = true;%>
-   <br><%=ejbcawebbean.getText("LOGFUNCTIONS") %><br> 
+            if(!logheaderprinted){
+              out.write("<br>" + ejbcawebbean.getText("SUPERVISIONFUNCTIONS")+"<br>"); 
+              logheaderprinted=true;
+            }%>
    &nbsp;&nbsp;<A href="<%= LOG_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("VIEWLOG") %></A>
    <br>
 <%    }
@@ -213,7 +234,7 @@
     // If authorized to edit log configurationthen display related link.
      if(ejbcawebbean.isAuthorizedNoLog(LOGCONFIGURATION_RESOURCE)){ 
             if(!logheaderprinted){
-              out.write("<br>" + ejbcawebbean.getText("LOGFUNCTIONS")+"<br>"); 
+              out.write("<br>" + ejbcawebbean.getText("SUPERVISIONFUNCTIONS")+"<br>"); 
               logheaderprinted=true;
             }
 %>

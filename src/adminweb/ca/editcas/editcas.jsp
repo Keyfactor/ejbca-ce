@@ -91,6 +91,8 @@
   static final String SELECT_AVAILABLECRLPUBLISHERS               = "selectavailablecrlpublishers";
   static final String SELECT_CERTIFICATEPROFILE                   = "selectcertificateprofile";
   static final String SELECT_SIGNATUREALGORITHM                   = "selectsignaturealgorithm";
+  static final String SELECT_APPROVALSETTINGS                     = "approvalsettings";
+  static final String SELECT_NUMOFREQUIREDAPPROVALS               = "numofrequiredapprovals";
 
   static final String FILE_RECIEVEFILE                            = "filerecievefile";
   static final String FILE_CACERTFILE                             = "filecacertfile";
@@ -376,7 +378,7 @@
              boolean alwaysuseuft8subjectdn = false;
              value = request.getParameter(CHECKBOX_USEUTF8SUBJECTDN);
              if(value != null)
-            	 alwaysuseuft8subjectdn = value.equals(CHECKBOX_VALUE);         
+            	 alwaysuseuft8subjectdn = value.equals(CHECKBOX_VALUE);                             
 
              String[] values = request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
              ArrayList crlpublishers = new ArrayList(); 
@@ -384,6 +386,20 @@
                for(int i=0; i < values.length; i++){
                   crlpublishers.add(new Integer(values[i]));
                }
+             }
+             
+             values = request.getParameterValues(SELECT_APPROVALSETTINGS);
+             ArrayList approvalsettings = new ArrayList(); 
+             if(values != null){
+               for(int i=0; i < values.length; i++){
+            	   approvalsettings.add(new Integer(values[i]));
+               }
+             }
+             
+             value = request.getParameter(SELECT_NUMOFREQUIREDAPPROVALS);
+             int numofreqapprovals = 1;
+             if(value != null){
+            	 numofreqapprovals = Integer.parseInt(value);
              }
 
              int ocspactive = ExtendedCAServiceInfo.STATUS_INACTIVE;
@@ -414,7 +430,9 @@
                                                         defaultcrldistpoint,
                                                         defaultocsplocator,
                                                         finishuser, extendedcaservices,
-                                                        alwaysuseuft8subjectdn);
+                                                        alwaysuseuft8subjectdn,
+                                                        approvalsettings,
+                                                        numofreqapprovals);
                  try{
                    cadatahandler.createCA((CAInfo) x509cainfo);
                  }catch(CAExistsException caee){
@@ -446,7 +464,9 @@
                                                         defaultcrldistpoint,
                                                         defaultocsplocator,
                                                         finishuser, extendedcaservices,
-                                                        alwaysuseuft8subjectdn);
+                                                        alwaysuseuft8subjectdn,
+                                                        approvalsettings,
+                                                        numofreqapprovals);
                  cabean.saveRequestInfo(x509cainfo);                
                  filemode = MAKEREQUESTMODE;
                  includefile="recievefile.jspf"; 
@@ -549,6 +569,20 @@
                     crlpublishers.add(new Integer(values[i]));
                  }
               }
+             
+             values = request.getParameterValues(SELECT_APPROVALSETTINGS);
+             ArrayList approvalsettings = new ArrayList(); 
+             if(values != null){
+               for(int i=0; i < values.length; i++){
+            	   approvalsettings.add(new Integer(values[i]));
+               }
+             }
+             
+             value = request.getParameter(SELECT_NUMOFREQUIREDAPPROVALS);
+             int numofreqapprovals = 1;
+             if(value != null){
+            	 numofreqapprovals = Integer.parseInt(value);
+             }
               
               // Create extended CA Service updatedata.
               int active = ExtendedCAServiceInfo.STATUS_INACTIVE;
@@ -580,7 +614,9 @@
                                                       defaultcrldistpoint,
                                                       defaultocsplocator,
                                                       finishuser,extendedcaservices,
-                                                      alwaysuseuft8subjectdn);
+                                                      alwaysuseuft8subjectdn,
+                                                      approvalsettings,
+                                                      numofreqapprovals);
                  
                cadatahandler.editCA((CAInfo) x509cainfo);
                  
@@ -777,7 +813,9 @@
               boolean finishuser = false;
               boolean alwaysuseuft8subjectdn = false;
               ArrayList crlpublishers = new ArrayList(); 
-              
+              ArrayList approvalsettings = new ArrayList(); 
+              int numofreqapprovals = 1;
+                            
              if(!illegaldnoraltname){
                if(request.getParameter(BUTTON_PROCESSREQUEST) != null){
                  X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, 0, subjectaltname,
@@ -792,7 +830,9 @@
                                                         "","",
                                                         finishuser, 
                                                         new ArrayList(),
-                                                        alwaysuseuft8subjectdn);
+                                                        alwaysuseuft8subjectdn,
+                                                        approvalsettings,
+                                                        numofreqapprovals);
                  try{
                    ExtendedPKCS10CertificationRequest req = cabean.getPKCS10RequestData(); 
                    java.security.cert.Certificate result = cadatahandler.processRequest(x509cainfo, new PKCS10RequestMessage(req));

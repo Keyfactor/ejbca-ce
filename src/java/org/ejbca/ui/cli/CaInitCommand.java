@@ -35,7 +35,7 @@ import org.ejbca.util.StringTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.4 2006-06-06 17:14:30 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.5 2006-08-09 07:29:50 herrvendil Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
@@ -124,8 +124,9 @@ public class CaInitCommand extends BaseCaAdminCommand {
                                              "", // Default OCSP Service Locator
                                              true, // Finish User
                                              extendedcaservices,
-			                                 false // use default utf8 settings
-			                                 );         
+			                                 false, // use default utf8 settings
+			                                 new ArrayList(), // Approvals Settings
+			                                 1); // Number of Req approvals       
             
             getOutputStream().println("Creating CA...");
             caadminsession.createCA(administrator, cainfo);

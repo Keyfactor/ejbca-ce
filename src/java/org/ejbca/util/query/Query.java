@@ -33,7 +33,7 @@ import org.ejbca.util.StringTools;
  * statement.
  *
  * @author tomselleck
- * @version $Id: Query.java,v 1.3 2006-07-30 18:19:02 herrvendil Exp $
+ * @version $Id: Query.java,v 1.4 2006-08-09 07:29:48 herrvendil Exp $
  */
 public class Query implements java.io.Serializable {
 	
@@ -230,6 +230,6 @@ public class Query implements java.io.Serializable {
     // Private fields.
     private Vector matches = null; // Should only contain BasicMatch objects.
     private Vector connectors = null; // Should only containg CONNECTOR constants.
-    private int type = 0;
+    protected int type = 0;
     private boolean hasIllegalSqlChars = false;
 }

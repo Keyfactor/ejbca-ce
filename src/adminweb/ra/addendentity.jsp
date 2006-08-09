@@ -125,6 +125,7 @@
   boolean usehardtokenissuers      = false;
   boolean usekeyrecovery           = false;
   boolean issuperadministrator     = false;
+
   try{
     issuperadministrator = ejbcawebbean.isAuthorizedNoLog("/super_administrator");
   }catch(org.ejbca.core.model.authorization.AuthorizationDeniedException ade){}   
@@ -133,6 +134,7 @@
   EndEntityProfile oldprofile      = null;
   String addedusername             = ""; 
 
+  String approvalmessage           = null;
   String oldemail = "";
   String lastselectedusername           = "";
   String lastselectedpassword           = "";
@@ -449,8 +451,15 @@
              if( request.getParameter(BUTTON_RELOAD) != null ){
               useoldprofile = true;   
              }else{
-               rabean.addUser(newuser); 
-               useradded=true;
+               try{
+                 rabean.addUser(newuser); 
+                 useradded=true;
+               }catch(org.ejbca.core.model.approval.ApprovalException e){
+            	   approvalmessage = ejbcawebbean.getText("THEREALREADYEXISTSAPPROVAL");
+               }catch(org.ejbca.core.model.approval.WaitingForApprovalException e){
+            	   approvalmessage = ejbcawebbean.getText("REQHAVEBEENADDEDFORAPPR");
+               }
+               
              }
            }
          }
@@ -885,16 +894,19 @@ function checkallfields(){
                  fillCAField();'>
   <h2 align="center"><%= ejbcawebbean.getText("ADDENDENTITY") %></h2>
   <!-- <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") + "#addendentity"%>")'>
-    <u><%= ejbcawebbean.getText("HELP") %></u> </A> -->
-  </div>
+    <u><%= ejbcawebbean.getText("HELP") %></u> </A> 
+  </div> -->
   <% if(noprofiles){ %>
     <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("NOTAUTHORIZEDTOCREATEENDENTITY") %></h4></div>
   <% }else{
        if(userexists){ %>
   <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("ENDENTITYALREADYEXISTS") %></h4></div>
   <% } %>
+    <% if(approvalmessage != null){ %>
+  <div align="center"><h4 id="alert"><%= approvalmessage%></h4></div>
+  <% } %>
   <% if(useradded){ %>
-  <div align="center"><h4 id="alert"><% out.write(ejbcawebbean.getText("ENDENTITY")+ " ");
+  <div align="center"><h4 ><% out.write(ejbcawebbean.getText("ENDENTITY")+ " ");
                                         out.write(addedusername + " ");
                                         out.write(ejbcawebbean.getText("ADDEDSUCCESSFULLY"));%></h4></div>
   <% } %>

@@ -5,6 +5,10 @@
 	<classpathentry kind="src" path="src/test"/>
 	<classpathentry kind="lib" path="lib/ldap.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.7.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jstl.jar"/>
+	<classpathentry kind="lib" path="lib/ext/myfaces-api.jar"/>
+	<classpathentry kind="lib" path="lib/ext/myfaces-impl.jar"/>
+	<classpathentry kind="lib" path="lib/tomahawk-1.1.3.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/commons-collections.jar"/>
 	<classpathentry kind="lib" path="lib/commons-fileupload-1.0.jar"/>

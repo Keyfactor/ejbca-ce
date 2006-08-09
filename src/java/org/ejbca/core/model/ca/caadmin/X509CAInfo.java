@@ -24,7 +24,7 @@ import org.ejbca.util.StringTools;
 /**
  * Holds nonsensitive information about a X509CA.
  *
- * @version $Id: X509CAInfo.java,v 1.4 2006-06-06 17:14:29 anatom Exp $
+ * @version $Id: X509CAInfo.java,v 1.5 2006-08-09 07:29:49 herrvendil Exp $
  */
 public class X509CAInfo extends CAInfo{
    
@@ -46,7 +46,7 @@ public class X509CAInfo extends CAInfo{
                     CATokenInfo catokeninfo, String description, int revokationreason, Date revokationdate, String policyid, int crlperiod, int crlIssueInterval, int crlOverlapTime, Collection crlpublishers,
                     boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
                     boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultocspservicelocator, boolean finishuser,
-                    Collection extendedcaserviceinfos, boolean alwaysuse8tf8subjectdn) {
+                    Collection extendedcaserviceinfos, boolean alwaysuse8tf8subjectdn, Collection approvalSettings, int numOfReqApprovals) {
         this.subjectdn = StringTools.strip(CertTools.stringToBCDNString(subjectdn));
         this.caid = this.subjectdn.hashCode();
         this.name = name;
@@ -76,6 +76,8 @@ public class X509CAInfo extends CAInfo{
         this.certificateprofileid = certificateprofileid;
         this.extendedcaserviceinfos = extendedcaserviceinfos; 
         this.alwaysUseUTF8SubjectDN = alwaysuse8tf8subjectdn;
+        this.approvalSettings = approvalSettings;
+        this.numOfReqApprovals = numOfReqApprovals;
     }
 
     /**
@@ -85,7 +87,8 @@ public class X509CAInfo extends CAInfo{
                       int crlperiod, int crlIssueInterval, int crlOverlapTime, Collection crlpublishers,
                       boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
                       boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultocspservicelocator, 
-                      boolean finishuser, Collection extendedcaserviceinfos, boolean alwaysuse8tf8subjectdn) {        
+                      boolean finishuser, Collection extendedcaserviceinfos, 
+                      boolean alwaysuse8tf8subjectdn, Collection approvalSettings, int numOfReqApprovals) {        
         this.caid = caid;
         this.validity=validity;
         this.catokeninfo = catokeninfo; 
@@ -103,6 +106,8 @@ public class X509CAInfo extends CAInfo{
         this.finishuser = finishuser;
 		this.extendedcaserviceinfos = extendedcaserviceinfos; 
         this.alwaysUseUTF8SubjectDN = alwaysuse8tf8subjectdn;
+        this.approvalSettings = approvalSettings;
+        this.numOfReqApprovals = numOfReqApprovals;
     }  
   
   

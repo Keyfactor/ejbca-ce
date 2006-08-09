@@ -64,7 +64,7 @@ import org.ejbca.util.query.Query;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.6 2006-07-20 17:50:18 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.7 2006-08-09 07:29:50 herrvendil Exp $
  */
 public class RAInterfaceBean implements java.io.Serializable {
     
@@ -73,8 +73,8 @@ public class RAInterfaceBean implements java.io.Serializable {
     // Public constants.
     public static final int MAXIMUM_QUERY_ROWCOUNT = SecConst.MAXIMUM_QUERY_ROWCOUNT;
     
-    public static final String[] tokentexts = {"TOKENSOFTBROWSERGEN","TOKENSOFTP12","TOKENSOFTJKS","TOKENSOFTPEM"};
-    public static final int[]    tokenids   = {SecConst.TOKEN_SOFT_BROWSERGEN,SecConst.TOKEN_SOFT_P12,SecConst.TOKEN_SOFT_JKS,SecConst.TOKEN_SOFT_PEM};
+    public static final String[] tokentexts = SecConst.TOKENTEXTS;
+    public static final int[]    tokenids   = SecConst.TOKENIDS;
     
     /** Creates new RaInterfaceBean */
     public RAInterfaceBean()  {

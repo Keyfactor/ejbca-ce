@@ -104,6 +104,8 @@
     issuperadministrator = ejbcawebbean.isAuthorizedNoLog("/super_administrator");
   }catch(org.ejbca.core.model.authorization.AuthorizationDeniedException ade){}   
 
+  String approvalmessage           = null;
+  
   HashMap caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
 
   RequestHelper.setDefaultCharacterEncoding(request);
@@ -352,9 +354,15 @@
                 if(newstatus == UserDataConstants.STATUS_NEW || newstatus == UserDataConstants.STATUS_GENERATED || newstatus == UserDataConstants.STATUS_HISTORICAL || newstatus == UserDataConstants.STATUS_KEYRECOVERY )
                   newuser.setStatus(newstatus); 
               }
-               // Send changes to database.
-               rabean.changeUserData(newuser);
-               endentitysaved = true;
+              try{
+                // Send changes to database.
+                rabean.changeUserData(newuser);
+                endentitysaved = true;
+              }catch(org.ejbca.core.model.approval.ApprovalException e){
+         	    approvalmessage = ejbcawebbean.getText("THEREALREADYEXISTSAPPROVAL");
+              }catch(org.ejbca.core.model.approval.WaitingForApprovalException e){
+         	    approvalmessage = ejbcawebbean.getText("REQHAVEBEENADDEDFORAPPR");
+              }
                userdata = newuser;
   
              }
@@ -815,6 +823,9 @@ function checkUseInBatch(){
   <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("NOTAUTHORIZEDTOEDIT") %></h4></div> 
     <%   }
          else{ 
+             if(approvalmessage != null){ %>
+        	    <div align="center"><h4 id="alert"><%= approvalmessage%></h4></div>
+        	 <% }         	 
            if(endentitysaved){%>
   <div align="center"><h4><%=ejbcawebbean.getText("ENDENTITYSAVED") %></h4></div> 
     <%     } %>

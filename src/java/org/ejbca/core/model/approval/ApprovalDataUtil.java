@@ -32,14 +32,15 @@ import org.ejbca.util.Base64;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalDataUtil.java,v 1.2 2006-07-30 18:19:02 herrvendil Exp $
+ * @version $Id: ApprovalDataUtil.java,v 1.3 2006-08-09 07:29:48 herrvendil Exp $
  */
 
 public class ApprovalDataUtil  { 
 	
 	private static final Logger log = Logger.getLogger(ApprovalDataUtil.class);
 
-    public static Collection getApprovals(String stringdata) {
+
+	public static Collection getApprovals(String stringdata) {
     	ArrayList retval = new ArrayList();
     	try{
     		ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(Base64.decode(stringdata.getBytes())));

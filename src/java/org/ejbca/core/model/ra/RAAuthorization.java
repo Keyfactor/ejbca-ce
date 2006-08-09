@@ -28,7 +28,7 @@ import org.ejbca.core.model.log.Admin;
 /**
  * A class that looks up the which CA:s or end entity profiles the administrator is authorized to view.
  * 
- * @version $Id: RAAuthorization.java,v 1.1 2006-01-17 20:28:07 anatom Exp $
+ * @version $Id: RAAuthorization.java,v 1.2 2006-08-09 07:29:51 herrvendil Exp $
  */
 public class RAAuthorization implements Serializable {
     
@@ -74,7 +74,7 @@ public class RAAuthorization implements Serializable {
      *
      * @return a string of end entity profile privileges that should be used in the where clause of SQL queries.
      */
-    public String getEndEntityProfileAuthorizationString(){
+    public String getEndEntityProfileAuthorizationString(boolean includeparanteses){
       if(authendentityprofilestring==null){
       	Collection result = this.authorizationsession.getAuthorizedEndEntityProfileIds(admin, AvailableAccessRules.VIEW_RIGHTS);     	
       	result.retainAll(this.raadminsession.getAuthorizedEndEntityProfileIds(admin));

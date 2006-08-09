@@ -122,7 +122,7 @@ import org.ejbca.util.cert.UTF8EntryConverter;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.24 2006-07-26 21:41:27 anatom Exp $
+ * @version $Id: X509CA.java,v 1.25 2006-08-09 07:29:49 herrvendil Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -247,7 +247,8 @@ public class X509CA extends CA implements Serializable {
                     getValidity(), getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(),
                     getCAToken().getCATokenInfo(), getDescription(), getRevokationReason(), getRevokationDate(), getPolicyId(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(), getCRLPublishers(),
                     getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(),
-                    getUseCRLNumber(), getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultOCSPServiceLocator(), getFinishUser(), externalcaserviceinfos, getAlwaysUseUTF8SubjectDN()); 
+                    getUseCRLNumber(), getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultOCSPServiceLocator(), getFinishUser(), externalcaserviceinfos, 
+                    getAlwaysUseUTF8SubjectDN(), getApprovalSettings(), getNumOfRequiredApprovals()); 
     }
 
 

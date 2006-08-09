@@ -13,8 +13,8 @@
 package org.ejbca.core.model.approval;
 
 import java.io.Serializable;
-import java.util.Date;
 import java.util.Collection;
+import java.util.Date;
 
 import org.ejbca.core.model.SecConst;
 
@@ -27,7 +27,7 @@ import org.ejbca.core.model.SecConst;
  * requestdata, requestdate, expiredate, remainingapprovals
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalDataVO.java,v 1.2 2006-07-30 18:19:02 herrvendil Exp $
+ * @version $Id: ApprovalDataVO.java,v 1.3 2006-08-09 07:29:48 herrvendil Exp $
  */
 
 public class ApprovalDataVO implements Serializable { 	
@@ -41,14 +41,19 @@ public class ApprovalDataVO implements Serializable {
 	public static final int STATUS_EXPIRED            = -3;
 	public static final int STATUS_EXPIREDANDNOTIFIED = -4; // Used to mark that the requestor havebee notified that the request havebeen expired.
 	public static final int STATUS_EXECUTED           = -5;
+	public static final int STATUS_EXECUTIONFAILED    = -6;
+	public static final int STATUS_EXECUTIONDENIED    = -7;
 	
 	
 	// Approval types
 
 	public static final int APPROVALTYPE_DUMMY                       = 0;
 	public static final int APPROVALTYPE_VIEWHARDTOKENDATA           = 1;
+	public static final int APPROVALTYPE_ADDENDENTITY                = 2;
+	public static final int APPROVALTYPE_EDITENDENTITY               = 3;
+	public static final int APPROVALTYPE_CHANGESTATUSENDENTITY       = 4;
 	
-	public static final String[] APPROVALTYPENAMES = {"DUMMY","VIEWHARDTOKENDATA"};
+	public static final String[] APPROVALTYPENAMES = {"DUMMY","APVIEWHARDTOKENDATA","APADDENDENTITY","APEDITENDENTITY","APCHANGESTATUSENDENTITY"};
 	
 	/**
 	 * Used to indicate that the approcal is applicable to any ca.
@@ -231,9 +236,7 @@ public class ApprovalDataVO implements Serializable {
 		return status;
 	}
     
-     
-    
-     
+          
 
 
 }

@@ -16,12 +16,15 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.security.cert.X509Certificate;
-
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
+import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
 
 /**
@@ -30,7 +33,7 @@ import org.ejbca.util.CertTools;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: DummyApprovalRequest.java,v 1.1 2006-07-30 18:19:03 herrvendil Exp $
+ * @version $Id: DummyApprovalRequest.java,v 1.2 2006-08-09 07:29:50 herrvendil Exp $
  */
 
 public class DummyApprovalRequest extends ApprovalRequest { 
@@ -105,35 +108,23 @@ public class DummyApprovalRequest extends ApprovalRequest {
 		return (CertTools.getFingerprintAsString(getRequestAdminCert()) + getApprovalType() + getCAId() + getEndEntityProfileId()).hashCode(); 
 	}
 	
-	/**
-	 * This method should return the request data in text representation.
-	 * This text is presented for the approving administrator in order
-	 * for him to make a desition about the request.
-	 * Use '\n' as line delimiter.
-	 */
-	public String getNewRequestDataAsText(){
-		return "This is a dummy approval request, \n\n" +
-		       "Approve or Reject";
+
+	public List getNewRequestDataAsText(Admin admin){
+		ArrayList newText = new ArrayList();
+		newText.add(new ApprovalDataText("DUMMYDATAROW1: ", "YES" , false, false));
+		newText.add(new ApprovalDataText("DUMMYDATAROW2: ", "YES" , false, false));
+		return newText;
 		
 	}
 	
-	/**
-	 * This method should return the original request data in text representation.
-	 * Should only be implemented by TYPE_COMPARING ApprovalRequests.
-	 * TYPE_SIMPLE requests should return null;
-	 * 
-	 * This text is presented for the approving administrator for him to
-	 * compare of what will be done.
-	 * 
-	 * Use '\n' as line delimiter.
-	 */
-	public String getOldRequestDataAsText(){
+
+	public List getOldRequestDataAsText(Admin admin){
 		return null;
 	}
 
 
 	/**
-	 * Should return the time in second that the request should be valid
+	 * Should return the time in millisecond that the request should be valid
 	 * or Long.MAX_VALUE if it should never expire
 	 * 
 	 * Returns 4 s (For testscripts only. usually 30 minutes or something)

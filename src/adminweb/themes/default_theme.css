@@ -1,4 +1,3 @@
-
 body { color: black; font-size: 12pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; margin-left: 0.5in; background-color: white}
 H { font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; margin-left: 0.5in; background-color: white}
 body#menu {color: black; font-size: 9pt; font-weight: bold; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; margin-left: 0.2in; background-color: white}
@@ -8,7 +7,12 @@ a:vlink#menu {color: black}
 a:active#menu {color: black}
 a:hover#menu {color: black}
 
-#alert {color: red font-size: 12pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular;  background-color: white}
+#alert {color: red; font-size: 12pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular;  background-color: white}
+.alert {color: red;
+    font-size: 12pt;
+	font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular;
+	background-color: white;
+}
 
 #Row0 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: white }
 #Row1 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: #e5ecff }
@@ -22,3 +26,5 @@ td#ErrorRow1 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Gen
 
 tr#LogTextRow0 { color: black; font-size: 8pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: white }
 tr#LogTextRow1 { color: black; font-size: 8pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: #e5ecff }
+.jsfrow1 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: white }
+.jsfrow2 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: #e5ecff }

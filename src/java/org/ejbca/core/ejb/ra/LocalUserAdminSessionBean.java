@@ -39,17 +39,28 @@ import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal;
 import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
+import org.ejbca.core.ejb.ra.Approval.IApprovalSessionLocal;
+import org.ejbca.core.ejb.ra.Approval.IApprovalSessionLocalHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalExecutorUtil;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
+import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
@@ -78,7 +89,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.11 2006-07-20 17:40:55 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.12 2006-08-09 07:29:51 herrvendil Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -163,6 +174,22 @@ import org.ejbca.util.query.UserMatch;
  *   home="org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome"
  *   business="org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal"
  *   link="KeyRecoverySession"
+ *   
+ * @ejb.ejb-external-ref description="The Approval Session Bean"
+ *   view-type="local"
+ *   ejb-name="ApprovalSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.approval.IApprovalSessionLocalHome"
+ *   business="org.ejbca.core.ejb.approval.IApprovalSessionLocal"
+ *   link="ApprovalSession"
+ *   
+ * @ejb.ejb-external-ref description="The CAAdmin Session Bean"
+ *   view-type="local"
+ *   ejb-name="CAAdminSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
+ *   link="CAAdminSession"
  *
  * @ejb.ejb-external-ref
  *   description="The User entity bean"
@@ -216,6 +243,16 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * The local interface of the authorization session bean
      */
     private IKeyRecoverySessionLocal keyrecoverysession;
+    
+    /**
+     * The local interface of the caadmin session bean
+     */
+    private ICAAdminSessionLocal caadminsession;
+    
+    /**
+     * The local interface of the approval session bean
+     */
+    private IApprovalSessionLocal approvalsession;
 
     /**
      * The remote interface of the log session bean
@@ -253,6 +290,12 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             
             IKeyRecoverySessionLocalHome keyrecoverysessionhome = (IKeyRecoverySessionLocalHome) getLocator().getLocalHome(IKeyRecoverySessionLocalHome.COMP_NAME);
             keyrecoverysession = keyrecoverysessionhome.create();
+            
+            ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
+            caadminsession = caadminsessionhome.create();
+            
+            IApprovalSessionLocalHome approvalsessionhome = (IApprovalSessionLocalHome) getLocator().getLocalHome(IApprovalSessionLocalHome.COMP_NAME);
+            approvalsession = approvalsessionhome.create();
 
         } catch (Exception e) {
             error("Error creating session bean:", e);
@@ -312,11 +355,13 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * @param tokentype             the type of token to be generated, one of SecConst.TOKEN constants
      * @param hardwaretokenissuerid , if token should be hard, the id of the hard token issuer,
      *                              else 0.
+     * @throws WaitingForApprovalException 
+     * @throws ApprovalException 
      * @ejb.interface-method
      */
     public void addUser(Admin admin, String username, String password, String subjectdn, String subjectaltname, String email, boolean clearpwd, int endentityprofileid, int certificateprofileid,
                         int type, int tokentype, int hardwaretokenissuerid, int caid)
-            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, DuplicateKeyException {
+            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, DuplicateKeyException, ApprovalException, WaitingForApprovalException {
     	
     	UserDataVO userdata = new UserDataVO(username, subjectdn, caid, subjectaltname, 
     			                             email, UserDataConstants.STATUS_NEW, type, endentityprofileid, certificateprofileid,
@@ -333,10 +378,15 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * @param userdata 	            a UserDataVO object, the fields status, timecreated and timemodified will not be used.
      * @param clearpwd              true if the password will be stored in clear form in the db, otherwise it is
      *                              hashed.
-
+     * @throws AuthorizationDeniedException if administrator isn't authorized to add user
+     * @throws UserDoesntFullfillEndEntityProfile if data doesn't fullfil requirements of end entity profile 
+     * @throws DuplicateKeyException if user already exists
+     * @throws ApprovalException if an approval already is waiting for specified action 
+     * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.  
+     * 
      * @ejb.interface-method
      */
-    public void addUser(Admin admin, UserDataVO userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, DuplicateKeyException {
+    public void addUser(Admin admin, UserDataVO userdata, boolean clearpwd) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, DuplicateKeyException, ApprovalException, WaitingForApprovalException {
         // String used in SQL so strip it
         String dn = CertTools.stringToBCDNString(userdata.getDN());
         dn = StringTools.strip(dn);
@@ -375,6 +425,17 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             throw new AuthorizationDeniedException("Administrator not authorized to create user with given CA.");
         }
 
+        // Check if approvals is required.
+        int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, userdata.getCAId());
+        if (numOfApprovalsRequired > 0){            
+			if(!ApprovalExecutorUtil.isCalledByClassName("AddEndEntityApprovalRequest")){
+			  AddEndEntityApprovalRequest ar = new AddEndEntityApprovalRequest(userdata,clearpwd,admin.getAdminInformation().getX509Certificate(),null,numOfApprovalsRequired,userdata.getCAId(),userdata.getEndEntityProfileId());
+			  approvalsession.addApprovalRequest(admin, ar);
+			  throw new WaitingForApprovalException("Add Endity Action have been added for approval by authorized adminstrators");
+			}
+
+        }
+        
         try {
             UserDataLocal data1 = home.create(userdata.getUsername(), newpassword, dn, userdata.getCAId());
             if (userdata.getSubjectAltName() != null)
@@ -419,8 +480,24 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         debug("<addUser(" + userdata.getUsername() + ", password, " + dn + ", " + userdata.getEmail() + ")");
     } // addUser
 
-    
     /**
+     * Help method that checks the CA data config if specified action 
+     * requires approvals and how many
+     * @param action one of CAInfo.REQ_APPROVAL_ constants
+     * @param caid of the ca to check
+     * @return 0 of no approvals is required othervise the number of approvals
+     */
+    private int getNumOfApprovalRequired(Admin admin,int action, int caid) {
+    	CAInfo cainfo = caadminsession.getCAInfo(admin, caid);
+    	int retval = 0;
+    	if(cainfo.isApprovalRequired(action)){
+    		retval = cainfo.getNumOfReqApprovals();
+    	}
+    	
+		return retval;
+	}
+
+	/**
      * Changes data for a user in the database speciefied by username.
      * 
      * Important, this method is old and shouldn't be used, user changeUser(..UserDataVO...) instead.
@@ -437,12 +514,17 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * @param hardwaretokenissuerid if token should be hard, the id of the hard token issuer, else 0.
      * @param status 				the status of the user, from UserDataConstants.STATUS_X
      * @param caid                  the id of the CA that should be used to issue the users certificate
+     * 
+     * @throws AuthorizationDeniedException if administrator isn't authorized to add user
+     * @throws UserDoesntFullfillEndEntityProfile if data doesn't fullfil requirements of end entity profile 
+     * @throws ApprovalException if an approval already is waiting for specified action 
+     * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.
      * @throws EJBException if a communication or other error occurs.
      * @ejb.interface-method
      */
     public void changeUser(Admin admin, String username, String password, String subjectdn, String subjectaltname, String email, boolean clearpwd, int endentityprofileid, int certificateprofileid,
             int type, int tokentype, int hardwaretokenissuerid, int status, int caid)
-throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile {
+throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException {
     	UserDataVO userdata = new UserDataVO(username, subjectdn, caid, subjectaltname, 
                 email, status, type, endentityprofileid, certificateprofileid,
                 null,null, tokentype, hardwaretokenissuerid, null);
@@ -458,11 +540,16 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile {
      * @param userdata 	            a UserDataVO object,  timecreated and timemodified will not be used.
      * @param clearpwd              true if the password will be stored in clear form in the db, otherwise it is
      *                              hashed.
+     *                              
+     * @throws AuthorizationDeniedException if administrator isn't authorized to add user
+     * @throws UserDoesntFullfillEndEntityProfile if data doesn't fullfil requirements of end entity profile 
+     * @throws ApprovalException if an approval already is waiting for specified action 
+     * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.
 
      * @ejb.interface-method
      */
     public void changeUser(Admin admin, UserDataVO userdata, boolean clearpwd)
-            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile {
+            throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException {
         // String used in SQL so strip it
         String dn = CertTools.stringToBCDNString(userdata.getDN());
         dn = StringTools.strip(dn);
@@ -500,6 +587,22 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile {
             logsession.log(admin, userdata.getCAId(), LogEntry.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY, "Administrator not authorized to edit user with this CA.");
             throw new AuthorizationDeniedException("Administrator not authorized to edit user with given CA.");
         }
+        // Check if approvals is required.
+        int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, userdata.getCAId());
+        if (numOfApprovalsRequired > 0 && !ApprovalExecutorUtil.isCalledByClassName("EditEndEntityApprovalRequest")){
+        	UserDataVO orguserdata;
+			try {
+				orguserdata = findUser(admin, userdata.getUsername());
+			} catch (FinderException e) {
+				throw new ApprovalException("Error creating edit end entity approval, user " + userdata.getUsername() + " doesn't exist.");
+			}        	        	
+			EditEndEntityApprovalRequest ar = new EditEndEntityApprovalRequest(userdata, clearpwd, orguserdata, admin.getAdminInformation().getX509Certificate(),null,numOfApprovalsRequired,userdata.getCAId(),userdata.getEndEntityProfileId());
+			approvalsession.addApprovalRequest(admin, ar);
+			throw new WaitingForApprovalException("Edit Endity Action have been added for approval by authorized adminstrators");
+
+        }   
+        
+        
         try {
             UserDataPK pk = new UserDataPK(userdata.getUsername());
             UserDataLocal data1 = home.findByPrimaryKey(pk);
@@ -601,9 +704,17 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile {
      *
      * @param username the unique username.
      * @param status   the new status, from 'UserData'.
+     * @throws ApprovalException if an approval already is waiting for specified action 
+     * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.
      * @ejb.interface-method
      */
-    public void setUserStatus(Admin admin, String username, int status) throws AuthorizationDeniedException, FinderException {
+    public void setUserStatus(Admin admin, String username, int status) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException {
+       setUserStatusWithApprovalFlag(admin, username, status, true);
+    } // setUserStatus
+    /**
+     * Help method with approvalflag that indicates if approvals should be used or not
+     */
+    private void setUserStatusWithApprovalFlag(Admin admin, String username, int status, boolean approvalflag) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException {
         debug(">setUserStatus(" + username + ", " + status + ")");
         // Check if administrator is authorized to edit user.
         int caid = LogConstants.INTERNALCAID;
@@ -624,7 +735,18 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile {
                     throw new AuthorizationDeniedException("Administrator not authorized to edit user.");
                 }
             }
-
+            
+            if(approvalflag){
+            	// Check if approvals is required.
+            	int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, caid);
+            	if (numOfApprovalsRequired > 0 && !ApprovalExecutorUtil.isCalledByClassName("ChangeStatusEndEntityApprovalRequest")){       		    		
+            		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest(username, status , data1.getStatus(), admin.getAdminInformation().getX509Certificate(),null,numOfApprovalsRequired,data1.getCaId(),data1.getEndEntityProfileId());
+            		approvalsession.addApprovalRequest(admin, ar);
+            		throw new WaitingForApprovalException("Edit Endity Action have been added for approval by authorized adminstrators");
+            	}  
+            }
+            
+            
             if(data1.getStatus() == UserDataConstants.STATUS_KEYRECOVERY && !(status == UserDataConstants.STATUS_KEYRECOVERY || status == UserDataConstants.STATUS_INPROCESS || status == UserDataConstants.STATUS_INITIALIZED)){
                 keyrecoverysession.unmarkUser(admin,username);	
             }
@@ -639,7 +761,8 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile {
         }
 
         debug("<setUserStatus(" + username + ", " + status + ")");
-    } // setUserStatus
+    } // setUserStatusWithApprovalFlag
+    
 
     /**
      * Sets a new password for a user.
@@ -805,7 +928,13 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile {
         } else {
             publishers = prof.getPublisherList();
         }
-        setUserStatus(admin, username, UserDataConstants.STATUS_REVOKED);
+        try {
+			setUserStatusWithApprovalFlag(admin, username, UserDataConstants.STATUS_REVOKED,false);
+		} catch (ApprovalException e) {
+			throw new EJBException("This should never happen",e);
+		} catch (WaitingForApprovalException e) {
+			throw new EJBException("This should never happen",e);
+		}
         certificatesession.setRevokeStatus(admin, username, publishers, reason);
         logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_INFO_REVOKEDENDENTITY, "");
         debug("<revokeUser()");
@@ -854,7 +983,13 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile {
         certificatesession.setRevokeStatus(admin, issuerdn, certserno, publishers, reason);
 
         if (certificatesession.checkIfAllRevoked(admin, username)) {
-            setUserStatus(admin, username, UserDataConstants.STATUS_REVOKED);
+            try {
+    			setUserStatusWithApprovalFlag(admin, username, UserDataConstants.STATUS_REVOKED,false);
+    		} catch (ApprovalException e) {
+    			throw new EJBException("This should never happen",e);
+    		} catch (WaitingForApprovalException e) {
+    			throw new EJBException("This should never happen",e);
+    		}
             logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_INFO_REVOKEDENDENTITY, "");
         }
         debug("<revokeCert()");
@@ -1173,7 +1308,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile {
             raauthorization = new RAAuthorization(admin, raadminsession, authorizationsession);
             caauthstring = raauthorization.getCAAuthorizationString();
             if (globalconfiguration.getEnableEndEntityProfileLimitations())
-                endentityauth = raauthorization.getEndEntityProfileAuthorizationString();
+                endentityauth = raauthorization.getEndEntityProfileAuthorizationString(true);
             else
                 endentityauth = "";
         }

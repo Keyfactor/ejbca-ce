@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<faces-config>
+    <managed-bean>
+    <managed-bean-name>web</managed-bean-name>
+    <managed-bean-class>org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper</managed-bean-class>
+    <managed-bean-scope>session</managed-bean-scope>
+  </managed-bean>
+  <managed-bean>
+    <managed-bean-name>listApproveActionSessionBean</managed-bean-name>
+    <managed-bean-class>org.ejbca.ui.web.admin.approval.ListApproveActionSessionBean</managed-bean-class>
+    <managed-bean-scope>session</managed-bean-scope>
+  </managed-bean>
+  <managed-bean>
+    <managed-bean-name>approvalActionSession</managed-bean-name>
+    <managed-bean-class>org.ejbca.ui.web.admin.approval.ApproveActionSessionBean</managed-bean-class>
+    <managed-bean-scope>session</managed-bean-scope>
+  </managed-bean>
+    <managed-bean>
+    <managed-bean-name>approvalActionRequest</managed-bean-name>
+    <managed-bean-class>org.ejbca.ui.web.admin.approval.ApproveActionRequestBean</managed-bean-class>
+    <managed-bean-scope>request</managed-bean-scope>
+  </managed-bean>
+
+  <navigation-rule>
+    <from-view-id>approval/approveactionlist.jsp</from-view-id>
+    <navigation-case>
+      <from-outcome>viewApproveAction</from-outcome>
+      <to-view-id>/approval/approveaction.jsp</to-view-id>
+    </navigation-case>
+  </navigation-rule>
+  <navigation-rule>
+  	<from-view-id>/approval/approveaction.jsp</from-view-id>
+  	<navigation-case>
+  		<from-outcome>approveaction</from-outcome>
+  		<to-view-id>/approval/approveaction.jsp</to-view-id>
+  	</navigation-case>
+  </navigation-rule>
+  
+
+	
+  </faces-config>

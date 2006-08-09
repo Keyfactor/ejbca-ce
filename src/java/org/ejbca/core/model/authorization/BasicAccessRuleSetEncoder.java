@@ -23,7 +23,7 @@ import java.util.Iterator;
  * A class used as a help class for displaying and configuring basic access rules
  *
  * @author  herrvendil 
- * @version $Id: BasicAccessRuleSetEncoder.java,v 1.2 2006-07-29 11:26:36 herrvendil Exp $
+ * @version $Id: BasicAccessRuleSetEncoder.java,v 1.3 2006-08-09 07:29:49 herrvendil Exp $
  */
 public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 
@@ -447,7 +447,7 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 				    	currentendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_KEYRECOVER));							
 				    	endentityrules.put(general,  new Integer(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_KEYRECOVER));				    	
 				    }
-				    if(ar.getAccessRule().equals(AvailableAccessRules.REGULAR_APPORVEENDENTITY)){				    	
+				    if(ar.getAccessRule().equals(AvailableAccessRules.REGULAR_APPROVEENDENTITY)){				    	
 				    	currentendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_APPROVE));							
 				    	endentityrules.put(general,  new Integer(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_APPROVE));				    	
 				    }

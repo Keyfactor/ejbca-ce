@@ -21,8 +21,22 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.List;
+
+import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
+import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal;
+import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocalHome;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
@@ -42,7 +56,7 @@ import org.ejbca.util.CertTools;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalRequest.java,v 1.2 2006-07-30 18:19:02 herrvendil Exp $
+ * @version $Id: ApprovalRequest.java,v 1.3 2006-08-09 07:29:48 herrvendil Exp $
  */
 
 public abstract class ApprovalRequest implements  Externalizable { 
@@ -65,6 +79,18 @@ public abstract class ApprovalRequest implements  Externalizable {
 	 * 
 	 */
 	public static final int REQUESTTYPE_COMPARING = 2;
+	
+	/**
+	 * The default request validity used if not method getRequestValidity is overridden
+	 *
+	 */
+	protected static final long DEFAULT_REQUESTVALIDITY = Long.parseLong("@approval.defaultrequestvalidity@") * 1000;
+
+	/**
+	 * The default approval validity used if not method getApprovalValidity is overridden
+	 *
+	 */
+	protected static final long DEFAULT_APPROVALVALIDITY = Long.parseLong("@approval.defaultapprovalvalidity@") * 1000;
 
     private String requestAdminCert = null; // Base64 encoding of x509certificate
     
@@ -133,9 +159,10 @@ public abstract class ApprovalRequest implements  Externalizable {
 	 * This method should return the request data in text representation.
 	 * This text is presented for the approving administrator in order
 	 * for him to make a desition about the request.
-	 * Use '\n' as line delimiter.
+	 * 
+	 * Should return a List of ApprovalDataText, one for each row
 	 */
-	public abstract String getNewRequestDataAsText();
+	public abstract List getNewRequestDataAsText(Admin admin);
 	
 	/**
 	 * This method should return the original request data in text representation.
@@ -145,22 +172,30 @@ public abstract class ApprovalRequest implements  Externalizable {
 	 * This text is presented for the approving administrator for him to
 	 * compare of what will be done.
 	 * 
-	 * Use '\n' as line delimiter.
+	 * Should return a Collection of ApprovalDataText, one for each row
 	 */
-	public abstract String getOldRequestDataAsText();
+	public abstract List getOldRequestDataAsText(Admin admin);
 	
 
 	/**
-	 * Should return the time in second that the request should be valid
+	 * Should return the time in millisecond that the request should be valid
 	 * or Long.MAX_VALUE if it should never expire
+	 * 
+	 * Default if will return the value defined in the ejbca.properties
 	 */
-	public abstract long getRequestValidity();
+	public long getRequestValidity(){
+		return DEFAULT_REQUESTVALIDITY;
+	}
 	
 	/**
-	 * Should return the time in second that the approval should be valid
+	 * Should return the time in millisecond that the approval should be valid
 	 * or Long.MAX_VALUE if it should never expire
+	 * 
+	 * Default if will return the value defined in the ejbca.properties
 	 */
-	public abstract long getApprovalValidity();
+	public long getApprovalValidity(){
+		return DEFAULT_APPROVALVALIDITY;
+	}
 	
 	
 	/**
@@ -269,6 +304,88 @@ public abstract class ApprovalRequest implements  Externalizable {
 		}
 		
 	}
+	
+	// Help Methods for approval requests
+	protected String getCAName(Admin admin,int caid){
+		String caname;
+			    
+		try {
+			ServiceLocator locator = ServiceLocator.getInstance();
+			ICAAdminSessionLocalHome home = (ICAAdminSessionLocalHome) locator.getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
+			ICAAdminSessionLocal session = home.create();
+			caname = session.getCAInfo(admin, caid).getName();
+			
+		} catch (CreateException e) {
+			throw new EJBException(e);
+		}
+		
+		return caname;
+	}
+	
+	protected String getEndEntityProfileName(Admin admin,int profileid){
+		String name;
+	    
+		try {
+			ServiceLocator locator = ServiceLocator.getInstance();
+			IRaAdminSessionLocalHome home = (IRaAdminSessionLocalHome) locator.getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
+			IRaAdminSessionLocal session = home.create();
+			name = session.getEndEntityProfileName(admin, profileid);			
+		} catch (CreateException e) {
+			throw new EJBException(e);
+		}
+		
+		return name;
+		
+	}
+	
+	protected String getCertificateProfileName(Admin admin,int profileid){
+		String name;
+	    
+		try {
+			ServiceLocator locator = ServiceLocator.getInstance();
+			ICertificateStoreSessionLocalHome home = (ICertificateStoreSessionLocalHome) locator.getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
+			ICertificateStoreSessionLocal session = home.create();
+			name = session.getCertificateProfileName(admin, profileid);			
+		} catch (CreateException e) {
+			throw new EJBException(e);
+		}
+		
+		return name;		
+	}
+		
+	protected ApprovalDataText getTokenName(Admin admin,int tokenid){
+		ApprovalDataText retval;
+	    
+		try {
+			if(tokenid <= SecConst.TOKEN_SOFT  ){
+				retval = new ApprovalDataText("TOKEN" ,SecConst.TOKENTEXTS[tokenid],true,true);
+			}else{			
+			  ServiceLocator locator = ServiceLocator.getInstance();
+			  IHardTokenSessionLocalHome home = (IHardTokenSessionLocalHome) locator.getLocalHome(IHardTokenSessionLocalHome.COMP_NAME);
+			  IHardTokenSessionLocal session = home.create();
+			  String name = session.getHardTokenProfileName(admin, tokenid);
+			  retval = new ApprovalDataText("TOKEN" ,name,true,false);
+			}
+		} catch (CreateException e) {
+			throw new EJBException(e);
+		}
+		
+		return retval;		
+	}
 
+	protected String getHardTokenIssuerName(Admin admin,int issuerid){
+		String name;
+	    
+		try {
+			ServiceLocator locator = ServiceLocator.getInstance();
+			IHardTokenSessionLocalHome home = (IHardTokenSessionLocalHome) locator.getLocalHome(IHardTokenSessionLocalHome.COMP_NAME);
+			IHardTokenSessionLocal session = home.create();
+			name = session.getHardTokenIssuerAlias(admin, issuerid);		
+		} catch (CreateException e) {
+			throw new EJBException(e);
+		}
+		
+		return name;		
+	}
 
 }

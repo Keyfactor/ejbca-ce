@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.60 2006-08-01 14:00:01 primelars Exp $
+# $Id: ejbca.properties.sample,v 1.61 2006-08-09 07:26:34 herrvendil Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -108,6 +108,17 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 # Default content encoding used to display JSP pages, for example ISO-8859-1, UTF-8 or GBK.
 # Default: ISO-8859-1
 #web.contentencoding=ISO-8859-1
+
+# ------------- Approval configuration ------------------------
+# Settings working as default values in the approval functionality
+#
+# Default request validity in seconds
+# Default : 28800 (8 Hours)
+#approval.defaultrequestvalidity=28800
+
+# Default approval validity (how long an approved request should stay valid)
+# Default : 28800 (8 Hours)
+#approval.defaultapprovalvalidity=28800
 
 # ------------- Database configuration ------------------------
 

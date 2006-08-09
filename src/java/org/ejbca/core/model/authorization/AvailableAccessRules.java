@@ -26,7 +26,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 /**
  * 
  *
- * @version $Id: AvailableAccessRules.java,v 1.3 2006-07-29 11:26:36 herrvendil Exp $
+ * @version $Id: AvailableAccessRules.java,v 1.4 2006-08-09 07:29:49 herrvendil Exp $
  */
 public class AvailableAccessRules {
         
@@ -78,7 +78,7 @@ public class AvailableAccessRules {
     public static final String REGULAR_DELETEENDENTITY                            = "/ra_functionality/delete_end_entity";
     public static final String REGULAR_REVOKEENDENTITY                            = "/ra_functionality/revoke_end_entity";    
     public static final String REGULAR_VIEWENDENTITYHISTORY                       = "/ra_functionality/view_end_entity_history";
-    public static final String REGULAR_APPORVEENDENTITY                           = "/ra_functionality/approve_end_entity";
+    public static final String REGULAR_APPROVEENDENTITY                           = "/ra_functionality/approve_end_entity";
     public static final String REGULAR_LOGFUNCTIONALITY                           = "/log_functionality"; 
     public static final String REGULAR_VIEWLOG                                    = "/log_functionality/view_log"; 
     public static final String REGULAR_LOGCONFIGURATION                           = "/log_functionality/edit_log_configuration"; 
@@ -113,7 +113,7 @@ public class AvailableAccessRules {
                                                            REGULAR_DELETEENDENTITY,
                                                            REGULAR_REVOKEENDENTITY,
                                                            REGULAR_VIEWENDENTITYHISTORY,
-                                                           REGULAR_APPORVEENDENTITY,
+                                                           REGULAR_APPROVEENDENTITY,
                                                            REGULAR_LOGFUNCTIONALITY,
                                                            REGULAR_VIEWLOG,
                                                            REGULAR_LOGCONFIGURATION,
