@@ -46,6 +46,7 @@ import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.ui.web.RequestHelper;
@@ -75,7 +76,7 @@ import org.ejbca.util.CertTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CardCertReqServlet.java,v 1.2 2006-08-08 13:18:53 primelars Exp $
+ * @version $Id: CardCertReqServlet.java,v 1.3 2006-08-09 08:06:51 primelars Exp $
  */
 public class CardCertReqServlet extends HttpServlet {
 	private final static Logger log = Logger.getLogger(CardCertReqServlet.class);
@@ -123,71 +124,54 @@ public class CardCertReqServlet extends HttpServlet {
     throws IOException, ServletException {
         ServletDebug debug = new ServletDebug(request, response);
         boolean usekeyrecovery = false;
-        
+
         try {
             Admin administrator = new Admin(Admin.TYPE_RACOMMANDLINE_USER);
             ICertificateStoreSessionRemote certificatestoresession = certificatestorehome.create();
             final String username; {
                 Object o = request.getAttribute("javax.servlet.request.X509Certificate");
                 final X509Certificate[] certs;
-                if (o!=null && o instanceof X509Certificate[] )
+                if ( o!=null && o instanceof X509Certificate[] )
                     certs = (X509Certificate[])o;
                 else
                     throw new AuthLoginException("No authenicating certificate");
                 username = certificatestoresession.findUsernameByCertSerno(administrator,
                         certs[0].getSerialNumber(), certs[0].getIssuerX500Principal().toString());
-                if ( username!=null && username.length()>0 )
-                    log.debug("Username "+username);
-                else
-                    log.error("Not possible to retrieve user name");
+                if ( username==null || username.length()==0 )
+                    throw new ObjectNotFoundException("Not possible to retrieve user name");
             }
-            String password = request.getParameter("password");
-            
-            
             IUserAdminSessionRemote adminsession = useradminhome.create();
             ISignSessionRemote signsession = signsessionhome.create();
-            log.debug("Got request for " + username + "/" + password);
+            log.debug("Got request for " + username + ".");
             debug.print("<h3>username: " + username + "</h3>");
-            
-            // Check user
-            int tokentype = SecConst.TOKEN_SOFT_BROWSERGEN;
-            
-            org.ejbca.core.model.ra.UserDataVO data = adminsession.findUser(administrator, username);
-            
-            int authCertProfile = certificatestoresession.getCertificateProfileId(administrator, this.getInitParameter("authCertProfile"));
-            int signCertProfile = certificatestoresession.getCertificateProfileId(administrator, this.getInitParameter("signCertProfile"));
-            
-            if (data == null) {
+
+            final UserDataVO data = adminsession.findUser(administrator, username);
+            if (data == null)
                 throw new ObjectNotFoundException();
-            }
-            
-            
-            // get users Token Type.
-            tokentype = data.getTokenType();
-            
-            if(tokentype == SecConst.TOKEN_SOFT_BROWSERGEN){
-                
-                
-                if (request.getParameter("authpkcs10") != null && request.getParameter("signpkcs10") != null) {
+
+            if ( data.getTokenType()== SecConst.TOKEN_SOFT_BROWSERGEN ) {
+                final String authReq = request.getParameter("authpkcs10");
+                final String signReq = request.getParameter("signpkcs10");
+
+                if ( authReq!=null && signReq!=null ) {
+                    final int authCertProfile = certificatestoresession.getCertificateProfileId(administrator, this.getInitParameter("authCertProfile"));
+                    final int signCertProfile = certificatestoresession.getCertificateProfileId(administrator, this.getInitParameter("signCertProfile"));
                     // if not IE, check if it's manual request
-                    byte[] authReqBytes=request.getParameter("authpkcs10").getBytes();
-                    byte[] signReqBytes=request.getParameter("signpkcs10").getBytes();
-                    if (authReqBytes != null && signReqBytes != null) {
-                        adminsession.changeUser(administrator,username,password,data.getDN(),data.getSubjectAltName(),data.getEmail(),false,data.getEndEntityProfileId(),authCertProfile,data.getType(),data.getTokenType(),data.getHardTokenIssuerId(),data.getStatus(),data.getCAId());
-                        byte[] authb64cert=pkcs10CertRequest(administrator, signsession, authReqBytes, username, password);                      
-                        adminsession.changeUser(administrator,username,password,data.getDN(),data.getSubjectAltName(),data.getEmail(),false,data.getEndEntityProfileId(),signCertProfile,data.getType(),data.getTokenType(),data.getHardTokenIssuerId(),UserDataConstants.STATUS_NEW,data.getCAId());
-                        byte[] signb64cert=pkcs10CertRequest(administrator, signsession, signReqBytes, username, password);
+                    final byte[] authReqBytes = authReq.getBytes();
+                    final byte[] signReqBytes = signReq.getBytes();
+                    if ( authReqBytes!=null && signReqBytes!=null) {
+                        adminsession.changeUser(administrator,username,data.getPassword(),data.getDN(),data.getSubjectAltName(),data.getEmail(),false,data.getEndEntityProfileId(),authCertProfile,data.getType(),data.getTokenType(),data.getHardTokenIssuerId(),data.getStatus(),data.getCAId());
+                        final byte[] authb64cert=pkcs10CertRequest(administrator, signsession, authReqBytes, username, data.getPassword());                      
+                        adminsession.changeUser(administrator,username,data.getPassword(),data.getDN(),data.getSubjectAltName(),data.getEmail(),false,data.getEndEntityProfileId(),signCertProfile,data.getType(),data.getTokenType(),data.getHardTokenIssuerId(),UserDataConstants.STATUS_NEW,data.getCAId());
+                        final byte[] signb64cert=pkcs10CertRequest(administrator, signsession, signReqBytes, username, data.getPassword());
                         
                         sendCertificates(authb64cert, signb64cert, response.getOutputStream(),  getServletContext(), getInitParameter("responseTemplate"));
                     }
                 }
             }
-            
         } catch (ObjectNotFoundException oe) {
             log.debug("Non existent username!");
             debug.printMessage("Non existent username!");
-            debug.printMessage(
-            "To generate a certificate a valid username and password must be entered.");
             debug.printDebugInfo();
             return;
         } catch (AuthStatusException ase) {
@@ -205,8 +189,6 @@ public class CardCertReqServlet extends HttpServlet {
         } catch (AuthLoginException ale) {
             log.debug("Wrong password for user!");
             debug.printMessage("Wrong username or password!");
-            debug.printMessage(
-            "To generate a certificate a valid username and password must be entered.");
             debug.printDebugInfo();
             return;
         } catch (SignRequestException re) {
