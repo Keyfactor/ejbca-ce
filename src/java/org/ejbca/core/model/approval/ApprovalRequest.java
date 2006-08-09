@@ -56,7 +56,7 @@ import org.ejbca.util.CertTools;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalRequest.java,v 1.3 2006-08-09 07:29:48 herrvendil Exp $
+ * @version $Id: ApprovalRequest.java,v 1.4 2006-08-09 13:25:49 herrvendil Exp $
  */
 
 public abstract class ApprovalRequest implements  Externalizable { 
@@ -358,7 +358,14 @@ public abstract class ApprovalRequest implements  Externalizable {
 	    
 		try {
 			if(tokenid <= SecConst.TOKEN_SOFT  ){
-				retval = new ApprovalDataText("TOKEN" ,SecConst.TOKENTEXTS[tokenid],true,true);
+				int tokenindex=0;
+				for(int i=0;i<SecConst.TOKENIDS.length;i++){					
+					if(SecConst.TOKENIDS[i] == tokenid){
+                      tokenindex = i;								
+					}
+				}
+				retval = new ApprovalDataText("TOKEN" ,SecConst.TOKENTEXTS[tokenindex],true,true);
+				
 			}else{			
 			  ServiceLocator locator = ServiceLocator.getInstance();
 			  IHardTokenSessionLocalHome home = (IHardTokenSessionLocalHome) locator.getLocalHome(IHardTokenSessionLocalHome.COMP_NAME);
