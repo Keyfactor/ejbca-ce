@@ -190,3 +190,17 @@ configuration to recognize the new data space.
 Informix JDBC driver:
 http://www14.software.ibm.com/webapp/download/product.jsp?id=MCOS-5MKKAB&s=z&cat=&S_TACT=TrialsAndBetas&S_CMP=
 
+
+Indexes for higher performance
+==============================
+
+This is a starting point for collecting indexes to create in the database to optimize performance (and cpu and disc usage):
+(you can start messing with this when you notice some slowdown, for normal installations it's rarely needed)
+
+TableProtectData searches when verifying:
+create index protect_idx1 on TableProtectData (dbKey,dbType);
+ 
+Selecting log entries when viewing logs:
+create index logentry_idx1 on LogEntryData (time,caid);
+
+ 
