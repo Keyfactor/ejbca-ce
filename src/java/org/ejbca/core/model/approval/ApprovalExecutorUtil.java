@@ -17,8 +17,7 @@ package org.ejbca.core.model.approval;
  * Used to avoid cirkular method invocations
  * 
  * @author Philip Vendil
- *
- * @version $id$
+ * @version $Id: ApprovalExecutorUtil.java,v 1.2 2006-08-10 10:09:05 anatom Exp $
  */
 public class ApprovalExecutorUtil {
 
