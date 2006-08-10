@@ -64,7 +64,7 @@ import org.ejbca.util.query.Query;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.7 2006-08-09 07:29:50 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.8 2006-08-10 17:26:01 anatom Exp $
  */
 public class RAInterfaceBean implements java.io.Serializable {
     
@@ -252,7 +252,11 @@ public class RAInterfaceBean implements java.io.Serializable {
  			 certificatesession.setRevokeStatus(administrator, issuerdn, serno, publisherList, RevokedCertInfo.NOT_REVOKED);
  			
  	         if ( !certificatesession.checkIfAllRevoked(administrator, userView.getUsername()) ) {
- 	        	 adminsession.setUserStatus(administrator, userView.getUsername(), UserDataConstants.STATUS_GENERATED);
+ 	        	 UserDataVO vo = adminsession.findUser(administrator, userView.getUsername());
+ 	        	 // Don't change status if it is already the same
+ 	        	 if (vo.getStatus() != UserDataConstants.STATUS_GENERATED) {
+ 	 	        	 adminsession.setUserStatus(administrator, userView.getUsername(), UserDataConstants.STATUS_GENERATED); 	        		 
+ 	        	 }
  		     }
  		        
      	 }
