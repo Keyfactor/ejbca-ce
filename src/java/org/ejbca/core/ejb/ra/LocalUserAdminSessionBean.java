@@ -89,7 +89,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.12 2006-08-09 07:29:51 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.13 2006-08-10 17:26:51 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -740,7 +740,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             	// Check if approvals is required.
             	int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, caid);
             	if (numOfApprovalsRequired > 0 && !ApprovalExecutorUtil.isCalledByClassName("ChangeStatusEndEntityApprovalRequest")){       		    		
-            		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest(username, status , data1.getStatus(), admin.getAdminInformation().getX509Certificate(),null,numOfApprovalsRequired,data1.getCaId(),data1.getEndEntityProfileId());
+            		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest(username, data1.getStatus(), status, admin.getAdminInformation().getX509Certificate(),null,numOfApprovalsRequired,data1.getCaId(),data1.getEndEntityProfileId());
             		approvalsession.addApprovalRequest(admin, ar);
             		throw new WaitingForApprovalException("Edit Endity Action have been added for approval by authorized adminstrators");
             	}  
