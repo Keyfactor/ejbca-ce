@@ -59,13 +59,24 @@ function myDeclare()
 
 function downloadCert()
 {
+	document.iID.SetProperty('Certificate', 'TAG_certToRemove1');
+	rv = document.iID.Invoke('DeleteCertificate');
 
-    document.iID.SetProperty('Certificate', 'ABCDEFG');
+	document.iID.SetProperty('Certificate', 'TAG_certToRemove2');
+	rv = document.iID.Invoke('DeleteCertificate');
+
+	document.iID.SetProperty('Certificate', 'TAG_certToRemove3');
+	rv = document.iID.Invoke('DeleteCertificate');
+
+	document.iID.SetProperty('Certificate', 'TAG_certToRemove4');
+	rv = document.iID.Invoke('DeleteCertificate');
+
+	document.iID.SetProperty('Certificate', 'TAG_authb64cert');
 	rv = document.iID.Invoke('WriteCertificate');
 	if (rv != 0)
-	  alert("Fel vid Certifikats import");
+		alert("Fel vid Certifikats import");
 	
-	document.iID.SetProperty('Certificate', 'HJIKLMN');
+	document.iID.SetProperty('Certificate', 'TAG_signb64cert');
 	rv = document.iID.Invoke('WriteCertificate');
 	if (rv != 0)
 		alert("Fel vid Certifikats import");

@@ -17,7 +17,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -79,8 +80,8 @@ import org.ejbca.util.CertTools;
  * password is needed. The path could be absolute or relative.<br>
  * </p>
  *
- * @author Original code by Lars Silv?n
- * @version $Id: CardCertReqServlet.java,v 1.4 2006-08-09 14:10:32 primelars Exp $
+ * @author Original code by Lars Silvén
+ * @version $Id: CardCertReqServlet.java,v 1.5 2006-08-10 12:49:42 primelars Exp $
  */
 public class CardCertReqServlet extends HttpServlet {
 	private final static Logger log = Logger.getLogger(CardCertReqServlet.class);
@@ -128,7 +129,6 @@ public class CardCertReqServlet extends HttpServlet {
     throws IOException, ServletException {
         final ServletDebug debug = new ServletDebug(request, response);
         boolean usekeyrecovery = false;
-        
         try {
             Admin administrator = new Admin(Admin.TYPE_RACOMMANDLINE_USER);
             ICertificateStoreSessionRemote certificatestoresession = certificatestorehome.create();
@@ -159,6 +159,7 @@ public class CardCertReqServlet extends HttpServlet {
                     if ( o instanceof X509Certificate ) {
                         X509Certificate cert = (X509Certificate)o;
                         RevokedCertInfo rci=certificatestoresession.isRevoked(administrator, cert.getIssuerDN().getName(), cert.getSerialNumber());
+                        
                         if ( rci!=null && rci.getReason()==RevokedCertInfo.NOT_REVOKED )
                             set.add(cert);
                     }
@@ -186,15 +187,14 @@ public class CardCertReqServlet extends HttpServlet {
                             data.getEmail(),false,data.getEndEntityProfileId(),signCertProfile,data.getType(),
                             data.getTokenType(),data.getHardTokenIssuerId(),UserDataConstants.STATUS_NEW,data.getCAId());
                     final byte[] signb64cert=pkcs10CertRequest(administrator, signsession, signReqBytes, username, data.getPassword());
-                    
-                    sendCertificates(authb64cert, signb64cert, response.getOutputStream(),  getServletContext(),
+                    for (int i=0; i<notRevokedCerts.length; i++)
+                        adminsession.revokeCert(administrator, notRevokedCerts[i].getSerialNumber(),
+                                                notRevokedCerts[i].getIssuerDN().toString(), username,
+                                                RevokedCertInfo.REVOKATION_REASON_SUPERSEDED);
+                    sendCertificates(authb64cert, signb64cert, response,  getServletContext(),
                             getInitParameter("responseTemplate"), notRevokedCerts);
                 }
             }
-            for (int i=0; i<notRevokedCerts.length; i++)
-                adminsession.revokeCert(administrator, notRevokedCerts[i].getSerialNumber(),
-                                        notRevokedCerts[i].getIssuerDN().toString(), username,
-                                        RevokedCertInfo.REVOKATION_REASON_SUPERSEDED);
         } catch (ObjectNotFoundException oe) {
             log.debug("Non existent username!");
             debug.printMessage("Non existent username!");
@@ -284,7 +284,7 @@ public class CardCertReqServlet extends HttpServlet {
      * Reads template and inserts cert to send back to netid for installation of cert
      *
      * @param b64cert cert to be installed in netid
-     * @param out utput stream to send to
+     * @param response utput stream to send to
      * @param sc serveltcontext
      * @param responseTemplate path to responseTemplate
      * @param notRevokedCerts 
@@ -292,31 +292,43 @@ public class CardCertReqServlet extends HttpServlet {
      *
      * @throws Exception on error
      */
-    private static void sendCertificates(byte[] authb64cert,byte[] signb64cert, OutputStream out, ServletContext sc,
+    private static void sendCertificates(byte[] authb64cert,byte[] signb64cert, HttpServletResponse response, ServletContext sc,
         String responseTemplate, X509Certificate[] notRevokedCerts) throws Exception {
         if (authb64cert.length == 0 || signb64cert.length == 0) {
             log.error("0 length certificate can not be sent to  client!");
             return;
         }
-
-        PrintStream ps = new PrintStream(out);
-        BufferedReader br = new BufferedReader(new InputStreamReader(sc.getResourceAsStream(
-                        responseTemplate)));
-
-        while (true) {
-            String line = br.readLine();
-            if (line == null)
-                break;
-            line = line.replaceAll("ABCDEFG",new String(authb64cert));
-            line = line.replaceAll("HJIKLMN",new String(signb64cert));
-            if ( notRevokedCerts.length > 0 )
-                line = line.replaceAll("OPQRSTU",new String(Base64.encode(notRevokedCerts[0].getEncoded(),false)));
-            if ( notRevokedCerts.length > 1 )
-                line = line.replaceAll("VXYZ123",new String(Base64.encode(notRevokedCerts[1].getEncoded(),false)));
-            ps.println(line);
+        StringWriter sw = new StringWriter();
+        {
+            BufferedReader br = new BufferedReader(new InputStreamReader(sc.getResourceAsStream(responseTemplate)));
+            PrintWriter pw = new PrintWriter(sw);
+            while (true) {
+                String line = br.readLine();
+                if (line == null)
+                    break;
+                line = line.replaceAll("TAG_authb64cert",new String(authb64cert));
+                line = line.replaceAll("TAG_signb64cert",new String(signb64cert));
+                if ( notRevokedCerts.length > 0 )
+                    line = line.replaceAll("TAG_certToRemove1",new String(Base64.encode(notRevokedCerts[0].getEncoded(),false)));
+                if ( notRevokedCerts.length > 1 )
+                    line = line.replaceAll("TAG_certToRemove2",new String(Base64.encode(notRevokedCerts[1].getEncoded(),false)));
+                if ( notRevokedCerts.length > 2 )
+                    line = line.replaceAll("TAG_certToRemove3",new String(Base64.encode(notRevokedCerts[2].getEncoded(),false)));
+                if ( notRevokedCerts.length > 3 )
+                    line = line.replaceAll("TAG_certToRemove4",new String(Base64.encode(notRevokedCerts[3].getEncoded(),false)));
+                pw.println(line);
+            }
+            pw.close();
+            sw.flush();
         }
-        ps.close();
-
+        {
+            OutputStream out = response.getOutputStream();
+            PrintWriter pw = new PrintWriter(out);
+            log.debug(sw);
+            pw.print(sw);
+            pw.close();
+            out.flush();
+        }
     } // sendCertificates
     
     /**
