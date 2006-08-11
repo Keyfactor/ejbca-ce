@@ -43,23 +43,23 @@
     </servlet>
 -->
 
-    <servlet>
-         <servlet-name>CardCertReqServlet</servlet-name>
-	     <display-name>CardCertReqServlet</display-name>
-         <servlet-class>org.ejbca.ui.web.pub.CardCertReqServlet</servlet-class>
+	<servlet>
+		<servlet-name>CardCertReqServlet</servlet-name>
+		<display-name>CardCertReqServlet</display-name>
+		<servlet-class>org.ejbca.ui.web.pub.CardCertReqServlet</servlet-class>
 		<init-param>
-		  <param-name>responseTemplate</param-name>
-		  <param-value>cardCertInstT.html</param-value>
+			<param-name>responseTemplate</param-name>
+			<param-value>cardCertInstT.html</param-value>
 		</init-param>
 		<init-param>
-		  <param-name>authCertProfile</param-name>
-		  <param-value>company A auth enc</param-value>
+			<param-name>authCertProfile</param-name>
+			<param-value>company A auth enc</param-value>
 		</init-param>
 		<init-param>    
-		  <param-name>signCertProfile</param-name>
-		  <param-value>company A sign</param-value>
+			<param-name>signCertProfile</param-name>
+			<param-value>company A sign</param-value>
 		</init-param>
-    </servlet>
+	</servlet>
 
     <servlet-mapping>
       <servlet-name>CertReqServlet</servlet-name>

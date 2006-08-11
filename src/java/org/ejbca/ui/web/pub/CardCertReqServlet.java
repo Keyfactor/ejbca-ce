@@ -19,12 +19,14 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.rmi.RemoteException;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import javax.ejb.CreateException;
 import javax.ejb.ObjectNotFoundException;
 import javax.naming.InitialContext;
 import javax.rmi.PortableRemoteObject;
@@ -36,6 +38,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
@@ -48,6 +52,7 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.IllegalKeyException;
 import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
+import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
@@ -81,13 +86,14 @@ import org.ejbca.util.CertTools;
  * </p>
  *
  * @author Original code by Lars Silvén
- * @version $Id: CardCertReqServlet.java,v 1.5 2006-08-10 12:49:42 primelars Exp $
+ * @version $Id: CardCertReqServlet.java,v 1.6 2006-08-11 13:10:57 primelars Exp $
  */
 public class CardCertReqServlet extends HttpServlet {
 	private final static Logger log = Logger.getLogger(CardCertReqServlet.class);
     private ISignSessionHome signsessionhome = null;
     private IUserAdminSessionHome useradminhome = null;
     private ICertificateStoreSessionHome certificatestorehome = null;
+    private ICAAdminSessionHome caadminsessionhome = null;
     /**
      * Servlet init
      *
@@ -110,7 +116,8 @@ public class CardCertReqServlet extends HttpServlet {
                              ctx.lookup("UserAdminSession"), IUserAdminSessionHome.class );
             certificatestorehome = (ICertificateStoreSessionHome) PortableRemoteObject.narrow(
                     ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class );
-            
+            caadminsessionhome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CAAdminSession"),
+                                                                                             ICAAdminSessionHome.class);
         } catch( Exception e ) {
             throw new ServletException(e);
         }
@@ -139,6 +146,10 @@ public class CardCertReqServlet extends HttpServlet {
                     certs = (X509Certificate[])o;
                 else
                     throw new AuthLoginException("No authenicating certificate");
+                RevokedCertInfo rci=certificatestoresession.isRevoked(administrator, certs[0].getIssuerDN().getName(),
+                                                                      certs[0].getSerialNumber());
+                if ( rci==null || rci.getReason()!=RevokedCertInfo.NOT_REVOKED )
+                    throw new UserCertificateRevokedException(certs[0]);
                 username = certificatestoresession.findUsernameByCertSerno(administrator,
                         certs[0].getSerialNumber(), certs[0].getIssuerX500Principal().toString());
                 if ( username==null || username.length()==0 )
@@ -159,7 +170,6 @@ public class CardCertReqServlet extends HttpServlet {
                     if ( o instanceof X509Certificate ) {
                         X509Certificate cert = (X509Certificate)o;
                         RevokedCertInfo rci=certificatestoresession.isRevoked(administrator, cert.getIssuerDN().getName(), cert.getSerialNumber());
-                        
                         if ( rci!=null && rci.getReason()==RevokedCertInfo.NOT_REVOKED )
                             set.add(cert);
                     }
@@ -173,28 +183,51 @@ public class CardCertReqServlet extends HttpServlet {
             final String signReq = request.getParameter("signpkcs10");
             
             if ( authReq!=null && signReq!=null ) {
-                final int authCertProfile = certificatestoresession.getCertificateProfileId(administrator, this.getInitParameter("authCertProfile"));
-                final int signCertProfile = certificatestoresession.getCertificateProfileId(administrator, this.getInitParameter("signCertProfile"));
+                final int authCertProfile;
+                final int signCertProfile;
+                {
+                    CertProfileID certProfileID = new CertProfileID(certificatestoresession, data, administrator);
+                    authCertProfile = certProfileID.getProfileID("authCertProfile");
+                    signCertProfile = certProfileID.getProfileID("signCertProfile");
+                }
+                final int authCA;
+                final int signCA;
+                {
+                    CAID caid = new CAID(data,administrator);
+                    authCA = caid.getProfileID("authCA");
+                    signCA = caid.getProfileID("signCA");
+                }
                 // if not IE, check if it's manual request
                 final byte[] authReqBytes = authReq.getBytes();
                 final byte[] signReqBytes = signReq.getBytes();
                 if ( authReqBytes!=null && signReqBytes!=null) {
-                    adminsession.changeUser(administrator,username,data.getPassword(),data.getDN(),data.getSubjectAltName(),
-                            data.getEmail(),false,data.getEndEntityProfileId(),authCertProfile,data.getType(),
-                            data.getTokenType(),data.getHardTokenIssuerId(),data.getStatus(),data.getCAId());
-                    final byte[] authb64cert=pkcs10CertRequest(administrator, signsession, authReqBytes, username, data.getPassword());                      
-                    adminsession.changeUser(administrator,username,data.getPassword(),data.getDN(),data.getSubjectAltName(),
-                            data.getEmail(),false,data.getEndEntityProfileId(),signCertProfile,data.getType(),
-                            data.getTokenType(),data.getHardTokenIssuerId(),UserDataConstants.STATUS_NEW,data.getCAId());
+                    adminsession.changeUser(administrator, username,data.getPassword(), data.getDN(), data.getSubjectAltName(),
+                                            data.getEmail(), true, data.getEndEntityProfileId(), authCertProfile, data.getType(),
+                                            data.getTokenType(), data.getHardTokenIssuerId(), data.getStatus(), authCA);
+                    final byte[] authb64cert=pkcs10CertRequest(administrator, signsession, authReqBytes, username, data.getPassword());
+
+                    adminsession.changeUser(administrator, username, data.getPassword(), data.getDN(), data.getSubjectAltName(),
+                                            data.getEmail(), true, data.getEndEntityProfileId(), signCertProfile, data.getType(),
+                                            data.getTokenType(), data.getHardTokenIssuerId(), UserDataConstants.STATUS_NEW, signCA);
                     final byte[] signb64cert=pkcs10CertRequest(administrator, signsession, signReqBytes, username, data.getPassword());
+
+                    data.setStatus(UserDataConstants.STATUS_GENERATED);
+                    adminsession.changeUser(administrator, data, true); // set back to original values
+
                     for (int i=0; i<notRevokedCerts.length; i++)
                         adminsession.revokeCert(administrator, notRevokedCerts[i].getSerialNumber(),
                                                 notRevokedCerts[i].getIssuerDN().toString(), username,
                                                 RevokedCertInfo.REVOKATION_REASON_SUPERSEDED);
+
                     sendCertificates(authb64cert, signb64cert, response,  getServletContext(),
-                            getInitParameter("responseTemplate"), notRevokedCerts);
+                                     getInitParameter("responseTemplate"), notRevokedCerts);
                 }
             }
+        } catch( UserCertificateRevokedException e) {
+            log.debug(e.getMessage());
+            debug.printMessage(e.getMessage());
+            debug.printDebugInfo();
+            return;
         } catch (ObjectNotFoundException oe) {
             log.debug("Non existent username!");
             debug.printMessage("Non existent username!");
@@ -253,10 +286,64 @@ public class CardCertReqServlet extends HttpServlet {
             debug.takeCareOfException(e);
             debug.printDebugInfo();
         }
+    } //doPost
+
+    private class UserCertificateRevokedException extends Exception {
+        UserCertificateRevokedException(X509Certificate cert) {
+            super("User certificate with serial number "+cert.getSerialNumber() +
+                  " from issuer \'"+cert.getIssuerX500Principal()+"\' is revoked.");
+        }
     }
-
-    //doPost
-
+    private class CAID extends BaseID {
+        final private ICAAdminSessionRemote caadminsession;
+        CAID(UserDataVO d, Admin a) throws RemoteException, CreateException {
+            super(d, a);
+            caadminsession = caadminsessionhome.create();                       
+        }
+        protected int getFromName(String name) throws RemoteException {
+            CAInfo caInfo = caadminsession.getCAInfo(administrator, name);
+            if ( caInfo!=null )
+                return caInfo.getCAId();
+            else
+                return 0;
+        }
+        protected int getFromOldData() {
+            return data.getCAId();
+        }
+    }
+    private class CertProfileID extends BaseID {
+        final ICertificateStoreSessionRemote certificatestoresession;
+        CertProfileID(ICertificateStoreSessionRemote c, UserDataVO d, Admin a) throws RemoteException, CreateException {
+            super(d, a);
+            certificatestoresession = c;
+        }
+        protected int getFromName(String name) throws RemoteException {
+            return certificatestoresession.getCertificateProfileId(administrator, name);
+        }
+        protected int getFromOldData() {
+            return data.getCertificateProfileId();
+        }
+    }
+    private abstract class BaseID {
+        final UserDataVO data;
+        final Admin administrator;
+        
+        protected abstract int getFromName(String name) throws RemoteException;
+        protected abstract int getFromOldData();
+        BaseID(UserDataVO d, Admin a) {
+            data = d;
+            administrator = a;
+        }
+        public int getProfileID(String parameterName) throws RemoteException {
+            String name = CardCertReqServlet.this.getInitParameter(parameterName);
+            if ( name!=null && name.length()>0 ) {
+                int tmp = getFromName(name);
+                if (tmp!=0)
+                    return tmp;
+            }
+            return getFromOldData();
+        }
+    }
     /**
      * Handles HTTP GET
      *
