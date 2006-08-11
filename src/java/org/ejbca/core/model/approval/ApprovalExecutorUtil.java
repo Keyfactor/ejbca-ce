@@ -12,27 +12,34 @@
  *************************************************************************/
 package org.ejbca.core.model.approval;
 
+import org.apache.log4j.Logger;
+
 /**
  * Util class with methods to get information about calling classes
  * Used to avoid cirkular method invocations
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalExecutorUtil.java,v 1.4 2006-08-11 06:59:17 anatom Exp $
+ * @version $Id: ApprovalExecutorUtil.java,v 1.5 2006-08-11 08:25:58 anatom Exp $
  */
 public class ApprovalExecutorUtil {
+
+    private static final Logger log = Logger.getLogger(ApprovalExecutorUtil.class);
 
     private static final String useApprovalsOnExternalRACallsSetting = "@approval.useonextracalls@";	
 	private static final boolean useApprovalsOnExternalRACalls = !useApprovalsOnExternalRACallsSetting.equalsIgnoreCase("FALSE");
 	
 	/**
 	 * Method that checks if the current method (not this but method using this util)
-	 * was call by given class.
+	 * was called by given class.
 	 *
 	 * 
 	 * @param className Example "AddEndEntityApprovalRequest"
-	 * @return
+	 * @return true is the method was called by the given class, false otherwise
 	 */
-	public static boolean isCalledByClassNameOrExtRA(String className){		
+	public static boolean isCalledByClassNameOrExtRA(String className){
+        if (log.isDebugEnabled()) {
+            log.debug(">isCalledByClassNameOrExtRA: "+className);            
+        }
 		// First check is approvals should be checked for extra calls
 		boolean retval = false;
 		if(useApprovalsOnExternalRACalls){
@@ -48,8 +55,10 @@ public class ApprovalExecutorUtil {
 				retval = isCalledByClassNameHelper(className);
 			}
 		  
-		}
-		
+		}		
+        if (log.isDebugEnabled()) {
+            log.debug("<isCalledByClassNameOrExtRA: "+retval);
+        }
 		return retval;
 	}
 	
