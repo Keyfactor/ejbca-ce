@@ -403,12 +403,14 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 		String username = getCertificateStoreSession().findUsernameByCertSerno(admin,approvingCert.getSerialNumber(),CertTools.getIssuerDN(approvingCert));
 		
         // Check that the approver isn't the same as requested the action.
-		String requsername = getCertificateStoreSession().findUsernameByCertSerno(admin,new BigInteger(data.getReqadmincertsn(),16),data.getReqadmincertissuerdn());
-		if(username.equals(requsername)){
-			getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALAPPROVED,"Error administrator have already approved, rejected or requested current request, approveId " + approvalId);
-			throw new AdminAlreadyApprovedRequestException("Error administrator have already approved, rejected or requested current request, approveId : " + approvalId);			
+		if(data.getReqadmincertissuerdn() != null){
+			String requsername = getCertificateStoreSession().findUsernameByCertSerno(admin,new BigInteger(data.getReqadmincertsn(),16),data.getReqadmincertissuerdn());
+			if(username.equals(requsername)){
+				getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALAPPROVED,"Error administrator have already approved, rejected or requested current request, approveId " + approvalId);
+				throw new AdminAlreadyApprovedRequestException("Error administrator have already approved, rejected or requested current request, approveId : " + approvalId);			
+			}
 		}
-		if(username != null && requsername != null){
+		if(username != null){
 			Iterator iter = data.getApprovals().iterator();
 			while(iter.hasNext()){
 				Approval next = (Approval) iter.next();
@@ -481,13 +483,16 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
     	X509Certificate approvingCert = admin.getAdminInformation().getX509Certificate();
 		String username = getCertificateStoreSession().findUsernameByCertSerno(admin,approvingCert.getSerialNumber(),CertTools.getIssuerDN(approvingCert));
 		ApprovalDataVO data = adl.getApprovalDataVO();
-        // Check that the approver isn't the same as requested the action.
-		String requsername = getCertificateStoreSession().findUsernameByCertSerno(admin,new BigInteger(data.getReqadmincertsn(),16),data.getReqadmincertissuerdn());
-		if(username.equals(requsername)){
-			getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREJECTED,"Error administrator have already approved, rejected or requested current request, approveId ");
-			throw new AdminAlreadyApprovedRequestException("Error administrator have already approved, rejected or requested current request, approveId : " + approvalId);			
+		
+		if(data.getReqadmincertissuerdn() != null){
+			// Check that the approver isn't the same as requested the action.
+			String requsername = getCertificateStoreSession().findUsernameByCertSerno(admin,new BigInteger(data.getReqadmincertsn(),16),data.getReqadmincertissuerdn());
+			if(username.equals(requsername)){
+				getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREJECTED,"Error administrator have already approved, rejected or requested current request, approveId ");
+				throw new AdminAlreadyApprovedRequestException("Error administrator have already approved, rejected or requested current request, approveId : " + approvalId);			
+			}
 		}
-		if(username != null && requsername != null){			
+		if(username != null){			
 			Iterator iter = data.getApprovals().iterator();
 			while(iter.hasNext()){
 				Approval next = (Approval) iter.next();

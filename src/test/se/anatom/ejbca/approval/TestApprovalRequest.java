@@ -10,6 +10,7 @@ import org.ejbca.core.model.approval.ApprovalDataUtil;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.DummyApprovalRequest;
+import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
@@ -35,7 +36,7 @@ public class TestApprovalRequest extends TestCase {
 	
 	public void testWriteExternal() throws Exception {
 		X509Certificate testcert = CertTools.getCertfromByteArray(testcertenc);
-		DummyApprovalRequest ar = new DummyApprovalRequest(testcert,null,1,2, false);
+		DummyApprovalRequest ar = new DummyApprovalRequest(new Admin(testcert),null,1,2, false);
 		
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();
     	ObjectOutputStream oos = new ObjectOutputStream(baos);

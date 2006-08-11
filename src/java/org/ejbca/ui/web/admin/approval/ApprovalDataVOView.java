@@ -15,6 +15,7 @@ import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.DummyApprovalRequest;
+import org.ejbca.core.model.log.Admin;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.util.Base64;
@@ -106,19 +107,27 @@ public class ApprovalDataVOView  implements Serializable{
 	}
 	
 	public String getRequestAdminName(){
+		String retval;
 	    if(!initialized){
 			  return "DummyAdmin";
 	    }
-		String dn = data.getApprovalRequest().getRequestAdminCert().getSubjectDN().toString();
-		String o =  CertTools.getPartFromDN(dn, "O");
-		if(o==null){
+	    
+	    if(data.getApprovalRequest().getRequestAdminCert()!= null){
+		  String dn = data.getApprovalRequest().getRequestAdminCert().getSubjectDN().toString();
+		  String o =  CertTools.getPartFromDN(dn, "O");
+		  if(o==null){
 			o="";
-		}else{
+		  }else{
 			o = ", " +  o;
-		}
+		  }
+		  
+		  retval =  CertTools.getPartFromDN(dn, "CN") + o;
+	    }else{
+	    	retval = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("CLITOOL");
+	    }
 		
-	   log.debug("getRequestAdminName " + CertTools.getPartFromDN(dn, "CN") + o);
-	   return  CertTools.getPartFromDN(dn, "CN") + o;
+	   log.debug("getRequestAdminName " + retval);
+	   return retval;
 	}
 	
 	public String getStatus(){
@@ -150,7 +159,7 @@ public class ApprovalDataVOView  implements Serializable{
 	public ApprovalDataVO getApproveActionDataVO() {
 	    if(!initialized){
 			  try {
-				return new ApprovalDataVO(1,1, ApprovalDataVO.APPROVALTYPE_DUMMY, 0,0,"","",ApprovalDataVO.STATUS_WAITINGFORAPPROVAL,new ArrayList(),new DummyApprovalRequest(CertTools.getCertfromByteArray(ApprovalDataVOView.dummycert),null,ApprovalDataVO.ANY_ENDENTITYPROFILE,ApprovalDataVO.ANY_CA,false),new Date(),new Date(),2);
+				return new ApprovalDataVO(1,1, ApprovalDataVO.APPROVALTYPE_DUMMY, 0,0,"","",ApprovalDataVO.STATUS_WAITINGFORAPPROVAL,new ArrayList(),new DummyApprovalRequest(new Admin(CertTools.getCertfromByteArray(ApprovalDataVOView.dummycert)),null,ApprovalDataVO.ANY_ENDENTITYPROFILE,ApprovalDataVO.ANY_CA,false),new Date(),new Date(),2);
 			} catch (CertificateException e) {
 				log.error(e);
 			}
@@ -177,15 +186,20 @@ public class ApprovalDataVOView  implements Serializable{
 	}
 
 	public String getViewRequestorCertLink(){
-		String link;
-		try {
-			link = EjbcaJSFHelper.getBean().getEjbcaWebBean().getBaseUrl() + EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath()
-			            + "viewcertificate.jsp?certsernoparameter=" + java.net.URLEncoder.encode(data.getReqadmincertsn() + "," + data.getReqadmincertissuerdn(),"UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new EJBException(e);
+		String retval = "";
+		if(data.getApprovalRequest().getRequestAdminCert() == null){
+			String link;
+			try {
+				link = EjbcaJSFHelper.getBean().getEjbcaWebBean().getBaseUrl() + EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath()
+				+ "viewcertificate.jsp?certsernoparameter=" + java.net.URLEncoder.encode(data.getReqadmincertsn() + "," + data.getReqadmincertissuerdn(),"UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				throw new EJBException(e);
+			}
+			
+			retval =  "viewcert('" + link + "')";
 		}
 		
-		return "viewcert('" + link + "')";
+		return retval;
 	}
 
 	public List getTextComparisonList(){

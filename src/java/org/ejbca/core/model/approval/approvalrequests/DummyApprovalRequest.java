@@ -15,7 +15,6 @@ package org.ejbca.core.model.approval.approvalrequests;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +32,7 @@ import org.ejbca.util.CertTools;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: DummyApprovalRequest.java,v 1.2 2006-08-09 07:29:50 herrvendil Exp $
+ * @version $Id: DummyApprovalRequest.java,v 1.3 2006-08-11 02:57:49 herrvendil Exp $
  */
 
 public class DummyApprovalRequest extends ApprovalRequest { 
@@ -60,8 +59,8 @@ public class DummyApprovalRequest extends ApprovalRequest {
      * @param endEntityProfileId the related profile id that the approver must be authorized to or ApprovalDataVO.ANY_ENDENTITYPROFILE if applicable to any end entity profile
      */
 
-	public DummyApprovalRequest(X509Certificate requestAdminCert, String requestSignature, int cAId, int endEntityProfileId, boolean executable) {
-		super(requestAdminCert, requestSignature, ApprovalRequest.REQUESTTYPE_SIMPLE,
+	public DummyApprovalRequest(Admin requestAdmin, String requestSignature, int cAId, int endEntityProfileId, boolean executable) {
+		super(requestAdmin, requestSignature, ApprovalRequest.REQUESTTYPE_SIMPLE,
 				NUM_OF_REQUIRED_APPROVALS, cAId, endEntityProfileId);	
 		this.executable = executable;
 		

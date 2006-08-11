@@ -112,7 +112,7 @@ import org.ejbca.util.CertTools;
  *   jndi-name="${datasource.jndi-name}"
  *   
  * @author Philip Vendil
- * @version $Id: ApprovalDataBean.java,v 1.3 2006-08-09 07:29:48 herrvendil Exp $   
+ * @version $Id: ApprovalDataBean.java,v 1.4 2006-08-11 02:57:50 herrvendil Exp $   
  */
 public abstract class ApprovalDataBean extends BaseEntityBean {
 
@@ -571,8 +571,10 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
         setEndentityprofileid(approvalRequest.getEndEntityProfileId());        
         setCaid(approvalRequest.getCAId());
         
-        setReqadmincertissuerdn(CertTools.getIssuerDN(approvalRequest.getRequestAdminCert()));
-        setReqadmincertsn(approvalRequest.getRequestAdminCert().getSerialNumber().toString(16));
+        if(approvalRequest.getRequestAdminCert() != null){
+          setReqadmincertissuerdn(CertTools.getIssuerDN(approvalRequest.getRequestAdminCert()));
+          setReqadmincertsn(approvalRequest.getRequestAdminCert().getSerialNumber().toString(16));
+        }
         setStatus(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL);        
         setApprovals(new ArrayList());
         setApprovalRequest(approvalRequest);                

@@ -17,7 +17,6 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -56,7 +55,7 @@ import org.ejbca.util.CertTools;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalRequest.java,v 1.4 2006-08-09 13:25:49 herrvendil Exp $
+ * @version $Id: ApprovalRequest.java,v 1.5 2006-08-11 02:57:49 herrvendil Exp $
  */
 
 public abstract class ApprovalRequest implements  Externalizable { 
@@ -65,7 +64,7 @@ public abstract class ApprovalRequest implements  Externalizable {
 	
 	private static final Logger log = Logger.getLogger(ApprovalRequest.class);
 	
-	private static final int LATEST_VERSION = 1;
+	private static final int LATEST_VERSION = 2;
 	
 	/**
 	 * Simple request type means that the approver will only see new data about the
@@ -92,9 +91,9 @@ public abstract class ApprovalRequest implements  Externalizable {
 	 */
 	protected static final long DEFAULT_APPROVALVALIDITY = Long.parseLong("@approval.defaultapprovalvalidity@") * 1000;
 
-    private String requestAdminCert = null; // Base64 encoding of x509certificate
+    private Admin requestAdmin = null; // Base64 encoding of x509certificate   
     
-    private String requestSignature = null;
+    private String requestSignature = null;        
     
     private int approvalRequestType = REQUESTTYPE_SIMPLE;
     
@@ -113,11 +112,11 @@ public abstract class ApprovalRequest implements  Externalizable {
      * @param cAId the related cAId of the request that the approver must be authorized to or ApprovalDataVO.ANY_CA in applicable to any ca
      * @param endEntityProfileId the related profile id that the approver must be authorized to or ApprovalDataVO.ANY_ENDENTITYPROFILE if applicable to any end entity profile
      */
-	protected ApprovalRequest(X509Certificate requestAdminCert, String requestSignature, 
+	protected ApprovalRequest(Admin requestAdmin, String requestSignature, 
 			                  int approvalRequestType, int numOfRequiredApprovals, int cAId, int endEntityProfileId) {
 		super();
 		
-   	    setRequestAdminCert(requestAdminCert);
+   	    setRequestAdmin(requestAdmin);
 		this.requestSignature = requestSignature;
 		this.approvalRequestType = approvalRequestType;
 		this.numOfRequiredApprovals = numOfRequiredApprovals;
@@ -247,43 +246,26 @@ public abstract class ApprovalRequest implements  Externalizable {
 	}
 
 
-	private void setRequestAdminCert(X509Certificate requestAdminCert) {				
-		try {
-			byte[] certbuf = requestAdminCert.getEncoded();
-			this.requestAdminCert = new String(Base64.encode(certbuf));	
-		} catch (CertificateEncodingException e) {
-			log.error(e);
-		}					
+	private void setRequestAdmin(Admin requestAdmin) {				
+		this.requestAdmin = requestAdmin; 				
 	}
 	
 	/**
 	 * Returns the certificate of the request admin.
 	 */
-	public X509Certificate getRequestAdminCert() {			
-      byte[] certbuf = Base64.decode(requestAdminCert.getBytes());
-      CertificateFactory cf = CertTools.getCertificateFactory();
-      X509Certificate x509cert = null;
-      try {
-    	  x509cert = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(certbuf));
-      } catch (CertificateException e) {
-    	  log.error(e);
-      }
-      return x509cert;
+	public X509Certificate getRequestAdminCert() {			      
+      return requestAdmin.getAdminInformation().getX509Certificate();
 	}
 
-	private transient Admin requestAdmin = null;
-	protected Admin getRequestAdmin() {
-		if(requestAdmin == null){
-			requestAdmin = new Admin(getRequestAdminCert());
-		}
-		
+	
+	protected Admin getRequestAdmin() {		
 		return requestAdmin;
 	}
 	
 
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeInt(LATEST_VERSION);
-		out.writeObject(this.requestAdminCert);
+		out.writeObject(this.requestAdmin);
 		out.writeObject(this.requestSignature);
 		out.writeInt(this.approvalRequestType);
 		out.writeInt(this.numOfRequiredApprovals);
@@ -295,7 +277,25 @@ public abstract class ApprovalRequest implements  Externalizable {
         
 		int version = in.readInt();
 		if(version == 1){
-			this.requestAdminCert = (String) in.readObject();
+			String requestAdminCert = (String) in.readObject();			
+			byte[] certbuf = Base64.decode(requestAdminCert.getBytes());
+		      CertificateFactory cf = CertTools.getCertificateFactory();
+		      X509Certificate x509cert = null;
+		      try {
+		    	  x509cert = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(certbuf));
+		      } catch (CertificateException e) {
+		    	  log.error(e);
+		      }
+		    this.requestAdmin = new Admin(x509cert); 
+			
+			this.requestSignature = (String) in.readObject();
+			this.approvalRequestType = in.readInt();
+			this.numOfRequiredApprovals =  in.readInt();
+			this.cAId = in.readInt();
+			this.endEntityProfileId = in.readInt();
+		}
+		if(version == 2){
+			this.requestAdmin = (Admin) in.readObject();
 			this.requestSignature = (String) in.readObject();
 			this.approvalRequestType = in.readInt();
 			this.numOfRequiredApprovals =  in.readInt();

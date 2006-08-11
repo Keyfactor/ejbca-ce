@@ -15,7 +15,6 @@ package org.ejbca.core.model.approval.approvalrequests;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,7 +42,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: ChangeStatusEndEntityApprovalRequest.java,v 1.1 2006-08-09 07:29:49 herrvendil Exp $
+ * @version $Id: ChangeStatusEndEntityApprovalRequest.java,v 1.2 2006-08-11 02:57:49 herrvendil Exp $
  */
 public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 
@@ -64,8 +63,8 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 	public ChangeStatusEndEntityApprovalRequest() {}
 
 
-	public ChangeStatusEndEntityApprovalRequest( String username, int oldstatus, int newstatus, X509Certificate requestAdminCert, String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId) {
-		super(requestAdminCert, requestSignature, REQUESTTYPE_COMPARING,
+	public ChangeStatusEndEntityApprovalRequest( String username, int oldstatus, int newstatus, Admin requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId) {
+		super(requestAdmin, requestSignature, REQUESTTYPE_COMPARING,
 				numOfReqApprovals, cAId, endEntityProfileId);
 		this.username = username;
 		this.oldstatus = oldstatus;

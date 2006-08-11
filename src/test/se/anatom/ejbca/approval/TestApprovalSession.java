@@ -167,7 +167,7 @@ public class TestApprovalSession extends TestCase {
 
 	public void testAddApprovalRequest() throws Exception {
 				
-		DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmincert,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,false);
+		DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,false);
 		
         //		 Test that the approvalrequest doesn't exists.
 		Collection result = pub.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
@@ -226,7 +226,7 @@ public class TestApprovalSession extends TestCase {
 	}
 
 	public void testApprove() throws Exception {
-		DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmincert,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,false);
+		DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,false);
 		pub.addApprovalRequest(admin1, nonExecutableRequest);
 		
 		Approval approval1 = new Approval("ap1test");
@@ -267,7 +267,7 @@ public class TestApprovalSession extends TestCase {
 		
 		
 		// Test using an executable Dummy, different behaviour
-		DummyApprovalRequest executableRequest = new DummyApprovalRequest(reqadmincert,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,true);
+		DummyApprovalRequest executableRequest = new DummyApprovalRequest(reqadmin,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,true);
 		pub.addApprovalRequest(admin1, executableRequest);
 										
 		pub.approve(admin1, nonExecutableRequest.generateApprovalId(), approval1);
@@ -290,7 +290,7 @@ public class TestApprovalSession extends TestCase {
 		pub.removeApprovalRequest(admin1, next.getId());
 		
 		// Test to request and to approve with the same admin
-		nonExecutableRequest = new DummyApprovalRequest(reqadmincert,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,false);
+		nonExecutableRequest = new DummyApprovalRequest(reqadmin,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,false);
 		pub.addApprovalRequest(admin1, nonExecutableRequest);
 		Approval approvalUsingReqAdmin = new Approval("approvalUsingReqAdmin");
 		try{
@@ -307,7 +307,7 @@ public class TestApprovalSession extends TestCase {
 
 	
 	public void testReject() throws Exception {
-		DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmincert,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,false);
+		DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,false);
 		pub.addApprovalRequest(reqadmin, nonExecutableRequest);
 		
 		Approval approval1 = new Approval("ap1test");
@@ -327,7 +327,7 @@ public class TestApprovalSession extends TestCase {
 		
 		pub.removeApprovalRequest(admin1, next.getId());
 		
-		nonExecutableRequest = new DummyApprovalRequest(reqadmincert,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,false);
+		nonExecutableRequest = new DummyApprovalRequest(reqadmin,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,false);
 		pub.addApprovalRequest(reqadmin, nonExecutableRequest);
 		
 		
@@ -364,7 +364,7 @@ public class TestApprovalSession extends TestCase {
 	}
  
 	public void testIsApproved() throws Exception {
-		DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmincert,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,false);
+		DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,false);
 		pub.addApprovalRequest(reqadmin, nonExecutableRequest);		
 		
 		int status = pub.isApproved(reqadmin, nonExecutableRequest.generateApprovalId());
@@ -402,7 +402,7 @@ public class TestApprovalSession extends TestCase {
 	}
 
 	public void testFindNonExpiredApprovalRequest() throws Exception {
-		DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmincert,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,false);
+		DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,false);
 		
 		pub.addApprovalRequest(admin1, nonExecutableRequest);
 		
@@ -428,9 +428,9 @@ public class TestApprovalSession extends TestCase {
 	public void testQuery() throws Exception {
 		
 		// Add a few requests
-		DummyApprovalRequest req1 = new DummyApprovalRequest(reqadmincert,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,false);
-		DummyApprovalRequest req2 = new DummyApprovalRequest(admincert1,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,false);
-		DummyApprovalRequest req3 = new DummyApprovalRequest(admincert2,null,3,2,false);
+		DummyApprovalRequest req1 = new DummyApprovalRequest(reqadmin,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,false);
+		DummyApprovalRequest req2 = new DummyApprovalRequest(admin1,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,false);
+		DummyApprovalRequest req3 = new DummyApprovalRequest(admin2,null,3,2,false);
 		
 		pub.addApprovalRequest(admin1, req1);
 		pub.addApprovalRequest(admin1, req2);

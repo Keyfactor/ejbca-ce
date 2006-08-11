@@ -177,6 +177,7 @@
     <property name="web.contentencoding" value="ISO-8859-1" />
 	<property name="approval.defaultrequestvalidity" value="28800" />
 	<property name="approval.defaultapprovalvalidity" value="28800" />
+	<property name="approval.useonextracalls" value="true" />
     
     <!-- Extra Protection settings for internal log signing etc -->
     <property name="protection.enabled" value="false" />
@@ -231,6 +232,7 @@ web.availablelanguages = ${web.availablelanguages}
 web.contentencoding    = ${web.contentencoding}
 approval.defaultrequestvalidity = ${approval.defaultrequestvalidity}
 approval.defaultapprovalvalidity = ${approval.defaultapprovalvalidity}
+approval.useonextracalls = ${approval.useonextracalls}
       </echo>
 <!--
 protection.enabled=${protection.enabled}
@@ -493,6 +495,7 @@ protection.certprotect=${protection.certprotect}
 		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@ejbca.version@" value="${app.version}"/>
 		<replace file="${src.java}/org/ejbca/core/model/approval/ApprovalRequest.java" token="@approval.defaultrequestvalidity@" value="${approval.defaultrequestvalidity}"/>
 		<replace file="${src.java}/org/ejbca/core/model/approval/ApprovalRequest.java" token="@approval.defaultapprovalvalidity@" value="${approval.defaultapprovalvalidity}"/>
+		<replace file="${src.java}/org/ejbca/core/model/approval/ApprovalExecutorUtil.java" token="@approval.useonextracalls@" value="${approval.useonextracalls}"/>
 		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name-prefix@" value="${datasource.jndi-name-prefix}"/>	
 		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name@" value="${datasource.jndi-name}"/>	
 		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@healthcheck.amountfreemem@" value="${healthcheck.amountfreemem}"/>	

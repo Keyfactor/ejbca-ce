@@ -89,7 +89,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.13 2006-08-10 17:26:51 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.14 2006-08-11 02:57:49 herrvendil Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -428,8 +428,8 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         // Check if approvals is required.
         int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, userdata.getCAId());
         if (numOfApprovalsRequired > 0){            
-			if(!ApprovalExecutorUtil.isCalledByClassName("AddEndEntityApprovalRequest")){
-			  AddEndEntityApprovalRequest ar = new AddEndEntityApprovalRequest(userdata,clearpwd,admin.getAdminInformation().getX509Certificate(),null,numOfApprovalsRequired,userdata.getCAId(),userdata.getEndEntityProfileId());
+			if(!ApprovalExecutorUtil.isCalledByClassNameOrExtRA("AddEndEntityApprovalRequest")){
+			  AddEndEntityApprovalRequest ar = new AddEndEntityApprovalRequest(userdata,clearpwd,admin,null,numOfApprovalsRequired,userdata.getCAId(),userdata.getEndEntityProfileId());
 			  approvalsession.addApprovalRequest(admin, ar);
 			  throw new WaitingForApprovalException("Add Endity Action have been added for approval by authorized adminstrators");
 			}
@@ -589,14 +589,14 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         }
         // Check if approvals is required.
         int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, userdata.getCAId());
-        if (numOfApprovalsRequired > 0 && !ApprovalExecutorUtil.isCalledByClassName("EditEndEntityApprovalRequest")){
+        if (numOfApprovalsRequired > 0 && !ApprovalExecutorUtil.isCalledByClassNameOrExtRA("EditEndEntityApprovalRequest")){
         	UserDataVO orguserdata;
 			try {
 				orguserdata = findUser(admin, userdata.getUsername());
 			} catch (FinderException e) {
 				throw new ApprovalException("Error creating edit end entity approval, user " + userdata.getUsername() + " doesn't exist.");
 			}        	        	
-			EditEndEntityApprovalRequest ar = new EditEndEntityApprovalRequest(userdata, clearpwd, orguserdata, admin.getAdminInformation().getX509Certificate(),null,numOfApprovalsRequired,userdata.getCAId(),userdata.getEndEntityProfileId());
+			EditEndEntityApprovalRequest ar = new EditEndEntityApprovalRequest(userdata, clearpwd, orguserdata, admin,null,numOfApprovalsRequired,userdata.getCAId(),userdata.getEndEntityProfileId());
 			approvalsession.addApprovalRequest(admin, ar);
 			throw new WaitingForApprovalException("Edit Endity Action have been added for approval by authorized adminstrators");
 
@@ -739,8 +739,8 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             if(approvalflag){
             	// Check if approvals is required.
             	int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, caid);
-            	if (numOfApprovalsRequired > 0 && !ApprovalExecutorUtil.isCalledByClassName("ChangeStatusEndEntityApprovalRequest")){       		    		
-            		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest(username, data1.getStatus(), status, admin.getAdminInformation().getX509Certificate(),null,numOfApprovalsRequired,data1.getCaId(),data1.getEndEntityProfileId());
+            	if (numOfApprovalsRequired > 0 && !ApprovalExecutorUtil.isCalledByClassNameOrExtRA("ChangeStatusEndEntityApprovalRequest")){       		    		
+            		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest(username, status , data1.getStatus(), admin,null,numOfApprovalsRequired,data1.getCaId(),data1.getEndEntityProfileId());
             		approvalsession.addApprovalRequest(admin, ar);
             		throw new WaitingForApprovalException("Edit Endity Action have been added for approval by authorized adminstrators");
             	}  

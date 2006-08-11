@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.61 2006-08-09 07:26:34 herrvendil Exp $
+# $Id: ejbca.properties.sample,v 1.62 2006-08-11 02:57:47 herrvendil Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -119,6 +119,10 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 # Default approval validity (how long an approved request should stay valid)
 # Default : 28800 (8 Hours)
 #approval.defaultapprovalvalidity=28800
+
+# Setting indicating if approvals should apply to extRA calls
+# Default : true
+#approval.useonextracalls=true
 
 # ------------- Database configuration ------------------------
 

@@ -15,7 +15,6 @@ package org.ejbca.core.model.approval.approvalrequests;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +43,7 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: EditEndEntityApprovalRequest.java,v 1.1 2006-08-09 07:29:50 herrvendil Exp $
+ * @version $Id: EditEndEntityApprovalRequest.java,v 1.2 2006-08-11 02:57:49 herrvendil Exp $
  */
 public class EditEndEntityApprovalRequest extends ApprovalRequest {
 
@@ -64,8 +63,8 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 	public EditEndEntityApprovalRequest() {}
 
 
-	public EditEndEntityApprovalRequest(UserDataVO newuserdata, boolean clearpwd, UserDataVO orguserdata, X509Certificate requestAdminCert, String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId) {
-		super(requestAdminCert, requestSignature, REQUESTTYPE_COMPARING,
+	public EditEndEntityApprovalRequest(UserDataVO newuserdata, boolean clearpwd, UserDataVO orguserdata, Admin requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId) {
+		super(requestAdmin, requestSignature, REQUESTTYPE_COMPARING,
 				numOfReqApprovals, cAId, endEntityProfileId);
 		this.newuserdata = newuserdata;
 		this.clearpwd = clearpwd;
