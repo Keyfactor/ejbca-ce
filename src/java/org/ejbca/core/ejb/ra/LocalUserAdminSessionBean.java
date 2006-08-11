@@ -89,7 +89,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.14 2006-08-11 02:57:49 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.15 2006-08-11 04:17:47 herrvendil Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -704,17 +704,12 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      *
      * @param username the unique username.
      * @param status   the new status, from 'UserData'.
+     * @param approvalflag approvalflag that indicates if approvals should be used or not
      * @throws ApprovalException if an approval already is waiting for specified action 
      * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.
      * @ejb.interface-method
      */
-    public void setUserStatus(Admin admin, String username, int status) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException {
-       setUserStatusWithApprovalFlag(admin, username, status, true);
-    } // setUserStatus
-    /**
-     * Help method with approvalflag that indicates if approvals should be used or not
-     */
-    private void setUserStatusWithApprovalFlag(Admin admin, String username, int status, boolean approvalflag) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException {
+    public void setUserStatus(Admin admin, String username, int status, boolean approvalflag) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException {
         debug(">setUserStatus(" + username + ", " + status + ")");
         // Check if administrator is authorized to edit user.
         int caid = LogConstants.INTERNALCAID;
@@ -740,7 +735,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             	// Check if approvals is required.
             	int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, caid);
             	if (numOfApprovalsRequired > 0 && !ApprovalExecutorUtil.isCalledByClassNameOrExtRA("ChangeStatusEndEntityApprovalRequest")){       		    		
-            		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest(username, status , data1.getStatus(), admin,null,numOfApprovalsRequired,data1.getCaId(),data1.getEndEntityProfileId());
+            		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest(username, data1.getStatus(), status ,  admin,null,numOfApprovalsRequired,data1.getCaId(),data1.getEndEntityProfileId());
             		approvalsession.addApprovalRequest(admin, ar);
             		throw new WaitingForApprovalException("Edit Endity Action have been added for approval by authorized adminstrators");
             	}  
@@ -761,7 +756,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         }
 
         debug("<setUserStatus(" + username + ", " + status + ")");
-    } // setUserStatusWithApprovalFlag
+    } // setUserStatus
     
 
     /**
@@ -929,7 +924,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             publishers = prof.getPublisherList();
         }
         try {
-			setUserStatusWithApprovalFlag(admin, username, UserDataConstants.STATUS_REVOKED,false);
+			setUserStatus(admin, username, UserDataConstants.STATUS_REVOKED,false);
 		} catch (ApprovalException e) {
 			throw new EJBException("This should never happen",e);
 		} catch (WaitingForApprovalException e) {
@@ -984,7 +979,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 
         if (certificatesession.checkIfAllRevoked(admin, username)) {
             try {
-    			setUserStatusWithApprovalFlag(admin, username, UserDataConstants.STATUS_REVOKED,false);
+    			setUserStatus(admin, username, UserDataConstants.STATUS_REVOKED,false);
     		} catch (ApprovalException e) {
     			throw new EJBException("This should never happen",e);
     		} catch (WaitingForApprovalException e) {

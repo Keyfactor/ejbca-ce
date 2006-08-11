@@ -24,7 +24,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 /**
  * Revokes a user in the database, and also revokes all the users certificates.
  *
- * @version $Id: RaRevokeUserCommand.java,v 1.2 2006-01-26 14:17:57 anatom Exp $
+ * @version $Id: RaRevokeUserCommand.java,v 1.3 2006-08-11 04:17:43 herrvendil Exp $
  */
 public class RaRevokeUserCommand extends BaseRaAdminCommand {
     /**
@@ -65,7 +65,7 @@ public class RaRevokeUserCommand extends BaseRaAdminCommand {
                 getOutputStream().println("dn=\"" + data.getDN() + "\"");
                 getOutputStream().println("Old status=" + data.getStatus());
                 getAdminSession().setUserStatus(administrator, username,
-                        UserDataConstants.STATUS_REVOKED);
+                        UserDataConstants.STATUS_REVOKED, false);
                 getOutputStream().println("New status=" + UserDataConstants.STATUS_REVOKED);
 
                 // Revoke users certificates

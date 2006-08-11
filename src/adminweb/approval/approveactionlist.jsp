@@ -95,9 +95,10 @@ function viewcert(link){
                </t:commandSortHeader>
                </f:facet>
                <f:verbatim>
-                 <h:commandLink immediate="true" onclick='#{approveActionDataVOView.viewRequestorCertLink}'>
+                 <h:commandLink immediate="true" onclick='#{approveActionDataVOView.viewRequestorCertLink}' rendered="#{approveActionDataVOView.showViewRequestorCertLink}">
                    <h:outputText value="#{approveActionDataVOView.requestAdminName}"/> 
                  </h:commandLink> 
+                 <h:outputText value="#{approveActionDataVOView.requestAdminName}" rendered="#{!approveActionDataVOView.showViewRequestorCertLink}"/> 
                </f:verbatim>
            </h:column>
            <h:column>

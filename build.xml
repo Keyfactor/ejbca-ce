@@ -361,6 +361,8 @@ protection.certprotect=${protection.certprotect}
         		  with long lists and you do not want the browser page to always jump to the
         		  top if you trigger a link or button action that stays on the same page.
         		  Default: 'false'"/>
+               <contextparam name="org.apache.myfaces.ADD_RESOURCE_CLASS" value="org.apache.myfaces.renderkit.html.util.DefaultAddResource"  />
+                <contextparam name="org.apache.myfaces.CHECK_EXTENSIONS_FILTER" value="true"  />            	
          	   <contextparam name="facelets.LIBRARIES" value="/WEB-INF/tomahawk.taglib.xml"  />
             	
              </deploymentdescriptor>

@@ -112,7 +112,7 @@ public class ApprovalDataVOView  implements Serializable{
 			  return "DummyAdmin";
 	    }
 	    
-	    if(data.getApprovalRequest().getRequestAdminCert()!= null){
+	    if(data.getApprovalRequest().getRequestAdmin().getAdminType() == Admin.TYPE_CLIENTCERT_USER){
 		  String dn = data.getApprovalRequest().getRequestAdminCert().getSubjectDN().toString();
 		  String o =  CertTools.getPartFromDN(dn, "O");
 		  if(o==null){
@@ -185,9 +185,14 @@ public class ApprovalDataVOView  implements Serializable{
 		return "window.open('"+link+"', 'ViewApproveAction', 'width=1000,height=800,scrollbars=yes,toolbar=no,resizable=yes').focus()";
 	}
 
+	
+	public boolean getShowViewRequestorCertLink(){
+		return data.getApprovalRequest().getRequestAdmin().getAdminType() == Admin.TYPE_CLIENTCERT_USER;		
+	}
+	
 	public String getViewRequestorCertLink(){
 		String retval = "";
-		if(data.getApprovalRequest().getRequestAdminCert() == null){
+		if(data.getApprovalRequest().getRequestAdmin().getAdminType() == Admin.TYPE_CLIENTCERT_USER){
 			String link;
 			try {
 				link = EjbcaJSFHelper.getBean().getEjbcaWebBean().getBaseUrl() + EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath()

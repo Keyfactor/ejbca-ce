@@ -36,7 +36,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestUserData.java,v 1.6 2006-01-26 14:18:20 anatom Exp $
+ * @version $Id: TestUserData.java,v 1.7 2006-08-11 04:17:48 herrvendil Exp $
  */
 public class TestUserData extends TestCase {
 
@@ -249,7 +249,7 @@ public class TestUserData extends TestCase {
 
             UserDataVO data = (UserDataVO) iter.next();
             log.debug("New user: " + data.getUsername() + ", " + data.getDN() + ", " + data.getEmail() + ", " + data.getStatus() + ", " + data.getType());
-            admin.setUserStatus(new Admin(Admin.TYPE_INTERNALUSER), data.getUsername(), UserDataConstants.STATUS_GENERATED);
+            admin.setUserStatus(new Admin(Admin.TYPE_INTERNALUSER), data.getUsername(), UserDataConstants.STATUS_GENERATED, false);
         }
 
         Collection coll1 = admin.findAllUsersByStatus(new Admin(Admin.TYPE_INTERNALUSER), UserDataConstants.STATUS_NEW);

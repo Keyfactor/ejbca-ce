@@ -741,7 +741,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
         try {
                 // Construct SQL query.
                 con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
-                log.info(sqlquery);
+                log.debug(sqlquery);
 
                 ps = con.prepareStatement(sqlquery);
                 

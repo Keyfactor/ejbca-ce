@@ -53,7 +53,7 @@ import org.ejbca.util.cert.CrlExtensions;
 /**
  * Tests CRL session (agentrunner and certificatesession).
  *
- * @version $Id: TestCreateCRLSession.java,v 1.6 2006-08-06 13:38:28 anatom Exp $
+ * @version $Id: TestCreateCRLSession.java,v 1.7 2006-08-11 04:17:45 herrvendil Exp $
  */
 public class TestCreateCRLSession extends TestCase {
 
@@ -213,7 +213,7 @@ public class TestCreateCRLSession extends TestCase {
         }
         if (userExists) {
             log.info("User foo already exists, resetting status.");
-            usersession.setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
+            usersession.setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW, false);
             log.debug("Reset status to NEW");
         }
         KeyPair keys = genKeys();

@@ -55,7 +55,7 @@ import org.ejbca.util.CertTools;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalRequest.java,v 1.5 2006-08-11 02:57:49 herrvendil Exp $
+ * @version $Id: ApprovalRequest.java,v 1.6 2006-08-11 04:17:44 herrvendil Exp $
  */
 
 public abstract class ApprovalRequest implements  Externalizable { 
@@ -258,7 +258,7 @@ public abstract class ApprovalRequest implements  Externalizable {
 	}
 
 	
-	protected Admin getRequestAdmin() {		
+	public Admin getRequestAdmin() {		
 		return requestAdmin;
 	}
 	

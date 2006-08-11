@@ -64,7 +64,7 @@ import org.ejbca.util.query.Query;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.8 2006-08-10 17:26:01 anatom Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.9 2006-08-11 04:17:45 herrvendil Exp $
  */
 public class RAInterfaceBean implements java.io.Serializable {
     
@@ -177,7 +177,7 @@ public class RAInterfaceBean implements java.io.Serializable {
       }catch(Exception e){}
       for(int i=0; i < usernames.length; i++){
         try{
-          adminsession.setUserStatus(administrator, usernames[i],intstatus);
+          adminsession.setUserStatus(administrator, usernames[i],intstatus, true);
         }catch(AuthorizationDeniedException e){
            success = false;
         }
@@ -255,7 +255,7 @@ public class RAInterfaceBean implements java.io.Serializable {
  	        	 UserDataVO vo = adminsession.findUser(administrator, userView.getUsername());
  	        	 // Don't change status if it is already the same
  	        	 if (vo.getStatus() != UserDataConstants.STATUS_GENERATED) {
- 	 	        	 adminsession.setUserStatus(administrator, userView.getUsername(), UserDataConstants.STATUS_GENERATED); 	        		 
+ 	 	        	 adminsession.setUserStatus(administrator, userView.getUsername(), UserDataConstants.STATUS_GENERATED, false); 	        		 
  	        	 }
  		     }
  		        
@@ -739,7 +739,7 @@ public class RAInterfaceBean implements java.io.Serializable {
 
       if(authorized){
         keyrecoverysession.markAsRecoverable(administrator, cert);
-        adminsession.setUserStatus(administrator, username,UserDataConstants.STATUS_KEYRECOVERY);
+        adminsession.setUserStatus(administrator, username,UserDataConstants.STATUS_KEYRECOVERY, false);
       }
     }
 
