@@ -46,7 +46,6 @@ import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocalHome;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
-import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
@@ -64,7 +63,7 @@ import org.ejbca.util.query.Query;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.9 2006-08-11 04:17:45 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.10 2006-08-11 08:16:09 anatom Exp $
  */
 public class RAInterfaceBean implements java.io.Serializable {
     
@@ -237,33 +236,10 @@ public class RAInterfaceBean implements java.io.Serializable {
       log.debug(">unrevokeCert()");
       boolean success = true;
       try{
-     	 
-     	 RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, issuerdn, serno);
-     	 
-     	 if ( revinfo != null && revinfo.getReason() == RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD ){
-     		 
- 	    	 //-- Find the UserView for the username, we must change his status
- 	    	 UserView userView = findUser(username);
- 	    	 
- 			 CertificateProfile certificateProfile = certificatesession.getCertificateProfile(administrator, userView.getCertificateProfileId());
- 			 Collection publisherList = certificateProfile.getPublisherList();
- 			
- 			 //-- Try to change the certificate status
- 			 certificatesession.setRevokeStatus(administrator, issuerdn, serno, publisherList, RevokedCertInfo.NOT_REVOKED);
- 			
- 	         if ( !certificatesession.checkIfAllRevoked(administrator, userView.getUsername()) ) {
- 	        	 UserDataVO vo = adminsession.findUser(administrator, userView.getUsername());
- 	        	 // Don't change status if it is already the same
- 	        	 if (vo.getStatus() != UserDataConstants.STATUS_GENERATED) {
- 	 	        	 adminsession.setUserStatus(administrator, userView.getUsername(), UserDataConstants.STATUS_GENERATED, false); 	        		 
- 	        	 }
- 		     }
- 		        
-     	 }
-   
-      }catch( AuthorizationDeniedException e){
-        success = false;
-      }
+          adminsession.unRevokeCert(administrator, serno, issuerdn, username);
+        }catch( AuthorizationDeniedException e){
+          success =false;
+        }
       log.debug("<unrevokeCert(): " + success);
       return success;
     }

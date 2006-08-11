@@ -62,6 +62,7 @@ import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
@@ -89,7 +90,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.15 2006-08-11 04:17:47 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.16 2006-08-11 08:16:09 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -938,9 +939,10 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
     /**
      * Method that revokes a certificate.
      *
+     * @param admin the adminsitrator performing the action
      * @param certserno the serno of certificate to revoke.
      * @param username  the username to revoke.
-     * @param reason    the reason of revokation.
+     * @param reason    the reason of revokation, one of the RevokedCertInfo.XX constants.
      * @ejb.interface-method
      */
     public void revokeCert(Admin admin, BigInteger certserno, String issuerdn, String username, int reason) throws AuthorizationDeniedException, FinderException {
@@ -963,9 +965,17 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
             if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AvailableAccessRules.REVOKE_RIGHTS)) {
-                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_ERROR_REVOKEDENDENTITY, "Administrator not authorized");
+                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_ERROR_REVOKEDENDENTITY, "Not authorized to revoke user : " + username + ".");
                 throw new AuthorizationDeniedException("Not authorized to revoke user : " + username + ".");
             }
+        }
+        // Check that unrevocation is not done on anything that can not be unrevoked
+        if (reason == RevokedCertInfo.NOT_REVOKED) {
+            RevokedCertInfo revinfo = certificatesession.isRevoked(admin, issuerdn, certserno);        
+            if ( (revinfo == null) || (revinfo != null && revinfo.getReason() != RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD) ) {
+                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_ERROR_REVOKEDENDENTITY, "Not allowed to unrevoke a certificate that is not on hold: " + username + ".");
+                throw new AuthorizationDeniedException("Not allowed to unrevoke a certificate that is not on hold: " + username + ".");
+            }            
         }
         CertificateProfile prof = this.certificatesession.getCertificateProfile(admin, data.getCertificateProfileId());
         Collection publishers;
@@ -986,10 +996,36 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
     			throw new EJBException("This should never happen",e);
     		}
             logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_INFO_REVOKEDENDENTITY, "");
+        } else if (reason == RevokedCertInfo.NOT_REVOKED) {
+            // Don't change status if it is already the same
+            if (data.getStatus() != UserDataConstants.STATUS_GENERATED) {
+                try {
+                    setUserStatus(admin, username, UserDataConstants.STATUS_GENERATED, false);                   
+                } catch (ApprovalException e) {
+                    throw new EJBException("This should never happen",e);
+                } catch (WaitingForApprovalException e) {
+                    throw new EJBException("This should never happen",e);
+                }
+            }
         }
         debug("<revokeCert()");
     } // revokeCert
 
+    /** 
+     * Reactivates the certificate with certificate serno.
+     *
+     * @param admin the adminsitrator performing the action
+     * @param certserno serial number of certificate to reactivate.
+     * @param issuerdn the issuerdn of certificate to reactivate.
+     * @param username the username joined to the certificate.
+     * @ejb.interface-method
+     */
+    public void unRevokeCert(Admin admin, BigInteger certserno, String issuerdn, String username) throws AuthorizationDeniedException, FinderException {
+        log.debug(">unrevokeCert()");
+        revokeCert(admin, certserno, issuerdn, username, RevokedCertInfo.NOT_REVOKED);
+        log.debug("<unrevokeCert()");
+    }
+    
     /**
      * Finds a user.
      *
