@@ -86,7 +86,7 @@ import org.ejbca.util.CertTools;
  * </p>
  *
  * @author Original code by Lars Silvén
- * @version $Id: CardCertReqServlet.java,v 1.6 2006-08-11 13:10:57 primelars Exp $
+ * @version $Id: CardCertReqServlet.java,v 1.7 2006-08-11 13:58:28 primelars Exp $
  */
 public class CardCertReqServlet extends HttpServlet {
 	private final static Logger log = Logger.getLogger(CardCertReqServlet.class);
@@ -337,9 +337,10 @@ public class CardCertReqServlet extends HttpServlet {
         public int getProfileID(String parameterName) throws RemoteException {
             String name = CardCertReqServlet.this.getInitParameter(parameterName);
             if ( name!=null && name.length()>0 ) {
-                int tmp = getFromName(name);
-                if (tmp!=0)
-                    return tmp;
+                final int id = getFromName(name);
+                log.debug("parameter name "+parameterName+" has ID "+id);
+                if (id!=0)
+                    return id;
             }
             return getFromOldData();
         }
