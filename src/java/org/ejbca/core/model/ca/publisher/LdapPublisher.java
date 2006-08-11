@@ -48,7 +48,7 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.13 2006-08-08 11:36:04 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.14 2006-08-11 13:46:45 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
@@ -846,14 +846,17 @@ public class LdapPublisher extends BasePublisher {
         		// sn means surname in LDAP, and is required for persons
         		String sn = CertTools.getPartFromDN(dn, "SURNAME");
         		if ( (sn == null) && (cn != null) ) {
-        			// Take surname to be the last part of the cn
-        			int index = cn.lastIndexOf(' ');
-        			if (index <=0) {
-        				// If there is no natural sn, use cn since sn is required
-        				sn = cn;
-        			} else {
-        				if (index < cn.length()) sn = cn.substring(index+1);
-        			}
+        		    // Only construct this if we are the standard object class
+        		    if (getUserObjectClass().endsWith("inetOrgPerson")) {
+        		        // Take surname to be the last part of the cn
+        		        int index = cn.lastIndexOf(' ');
+        		        if (index <=0) {
+        		            // If there is no natural sn, use cn since sn is required
+        		            sn = cn;
+        		        } else {
+        		            if (index < cn.length()) sn = cn.substring(index+1);
+        		        }
+        		    }
         		}
         		if (sn != null) {
         			attributeSet.add(new LDAPAttribute("sn", sn));
@@ -861,14 +864,17 @@ public class LdapPublisher extends BasePublisher {
         		// gn means givenname in LDAP, and is required for persons
         		String gn = CertTools.getPartFromDN(dn, "GIVENNAME");
         		if ( (gn == null) && (cn != null) ) {
-        			// Take givenname to be the first part of the cn
-        			int index = cn.indexOf(' ');
-        			if (index <=0) {
-        				// If there is no natural gn/sn, ignore gn if we are using sn
-        				if (sn == null) gn = cn;
-        			} else {
-        				gn = cn.substring(0, index);
-        			}
+        		    // Only construct this if we are the standard object class
+        		    if (getUserObjectClass().endsWith("inetOrgPerson")) {
+        		        // Take givenname to be the first part of the cn
+        		        int index = cn.indexOf(' ');
+        		        if (index <=0) {
+        		            // If there is no natural gn/sn, ignore gn if we are using sn
+        		            if (sn == null) gn = cn;
+        		        } else {
+        		            gn = cn.substring(0, index);
+        		        }
+        		    }
         		}
         		if (gn != null) {
         			attributeSet.add(new LDAPAttribute("gn", gn));
@@ -935,33 +941,39 @@ public class LdapPublisher extends BasePublisher {
         	// A CA might have them if you don't use the default objectClass, but we don't
         	// handle that case.
         	if (person) {
-        		// sn means surname in LDAP, and is required for persons
+        		// sn means surname in LDAP, and is required for inetOrgPerson
         		String sn = CertTools.getPartFromDN(dn, "SURNAME");
         		if ( (sn == null) && (cn != null) ) {
-        			// Take surname to be the last part of the cn
-        			int index = cn.lastIndexOf(' ');
-        			if (index <=0) {
-        				// If there is no natural sn, use cn since sn is required
-        				sn = cn;
-        			} else {
-        				if (index < cn.length()) sn = cn.substring(index+1);
-        			}
+                    // Only construct this if we are the standard object class
+                    if (getUserObjectClass().endsWith("inetOrgPerson")) {
+                        // Take surname to be the last part of the cn
+                        int index = cn.lastIndexOf(' ');
+                        if (index <=0) {
+                            // If there is no natural sn, use cn since sn is required
+                            sn = cn;
+                        } else {
+                            if (index < cn.length()) sn = cn.substring(index+1);
+                        }                        
+                    }
         		}
         		if (sn != null) {
                     LDAPAttribute attr = new LDAPAttribute("sn", sn);
                     modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
         		}
-        		// gn means givenname in LDAP, and is required for persons
+        		// gn means givenname in LDAP, and is required for inetOrgPerson
         		String gn = CertTools.getPartFromDN(dn, "GIVENNAME");
         		if ( (gn == null) && (cn != null) ) {
-        			// Take givenname to be the first part of the cn
-        			int index = cn.indexOf(' ');
-        			if (index <=0) {
-        				// If there is no natural gn/sn, ignore gn if we are using sn
-        				if (sn == null) gn = cn;
-        			} else {
-        				gn = cn.substring(0, index);
-        			}
+        		    // Only construct this if we are the standard object class
+        		    if (getUserObjectClass().endsWith("inetOrgPerson")) {
+        		        // Take givenname to be the first part of the cn
+        		        int index = cn.indexOf(' ');
+        		        if (index <=0) {
+        		            // If there is no natural gn/sn, ignore gn if we are using sn
+        		            if (sn == null) gn = cn;
+        		        } else {
+        		            gn = cn.substring(0, index);
+        		        }
+        		    }
         		}
         		if (gn != null) {
                     LDAPAttribute attr = new LDAPAttribute("gn", gn);
