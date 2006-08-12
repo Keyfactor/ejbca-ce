@@ -395,7 +395,7 @@ public class ProtocolScepHttpTest extends TestCase {
 
         if (userExists) {
             log.debug("User sceptest already exists.");
-            usersession.setUserStatus(admin,"sceptest",UserDataConstants.STATUS_NEW, false);
+            usersession.setUserStatus(admin,"sceptest",UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
         

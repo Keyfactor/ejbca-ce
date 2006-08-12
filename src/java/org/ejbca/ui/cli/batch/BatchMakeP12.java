@@ -65,7 +65,7 @@ import org.ejbca.util.P12toPEM;
  * This class generates keys and request certificates for all users with status NEW. The result is
  * generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.4 2006-08-11 04:17:44 herrvendil Exp $
+ * @version $Id: BatchMakeP12.java,v 1.5 2006-08-12 09:49:30 herrvendil Exp $
  */
 public class BatchMakeP12 {
     /**
@@ -364,13 +364,13 @@ public class BatchMakeP12 {
             
             // Grab new user, set status to INPROCESS
             admin.setUserStatus(administrator, data.getUsername(),
-                    UserDataConstants.STATUS_INPROCESS, false);
+                    UserDataConstants.STATUS_INPROCESS);
             processUser(data, createJKS, createPEM,
                     (status == UserDataConstants.STATUS_KEYRECOVERY));
             
             // If all was OK , set status to GENERATED
             admin.setUserStatus(administrator, data.getUsername(),
-                    UserDataConstants.STATUS_GENERATED,false);
+                    UserDataConstants.STATUS_GENERATED);
             
             // Delete clear text password
             admin.setClearTextPassword(administrator, data.getUsername(), null);
@@ -463,9 +463,9 @@ public class BatchMakeP12 {
                             failedusers += (":" + data.getUsername());
                             failcount++;
                             if (status == UserDataConstants.STATUS_KEYRECOVERY) {
-                                admin.setUserStatus(administrator, data.getUsername(), UserDataConstants.STATUS_KEYRECOVERY, false);
+                                admin.setUserStatus(administrator, data.getUsername(), UserDataConstants.STATUS_KEYRECOVERY);
                             } else {
-                                admin.setUserStatus(administrator, data.getUsername(), UserDataConstants.STATUS_FAILED, false);
+                                admin.setUserStatus(administrator, data.getUsername(), UserDataConstants.STATUS_FAILED);
                             }
                         }
                     } else {
@@ -509,9 +509,9 @@ public class BatchMakeP12 {
                     log.error("An error happened, setting status to FAILED (if not keyrecovery).");
                     log.error(e);
                     if (status == UserDataConstants.STATUS_KEYRECOVERY) {
-                        admin.setUserStatus(administrator, data.getUsername(), UserDataConstants.STATUS_KEYRECOVERY, false);
+                        admin.setUserStatus(administrator, data.getUsername(), UserDataConstants.STATUS_KEYRECOVERY);
                     } else {
-                        admin.setUserStatus(administrator, data.getUsername(), UserDataConstants.STATUS_FAILED, false);
+                        admin.setUserStatus(administrator, data.getUsername(), UserDataConstants.STATUS_FAILED);
                     }
                     throw new Exception("BatchMakeP12 failed for '" + username + "'.");
                 }

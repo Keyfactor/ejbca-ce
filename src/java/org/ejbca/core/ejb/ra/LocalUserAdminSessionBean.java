@@ -54,6 +54,7 @@ import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalExecutorUtil;
+import org.ejbca.core.model.approval.ApprovalOveradableClassName;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest;
@@ -90,7 +91,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.16 2006-08-11 08:16:09 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.17 2006-08-12 09:49:31 herrvendil Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -429,7 +430,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         // Check if approvals is required.
         int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, userdata.getCAId());
         if (numOfApprovalsRequired > 0){            
-			if(!ApprovalExecutorUtil.isCalledByClassNameOrExtRA("AddEndEntityApprovalRequest")){
+			if(!ApprovalExecutorUtil.isCalledByClassNameOrExtRA("AddEndEntityApprovalRequest",null)){
 			  AddEndEntityApprovalRequest ar = new AddEndEntityApprovalRequest(userdata,clearpwd,admin,null,numOfApprovalsRequired,userdata.getCAId(),userdata.getEndEntityProfileId());
 			  approvalsession.addApprovalRequest(admin, ar);
 			  throw new WaitingForApprovalException("Add Endity Action have been added for approval by authorized adminstrators");
@@ -590,7 +591,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         }
         // Check if approvals is required.
         int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, userdata.getCAId());
-        if (numOfApprovalsRequired > 0 && !ApprovalExecutorUtil.isCalledByClassNameOrExtRA("EditEndEntityApprovalRequest")){
+        if (numOfApprovalsRequired > 0 && !ApprovalExecutorUtil.isCalledByClassNameOrExtRA("EditEndEntityApprovalRequest",null)){
         	UserDataVO orguserdata;
 			try {
 				orguserdata = findUser(admin, userdata.getUsername());
@@ -700,6 +701,24 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         debug("<deleteUser(" + username + ")");
     } // deleteUser
 
+    
+
+	private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_SETUSERSTATUS = {
+		new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.LocalUserAdminSessionBean","revokeUser"),
+		new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.LocalUserAdminSessionBean","revokeCert"),
+		new ApprovalOveradableClassName("org.ejbca.ui.cli.RaKeyRecoverCommand",null),		
+		new ApprovalOveradableClassName("org.ejbca.ui.cli.RaKeyRecoverNewestCommand",null),
+		new ApprovalOveradableClassName("org.ejbca.ui.cli.RaRevokeUserCommand",null),
+		new ApprovalOveradableClassName("org.ejbca.ui.cli.RaKeyRecoverCommand",null),
+		new ApprovalOveradableClassName("org.ejbca.ui.cli.RaUnRevokeUserCommand",null),
+		new ApprovalOveradableClassName("org.ejbca.ui.cli.CaImportCertCommand",null),
+		new ApprovalOveradableClassName("org.ejbca.ui.cli.batch.BatchMakeP12",null),
+		new ApprovalOveradableClassName("org.ejbca.ui.web.admin.rainterface.RAInterfaceBean","unrevokeCert"),
+		new ApprovalOveradableClassName("org.ejbca.ui.web.admin.rainterface.RAInterfaceBean","markForRecovery"),
+		new ApprovalOveradableClassName("org.ejbca.extra.caservice.ExtRACAProcess","processExtRARevocationRequest"),
+		new ApprovalOveradableClassName("se.primeKey.cardPersonalization.ra.connection.ejbca.EjbcaConnection",null)
+	};
+    
     /**
      * Changes status of a user.
      *
@@ -710,7 +729,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @throws WaitingForApprovalException if approval is required and the action have been added in the approval queue.
      * @ejb.interface-method
      */
-    public void setUserStatus(Admin admin, String username, int status, boolean approvalflag) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException {
+    public void setUserStatus(Admin admin, String username, int status) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException {
         debug(">setUserStatus(" + username + ", " + status + ")");
         // Check if administrator is authorized to edit user.
         int caid = LogConstants.INTERNALCAID;
@@ -732,15 +751,15 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                 }
             }
             
-            if(approvalflag){
+
             	// Check if approvals is required.
             	int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, caid);
-            	if (numOfApprovalsRequired > 0 && !ApprovalExecutorUtil.isCalledByClassNameOrExtRA("ChangeStatusEndEntityApprovalRequest")){       		    		
+            	if (numOfApprovalsRequired > 0 && !ApprovalExecutorUtil.isCalledByClassNameOrExtRA("ChangeStatusEndEntityApprovalRequest",NONAPPROVABLECLASSNAMES_SETUSERSTATUS)){       		    		
             		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest(username, data1.getStatus(), status ,  admin,null,numOfApprovalsRequired,data1.getCaId(),data1.getEndEntityProfileId());
             		approvalsession.addApprovalRequest(admin, ar);
             		throw new WaitingForApprovalException("Edit Endity Action have been added for approval by authorized adminstrators");
             	}  
-            }
+
             
             
             if(data1.getStatus() == UserDataConstants.STATUS_KEYRECOVERY && !(status == UserDataConstants.STATUS_KEYRECOVERY || status == UserDataConstants.STATUS_INPROCESS || status == UserDataConstants.STATUS_INITIALIZED)){
@@ -925,7 +944,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             publishers = prof.getPublisherList();
         }
         try {
-			setUserStatus(admin, username, UserDataConstants.STATUS_REVOKED,false);
+			setUserStatus(admin, username, UserDataConstants.STATUS_REVOKED);
 		} catch (ApprovalException e) {
 			throw new EJBException("This should never happen",e);
 		} catch (WaitingForApprovalException e) {
@@ -989,7 +1008,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 
         if (certificatesession.checkIfAllRevoked(admin, username)) {
             try {
-    			setUserStatus(admin, username, UserDataConstants.STATUS_REVOKED,false);
+    			setUserStatus(admin, username, UserDataConstants.STATUS_REVOKED);
     		} catch (ApprovalException e) {
     			throw new EJBException("This should never happen",e);
     		} catch (WaitingForApprovalException e) {
@@ -1000,7 +1019,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             // Don't change status if it is already the same
             if (data.getStatus() != UserDataConstants.STATUS_GENERATED) {
                 try {
-                    setUserStatus(admin, username, UserDataConstants.STATUS_GENERATED, false);                   
+                    setUserStatus(admin, username, UserDataConstants.STATUS_GENERATED);                   
                 } catch (ApprovalException e) {
                     throw new EJBException("This should never happen",e);
                 } catch (WaitingForApprovalException e) {

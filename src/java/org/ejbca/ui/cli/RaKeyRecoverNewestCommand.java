@@ -23,7 +23,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
 /**
  * Find details of a user in the database.
  *
- * @version $Id: RaKeyRecoverNewestCommand.java,v 1.2 2006-08-11 04:17:43 herrvendil Exp $
+ * @version $Id: RaKeyRecoverNewestCommand.java,v 1.3 2006-08-12 09:49:30 herrvendil Exp $
  */
 public class RaKeyRecoverNewestCommand extends BaseRaAdminCommand {
     /**
@@ -71,7 +71,7 @@ public class RaKeyRecoverNewestCommand extends BaseRaAdminCommand {
              
              keyrecoverysession.markNewestAsRecoverable(administrator, username);
         
-             getAdminSession().setUserStatus(administrator, username, UserDataConstants.STATUS_KEYRECOVERY,false); 
+             getAdminSession().setUserStatus(administrator, username, UserDataConstants.STATUS_KEYRECOVERY); 
              getOutputStream().println("Key corresponding to users newest certificate has been marked for recovery.");             
  
 

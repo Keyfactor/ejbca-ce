@@ -19,32 +19,37 @@ import org.apache.log4j.Logger;
  * Used to avoid cirkular method invocations
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalExecutorUtil.java,v 1.5 2006-08-11 08:25:58 anatom Exp $
+ *
+ * @version $id$
  */
 public class ApprovalExecutorUtil {
-
-    private static final Logger log = Logger.getLogger(ApprovalExecutorUtil.class);
-
+      
+	private static final Logger log = Logger.getLogger(ApprovalOveradableClassName.class);
+	
     private static final String useApprovalsOnExternalRACallsSetting = "@approval.useonextracalls@";	
 	private static final boolean useApprovalsOnExternalRACalls = !useApprovalsOnExternalRACallsSetting.equalsIgnoreCase("FALSE");
-	
+			
 	/**
 	 * Method that checks if the current method (not this but method using this util)
 	 * was called by given class.
 	 *
 	 * 
 	 * @param className Example "AddEndEntityApprovalRequest"
+	 * @param overridableClassNames containing a separated ';' string of classnamnes that shouldn't
+	 * be involved in the approvalprocess, i.e their calls to the original method
+	 * shouldn't require an approval even though approvals is configured for this method. 
+	 * Null means no classes should be overridable.
 	 * @return true is the method was called by the given class, false otherwise
 	 */
-	public static boolean isCalledByClassNameOrExtRA(String className){
-        if (log.isDebugEnabled()) {
+	public static boolean isCalledByClassNameOrExtRA(String className, ApprovalOveradableClassName[] overridableClassNames){		
+	    if (log.isDebugEnabled()) {
             log.debug(">isCalledByClassNameOrExtRA: "+className);            
         }
 		// First check is approvals should be checked for extra calls
 		boolean retval = false;
 		if(useApprovalsOnExternalRACalls){
 			// Do checks as usual
-			retval = isCalledByClassNameHelper(className);
+			retval = isCalledByClassNameHelper(className) || isCalledByOveridableClassnames(overridableClassNames);
 		}else{
 			// First check that it is not called from extra
 			if(isCalledByClassNameHelper("ExtRACAProcess")){
@@ -52,7 +57,7 @@ public class ApprovalExecutorUtil {
 				retval = true;
 			}else{
 				// Call not from extra check that it'snot from action request.
-				retval = isCalledByClassNameHelper(className);
+				retval = isCalledByClassNameHelper(className) || isCalledByOveridableClassnames(overridableClassNames);
 			}
 		  
 		}		
@@ -62,7 +67,31 @@ public class ApprovalExecutorUtil {
 		return retval;
 	}
 	
-
+	private static boolean isCalledByOveridableClassnames(ApprovalOveradableClassName[] overridableClassNames){		
+		boolean retval = false;
+		try{
+			throw new Exception();
+		}catch(Exception e){
+			if(overridableClassNames != null){
+				Throwable next = e;
+				while(next != null){
+				  for(int j=0;j< overridableClassNames.length;j++){
+					retval = overridableClassNames[j].isInStackTrace(e.getStackTrace());
+					if(retval == true){
+						break;
+					}
+				  }
+				  if(retval == true){
+						break;
+				  }
+				  next = e.getCause();
+				}
+			}
+		}
+		
+		return retval;
+	}
+	
 	private static boolean isCalledByClassNameHelper(String className){		
 		boolean retval = false;
 		try{

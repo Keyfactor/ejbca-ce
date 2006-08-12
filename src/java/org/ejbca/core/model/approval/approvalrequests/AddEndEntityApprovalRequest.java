@@ -36,6 +36,7 @@ import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.util.CertTools;
 
 /**
  * Approval Request created when trying to add an end entity.
@@ -43,7 +44,7 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: AddEndEntityApprovalRequest.java,v 1.2 2006-08-11 02:57:49 herrvendil Exp $
+ * @version $Id: AddEndEntityApprovalRequest.java,v 1.3 2006-08-12 09:49:30 herrvendil Exp $
  */
 public class AddEndEntityApprovalRequest extends ApprovalRequest {
 
@@ -112,7 +113,7 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 	public List getNewRequestDataAsText(Admin admin) {
 		ArrayList retval = new ArrayList();
 		retval.add(new ApprovalDataText("USERNAME",userdata.getUsername(),true,false));
-		retval.add(new ApprovalDataText("SUBJECTDN",userdata.getDN(),true,false));
+		retval.add(new ApprovalDataText("SUBJECTDN",CertTools.stringToBCDNString(userdata.getDN()),true,false));
 		retval.add(getTextWithNoValueString("SUBJECTALTNAME",userdata.getSubjectAltName()));
 		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",userdata.getExtendedinformation().getSubjectDirectoryAttributes()));
 		retval.add(getTextWithNoValueString("EMAIL",userdata.getEmail()));

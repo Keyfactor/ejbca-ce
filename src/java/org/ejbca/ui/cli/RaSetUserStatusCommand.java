@@ -20,7 +20,7 @@ import org.ejbca.core.model.authorization.AuthorizationDeniedException;
  * Changes status for a user in the database, status is defined in
  * org.ejbca.core.ejb.ra.UserDataLocal.
  *
- * @version $Id: RaSetUserStatusCommand.java,v 1.2 2006-08-11 04:17:43 herrvendil Exp $
+ * @version $Id: RaSetUserStatusCommand.java,v 1.3 2006-08-12 09:49:30 herrvendil Exp $
  *
  * @see org.ejbca.core.ejb.ra.UserDataLocal
  */
@@ -54,7 +54,7 @@ public class RaSetUserStatusCommand extends BaseRaAdminCommand {
             int status = Integer.parseInt(args[2]);
 
             try {
-                getAdminSession().setUserStatus(administrator, username, status,true);
+                getAdminSession().setUserStatus(administrator, username, status);
                 getOutputStream().println("New status for user " + username + " is " + status);
             } catch (AuthorizationDeniedException e) {
                 getOutputStream().println("Error : Not authorized to change userdata.");

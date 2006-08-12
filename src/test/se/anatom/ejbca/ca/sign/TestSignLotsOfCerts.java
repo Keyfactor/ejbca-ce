@@ -41,7 +41,7 @@ import org.ejbca.util.CertTools;
  * -the users performancefoono1-10 should not exist in the database
  * 
  *
- * @version $Id: TestSignLotsOfCerts.java,v 1.6 2006-08-11 04:17:46 herrvendil Exp $
+ * @version $Id: TestSignLotsOfCerts.java,v 1.7 2006-08-12 09:49:53 herrvendil Exp $
  */
 public class TestSignLotsOfCerts extends TestCase {
     private static Logger log = Logger.getLogger(TestSignLotsOfCerts.class);
@@ -123,7 +123,7 @@ public class TestSignLotsOfCerts extends TestCase {
         }
         if (userExists) {
             log.info("User performancefoo already exists, resetting status.");
-            usersession.setUserStatus(admin,"performancefoo"+post,UserDataConstants.STATUS_NEW, false);
+            usersession.setUserStatus(admin,"performancefoo"+post,UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
 

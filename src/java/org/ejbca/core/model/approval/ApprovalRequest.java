@@ -55,7 +55,7 @@ import org.ejbca.util.CertTools;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalRequest.java,v 1.6 2006-08-11 04:17:44 herrvendil Exp $
+ * @version $Id: ApprovalRequest.java,v 1.7 2006-08-12 09:49:30 herrvendil Exp $
  */
 
 public abstract class ApprovalRequest implements  Externalizable { 
@@ -65,7 +65,7 @@ public abstract class ApprovalRequest implements  Externalizable {
 	private static final Logger log = Logger.getLogger(ApprovalRequest.class);
 	
 	private static final int LATEST_VERSION = 2;
-	
+		
 	/**
 	 * Simple request type means that the approver will only see new data about the
 	 * action and will not compare it to old data
@@ -174,7 +174,7 @@ public abstract class ApprovalRequest implements  Externalizable {
 	 * Should return a Collection of ApprovalDataText, one for each row
 	 */
 	public abstract List getOldRequestDataAsText(Admin admin);
-	
+		
 
 	/**
 	 * Should return the time in millisecond that the request should be valid

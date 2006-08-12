@@ -42,7 +42,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: ChangeStatusEndEntityApprovalRequest.java,v 1.3 2006-08-11 04:17:47 herrvendil Exp $
+ * @version $Id: ChangeStatusEndEntityApprovalRequest.java,v 1.4 2006-08-12 09:49:30 herrvendil Exp $
  */
 public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 
@@ -51,6 +51,8 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 	private static final Logger log = Logger.getLogger(ChangeStatusEndEntityApprovalRequest.class);
 	
 	private static final int LATEST_VERSION = 1;
+	
+
 	
 	
 	private String username;
@@ -79,7 +81,7 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 			IUserAdminSessionLocalHome userdatahome = (IUserAdminSessionLocalHome) locator.getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
 			IUserAdminSessionLocal usersession = userdatahome.create();
 		
-		    usersession.setUserStatus(getRequestAdmin(), username, newstatus, false);
+		    usersession.setUserStatus(getRequestAdmin(), username, newstatus);
 		}catch (CreateException e) {
 			throw new ApprovalRequestExecutionException("Error creating new userdata session", e);
 		} catch (AuthorizationDeniedException e) {

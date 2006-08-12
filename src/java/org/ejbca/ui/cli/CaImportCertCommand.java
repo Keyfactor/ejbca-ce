@@ -34,7 +34,7 @@ import org.ejbca.util.FileTools;
  * Imports a certificate file in the database.
  *
  * @author Marco Ferrante, (c) 2005 CSITA - University of Genoa (Italy)
- * @version $Id: CaImportCertCommand.java,v 1.4 2006-08-11 04:17:43 herrvendil Exp $
+ * @version $Id: CaImportCertCommand.java,v 1.5 2006-08-12 09:49:30 herrvendil Exp $
  */
 public class CaImportCertCommand extends BaseCaAdminCommand {
 	/**
@@ -230,10 +230,10 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 						SecConst.NO_HARDTOKENISSUER,
 						cainfo.getCAId());
 				if (status == CertificateDataBean.CERT_ACTIVE) {
-					getAdminSession().setUserStatus(administrator, username, UserDataConstants.STATUS_GENERATED,false);
+					getAdminSession().setUserStatus(administrator, username, UserDataConstants.STATUS_GENERATED);
 				}
 				else {
-					getAdminSession().setUserStatus(administrator, username, UserDataConstants.STATUS_REVOKED,false);
+					getAdminSession().setUserStatus(administrator, username, UserDataConstants.STATUS_REVOKED);
 				}
 				getOutputStream().println("User '" + args[1] + "' has been added.");
 			}

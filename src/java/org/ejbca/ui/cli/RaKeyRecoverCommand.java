@@ -27,7 +27,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
 /**
  * Find details of a user in the database.
  *
- * @version $Id: RaKeyRecoverCommand.java,v 1.2 2006-08-11 04:17:43 herrvendil Exp $
+ * @version $Id: RaKeyRecoverCommand.java,v 1.3 2006-08-12 09:49:30 herrvendil Exp $
  */
 public class RaKeyRecoverCommand extends BaseRaAdminCommand {
     /**
@@ -100,7 +100,7 @@ public class RaKeyRecoverCommand extends BaseRaAdminCommand {
              keyrecoverysession.markAsRecoverable(administrator, 
                                                   cert);
         
-             getAdminSession().setUserStatus(administrator, username, UserDataConstants.STATUS_KEYRECOVERY,false); 
+             getAdminSession().setUserStatus(administrator, username, UserDataConstants.STATUS_KEYRECOVERY); 
  
              getOutputStream().println("Keys corresponding to given certificate has been marked for recovery.");                           
 

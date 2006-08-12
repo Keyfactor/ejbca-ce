@@ -46,7 +46,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Tests authentication session used by signer.
  *
- * @version $Id: TestAuthenticationSession.java,v 1.10 2006-08-11 04:17:48 herrvendil Exp $
+ * @version $Id: TestAuthenticationSession.java,v 1.11 2006-08-12 09:49:54 herrvendil Exp $
  */
 public class TestAuthenticationSession extends TestCase {
     private static Logger log = Logger.getLogger(TestAuthenticationSession.class);
@@ -180,7 +180,7 @@ public class TestAuthenticationSession extends TestCase {
     public void test03FailAuthenticateUser() throws Exception {
         log.debug(">test03FailAuthenticateUser()");
         // Set status to GENERATED so authentication will fail
-        usersession.setUserStatus(admin,username,UserDataConstants.STATUS_GENERATED, false);
+        usersession.setUserStatus(admin,username,UserDataConstants.STATUS_GENERATED);
         boolean authfailed = false;
         try {
             UserDataVO auth = remote.authenticateUser(admin, username, pwd);
@@ -227,7 +227,7 @@ public class TestAuthenticationSession extends TestCase {
         // create certificate for user
         //    	 Set status to NEW        
         usersession.setPassword(admin, username, "foo123");
-        usersession.setUserStatus(admin, username, UserDataConstants.STATUS_NEW, false);
+        usersession.setUserStatus(admin, username, UserDataConstants.STATUS_NEW);
         
 
     	
