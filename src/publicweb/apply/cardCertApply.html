@@ -1,15 +1,18 @@
-
-<html >
-<HEAD><TITLE>Kort Certifikatbegäran</TITLE>
-<META http-equiv=Content-Type content="text/html; charset=windows-1252">
-<SCRIPT language=VBScript>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=iso-8859-1">
+	<TITLE>Kort Certifikatbeg&auml;ran</TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.0  (Linux)">
+	<META NAME="CREATED" CONTENT="20060812;7291400">
+	<META NAME="CHANGED" CONTENT="20060812;11052100">
+	<SCRIPT LANGUAGE="VBScript">
 Function ControlExists(objectID)
 on error resume next
 ControlExists = IsObject(CreateObject(objectID))
 End Function
 </SCRIPT>
-
-<SCRIPT language=JavaScript>
+	<SCRIPT LANGUAGE="JavaScript">
 		     
 
 function myDeclare()
@@ -75,36 +78,109 @@ function generate_pkcs10()
 myDeclare();
 
 </SCRIPT>
+	<NOSCRIPT>
 </HEAD>
-
-<BODY>
-
-<NOSCRIPT>
-<META content="MSHTML 6.00.2900.2523" name=GENERATOR>
-<B>Javascript is turned off or you don't have a browser that can handle 
-javascript.</B>
-</NOSCRIPT>
-
-
-<FORM name=form1 ACTION="cardcertreq" ENCTYPE=x-www-form-encoded METHOD=POST>
-
-<BR><BR><BR>
-
-<TABLE>
-  <TBODY>
-  <TR>
-    <TD>
-       <INPUT onclick=generate_pkcs10() type=button value="Hämta Certifikat"> 
-    </TD>
-    <TD></TD>
-  </TR>
-  </TBODY>
+<BODY LANG="en-US" DIR="LTR">
+<P><B>Javascript is turned off or you don't have a browser that can
+handle Javascript.</NOSCRIPT></B> 
+</P>
+<H1>Renewal of certificates on PrimeCard smart cards.</H1>
+<P>From this page you can renew your the certificate on your smart
+card if you have NetID installed.</P>
+<P>The process is ruffly like this:</P>
+<OL>
+	<LI><P>This page is accessed with https and client authentication.
+	The card that will have its certificates renewed should be used to
+	authenticate with.</P>
+	<LI><P>The NetID plugin is used to create one certificate request
+	for each key on the card with Javascript. These request are then
+	posted to a servlet.</P>
+	<LI><P>The servlet checks if the client authentication certificate
+	is revoked. If it is an error message is returned</P>
+	<LI><P>The servlet uses the client authentication certificate to
+	find the user name.</P>
+	<LI><P>The status of the user is checked by the servlet. If not new
+	an error message is returned.</P>
+	<LI><P>All certificates belonging to the user that is not revoked is
+	revoked (this should only be the old certificates of the card) by
+	the servlet.</P>
+	<LI><P>New certificates are issued by the servlet for the card with
+	the previously received certificate requests.</P>
+	<LI><P>A new response page is then created by the servlet. A
+	template for this page that is used. On the page it is a Javascript
+	that deletes the old revoked certificates and install new ones
+	instead. The template contains tags that is replaced by certificates
+	to be removed or added.</P>
+</OL>
+<P>Configuration of the servlet is made in the file ./WEB-INF/web.xml
+file. The class name of the servlet must be
+<FONT FACE="Monospace"><FONT SIZE=3>org.ejbca.ui.web.pub.CardCertReqServlet</FONT><FONT SIZE=2>.
+</FONT></FONT>The following parameters are used:</P>
+<TABLE WIDTH=100% BORDER=0 CELLPADDING=0 CELLSPACING=0>
+	<COL WIDTH=37*>
+	<COL WIDTH=219*>
+	<TR VALIGN=TOP>
+		<TD WIDTH=14%>
+			<P><FONT FACE="Monospace"><FONT SIZE=3>responseTemplate</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=86%>
+			<P>The URL of the file to be used as response template. Mandatory.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=14%>
+			<P><FONT FACE="Monospace"><FONT SIZE=3>authCertProfile</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=86%>
+			<P>Certificate profile used to create the new authenticating
+			certificate. If absent the certificate profile of the user is
+			used.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=14%>
+			<P><FONT FACE="Monospace"><FONT SIZE=3>signCertProfile</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=86%>
+			<P>Certificate profile used to create the new signing certificate.
+			If absent the certificate profile of the user is used.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=14%>
+			<P><FONT FACE="Monospace"><FONT SIZE=3>signCA</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=86%>
+			<P>CA used to sign the new signing certificate. If absent the CA
+			of the user is used.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=14%>
+			<P><FONT FACE="Monospace"><FONT SIZE=3>authCA</FONT></FONT></P>
+		</TD>
+		<TD WIDTH=86%>
+			<P>CA used to sign the new authenticating certificate. If absent
+			the CA of the user is used.</P>
+		</TD>
+	</TR>
 </TABLE>
-<BR><BR>
-<INPUT TYPE="hidden" name=authpkcs10>
-<INPUT TYPE="hidden" name=signpkcs10>
-
-
-</FORM></BODY>
-
-</html>
+<P>It is recommended that at least either <FONT FACE="Monospace"><FONT SIZE=3>authCertProfile</FONT><FONT SIZE=2>
+</FONT></FONT>or <FONT SIZE=3><FONT FACE="Monospace">signCertProfile</FONT></FONT>
+is used since key usage should be different for the new certificates.
+</P>
+<FORM NAME="form1" ACTION="cardcertreq" METHOD="POST">
+	<INPUT TYPE=HIDDEN NAME="authpkcs10">
+	<INPUT TYPE=HIDDEN NAME="signpkcs10">
+	<TABLE CELLPADDING=2 CELLSPACING=2>
+		<TR>
+			<TD>
+				<P><INPUT TYPE=BUTTON VALUE="Fetch Certificate" STYLE="width: 3.25cm; height: 0.66cm" ONCLICK="generate_pkcs10()"></P>
+			</TD>
+		</TR>
+	</TABLE>
+</FORM>
+<P><BR><BR>
+</P>
+</BODY>
+</HTML>
