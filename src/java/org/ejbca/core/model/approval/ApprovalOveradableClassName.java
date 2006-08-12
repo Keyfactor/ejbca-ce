@@ -21,8 +21,7 @@ import org.apache.log4j.Logger;
  * Contains the full classpath and method na,e
  * 
  * @author Philip Vendil
- *
- * $id$
+ * $Id: ApprovalOveradableClassName.java,v 1.2 2006-08-12 17:14:50 anatom Exp $
  */
 public class ApprovalOveradableClassName {
 	

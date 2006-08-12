@@ -19,12 +19,11 @@ import org.apache.log4j.Logger;
  * Used to avoid cirkular method invocations
  * 
  * @author Philip Vendil
- *
- * @version $id$
+ * @version $Id: ApprovalExecutorUtil.java,v 1.7 2006-08-12 17:14:50 anatom Exp $
  */
 public class ApprovalExecutorUtil {
       
-	private static final Logger log = Logger.getLogger(ApprovalOveradableClassName.class);
+	private static final Logger log = Logger.getLogger(ApprovalExecutorUtil.class);
 	
     private static final String useApprovalsOnExternalRACallsSetting = "@approval.useonextracalls@";	
 	private static final boolean useApprovalsOnExternalRACalls = !useApprovalsOnExternalRACallsSetting.equalsIgnoreCase("FALSE");
