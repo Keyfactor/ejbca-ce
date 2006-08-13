@@ -44,7 +44,7 @@ import org.ejbca.util.CertTools;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: EditEndEntityApprovalRequest.java,v 1.3 2006-08-12 09:49:30 herrvendil Exp $
+ * @version $Id: EditEndEntityApprovalRequest.java,v 1.4 2006-08-13 14:56:53 herrvendil Exp $
  */
 public class EditEndEntityApprovalRequest extends ApprovalRequest {
 
@@ -112,6 +112,17 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 	public List getNewRequestDataAsText(Admin admin) {
 		ArrayList retval = new ArrayList();
 		retval.add(new ApprovalDataText("USERNAME",newuserdata.getUsername(),true,false));
+		String passwordtext = "NOTSHOWN";
+		if((newuserdata.getPassword() == null && orguserdata.getPassword() != null && !orguserdata.getPassword().equals("")) ||
+		   (newuserdata.getPassword() != null && !orguserdata.getPassword().equals("") && orguserdata.getPassword() == null)){			
+			passwordtext = "NEWPASSWORD";			
+		}		
+		if(newuserdata.getPassword() != null && orguserdata.getPassword() != null){
+			if(!newuserdata.getPassword().equals(orguserdata.getPassword())){
+				passwordtext = "NEWPASSWORD";
+			}
+		}				
+		retval.add(new ApprovalDataText("PASSWORD",passwordtext,true,true));
 		retval.add(new ApprovalDataText("SUBJECTDN",CertTools.stringToBCDNString(newuserdata.getDN()),true,false));
 		retval.add(getTextWithNoValueString("SUBJECTALTNAME",newuserdata.getSubjectAltName()));
 		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",newuserdata.getExtendedinformation().getSubjectDirectoryAttributes()));
@@ -139,6 +150,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 	public List getOldRequestDataAsText(Admin admin) {
 		ArrayList retval = new ArrayList();
 		retval.add(new ApprovalDataText("USERNAME",orguserdata.getUsername(),true,false));
+		retval.add(new ApprovalDataText("PASSWORD","NOTSHOWN",true,true));
 		retval.add(new ApprovalDataText("SUBJECTDN",CertTools.stringToBCDNString(orguserdata.getDN()),true,false));
 		retval.add(getTextWithNoValueString("SUBJECTALTNAME",orguserdata.getSubjectAltName()));
 		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",orguserdata.getExtendedinformation().getSubjectDirectoryAttributes()));
