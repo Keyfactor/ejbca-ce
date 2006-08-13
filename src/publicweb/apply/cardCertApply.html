@@ -85,9 +85,9 @@ myDeclare();
 handle Javascript.</NOSCRIPT></B> 
 </P>
 <H1>Renewal of certificates on PrimeCard smart cards.</H1>
-<P>From this page you can renew your the certificate on your smart
-card if you have NetID installed.</P>
-<P>The process is ruffly like this:</P>
+<P>From this page you can renew the certificate on your smart
+card if you have NetID (4.2.0.18 or later) installed.</P>
+<P>The process is roughly like this:</P>
 <OL>
 	<LI><P>This page is accessed with https and client authentication.
 	The card that will have its certificates renewed should be used to
@@ -107,7 +107,7 @@ card if you have NetID installed.</P>
 	<LI><P>New certificates are issued by the servlet for the card with
 	the previously received certificate requests.</P>
 	<LI><P>A new response page is then created by the servlet. A
-	template for this page that is used. On the page it is a Javascript
+	template for this page is used. On the page it is a Javascript
 	that deletes the old revoked certificates and install new ones
 	instead. The template contains tags that is replaced by certificates
 	to be removed or added.</P>
