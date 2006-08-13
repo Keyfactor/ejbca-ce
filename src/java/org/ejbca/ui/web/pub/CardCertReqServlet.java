@@ -86,7 +86,7 @@ import org.ejbca.util.CertTools;
  * </p>
  *
  * @author Original code by Lars Silvén
- * @version $Id: CardCertReqServlet.java,v 1.8 2006-08-13 16:04:14 anatom Exp $
+ * @version $Id: CardCertReqServlet.java,v 1.9 2006-08-13 16:19:36 anatom Exp $
  */
 public class CardCertReqServlet extends HttpServlet {
 	private final static Logger log = Logger.getLogger(CardCertReqServlet.class);
@@ -161,8 +161,12 @@ public class CardCertReqServlet extends HttpServlet {
             debug.print("<h3>username: " + username + "</h3>");
             
             final UserDataVO data = adminsession.findUser(administrator, username);
-            if ( data.getTokenType()!= SecConst.TOKEN_SOFT_BROWSERGEN )
-                return;
+            if ( data.getTokenType()!= SecConst.TOKEN_SOFT_BROWSERGEN ) {
+            	log.error("Users token type must be 'UserGenerated' (1), but is: "+data.getTokenType());
+                debug.printMessage("Users token type must be 'UserGenerated' (1), but is: "+data.getTokenType());
+                debug.printDebugInfo();
+                return;            	
+            }
             final X509Certificate notRevokedCerts[]; {
                 Set set = new HashSet();
                 for( Iterator i = certificatestoresession.findCertificatesByUsername(administrator, username).iterator(); i.hasNext(); ) {
