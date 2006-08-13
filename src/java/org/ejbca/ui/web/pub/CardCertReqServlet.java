@@ -86,7 +86,7 @@ import org.ejbca.util.CertTools;
  * </p>
  *
  * @author Original code by Lars Silvén
- * @version $Id: CardCertReqServlet.java,v 1.7 2006-08-11 13:58:28 primelars Exp $
+ * @version $Id: CardCertReqServlet.java,v 1.8 2006-08-13 16:04:14 anatom Exp $
  */
 public class CardCertReqServlet extends HttpServlet {
 	private final static Logger log = Logger.getLogger(CardCertReqServlet.class);
@@ -224,17 +224,17 @@ public class CardCertReqServlet extends HttpServlet {
                 }
             }
         } catch( UserCertificateRevokedException e) {
-            log.debug(e.getMessage());
+            log.error("An error revoking certificaates occured: ", e);
             debug.printMessage(e.getMessage());
             debug.printDebugInfo();
             return;
         } catch (ObjectNotFoundException oe) {
-            log.debug("Non existent username!");
+            log.error("Non existent username!", oe);
             debug.printMessage("Non existent username!");
             debug.printDebugInfo();
             return;
         } catch (AuthStatusException ase) {
-            log.debug("Wrong user status!");
+            log.error("Wrong user status!", ase);
             debug.printMessage("Wrong user status!");
             if (usekeyrecovery) {
                 debug.printMessage(
@@ -246,36 +246,36 @@ public class CardCertReqServlet extends HttpServlet {
             debug.printDebugInfo();
             return;
         } catch (AuthLoginException ale) {
-            log.debug("Wrong password for user!");
+            log.error("Wrong password for user!", ale);
             debug.printMessage("Wrong username or password!");
             debug.printDebugInfo();
             return;
         } catch (SignRequestException re) {
-            log.debug("Invalid request!");
+            log.error("Invalid request!", re);
             debug.printMessage("Invalid request!");
             debug.printMessage("Please supply a correct request.");
             debug.printDebugInfo();
             return;
         } catch (SignRequestSignatureException se) {
-            log.debug("Invalid signature on certificate request!");
+            log.error("Invalid signature on certificate request!", se);
             debug.printMessage("Invalid signature on certificate request!");
             debug.printMessage("Please supply a correctly signed request.");
             debug.printDebugInfo();
             return;
         } catch (java.lang.ArrayIndexOutOfBoundsException ae) {
-            log.debug("Empty or invalid request received.");
+            log.error("Empty or invalid request received.", ae);
             debug.printMessage("Empty or invalid request!");
             debug.printMessage("Please supply a correct request.");
             debug.printDebugInfo();
             return;
         } catch (IllegalKeyException e) {
-            log.debug("Illegal Key received: "+e.getMessage());
+            log.error("Illegal Key received: ", e);
             debug.printMessage("Invalid Key in request: "+e.getMessage());
             debug.printMessage("Please supply a correct request.");
             debug.printDebugInfo();
             return;
         } catch (Exception e) {
-            log.debug(e);
+            log.error("Exception occured: ", e);
             debug.print("<h3>parameter name and values: </h3>");
             Enumeration paramNames = request.getParameterNames();
             while (paramNames.hasMoreElements()) {
