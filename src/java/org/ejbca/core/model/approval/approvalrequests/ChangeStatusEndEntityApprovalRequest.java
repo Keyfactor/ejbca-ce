@@ -42,7 +42,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: ChangeStatusEndEntityApprovalRequest.java,v 1.5 2006-08-13 10:16:24 anatom Exp $
+ * @version $Id: ChangeStatusEndEntityApprovalRequest.java,v 1.6 2006-08-13 14:56:36 herrvendil Exp $
  */
 public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 
@@ -79,6 +79,13 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 	 */
 	public boolean isAllowedTransition() {
 		boolean ret = false;
+		
+		// Allow Keyrecovery transitions until keyrecovery approvals have been implemented.
+		if(newstatus == UserDataConstants.STATUS_KEYRECOVERY){
+			return true;
+		}
+		
+		
 		if (oldstatus == UserDataConstants.STATUS_GENERATED) {
 			switch (newstatus) {
 			case UserDataConstants.STATUS_GENERATED:
