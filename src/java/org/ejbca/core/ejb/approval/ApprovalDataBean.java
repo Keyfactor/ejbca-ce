@@ -70,7 +70,7 @@ import org.ejbca.util.CertTools;
  *   local-jndi-name="ApprovalDataLocal"
  *   view-type="local"
  *   type="CMP"
- *   reentrant="False"
+ *   reentrant="True"
  *   cmp-version="2.x"
  *   transaction-type="Container"
  *   schema="ApprovalDataBean"
@@ -112,7 +112,7 @@ import org.ejbca.util.CertTools;
  *   jndi-name="${datasource.jndi-name}"
  *   
  * @author Philip Vendil
- * @version $Id: ApprovalDataBean.java,v 1.4 2006-08-11 02:57:50 herrvendil Exp $   
+ * @version $Id: ApprovalDataBean.java,v 1.5 2006-08-13 10:12:58 anatom Exp $   
  */
 public abstract class ApprovalDataBean extends BaseEntityBean {
 
