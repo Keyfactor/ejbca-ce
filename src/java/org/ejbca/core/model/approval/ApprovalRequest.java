@@ -25,6 +25,7 @@ import java.util.List;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
@@ -55,7 +56,7 @@ import org.ejbca.util.CertTools;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalRequest.java,v 1.7 2006-08-12 09:49:30 herrvendil Exp $
+ * @version $Id: ApprovalRequest.java,v 1.8 2006-08-13 10:13:58 anatom Exp $
  */
 
 public abstract class ApprovalRequest implements  Externalizable { 
@@ -83,13 +84,15 @@ public abstract class ApprovalRequest implements  Externalizable {
 	 * The default request validity used if not method getRequestValidity is overridden
 	 *
 	 */
-	protected static final long DEFAULT_REQUESTVALIDITY = Long.parseLong("@approval.defaultrequestvalidity@") * 1000;
+	protected static final long DEFAULT_REQUESTVALIDITY = 28800 * 1000;
+	protected static final String DEFAULT_REQUESTVALIDITYSTRING = "@approval.defaultrequestvalidity@";
 
 	/**
 	 * The default approval validity used if not method getApprovalValidity is overridden
 	 *
 	 */
-	protected static final long DEFAULT_APPROVALVALIDITY = Long.parseLong("@approval.defaultapprovalvalidity@") * 1000;
+	protected static final long DEFAULT_APPROVALVALIDITY = 28800 * 1000;
+	protected static final String DEFAULT_APPROVALVALIDITYSTRING = "@approval.defaultapprovalvalidity@";
 
     private Admin requestAdmin = null; // Base64 encoding of x509certificate   
     
@@ -175,6 +178,17 @@ public abstract class ApprovalRequest implements  Externalizable {
 	 */
 	public abstract List getOldRequestDataAsText(Admin admin);
 		
+	/**
+	 * This method is used to check if this is an allowed transition between
+	 * two states, so that it does not require approval. 
+	 * Override this method to add allowed transitions.
+	 * 
+	 * @return true if this transition does not require approval, false by default.
+	 * 
+	 */
+	public boolean isAllowedTransition() {
+		return false;
+	}
 
 	/**
 	 * Should return the time in millisecond that the request should be valid
@@ -183,7 +197,11 @@ public abstract class ApprovalRequest implements  Externalizable {
 	 * Default if will return the value defined in the ejbca.properties
 	 */
 	public long getRequestValidity(){
-		return DEFAULT_REQUESTVALIDITY;
+		long ret = DEFAULT_REQUESTVALIDITY; 
+		if (StringUtils.isNotEmpty(DEFAULT_REQUESTVALIDITYSTRING)) {
+			ret = Long.parseLong(DEFAULT_REQUESTVALIDITYSTRING) * 1000;
+		}
+		return ret;
 	}
 	
 	/**
@@ -193,7 +211,11 @@ public abstract class ApprovalRequest implements  Externalizable {
 	 * Default if will return the value defined in the ejbca.properties
 	 */
 	public long getApprovalValidity(){
-		return DEFAULT_APPROVALVALIDITY;
+		long ret = DEFAULT_APPROVALVALIDITY; 
+		if (StringUtils.isNotEmpty(DEFAULT_APPROVALVALIDITYSTRING)) {
+			ret = Long.parseLong(DEFAULT_APPROVALVALIDITYSTRING) * 1000;
+		}
+		return ret;
 	}
 	
 	
