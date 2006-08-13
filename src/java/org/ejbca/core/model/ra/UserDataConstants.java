@@ -24,6 +24,7 @@ public class UserDataConstants {
     	STATUS_TEXT.put(new Integer(STATUS_GENERATED),"STATUSGENERATED");
     	STATUS_TEXT.put(new Integer(STATUS_REVOKED),"STATUSREVOKED");
     	STATUS_TEXT.put(new Integer(STATUS_HISTORICAL),"STATUSHISTORICAL");
+    	STATUS_TEXT.put(new Integer(STATUS_KEYRECOVERY),"STATUSKEYRECOVERY");
     }
         
 

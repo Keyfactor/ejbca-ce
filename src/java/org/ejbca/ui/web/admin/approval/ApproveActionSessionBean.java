@@ -1,5 +1,6 @@
 package org.ejbca.ui.web.admin.approval;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -14,6 +15,7 @@ import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
+import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
@@ -25,7 +27,7 @@ import org.ejbca.util.query.Query;
  * 
  * @author Philip Vendil
  * 
- *  $Id: ApproveActionSessionBean.java,v 1.1 2006-08-09 07:29:48 herrvendil Exp $
+ *  $Id: ApproveActionSessionBean.java,v 1.2 2006-08-13 14:55:49 herrvendil Exp $
  */
 public class ApproveActionSessionBean extends BaseManagedBean {
 	private static final Logger log = Logger.getLogger(ApproveActionSessionBean.class);
@@ -39,9 +41,23 @@ public class ApproveActionSessionBean extends BaseManagedBean {
 	}
 
 
- 
+	private  HashMap statustext = null;
     
-	
+	public  HashMap getStatusText(){
+	    if(statustext == null){
+	    	EjbcaWebBean ejbcawebbean = EjbcaJSFHelper.getBean().getEjbcaWebBean();
+	    	statustext = new HashMap();
+	    	statustext.put(new Integer(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL), ejbcawebbean.getText("WAITING"));
+	    	statustext.put(new Integer(ApprovalDataVO.STATUS_EXPIRED), ejbcawebbean.getText("EXPIRED"));
+	    	statustext.put(new Integer(ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED), ejbcawebbean.getText("EXPIREDANDNOTIFIED"));
+	    	statustext.put(new Integer(ApprovalDataVO.STATUS_EXECUTED), ejbcawebbean.getText("EXECUTED"));
+	    	statustext.put(new Integer(ApprovalDataVO.STATUS_APPROVED), ejbcawebbean.getText("APPROVED"));
+	    	statustext.put(new Integer(ApprovalDataVO.STATUS_REJECTED), ejbcawebbean.getText("REJECTED"));
+	    	statustext.put(new Integer(ApprovalDataVO.STATUS_EXECUTIONFAILED), ejbcawebbean.getText("EXECUTIONFAILED"));
+	    	statustext.put(new Integer(ApprovalDataVO.STATUS_EXECUTIONDENIED), ejbcawebbean.getText("EXECUTIONDENIED"));
+	    }
+	    return statustext;
+	}
 
 	private ApprovalDataVOView approveRequestData;
 	

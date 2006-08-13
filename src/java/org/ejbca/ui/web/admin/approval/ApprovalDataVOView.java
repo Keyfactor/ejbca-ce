@@ -5,10 +5,12 @@ import java.security.cert.CertificateException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.ejb.EJBException;
+import javax.faces.application.Application;
+import javax.faces.context.FacesContext;
+import javax.faces.el.ValueBinding;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.approval.ApprovalDataText;
@@ -17,7 +19,6 @@ import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.DummyApprovalRequest;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
-import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
@@ -135,23 +136,17 @@ public class ApprovalDataVOView  implements Serializable{
 			  return "EXPIRED";
 	    }
 	    
-	    if(statustext == null){
-	    	EjbcaWebBean ejbcawebbean = EjbcaJSFHelper.getBean().getEjbcaWebBean();
-	    	statustext = new HashMap();
-	    	statustext.put(new Integer(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL), ejbcawebbean.getText("WAITING"));
-	    	statustext.put(new Integer(ApprovalDataVO.STATUS_EXPIRED), ejbcawebbean.getText("EXPIRED"));
-	    	statustext.put(new Integer(ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED), ejbcawebbean.getText("EXPIREDANDNOTIFIED"));
-	    	statustext.put(new Integer(ApprovalDataVO.STATUS_EXECUTED), ejbcawebbean.getText("EXECUTED"));
-	    	statustext.put(new Integer(ApprovalDataVO.STATUS_APPROVED), ejbcawebbean.getText("APPROVED"));
-	    	statustext.put(new Integer(ApprovalDataVO.STATUS_REJECTED), ejbcawebbean.getText("REJECTED"));
-	    	statustext.put(new Integer(ApprovalDataVO.STATUS_EXECUTIONFAILED), ejbcawebbean.getText("EXECUTIONFAILED"));
-	    	statustext.put(new Integer(ApprovalDataVO.STATUS_EXECUTIONDENIED), ejbcawebbean.getText("EXECUTIONDENIED"));
-	    }
+    	FacesContext context = FacesContext.getCurrentInstance();    
+    	Application app = context.getApplication();    
+    	ValueBinding binding = app.createValueBinding("#{approvalActionSession}");    
+    	Object value = binding.getValue(context);    
+    	ApproveActionSessionBean approvalActionSession = (ApproveActionSessionBean) value;
+
 	    
-	  return (String) statustext.get(new Integer(data.getStatus()));									
+	  return (String) approvalActionSession.getStatusText().get(new Integer(data.getStatus()));									
 	}
 	
-	private static HashMap statustext = null;
+
 
 	/**
 	 * @return
