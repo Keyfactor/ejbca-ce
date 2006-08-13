@@ -32,14 +32,14 @@ public class TestApprovalExecutorUtil extends TestCase {
 		ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest("foo", UserDataConstants.STATUS_GENERATED, UserDataConstants.STATUS_NEW, admin, null, numOfApprovalsRequired, 1, 1);
 		boolean approvalRequired = ApprovalExecutorUtil.requireApproval(ar, null);   
 		assertTrue(approvalRequired);
-		TestApprovalExecutorUtil1.init();
-		approvalRequired = TestApprovalExecutorUtil1.requireApproval(ar, null);   
+		JunitApprovalExecutorUtil1.init();
+		approvalRequired = JunitApprovalExecutorUtil1.requireApproval(ar, null);   
 		assertFalse(approvalRequired);
-		TestApprovalExecutorUtil2.init();
-		approvalRequired = TestApprovalExecutorUtil2.requireApproval(ar, null);   
+		JunitApprovalExecutorUtil2.init();
+		approvalRequired = JunitApprovalExecutorUtil2.requireApproval(ar, null);   
 		assertFalse(approvalRequired);
-		TestApprovalExecutorUtil3.init();
-		approvalRequired = TestApprovalExecutorUtil3.requireApproval(ar, null);   
+		JunitApprovalExecutorUtil3.init();
+		approvalRequired = JunitApprovalExecutorUtil3.requireApproval(ar, null);   
 		assertTrue(approvalRequired);
 	}
 	
@@ -113,7 +113,7 @@ public class TestApprovalExecutorUtil extends TestCase {
 		
 	}
 
-	private static class TestApprovalExecutorUtil1 extends ApprovalExecutorUtil {
+	private static class JunitApprovalExecutorUtil1 extends ApprovalExecutorUtil {
 	      
 		public static void init() {
 			ApprovalExecutorUtil.globallyAllowedString = "se.anatom.ejbca.approval.TestApprovalExecutorUtil";
@@ -121,7 +121,7 @@ public class TestApprovalExecutorUtil extends TestCase {
 			
 		}
 	}
-	private static class TestApprovalExecutorUtil2 extends ApprovalExecutorUtil {
+	private static class JunitApprovalExecutorUtil2 extends ApprovalExecutorUtil {
 	      
 		public static void init() {
 			ApprovalExecutorUtil.globallyAllowedString = "foo.base.Foo,se.anatom.ejbca.approval.TestApprovalExecutorUtil, foo.bar.Bar";
@@ -129,7 +129,7 @@ public class TestApprovalExecutorUtil extends TestCase {
 			
 		}
 	}
-	private static class TestApprovalExecutorUtil3 extends ApprovalExecutorUtil {
+	private static class JunitApprovalExecutorUtil3 extends ApprovalExecutorUtil {
 	      
 		public static void init() {
 			ApprovalExecutorUtil.globallyAllowedString = "foo.base.Foo, foo.bar.Bar";
