@@ -133,7 +133,6 @@ The new logrotate configuration:
         FILE="$LOGFILE.`date +%F.%H:%M:%S`.log"
         SIGNATUREFILE="$FILE.sign"
         cp $LOGFILE.1 "$FILE"
-        PRIVATEKEY="/etc/logsigner/qc1.priv"
         java -jar "$TSACLIENTDIR/timeStampClient.jar" -url "http://127.0.0.1:8080/signserver/tsa?signerId=1" -infile $FILE -outrep $SIGNATUREFILE -base64
     endscript
 }
@@ -312,7 +311,7 @@ To enable, you must add a file protection.properties as defined below, and then 
 
 -----
 #
-# $Id: HOWTO-logsigning.txt,v 1.9 2006-08-06 12:38:09 anatom Exp $
+# $Id: HOWTO-logsigning.txt,v 1.10 2006-08-13 13:39:26 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
