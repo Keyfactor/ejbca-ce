@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.62 2006-08-11 02:57:47 herrvendil Exp $
+# $Id: ejbca.properties.sample,v 1.63 2006-08-13 10:16:23 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -120,9 +120,11 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 # Default : 28800 (8 Hours)
 #approval.defaultapprovalvalidity=28800
 
-# Setting indicating if approvals should apply to extRA calls
-# Default : true
-#approval.useonextracalls=true
+# Setting excluding som classes from approval. When one of the classes in this list calls a method that normally 
+# required approval, the call is immediately allowed, bypassing the approval mechanism. The list is comma separated.
+# Example: org.ejbca.extra.caservice.ExtRACAProcess
+# Default : empty 
+#approval.excludedClasses=
 
 # ------------- Database configuration ------------------------
 

@@ -42,7 +42,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: ChangeStatusEndEntityApprovalRequest.java,v 1.4 2006-08-12 09:49:30 herrvendil Exp $
+ * @version $Id: ChangeStatusEndEntityApprovalRequest.java,v 1.5 2006-08-13 10:16:24 anatom Exp $
  */
 public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 
@@ -73,6 +73,89 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 		this.newstatus = newstatus;
 	}
 
+
+	/** Overrides ApprovalRequest.isAllowedTransition()
+	 * @see ApprovalRequest#isAllowedTransition()
+	 */
+	public boolean isAllowedTransition() {
+		boolean ret = false;
+		if (oldstatus == UserDataConstants.STATUS_GENERATED) {
+			switch (newstatus) {
+			case UserDataConstants.STATUS_GENERATED:
+				ret = true;
+				break;
+			default:
+				break;
+			}			
+		}
+		if (oldstatus == UserDataConstants.STATUS_NEW) {
+			switch (newstatus) {
+			case UserDataConstants.STATUS_NEW:
+				ret = true;
+				break;
+			case UserDataConstants.STATUS_INPROCESS:
+				ret = true;
+				break;
+			case UserDataConstants.STATUS_GENERATED:
+				ret = true;
+				break;
+			case UserDataConstants.STATUS_FAILED:
+				ret = true;
+				break;
+			default:
+				break;
+			}			
+		}
+		if (oldstatus == UserDataConstants.STATUS_FAILED) {
+			switch (newstatus) {
+			case UserDataConstants.STATUS_FAILED:
+				ret = true;
+				break;
+			case UserDataConstants.STATUS_INPROCESS:
+				ret = true;
+				break;
+			case UserDataConstants.STATUS_GENERATED:
+				ret = true;
+				break;
+			default:
+				break;
+			}			
+		}
+		if (oldstatus == UserDataConstants.STATUS_INPROCESS) {
+			switch (newstatus) {
+			case UserDataConstants.STATUS_INPROCESS:
+				ret = true;
+				break;
+			case UserDataConstants.STATUS_GENERATED:
+				ret = true;
+				break;
+			case UserDataConstants.STATUS_FAILED:
+				ret = true;
+				break;
+			default:
+				break;
+			}			
+		}
+		if (oldstatus == UserDataConstants.STATUS_KEYRECOVERY) {
+			switch (newstatus) {
+			case UserDataConstants.STATUS_KEYRECOVERY:
+				ret = true;
+				break;
+			case UserDataConstants.STATUS_INPROCESS:
+				ret = true;
+				break;
+			case UserDataConstants.STATUS_GENERATED:
+				ret = true;
+				break;
+			case UserDataConstants.STATUS_FAILED:
+				ret = true;
+				break;
+			default:
+				break;
+			}			
+		}
+		return ret;
+	}
 
 	public void execute() throws ApprovalRequestExecutionException {
 		log.debug("Executing Change Status  for user:" + username);
