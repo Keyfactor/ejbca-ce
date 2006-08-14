@@ -22,6 +22,8 @@ In the subdirectories here hides some other docs:
 - samples contains some sample code that does not fit on the source tree
 - developer contains architecture documents and information for developers.
 
+There is also a good batch of documentation at http://docs.primekey.se/
+
 Release notes and upgrade
 -------------------------
 In this directory you will find RELEASE_NOTES with some notes relating to this specific release and

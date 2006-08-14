@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.22 2006-06-27 12:19:48 anatom Exp $
+$Id: UPGRADE,v 1.23 2006-08-14 19:35:16 anatom Exp $
 
 UPGRADE
 =======
@@ -22,18 +22,18 @@ After this you must do:
 From EJBCA 3.2.x to EJBCA 3.3.x
 -------------------------------
 Upgrade from EJBCA 3.2.x to EJBCA 3.3.x is a plug-in upgrade, because there are
-no database changes.
+no database changes, or the database changes are only new tables and not changed ones.
 
 You should still follow this advice:
 Backup your database first! If the upgrade fails, you can always go back to the earlier version.
 
 Simply keep/copy ejbca.properties from the earlier installation.
-Merge changes (if there are any) from ejbca.properties.sample into your ejbca.properties.
+Merge changes from ejbca.properties.sample into your ejbca.properties.
 Copy the directory 'p12' from the earlier installation and 'ant deploy' 
 (or deploywithjbossservice) this new one.
 
 You should be ablo to upgrade from EJBCA 3.1.x directly to 3.3.x, by following the same instructions
-as when upgrading from 3.1.x to 3.2.x.
+as when upgrading from 3.1.x to 3.2.x (untested though).
 
 From EJBCA 3.2.x to EJBCA 3.2.x
 -------------------------------
