@@ -270,25 +270,6 @@ replace the ip-address and port '127.0.0.1:8080' with the IP and port of your ac
 The TSA should listen on the HTTP protocol as defined in RFC 3161.
 
 
-Verifying timestamps
-====================
-
-You can verify time stamps with a time stamp client, for example the one that comes with PrimeKeys TSA.
-After building 'signserver' the timeStampClient.jar and other needed jar files is in the dist-client directory.
-
-> java -jar timeStampClient.jar -verify -signerfile tsa1.pem -inrep server.log.2006-07-28-18-58.tsp
-Token was validated successfully.
-Token was generated on: Fri Jul 28 18:59:00 CEST 2006
-Token hash alg: SHA1
-MessageDigest=1a02dc7e05d06df45d2e0f74da502513852064d5
-
-> sha1sum server.log.2006-07-28-18-58
-1a02dc7e05d06df45d2e0f74da502513852064d5 *server.log.2006-07-28-18-58
-
-If the hashes from the time stamp token (MessageDigest) matches the hash from sha1sum, the file is verified, 
-i.e. has not been changed since the time stamp token was generated.
-
-
 Enabling log signing using external script in JBoss
 ===================================================
 
@@ -356,6 +337,26 @@ In the script you must replace TSACLIENTDIR with the path to your TSA client and
 url to your TSA.
 
 
+Verifying timestamps
+====================
+
+You can verify time stamps with a time stamp client, for example the one that comes with PrimeKeys TSA.
+After building 'signserver' the timeStampClient.jar and other needed jar files is in the dist-client directory.
+
+> java -jar timeStampClient.jar -verify -signerfile tsa1.pem -inrep server.log.2006-07-28-18-58.tsp
+Token was validated successfully.
+Token was generated on: Fri Jul 28 18:59:00 CEST 2006
+Token hash alg: SHA1
+MessageDigest=1a02dc7e05d06df45d2e0f74da502513852064d5
+
+> sha1sum server.log.2006-07-28-18-58
+1a02dc7e05d06df45d2e0f74da502513852064d5 *server.log.2006-07-28-18-58
+
+If the hashes from the time stamp token (MessageDigest) matches the hash from sha1sum, the file is verified, 
+i.e. has not been changed since the time stamp token was generated.
+
+
+
 Internal log signing in EJBCA
 =============================
 
@@ -379,7 +380,7 @@ To enable, you must add a file protection.properties as defined below, and then 
 
 -----
 #
-# $Id: HOWTO-logsigning.txt,v 1.11 2006-08-14 08:46:16 anatom Exp $
+# $Id: HOWTO-logsigning.txt,v 1.12 2006-08-14 08:50:56 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
