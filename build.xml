@@ -880,8 +880,10 @@ protection.certprotect=${protection.certprotect}
         <javac srcdir="${src.java}" extdirs="${lib}" destdir="${build}" debug="on" encoding="iso8859-1">
             <exclude name="**/CVS/**" />
             <include name="**/appserver/jboss/SigningDailyRollingFileAppender*" />
+            <include name="**/appserver/jboss/ScriptrunningDailyRollingFileAppender*" />
             <include name="**/appserver/jboss/RollingCalendar*" />
             <include name="**/appserver/jboss/SignerThread*" />
+            <include name="**/appserver/jboss/ScriptThread*" />
             <!-- appserver specific files are built separtely-->
             <classpath refid="jbosslogsigning.classpath" />
             <classpath refid="compile.classpath" />
@@ -891,8 +893,10 @@ protection.certprotect=${protection.certprotect}
         <copy todir="${logsigning.build}">
             <fileset dir="${build}">
                 <include name="org/ejbca/appserver/jboss/SigningDailyRollingFileAppender*.class" />
+                <include name="org/ejbca/appserver/jboss/ScriptrunningDailyRollingFileAppender*.class" />
                 <include name="org/ejbca/appserver/jboss/RollingCalendar.class" />   
                 <include name="org/ejbca/appserver/jboss/SignerThread.class" />   
+                <include name="org/ejbca/appserver/jboss/ScriptThread.class" />   
                 <include name="org/ejbca/util/CertTools*.class" />
                 <include name="org/ejbca/util/FileTools*.class" />
                 <exclude name="se/anatom/ejbca/**/*Test*" />

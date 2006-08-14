@@ -21,6 +21,7 @@ HSM is needed, several log rows per secons is normally issued when actions are d
 
 This document describes the three first options.
 
+
 Enabling log signing using logrotate and openssl
 ================================================
 
@@ -288,6 +289,73 @@ If the hashes from the time stamp token (MessageDigest) matches the hash from sh
 i.e. has not been changed since the time stamp token was generated.
 
 
+Enabling log signing using external script in JBoss
+===================================================
+
+There is an implementation that runs an external script when JBoss log files
+when they are rolled-over. This can be every hour for example.
+
+- Stop JBoss
+- Issue the command: ant jbosslogsigning
+- Copy dist/ejbcalogsigning.jar to jboss.home/server/default/lib
+- Configure jboss.home/server/default/conf/log4j.xml, according to below
+- Create the script that is to be run (see example below)
+- Start JBoss
+
+As for the SigningDailyRollingFileAppender above, replace the default section in log4j.xml with:
+-----
+   <!-- A time/date based rolling appender that signs rollev over log files using a time stamp server -->
+   <appender name="FILE" class="org.ejbca.appserver.jboss.ScriptrunningDailyRollingFileAppender">
+      <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
+      <param name="File" value="${jboss.server.log.dir}/server.log"/>
+      <param name="Append" value="false"/>
+      <param name="Script" value="/home/jboss/log-sign-tsa-jboss.sh"/>
+
+      <!-- Rollover at midnight each day -->
+      <param name="DatePattern" value="'.'yyyy-MM-dd"/>
+
+      <!-- Rollover at the top of each hour
+      <param name="DatePattern" value="'.'yyyy-MM-dd-HH"/>
+      -->
+
+      <!-- Rollover at the beginning of every minute
+      <param name="DatePattern" value="'.'yyyy-MM-dd-HH-mm"/>
+      -->
+
+      <layout class="org.apache.log4j.PatternLayout">
+         <!-- The default pattern: Date Priority [Category] Message\n -->
+         <param name="ConversionPattern" value="%d %-5p [%c] %m%n"/>
+
+         <!-- The full pattern: Date MS Priority [Category] (Thread:NDC) Message\n
+         <param name="ConversionPattern" value="%d %-5r %-5p [%c] (%t:%x) %m%n"/>
+          -->
+      </layout>
+   </appender>
+-----
+
+Where /home/jboss/log-sign-tsa-jboss.sh is your script that should be run to do the signing.
+signlog.sh must take one argument, which is the file to sign.
+
+And the new shell script for verification (or manual signing).
+log-sign-tsa-jboss.sh
+-----
+#!/bin/bash
+
+TSACLIENTDIR=/usr/local/signserver/dist-client
+TSAURL="http://127.0.0.1:8080/signserver/tsa?signerId=1"
+SCRIPTNAME=`basename $0`
+
+FILE="$1"
+SIGNATUREFILE="$FILE.tsa"
+java -jar "$TSACLIENTDIR/timeStampClient.jar" -url $TSAURL -infile $FILE -outrep $SIGNATUREFILE -base64
+
+exit 0
+-----
+
+In the script you must replace TSACLIENTDIR with the path to your TSA client and TSAURL with the
+url to your TSA.
+
+
 Internal log signing in EJBCA
 =============================
 
@@ -311,7 +379,7 @@ To enable, you must add a file protection.properties as defined below, and then 
 
 -----
 #
-# $Id: HOWTO-logsigning.txt,v 1.10 2006-08-13 13:39:26 anatom Exp $
+# $Id: HOWTO-logsigning.txt,v 1.11 2006-08-14 08:46:16 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
