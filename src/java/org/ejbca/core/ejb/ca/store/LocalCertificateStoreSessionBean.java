@@ -170,7 +170,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.16 2006-08-06 15:48:48 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.17 2006-08-15 13:26:17 anatom Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
@@ -1181,9 +1181,6 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 crlinfo = null;
             }
             debug("<getLastCRLInfo()");
-            if (crlinfo == null)
-                return null;
-
             return crlinfo;
         } catch (Exception e) {
             getLogSession().log(admin, issuerdn.hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_GETLASTCRL, "Error retrieving crl info.");
