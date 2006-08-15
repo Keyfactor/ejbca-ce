@@ -44,6 +44,7 @@ import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
+import org.ejbca.core.ejb.hardtoken.IHardTokenSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -54,6 +55,9 @@ import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.model.hardtoken.profiles.EIDProfile;
+import org.ejbca.core.model.hardtoken.profiles.HardTokenProfile;
+import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -86,7 +90,7 @@ import org.ejbca.util.CertTools;
  * </p>
  *
  * @author Original code by Lars Silvén
- * @version $Id: CardCertReqServlet.java,v 1.9 2006-08-13 16:19:36 anatom Exp $
+ * @version $Id: CardCertReqServlet.java,v 1.10 2006-08-15 20:42:47 primelars Exp $
  */
 public class CardCertReqServlet extends HttpServlet {
 	private final static Logger log = Logger.getLogger(CardCertReqServlet.class);
@@ -94,6 +98,8 @@ public class CardCertReqServlet extends HttpServlet {
     private IUserAdminSessionHome useradminhome = null;
     private ICertificateStoreSessionHome certificatestorehome = null;
     private ICAAdminSessionHome caadminsessionhome = null;
+    private IHardTokenSessionHome tokenSessionHome = null;
+
     /**
      * Servlet init
      *
@@ -118,6 +124,8 @@ public class CardCertReqServlet extends HttpServlet {
                     ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class );
             caadminsessionhome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CAAdminSession"),
                                                                                              ICAAdminSessionHome.class);
+            tokenSessionHome = (IHardTokenSessionHome)javax.rmi.PortableRemoteObject.narrow(ctx.lookup("HardTokenSession"),
+                                                                                            IHardTokenSessionHome.class);
         } catch( Exception e ) {
             throw new ServletException(e);
         }
@@ -161,12 +169,6 @@ public class CardCertReqServlet extends HttpServlet {
             debug.print("<h3>username: " + username + "</h3>");
             
             final UserDataVO data = adminsession.findUser(administrator, username);
-            if ( data.getTokenType()!= SecConst.TOKEN_SOFT_BROWSERGEN ) {
-            	log.error("Users token type must be 'UserGenerated' (1), but is: "+data.getTokenType());
-                debug.printMessage("Users token type must be 'UserGenerated' (1), but is: "+data.getTokenType());
-                debug.printDebugInfo();
-                return;            	
-            }
             final X509Certificate notRevokedCerts[]; {
                 Set set = new HashSet();
                 for( Iterator i = certificatestoresession.findCertificatesByUsername(administrator, username).iterator(); i.hasNext(); ) {
@@ -189,17 +191,21 @@ public class CardCertReqServlet extends HttpServlet {
             if ( authReq!=null && signReq!=null ) {
                 final int authCertProfile;
                 final int signCertProfile;
+                // for some reason you can't use the HardTokenProfile. null disables is.
+//                final HardTokenProfile hardTokenSession = tokenSessionHome.create().getHardTokenProfile(administrator, data.getTokenType());
+                final HardTokenProfile hardTokenSession = null;
                 {
-                    CertProfileID certProfileID = new CertProfileID(certificatestoresession, data, administrator);
-                    authCertProfile = certProfileID.getProfileID("authCertProfile");
-                    signCertProfile = certProfileID.getProfileID("signCertProfile");
+                    CertProfileID certProfileID = new CertProfileID(certificatestoresession, data, administrator,
+                                                                    hardTokenSession);
+                    authCertProfile = certProfileID.getProfileID("authCertProfile", SwedishEIDProfile.CERTUSAGE_AUTHENC);
+                    signCertProfile = certProfileID.getProfileID("signCertProfile", SwedishEIDProfile.CERTUSAGE_SIGN);
                 }
                 final int authCA;
                 final int signCA;
                 {
-                    CAID caid = new CAID(data,administrator);
-                    authCA = caid.getProfileID("authCA");
-                    signCA = caid.getProfileID("signCA");
+                    CAID caid = new CAID(data,administrator, hardTokenSession);
+                    authCA = caid.getProfileID("authCA", SwedishEIDProfile.CERTUSAGE_AUTHENC);
+                    signCA = caid.getProfileID("signCA", SwedishEIDProfile.CERTUSAGE_SIGN);
                 }
                 // if not IE, check if it's manual request
                 final byte[] authReqBytes = authReq.getBytes();
@@ -207,12 +213,12 @@ public class CardCertReqServlet extends HttpServlet {
                 if ( authReqBytes!=null && signReqBytes!=null) {
                     adminsession.changeUser(administrator, username,data.getPassword(), data.getDN(), data.getSubjectAltName(),
                                             data.getEmail(), true, data.getEndEntityProfileId(), authCertProfile, data.getType(),
-                                            data.getTokenType(), data.getHardTokenIssuerId(), data.getStatus(), authCA);
+                                            SecConst.TOKEN_SOFT_BROWSERGEN, 0, data.getStatus(), authCA);
                     final byte[] authb64cert=pkcs10CertRequest(administrator, signsession, authReqBytes, username, data.getPassword());
 
                     adminsession.changeUser(administrator, username, data.getPassword(), data.getDN(), data.getSubjectAltName(),
                                             data.getEmail(), true, data.getEndEntityProfileId(), signCertProfile, data.getType(),
-                                            data.getTokenType(), data.getHardTokenIssuerId(), UserDataConstants.STATUS_NEW, signCA);
+                                            SecConst.TOKEN_SOFT_BROWSERGEN, 0, UserDataConstants.STATUS_NEW, signCA);
                     final byte[] signb64cert=pkcs10CertRequest(administrator, signsession, signReqBytes, username, data.getPassword());
 
                     data.setStatus(UserDataConstants.STATUS_GENERATED);
@@ -300,8 +306,8 @@ public class CardCertReqServlet extends HttpServlet {
     }
     private class CAID extends BaseID {
         final private ICAAdminSessionRemote caadminsession;
-        CAID(UserDataVO d, Admin a) throws RemoteException, CreateException {
-            super(d, a);
+        CAID(UserDataVO d, Admin a, HardTokenProfile hardTokenProfile) throws RemoteException, CreateException {
+            super(d, a, hardTokenProfile);
             caadminsession = caadminsessionhome.create();                       
         }
         protected int getFromName(String name) throws RemoteException {
@@ -314,11 +320,19 @@ public class CardCertReqServlet extends HttpServlet {
         protected int getFromOldData() {
             return data.getCAId();
         }
+        protected int getFromHardToken(int keyType) {
+            final int id = hardTokenProfile.getCertificateProfileId(keyType);
+            if ( id!=EIDProfile.CAID_USEUSERDEFINED )
+                return id;
+            else
+                return data.getCAId();
+        }
     }
     private class CertProfileID extends BaseID {
         final ICertificateStoreSessionRemote certificatestoresession;
-        CertProfileID(ICertificateStoreSessionRemote c, UserDataVO d, Admin a) throws RemoteException, CreateException {
-            super(d, a);
+        CertProfileID(ICertificateStoreSessionRemote c, UserDataVO d, Admin a,
+                      HardTokenProfile hardTokenProfile) throws RemoteException, CreateException {
+            super(d, a, hardTokenProfile);
             certificatestoresession = c;
         }
         protected int getFromName(String name) throws RemoteException {
@@ -327,18 +341,29 @@ public class CardCertReqServlet extends HttpServlet {
         protected int getFromOldData() {
             return data.getCertificateProfileId();
         }
+        protected int getFromHardToken(int keyType) {
+            return hardTokenProfile.getCertificateProfileId(keyType);
+        }
     }
     private abstract class BaseID {
         final UserDataVO data;
         final Admin administrator;
+        final EIDProfile hardTokenProfile;
         
+        protected abstract int getFromHardToken(int keyType);
         protected abstract int getFromName(String name) throws RemoteException;
         protected abstract int getFromOldData();
-        BaseID(UserDataVO d, Admin a) {
+        BaseID(UserDataVO d, Admin a, HardTokenProfile htp) {
             data = d;
             administrator = a;
+            if ( htp!=null && htp instanceof EIDProfile )
+                hardTokenProfile = (EIDProfile)htp;
+            else
+                hardTokenProfile = null;
         }
-        public int getProfileID(String parameterName) throws RemoteException {
+        public int getProfileID(String parameterName, int keyType) throws RemoteException {
+            if ( hardTokenProfile!=null )
+                return getFromHardToken(keyType);
             String name = CardCertReqServlet.this.getInitParameter(parameterName);
             if ( name!=null && name.length()>0 ) {
                 final int id = getFromName(name);
