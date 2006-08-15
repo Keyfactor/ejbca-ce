@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.23 2006-08-14 19:35:16 anatom Exp $
+$Id: UPGRADE,v 1.24 2006-08-15 14:05:01 anatom Exp $
 
 UPGRADE
 =======
@@ -34,6 +34,10 @@ Copy the directory 'p12' from the earlier installation and 'ant deploy'
 
 You should be ablo to upgrade from EJBCA 3.1.x directly to 3.3.x, by following the same instructions
 as when upgrading from 3.1.x to 3.2.x (untested though).
+
+If you are using Eracom HSM, please notice that property names have changed for determining which key is used.
+After upgrading EJBCA, you must go into CA configuration and update your HSM properties.
+The property names are now the same for all different HSMs.
 
 From EJBCA 3.2.x to EJBCA 3.2.x
 -------------------------------
