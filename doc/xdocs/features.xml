@@ -17,7 +17,7 @@
 <li>Powerful Web based administration GUI using strong authentication.</li>
 <li>Administration GUI available in several languages - english, french, italian, spanish, swedish and chinese.</li>
 <li>Command line administration for scripts etc.</li>
-<li>Modular API for HSMs. Built in support for nCipher HSM (sponsored by Linagora), PrimeCardHSM and Eracom (now SafeNet).</li>
+<li>Modular API for HSMs. Built in support for nCipher HSM (sponsored by Linagora), PrimeCardHSM, Eracom (now SafeNet) and SafeNet Luna.</li>
 <li>Supports different architectures; all-in-one, clustered, external RA, external OCSP, etc.</li>
 <li>Individual enrollment or batch production of certificates.</li>
 <li>Server and client certificates can be exported as PKCS12, JKS or PEM.</li>
@@ -42,10 +42,12 @@
 <li>Supports authentication and publishing of certificates to Microsoft Active Directory.</li>
 <li>Component based architecture for publishing certificates and CRLs to different sources.</li>
 <li>Key recovery module to store private keys for recovery for selected users and certificates.</li>
+<li>API for an external RA, restricting inbound traffic to CA.</li>
+<li>Optional approval mechanism for RA so several admins are required to perform an action.</li>
 <li>Component based architecture for various authorization methods of entities when issuing certificates.</li>
 <li>Easy to integrate into large java applications for optimal integration into bussiness process.</li>
-<li>API for an external RA, restricting inbound traffic to CA</li>
 <li>Deploys easily in a clustered high availability environment.</li>
+<li>Health check service to support efficient clustering and monitoring.</li>
 <li>Supports many databases: Hypersoniq, MySQL, PostgreSQL, Orcale, MS-SQL2000, Sybase, Informix.</li>
 </ul>    
 
