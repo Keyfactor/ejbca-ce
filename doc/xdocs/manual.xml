@@ -967,7 +967,7 @@ like approving CA editing and creation (not implemented yet).  An administrator 
 gives access to end entity profile related access rules, like adding and editing end entities. The administrator must 
 also have the ‘approve_end_entity rule’ for at least one of the ‘/endentityprofilerules/’ in order to approve any 
 actions.</li>
-<li><i>'/endentityprofilerules/<endentityprofilename>/approve_end_entity'</i>see previous rule.</li>
+<li><i>'/endentityprofilerules/&lt;endentityprofilename&gt;/approve_end_entity'</i>see previous rule.</li>
 </ul>
 </p><p>
 <i>Two Different Approval Requests</i>
@@ -977,7 +977,7 @@ end entity, and that is executed directly after the last required administrator 
 called ‘Executable Action Request’. The other type are requests to get hold of some information, like hard token 
 PUK codes or archived keys. This kind of request is approved when the last administrator gives his consent and is valid 
 for a defined period of time (in ejbca.properties). In this case is the requesting administrator supposed to poll the 
-approval request if it has been approved or not. These requests are called ‘Non-Executable Action Requests’. 
+approval request if it has been approved or not. These requests are called 'Non-Executable Action Requests'. 
 </p><p>
 <i>Explanation of approval status</i>
 </p><p>
@@ -988,21 +988,21 @@ valid for the time specified by approval.defaultrequestvalidity in ejbca.propert
 <li><i>Approved</i>: Means that the action request is approved and is valid for the amount of time specified by 
 approval.defaultapprovalvalidity in ejbca.properties. After this it is set to Expired. Used by action requests that’s 
 not executable.</li>
-<li><i>Rejected<</i>: Means that the action request is rejected and won’t be allowed. The rejection lasts the amount of time 
+<li><i>Rejected</i>: Means that the action request is rejected and won't be allowed. The rejection lasts the amount of time 
 specified by approval.defaultapprovalvalidity in ejbca.properties. After this it is set to Expired and a new request can 
-be done. Used by action requests that’s not executable.</li>
-<li><i>Expired</i>: Means that the action request isn’t valid any more and cannot be processed. The requesting administrator 
+be done. Used by action requests that's not executable.</li>
+<li><i>Expired</i>: Means that the action request isn't valid any more and cannot be processed. The requesting administrator 
 has to make a new request in order to approve it.</li>
-<li><i>Expired and Notified</i>: Same as ‘Expired’ but also indicates that the requesting administrator has been notified 
+<li><i>Expired and Notified</i>: Same as 'Expired' but also indicates that the requesting administrator has been notified 
 about that his request have expired.</li>
 <li><i>Executed</i>: Means that the action request have been executed successfully. Used by action requests that’s executable.</li>
 <li><i>Execution Failed</i>: Means that the action request failed for some reason during execution, see log for more information.
  Used by action requests that’s executable.</li>
-<li><i>Execution Denied</i>: Means that the action request hasn’t been approved and will not be executed. The difference with status 
-‘Rejected’ is that this status is only used with executable requests and don’t have any expire time. This means that the requesting 
+<li><i>Execution Denied</i>: Means that the action request hasn't been approved and will not be executed. The difference with status 
+'Rejected' is that this status is only used with executable requests and don’t have any expire time. This means that the requesting 
 administrator can apply again directly after the rejection.</li>
 </ul>
-</p><p>
+</p>
 </section>
 
 <section name="Framwork for External User Data Sources">
@@ -1010,43 +1010,45 @@ administrator can apply again directly after the rejection.</li>
 In EJBCA 3.3 there exists a basic framework of custom user data sources 
 for importing user data from existing databases. 
 </p>
-</p>These instuctions is intended for EJBCA developers.<p>
-</p>Currently there exists a standalone framework for implementing 
+<p>These instuctions is intended for EJBCA developers.</p>
+<p>Currently there exists a standalone framework for implementing 
 custom user data sources in the same way as for custom publishers. Later 
 on will ready made LDAP and AD userdatasources be implemented to be used 
 out of the box. 
-<p>
-</p>A custom userdatasource have two extra fields of data<p>
-</p>The first one is a set of CA ids that the userdatasource is applicable to. 
-It can have a constant BaseUserDataSource.ANY_CA.<p>
-</p>The second is a set of fields instructing the RA interface GUI which fields that 
+</p>
+<p>A custom userdatasource have two extra fields of data</p>
+<p>The first one is a set of CA ids that the userdatasource is applicable to. 
+It can have a constant BaseUserDataSource.ANY_CA.
+</p>
+<p>The second is a set of fields instructing the RA interface GUI which fields that 
 should be modifyable by the RA and which that should be fixed. Important, there 
 is not connection between the user data source, isModifyable data and the end entity profile 
 isModifyalbe data. The userdata source is only a instuction to the RA gui then when the 
 userdata is added will it be matched against the end entity profile, and it's the data 
-in the end entity profile that really counts. <p>
-</p>Tip. The RA gui should read non-modifyable data twice since the RA could 
-change the postdata even if the form have a field as disabled. 
-<p>
+in the end entity profile that really counts. 
 </p>
+<p>Tip. The RA gui should read non-modifyable data twice since the RA could 
+change the postdata even if the form have a field as disabled. 
+</p>
+<p>
 To implement a custom user data source do the following: 
 <ol>
 <li>Create a class implementing the interface 
 org.ejbca.core.model.ra.userdatasource.ICustomUserDataSource containing the methods: 
 init(), fetch() and testConnection(), see org.ejbca.core.model.ra.userdatasource.DummyCustomUserDataSource 
 for an simple example implementation. 
-</il>
-<li>Create a jar file containing the class and deploy it to the application server.</il>
+</li>
+<li>Create a jar file containing the class and deploy it to the application server.</li>
 <li>Make the user data source available to EJBCA by adding a userdata source, choose 'Custom user data source' 
 as type and enter it's classpath and properties (using the same semantics as a regular java property file). 
-</il>
-<il>
+</li>
+<li>
 Now it is possible to fetch userdata from the userdata source from custom implemented webpages using the 
 UserDataSourceSession session bean calling the method 
 java.util.Collection IUserDataSourceSessionLocal.fetch( Admin admin,Collection userdatasourceids,String searchstring) method. 
-</il>
+</li>
 </ol>
-<p>
+</p>
 </section>
 
 <section name="Hardware Security Modules (HSM)">
