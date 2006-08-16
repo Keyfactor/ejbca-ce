@@ -91,7 +91,7 @@ import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silvén PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.25 2006-08-06 12:37:00 anatom Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.26 2006-08-16 15:53:31 primelars Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChecker {
 
@@ -213,7 +213,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
             keyStore = tmpKeyStore;
             eAlias = keyStore.aliases();
         } catch( Exception e ) {
-            m_log.error("Unable to load key file "+fileName, e);
+            m_log.debug("Unable to load key file "+fileName+". Exception: "+e.getMessage());
             return false;
         }
         while( eAlias.hasMoreElements() ) {
@@ -224,7 +224,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
                 if ( key!=null && cert!=null )
                     putSignEntity(new PrivateKeyFactorySW(key), cert, adm, "BC");
             } catch (Exception e) {
-                m_log.error("Unable to get alias "+alias+" in file "+fileName+". Exception: ", e);
+                m_log.debug("Unable to get alias "+alias+" in file "+fileName+". Exception: "+e.getMessage());
             }
         }
         return true;
