@@ -934,7 +934,7 @@ Currently are the following actions enabled for approvals :
 <li>Change User Status</li>
 </ul>
 </p><p>
-In the main menu there is a new option ‘Approve Actions’ that lets the 
+In the main menu there is a new option 'Approve Actions' that lets the 
 administrator to search for waiting requests and review its data and finally 
 gives his approval or reject the action.
 </p><p>
@@ -942,7 +942,7 @@ gives his approval or reject the action.
 </p><p>
 Approvals are configured for each CA, in the 'edit CA' page.
 Just select the actions that needs approval and the number of approvers required and save. The actions 'Add End Entity', 
-'Change End Entity' and 'Change User Status' are all covered by the setting ‘Add/Edit End Entity’
+'Change End Entity' and 'Change User Status' are all covered by the setting 'Add/Edit End Entity'.
 </p><p>
 <i>Authorizing Approving Administrators</i>
 </p><p>
@@ -960,12 +960,12 @@ Using Advanced Rule Sets:
 </p><p>
 There are three new access rules: 
 <ul>
-<li><i>‘/cafunctionality/approve_caaction’</i>, a rule that gives access to non end entity profile related actions 
+<li><i>'/cafunctionality/approve_caaction'</i>, a rule that gives access to non end entity profile related actions 
 like approving CA editing and creation (not implemented yet).  An administrator must have either this rule or the 
-‘/rafunctionalty/approve_end_entity’ in order to access the ‘Approve Actions’ web pages.</li>
+'/rafunctionalty/approve_end_entity' in order to access the 'Approve Actions' web pages.</li>
 <li><i>'/rafunctionalty/approve_end_entity'</i>, a rule (along with the corresponding end entity profile rule) that 
 gives access to end entity profile related access rules, like adding and editing end entities. The administrator must 
-also have the ‘approve_end_entity rule’ for at least one of the ‘/endentityprofilerules/’ in order to approve any 
+also have the 'approve_end_entity rule' for at least one of the '/endentityprofilerules/' in order to approve any 
 actions.</li>
 <li><i>'/endentityprofilerules/&lt;endentityprofilename&gt;/approve_end_entity'</i>see previous rule.</li>
 </ul>
@@ -974,7 +974,7 @@ actions.</li>
 </p><p>
 In the system there are basically two different classes of requests. One is requests to do some action, like adding an 
 end entity, and that is executed directly after the last required administrator has approved the action. This type is 
-called ‘Executable Action Request’. The other type are requests to get hold of some information, like hard token 
+called 'Executable Action Request'. The other type are requests to get hold of some information, like hard token 
 PUK codes or archived keys. This kind of request is approved when the last administrator gives his consent and is valid 
 for a defined period of time (in ejbca.properties). In this case is the requesting administrator supposed to poll the 
 approval request if it has been approved or not. These requests are called 'Non-Executable Action Requests'. 
@@ -986,18 +986,18 @@ Here follows an explanation of what the different approval requests statuses.
 <li><i>Waiting</i>: Means that the action request is waiting to be processed by authorized administrators, request are 
 valid for the time specified by approval.defaultrequestvalidity in ejbca.properties before it is set to status Expired.</li>
 <li><i>Approved</i>: Means that the action request is approved and is valid for the amount of time specified by 
-approval.defaultapprovalvalidity in ejbca.properties. After this it is set to Expired. Used by action requests that’s 
+approval.defaultapprovalvalidity in ejbca.properties. After this it is set to Expired. Used by action requests that are 
 not executable.</li>
 <li><i>Rejected</i>: Means that the action request is rejected and won't be allowed. The rejection lasts the amount of time 
 specified by approval.defaultapprovalvalidity in ejbca.properties. After this it is set to Expired and a new request can 
-be done. Used by action requests that's not executable.</li>
+be done. Used by action requests that are not executable.</li>
 <li><i>Expired</i>: Means that the action request isn't valid any more and cannot be processed. The requesting administrator 
 has to make a new request in order to approve it.</li>
 <li><i>Expired and Notified</i>: Same as 'Expired' but also indicates that the requesting administrator has been notified 
 about that his request have expired.</li>
-<li><i>Executed</i>: Means that the action request have been executed successfully. Used by action requests that’s executable.</li>
+<li><i>Executed</i>: Means that the action request have been executed successfully. Used by action requests that are executable.</li>
 <li><i>Execution Failed</i>: Means that the action request failed for some reason during execution, see log for more information.
- Used by action requests that’s executable.</li>
+ Used by action requests that are executable.</li>
 <li><i>Execution Denied</i>: Means that the action request hasn't been approved and will not be executed. The difference with status 
 'Rejected' is that this status is only used with executable requests and don’t have any expire time. This means that the requesting 
 administrator can apply again directly after the rejection.</li>
@@ -1045,7 +1045,7 @@ as type and enter it's classpath and properties (using the same semantics as a r
 <li>
 Now it is possible to fetch userdata from the userdata source from custom implemented webpages using the 
 UserDataSourceSession session bean calling the method 
-java.util.Collection IUserDataSourceSessionLocal.fetch( Admin admin,Collection userdatasourceids,String searchstring) method. 
+java.util.Collection IUserDataSourceSessionLocal.fetch(Admin admin, Collection userdatasourceids, String searchstring) method. 
 </li>
 </ol>
 </p>
