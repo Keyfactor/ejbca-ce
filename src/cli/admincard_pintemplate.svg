@@ -27,11 +27,11 @@
    </text>
    <text x="3016" y="10773">$PIN2 
    </text>
-   <text x="3016" y="11455">$PUK2
+   <text x="3016" y="11455">PUK for $PUK2
    </text>
    <text x="3016" y="12819">$PIN1 
    </text>
-   <text x="3016" y="13501">$PUK1 
+   <text x="3016" y="13501">PUK for $PUK1 
    </text>
   </g>
  </g>
