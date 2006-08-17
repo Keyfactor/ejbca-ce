@@ -49,7 +49,7 @@ import org.bouncycastle.jce.X509Principal;
 /**
  * Class copied from BC where RSASSA-PSS support is added.
  * 
- * @version $Id: ExtendedPKCS10CertificationRequest.java,v 1.4 2006-06-08 14:45:05 anatom Exp $
+ * @version $Id: ExtendedPKCS10CertificationRequest.java,v 1.5 2006-08-17 11:23:59 anatom Exp $
  */
 public class ExtendedPKCS10CertificationRequest
     extends CertificationRequest
@@ -305,11 +305,16 @@ public class ExtendedPKCS10CertificationRequest
         throws NoSuchAlgorithmException, NoSuchProviderException,
                 InvalidKeyException, SignatureException
     {
-        return verify("BC");
+        return verify(null, "BC");
     }
+    public boolean verify(PublicKey pubKey)
+    throws NoSuchAlgorithmException, NoSuchProviderException,
+            InvalidKeyException, SignatureException
+{
+    return verify(pubKey, "BC");
+}
 
-    public boolean verify(
-        String provider)
+    public boolean verify(PublicKey pubKey, String provider)
         throws NoSuchAlgorithmException, NoSuchProviderException,
                 InvalidKeyException, SignatureException
     {
@@ -338,8 +343,11 @@ public class ExtendedPKCS10CertificationRequest
             }
         }
 
-        
-        sig.initVerify(this.getPublicKey(provider));
+        PublicKey pub = pubKey;
+        if (pub == null) {
+            pub = this.getPublicKey(provider);
+        }
+        sig.initVerify(pub);
 
         try
         {

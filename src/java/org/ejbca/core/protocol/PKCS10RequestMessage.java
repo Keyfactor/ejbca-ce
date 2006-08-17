@@ -44,7 +44,7 @@ import org.ejbca.util.CertTools;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.5 2006-08-06 15:48:04 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.6 2006-08-17 11:23:59 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage {
     /**
@@ -360,6 +360,10 @@ public class PKCS10RequestMessage implements IRequestMessage {
      * @throws NoSuchProviderException DOCUMENT ME!
      */
     public boolean verify()
+    throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+        return verify(null);
+    }
+    public boolean verify(PublicKey pubKey)
             throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
         log.debug(">verify()");
 
@@ -370,7 +374,7 @@ public class PKCS10RequestMessage implements IRequestMessage {
                 init();
             }
 
-            ret = pkcs10.verify();
+            ret = pkcs10.verify(pubKey);
         } catch (IllegalArgumentException e) {
             log.error("PKCS10 not inited!");
         } catch (InvalidKeyException e) {
