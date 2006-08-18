@@ -90,7 +90,7 @@ import org.ejbca.util.CertTools;
  * </p>
  *
  * @author Original code by Lars Silvén
- * @version $Id: CardCertReqServlet.java,v 1.10 2006-08-15 20:42:47 primelars Exp $
+ * @version $Id: CardCertReqServlet.java,v 1.11 2006-08-18 10:48:46 primelars Exp $
  */
 public class CardCertReqServlet extends HttpServlet {
 	private final static Logger log = Logger.getLogger(CardCertReqServlet.class);
@@ -191,19 +191,17 @@ public class CardCertReqServlet extends HttpServlet {
             if ( authReq!=null && signReq!=null ) {
                 final int authCertProfile;
                 final int signCertProfile;
-                // for some reason you can't use the HardTokenProfile. null disables is.
-//                final HardTokenProfile hardTokenSession = tokenSessionHome.create().getHardTokenProfile(administrator, data.getTokenType());
-                final HardTokenProfile hardTokenSession = null;
+                final HardTokenProfile hardTokenProfile = tokenSessionHome.create().getHardTokenProfile(administrator, data.getTokenType());
                 {
                     CertProfileID certProfileID = new CertProfileID(certificatestoresession, data, administrator,
-                                                                    hardTokenSession);
+                                                                    hardTokenProfile);
                     authCertProfile = certProfileID.getProfileID("authCertProfile", SwedishEIDProfile.CERTUSAGE_AUTHENC);
                     signCertProfile = certProfileID.getProfileID("signCertProfile", SwedishEIDProfile.CERTUSAGE_SIGN);
                 }
                 final int authCA;
                 final int signCA;
                 {
-                    CAID caid = new CAID(data,administrator, hardTokenSession);
+                    CAID caid = new CAID(data,administrator, hardTokenProfile);
                     authCA = caid.getProfileID("authCA", SwedishEIDProfile.CERTUSAGE_AUTHENC);
                     signCA = caid.getProfileID("signCA", SwedishEIDProfile.CERTUSAGE_SIGN);
                 }
@@ -321,7 +319,7 @@ public class CardCertReqServlet extends HttpServlet {
             return data.getCAId();
         }
         protected int getFromHardToken(int keyType) {
-            final int id = hardTokenProfile.getCertificateProfileId(keyType);
+            final int id = hardTokenProfile.getCAId(keyType);
             if ( id!=EIDProfile.CAID_USEUSERDEFINED )
                 return id;
             else
