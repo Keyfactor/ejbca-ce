@@ -90,7 +90,7 @@ import org.ejbca.util.CertTools;
  * </p>
  *
  * @author Original code by Lars Silvén
- * @version $Id: CardCertReqServlet.java,v 1.11 2006-08-18 10:48:46 primelars Exp $
+ * @version $Id: CardCertReqServlet.java,v 1.12 2006-08-18 11:52:15 primelars Exp $
  */
 public class CardCertReqServlet extends HttpServlet {
 	private final static Logger log = Logger.getLogger(CardCertReqServlet.class);
@@ -209,6 +209,7 @@ public class CardCertReqServlet extends HttpServlet {
                 final byte[] authReqBytes = authReq.getBytes();
                 final byte[] signReqBytes = signReq.getBytes();
                 if ( authReqBytes!=null && signReqBytes!=null) {
+                    try {
                     adminsession.changeUser(administrator, username,data.getPassword(), data.getDN(), data.getSubjectAltName(),
                                             data.getEmail(), true, data.getEndEntityProfileId(), authCertProfile, data.getType(),
                                             SecConst.TOKEN_SOFT_BROWSERGEN, 0, data.getStatus(), authCA);
@@ -219,8 +220,6 @@ public class CardCertReqServlet extends HttpServlet {
                                             SecConst.TOKEN_SOFT_BROWSERGEN, 0, UserDataConstants.STATUS_NEW, signCA);
                     final byte[] signb64cert=pkcs10CertRequest(administrator, signsession, signReqBytes, username, data.getPassword());
 
-                    data.setStatus(UserDataConstants.STATUS_GENERATED);
-                    adminsession.changeUser(administrator, data, true); // set back to original values
 
                     for (int i=0; i<notRevokedCerts.length; i++)
                         adminsession.revokeCert(administrator, notRevokedCerts[i].getSerialNumber(),
@@ -229,6 +228,15 @@ public class CardCertReqServlet extends HttpServlet {
 
                     sendCertificates(authb64cert, signb64cert, response,  getServletContext(),
                                      getInitParameter("responseTemplate"), notRevokedCerts);
+                    } catch( Throwable t ) {
+                        if (t instanceof Exception)
+                            throw (Exception)t;
+                        else
+                            throw new Error(t);
+                    } finally {
+                        data.setStatus(UserDataConstants.STATUS_GENERATED);
+                        adminsession.changeUser(administrator, data, true); // set back to original values
+                    }
                 }
             }
         } catch( UserCertificateRevokedException e) {
