@@ -43,6 +43,12 @@
     </servlet>
 -->
 
+<!-- 
+This is a servlet that can be used to renew certificates on smart card using NetId CSP.
+It is tailored for SwedishEID hard token profile with two certificates, one for authentication and one for signature.
+The old certificates will be removed when the new ones are added.
+-->
+<!-- 
 	<servlet>
 		<servlet-name>CardCertReqServlet</servlet-name>
 		<display-name>CardCertReqServlet</display-name>
@@ -68,7 +74,8 @@
 			<param-value>Company A from test</param-value>
 		</init-param>
 	</servlet>
-
+ -->
+ 
     <servlet-mapping>
       <servlet-name>CertReqServlet</servlet-name>
       <url-pattern>/certreq</url-pattern>
@@ -89,11 +96,12 @@
     </servlet-mapping>
 -->
 
+<!-- 
     <servlet-mapping>
       <servlet-name>CardCertReqServlet</servlet-name>
       <url-pattern>/cardcertreq</url-pattern>
     </servlet-mapping>
-
+ 
   <security-constraint>
     <web-resource-collection>
       <web-resource-name>EJBCA</web-resource-name> 
@@ -109,6 +117,8 @@
   <login-config>
     <auth-method>CLIENT-CERT</auth-method>
   </login-config>
+ 
+ -->
   
    <env-entry>
       <description><![CDATA[Default content encoding used to decode form posts]]></description>
