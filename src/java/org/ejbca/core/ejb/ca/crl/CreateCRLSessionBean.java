@@ -52,7 +52,7 @@ import org.ejbca.util.CertTools;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.8 2006-08-15 13:26:56 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.9 2006-08-19 16:42:18 anatom Exp $
  * @ejb.bean
  *   description="Session bean handling hard token data, both about hard tokens and hard token issuers."
  *   display-name="CreateCRLSB"
@@ -206,7 +206,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
             }
             ISignSessionLocal sign = signHome.create();
             byte[] crlBytes = sign.createCRL(admin, caid, certs);
-            log.info("Created CRL for CA: "+cainfo.getName());
+            log.info("Created CRL for CA: "+cainfo.getName()+", with DN: "+cainfo.getSubjectDN());
             if (log.isDebugEnabled()) {
                 X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
                 debug("Created CRL with expire date: "+crl.getNextUpdate());
