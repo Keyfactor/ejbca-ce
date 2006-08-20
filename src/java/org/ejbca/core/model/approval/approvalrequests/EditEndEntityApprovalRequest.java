@@ -21,6 +21,7 @@ import java.util.List;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
@@ -44,7 +45,7 @@ import org.ejbca.util.CertTools;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: EditEndEntityApprovalRequest.java,v 1.4 2006-08-13 14:56:53 herrvendil Exp $
+ * @version $Id: EditEndEntityApprovalRequest.java,v 1.5 2006-08-20 12:49:21 anatom Exp $
  */
 public class EditEndEntityApprovalRequest extends ApprovalRequest {
 
@@ -113,8 +114,8 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		ArrayList retval = new ArrayList();
 		retval.add(new ApprovalDataText("USERNAME",newuserdata.getUsername(),true,false));
 		String passwordtext = "NOTSHOWN";
-		if((newuserdata.getPassword() == null && orguserdata.getPassword() != null && !orguserdata.getPassword().equals("")) ||
-		   (newuserdata.getPassword() != null && !orguserdata.getPassword().equals("") && orguserdata.getPassword() == null)){			
+		if((newuserdata.getPassword() == null && !StringUtils.isEmpty(orguserdata.getPassword())) ||
+		   (!StringUtils.isEmpty(newuserdata.getPassword()) && orguserdata.getPassword() == null)) {			
 			passwordtext = "NEWPASSWORD";			
 		}		
 		if(newuserdata.getPassword() != null && orguserdata.getPassword() != null){
