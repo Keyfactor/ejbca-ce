@@ -127,7 +127,7 @@
 	<target name="j2ee:assert-run" description="Check that the server is running">
         <echo message="Checking that the J2EE server is up and running..."/>
         <waitfor maxwait="2" maxwaitunit="second" timeoutproperty="j2ee.notrunning">
-            <http url="http://localhost:8080/web-console/"/>
+            <http url="http://localhost:8080/"/>
         </waitfor>
         <fail message="Please start J2EE server before running this script" if="j2ee.notrunning"/>	
 	</target>
