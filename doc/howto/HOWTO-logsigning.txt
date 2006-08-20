@@ -129,12 +129,13 @@ The new logrotate configuration:
         /usr/bin/killall -HUP syslogd
     endscript    
     lastaction
+        JAVA_HOME=/usr/local/java
         TSACLIENTDIR=/home/tomas/dev/workspace/signserver/dist-client
         LOGFILE=/var/log/syslog
         FILE="$LOGFILE.`date +%F.%H:%M:%S`.log"
         SIGNATUREFILE="$FILE.sign"
         cp $LOGFILE.1 "$FILE"
-        java -jar "$TSACLIENTDIR/timeStampClient.jar" -url "http://127.0.0.1:8080/signserver/tsa?signerId=1" -infile $FILE -outrep $SIGNATUREFILE -base64
+        $JAVA_HOME/bin/java -jar "$TSACLIENTDIR/timeStampClient.jar" -url "http://127.0.0.1:8080/signserver/tsa?signerId=1" -infile $FILE -outrep $SIGNATUREFILE -base64
     endscript
 }
 -----
@@ -378,11 +379,12 @@ This information can be used to monitor logs for protection errors.
 To enable, you must add a file protection.properties as defined below, and then doing
 'ant clean', 'and deploy'.
 
-Don't forget, enabling log protection degrades performance with quite a bit!!!
+Don't forget, enabling log protection degrades performance a bit! 
+See HOWTO-database.txt for some indexes that might speed things up a little bit again.
 
 -----
 #
-# $Id: HOWTO-logsigning.txt,v 1.14 2006-08-20 12:52:54 anatom Exp $
+# $Id: HOWTO-logsigning.txt,v 1.15 2006-08-20 14:06:25 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
