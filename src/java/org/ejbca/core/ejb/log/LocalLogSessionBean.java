@@ -128,7 +128,7 @@ import org.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.6 2006-08-05 10:29:52 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.7 2006-08-20 13:35:54 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 
@@ -260,9 +260,9 @@ public class LocalLogSessionBean extends BaseSessionBean {
 
 
     /**
-     * Internal implementation for loggin
+     * Internal implementation for logging
      */
-    private void doLog(Admin admin, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception ex) {
+    private synchronized void doLog(Admin admin, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception ex) {
         final LogConfiguration config = loadLogConfiguration(caid);
         if (config.logEvent(event)) {
             try {
@@ -433,7 +433,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
     } // saveLogConfiguration
 
 
-    private synchronized Integer getAndIncrementRowCount() {
+    private Integer getAndIncrementRowCount() {
         if (this.logconfigurationdata == null) {
             try {
                 logconfigurationdata = logconfigurationhome.findByPrimaryKey(new Integer(0));
