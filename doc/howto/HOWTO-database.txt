@@ -206,4 +206,8 @@ create index logentry_idx2 on LogEntryData (caid);
 
 Indexes on CRLData:
 create index crldata_idx1 on CRLData (issuerDN);
+create index crldata_idx2 on CRLData (cRLNumber);
 
+Indexes on CertificateData:
+create index certificatedata_idx1 on CertificateData (issuerDN);
+create index certificatedata_idx2 on CertificateData (serialNumber);
