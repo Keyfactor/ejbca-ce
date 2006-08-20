@@ -378,9 +378,11 @@ This information can be used to monitor logs for protection errors.
 To enable, you must add a file protection.properties as defined below, and then doing
 'ant clean', 'and deploy'.
 
+Don't forget, enabling log protection degrades performance with quite a bit!!!
+
 -----
 #
-# $Id: HOWTO-logsigning.txt,v 1.13 2006-08-14 19:30:26 anatom Exp $
+# $Id: HOWTO-logsigning.txt,v 1.14 2006-08-20 12:52:54 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
