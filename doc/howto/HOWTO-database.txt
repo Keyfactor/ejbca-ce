@@ -203,3 +203,7 @@ create index protect_idx1 on TableProtectData (dbKey,dbType);
 Selecting log entries when viewing logs:
 create index logentry_idx1 on LogEntryData (time);
 create index logentry_idx2 on LogEntryData (caid);
+
+Indexes on CRLData:
+create index crldata_idx1 on CRLData (issuerDN);
+
