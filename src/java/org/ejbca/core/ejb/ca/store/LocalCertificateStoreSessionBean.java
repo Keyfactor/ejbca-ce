@@ -170,7 +170,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.17 2006-08-15 13:26:17 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.18 2006-08-22 17:28:35 anatom Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
@@ -1178,6 +1178,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 CRLDataLocal data = crlHome.findByIssuerDNAndCRLNumber(issuerdn, maxnumber);
                 crlinfo = new CRLInfo(data.getIssuerDN(), maxnumber, data.getThisUpdate(), data.getNextUpdate());
             } catch (FinderException e) {
+                log.error("Can not find CRL for issuer: "+issuerdn+", with number: "+maxnumber, e);
                 crlinfo = null;
             }
             debug("<getLastCRLInfo()");
