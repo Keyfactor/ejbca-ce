@@ -197,6 +197,8 @@ Indexes for higher performance
 This is a starting point for collecting indexes to create in the database to optimize performance (and cpu and disc usage):
 (you can start messing with this when you notice some slowdown, for normal installations it's rarely needed)
 
+Indexes below are in MySQL syntax, it should be general enough though.
+
 TableProtectData searches when verifying:
 create index protect_idx1 on TableProtectData (dbKey,dbType);
  
@@ -205,9 +207,11 @@ create index logentry_idx1 on LogEntryData (time);
 create index logentry_idx2 on LogEntryData (caid);
 
 Indexes on CRLData:
-create index crldata_idx1 on CRLData (issuerDN);
-create index crldata_idx2 on CRLData (cRLNumber);
+create index crldata_idx1 on CRLData (issuerDN,cRLNumber);
 
 Indexes on CertificateData:
-create index certificatedata_idx1 on CertificateData (issuerDN);
-create index certificatedata_idx2 on CertificateData (serialNumber);
+create index certificatedata_idx1 on CertificateData (issuerDN,serialNumber);
+
+On external OCSP responders you should create the following two indexes:
+create index protect_idx1 on TableProtectData (dbKey,dbType);
+create index certificatedata_idx1 on CertificateData (issuerDN,serialNumber);
