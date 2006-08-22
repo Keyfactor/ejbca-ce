@@ -23,23 +23,26 @@
        // Print Authorization Denied Exception.
      out.write("<H2>" + ejbcawebbean.getText("AUTHORIZATIONDENIED") + "</H2>");
      out.write("<H4>" + ejbcawebbean.getText("CAUSE") + " : " + exception.getMessage() + "</H4>");
-     exception.printStackTrace() ; // TODO Remove
+     response.setStatus(HttpServletResponse.SC_OK);
    }
    else
    if( exception instanceof AuthenticationFailedException){
        // Print Authorization Denied Exception.
      out.write("<H2>" + ejbcawebbean.getText("AUTHORIZATIONDENIED") + "</H2>");
      out.write("<H4>" + ejbcawebbean.getText("CAUSE") + " : " + exception.getMessage() + "</H4>");
+     response.setStatus(HttpServletResponse.SC_OK);
    }else
 	if( exception instanceof CATokenOfflineException){
     // Print CATokenOfflineException.
     out.write("<H2>" + ejbcawebbean.getText("CATOKENISOFFLINE") + "</H2>");
     out.write("<H4>" + ejbcawebbean.getText("CAUSE") + " : " + exception.getMessage() + "</H4>");
+    response.setStatus(HttpServletResponse.SC_OK);
    }else{
        // Other exception occured, print exception and stack trace.   
      out.write("<H2>" + ejbcawebbean.getText("EXCEPTIONOCCURED") + "</H2>");
      out.write("<H4>" + exception.toString() + " : " + exception.getMessage() + "</H4>");
      exception.printStackTrace() ;
+     response.setStatus(HttpServletResponse.SC_OK);
    }
 %>
 
