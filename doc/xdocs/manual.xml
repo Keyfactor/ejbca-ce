@@ -391,14 +391,16 @@ Create desired profiles (the default entity and certificate profiles work fine, 
 You certificate profile should have:<br/> 
 - KeyUsage: <i>Digital signature, Key encipherment</i><br/>
 - Extended key usage: <i>Server Authentication</i><br/>
-Your end entity should include the servers hostname (or *.domain.com) in the CommonName, and possibly 
-also as a DNSName in SubjectAlternativeNames. 
 </li>
-<li>Create a user with the admin_GUI or 'bin/ejbca.sh ra'. The DN for a server should have the
-domain name in
-CommonName (CN). Example DN for webserver: "C=SE,O=AnaTom,CN=
+<li>Create a user with the admin-GUI or 'bin/ejbca.sh ra'. 
+<br/>The Distinguished name (DN) of the server should have the
+the servers full hostname (host.domain.com) in the CommonName (CN) field.
+<br/>Example DN for webserver: "C=SE,O=AnaTom,CN=
 www.anatom.se", or
-for mailserver "C=SE,O=AnaTom,OU=Engineering,CN=mail.anatom.se". Set the token type to match the kind of token that should be generated for your server.
+for mailserver "C=SE,O=AnaTom,OU=Engineering,CN=mail.anatom.se". 
+<br/>You can also put the same name (or several names) as a DNSName in SubjectAlternativeNames. 
+<br/>For so-called wildcard certificates, use *.anatom.se.
+<br/>Set the token type to match the kind of token that should be generated for your server.
 </li>
 <li>To be able to batch-generate certificates, the batch
 generation program must have access to the users (servers) password in order to request
@@ -411,7 +413,7 @@ form, so the password must be stored in clear text form by running
 </ol>
 </p><p>
 Many servers (ex Apache, Tomcat) wants keys and certificates
-in PEM-format or SUN JKS.
+in PEM-format (Apache) or SUN JKS (Tomcat).
 To generate PEM-files use token type PEM. The PEM-files will be stored in a
 separate subdirectory, 'pem'. The generated PEM-files can be used with
 Apache etc, and are NOT protected by any password.
@@ -421,8 +423,9 @@ files can be used with Tomcat etc, and are protected (both private key password
 and keystore password) by the users password.
 </p>
 <p>
-If the server generates the keys and a certificate request for you, you can use the 
-public enrollment web pages, 'manual for a server', to paste the request and receive the certificate.
+If the server generates the keys and a certificate request (CST) for you, select token type "User generated".
+You can use the public enrollment web pages (http://127.0.0.1:8080/ejbca/) to paste the request and receive the certificate.
+This function is under "Certificate Enrollment->manually for a server".
 </p>
 <p>
 It is also possible to use openssl to transform a PKCS12 file to PEM-
