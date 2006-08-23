@@ -1,0 +1,47 @@
+
+OpenLDAP replication
+--------------------
+
+From OpenLDAP news group:
+
+I tried to set up classic replication with my openldap servers, I had some success, 
+however I wasn't able to get control over replication as I can with syncrepl module. 
+After some days trying, I dropped the idea of classic replication, and moved to syncrepl
+module, and I strongly recommend it.
+
+On master:
+######
+overlay syncprov
+syncprov-checkpoint 5 3
+syncprov-sessionlog 100
+######
+
+and on slave(s):
+#####
+syncrepl
+        rid=123
+        provider=ldap://aa.bb.cc.dd:389/
+        bindmethod=simple
+        binddn="cn=master-superuser,dc=uk"
+        credentials=secretpassword
+        type=refreshAndPersist
+        searchbase="dc=uk"
+        schemachecking=on
+        interval=00:00:02:00
+        retry="60 +"
+        scope=sub
+        attributes="*"
+############
+
+and that's all  :)  and it works fine  :)  One should also note, that user specified on slave, 
+should have implicit read rights for specified replication base dn, like this:
+
+on master:
+
+access to *
+        by dn="cn=master-superuser,dc=uk" read
+
+see man slapd.conf for explanation of syncrepl configuration options.
+
+Regards,
+DT.
