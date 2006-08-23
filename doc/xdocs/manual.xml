@@ -439,7 +439,30 @@ copy and paste the private key to key file, the first certificate to
 server cert file and last certificate to CA cert file (If your CA is a
 subordinate CA to another Root CA, the CA cert file may need to contain the whole cert
 chain). Exactly how your server wants the files is server dependent.
-</p></subsection>
+</p>
+<p>
+For your convenience, here is the standard text (RFC2818) how browsers validate the name(s) in the certificate.
+</p>
+<source>
+If a subjectAltName extension of type dNSName is present, that MUST
+be used as the identity. Otherwise, the (most specific) Common Name
+field in the Subject field of the certificate MUST be used. Although
+the use of the Common Name is existing practice, it is deprecated and
+Certification Authorities are encouraged to use the dNSName instead.
+
+Matching is performed using the matching rules specified by
+[RFC2459].  If more than one identity of a given type is present in
+the certificate (e.g., more than one dNSName name, a match in any one
+of the set is considered acceptable.) Names may contain the wildcard
+character * which is considered to match any single domain name
+component or component fragment. E.g., *.a.com matches foo.a.com but
+not bar.foo.a.com. f*.com matches foo.com but not bar.com.
+
+In some cases, the URI is specified as an IP address rather than a
+hostname. In this case, the iPAddress subjectAltName must be present
+in the certificate and must exactly match the IP in the URI.
+</source>
+</subsection>
 </section>
 
 <section name="CRL generation">
