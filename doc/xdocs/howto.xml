@@ -166,6 +166,13 @@ CA Certificate
 
   </section>
 
+  <section name="OpenSSH and X509 authentication">
+  <p>Bruno Bonfils has written this excellent howto on using SSH with certificates from EJBCA:</p>
+  <p>
+  <a href="http://asyd.net/home/geeklog/2006/08/24/openssh_x509">OpenSSH and X509 authentication</a>.
+  </p>
+  </section>
+  
 </body>
 </document>
 

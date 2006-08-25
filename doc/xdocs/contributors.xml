@@ -52,7 +52,7 @@ administrator, who can be found on the sourceforge project page.
 <li>Hu Aranjuez, mynetbus(at)126.com, Column name fix for MS SQL2000.</li>
 <li>Marco Ferrante, marco(at)csita.unige.it, Italian translation, openssl migration howto, importcert cli function.</li>
 <li>Alejandro Falcone, afalcone(at)speedy.com.ar, Spanish translation.</li>
-<li>Bruno Bonfils, asyd(at)gwyneth.glou.net, added X-ORIGIN to device schema for latest Sun Directory Server. Tested Cisco IOS and made the IOS Howto.</li>
+<li>Bruno Bonfils, asyd(at)gwyneth.glou.net, added X-ORIGIN to device schema for latest Sun Directory Server. Tested Cisco IOS and made the IOS Howto. OpenSSH and X509 authentication.</li>
 <li>Resurrección Mazo González, rmazgon(at)canarias.org, LdapSearchPublisher.</li>
 <li>Ronan le Meillat, ronan.le_meillat(at)lesmuids.com, Htmlized french translation.</li>
 <li>Zhengrong (Jerry) Liu, zjl6(at)users.sourceforge.net, Limit length of primary key columns when using UTF-8 encoding in MySQL, fix for static fields in server.xml.</li>
