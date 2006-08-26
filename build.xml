@@ -173,7 +173,7 @@
     <property name="httpserver.pubhttps" value="8442" />
     <property name="httpserver.privhttps" value="8443" />
     <property name="httpsserver.password" value="serverpwd" />
-    <property name="web.availablelanguages" value="EN,FR,IT,ES,SE,ZH" />
+    <property name="web.availablelanguages" value="EN,FR,IT,ES,SE,ZH,DE" />
     <property name="web.contentencoding" value="ISO-8859-1" />
 	<property name="approval.defaultrequestvalidity" value="28800" />
 	<property name="approval.defaultapprovalvalidity" value="28800" />
