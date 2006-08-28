@@ -13,8 +13,10 @@
 
 package org.ejbca.ui.cli;
 
+import java.lang.reflect.InvocationTargetException;
 import java.security.KeyStore;
 import java.security.Provider;
+import java.security.Security;
 import java.security.cert.X509Certificate;
 
 import sun.security.x509.CertAndKeyGen;
@@ -22,7 +24,7 @@ import sun.security.x509.X500Name;
 
 /**
  * @author lars
- * @version $Id: KeyTool.java,v 1.2 2006-08-28 06:20:47 primelars Exp $
+ * @version $Id: KeyTool.java,v 1.3 2006-08-28 06:46:12 primelars Exp $
  *
  */
 public class KeyTool {
@@ -56,10 +58,12 @@ public class KeyTool {
             System.err.println("Use \"" + args[0]+" "+GENERATE_SWITCH+"\" or \"" +
                                args[0]+" "+DELETE_SWITCH+"\".");
      }
-    private String loadProvider( String className ) {
-        final Provider provider = Object.;//(Provider)Class.forName(className);
+    private static String loadProvider( String className ) throws IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException {
+        final Provider provider = (Provider)Class.forName(className).getConstructor(new Class[0]).newInstance(new Class[0]);
+        Security.addProvider(provider);
+        return provider.getName();
     }
-    private static void generate(final String providerName,
+    private static void generate(final String providerClassName,
                                  final String keyStoreName,
                                  final String keyEntryName,
                                  final int keySize) {
@@ -67,6 +71,7 @@ public class KeyTool {
             // Generate the RSA Keypair
             final String keyAlgName = "RSA";
             final String sigAlgName = "SHA1withRSA";
+            final String providerName = loadProvider(providerClassName);
             final CertAndKeyGen keyPair = new CertAndKeyGen(keyAlgName, sigAlgName, providerName);
             keyPair.generate(keySize);
             X509Certificate[] chain = new X509Certificate[1];
@@ -79,10 +84,11 @@ public class KeyTool {
             e.printStackTrace(System.err);
         }
     }
-    private static void delete(final String providerName,
+    private static void delete(final String providerClassName,
                                final String keyStoreName,
                                final String keyEntryName) {
         try {
+            final String providerName = loadProvider(providerClassName);
             final KeyStore ks = KeyStore.getInstance(keyStoreName, providerName);
             ks.load(System.in, null);
             // Save the Certificate to the Luna KeyStore
