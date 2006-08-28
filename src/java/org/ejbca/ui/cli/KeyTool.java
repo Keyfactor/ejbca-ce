@@ -14,6 +14,7 @@
 package org.ejbca.ui.cli;
 
 import java.security.KeyStore;
+import java.security.Provider;
 import java.security.cert.X509Certificate;
 
 import sun.security.x509.CertAndKeyGen;
@@ -21,7 +22,7 @@ import sun.security.x509.X500Name;
 
 /**
  * @author lars
- * @version $Id: KeyTool.java,v 1.1 2006-08-25 13:56:49 primelars Exp $
+ * @version $Id: KeyTool.java,v 1.2 2006-08-28 06:20:47 primelars Exp $
  *
  */
 public class KeyTool {
@@ -41,12 +42,12 @@ public class KeyTool {
            See the Luna developers reference guide for information on
            alternatives to using the LunaTokenManager class.
         */
-        if ( args.length > 0 && args[0].toLowerCase().trim().equals(GENERATE_SWITCH)) {
+        if ( args.length > 1 && args[1].toLowerCase().trim().equals(GENERATE_SWITCH)) {
             if ( args.length < 6 )
                 System.err.println(args[0] + " " + args[1] + " <key entry name> <key size>");
             else
                 generate(args[2], args[3], args[4], Integer.parseInt(args[5].trim()));
-        } else if ( args.length > 0 && args[0].toLowerCase().trim().equals(DELETE_SWITCH)) {
+        } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(DELETE_SWITCH)) {
             if ( args.length < 5 )
                 System.err.println(args[0] + " " + args[1] + " <key entry name>");
             else
@@ -55,6 +56,9 @@ public class KeyTool {
             System.err.println("Use \"" + args[0]+" "+GENERATE_SWITCH+"\" or \"" +
                                args[0]+" "+DELETE_SWITCH+"\".");
      }
+    private String loadProvider( String className ) {
+        final Provider provider = Object.;//(Provider)Class.forName(className);
+    }
     private static void generate(final String providerName,
                                  final String keyStoreName,
                                  final String keyEntryName,
@@ -62,7 +66,7 @@ public class KeyTool {
         try {
             // Generate the RSA Keypair
             final String keyAlgName = "RSA";
-            final String sigAlgName = "RSA";
+            final String sigAlgName = "SHA1withRSA";
             final CertAndKeyGen keyPair = new CertAndKeyGen(keyAlgName, sigAlgName, providerName);
             keyPair.generate(keySize);
             X509Certificate[] chain = new X509Certificate[1];

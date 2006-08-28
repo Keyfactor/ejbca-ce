@@ -2,10 +2,11 @@
 
 args="$0 $1 "
 shift
-shift
 args+="com.ncipher.provider.km.nCipherKM nCipher.sworld "
-args+="$*"
+args+="$@"
 
-export cp=/opt/nfast/java/classes/rsaprivenc.jar:/opt/nfast/java/classes/nfjava.jar:/opt/nfast/java/classes/kmjava.jar:/opt/nfast/java/classes/kmcsp.jar:/opt/nfast/java/classes/jutils.jar:$EJBCA_HOME/tmp/bin/classes
+cp=/opt/nfast/java/classes/rsaprivenc.jar:/opt/nfast/java/classes/nfjava.jar:/opt/nfast/java/classes/kmjava.jar:/opt/nfast/java/classes/kmcsp.jar:/opt/nfast/java/classes/jcetools.jar:/opt/nfast/java/classes/jutils.jar
+cp+=:$EJBCA_HOME/out/classes
+#cp+=:$EJBCA_HOME/tmp/bin/classes
 
-echo "$JAVA_HOME/bin/java" -cp $cp org.ejbca.ui.cli.KeyTool $args
+"$JAVA_HOME/bin/java" -cp $cp org.ejbca.ui.cli.KeyTool $args
