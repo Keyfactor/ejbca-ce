@@ -10,4 +10,4 @@ cp+=:$EJBCA_HOME/lib/bcprov-jdk15.jar
 cp+=:$EJBCA_HOME/out/classes
 #cp+=:$EJBCA_HOME/tmp/bin/classes
 
-"$JAVA_HOME/bin/java" -cp $cp org.ejbca.ui.cli.KeyTool $args
+"$JAVA_HOME/bin/java" -cp $cp org.ejbca.ui.cli.HSMKeyTool $args

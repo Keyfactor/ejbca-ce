@@ -38,10 +38,10 @@ import org.bouncycastle.x509.X509V3CertificateGenerator;
 
 /**
  * @author lars
- * @version $Id: KeyTool.java,v 1.4 2006-08-28 14:00:59 primelars Exp $
+ * @version $Id: HSMKeyTool.java,v 1.1 2006-08-29 05:42:23 primelars Exp $
  *
  */
-public class KeyTool {
+public class HSMKeyTool {
     private static String GENERATE_SWITCH = "generate";
     private static String DELETE_SWITCH = "delete";
     /**
@@ -53,7 +53,7 @@ public class KeyTool {
             if ( args.length < 5 )
                 System.err.println(args[0] + " " + args[1] + " <key size> [<key entry name>]");
             else
-                generate(args[2], args[3], Integer.parseInt(args[4].trim()), args.length>6 ? args[5] :null, args.length>6 ? args[6] : "myKey");
+                generate(args[2], args[3], Integer.parseInt(args[4].trim()), args.length>5 ? args[5] :null, args.length>6 ? args[6] : "myKey");
         } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(DELETE_SWITCH)) {
             if ( args.length < 4 )
                 System.err.println(args[0] + " " + args[1] + " <key entry name>");
