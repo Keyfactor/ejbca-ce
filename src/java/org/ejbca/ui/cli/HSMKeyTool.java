@@ -77,7 +77,7 @@ class Test {
 
 /**
  * @author lars
- * @version $Id: HSMKeyTool.java,v 1.3 2006-08-30 09:34:45 primelars Exp $
+ * @version $Id: HSMKeyTool.java,v 1.4 2006-08-30 12:50:22 primelars Exp $
  *
  */
 public class HSMKeyTool {
@@ -170,11 +170,12 @@ public class HSMKeyTool {
         try {
             ks.setKeyEntry(keyEntryName, keyPair.getPrivate(), passPrase!=null ? passPrase.toCharArray() : null, chain);
         } catch( KeyStoreException kse ) {
-            System.err.println("Give password of inserted card in slot.");
+            System.err.println("Give password of inserted card in slot:");
             ks.setKeyEntry(keyEntryName, keyPair.getPrivate(),
                            new BufferedReader(new InputStreamReader(System.in)).readLine().toCharArray(),
                            chain);
         }
+        System.err.println("Next line will contain the identity identifying the keystore:");
         ks.store(System.out, null);
         System.out.println();
     }
