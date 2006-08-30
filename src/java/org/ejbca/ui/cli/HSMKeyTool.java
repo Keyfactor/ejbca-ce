@@ -44,18 +44,17 @@ import javax.security.auth.x500.X500Principal;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 
 class Test {
-    final String sigAlgName = "SHA1withRSA";
-    final byte signInput[] = "Lillan gick på vägen ut.".getBytes();
-    final String alias;
-    final KeyPair keyPair;
-    final String providerName;
+    final private String sigAlgName = "SHA1withRSA";
+    final private byte signInput[] = "Lillan gick på vägen ut.".getBytes();
+    final private String alias;
+    final private KeyPair keyPair;
+    final private String providerName;
     public Test(String a, KeyPair kp, String pn) {
         alias = a;
         keyPair = kp;
         providerName = pn;
     }
-    public void doIt(int i) {
-        try {
+    public void doIt(int i) throws Exception {
             final byte signBA[]; {
                 Signature signature = Signature.getInstance(sigAlgName, providerName);
                 signature.initSign( keyPair.getPrivate() );
@@ -73,15 +72,12 @@ class Test {
                                    "; first byte " + Integer.toHexString(0xff&signBA[0]) +
                                    "; verifying " + result);
             }
-        } catch( Throwable t ) {
-            t.printStackTrace(System.err);
-        }
     }
 }
 
 /**
  * @author lars
- * @version $Id: HSMKeyTool.java,v 1.2 2006-08-29 19:11:44 primelars Exp $
+ * @version $Id: HSMKeyTool.java,v 1.3 2006-08-30 09:34:45 primelars Exp $
  *
  */
 public class HSMKeyTool {
@@ -206,16 +202,24 @@ public class HSMKeyTool {
         ks.store(System.out, null);
         System.out.println();
     }
-    private static void test(final String providerClassName,
-                             final String keyStoreType,
-                             final String storeID,
-                             final int nrOfTests) throws Exception {
-        final String providerName = getProviderName(providerClassName);
-        System.out.println("Test of keystore with ID "+storeID+" of type "+keyStoreType+" with provider "+providerName+'.');
-        final KeyStore ks = KeyStore.getInstance(keyStoreType, providerName);
-        {
-            InputStream is = new ByteArrayInputStream(storeID.getBytes());
-            ks.load(is, null);
+    private static Test[] getTests(final String providerName,
+                                   final String keyStoreType,
+                                   final String storeID) throws Exception {
+        final KeyStore ks; {
+            KeyStore tmp = null;
+            while( tmp==null ) {
+                final InputStream is = new ByteArrayInputStream(storeID.getBytes());
+                tmp = KeyStore.getInstance(keyStoreType, providerName);
+                try {
+                    tmp.load(is, null);
+                } catch( Throwable t ) {
+                    tmp = null;
+                    t.printStackTrace(System.err);
+                    System.err.println("Card set not preloaded. Hit return when error fixed");
+                    new BufferedReader(new InputStreamReader(System.in)).readLine();
+                }
+            }
+            ks = tmp;
         }
         Enumeration e = ks.aliases();
         Set testSet = new HashSet();
@@ -233,9 +237,25 @@ public class HSMKeyTool {
                 testSet.add(new Test(alias, new KeyPair(ks.getCertificate(alias).getPublicKey(), privateKey), providerName));
             }
         }
-        Test tests[] = (Test[])testSet.toArray(new Test[0]);
-        for (int i = 0; i<nrOfTests || nrOfTests <1; i++)
-            for( int j = 0; j<tests.length; j++ )
-                tests[j].doIt(i);
+        return (Test[])testSet.toArray(new Test[0]);
+    }
+    private static void test(final String providerClassName,
+                             final String keyStoreType,
+                             final String storeID,
+                             final int nrOfTests) throws Exception {
+        String providerName = getProviderName(providerClassName);
+        System.out.println("Test of keystore with ID "+storeID+" of type "+keyStoreType+" with provider "+providerName+'.');
+        Test tests[] = null;
+        for (int i = 0; i<nrOfTests || nrOfTests<1; i++) {
+            if ( tests==null )
+                tests = getTests(providerName, keyStoreType, storeID);
+            try {
+                for( int j = 0; j<tests.length; j++ )
+                    tests[j].doIt(i);
+            } catch( Throwable t ) {
+                tests = null;
+                t.printStackTrace(System.err);
+            }
+        }
     }
 }
