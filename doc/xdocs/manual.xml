@@ -1125,11 +1125,10 @@ Follow these steps to create a CA that is using a nFast card:
 </p>
 <strong>1. Install the nFast card</strong>
 <p>
-Make sure you have all necessary software and drivers installed and created
-the user and group nfast. In Linux should the software be installed to /opt/nfast or the location environment variable NFAST_HOME is pointing to.
+Make sure you have all necessary software and drivers installed and created the user and group nfast. In Linux should the software be installed to /opt/nfast or the location environment variable NFAST_HOME is pointing to.
 </p>
 <p>
-login as the nfast user.
+login as the nfast user: 'sudo su nfast'
 </p>
 <p>
 Set the nCipher box to initialization mode by setting the switch to mode 'I'.
@@ -1138,17 +1137,82 @@ Set the nCipher box to initialization mode by setting the switch to mode 'I'.
 Clear the nCipher box by pressing the reset button on the device
 </p>
 <p>
-Goto the NFAST_HOME directory and use 'bin/enquiry' to check the status of the nchiper box. Check that the mode is in 
-'pre-initialization mode' and not in 'operational'.
+Check that the mode is in 'pre-initialization mode' and not in 'operational':
 </p>
+<source>
+nfast@donny:/home/lars/work$ /opt/nfast/bin/enquiry
+Server:
+ enquiry reply flags  none
+ enquiry reply level  Six
+ serial number        41C5-BA04-6D2C
+ mode                 operational
+ version              2.23.6
+ speed index          147
+ rec. queue           442..642
+ level one flags      Hardware HasTokens
+ version string       2.23.6cam5, 2.22.6cam7 built on Apr 25 2005 18:15:46
+ checked in           00000000431dca98 Tue Sep  6 18:58:00 2005
+ level two flags      none
+ max. write size      8192
+ level three flags    KeyStorage
+ level four flags     OrderlyClearUnit HasRTC HasNVRAM HasNSOPermsCmd ServerHasPollCmds FastPollSlotList HasSEE HasKLF HasShareACL HasFeatureEnable HasFileOp HasLongJobs ServerHasLongJobs AESModuleKeys NTokenCmds LongJobsPreferred
+ module type code     0
+ product name         nFast server
+ device name
+ EnquirySix version   4
+ impath kx groups
+ feature ctrl flags   none
+ features enabled     none
+ version serial       0
+ remote server port   9004
+
+Module #1:
+ enquiry reply flags  none
+ enquiry reply level  Six
+ serial number        41C5-BA04-6D2C
+ mode                 pre-initialisation
+ version              2.22.6
+ speed index          147
+ rec. queue           9..152
+ level one flags      Hardware HasTokens InitialisationMode PreMaintInitMode
+ version string       2.22.6cam7 built on Apr 25 2005 18:15:46
+ checked in           00000000426636cd Wed Apr 20 13:02:37 2005
+ level two flags      none
+ max. write size      8192
+ level three flags    KeyStorage
+ level four flags     OrderlyClearUnit HasRTC HasNVRAM HasNSOPermsCmd ServerHasPollCmds FastPollSlotList HasSEE HasKLF HasShareACL HasFeatureEnable HasFileOp HasLongJobs ServerHasLongJobs AESModuleKeys NTokenCmds LongJobsPreferred
+ module type code     6
+ product name         nC1002P/nC3022P
+ device name          #1 nFast PCI device, bus 0, slot 13.
+ EnquirySix version   5
+ impath kx groups     DHPrime1024
+ feature ctrl flags   LongTerm
+ features enabled     StandardKM
+ version serial       24
+ rec. LongJobs queue  8
+ SEE machine type     gen1AIF
+nfast@donny:/home/lars/work$
+</source>
 <p>
 Create the security world with the command :
 </p>
 <source>
-bin/new-world -i -m 1 -Q K/N 
+nfast@donny:/home/lars/work$ /opt/nfast/bin/new-world -i -Q 1/1
+15:04:50 WARNING: Module #1: preemptively erasing module to see its slots!
+
+Create Security World:
+ Module 1: 0 cards of 1 written
+ Module 1 slot 0: empty
+ Module 1 slot 0: unknown card
+ Module 1 slot 0:- passphrase specified - overwriting card
+Card writing complete.
+
+security world generated on module #0; hknso = 6807e0b031c4f797b739ec33ca7dba05279cf54f
+nfast@donny:/home/lars/work$
 </source>
 <p>
-Where K/N stands for the number of administration cards required and N for the total number of administration cards to generate.
+The '-Q K/N' option tells how many administration cards that are created N. K of these cards will be needed to restore a module with a backup of the security world.
+'1/1' is a bad choice in production but will do in this example. Choose K>=3 and N>K in produktion.
 </p>
 <p>
 Change mode on the switch on the device to mode 'O'.
@@ -1160,43 +1224,88 @@ Press the 'Clear' button again.
 Check with 'enquiry' that the mode have changed to 'Operational'
 </p>
 <p>
-Create the Operator cards with the command 
+Example on creation of operator cards:
 </p>
 <source>
-'bin/createocs -m -Q 1/N -N OperatorCards -M'
+nfast@donny:/home/lars/work$ /opt/nfast/bin/createocs -m 1 -Q 2/3 -N ejbca -M -p -T 0
+
+Creating Cardset:
+ Module 1: 0 cards of 3 written
+ Module 1 slot 0: Admin Card #1
+ Module 1 slot 0: empty
+ Module 1 slot 0: blank card
+ Module 1 slot 0:- passphrase specified - writing card (naming `EJBCA card 1')
+ Module 1: 1 card of 3 written
+ Module 1 slot 0: remove already-written card #1
+ Module 1 slot 0: empty
+ Module 1 slot 0: blank card
+ Module 1 slot 0:- passphrase specified - writing card (naming `EJBCA card 2')
+ Module 1: 2 cards of 3 written
+ Module 1 slot 0: remove already-written card #2
+ Module 1 slot 0: empty
+ Module 1 slot 0: blank card
+New passphrases do not match; please try again.
+ Module 1 slot 0:- passphrase specified - writing card (naming `EJBCA card 3')
+Card writing complete.
+
+cardset created; hkltu = 8d30f2ab5bdccacd8a4333aefed2c0ea1ff0e6db
+nfast@donny:/home/lars/work$
 </source>
 <p>
-Where N is the number of cards to generate.
+This will generate 3 cards of the card set named 'ejbca'. Any 2 of these cards will be needed when generating keys and starting ejbca. Different card sets could be used for different CAs.
 </p>
 <p>
-Enable java library communication with the nfast server by the command 'bin/config-serverstartup -s'
-and '/etc/init.d/nfast restart'
+Open the file '/opt/nfast/kmdata/config/config' and set 'nonpriv_port=9000' and 'priv_port=9001'.
+</p>
+<p>
+Restart from scratch: 'sudo /etc/init.d/nfast restart'.
 </p>
 <strong>2. Create keys that should be used on the NFast card</strong>
 <p>
-You may use the java keytool. It is advisable to define an alias for using the tool for keystores on the NFast:
+First load the card set so that keys protected by the card set could be generated:
 </p>
 <source>
-alias keyToolHSM='java -cp /opt/nfast/java/classes/rsaprivenc.jar:/opt/nfast/java/classes/nfjava.jar
-:/opt/nfast/java/classes/kmjava.jar:/opt/nfast/java/classes/kmcsp.jar
-:/opt/nfast/java/classes/jutils.jar sun.security.tools.KeyTool -provider com.ncipher.provider.km.nCipherKM 
--storetype nCipher.sworld'
+lars@donny:~$ /opt/nfast/bin/preload -c ejbca pause
+Loading cardsets:
+ejbca on modules 1
+
+Loading `ejbca':
+ Module 1 slot 0: `ejbca' #3 (`EJBCA card 3')
+ Module 1 slot 0:- passphrase supplied - reading card
+ Module 1 slot 0: `ejbca' #3 (`EJBCA card 3'): already read
+ Module 1 slot 0: empty
+ Module 1 slot 0: `ejbca' #2 (`EJBCA card 2')
+ Module 1 slot 0:- passphrase supplied - reading card
+Card reading complete.
+
+Loading complete; now pausing
 </source>
 <p>
-Then the keyToolHSM alias could be used to manage keys on the NFast card in exactly the same way as soft keys are managed by keytool.
-All keys for one CA should be in the same keystore. Different CAs may share the same keystore but may also have different keystores.
-</p>
-<p>
-Generate the signing key using the command :
+A new window is started and login to NFast is done. Then 2 keys protected by the key set 'ejbca' are created like this:
 </p>
 <source>
-keyToolHSM -genkey -alias signKey -keyalg RSA -keysize 4096 -keystore 'keystore filename' -storepass 'PIN to OperatorCard'
+Loading complete; now pausing
+nfast@donny:/home/lars/work$ /opt/nfast/bin/preload pause
+Loading complete; now pausing
+nfast@donny:/home/lars/work$ /opt/nfast/bin/preload -c ejbca bash $EJBCA/bin/nCipherHSM.sh generate 4096 default
+Executing bash /home/lars/work/mountP/brandtLars/work/PWE/ejbca/bin/nCipherHSM.sh generate 4096 defaultKey
+Creating certificate with entry defaultKey in KeyStore of type nCipher.sworld with provider nCipherKM.
+Give password of inserted card in slot:
+pass1
+Next line will contain the identity identifying the keystore:
+e5b2074406c72cbeb435437bb7cd95c2cd9ed23e
+nfast@donny:/home/lars/work$ /opt/nfast/bin/preload -c ejbca bash $EJBCA/bin/nCipherHSM.sh generate 2048 encrypt e5b2074406c72cbeb435437bb7cd95c2cd9ed23e
+Loaded jcecsp e5b2074406c72cbeb435437bb7cd95c2cd9ed23e key (HMACSHA1) on modules 1
+Loaded jcecsp e5b2074406c72cbeb435437bb7cd95c2cd9ed23e-key-18e44defe52057c8ffbd519d012c7f2113db38d5 key (RSAPrivate) on modules 1
+Executing bash /home/lars/work/mountP/brandtLars/work/PWE/ejbca/bin/nCipherHSM.sh generate 2048 keyEncryptKey e5b2074406c72cbeb435437bb7cd95c2cd9ed23e
+Creating certificate with entry keyEncryptKey in KeyStore of type nCipher.sworld with provider nCipherKM.
+Give password of inserted card in slot:
+pass1
+Next line will contain the identity identifying the keystore:
+e5b2074406c72cbeb435437bb7cd95c2cd9ed23e
 </source>
 <p>
-Enter any data as DN in the certificate request and use the same password to protect the key
-</p>
-<p>
-Generate the encryption key using the same command with alias 'encKey' if you shall use key recovery.
+Different CAs may share the same keys tore but may also have different key stores. Different key store may be protected by different card sets. Use the '-c' parameter of preload to select card set when you are generating new keys. Only one key set should be loaded at a time when creating keys.
 </p>
 <p>
 Finally it's recommended that you generate a test key, used to check the status of the HSM by EJBCA.
@@ -1204,7 +1313,7 @@ This key can be smaller (512 bit) to enhance performance.
 </p>
 <strong>3. Copy files to jboss that implements the nCipher CA Token functionality to JBoss</strong>
 <p>
-The file are copied from the dist directory. The destination is the deploy directory of the application server (server/default/deploy in jboss).
+The file are copied from /opt/nfast/java/classes. The destination is the deploy directory of the application server (server/default/deploy in jboss).
 The files to be copied are:
 </p>
 <source>
@@ -1215,13 +1324,13 @@ You could also make links if you prefer that.
 </p>
 <strong>4. Make EJBCA aware of the NFast HSM</strong>
 <p>
-Restart the application server.
+Restart the application server and use preload.
 </p>
 <strong>5. Create a new CA in the web GUI of EJBCA</strong>
 <p>
 Choose NFastCAToken as "CA Token Type".
 </p><p>
-Define the keystore on the nFast card that should be used. The keystore is defined by the hexadecimal hash string from the keystore file (open the .jks with a text editor ) generated in step 1.
+Define the keystore on the nFast card that should be used. The keystore is defined by the hexadecimal hash string from the output of the key generation.
 Define which keys in the keystore that should be used and the purpose of these keys.
 </p><p>
 Use one row for each definition. Begin the row with a key word. It is one row for the keystore and one for each key definition. Key word and value is separated by one or more spaces.
@@ -1229,12 +1338,12 @@ A row with the keyword keyStore must always be present.
 </p><p>
 The keys in the property field are defined by their keystore alias. See general text above about key definition.
 </p><p>
-Example:
+Example with previous generated keys:
 </p>
 <source>
-keyStore 578fc1f0b19d5bc6f61e3a3f1e28318715385a20
-certSignKey rootCertSign
-defaultKey rootCRLSign
+keyStore e5b2074406c72cbeb435437bb7cd95c2cd9ed23e
+certSignKey keyEncryptKey
+defaultKey defaultKey
 </source>
 </subsection>
 
