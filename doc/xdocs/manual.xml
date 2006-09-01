@@ -1286,20 +1286,20 @@ Start a new window and login as the same user (jboss user).
 Now 2 keys protected by the key set 'ejbca' are created like this:
 </p>
 <source>
-jboss@donny:~$ /opt/nfast/bin/preload bash $EJBCA_HOME/bin/nCipherHSM.sh generate 4096 defaultRoot
-Executing bash /home/jboss/ejbca/bin/nCipherHSM.sh generate 4096 defaultRoot
+jboss@donny:~$ /opt/nfast/bin/preload $EJBCA_HOME/bin/nCipherHSM.sh generate 4096 defaultRoot
+Executing /home/jboss/ejbca/bin/nCipherHSM.sh generate 4096 defaultRoot
 Creating certificate with entry defaultRoot in KeyStore of type nCipher.sworld with provider nCipherKM.
 Give password of inserted card in slot:
 pass2
 Next line will contain the identity identifying the keystore:
-53607a33f254ce4da432d68b2c76790a02900a71
-jboss@donny:~$ /opt/nfast/bin/preload bash $EJBCA_HOME/bin/nCipherHSM.sh generate 2048 encryptRoot
-Executing bash /home/jboss/ejbca/bin/nCipherHSM.sh generate 2048 encryptRoot
+03842f5bffefd9a73ac4f6caea27fb7287e7eff0
+jboss@donny:~$ /opt/nfast/bin/preload $EJBCA_HOME/bin/nCipherHSM.sh generate 2048 encryptRoot 03842f5bffefd9a73ac4f6caea27fb7287e7eff0
+Executing /home/jboss/ejbca/bin/nCipherHSM.sh generate 2048 encryptRoot 03842f5bffefd9a73ac4f6caea27fb7287e7eff0
 Creating certificate with entry encryptRoot in KeyStore of type nCipher.sworld with provider nCipherKM.
 Give password of inserted card in slot:
 pass2
 Next line will contain the identity identifying the keystore:
-c54e3fb324254cde508d78beecb733e86a3ae773
+03842f5bffefd9a73ac4f6caea27fb7287e7eff0
 jboss@donny:~$
 </source>
 <p>
@@ -1339,7 +1339,7 @@ The keys in the property field are defined by their keystore alias. See general 
 Example with previous generated keys:
 </p>
 <source>
-keyStore 53607a33f254ce4da432d68b2c76790a02900a71
+keyStore 03842f5bffefd9a73ac4f6caea27fb7287e7eff0
 keyEncryptKey encryptRoot
 defaultKey defaultRoot
 </source>
