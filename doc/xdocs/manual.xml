@@ -1300,14 +1300,21 @@ Give password of inserted card in slot:
 pass2
 Next line will contain the identity identifying the keystore:
 03842f5bffefd9a73ac4f6caea27fb7287e7eff0
+jboss@donny:~$ /opt/nfast/bin/preload $EJBCA_HOME/bin/nCipherHSM.sh generate 512 testRoot 03842f5bffefd9a73ac4f6caea27fb7287e7eff0
+Executing /home/jboss/ejbca/bin/nCipherHSM.sh generate 512 testRoot 03842f5bffefd9a73ac4f6caea27fb7287e7eff0
+Creating certificate with entry testRoot in KeyStore of type nCipher.sworld with provider nCipherKM.
+Give password of inserted card in slot:
+pass2
+Next line will contain the identity identifying the keystore:
+03842f5bffefd9a73ac4f6caea27fb7287e7eff0
 jboss@donny:~$
 </source>
 <p>
 Different CAs may share the same keys tore but may also have different key stores. Different key store may be protected by different card sets. Use the '-c' parameter of preload to select card set when you are generating new keys. Only one key set should be loaded at a time when creating keys.
 </p>
 <p>
-Finally it's recommended that you generate a test key, used to check the status of the HSM by EJBCA.
-This key can be smaller (512 bit) to enhance performance.
+The last key in the example is used to check the status of the HSM by EJBCA.
+This key is small (512 bit) to enhance performance.
 </p>
 <strong>3. Copy files to jboss that implements the nCipher CA Token functionality to JBoss</strong>
 <p>
@@ -1342,6 +1349,7 @@ Example with previous generated keys:
 keyStore 03842f5bffefd9a73ac4f6caea27fb7287e7eff0
 keyEncryptKey encryptRoot
 defaultKey defaultRoot
+testKey testRoot
 </source>
 </subsection>
 
