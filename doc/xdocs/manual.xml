@@ -1262,10 +1262,11 @@ Restart from scratch: 'sudo /etc/init.d/nfast restart'.
 </p>
 <strong>2. Create keys that should be used on the NFast card</strong>
 <p>
-First load the card set so that keys protected by the card set could be generated:
+Login as the user that is running the application server. This user must be a member of the nfast group. The preload command (see below) must always be called as the same user unless the directory /opt/nfast/kmdata/preload is removed.
+Load the card set so that keys protected by the card set could be generated:
 </p>
 <source>
-lars@donny:~$ /opt/nfast/bin/preload -c ejbca pause
+jboss@donny:~$ /opt/nfast/bin/preload -c ejbca pause
 Loading cardsets:
 ejbca on modules 1
 
@@ -1281,28 +1282,25 @@ Card reading complete.
 Loading complete; now pausing
 </source>
 <p>
-A new window is started and login to NFast is done. Then 2 keys protected by the key set 'ejbca' are created like this:
+Start a new window and login as the same user (jboss user).
+Now 2 keys protected by the key set 'ejbca' are created like this:
 </p>
 <source>
-Loading complete; now pausing
-nfast@donny:/home/lars/work$ /opt/nfast/bin/preload pause
-Loading complete; now pausing
-nfast@donny:/home/lars/work$ /opt/nfast/bin/preload -c ejbca bash $EJBCA/bin/nCipherHSM.sh generate 4096 default
-Executing bash /home/lars/work/mountP/brandtLars/work/PWE/ejbca/bin/nCipherHSM.sh generate 4096 defaultKey
-Creating certificate with entry defaultKey in KeyStore of type nCipher.sworld with provider nCipherKM.
+jboss@donny:~$ /opt/nfast/bin/preload bash $EJBCA_HOME/bin/nCipherHSM.sh generate 4096 defaultRoot
+Executing bash /home/jboss/ejbca/bin/nCipherHSM.sh generate 4096 defaultRoot
+Creating certificate with entry defaultRoot in KeyStore of type nCipher.sworld with provider nCipherKM.
 Give password of inserted card in slot:
-pass1
+pass2
 Next line will contain the identity identifying the keystore:
-e5b2074406c72cbeb435437bb7cd95c2cd9ed23e
-nfast@donny:/home/lars/work$ /opt/nfast/bin/preload -c ejbca bash $EJBCA/bin/nCipherHSM.sh generate 2048 encrypt e5b2074406c72cbeb435437bb7cd95c2cd9ed23e
-Loaded jcecsp e5b2074406c72cbeb435437bb7cd95c2cd9ed23e key (HMACSHA1) on modules 1
-Loaded jcecsp e5b2074406c72cbeb435437bb7cd95c2cd9ed23e-key-18e44defe52057c8ffbd519d012c7f2113db38d5 key (RSAPrivate) on modules 1
-Executing bash /home/lars/work/mountP/brandtLars/work/PWE/ejbca/bin/nCipherHSM.sh generate 2048 keyEncryptKey e5b2074406c72cbeb435437bb7cd95c2cd9ed23e
-Creating certificate with entry keyEncryptKey in KeyStore of type nCipher.sworld with provider nCipherKM.
+53607a33f254ce4da432d68b2c76790a02900a71
+jboss@donny:~$ /opt/nfast/bin/preload bash $EJBCA_HOME/bin/nCipherHSM.sh generate 2048 encryptRoot
+Executing bash /home/jboss/ejbca/bin/nCipherHSM.sh generate 2048 encryptRoot
+Creating certificate with entry encryptRoot in KeyStore of type nCipher.sworld with provider nCipherKM.
 Give password of inserted card in slot:
-pass1
+pass2
 Next line will contain the identity identifying the keystore:
-e5b2074406c72cbeb435437bb7cd95c2cd9ed23e
+c54e3fb324254cde508d78beecb733e86a3ae773
+jboss@donny:~$
 </source>
 <p>
 Different CAs may share the same keys tore but may also have different key stores. Different key store may be protected by different card sets. Use the '-c' parameter of preload to select card set when you are generating new keys. Only one key set should be loaded at a time when creating keys.
@@ -1341,9 +1339,9 @@ The keys in the property field are defined by their keystore alias. See general 
 Example with previous generated keys:
 </p>
 <source>
-keyStore e5b2074406c72cbeb435437bb7cd95c2cd9ed23e
-certSignKey keyEncryptKey
-defaultKey defaultKey
+keyStore 53607a33f254ce4da432d68b2c76790a02900a71
+keyEncryptKey encryptRoot
+defaultKey defaultRoot
 </source>
 </subsection>
 
