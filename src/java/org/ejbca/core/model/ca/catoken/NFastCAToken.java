@@ -26,7 +26,7 @@ import org.apache.log4j.Logger;
  * and the development was sponsored by Linagora (www.linagora.com).
  * 
  * @author Lars Silvén
- * @version $Id: NFastCAToken.java,v 1.6 2006-06-03 21:46:39 primelars Exp $
+ * @version $Id: NFastCAToken.java,v 1.7 2006-09-02 20:28:45 primelars Exp $
  */
 public class NFastCAToken extends BaseCAToken implements IHardCAToken {
 
@@ -58,8 +58,14 @@ public class NFastCAToken extends BaseCAToken implements IHardCAToken {
             OutputStreamWriter osw = new OutputStreamWriter(baos);
             osw.write(sSlotLabel);
             osw.close();
-            keyStore.load(new ByteArrayInputStream(baos.toByteArray()),
-                          authCode.toCharArray());
+            try {
+                keyStore.load(new ByteArrayInputStream(baos.toByteArray()),
+                              null);
+            } catch( Exception e) {
+                log.debug("Preload maybe not called. Assuming 1/N. Exception was: "+e);
+                keyStore.load(new ByteArrayInputStream(baos.toByteArray()),
+                              authCode.toCharArray());
+            }
             setKeys(keyStore, authCode);
         } catch( Exception e ) {
             log.error("Authentication failed: ", e);
