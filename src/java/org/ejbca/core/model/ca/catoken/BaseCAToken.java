@@ -13,6 +13,7 @@
 
  package org.ejbca.core.model.ca.catoken;
 
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -33,7 +34,7 @@ import org.ejbca.core.model.SecConst;
 
 /**
  * @author lars
- * @version $Id: BaseCAToken.java,v 1.6 2006-06-25 15:45:23 primelars Exp $
+ * @version $Id: BaseCAToken.java,v 1.7 2006-09-04 14:06:25 primelars Exp $
  */
 public abstract class BaseCAToken implements IHardCAToken {
 
@@ -74,25 +75,47 @@ public abstract class BaseCAToken implements IHardCAToken {
                 log.debug(e);
             }
     }
-
+    private void testKey( KeyPair pair ) throws Exception {
+        final byte input[] = "Lillan gick på vägen ut, mötte där en katt ...".getBytes();
+        final byte signBV[];
+        {
+            Signature signature = Signature.getInstance("SHA1withRSA", getProvider());
+            signature.initSign( pair.getPrivate() );
+            signature.update( input );
+            signBV = signature.sign();
+        }{
+            Signature signature = Signature.getInstance("SHA1withRSA", "BC");
+            signature.initVerify(pair.getPublic());
+            signature.update(input);
+            if ( !signature.verify(signBV) )
+                throw new InvalidKeyException("Not possible to sign and then verify with key pair.");
+        }
+    }
     /**
      * @param keyStore
      * @param authCode
-     * @throws KeyStoreException
-     * @throws NoSuchAlgorithmException
-     * @throws UnrecoverableKeyException
+     * @throws Exception
      */
-    protected void setKeys(KeyStore keyStore, String authCode) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException {
-        String keyAliases[] = keyStrings.getAllStrings();
-        mKeys = new Hashtable();
+    protected void setKeys(KeyStore keyStore, String authCode) throws Exception {
+        mKeys = null;
+        final String keyAliases[] = keyStrings.getAllStrings();
+        final Map mTmp = new Hashtable();
         for ( int i=0; i<keyAliases.length; i++ ) {
             PrivateKey privateK =
                 (PrivateKey)keyStore.getKey(keyAliases[i],
                                             authCode!=null ? authCode.toCharArray():null);
             PublicKey publicK = readPublicKey(keyStore, keyAliases[i]);
             KeyPair keyPair = new KeyPair(publicK, privateK);
-            mKeys.put(keyAliases[i], keyPair);
+            mTmp.put(keyAliases[i], keyPair);
         }
+        for ( int i=0; i<keyAliases.length; i++ ) {
+            KeyPair pair = (KeyPair)mTmp.get(keyAliases[i]);
+            testKey(pair);
+            log.debug("Key with alias "+keyAliases[i]+" tested. toString for private part: "+pair.getPrivate());
+        }
+        mKeys = mTmp;
+        if ( getCATokenStatus()!=IHardCAToken.STATUS_ACTIVE )
+            throw new Exception("Activation test failed");
     }
 
     /**
@@ -111,10 +134,7 @@ public abstract class BaseCAToken implements IHardCAToken {
      * @see org.ejbca.core.model.ca.catoken.IHardCAToken#init(java.util.Properties, java.lang.String)
      */
     public void init(Properties properties, String signaturealgorithm) {
-        if (log.isDebugEnabled()) {
-            log.debug("Properties: "+properties != null ? properties.toString() : "null");
-            log.debug("Signaturealg: "+signaturealgorithm);
-        }
+        log.debug("Properties: "+(properties!=null ? properties.toString() : "null")+". Signaturealg: "+signaturealgorithm);
         keyStrings = new KeyStrings(properties);
         sSlotLabel = properties.getProperty(sSlotLabelKey);
         sSlotLabel = sSlotLabel!=null ? sSlotLabel.trim() : null;
@@ -184,20 +204,20 @@ public abstract class BaseCAToken implements IHardCAToken {
             if ( strings==null || i<strings.length)
                 return IHardCAToken.STATUS_OFFLINE;
         } {
-            PrivateKey pk;
+            PrivateKey privateKey;
+            PublicKey publicKey;
             try {
-                pk = getPrivateKey(SecConst.CAKEYPURPOSE_KEYTEST);
+                privateKey = getPrivateKey(SecConst.CAKEYPURPOSE_KEYTEST);
+                publicKey = getPublicKey(SecConst.CAKEYPURPOSE_KEYTEST);
             } catch (CATokenOfflineException e) {
-                pk = null;
+                privateKey = null;
+                publicKey = null;
                 log.debug("no test key defined");
             }
-            if ( pk!=null ) {
+            if ( privateKey!=null && publicKey!=null ) {
                 //Check that that the testkey is usable by doing a test signature.
                 try{
-                    Signature signature = Signature.getInstance("SHA1withRSA", getProvider());
-                    signature.initSign( pk );
-                    signature.update( "Test".getBytes() );
-                    signature.sign();
+                    testKey(new KeyPair(publicKey, privateKey));
                 } catch( Throwable th ){
                     log.error("Error testing activation", th);
                     return IHardCAToken.STATUS_OFFLINE;     

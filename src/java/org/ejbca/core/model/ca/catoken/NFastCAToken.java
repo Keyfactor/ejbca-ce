@@ -14,8 +14,6 @@
  package org.ejbca.core.model.ca.catoken;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStreamWriter;
 import java.security.KeyStore;
 
 import org.apache.log4j.Logger;
@@ -26,7 +24,7 @@ import org.apache.log4j.Logger;
  * and the development was sponsored by Linagora (www.linagora.com).
  * 
  * @author Lars Silvén
- * @version $Id: NFastCAToken.java,v 1.7 2006-09-02 20:28:45 primelars Exp $
+ * @version $Id: NFastCAToken.java,v 1.8 2006-09-04 14:06:25 primelars Exp $
  */
 public class NFastCAToken extends BaseCAToken implements IHardCAToken {
 
@@ -54,21 +52,18 @@ public class NFastCAToken extends BaseCAToken implements IHardCAToken {
         CATokenAuthenticationFailedException {
         try {
             KeyStore keyStore = KeyStore.getInstance("nCipher.sworld"); 
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            OutputStreamWriter osw = new OutputStreamWriter(baos);
-            osw.write(sSlotLabel);
-            osw.close();
-            try {
-                keyStore.load(new ByteArrayInputStream(baos.toByteArray()),
+//            try {
+                keyStore.load(new ByteArrayInputStream(sSlotLabel.getBytes()),
                               null);
-            } catch( Exception e) {
-                log.debug("Preload maybe not called. Assuming 1/N. Exception was: "+e);
-                keyStore.load(new ByteArrayInputStream(baos.toByteArray()),
-                              authCode.toCharArray());
-            }
+//            } catch( Exception e) {
+//                log.debug("Preload maybe not called. Assuming 1/N. Exception was: "+e);
+//                keyStore.load(new ByteArrayInputStream(baos.toByteArray()),
+//                              authCode.toCharArray());
+//            }
             setKeys(keyStore, authCode);
+            log.debug("Keys from "+sSlotLabel+ " activated.");
         } catch( Exception e ) {
-            log.error("Authentication failed: ", e);
+            log.error("Authentication failed for keystore "+sSlotLabel+": ", e);
             CATokenAuthenticationFailedException t = new CATokenAuthenticationFailedException(e.getMessage());
             t.initCause(e);
             deactivate();
