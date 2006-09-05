@@ -34,7 +34,7 @@ import org.ejbca.core.model.SecConst;
 
 /**
  * @author lars
- * @version $Id: BaseCAToken.java,v 1.7 2006-09-04 14:06:25 primelars Exp $
+ * @version $Id: BaseCAToken.java,v 1.8 2006-09-05 13:18:02 primelars Exp $
  */
 public abstract class BaseCAToken implements IHardCAToken {
 
@@ -166,7 +166,7 @@ public abstract class BaseCAToken implements IHardCAToken {
             (KeyPair)mKeys.get(keyStrings.getString(purpose)) :
             null;
         if ( keyPair==null )
-            throw new CATokenOfflineException();
+            throw new CATokenOfflineException("no such key");
         return keyPair.getPrivate();
     }
 

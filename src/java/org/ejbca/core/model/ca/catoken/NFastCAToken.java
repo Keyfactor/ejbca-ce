@@ -24,7 +24,7 @@ import org.apache.log4j.Logger;
  * and the development was sponsored by Linagora (www.linagora.com).
  * 
  * @author Lars Silvén
- * @version $Id: NFastCAToken.java,v 1.8 2006-09-04 14:06:25 primelars Exp $
+ * @version $Id: NFastCAToken.java,v 1.9 2006-09-05 13:18:02 primelars Exp $
  */
 public class NFastCAToken extends BaseCAToken implements IHardCAToken {
 
@@ -33,12 +33,14 @@ public class NFastCAToken extends BaseCAToken implements IHardCAToken {
 
     static final private String SLOT_LABEL_KEY = "keyStore";
     static final private String PROVIDER_NAME = "nCipherKM";
-    static final private String PROVIDER_CLASS = "com.ncipher.provider.km.nCipherKM"; 
+    static final private String PROVIDER_CLASS = "com.ncipher.provider.km.nCipherKM";
+
+    private KeyStore keyStore; // has to be declared as an atribute because its destructor destoys fetched keys.
 
     /** The constructor of HardCAToken should throw an InstantiationException if the token can not
      * be created, if for example depending jar files for the particular HSM is not available.
-     * 
-     * @throws InstantiationException if the nCipher provider is not available
+     * @throws InstantiationException
+     * @throws IllegalAccessException if the nCipher provider is not available
      */
     public NFastCAToken() throws InstantiationException, IllegalAccessException {
         super(PROVIDER_CLASS, PROVIDER_NAME, SLOT_LABEL_KEY);
@@ -48,26 +50,25 @@ public class NFastCAToken extends BaseCAToken implements IHardCAToken {
     /* (non-Javadoc)
      * @see org.ejbca.core.model.ca.catoken.IHardCAToken#activate(java.lang.String)
      */
-    public void activate(String authCode) throws CATokenOfflineException,
-        CATokenAuthenticationFailedException {
+    public void activate(String authCode) throws CATokenOfflineException, CATokenAuthenticationFailedException {
         try {
-            KeyStore keyStore = KeyStore.getInstance("nCipher.sworld"); 
-//            try {
+            keyStore = KeyStore.getInstance("nCipher.sworld");
+            try {
                 keyStore.load(new ByteArrayInputStream(sSlotLabel.getBytes()),
                               null);
-//            } catch( Exception e) {
-//                log.debug("Preload maybe not called. Assuming 1/N. Exception was: "+e);
-//                keyStore.load(new ByteArrayInputStream(baos.toByteArray()),
-//                              authCode.toCharArray());
-//            }
+            } catch( Exception e) {
+                log.debug("Preload maybe not called. Assuming 1/N. Exception was: "+e);
+                keyStore.load(new ByteArrayInputStream(sSlotLabel.getBytes()),
+                              authCode.toCharArray());
+            }
             setKeys(keyStore, authCode);
             log.debug("Keys from "+sSlotLabel+ " activated.");
-        } catch( Exception e ) {
-            log.error("Authentication failed for keystore "+sSlotLabel+": ", e);
-            CATokenAuthenticationFailedException t = new CATokenAuthenticationFailedException(e.getMessage());
-            t.initCause(e);
+        } catch( Throwable t ) {
+            log.error("Authentication failed for keystore "+sSlotLabel+": "+t );
+            CATokenAuthenticationFailedException e = new CATokenAuthenticationFailedException(t.toString());
+            e.initCause(t);
             deactivate();
-            throw t;
+            throw e;
         }
     }
 }
