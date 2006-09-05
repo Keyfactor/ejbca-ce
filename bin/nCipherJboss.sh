@@ -30,7 +30,7 @@ JBOSSCP=${JBOSSCP:-"$JBOSS_HOME/bin/shutdown.jar:$JBOSS_HOME/client/jnet.jar"}
 
 #define the script to use to start jboss
 #JBOSSSH=${JBOSSSH:-"$JBOSS_HOME/bin/run.sh -c all"}
-JBOSSSH=${JBOSSSH:-"/opt/nfast/bin/preload -c ejbca $JBOSS_HOME/bin/run.sh"}
+JBOSSSH=${JBOSSSH:-"/opt/nfast/bin/preload $JBOSS_HOME/bin/run.sh"}
 
 CMD_START="$JBOSSSH" 
 CMD_STOP="java -classpath $JBOSSCP org.jboss.Shutdown --shutdown"
