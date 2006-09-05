@@ -714,10 +714,12 @@ protection.certprotect=${protection.certprotect}
                     <include name="**/BaseSessionBean.*" /> 
                 	<include name="**/ServiceLocator.*"/>
                 	<include name="**/JNDINames.*"/>
-                	<include name="**/HealthCheckServlet.*"/>                	
+                	<include name="**/HealthCheckServlet.*"/>
+                	<include name="**/UserDataVOWS.*"/>
                     <include name="org/ejbca/ui/web/RequestHelper.*"/>
                 	<include name="org/ejbca/ui/web/pub/cluster/**"/>
                     <include name="org/ejbca/ui/web/pub/ServletUtils.*"/>   
+                    <include name="org/ejbca/ui/web/admin/configuration/LanguageProperties.*"/>
                 </fileset>
                 
 
