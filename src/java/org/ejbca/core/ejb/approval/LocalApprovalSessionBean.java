@@ -670,9 +670,6 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
     
     public List query(Admin admin, Query query, int index, int numberofrows) throws IllegalQueryException, AuthorizationDeniedException {
         debug(">query(): ");
-        Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
         
         boolean authorizedToApproveCAActions = false; // i.e approvals with endentityprofile ApprovalDataVO.ANY_ENDENTITYPROFILE
         boolean authorizedToApproveRAActions = false; // i.e approvals with endentityprofile not ApprovalDataVO.ANY_ENDENTITYPROFILE 
@@ -736,8 +733,9 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
         }
 
         
-
-
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
                 // Construct SQL query.
                 con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
@@ -747,7 +745,18 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
                 
                 // Execute query.
                 rs = ps.executeQuery();
-                rs.relative(index);
+                int direction = rs.getFetchDirection();
+                if (direction == ResultSet.FETCH_FORWARD) {
+                	// Special handling for databases that do not support backward moving in the RS, i.e. Hsql
+                	if (index < 0) {
+                		throw new Exception("Database does only support forward fetching, but index is "+index);
+                	}
+                	for (int i = 0; i < index; i++) {
+                		rs.next();
+                	}
+                } else {
+                    rs.relative(index);                	
+                }
                 // Assemble result.
                 while (rs.next() && returnData.size() < numberofrows) {
                 	
@@ -779,7 +788,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
             debug("<query()");
             return returnData;
 
-        } catch (Exception e) {
+        } catch (Exception e) { 
             throw new EJBException(e);
         } finally {
             JDBCUtil.close(con, ps, rs);
