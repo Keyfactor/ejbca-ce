@@ -24,7 +24,7 @@ import org.apache.log4j.Logger;
  * and the development was sponsored by Linagora (www.linagora.com).
  * 
  * @author Lars Silvén
- * @version $Id: NFastCAToken.java,v 1.9 2006-09-05 13:18:02 primelars Exp $
+ * @version $Id: NFastCAToken.java,v 1.10 2006-09-05 20:14:09 primelars Exp $
  */
 public class NFastCAToken extends BaseCAToken implements IHardCAToken {
 
@@ -35,7 +35,8 @@ public class NFastCAToken extends BaseCAToken implements IHardCAToken {
     static final private String PROVIDER_NAME = "nCipherKM";
     static final private String PROVIDER_CLASS = "com.ncipher.provider.km.nCipherKM";
 
-    private KeyStore keyStore; // has to be declared as an atribute because its destructor destoys fetched keys.
+    private KeyStore keyStore; // The used keystore has to be saved. Otherwise the used keys of the store are destroyed when the 
+                               // KeyStore destructor is called after the reference is lost. This is a workaround for a nCipher bug.
 
     /** The constructor of HardCAToken should throw an InstantiationException if the token can not
      * be created, if for example depending jar files for the particular HSM is not available.
@@ -57,14 +58,14 @@ public class NFastCAToken extends BaseCAToken implements IHardCAToken {
                 keyStore.load(new ByteArrayInputStream(sSlotLabel.getBytes()),
                               null);
             } catch( Exception e) {
-                log.debug("Preload maybe not called. Assuming 1/N. Exception was: "+e);
+                log.debug("Preload maybe not called. Assuming 1/N. Exception was:",e);
                 keyStore.load(new ByteArrayInputStream(sSlotLabel.getBytes()),
                               authCode.toCharArray());
             }
             setKeys(keyStore, authCode);
             log.debug("Keys from "+sSlotLabel+ " activated.");
         } catch( Throwable t ) {
-            log.error("Authentication failed for keystore "+sSlotLabel+": "+t );
+            log.debug("Authentication failed for keystore "+sSlotLabel+':', t );
             CATokenAuthenticationFailedException e = new CATokenAuthenticationFailedException(t.toString());
             e.initCause(t);
             deactivate();
