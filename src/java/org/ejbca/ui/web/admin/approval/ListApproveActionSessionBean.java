@@ -1,4 +1,18 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package org.ejbca.ui.web.admin.approval;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -16,18 +30,11 @@ import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
-/*
- * Created on 2005-jun-20
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
-
 /**
  * Managed bean in the actionapprovallist page.
  * 
  * @author Philip Vendil
- * $id$
+ * @version $Id: ListApproveActionSessionBean.java,v 1.2 2006-09-05 09:23:28 anatom Exp $
  */
 public class ListApproveActionSessionBean extends BaseManagedBean{
 	//private static final Logger log = Logger.getLogger(ListApproveActionSessionBean.class);
@@ -60,15 +67,15 @@ public class ListApproveActionSessionBean extends BaseManagedBean{
 	public List getAvailableStatus() {
 		if(availableStatus == null){
 			  availableStatus = new ArrayList();
-			  availableStatus.add(new SelectItem("" + ApprovalDataVO.STATUS_WAITINGFORAPPROVAL,getEjbcaWebBean().getText("WAITING"),""));	 
-			  availableStatus.add(new SelectItem("" + ApprovalDataVO.STATUS_EXPIRED,getEjbcaWebBean().getText("EXPIRED"),""));
-			  availableStatus.add(new SelectItem("" + ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED,getEjbcaWebBean().getText("EXPIREDANDNOTIFIED"),""));	  
-			  availableStatus.add(new SelectItem("" + ApprovalDataVO.STATUS_EXECUTED,getEjbcaWebBean().getText("EXECUTED"),""));
-			  availableStatus.add(new SelectItem("" + ApprovalDataVO.STATUS_EXECUTIONFAILED,getEjbcaWebBean().getText("EXECUTIONFAILED"),""));
-			  availableStatus.add(new SelectItem("" + ApprovalDataVO.STATUS_EXECUTIONDENIED,getEjbcaWebBean().getText("EXECUTIONDENIED"),""));			  
-			  availableStatus.add(new SelectItem("" + ApprovalDataVO.STATUS_APPROVED,getEjbcaWebBean().getText("APPROVED"),""));	
-			  availableStatus.add(new SelectItem("" + ApprovalDataVO.STATUS_REJECTED,getEjbcaWebBean().getText("REJECTED"),""));
-			  availableStatus.add(new SelectItem(ALL_STATUSES,getEjbcaWebBean().getText("ALL"),""));			
+			  availableStatus.add(new SelectItem("" + ApprovalDataVO.STATUS_WAITINGFORAPPROVAL,getEjbcaWebBean().getText("WAITING", true),""));	 
+			  availableStatus.add(new SelectItem("" + ApprovalDataVO.STATUS_EXPIRED,getEjbcaWebBean().getText("EXPIRED", true),""));
+			  availableStatus.add(new SelectItem("" + ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED,getEjbcaWebBean().getText("EXPIREDANDNOTIFIED", true),""));	  
+			  availableStatus.add(new SelectItem("" + ApprovalDataVO.STATUS_EXECUTED,getEjbcaWebBean().getText("EXECUTED", true),""));
+			  availableStatus.add(new SelectItem("" + ApprovalDataVO.STATUS_EXECUTIONFAILED,getEjbcaWebBean().getText("EXECUTIONFAILED", true),""));
+			  availableStatus.add(new SelectItem("" + ApprovalDataVO.STATUS_EXECUTIONDENIED,getEjbcaWebBean().getText("EXECUTIONDENIED", true),""));			  
+			  availableStatus.add(new SelectItem("" + ApprovalDataVO.STATUS_APPROVED,getEjbcaWebBean().getText("APPROVED", true),""));	
+			  availableStatus.add(new SelectItem("" + ApprovalDataVO.STATUS_REJECTED,getEjbcaWebBean().getText("REJECTED", true),""));
+			  availableStatus.add(new SelectItem(ALL_STATUSES,getEjbcaWebBean().getText("ALL", true),""));			
 		}
 		
 		
@@ -83,10 +90,10 @@ public class ListApproveActionSessionBean extends BaseManagedBean{
 	public List getAvailableTimeSpans() {
 		if(availableTimeSpans == null){
 		  availableTimeSpans = new ArrayList();
-		  availableTimeSpans.add(new SelectItem(TIME_5MIN ,"5 " + getEjbcaWebBean().getText("MINUTES"),""));	 
-		  availableTimeSpans.add(new SelectItem(TIME_30MIN,"30 " + getEjbcaWebBean().getText("MINUTES"),""));
-		  availableTimeSpans.add(new SelectItem(TIME_8HOURS,"8 " + getEjbcaWebBean().getText("HOURS"),""));	
-		  availableTimeSpans.add(new SelectItem("0",getEjbcaWebBean().getText("EVER"),""));	
+		  availableTimeSpans.add(new SelectItem(TIME_5MIN ,"5 " + getEjbcaWebBean().getText("MINUTES", true),""));	 
+		  availableTimeSpans.add(new SelectItem(TIME_30MIN,"30 " + getEjbcaWebBean().getText("MINUTES", true),""));
+		  availableTimeSpans.add(new SelectItem(TIME_8HOURS,"8 " + getEjbcaWebBean().getText("HOURS", true),""));	
+		  availableTimeSpans.add(new SelectItem("0",getEjbcaWebBean().getText("EVER", true),""));	
 		}
 		
 		return availableTimeSpans;
@@ -111,7 +118,7 @@ public class ListApproveActionSessionBean extends BaseManagedBean{
 		try {
 			result = EjbcaJSFHelper.getBean().getApprovalSession().query(EjbcaJSFHelper.getBean().getAdmin(), query, 0, QUERY_MAX_NUM_ROWS);
 			if(result.size() == QUERY_MAX_NUM_ROWS){
-				String messagestring = getEjbcaWebBean().getText("MAXAPPROVALQUERYROWS1") + " " + QUERY_MAX_NUM_ROWS + " " + getEjbcaWebBean().getText("MAXAPPROVALQUERYROWS2");
+				String messagestring = getEjbcaWebBean().getText("MAXAPPROVALQUERYROWS1", true) + " " + QUERY_MAX_NUM_ROWS + " " + getEjbcaWebBean().getText("MAXAPPROVALQUERYROWS2", true);
 				FacesContext ctx = FacesContext.getCurrentInstance();
 				ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_ERROR,messagestring,messagestring));
 			}

@@ -10,6 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+
 package org.ejbca.ui.web.admin.approval;
 
 import javax.faces.application.Application;
@@ -22,8 +23,7 @@ import javax.servlet.http.HttpServletRequest;
  * from javascript
  * 
  * @author Philip Vendil
- *
- * $id$
+ * @version $Id: ApproveActionRequestBean.java,v 1.2 2006-09-05 09:23:28 anatom Exp $
  */
 public class ApproveActionRequestBean {
   private int uniqueId;

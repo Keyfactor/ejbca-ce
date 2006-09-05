@@ -1,4 +1,18 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
 package org.ejbca.ui.web.admin.approval;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -26,8 +40,7 @@ import org.ejbca.util.query.Query;
  * Seesion scoped bean for displaying information about an approval request.
  * 
  * @author Philip Vendil
- * 
- *  $Id: ApproveActionSessionBean.java,v 1.2 2006-08-13 14:55:49 herrvendil Exp $
+ * @version $Id: ApproveActionSessionBean.java,v 1.3 2006-09-05 09:23:27 anatom Exp $
  */
 public class ApproveActionSessionBean extends BaseManagedBean {
 	private static final Logger log = Logger.getLogger(ApproveActionSessionBean.class);
@@ -47,14 +60,14 @@ public class ApproveActionSessionBean extends BaseManagedBean {
 	    if(statustext == null){
 	    	EjbcaWebBean ejbcawebbean = EjbcaJSFHelper.getBean().getEjbcaWebBean();
 	    	statustext = new HashMap();
-	    	statustext.put(new Integer(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL), ejbcawebbean.getText("WAITING"));
-	    	statustext.put(new Integer(ApprovalDataVO.STATUS_EXPIRED), ejbcawebbean.getText("EXPIRED"));
-	    	statustext.put(new Integer(ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED), ejbcawebbean.getText("EXPIREDANDNOTIFIED"));
-	    	statustext.put(new Integer(ApprovalDataVO.STATUS_EXECUTED), ejbcawebbean.getText("EXECUTED"));
-	    	statustext.put(new Integer(ApprovalDataVO.STATUS_APPROVED), ejbcawebbean.getText("APPROVED"));
-	    	statustext.put(new Integer(ApprovalDataVO.STATUS_REJECTED), ejbcawebbean.getText("REJECTED"));
-	    	statustext.put(new Integer(ApprovalDataVO.STATUS_EXECUTIONFAILED), ejbcawebbean.getText("EXECUTIONFAILED"));
-	    	statustext.put(new Integer(ApprovalDataVO.STATUS_EXECUTIONDENIED), ejbcawebbean.getText("EXECUTIONDENIED"));
+	    	statustext.put(new Integer(ApprovalDataVO.STATUS_WAITINGFORAPPROVAL), ejbcawebbean.getText("WAITING", true));
+	    	statustext.put(new Integer(ApprovalDataVO.STATUS_EXPIRED), ejbcawebbean.getText("EXPIRED", true));
+	    	statustext.put(new Integer(ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED), ejbcawebbean.getText("EXPIREDANDNOTIFIED", true));
+	    	statustext.put(new Integer(ApprovalDataVO.STATUS_EXECUTED), ejbcawebbean.getText("EXECUTED", true));
+	    	statustext.put(new Integer(ApprovalDataVO.STATUS_APPROVED), ejbcawebbean.getText("APPROVED", true));
+	    	statustext.put(new Integer(ApprovalDataVO.STATUS_REJECTED), ejbcawebbean.getText("REJECTED", true));
+	    	statustext.put(new Integer(ApprovalDataVO.STATUS_EXECUTIONFAILED), ejbcawebbean.getText("EXECUTIONFAILED", true));
+	    	statustext.put(new Integer(ApprovalDataVO.STATUS_EXECUTIONDENIED), ejbcawebbean.getText("EXECUTIONDENIED", true));
 	    }
 	    return statustext;
 	}

@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
 package org.ejbca.ui.web.admin.approval;
 
 import java.io.UnsupportedEncodingException;
@@ -13,8 +26,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Class used to represent the view of an approval
  * 
  * @author Philip Vendil
- *
- * $id$
+ * @version $Id: ApprovalView.java,v 1.2 2006-09-05 09:23:28 anatom Exp $
  */
 public class ApprovalView {
 	

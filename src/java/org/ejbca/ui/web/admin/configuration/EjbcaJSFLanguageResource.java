@@ -6,6 +6,8 @@ import java.util.Set;
 
 import javax.ejb.EJBException;
 
+import org.ejbca.util.HTMLTools;
+
 /**
  * Class used to retrieve EJBCA language resources in JSF views
  * 
@@ -39,7 +41,8 @@ public class EjbcaJSFLanguageResource implements Map {
 	}
 
 	public Object get(Object arg0) {
-		return ejbcawebbean.getText((String) arg0);
+		String str = ejbcawebbean.getText((String) arg0);
+		return HTMLTools.htmlunescape(str);
 	}
 
 	public boolean isEmpty() {

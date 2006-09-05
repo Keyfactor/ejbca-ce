@@ -47,12 +47,13 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.HTMLTools;
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.5 2006-02-19 17:03:41 herrvendil Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.6 2006-09-05 09:23:24 anatom Exp $
  */
 public class EjbcaWebBean implements java.io.Serializable {
 
@@ -508,6 +509,15 @@ public class EjbcaWebBean implements java.io.Serializable {
     public String getText(String template){
       return adminsweblanguage.getText(template);
     }
+    /**
+     * @param template the entry in the language file to get
+     * @param unescape true if html entities should be unescaped (&auml; converted to the real char)
+     * @return text string, possibly unescaped, or "No text available" if the template does not match any entry in the language files
+     */
+    public String getText(String template, boolean unescape){
+        String str = getText(template);
+        return HTMLTools.htmlunescape(str);
+      }
 
     public String printDate(Date date){
      return DateFormat.getDateInstance(DateFormat.SHORT).format(date);
