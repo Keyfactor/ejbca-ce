@@ -55,29 +55,31 @@ class Test {
         providerName = pn;
     }
     public void doIt(int i) throws Exception {
-            final byte signBA[]; {
-                Signature signature = Signature.getInstance(sigAlgName, providerName);
-                signature.initSign( keyPair.getPrivate() );
-                signature.update( signInput );
-                signBA = signature.sign();
-            }
-            {
-                Signature signature = Signature.getInstance(sigAlgName);
-                signature.initVerify(keyPair.getPublic());
-                signature.update(signInput);
-                boolean result = signature.verify(signBA);
-                System.out.println("Signature test of key "+alias+
-                                   ": signature length " + signBA.length +
-                                   "; test nr " + i +
-                                   "; first byte " + Integer.toHexString(0xff&signBA[0]) +
-                                   "; verifying " + result);
-            }
+        final byte signBA[]; {
+            Signature signature = Signature.getInstance(sigAlgName, providerName);
+            signature.initSign( keyPair.getPrivate() );
+            signature.update( signInput );
+            signBA = signature.sign();
+        }
+        {
+            Signature signature = Signature.getInstance(sigAlgName);
+            signature.initVerify(keyPair.getPublic());
+            signature.update(signInput);
+            boolean result = signature.verify(signBA);
+            System.out.println("Signature test of key "+alias+
+                               ": signature length " + signBA.length +
+                               "; test nr " + i +
+                               "; first byte " + Integer.toHexString(0xff&signBA[0]) +
+                               "; verifying " + result);
+        }
+        System.gc();
+        System.runFinalization();
     }
 }
 
 /**
  * @author lars
- * @version $Id: HSMKeyTool.java,v 1.4 2006-08-30 12:50:22 primelars Exp $
+ * @version $Id: HSMKeyTool.java,v 1.5 2006-09-07 20:01:27 primelars Exp $
  *
  */
 public class HSMKeyTool {
@@ -203,39 +205,40 @@ public class HSMKeyTool {
         ks.store(System.out, null);
         System.out.println();
     }
-    private static Test[] getTests(final String providerName,
-                                   final String keyStoreType,
-                                   final String storeID) throws Exception {
-        final KeyStore ks; {
-            KeyStore tmp = null;
-            while( tmp==null ) {
-                final InputStream is = new ByteArrayInputStream(storeID.getBytes());
-                tmp = KeyStore.getInstance(keyStoreType, providerName);
-                try {
-                    tmp.load(is, null);
-                } catch( Throwable t ) {
-                    tmp = null;
-                    t.printStackTrace(System.err);
-                    System.err.println("Card set not preloaded. Hit return when error fixed");
-                    new BufferedReader(new InputStreamReader(System.in)).readLine();
-                }
+    private static KeyStore getKeyStore(final String providerName,
+                                        final String keyStoreType,
+                                        final String storeID) throws Exception {
+        KeyStore keyStore = null;
+        while( keyStore==null ) {
+            final InputStream is = new ByteArrayInputStream(storeID.getBytes());
+            keyStore = KeyStore.getInstance(keyStoreType, providerName);
+            try {
+                keyStore.load(is, null);
+            } catch( Throwable t ) {
+                keyStore = null;
+                t.printStackTrace(System.err);
+                System.err.println("Card set not preloaded. Hit return when error fixed");
+                new BufferedReader(new InputStreamReader(System.in)).readLine();
             }
-            ks = tmp;
         }
-        Enumeration e = ks.aliases();
+        return keyStore;
+    }
+    private static Test[] getTests(final KeyStore keyStore,
+                                   final String providerName) throws Exception {
+        Enumeration e = keyStore.aliases();
         Set testSet = new HashSet();
         while( e.hasMoreElements() ) {
             String alias = (String)e.nextElement();
-            if ( ks.isKeyEntry(alias) ) {
+            if ( keyStore.isKeyEntry(alias) ) {
                 PrivateKey privateKey;
                 try {
-                    privateKey = (PrivateKey)ks.getKey(alias, null);
+                    privateKey = (PrivateKey)keyStore.getKey(alias, null);
                 } catch (UnrecoverableKeyException e1) {
                     System.err.println("Give password for key "+alias+':');
-                    privateKey = (PrivateKey)ks.getKey(alias, 
+                    privateKey = (PrivateKey)keyStore.getKey(alias, 
                                                        new BufferedReader(new InputStreamReader(System.in)).readLine().toCharArray() );
                 }
-                testSet.add(new Test(alias, new KeyPair(ks.getCertificate(alias).getPublicKey(), privateKey), providerName));
+                testSet.add(new Test(alias, new KeyPair(keyStore.getCertificate(alias).getPublicKey(), privateKey), providerName));
             }
         }
         return (Test[])testSet.toArray(new Test[0]);
@@ -247,10 +250,11 @@ public class HSMKeyTool {
         String providerName = getProviderName(providerClassName);
         System.out.println("Test of keystore with ID "+storeID+" of type "+keyStoreType+" with provider "+providerName+'.');
         Test tests[] = null;
+        final KeyStore keyStore = getKeyStore(providerName, keyStoreType, storeID);
         for (int i = 0; i<nrOfTests || nrOfTests<1; i++) {
-            if ( tests==null )
-                tests = getTests(providerName, keyStoreType, storeID);
             try {
+                if ( tests==null || nrOfTests==-5 )
+                    tests = getTests(keyStore, providerName);
                 for( int j = 0; j<tests.length; j++ )
                     tests[j].doIt(i);
             } catch( Throwable t ) {

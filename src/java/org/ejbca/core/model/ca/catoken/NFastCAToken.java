@@ -14,7 +14,11 @@
  package org.ejbca.core.model.ca.catoken;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 
 import org.apache.log4j.Logger;
 
@@ -24,7 +28,7 @@ import org.apache.log4j.Logger;
  * and the development was sponsored by Linagora (www.linagora.com).
  * 
  * @author Lars Silvén
- * @version $Id: NFastCAToken.java,v 1.10 2006-09-05 20:14:09 primelars Exp $
+ * @version $Id: NFastCAToken.java,v 1.11 2006-09-07 20:01:26 primelars Exp $
  */
 public class NFastCAToken extends BaseCAToken implements IHardCAToken {
 
@@ -48,20 +52,25 @@ public class NFastCAToken extends BaseCAToken implements IHardCAToken {
         log.debug("Creating NFastCAToken");
     }
 
+    private KeyStore getKeyStore(String authCode) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+        final KeyStore ks = KeyStore.getInstance("nCipher.sworld");
+        try {
+            ks.load(new ByteArrayInputStream(sSlotLabel.getBytes()),
+                    null);
+        } catch( Exception e) {
+            log.debug("Preload maybe not called. Assuming 1/N. Exception was:",e);
+            ks.load(new ByteArrayInputStream(sSlotLabel.getBytes()),
+                    authCode.toCharArray());
+        }
+        return ks;
+    }
     /* (non-Javadoc)
      * @see org.ejbca.core.model.ca.catoken.IHardCAToken#activate(java.lang.String)
      */
     public void activate(String authCode) throws CATokenOfflineException, CATokenAuthenticationFailedException {
         try {
-            keyStore = KeyStore.getInstance("nCipher.sworld");
-            try {
-                keyStore.load(new ByteArrayInputStream(sSlotLabel.getBytes()),
-                              null);
-            } catch( Exception e) {
-                log.debug("Preload maybe not called. Assuming 1/N. Exception was:",e);
-                keyStore.load(new ByteArrayInputStream(sSlotLabel.getBytes()),
-                              authCode.toCharArray());
-            }
+            if ( keyStore==null )
+                keyStore = getKeyStore(authCode);
             setKeys(keyStore, authCode);
             log.debug("Keys from "+sSlotLabel+ " activated.");
         } catch( Throwable t ) {
