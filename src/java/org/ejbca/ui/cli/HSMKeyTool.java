@@ -79,7 +79,7 @@ class Test {
 
 /**
  * @author lars
- * @version $Id: HSMKeyTool.java,v 1.5 2006-09-07 20:01:27 primelars Exp $
+ * @version $Id: HSMKeyTool.java,v 1.6 2006-09-11 09:12:21 primelars Exp $
  *
  */
 public class HSMKeyTool {
@@ -115,7 +115,7 @@ public class HSMKeyTool {
         }
     }
     private static String getProviderName( String className ) throws IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException {
-        Provider provider = (Provider)Class.forName(className).getConstructor(new Class[0]).newInstance(new Class[0]);
+        Provider provider = (Provider)Class.forName(className).getConstructor(new Class[0]).newInstance(new Object[0]);
         Security.addProvider(provider);
         return provider.getName();
     }
