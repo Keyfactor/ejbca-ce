@@ -1366,6 +1366,8 @@ A row with the keyword keyStore must always be present.
 </p><p>
 The keys in the property field are defined by their keystore alias. See general text above about key definition.
 </p><p>
+You must use a unique keystore for each CA.
+</p><p>
 Example with previous generated keys:
 </p>
 <source>
