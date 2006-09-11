@@ -1316,22 +1316,45 @@ Different CAs may share the same keys tore but may also have different key store
 The last key in the example is used to check the status of the HSM by EJBCA.
 This key is small (512 bit) to enhance performance.
 </p>
-<strong>3. Copy files to jboss that implements the nCipher CA Token functionality to JBoss</strong>
+<strong>3. Start EJBCA with NFast HSM</strong>
 <p>
-The file are copied from /opt/nfast/java/classes. The destination is the deploy directory of the application server (server/default/deploy in jboss).
-The files to be copied are:
+To start EJBCA, preload must be running with the required key stores loaded. In this example this was done in step 2. A provided script may be used to start EJBCA:
 </p>
 <source>
-jutil.jar kmcsp.jar kmjava.jar nfjava.jar rsaprivenc.jar
+jboss@donny:~/tmp$ $EJBCA_HOME/bin/nCipherJboss.sh start
+CMD_START = /opt/nfast/bin/preload /home/jboss/jboss/bin/run.sh
+Executing /home/jboss/jboss/bin/run.sh
+=========================================================================
+
+  JBoss Bootstrap Environment
+
+  JBOSS_HOME: /home/jboss/jboss
+
+  JAVA: /usr/local/jdk/bin/java
+
+  JAVA_OPTS: -server -Xms128m -Xmx512m -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000 -Dprogram.name=run.sh
+
+  CLASSPATH: /opt/nfast/java/classes/kmcsp.jar:/opt/nfast/java/classes/kmjava.jar:/opt/nfast/java/classes/nfjava.jar:/opt/nfast/java/classes/rsaprivenc.jar:/home/jboss/jboss/bin/run.jar:/usr/local/jdk/lib/tools.jar
+
+=========================================================================
+
+09:36:49,419 INFO  [Server] Starting JBoss (MX MicroKernel)...
+09:36:49,432 INFO  [Server] Release ID: JBoss [Zion] 4.0.4.GA (build: CVSTag=JBoss_4_0_4_GA date=200605151000)
+09:36:49,471 INFO  [Server] Home Dir: /home/jboss/jboss-4.0.4.GA
+09:36:49,472 INFO  [Server] Home URL: file:/home/jboss/jboss-4.0.4.GA/
+09:36:49,474 INFO  [Server] Patch URL: null
+09:36:49,475 INFO  [Server] Server Name: default
+09:36:49,475 INFO  [Server] Server Home Dir: /home/jboss/jboss-4.0.4.GA/server/default
+09:36:49,476 INFO  [Server] Server Home URL: file:/home/jboss/jboss-4.0.4.GA/server/default/
+09:36:49,477 INFO  [Server] Server Log Dir: /home/jboss/jboss-4.0.4.GA/server/default/log
+09:36:49,478 INFO  [Server] Server Temp Dir: /home/jboss/jboss-4.0.4.GA/server/default/tmp
+09:36:49,479 INFO  [Server] Root Deployment Filename: jboss-service.xml
+09:36:50,495 INFO  [ServerInfo] Java version: 1.5.0_06,Sun Microsystems Inc.
+09:36:50,496 INFO  [ServerInfo] Java VM: Java HotSpot(TM) Server VM 1.5.0_06-b05,Sun Microsystems Inc.
+09:36:50,496 INFO  [ServerInfo] OS-System: Linux 2.6.15-26-server,i386
+09:36:52,755 INFO  [Server] Core system initialized
 </source>
-<p>
-You could also make links if you prefer that.
-</p>
-<strong>4. Make EJBCA aware of the NFast HSM</strong>
-<p>
-Restart the application server and use preload.
-</p>
-<strong>5. Create a new CA in the web GUI of EJBCA</strong>
+<strong>4. Create a new CA in the web GUI of EJBCA</strong>
 <p>
 Choose NFastCAToken as "CA Token Type".
 </p><p>

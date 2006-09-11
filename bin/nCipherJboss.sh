@@ -2,28 +2,9 @@
 #
 # JBoss Control Script
 #
-# chkconfig: 3 80 20
-# description: JBoss EJB Container
-# 
-# To use this script
-# run it as root - it will switch to the specified user
-# It loses all console output - use the log.
-#
-# Here is a little (and extremely primitive) 
-# startup/shutdown script for RedHat systems. It assumes 
-# that JBoss lives in /usr/local/jboss, it's run by user 
-# 'jboss' and JDK binaries are in /usr/local/jdk/bin. All 
-# this can be changed in the script itself. 
-# Bojan 
-#
-# Either amend this script for your requirements
-# or just ensure that the following variables are set correctly 
-# before calling the script
-
-# [ #420297 ] JBoss startup/shutdown for RedHat
 
 #make java is on your path
-JAVAPTH=${JAVAPTH:-"/usr/local/jdk/bin"}
+JAVAPTH=${JAVAPTH:-"$JBOSS_HOME/bin"}
 
 #define the classpath for the shutdown class
 JBOSSCP=${JBOSSCP:-"$JBOSS_HOME/bin/shutdown.jar:$JBOSS_HOME/client/jnet.jar"}
