@@ -52,7 +52,7 @@ import org.ejbca.util.CertTools;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.10 2006-09-12 12:16:24 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.11 2006-09-12 15:12:39 anatom Exp $
  * @ejb.bean
  *   description="Session bean handling hard token data, both about hard tokens and hard token issuers."
  *   display-name="CreateCRLSB"
@@ -296,7 +296,9 @@ public class CreateCRLSessionBean extends BaseSessionBean {
                                    // if isseuinterval is > 0 we will issue a new CRL when currenttime > createtime + issueinterval
                                    nextUpdate = crlinfo.getExpireDate().getTime(); // Default if crlissueinterval == 0
                                    if (crlissueinterval > 0) {
-                                       long u = crlinfo.getCreateDate().getTime() + ( crlissueinterval * 60 * 60 * 1000);
+                                	   long crlissueintervalmillisec = ((long)crlissueinterval) * 60 * 60 * 1000;
+                                	   log.debug("crlissueinterval milliseconds: "+crlissueintervalmillisec);
+                                       long u = crlinfo.getCreateDate().getTime() + (crlissueintervalmillisec);
                                        // If this period for some reason (we missed to issue some?) is larger than when the CRL expires,
                                        // we need to issue one when the CRL expires
                                        if ((u + overlap) < nextUpdate) {
