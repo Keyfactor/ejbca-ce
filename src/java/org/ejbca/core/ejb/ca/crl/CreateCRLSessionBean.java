@@ -52,7 +52,7 @@ import org.ejbca.util.CertTools;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.9 2006-08-19 16:42:18 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.10 2006-09-12 12:16:24 anatom Exp $
  * @ejb.bean
  *   description="Session bean handling hard token data, both about hard tokens and hard token issuers."
  *   display-name="CreateCRLSB"
@@ -250,7 +250,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
      *
      * @param admin administrator performing the task
      * @param addtocrloverlaptime given in milliseconds and added to the CRL overlap time, if set to how often this method is run (poll time), it can be used to issue a new CRL if the current one expires within
-     * the CRL overlap time (configured in CA) and the poll time. The used CRL overlap time will be (crloverlaptime 0 addtocrloverlaptime) 
+     * the CRL overlap time (configured in CA) and the poll time. The used CRL overlap time will be (crloverlaptime + addtocrloverlaptime) 
      *
      * @return the number of crls created.
      * @throws EJBException om ett kommunikations eller systemfel intr?ffar.
@@ -266,6 +266,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     		Iterator iter = caadmin.getAvailableCAs(admin).iterator();
     		while(iter.hasNext()){
     			int caid = ((Integer) iter.next()).intValue();
+    			log.debug("createCRLs for caid: "+caid);
     			try {
     			   CAInfo cainfo = caadmin.getCAInfo(admin, caid);
     			   if (cainfo instanceof X509CAInfo) {
@@ -277,7 +278,16 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     			        		   log.debug("Checking to see if CA '"+cainfo.getName()+"' needs CRL generation.");
     			        	   }
     			               CRLInfo crlinfo = store.getLastCRLInfo(admin,cainfo.getSubjectDN());
+    			               if (log.isDebugEnabled()) {
+        			               if (crlinfo == null) {
+        			            	   log.debug("Crlinfo was null");
+        			               } else {
+        			            	   log.debug("Read crlinfo for CA: "+cainfo.getName()+", lastNumber="+crlinfo.getLastCRLNumber()+", expireDate="+crlinfo.getExpireDate());
+        			               }    			            	   
+    			               }
                                int crlissueinterval = cainfo.getCRLIssueInterval();
+                               log.debug("crlissueinterval="+crlissueinterval);
+                               log.debug("crloverlaptime="+cainfo.getCRLOverlapTime());
                                long overlap = (cainfo.getCRLOverlapTime() * 60 * 1000) + addtocrloverlaptime; // Overlaptime is in minutes, default if crlissueinterval == 0
                                long nextUpdate = 0; // if crlinfo == 0, we will issue a crl now
                                if (crlinfo != null) {
@@ -295,8 +305,14 @@ public class CreateCRLSessionBean extends BaseSessionBean {
                                            overlap = 0;
                                        }
                                    }                                   
+                                   log.debug("Calculated nextUpdate to "+nextUpdate);
+                               } else {
+                            	   log.info("crlinfo is null, so we use 0 as nextUpdate");
                                }
     			               if ((currenttime.getTime() + overlap) >= nextUpdate) {
+    			            	   if (log.isDebugEnabled()) {
+        			            	   log.debug("Creating CRL for CA, because:"+currenttime.getTime()+overlap+" >= "+nextUpdate);    			            		   
+    			            	   }
     			                   this.run(admin, cainfo.getSubjectDN());
     			                   createdcrls++;
     			               }
