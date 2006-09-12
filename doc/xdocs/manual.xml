@@ -194,6 +194,18 @@ If you did not have root permission and get an error during installation step 5,
 install the root certificate afterwards with the following commands, WITH the right permissions:
 </p>
 <source>
+ant javatruststore
+</source>
+<p>
+For example on Ubuntu you can run:
+</p>
+<source>
+sudo ant javatruststore
+</source>
+<p>
+What this does in the background are the following commands. You do not have to run these command manually.
+</p>
+<source>
 bin/ejbca.sh ca getrootcert AdminCA1 ca.crt -der
 keytool -import -trustcacerts -alias AdminCA1 -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit -file ca.crt
 </source>

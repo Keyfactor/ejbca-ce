@@ -74,16 +74,20 @@ superadmin.password : ${superadmin.password}
 java.trustpassword  : ${java.trustpassword}
         </echo>
     </target>
-    
+
+	<target name="ejbca:javatruststore" description="Java trust store config">
+        <echo message="Creating root certificate in DER format..."/>
+	    <ejbca:cli name="ca" arg='getrootcert ${ca.name} ${java.io.tmpdir}/rootca.der -der'/>
+	    <ejbca:keytool arg="-v -alias EJBCA-CA -delete -keystore '${java.home}/lib/security/cacerts' -storepass ${java.trustpassword}"/>
+	    <ejbca:keytool arg="-v -alias EJBCA-CA -import -trustcacerts -file '${java.io.tmpdir}/rootca.der' -keystore '${java.home}/lib/security/cacerts' -storepass ${java.trustpassword} -noprompt"/>
+	    <delete file="${java.io.tmpdir}/rootca.der"/>
+	</target>
+
     <target name="ejbca:install" depends="check:bootstrapdone, ejbca:init" description="Install">
         <echo message="Initializing CA with ${ca.name} '${ca.dn}' ${ca.keysize} ${ca.validity} ${ca.policy} ..."/>
         <ejbca:cli name="ca" arg='init ${ca.name} "${ca.dn}" ${ca.keysize} ${ca.validity} ${ca.policy}'/>
         <antcall target="ejbca:adminweb"/>
-        <echo message="Creating root certificate in DER format..."/>
-        <ejbca:cli name="ca" arg='getrootcert ${ca.name} ${java.io.tmpdir}/rootca.der -der'/>
-        <ejbca:keytool arg="-v -alias EJBCA-CA -delete -keystore '${java.home}/lib/security/cacerts' -storepass ${java.trustpassword}"/>
-        <ejbca:keytool arg="-v -alias EJBCA-CA -import -trustcacerts -file '${java.io.tmpdir}/rootca.der' -keystore '${java.home}/lib/security/cacerts' -storepass ${java.trustpassword} -noprompt"/>
-        <delete file="${java.io.tmpdir}/rootca.der"/>
+    	<antcall target="ejbca:javatruststore"/>
     </target>
 
 	<target name="ejbca:adminweb">

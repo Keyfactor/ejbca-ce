@@ -526,6 +526,10 @@ protection.certprotect=${protection.certprotect}
     <target name="install" description="Install EJBCA application">
         <ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:install" />
     </target>
+	
+    <target name="javatruststore" description="Install RootCA ceritficate in Java trust store">
+        <ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:javatruststore" />
+    </target>
 
     <!-- =================================================================== -->
     <!-- Compile java sources                                                -->

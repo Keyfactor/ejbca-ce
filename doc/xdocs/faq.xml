@@ -150,6 +150,12 @@ fi
         <b>2)</b> You may have to delete and import the ca certificate in your java trust-store:
         </p>
 <source>
+sudo ant javatruststore
+</source>
+<p>
+Or you can run the commands manually. You don't have to do this if you use the convenience command 'ant javatruststore'.
+</p>
+<source>
 bin/ejbca.sh ca getrootcert caname rootca.der -der
 </source>
 <source>
