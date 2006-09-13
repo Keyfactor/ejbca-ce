@@ -61,7 +61,6 @@ administrator, who can be found on the sourceforge project page.
 <li>Yovko Ilchev Yovkov, yyovkov(at)yyovkov.net, Howtos for Fedora Core 4 and 5.</li>
 <li>Javier Aparicio Conesa, aparicio_fracon(at)gva.es, User notice and CPS in certificate policy extension. Directoryname in alternative names. CRL Issue period. Option to not remove certificates from publisher when revoked. Patch for unsuspend from CRL.</li>
 <li>Jon Bendtsen, jon.bendtsen(at)laerdal.dk, OpenVPN installer package enrollment.</li>
-<li>Ezizmuhamet Muhammetkuliyev, eziz@simetri.com, testing, debugging and suggestions.</li>
 </ul>
     </section>
   </body>
