@@ -35,7 +35,7 @@
     <servlet>
         <servlet-name>DemoCertReqServlet</servlet-name>
         <display-name>DemoCertReqServlet</display-name>
-        <servlet-class>org.ejbca.ui.web.DemoCertReqServlet</servlet-class>
+        <servlet-class>org.ejbca.ui.web.pub.DemoCertReqServlet</servlet-class>
         <init-param>
             <param-name>responseTemplate</param-name>
             <param-value>certInstT.html</param-value>
