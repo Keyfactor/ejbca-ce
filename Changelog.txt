@@ -1,3 +1,80 @@
+3.3.0
+---
+New Feature
+
+    * [ECA-98] - Commands and status for certificate suspend
+    * [ECA-143] - Option to generate new keys when renewing a CA
+    * [ECA-215] - Loadbalancer Health Check Servlet
+    * [ECA-234] - Support for directoryName in SubjectAltNames
+    * [ECA-238] - Generate OpenVPN install packages for token enrollment
+    * [ECA-248] - External RA API and service
+    * [ECA-268] - Revoke certificate in Ldap search publisher
+    * [ECA-271] - Option in publishers to not remove certificate when revoked
+    * [ECA-272] - Configurable CRL overlap time
+    * [ECA-274] - Support Subject Directory Attributes extension
+    * [ECA-275] - Support Custom UTF8String QC Statement
+    * [ECA-276] - Asn1dump cli command
+    * [ECA-281] - Option to specify UTF8String for all subject DNs
+    * [ECA-289] - Possibility to use smart card HSM on external OCSP responder
+    * [ECA-290] - Basic signing function to verify the integrity of audit logs
+    * [ECA-306] - Inital Framwork for User Data Sources
+    * [ECA-314] - Inital Approval implementation
+    * [ECA-316] - Basic integrity protection of external OCSP database
+    * [ECA-321] - k/n operator card authentication when enabling nCipher keys in nCipher cards
+    * [ECA-322] - Support for German in admin-GUI
+
+Improvement
+
+    * [ECA-84] - Add UserNotice and CPS url to certificate policy extension
+    * [ECA-166] - Request to external CA gives bad error messages
+    * [ECA-187] - Better sizing of the 'View Certificates' windows
+    * [ECA-255] - Templates for Hard Token Profile printouts
+    * [ECA-266] - Issue CRLs periodically before CRL expire date
+    * [ECA-279] - Added new classes to ejbca-util.jar to compile with timestamp server
+    * [ECA-280] - Support of Safe Net Luna HSM
+    * [ECA-285] - If possible it should be possible to define the auth code of the HSM when configuring the CA.
+    * [ECA-294] - Limit user cert validity to CAs validity
+    * [ECA-309] - Healthcheck servlet for the External OCSP Service
+    * [ECA-310] - Simplified EJBCA healthcheck deployment
+    * [ECA-312] - Option in cli to re-publish all certificates, not only latest
+    * [ECA-320] - Authorization denied displays as error 500 in IE
+    * [ECA-324] - ant task to add ca-certificate to java truststore
+
+Task
+
+    * [ECA-174] - Publish (optionally) multiple certificate values in LDAP
+    * [ECA-207] - Remove redundant code from Profiles
+    * [ECA-298] - Latest version (1.33) of bouncycastle jars
+
+Bug
+
+    * [ECA-57] - I18N issues with resource bundle
+    * [ECA-150] - Can get user certificate from another CA than the user is registered for
+    * [ECA-189] - LogSession can miss to log events under multithreaded heavy load
+    * [ECA-236] - Internationalize webconfiguration.jspf
+    * [ECA-250] - Error in default PIN envelope for hard tokens
+    * [ECA-258] - JBoss hangs when deleting publisher used in CA
+    * [ECA-262] - You cannot leave out defaultKey in nfast ca token configuration
+    * [ECA-267] - Bug in searching for certificates for user that have been removed
+    * [ECA-284] - Wrong exception thrown in EracomCAToken.
+    * [ECA-287] - It is only possbile to use one key for each CA with Eracom HSM.
+    * [ECA-292] - Creating CA with national chars in DN fails for some encodings
+    * [ECA-300] - "Hard CA Token Properties" not stored permanently after editing.
+    * [ECA-301] - External OCSP responder doesn't work with jboss-4.0.4
+    * [ECA-302] - In the Edit End Entity Page it not possible to set a user back to genereated if it have been set to new by mistake
+    * [ECA-303] - ant ocsp-deploy does not work without tomcat.jks file
+    * [ECA-305] - Wrong responderId in response from OCSP responder when not using CA-signing
+    * [ECA-307] - Custom Publishers doesn't reload after save of properties
+    * [ECA-308] - Exception is thrown when trying to republish to external OCSP publisher
+    * [ECA-311] - Re-publish should not add revoked certificates in LDAP
+    * [ECA-313] - BC provider can be missing if running multiple apps simultaneously (rare)
+    * [ECA-315] - Many calls to internal OCSP responder can give 'Reentrant method call detected' error
+    * [ECA-317] - ca republish cli command uses wrong username for CA
+    * [ECA-318] - Scep only works against RootCAs, not SubCAs
+    * [ECA-319] - Surname and Givenname is always added as attriubtes in LDAP even if not required
+    * [ECA-323] - Html encoded characters not displayed correctly on jsf pages
+    * [ECA-325] - CRL Issue interval overflows when too large value entered
+
 3.2.2
 ---
 Improvement
