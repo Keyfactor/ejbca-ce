@@ -12,6 +12,11 @@
     href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=108797">download</a>.
     <br/>
     SHA1 checksum: fe537203995f412bc1c6d74a1ef107340fa40ab3
+    <br/><br/>
+    External RA API 3.3.0 is now available for <a
+    href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=203939">download</a>.
+    <br/>
+    SHA1 checksum: 08728c9bee3e936db9ace08170eeed66ee51a778
     </note>
     <p>
     EJBCA 3.1 and later contains support for nCipher HSM. The development of this functionality was sponsored by 
