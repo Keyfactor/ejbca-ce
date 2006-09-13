@@ -493,7 +493,16 @@ http://host:port/ejbca/publicweb/webdist/certdist?cmd=crl&amp;issuer=url-encoded
 </source>
 <p>
 (such as the link from the webdist pages)
-</p><p>
+</p>
+<p>
+There are three settings in CA configuration dictating the times when CRL generation is done:
+<ul>
+<li>CRL Expire Period (Hours): Mandatory. The validity period for generated CRLs. If set to for example 24, the nextUpdate for a generated CRL will be the issue time + 24 hours.</li>
+<li>CRL Issue Interval (Hours): Optional. A fixed interval when CRLs will be issued. If set to for example 1 hour a new CRL will be issued every hour, even though the old one is still valid for another 23 hours. The default value here is 0, which means that a new CRL will be issued when the old one is about to expire (see also overlap time). Keeping the default value 0 has the same as effect as setting this value to the same value as CRL Expire Period.</li>
+<li>CRL Overlap Time (Minutes): Optional. When checking if a CRL should be generated (if the old one is about to expire), the new CRL is generated this amount of minutes before the old CRL expires. The default value is 10 minutes, meaning that if CRL Expire period is 24 hours, a new CRL will be issued after 23h50m. This ensures that there is no time period (even a few seconds) when there is no valid CRL issued. It also gives clients a time-slot to download a new CRL before the old one expires.</li> 
+</ul>
+</p>
+<p>
 There are at least two ways to have EJBCA to periodically create updated CRLs.
 </p>
 <subsection name="JBossservice">
