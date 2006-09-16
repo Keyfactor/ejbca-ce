@@ -56,8 +56,9 @@ Needed to build and run are:
 <ul>
 <li>JDK 1.4.x or 1.5.x</li>
 <li><i>Unlimited Strength Jurisdiction Policy Files</i> for your JDK</li>
-<li>JBOSS >3.2.6 or 4.0.x (latest tested verison is JBoss 4.0.2)</li>
+<li>JBOSS >=4.0.3 (latest tested verison is JBoss 4.0.4)</li>
 <li>Ant 1.6.x to build (http://jakarta.apache.org/ant/)</li>
+<li>Apache Myfaces 1.1 JSF libraries (included in JBoss >=4.0.3)</li>
 </ul>
 </p><p>
 Set the environment variable JBOSS_HOME to the directory where
