@@ -1,0 +1,152 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
+package org.ejbca.core.protocol.ws.client;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.ArrayList;
+
+//import org.ejbca.core.model.authorization.wsclient.AuthorizationDeniedException;
+//import org.ejbca.core.protocol.ws.wsclient.Certificate;
+import org.ejbca.core.protocol.ws.common.CertificateHelper;
+import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.IAdminCommand;
+import org.ejbca.ui.cli.IllegalAdminCommandException;
+import org.ejbca.util.CertTools;
+
+/**
+ * Finds a certificates in the database
+ *
+ * @version $Id: FindCertsCommand.java,v 1.1 2006-09-17 23:00:25 herrvendil Exp $
+ */
+public class FindCertsCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
+
+	
+	private static final int ARG_USERNAME                 = 1;
+	private static final int ARG_ONLYVALID                = 2;  
+	private static final int ARG_ENCODING                 = 3;
+	private static final int ARG_OUTPUTPATH               = 4;
+	
+    /**
+     * Creates a new instance of RaAddUserCommand
+     *
+     * @param args command line arguments
+     */
+    public FindCertsCommand(String[] args) {
+        super(args);
+    }
+
+    /**
+     * Runs the command
+     *
+     * @throws IllegalAdminCommandException Error in command args
+     * @throws ErrorAdminCommandException Error running command
+     */
+    public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
+    	/*
+        try {   
+           
+            if(args.length !=  5){
+            	usage();
+            	System.exit(-1);
+            }
+            
+            String username = args[ARG_USERNAME];            
+            boolean onlyValid = getOnlyValid(args[ARG_ONLYVALID]);
+            String encoding = getEncoding(args[ARG_ENCODING]);
+            String outputPath = getOutputPath(args[ARG_OUTPUTPATH]);
+            
+            
+            try{
+            	Certificate[] result = getEjbcaRAWS().findCerts(username, onlyValid);
+            	
+            	if(result==null || result.length == 0){
+            		getPrintStream().println("No certificate could be found for user");
+            	}else{
+            		getPrintStream().println(result.length + " certificate found, written to " + outputPath);
+            		for(int i=0;i<result.length;i++){
+            			if(encoding.equals("DER")){
+            			    FileOutputStream fos = new FileOutputStream(outputPath + "/" + username + "-" + i +".cer");
+            			    fos.write(CertificateHelper.getCertificate(result[i].getCertificateData()).getEncoded());
+            			    fos.close();
+            			}else{
+            				FileOutputStream fos = new FileOutputStream(outputPath + "/" + username + "-" + i +".pem");
+            				ArrayList list = new ArrayList();
+            				list.add(CertificateHelper.getCertificate(result[i].getCertificateData()));
+            				fos.write(CertTools.getPEMFromCerts(list));
+            				fos.close();            				            				
+            			}                        
+            		}
+            	}
+            	             
+            }catch(AuthorizationDeniedException e){
+            	getPrintStream().println("Error : " + e.getMessage());
+            }           
+        } catch (Exception e) {
+            throw new ErrorAdminCommandException(e);
+        }*/
+    }
+
+
+
+	
+
+	private String getOutputPath(String outputpath) {
+		File dir = new File(outputpath);
+		if(!dir.exists()){
+			getPrintStream().println("Error : Output directory doesn't seem to exist.");
+			System.exit(-1);
+		}
+		if(!dir.isDirectory()){
+			getPrintStream().println("Error : Output directory doesn't seem to be a directory.");
+			System.exit(-1);			
+		}
+		if(!dir.canWrite()){
+			getPrintStream().println("Error : Output directory isn't writeable.");
+			System.exit(-1);
+
+		}
+		return outputpath;
+	}
+
+	private String getEncoding(String encoding) {
+		if(!encoding.equalsIgnoreCase("PEM") && !encoding.equalsIgnoreCase("DER")){
+			usage();
+			System.exit(-1);
+		}
+		
+		return encoding.toUpperCase();
+	}
+
+	private boolean getOnlyValid(String onlyValid) {
+		if(onlyValid.equalsIgnoreCase("true")){
+			return true;
+		}
+		if(onlyValid.equalsIgnoreCase("false")){
+			return false;
+		}
+		usage();
+		System.exit(-1);				
+		return false; // Should never happen
+	}
+
+	protected void usage() {
+		getPrintStream().println("Command used to find a users certificates");
+		getPrintStream().println("Usage : findcerts <username> <onlyvalid (true|false)> <encoding (DER|PEM)> <outputpath> \n\n");
+        getPrintStream().println("onlyvalid = true only returns nonexired and unrevoked certificates ");
+        getPrintStream().println("outputpath : directory where certificates are written in form username+nn ");
+   }
+
+
+}

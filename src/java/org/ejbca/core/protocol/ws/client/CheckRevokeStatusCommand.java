@@ -1,0 +1,107 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
+package org.ejbca.core.protocol.ws.client;
+
+import java.math.BigInteger;
+
+//import org.ejbca.core.model.authorization.wsclient.AuthorizationDeniedException;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+//import org.ejbca.core.protocol.ws.wsclient.RevokeStatus;
+import org.ejbca.ui.cli.ErrorAdminCommandException;
+import org.ejbca.ui.cli.IAdminCommand;
+import org.ejbca.ui.cli.IllegalAdminCommandException;
+import org.ejbca.util.CertTools;
+
+/**
+ * Revokes a given certificate
+ *
+ * @version $Id: CheckRevokeStatusCommand.java,v 1.1 2006-09-17 23:00:25 herrvendil Exp $
+ */
+public class CheckRevokeStatusCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
+
+	
+	private static final int ARG_ISSUERDN                 = 1;
+	private static final int ARG_CERTSN                   = 2;
+	
+	
+	
+    /**
+     * Creates a new instance of RevokeCertCommand
+     *
+     * @param args command line arguments
+     */
+    public CheckRevokeStatusCommand(String[] args) {
+        super(args);
+    }
+
+    /**
+     * Runs the command
+     *
+     * @throws IllegalAdminCommandException Error in command args
+     * @throws ErrorAdminCommandException Error running command
+     */
+    public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
+        try {   
+           
+            if(args.length != 3){
+            	usage();
+            	System.exit(-1);
+            }
+            
+            String issuerdn = CertTools.stringToBCDNString(args[ARG_ISSUERDN]);            
+            String certsn = getCertSN(args[ARG_CERTSN]);                                   
+            /*          
+            try{
+            	
+            	RevokeStatus status = null;// getEjbcaRAWS().checkRevokationStatus(issuerdn,certsn);
+
+            	getPrintStream().println("Revokation status :");
+            	getPrintStream().println("  IssuerDN      : " + status.getIssuerDN());
+            	getPrintStream().println("  CertificateSN : " + status.getCertificateSN());
+            	if(status.getReason() == RevokedCertInfo.NOT_REVOKED){
+            	    getPrintStream().println("  Status        : NOT REVOKED");
+            	}else{
+            		getPrintStream().println("  Status        : REVOKED");
+            		getPrintStream().println("  Reason        : " + getRevokeReason(status.getReason()));
+            		getPrintStream().println("  Date          : " + status.getRevocationDate().toString());
+            	}
+            	
+            }catch(AuthorizationDeniedException e){
+            	getPrintStream().println("Error : " + e.getMessage());            
+            }*/
+        } catch (Exception e) {
+            throw new ErrorAdminCommandException(e);
+        }
+    }
+
+
+	private String getCertSN(String certsn) {
+		try{
+			new BigInteger(certsn,16);
+		}catch(NumberFormatException e){
+			getPrintStream().println("Error in Certificate SN");
+			usage();
+			System.exit(-1);
+		}
+		return certsn;
+	}
+
+	protected void usage() {
+		getPrintStream().println("Command used check the status of certificate");
+		getPrintStream().println("Usage : checkrevokationstatus <issuerdn> <certificatesn (HEX)>  \n\n");
+
+   }
+
+
+}

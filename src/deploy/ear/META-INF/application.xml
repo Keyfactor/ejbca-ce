@@ -47,6 +47,7 @@ applications for enrollment, distribution and administration.
             <web-uri>adminweb.war</web-uri>
             <context-root>/@ejbca@/adminweb</context-root>
         </web>
-    </module>
+    </module> 
+       <!--@ejbcaws.war@-->
 </application>
 
