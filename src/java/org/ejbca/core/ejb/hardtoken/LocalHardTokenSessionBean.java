@@ -1105,6 +1105,10 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        */
     public HardTokenData getHardToken(Admin admin, String tokensn){
        debug("<getHardToken(tokensn :" + tokensn +")");
+       
+       
+       // Check Approvals       
+       
        HardTokenData returnval = null;
        HardTokenDataLocal htd = null;
        try{

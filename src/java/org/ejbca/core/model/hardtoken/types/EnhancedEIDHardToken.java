@@ -14,13 +14,14 @@
 package org.ejbca.core.model.hardtoken.types;
 
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
 
 
 /**
  * EnhancedEIDHardToken is a class defining data stored in database for a Enhanced EID token.
  *
- * @version $Id: EnhancedEIDHardToken.java,v 1.1 2006-01-17 20:31:52 anatom Exp $
+ * @version $Id: EnhancedEIDHardToken.java,v 1.2 2006-09-17 23:02:22 herrvendil Exp $
  */
 public class EnhancedEIDHardToken extends HardToken {
     // Public Constants
@@ -32,19 +33,34 @@ public class EnhancedEIDHardToken extends HardToken {
 	public static final String INITIALENCPIN       = "INITIALENCPIN";
 	public static final String ENCPUK              = "ENCPUK";
 	public static final String ENCKEYRECOVERABLE   = "ENCKEYRECOVERABLE";
-		    
-    public static final String[] FIELDS = {
-		INITIALSIGNATUREPIN, SIGNATUREPUK, EMPTYROW_FIELD, INITIALAUTHPIN, AUTHPUK, 
-		EMPTYROW_FIELD, INITIALENCPIN, ENCPUK, ENCKEYRECOVERABLE 
-    };
-    public static final int[] DATATYPES = { STRING, STRING, EMPTYROW, 
-    	                                    STRING, STRING, EMPTYROW, 
-    	                                    STRING, STRING, BOOLEAN };
-    public static final String[] FIELDTEXTS = {
-		INITIALSIGNATUREPIN, SIGNATUREPUK, EMPTYROW_FIELD, 
-		INITIALAUTHPIN, AUTHPUK, EMPTYROW_FIELD,
-		INITIALENCPIN, ENCPUK, ENCKEYRECOVERABLE 
-    };
+		        
+    public static String[] FIELDS = null;
+    public static int[] DATATYPES = null;
+    public static String[] FIELDTEXTS = null;
+    
+    static {
+    	if(GlobalConfiguration.HARDTOKEN_DIPLAYSENSITIVEINFO){
+    		FIELDS = new String[] {
+    				INITIALSIGNATUREPIN, SIGNATUREPUK, EMPTYROW_FIELD, INITIALAUTHPIN, AUTHPUK, 
+    				EMPTYROW_FIELD, INITIALENCPIN, ENCPUK, ENCKEYRECOVERABLE 
+    		    };
+    		DATATYPES = new int[] { STRING, STRING, EMPTYROW, 
+                                    STRING, STRING, EMPTYROW, 
+                                    STRING, STRING, BOOLEAN };
+    		FIELDTEXTS = new String[] {
+    				INITIALSIGNATUREPIN, SIGNATUREPUK, EMPTYROW_FIELD, 
+    				INITIALAUTHPIN, AUTHPUK, EMPTYROW_FIELD,
+    				INITIALENCPIN, ENCPUK, ENCKEYRECOVERABLE 
+    		    };
+    	}else{
+    		FIELDS = new String[] {ENCKEYRECOVERABLE};
+    		DATATYPES = new int[] {BOOLEAN};
+    	    FIELDTEXTS = new String[] {ENCKEYRECOVERABLE};    	 
+    	}
+    }
+    
+    
+    
 
     // Public Methods
    /** Constructor to use. */

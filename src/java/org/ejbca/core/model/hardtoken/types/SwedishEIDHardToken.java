@@ -14,13 +14,14 @@
 package org.ejbca.core.model.hardtoken.types;
 
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
 
 
 /**
  * SwedishEIDHardToken is a class defining data stored in database for a Swedish EID token.
  *
- * @version $Id: SwedishEIDHardToken.java,v 1.1 2006-01-17 20:31:52 anatom Exp $
+ * @version $Id: SwedishEIDHardToken.java,v 1.2 2006-09-17 23:02:22 herrvendil Exp $
  */
 public class SwedishEIDHardToken extends HardToken {
     // Public Constants
@@ -31,13 +32,22 @@ public class SwedishEIDHardToken extends HardToken {
     public static final String INITIALSIGNATUREPIN = "INITIALSIGNATUREPIN";
     public static final String SIGNATUREPUK        = "SIGNATUREPUK";   
     
-    public static final String[] FIELDS = {
-        INITIALAUTHENCPIN, AUTHENCPUK, EMPTYROW_FIELD, INITIALSIGNATUREPIN, SIGNATUREPUK
-    };
-    public static final int[] DATATYPES = { STRING, STRING, EMPTYROW, STRING, STRING };
-    public static final String[] FIELDTEXTS = {
-        INITIALAUTHENCPIN, AUTHENCPUK, EMPTYROW_FIELD, INITIALSIGNATUREPIN, SIGNATUREPUK
-    };
+    public static String[] FIELDS = null;
+    public static int[] DATATYPES = null;
+    public static String[] FIELDTEXTS = null;
+    
+    static {
+    	if(GlobalConfiguration.HARDTOKEN_DIPLAYSENSITIVEINFO){
+    		FIELDS = new String[] {INITIALAUTHENCPIN, AUTHENCPUK, EMPTYROW_FIELD, INITIALSIGNATUREPIN, SIGNATUREPUK};
+    		DATATYPES = new int[] { STRING, STRING, EMPTYROW, STRING, STRING };
+    		FIELDTEXTS = new String[] { INITIALAUTHENCPIN, AUTHENCPUK, EMPTYROW_FIELD, INITIALSIGNATUREPIN, SIGNATUREPUK};   
+    	}else{
+    		FIELDS = new String[] {};
+    		DATATYPES = new int[] {};
+    	    FIELDTEXTS = new String[] {};    	 
+    	}
+    }
+
 
     // Public Methods
     /** Constructor to use. */

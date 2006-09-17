@@ -14,13 +14,14 @@
 package org.ejbca.core.model.hardtoken.types;
 
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
 
 /**
  *  EIDHardToken is a class defining data stored in database for a EID token.
  *  
  *  OBSERVE This class should only be used for backward compability with EJBCA 2.0 
- * @version $Id: EIDHardToken.java,v 1.1 2006-01-17 20:31:52 anatom Exp $
+ * @version $Id: EIDHardToken.java,v 1.2 2006-09-17 23:02:22 herrvendil Exp $
  */
 public class EIDHardToken extends HardToken {
     // Public Constants
@@ -29,13 +30,23 @@ public class EIDHardToken extends HardToken {
     public static final String INITIALSIGNATUREPIN = "INITIALSIGNATUREPIN";
     public static final String SIGNATUREPUK = "SIGNATUREPUK";
     public static final int THIS_TOKENTYPE = SecConst.TOKEN_EID;
-    public static final String[] FIELDS = {
-        INITIALBASICPIN, BASICPUK, EMPTYROW_FIELD, INITIALSIGNATUREPIN, SIGNATUREPUK
-    };
-    public static final int[] DATATYPES = { STRING, STRING, EMPTYROW, STRING, STRING };
-    public static final String[] FIELDTEXTS = {
-        INITIALBASICPIN, BASICPUK, EMPTYROW_FIELD, INITIALSIGNATUREPIN, SIGNATUREPUK
-    };
+
+    
+    public static String[] FIELDS = null;
+    public static int[] DATATYPES = null;
+    public static String[] FIELDTEXTS = null;
+    
+    static {
+    	if(GlobalConfiguration.HARDTOKEN_DIPLAYSENSITIVEINFO){
+    		FIELDS = new String[] {INITIALBASICPIN, BASICPUK, EMPTYROW_FIELD, INITIALSIGNATUREPIN, SIGNATUREPUK};
+    		DATATYPES = new int[] { STRING, STRING, EMPTYROW, STRING, STRING };
+    		FIELDTEXTS = new String[] { INITIALBASICPIN, BASICPUK, EMPTYROW_FIELD, INITIALSIGNATUREPIN, SIGNATUREPUK};   
+    	}else{
+    		FIELDS = new String[] {};
+    		DATATYPES = new int[] {};
+    	    FIELDTEXTS = new String[] {};    	 
+    	}
+    }
 
     // Public Methods
 
