@@ -2,7 +2,7 @@
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, 
     org.ejbca.ui.web.RequestHelper,org.ejbca.core.model.ra.raadmin.AdminPreference, org.ejbca.ui.web.admin.configuration.GlobalConfigurationDataHandler,
-                org.ejbca.ui.web.admin.configuration.WebLanguages"%>
+                org.ejbca.ui.web.admin.configuration.WebLanguages, org.ejbca.core.model.authorization.AvailableAccessRules"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 
@@ -43,7 +43,7 @@
   // Initialize environment.
   final String THIS_FILENAME                          =  "configuration.jsp";
 
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/super_administrator"); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AvailableAccessRules.REGULAR_EDITSYSTEMCONFIGURATION); 
 
   String forwardurl = "/" + globalconfiguration .getMainFilename(); 
 
