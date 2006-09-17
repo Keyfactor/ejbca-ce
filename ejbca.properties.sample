@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.64 2006-08-26 13:39:50 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.65 2006-09-17 22:58:54 herrvendil Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -108,6 +108,12 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 # Default content encoding used to display JSP pages, for example ISO-8859-1, UTF-8 or GBK.
 # Default: ISO-8859-1
 #web.contentencoding=ISO-8859-1
+
+# Setting to indicate if the secret information stored on hard tokens (i.e initial PIN/PUK codes) should
+# be displayed for the administrators. If false only non-sensitive information is displayed.
+# Values should be "true" or "false".
+# Default = true
+#hardtoken.diplaysensitiveinfo=true
 
 # ------------- Approval configuration ------------------------
 # Settings working as default values in the approval functionality

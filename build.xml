@@ -61,6 +61,10 @@
 	
     <property name="healthcheck.src" value="${src}/publicweb/healthcheck" />
     <property name="healthcheckwar" value="${dist.dir}/healthcheck.war" />
+	
+    <property name="ejbcaws.src" value="${src}/wsee" />
+	<property name="ejbcaws.build" value="${tmp}/ejbcaws.war" />  
+    <property name="ejbcawswar" value="${dist.dir}/ejbcaws.war" />
 
     <property name="ocsphealthcheck.src" value="${src}/publicweb/ocsphealthcheck" />
     <property name="ocsphealthcheckwar" value="${ocsp-dist.dir}/ocsphealthcheck.war" />
@@ -97,6 +101,12 @@
     <path id="ext.classpath">
         <fileset dir="lib/ext" includes="*.jar" />
     </path>
+    <path id="wsee.classpath" >
+    	<fileset dir="lib/wsee" includes="*.jar"/>
+    	<fileset dir="lib/jasper" includes="*.jar"/>
+    	<path location="${build}" />
+    	<path refid="compile.classpath" />
+    </path>
 
     <path id="compile.classpath">
         <path refid="ext.classpath" />
@@ -116,7 +126,7 @@
     <path id="xdoclet.classpath">
         <fileset dir="lib" includes="*.jar" />
         <fileset dir="lib/ext" includes="*.jar" />
-        <fileset dir="lib/xdoclet/lib" includes="*.jar" />
+        <fileset dir="lib/xdoclet/lib" includes="*.jar" />    
         <fileset dir="${jboss.home}/client">
             <include name="jboss-j2ee.jar" />
         </fileset>
@@ -175,6 +185,7 @@
     <property name="httpsserver.password" value="serverpwd" />
     <property name="web.availablelanguages" value="EN,FR,IT,ES,SE,ZH,DE" />
     <property name="web.contentencoding" value="ISO-8859-1" />
+    <property name="hardtoken.diplaysensitiveinfo" value="true" />
 	<property name="approval.defaultrequestvalidity" value="28800" />
 	<property name="approval.defaultapprovalvalidity" value="28800" />
     <property name="approval.excludedClasses" value="" />
@@ -230,7 +241,8 @@ httpserver.privhttps   = ${httpserver.privhttps}
 httpsserver.password   = ${httpsserver.password}
 web.availablelanguages = ${web.availablelanguages}
 web.contentencoding    = ${web.contentencoding}
-approval.defaultrequestvalidity = ${approval.defaultrequestvalidity}
+hardtoken.diplaysensitiveinfo    = ${hardtoken.diplaysensitiveinfo}
+approval.defaultrequestvalidity  = ${approval.defaultrequestvalidity}
 approval.defaultapprovalvalidity = ${approval.defaultapprovalvalidity}
 approval.excludedClasses = ${approval.excludedClasses}
       </echo>
@@ -495,6 +507,7 @@ protection.certprotect=${protection.certprotect}
         <copy file="src/java/org/ejbca/core/model/ca/caadmin/ExtendedX509Util.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/caadmin/ExtendedX509Util.java" overwrite="true" failonerror="false"/>
         <copy file="src/java/org/ejbca/core/model/ca/caadmin/ExtendedX509V3CertificateGenerator.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/caadmin/ExtendedX509V3CertificateGenerator.java" overwrite="true" failonerror="false"/>
 		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@ejbca.version@" value="${app.version}"/>
+		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@hardtoken.diplaysensitiveinfo@" value="${hardtoken.diplaysensitiveinfo}"/>
 		<replace file="${src.java}/org/ejbca/core/model/approval/ApprovalRequest.java" token="@approval.defaultrequestvalidity@" value="${approval.defaultrequestvalidity}"/>
 		<replace file="${src.java}/org/ejbca/core/model/approval/ApprovalRequest.java" token="@approval.defaultapprovalvalidity@" value="${approval.defaultapprovalvalidity}"/>
         <replace file="${src.java}/org/ejbca/core/model/approval/ApprovalExecutorUtil.java" token="@approval.excludedClasses@" value="${approval.excludedClasses}"/>
@@ -540,6 +553,7 @@ protection.certprotect=${protection.certprotect}
             <exclude name="**/appserver/**" />
             <exclude name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java" />
             <exclude name="org/ejbca/ui/web/pub/cluster/ExtOCSPHealthCheck.java" />
+        	<exclude name="org/ejbca/core/protocol/ws/client/*.java" />
             <src path="${src.java}" />
             <src path="${src.gen}" />
         </javac>
@@ -589,6 +603,192 @@ protection.certprotect=${protection.certprotect}
 
         </war>
     </target>
+		
+    <!-- =================================================================== -->
+    <!-- Build ejbcaws part                                                                                                                             -->
+    <!-- =================================================================== -->
+
+    <taskdef name="java2wsdl" classname= "org.apache.axis.tools.ant.wsdl.Java2WsdlAntTask" classpathref="wsee.classpath"/>     
+    <taskdef name="wsdl2java" classname="org.apache.axis.tools.ant.wsdl.Wsdl2javaAntTask" classpathref="wsee.classpath" />
+    <target name="genejbcaws" depends="">
+
+    	<mkdir dir="tmp/wseesrc/wsdl"/>
+    	<mkdir dir="tmp/wseesrc/java"/>
+      <java2wsdl 
+            classname="org.ejbca.core.protocol.ws.services.EjbcaRAWS"
+            location="http://localhost:8080/ejbca/ejbcaws/services/EjbcaRAWS"
+            namespace="http://ws.protocol.core.ejbca.org"
+            output="tmp/wseesrc/wsdl/EjbcaRAWS.wsdl"
+        	methods="test"
+        	style="DOCUMENT"        	
+            typemappingversion="1.1" 
+        	useinheritedmethods="false" 
+        	classpathref="compile.classpath">        	             
+        </java2wsdl>
+        <wsdl2java debug="false" 
+        	helperGen="true" 
+
+        	noimports="false"
+            output="tmp/wseesrc/java"
+            serverside="false" 
+        	skeletonDeploy="false" 
+        	testcase="true"
+            typeMappingVersion="1.1"
+            url="tmp/wseesrc/wsdl/EjbcaRAWS.wsdl" 
+        	verbose="false"        	
+        	>
+        	  <mappingset>
+        	  	 <mapping namespace="http://core.ejbca.org"
+        	  	 	      package="org.ejbca.core.wsclient" />
+       	  	     <mapping namespace="http://approval.model.core.ejbca.org"
+       	  	 	          package="org.ejbca.core.model.approval.wsclient" /> 
+      	  	     <mapping namespace="http://authorization.model.core.ejbca.org"
+      	  	 	          package="org.ejbca.core.model.authorization.wsclient" /> 
+      	  	     <mapping namespace="http://ra.model.core.ejbca.org"
+      	  	 	          package="org.ejbca.core.model.ra.wsclient" /> 
+     	  	     <mapping namespace="http://raadmin.ra.model.core.ejbca.org"
+     	  	 	          package="org.ejbca.core.model.ra.raadmin.wsclient" /> 
+    	  	     <mapping namespace="http://query.util.ejbca.org"
+    	  	 	          package="org.ejbca.util.query.wsclient" /> 
+   	  	         <mapping namespace="http://ws.protocol.core.ejbca.org"
+   	  	 	              package="org.ejbca.core.protocol.ws.wsclient" /> 
+  	  	         <mapping namespace="http://common.ws.protocol.core.ejbca.org"
+  	  	 	              package="org.ejbca.core.protocol.ws.common.wsclient" /> 
+              </mappingset>
+        </wsdl2java> 
+      </target>
+	
+	 <target name="ejbcaws.init">
+        <available  file="tmp\wseesrc\wsdl\EjbcaRAWS.wsdl" property="ejbcaws.generated"></available> 
+     </target>
+	
+      <target name="ejbcaws.war" depends="compile, ejbcaws.init" if="ejbcaws.generated">
+      	    <replace file="${eardd.src}/META-INF/application.xml" token="!--@ejbcaws.war@-->" value="module>&lt;web>&lt;web-uri>ejbcaws.war&lt;/web-uri>&lt;context-root>/${app.name}/ejbcaws&lt;/context-root>&lt;/web>&lt;/module>"/>
+       	    <mkdir dir="${ejbcaws.build}"/>
+       	    <mkdir dir="${ejbcaws.build}/wsdl"/>
+        	<mkdir dir="${ejbcaws.build}/WEB-INF/lib"/>
+        	<mkdir dir="${ejbcaws.build}/WEB-INF/classes"/>
+            <copy todir="${ejbcaws.build}">
+                <fileset dir="${ejbcaws.src}" />
+            </copy>
+            <copy todir="${ejbcaws.build}/WEB-INF">
+                <fileset dir="${ejbcaws.src}/WEB-INF" />
+            </copy>
+            <copy todir="${ejbcaws.build}/WEB-INF/lib">
+                <fileset dir="dist" >
+                	<include name="ejbca-ejb.jar"/>
+                </fileset>
+            	<fileset dir="${lib}/" >
+                	<include name="log4j-1.2.7.jar"/>
+                </fileset>
+            	<!--       <fileset dir="${lib}/ext/" >
+                	<include name="servlet-2.3.jar"/>
+                </fileset>
+              <fileset dir="${jboss.home}/client">
+                    <include name="jbossall-client.jar" />
+                    <include name="jboss-j2ee.jar" />
+                </fileset> -->
+                <fileset dir="${lib}/wsee" >
+                	<include name="*.jar"/>
+                	<include name="*.properties"/>
+                </fileset>
+            </copy> 
+           <javac srcdir="${tmp}/wseesrc/java" destdir="${ejbcaws.build}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1">
+            <classpath refid="wsee.classpath" />
+            <include name="**/*.java" />
+           </javac>
+            <copy todir="${ejbcaws.build}/WEB-INF/classes">
+                <fileset dir="${build}" >
+                	<include name="org/ejbca/core/protocol/ws/*"/>
+                	<include name="org/ejbca/core/protocol/ws/common/*"/>
+                 	<include name="org/ejbca/core/protocol/ws/services/*"/> 
+                </fileset>
+            </copy>
+            <copy todir="${ejbcaws.build}/wsdl">
+              <fileset dir="${tmp}/wseesrc/wsdl" >
+            	<include name="*.wsdl"/>
+              </fileset>
+            </copy>
+        	<!-- <copy tofile="${ejbcaws.build}/WEB-INF/server-config.wsdd" file="${tmp}/wseesrc/java/org/ejbca/core/protocol/ws/wsclient/deploy.wsdd"/>     -->
+            <war  destfile="${ejbcawswar}" webxml="${ejbcaws.src}/WEB-INF/web.xml">
+                <fileset dir="${ejbcaws.build}" excludes="WEB-INF/web.xml" />
+            </war>  
+    	    	    	
+    </target>
+    <!-- =================================================================== -->
+    <!-- Build ejbcaws part                                                  -->
+    <!-- =================================================================== -->	
+    <target name="ejbcaws.cli" depends="ejbcaws.war">
+    	<mkdir dir="tmp/ejbcawscli.jar"/>
+    	<mkdir dir="tmp/ejbcawscli.jar/META-INF"/>
+    	<mkdir dir="tmp/ejbcawscli.jar/META-INF/wsdl"/>
+    	<mkdir dir="dist/ejbcaws/cli"/>
+ 
+            <javac destdir="${build}" debug="on" includeantruntime="no" encoding="iso8859-1">
+                <classpath refid="wsee.classpath" />
+            	<include name="org/ejbca/core/protocol/ws/client/*.java" />
+                <src path="${src.java}" />
+                <src path="${src.gen}" />
+            	<src path="${tmp}/wseesrc/java" />
+            </javac>
+    	
+        <copy todir="tmp/ejbcawscli.jar">
+            <fileset dir="${build}">
+              <include name="org/ejbca/core/protocol/ws/client/*.class"/>
+              <include name="org/ejbca/core/protocol/ws/common/*.class"/>
+            </fileset>	
+	    </copy>  
+        <copy todir="tmp/ejbcawscli.jar">
+            <fileset dir="${ejbcaws.build}/WEB-INF/classes">
+              <include name="**/wsclient/*.class"/>
+            </fileset>	
+	    </copy>  
+	    <copy todir="tmp/ejbcawscli.jar/META-INF/wsdl">
+	       <fileset dir="${tmp}/wseesrc/wsdl">
+             <include name="*.wsdl"/> 
+           </fileset>
+        </copy> 
+        <copy todir="dist/ejbcaws//cli">
+            <fileset dir="${ejbca.home}/lib">        
+              <include name="bcprov-jdk15.jar"/>  
+            </fileset>	
+            <fileset dir="${ejbca.home}/dist">
+              <include name="ejbca-util.jar"/>         
+            </fileset>	    
+	        <fileset dir="${lib}/wsee">
+				<include name="axis.jar" />
+				<include name="commons-discovery-0.2.jar" />
+				<include name="commons-logging-1.0.4.jar" />
+				<include name="jaxrpc.jar" />
+			    <include name="saaj.jar" />	
+			    <include name="wsdl4j-1.5.1.jar" />	 
+			</fileset>
+	        <fileset dir="${lib}">
+				<include name="log4j-1.2.7.jar" />
+			</fileset>
+	    </copy> 
+	    <copy todir="tmp/ejbcawscli.jar">
+            <fileset dir="src">
+                <include name="log4j.properties" />
+            </fileset>
+        </copy>
+    	
+	    <copy todir="dist/ejbcaws/cli/">
+            <fileset dir="${src}/wsee/cli">
+                <include name="*.*" />
+            </fileset>
+        </copy>
+	    
+        <jar destfile="dist/ejbcaws/cli/ejbcawscli.jar" basedir="tmp/ejbcawscli.jar">
+          <manifest>
+          	<attribute name="Class-Path" value="wsdl4j-1.5.1.jar saaj.jar jaxrpc.jar commons-discovery-0.2.jar commons-logging-1.0.4.jar axis.jar bcprov-jdk15.jar ejbca-util.jar log4j-1.2.7.jar "/>
+            <attribute name="Main-Class" value="org.ejbca.core.protocol.ws.client.ejbcawsracli"/>
+          </manifest>
+        </jar>
+ 
+    	    	    	
+    </target>
+
 	
     <!-- =================================================================== -->
     <!-- Build ocsp health check part                                                                                                                             -->
@@ -686,7 +886,9 @@ protection.certprotect=${protection.certprotect}
             	<exclude name="WEB-INF/**"/>
             	<exclude name="status/**"/>
             </fileset>
-            <fileset dir="${build}"/>
+            <fileset dir="${build}">            	
+        	    <exclude name="org/ejbca/core/protocol/ws/**"/>
+            </fileset>
             <fileset dir="${src}/log"/>
             <fileset dir="${src}/upgrade"/>
             <fileset dir="${hwtoken.class.dir}"/>
@@ -718,8 +920,7 @@ protection.certprotect=${protection.certprotect}
                     <include name="**/BaseSessionBean.*" /> 
                 	<include name="**/ServiceLocator.*"/>
                 	<include name="**/JNDINames.*"/>
-                	<include name="**/HealthCheckServlet.*"/>
-                	<include name="**/UserDataVOWS.*"/>
+                	<include name="**/HealthCheckServlet.*"/>                	
                     <include name="org/ejbca/ui/web/RequestHelper.*"/>
                 	<include name="org/ejbca/ui/web/pub/cluster/**"/>
                     <include name="org/ejbca/ui/web/pub/ServletUtils.*"/>   
