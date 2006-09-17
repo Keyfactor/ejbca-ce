@@ -26,7 +26,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 /**
  * 
  *
- * @version $Id: AvailableAccessRules.java,v 1.4 2006-08-09 07:29:49 herrvendil Exp $
+ * @version $Id: AvailableAccessRules.java,v 1.5 2006-09-17 23:02:04 herrvendil Exp $
  */
 public class AvailableAccessRules {
         
@@ -84,6 +84,7 @@ public class AvailableAccessRules {
     public static final String REGULAR_LOGCONFIGURATION                           = "/log_functionality/edit_log_configuration"; 
     public static final String REGULAR_SYSTEMFUNCTIONALITY                        = "/system_functionality";
     public static final String REGULAR_EDITADMINISTRATORPRIVILEDGES               = "/system_functionality/edit_administrator_privileges";
+    public static final String REGULAR_EDITSYSTEMCONFIGURATION                    = "/system_functionality/edit_systemconfiguration";
     
     public static final String REGULAR_VIEWHARDTOKENS                             = "/ra_functionality" + HARDTOKEN_RIGHTS;    
     public static final String REGULAR_KEYRECOVERY                                = "/ra_functionality" + KEYRECOVERY_RIGHTS;
@@ -118,7 +119,8 @@ public class AvailableAccessRules {
                                                            REGULAR_VIEWLOG,
                                                            REGULAR_LOGCONFIGURATION,
                                                            REGULAR_SYSTEMFUNCTIONALITY,
-                                                           REGULAR_EDITADMINISTRATORPRIVILEDGES};
+                                                           REGULAR_EDITADMINISTRATORPRIVILEDGES,
+                                                           REGULAR_EDITSYSTEMCONFIGURATION};
                                                        
         // Role Access Rules
     public static final  String[] ROLEACCESSRULES =       {  ROLE_PUBLICWEBUSER,

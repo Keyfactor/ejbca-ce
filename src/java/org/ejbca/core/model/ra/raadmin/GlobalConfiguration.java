@@ -18,7 +18,7 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
 /**
  * This is a  class containing global configuration parameters.
  *
- * @version $Id: GlobalConfiguration.java,v 1.4 2006-05-28 14:21:11 anatom Exp $
+ * @version $Id: GlobalConfiguration.java,v 1.5 2006-09-17 23:02:04 herrvendil Exp $
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
 
@@ -27,6 +27,11 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     
     public static final String EJBCA_VERSION = "@ejbca.version@";
 
+    /**
+     * Setting to indicate if the secret information stored on hard tokens (i.e initial PIN/PUK codes) should
+     * be displayed for the administrators. If false only non-sensitive information is displayed.
+     */
+    public static final boolean HARDTOKEN_DIPLAYSENSITIVEINFO = "@hardtoken.diplaysensitiveinfo@".equalsIgnoreCase("true");
 
     // Entries to choose from in userpreference part, defines the size of data to be displayed on one page.
     private final  String[] DEFAULTPOSSIBLEENTRIESPERPAGE = {"10" , "25" , "50" , "100"};
