@@ -36,7 +36,7 @@
 	<classpathentry kind="var" path="JBOSS_HOME/client/activation.jar"/>
 	<classpathentry kind="var" path="JBOSS_HOME/lib/jboss-system.jar"/>
 	<classpathentry kind="var" path="JBOSS_HOME/server/default/lib/commons-httpclient.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre1.5.0_07"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/wsee/axis.jar"/>
 	<classpathentry kind="lib" path="lib/wsee/axis-ant.jar"/>
 	<classpathentry kind="lib" path="lib/wsee/commons-discovery-0.2.jar"/>
