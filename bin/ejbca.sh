@@ -74,6 +74,7 @@ for i in "${EJBCA_HOME}"/lib/*.jar
 do
 	CP="$i":"$CP"
 done
+
 CP=$CP:$EJBCA_HOME/bin
 
 # For Cygwin, switch paths to Windows format before running java

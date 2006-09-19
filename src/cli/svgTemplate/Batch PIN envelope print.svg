@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   id="svg1307"
+   sodipodi:version="0.32"
+   inkscape:version="0.44"
+   sodipodi:docbase="C:\eclipse\workspace\ejbcanew\src\cli\svgTemplate"
+   sodipodi:docname="Batch PIN envelope print.svg">
+  <defs
+     id="defs3" />
+  <sodipodi:namedview
+     inkscape:document-units="mm"
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.97970073"
+     inkscape:cx="316.28041"
+     inkscape:cy="775.52886"
+     inkscape:current-layer="layer1"
+     inkscape:window-width="1028"
+     inkscape:window-height="753"
+     inkscape:window-x="0"
+     inkscape:window-y="0" />
+  <metadata
+     id="metadata4">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <text
+       xml:space="preserve"
+       style="font-size:45px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:129.99999523%;writing-mode:lr-tb;text-anchor:start;fill:black;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Sans"
+       x="29.600874"
+       y="260.28357"
+       id="text1313"
+       sodipodi:linespacing="130%"><tspan
+         sodipodi:role="line"
+         id="tspan1359"
+         x="29.600874"
+         y="260.28357">Key Store PIN Envelope</tspan><tspan
+         sodipodi:role="line"
+         id="tspan1361"
+         x="29.600874"
+         y="318.78357" /><tspan
+         sodipodi:role="line"
+         id="tspan1363"
+         x="29.600874"
+         y="377.28357">Keystore belonging to:</tspan><tspan
+         sodipodi:role="line"
+         id="tspan1365"
+         x="29.600874"
+         y="435.78356">$CN</tspan><tspan
+         sodipodi:role="line"
+         id="tspan1367"
+         x="29.600874"
+         y="494.28356">$O</tspan><tspan
+         sodipodi:role="line"
+         id="tspan1369"
+         x="29.600874"
+         y="552.78356">$OU</tspan><tspan
+         sodipodi:role="line"
+         id="tspan1371"
+         x="29.600874"
+         y="611.28356" /><tspan
+         sodipodi:role="line"
+         id="tspan1373"
+         x="29.600874"
+         y="669.78355">Password:</tspan><tspan
+         sodipodi:role="line"
+         id="tspan1377"
+         x="29.600874"
+         y="728.28355">$PIN1</tspan></text>
+  </g>
+</svg>

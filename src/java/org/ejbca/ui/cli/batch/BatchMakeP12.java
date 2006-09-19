@@ -57,6 +57,8 @@ import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
 import org.ejbca.util.P12toPEM;
+import org.ejbca.util.query.Query;
+import org.ejbca.util.query.UserMatch;
 
 
 
@@ -65,7 +67,7 @@ import org.ejbca.util.P12toPEM;
  * This class generates keys and request certificates for all users with status NEW. The result is
  * generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.5 2006-08-12 09:49:30 herrvendil Exp $
+ * @version $Id: BatchMakeP12.java,v 1.6 2006-09-19 15:54:57 herrvendil Exp $
  */
 public class BatchMakeP12 {
     /**
@@ -73,7 +75,9 @@ public class BatchMakeP12 {
      */
     private static final Logger log = Logger.getLogger(BatchMakeP12.class);
 
-
+    BatchToolProperties props = new BatchToolProperties();
+    BatchSVGPrinter printing = null;
+    
     /**
      * Where created P12-files are stored, default username.p12
      */
@@ -114,7 +118,9 @@ public class BatchMakeP12 {
             throws javax.naming.NamingException, javax.ejb.CreateException, java.rmi.RemoteException,
             java.io.IOException {
         log.debug(">BatchMakeP12:");
+        
         administrator = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
+        printing = new BatchSVGPrinter(props);
 
         // Bouncy Castle security provider
         CertTools.installBCProvider();
@@ -334,7 +340,7 @@ public class BatchMakeP12 {
                 throw new Exception("No Key Recovery Data available for user, " + data.getUsername() + " can not be generated.");
             }
         } else {
-            rsaKeys = KeyTools.genKeys(1024);
+            rsaKeys = KeyTools.genKeys(props.getKeySize());
         }
         // Get certificate for user and create P12
         if (rsaKeys != null) {
@@ -436,7 +442,19 @@ public class BatchMakeP12 {
 
         //Collection result = admin.findAllUsersByStatus(administrator, status);
         do {
+      	
             result = admin.findAllUsersByStatusWithLimit(administrator, status, true);
+            
+            Iterator iter = result.iterator();
+            while(iter.hasNext()){
+            	UserDataVO data = (UserDataVO) iter.next();
+            	if(!(data.getTokenType() == SecConst.TOKEN_SOFT_JKS || 
+            	   data.getTokenType() == SecConst.TOKEN_SOFT_PEM ||
+            	   data.getTokenType() == SecConst.TOKEN_SOFT_P12) ){
+            		result.remove(data);
+            	}
+            }
+            
             log.info("Batch generating " + result.size() + " users.");
 
             int failcount = 0;
@@ -456,6 +474,8 @@ public class BatchMakeP12 {
                             if (doCreate(admin, data, status)) {
                                 successusers += (":" + data.getUsername());
                                 successcount++;
+                                // Perform printing
+                                printing.print(data);
                             }
                         } catch (Exception e) {
                             // If things went wrong set status to FAILED
@@ -469,7 +489,7 @@ public class BatchMakeP12 {
                             }
                         }
                     } else {
-                        log.debug("User '" + data.getUsername() +
+                        log.info("User '" + data.getUsername() +
                                 "' does not have clear text password.");
                     }
                 }
@@ -478,7 +498,8 @@ public class BatchMakeP12 {
                     throw new Exception("BatchMakeP12 failed for " + failcount + " users (" +
                             successcount + " succeeded) - " + failedusers);
                 }
-
+                  
+                
                 log.info(successcount + " new users generated successfully - " + successusers);
             }
         } while ((result.size() > 0) && !stopnow);

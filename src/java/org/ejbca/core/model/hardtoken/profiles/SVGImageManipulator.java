@@ -62,7 +62,7 @@ import org.w3c.dom.svg.SVGTextElement;
  * It replaces all occurrenses of specified variables in the images 
  * with the corresponding userdata.
  *
- * @version $Id: SVGImageManipulator.java,v 1.5 2006-03-01 11:14:56 primelars Exp $
+ * @version $Id: SVGImageManipulator.java,v 1.6 2006-09-19 15:55:00 herrvendil Exp $
  */
 public class SVGImageManipulator {
 	/**
@@ -289,7 +289,7 @@ public class SVGImageManipulator {
       //text = CUSTOMTEXTROW4.matcher(text).replaceAll(?);
       //text = CUSTOMTEXTROW5.matcher(text).replaceAll(?);
       if (StringUtils.isNotEmpty(copyoftokensn) || StringUtils.isNotEmpty(copyoftokensnwithoutprefix)) {
-          log.info("copyoftokensn: "+copyoftokensn+" and/or copyoftokensnwithoutprefix: "+copyoftokensnwithoutprefix+" is not used.");          
+          log.debug("copyoftokensn: "+copyoftokensn+" and/or copyoftokensnwithoutprefix: "+copyoftokensnwithoutprefix+" is not used.");          
       }
       //text = COPYOFSN.matcher(text).replaceAll(copyoftokensn);
       //text = COPYOFSNWITHOUTPREFIX.matcher(text).replaceAll(copyoftokensnwithoutprefix);
