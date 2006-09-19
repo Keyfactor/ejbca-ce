@@ -34,7 +34,7 @@ import org.ejbca.util.JDBCUtil;
 
 /**
  * @author lars
- * @version $Id: ExternalOCSPPublisher.java,v 1.9 2006-08-06 12:37:00 anatom Exp $
+ * @version $Id: ExternalOCSPPublisher.java,v 1.10 2006-09-19 05:57:10 asyd Exp $
  *
  */
 public class ExternalOCSPPublisher implements ICustomPublisher {
@@ -245,7 +245,7 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
      */
     public void testConnection(Admin admin) throws PublisherConnectionException {
         try {
-        	JDBCUtil.execute("UNLOCK TABLES;", new DoNothingPreparer(), dataSource);
+        	JDBCUtil.execute("SELECT NOW();", new DoNothingPreparer(), dataSource);
         } catch (Exception e) {
             final PublisherConnectionException pce = new PublisherConnectionException("Connection in init failed: "+e.getMessage());
             pce.initCause(e);
