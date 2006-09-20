@@ -44,7 +44,7 @@ import org.ejbca.util.CertTools;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.6 2006-08-17 11:23:59 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.7 2006-09-20 15:44:56 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage {
     /**
@@ -58,7 +58,7 @@ public class PKCS10RequestMessage implements IRequestMessage {
      */
     static final long serialVersionUID = 3597275157018205136L;
 
-    private static Logger log = Logger.getLogger(PKCS10RequestMessage.class);
+    private static final Logger log = Logger.getLogger(PKCS10RequestMessage.class);
 
     /** Raw form of the PKCS10 message */
     protected byte[] p10msg;
@@ -467,7 +467,18 @@ public class PKCS10RequestMessage implements IRequestMessage {
     public boolean includeCACert() {
     	return includeCACert;
     }
+
+    /** @see org.ejbca.core.protocol.IRequestMessage
+     */
+    public int getRequestType() {
+    	return 0;
+    }
     
+    /** @see org.ejbca.core.protocol.IRequestMessage
+     */
+    public int getRequestId() {
+    	return 0;
+    }
 }
 
 // PKCS10RequestMessage

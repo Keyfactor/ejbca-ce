@@ -64,7 +64,7 @@ import org.ejbca.util.query.Query;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.11 2006-08-12 09:49:31 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.12 2006-09-20 15:44:57 anatom Exp $
  */
 public class RAInterfaceBean implements java.io.Serializable {
     
@@ -385,7 +385,7 @@ public class RAInterfaceBean implements java.io.Serializable {
            UserDataVO user = null;
            try{
              X509Certificate next = (X509Certificate) iter.next();  
-             user = adminsession.findUserBySubjectDN(administrator, CertTools.getSubjectDN(next), next.getIssuerDN().toString());
+             user = adminsession.findUserBySubjectAndIssuerDN(administrator, CertTools.getSubjectDN(next), next.getIssuerDN().toString());
              if(user != null){
                userlist.add(user);
              }

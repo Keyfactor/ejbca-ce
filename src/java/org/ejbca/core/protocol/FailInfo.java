@@ -12,20 +12,23 @@
  *************************************************************************/
  
 /**
- * $Header: /home/tomas/Dev/cvs2svn/ejbca-cvsbackup/ejbca/src/java/org/ejbca/core/protocol/FailInfo.java,v 1.2 2006-02-08 07:31:49 anatom Exp $
- * $Revision: 1.2 $
- * $Date: 2006-02-08 07:31:49 $
+ * $Header: /home/tomas/Dev/cvs2svn/ejbca-cvsbackup/ejbca/src/java/org/ejbca/core/protocol/FailInfo.java,v 1.3 2006-09-20 15:44:56 anatom Exp $
+ * $Revision: 1.3 $
+ * $Date: 2006-09-20 15:44:56 $
  *
  */
 package org.ejbca.core.protocol;
 
 import java.io.Serializable;
 
+import org.bouncycastle.asn1.DERBitString;
+import org.bouncycastle.asn1.x509.ReasonFlags;
+
 /**
  * Encapsulates the possible values for the failinfo part of a SCEP FAILURE response.
  *
  * @author Jon Barber (jon.barber@acm.org)
- * @version $Id: FailInfo.java,v 1.2 2006-02-08 07:31:49 anatom Exp $
+ * @version $Id: FailInfo.java,v 1.3 2006-09-20 15:44:56 anatom Exp $
  */
 
 public class FailInfo implements Serializable {
@@ -45,7 +48,6 @@ public class FailInfo implements Serializable {
      */
     public static final FailInfo BAD_REQUEST = new FailInfo(2);
 
-
     /**
      * Message time field was not sufficiently close to the system time
      */
@@ -55,6 +57,18 @@ public class FailInfo implements Serializable {
      * No certificate could be identified matching the provided criteria
      */
     public static final FailInfo BAD_CERTIFICATE_ID = new FailInfo(4);
+    /**
+     * Request for wrong certificate authority
+     */
+    public static final FailInfo WRONG_AUTHORITY = new FailInfo(6);
+    /**
+     * Data incorrect, for example request for a non-existing user
+     */
+    public static final FailInfo INCORRECT_DATA = new FailInfo(7);
+    /**
+     * Verification of Proof of possession failed
+     */
+    public static final FailInfo BAD_POP = new FailInfo(9);
     /**
      * The value actually encoded into the response message as the failinfo attribute
      */
@@ -72,6 +86,16 @@ public class FailInfo implements Serializable {
         return Integer.toString(value);
     }
 
+    /** Returns the FailInfo value as a bit string, where the value represents the bit that is set
+     * 
+     * @return DERBitString
+     */
+    public DERBitString getAsBitString() {
+    	int i = 1 << value;
+    	// Use reasonflags, because it already has convertion between int and BitString in it
+    	DERBitString str = new ReasonFlags(i);
+    	return str;
+    }
 
     public boolean equals(Object o) {
         if (this == o) return true;

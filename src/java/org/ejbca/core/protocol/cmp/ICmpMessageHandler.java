@@ -10,30 +10,23 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
-package org.ejbca.core.model.ra;
 
-import org.ejbca.core.EjbcaException;
+package org.ejbca.core.protocol.cmp;
 
+import org.ejbca.core.protocol.IResponseMessage;
 
 /**
- * Thrown when an objekt cannot be found in the database and the error is not critical so we want
- * to inform the client in a nice way.
- *
- * @version $Id: NotFoundException.java,v 1.2 2006-09-20 15:44:58 anatom Exp $
+ * Interface for message handler handling a specific CMP message
+ * @author tomas
+ * @version $Id: ICmpMessageHandler.java,v 1.1 2006-09-20 15:44:55 anatom Exp $
  */
-public class NotFoundException extends EjbcaException {
-    /**
-     * Constructor used to create exception with an errormessage. Calls the same constructor in
-     * baseclass <code>Exception</code>.
-     *
-     * @param message Human redable error message, can not be NULL.
-     */
-    public NotFoundException(String message) {
-        super(message);
-    }
-    public NotFoundException(String message, Throwable cause) {
-        super(message);
-        super.initCause(cause);
-    }
+public interface ICmpMessageHandler {
+	
+	/**
+	 * 
+	 * @param msg input message
+	 * @return response message
+	 */
+	public IResponseMessage handleMessage(ICmpMessage msg);
+
 }

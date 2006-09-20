@@ -24,6 +24,9 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 
+import org.ejbca.core.model.ca.SignRequestException;
+import org.ejbca.core.model.ra.NotFoundException;
+
 /**
  * Base interface for response messages sent from the CA. Implementors of this interface must also
  * implement Serializable if they are to be sent to any EJB bussiness methods. 
@@ -40,7 +43,7 @@ import java.security.cert.X509Certificate;
  * byte[] responseMessage = resp.getResponseMessage(); 
  * </code>
  *
- * @version $Id: IResponseMessage.java,v 1.2 2006-02-28 08:25:28 anatom Exp $
+ * @version $Id: IResponseMessage.java,v 1.3 2006-09-20 15:44:56 anatom Exp $
  */
 public interface IResponseMessage extends Serializable {
 
@@ -102,6 +105,20 @@ public interface IResponseMessage extends Serializable {
     public FailInfo getFailInfo();
 
     /**
+     * Sets clear text info about reason for failure.
+     *
+     * @param failText description about failure.
+     */
+    public void setFailText(String failText);
+
+    /**
+     * Gets clear text info about reason for failure.
+     *
+     * @return failText description about failure.
+     */
+    public String getFailText();
+
+    /**
      * Create encrypts and creates signatures as needed to produce a complete response message.  If
      * needed setSignKeyInfo and setEncKeyInfo must be called before this method. After this is
      * called the response message can be retrieved with getResponseMessage();
@@ -119,7 +136,7 @@ public interface IResponseMessage extends Serializable {
      * @see #setEncKeyInfo
      */
     public boolean create()
-            throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException;
+            throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignRequestException, NotFoundException;
 
     /**
      * indicates if this message needs recipients public and private key to sign. If this returns
@@ -196,4 +213,18 @@ public interface IResponseMessage extends Serializable {
      * @param String oid of digest algorithm ex CMSSignedDataGenerator.MD5, SHA1, SHA256 etc
      */
     public void setPreferredDigestAlg(String digest);
+    
+    /** Sometimes (CMP) the response identifier sent depends on which request identifier was used, 
+     * even if the messages themselves are the same mesages.
+     * 
+     * @param reqtype which type of request message this response is in response to
+     */ 
+    public void setRequestType(int reqtype);
+    
+    /**
+     * For some types of request-responses there is a need for a requetsId to match the request and the
+     * response together.
+     * @param reqId the id from the request matching to this response
+     */
+    public void setRequestId(int reqid);
 }

@@ -66,7 +66,6 @@ import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.cms.SignerId;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
-import org.bouncycastle.ocsp.OCSPException;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
@@ -91,10 +90,10 @@ import com.meterware.httpunit.WebConversation;
 import com.meterware.httpunit.WebRequest;
 import com.meterware.httpunit.WebResponse;
 
-/** Tests http pages of ocsp and scep
+/** Tests http pages of scep
  **/
 public class ProtocolScepHttpTest extends TestCase {
-    private static Logger log = Logger.getLogger(TestMessages.class);
+    private static Logger log = Logger.getLogger(ProtocolScepHttpTest.class);
 
     private static final String httpReqPath = "http://127.0.0.1:8080/ejbca";
     private static final String resourceScep = "publicweb/apply/scep/pkiclient.exe";
@@ -585,8 +584,8 @@ public class ProtocolScepHttpTest extends TestCase {
         signer2.update("PrimeKey".getBytes());
         return signer2.verify(signature);
     }
-    private byte[] sendScep(boolean post, byte[] scepPackage, boolean noca) throws IOException, OCSPException, NoSuchProviderException {
-        // POST the OCSP request
+    private byte[] sendScep(boolean post, byte[] scepPackage, boolean noca) throws IOException, NoSuchProviderException {
+        // POST the SCEP request
         // we are going to do a POST
     	String resource = resourceScep;
     	if (noca) {

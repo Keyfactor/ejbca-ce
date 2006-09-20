@@ -27,7 +27,7 @@ import java.security.cert.X509Certificate;
  * Base interface for request messages sent to the CA. Implementors of this interface must also
  * implement Serializable if they are to be sent to any EJB bussiness methods.
  *
- * @version $Id: IRequestMessage.java,v 1.3 2006-08-06 15:48:04 anatom Exp $
+ * @version $Id: IRequestMessage.java,v 1.4 2006-09-20 15:44:56 anatom Exp $
  */
 public interface IRequestMessage extends Serializable {
     /**
@@ -163,10 +163,10 @@ public interface IRequestMessage extends Serializable {
     
     /**
      * Returns the name of the preferred Digest algorithm to be used in the response if applicable.
-     * Defaults to CMSSignedDataGenerator.SHA1 for normal messages, but to MD5 for SCEP messages. If SCEP request is 
+     * Defaults to CMSSignedGenerator.DIGEST_SHA1 for normal messages, but to MD5 for SCEP messages. If SCEP request is 
      * digested with SHA1 it is set to SHA1 though.
      *  
-     * @return oid of digest algorithm ex CMSSignedDataGenerator.MD5, SHA1, SHA256 etc
+     * @return oid of digest algorithm ex CMSSignedGenerator.DIGEST_SHA1, SHA256 etc
      */
     public String getPreferredDigestAlg(); 
     
@@ -177,5 +177,19 @@ public interface IRequestMessage extends Serializable {
      * @return true or false
      */
     public boolean includeCACert();
+
+    /** Sometimes (CMP) the response identifier sent depends on which request identifier was used, 
+     * even if the messages themselves are the same mesages.
+     * 
+     * @param reqtype which type of request message this response is in response to
+     */ 
+    public int getRequestType();
+    
+    /**
+     * For some types of request-responses there is a need for a requetsId to match the request and the
+     * response together.
+     * @param reqId the id from the request matching to this response
+     */
+    public int getRequestId();
 
 }

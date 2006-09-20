@@ -7,7 +7,7 @@ import org.apache.log4j.Logger;
  * A class containing some helpful functions used in more than one servlet, avoiding code duplication.
  * 
  * @author tomasg
- * @version $Id: ServletUtils.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: ServletUtils.java,v 1.2 2006-09-20 15:44:56 anatom Exp $
  */
 public class ServletUtils {
 
@@ -28,6 +28,21 @@ public class ServletUtils {
         if (res.containsHeader("Cache-Control")) {
             log.debug("Removing Cache-Control header to avoid caching issues in IE");
             res.setHeader("Cache-Control","null");
+        }
+    }
+
+    /** Helper methods that adds no-cache headers to a response. 
+     * 
+     * @param res HttpServletResponse parameter as taken from the doGet, doPost methods in a Servlet.
+     */
+    public static void addCacheHeaders(HttpServletResponse res) {
+        if (!res.containsHeader("Pragma")) {
+            log.debug("Adding Pragma header");
+            res.setHeader("Pragma","no-cache");
+        }
+        if (!res.containsHeader("Cache-Control")) {
+            log.debug("Adding Cache-Control header");
+            res.setHeader("Cache-Control","no-cache");
         }
     }
 }

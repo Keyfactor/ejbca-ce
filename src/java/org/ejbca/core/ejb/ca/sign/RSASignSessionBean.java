@@ -70,6 +70,7 @@ import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.core.protocol.IRequestMessage;
@@ -648,7 +649,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
      */
-    public IResponseMessage createCertificate(Admin admin, IRequestMessage req, Class responseClass) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException {
+    public IResponseMessage createCertificate(Admin admin, IRequestMessage req, Class responseClass) throws NotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException {
         return createCertificate(admin, req, -1, responseClass);
     }
 
@@ -685,7 +686,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @see org.ejbca.core.protocol.IResponseMessage
      * @see org.ejbca.core.protocol.X509ResponseMessage
      */
-    public IResponseMessage createCertificate(Admin admin, IRequestMessage req, int keyUsage, Class responseClass) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException {
+    public IResponseMessage createCertificate(Admin admin, IRequestMessage req, int keyUsage, Class responseClass) throws AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, NotFoundException {
         debug(">createCertificate(IRequestMessage)");
         // Get CA that will receive request
         CADataLocal cadata = null;
@@ -715,34 +716,49 @@ public class RSASignSessionBean extends BaseSessionBean {
             } else if (req.getPassword() == null) {
                 log.error("No password in request");
                 throw new SignRequestException("No password in request!");
-            } else {              
-				// If we haven't done so yet, authenticate user
-                if (data == null) {
-                    data = authUser(admin, req.getUsername(), req.getPassword());
-                }
-                PublicKey reqpk = req.getRequestPublicKey();
-                if (reqpk == null) {
-                    throw new InvalidKeyException("Key is null!");
-                }
-                // We need to make sure we use the users registered CA here
-                if (data.getCAId() != ca.getCAId()) {
-                	String msg = "CA from request ("+ca.getCAId()+") does not match users CA ("+data.getCAId()+")!";
-                    log.error(msg);
-                    throw new SignRequestException(msg);                	
-                }
-
+            } else {        
+            	ResponseStatus status = ResponseStatus.SUCCESS;
+            	FailInfo failInfo = null;
+            	String failText = null;
                 Certificate cert = null;
-                cert = createCertificate(admin, data, ca, reqpk, keyUsage);
+            	try {
+    				// If we haven't done so yet, authenticate user
+            		data = authUser(admin, req.getUsername(), req.getPassword());
+                    PublicKey reqpk = req.getRequestPublicKey();
+                    if (reqpk == null) {
+                        throw new InvalidKeyException("Key is null!");
+                    }
+                    // We need to make sure we use the users registered CA here
+                    if (data.getCAId() != ca.getCAId()) {
+                    	failText = "CA from request ("+ca.getCAId()+") does not match users CA ("+data.getCAId()+")!";
+                        status = ResponseStatus.FAILURE;
+                        failInfo = FailInfo.WRONG_AUTHORITY;
+                    }
+
+                    if (status.equals(ResponseStatus.SUCCESS)) {
+                    	cert = createCertificate(admin, data, ca, reqpk, keyUsage);
+                    }
+            	} catch (ObjectNotFoundException oe) {
+            		// If we didn't find the entity return error message
+            		log.error("User not found: ", oe);
+                	failText = "User not found: "+req.getUsername();
+                    status = ResponseStatus.FAILURE;
+                    failInfo = FailInfo.INCORRECT_DATA;
+            	}
                 
                 //Create the response message with all nonces and checks etc
                 ret = createResponseMessage(responseClass, req, ca, catoken);
 				
-				if (cert != null) {
-                    ret.setCertificate(cert);
-                    ret.setStatus(ResponseStatus.SUCCESS);
+				if ( (cert == null) && (status == ResponseStatus.SUCCESS) ) {
+					status = ResponseStatus.FAILURE;
+					failInfo = FailInfo.BAD_REQUEST;
                 } else {
-                    ret.setStatus(ResponseStatus.FAILURE);
-                    ret.setFailInfo(FailInfo.BAD_REQUEST);
+                    ret.setCertificate(cert);
+                }
+                ret.setStatus(status);
+                if (failInfo != null) {
+                    ret.setFailInfo(failInfo); 
+                    ret.setFailText(failText);
                 }
             }
             ret.create();
@@ -750,9 +766,10 @@ public class RSASignSessionBean extends BaseSessionBean {
             if (ca.getFinishUser() == true) {
                 finishUser(admin, req.getUsername(), req.getPassword());
             }
-            // TODO: handle returning errors as response message,
-            // javax.ejb.ObjectNotFoundException and the others thrown...
         } catch (ObjectNotFoundException oe) {
+        	log.error("ObjectNotFound: ", oe);
+            throw new NotFoundException(oe.getMessage(), oe);
+        } catch (NotFoundException oe) {
             throw oe;
         } catch (AuthStatusException se) {
             throw se;
@@ -782,6 +799,83 @@ public class RSASignSessionBean extends BaseSessionBean {
         return ret;
     }
     
+    /**
+     * Method that generates a request failed response message. The request
+     * should already have been decrypted and verified.
+     *
+     * @param admin         Information about the administrator or admin preforming the event.
+     * @param req           a Certification Request message, containing the public key to be put in the
+     *                      created certificate. Currently no additional parameters in requests are considered!
+
+     * @param responseClass The implementation class that will be used as the response message.
+     * 
+     * @return A decrypted and verified IReqeust message
+     * @throws AuthStatusException           If the users status is incorrect.
+     * @throws AuthLoginException            If the password is incorrect.
+     * @throws CADoesntExistsException       if the targeted CA does not exist
+     * @throws SignRequestException          if the provided request is invalid.
+     * @throws SignRequestSignatureException if the the request couldn't be verified.
+     * @throws IllegalKeyException 
+     * @ejb.permission unchecked="true"
+     * @ejb.interface-method view-type="both"
+     * @see se.anatom.ejbca.protocol.IRequestMessage
+     * @see se.anatom.ejbca.protocol.IResponseMessage
+     * @see se.anatom.ejbca.protocol.X509ResponseMessage
+     */
+    public IResponseMessage createRequestFailedResponse(Admin admin, IRequestMessage req,  Class responseClass) throws  AuthLoginException, AuthStatusException, IllegalKeyException, CADoesntExistsException, SignRequestSignatureException, SignRequestException {
+        debug(">createRequestFailedResponse(IRequestMessage)");
+        IResponseMessage ret = null;            
+        CADataLocal cadata = null;
+        try {
+        	cadata = getCAFromRequest(admin, req);
+            CA ca = cadata.getCA();
+            CAToken catoken = ca.getCAToken();
+         
+            // See if we need some key material to decrypt request
+            if (req.requireKeyInfo()) {
+                // You go figure...scep encrypts message with the public CA-cert
+                req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getProvider());
+            }
+            // Verify the request
+            if (req.verify() == false) {
+                getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "POPO verification failed.");
+                throw new SignRequestSignatureException("Verification of signature (popo) on request failed.");
+            }
+            
+            //Create the response message with all nonces and checks etc
+            ret = createResponseMessage(responseClass, req, ca, catoken);
+            
+            ret.setStatus(ResponseStatus.FAILURE);
+            ret.setFailInfo(FailInfo.BAD_REQUEST);
+            ret.create();
+        } catch (AuthStatusException se) {
+            throw se;
+        } catch (AuthLoginException le) {
+            throw le;
+        } catch (IllegalKeyStoreException e) {
+            throw new IllegalKeyException(e);
+        } catch (NotFoundException e) {
+        	// This can actually not happen here?
+            throw new CADoesntExistsException(e);
+        } catch (UnsupportedEncodingException e) {
+            throw new CADoesntExistsException(e);
+        } catch (NoSuchProviderException e) {
+            log.error("NoSuchProvider provider: ", e);
+        } catch (InvalidKeyException e) {
+            log.error("Invalid key in request: ", e);
+        } catch (NoSuchAlgorithmException e) {
+            log.error("No such algorithm: ", e);
+        } catch (IOException e) {
+            log.error("Cannot create response message: ", e);
+        } catch (CATokenOfflineException ctoe) {
+            log.error("CA Token is Offline: ", ctoe);
+            getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Signing CA " + cadata.getSubjectDN() + " is offline.", ctoe);
+            throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " is offline.");
+        }
+        debug("<createRequestFailedResponse(IRequestMessage)");
+        return ret;
+    }
+
     /**
      * Method that just decrypts and verifies a request and should be used in those cases
      * a when encrypted information needs to be extracted and presented to an RA for approval.
@@ -847,80 +941,6 @@ public class RSASignSessionBean extends BaseSessionBean {
         return req;
     }
     
-    /**
-     * Method that generates a request failed response message. The request
-     * should already have been decrypted and verified.
-     *
-     * @param admin         Information about the administrator or admin preforming the event.
-     * @param req           a Certification Request message, containing the public key to be put in the
-     *                      created certificate. Currently no additional parameters in requests are considered!
-
-     * @param responseClass The implementation class that will be used as the response message.
-     * 
-     * @return A decrypted and verified IReqeust message
-     * @throws AuthStatusException           If the users status is incorrect.
-     * @throws AuthLoginException            If the password is incorrect.
-     * @throws CADoesntExistsException       if the targeted CA does not exist
-     * @throws SignRequestException          if the provided request is invalid.
-     * @throws SignRequestSignatureException if the the request couldn't be verified.
-     * @throws IllegalKeyException 
-     * @ejb.permission unchecked="true"
-     * @ejb.interface-method view-type="both"
-     * @see se.anatom.ejbca.protocol.IRequestMessage
-     * @see se.anatom.ejbca.protocol.IResponseMessage
-     * @see se.anatom.ejbca.protocol.X509ResponseMessage
-     */
-    public IResponseMessage createRequestFailedResponse(Admin admin, IRequestMessage req,  Class responseClass) throws  AuthLoginException, AuthStatusException, IllegalKeyException, CADoesntExistsException, SignRequestSignatureException {
-        debug(">createRequestFailedResponse(IRequestMessage)");
-        IResponseMessage ret = null;            
-        CADataLocal cadata = null;
-        try {
-        	cadata = getCAFromRequest(admin, req);
-            CA ca = cadata.getCA();
-            CAToken catoken = ca.getCAToken();
-         
-            // See if we need some key material to decrypt request
-            if (req.requireKeyInfo()) {
-                // You go figure...scep encrypts message with the public CA-cert
-                req.setKeyInfo((X509Certificate)ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getProvider());
-            }
-            // Verify the request
-            if (req.verify() == false) {
-                getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "POPO verification failed.");
-                throw new SignRequestSignatureException("Verification of signature (popo) on request failed.");
-            }
-            
-            //Create the response message with all nonces and checks etc
-            ret = createResponseMessage(responseClass, req, ca, catoken);
-            
-            ret.setStatus(ResponseStatus.FAILURE);
-            ret.setFailInfo(FailInfo.BAD_REQUEST);
-            ret.create();
-        } catch (AuthStatusException se) {
-            throw se;
-        } catch (AuthLoginException le) {
-            throw le;
-        } catch (IllegalKeyStoreException e) {
-            throw new IllegalKeyException(e);
-        } catch (UnsupportedEncodingException e) {
-            throw new CADoesntExistsException(e);
-        } catch (NoSuchProviderException e) {
-            log.error("NoSuchProvider provider: ", e);
-        } catch (InvalidKeyException e) {
-            log.error("Invalid key in request: ", e);
-        } catch (NoSuchAlgorithmException e) {
-            log.error("No such algorithm: ", e);
-        } catch (IOException e) {
-            log.error("Cannot create response message: ", e);
-        } catch (CATokenOfflineException ctoe) {
-            log.error("CA Token is Offline: ", ctoe);
-            getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Signing CA " + cadata.getSubjectDN() + " is offline.", ctoe);
-            throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " is offline.");
-        }
-        debug("<createRequestFailedResponse(IRequestMessage)");
-        return ret;
-    }
-
     /**
      * Implements ISignSession::getCRL
      *
@@ -990,6 +1010,9 @@ public class RSASignSessionBean extends BaseSessionBean {
             ret.create();
             // TODO: handle returning errors as response message,
             // javax.ejb.ObjectNotFoundException and the others thrown...
+        } catch (NotFoundException e) {
+        	// This actually can not happen here
+            throw new CADoesntExistsException(e);
         } catch (IllegalKeyStoreException e) {
             throw new IllegalKeyException(e);
         } catch (UnsupportedEncodingException e) {
@@ -1120,6 +1143,9 @@ public class RSASignSessionBean extends BaseSessionBean {
     	ret.setPreferredDigestAlg(req.getPreferredDigestAlg());
     	// Include the CA cert or not in the response, if applicable for the response type
     	ret.setIncludeCACert(req.includeCACert());
+    	// Hint to the response which request type it is in response to
+    	ret.setRequestType(req.getRequestType());
+    	ret.setRequestId(req.getRequestId());
     	return ret;
     }
     /**

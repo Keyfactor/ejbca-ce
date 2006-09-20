@@ -30,6 +30,26 @@
             <param-value>0</param-value>
         </init-param>
     </servlet>
+    <servlet>
+        <servlet-name>CmpServlet</servlet-name>
+        <display-name>CmpServlet</display-name>
+        <servlet-class>org.ejbca.ui.web.protocol.CmpServlet</servlet-class>
+        <init-param>
+            <param-name>allowRaVerifyPopo</param-name>
+            <param-value>1</param-value>
+        	<description>Allow the client/RA to specify that the CA should not verify POP</description>
+        </init-param>
+        <init-param>
+            <param-name>defaultCA</param-name>
+            <param-value></param-value>
+        	<description>Enforce a particual CA instead of taking it from the request</description>
+        </init-param>
+        <init-param>
+            <param-name>extractUsernameComponent</param-name>
+            <param-value></param-value>
+        	<description>Defines which component from the DN should be used as username in EJBCA. Can be cN, UID or nothing. Nothing means that the DN will be used to look up the user.</description>
+        </init-param>
+    </servlet>
 
 <!--
     <servlet>
@@ -88,6 +108,10 @@ The old certificates will be removed when the new ones are added.
       <servlet-name>ScepServletNoCACert</servlet-name>
       <url-pattern>/scep/noca/pkiclient.exe</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+      <servlet-name>CmpServlet</servlet-name>
+      <url-pattern>/cmp</url-pattern>
+    </servlet-mapping>
 
 <!--
     <servlet-mapping>
@@ -126,5 +150,27 @@ The old certificates will be removed when the new ones are added.
       <env-entry-value>@page.encoding@</env-entry-value>
       <env-entry-type>java.lang.String</env-entry-type>
    </env-entry>
+
+  <ejb-local-ref>
+    <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
+    <ejb-ref-type>Session</ejb-ref-type>
+    <local-home>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome</local-home>
+    <local>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome</local>
+    <ejb-link>CAAdminSession</ejb-link>
+  </ejb-local-ref>
+  <ejb-local-ref>
+    <ejb-ref-name>ejb/SignSessionLocal</ejb-ref-name>
+    <ejb-ref-type>Session</ejb-ref-type>
+    <local-home>org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome</local-home>
+    <local>org.ejbca.core.ejb.ca.sign.ISignSessionLocal</local>
+    <ejb-link>RSASignSession</ejb-link>
+  </ejb-local-ref>
+  <ejb-local-ref>
+    <ejb-ref-name>ejb/UserAdminSessionLocal</ejb-ref-name>
+    <ejb-ref-type>Session</ejb-ref-type>
+    <local-home>org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome</local-home>
+    <local>org.ejbca.core.ejb.ra.IUserAdminSessionLocal</local>
+    <ejb-link>UserAdminSession</ejb-link>
+  </ejb-local-ref>
 
 </web-app>

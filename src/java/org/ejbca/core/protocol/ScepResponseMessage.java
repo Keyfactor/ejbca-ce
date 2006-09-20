@@ -30,6 +30,8 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+import javax.ejb.ObjectNotFoundException;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
@@ -46,13 +48,15 @@ import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSSignedGenerator;
+import org.ejbca.core.model.ca.SignRequestException;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
 /**
  * A response message for scep (pkcs7).
  *
- * @version $Id: ScepResponseMessage.java,v 1.5 2006-06-22 07:41:51 anatom Exp $
+ * @version $Id: ScepResponseMessage.java,v 1.6 2006-09-20 15:44:56 anatom Exp $
  */
 public class ScepResponseMessage implements IResponseMessage {
     /**
@@ -76,6 +80,9 @@ public class ScepResponseMessage implements IResponseMessage {
 
     /** Possible fail information in the response. Defaults to 'badRequest (2)'. */
     private FailInfo failInfo = FailInfo.BAD_REQUEST;
+
+    /** Possible clear text error information in the response. Defaults to null. */
+    private String failText = null;
 
     /**
      * SenderNonce. This is base64 encoded bytes
@@ -179,6 +186,14 @@ public class ScepResponseMessage implements IResponseMessage {
         return failInfo;
     }
 
+    public void setFailText(String failText) {
+    	this.failText = failText;
+    }
+
+    public String getFailText() {
+    	return this.failText;
+    }
+
     /**
      * Create encrypts and creates signatures as needed to produce a complete response message.  If
      * needed setSignKeyInfo and setEncKeyInfo must be called before this method. After this is
@@ -192,12 +207,13 @@ public class ScepResponseMessage implements IResponseMessage {
      * @throws NoSuchProviderException if there is an error with the Provider.
      * @throws NoSuchAlgorithmException if the signature on the request is done with an unhandled
      *         algorithm.
+     * @throws ObjectNotFoundException 
      *
      * @see #setSignKeyInfo
      * @see #setEncKeyInfo
      */
     public boolean create()
-            throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+            throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignRequestException, NotFoundException {
         boolean ret = false;
 
         try {
@@ -206,7 +222,14 @@ public class ScepResponseMessage implements IResponseMessage {
                 log.debug("Creating a STATUS_OK message.");
             } else {
             	if (status.equals(ResponseStatus.FAILURE)) {
-                    log.debug("Creating a STATUS_FAILED message.");
+                    log.debug("Creating a STATUS_FAILED message (or throwing an exception).");
+                    if (failInfo.equals(FailInfo.WRONG_AUTHORITY)) {
+                    	throw new SignRequestException(failText);            
+                    }
+                    if (failInfo.equals(FailInfo.INCORRECT_DATA)) {
+                    	throw new NotFoundException(failText);
+                    }
+
                 } else {
                     log.debug("Creating a STATUS_PENDING message.");
                 }               
@@ -453,6 +476,16 @@ public class ScepResponseMessage implements IResponseMessage {
      */
     public void setPreferredDigestAlg(String digest) {
     	this.digestAlg = digest;
+    }
+
+    /** @see org.ejca.core.protocol.IResponseMessage
+     */
+    public void setRequestType(int reqtype) {
+	}
+
+    /** @see org.ejca.core.protocol.IResponseMessage
+     */
+    public void setRequestId(int reqid) {
     }
 
 }

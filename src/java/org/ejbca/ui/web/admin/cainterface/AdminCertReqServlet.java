@@ -20,7 +20,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 import javax.ejb.CreateException;
-import javax.ejb.ObjectNotFoundException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -41,6 +40,7 @@ import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.ui.web.RequestHelper;
@@ -109,7 +109,7 @@ import org.ejbca.util.StringTools;
  * 
  *
  * @author Ville Skyttä
- * @version $Id: AdminCertReqServlet.java,v 1.2 2006-02-09 10:05:38 anatom Exp $
+ * @version $Id: AdminCertReqServlet.java,v 1.3 2006-09-20 15:44:56 anatom Exp $
  * 
  * @web.servlet name = "AdminCertReq"
  *              display-name = "AdminCertReqServlet"
@@ -291,7 +291,7 @@ public class AdminCertReqServlet extends HttpServlet {
         } catch (CertificateException e) {
             // Error in cert
             throw new ServletException(e);
-        } catch (ObjectNotFoundException e) {
+        } catch (NotFoundException e) {
             // User not found
             throw new ServletException(e);
         } catch (AuthStatusException e) {

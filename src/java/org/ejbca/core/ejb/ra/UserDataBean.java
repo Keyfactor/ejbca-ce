@@ -62,7 +62,7 @@ import org.ejbca.util.StringTools;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.7 2006-06-26 08:02:13 anatom Exp $
+ * @version $Id: UserDataBean.java,v 1.8 2006-09-20 15:44:57 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a Log Entry with accompanying data"
  * display-name="UserDataEB"
@@ -91,10 +91,15 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ra.UserDataLocal"
  *
  * @ejb.finder
- *   description="findBySubjectDN"
- *   signature="org.ejbca.core.ejb.ra.UserDataLocal findBySubjectDN(java.lang.String username, int caId)"
+ *   description="findBySubjectDNAndCAId"
+ *   signature="org.ejbca.core.ejb.ra.UserDataLocal findBySubjectDNAndCAId(java.lang.String subjectdn, int caId)"
  *   query="SELECT OBJECT(a) from UserDataBean a WHERE a.subjectDN=?1 AND a.caId=?2"
  *
+ * @ejb.finder
+ *   description="findBySubjectDN"
+ *   signature="org.ejbca.core.ejb.ra.UserDataLocal findBySubjectDN(java.lang.String subjectdn)"
+ *   query="SELECT OBJECT(a) from UserDataBean a WHERE a.subjectDN=?1"
+ *   
  * @ejb.finder
  *   description="findBySubjectEmail"
  *   signature="java.util.Collection findBySubjectEmail(java.lang.String subjectEmail)"

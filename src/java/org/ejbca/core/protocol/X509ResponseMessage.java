@@ -25,13 +25,16 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
+import org.apache.log4j.Logger;
+import org.ejbca.core.model.ca.SignRequestException;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.util.CertTools;
 
 
 /**
  * A response message consisting of a single X509 Certificate.
  *
- * @version $Id: X509ResponseMessage.java,v 1.3 2006-05-15 16:31:28 anatom Exp $
+ * @version $Id: X509ResponseMessage.java,v 1.4 2006-09-20 15:44:56 anatom Exp $
  */
 public class X509ResponseMessage implements IResponseMessage {
     /**
@@ -45,6 +48,8 @@ public class X509ResponseMessage implements IResponseMessage {
      */
     static final long serialVersionUID = -2157072605987735912L;
 
+    private static Logger log = Logger.getLogger(X509ResponseMessage.class);
+
     /** Certificate to be in response message, */
     private Certificate cert = null;
 
@@ -53,6 +58,9 @@ public class X509ResponseMessage implements IResponseMessage {
 
     /** Possible fail information in the response. Defaults to null. */
     private FailInfo failInfo = null;
+
+    /** Possible clear text error information in the response. Defaults to null. */
+    private String failText = null;
 
     /**
      * Sets the complete certificate in the response message.
@@ -133,6 +141,14 @@ public class X509ResponseMessage implements IResponseMessage {
         return failInfo;
     }
 
+    public void setFailText(String failText) {
+    	this.failText = failText;
+    }
+
+    public String getFailText() {
+    	return this.failText;
+    }
+
     /**
      * Create encrypts and creates signatures as needed to produce a complete response message.  If
      * needed setSignKeyInfo and setEncKeyInfo must be called before this method. After this is
@@ -151,8 +167,24 @@ public class X509ResponseMessage implements IResponseMessage {
      * @see #setEncKeyInfo()
      */
     public boolean create()
-            throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
-        // Nothing needs to be done here
+            throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignRequestException, NotFoundException {
+
+        if (status.equals(ResponseStatus.SUCCESS)) {
+            log.debug("Creating a STATUS_OK message.");
+        } else {
+        	if (status.equals(ResponseStatus.FAILURE)) {
+                log.debug("Creating a STATUS_FAILED message (or throwing an exception).");
+                if (failInfo.equals(FailInfo.WRONG_AUTHORITY)) {
+                	throw new SignRequestException(failText);            
+                }
+                if (failInfo.equals(FailInfo.INCORRECT_DATA)) {
+                	throw new NotFoundException(failText);
+                }
+
+            } else {
+                log.debug("Creating a STATUS_PENDING message.");
+            }               
+        }
         return true;
     }
 
@@ -238,5 +270,15 @@ public class X509ResponseMessage implements IResponseMessage {
     /** @see org.ejca.core.protocol.IResponseMessage
      */
     public void setPreferredDigestAlg(String digest) {
+    }
+
+    /** @see org.ejca.core.protocol.IResponseMessage
+     */
+    public void setRequestType(int reqtype) {
+	}
+
+    /** @see org.ejca.core.protocol.IResponseMessage
+     */
+    public void setRequestId(int reqid) {
     }
 }

@@ -16,8 +16,6 @@ package org.ejbca.ui.web.protocol;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
-import javax.ejb.ObjectNotFoundException;
-
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
 import org.ejbca.core.model.ca.AuthLoginException;
@@ -27,6 +25,7 @@ import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.ScepRequestMessage;
 
@@ -34,7 +33,7 @@ import org.ejbca.core.protocol.ScepRequestMessage;
 /**
  * Helper class to handle SCEP (draft-nourse-scep-06.txt) requests.
  *
- * @version  $Id: ScepPkiOpHelper.java,v 1.1 2006-01-17 20:32:20 anatom Exp $
+ * @version  $Id: ScepPkiOpHelper.java,v 1.2 2006-09-20 15:44:56 anatom Exp $
  */
 public class ScepPkiOpHelper {
     private static Logger log = Logger.getLogger(ScepPkiOpHelper.class);
@@ -63,7 +62,7 @@ public class ScepPkiOpHelper {
      * @return byte[] containing response to be sent to client.
      */
     public byte[] scepCertRequest(byte[] msg, boolean includeCACert)
-            throws ObjectNotFoundException, AuthLoginException,
+            throws NotFoundException, AuthLoginException,
             SignRequestException, AuthStatusException, IllegalKeyException,
             SignRequestSignatureException, CADoesntExistsException {
         byte[] ret = null;

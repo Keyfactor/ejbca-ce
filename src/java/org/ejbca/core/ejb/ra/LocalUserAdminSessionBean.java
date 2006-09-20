@@ -91,7 +91,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.18 2006-08-13 10:16:24 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.19 2006-09-20 15:44:58 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -1081,15 +1081,17 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
     } // findUser
 
     /**
-     * Finds a user by its subjectDN.
+     * Finds a user by its subject and issuer DN.
      *
+     * @param admin
      * @param subjectdn
+     * @param issuerdn
      * @return UserDataVO or null if the user is not found.
      * @ejb.interface-method
      * @ejb.transaction type="Supports"
      */
-    public UserDataVO findUserBySubjectDN(Admin admin, String subjectdn, String issuerdn) throws AuthorizationDeniedException {
-        debug(">findUserBySubjectDN(" + subjectdn + ")");
+    public UserDataVO findUserBySubjectAndIssuerDN(Admin admin, String subjectdn, String issuerdn) throws AuthorizationDeniedException {
+        debug(">findUserBySubjectAndIssuerDN(" + subjectdn + ", "+issuerdn+")");
         String bcdn = CertTools.stringToBCDNString(subjectdn);
         // String used in SQL so strip it
         String dn = StringTools.strip(bcdn);
@@ -1098,22 +1100,56 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 
         UserDataLocal data = null;
 
-        if (!authorizedToCA(admin, issuerdn.hashCode())) {
-            throw new AuthorizationDeniedException("Administrator not authorized to view user with given CA.");
-        }
-
         try {
-            data = home.findBySubjectDN(dn, issuerdn.hashCode());
+            data = home.findBySubjectDNAndCAId(dn, issuerdn.hashCode());
         } catch (FinderException e) {
             log.debug("Cannot find user with DN='" + dn + "'");
         }
-        if (data != null) {
+        returnval = returnUserDataVO(admin, returnval, data);
+        debug("<findUserBySubjectAndIssuerDN(" + subjectdn + ", "+issuerdn+")");
+        return returnval;
+    } // findUserBySubjectDN
+
+    /**
+     * Finds a user by its subject DN.
+     *
+     * @param admin
+     * @param subjectdn
+     * @return UserDataVO or null if the user is not found.
+     * @ejb.interface-method
+     * @ejb.transaction type="Supports"
+     */
+    public UserDataVO findUserBySubjectDN(Admin admin, String subjectdn) throws AuthorizationDeniedException {
+        debug(">findUserBySubjectDN(" + subjectdn + ")");
+        String bcdn = CertTools.stringToBCDNString(subjectdn);
+        // String used in SQL so strip it
+        String dn = StringTools.strip(bcdn);
+        debug("Looking for users with subjectdn: " + dn);
+        UserDataVO returnval = null;
+
+        UserDataLocal data = null;
+
+        try {
+            data = home.findBySubjectDN(dn);
+        } catch (FinderException e) {
+            log.debug("Cannot find user with DN='" + dn + "'");
+        }
+        returnval = returnUserDataVO(admin, returnval, data);
+        debug("<findUserBySubjectDN(" + subjectdn + ")");
+        return returnval;
+    } // findUserBySubjectDN
+
+	private UserDataVO returnUserDataVO(Admin admin, UserDataVO returnval, UserDataLocal data) throws AuthorizationDeniedException {
+		if (data != null) {
         	if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
         		// Check if administrator is authorized to view user.
         		if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AvailableAccessRules.VIEW_RIGHTS))
         			throw new AuthorizationDeniedException("Administrator not authorized to view user.");
         	}
 
+            if (!authorizedToCA(admin, data.getCaId())) {
+                throw new AuthorizationDeniedException("Administrator not authorized to view user with given CA.");
+            }
 
             returnval = new UserDataVO(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), data.getStatus()
                     , data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId()
@@ -1122,9 +1158,8 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 
             returnval.setPassword(data.getClearPassword());
         }
-        debug("<findUserBySubjectDN(" + subjectdn + ")");
-        return returnval;
-    } // findUserBySubjectDN
+		return returnval;
+	}
 
     /**
      * Finds a user by its Email.
