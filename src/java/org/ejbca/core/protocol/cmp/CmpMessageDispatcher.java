@@ -47,7 +47,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * - Certificate Confirmation - accept or reject by client - will return a PKIConfirm
  * 
  * @author tomas
- * @version $Id: CmpMessageDispatcher.java,v 1.1 2006-09-20 15:44:55 anatom Exp $
+ * @version $Id: CmpMessageDispatcher.java,v 1.2 2006-09-21 11:33:33 anatom Exp $
  */
 public class CmpMessageDispatcher {
 	private static final Logger log = Logger.getLogger(CmpMessageDispatcher.class);
@@ -97,7 +97,7 @@ public class CmpMessageDispatcher {
 				log.debug(req);
 				//log.debug(ASN1Dump.dumpAsString(req));				
 			}
-			ICmpMessage cmpMessage = null;
+			BaseCmpMessage cmpMessage = null;
 			ICmpMessageHandler handler = null;
 			switch (tagno) {
 			case 0:
@@ -108,6 +108,16 @@ public class CmpMessageDispatcher {
 			case 2:
 				handler = new CrmfMessageHandler(admin);
 				cmpMessage = new CrmfRequestMessage(header, body, defaultCA, allowRaVerifyPopo, extractUsernameComponent);
+				break;
+			case 19:
+				// PKI confirm
+				handler = new ConfirmationMessageHandler();
+				cmpMessage = new ConfirmationMessage(header, body);
+				break;
+			case 24:
+				// Certificate confirmation
+				handler = new ConfirmationMessageHandler();
+				cmpMessage = new ConfirmationMessage(header, body);
 				break;
 			default:
 				break;

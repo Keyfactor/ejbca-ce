@@ -37,7 +37,7 @@ import org.ejbca.core.protocol.IResponseMessage;
 /**
  * Message handler for certificate request messages in the CRMF format
  * @author tomas
- * @version $Id: CrmfMessageHandler.java,v 1.1 2006-09-20 15:44:55 anatom Exp $
+ * @version $Id: CrmfMessageHandler.java,v 1.2 2006-09-21 11:33:33 anatom Exp $
  */
 public class CrmfMessageHandler implements ICmpMessageHandler {
 	
@@ -58,7 +58,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 		IUserAdminSessionLocalHome userHome = (IUserAdminSessionLocalHome) ServiceLocator.getInstance().getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
 		this.usersession = userHome.create();
 	}
-	public IResponseMessage handleMessage(ICmpMessage msg) {
+	public IResponseMessage handleMessage(BaseCmpMessage msg) {
 		log.debug(">handleMessage");
 		IResponseMessage resp = null;
 		try {

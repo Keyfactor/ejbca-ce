@@ -25,6 +25,7 @@ import java.security.SignatureException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
+import java.util.Random;
 
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DERBitString;
@@ -48,7 +49,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * Helper class to create different standard parts of CMP messages
  * 
  * @author tomas
- * @version $Id: CmpMessageHelper.java,v 1.1 2006-09-20 15:44:55 anatom Exp $
+ * @version $Id: CmpMessageHelper.java,v 1.2 2006-09-21 11:33:33 anatom Exp $
  */
 public class CmpMessageHelper {
 
@@ -102,5 +103,18 @@ public class CmpMessageHelper {
 		pKIMessage.setProtection( new DERBitString(sig.sign()) );
 		pKIMessage.addExtraCert( cert );
 	}
-	
+
+	/** Creates a 16 bytes random sender nonce
+	 * 
+	 * @return byte array of length 16
+	 */
+	public static byte[] createSenderNonce() {
+    	// Sendernonce is a random number
+    	byte[] senderNonce = new byte[16];
+        Random randomSource;
+        randomSource = new Random();
+        randomSource.nextBytes(senderNonce);
+    	return senderNonce;
+	}
+
 }

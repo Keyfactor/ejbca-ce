@@ -58,6 +58,7 @@ import com.novosec.pkix.asn1.crmf.CertReqMessages;
  *       genm    [21] GenMsgContent,          --General Message
  *       genp    [22] GenRepContent,          --General Response
  *       error   [23] ErrorMsgContent         --Error Message
+ *       certConf[24] CertConfirmContent      --Certificate Confirm
  *   }
  *  
  * </pre>
@@ -246,6 +247,12 @@ public class PKIBody implements DEREncodable
       return (ErrorMsgContent)this.obj;
     }
 
+    public CertConfirmContent getCertConf() {
+    	if (this.tag != 24 ) 
+    		return null;
+    	return (CertConfirmContent)this.obj;
+    }
+    
     public static PKIBody getInstance( DERObject obj )
     {
       return getInstance( (ASN1TaggedObject)obj, true );
@@ -281,6 +288,7 @@ public class PKIBody implements DEREncodable
           case 21: return new PKIBody(GenMsgContent.getInstance(tagObj.getObject()),           21);
           case 22: return new PKIBody(GenRepContent.getInstance(tagObj.getObject()),           22);
           case 23: return new PKIBody(ErrorMsgContent.getInstance(tagObj.getObject()),         23);
+          case 24: return new PKIBody(CertConfirmContent.getInstance(tagObj.getObject()),      24);
         }
 
         throw new IllegalArgumentException("unknown tag: " + tag);

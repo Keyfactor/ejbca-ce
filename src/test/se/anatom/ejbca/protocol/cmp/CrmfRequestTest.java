@@ -25,7 +25,6 @@ import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.SecureRandom;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CertificateEncodingException;
@@ -73,9 +72,11 @@ import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
 
+import com.novosec.pkix.asn1.cmp.CertConfirmContent;
 import com.novosec.pkix.asn1.cmp.CertOrEncCert;
 import com.novosec.pkix.asn1.cmp.CertRepMessage;
 import com.novosec.pkix.asn1.cmp.CertResponse;
@@ -166,23 +167,20 @@ public class CrmfRequestTest extends TestCase {
         // A name that does not exis
 	    userDN = "CN=abc123rry5774466, O=PrimeKey Solutions AB, C=SE";
 
-		byte[] nonce = new byte[16];
-        SecureRandom randomSource = SecureRandom.getInstance("SHA1PRNG");
-        randomSource.nextBytes(nonce);
-		byte[] transid = new byte[16];
-        randomSource.nextBytes(transid);
+		byte[] nonce = CmpMessageHelper.createSenderNonce();
+		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
         PKIMessage req = genCertReq(nonce, transid);
 		assertNotNull(req);
 		ByteArrayOutputStream bao = new ByteArrayOutputStream();
 		DEROutputStream out = new DEROutputStream(bao);
 		out.writeObject(req);
-		byte ba[] = bao.toByteArray();
+		byte[] ba = bao.toByteArray();
 		// Send request and receive response
 		byte[] resp = sendCmp(ba);
 		assertNotNull(resp);
 		assertTrue(resp.length > 0);
-		checkCmpResponseGeneral(resp, userDN, nonce, transid);
+		checkCmpResponseGeneral(resp, userDN, nonce, transid, true);
 		checkCmpFailMessage(resp, "User not found: abc123rry5774466");
 	}
 	
@@ -191,11 +189,8 @@ public class CrmfRequestTest extends TestCase {
 		// Create a new good user
 		createCmpUser();
 
-		byte[] nonce = new byte[16];
-        SecureRandom randomSource = SecureRandom.getInstance("SHA1PRNG");
-        randomSource.nextBytes(nonce);
-		byte[] transid = new byte[16];
-        randomSource.nextBytes(transid);
+		byte[] nonce = CmpMessageHelper.createSenderNonce();
+		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
         PKIMessage req = genCertReq(nonce, transid);
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
@@ -203,13 +198,28 @@ public class CrmfRequestTest extends TestCase {
 		ByteArrayOutputStream bao = new ByteArrayOutputStream();
 		DEROutputStream out = new DEROutputStream(bao);
 		out.writeObject(req);
-		byte ba[] = bao.toByteArray();
+		byte[] ba = bao.toByteArray();
 		// Send request and receive response
 		byte[] resp = sendCmp(ba);
 		assertNotNull(resp);
 		assertTrue(resp.length > 0);
-		checkCmpResponseGeneral(resp, userDN, nonce, transid);
+		checkCmpResponseGeneral(resp, userDN, nonce, transid, true);
 		checkCmpCertRepMessage(resp, reqId);
+		
+		// Send a confirm message to the CA
+		String hash = "foo123";
+        PKIMessage confirm = genCertConfirm(nonce, transid, hash, reqId);
+		assertNotNull(confirm);
+		bao = new ByteArrayOutputStream();
+		out = new DEROutputStream(bao);
+		out.writeObject(confirm);
+		ba = bao.toByteArray();
+		// Send request and receive response
+		resp = sendCmp(ba);
+		assertNotNull(resp);
+		assertTrue(resp.length > 0);
+		checkCmpResponseGeneral(resp, userDN, nonce, transid, false);
+		checkCmpPKIConfirmMessage(resp);
 	}
 
 	private PKIMessage genCertReq(byte[] nonce, byte[] transid) throws NoSuchAlgorithmException, NoSuchProviderException, IOException {
@@ -268,8 +278,8 @@ public class CrmfRequestTest extends TestCase {
 		PKIHeader myPKIHeader =
 			new PKIHeader(
 					new DERInteger(1),
-					new GeneralName(new X509Name("C=DE, O=NOVOSEC AG, OU=Security Division, E=sender@novosec.com")),
-					new GeneralName(new X509Name("C=DE, O=NOVOSEC AG, OU=Security Division, E=recipient@novosec.com")));
+					new GeneralName(new X509Name(cacert.getSubjectDN().getName())),
+					new GeneralName(new X509Name(userDN)));
 		myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
         // senderNonce
 		myPKIHeader.setSenderNonce(new DEROctetString(nonce));
@@ -285,7 +295,26 @@ public class CrmfRequestTest extends TestCase {
 		return myPKIMessage;
 	}
 
-    private byte[] sendCmp(byte[] message) throws IOException, NoSuchProviderException {
+	private PKIMessage genCertConfirm(byte[] nonce, byte[] transid, String hash, int certReqId) throws NoSuchAlgorithmException, NoSuchProviderException, IOException {
+				
+		PKIHeader myPKIHeader =
+			new PKIHeader(
+					new DERInteger(1),
+					new GeneralName(new X509Name(userDN)),
+					new GeneralName(new X509Name(cacert.getSubjectDN().getName())));
+		myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
+        // senderNonce
+		myPKIHeader.setSenderNonce(new DEROctetString(nonce));
+		// TransactionId
+		myPKIHeader.setTransactionID(new DEROctetString(transid));
+		
+		CertConfirmContent cc = new CertConfirmContent(new DEROctetString(hash.getBytes()), new DERInteger(certReqId));
+		PKIBody myPKIBody = new PKIBody(cc, 24); // Cert Confirm
+		PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);	
+		return myPKIMessage;
+	}
+
+	private byte[] sendCmp(byte[] message) throws IOException, NoSuchProviderException {
         // POST the CMP request
         // we are going to do a POST
     	String resource = resourceCmp;
@@ -321,7 +350,7 @@ public class CrmfRequestTest extends TestCase {
         return respBytes;
     }
 
-    private void checkCmpResponseGeneral(byte[] retMsg, String userDN, byte[] senderNonce, byte[] transId) throws IOException {
+    private void checkCmpResponseGeneral(byte[] retMsg, String userDN, byte[] senderNonce, byte[] transId, boolean signed) throws IOException {
         //
         // Parse response message
         //
@@ -335,35 +364,39 @@ public class CrmfRequestTest extends TestCase {
 		PKIHeader header = respObject.getHeader();
 
     	// Check that the message is signed with the correct digest alg
-		AlgorithmIdentifier algId = header.getProtectionAlg();
-		assertEquals(algId.getObjectId().getId(), PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+		if (signed) {
+			AlgorithmIdentifier algId = header.getProtectionAlg();
+			assertEquals(algId.getObjectId().getId(), PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());			
+		}
 
     	// Check that the signer is the expected CA
 		assertEquals(header.getSender().getTagNo(), 4);
 		X509Name name = X509Name.getInstance(header.getSender().getName()); 
 		assertEquals(name.toString(), issuerDN);
 
-    	// Verify the signature
-		byte[] protBytes = respObject.getProtectedBytes();
-		DERBitString bs = respObject.getProtection();
-	    Signature sig;
-		try {
-			sig = Signature.getInstance(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), "BC");
-		    sig.initVerify(cacert);
-		    sig.update(protBytes);
-		    sig.verify(bs.getBytes());
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-			assertTrue(false);
-		} catch (NoSuchProviderException e) {
-			e.printStackTrace();
-			assertTrue(false);
-		} catch (InvalidKeyException e) {
-			e.printStackTrace();
-			assertTrue(false);
-		} catch (SignatureException e) {
-			e.printStackTrace();
-			assertTrue(false);
+		if (signed) {
+	    	// Verify the signature
+			byte[] protBytes = respObject.getProtectedBytes();
+			DERBitString bs = respObject.getProtection();
+		    Signature sig;
+			try {
+				sig = Signature.getInstance(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), "BC");
+			    sig.initVerify(cacert);
+			    sig.update(protBytes);
+			    sig.verify(bs.getBytes());
+			} catch (NoSuchAlgorithmException e) {
+				e.printStackTrace();
+				assertTrue(false);
+			} catch (NoSuchProviderException e) {
+				e.printStackTrace();
+				assertTrue(false);
+			} catch (InvalidKeyException e) {
+				e.printStackTrace();
+				assertTrue(false);
+			} catch (SignatureException e) {
+				e.printStackTrace();
+				assertTrue(false);
+			}			
 		}
 
     	// --SenderNonce
@@ -380,23 +413,7 @@ public class CrmfRequestTest extends TestCase {
         // transid should be the same as the one we sent
 		nonce = header.getTransactionID().getOctets();
 		assertEquals(new String(nonce), new String(transId));
-        
-
-    	// --Fail info
-        // No failInfo on this success message
-
-    	// --Message type
-        // --Success status
-
-        //
-        // Check different message types
-        //
-                // We got a reply with a requested certificate 
-                // Issued certificate must be first
-                    // check the returned certificate
-                        // issued certificate
-                        // ca certificate
-        
+                
     }
     
     private void checkCmpFailMessage(byte[] retMsg, String failMsg) throws IOException {
@@ -444,6 +461,20 @@ public class CrmfRequestTest extends TestCase {
 		assertNotNull(struct);
 		assertEquals(CertTools.stringToBCDNString(struct.getSubject().toString()), CertTools.stringToBCDNString(userDN));
 		assertEquals(CertTools.stringToBCDNString(struct.getIssuer().toString()), CertTools.stringToBCDNString(cacert.getSubjectDN().getName()));
+    }
+
+    private void checkCmpPKIConfirmMessage(byte[] retMsg) throws IOException {
+        //
+        // Parse response message
+        //
+		PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(retMsg)).readObject());
+		assertNotNull(respObject);
+		
+		PKIBody body = respObject.getBody();
+		int tag = body.getTagNo();
+		assertEquals(tag, 19);
+		DERNull n = body.getConf();
+		assertNotNull(n);
     }
 
     //

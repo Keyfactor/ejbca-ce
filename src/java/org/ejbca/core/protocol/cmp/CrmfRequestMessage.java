@@ -53,9 +53,9 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
  * - Supported POPO: raVerified (null), i.e. no POPO verification is done, it should be configurable if the CA should allow this or require a real POPO
  * 
  * @author tomas
- * @version $Id: CrmfRequestMessage.java,v 1.1 2006-09-20 15:44:55 anatom Exp $
+ * @version $Id: CrmfRequestMessage.java,v 1.2 2006-09-21 11:33:33 anatom Exp $
  */
-public class CrmfRequestMessage implements ICmpMessage, IRequestMessage {
+public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessage {
 	
 	private static final Logger log = Logger.getLogger(CrmfRequestMessage.class);
 	
