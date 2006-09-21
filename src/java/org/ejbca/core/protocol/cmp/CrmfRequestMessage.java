@@ -53,7 +53,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
  * - Supported POPO: raVerified (null), i.e. no POPO verification is done, it should be configurable if the CA should allow this or require a real POPO
  * 
  * @author tomas
- * @version $Id: CrmfRequestMessage.java,v 1.2 2006-09-21 11:33:33 anatom Exp $
+ * @version $Id: CrmfRequestMessage.java,v 1.3 2006-09-21 15:34:31 anatom Exp $
  */
 public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessage {
 	
@@ -116,7 +116,8 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 				setSenderNonce(new String(Base64.encode(val)));							
 			}
 		}
-
+		setRecipient(header.getRecipient());
+		setSender(header.getSender());
 	}
 	
 	public PublicKey getRequestPublicKey() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {

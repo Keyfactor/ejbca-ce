@@ -32,12 +32,14 @@ import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.core.protocol.IResponseMessage;
+import org.ejbca.core.protocol.ResponseStatus;
 
 /**
  * Message handler for certificate request messages in the CRMF format
  * @author tomas
- * @version $Id: CrmfMessageHandler.java,v 1.2 2006-09-21 11:33:33 anatom Exp $
+ * @version $Id: CrmfMessageHandler.java,v 1.3 2006-09-21 15:34:31 anatom Exp $
  */
 public class CrmfMessageHandler implements ICmpMessageHandler {
 	
@@ -91,14 +93,18 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 			log.error("Exception during CMP processing: ", e);			
 		} catch (NotFoundException e) {
 			log.error("Exception during CMP processing: ", e);
+			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
 		} catch (AuthStatusException e) {
 			log.error("Exception during CMP processing: ", e);
+			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
 		} catch (AuthLoginException e) {
 			log.error("Exception during CMP processing: ", e);
+			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
 		} catch (IllegalKeyException e) {
 			log.error("Exception during CMP processing: ", e);
 		} catch (CADoesntExistsException e) {
 			log.error("Exception during CMP processing: ", e);
+			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.WRONG_AUTHORITY, e.getMessage());
 		} catch (SignRequestException e) {
 			log.error("Exception during CMP processing: ", e);
 		} catch (SignRequestSignatureException e) {

@@ -31,6 +31,7 @@ import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.X509CertificateStructure;
+import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.core.protocol.IResponseMessage;
@@ -50,7 +51,7 @@ import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
 /**
  * CMP certificate response message
  * @author tomas
- * @version $Id: CmpResponseMessage.java,v 1.2 2006-09-21 11:33:33 anatom Exp $
+ * @version $Id: CmpResponseMessage.java,v 1.3 2006-09-21 15:34:31 anatom Exp $
  */
 public class CmpResponseMessage implements IResponseMessage {
 	
@@ -174,7 +175,9 @@ public class CmpResponseMessage implements IResponseMessage {
 			subject = "CN=fooSubject";
 		}
 		
-		PKIHeader myPKIHeader = CmpMessageHelper.createPKIHeader(issuer, subject, senderNonce, recipientNonce, transactionId);
+		X509Name issuerName = new X509Name(issuer);
+		X509Name subjectName = new X509Name(subject);
+		PKIHeader myPKIHeader = CmpMessageHelper.createPKIHeader(issuerName, subjectName, senderNonce, recipientNonce, transactionId);
 
 		try {
 			if (status.equals(ResponseStatus.SUCCESS)) {

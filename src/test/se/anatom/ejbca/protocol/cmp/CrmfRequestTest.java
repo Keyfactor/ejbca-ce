@@ -73,6 +73,7 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
+import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
 
@@ -162,6 +163,7 @@ public class CrmfRequestTest extends TestCase {
 	protected void tearDown() throws Exception {
 		super.tearDown();
 	}
+
 	
 	public void test01CrmfHttpUnknowUser() throws Exception {
         // A name that does not exis
@@ -177,6 +179,11 @@ public class CrmfRequestTest extends TestCase {
 		out.writeObject(req);
 		byte[] ba = bao.toByteArray();
 		// Send request and receive response
+		/*
+		FileOutputStream fos = new FileOutputStream("/home/tomas/dev/support/cmp_0_ir");
+		fos.write(ba);
+		fos.close();
+		*/
 		byte[] resp = sendCmp(ba);
 		assertNotNull(resp);
 		assertTrue(resp.length > 0);
@@ -222,6 +229,12 @@ public class CrmfRequestTest extends TestCase {
 		checkCmpPKIConfirmMessage(resp);
 	}
 
+	public void test03BlueXCrmf() throws Exception {
+		byte[] resp = sendCmp(bluexir);
+		assertNotNull(resp);
+		checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", "", 64); // 64 is WRONG_AUTHORITY
+	}
+	
 	private PKIMessage genCertReq(byte[] nonce, byte[] transid) throws NoSuchAlgorithmException, NoSuchProviderException, IOException {
 		OptionalValidity myOptionalValidity = new OptionalValidity();
 		myOptionalValidity.setNotBefore( new org.bouncycastle.asn1.x509.Time( new DERGeneralizedTime("20030211002120Z") ) );
@@ -277,7 +290,7 @@ public class CrmfRequestTest extends TestCase {
 				
 		PKIHeader myPKIHeader =
 			new PKIHeader(
-					new DERInteger(1),
+					new DERInteger(2),
 					new GeneralName(new X509Name(cacert.getSubjectDN().getName())),
 					new GeneralName(new X509Name(userDN)));
 		myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
@@ -469,7 +482,13 @@ public class CrmfRequestTest extends TestCase {
         //
 		PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(retMsg)).readObject());
 		assertNotNull(respObject);
-		
+		PKIHeader header = respObject.getHeader();
+		assertEquals(header.getSender().getTagNo(), 4);
+		X509Name name = X509Name.getInstance(header.getSender().getName()); 
+		assertEquals(name.toString(), cacert.getSubjectDN().getName());
+		name = X509Name.getInstance(header.getRecipient().getName()); 
+		assertEquals(name.toString(), userDN);
+
 		PKIBody body = respObject.getBody();
 		int tag = body.getTagNo();
 		assertEquals(tag, 19);
@@ -477,6 +496,31 @@ public class CrmfRequestTest extends TestCase {
 		assertNotNull(n);
     }
 
+    private void checkCmpPKIErrorMessage(byte[] retMsg, String sender, String recipient, int error) throws IOException {
+        //
+        // Parse response message
+        //
+		PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(retMsg)).readObject());
+		assertNotNull(respObject);
+		PKIHeader header = respObject.getHeader();
+		assertEquals(header.getSender().getTagNo(), 4);
+		X509Name name = X509Name.getInstance(header.getSender().getName()); 
+		assertEquals(name.toString(), sender);
+		name = X509Name.getInstance(header.getRecipient().getName()); 
+		assertEquals(name.toString(), recipient);
+
+		PKIBody body = respObject.getBody();
+		int tag = body.getTagNo();
+		assertEquals(tag, 23);
+		ErrorMsgContent n = body.getError();
+		assertNotNull(n);
+		PKIStatusInfo info = n.getPKIStatus();
+		assertNotNull(info);
+		DERInteger i = info.getStatus();
+		assertEquals(i.getValue().intValue(), 2);
+		DERBitString b = info.getFailInfo();
+		assertEquals(b.intValue(), error);
+    }
     //
     // Private helper methods
     //
@@ -502,5 +546,18 @@ public class CrmfRequestTest extends TestCase {
         }
         
     }
+
+    static byte[] bluexir = Base64.decode(("MIICIjCB1AIBAqQCMACkVjBUMQswCQYDVQQGEwJOTDEbMBkGA1UEChMSQS5FLlQu"+
+		"IEV1cm9wZSBCLlYuMRQwEgYDVQQLEwtEZXZlbG9wbWVudDESMBAGA1UEAxMJVGVz"+
+		"dCBDQSAxoT4wPAYJKoZIhvZ9B0INMC8EEAK/H7Do+55N724Kdvxm7NcwCQYFKw4D"+
+		"AhoFAAICA+gwDAYIKwYBBQUIAQIFAKILBAlzc2xjbGllbnSkEgQQpFpBsonfhnW8"+
+		"ia1otGchraUSBBAyzd3nkKAzcJqGFrDw0jkYoIIBLjCCASowggEmMIIBIAIBADCC"+
+		"ARmkJqARGA8yMDA2MDkxOTE2MTEyNlqhERgPMjAwOTA2MTUxNjExMjZapR0wGzEZ"+
+		"MBcGA1UEAwwQU29tZSBDb21tb24gTmFtZaaBoDANBgkqhkiG9w0BAQEFAAOBjgAw"+
+		"gYoCgYEAuBgTGPgXrS3AIPN6iXO6LNf5GzAcb/WZhvebXMdxdrMo9+5hw/Le5St/"+
+		"Sz4J93rxU95b2LMuHTg8U6njxC2lZarNExZTdEwnI37X6ep7lq1purq80zD9bFXj"+
+		"ougRD5MHfhDUAQC+btOgEXkanoAo8St3cbtHoYUacAXN2Zs/RVcCBAABAAGpLTAr"+
+		"BgNVHREEJDAioCAGCisGAQQBgjcUAgOgEgwQdXBuQGFldGV1cm9wZS5ubIAAoBcD"+
+		"FQAy/vSoNUevcdUxXkCQx3fvxkjh6A==").getBytes());
 
 }

@@ -27,6 +27,7 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Random;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERGeneralizedTime;
@@ -40,6 +41,11 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.X509CertificateStructure;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cms.CMSSignedGenerator;
+import org.ejbca.core.model.ca.SignRequestException;
+import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.protocol.FailInfo;
+import org.ejbca.core.protocol.IResponseMessage;
+import org.ejbca.core.protocol.ResponseStatus;
 import org.ejbca.util.Base64;
 
 import com.novosec.pkix.asn1.cmp.PKIHeader;
@@ -49,16 +55,17 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * Helper class to create different standard parts of CMP messages
  * 
  * @author tomas
- * @version $Id: CmpMessageHelper.java,v 1.2 2006-09-21 11:33:33 anatom Exp $
+ * @version $Id: CmpMessageHelper.java,v 1.3 2006-09-21 15:34:31 anatom Exp $
  */
 public class CmpMessageHelper {
+	private static Logger log = Logger.getLogger(CmpMessageHelper.class);
 
-	public static PKIHeader createPKIHeader(String sender, String recipient, String senderNonce, String recipientNonce, String transactionId) {
+	public static PKIHeader createPKIHeader(X509Name sender, X509Name recipient, String senderNonce, String recipientNonce, String transactionId) {
 		PKIHeader myPKIHeader =
 			new PKIHeader(
 					new DERInteger(2),
-					new GeneralName(new X509Name(sender)),
-					new GeneralName(new X509Name(recipient)));
+					new GeneralName(sender),
+					new GeneralName(recipient));
 		myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
 		if (senderNonce != null) {
 			myPKIHeader.setSenderNonce(new DEROctetString(Base64.decode(senderNonce.getBytes())));					
@@ -116,5 +123,40 @@ public class CmpMessageHelper {
         randomSource.nextBytes(senderNonce);
     	return senderNonce;
 	}
-
+	/**
+	 * creates a very simple error message in response to msg (that's why we switch sender and recipient)
+	 * @param msg
+	 * @param status
+	 * @param failInfo
+	 * @param failText
+	 * @return IResponseMessage that can be sent to user
+	 */
+	public static IResponseMessage createUnprotectedErrorMessage(BaseCmpMessage msg, ResponseStatus status, FailInfo failInfo, String failText) {
+		// Create a failure message
+		CmpErrorResponseMessage resp = new CmpErrorResponseMessage();
+		resp.setRecipientNonce(msg.getSenderNonce());
+		resp.setSenderNonce(new String(Base64.encode(CmpMessageHelper.createSenderNonce())));
+		resp.setSender(msg.getRecipient());
+		resp.setRecipient(msg.getSender());
+		resp.setTransactionId(msg.getTransactionId());
+		resp.setFailInfo(failInfo);
+		resp.setStatus( status);
+		resp.setFailText(failText);
+		try {
+			resp.create();
+		} catch (InvalidKeyException e) {
+			log.error("Exception during CMP processing: ", e);			
+		} catch (NoSuchAlgorithmException e) {
+			log.error("Exception during CMP processing: ", e);			
+		} catch (NoSuchProviderException e) {
+			log.error("Exception during CMP processing: ", e);			
+		} catch (SignRequestException e) {
+			log.error("Exception during CMP processing: ", e);			
+		} catch (NotFoundException e) {
+			log.error("Exception during CMP processing: ", e);			
+		} catch (IOException e) {
+			log.error("Exception during CMP processing: ", e);			
+		}
+		return resp;
+	}
 }
