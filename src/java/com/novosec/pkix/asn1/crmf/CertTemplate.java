@@ -55,8 +55,8 @@ import org.bouncycastle.asn1.x509.X509Name;
  */
 public class CertTemplate implements DEREncodable
 {
-    // name is not a choice type --> tag it implicit
-    public static final boolean bNameIsExplicit = false;
+    // name is not a choice type --> tag it implicit...no but it should be explicit?
+    public static final boolean bNameIsExplicit = true;
 
     private DERInteger            version = null;
     private DERInteger            serialNumber = null;
