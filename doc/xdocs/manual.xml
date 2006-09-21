@@ -769,6 +769,43 @@ CA Certificate
 </subsection>
 </section>
 
+<section name="CMP">
+<p>
+CMP (RFC4210) is a very complex protocol, which EJBCA does implement some parts of.
+<br/> 
+The following CMP messages are supported:
+<ul>
+<li>Initialization request (ir)</li>
+<li>Certification request (cr)</li>
+<li>Certification Confirm (certConf)</li>
+</ul>
+</p>
+<subsection name="User authentication">
+<p>
+Initialization and certification requests uses the CRMF request message (RFC4211).
+There messages are interesting as there are a zillion options how to authenticate them.
+EJBCA currently does authentication through the means of a regToken control (id-regCtrl-regToken) in the CRMF message.
+The regToken is a UTF8String which is the users password as registered in EJBCA.
+</p>
+<p>
+Users can be looked up from the request in different ways, as configured in ejbca.properties.
+By default the subject DN from the certTemplate in the request is used to look up the used in EJBCA. 
+You can also configure EJBCA to use the CN or the UID from the subject DN as the username in EJBCA.
+</p>
+</subsection>
+<subsection name="Proof of possession">
+<p>
+Proof of Possession (POP) is another part where CMP has gazillions of different options. 
+<br/>
+The following POP are supported by EJBCA:
+<ul>
+<li>raVerify - if configured so in ejbca.properties EJBCA will support the raVerify POP and in that case not do any verification of POP. By default this is false, because the standard does not recommend this option.</li>
+</ul>
+Currently this is unforturnately the only POP supported by EJBCA, so if you don't use raVerify your request will fail becuase POP is not verified.
+</p>
+</subsection>
+</section>
+
 <section name="Ocsp">
 <p>
 Note! Some OCSP clients does not handle external OCSP responders very well unforturnately. You should be aware of this.
