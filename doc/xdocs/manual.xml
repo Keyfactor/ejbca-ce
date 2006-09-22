@@ -692,7 +692,8 @@ should be the CA-name as defined when creating the CA in EJBCA. For example 'vpn
 <li>The end-entity DN must include the DN components CN and unstructuredName, ex "CN=pix.primekey.se, unstructuredName=pix.primekey.se". 
 You can also include O, C etc in the certificate. A normal DN for a PIX is "CN=pix.primekey.se,unstructuredName=pix.primekey.se,O=PrimeKey,C=SE".</li>
 <li>Certificates used for PIX MUST include the DN component unstructuredName (fqdn) and could also include unstructuredAddress (ip) beeing the IP-address of the PIX.</li>
-<li>Certificates used for PIX may also use the SubjectAltName dNSName and iPAddress matching the DN components unstructuredName and unstructuredAddress, but it's not necessary.</li>
+<li>The certificate used on the Cisco PIX MUST have a SubjectAltName field dNSName, matching the DN component unstructuredName. This is needed in order for Cisco VPN clients to connect to the PIX. The DNS Name field is not nessasary for the PIX to enroll perfectly with EJBCA, only for the client to be able to connect.</li>
+<li>Certificates used for PIX may also use the SubjectAltName iPAddress matching the DN component unstructuredAddress, but it's not necessary.</li>
 <li>Cisco does not support use of the 'Domain Component', DC, attribute in DNs, don't use it.</li>
 <li>KeyUsage should include <i>Digital Signature</i> and <i>Key Encipherment</i>, the EJBCA defaults work fine.</li>
 <li>When the Cisco VPN-client (above) connects to the PIX, the 'ou' part of the clients DN must match a Vpngroup you have specified, 
