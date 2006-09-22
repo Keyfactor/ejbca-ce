@@ -1017,6 +1017,25 @@ If you want to re-send a notification for a user, reset the status to NEW.
 If the status is already NEW, set the status to GENERATED and then back to NEW.
 </p></section>
 
+<section name="Printing of User Data">
+<p>
+From EJBCA 3.4 it is possible to have userdata printed on a printer
+whenever an end entity is added or edited. The functionality is
+practically the same as for notifications.
+</p><p>
+This is configured in the end entity profiles by selecting a printer,
+the number of copies and uploading a SVG formatted template. There 
+exists a template in 'src/cli/svgTemplate/Batch PIN envelope print.svg' 
+that can be used for testing.
+</p><p>
+For more information how to write EJBCA SVG templates see: http://docs.primekey.se/documentation/en/appendixes/hardtokenprofiles.html 
+</p><p>
+One good SVG client can be downloaded from inkscape.org 
+</p><p>
+In order to renew the list of available printers you must restart
+the http session since the list is cached for performance reasons.
+</p></section>
+
 <section name="Approving Actions">
 <p>
 It is possible to have other administrators (1-5) to approve an action in order to make sure the correct data is entered.
