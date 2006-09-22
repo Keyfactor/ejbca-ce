@@ -36,13 +36,14 @@ import org.ejbca.core.model.ra.UserDataVO;
  * 
  * @author Philip Vendil 2006 sep 20
  *
- * @version $Id: PrinterManager.java,v 1.1 2006-09-22 13:05:10 herrvendil Exp $
+ * @version $Id: PrinterManager.java,v 1.2 2006-09-22 13:48:16 herrvendil Exp $
  */
 public class PrinterManager {
 	
 	private static Logger log = Logger.getLogger(PrinterManager.class);
 
 	private static transient PrintService currentService = null;	
+	private static transient String currentPrinterName = null;
 	private static transient String currentSVGTemplateName = null;
 	private static transient SVGImageManipulator sVGImagemanipulator = null;
 	
@@ -64,7 +65,6 @@ public class PrinterManager {
 	}
 
 
-	private String hardTokenSerialPrefix;
 	
 	/**
 	 * Method performin the actual processing and
@@ -94,7 +94,9 @@ public class PrinterManager {
 			int visualVaildity,  UserDataVO userDataVO, 
 			String[] pINs, String[] pUKs, String hardTokenSerialPrefix,
 			String hardTokenSN, String copyOfHardTokenSN) throws PrinterException{
-		if(currentService == null){
+		if(currentService == null 
+		   || currentPrinterName == null 
+		   || !printerName.equals(currentPrinterName)){
 			PrintRequestAttributeSet pras = new HashPrintRequestAttributeSet();
 			DocFlavor flavor = DocFlavor.BYTE_ARRAY.AUTOSENSE;
 			PrintService printService[] =  PrintServiceLookup.lookupPrintServices(flavor, pras);
@@ -103,7 +105,8 @@ public class PrinterManager {
 			while ( i<printService.length && !trimemdPrinterName.equalsIgnoreCase(printService[i].getName()) ){
 				i++;
 			}
-			currentService = i<printService.length ? printService[i] : null;	 
+			currentService = i<printService.length ? printService[i] : null;	
+			currentPrinterName = printerName;
 		}	
 		try{
 			if(currentSVGTemplateName == null || !currentSVGTemplateName.equals(svtTemplateName)){
