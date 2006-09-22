@@ -769,7 +769,7 @@ CA Certificate
 </subsection>
 </section>
 
-<section name="CMP">
+<section name="CMP (available in EJBCA >=3.4)">
 <p>
 CMP (RFC4210) is a very complex protocol, which EJBCA does implement some parts of.
 <br/> 
@@ -780,6 +780,14 @@ The following CMP messages are supported:
 <li>Certification Confirm (certConf)</li>
 </ul>
 </p>
+<subsection name="CMP over http">
+<p>
+By default EJBCA support CMP over the http transport protocol.
+The URL for the CMP servlet is:
+<br/>
+http://127.0.0.1:8080/ejbca/publicweb/apply/cmp
+</p>
+</subsection>
 <subsection name="User authentication">
 <p>
 Initialization and certification requests uses the CRMF request message (RFC4211).
