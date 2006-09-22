@@ -27,6 +27,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -57,8 +58,6 @@ import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
 import org.ejbca.util.P12toPEM;
-import org.ejbca.util.query.Query;
-import org.ejbca.util.query.UserMatch;
 
 
 
@@ -67,7 +66,7 @@ import org.ejbca.util.query.UserMatch;
  * This class generates keys and request certificates for all users with status NEW. The result is
  * generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.6 2006-09-19 15:54:57 herrvendil Exp $
+ * @version $Id: BatchMakeP12.java,v 1.7 2006-09-22 13:05:10 herrvendil Exp $
  */
 public class BatchMakeP12 {
     /**
@@ -76,7 +75,7 @@ public class BatchMakeP12 {
     private static final Logger log = Logger.getLogger(BatchMakeP12.class);
 
     BatchToolProperties props = new BatchToolProperties();
-    BatchSVGPrinter printing = null;
+
     
     /**
      * Where created P12-files are stored, default username.p12
@@ -120,7 +119,7 @@ public class BatchMakeP12 {
         log.debug(">BatchMakeP12:");
         
         administrator = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
-        printing = new BatchSVGPrinter(props);
+
 
         // Bouncy Castle security provider
         CertTools.installBCProvider();
@@ -436,22 +435,23 @@ public class BatchMakeP12 {
     public void createAllWithStatus(int status) throws Exception {
         log.debug(">createAllWithStatus: " + status);
 
-        Collection result;
+        ArrayList result;
         IUserAdminSessionRemote admin = adminhome.create();
         boolean stopnow = false;
 
         //Collection result = admin.findAllUsersByStatus(administrator, status);
         do {
       	
-            result = admin.findAllUsersByStatusWithLimit(administrator, status, true);
+            Collection queryResult = admin.findAllUsersByStatusWithLimit(administrator, status, true);
+            result = new ArrayList();
             
-            Iterator iter = result.iterator();
+            Iterator iter = queryResult.iterator();
             while(iter.hasNext()){
             	UserDataVO data = (UserDataVO) iter.next();
-            	if(!(data.getTokenType() == SecConst.TOKEN_SOFT_JKS || 
+            	if(data.getTokenType() == SecConst.TOKEN_SOFT_JKS || 
             	   data.getTokenType() == SecConst.TOKEN_SOFT_PEM ||
-            	   data.getTokenType() == SecConst.TOKEN_SOFT_P12) ){
-            		result.remove(data);
+            	   data.getTokenType() == SecConst.TOKEN_SOFT_P12 ){
+            	   result.add(data);  
             	}
             }
             
@@ -474,8 +474,6 @@ public class BatchMakeP12 {
                             if (doCreate(admin, data, status)) {
                                 successusers += (":" + data.getUsername());
                                 successcount++;
-                                // Perform printing
-                                printing.print(data);
                             }
                         } catch (Exception e) {
                             // If things went wrong set status to FAILED

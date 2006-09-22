@@ -1,0 +1,49 @@
+
+<% 
+  int row = 0;
+%>
+<body > 
+<SCRIPT language="JavaScript">
+<!--  
+
+function check()
+{  
+  
+  if(document.uploadfile.<%= FILE_TEMPLATE %>.value == ''){   
+     alert("<%= ejbcawebbean.getText("YOUMUSTSELECT") %>"); 
+   }else{  
+     return true;  
+   }
+  
+   return false;
+}
+-->
+</SCRIPT>
+<div align="center">   
+   <h2><%= ejbcawebbean.getText("UPLOADUSERDATATEMP") %><br></h2>
+   <h3><%= ejbcawebbean.getText("PROFILE")+ " : " + profile %> </h3>
+</div>
+  <table width="100%" border="0" cellspacing="3" cellpadding="3">
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="left"> 
+          <h3>&nbsp;</h3>
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+        <div align="right">
+        <A href="<%=THIS_FILENAME %>"><u><%= ejbcawebbean.getText("BACKTOPROFILES") %></u></A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </td>
+    </tr>
+    <form name="uploadfile" action="<%= THIS_FILENAME %>" method="post" enctype='multipart/form-data' >
+      <input type="hidden" name='<%= ACTION %>' value='<%= ACTION_UPLOADTEMP %>'>            
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="49%" valign="top" align="right"><%= ejbcawebbean.getText("PATHTOTEMPLATE") %></td>
+      <td width="51%" valign="top">     
+        <input TYPE="FILE" NAME="<%= FILE_TEMPLATE %>">            
+        <input type="submit" name="<%= BUTTON_UPLOADFILE %>" onClick='return check()' value="<%= ejbcawebbean.getText("UPLOADTEMPLATE") %>" ><br><br>
+        <input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">     
+      </td>
+    </tr>
+    </form>
+  </table>

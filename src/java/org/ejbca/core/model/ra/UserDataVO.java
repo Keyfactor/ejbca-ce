@@ -24,7 +24,7 @@ import org.ejbca.util.StringTools;
 /**
  * Holds admin data collected from UserData in the database. Strings are stored in Base64 encoded format to be safe for storing in database, xml etc.
  *
- * @version $Id: UserDataVO.java,v 1.6 2006-07-20 17:46:51 herrvendil Exp $
+ * @version $Id: UserDataVO.java,v 1.7 2006-09-22 13:05:11 herrvendil Exp $
  */
 public class UserDataVO implements Serializable {
 
@@ -183,6 +183,17 @@ public class UserDataVO implements Serializable {
       else
         type = type & (~SecConst.USER_SENDNOTIFICATION);
     }
+    
+    public boolean getPrintUserData(){
+        return (type & SecConst.USER_SENDNOTIFICATION) == SecConst.USER_SENDNOTIFICATION;
+      }
+
+    public void setPrintUserData(boolean printUserData){
+        if(printUserData)
+          type = type | SecConst.USER_PRINT;
+        else
+          type = type & (~SecConst.USER_PRINT);
+   }
 
 	/**
 	 * @return Returns the extendedinformation.

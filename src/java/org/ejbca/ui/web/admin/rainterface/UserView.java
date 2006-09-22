@@ -27,7 +27,7 @@ import org.ejbca.util.StringTools;
 /**
  * A class representing a web interface view of a user in the ra user database.
  *
- * @version $Id: UserView.java,v 1.4 2006-06-03 18:10:46 anatom Exp $
+ * @version $Id: UserView.java,v 1.5 2006-09-22 13:05:10 herrvendil Exp $
  */
 public class UserView implements java.io.Serializable, Cloneable, Comparable {
     // Public constants.
@@ -96,6 +96,8 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
     public boolean getKeyRecoverable() {return userdata.getKeyRecoverable();}
     public void setSendNotification(boolean sendnotification) {userdata.setSendNotification(sendnotification);}
     public boolean getSendNotification() {return userdata.getSendNotification();}
+    public void setPrintUserData(boolean printUserData) {userdata.setPrintUserData(printUserData);}
+    public boolean getPrintUserData() {return userdata.getPrintUserData();}
     public void setEndEntityProfileId(int profileid) { userdata.setEndEntityProfileId(profileid); }
     public int getEndEntityProfileId(){ return userdata.getEndEntityProfileId(); }
     public void setCertificateProfileId(int profileid) { userdata.setCertificateProfileId(profileid); }

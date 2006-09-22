@@ -44,7 +44,7 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 /**
  * Adds a user to the database.
  *
- * @version $Id: RaAddUserCommand.java,v 1.2 2006-04-29 09:33:03 anatom Exp $
+ * @version $Id: RaAddUserCommand.java,v 1.3 2006-09-22 13:05:11 herrvendil Exp $
  */
 public class RaAddUserCommand extends BaseRaAdminCommand {
 	
@@ -140,10 +140,10 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
 
                 if (usekeyrecovery) {
                     getOutputStream().println(
-                        "Type (mask): INVALID=0; END-USER=1; ADMINISTRATOR=64; KEYRECOVERABLE=128; SENDNOTIFICATION=256");
+                        "Type (mask): INVALID=0; END-USER=1; ADMINISTRATOR=64; KEYRECOVERABLE=128; SENDNOTIFICATION=256; PRINTUSERDATA=512");
                 } else {
                     getOutputStream().println(
-                        "Type (mask): INVALID=0; END-USER=1; ADMINISTRATOR=64; SENDNOTIFICATION=256");
+                        "Type (mask): INVALID=0; END-USER=1; ADMINISTRATOR=64; SENDNOTIFICATION=256; PRINTUSERDATA=512");
                 }
 
                 getOutputStream().print("Existing tokens      : " + USERGENERATED + ", " +

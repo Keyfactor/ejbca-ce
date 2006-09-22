@@ -50,7 +50,8 @@
   static final String CHECKBOX_ADMINISTRATOR              = "checkboxadministrator";
   static final String CHECKBOX_KEYRECOVERABLE             = "checkboxkeyrecoverable";
   static final String CHECKBOX_SENDNOTIFICATION           = "checkboxsendnotification";
-
+  static final String CHECKBOX_PRINT                      = "checkboxprint";
+  
   static final String CHECKBOX_REGENERATEPASSWD           = "checkboxregeneratepasswd";
 
   static final String CHECKBOX_REQUIRED_USERNAME          = "checkboxrequiredusername";
@@ -331,6 +332,14 @@
                    newuser.setSendNotification(false);         
                  }
                }   
+               value = request.getParameter(CHECKBOX_PRINT);
+               if(value !=null){
+                 if(value.equals(CHECKBOX_VALUE)){
+                   newuser.setPrintUserData(true);                  
+                 }else{
+                   newuser.setPrintUserData(false);   
+                 }
+               }                
 
                value = request.getParameter(SELECT_CERTIFICATEPROFILE);
                newuser.setCertificateProfileId(Integer.parseInt(value));   
@@ -769,6 +778,8 @@ function checkallfields(){
       document.edituser.<%= CHECKBOX_KEYRECOVERABLE %>.disabled = false;
       <% } if(profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)){%> 
       document.edituser.<%= CHECKBOX_SENDNOTIFICATION %>.disabled = false;
+      <% } if(profile.getUsePrinting()){%> 
+      document.edituser.<%= CHECKBOX_PRINT %>.disabled = false;
       <% }%>
     }
 
@@ -1185,7 +1196,9 @@ function checkUseInBatch(){
 	 <td></td>
        </tr>
        <% } %>
-       <% if( profile.getUse(EndEntityProfile.ADMINISTRATOR,0) || usekeyrecovery){ %>
+       <% if( profile.getUse(EndEntityProfile.ADMINISTRATOR,0) || usekeyrecovery 
+           || profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)
+           || profile.getUsePrinting()){ %>
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right"><%= ejbcawebbean.getText("TYPES") %></td>
 	 <td>
@@ -1238,7 +1251,21 @@ function checkUseInBatch(){
       </td>
       <td></td>
     </tr>
-    <%} %>
+     <% }if(profile.getUsePrinting()){ %>
+    <tr  id="Row<%=(row++)%2%>"> 
+      <td  align="right"> 
+        <%= ejbcawebbean.getText("PRINTUSERDATA") %> <br>
+      </td>
+      <td > 
+        <input type="checkbox" name="<%=CHECKBOX_PRINT%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" <% if(profile.getPrintingDefault())
+                                                                                                                 out.write(" CHECKED "); 
+                                                                                                               if(userdata.getPrintUserData())
+                                                                                                                 out.write(" disabled='true' "); 
+                                                                                                             %>> 
+      </td>
+      <td></td>
+    </tr>
+      <%} %>
     <tr  id="Row<%=(row++)%2%>"> 
       <td  align="right"> 
         &nbsp;

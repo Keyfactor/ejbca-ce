@@ -42,13 +42,13 @@
   static final String SELECT_CA                   = "selectca";
 
   static final String CHECKBOX_CLEARTEXTPASSWORD          = "checkboxcleartextpassword";
-  static final String CHECKBOX_SUBJECTDN                 = "checkboxsubjectdn";
-  static final String CHECKBOX_SUBJECTALTNAME            = "checkboxsubjectaltname";
-  static final String CHECKBOX_SUBJECTDIRATTR            = "checkboxsubjectdirattr";
+  static final String CHECKBOX_SUBJECTDN                  = "checkboxsubjectdn";
+  static final String CHECKBOX_SUBJECTALTNAME             = "checkboxsubjectaltname";
+  static final String CHECKBOX_SUBJECTDIRATTR             = "checkboxsubjectdirattr";
   static final String CHECKBOX_ADMINISTRATOR              = "checkboxadministrator";
   static final String CHECKBOX_KEYRECOVERABLE             = "checkboxkeyrecoverable";
   static final String CHECKBOX_SENDNOTIFICATION           = "checkboxsendnotification";
-
+  static final String CHECKBOX_PRINT                      = "checkboxprint";
 
   static final String CHECKBOX_REQUIRED_USERNAME          = "checkboxrequiredusername";
   static final String CHECKBOX_REQUIRED_PASSWORD          = "checkboxrequiredpassword";
@@ -415,7 +415,21 @@
                newuser.setSendNotification(false);   
                oldprofile.setValue(EndEntityProfile.SENDNOTIFICATION, 0, EndEntityProfile.FALSE);               
              }
-           }  
+           } 
+           value = request.getParameter(CHECKBOX_PRINT);
+           if(value !=null){
+             if(value.equals(CHECKBOX_VALUE)){
+               newuser.setPrintUserData(true);   
+               oldprofile.setPrintingDefault(true);                          
+             }
+             else{
+               newuser.setPrintUserData(false);   
+               oldprofile.setPrintingDefault(false);               
+             }
+           }            
+            
+           
+           
 
            value = request.getParameter(SELECT_CERTIFICATEPROFILE);
            newuser.setCertificateProfileId(Integer.parseInt(value));   
@@ -879,6 +893,8 @@ function checkallfields(){
       document.adduser.<%= CHECKBOX_KEYRECOVERABLE %>.disabled = false;
       <% } if(profile.getUse(EndEntityProfile.SENDNOTIFICATION,0)){%> 
       document.adduser.<%= CHECKBOX_SENDNOTIFICATION %>.disabled = false;
+      <% } if(profile.getUsePrinting()){%> 
+      document.adduser.<%= CHECKBOX_PRINT %>.disabled = false;
       <% }%>
     }
 
@@ -1333,6 +1349,22 @@ function checkallfields(){
         <input type="checkbox" name="<%=CHECKBOX_SENDNOTIFICATION%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" <% if(profile.getValue(EndEntityProfile.SENDNOTIFICATION,0).equals(EndEntityProfile.TRUE))
                                                                                                                  out.write(" CHECKED "); 
                                                                                                                if(profile.isRequired(EndEntityProfile.SENDNOTIFICATION,0))
+                                                                                                                 out.write(" disabled='true' "); 
+                                                                                                             %>> 
+      </td>
+      <td></td>
+    </tr>
+        </tr>
+     <% }if(profile.getUsePrinting()){ %>
+    <tr  id="Row<%=(row++)%2%>"> 
+      <td></td>
+      <td  align="right"> 
+        <%= ejbcawebbean.getText("PRINTUSERDATA") %> <br>
+      </td>
+      <td > 
+        <input type="checkbox" name="<%=CHECKBOX_PRINT%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" <% if(profile.getPrintingDefault())
+                                                                                                                 out.write(" CHECKED "); 
+                                                                                                               if(profile.getPrintingRequired())
                                                                                                                  out.write(" disabled='true' "); 
                                                                                                              %>> 
       </td>

@@ -64,7 +64,7 @@ import org.ejbca.util.query.Query;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.12 2006-09-20 15:44:57 anatom Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.13 2006-09-22 13:05:10 herrvendil Exp $
  */
 public class RAInterfaceBean implements java.io.Serializable {
     
@@ -803,6 +803,14 @@ public class RAInterfaceBean implements java.io.Serializable {
     IUserDataSourceSessionLocal getUserDataSourceSession(){
     	return userdatasourcesession;
     }
+    
+    public String[] listPrinters(){
+    	if(printerNames == null){
+    		printerNames = org.ejbca.util.PrinterManager.listPrinters();
+    	}
+    	
+    	return printerNames;
+    }
 
     //
     // Private fields.
@@ -826,6 +834,8 @@ public class RAInterfaceBean implements java.io.Serializable {
     private Admin                                 administrator;   
     private InformationMemory             informationmemory;
     private boolean initialized=false;
+    
+    private String[] printerNames = null;
     
     private EndEntityProfile temporateendentityprofile = null;  
 }

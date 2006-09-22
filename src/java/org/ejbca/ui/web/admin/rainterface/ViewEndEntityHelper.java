@@ -34,7 +34,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Helper class for the View End Entity Page, parses the request and performs apporiate actions.
  * 
  * @author Philip Vendil
- * @version $Id: ViewEndEntityHelper.java,v 1.3 2006-06-03 18:10:46 anatom Exp $
+ * @version $Id: ViewEndEntityHelper.java,v 1.4 2006-09-22 13:05:10 herrvendil Exp $
  */
 
 public class ViewEndEntityHelper implements java.io.Serializable{
@@ -57,6 +57,7 @@ public class ViewEndEntityHelper implements java.io.Serializable{
 	public static final String CHECKBOX_ADMINISTRATOR              = "checkboxadministrator";
 	public static final String CHECKBOX_KEYRECOVERABLE             = "checkboxkeyrecoverable";
 	public static final String CHECKBOX_SENDNOTIFICATION           = "checkboxsendnotification";
+	public static final String CHECKBOX_PRINT                      = "checkboxprint";
 	
 	public static final String CHECKBOX_VALUE             = "true";
 

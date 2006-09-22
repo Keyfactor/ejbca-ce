@@ -3,7 +3,9 @@
 <%@page errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.SecConst
                ,org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, 
                 org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer,
-                org.ejbca.core.model.hardtoken.HardTokenIssuerData,  org.ejbca.ui.web.admin.cainterface.CAInterfaceBean"%>
+                org.ejbca.core.model.hardtoken.HardTokenIssuerData,  org.ejbca.ui.web.admin.cainterface.CAInterfaceBean,
+                java.io.InputStream, java.io.InputStreamReader,
+                java.io.IOException, java.io.BufferedReader, org.apache.commons.fileupload.FileUploadException, org.apache.commons.fileupload.FileItem, org.apache.commons.fileupload.FileUploadBase, org.apache.commons.fileupload.DiskFileUpload"%>
 
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -15,6 +17,7 @@
   static final String ACTION                        = "action";
   static final String ACTION_EDIT_PROFILES          = "editprofiles";
   static final String ACTION_EDIT_PROFILE           = "editprofile";
+  static final String ACTION_UPLOADTEMP             = "uploadtemp";
 
   static final String CHECKBOX_VALUE           = EndEntityProfile.TRUE;
 
@@ -32,6 +35,8 @@
 // Buttons used in profile.jsp
   static final String BUTTON_SAVE              = "buttonsave";
   static final String BUTTON_CANCEL            = "buttoncancel";
+  static final String BUTTON_UPLOADTEMPLATE    = "buttonuploadtemplate";
+  static final String BUTTON_UPLOADFILE        = "buttonuploadfile";
  
   static final String TEXTFIELD_USERNAME             = "textfieldusername";
   static final String TEXTFIELD_PASSWORD             = "textfieldpassword";
@@ -50,7 +55,8 @@
   static final String CHECKBOX_REUSECERTIFICATE           = "checkboxreusecertificate";
   static final String CHECKBOX_REVERSEFIELDCHECKS         = "checkboxreversefieldchecks";
   static final String CHECKBOX_SENDNOTIFICATION           = "checkboxsendnotification";
-
+  static final String CHECKBOX_PRINTING                   = "checkboxprinting";
+  
   static final String CHECKBOX_REQUIRED_USERNAME          = "checkboxrequiredusername";
   static final String CHECKBOX_REQUIRED_PASSWORD          = "checkboxrequiredpassword";
   static final String CHECKBOX_REQUIRED_CLEARTEXTPASSWORD = "checkboxrequiredcleartextpassword";
@@ -61,6 +67,7 @@
   static final String CHECKBOX_REQUIRED_ADMINISTRATOR     = "checkboxrequiredadministrator";
   static final String CHECKBOX_REQUIRED_SENDNOTIFICATION  = "checkboxrequiredsendnotification";
   static final String CHECKBOX_REQUIRED_KEYRECOVERABLE    = "checkboxrequiredkeyrecoverable";
+  static final String CHECKBOX_REQUIRED_PRINTING          = "checkboxrequiredprinting";
 
 
   static final String CHECKBOX_MODIFYABLE_USERNAME          = "checkboxmodifyableusername";
@@ -81,7 +88,9 @@
   static final String CHECKBOX_USE_KEYRECOVERABLE    = "checkboxusekeyrecoverable";
   static final String CHECKBOX_USE_SENDNOTIFICATION  = "checkboxusesendnotification";
   static final String CHECKBOX_USE_HARDTOKENISSUERS  = "checkboxusehardtokenissuers";
+  static final String CHECKBOX_USE_PRINTING          = "checkboxuseprinting";
 
+  
   static final String SELECT_DEFAULTCERTPROFILE             = "selectdefaultcertprofile";
   static final String SELECT_AVAILABLECERTPROFILES          = "selectavailablecertprofiles";
 
@@ -94,6 +103,9 @@
 
   static final String SELECT_DEFAULTHARDTOKENISSUER         = "selectdefaulthardtokenissuer";
   static final String SELECT_AVAILABLEHARDTOKENISSUERS      = "selectavailablehardtokenissuers";
+
+  static final String SELECT_PRINTINGPRINTERNAME            = "selectprinteringprintername";
+  static final String SELECT_PRINTINGCOPIES                 = "selectprinteringcopies";
 
 
   static final String SELECT_ADDSUBJECTDN                   = "selectaddsubjectdn";
@@ -111,6 +123,8 @@
   static final String CHECKBOX_SELECTSUBJECTDIRATTR         = "checkboxselectsubjectdirattr";
 
   static final String SELECT_TYPE                         = "selecttype";
+  
+  public static final String FILE_TEMPLATE             = "filetemplate";
   String profile = null;
   // Declare Language file.
 
@@ -124,6 +138,14 @@
   boolean  profileexists             = false;
   boolean  profiledeletefailed       = false;
   boolean  cannotcloneempty          = false;
+  boolean  fileuploadfailed          = false;
+  boolean  fileuploadsuccess         = false;
+  boolean  buttonupload             = false;
+  
+  String action = null;
+  
+  InputStream templateData = null;
+  String templateFilename = null;
 
   int numberofsubjectdnfields=0;
   int numberofsubjectaltnamefields=0;
@@ -150,8 +172,46 @@
 <%  // Determine action 
   RequestHelper.setDefaultCharacterEncoding(request);
 
-  if( request.getParameter(ACTION) != null){
-    if( request.getParameter(ACTION).equals(ACTION_EDIT_PROFILES)){
+
+
+  if(FileUploadBase.isMultipartContent(request)){
+  	try{     	  	
+	  DiskFileUpload upload = new DiskFileUpload();
+	  upload.setSizeMax(2000000);                   
+	  upload.setSizeThreshold(1999999);
+	  List /* FileItem */ items = upload.parseRequest(request);     
+
+	  Iterator iter = items.iterator();
+	  while (iter.hasNext()) {     
+	  FileItem item = (FileItem) iter.next();
+
+	    if (item.isFormField()) {         
+		  if(item.getFieldName().equals(ACTION))
+		    action = item.getString(); 
+		  if(item.getFieldName().equals(BUTTON_CANCEL)) {
+		      // do nothing
+          }
+		  if(item.getFieldName().equals(BUTTON_UPLOADFILE)){
+			 buttonupload = true;
+		  }
+	    }else{         
+		  templateData = item.getInputStream();
+		  templateFilename = item.getName(); 
+	    }
+	  }
+  	}catch(IOException e){
+  	  fileuploadfailed = true;
+	  includefile="endentityprofilepage.jspf";	  
+  	}catch(FileUploadException e){
+	  fileuploadfailed = true;	  
+	  includefile="endentityprofilepage.jspf";
+    }
+  }else{
+		action = request.getParameter(ACTION);
+  }
+
+  if( action != null){
+    if( action.equals(ACTION_EDIT_PROFILES)){
       if( request.getParameter(BUTTON_EDIT_PROFILE) != null){
           // Display  profilepage.jspf
          profile = request.getParameter(SELECT_PROFILE);
@@ -240,7 +300,7 @@
           includefile="endentityprofilespage.jspf"; 
       }
     }
-    if( request.getParameter(ACTION).equals(ACTION_EDIT_PROFILE)){
+    if( action.equals(ACTION_EDIT_PROFILE)){
          // Display edit access rules page.
        profile = request.getParameter(HIDDEN_PROFILENAME);
        if(profile != null){
@@ -251,7 +311,8 @@
               request.getParameter(BUTTON_DELETESUBJECTALTNAME) != null ||
               request.getParameter(BUTTON_ADDSUBJECTALTNAME) != null ||
               request.getParameter(BUTTON_DELETESUBJECTDIRATTR) != null ||
-              request.getParameter(BUTTON_ADDSUBJECTDIRATTR) != null){
+              request.getParameter(BUTTON_ADDSUBJECTDIRATTR) != null ||
+              request.getParameter(BUTTON_UPLOADTEMPLATE) != null){
                
              profiledata = ejbcarabean.getTemporaryEndEntityProfile();
              if(profiledata == null){
@@ -415,6 +476,44 @@
              profiledata.setNotificationSender(request.getParameter(TEXTFIELD_NOTIFICATIONSENDER));
              profiledata.setNotificationSubject(request.getParameter(TEXTFIELD_NOTIFICATIONSUBJECT));
              profiledata.setNotificationMessage(request.getParameter(TEXTAREA_NOTIFICATIONMESSAGE));
+             
+             value = request.getParameter(CHECKBOX_USE_PRINTING);
+             if(value != null && value.equalsIgnoreCase(CHECKBOX_VALUE)){
+            	 profiledata.setUsePrinting(true);
+            	 
+                 value = request.getParameter(CHECKBOX_PRINTING);
+                 if(value != null && value.equalsIgnoreCase(CHECKBOX_VALUE)){
+                    profiledata.setPrintingDefault(true);
+                 }else{
+                     profiledata.setPrintingDefault(false);                	 
+                 }
+                 value = request.getParameter(CHECKBOX_REQUIRED_PRINTING);
+                 if(value != null && value.equalsIgnoreCase(CHECKBOX_VALUE)){
+                	 profiledata.setPrintingRequired(true);
+                 }else{
+                	 profiledata.setPrintingRequired(false);                	 
+                 }            	 
+            	 
+                 value = request.getParameter(SELECT_PRINTINGCOPIES);
+                 if(value != null){
+                   profiledata.setPrintedCopies(Integer.parseInt(value));
+                 }
+                 value = request.getParameter(SELECT_PRINTINGPRINTERNAME);
+                 if(value != null){
+                   profiledata.setPrinterName(value);
+                 } 
+                 
+             }else{
+            	 profiledata.setUsePrinting(false);
+            	 profiledata.setPrintingDefault(false);
+            	 profiledata.setPrintingRequired(false);
+            	 profiledata.setPrintedCopies(1);
+            	 profiledata.setPrinterName("");
+            	 profiledata.setPrinterSVGData("");
+            	 profiledata.setPrinterSVGFileName("");            	
+             }
+             
+
           
              if(request.getParameter(BUTTON_DELETESUBJECTDN) != null){  
                numberofsubjectdnfields = profiledata.getSubjectDNFieldOrderLength();
@@ -480,6 +579,9 @@
                ejbcarabean.setTemporaryEndEntityProfile(null);
                includefile="endentityprofilespage.jspf";  
              }
+			 if(request.getParameter(BUTTON_UPLOADTEMPLATE) != null){
+				   includefile="uploadtemplate.jspf";
+		      }
            }
            if(request.getParameter(BUTTON_CANCEL) != null){
               // Don't save changes.
@@ -489,13 +591,43 @@
          }
       }
     }
+	if( action.equals(ACTION_UPLOADTEMP)){
+		if(buttonupload){
+		  try{			  
+		    BufferedReader br = new BufferedReader(new InputStreamReader(templateData,"UTF8"));
+		    String filecontent = "";
+		    String nextline = "";
+		    while(nextline!=null){
+			  nextline = br.readLine();
+			  if(nextline != null)				    
+			    filecontent += nextline + "\n";
+		    }
+		    if(filecontent.equals("")){
+		    	fileuploadfailed = true;  
+		    }else{
+		      profiledata = ejbcarabean.getTemporaryEndEntityProfile();
+		      profiledata.setPrinterSVGData(filecontent);
+		      profiledata.setPrinterSVGFileName(templateFilename);
+		      ejbcarabean.setTemporaryEndEntityProfile(profiledata);
+  		      fileuploadsuccess = true;
+		    }
+		  }catch(IOException ioe){
+			fileuploadfailed = true;              	 
+		  }
+		}
+	   includefile="endentityprofilepage.jspf";  
+	}
   }
+  
  // Include page
   if( includefile.equals("endentityprofilepage.jspf")){ %>
    <%@ include file="endentityprofilepage.jspf" %>
 <%}
   if( includefile.equals("endentityprofilespage.jspf")){ %>
    <%@ include file="endentityprofilespage.jspf" %> 
+<%}  
+  if( includefile.equals("uploadtemplate.jspf")){ %>
+   <%@ include file="uploadtemplate.jspf" %> 
 <%}
 
    // Include Footer 

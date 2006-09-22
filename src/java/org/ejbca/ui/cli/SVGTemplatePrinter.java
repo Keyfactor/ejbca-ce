@@ -22,7 +22,11 @@ import java.awt.print.PageFormat;
 import java.awt.print.Paper;
 import java.awt.print.PrinterJob;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.util.Date;
 import java.util.Properties;
 
@@ -34,6 +38,7 @@ import javax.print.attribute.PrintRequestAttributeSet;
 
 import org.ejbca.core.model.hardtoken.profiles.SVGImageManipulator;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.util.PrinterManager;
 
 
 
@@ -50,16 +55,20 @@ public class SVGTemplatePrinter {
 	
 	private static final String USERDATAFILENAME = "src/cli/svgtemplateprinttester.properties";
 	
-	final private SVGImageManipulator imagemanipulator;
-	final private PrintService printservice;
-	
 	final private UserDataVO userdata;
 	final private String[] pins = new String[2];
 	final private String[] puks = new String[2];
 	final private String hardtokensn;
 	final private String copyofhardtokensn;
+	final private int validity;
+	final private String hardtokensnprefix;
+	final private String templatefilename;
+	final private String printername;
 	
-	public SVGTemplatePrinter(String templatefilename, String printer) throws Exception{
+	public SVGTemplatePrinter(String templatefilename, String printername) throws FileNotFoundException, IOException{
+		this.templatefilename = templatefilename;
+		this.printername = printername;
+		
 		Properties data = new Properties();
 		data.load(new FileInputStream(USERDATAFILENAME));
   						
@@ -76,40 +85,21 @@ public class SVGTemplatePrinter {
 		copyofhardtokensn = data.getProperty("COPYOFHARDTOKENSN");
 		hardtokensn = data.getProperty("HARDTOKENSN");
 		
-		int validity = Integer.parseInt(data.getProperty("VALIDITY"));		
-		String hardtokensnprefix = data.getProperty("HARDTOKENSNPREFIX");
+		validity = Integer.parseInt(data.getProperty("VALIDITY"));		
+		hardtokensnprefix = data.getProperty("HARDTOKENSNPREFIX");
 				
-		// Read the tempate file.
-		 imagemanipulator = new SVGImageManipulator( new InputStreamReader(new FileInputStream(templatefilename), "UTF-8"), validity, hardtokensnprefix);
-		
-         {  // Setup the printer.
-             PrintRequestAttributeSet pras = new HashPrintRequestAttributeSet();
-             DocFlavor flavor = DocFlavor.BYTE_ARRAY.AUTOSENSE;
-             PrintService printService[] =  PrintServiceLookup.lookupPrintServices(flavor, pras);
-             int i = 0;
-             while ( i<printService.length && !printer.trim().equalsIgnoreCase(printService[i].getName()) )
-                 i++;
-             printservice = i<printService.length ? printService[i] : null;
-         }
+	
     }
 	public void print() throws Exception{
-	   if(printservice != null){
-	   	  PrinterJob job = PrinterJob.getPrinterJob();
-
-	   	  job.setPrintService(printservice);
-	   	  PageFormat pf = job.defaultPage();	   	  
-	   	  Paper paper = new Paper();
-	   	  paper.setSize(pf.getWidth(), pf.getHeight());
-	   	  paper.setImageableArea(0.0,0.0,pf.getWidth(), pf.getHeight());
-          System.out.println("height: "+pf.getHeight()+" width: "+pf.getWidth());
-	   	  
-	   	  pf.setPaper(paper);	   	  
-	   	  job.setPrintable(imagemanipulator.print(userdata,pins,puks,hardtokensn, copyofhardtokensn),pf);	   	  
-	   	  
-	   	  job.print();	   	  	   	  	   	  	   	 
-	   }else{
-	      System.out.println("Error: Couldn't find printer.");		  	   	
-	   }			   	   
+		
+		FileInputStream fis = new FileInputStream(templatefilename);
+		byte[] data = new byte[fis.available()];
+	    fis.read(data);
+	    String sVGData = new String(data,"UTF8");
+	   
+	    PrinterManager.print(printername, templatefilename, sVGData, 1, validity, userdata, pins, puks, hardtokensnprefix, hardtokensn, copyofhardtokensn);	
+		
+			   	   
 	}
 	
 
@@ -118,13 +108,12 @@ public class SVGTemplatePrinter {
 	public static void main(String[] args) throws Exception {
 		boolean noargmatch = true;
 				
-		if(args.length == 1 && args[0].equalsIgnoreCase("listprinters")){		   
-			PrintRequestAttributeSet pras = new HashPrintRequestAttributeSet();
-			DocFlavor flavor = DocFlavor.BYTE_ARRAY.AUTOSENSE;
-			PrintService printService[] =  PrintServiceLookup.lookupPrintServices(flavor, pras);
-			System.out.println("\n Found " + printService.length + " printers:");
-			for(int i=0;i<printService.length;i++){
-			   System.out.println("  " + printService[i].getName());	
+		if(args.length == 1 && args[0].equalsIgnoreCase("listprinters")){
+			String[] printerNames = PrinterManager.listPrinters();
+			
+			System.out.println("\n Found " + printerNames.length + " printers:");
+			for(int i=0;i<printerNames.length;i++){
+			   System.out.println("  " + printerNames[i]);	
 			}						
 			
 			noargmatch = false;

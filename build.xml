@@ -95,7 +95,7 @@
     <property name="logsigning.build" value="${tmp}/${logsigning.name}" />  
     <property name="logsigningjar" value="${dist.dir}/${logsigning.name}" />
 
-    <property name="jar.extclasspath" value="lib/bcmail-jdk${java.ver}.jar lib/bcprov-jdk${java.ver}.jar lib/log4j-1.2.7.jar lib/ldap.jar lib/commons-lang-2.0.jar lib/commons-collections.jar lib/commons-fileupload-1.0.jar"/>
+    <property name="jar.extclasspath" value="lib/bcmail-jdk${java.ver}.jar lib/bcprov-jdk${java.ver}.jar lib/log4j-1.2.7.jar lib/ldap.jar lib/commons-lang-2.0.jar lib/commons-collections.jar lib/commons-fileupload-1.0.jar lib/batik-xml.jar lib/batik-dom.jar lib/batik-svg-dom.jar lib/batik-ext.jar lib/batik-parser.jar lib/batik-svggen.jar lib/batik-transcoder.jar lib/batik-util.jar lib/batik-css.jar lib/batik-gvt.jar lib/batik-bridge.jar lib/batik-awt-util.jar lib/batik-script.jar lib/xerces_2_3_0.jar"/>	
     <property name="jar.ocspclientclasspath" value="lib/bcprov-jdk${java.ver}.jar lib/log4j-1.2.7.jar ./"/>
 
     <path id="ext.classpath">
@@ -968,6 +968,20 @@ protection.certprotect=${protection.certprotect}
                 <include name="${lib}/commons-lang-2.0.jar" />
                 <include name="${lib}/commons-collections.jar" />
                 <include name="${lib}/commons-fileupload-1.0.jar" />
+                <include name="${lib}/batik-xml.jar" />
+                <include name="${lib}/batik-dom.jar" />
+                <include name="${lib}/batik-svg-dom.jar" />
+                <include name="${lib}/batik-ext.jar" />
+                <include name="${lib}/batik-parser.jar" />
+                <include name="${lib}/batik-svggen.jar" />
+                <include name="${lib}/batik-transcoder.jar" />
+                <include name="${lib}/batik-util.jar" />
+                <include name="${lib}/batik-css.jar" />
+                <include name="${lib}/batik-gvt.jar" />
+                <include name="${lib}/batik-bridge.jar" />
+                <include name="${lib}/batik-awt-util.jar" />
+                <include name="${lib}/batik-script.jar" />
+                <include name="${lib}/xerces_2_3_0.jar" />
             </fileset>
             <fileset dir="${dist.dir}">
                 <include name="*-ejb.jar" />

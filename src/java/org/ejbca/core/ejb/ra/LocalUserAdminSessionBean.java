@@ -13,6 +13,7 @@
 
 package org.ejbca.core.ejb.ra;
 
+import java.awt.print.PrinterException;
 import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -55,6 +56,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalExecutorUtil;
 import org.ejbca.core.model.approval.ApprovalOveradableClassName;
+import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest;
@@ -78,6 +80,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
+import org.ejbca.util.PrinterManager;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.TemplateMimeMessage;
 import org.ejbca.util.query.BasicMatch;
@@ -91,7 +94,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.19 2006-09-20 15:44:58 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.20 2006-09-22 13:05:11 herrvendil Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -469,6 +472,9 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             if ((type & SecConst.USER_SENDNOTIFICATION) != 0) {
                 sendNotification(admin, profile, userdata.getUsername(), newpassword, dn, userdata.getEmail(), userdata.getCAId());
             }
+            if ((type & SecConst.USER_PRINT) != 0) {
+            	print(admin,profile,userdata);
+            }
             logsession.log(admin, userdata.getCAId(), LogEntry.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogEntry.EVENT_INFO_ADDEDENDENTITY, "");
 
         } catch (DuplicateKeyException e) {
@@ -652,6 +658,9 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             if ((type & SecConst.USER_SENDNOTIFICATION) != 0 && statuschanged && (userdata.getStatus() == UserDataConstants.STATUS_NEW || userdata.getStatus() == UserDataConstants.STATUS_KEYRECOVERY || userdata.getStatus() == UserDataConstants.STATUS_INITIALIZED)) {
 
                 sendNotification(admin, profile, userdata.getUsername(), newpassword, dn, userdata.getEmail(), userdata.getCAId());
+            }
+            if ((type & SecConst.USER_PRINT) != 0 && statuschanged && (userdata.getStatus() == UserDataConstants.STATUS_NEW || userdata.getStatus() == UserDataConstants.STATUS_KEYRECOVERY || userdata.getStatus() == UserDataConstants.STATUS_INITIALIZED)) {
+            	print(admin,profile,userdata);
             }
             if (statuschanged)
                 logsession.log(admin, userdata.getCAId(), LogEntry.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogEntry.EVENT_INFO_CHANGEDENDENTITY, "New status: " + userdata.getStatus());
@@ -1622,6 +1631,23 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
     } // checkForHardTokenProfileId
 
 
+    private void  print(Admin admin, EndEntityProfile profile, UserDataVO userdata){
+    	try{
+      	  if(profile.getUsePrinting()){
+      	    String[] pINs = new String[1];
+      	    pINs[0] = userdata.getPassword();
+              PrinterManager.print(profile.getPrinterName(), profile.getPrinterSVGFileName(), profile.getPrinterSVGData(), profile.getPrintedCopies(), 0, userdata, pINs, new String[0], "", "", "");
+      	  }
+      	}catch(PrinterException e){
+              error("Error when printing userdata for user : " + userdata.getUsername() + ", message " + e.getMessage(), e);
+              try{
+                  logsession.log(admin, userdata.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),userdata.getUsername(), null, LogEntry.EVENT_ERROR_NOTIFICATION, "Error when printing userdata for user : " + userdata.getUsername() + ", message " + e.getMessage());
+              }catch(Exception f){
+                  throw new EJBException(f);
+              }
+      	}
+    }
+    
     private void sendNotification(Admin admin, EndEntityProfile profile, String username, String password, String dn, String email, int caid) {
         debug(">sendNotification: user="+username+", email="+email);
         try {

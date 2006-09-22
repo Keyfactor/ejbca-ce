@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.UpgradeableDataHashMap;
+import org.ejbca.util.Base64;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
@@ -33,7 +34,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * of ejbca web interface.
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.7 2006-06-04 10:57:21 anatom Exp $
+ * @version $Id: EndEntityProfile.java,v 1.8 2006-09-22 13:05:11 herrvendil Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -485,6 +486,117 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     public void setReverseFieldChecks(boolean reverse){
     	data.put(REVERSEFFIELDCHECKS, new Boolean(reverse));
     }
+    
+    /**
+     * @return indicationg printing of userdata should be done
+     * default is false.
+     */
+    public boolean getUsePrinting(){
+    	if(data.get(PRINTINGUSE) == null){
+    		return false;
+    	}
+    	
+    	return ((Boolean) data.get(PRINTINGUSE)).booleanValue();
+    }
+    
+    public void setUsePrinting(boolean use){
+    	data.put(PRINTINGUSE, new Boolean(use));
+    }
+    
+    /**
+     * @return indicationg printing of userdata should be done
+     * default is false.
+     */
+    public boolean getPrintingDefault(){
+    	if(data.get(PRINTINGDEFAULT) == null){
+    		return false;
+    	}
+    	
+    	return ((Boolean) data.get(PRINTINGDEFAULT)).booleanValue();
+    }
+    
+    public void setPrintingDefault(boolean printDefault){
+    	data.put(PRINTINGDEFAULT, new Boolean(printDefault));
+    }
+    
+    /**
+     * @return indicationg printing of userdata should be done
+     * default is false.
+     */
+    public boolean getPrintingRequired(){
+    	if(data.get(PRINTINGREQUIRED) == null){
+    		return false;
+    	}
+    	return ((Boolean) data.get(PRINTINGREQUIRED)).booleanValue();
+    }
+    
+    public void setPrintingRequired(boolean printRequired){
+    	data.put(PRINTINGREQUIRED, new Boolean(printRequired));
+    }
+    
+    /**
+     * @return the number of copies that should be printed
+     * default is 1.
+     */
+    public int getPrintedCopies(){
+    	if(data.get(PRINTINGCOPIES) == null){
+    		return 1;
+    	}
+    	
+    	return ((Integer) data.get(PRINTINGCOPIES)).intValue();
+    }
+    
+    public void setPrintedCopies(int copies){
+    	data.put(PRINTINGCOPIES, new Integer(copies));
+    }
+    
+    /**
+     * @return the name of the printer that should be used
+     */
+    public String getPrinterName(){
+    	if(data.get(PRINTINGPRINTERNAME) == null){
+    		return "";
+    	}
+    	
+    	return (String) data.get(PRINTINGPRINTERNAME);
+    }
+    
+    public void setPrinterName(String printerName){
+    	data.put(PRINTINGPRINTERNAME, printerName);
+    }
+    
+    /**
+     * @return filename of the uploaded 
+     */
+    public String getPrinterSVGFileName(){
+    	if(data.get(PRINTINGSVGFILENAME) == null){
+    		return "";
+    	}
+    	
+    	return (String) data.get(PRINTINGSVGFILENAME);
+    }
+    
+    public void setPrinterSVGFileName(String printerSVGFileName){
+    	data.put(PRINTINGSVGFILENAME, printerSVGFileName);
+    }
+    
+    /**
+     * @return the data of the SVG file, if no content have
+     * been uploaded null is returned
+     */
+    public String getPrinterSVGData(){
+    	if(data.get(PRINTINGSVGDATA) == null){
+    		return null;
+    	}
+    	
+    	return new String(Base64.decode(((String) data.get(PRINTINGSVGDATA)).getBytes()));
+    }
+    
+    public void setPrinterSVGData(String sVGData){
+    	data.put(PRINTINGSVGDATA, new String(Base64.encode(sVGData.getBytes())));
+    }
+    
+    
         
     
     /** A function that takes an fieldid pointing to a coresponding id in UserView and DnFieldExctractor.
@@ -1192,6 +1304,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 
     private static final String REUSECERTIFICATE = "REUSECERTIFICATE";
     private static final String REVERSEFFIELDCHECKS = "REVERSEFFIELDCHECKS"; 
+    
+    private static final String PRINTINGUSE            = "PRINTINGUSE";
+    private static final String PRINTINGDEFAULT        = "PRINTINGDEFAULT";
+    private static final String PRINTINGREQUIRED       = "PRINTINGREQUIRED";
+    private static final String PRINTINGCOPIES         = "PRINTINGCOPIES";
+    private static final String PRINTINGPRINTERNAME    = "PRINTINGPRINTERNAME";
+    private static final String PRINTINGSVGFILENAME    = "PRINTINGSVGFILENAME";
+    private static final String PRINTINGSVGDATA        = "PRINTINGSVGDATA";
     // Private fields.
 
 
