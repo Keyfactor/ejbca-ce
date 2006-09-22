@@ -36,7 +36,51 @@ import org.ejbca.util.Base64;
  * Servlet implementing server side of the Certificate Management Protocols (CMP) 
  *
  * @author tomas
- * @version $Id: CmpServlet.java,v 1.1 2006-09-20 15:44:56 anatom Exp $
+ * @version $Id: CmpServlet.java,v 1.2 2006-09-22 14:56:11 anatom Exp $
+ * 
+ * @web.servlet name = "CmpServlet"
+ *              display-name = "CmpServlet"
+ *              description="Used to handle CMP (RFC4210) protocol messages"
+ *              load-on-startup = "99"
+ *
+ * @web.servlet-mapping url-pattern = "/cmp"
+ * 
+ * @web.env-entry description="Allow the client/RA to specify that the CA should not verify POP"
+ *   name="allowRaVerifyPopo"
+ *   type="java.lang.String"
+ *   value="1"
+ *   
+ * @web.env-entry description="Enforce a particual CA instead of taking it from the request"
+ *   name="defaultCA"
+ *   type="java.lang.String"
+ *   value=""
+ *   
+ * @web.env-entry description="Defines which component from the DN should be used as username in EJBCA. Can be cN, UID or nothing. Nothing means that the DN will be used to look up the user."
+ *   name="extractUsernameComponent"
+ *   type="java.lang.String"
+ *   value=""
+ *   
+ * @web.ejb-local-ref
+ *  name="ejb/SignSessionLocal"
+ *  type="Session"
+ *  link="RSASignSession"
+ *  home="org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome"
+ *  local="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
+ *  
+ * @web.ejb-local-ref
+ *  name="ejb/UserAdminSessionLocal"
+ *  type="Session"
+ *  link="UserAdminSession"
+ *  home="org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome"
+ *  local="org.ejbca.core.ejb.ra.IUserAdminSessionLocal"
+ *  
+ * @web.ejb-local-ref
+ *  name="ejb/CAAdminSessionLocal"
+ *  type="Session"
+ *  link="CAAdminSession"
+ *  home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
+ *  local="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
+ *  
  */
 public class CmpServlet extends HttpServlet {
 	private static Logger log = Logger.getLogger(CmpServlet.class);

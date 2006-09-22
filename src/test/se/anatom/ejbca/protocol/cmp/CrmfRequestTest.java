@@ -102,7 +102,7 @@ public class CrmfRequestTest extends TestCase {
     private static Logger log = Logger.getLogger(CrmfRequestTest.class);
 
     private static final String httpReqPath = "http://127.0.0.1:8080/ejbca";
-    private static final String resourceCmp = "publicweb/apply/cmp";
+    private static final String resourceCmp = "publicweb/cmp";
 
     private static String userDN = "CN=tomas1, UID=tomas2, O=PrimeKey Solutions AB, C=SE";
     private static String issuerDN = "CN=AdminCA1,O=EJBCA Sample,C=SE";
@@ -276,8 +276,6 @@ public class CrmfRequestTest extends TestCase {
 		mout.writeObject( myCertRequest );
 		mout.close();
 		byte[] popoProtectionBytes = baos.toByteArray();
-		System.out.println("POP algorithm identifier is: "+PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-		System.out.println("POP protection bytes length: "+popoProtectionBytes.length);
 		Signature sig = Signature.getInstance( PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), "BC");
 		sig.initSign(keys.getPrivate());
 		sig.update( popoProtectionBytes );
@@ -385,9 +383,6 @@ public class CrmfRequestTest extends TestCase {
 		PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(retMsg)).readObject());
 		assertNotNull(respObject);
 		
-		System.out.println(respObject);
-		System.out.println(ASN1Dump.dumpAsString(respObject));
-
     	// The signer, i.e. the CA, check it's the right CA
 		PKIHeader header = respObject.getHeader();
 

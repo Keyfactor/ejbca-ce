@@ -59,6 +59,9 @@
     <property name="status.src" value="${src}/publicweb/status" />
     <property name="statuswar" value="${dist.dir}/status.war" />
 	
+    <property name="cmp.src" value="${src}/publicweb/cmp" />
+    <property name="cmpwar" value="${dist.dir}/cmp.war" />
+	
     <property name="healthcheck.src" value="${src}/publicweb/healthcheck" />
     <property name="healthcheckwar" value="${dist.dir}/healthcheck.war" />
 	
@@ -345,7 +348,7 @@ protection.certprotect=${protection.certprotect}
             <fileset dir="${src.java}">
                 <include name="**/*Servlet.java" />
                 <exclude name="**/protocol/*Servlet.java" />
-            	<exclude name="**/HealthCheckServlet.java" />
+            	<exclude name="**/ui/web/pub/*Servlet.java" />
             </fileset>
             <deploymentdescriptor destdir="${src.dd}/WEB-INF"
              servletspec="2.3"
@@ -388,6 +391,17 @@ protection.certprotect=${protection.certprotect}
              servletspec="2.3"
              sessiontimeout="30" 
              description="OCSP responder" 
+             distributable="false" 	
+             validatexml="false" />
+        </webdoclet>
+        <webdoclet force="true" destdir="${src.gen}" excludedtags="@version,@author">
+            <fileset dir="${src.java}">
+                <include name="**/protocol/CmpServlet.java" />
+            </fileset>
+            <deploymentdescriptor destdir="${src.dd}/cmp/WEB-INF"
+             servletspec="2.3"
+             sessiontimeout="30" 
+             description="CMP server" 
              distributable="false" 	
              validatexml="false" />
         </webdoclet>
@@ -591,6 +605,15 @@ protection.certprotect=${protection.certprotect}
     <target name="status.war" depends="compile">
         <war destfile="${statuswar}" webxml="${src.dd}/status/WEB-INF/web.xml">
             <fileset dir="${status.src}" excludes="WEB-INF/web.xml" />
+        </war>
+    </target>
+	
+    <!-- =================================================================== -->
+    <!-- Build CMP part                                                                                                                             -->
+    <!-- =================================================================== -->
+    <target name="cmp.war" depends="compile">
+        <war destfile="${cmpwar}" webxml="${src.dd}/cmp/WEB-INF/web.xml">
+            <fileset dir="${cmp.src}" excludes="WEB-INF/web.xml" />
         </war>
     </target>
 	
@@ -955,7 +978,7 @@ protection.certprotect=${protection.certprotect}
     <!-- =================================================================== -->
     <!-- Build CA-ear                                                        -->
     <!-- =================================================================== -->
-    <target name="ca.ear" depends="apply.war, status.war, healthcheck.war, webdist.war, adminweb.war, publicwebroot.war, ejbca-ejb.jar, ejbca-util.jar">
+    <target name="ca.ear" depends="apply.war, status.war, cmp.war, healthcheck.war, webdist.war, adminweb.war, publicwebroot.war, ejbca-ejb.jar, ejbca-util.jar">
         <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml"> 
             <fileset dir="${eardd.src}">
                 <exclude name="META-INF/application.xml" />

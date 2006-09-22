@@ -787,7 +787,7 @@ Certificate requests use the CRMF (RFC4211).
 By default EJBCA support CMP over the http transport protocol.
 The URL for the CMP servlet is:
 <br/>
-http://127.0.0.1:8080/ejbca/publicweb/apply/cmp
+http://127.0.0.1:8080/ejbca/publicweb/cmp
 </p>
 </subsection>
 <subsection name="User authentication">

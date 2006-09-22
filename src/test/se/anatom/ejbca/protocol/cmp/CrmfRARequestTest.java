@@ -51,10 +51,8 @@ import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
@@ -72,7 +70,6 @@ import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
@@ -101,7 +98,7 @@ public class CrmfRARequestTest extends TestCase {
     private static Logger log = Logger.getLogger(CrmfRARequestTest.class);
 
     private static final String httpReqPath = "http://127.0.0.1:8080/ejbca";
-    private static final String resourceCmp = "publicweb/apply/cmp";
+    private static final String resourceCmp = "publicweb/cmp";
 
     private static String userDN = "CN=tomas1, UID=tomas2, O=PrimeKey Solutions AB, C=SE";
     private static String issuerDN = "CN=AdminCA1,O=EJBCA Sample,C=SE";
@@ -164,7 +161,7 @@ public class CrmfRARequestTest extends TestCase {
 		super.tearDown();
 	}
 
-	
+	/*
 	public void test01CrmfHttpUnknowUser() throws Exception {
         // A name that does not exis
 	    userDN = "CN=abc123rry5774466, O=PrimeKey Solutions AB, C=SE";
@@ -179,11 +176,6 @@ public class CrmfRARequestTest extends TestCase {
 		out.writeObject(req);
 		byte[] ba = bao.toByteArray();
 		// Send request and receive response
-		/*
-		FileOutputStream fos = new FileOutputStream("/home/tomas/dev/support/cmp_0_ir");
-		fos.write(ba);
-		fos.close();
-		*/
 		byte[] resp = sendCmp(ba);
 		assertNotNull(resp);
 		assertTrue(resp.length > 0);
@@ -228,7 +220,8 @@ public class CrmfRARequestTest extends TestCase {
 		checkCmpResponseGeneral(resp, userDN, nonce, transid, false);
 		checkCmpPKIConfirmMessage(resp);
 	}
-
+	*/
+	
 	public void test03BlueXCrmf() throws Exception {
 		byte[] resp = sendCmp(bluexir);
 		assertNotNull(resp);
@@ -370,9 +363,6 @@ public class CrmfRARequestTest extends TestCase {
 		PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(retMsg)).readObject());
 		assertNotNull(respObject);
 		
-		System.out.println(respObject);
-		System.out.println(ASN1Dump.dumpAsString(respObject));
-
     	// The signer, i.e. the CA, check it's the right CA
 		PKIHeader header = respObject.getHeader();
 
