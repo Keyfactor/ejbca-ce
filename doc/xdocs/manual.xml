@@ -806,11 +806,12 @@ You can also configure EJBCA to use the CN or the UID from the subject DN as the
 <p>
 Proof of Possession (POP) is another part where CMP has gazillions of different options. 
 <br/>
-The following POP are supported by EJBCA:
+The following POPs are supported by EJBCA:
 <ul>
 <li>raVerify - if configured so in ejbca.properties EJBCA will support the raVerify POP and in that case not do any verification of POP. By default this is false, because the standard does not recommend this option.</li>
+<li>signature - where the PublicKey is in the CertTemplate and the signature is calculated over the CertReqMsg.certReq (the standard procedure when the CertTemplate contains the subject and publicKey values).</li>
 </ul>
-Currently this is unforturnately the only POP supported by EJBCA, so if you don't use raVerify your request will fail becuase POP is not verified.
+Currently this are the only POPs supported by EJBCA, so if you don't use raVerify or signature your request will fail becuase POP is not verified.
 </p>
 </subsection>
 </section>

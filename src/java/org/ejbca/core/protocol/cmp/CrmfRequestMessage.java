@@ -13,6 +13,8 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -20,6 +22,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
@@ -29,6 +33,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
@@ -46,6 +51,7 @@ import com.novosec.pkix.asn1.crmf.CertReqMessages;
 import com.novosec.pkix.asn1.crmf.CertReqMsg;
 import com.novosec.pkix.asn1.crmf.CertRequest;
 import com.novosec.pkix.asn1.crmf.CertTemplate;
+import com.novosec.pkix.asn1.crmf.POPOSigningKey;
 import com.novosec.pkix.asn1.crmf.ProofOfPossession;
 
 /**
@@ -53,7 +59,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
  * - Supported POPO: raVerified (null), i.e. no POPO verification is done, it should be configurable if the CA should allow this or require a real POPO
  * 
  * @author tomas
- * @version $Id: CrmfRequestMessage.java,v 1.3 2006-09-21 15:34:31 anatom Exp $
+ * @version $Id: CrmfRequestMessage.java,v 1.4 2006-09-22 10:42:10 anatom Exp $
  */
 public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessage {
 	
@@ -193,6 +199,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
             	ret = name;
             }
         }
+        log.debug("Username is: "+ret);
         return ret;
 	}
 
@@ -208,6 +215,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 		} else {
 			ret = defaultCA;
 		}
+		log.debug("Issuer DN is: "+ret);
 		return ret;
 	}
 
@@ -230,6 +238,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 		if (name != null) {
 			ret = CertTools.stringToBCDNString(name.toString());
 		}
+		log.debug("Request DN is: "+ret);
 		return ret;
 	}
 
@@ -238,8 +247,28 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 		ProofOfPossession pop = req.getPop();
 		if ( (pop.getRaVerified() != null) && allowRaVerifyPopo) {
 			ret = true;
-		} else {
-			// TODO: actually verify POP
+		} else if (pop.getSignature() != null) {
+			try {
+				POPOSigningKey sk = pop.getSignature();
+				AlgorithmIdentifier algId = sk.getAlgorithmIdentifier();
+				log.debug("POP algorithm identifier is: "+algId.getObjectId().getId());
+				DERBitString bs = sk.getSignature();
+				PublicKey pk = getRequestPublicKey();
+				ByteArrayOutputStream bao = new ByteArrayOutputStream();
+				DEROutputStream out = new DEROutputStream(bao);
+				out.writeObject(req.getCertReq());
+				byte[] protBytes = bao.toByteArray();	
+				log.debug("POP protection bytes length: "+protBytes.length);
+				Signature sig;
+				sig = Signature.getInstance(algId.getObjectId().getId(), "BC");
+				sig.initVerify(pk);
+				sig.update(protBytes);
+				ret = sig.verify(bs.getBytes());
+			} catch (IOException e) {
+				log.error("Error encoding CertReqMsg: ", e);
+			} catch (SignatureException e) {
+				log.error("SignatureException verifying POP: ", e);
+			}			
 		}
 		return ret;
 	}

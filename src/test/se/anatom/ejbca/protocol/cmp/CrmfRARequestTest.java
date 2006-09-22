@@ -94,12 +94,11 @@ import com.novosec.pkix.asn1.crmf.CertReqMsg;
 import com.novosec.pkix.asn1.crmf.CertRequest;
 import com.novosec.pkix.asn1.crmf.CertTemplate;
 import com.novosec.pkix.asn1.crmf.OptionalValidity;
-import com.novosec.pkix.asn1.crmf.POPOSigningKey;
 import com.novosec.pkix.asn1.crmf.ProofOfPossession;
 
-public class CrmfRequestTest extends TestCase {
+public class CrmfRARequestTest extends TestCase {
 	
-    private static Logger log = Logger.getLogger(CrmfRequestTest.class);
+    private static Logger log = Logger.getLogger(CrmfRARequestTest.class);
 
     private static final String httpReqPath = "http://127.0.0.1:8080/ejbca";
     private static final String resourceCmp = "publicweb/apply/cmp";
@@ -113,7 +112,7 @@ public class CrmfRequestTest extends TestCase {
     private static Admin admin;
     private static X509Certificate cacert = null;
 
-	public CrmfRequestTest(String arg0) throws NamingException, RemoteException, CreateException, CertificateEncodingException, CertificateException {
+	public CrmfRARequestTest(String arg0) throws NamingException, RemoteException, CreateException, CertificateEncodingException, CertificateException {
 		super(arg0);
         admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
 		CertTools.installBCProvider();
@@ -236,7 +235,7 @@ public class CrmfRequestTest extends TestCase {
 		checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", "", 64); // 64 is WRONG_AUTHORITY
 	}
 	
-	private PKIMessage genCertReq(byte[] nonce, byte[] transid) throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {
+	private PKIMessage genCertReq(byte[] nonce, byte[] transid) throws NoSuchAlgorithmException, NoSuchProviderException, IOException {
 		OptionalValidity myOptionalValidity = new OptionalValidity();
 		myOptionalValidity.setNotBefore( new org.bouncycastle.asn1.x509.Time( new DERGeneralizedTime("20030211002120Z") ) );
 		myOptionalValidity.setNotAfter( new org.bouncycastle.asn1.x509.Time(new Date()) );
@@ -253,7 +252,6 @@ public class CrmfRequestTest extends TestCase {
 		
 		CertRequest myCertRequest = new CertRequest(new DERInteger(4), myCertTemplate);
 		//myCertRequest.addControls(new AttributeTypeAndValue(CRMFObjectIdentifiers.regInfo_utf8Pairs, new DERInteger(12345)));
-		CertReqMsg myCertReqMsg = new CertReqMsg(myCertRequest);
 		
 		// POPO
 		/*
@@ -270,31 +268,18 @@ public class CrmfRequestTest extends TestCase {
 					new SubjectPublicKeyInfo(
 							new AlgorithmIdentifier(new DERObjectIdentifier("9.3.3.9.2.2"), new DERBitString(new byte[] { 2, 9, 7, 3 })),
 							new byte[] { 7, 7, 7, 4, 5, 6, 7, 7, 7 }));
-		*/
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		DEROutputStream mout = new DEROutputStream( baos );
-		mout.writeObject( myCertRequest );
-		mout.close();
-		byte[] popoProtectionBytes = baos.toByteArray();
-		System.out.println("POP algorithm identifier is: "+PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
-		System.out.println("POP protection bytes length: "+popoProtectionBytes.length);
-		Signature sig = Signature.getInstance( PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), "BC");
-		sig.initSign(keys.getPrivate());
-		sig.update( popoProtectionBytes );
-		
-		DERBitString bs = new DERBitString(sig.sign());
-
 		POPOSigningKey myPOPOSigningKey =
 			new POPOSigningKey(
-					new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption),
-					bs);
-		//myPOPOSigningKey.setPoposkInput( myPOPOSigningKeyInput );
+					new AlgorithmIdentifier(new DERObjectIdentifier("1.3.3.3.3.1"), new DERBitString(new byte[] { 2, 0, 0, 3 })),
+					new DERBitString(new byte[] { 99, 88, 77, 66, 55, 44, 33, 22, 11 }));
+		myPOPOSigningKey.setPoposkInput( myPOPOSigningKeyInput );
 		
-		ProofOfPossession myProofOfPossession = new ProofOfPossession(myPOPOSigningKey, 1);
-		
+		ProofOfPossession myProofOfPossession = new ProofOfPossession(myPOPOPrivKey, 2);
+		*/
 		// raVerified POPO (meaning there is no POPO)
-		//ProofOfPossession myProofOfPossession = new ProofOfPossession(new DERNull(), 0);
+		ProofOfPossession myProofOfPossession = new ProofOfPossession(new DERNull(), 0);
 		
+		CertReqMsg myCertReqMsg = new CertReqMsg(myCertRequest);
 		myCertReqMsg.setPop(myProofOfPossession);
 		//myCertReqMsg.addRegInfo(new AttributeTypeAndValue(new DERObjectIdentifier("1.3.6.2.2.2.2.3.1"), new DERInteger(1122334455)));
 		AttributeTypeAndValue av = new AttributeTypeAndValue(CRMFObjectIdentifiers.regCtrl_regToken, new DERUTF8String("foo123")); 
@@ -464,7 +449,7 @@ public class CrmfRequestTest extends TestCase {
 		assertEquals(i,1<<7); // bit nr 7 (INCORRECT_DATA) set is 128
 		assertEquals(failMsg, info.getStatusString().getString(0).getString());
     }
-    private void checkCmpCertRepMessage(byte[] retMsg, int requestId) throws IOException, CertificateException {
+    private void checkCmpCertRepMessage(byte[] retMsg, int requestId) throws IOException {
         //
         // Parse response message
         //
@@ -490,7 +475,6 @@ public class CrmfRequestTest extends TestCase {
 		assertNotNull(struct);
 		assertEquals(CertTools.stringToBCDNString(struct.getSubject().toString()), CertTools.stringToBCDNString(userDN));
 		assertEquals(CertTools.stringToBCDNString(struct.getIssuer().toString()), CertTools.stringToBCDNString(cacert.getSubjectDN().getName()));
-		//X509Certificate cert = CertTools.getCertfromByteArray(struct.getDEREncoded());
     }
 
     private void checkCmpPKIConfirmMessage(byte[] retMsg) throws IOException {
