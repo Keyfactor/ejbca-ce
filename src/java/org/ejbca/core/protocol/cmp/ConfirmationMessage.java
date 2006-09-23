@@ -24,7 +24,7 @@ import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
 /**
  * Message class for CMP PKI confirm and CertCOnf messages
  * @author tomas
- * @version $Id: ConfirmationMessage.java,v 1.1 2006-09-21 11:33:33 anatom Exp $
+ * @version $Id: ConfirmationMessage.java,v 1.2 2006-09-23 07:26:28 anatom Exp $
  */
 public class ConfirmationMessage extends BaseCmpMessage {
 
@@ -62,6 +62,7 @@ public class ConfirmationMessage extends BaseCmpMessage {
 				}
 			}
 		}
+		setHeader(header);
 		DEROctetString os = header.getTransactionID();
 		if (os != null) {
 			byte[] val = os.getOctets();

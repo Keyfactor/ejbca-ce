@@ -59,7 +59,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
  * - Supported POPO: raVerified (null), i.e. no POPO verification is done, it should be configurable if the CA should allow this or require a real POPO
  * 
  * @author tomas
- * @version $Id: CrmfRequestMessage.java,v 1.4 2006-09-22 10:42:10 anatom Exp $
+ * @version $Id: CrmfRequestMessage.java,v 1.5 2006-09-23 07:26:28 anatom Exp $
  */
 public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessage {
 	
@@ -108,6 +108,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 		this.allowRaVerifyPopo = allowRaVerifyPopo;
 		this.extractUsernameComponent = extractUsernameComponent;
 		this.req = msgs.getCertReqMsg(0);
+		setHeader(header);
 		DEROctetString os = header.getTransactionID();
 		if (os != null) {
 			byte[] val = os.getOctets();

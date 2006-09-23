@@ -36,7 +36,7 @@ import org.ejbca.util.Base64;
  * Servlet implementing server side of the Certificate Management Protocols (CMP) 
  *
  * @author tomas
- * @version $Id: CmpServlet.java,v 1.2 2006-09-22 14:56:11 anatom Exp $
+ * @version $Id: CmpServlet.java,v 1.3 2006-09-23 07:26:28 anatom Exp $
  * 
  * @web.servlet name = "CmpServlet"
  *              display-name = "CmpServlet"
@@ -45,7 +45,7 @@ import org.ejbca.util.Base64;
  *
  * @web.servlet-mapping url-pattern = "/cmp"
  * 
- * @web.env-entry description="Allow the client/RA to specify that the CA should not verify POP"
+ * @web.env-entry description="Allow the client/RA to specify that the CA should not verify POP, set to 1 to allow no POP (raVerify in the rfc)"
  *   name="allowRaVerifyPopo"
  *   type="java.lang.String"
  *   value="1"
@@ -55,10 +55,35 @@ import org.ejbca.util.Base64;
  *   type="java.lang.String"
  *   value=""
  *   
- * @web.env-entry description="Defines which component from the DN should be used as username in EJBCA. Can be cN, UID or nothing. Nothing means that the DN will be used to look up the user."
+ * @web.env-entry description="Defines which component from the DN should be used to look up username in EJBCA. Can be CN, UID or nothing. Nothing means that the DN will be used to look up the user."
  *   name="extractUsernameComponent"
  *   type="java.lang.String"
  *   value=""
+ *   
+ * @web.env-entry description="If the CMP service should work in NORMAL or RA mode (see docs)"
+ *   name="operationMode"
+ *   type="java.lang.String"
+ *   value="RA"
+ *   
+ * @web.env-entry description="Which generation scheme should be used, RANDOM or DN"
+ *   name="raModeNameGenerationScheme"
+ *   type="java.lang.String"
+ *   value="DN"
+ *   
+ * @web.env-entry description="Parameters for name generation, for DN it can be CN or UID"
+ *   name="raModeNameGenerationParameters"
+ *   type="java.lang.String"
+ *   value="CN"
+ *   
+ * @web.env-entry description="Prefix to generated name, a string or RANDOM"
+ *   name="raModeNameGenerationPrefix"
+ *   type="java.lang.String"
+ *   value="Prefix - "
+ *   
+ * @web.env-entry description="Postfix to generated name, a string or RANDOM"
+ *   name="raModeNameGenerationPostfix"
+ *   type="java.lang.String"
+ *   value=" - Postfix"
  *   
  * @web.ejb-local-ref
  *  name="ejb/SignSessionLocal"

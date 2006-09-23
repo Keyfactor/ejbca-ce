@@ -17,6 +17,7 @@ import javax.ejb.CreateException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.DEROctetString;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
@@ -36,10 +37,12 @@ import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.ResponseStatus;
 
+import com.novosec.pkix.asn1.cmp.PKIHeader;
+
 /**
  * Message handler for certificate request messages in the CRMF format
  * @author tomas
- * @version $Id: CrmfMessageHandler.java,v 1.3 2006-09-21 15:34:31 anatom Exp $
+ * @version $Id: CrmfMessageHandler.java,v 1.4 2006-09-23 07:26:28 anatom Exp $
  */
 public class CrmfMessageHandler implements ICmpMessageHandler {
 	
@@ -67,7 +70,9 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 			CrmfRequestMessage crmfreq = null;
 			if (msg instanceof CrmfRequestMessage) {
 				crmfreq = (CrmfRequestMessage) msg;
+				// Try to find the user that is the subject for the request
 				// if extractUsernameComponent is null, we have to find the user from the DN
+				// if not empty the message will find the username itself, in the getUsername method
 				if (StringUtils.isEmpty(extractUsernameComponent)) {
 					String dn = crmfreq.getSubjectDN();
 					log.debug("looking for user with dn: "+dn);
@@ -78,6 +83,14 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 					} else {
 						log.info("Did not find a username matching dn: "+dn);
 					}
+				}
+				
+				// Try to find a HMAC/SHA1 protection key
+				PKIHeader head = crmfreq.getHeader();
+				DEROctetString os = head.getSenderKID();
+				if (os != null) {
+					String keyId = new String(os.getOctets());
+					log.debug("Found a sender keyId: "+keyId);
 				}
 			} else {
 				log.error("ICmpMessage if not aCrmfRequestMessage!");
