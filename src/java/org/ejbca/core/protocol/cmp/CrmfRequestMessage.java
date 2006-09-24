@@ -45,6 +45,7 @@ import org.ejbca.util.CertTools;
 
 import com.novosec.pkix.asn1.cmp.PKIBody;
 import com.novosec.pkix.asn1.cmp.PKIHeader;
+import com.novosec.pkix.asn1.cmp.PKIMessage;
 import com.novosec.pkix.asn1.crmf.AttributeTypeAndValue;
 import com.novosec.pkix.asn1.crmf.CRMFObjectIdentifiers;
 import com.novosec.pkix.asn1.crmf.CertReqMessages;
@@ -59,7 +60,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
  * - Supported POPO: raVerified (null), i.e. no POPO verification is done, it should be configurable if the CA should allow this or require a real POPO
  * 
  * @author tomas
- * @version $Id: CrmfRequestMessage.java,v 1.5 2006-09-23 07:26:28 anatom Exp $
+ * @version $Id: CrmfRequestMessage.java,v 1.6 2006-09-24 13:20:06 anatom Exp $
  */
 public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessage {
 	
@@ -78,6 +79,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 
     private int requestType = 0;
     private int requestId = 0;
+    private PKIMessage msg;
 	private CertReqMsg req;
 	private String b64SenderNonce = null;
 	private String b64TransId = null;
@@ -100,7 +102,10 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
      * @param allowRaVerifyPopo true if we allows the user/RA to specify the POP should not be verified
      * @param extractUsernameComponent Defines which component from the DN should be used as username in EJBCA. Can be CN, UID or nothing. Null means that the DN should have been pre-set, here it is the same as CN.
      */
-	public CrmfRequestMessage(PKIHeader header, PKIBody body, String defaultCA, boolean allowRaVerifyPopo, String extractUsernameComponent) {
+	public CrmfRequestMessage(PKIMessage msg, String defaultCA, boolean allowRaVerifyPopo, String extractUsernameComponent) {
+		this.msg = msg;
+		PKIBody body = msg.getBody();
+		PKIHeader header = msg.getHeader();
 		requestType = body.getTagNo();
 		CertReqMessages msgs = getCertReqFromTag(body, requestType);
 		requestId = msgs.getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
@@ -108,7 +113,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 		this.allowRaVerifyPopo = allowRaVerifyPopo;
 		this.extractUsernameComponent = extractUsernameComponent;
 		this.req = msgs.getCertReqMsg(0);
-		setHeader(header);
+		setMessage(this.msg);
 		DEROctetString os = header.getTransactionID();
 		if (os != null) {
 			byte[] val = os.getOctets();

@@ -19,8 +19,10 @@ import java.security.cert.CertificateEncodingException;
 
 import javax.ejb.CreateException;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.util.CertTools;
@@ -47,7 +49,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * - Certificate Confirmation - accept or reject by client - will return a PKIConfirm
  * 
  * @author tomas
- * @version $Id: CmpMessageDispatcher.java,v 1.2 2006-09-21 11:33:33 anatom Exp $
+ * @version $Id: CmpMessageDispatcher.java,v 1.3 2006-09-24 13:20:06 anatom Exp $
  */
 public class CmpMessageDispatcher {
 	private static final Logger log = Logger.getLogger(CmpMessageDispatcher.class);
@@ -65,18 +67,26 @@ public class CmpMessageDispatcher {
 	public CmpMessageDispatcher(Admin adm) {
 		this.admin = adm;
 		// Install BouncyCastle provider
-		CertTools.installBCProvider();			
+		CertTools.installBCProvider();
+		
+		// Read parameters 
+		String str = ServiceLocator.getInstance().getString("java:comp/env/allowRaVerifyPopo");
+		if (StringUtils.equals("1", str)) {
+			log.debug("allowRAVerifyPopo=true");
+			allowRaVerifyPopo = true;
+		}
+		str = ServiceLocator.getInstance().getString("java:comp/env/defaultCA");
+		log.debug("defaultCA="+str);
+		if (StringUtils.isNotEmpty(str)) {
+			defaultCA = str;
+		}
+		str = ServiceLocator.getInstance().getString("java:comp/env/extractUsernameComponent");
+		log.debug("extractUsernameComponent="+str);
+		if (StringUtils.isNotEmpty(str)) {
+			extractUsernameComponent = str;
+		}
 	}
 	
-	public void setAllowRaVerifyPopo(boolean allow) {
-		this.allowRaVerifyPopo = allow;
-	}
-	public void setDefaultCA(String defaultCA) {
-		this.defaultCA = defaultCA;
-	}
-	public void setExtractUsernameComponent(String extractUsernameComponent) {
-		this.extractUsernameComponent = extractUsernameComponent;
-	}
 	/** The message may have been received by any transport protocol, and is passed here in it's binary asn.1 form.
 	 * 
 	 * @param message der encoded CMP message
@@ -89,6 +99,7 @@ public class CmpMessageDispatcher {
 			req = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(message)).readObject());
 			PKIHeader header = req.getHeader();
 			PKIBody body = req.getBody();
+			
 			int tagno = -1;
 			if (log.isDebugEnabled()) {
 				tagno = body.getTagNo();
@@ -103,21 +114,21 @@ public class CmpMessageDispatcher {
 			case 0:
 				// 0 and 2 are both certificate requests
 				handler = new CrmfMessageHandler(admin);
-				cmpMessage = new CrmfRequestMessage(header, body, defaultCA, allowRaVerifyPopo, extractUsernameComponent);
+				cmpMessage = new CrmfRequestMessage(req, defaultCA, allowRaVerifyPopo, extractUsernameComponent);
 				break;
 			case 2:
 				handler = new CrmfMessageHandler(admin);
-				cmpMessage = new CrmfRequestMessage(header, body, defaultCA, allowRaVerifyPopo, extractUsernameComponent);
+				cmpMessage = new CrmfRequestMessage(req, defaultCA, allowRaVerifyPopo, extractUsernameComponent);
 				break;
 			case 19:
 				// PKI confirm
 				handler = new ConfirmationMessageHandler();
-				cmpMessage = new ConfirmationMessage(header, body);
+				cmpMessage = new ConfirmationMessage(req);
 				break;
 			case 24:
 				// Certificate confirmation
 				handler = new ConfirmationMessageHandler();
-				cmpMessage = new ConfirmationMessage(header, body);
+				cmpMessage = new ConfirmationMessage(req);
 				break;
 			default:
 				break;

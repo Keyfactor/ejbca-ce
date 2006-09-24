@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.model.ra;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,65 +41,51 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * The variable ${RANDOM} will be replaced by a random value of length set in 'randomPrefixLength'. 
  * 
  * @author tomas
- * @version $Id: UsernameGenerator.java,v 1.1 2006-09-23 07:26:28 anatom Exp $
+ * @version $Id: UsernameGenerator.java,v 1.2 2006-09-24 13:20:09 anatom Exp $
  */
 public class UsernameGenerator {
 
 	private static Logger log = Logger.getLogger(UsernameGenerator.class);
 
-	private static final int MODE_RANDOM = 0;
-	private static final int MODE_USERNAME = 1;
-	private static final int MODE_DN = 2;
-
-	public static final String RANDOM = "RANDOM";
-	public static final String USERNAME = "USERNAME";
-	public static final String DN = "DN";
-	
-	private String[] modes = {"RANDOM", "USERNAME", "DN"};
-	private List modeList = null;
-	private int mode = -1;
-	
 	// Generator configuration parameters, with good default values
-	private int randomNameLength = 12;
-	private int randomGeneratorType = PasswordGeneratorFactory.PASSWORDTYPE_LETTERSANDDIGITS;
-	private String dNGeneratorComponent = "CN"; // Can be CN or UID
-	private String prefix = null;
-	private String postfix = null;
-	private int randomPrefixLength = 12;
+	private UsernameGeneratorParams params = null;
 	
 	public static UsernameGenerator getInstance(String mode) {
 		return new UsernameGenerator(mode);
 	}
+	public static UsernameGenerator getInstance(UsernameGeneratorParams params) {
+		return new UsernameGenerator(params);
+	}
 	private UsernameGenerator(String mode) {
-		modeList = Arrays.asList(modes);
-		if (!modeList.contains(mode)) {
-			throw new IllegalArgumentException("Mode " + mode + " is not supported");
-		}
-		this.mode = modeList.indexOf(mode);
+		this.params = new UsernameGeneratorParams();
+		params.setMode(mode);
+	}
+	private UsernameGenerator(UsernameGeneratorParams params) {
+		this.params = params;
 	}
 	
 	public String generateUsername() {
 		String ret = null;
-		if (mode != MODE_RANDOM) {
-			throw new IllegalArgumentException("generateUsername() can only be used in mode RANDOM");
-		}
-		ret = getRandomString(randomNameLength);
+		if (params.getMode() != UsernameGeneratorParams.MODE_RANDOM) {
+			throw new IllegalArgumentException("this method can only be used in mode RANDOM");
+		}		
+		ret = getRandomString(params.getRandomNameLength());
 		log.debug("Generated random username: "+ret);
 		return addPrePostFix(ret);
 	}
 	
 	public String generateUsername(String name) {
 		String str = name;
-		if (mode == MODE_RANDOM) {
+		if (params.getMode() == UsernameGeneratorParams.MODE_RANDOM) {
 			throw new IllegalArgumentException("generateUsername(String) can only be used in mode DN ur USERNAME");
-		} else if (mode == MODE_DN) {
-	        str = CertTools.getPartFromDN(name, dNGeneratorComponent);			
-		} else if (mode == MODE_USERNAME) {}
+		} else if (params.getMode() == UsernameGeneratorParams.MODE_DN) {
+	        str = CertTools.getPartFromDN(name, params.getDNGeneratorComponent());			
+		} else if (params.getMode() == UsernameGeneratorParams.MODE_USERNAME) {}
 		return addPrePostFix(str);
 	}
 	
 	private String getRandomString(int length) {
-		IPasswordGenerator gen = PasswordGeneratorFactory.getInstance(randomGeneratorType);
+		IPasswordGenerator gen = PasswordGeneratorFactory.getInstance(params.getRandomGeneratorType());
 		return gen.getNewPassword(length, length);		
 	}
 	
@@ -119,21 +103,13 @@ public class UsernameGenerator {
 	}
 
 	private String getPostfix() {
-		return interpolate(postfix);
-	}
-
-	public void setPostfix(String postfix) {
-		this.postfix = postfix;
+		return interpolate(params.getPostfix());
 	}
 
 	private String getPrefix() {
-		return interpolate(prefix);
+		return interpolate(params.getPrefix());
 	}
 
-	public void setPrefix(String prefix) {
-		this.prefix = prefix;
-	}
-	
     /** regexp pattern to match ${identifier} patterns */
     private final static Pattern PATTERN = Pattern.compile("\\$\\{(.+?)\\}");
     /**
@@ -151,7 +127,7 @@ public class UsernameGenerator {
             String key = m.group(1);
             String value = null;
             if (StringUtils.equals(key, "RANDOM")) {
-            	value = getRandomString(randomPrefixLength);
+            	value = getRandomString(params.getRandomPrefixLength());
             }
             // if the pattern does exists, replace it by its value
             // otherwise keep the pattern ( it is group(0) )
@@ -168,16 +144,11 @@ public class UsernameGenerator {
         m.appendTail(sb);
         return sb.toString();
     }
-
-	public void setRandomPrefixLength(int length) {
-		this.randomPrefixLength = length;
+	public UsernameGeneratorParams getParams() {
+		return params;
 	}
-
-	public void setDNGeneratorComponent(String generatorComponent) {
-		dNGeneratorComponent = generatorComponent;
-	}
-	public void setRandomNameLength(int randomNameLength) {
-		this.randomNameLength = randomNameLength;
+	public void setParams(UsernameGeneratorParams params) {
+		this.params = params;
 	}
 
 }

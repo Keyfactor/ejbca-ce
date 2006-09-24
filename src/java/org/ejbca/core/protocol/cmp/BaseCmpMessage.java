@@ -16,10 +16,11 @@ package org.ejbca.core.protocol.cmp;
 import org.bouncycastle.asn1.x509.GeneralName;
 
 import com.novosec.pkix.asn1.cmp.PKIHeader;
+import com.novosec.pkix.asn1.cmp.PKIMessage;
 
 public abstract class BaseCmpMessage {
 
-	private PKIHeader header = null;
+	private PKIMessage msg = null;
 	private String b64SenderNonce = null;
 	private String b64RecipientNonce = null;
 	private String b64TransId = null;
@@ -59,10 +60,13 @@ public abstract class BaseCmpMessage {
 		this.sender = sender;
 	}
 	public PKIHeader getHeader() {
-		return header;
+		return msg.getHeader();
 	}
-	public void setHeader(PKIHeader header) {
-		this.header = header;
+	public PKIMessage getMessage() {
+		return msg;
+	}
+	public void setMessage(PKIMessage msg) {
+		this.msg = msg;
 	}
 	
 	

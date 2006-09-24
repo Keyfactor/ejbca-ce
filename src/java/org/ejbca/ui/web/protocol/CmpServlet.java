@@ -23,7 +23,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcher;
@@ -36,7 +35,7 @@ import org.ejbca.util.Base64;
  * Servlet implementing server side of the Certificate Management Protocols (CMP) 
  *
  * @author tomas
- * @version $Id: CmpServlet.java,v 1.3 2006-09-23 07:26:28 anatom Exp $
+ * @version $Id: CmpServlet.java,v 1.4 2006-09-24 13:20:07 anatom Exp $
  * 
  * @web.servlet name = "CmpServlet"
  *              display-name = "CmpServlet"
@@ -45,45 +44,50 @@ import org.ejbca.util.Base64;
  *
  * @web.servlet-mapping url-pattern = "/cmp"
  * 
- * @web.env-entry description="Allow the client/RA to specify that the CA should not verify POP, set to 1 to allow no POP (raVerify in the rfc)"
+ * @web.env-entry description="Allow the client/RA to specify that the CA should not verify POP, set to 1 to allow no POP (raVerify in the rfc). Default 0."
  *   name="allowRaVerifyPopo"
  *   type="java.lang.String"
  *   value="1"
  *   
- * @web.env-entry description="Enforce a particual CA instead of taking it from the request"
+ * @web.env-entry description="Enforce a particual CA instead of taking it from the request. Default empty."
  *   name="defaultCA"
  *   type="java.lang.String"
  *   value=""
  *   
- * @web.env-entry description="Defines which component from the DN should be used to look up username in EJBCA. Can be CN, UID or nothing. Nothing means that the DN will be used to look up the user."
+ * @web.env-entry description="Defines which component from the DN should be used to look up username in EJBCA. Can be CN, UID or nothing. Nothing means that the DN will be used to look up the user. Default empty."
  *   name="extractUsernameComponent"
  *   type="java.lang.String"
  *   value=""
  *   
- * @web.env-entry description="If the CMP service should work in NORMAL or RA mode (see docs)"
+ * @web.env-entry description="If the CMP service should work in NORMAL or RA mode (see docs). Default NORMAL."
  *   name="operationMode"
  *   type="java.lang.String"
  *   value="RA"
  *   
- * @web.env-entry description="Which generation scheme should be used, RANDOM or DN"
+ * @web.env-entry description="Shared secret between the CA and the RA used to authenticate valid RA messages. Default empty."
+ *   name="raAuthenticationSecret"
+ *   type="java.lang.String"
+ *   value="password"
+ *   
+ * @web.env-entry description="Which generation scheme should be used, RANDOM or DN. Default DN."
  *   name="raModeNameGenerationScheme"
  *   type="java.lang.String"
  *   value="DN"
  *   
- * @web.env-entry description="Parameters for name generation, for DN it can be CN or UID"
+ * @web.env-entry description="Parameters for name generation, for DN it can be CN or UID. Default CN."
  *   name="raModeNameGenerationParameters"
  *   type="java.lang.String"
  *   value="CN"
  *   
- * @web.env-entry description="Prefix to generated name, a string or RANDOM"
+ * @web.env-entry description="Prefix to generated name, a string that can contain the markup ${RANDOM} to inser random chars. Default empty."
  *   name="raModeNameGenerationPrefix"
  *   type="java.lang.String"
- *   value="Prefix - "
+ *   value=""
  *   
- * @web.env-entry description="Postfix to generated name, a string or RANDOM"
+ * @web.env-entry description="Postfix to generated name, a string that can contain the markup ${RANDOM} to inser random chars. Default empty."
  *   name="raModeNameGenerationPostfix"
  *   type="java.lang.String"
- *   value=" - Postfix"
+ *   value=""
  *   
  * @web.ejb-local-ref
  *  name="ejb/SignSessionLocal"
@@ -110,10 +114,6 @@ import org.ejbca.util.Base64;
 public class CmpServlet extends HttpServlet {
 	private static Logger log = Logger.getLogger(CmpServlet.class);
 	
-	private boolean allowRaVerifyPopo = true;
-	private String defaultCA = null;
-	private String extractUsernameComponent = null;
-	
 	/**
 	 * Inits the CMP servlet
 	 *
@@ -124,17 +124,6 @@ public class CmpServlet extends HttpServlet {
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);		
 		
-		if (StringUtils.equals("0", getInitParameter("allowRaVerifyPopo"))) {
-			allowRaVerifyPopo = false;
-		}
-		String str = getInitParameter("defaultCA");
-		if (StringUtils.isNotEmpty(str)) {
-			defaultCA = str;
-		}
-		str = getInitParameter("extractUsernameComponent"); 
-		if (StringUtils.isNotEmpty(str)) {
-			extractUsernameComponent = str;
-		}
 	}
 	
 	/**
@@ -199,9 +188,6 @@ public class CmpServlet extends HttpServlet {
 			}
 			
 			CmpMessageDispatcher dispatcher = new CmpMessageDispatcher(administrator);
-			dispatcher.setAllowRaVerifyPopo(allowRaVerifyPopo);
-			dispatcher.setDefaultCA(defaultCA);
-			dispatcher.setExtractUsernameComponent(extractUsernameComponent);
 			byte[] resp = dispatcher.dispatch(message);
 			if (resp == null) {
 				// unknown error?

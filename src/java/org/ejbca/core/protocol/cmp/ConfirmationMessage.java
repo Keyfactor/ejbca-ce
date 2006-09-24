@@ -19,12 +19,13 @@ import org.ejbca.util.Base64;
 import com.novosec.pkix.asn1.cmp.CertConfirmContent;
 import com.novosec.pkix.asn1.cmp.PKIBody;
 import com.novosec.pkix.asn1.cmp.PKIHeader;
+import com.novosec.pkix.asn1.cmp.PKIMessage;
 import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
 
 /**
  * Message class for CMP PKI confirm and CertCOnf messages
  * @author tomas
- * @version $Id: ConfirmationMessage.java,v 1.2 2006-09-23 07:26:28 anatom Exp $
+ * @version $Id: ConfirmationMessage.java,v 1.3 2006-09-24 13:20:06 anatom Exp $
  */
 public class ConfirmationMessage extends BaseCmpMessage {
 
@@ -41,7 +42,8 @@ public class ConfirmationMessage extends BaseCmpMessage {
      */
     static final long serialVersionUID = 1000L;
 
-	public ConfirmationMessage(PKIHeader header, PKIBody body) {
+	public ConfirmationMessage(PKIMessage msg) {
+		PKIBody body = msg.getBody();
 		int tag = body.getTagNo();
 		if (tag == 19) {
 			// this is a PKIConfirmContent
@@ -62,7 +64,8 @@ public class ConfirmationMessage extends BaseCmpMessage {
 				}
 			}
 		}
-		setHeader(header);
+		setMessage(msg);
+		PKIHeader header = msg.getHeader();
 		DEROctetString os = header.getTransactionID();
 		if (os != null) {
 			byte[] val = os.getOctets();
