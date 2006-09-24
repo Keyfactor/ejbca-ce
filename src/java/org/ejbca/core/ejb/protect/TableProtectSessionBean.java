@@ -73,7 +73,7 @@ import org.ejbca.util.StringTools;
  *   type="java.lang.String"
  *   value="${protection.key}"
  *   
- * @ejb.env-entry description="Key type, HMAC or ENCHMAC"
+ * @ejb.env-entry description="Key type, ENC_SOFT_HMAC or SOFT_HMAC"
  *   name="keyType"
  *   type="java.lang.String"
  *   value="${protection.keytype}"
@@ -99,7 +99,7 @@ import org.ejbca.util.StringTools;
  *   local-class="org.ejbca.core.ejb.protect.TableProtectSessionLocal"
  *   remote-class="org.ejbca.core.ejb.protect.TableProtectSessionRemote"
  *
- * @version $Id: TableProtectSessionBean.java,v 1.2 2006-08-06 12:37:00 anatom Exp $
+ * @version $Id: TableProtectSessionBean.java,v 1.3 2006-09-24 13:18:29 anatom Exp $
  */
 public class TableProtectSessionBean extends BaseSessionBean {
 
