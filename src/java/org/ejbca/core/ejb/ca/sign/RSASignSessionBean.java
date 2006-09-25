@@ -764,11 +764,8 @@ public class RSASignSessionBean extends BaseSessionBean {
             ret.create();
             // Call authentication session and tell that we are finished with this user
             if (ca.getFinishUser() == true) {
-                finishUser(admin, req.getUsername(), req.getPassword());
-            }
-        } catch (ObjectNotFoundException oe) {
-        	log.error("ObjectNotFound: ", oe);
-            throw new NotFoundException(oe.getMessage(), oe);
+            	finishUser(admin, req.getUsername(), req.getPassword());
+            }            	
         } catch (NotFoundException oe) {
             throw oe;
         } catch (AuthStatusException se) {
@@ -1273,7 +1270,7 @@ public class RSASignSessionBean extends BaseSessionBean {
 
     } // authUser
 
-    private void finishUser(Admin admin, String username, String password) throws ObjectNotFoundException {
+    private void finishUser(Admin admin, String username, String password) {
         // Finnish user and set new status
         try {
             IAuthenticationSessionLocal authSession = authHome.create();
@@ -1281,6 +1278,8 @@ public class RSASignSessionBean extends BaseSessionBean {
         } catch (CreateException e) {
             log.error(e);
             throw new EJBException(e);
+        } catch (ObjectNotFoundException e) {
+        	log.info("Called finishUser fdor no existing user: ", e);
         }
     } // finishUser
 
