@@ -35,7 +35,7 @@ import org.ejbca.util.Base64;
  * Servlet implementing server side of the Certificate Management Protocols (CMP) 
  *
  * @author tomas
- * @version $Id: CmpServlet.java,v 1.5 2006-09-25 12:54:59 anatom Exp $
+ * @version $Id: CmpServlet.java,v 1.6 2006-09-25 12:56:17 anatom Exp $
  * 
  * @web.servlet name = "CmpServlet"
  *              display-name = "CmpServlet"
@@ -47,7 +47,7 @@ import org.ejbca.util.Base64;
  * @web.env-entry description="Allow the client/RA to specify that the CA should not verify POP, set to 1 to allow no POP (raVerify in the rfc). Default 0."
  *   name="allowRaVerifyPopo"
  *   type="java.lang.String"
- *   value="1"
+ *   value="0"
  *   
  * @web.env-entry description="Enforce a particual CA instead of taking it from the request. Default empty."
  *   name="defaultCA"
@@ -87,7 +87,7 @@ import org.ejbca.util.Base64;
  * @web.env-entry description="Postfix to generated name, a string that can contain the markup ${RANDOM} to inser random chars. Default empty."
  *   name="raModeNameGenerationPostfix"
  *   type="java.lang.String"
- *   value=" - ${RANDOM}"
+ *   value=""
  *   
  * @web.env-entry description="The endEntityProfile to be used when adding users in RA mode. Default EMPTY."
  *   name="endEntityProfile"
