@@ -89,11 +89,14 @@ definition file in JBoss, so you don't have to do anything with that.
 
 1. Install and setup the database your database.
 
-2. Create a database for EJBCA (that is obviouslly the one you defined in .ejbca.properties)
+2. Create a database for EJBCA (that is obviouslly the one you defined in ejbca.properties)
 Check your database documentation for more info (I know it is boring).
 
-Typically for postgres: 'createdb -U postgres ejbca "database for ejbca"' will create
-a database named 'ejbca' with description "database for ejbca" and with user postgres.
+Typically for postgres: 'createdb ejbca "database for ejbca"' will create
+a database named 'ejbca' with description "database for ejbca" and with user postgres (add '-E UTF8' for utf8 encoding if not default).
+To create a new user for the ejbca database 'createuser -P ejbca'
+Then you may have to mess around a lot to be able to connect to the database as well...
+for example change in pg_hba.conf to not use ident for logins to the local database, so you can actually connect locally as the ejbca user.
 
 Typically for mysql: 'mysqladmin create ejbca' will create the database. 
 Start 'mysql -u root mysql' and create the user with "grant all on ejbca.* to ejbca@'<host>' identified by '<pwd>';".
@@ -138,10 +141,11 @@ try to add stuff if it doesn't work.
 
 PostgreSQL specifics
 --------------------
-EJBCA have been tested with PostgreSQL 7.2 and 8.0.
+EJBCA have been tested with PostgreSQL 7.x and 8.x.
 
-JDBC driver: the 7.4 driver (development) is needed to support the JDBC used by
-JBoss.
+JDBC driver: 
+For v7.x the 7.4 driver (development) is needed to support the JDBC used by JBoss.
+For v8.x the 8.1 driver works fine.
 
 Download JDBC driver for PostgreSQL from http://jdbc.postgresql.org/.
 
