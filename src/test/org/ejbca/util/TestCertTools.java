@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package se.anatom.ejbca.util;
+package org.ejbca.util;
 
 import java.security.cert.X509Certificate;
 import java.util.Collection;
@@ -38,7 +38,7 @@ import com.novell.ldap.LDAPDN;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.21 2006-06-04 10:08:44 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.1 2006-09-25 16:32:36 anatom Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);

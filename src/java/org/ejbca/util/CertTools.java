@@ -88,7 +88,7 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.16 2006-08-06 12:36:17 anatom Exp $
+ * @version $Id: CertTools.java,v 1.17 2006-09-25 16:32:36 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -181,16 +181,19 @@ public class CertTools {
         oids.put("unstructuredaddress", X509Name.UnstructuredAddress); //unstructuredAddress
     }
 
+    
     private static final String[] dNObjectsForward = {
         "unstructuredaddress", "unstructuredname", "emailaddress", "e", "email", "uid", "cn", "sn", "serialnumber", "gn", "givenname",
         "initials", "surname", "t", "ou", "o", "l", "st", "dc", "c"
     };
+    
     /*
     private static final String[] dNObjectsReverse = {
         "c", "dc", "st", "l", "o", "ou", "t", "surname", "initials",
         "givenname", "gn", "serialnumber", "sn", "cn", "uid", "email", "e", "emailaddress", "unstructuredname", "unstructuredaddress"
     };
     */
+    
     /** Uncomment above and change this if you want reverse order */
     private static final String[] dNObjects = dNObjectsForward;    
     
@@ -395,12 +398,18 @@ public class CertTools {
      * Tries to determine if a DN is in reversed form. It does this by taking the last attribute 
      * and the first attribute. If the last attribute comes before the first in the dNObjects array
      * the DN is assumed to be in reversed order.
+     * The check if a DN is revered is relative to the default ordering, so if the default ordering is:
+     * "C=SE, O=PrimeKey, CN=Tomas" (dNObjectsReverse ordering in EJBCA) a dn or form "CN=Tomas, O=PrimeKey, C=SE" is reversed.
+     * 
+     * if the default ordering is:
+     * "CN=Tomas, O=PrimeKey, C=SE" (dNObjectsForward ordering in EJBCA) a dn or form "C=SE, O=PrimeKey, CN=Tomas" is reversed.
+     * 
      *
      * @param dn String containing DN to be checked, The DN string has the format "C=SE, O=xx, OU=yy, CN=zz".
      *
      * @return true if the DN is believed to be in reversed order, false otherwise
      */
-    public static boolean isDNReversed(String dn) {
+    protected static boolean isDNReversed(String dn) {
         //log.debug(">isDNReversed: dn: " + dn);
         boolean ret = false;
         if (dn != null) {
@@ -418,10 +427,10 @@ public class CertTools {
             	last = last.substring(0,last.indexOf('='));
             	int firsti = 0, lasti = 0;
             	for (int i = 0; i < dNObjects.length; i++) {
-            		if (first.toLowerCase().equals(dNObjectsForward[i])) {
+            		if (first.toLowerCase().equals(dNObjects[i])) {
             			firsti = i;
             		}
-            		if (last.toLowerCase().equals(dNObjectsForward[i])) {
+            		if (last.toLowerCase().equals(dNObjects[i])) {
             			lasti = i;
             		}
             	}
