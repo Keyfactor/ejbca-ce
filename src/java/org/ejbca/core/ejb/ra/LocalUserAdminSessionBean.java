@@ -56,7 +56,6 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalExecutorUtil;
 import org.ejbca.core.model.approval.ApprovalOveradableClassName;
-import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest;
@@ -94,7 +93,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.20 2006-09-22 13:05:11 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.21 2006-09-25 12:51:09 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -356,10 +355,11 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      * @param endentityprofileid    the id number of the end entity profile bound to this user.
      * @param certificateprofileid  the id number of the certificate profile that should be
      *                              generated for the user.
-     * @param type                  of user i.e administrator, keyrecoverable and/or sendnotification, from SecConst.
+     * @param type                  of user i.e administrator, keyrecoverable and/or sendnotification, from SecConst.USER_XX.
      * @param tokentype             the type of token to be generated, one of SecConst.TOKEN constants
      * @param hardwaretokenissuerid , if token should be hard, the id of the hard token issuer,
      *                              else 0.
+     * @param caid					the CA the user should be issued from.
      * @throws WaitingForApprovalException 
      * @throws ApprovalException 
      * @ejb.interface-method
