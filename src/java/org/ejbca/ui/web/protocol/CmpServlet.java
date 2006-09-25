@@ -35,7 +35,7 @@ import org.ejbca.util.Base64;
  * Servlet implementing server side of the Certificate Management Protocols (CMP) 
  *
  * @author tomas
- * @version $Id: CmpServlet.java,v 1.6 2006-09-25 12:56:17 anatom Exp $
+ * @version $Id: CmpServlet.java,v 1.7 2006-09-25 13:20:34 anatom Exp $
  * 
  * @web.servlet name = "CmpServlet"
  *              display-name = "CmpServlet"
@@ -124,13 +124,6 @@ import org.ejbca.util.Base64;
  *  link="CAAdminSession"
  *  home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
  *  local="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
- *  
- * @web.ejb-local-ref
- *  name="ejb/UserAdminSessionLocal"
- *  type="Session"
- *  link="UserAdminSession"
- *  home="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome"
- *  local="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome"
  *  
  * @web.ejb-local-ref
  *  name="ejb/CertificateStoreSessionLocal"
