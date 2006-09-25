@@ -24,7 +24,9 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.core.protocol.IResponseMessage;
+import org.ejbca.core.protocol.ResponseStatus;
 import org.ejbca.util.CertTools;
 
 import com.novosec.pkix.asn1.cmp.PKIBody;
@@ -49,7 +51,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * - Certificate Confirmation - accept or reject by client - will return a PKIConfirm
  * 
  * @author tomas
- * @version $Id: CmpMessageDispatcher.java,v 1.3 2006-09-24 13:20:06 anatom Exp $
+ * @version $Id: CmpMessageDispatcher.java,v 1.4 2006-09-25 12:54:59 anatom Exp $
  */
 public class CmpMessageDispatcher {
 	private static final Logger log = Logger.getLogger(CmpMessageDispatcher.class);
@@ -95,8 +97,14 @@ public class CmpMessageDispatcher {
 	public byte[] dispatch(byte[] message) {
 		byte[] ret = null;
 		try {
-			PKIMessage req;
-			req = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(message)).readObject());
+			PKIMessage req = null;
+			try {
+				req = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(message)).readObject());				
+			} catch (Exception e) {
+				// If we could not read the message, we should return an error BAD_REQUEST
+				IResponseMessage resp = CmpMessageHelper.createUnprotectedErrorMessage(null, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, "Can not parse request message");
+				return resp.getResponseMessage();
+			}
 			PKIHeader header = req.getHeader();
 			PKIBody body = req.getBody();
 			

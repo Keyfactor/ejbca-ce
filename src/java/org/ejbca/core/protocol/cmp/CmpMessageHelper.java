@@ -47,6 +47,7 @@ import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.ResponseStatus;
 import org.ejbca.util.Base64;
+import org.ejbca.util.CertTools;
 
 import com.novosec.pkix.asn1.cmp.PKIHeader;
 import com.novosec.pkix.asn1.cmp.PKIMessage;
@@ -55,7 +56,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * Helper class to create different standard parts of CMP messages
  * 
  * @author tomas
- * @version $Id: CmpMessageHelper.java,v 1.3 2006-09-21 15:34:31 anatom Exp $
+ * @version $Id: CmpMessageHelper.java,v 1.4 2006-09-25 12:54:59 anatom Exp $
  */
 public class CmpMessageHelper {
 	private static Logger log = Logger.getLogger(CmpMessageHelper.class);
@@ -133,12 +134,21 @@ public class CmpMessageHelper {
 	 */
 	public static IResponseMessage createUnprotectedErrorMessage(BaseCmpMessage msg, ResponseStatus status, FailInfo failInfo, String failText) {
 		// Create a failure message
+		if (log.isDebugEnabled()) {
+			log.debug("Creating an unprotected error message with status="+status+", failInfo="+failInfo+", failText="+failText);
+		}
 		CmpErrorResponseMessage resp = new CmpErrorResponseMessage();
-		resp.setRecipientNonce(msg.getSenderNonce());
 		resp.setSenderNonce(new String(Base64.encode(CmpMessageHelper.createSenderNonce())));
-		resp.setSender(msg.getRecipient());
-		resp.setRecipient(msg.getSender());
-		resp.setTransactionId(msg.getTransactionId());
+		if (msg != null) {
+			resp.setRecipientNonce(msg.getSenderNonce());
+			resp.setSender(msg.getRecipient());
+			resp.setRecipient(msg.getSender());
+			resp.setTransactionId(msg.getTransactionId());			
+		} else {
+			// We didn't even have a request the get these from, so send back some dummy values
+			resp.setSender(new GeneralName(CertTools.stringToBcX509Name("CN=Failure Sender")));
+			resp.setRecipient(new GeneralName(CertTools.stringToBcX509Name("CN=Failure Recipient")));
+		}
 		resp.setFailInfo(failInfo);
 		resp.setStatus( status);
 		resp.setFailText(failText);

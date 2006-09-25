@@ -21,13 +21,16 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
 /** Parameters used in UsernameGenerator
  * 
  * @author tomas
- * @version $Id: UsernameGeneratorParams.java,v 1.1 2006-09-24 13:20:09 anatom Exp $
+ * @version $Id: UsernameGeneratorParams.java,v 1.2 2006-09-25 12:54:59 anatom Exp $
  * @see UsernameGenerator
  */
 public class UsernameGeneratorParams {
 
+	/** Create a completely random username */
 	protected static final int MODE_RANDOM = 0;
+	/** Use the input as the base username */
 	protected static final int MODE_USERNAME = 1;
+	/** Use a part of the DN as pase username */
 	protected static final int MODE_DN = 2;
 
 	public static final String RANDOM = "RANDOM";

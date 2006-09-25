@@ -23,6 +23,7 @@ import java.net.URL;
 import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Signature;
@@ -34,6 +35,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
+import javax.crypto.Mac;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import javax.ejb.CreateException;
 import javax.ejb.DuplicateKeyException;
 import javax.ejb.FinderException;
@@ -50,7 +54,9 @@ import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERNull;
+import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
@@ -70,6 +76,7 @@ import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
@@ -81,6 +88,7 @@ import com.novosec.pkix.asn1.cmp.CertResponse;
 import com.novosec.pkix.asn1.cmp.CertifiedKeyPair;
 import com.novosec.pkix.asn1.cmp.ErrorMsgContent;
 import com.novosec.pkix.asn1.cmp.PKIBody;
+import com.novosec.pkix.asn1.cmp.PKIFreeText;
 import com.novosec.pkix.asn1.cmp.PKIHeader;
 import com.novosec.pkix.asn1.cmp.PKIMessage;
 import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
@@ -91,6 +99,7 @@ import com.novosec.pkix.asn1.crmf.CertReqMsg;
 import com.novosec.pkix.asn1.crmf.CertRequest;
 import com.novosec.pkix.asn1.crmf.CertTemplate;
 import com.novosec.pkix.asn1.crmf.OptionalValidity;
+import com.novosec.pkix.asn1.crmf.PBMParameter;
 import com.novosec.pkix.asn1.crmf.ProofOfPossession;
 
 public class CrmfRARequestTest extends TestCase {
@@ -100,7 +109,7 @@ public class CrmfRARequestTest extends TestCase {
     private static final String httpReqPath = "http://127.0.0.1:8080/ejbca";
     private static final String resourceCmp = "publicweb/cmp";
 
-    private static String userDN = "CN=tomas1, UID=tomas2, O=PrimeKey Solutions AB, C=SE";
+    private static String userDN = "CN=tomas1,UID=tomas2,O=PrimeKey Solutions AB,C=SE";
     private static String issuerDN = "CN=AdminCA1,O=EJBCA Sample,C=SE";
     private KeyPair keys = null;  
 
@@ -161,7 +170,6 @@ public class CrmfRARequestTest extends TestCase {
 		super.tearDown();
 	}
 
-	/*
 	public void test01CrmfHttpUnknowUser() throws Exception {
         // A name that does not exis
 	    userDN = "CN=abc123rry5774466, O=PrimeKey Solutions AB, C=SE";
@@ -169,7 +177,9 @@ public class CrmfRARequestTest extends TestCase {
 		byte[] nonce = CmpMessageHelper.createSenderNonce();
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
-        PKIMessage req = genCertReq(nonce, transid);
+        PKIMessage one = genCertReq(nonce, transid);
+        PKIMessage req = protectPKIMessage(one, false);
+        int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
 		assertNotNull(req);
 		ByteArrayOutputStream bao = new ByteArrayOutputStream();
 		DEROutputStream out = new DEROutputStream(bao);
@@ -180,7 +190,7 @@ public class CrmfRARequestTest extends TestCase {
 		assertNotNull(resp);
 		assertTrue(resp.length > 0);
 		checkCmpResponseGeneral(resp, userDN, nonce, transid, true);
-		checkCmpFailMessage(resp, "User not found: abc123rry5774466");
+		checkCmpCertRepMessage(resp, reqId);
 	}
 	
 	public void test02CrmfHttpOkUser() throws Exception {
@@ -191,7 +201,9 @@ public class CrmfRARequestTest extends TestCase {
 		byte[] nonce = CmpMessageHelper.createSenderNonce();
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
-        PKIMessage req = genCertReq(nonce, transid);
+        PKIMessage one = genCertReq(nonce, transid);
+        PKIMessage req = protectPKIMessage(one, false);
+
         int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
 		assertNotNull(req);
 		ByteArrayOutputStream bao = new ByteArrayOutputStream();
@@ -220,14 +232,60 @@ public class CrmfRARequestTest extends TestCase {
 		checkCmpResponseGeneral(resp, userDN, nonce, transid, false);
 		checkCmpPKIConfirmMessage(resp);
 	}
-	*/
 	
 	public void test03BlueXCrmf() throws Exception {
+		PKIMessage req = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(bluexir)).readObject());
 		byte[] resp = sendCmp(bluexir);
+		userDN="CN=Some Common Name"; // we know what it is in this request...
 		assertNotNull(resp);
-		checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", "", 64); // 64 is WRONG_AUTHORITY
+		byte[] senderNonce = req.getHeader().getSenderNonce().getOctets();
+		byte[] transId = req.getHeader().getTransactionID().getOctets();
+        int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+		checkCmpResponseGeneral(resp, "CN=Some Common Name", senderNonce, transId, true);
+		checkCmpCertRepMessage(resp, reqId);
 	}
 	
+	public void test04CrmfUnuahtenticated() throws Exception {
+
+		byte[] nonce = CmpMessageHelper.createSenderNonce();
+		byte[] transid = CmpMessageHelper.createSenderNonce();
+		
+        PKIMessage req = genCertReq(nonce, transid);
+
+		assertNotNull(req);
+		ByteArrayOutputStream bao = new ByteArrayOutputStream();
+		DEROutputStream out = new DEROutputStream(bao);
+		out.writeObject(req);
+		byte[] ba = bao.toByteArray();
+		// Send request and receive response
+		byte[] resp = sendCmp(ba);
+		assertNotNull(resp);
+		assertTrue(resp.length > 0);
+		checkCmpResponseGeneral(resp, userDN, nonce, transid, false);
+		checkCmpPKIErrorMessage(resp, issuerDN, userDN, 2, "Recevied an unathenticated message in RA mode!");
+	}
+
+	public void test05CrmfUnknownProtection() throws Exception {
+
+		byte[] nonce = CmpMessageHelper.createSenderNonce();
+		byte[] transid = CmpMessageHelper.createSenderNonce();
+		
+        PKIMessage one = genCertReq(nonce, transid);
+        PKIMessage req = protectPKIMessage(one, true);
+
+		assertNotNull(req);
+		ByteArrayOutputStream bao = new ByteArrayOutputStream();
+		DEROutputStream out = new DEROutputStream(bao);
+		out.writeObject(req);
+		byte[] ba = bao.toByteArray();
+		// Send request and receive response
+		byte[] resp = sendCmp(ba);
+		assertNotNull(resp);
+		assertTrue(resp.length > 0);
+		checkCmpResponseGeneral(resp, userDN, nonce, transid, false);
+		checkCmpPKIErrorMessage(resp, issuerDN, userDN, 2, "Received CMP message with unknown protection alg: 1.2.840.113533.7.66.13.7");
+	}
+
 	private PKIMessage genCertReq(byte[] nonce, byte[] transid) throws NoSuchAlgorithmException, NoSuchProviderException, IOException {
 		OptionalValidity myOptionalValidity = new OptionalValidity();
 		myOptionalValidity.setNotBefore( new org.bouncycastle.asn1.x509.Time( new DERGeneralizedTime("20030211002120Z") ) );
@@ -246,6 +304,7 @@ public class CrmfRARequestTest extends TestCase {
 		CertRequest myCertRequest = new CertRequest(new DERInteger(4), myCertTemplate);
 		//myCertRequest.addControls(new AttributeTypeAndValue(CRMFObjectIdentifiers.regInfo_utf8Pairs, new DERInteger(12345)));
 		
+
 		// POPO
 		/*
 		PKMACValue myPKMACValue =
@@ -284,8 +343,8 @@ public class CrmfRARequestTest extends TestCase {
 		PKIHeader myPKIHeader =
 			new PKIHeader(
 					new DERInteger(2),
-					new GeneralName(new X509Name(cacert.getSubjectDN().getName())),
-					new GeneralName(new X509Name(userDN)));
+					new GeneralName(new X509Name(userDN)),
+					new GeneralName(new X509Name(cacert.getSubjectDN().getName())));
 		myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
         // senderNonce
 		myPKIHeader.setSenderNonce(new DEROctetString(nonce));
@@ -297,10 +356,67 @@ public class CrmfRARequestTest extends TestCase {
 		//myPKIHeader.setFreeText(myPKIFreeText);
 		
 		PKIBody myPKIBody = new PKIBody(myCertReqMessages, 0); // initialization request
+		
 		PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);	
 		return myPKIMessage;
 	}
 
+	private PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
+		// Create the PasswordBased protection of the message
+		PKIHeader head = msg.getHeader();
+		head.setSenderKID(new DEROctetString("primekey".getBytes()));
+		// SHA1
+		AlgorithmIdentifier owfAlg = new AlgorithmIdentifier("1.3.14.3.2.26");
+		// 567 iterations
+		int iterationCount = 567;
+		DERInteger iteration = new DERInteger(iterationCount);
+		// HMAC/SHA1
+		AlgorithmIdentifier macAlg = new AlgorithmIdentifier("1.2.840.113549.2.7");
+		byte[] salt = "foo123".getBytes();
+		DEROctetString derSalt = new DEROctetString(salt);
+		
+		// Create the new protected return message
+		String objectId = "1.2.840.113533.7.66.13";
+		if (badObjectId) {
+			objectId += ".7";
+		}
+		PBMParameter pp = new PBMParameter(derSalt, owfAlg, iteration, macAlg);
+		AlgorithmIdentifier pAlg = new AlgorithmIdentifier(new DERObjectIdentifier(objectId), pp);
+		head.setProtectionAlg(pAlg);
+		PKIBody body = msg.getBody();
+		PKIMessage ret = new PKIMessage(head, body);
+
+		// Calculate the protection bits
+		byte[] raSecret = "password".getBytes();
+		byte[] basekey = new byte[raSecret.length + salt.length];
+		for (int i = 0; i < raSecret.length; i++) {
+			basekey[i] = raSecret[i];
+		}
+		for (int i = 0; i < salt.length; i++) {
+			basekey[raSecret.length+i] = salt[i];
+		}
+		// Construct the base key according to rfc4210, section 5.1.3.1
+		MessageDigest dig = MessageDigest.getInstance(owfAlg.getObjectId().getId(), "BC");
+		for (int i = 0; i < iterationCount; i++) {
+			basekey = dig.digest(basekey);
+			dig.reset();
+		}
+		// For HMAC/SHA1 there is another oid, that is not known in BC, but the result is the same so...
+		String macOid = macAlg.getObjectId().getId();
+		byte[] protectedBytes = ret.getProtectedBytes();
+		Mac mac = Mac.getInstance(macOid, "BC");
+		SecretKey key = new SecretKeySpec(basekey, macOid);
+		mac.init(key);
+		mac.reset();
+		mac.update(protectedBytes, 0, protectedBytes.length);
+		byte[] out = mac.doFinal();
+		DERBitString bs = new DERBitString(out);
+
+		// Finally store the protection bytes in the msg
+		ret.setProtection(bs);
+		return ret;
+	}
+	
 	private PKIMessage genCertConfirm(byte[] nonce, byte[] transid, String hash, int certReqId) throws NoSuchAlgorithmException, NoSuchProviderException, IOException {
 				
 		PKIHeader myPKIHeader =
@@ -420,25 +536,6 @@ public class CrmfRARequestTest extends TestCase {
                 
     }
     
-    private void checkCmpFailMessage(byte[] retMsg, String failMsg) throws IOException {
-        //
-        // Parse response message
-        //
-		PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(retMsg)).readObject());
-		assertNotNull(respObject);
-		
-		PKIBody body = respObject.getBody();
-		int tag = body.getTagNo();
-		assertEquals(tag, 23);
-		ErrorMsgContent c = body.getError();
-		assertNotNull(c);
-		PKIStatusInfo info = c.getPKIStatus();
-		assertNotNull(info);
-		assertEquals(2, info.getStatus().getValue().intValue());
-		int i = info.getFailInfo().intValue();
-		assertEquals(i,1<<7); // bit nr 7 (INCORRECT_DATA) set is 128
-		assertEquals(failMsg, info.getStatusString().getString(0).getString());
-    }
     private void checkCmpCertRepMessage(byte[] retMsg, int requestId) throws IOException {
         //
         // Parse response message
@@ -487,7 +584,7 @@ public class CrmfRARequestTest extends TestCase {
 		assertNotNull(n);
     }
 
-    private void checkCmpPKIErrorMessage(byte[] retMsg, String sender, String recipient, int error) throws IOException {
+    private void checkCmpPKIErrorMessage(byte[] retMsg, String sender, String recipient, int errorCode, String errorMsg) throws IOException {
         //
         // Parse response message
         //
@@ -510,7 +607,12 @@ public class CrmfRARequestTest extends TestCase {
 		DERInteger i = info.getStatus();
 		assertEquals(i.getValue().intValue(), 2);
 		DERBitString b = info.getFailInfo();
-		assertEquals(b.intValue(), error);
+		assertEquals(errorCode, b.intValue());
+		if (errorMsg != null) {
+			PKIFreeText freeText = info.getStatusString();
+			DERUTF8String utf = freeText.getString(0);
+			assertEquals(errorMsg, utf.getString());
+		}
     }
     //
     // Private helper methods

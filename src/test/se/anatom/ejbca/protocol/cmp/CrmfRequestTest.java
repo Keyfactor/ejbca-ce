@@ -54,7 +54,6 @@ import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
@@ -234,6 +233,19 @@ public class CrmfRequestTest extends TestCase {
 		byte[] resp = sendCmp(bluexir);
 		assertNotNull(resp);
 		checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", "", 64); // 64 is WRONG_AUTHORITY
+	}
+	
+	public void test04BadBytes() throws Exception {
+		byte[] msg = bluexir;
+		// Change some bytes to make the message bad
+		msg[10] = 0;
+		msg[15] = 0;
+		msg[22] = 0;
+		msg[56] = 0;
+		msg[88] = 0;
+		byte[] resp = sendCmp(msg);
+		assertNotNull(resp);
+		checkCmpPKIErrorMessage(resp, "CN=Failure Sender", "CN=Failure Recipient", 4); // 4 is BAD_REQUEST
 	}
 	
 	private PKIMessage genCertReq(byte[] nonce, byte[] transid) throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {

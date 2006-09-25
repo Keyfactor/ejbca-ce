@@ -57,10 +57,12 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
 
 /**
  * Certificate request message (crmf) according to RFC4211.
- * - Supported POPO: raVerified (null), i.e. no POPO verification is done, it should be configurable if the CA should allow this or require a real POPO
+ * - Supported POPO: 
+ * -- raVerified (null), i.e. no POPO verification is done, it should be configurable if the CA should allow this or require a real POPO
+ * -- Self signature
  * 
  * @author tomas
- * @version $Id: CrmfRequestMessage.java,v 1.6 2006-09-24 13:20:06 anatom Exp $
+ * @version $Id: CrmfRequestMessage.java,v 1.7 2006-09-25 12:54:59 anatom Exp $
  */
 public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessage {
 	

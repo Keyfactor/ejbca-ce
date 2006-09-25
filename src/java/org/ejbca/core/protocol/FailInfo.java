@@ -12,9 +12,9 @@
  *************************************************************************/
  
 /**
- * $Header: /home/tomas/Dev/cvs2svn/ejbca-cvsbackup/ejbca/src/java/org/ejbca/core/protocol/FailInfo.java,v 1.3 2006-09-20 15:44:56 anatom Exp $
- * $Revision: 1.3 $
- * $Date: 2006-09-20 15:44:56 $
+ * $Header: /home/tomas/Dev/cvs2svn/ejbca-cvsbackup/ejbca/src/java/org/ejbca/core/protocol/FailInfo.java,v 1.4 2006-09-25 12:54:59 anatom Exp $
+ * $Revision: 1.4 $
+ * $Date: 2006-09-25 12:54:59 $
  *
  */
 package org.ejbca.core.protocol;
@@ -28,7 +28,7 @@ import org.bouncycastle.asn1.x509.ReasonFlags;
  * Encapsulates the possible values for the failinfo part of a SCEP FAILURE response.
  *
  * @author Jon Barber (jon.barber@acm.org)
- * @version $Id: FailInfo.java,v 1.3 2006-09-20 15:44:56 anatom Exp $
+ * @version $Id: FailInfo.java,v 1.4 2006-09-25 12:54:59 anatom Exp $
  */
 
 public class FailInfo implements Serializable {
@@ -110,5 +110,8 @@ public class FailInfo implements Serializable {
 
     public int hashCode() {
         return value;
+    }
+    public String toString() {
+    	return Integer.toString(value);
     }
 }

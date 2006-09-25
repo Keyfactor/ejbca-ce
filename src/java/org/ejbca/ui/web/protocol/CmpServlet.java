@@ -35,7 +35,7 @@ import org.ejbca.util.Base64;
  * Servlet implementing server side of the Certificate Management Protocols (CMP) 
  *
  * @author tomas
- * @version $Id: CmpServlet.java,v 1.4 2006-09-24 13:20:07 anatom Exp $
+ * @version $Id: CmpServlet.java,v 1.5 2006-09-25 12:54:59 anatom Exp $
  * 
  * @web.servlet name = "CmpServlet"
  *              display-name = "CmpServlet"
@@ -59,10 +59,10 @@ import org.ejbca.util.Base64;
  *   type="java.lang.String"
  *   value=""
  *   
- * @web.env-entry description="If the CMP service should work in NORMAL or RA mode (see docs). Default NORMAL."
+ * @web.env-entry description="If the CMP service should work in NORMAL or RA mode (see docs). Default NORMAL (or empty value means the same)."
  *   name="operationMode"
  *   type="java.lang.String"
- *   value="RA"
+ *   value=""
  *   
  * @web.env-entry description="Shared secret between the CA and the RA used to authenticate valid RA messages. Default empty."
  *   name="raAuthenticationSecret"
@@ -87,7 +87,22 @@ import org.ejbca.util.Base64;
  * @web.env-entry description="Postfix to generated name, a string that can contain the markup ${RANDOM} to inser random chars. Default empty."
  *   name="raModeNameGenerationPostfix"
  *   type="java.lang.String"
- *   value=""
+ *   value=" - ${RANDOM}"
+ *   
+ * @web.env-entry description="The endEntityProfile to be used when adding users in RA mode. Default EMPTY."
+ *   name="endEntityProfile"
+ *   type="java.lang.String"
+ *   value="EMPTY"
+ *   
+ * @web.env-entry description="The certificateProfile to be used when adding users in RA mode. Default ENDUSER."
+ *   name="certificateProfile"
+ *   type="java.lang.String"
+ *   value="ENDUSER"
+ *   
+ * @web.env-entry description="The CA to be used when adding users in RA mode. Default AdminCA1."
+ *   name="caName"
+ *   type="java.lang.String"
+ *   value="AdminCA1"
  *   
  * @web.ejb-local-ref
  *  name="ejb/SignSessionLocal"
@@ -109,6 +124,20 @@ import org.ejbca.util.Base64;
  *  link="CAAdminSession"
  *  home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
  *  local="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
+ *  
+ * @web.ejb-local-ref
+ *  name="ejb/UserAdminSessionLocal"
+ *  type="Session"
+ *  link="UserAdminSession"
+ *  home="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome"
+ *  local="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome"
+ *  
+ * @web.ejb-local-ref
+ *  name="ejb/CertificateStoreSessionLocal"
+ *  type="Session"
+ *  link="CertificateStoreSession"
+ *  home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
+ *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
  *  
  */
 public class CmpServlet extends HttpServlet {
@@ -182,7 +211,8 @@ public class CmpServlet extends HttpServlet {
 				return;
 			}
 			
-			Admin administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteAddr);
+			// We must use an administrator with rights to create users
+			Admin administrator = new Admin(Admin.TYPE_RACOMMANDLINE_USER, remoteAddr);
 			if (log.isDebugEnabled()) {
 				log.debug("Message: " + new String(Base64.encode(message)));
 			}

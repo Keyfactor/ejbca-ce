@@ -41,7 +41,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * The variable ${RANDOM} will be replaced by a random value of length set in 'randomPrefixLength'. 
  * 
  * @author tomas
- * @version $Id: UsernameGenerator.java,v 1.2 2006-09-24 13:20:09 anatom Exp $
+ * @version $Id: UsernameGenerator.java,v 1.3 2006-09-25 12:54:59 anatom Exp $
  */
 public class UsernameGenerator {
 
@@ -70,23 +70,38 @@ public class UsernameGenerator {
 			throw new IllegalArgumentException("this method can only be used in mode RANDOM");
 		}		
 		ret = getRandomString(params.getRandomNameLength());
-		log.debug("Generated random username: "+ret);
 		return addPrePostFix(ret);
 	}
 	
 	public String generateUsername(String name) {
 		String str = name;
-		if (params.getMode() == UsernameGeneratorParams.MODE_RANDOM) {
-			throw new IllegalArgumentException("generateUsername(String) can only be used in mode DN ur USERNAME");
-		} else if (params.getMode() == UsernameGeneratorParams.MODE_DN) {
-	        str = CertTools.getPartFromDN(name, params.getDNGeneratorComponent());			
-		} else if (params.getMode() == UsernameGeneratorParams.MODE_USERNAME) {}
-		return addPrePostFix(str);
+		switch (params.getMode()) {
+		case UsernameGeneratorParams.MODE_RANDOM:
+			str = getRandomString(params.getRandomNameLength());			
+			break;
+		case UsernameGeneratorParams.MODE_DN:
+			if (str == null) {
+				throw new IllegalArgumentException("Input name can not be null in MODE_DN!");
+			}
+	        str = CertTools.getPartFromDN(name, params.getDNGeneratorComponent());
+	        break;
+		case UsernameGeneratorParams.MODE_USERNAME:
+			if (str == null) {
+				throw new IllegalArgumentException("Input name can not be null in MODE_USERNAME!");
+			}
+	        break;
+		default:
+			break;
+		}
+		String ret = addPrePostFix(str);
+		log.debug("Generated username: "+ret);
+		return ret;
 	}
 	
 	private String getRandomString(int length) {
 		IPasswordGenerator gen = PasswordGeneratorFactory.getInstance(params.getRandomGeneratorType());
-		return gen.getNewPassword(length, length);		
+		String ret = gen.getNewPassword(length, length);		
+		return ret;
 	}
 	
 	private String addPrePostFix(String in) {
