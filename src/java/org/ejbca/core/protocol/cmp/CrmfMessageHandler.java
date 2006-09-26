@@ -71,7 +71,7 @@ import com.novosec.pkix.asn1.crmf.PBMParameter;
 /**
  * Message handler for certificate request messages in the CRMF format
  * @author tomas
- * @version $Id: CrmfMessageHandler.java,v 1.7 2006-09-26 12:42:37 anatom Exp $
+ * @version $Id: CrmfMessageHandler.java,v 1.8 2006-09-26 13:15:44 anatom Exp $
  */
 public class CrmfMessageHandler implements ICmpMessageHandler {
 	
@@ -212,11 +212,8 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 									basekey = dig.digest(basekey);
 									dig.reset();
 								}
-								// For HMAC/SHA1 there is another oid, that is not known in BC, but the result is the same so...
+								// HMAC/SHA1 os normal 1.3.6.1.5.5.8.1.2 or 1.2.840.113549.2.7 
 								String macOid = macAlg.getObjectId().getId();
-								if (StringUtils.equals("1.3.6.1.5.5.8.1.2", macOid)) {
-									macOid = "1.2.840.113549.2.7";
-								}
 						        Mac mac = Mac.getInstance(macOid, "BC");
 						        SecretKey key = new SecretKeySpec(basekey, macOid);
 						        mac.init(key);
