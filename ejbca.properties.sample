@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.65 2006-09-17 22:58:54 herrvendil Exp $
+# $Id: ejbca.properties.sample,v 1.66 2006-09-26 07:38:35 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -410,4 +410,18 @@ ocsp.keys.cardPassword=6231
 
 # Parameter specifying IP addresses authorized to access the healthcheck
 # servlet. Use ';' for between multiple IPs. 
-#ocsphealthcheckg.authorizedips=127.0.0.1
+#ocsphealthcheck.authorizedips=127.0.0.1
+
+#------------------- Debug and special settings -------------
+# 
+# Specifies if the DN order should be constructed in forward (standard and default)
+# or reverse order.
+# Forward is: CN=Tomas Gustavsson, O=PrimeKey, C=SE
+# Reverse is: C=SE, O=PrimeKey, CN=Tomas Gustavsson
+# 
+# Do not change this unless you really know what you are doing.
+# You can NOT install a CA in one order and then change the order, you have to re-install completely,
+# otherwise strange phenomenon will happen.
+#
+# Default: false
+#certtools.dnorderreverse=false

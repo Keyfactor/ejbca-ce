@@ -47,6 +47,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -88,7 +89,7 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.17 2006-09-25 16:32:36 anatom Exp $
+ * @version $Id: CertTools.java,v 1.18 2006-09-26 07:38:37 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -187,15 +188,15 @@ public class CertTools {
         "initials", "surname", "t", "ou", "o", "l", "st", "dc", "c"
     };
     
-    /*
     private static final String[] dNObjectsReverse = {
         "c", "dc", "st", "l", "o", "ou", "t", "surname", "initials",
         "givenname", "gn", "serialnumber", "sn", "cn", "uid", "email", "e", "emailaddress", "unstructuredname", "unstructuredaddress"
     };
-    */
     
-    /** Uncomment above and change this if you want reverse order */
-    private static final String[] dNObjects = dNObjectsForward;    
+    /** This property is true if reverse DN order should be used. Default value is false (forward order).
+     * This setting is changed from ejbca.properties
+     */
+    private static final boolean reverseOrder = BooleanUtils.toBoolean("@certtools.dnorderreverse@");
     
     
     private static DERObjectIdentifier getOid(String o) {
@@ -422,6 +423,7 @@ public class CertTools {
             while (xt.hasMoreTokens()) {
                 last = xt.nextToken();
             }
+            String[] dNObjects = getDnObjects();
             if ( (first != null) && (last != null) ) {
             	first = first.substring(0,first.indexOf('='));
             	last = last.substring(0,last.indexOf('='));
@@ -1611,10 +1613,21 @@ public class CertTools {
      */
     private static Vector getDefaultX509FieldOrder(){
       Vector fieldOrder = new Vector();
+      String[] dNObjects = getDnObjects();
       for (int i = 0; i < dNObjects.length; i++) {
           fieldOrder.add(getOid(dNObjects[i]));
       }
       return fieldOrder;
+    }
+    
+    /**
+     * Returns the dnObject (forward or reverse) that is in use
+     */
+    private static String[]getDnObjects() {
+    	if (!reverseOrder) {
+    		return dNObjectsForward;
+    	}
+    	return dNObjectsReverse;
     }
     
     /**

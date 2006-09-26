@@ -200,6 +200,8 @@
     <property name="protection.keyref" value="key1" />
     <property name="protection.key" value="foo123" />
     <property name="protection.keytype" value="SOFT_HMAC" />
+	
+	<property name="certtools.dnorderreverse" value="false" />
     
     <!-- =================================================================== -->
     <!-- Build ALL                                                           -->
@@ -248,6 +250,8 @@ hardtoken.diplaysensitiveinfo    = ${hardtoken.diplaysensitiveinfo}
 approval.defaultrequestvalidity  = ${approval.defaultrequestvalidity}
 approval.defaultapprovalvalidity = ${approval.defaultapprovalvalidity}
 approval.excludedClasses = ${approval.excludedClasses}
+certtools.dnorderreverse = ${certtools.dnorderreverse}
+
       </echo>
 <!--
 protection.enabled=${protection.enabled}
@@ -511,6 +515,7 @@ protection.certprotect=${protection.certprotect}
 		    	<replacestring from="@EJBCA@" to="${app.name.cap}"/>
 		    	<replacestring from="@weblogic.ora.columntyp@" to="${weblogic-oracle-columntype}"/>
 				<replacestring from="@page.encoding@" to="${web.contentencoding}"/>
+				<replacestring from="@certtools.dnorderreverse@" to="${certtools.dnorderreverse}"/>
 			</tokenfilter>
 			</filterchain>
 	    </copy>
