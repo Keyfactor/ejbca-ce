@@ -89,7 +89,7 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.18 2006-09-26 07:38:37 anatom Exp $
+ * @version $Id: CertTools.java,v 1.19 2006-09-26 07:51:47 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -150,6 +150,13 @@ public class CertTools {
     /** ObjectID for unstructuredAddress DN attribute */
     //public static final DERObjectIdentifier unstructuredAddress = new DERObjectIdentifier("1.2.840.113549.1.9.8");
 
+    /** Flag indicating if the BC provider should be removed before installing it again. When developing and re-deploying alot
+     * this is needed so you don't have to restart JBoss all the time. 
+     * In production it may cause failures because the BC provider may get removed just when another thread wants to use it.
+     * Therefore the default value is false. 
+     */
+    private static final boolean developmentProviderInstallation = BooleanUtils.toBoolean("@development.provider.installation@");
+    
     /**
      * inhibits creation of new CertTools
      */
@@ -600,10 +607,12 @@ public class CertTools {
         	// Nope, we ignore re-deploy on this level, because it can happen
         	// that the BC-provider is uninstalled, in just the second another
         	// thread tries to use the provider, and then that request will fail.
-            //Security.removeProvider("BC");
-            //if (Security.addProvider(new BouncyCastleProvider()) < 0) {
-            //    log.error("Cannot even install BC provider again!");
-            //}
+        	if (developmentProviderInstallation) {
+                Security.removeProvider("BC");
+                if (Security.addProvider(new BouncyCastleProvider()) < 0) {
+                    log.error("Cannot even install BC provider again!");
+                }        		
+        	}
         }
     }
 

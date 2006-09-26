@@ -202,7 +202,8 @@
     <property name="protection.keytype" value="SOFT_HMAC" />
 	
 	<property name="certtools.dnorderreverse" value="false" />
-    
+	<property name="development.provider.installation" value="false" />
+	
     <!-- =================================================================== -->
     <!-- Build ALL                                                           -->
     <!-- =================================================================== -->
@@ -251,7 +252,7 @@ approval.defaultrequestvalidity  = ${approval.defaultrequestvalidity}
 approval.defaultapprovalvalidity = ${approval.defaultapprovalvalidity}
 approval.excludedClasses = ${approval.excludedClasses}
 certtools.dnorderreverse = ${certtools.dnorderreverse}
-
+development.provider.installation = ${development.provider.installation}
       </echo>
 <!--
 protection.enabled=${protection.enabled}
@@ -516,6 +517,7 @@ protection.certprotect=${protection.certprotect}
 		    	<replacestring from="@weblogic.ora.columntyp@" to="${weblogic-oracle-columntype}"/>
 				<replacestring from="@page.encoding@" to="${web.contentencoding}"/>
 				<replacestring from="@certtools.dnorderreverse@" to="${certtools.dnorderreverse}"/>
+				<replacestring from="@development.provider.installation@" to="${development.provider.installation}"/>
 			</tokenfilter>
 			</filterchain>
 	    </copy>
