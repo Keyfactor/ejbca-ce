@@ -56,7 +56,7 @@ import org.ejbca.util.JDBCUtil;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.2 2006-07-30 18:19:03 herrvendil Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.3 2006-09-26 09:54:11 anatom Exp $
  *
  * @ejb.bean
  *   description="Session bean handling interface with ra authorization"
@@ -107,7 +107,7 @@ import org.ejbca.util.JDBCUtil;
  *   ejb-name="CAAdminSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.sign.ICAAdminSessionLocal"
+ *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
  *   link="CAAdminSession"
  *
  * @ejb.ejb-external-ref

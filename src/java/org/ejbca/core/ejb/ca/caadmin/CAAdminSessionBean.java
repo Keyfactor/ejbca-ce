@@ -99,7 +99,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.21 2006-08-09 07:29:49 herrvendil Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.22 2006-09-26 09:54:11 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -128,8 +128,8 @@ import org.ejbca.util.KeyTools;
  *   view-type="local"
  *   ejb-name="CADataLocal"
  *   type="Entity"
- *   home="org.ejbca.core.ejb.ca.caadmin.ICADataLocalHome"
- *   business="org.ejbca.core.ejb.ca.caadmin.ICADataLocal"
+ *   home="org.ejbca.core.ejb.ca.caadmin.CADataLocalHome"
+ *   business="org.ejbca.core.ejb.ca.caadmin.CADataLocal"
  *   link="CAData"
  *
  * @ejb.ejb-external-ref description="The log session bean"

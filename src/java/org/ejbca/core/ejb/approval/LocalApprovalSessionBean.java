@@ -89,8 +89,8 @@ import org.ejbca.util.query.Query;
  *   view-type="local"
  *   ejb-name="ApprovalDataLocal"
  *   type="Entity"
- *   home="org.ejbca.core.ejb.ra.Approval.ApprovalDataLocalHome"
- *   business="org.ejbca.core.ejb.ra.Approval.ApprovalDataLocal"
+ *   home="org.ejbca.core.ejb.approval.ApprovalDataLocalHome"
+ *   business="org.ejbca.core.ejb.approval.ApprovalDataLocal"
  *   link="ApprovalData"
  *   
  * @ejb.ejb-external-ref description="The Certificate store used to store and fetch certificates"
@@ -162,13 +162,13 @@ import org.ejbca.util.query.Query;
  *
  * @ejb.home extends="javax.ejb.EJBHome"
  *   local-extends="javax.ejb.EJBLocalHome"
- *   local-class="org.ejbca.core.ejb.ra.Approval.IApprovalSessionLocalHome"
- *   remote-class="org.ejbca.core.ejb.ra.Approval.IApprovalSessionHome"
+ *   local-class="org.ejbca.core.ejb.approval.IApprovalSessionLocalHome"
+ *   remote-class="org.ejbca.core.ejb.approval.IApprovalSessionHome"
  *
  * @ejb.interface extends="javax.ejb.EJBObject"
  *   local-extends="javax.ejb.EJBLocalObject"
- *   local-class="org.ejbca.core.ejb.ra.Approval.IApprovalSessionLocal"
- *   remote-class="org.ejbca.core.ejb.ra.Approval.IApprovalSessionRemote"
+ *   local-class="org.ejbca.core.ejb.approval.IApprovalSessionLocal"
+ *   remote-class="org.ejbca.core.ejb.approval.IApprovalSessionRemote"
  *
  *  @jonas.bean ejb-name="ApprovalSession"
  */

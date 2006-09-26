@@ -88,7 +88,7 @@
     <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
     <ejb-ref-type>Session</ejb-ref-type>
     <local-home>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome</local-home>
-    <local>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome</local>
+    <local>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal</local>
     <ejb-link>CAAdminSession</ejb-link>
   </ejb-local-ref>
   <ejb-local-ref>

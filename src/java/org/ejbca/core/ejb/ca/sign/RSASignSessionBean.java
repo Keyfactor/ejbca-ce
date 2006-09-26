@@ -116,8 +116,8 @@ import org.ejbca.util.CertTools;
  *   view-type="local"
  *   ejb-name="CADataLocal"
  *   type="Entity"
- *   home="org.ejbca.core.ejb.ca.caadmin.ICADataLocalHome"
- *   business="org.ejbca.core.ejb.ca.caadmin.ICADataLocal"
+ *   home="org.ejbca.core.ejb.ca.caadmin.CADataLocalHome"
+ *   business="org.ejbca.core.ejb.ca.caadmin.CADataLocal"
  *   link="CAData"
  *
  * @ejb.ejb-external-ref description="The log session bean"

@@ -43,7 +43,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.2 2006-01-26 14:14:31 anatom Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.3 2006-09-26 09:54:11 anatom Exp $
  *
  * @ejb.bean
  *   display-name="AuthenticationSB"
@@ -63,8 +63,8 @@ import org.ejbca.core.model.ra.UserDataVO;
  *   view-type="local"
  *   ejb-name="UserDataLocal"
  *   type="Entity"
- *   home="org.ejbca.core.model.ca.store.UserDataLocalHome"
- *   business="org.ejbca.core.model.ca.store.UserDataLocal"
+ *   home="org.ejbca.core.ejb.ra.UserDataLocalHome"
+ *   business="org.ejbca.core.ejb.ra.UserDataLocal"
  *   link="UserData"
  *
  * @ejb.ejb-external-ref
@@ -72,8 +72,8 @@ import org.ejbca.core.model.ra.UserDataVO;
  *   view-type="local"
  *   ejb-name="LogSessionLocal"
  *   type="Session"
- *   home="org.ejbca.core.model.log.ILogSessionLocalHome"
- *   business="org.ejbca.core.model.log.ILogSessionLocal"
+ *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
+ *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
  *   link="LogSession"
  *
  * @ejb.ejb-external-ref
@@ -81,8 +81,8 @@ import org.ejbca.core.model.ra.UserDataVO;
  *   view-type="local"
  *   ejb-name="RaAdminSessionLocal"
  *   type="Session"
- *   home="org.ejbca.core.model.ra.raadmin.IRaAdminSessionLocalHome"
- *   business="org.ejbca.core.model.ra.raadmin.IRaAdminSessionLocal"
+ *   home="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal"
  *   link="RaAdminSession"
  *
  * @ejb.ejb-external-ref

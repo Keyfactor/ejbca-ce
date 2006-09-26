@@ -13,10 +13,10 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.approval.IApprovalSessionLocal;
+import org.ejbca.core.ejb.approval.IApprovalSessionLocalHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
-import org.ejbca.core.ejb.ra.Approval.IApprovalSessionLocal;
-import org.ejbca.core.ejb.ra.Approval.IApprovalSessionLocalHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -32,7 +32,7 @@ import org.ejbca.ui.web.RequestHelper;
  * Contains methods for such things as language, themes ext
  * 
  * @author Philip Vendil
- * $Id: EjbcaJSFHelper.java,v 1.1 2006-08-09 07:29:47 herrvendil Exp $
+ * $Id: EjbcaJSFHelper.java,v 1.2 2006-09-26 09:53:48 anatom Exp $
  */
 
 public class EjbcaJSFHelper  {

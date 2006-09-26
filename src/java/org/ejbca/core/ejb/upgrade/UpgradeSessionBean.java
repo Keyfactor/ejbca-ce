@@ -45,7 +45,7 @@ import se.anatom.ejbca.log.OldLogConfigurationDataLocalHome;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.6 2006-04-05 09:07:34 anatom Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.7 2006-09-26 09:53:48 anatom Exp $
  * @ejb.bean
  *   display-name="UpgradeSB"
  *   name="UpgradeSession"
@@ -87,8 +87,8 @@ import se.anatom.ejbca.log.OldLogConfigurationDataLocalHome;
  *   view-type="local"
  *   ejb-name="OldLogConfigurationDataLocal"
  *   type="Entity"
- *   home="se.anatom.ejbca.log.LogConfigurationDataLocalHome"
- *   business="se.anatom.ejbca.log.LogConfigurationDataLocal"
+ *   home="se.anatom.ejbca.log.OldLogConfigurationDataLocalHome"
+ *   business="se.anatom.ejbca.log.OldLogConfigurationDataLocal"
  *   link="OldLogConfigurationData"
  * 
  * @ejb.ejb-external-ref
@@ -96,8 +96,8 @@ import se.anatom.ejbca.log.OldLogConfigurationDataLocalHome;
  *   view-type="local"
  *   ejb-name="CAAdminSessionLocal"
  *   type="Session"
- *   home="se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocalHome"
- *   business="se.anatom.ejbca.ca.caadmin.ICAAdminSessionLocal"
+ *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
  *   link="CAAdminSession"
  */
 public class UpgradeSessionBean extends BaseSessionBean {

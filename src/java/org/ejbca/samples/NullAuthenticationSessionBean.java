@@ -58,8 +58,8 @@ import org.ejbca.util.CertTools;
  *   view-type="local"
  *   ejb-name="LogSessionLocal"
  *   type="Session"
- *   home="org.ejbca.core.model.log.ILogSessionLocalHome"
- *   business="org.ejbca.core.model.log.ILogSessionLocal"
+ *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
+ *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
  *   link="LogSession"
  * 
  * @ejb.home
@@ -77,7 +77,7 @@ import org.ejbca.util.CertTools;
  *   generate="none"
  *
  *
- * @version $Id: NullAuthenticationSessionBean.java,v 1.2 2006-01-26 14:17:58 anatom Exp $
+ * @version $Id: NullAuthenticationSessionBean.java,v 1.3 2006-09-26 09:53:48 anatom Exp $
  * 
  */
 public class NullAuthenticationSessionBean extends BaseSessionBean {

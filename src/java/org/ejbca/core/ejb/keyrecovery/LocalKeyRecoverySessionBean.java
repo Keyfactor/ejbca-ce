@@ -45,7 +45,7 @@ import org.ejbca.util.CertTools;
  * Stores key recovery data. Uses JNDI name for datasource as defined in env 'Datasource' in
  * ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.2 2006-02-15 00:15:56 herrvendil Exp $
+ * @version $Id: LocalKeyRecoverySessionBean.java,v 1.3 2006-09-26 09:54:12 anatom Exp $
  *
  * @ejb.bean
  *   display-name="Stores key recovery data"
@@ -88,8 +88,8 @@ import org.ejbca.util.CertTools;
  *   view-type="local"
  *   ejb-name="CertificateStoreSessionLocal"
  *   type="Session"
- *   home="org.ejbca.core.model.ca.store.ICertificateStoreSessionLocalHome"
- *   business="org.ejbca.core.model.ca.store.ICertificateStoreSessionLocal"
+ *   home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  *   link="CertificateStoreSession"
  *   
  * @ejb.ejb-external-ref
@@ -106,8 +106,8 @@ import org.ejbca.util.CertTools;
  *   view-type="local"
  *   ejb-name="LogSessionLocal"
  *   type="Session"
- *   home="org.ejbca.core.model.log.ILogSessionLocalHome"
- *   business="org.ejbca.core.model.log.ILogSessionLocal"
+ *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
+ *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
  *   link="LogSession"
  *
  * @ejb.home

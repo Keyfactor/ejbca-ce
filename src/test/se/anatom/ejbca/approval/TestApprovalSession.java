@@ -15,14 +15,14 @@ import javax.naming.NamingException;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.approval.IApprovalSessionHome;
+import org.ejbca.core.ejb.approval.IApprovalSessionRemote;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionHome;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.Approval.IApprovalSessionHome;
-import org.ejbca.core.ejb.ra.Approval.IApprovalSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
