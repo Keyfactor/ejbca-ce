@@ -1,5 +1,5 @@
 #
-# $Id: cmp.properties.sample,v 1.1 2006-09-26 12:42:36 anatom Exp $
+# $Id: cmp.properties.sample,v 1.2 2006-09-26 12:57:45 anatom Exp $
 #
 # This is a sample file to override properties used
 # during deployment of EJBCA
@@ -40,7 +40,6 @@
 #
 # Default: empty
 #cmp.ra.authenticationsecret=
-cmp.ra.authenticationsecret=password
 
 # Which generation scheme should be used, RANDOM or DN.
 #
