@@ -16,7 +16,7 @@
       you will probably see some SQLException errors. You should:
       </p>
       <ul>
-      <li>Make sure the settings in ejbca.properties is correct</li>
+      <li>Make sure the settings in conf/ejbca.properties is correct</li>
       <li>Stop JBoss</li>
       <li>Drop the old database and create a new one</li>
       <li>Do 'ant clean' and 'ant bootstrap' again</li>

@@ -51,7 +51,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * - Certificate Confirmation - accept or reject by client - will return a PKIConfirm
  * 
  * @author tomas
- * @version $Id: CmpMessageDispatcher.java,v 1.4 2006-09-25 12:54:59 anatom Exp $
+ * @version $Id: CmpMessageDispatcher.java,v 1.5 2006-09-26 12:42:37 anatom Exp $
  */
 public class CmpMessageDispatcher {
 	private static final Logger log = Logger.getLogger(CmpMessageDispatcher.class);
@@ -73,7 +73,7 @@ public class CmpMessageDispatcher {
 		
 		// Read parameters 
 		String str = ServiceLocator.getInstance().getString("java:comp/env/allowRaVerifyPopo");
-		if (StringUtils.equals("1", str)) {
+		if (StringUtils.equals("true", str)) {
 			log.debug("allowRAVerifyPopo=true");
 			allowRaVerifyPopo = true;
 		}

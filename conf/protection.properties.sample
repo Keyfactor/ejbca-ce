@@ -1,0 +1,44 @@
+#
+# $Id: protection.properties.sample,v 1.1 2006-09-26 12:42:36 anatom Exp $
+#
+# See doc/howto/howto-logsigning.txt for more information about these properties.
+
+# This is a sample file to override properties used
+# during development (or deployment) of EJBCA
+# 
+# You should store this file as protection.properties (in the same place as ejbca.properties)
+# and customize at will.
+#
+
+# Enable protection altogether
+# Default: false
+#protection.enabled=false
+
+# Enable protection of internal database logs
+# Default: false
+#protection.logprotect=false
+
+# Enable protection of internal CertificateData store
+# Default: false
+#protection.certprotect=false
+
+# Should we warn when verifying if a protection row is missing?
+# Default: true
+#protection.warnonmissingrow=true
+
+# Reference to a key to be read, mostly enabled for future use when several different keys can be used
+# for different types of protection entries.
+# Default: key1
+#protection.keyref=key1
+
+# The key referenced above, can be a clear text key, an encrypted key or some other type,
+# depending on the value of protection.keytype.
+# Default: foo123
+#protection.key=foo123
+
+# The type of key, to be able to decode the value and use it.
+# Supported types are: 
+# SOFT_HMAC, for a clear text password
+# ENC_SOFT_HMAC, for an encrypted password, created with 'bin/ejbca.sh encryptpwd'
+# Default: SOFT_HMAC
+#protection.keytype=SOFT_HMAC

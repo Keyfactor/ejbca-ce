@@ -376,15 +376,15 @@ PROTECT ERROR
 
 This information can be used to monitor logs for protection errors.
 
-To enable, you must add a file protection.properties as defined below, and then doing
-'ant clean', 'and deploy'.
+To enable, you must add a file conf/protection.properties as defined below, and then doing
+'ant clean', 'and deploy'. There is a conf/protection.properties.sample that you can copy.
 
 Don't forget, enabling log protection degrades performance a bit! 
 See HOWTO-database.txt for some indexes that might speed things up a little bit again.
 
 -----
 #
-# $Id: HOWTO-logsigning.txt,v 1.15 2006-08-20 14:06:25 anatom Exp $
+# $Id: HOWTO-logsigning.txt,v 1.16 2006-09-26 12:42:36 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA

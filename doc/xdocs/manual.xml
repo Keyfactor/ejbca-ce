@@ -143,13 +143,13 @@ Note that the installation must be done with a user with privileges to write to 
 1) Set the environment variable JBOSS_HOME to where your JBoss is installed,
 example /opt/jboss-4.0.2 or C:\jboss-4.0.3SP1. 
 </p><p>
-2) Copy ejbca.properties.sample to ejbca.properties and customize if needed.
+2) Copy conf/ejbca.properties.sample to conf/ejbca.properties and customize if needed.
 The default values works fine for a test installaton. 
 </p><p>
 <ul>
 <li>Customize the CA properties if you need to do so.
 For production use you need to do this, don't forget to edit
-passwords to be secure and secret. Keep ejbca.properties as secret as possible.
+passwords to be secure and secret. Keep conf/ejbca.properties as secret as possible.
 DO NOT forget the passwords, if you need to re-install the software sometime.</li>
 <li>Customize the database if needed but easiest thing is to keep the default as it is,
 it will use the JBoss embedded HSQLDB and everything will be easier for you.
@@ -211,7 +211,7 @@ bin/ejbca.sh ca getrootcert AdminCA1 ca.crt -der
 keytool -import -trustcacerts -alias AdminCA1 -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit -file ca.crt
 </source>
 <p>
-where AdminCA1 is the CA name as configured in ejbca.properties (default is AdminCA1).
+where AdminCA1 is the CA name as configured in conf/ejbca.properties (default is AdminCA1).
 You must stop and start JBoss after doing this.
 </p></subsection>
 
@@ -267,7 +267,7 @@ The default validity time for the SSL certificate is two years. When this expire
 You can do this throught the admin-GUI by:
 <ol>
 <li>Go to 'List/Edit End Entities' and search for user 'tomcat'.</li>
-<li>'Edit_End_Entity' and set the 'Password' to the same as httpsserver.password in your ejbca.properties and 'Status' to 'New'.</li>
+<li>'Edit_End_Entity' and set the 'Password' to the same as httpsserver.password in your conf/ejbca.properties and 'Status' to 'New'.</li>
 <li>Open up a command line in EJBCA_HOME and run 'bin/ejbca.sh batch'.</li>
 <li>Copy EJBCA_HOME/p12/tomcat.jks to JBOSS_HOME/server/default/conf/keystore.jks, or run 'ant deploy'. Ant deploy will do some other things as well, so if you are not sure, just copy the file.</li>
 <li>Restart JBoss.</li>
@@ -798,7 +798,7 @@ EJBCA currently does authentication through the means of a regToken control (id-
 The regToken is a UTF8String which is the users password as registered in EJBCA.
 </p>
 <p>
-Users can be looked up from the request in different ways, as configured in ejbca.properties.
+Users can be looked up from the request in different ways, as configured in conf/ejbca.properties.
 By default the subject DN from the certTemplate in the request is used to look up the used in EJBCA. 
 You can also configure EJBCA to use the CN or the UID from the subject DN as the username in EJBCA.
 </p>
@@ -809,7 +809,7 @@ Proof of Possession (POP) is another part where CMP has gazillions of different 
 <br/>
 The following POPs in the CRMF are supported by EJBCA:
 <ul>
-<li>raVerify - if configured so in ejbca.properties EJBCA will support the raVerify POP and in that case not do any verification of POP. By default this is false, because the standard does not recommend this option.</li>
+<li>raVerify - if configured so in conf/ejbca.properties EJBCA will support the raVerify POP and in that case not do any verification of POP. By default this is false, because the standard does not recommend this option.</li>
 <li>signature - where the PublicKey is in the CertTemplate and the signature is calculated over the CertReqMsg.certReq (the standard procedure when the CertTemplate contains the subject and publicKey values).</li>
 </ul>
 Currently this are the only POPs supported by EJBCA, so if you don't use raVerify or signature your request will fail becuase POP is not verified.
@@ -840,7 +840,7 @@ For a CA to be valid as an OCSP-responder it must have the KeyUsage 'Digital Sig
 This KeyUsage must be included if the CA is to sign OCSP-responses.
 The default certificate profiles for CAs includes the key usage 'Digital Signature'.
 </p><p>
-There are a two parameters affecting the OCSP service that can be configured in ejbca.properties:
+There are a two parameters affecting the OCSP service that can be configured in conf/ejbca.properties:
 <ul>
 <li>'useCASigningCert' - If set to true (default) the OCSP reponses will be signed directly by the CAs certificate instead 
 of the CAs OCSP responder. If set to false, the CAs special OCSP responder certificate is used to sign the
@@ -992,12 +992,12 @@ bin/ejbca.sh batch
 <section name="Email notifications">
 <p>
 Mail settings in JBoss is created when running the 'ant install' using the values
-specified in ejbca.properties (or default).
+specified in conf/ejbca.properties (or default).
 <br></br>
 It is configured in 
 $JBOSS_HOME/server/default/deploy/ejbca-mail-service.xml.
 For other containers you must create a mail service with the same JNDI name as specificed in 
-ejbca.properties.
+conf/ejbca.properties.
 </p><p>
 You must create a new end-entity profile to be able to issue certificates 
 to end users using email notifications. Under the RA functions, choose "Edit End Entity Profiles" 
@@ -1091,7 +1091,7 @@ In the system there are basically two different classes of requests. One is requ
 end entity, and that is executed directly after the last required administrator has approved the action. This type is 
 called 'Executable Action Request'. The other type are requests to get hold of some information, like hard token 
 PUK codes or archived keys. This kind of request is approved when the last administrator gives his consent and is valid 
-for a defined period of time (in ejbca.properties). In this case is the requesting administrator supposed to poll the 
+for a defined period of time (in conf/ejbca.properties). In this case is the requesting administrator supposed to poll the 
 approval request if it has been approved or not. These requests are called 'Non-Executable Action Requests'. 
 </p><p>
 <i>Explanation of approval status</i>
@@ -1099,12 +1099,12 @@ approval request if it has been approved or not. These requests are called 'Non-
 Here follows an explanation of what the different approval requests statuses.
 <ul>
 <li><i>Waiting</i>: Means that the action request is waiting to be processed by authorized administrators, request are 
-valid for the time specified by approval.defaultrequestvalidity in ejbca.properties before it is set to status Expired.</li>
+valid for the time specified by approval.defaultrequestvalidity in conf/ejbca.properties before it is set to status Expired.</li>
 <li><i>Approved</i>: Means that the action request is approved and is valid for the amount of time specified by 
-approval.defaultapprovalvalidity in ejbca.properties. After this it is set to Expired. Used by action requests that are 
+approval.defaultapprovalvalidity in conf/ejbca.properties. After this it is set to Expired. Used by action requests that are 
 not executable.</li>
 <li><i>Rejected</i>: Means that the action request is rejected and won't be allowed. The rejection lasts the amount of time 
-specified by approval.defaultapprovalvalidity in ejbca.properties. After this it is set to Expired and a new request can 
+specified by approval.defaultapprovalvalidity in conf/ejbca.properties. After this it is set to Expired and a new request can 
 be done. Used by action requests that are not executable.</li>
 <li><i>Expired</i>: Means that the action request isn't valid any more and cannot be processed. The requesting administrator 
 has to make a new request in order to approve it.</li>
@@ -1484,7 +1484,7 @@ Do the setup according the documentation from SafeNet. After "Assign a Client to
 Do the following:
 <ul>
 <li>1. Put LunaJCASP.jar from SafeNet in $EJBCA_HOME/lib and in $JBOSS_HOME/server/default/lib</li>
-<li>2. Define the property 'hsm.luna' in ejbca.properties (see uncommented line in ejbca.properties.sample).</li>
+<li>2. Define the property 'hsm.luna' in conf/ejbca.properties (see uncommented line in conf/ejbca.properties.sample).</li>
 <li>3. ant deploy</li>
 </ul>
 </p>
@@ -2237,7 +2237,7 @@ This is not ideal, but it is a consequence of how the authorization system works
 <section name="Internationalization">
 <p>
 To customize EJBCA admin GUI for your languages special characters you will probably have to 
-change the default page encoding in 'web.contentencoding' (in ejbca.properties file) 
+change the default page encoding in 'web.contentencoding' (in conf/ejbca.properties file) 
 to for example UTF-8 instead of the default ISO-8859-1.
 </p><p>
 Displaying, receiving, decoding and storing different char sets is rather complicated and the 
@@ -2304,7 +2304,7 @@ In order to add a language you should do the following:
 language.<i>languagecode</i>.properties. In case of chinese it should be 'zh', and place 
 it in the src/adminweb/languages directory.
 </li>
-<li>Edit ejbca.properties (create with ejbca.properties.sample as template if you don't have one).
+<li>Edit conf/ejbca.properties (create with conf/ejbca.properties.sample as template if you don't have one).
 Change 'web.availablelanguages' and add your language code to the value. i.e:
 &lt;env-entry-value>EN,FR,IT&lt;/env-entry-value>
 </li>
@@ -2324,8 +2324,7 @@ The language will be changed next time the administrator logs in.
 
 <section name="Reference manual">
 <p>
-All configuration options, JNDI names etc is configured through the use of an 
-ejbca.properties file. 
+All configuration options, JNDI names etc is configured through the use of a conf/ejbca.properties file. 
 </p>
 
 <subsection name="Administrating CA">
@@ -2418,7 +2417,7 @@ Ex: bin/ejbca.sh setup setbaseurl localhost ejbca
 You should never have to do this in version >= 3.2.
 </p><p>
 To change ports (default public http=8080, public https=8442, private https=8443) you must edit 
-ejbca.properties. Change the properties httpserver.pubhttp, httpserver.pubhttps and httpserver.privhttps.
+conf/ejbca.properties. Change the properties httpserver.pubhttp, httpserver.pubhttps and httpserver.privhttps.
 After changing, run 'ant deploy' and re-start the application server.
 </p></subsection>
 
@@ -2596,7 +2595,7 @@ to <br></br>$JBOSS_HOME/server/default/deploy/jbossweb-tomcat41.sar/META-INF/jbo
 Edit the file so 'keyStorePass' is the
 same as the password you specify below for 'tomcat'.
 </p><p>
-2. Edit parameters in ejbca.properties.
+2. Edit parameters in conf/ejbca.properties.
 </p><p>
 3. Create a tomcat server keystore with the 'ejbca.sh batch' tool
 (this can also be done with Suns 'keytool' by creating a keystore and then

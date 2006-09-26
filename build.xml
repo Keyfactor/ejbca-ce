@@ -13,8 +13,11 @@
        First it checks your home directory for ejbca.properties
        next it checks the properties file here. -->
     <property file="${user.home}/${app.name}.properties" />
+	<!-- Keep reading the old file to be simply backwards compatible, the new one (conf/x overrides -->
     <property file="${app.name}.properties" />
-    <property file="protection.properties" />
+    <property file="conf/${app.name}.properties" />
+    <property file="conf/protection.properties" />
+    <property file="conf/cmp.properties" />
 	<property name="java.ver" value="14" />
 	
 
@@ -201,8 +204,24 @@
     <property name="protection.key" value="foo123" />
     <property name="protection.keytype" value="SOFT_HMAC" />
 	
+	<!-- CMP settings -->
+	<property name="cmp.allowraverifypopo" value="false" />
+	<property name="cmp.defaultca" value="" />
+	<property name="cmp.extractusernamecomponent" value="" />
+	<property name="cmp.operationmode" value="normal" />
+	<property name="cmp.ra.authenticationsecret" value="" />
+	<property name="cmp.ra.namegenerationscheme" value="DN" />
+	<property name="cmp.ra.namegenerationparameters" value="CN" />
+	<property name="cmp.ra.namegenerationprefix" value="" />
+	<property name="cmp.ra.namegenerationpostfix" value="" />
+	<property name="cmp.ra.endentityprofile" value="EMPTY" />
+	<property name="cmp.ra.certificateprofile" value="ENDUSER" />
+	<property name="cmp.ra.caname" value="AdminCA1" />
+
+	<!-- Development and debug setting -->
 	<property name="certtools.dnorderreverse" value="false" />
 	<property name="development.provider.installation" value="false" />
+	
 	
     <!-- =================================================================== -->
     <!-- Build ALL                                                           -->
@@ -250,8 +269,20 @@ web.contentencoding    = ${web.contentencoding}
 hardtoken.diplaysensitiveinfo    = ${hardtoken.diplaysensitiveinfo}
 approval.defaultrequestvalidity  = ${approval.defaultrequestvalidity}
 approval.defaultapprovalvalidity = ${approval.defaultapprovalvalidity}
-approval.excludedClasses = ${approval.excludedClasses}
-certtools.dnorderreverse = ${certtools.dnorderreverse}
+approval.excludedClasses         = ${approval.excludedClasses}
+cmp.allowraverifypopo           = ${cmp.allowraverifypopo}
+cmp.defaultca                   = ${cmp.defaultca}
+cmp.extractusernamecomponent    = ${cmp.extractusernamecomponent}
+cmp.operationmode               = ${cmp.operationmode}
+cmp.ra.authenticationsecret     = ${cmp.ra.authenticationsecret}
+cmp.ra.namegenerationscheme     = ${cmp.ra.namegenerationscheme}
+cmp.ra.namegenerationparameters = ${cmp.ra.namegenerationparameters}
+cmp.ra.namegenerationprefix     = ${cmp.ra.namegenerationprefix}
+cmp.ra.namegenerationpostfix    = ${cmp.ra.namegenerationpostfix}
+cmp.ra.endentityprofile         = ${cmp.ra.endentityprofile}
+cmp.ra.certificateprofile       = ${cmp.ra.certificateprofile}
+cmp.ra.caname                   = ${cmp.ra.caname}
+certtools.dnorderreverse          = ${certtools.dnorderreverse}
 development.provider.installation = ${development.provider.installation}
       </echo>
 <!--
@@ -1511,6 +1542,7 @@ protection.certprotect=${protection.certprotect}
 		    	<exclude name=".project" />
 		    	<exclude name="**/.cvsignore" />
 		    	<exclude name="**/ejbca.properties" />
+		    	<exclude name="conf/*.properties" />
 		    	<exclude name="**/*.sh" />
 		    </zipfileset>
 		    <zipfileset dir="." prefix="ejbca" filemode="700" dirmode="700"> 

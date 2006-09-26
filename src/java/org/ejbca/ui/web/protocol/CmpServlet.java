@@ -35,7 +35,7 @@ import org.ejbca.util.Base64;
  * Servlet implementing server side of the Certificate Management Protocols (CMP) 
  *
  * @author tomas
- * @version $Id: CmpServlet.java,v 1.8 2006-09-26 09:53:48 anatom Exp $
+ * @version $Id: CmpServlet.java,v 1.9 2006-09-26 12:42:37 anatom Exp $
  * 
  * @web.servlet name = "CmpServlet"
  *              display-name = "CmpServlet"
@@ -44,65 +44,65 @@ import org.ejbca.util.Base64;
  *
  * @web.servlet-mapping url-pattern = "/cmp"
  * 
- * @web.env-entry description="Allow the client/RA to specify that the CA should not verify POP, set to 1 to allow no POP (raVerify in the rfc). Default 0."
+ * @web.env-entry description="Allow the client/RA to specify that the CA should not verify POP, set to true to allow no POP (raVerify in the rfc). Default false."
  *   name="allowRaVerifyPopo"
  *   type="java.lang.String"
- *   value="0"
+ *   value="${cmp.allowraverifypopo}"
  *   
  * @web.env-entry description="Enforce a particual CA instead of taking it from the request. Default empty."
  *   name="defaultCA"
  *   type="java.lang.String"
- *   value=""
+ *   value="${cmp.defaultca}"
  *   
  * @web.env-entry description="Defines which component from the DN should be used to look up username in EJBCA. Can be CN, UID or nothing. Nothing means that the DN will be used to look up the user. Default empty."
  *   name="extractUsernameComponent"
  *   type="java.lang.String"
- *   value=""
+ *   value="${cmp.extractusernamecomponent}"
  *   
- * @web.env-entry description="If the CMP service should work in NORMAL or RA mode (see docs). Default NORMAL (or empty value means the same)."
+ * @web.env-entry description="If the CMP service should work in 'normal' or 'ra' mode (see docs). Default normal (or empty value means the same)."
  *   name="operationMode"
  *   type="java.lang.String"
- *   value=""
+ *   value="${cmp.operationmode}"
  *   
  * @web.env-entry description="Shared secret between the CA and the RA used to authenticate valid RA messages. Default empty."
  *   name="raAuthenticationSecret"
  *   type="java.lang.String"
- *   value="password"
+ *   value="${cmp.ra.authenticationsecret}"
  *   
  * @web.env-entry description="Which generation scheme should be used, RANDOM or DN. Default DN."
  *   name="raModeNameGenerationScheme"
  *   type="java.lang.String"
- *   value="DN"
+ *   value="${cmp.ra.namegenerationscheme}"
  *   
  * @web.env-entry description="Parameters for name generation, for DN it can be CN or UID. Default CN."
  *   name="raModeNameGenerationParameters"
  *   type="java.lang.String"
- *   value="CN"
+ *   value="${cmp.ra.namegenerationparameters}"
  *   
  * @web.env-entry description="Prefix to generated name, a string that can contain the markup ${RANDOM} to inser random chars. Default empty."
  *   name="raModeNameGenerationPrefix"
  *   type="java.lang.String"
- *   value=""
+ *   value="${cmp.ra.namegenerationprefix}"
  *   
  * @web.env-entry description="Postfix to generated name, a string that can contain the markup ${RANDOM} to inser random chars. Default empty."
  *   name="raModeNameGenerationPostfix"
  *   type="java.lang.String"
- *   value=""
+ *   value="${cmp.ra.namegenerationpostfix}"
  *   
  * @web.env-entry description="The endEntityProfile to be used when adding users in RA mode. Default EMPTY."
  *   name="endEntityProfile"
  *   type="java.lang.String"
- *   value="EMPTY"
+ *   value="${cmp.ra.endentityprofile}"
  *   
  * @web.env-entry description="The certificateProfile to be used when adding users in RA mode. Default ENDUSER."
  *   name="certificateProfile"
  *   type="java.lang.String"
- *   value="ENDUSER"
+ *   value="${cmp.ra.certificateprofile}"
  *   
  * @web.env-entry description="The CA to be used when adding users in RA mode. Default AdminCA1."
  *   name="caName"
  *   type="java.lang.String"
- *   value="AdminCA1"
+ *   value="${cmp.ra.caname}"
  *   
  * @web.ejb-local-ref
  *  name="ejb/SignSessionLocal"

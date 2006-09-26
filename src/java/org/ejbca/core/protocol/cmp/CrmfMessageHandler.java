@@ -71,7 +71,7 @@ import com.novosec.pkix.asn1.crmf.PBMParameter;
 /**
  * Message handler for certificate request messages in the CRMF format
  * @author tomas
- * @version $Id: CrmfMessageHandler.java,v 1.6 2006-09-25 12:54:59 anatom Exp $
+ * @version $Id: CrmfMessageHandler.java,v 1.7 2006-09-26 12:42:37 anatom Exp $
  */
 public class CrmfMessageHandler implements ICmpMessageHandler {
 	
@@ -113,7 +113,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 		
 		String str = ServiceLocator.getInstance().getString("java:comp/env/operationMode");
 		log.debug("operationMode="+str);
-		if (StringUtils.equals(str, "RA")) {
+		if (StringUtils.equalsIgnoreCase(str, "ra")) {
 			// create UsernameGeneratorParams
 			usernameGeneratorParams = new UsernameGeneratorParams();
 			str = ServiceLocator.getInstance().getString("java:comp/env/raModeNameGenerationScheme");

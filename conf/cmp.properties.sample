@@ -1,0 +1,80 @@
+#
+# $Id: cmp.properties.sample,v 1.1 2006-09-26 12:42:36 anatom Exp $
+#
+# This is a sample file to override properties used
+# during deployment of EJBCA
+# 
+# You should copy and rename this file to cmp.properties
+# and customize at will.
+#
+
+#------------------- CMP (RFC4210) settings -------------
+# 
+# Allow the client/RA to specify that the CA should not verify POP, 
+# set to true to allow no POP (raVerify in the rfc). 
+#
+# Default: false
+#cmp.allowraverifypopo=false
+
+# Enforce a particual CA instead of taking it from the request. 
+#
+# Default: empty
+#cmp.defaultca=
+
+# Defines which component from the DN should be used to look up username in EJBCA. Can be CN, UID or nothing. Nothing means that the DN will be used to look up the user. 
+#
+# Default: empty
+#cmp.extractusernamecomponent=
+
+# If the CMP service should work in 'normal' or 'ra' mode (see docs). 
+# Normal mode means that the user must be pre-registered in EJBCA (as normal), and the EJBCA user is looked up from data in the request
+# (the DN or a part of the DN).
+# RA mode means that the CMP client will act as an RA to EJBCA and users will be created in EJBCA when a request comes in. 
+# The username that is created will be generated according to the parameters set here, it can be random or also a part of the DN, 
+# optionally with pre- and postfix appended.
+#
+# Default normal (empty value means the same)
+#cmp.operationmode=normal
+
+# Shared secret between the CA and the RA used to authenticate valid RA messages.
+#
+# Default: empty
+#cmp.ra.authenticationsecret=
+cmp.ra.authenticationsecret=password
+
+# Which generation scheme should be used, RANDOM or DN.
+#
+# Default: DN
+#cmp.ra.namegenerationscheme=DN
+
+# Parameters for name generation, for DN it can be CN or UID. 
+#
+# Default: CN
+#cmp.ra.namegenerationparameters=CN
+
+# Prefix to generated name, a string that can contain the markup ${RANDOM} to inser random chars.
+# Example: MyPrefix - ${RANDOM}
+#
+# Default: empty
+#cmp.ra.namegenerationprefix=
+
+# Postfix to generated name, a string that can contain the markup ${RANDOM} to inser random chars.
+# Example: MyPostfix - ${RANDOM}
+#
+# Default: empty
+#cmp.ra.namegenerationpostfix=
+
+# The endEntityProfile to be used when adding users in RA mode. 
+#
+# Default: EMPTY
+#cmp.ra.endentityprofile=EMPTY
+
+# The certificateProfile to be used when adding users in RA mode. 
+#
+# Default: ENDUSER
+#cmp.ra.certificateprofile=ENDUSER
+
+# The CA to be used when adding users in RA mode. 
+#
+# Default: AdminCA1
+#cmp.ra.caname=AdminCA1

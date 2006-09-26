@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.67 2006-09-26 07:51:47 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.1 2006-09-26 12:42:36 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
