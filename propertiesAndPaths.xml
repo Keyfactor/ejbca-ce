@@ -1,0 +1,230 @@
+
+	<!-- This XML file is for inclusion in build.xml, and not for usage in itself -->
+
+	<property name="app.name" value="ejbca" />
+    <property name="app.name.cap" value="EJBCA" />
+	<property name="app.version" value="${app.name.cap} 3.4alpha" />
+	
+    <property name="ejbca.home" location="." />
+    <property environment="env" />
+
+    <!-- Give user a chance to override without editing this file
+       (and without typing -D each time it compiles it).
+       First it checks your home directory for ejbca.properties
+       next it checks the properties file here. -->
+    <property file="${user.home}/${app.name}.properties" />
+	<!-- Keep reading the old file to be simply backwards compatible, the new one (conf/x overrides -->
+    <property file="${app.name}.properties" />
+    <property file="conf/${app.name}.properties" />
+    <property file="conf/protection.properties" />
+    <property file="conf/cmp.properties" />
+	<property name="java.ver" value="14" />
+	
+	
+    <!-- set global properties for this build -->
+	<property name="tmp" value="./tmp" />
+    <property name="bin" value="./${tmp}/bin" />
+    <property name="build" value="${bin}/classes" />
+    <property name="ocsp-build" location="${bin}/ocsp-classes"/>
+    <property name="ocsp-client.build" location="${bin}/ocspclient" />
+    <property name="lib" value="lib" />
+	<property name="preprocessed" value="${tmp}/preprocessed"/>
+	<property name="mainsrc" value="src"/>
+	<property name="mainbin" value="bin"/>
+
+    <property name="src" value="${preprocessed}" />
+    <property name="src.java" value="${src}/java" />
+    <property name="src.gen" value="${bin}/gensrc" />
+    <property name="src.dd" value="${bin}/dd" />
+    <property name="ocsp-src.gen" value="${bin}/ocsp-gensrc" />
+    <property name="ocsp-src.dd" value="${bin}/ocsp-dd" />
+    
+    <property name="test.dir" value="${bin}/junit" />
+    <property name="test.src.dir" location="${src}/test" />
+    <property name="dist.dir" location="dist" />
+    <property name="ocsp-dist.dir" location="ocsp-dist" />
+	
+    <property name="hwtoken_classes" value="hwtoken"/>
+    <property name="hwtoken.class.dir" location="${hwtoken_classes}" />
+    <property name="apidoc" value="./doc/api" />
+
+    <property name="apply.src" value="${src}/publicweb/apply" />
+    <property name="applywar" value="${dist.dir}/apply.war" />
+
+    <property name="webdist.src" value="${src}/publicweb/webdist" />
+    <property name="webdistwar" value="${dist.dir}/webdist.war" />
+
+    <property name="sampleauth.src" value="${src}/ca/sampleauth" />
+    <property name="sampleauthwar" value="${dist.dir}/sampleauth.war" />
+
+    <property name="status.src" value="${src}/publicweb/status" />
+    <property name="statuswar" value="${dist.dir}/status.war" />
+	
+    <property name="cmp.src" value="${src}/publicweb/cmp" />
+    <property name="cmpwar" value="${dist.dir}/cmp.war" />
+	
+    <property name="healthcheck.src" value="${src}/publicweb/healthcheck" />
+    <property name="healthcheckwar" value="${dist.dir}/healthcheck.war" />
+	
+    <property name="ejbcaws.src" value="${src}/wsee" />
+	<property name="ejbcaws.build" value="${tmp}/ejbcaws.war" />  
+    <property name="ejbcawswar" value="${dist.dir}/ejbcaws.war" />
+
+    <property name="ocsphealthcheck.src" value="${src}/publicweb/ocsphealthcheck" />
+    <property name="ocsphealthcheckwar" value="${ocsp-dist.dir}/ocsphealthcheck.war" />
+	
+    <property name="ocspwar" value="${ocsp-dist.dir}/status.war" />
+
+    <property name="adminweb.src" value="${src}/adminweb" />
+    <property name="adminweb.build" value="${tmp}/adminweb.war" />    
+    <property name="adminwebwar" value="${dist.dir}/adminweb.war" />
+
+    <property name="root.warsrc" value="${src}/publicweb/root" />
+    <property name="rootwar" value="${dist.dir}/publicwebroot.war" />
+
+    <property name="ejbdd.src" value="${src}/deploy/ejb" />
+    <property name="webdd.src" value="${src}/deploy/web" />
+    <property name="eardd.src" value="${src}/deploy/ear" />
+    <property name="ocsp-eardd.src" value="${src}/deploy/ocsp-ear" />
+    <property name="caear" value="${dist.dir}/${app.name}.ear" />
+    <property name="ocspear" value="${ocsp-dist.dir}/${app.name}.ear" />
+
+	<property name="createcrlservice.name" value="crlcreateservice.jar" />
+    <property name="createcrlservice.build" value="${tmp}/${createcrlservice.name}" />	
+    <property name="createcrlservicejar" value="${dist.dir}/${createcrlservice.name}" />
+
+	<property name="cmptcpservice.name" value="cmptcpservice.jar" />
+    <property name="cmptcpservice.build" value="${tmp}/${cmptcpservice.name}" />	
+    <property name="cmptcpservicejar" value="${dist.dir}/${cmptcpservice.name}" />
+
+    <property name="logsigning.name" value="ejbcalogsigning.jar" />
+    <property name="logsigning.build" value="${tmp}/${logsigning.name}" />  
+    <property name="logsigningjar" value="${dist.dir}/${logsigning.name}" />
+
+    <property name="jar.extclasspath" value="lib/bcmail-jdk${java.ver}.jar lib/bcprov-jdk${java.ver}.jar lib/log4j-1.2.7.jar lib/ldap.jar lib/commons-lang-2.0.jar lib/commons-collections.jar lib/commons-fileupload-1.0.jar lib/batik-xml.jar lib/batik-dom.jar lib/batik-svg-dom.jar lib/batik-ext.jar lib/batik-parser.jar lib/batik-svggen.jar lib/batik-transcoder.jar lib/batik-util.jar lib/batik-css.jar lib/batik-gvt.jar lib/batik-bridge.jar lib/batik-awt-util.jar lib/batik-script.jar lib/xerces_2_3_0.jar"/>	
+    <property name="jar.ocspclientclasspath" value="lib/bcprov-jdk${java.ver}.jar lib/log4j-1.2.7.jar ./"/>
+
+    <path id="ext.classpath">
+        <fileset dir="lib/ext" includes="*.jar" />
+    </path>
+
+	<path id="wsee.classpath" >
+    	<fileset dir="lib/wsee" includes="*.jar"/>
+    	<fileset dir="lib/jasper" includes="*.jar"/>
+    	<path location="${build}" />
+    	<path refid="compile.classpath" />
+    </path>
+
+    <path id="compile.classpath">
+        <path refid="ext.classpath" />
+        <fileset dir="lib" includes="*.jar" excludes="bc*.jar"/>
+        <fileset dir="lib/quickserver" includes="*.jar"/>
+        <fileset dir="lib" includes="bcmail-jdk${java.ver}.jar"/>
+    	<fileset dir="lib" includes="bcprov-jdk${java.ver}.jar"/>
+        <path refid="j2ee.classpath" />
+    </path>
+
+    <path id="j2ee.classpath">
+        <fileset dir="${jboss.home}/client">
+            <include name="jbossall-client.jar" />
+            <include name="jboss-j2ee.jar" />
+        </fileset>
+    </path>
+
+    <path id="xdoclet.classpath">
+        <fileset dir="lib" includes="*.jar" />
+        <fileset dir="lib/ext" includes="*.jar" />
+        <fileset dir="lib/xdoclet/lib" includes="*.jar" />    
+        <fileset dir="${jboss.home}/client">
+            <include name="jboss-j2ee.jar" />
+        </fileset>
+    </path>
+
+    <path id="test.compile.classpath">
+        <path refid="compile.classpath" />
+        <path location="${build}" />
+        <path refid="j2ee.classpath" />
+    </path>
+
+    <!-- those are the default values used within JBoss for easy startup -->
+    <property name="ca.keystorepass" value="foo123"/>
+    <property name="ca.ocspkeystorepass" value="foo123"/>
+    <property name="ocsp.defaultresponder" value="CN=AdminCA1,O=${app.name.cap} Sample,C=SE"/>
+    <property name="ocsp.usecasigningcert" value="true"/>
+    <property name="ocsp.extensionoid" value=""/>
+    <property name="ocsp.extensionclass" value=""/>
+    <property name="ocsp.uniddatsource" value=""/>
+    <property name="ocsp.unidcacert" value=""/>
+    <property name="ocsp.keys.dir" value="./keys"/>
+    <property name="ocsp.keys.keyPassword" value="foo123"/>
+    <property name="ocsp.keys.storePassword" value=""/>
+    <property name="ocsp.keys.cardPassword" value=""/>
+    <property name="ocsp.hardToken.className" value="se.primeKey.caToken.card.CardKeysImpl"/>
+    <property name="ocspHardTokenClasses" value="ocspHardTokenClasses"/>
+    <property name="ocsp.hardToken.classes" location="${ocspHardTokenClasses}"/>
+    <property name="datasource.jndi-name" value="EjbcaDS" />
+    <property name="datasource.jndi-name-prefix" value="java:/" />
+    <property name="database.name" value="hsqldb" />
+    <property name="datasource.mapping" value="Hypersonic SQL" />
+    <property name="database.url" value="jdbc:hsqldb:$${jboss.server.data.dir}$${/}hypersonic$${/}localDB" />
+    <property name="database.driver" value="org.hsqldb.jdbcDriver" />
+    <property name="database.username" value="sa" />
+    <property name="database.password" value="" />
+    <property name="weblogic-oracle-columntype" value="" />
+    <property name="healthcheck.amountfreemem" value="1" />
+    <property name="healthcheck.dbquery" value="Select 1 From CertificateData" />
+    <property name="healthcheck.authorizedips" value="127.0.0.1" />
+    <property name="ocsphealthcheck.amountfreemem" value="1" />
+    <property name="ocsphealthcheck.dbquery" value="Select 1 From CertificateData" />
+    <property name="ocsphealthcheck.authorizedips" value="127.0.0.1"/>
+    <property name="mail.jndi-name" value="java:/EjbcaMail" />
+    <property name="mail.from" value="ejbca-donotreply@domain.com" />
+    <property name="mail.user" value="ejbca_user" />
+    <property name="mail.password" value="primekey" />
+    <property name="mail.pop3.host" value="localhost" />
+    <property name="mail.smtp.host" value="localhost" />
+    <property name="mail.smtp.auth" value="false" />
+    <property name="mail.subject" value="Retrieve your certificate" />
+    <property name="mail.message" value="Hello ${CN}${NL}${NL} This is a notification. ${NL}${NL} Your username: ${USERNAME}${NL} password: ${PASSWORD}${NL}${NL} Your are NOT supposed to go and fetch your certificate, this is only a test." />
+    <property name="mail.debug" value="false" />
+    <property name="httpserver.pubhttp" value="8080" />
+    <property name="httpserver.pubhttps" value="8442" />
+    <property name="httpserver.privhttps" value="8443" />
+    <property name="httpsserver.password" value="serverpwd" />
+    <property name="web.availablelanguages" value="EN,FR,IT,ES,SE,ZH,DE" />
+    <property name="web.contentencoding" value="ISO-8859-1" />
+    <property name="hardtoken.diplaysensitiveinfo" value="true" />
+	<property name="approval.defaultrequestvalidity" value="28800" />
+	<property name="approval.defaultapprovalvalidity" value="28800" />
+    <property name="approval.excludedClasses" value="" />
+
+    <!-- Extra Protection settings for internal log signing etc -->
+    <property name="protection.enabled" value="false" />
+    <property name="protection.logprotect" value="false" />
+    <property name="protection.certprotect" value="false" />
+    <property name="protection.keyref" value="key1" />
+    <property name="protection.key" value="foo123" />
+    <property name="protection.keytype" value="SOFT_HMAC" />
+	
+	<!-- CMP settings -->
+	<property name="cmp.allowraverifypopo" value="false" />
+	<property name="cmp.defaultca" value="" />
+	<property name="cmp.extractusernamecomponent" value="" />
+	<property name="cmp.operationmode" value="normal" />
+	<property name="cmp.ra.authenticationsecret" value="" />
+	<property name="cmp.ra.namegenerationscheme" value="DN" />
+	<property name="cmp.ra.namegenerationparameters" value="CN" />
+	<property name="cmp.ra.namegenerationprefix" value="" />
+	<property name="cmp.ra.namegenerationpostfix" value="" />
+	<property name="cmp.ra.endentityprofile" value="EMPTY" />
+	<property name="cmp.ra.certificateprofile" value="ENDUSER" />
+	<property name="cmp.ra.caname" value="AdminCA1" />
+	<property name="cmp.tcp.portno" value="829" />
+	<property name="cmp.tcp.logdir" value="./log" />
+	<property name="cmp.tcp.conffile" value="" />
+	
+
+	<!-- Development and debug setting -->
+	<property name="certtools.dnorderreverse" value="false" />
+	<property name="development.provider.installation" value="false" />
+	

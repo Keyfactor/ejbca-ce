@@ -1,0 +1,466 @@
+	<!-- This XML file is for inclusion in build.xml, and not for usage in itself -->
+
+    <!-- =================================================================== -->
+    <!-- Create the time stamp and build directory -->
+    <!-- =================================================================== -->
+    <target name="init" depends="j2ee:check">
+        <echo>
+---------- ${app.version} CONFIGURATION PROPERTIES ----------
+jboss.home             = ${jboss.home}
+java.ver               = ${java.ver}
+ca.keystorepass        = ${ca.keystorepass}
+ca.ocspkeystorepass    = ${ca.ocspkeystorepass}
+ocsp.defaultresponder  = ${ocsp.defaultresponder}
+ocsp.usecasigningcert  = ${ocsp.usecasigningcert}
+ocsp.extensionoid      = ${ocsp.extensionoid}
+ocsp.extensionclass    = ${ocsp.extensionclass}
+datasource.jndi-name   = ${datasource.jndi-name}
+datasource.jndi-name-prefix = ${datasource.jndi-name-prefix}
+database.name          = ${database.name}
+datasource.mapping     = ${datasource.mapping}
+database.url           = ${database.url}
+database.driver        = ${database.driver}
+database.username      = ${database.username}
+database.password      = ${database.password}
+weblogic-oracle-columntype = ${weblogic-oracle-columntype}
+mail.jndi-name         = ${mail.jndi-name}
+mail.from              = ${mail.from}
+mail.subject           = ${mail.subject}
+mail.message           = ${mail.message}
+mail.user              = ${mail.user}
+mail.password          = ${mail.password}
+mail.smtp.host         = ${mail.smtp.host}
+mail.smtp.auth         = ${mail.smtp.auth}
+mail.debug             = ${mail.debug}
+httpserver.pubhttp	   = ${httpserver.pubhttp}
+httpserver.pubhttps	   = ${httpserver.pubhttps}
+httpserver.privhttps   = ${httpserver.privhttps}
+httpsserver.password   = ${httpsserver.password}
+web.availablelanguages = ${web.availablelanguages}
+web.contentencoding    = ${web.contentencoding}
+hardtoken.diplaysensitiveinfo    = ${hardtoken.diplaysensitiveinfo}
+approval.defaultrequestvalidity  = ${approval.defaultrequestvalidity}
+approval.defaultapprovalvalidity = ${approval.defaultapprovalvalidity}
+approval.excludedClasses         = ${approval.excludedClasses}
+cmp.allowraverifypopo           = ${cmp.allowraverifypopo}
+cmp.defaultca                   = ${cmp.defaultca}
+cmp.extractusernamecomponent    = ${cmp.extractusernamecomponent}
+cmp.operationmode               = ${cmp.operationmode}
+cmp.ra.authenticationsecret     = ${cmp.ra.authenticationsecret}
+cmp.ra.namegenerationscheme     = ${cmp.ra.namegenerationscheme}
+cmp.ra.namegenerationparameters = ${cmp.ra.namegenerationparameters}
+cmp.ra.namegenerationprefix     = ${cmp.ra.namegenerationprefix}
+cmp.ra.namegenerationpostfix    = ${cmp.ra.namegenerationpostfix}
+cmp.ra.endentityprofile         = ${cmp.ra.endentityprofile}
+cmp.ra.certificateprofile       = ${cmp.ra.certificateprofile}
+cmp.ra.caname                   = ${cmp.ra.caname}
+cmp.tcp.portno                  = ${cmp.tcp.portno}
+cmp.tcp.logdir                  = ${cmp.tcp.logdir}
+cmp.tcp.conffile                = ${cmp.tcp.conffile}
+
+certtools.dnorderreverse          = ${certtools.dnorderreverse}
+development.provider.installation = ${development.provider.installation}
+      </echo>
+<!--
+protection.enabled=${protection.enabled}
+protection.logprotect=${protection.logprotect}
+protection.keyref=${protection.keyref}
+protection.keytype=${protection.keytype}
+protection.key=${protection.key}
+protection.certprotect=${protection.certprotect}
+-->   
+        <!-- Create the time stamp -->
+        <tstamp/>
+        <!-- Create the build directory structure used by compile -->
+        <mkdir dir="${build}"/>
+        <mkdir dir="${ocsp-build}"/>
+        <mkdir dir="${dist.dir}/${lib}"/>
+        <mkdir dir="${ocsp-dist.dir}"/>
+        <mkdir dir="${ocsp-client.build}"/>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Clean ALL                                                           -->
+    <!-- =================================================================== -->
+    <target name="clean">
+        <!-- Delete the ${build} and ${dist.dir} directory trees -->
+        <delete dir="${build}" />
+        <delete dir="${ocsp-build}" />
+        <delete dir="${dist.dir}" />
+        <delete dir="${ocsp-dist.dir}" />
+        <delete dir="${src.gen}" />
+        <delete dir="${src.dd}" />
+        <delete dir="${ocsp-src.gen}" />
+        <delete dir="${ocsp-src.dd}" />
+        <delete dir="${ocsp-client.build}" />
+        <delete dir="${apidoc}" />
+        <delete dir="${tmp}"/>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Compile java sources                                                -->
+    <!-- =================================================================== -->
+    <target name="compile" depends="run-xdoc">
+        <javac destdir="${build}" debug="on" includeantruntime="no" encoding="iso8859-1">
+            <classpath refid="compile.classpath" />
+            <exclude name="**/appserver/**" />
+            <exclude name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java" />
+            <exclude name="org/ejbca/ui/web/pub/cluster/ExtOCSPHealthCheck.java" />
+        	<exclude name="org/ejbca/core/protocol/ws/client/*.java" />
+            <src path="${src.java}" />
+            <src path="${src.gen}" />
+        </javac>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Autogenerate all ejb interfaces and deployment descriptors          -->
+    <!-- =================================================================== -->
+    <target name="run-xdoc" depends="init, preprocess">
+        <taskdef name="ejbdoclet" classname="xdoclet.modules.ejb.EjbDocletTask">
+            <classpath refid="xdoclet.classpath" />
+        </taskdef>
+        <taskdef name="webdoclet" classname="xdoclet.modules.web.WebDocletTask">
+            <classpath refid="xdoclet.classpath" />
+        </taskdef>
+    	<!-- Copy XDoclet merge files to handle database specific settings -->
+        <ejb-merge-copy database="${database.name}" overwrite="true" />
+        <ejbdoclet force="false" destdir="${src.gen}" ejbspec="2.0" excludedtags="@version,@author">
+            <fileset dir="${src.java}">
+                <include name="**/*Bean.java" />
+                <exclude name="**/BaseEntityBean.java" />
+                <exclude name="**/BaseSessionBean.java" />
+            </fileset>
+            <remoteinterface />
+            <homeinterface />
+            <localinterface />
+            <localhomeinterface />
+            <entitypk />
+            <session />
+            <deploymentdescriptor 
+            	destdir="${src.dd}/META-INF" 
+            	validatexml="false" 
+            	useIds="true"/>
+             <jboss version="3.2" 
+                unauthenticatedPrincipal="nobody" 
+                xmlencoding="UTF-8" 
+                validatexml="false" 
+                destdir="${src.dd}/META-INF" 
+                mergeDir="${ejbdd.src}/merge"
+                datasource="${datasource.jndi-name-prefix}${datasource.jndi-name}" 
+                datasourcemapping="${datasource.mapping}" />
+            <weblogic version="8.1" 
+                xmlencoding="UTF-8" 
+                validatexml="false" 
+                destdir="${src.dd}/META-INF" 
+                datasource="${datasource.jndi-name}" 
+                persistence="weblogic"
+                createTables="Disabled" />
+<!--            
+            <websphere
+                xmlencoding="UTF-8" 
+                validatexml="false" 
+            	useIds="true"
+                destdir="${src.dd}/META-INF" />
+            <sunone version="7.0" 
+                xmlencoding="UTF-8" 
+                destdir="${src.dd}/META-INF" 
+                validatexml="false" />
+            <jonas version="3.0" 
+                xmlencoding="UTF-8" 
+                destdir="${src.dd}/META-INF" 
+                validatexml="false" /> 
+-->                
+        </ejbdoclet>
+        <webdoclet force="true" destdir="${src.gen}" excludedtags="@version,@author">
+            <fileset dir="${src.java}">
+                <include name="**/*Servlet.java" />
+                <exclude name="**/protocol/*Servlet.java" />
+            	<exclude name="**/ui/web/pub/*Servlet.java" />
+            </fileset>
+            <deploymentdescriptor destdir="${src.dd}/WEB-INF"
+             servletspec="2.3"
+             sessiontimeout="30" 
+             description="EJBCA Administration web" 
+             mergeDir="${webdd.src}/merge"
+             distributable="false"
+             validatexml="false" >
+        	   <contextparam name="javax.faces.CONFIG_FILES" value="/WEB-INF/faces-config.xml"  />
+       	       <contextparam name="javax.faces.STATE_SAVING_METHOD" value="client" description="State saving method: 'client' or 'server' (= default) See JSF Specification 2.5.2"/>
+           	   <contextparam name="org.apache.myfaces.ALLOW_JAVASCRIPT" value="true" description="This parameter tells MyFaces if javascript code should be allowed in the
+          	     rendered HTML output.
+          	     If javascript is allowed, command_link anchors will have javascript code
+          	     that submits the corresponding form.
+          	     If javascript is not allowed, the state saving info and nested parameters
+          	     will be added as url parameters.
+          	     Default: 'true'"/>
+        	   <contextparam name="org.apache.myfaces.PRETTY_HTML" value="true" description="If true, rendered HTML code will be formatted, so that it is 'human readable'.
+          	     i.e. additional line separators and whitespace will be written, that do not
+          	     influence the HTML code.
+          	     Default: 'true'" />
+        	   <contextparam name="org.apache.myfaces.DETECT_JAVASCRIPT" value="false" />
+        	   <contextparam name="org.apache.myfaces.AUTO_SCROLL" value="true" description="If true, a javascript function will be rendered that is able to restore the
+        		  former vertical scroll on every request. Convenient feature if you have pages
+        		  with long lists and you do not want the browser page to always jump to the
+        		  top if you trigger a link or button action that stays on the same page.
+        		  Default: 'false'"/>
+               <contextparam name="org.apache.myfaces.ADD_RESOURCE_CLASS" value="org.apache.myfaces.renderkit.html.util.DefaultAddResource"  />
+                <contextparam name="org.apache.myfaces.CHECK_EXTENSIONS_FILTER" value="true"  />            	
+         	   <contextparam name="facelets.LIBRARIES" value="/WEB-INF/tomahawk.taglib.xml"  />
+            	
+             </deploymentdescriptor>
+        </webdoclet>
+        <webdoclet force="true" destdir="${src.gen}" excludedtags="@version,@author">
+            <fileset dir="${src.java}">
+                <include name="**/protocol/OCSPServlet.java" />
+                <include name="**/protocol/OCSPServletBase.java" />
+            </fileset>
+            <deploymentdescriptor destdir="${src.dd}/status/WEB-INF"
+             servletspec="2.3"
+             sessiontimeout="30" 
+             description="OCSP responder" 
+             distributable="false" 	
+             validatexml="false" />
+        </webdoclet>
+        <webdoclet force="true" destdir="${src.gen}" excludedtags="@version,@author">
+            <fileset dir="${src.java}">
+                <include name="**/protocol/CmpServlet.java" />
+            </fileset>
+            <deploymentdescriptor destdir="${src.dd}/cmp/WEB-INF"
+             servletspec="2.3"
+             sessiontimeout="30" 
+             description="CMP server" 
+             distributable="false" 	
+             validatexml="false" />
+        </webdoclet>
+    </target>
+	
+    <!-- =================================================================== -->
+    <!-- Autogenerate all ejb interfaces and deployment descriptors          -->
+    <!-- =================================================================== -->
+    <target name="ocsp-run-xdoc" depends="init, preprocess">
+        <taskdef name="ejbdoclet" classname="xdoclet.modules.ejb.EjbDocletTask">
+            <classpath refid="xdoclet.classpath" />
+        </taskdef>
+        <taskdef name="webdoclet" classname="xdoclet.modules.web.WebDocletTask">
+            <classpath refid="xdoclet.classpath" />
+        </taskdef>
+    	<!-- Copy XDoclet merge files to handle database specific settings -->
+        <ejb-merge-copy database="${database.name}" overwrite="true" />
+        <ejbdoclet force="false" destdir="${ocsp-src.gen}" ejbspec="2.0" excludedtags="@version,@author">
+            <fileset dir="${src.java}">
+                <include name="**/CertificateDataBean.java" />
+                <include name="**/LocalCertificateStoreOnlyDataSessionBean.java" />
+                <include name="**/TableProtectDataBean.java" />
+                <include name="**/TableProtectSessionBean.java" />
+            </fileset>
+            <remoteinterface />
+            <homeinterface />
+            <localinterface />
+            <localhomeinterface />
+            <entitypk />
+            <session />
+            <deploymentdescriptor destdir="${ocsp-src.dd}/META-INF" validatexml="false" />
+             <jboss version="3.2" 
+                unauthenticatedPrincipal="nobody" 
+                xmlencoding="UTF-8" 
+                validatexml="false" 
+                destdir="${ocsp-src.dd}/META-INF" 
+                mergeDir="${ejbdd.src}/merge"
+                datasource="${datasource.jndi-name-prefix}${datasource.jndi-name}" 
+                datasourcemapping="${datasource.mapping}" />
+            <weblogic version="8.1" 
+                xmlencoding="UTF-8" 
+                destdir="${ocsp-src.dd}/META-INF" 
+                validatexml="false" 
+                datasource="${datasource.jndi-name}" 
+                persistence="weblogic"
+                createTables="Disabled" />
+<!--            
+            <sunone version="7.0" 
+                xmlencoding="UTF-8" 
+                destdir="${ocsp-src.dd}/META-INF" 
+                validatexml="false" />
+            <jonas version="3.0" 
+                xmlencoding="UTF-8" 
+                destdir="${ocsp-src.dd}/META-INF" 
+                validatexml="false" /> 
+-->                
+        </ejbdoclet>
+        <webdoclet force="true" destdir="${ocsp-src.gen}" excludedtags="@version,@author">
+            <fileset dir="${src.java}">
+                <include name="**/protocol/OCSPServletStandAlone.java" />
+                <include name="**/protocol/OCSPServletBase.java" />
+            </fileset>
+            <deploymentdescriptor destdir="${ocsp-src.dd}/status/WEB-INF"
+             servletspec="2.3"
+             sessiontimeout="30" 
+             description="OCSP responder standalone" 
+             distributable="false"            	
+             validatexml="false" />
+        </webdoclet>
+    </target>
+	
+	<!--
+	  Preprocesses EJBCA by replacing tags with correct version and application texts.
+	-->
+    <target name="preprocess.luna" if="hsm.luna">
+    	<copy file="src/java/org/ejbca/core/model/ca/catoken/SafeNetLunaCAToken.java.luna" tofile="${preprocessed}/java/org/ejbca/core/model/ca/catoken/SafeNetLunaCAToken.java" overwrite="true" failonerror="false"/>
+    	<copy file="src/java/org/ejbca/ui/cli/LunaKeyTool.java.luna" tofile="${preprocessed}/java/org/ejbca/ui/cli/LunaKeyTool.java" overwrite="true" failonerror="false"/>
+    </target>
+
+	<target name="preprocess" depends="preprocess.luna">
+        <copy todir="${preprocessed}">
+            <fileset dir="src">
+              <include name="**"/>
+              <exclude name="**/*.java"/>
+              <exclude name="**/*.java.15"/>
+              <exclude name="**/*.html"/>
+              <exclude name="**/*.htm"/>            	
+              <exclude name="**/*.xml"/>
+              <exclude name="**/*.jsp"/>
+              <exclude name="**/*.jspf"/>
+              <exclude name="**/*.properties"/>
+            </fileset>	      
+	    </copy>
+        <copy todir="${preprocessed}">
+            <fileset dir="src">
+                <include name="**/*.java"/>
+                <include name="**/*.html"/>
+                <include name="**/*.htm"/>
+                <include name="**/*.xml"/>
+                <include name="**/*.jsp"/>
+                <include name="**/*.jspf"/>
+                <include name="**/*.properties"/>
+            </fileset>	   
+
+			<filterchain>
+			<tokenfilter>			    
+		        <replacestring from="@ejbca@" to="${app.name}"/>
+		    	<replacestring from="@EJBCA@" to="${app.name.cap}"/>
+		    	<replacestring from="@weblogic.ora.columntyp@" to="${weblogic-oracle-columntype}"/>
+				<replacestring from="@page.encoding@" to="${web.contentencoding}"/>
+				<replacestring from="@certtools.dnorderreverse@" to="${certtools.dnorderreverse}"/>
+				<replacestring from="@development.provider.installation@" to="${development.provider.installation}"/>
+			</tokenfilter>
+			</filterchain>
+	    </copy>
+		<echo>Ignore warnings about 'Couldn't find file' during preprocessing if you are running jdk 1.4</echo>
+        <copy file="src/java/org/ejbca/core/model/ca/catoken/CATokenInfo.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/catoken/CATokenInfo.java" overwrite="true" failonerror="false"/>
+        <copy file="src/java/org/ejbca/core/model/ca/caadmin/ExtendedX509CertificateObject.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/caadmin/ExtendedX509CertificateObject.java" overwrite="true" failonerror="false"/>
+        <copy file="src/java/org/ejbca/core/model/ca/caadmin/ExtendedX509CRLObject.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/caadmin/ExtendedX509CRLObject.java" overwrite="true" failonerror="false"/>
+        <copy file="src/java/org/ejbca/core/model/ca/caadmin/ExtendedX509Util.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/caadmin/ExtendedX509Util.java" overwrite="true" failonerror="false"/>
+        <copy file="src/java/org/ejbca/core/model/ca/caadmin/ExtendedX509V3CertificateGenerator.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/caadmin/ExtendedX509V3CertificateGenerator.java" overwrite="true" failonerror="false"/>
+		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@ejbca.version@" value="${app.version}"/>
+		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@hardtoken.diplaysensitiveinfo@" value="${hardtoken.diplaysensitiveinfo}"/>
+		<replace file="${src.java}/org/ejbca/core/model/approval/ApprovalRequest.java" token="@approval.defaultrequestvalidity@" value="${approval.defaultrequestvalidity}"/>
+		<replace file="${src.java}/org/ejbca/core/model/approval/ApprovalRequest.java" token="@approval.defaultapprovalvalidity@" value="${approval.defaultapprovalvalidity}"/>
+        <replace file="${src.java}/org/ejbca/core/model/approval/ApprovalExecutorUtil.java" token="@approval.excludedClasses@" value="${approval.excludedClasses}"/>
+		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name-prefix@" value="${datasource.jndi-name-prefix}"/>	
+		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name@" value="${datasource.jndi-name}"/>	
+		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@healthcheck.amountfreemem@" value="${healthcheck.amountfreemem}"/>	
+		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@healthcheck.dbquery@" value="${healthcheck.dbquery}"/>	
+		<replace file="${healthcheck.src}/WEB-INF/web.xml" token="@healthcheck.authorizedips@" value="${healthcheck.authorizedips}"/>	
+		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name-prefix@" value="${datasource.jndi-name-prefix}"/>	
+		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@datasource.jndi-name@" value="${datasource.jndi-name}"/>	
+		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.amountfreemem@" value="${ocsphealthcheck.amountfreemem}"/>	
+		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.dbquery@" value="${ocsphealthcheck.dbquery}"/>	
+		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.authorizedips@" value="${ocsphealthcheck.authorizedips}"/>	
+	</target>
+
+    <!--
+        this macro is a specialized copy for deployment descriptors (dd).
+        In the wonderful world of J2EE nothing it is always painful
+        Basically it is copying the appropriate DD for each J2EE server
+        and selected database:
+        @database.name
+    -->
+    <macrodef name="ejb-merge-copy">
+        <attribute name="database" />
+        <attribute name="overwrite" default="false" />
+        <sequential>
+            <!-- Remove old possible files -->
+        	<delete dir="${ejbdd.src}/merge/se"/>
+            <!-- jboss configuration -->
+            <copy todir="${ejbdd.src}/merge" overwrite="@{overwrite}" failonerror="false">
+                <fileset dir="${ejbdd.src}/merge/${database.name}" includes="**/*.xml" />
+            </copy>
+        </sequential>
+    </macrodef>
+
+	<!--
+        this macro is a specialized copy for deployment descriptors (dd).
+        In the wonderful world of J2EE nothing it is always painful
+    -->
+    <macrodef name="ejb-dd-copy">
+        <attribute name="todir" />
+        <attribute name="dir" />
+        <attribute name="overwrite" default="false" />
+        <sequential>
+        </sequential>
+    </macrodef>
+
+    <!--
+    Macro that creates an exploded war based on the structure in use for this
+    project. The 'name' attributes should match the org.ejbca.name package
+    and it expects to find a directory 'name' in src with the META-INF as the
+    subdirectory.
+    -->
+    <macrodef name="ejb-jar">
+        <attribute name="name" />
+        <element name="filesets" optional="yes" />
+        <sequential>
+            <property name="@{name}.id" value="@{name}-ejb.jar" />
+            <property name="@{name}.build.dir" value="${tmp}/${@{name}.id}" />
+            <mkdir dir="${@{name}.build.dir}" />
+
+            <!-- generate xdoclet sources and dd -->
+            <!-- FIXME: Comment this to use XDoclet generated DDs -->
+            <property name="@{name}.tmp.dir" location="${tmp}/xdoclet/${@{name}.id}/META-INF" />
+            <ejb-doclet dir="${src.java}" todir="${src.java}" module="@{name}" />
+
+            <!-- copy/configure the dds -->
+            <ejb-dd-copy todir="${@{name}.build.dir}" dir="${src}/@{name}" overwrite="true" />
+
+            <!-- compile the module -->
+            <javac srcdir="${src.java}" classpathref="compile.classpath" destdir="${build}" debug="on" includeantruntime="no" encoding="iso8859-1">
+                <include name="org/ejbca/@{name}/**" />
+                <classpath path="${build}" />
+            </javac>
+
+            <!-- copy the appropriate classes -->
+            <copy todir="${@{name}.build.dir}">
+                <fileset dir="${build}">
+                    <include name="org/ejbca/@{name}/**" />
+                </fileset>
+                <!-- add extra classes, in case it is not enough -->
+                <filesets />
+            </copy>
+
+            <!-- jar all files -->
+            <jar basedir="${@{name}.build.dir}" jarfile="${dist.dir}/${@{name}.id}">
+                <manifest>
+                    <attribute name="Class-Path" value="${jar.classpath}" />
+                </manifest>
+            </jar>
+
+            <!-- add an extra step: ejb verifier -->
+            <ejb-verifier file="${dist.dir}/${@{name}.id}" />
+        </sequential>
+    </macrodef>
+
+    <macrodef name="ejb-verifier">
+        <attribute name="file" />
+        <sequential>
+            <echo message="Verifying EJB jar @{file}" />
+            <java classname="org.jboss.verifier.Main" fork="true">
+                <classpath>
+                    <fileset dir="${jboss.server.home.dir}/lib" includes="*.jar" />
+                    <fileset dir="${jboss.home}/client" includes="*.jar" />
+                    <fileset dir="${jboss.home}/lib" includes="*.jar" />
+                    <fileset dir="${dist.dir}" includes="*.jar" />
+                    <pathelement location="${jboss.conf.dir}" />
+                </classpath>
+                <arg value="@{file}" />
+            </java>
+        </sequential>
+    </macrodef>
