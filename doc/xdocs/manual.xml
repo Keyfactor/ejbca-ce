@@ -1117,6 +1117,21 @@ about that his request have expired.</li>
 'Rejected' is that this status is only used with executable requests and don’t have any expire time. This means that the requesting 
 administrator can apply again directly after the rejection.</li>
 </ul>
+</p><p>
+<i>Approval Notification</i>
+</p><p>
+EJBCA approval functionality have been enhanced to sent notifications about approval requests.
+</p><p>
+To enable approval notification go to the system configuration page and check the 'Use Approval Notification' checkbox.
+You are also required to set the email-address to the approving administrators. This should be a mail-alias to all administrators that should be able to review approval requests and the from address that should be used when EJBCA sends emails.
+</p><p>
+Then whenever an approval request is created an e-mail is sent both to the requesting admin (if he has an e-mail configured in his user data) and to the approval administrators.
+</p><p>
+When the approving administrators have recieved the mail, there is a link directly to the approve request page where he can review the requests. When he has approved and rejected the requested all the other administrators in notified about this.
+</p><p>
+The text of notifications is configured in src/intresources.xx.properties
+</p><p>
+Remember to configure mail-server settings in the ejbca.properties file.
 </p>
 </section>
 
@@ -2320,6 +2335,20 @@ Now it should be possible to select EN, FR and IT in the system configuration as
 and in the administrator preferences page. 
 The language will be changed next time the administrator logs in.
 </p></subsection>
+<subsection name="Internal Internationalization">
+<p>
+It's also possible to translate internal log comments, some exception messages and approval notifications.
+This is done separately in it's own resource files since this is done internally in the core application
+and not in the web-layer. 
+</p><p>
+The language used internally is configured in the ejbca.properties file by setting the properties
+intresources.preferredlanguage and intresources.secondarylanguage to the language you want to use.
+The letters should be the same as the xx name in the intresources.xx.properties files in the src/intresources 
+directory. The secondary resource file is used if the resource isn't found in the preferred language.
+This is a global setting that cannot be overridden by administrators own settings in the web-layer.
+</p>
+</subsection>
+
 </section>
 
 <section name="Reference manual">
