@@ -19,7 +19,7 @@
     <property file="conf/protection.properties" />
     <property file="conf/cmp.properties" />
 	<property name="java.ver" value="14" />
-	
+
 	
     <!-- set global properties for this build -->
 	<property name="tmp" value="./tmp" />
@@ -108,7 +108,7 @@
         <fileset dir="lib/ext" includes="*.jar" />
     </path>
 
-	<path id="wsee.classpath" >
+    <path id="wsee.classpath" >
     	<fileset dir="lib/wsee" includes="*.jar"/>
     	<fileset dir="lib/jasper" includes="*.jar"/>
     	<path location="${build}" />
@@ -193,6 +193,8 @@
     <property name="httpsserver.password" value="serverpwd" />
     <property name="web.availablelanguages" value="EN,FR,IT,ES,SE,ZH,DE" />
     <property name="web.contentencoding" value="ISO-8859-1" />
+    <property name="intresources.preferredlanguage" value="EN" />
+    <property name="intresources.secondarylanguage" value="SE" />
     <property name="hardtoken.diplaysensitiveinfo" value="true" />
 	<property name="approval.defaultrequestvalidity" value="28800" />
 	<property name="approval.defaultapprovalvalidity" value="28800" />
@@ -222,9 +224,9 @@
 	<property name="cmp.tcp.portno" value="829" />
 	<property name="cmp.tcp.logdir" value="./log" />
 	<property name="cmp.tcp.conffile" value="" />
-	
 
 	<!-- Development and debug setting -->
 	<property name="certtools.dnorderreverse" value="false" />
 	<property name="development.provider.installation" value="false" />
+	
 	

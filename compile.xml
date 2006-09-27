@@ -38,6 +38,8 @@ httpserver.privhttps   = ${httpserver.privhttps}
 httpsserver.password   = ${httpsserver.password}
 web.availablelanguages = ${web.availablelanguages}
 web.contentencoding    = ${web.contentencoding}
+intresources.preferredlanguage   = ${intresources.preferredlanguage}     	
+intresources.secondarylanguage   = ${intresources.secondarylanguage}
 hardtoken.diplaysensitiveinfo    = ${hardtoken.diplaysensitiveinfo}
 approval.defaultrequestvalidity  = ${approval.defaultrequestvalidity}
 approval.defaultapprovalvalidity = ${approval.defaultapprovalvalidity}
@@ -57,7 +59,6 @@ cmp.ra.caname                   = ${cmp.ra.caname}
 cmp.tcp.portno                  = ${cmp.tcp.portno}
 cmp.tcp.logdir                  = ${cmp.tcp.logdir}
 cmp.tcp.conffile                = ${cmp.tcp.conffile}
-
 certtools.dnorderreverse          = ${certtools.dnorderreverse}
 development.provider.installation = ${development.provider.installation}
       </echo>
@@ -352,6 +353,8 @@ protection.certprotect=${protection.certprotect}
         <copy file="src/java/org/ejbca/core/model/ca/caadmin/ExtendedX509V3CertificateGenerator.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/caadmin/ExtendedX509V3CertificateGenerator.java" overwrite="true" failonerror="false"/>
 		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@ejbca.version@" value="${app.version}"/>
 		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@hardtoken.diplaysensitiveinfo@" value="${hardtoken.diplaysensitiveinfo}"/>
+		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@intresources.preferredlanguage@" value="${intresources.preferredlanguage}"/>				
+		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@intresources.secondarylanguage@" value="${intresources.secondarylanguage}"/>				
 		<replace file="${src.java}/org/ejbca/core/model/approval/ApprovalRequest.java" token="@approval.defaultrequestvalidity@" value="${approval.defaultrequestvalidity}"/>
 		<replace file="${src.java}/org/ejbca/core/model/approval/ApprovalRequest.java" token="@approval.defaultapprovalvalidity@" value="${approval.defaultapprovalvalidity}"/>
         <replace file="${src.java}/org/ejbca/core/model/approval/ApprovalExecutorUtil.java" token="@approval.excludedClasses@" value="${approval.excludedClasses}"/>
@@ -464,3 +467,4 @@ protection.certprotect=${protection.certprotect}
             </java>
         </sequential>
     </macrodef>
+
