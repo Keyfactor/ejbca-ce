@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<project name="ejbcacmp" basedir=".">
+
+	<!--  This file is included from build.xml and can not be run in itself -->
+	
+    <!-- =================================================================== -->
+    <!-- Build Jboss CMP tmp listener                       -->
+    <!-- =================================================================== -->
+    <target name="jbosscmptcplistener" depends="compile">
+        <path id="jbossservices.classpath">
+            <pathelement location="${jboss.home}/lib/jboss-system.jar" />
+            <pathelement location="${jboss.home}/lib/jboss-common.jar" />
+            <pathelement location="${jboss.home}/lib/jboss-jmx.jar" />
+        </path>
+        <javac srcdir="${src.java}" extdirs="${lib}" destdir="${build}" debug="on" encoding="iso8859-1">
+            <exclude name="**/CVS/**" />
+            <include name="**/ui/tcp/**/CmpTcp*" />
+            <include name="**/appserver/**/CmpTcp*" />
+            <!-- appserver specific files are built separtely-->
+            <classpath refid="jbossservices.classpath" />
+            <classpath refid="compile.classpath" />
+        </javac>
+
+        <mkdir dir="${cmptcpservice.build}" />
+        <copy todir="${cmptcpservice.build}">
+            <fileset dir="${src}/appserver/jboss">
+                <include name="cmptcp-service.xml" />
+            </fileset>
+			<filterchain>
+			<tokenfilter>			    
+		        <replacestring from="cmp.allowraverifypopo" to="${cmp.allowraverifypopo}"/>
+		        <replacestring from="cmp.defaultca" to="${cmp.defaultca}"/>
+		        <replacestring from="cmp.extractusernamecomponent" to="${cmp.extractusernamecomponent}"/>
+		        <replacestring from="cmp.operationmode" to="${cmp.operationmode}"/>
+		        <replacestring from="cmp.ra.caname" to="${cmp.ra.caname}"/>
+		        <replacestring from="cmp.ra.endentityprofile" to="${cmp.ra.endentityprofile}"/>
+		        <replacestring from="cmp.ra.certificateprofile" to="${cmp.ra.certificateprofile}"/>
+		        <replacestring from="cmp.ra.namegenerationscheme" to="${cmp.ra.namegenerationscheme}"/>
+		        <replacestring from="cmp.ra.namegenerationparameters" to="${cmp.ra.namegenerationparameters}"/>
+		        <replacestring from="cmp.ra.namegenerationpostfix" to="${cmp.ra.namegenerationpostfix}"/>
+		        <replacestring from="cmp.ra.namegenerationprefix" to="${cmp.ra.namegenerationprefix}"/>
+		        <replacestring from="cmp.ra.authenticationsecret" to="${cmp.ra.authenticationsecret}"/>
+		        <replacestring from="cmp.tcp.portno" to="${cmp.tcp.portno}"/>
+		        <replacestring from="cmp.tcp.logdir" to="${cmp.tcp.logdir}"/>
+		        <replacestring from="cmp.tcp.conffile" to="${cmp.tcp.conffile}"/>
+			</tokenfilter>
+			</filterchain>
+        </copy>
+        <copy todir="${cmptcpservice.build}">
+            <fileset dir="${build}">
+                <include name="org/ejbca/ui/tcp/CmpTcp*.class" />
+                <include name="org/ejbca/appserver/jboss/CmpTcp*.class" />
+                <exclude name="se/anatom/ejbca/**/*Test*" />
+            </fileset>
+            <fileset dir=".">
+                <include name="lib/quickserver/*.jar" />
+            </fileset>
+        </copy>
+        <jar basedir="${cmptcpservice.build}" jarfile="${cmptcpservicejar}">
+            <manifest>
+                <attribute name="Class-Path" value="${jar.classpath}" />
+            </manifest>
+        </jar>
+    </target>
+
+	<target name="ca.ear">
+	</target>
+	
+    <!-- =================================================================== -->
+    <!--Deploy EJBCA with Jboss Specific Services inside the ear file.       -->
+    <!-- =================================================================== -->
+    <target name="deploywithcmptcpservices" depends="jbosscmptcplistener, ca.ear" description="Deploys EJBCA with CMP TCP listener">    	
+        <copy todir="${tmp}" overwrite="false">
+        	<fileset dir="${eardd.src}">
+        	   <include name="META-INF/jboss-app.xml" />
+        	</fileset> 
+    	</copy>
+    	<replace file="${tmp}/META-INF/jboss-app.xml" token="!--@cmptcpservice.jar@-->" value="module>&lt;service>cmptcpservice.jar&lt;/service>&lt;/module>"/>
+        <ear update="true" destfile="${caear}" > 
+            <fileset dir="${tmp}">
+                <include name="META-INF/jboss-app.xml" />
+            </fileset>
+            <fileset dir="${dist.dir}">
+                <include name="${cmptcpservice.name}" />
+            </fileset>
+		</ear>
+        <antcall target="j2ee:deploy" />
+    </target>
+
+</project>

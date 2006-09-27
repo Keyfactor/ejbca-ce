@@ -17,7 +17,7 @@
 	<!--property name="j2ee.web-noconfigure" value="true"/-->
 	
 	
-	<target name="j2ee:check" description="Check a few configuration settings">
+	<target name="j2ee:check">
         <!--
             we could have a dedicated jboss for ejbca, so give users a chance to override
             otherwise, try to pick the one from environment if it exists
@@ -34,7 +34,7 @@
 		
 	</target>
 
-	<target name="j2ee:web-configure" depends="j2ee:check" unless="j2ee.web-noconfigure" description="Configure the servlet container">
+	<target name="j2ee:web-configure" depends="j2ee:check" unless="j2ee.web-noconfigure">
         <echo message="Using JBoss deploy directory ${jboss.farm.dir}"/>
 
 		<!-- copy the keystore file to the server -->
@@ -74,7 +74,7 @@
         
 	</target>
 
-	<target name="j2ee:deployBase" description="Deploy the application" depends="j2ee:configure">
+	<target name="j2ee:deployBase" depends="j2ee:configure">
         <copy todir="${jboss.farm.dir}" overwrite="true">
             <fileset dir="src/appserver/jboss">
             	<include name="ejbca-ds.xml"/>
@@ -94,6 +94,7 @@
 	</target>
 
 	<target name="j2ee:deploy" if="ocsp-datasource.jndi-name" description="Deploy the application" depends="j2ee:deployBase">
+		<!-- deploy base handles ejbca, here we check if we should deploy a datasource to an external ocsp responder -->
         <copy todir="${jboss.farm.dir}" overwrite="true">
             <fileset dir="src/appserver/jboss">
                 <include name="ocsp-ds.xml"/>

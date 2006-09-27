@@ -18,6 +18,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.Arrays;
+import java.util.Properties;
 
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
@@ -71,7 +72,7 @@ import com.novosec.pkix.asn1.crmf.PBMParameter;
 /**
  * Message handler for certificate request messages in the CRMF format
  * @author tomas
- * @version $Id: CrmfMessageHandler.java,v 1.8 2006-09-26 13:15:44 anatom Exp $
+ * @version $Id: CrmfMessageHandler.java,v 1.9 2006-09-27 15:33:27 anatom Exp $
  */
 public class CrmfMessageHandler implements ICmpMessageHandler {
 	
@@ -97,7 +98,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 	private IRaAdminSessionLocal rasession = null;
 	private ICertificateStoreSessionLocal storesession = null;
 	
-	public CrmfMessageHandler(Admin admin) throws CreateException {
+	public CrmfMessageHandler(Admin admin, Properties prop) throws CreateException {
 		this.admin = admin;
 		// Get EJB local bean
 		ISignSessionLocalHome signHome = (ISignSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
@@ -110,48 +111,48 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 		this.rasession = raHome.create();
 		ICertificateStoreSessionLocalHome storeHome = (ICertificateStoreSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
 		this.storesession = storeHome.create();
-		
-		String str = ServiceLocator.getInstance().getString("java:comp/env/operationMode");
+
+		String str = prop.getProperty("operationMode");
 		log.debug("operationMode="+str);
 		if (StringUtils.equalsIgnoreCase(str, "ra")) {
 			// create UsernameGeneratorParams
 			usernameGeneratorParams = new UsernameGeneratorParams();
-			str = ServiceLocator.getInstance().getString("java:comp/env/raModeNameGenerationScheme");
+			str = prop.getProperty("raModeNameGenerationScheme");
 			log.debug("raModeNameGenerationScheme="+str);
 			if (StringUtils.isNotEmpty(str)) {
 				usernameGeneratorParams.setMode(str);
 			}
-			str = ServiceLocator.getInstance().getString("java:comp/env/raModeNameGenerationParameters");
+			str = prop.getProperty("raModeNameGenerationParameters");
 			log.debug("raModeNameGenerationParameters="+str);
 			if (StringUtils.isNotEmpty(str)) {
 				usernameGeneratorParams.setDNGeneratorComponent(str);
 			}
-			str = ServiceLocator.getInstance().getString("java:comp/env/raModeNameGenerationPrefix");
+			str = prop.getProperty("raModeNameGenerationPrefix");
 			log.debug("raModeNameGenerationPrefix="+str);
 			if (StringUtils.isNotEmpty(str)) {
 				usernameGeneratorParams.setPrefix(str);
 			}
-			str = ServiceLocator.getInstance().getString("java:comp/env/raModeNameGenerationPostfix");
+			str = prop.getProperty("raModeNameGenerationPostfix");
 			log.debug("raModeNameGenerationPostfix="+str);
 			if (StringUtils.isNotEmpty(str)) {
 				usernameGeneratorParams.setPostfix(str);
 			}
-			str = ServiceLocator.getInstance().getString("java:comp/env/raAuthenticationSecret");
+			str = prop.getProperty("raAuthenticationSecret");
 			if (StringUtils.isNotEmpty(str)) {
 				log.debug("raAuthenticationSecret is not null");
 				raAuthenticationSecret = str;
 			}			
-			str = ServiceLocator.getInstance().getString("java:comp/env/endEntityProfile");
+			str = prop.getProperty("endEntityProfile");
 			if (StringUtils.isNotEmpty(str)) {
 				log.debug("endEntityProfile="+str);
 				eeProfileId = rasession.getEndEntityProfileId(admin, str);
 			}			
-			str = ServiceLocator.getInstance().getString("java:comp/env/certificateProfile");
+			str = prop.getProperty("certificateProfile");
 			if (StringUtils.isNotEmpty(str)) {
 				log.debug("certificateProfile="+str);
 				certProfileId = storesession.getCertificateProfileId(admin, str);
 			}			
-			str = ServiceLocator.getInstance().getString("java:comp/env/caName");
+			str = prop.getProperty("caName");
 			if (StringUtils.isNotEmpty(str)) {
 				log.debug("caName="+str);
 				CAInfo info = casession.getCAInfo(admin, str);

@@ -14,15 +14,13 @@
 package org.ejbca.core.protocol.cmp;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.security.cert.CertificateEncodingException;
+import java.util.Properties;
 
 import javax.ejb.CreateException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
-import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.core.protocol.IResponseMessage;
@@ -51,7 +49,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * - Certificate Confirmation - accept or reject by client - will return a PKIConfirm
  * 
  * @author tomas
- * @version $Id: CmpMessageDispatcher.java,v 1.5 2006-09-26 12:42:37 anatom Exp $
+ * @version $Id: CmpMessageDispatcher.java,v 1.6 2006-09-27 15:33:27 anatom Exp $
  */
 public class CmpMessageDispatcher {
 	private static final Logger log = Logger.getLogger(CmpMessageDispatcher.class);
@@ -65,24 +63,27 @@ public class CmpMessageDispatcher {
 	/** Defines which component from the DN should be used as username in EJBCA. Can be DN, UID or nothing. Nothing means that the DN will be used to look up the user. */
 	private String extractUsernameComponent = null;
 	private Admin admin;
+	/** Configuration properties passed from higher class, used to configure message handlers as well */
+	private Properties properties;
 	
-	public CmpMessageDispatcher(Admin adm) {
+	public CmpMessageDispatcher(Admin adm, Properties prop) {
 		this.admin = adm;
+		this.properties = prop;
 		// Install BouncyCastle provider
 		CertTools.installBCProvider();
 		
 		// Read parameters 
-		String str = ServiceLocator.getInstance().getString("java:comp/env/allowRaVerifyPopo");
+		String str = prop.getProperty("allowRaVerifyPopo");
 		if (StringUtils.equals("true", str)) {
 			log.debug("allowRAVerifyPopo=true");
 			allowRaVerifyPopo = true;
 		}
-		str = ServiceLocator.getInstance().getString("java:comp/env/defaultCA");
+		str = prop.getProperty("defaultCA");
 		log.debug("defaultCA="+str);
 		if (StringUtils.isNotEmpty(str)) {
 			defaultCA = str;
 		}
-		str = ServiceLocator.getInstance().getString("java:comp/env/extractUsernameComponent");
+		str = prop.getProperty("extractUsernameComponent");
 		log.debug("extractUsernameComponent="+str);
 		if (StringUtils.isNotEmpty(str)) {
 			extractUsernameComponent = str;
@@ -92,18 +93,18 @@ public class CmpMessageDispatcher {
 	/** The message may have been received by any transport protocol, and is passed here in it's binary asn.1 form.
 	 * 
 	 * @param message der encoded CMP message
-	 * @return binary CMP response message
+	 * @return IResponseMessage containing the CMP response message
 	 */
-	public byte[] dispatch(byte[] message) {
-		byte[] ret = null;
+	public IResponseMessage dispatch(byte[] message) {
+		IResponseMessage ret = null;
 		try {
 			PKIMessage req = null;
 			try {
 				req = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(message)).readObject());				
 			} catch (Exception e) {
 				// If we could not read the message, we should return an error BAD_REQUEST
-				IResponseMessage resp = CmpMessageHelper.createUnprotectedErrorMessage(null, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, "Can not parse request message");
-				return resp.getResponseMessage();
+				ret = CmpMessageHelper.createUnprotectedErrorMessage(null, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, "Can not parse request message");
+				return ret;
 			}
 			PKIHeader header = req.getHeader();
 			PKIBody body = req.getBody();
@@ -121,11 +122,11 @@ public class CmpMessageDispatcher {
 			switch (tagno) {
 			case 0:
 				// 0 and 2 are both certificate requests
-				handler = new CrmfMessageHandler(admin);
+				handler = new CrmfMessageHandler(admin, properties);
 				cmpMessage = new CrmfRequestMessage(req, defaultCA, allowRaVerifyPopo, extractUsernameComponent);
 				break;
 			case 2:
-				handler = new CrmfMessageHandler(admin);
+				handler = new CrmfMessageHandler(admin, properties);
 				cmpMessage = new CrmfRequestMessage(req, defaultCA, allowRaVerifyPopo, extractUsernameComponent);
 				break;
 			case 19:
@@ -142,21 +143,16 @@ public class CmpMessageDispatcher {
 				break;
 			}
 			if ( (handler != null) && (cmpMessage != null) ) {
-				IResponseMessage resp = handler.handleMessage(cmpMessage);
-				if (resp != null) {
+				ret  = handler.handleMessage(cmpMessage);
+				if (ret != null) {
 					log.debug("Received a response message from CmpMessageHandler.");
-					ret = resp.getResponseMessage();
 				} else {
 					log.error("CmpMessageHandler returned a null message");
 				}
 			} else {
 				log.error("Something is null! Handler= "+handler+", cmpMessage="+cmpMessage);
 			}
-		} catch (IOException e) {
-			log.error("Exception during CMP processing: ", e);
 		} catch (CreateException e) {
-			log.error("Exception during CMP processing: ", e);
-		} catch (CertificateEncodingException e) {
 			log.error("Exception during CMP processing: ", e);
 		}
 

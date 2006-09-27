@@ -1,5 +1,5 @@
 #
-# $Id: cmp.properties.sample,v 1.2 2006-09-26 12:57:45 anatom Exp $
+# $Id: cmp.properties.sample,v 1.3 2006-09-27 15:30:31 anatom Exp $
 #
 # This is a sample file to override properties used
 # during deployment of EJBCA
@@ -7,6 +7,7 @@
 # You should copy and rename this file to cmp.properties
 # and customize at will.
 #
+# Developers: If you add fields in this file, make arrangements in CmpServlet, CmpTcpService, cmptcp-service.xml and cmptcp.xml
 
 #------------------- CMP (RFC4210) settings -------------
 # 
@@ -77,3 +78,19 @@
 #
 # Default: AdminCA1
 #cmp.ra.caname=AdminCA1
+
+# The port number to listen to for TCP connections, if TCP transport is enabled
+#
+# Default: 829
+#cmp.tcp.portno=829
+
+# The directory where TCP log files are stores, if TCP transport is enabled
+#
+# Default: ./log
+#cmp.tcp.logdir=./log
+
+# An optional TCP configuration file, if TCP transport is enabled. 
+# This is a configuration file for QuickServer.
+#
+# Default: 
+#cmp.tcp.conffile=

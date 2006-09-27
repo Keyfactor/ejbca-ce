@@ -17,6 +17,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.rmi.RemoteException;
@@ -101,12 +102,9 @@ import com.novosec.pkix.asn1.crmf.OptionalValidity;
 import com.novosec.pkix.asn1.crmf.PBMParameter;
 import com.novosec.pkix.asn1.crmf.ProofOfPossession;
 
-public class CrmfRARequestTest extends TestCase {
+public class CrmfRATcpRequestTest extends TestCase {
 	
-    private static Logger log = Logger.getLogger(CrmfRARequestTest.class);
-
-    private static final String httpReqPath = "http://127.0.0.1:8080/ejbca";
-    private static final String resourceCmp = "publicweb/cmp";
+    private static Logger log = Logger.getLogger(CrmfRATcpRequestTest.class);
 
     private static String userDN = "CN=tomas1,UID=tomas2,O=PrimeKey Solutions AB,C=SE";
     private static String issuerDN = "CN=AdminCA1,O=EJBCA Sample,C=SE";
@@ -117,7 +115,7 @@ public class CrmfRARequestTest extends TestCase {
     private static Admin admin;
     private static X509Certificate cacert = null;
 
-	public CrmfRARequestTest(String arg0) throws NamingException, RemoteException, CreateException, CertificateEncodingException, CertificateException {
+	public CrmfRATcpRequestTest(String arg0) throws NamingException, RemoteException, CreateException, CertificateEncodingException, CertificateException {
 		super(arg0);
         admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
 		CertTools.installBCProvider();
@@ -192,6 +190,7 @@ public class CrmfRARequestTest extends TestCase {
 		checkCmpCertRepMessage(resp, reqId);
 	}
 	
+	/*
 	public void test02CrmfHttpOkUser() throws Exception {
 
 		// Create a new good user
@@ -284,6 +283,7 @@ public class CrmfRARequestTest extends TestCase {
 		checkCmpResponseGeneral(resp, userDN, nonce, transid, false);
 		checkCmpPKIErrorMessage(resp, issuerDN, userDN, 2, "Received CMP message with unknown protection alg: 1.2.840.113533.7.66.13.7");
 	}
+	*/
 
 	private PKIMessage genCertReq(byte[] nonce, byte[] transid) throws NoSuchAlgorithmException, NoSuchProviderException, IOException {
 		OptionalValidity myOptionalValidity = new OptionalValidity();
@@ -441,10 +441,12 @@ public class CrmfRARequestTest extends TestCase {
 			int port = 5587;
 			Socket socket = new Socket("127.0.0.1", port);
 
+			byte[] msg = createTcpMessage(message);
 
 			BufferedInputStream is = new BufferedInputStream(socket.getInputStream());
 			BufferedOutputStream os = new BufferedOutputStream(socket.getOutputStream());
-			os.write(message);
+			os.write(msg);
+			os.flush();
 			
 			ByteArrayOutputStream baos = new ByteArrayOutputStream(512);
 			while (is.available() > 0) {
@@ -460,6 +462,22 @@ public class CrmfRARequestTest extends TestCase {
         return respBytes;
     }
 
+	private byte[] createTcpMessage(byte[] msg) throws IOException {
+		ByteArrayOutputStream bao = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(bao); 
+		// 0 is pkiReq
+		int msgType = 0;
+		int len = msg.length;
+		// return msg length = msg.length + 3; 1 byte version, 1 byte flags and 1 byte message type
+		dos.writeInt(len+3);
+		dos.writeByte(10);
+		dos.writeByte(0); // 1 if we should close, 0 otherwise
+		dos.writeByte(msgType); 
+		dos.write(msg);
+		dos.flush();
+		return bao.toByteArray();
+	}
+	
     private void checkCmpResponseGeneral(byte[] retMsg, String userDN, byte[] senderNonce, byte[] transId, boolean signed) throws IOException {
         //
         // Parse response message
