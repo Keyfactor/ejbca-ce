@@ -17,6 +17,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
 
@@ -25,9 +26,11 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  * the presented text in the users prefered language.
  *
  * @author  Philip Vendil
- * @version $Id: WebLanguages.java,v 1.1 2006-01-17 20:32:19 anatom Exp $
+ * @version $Id: WebLanguages.java,v 1.2 2006-09-27 09:22:42 herrvendil Exp $
  */
 public class WebLanguages implements java.io.Serializable {
+	
+	InternalResources internalResources = InternalResources.getInstance();
 
     /** Construtor used to load static content. An instance must be declared with this constructor before
      *  any WebLanguage object can be used. */
@@ -71,9 +74,12 @@ public class WebLanguages implements java.io.Serializable {
       String returnvalue = null;
       try{
         returnvalue= languages[userspreferedlanguage].getProperty(template);
-        if(returnvalue == null)
+        if(returnvalue == null){
           returnvalue= languages[userssecondarylanguage].getProperty(template);
-
+        }
+        if(returnvalue == null){
+            returnvalue= internalResources.getLocalizedMessage(template);
+        }        
       }catch(java.lang.NullPointerException e){}
       if(returnvalue == null)
         returnvalue= "No text available";
