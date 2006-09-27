@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.1 2006-09-26 12:42:36 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.2 2006-09-27 09:29:12 herrvendil Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -108,6 +108,15 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 # Default content encoding used to display JSP pages, for example ISO-8859-1, UTF-8 or GBK.
 # Default: ISO-8859-1
 #web.contentencoding=ISO-8859-1
+
+# The language that should be used internally for logging, exceptions and approval notifications.
+# The languagefile is stored in src/intresources/intresources.xx.properties
+# and works in the same way as for web.available languages. is a global application setting 
+# Should be one of EN,SE
+#intresources.preferredlanguage=SE
+
+# The language used internally if a resource not found in the preferred language
+#intresources.secondarylanguage=EN
 
 # Setting to indicate if the secret information stored on hard tokens (i.e initial PIN/PUK codes) should
 # be displayed for the administrators. If false only non-sensitive information is displayed.
