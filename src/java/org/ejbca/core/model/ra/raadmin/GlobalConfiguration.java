@@ -13,12 +13,15 @@
  
 package org.ejbca.core.model.ra.raadmin;
 
+
+
 import org.ejbca.core.model.UpgradeableDataHashMap;
+
 
 /**
  * This is a  class containing global configuration parameters.
  *
- * @version $Id: GlobalConfiguration.java,v 1.5 2006-09-17 23:02:04 herrvendil Exp $
+ * @version $Id: GlobalConfiguration.java,v 1.6 2006-09-27 09:28:27 herrvendil Exp $
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
 
@@ -32,6 +35,9 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
      * be displayed for the administrators. If false only non-sensitive information is displayed.
      */
     public static final boolean HARDTOKEN_DIPLAYSENSITIVEINFO = "@hardtoken.diplaysensitiveinfo@".equalsIgnoreCase("true");
+    
+    public static final String PREFEREDINTERNALRESOURCES = "@intresources.preferredlanguage@".trim();
+    public static final String SECONDARYINTERNALRESOURCES = "@intresources.secondarylanguage@".trim();
 
     // Entries to choose from in userpreference part, defines the size of data to be displayed on one page.
     private final  String[] DEFAULTPOSSIBLEENTRIESPERPAGE = {"10" , "25" , "50" , "100"};
@@ -99,7 +105,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
        
        data.put(ADMINPATH,tempadminpath);
        data.put(AVAILABLELANGUAGES,availablelanguages.trim());
-       data.put(AVAILABLETHEMES,availablethemes.trim());
+       data.put(AVAILABLETHEMES,availablethemes.trim());       
        data.put(PUBLICPORT,publicport.trim());
        data.put(PRIVATEPORT,privateport.trim());
        data.put(PUBLICPROTOCOL,publicprotocol.trim());
@@ -195,7 +201,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
      *  without the ".css" ending. */
     public   String[] getAvailableThemes() {
        String[] availablethemes;
-       availablethemes =  getAvailableThenesAsString().split(",");
+       availablethemes =  getAvailableThemesAsString().split(",");
        if(availablethemes != null){
          for(int i = 0; i <  availablethemes.length; i++){
            availablethemes[i] = availablethemes[i].trim();
@@ -211,7 +217,9 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     public String getDefaultAvailableTheme(){
       return getAvailableThemes()[0];
     }
+    
 
+    
     // Methods for manipulating the headbanner filename.
     public   String getHeadBanner() {return (String) data.get(HEADBANNER);}
     public   String getHeadBannerFilename(){
@@ -260,7 +268,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     public   String[] getPossibleLogEntiresPerPage(){return DEFAULTPOSSIBLELOGENTRIESPERPAGE;}
 
     public   String getAvailableLanguagesAsString(){return (String) data.get(AVAILABLELANGUAGES);}
-    public   String getAvailableThenesAsString(){return (String) data.get(AVAILABLETHEMES);}
+    public   String getAvailableThemesAsString(){return (String) data.get(AVAILABLETHEMES);}
 
     public   boolean getEnableEndEntityProfileLimitations(){return ((Boolean) data.get(ENABLEEEPROFILELIMITATIONS)).booleanValue();}
     public   void    setEnableEndEntityProfileLimitations(boolean value){ data.put(ENABLEEEPROFILELIMITATIONS, Boolean.valueOf(value));}
@@ -274,6 +282,71 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     public   boolean getIssueHardwareTokens(){return ((Boolean) data.get(ISSUEHARDWARETOKENS)).booleanValue();}
     public   void    setIssueHardwareTokens(boolean value){ data.put(ISSUEHARDWARETOKENS, Boolean.valueOf(value));}
 
+   /**
+    * @return the number of required approvals to access sensitive hard token data (default 0)
+    */
+    public   int getNumberOfApprovalsToViewPUK(){
+    	Object num = data.get(NUMBEROFAPPROVALSTOVIEWPUK);
+        if(num == null){
+        	return 0;
+        }
+    	
+    	return ((Integer) num).intValue();
+    }
+    
+    public void setNumberOfApprovalsToViewPUK(int numberOfHardTokenApprovals){ 
+    	data.put(NUMBEROFAPPROVALSTOVIEWPUK, Integer.valueOf(numberOfHardTokenApprovals));
+    }
+    
+    /**
+     * @return true of email notification of requested approvals should be sent (default false)
+     */
+     public boolean getUseApprovalNotifications(){
+     	Object value = data.get(USEAPPROVALNOTIFICATIONS);
+         if(value == null){
+         	return false;
+         }
+     	
+     	return ((Boolean) value).booleanValue();
+     }
+     
+     public   void    setUseApprovalNotifications(boolean useApprovalNotifications){ 
+     	data.put(USEAPPROVALNOTIFICATIONS, Boolean.valueOf(useApprovalNotifications));
+     }   
+    
+     /**
+      * Returns the email address to the administrators that should recieve notification emails
+      * should be an alias to all approval administrators default "" never null
+      */
+      public String getApprovalAdminEmailAddress(){
+      	Object value = data.get(APPROVALADMINEMAILADDRESS);
+          if(value == null){
+          	return "";
+          }
+      	
+      	return (String) value;
+      }      
+
+      public   void    setApprovalAdminEmailAddress(String approvalAdminEmailAddress){ 
+      	data.put(APPROVALADMINEMAILADDRESS, approvalAdminEmailAddress);
+      }  
+      
+      /**
+       * Returns the email address used in the from field of approval notification emails
+       */
+       public String getApprovalNotificationFromAddress(){
+       	Object value = data.get(APPROVALNOTIFICATIONFROMADDR);
+           if(value == null){
+           	return "";
+           }
+       	
+       	return (String) value;
+       }      
+ 
+       public   void    setApprovalNotificationFromAddress(String approvalNotificationFromAddress){ 
+       	data.put(APPROVALNOTIFICATIONFROMADDR, approvalNotificationFromAddress);
+       }     
+      
 
     /** Implemtation of UpgradableDataHashMap function getLatestVersion */
     public float getLatestVersion(){
@@ -297,15 +370,15 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
 
     // Private constants
     //private static final   String BASEURL             = "baseurl";
-    private static final   String COMPUTERNAME  = "computername";
-    private static final   String APPLICATIONPATH  = "applicationpath";
-    private static final   String ADMINPATH          = "raadminpath";
-    private static final   String AVAILABLELANGUAGES = "availablelanguages";
-    private static final   String AVAILABLETHEMES    = "availablethemes";
-    private static final   String PUBLICPORT         = "publicport";
-    private static final   String PRIVATEPORT        = "privateport";
-    private static final   String PUBLICPROTOCOL     = "publicprotocol";
-    private static final   String PRIVATEPROTOCOL    = "privateprotocol";
+    private static final   String COMPUTERNAME          = "computername";
+    private static final   String APPLICATIONPATH       = "applicationpath";
+    private static final   String ADMINPATH             = "raadminpath";
+    private static final   String AVAILABLELANGUAGES    = "availablelanguages";
+    private static final   String AVAILABLETHEMES       = "availablethemes";
+    private static final   String PUBLICPORT            = "publicport";
+    private static final   String PRIVATEPORT           = "privateport";
+    private static final   String PUBLICPROTOCOL        = "publicprotocol";
+    private static final   String PRIVATEPROTOCOL       = "privateprotocol";
 
 
       // Title
@@ -318,6 +391,14 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     private static final   String ENABLEAUTHENTICATEDUSERSONLY = "authenticatedusersonly";
     private static final   String ENABLEKEYRECOVERY            = "enablekeyrecovery";
     private static final   String ISSUEHARDWARETOKENS          = "issuehardwaretokens";
+    
+    private static final   String NUMBEROFAPPROVALSTOVIEWPUK   = "numberofapprovalstoviewpuk";
+    private static final   String USEAPPROVALNOTIFICATIONS     = "useapprovalnotifications";
+    private static final   String APPROVALADMINEMAILADDRESS    = "approvaladminemailaddress";
+    private static final   String APPROVALNOTIFICATIONFROMADDR = "approvalnotificationfromaddr";
+       
+
+    
       // Paths
     private static final   String AUTHORIZATION_PATH  = "authorization_path";
     private static final   String BANNERS_PATH        = "banners_path";

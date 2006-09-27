@@ -179,8 +179,15 @@
      currentindex = Integer.parseInt(request.getParameter(HIDDEN_INDEX));
      noparameter=false;
      certificatedata = rabean.getCertificate(currentindex);
-     if(!cacerts && rabean.keyRecoveryPossible(certificatedata.getCertificate(), certificatedata.getUsername()) && usekeyrecovery)  
-       rabean.markForRecovery(certificatedata.getUsername(), certificatedata.getCertificate()); 
+     if(!cacerts && rabean.keyRecoveryPossible(certificatedata.getCertificate(), certificatedata.getUsername()) && usekeyrecovery){
+         try{
+        	 rabean.markForRecovery(certificatedata.getUsername(), certificatedata.getCertificate()); 
+           }catch(org.ejbca.core.model.approval.ApprovalException e){
+        	   message = "THEREALREADYEXISTSAPPROVAL";
+           }catch(org.ejbca.core.model.approval.WaitingForApprovalException e){
+        	   message = "REQHAVEBEENADDEDFORAPPR";
+           }       
+     }       
      try{
        if(tokensn !=null) {
         rabean.loadTokenCertificates(tokensn,username);
@@ -301,7 +308,7 @@ function confirmrepublish(){
          if(certificatedata == null){%>
   <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("CERTIFICATEDOESNTEXIST") %></h4></div> 
     <%   }
-         else{ 
+         else{         	 
    if(message != null){ %>
       <div align="center"><h4 id="alert"><%=ejbcawebbean.getText(message) %></h4></div> 
   <% } %>

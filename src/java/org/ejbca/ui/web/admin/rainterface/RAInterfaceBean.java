@@ -64,7 +64,7 @@ import org.ejbca.util.query.Query;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.13 2006-09-22 13:05:10 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.14 2006-09-27 09:28:27 herrvendil Exp $
  */
 public class RAInterfaceBean implements java.io.Serializable {
     
@@ -733,14 +733,13 @@ public class RAInterfaceBean implements java.io.Serializable {
 
     public void markForRecovery(String username, X509Certificate cert) throws Exception{
       boolean authorized = true;
+      int profileid = adminsession.findUser(administrator, username).getEndEntityProfileId();
       if(informationmemory.getGlobalConfiguration().getEnableEndEntityProfileLimitations()){
-        int profileid = adminsession.findUser(administrator, username).getEndEntityProfileId();
         authorized = endEntityAuthorization(administrator, profileid, AvailableAccessRules.KEYRECOVERY_RIGHTS, false);
       }
 
       if(authorized){
-        keyrecoverysession.markAsRecoverable(administrator, cert);
-        adminsession.setUserStatus(administrator, username,UserDataConstants.STATUS_KEYRECOVERY);
+        keyrecoverysession.markAsRecoverable(administrator, cert, profileid);        
       }
     }
 

@@ -23,11 +23,12 @@ import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionHome;
 import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionRemote;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.model.ra.UserDataVO;
 
 /**
  * Find details of a user in the database.
  *
- * @version $Id: RaKeyRecoverCommand.java,v 1.3 2006-08-12 09:49:30 herrvendil Exp $
+ * @version $Id: RaKeyRecoverCommand.java,v 1.4 2006-09-27 09:28:25 herrvendil Exp $
  */
 public class RaKeyRecoverCommand extends BaseRaAdminCommand {
     /**
@@ -96,11 +97,16 @@ public class RaKeyRecoverCommand extends BaseRaAdminCommand {
                getOutputStream().println("User is already marked for recovery.");
                return;                     
              }
+             
+             UserDataVO userdata = getAdminSession().findUser(administrator, username);
+             if(userdata == null){
+                 getOutputStream().println("Error, The user doesn't exist.");
+                 return;
+             }
   
              keyrecoverysession.markAsRecoverable(administrator, 
-                                                  cert);
-        
-             getAdminSession().setUserStatus(administrator, username, UserDataConstants.STATUS_KEYRECOVERY); 
+                                                  cert, userdata.getEndEntityProfileId());
+                      
  
              getOutputStream().println("Keys corresponding to given certificate has been marked for recovery.");                           
 

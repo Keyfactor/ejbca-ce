@@ -11,6 +11,24 @@
 </head>
 
 <body>
+<SCRIPT language="JavaScript">
+<!--  
+
+function checkuseapprovalnotifications(){
+  if(document.webconfiguration.<%=CHECKBOX_APPROVALUSEEMAILNOTIFICATIONS %>.checked){
+    document.webconfiguration.<%= TEXTFIELD_APPROVALADMINEMAILADDRESS %>.disabled = false;
+    document.webconfiguration.<%= TEXTFIELD_APPROVALNOTIFICATIONFROMADDR %>.disabled = false;
+  }
+  else{
+    document.webconfiguration.<%= TEXTFIELD_APPROVALADMINEMAILADDRESS %>.disabled = true;
+    document.webconfiguration.<%= TEXTFIELD_APPROVALADMINEMAILADDRESS %>.value = "";   
+    document.webconfiguration.<%= TEXTFIELD_APPROVALNOTIFICATIONFROMADDR %>.disabled = true;
+    document.webconfiguration.<%= TEXTFIELD_APPROVALNOTIFICATIONFROMADDR %>.value = "";   
+    
+  }
+}
+-->
+</SCRIPT>
 <div align="center"> 
   <h2><%= ejbcawebbean.getText("EJBCAWEBCONFIGURATION") %> <br>
   </h2> 
@@ -101,7 +119,51 @@
                                                                                                 out.write(" CHECKED "); %>> 
       </td>
     </tr>
-
+    <tr id="Row1"> 
+      <td width="49%" valign="top"> 
+        <h3><%= ejbcawebbean.getText("REQUIREAPPROVALTOVIEWPUK") %></h3>
+        <h5><%= ejbcawebbean.getText("THENUMBEROFAPPROVALSREQ") %></h5>
+      </td>
+      <td width="51%" valign="top"> 
+        <select name="<%= LIST_VIEWPUKREQUIREDAPPROVALS %>">
+          <% int currentval = gc.getNumberOfApprovalsToViewPUK();
+             for(int i = 0; i < 5; i++){
+          %>   <option <% if(currentval == i){ %> selected <% } %>
+                  value='<%= i%>'><%= i %></option>
+          <% } %>
+        </select>
+      </td>
+    </tr>
+    <tr id="Row0"> 
+      <td width="49%" valign="top"> 
+        <h3><%= ejbcawebbean.getText("USEAPPROVALNOTIFICATIONS") %></h3>
+        <h5><%= ejbcawebbean.getText("CHECKTOHAVEAPPROVALEMAILS") %></h5>
+      </td>
+      <td width="51%" valign="top"> 
+      <input type="checkbox" name="<%=CHECKBOX_APPROVALUSEEMAILNOTIFICATIONS%>" onchange="checkuseapprovalnotifications()" value="<%=CHECKBOX_VALUE %>" 
+                                                                                          <% if(gc.getUseApprovalNotifications())
+                                                                                                out.write(" CHECKED "); %>> 
+ 
+      </td>
+    </tr> 
+    <tr id="Row0"> 
+      <td width="49%" valign="top"> 
+        <h3><%= ejbcawebbean.getText("EMAILADDRESSTOAPPROVING") %></h3>
+        <h5><%= ejbcawebbean.getText("USEANEMAILADDRESS") %></h5>
+      </td>
+      <td width="51%" valign="top"> 
+        <input type="text" name="<%=TEXTFIELD_APPROVALADMINEMAILADDRESS %>" value="<%= gc.getApprovalAdminEmailAddress() %>" <% if(!gc.getUseApprovalNotifications()){ out.write(" disabled "); }%>maxlength="150" size="70">
+      </td>
+    </tr>
+    <tr id="Row0"> 
+      <td width="49%" valign="top"> 
+        <h3><%= ejbcawebbean.getText("APPROVALNOTIFICATIONFROM") %></h3>
+        <h5><%= ejbcawebbean.getText("THEADDRESSUSEDFROMFIELD") %></h5>
+      </td>
+      <td width="51%" valign="top"> 
+        <input type="text" name="<%=TEXTFIELD_APPROVALNOTIFICATIONFROMADDR %>" value="<%= gc.getApprovalNotificationFromAddress() %>" <% if(!gc.getUseApprovalNotifications()){ out.write(" disabled "); }%>maxlength="150" size="70">
+      </td>
+    </tr>          
     <tr> 
       <td width="49%" valign="top">&nbsp;</td>
       <td width="51%" valign="top">

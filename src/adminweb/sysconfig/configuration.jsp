@@ -2,7 +2,7 @@
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, 
     org.ejbca.ui.web.RequestHelper,org.ejbca.core.model.ra.raadmin.AdminPreference, org.ejbca.ui.web.admin.configuration.GlobalConfigurationDataHandler,
-                org.ejbca.ui.web.admin.configuration.WebLanguages, org.ejbca.core.model.authorization.AvailableAccessRules"%>
+                org.ejbca.ui.web.admin.configuration.WebLanguages, org.ejbca.core.model.authorization.AvailableAccessRules, org.ejbca.core.model.InternalResources"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 
@@ -24,11 +24,14 @@
   static final String TEXTFIELD_HEADBANNER                   = "textfieldheadbanner";
   static final String TEXTFIELD_FOOTBANNER                   = "textfieldfootbanner";
 
+  static final String TEXTFIELD_APPROVALADMINEMAILADDRESS    = "textfieldapprovaladminemailaddress";
+  static final String TEXTFIELD_APPROVALNOTIFICATIONFROMADDR = "textfieldapprovalnoificationfromaddr";  
 
   static final String CHECKBOX_ENABLEEEPROFILELIMITATIONS    = "checkboxendentityprofilelimitations"; 
   static final String CHECKBOX_ENABLEAUTHENTICATEDUSERSONLY  = "checkboxauthenticatedusersonly"; 
   static final String CHECKBOX_ENABLEKEYRECOVERY             = "checkboxenablekeyrecovery";
   static final String CHECKBOX_ISSUEHARDWARETOKENS           = "checkboxissuehardwaretokens";
+  static final String CHECKBOX_APPROVALUSEEMAILNOTIFICATIONS = "checkboxapprovaluseemailnotifications";
 
 // Lists used in defaultuserprefereces.jsp
   static final String LIST_PREFEREDLANGUAGE                  = "listpreferedlanguage";
@@ -36,6 +39,8 @@
   static final String LIST_THEME                             = "listtheme";
   static final String LIST_ENTIESPERPAGE                     = "listentriesperpage";
 
+  static final String LIST_VIEWPUKREQUIREDAPPROVALS          = "viewpukrequiredapprovals";  
+  
 
   static final String CHECKBOX_VALUE             = "true";
 %> 
@@ -123,6 +128,26 @@
          gc.setIssueHardwareTokens(false);
        }
 
+       if(request.getParameter(CHECKBOX_APPROVALUSEEMAILNOTIFICATIONS) != null && request.getParameter(CHECKBOX_APPROVALUSEEMAILNOTIFICATIONS).equals(CHECKBOX_VALUE)){
+    	   gc.setUseApprovalNotifications(true);
+    	   if(request.getParameter(TEXTFIELD_APPROVALADMINEMAILADDRESS) != null){
+    		   gc.setApprovalAdminEmailAddress(request.getParameter(TEXTFIELD_APPROVALADMINEMAILADDRESS).trim());  
+    	   }
+    	   if(request.getParameter(TEXTFIELD_APPROVALNOTIFICATIONFROMADDR) != null){
+    		  gc.setApprovalNotificationFromAddress(request.getParameter(TEXTFIELD_APPROVALNOTIFICATIONFROMADDR)); 
+    	   }
+       }else{
+         gc.setUseApprovalNotifications(false);
+         gc.setApprovalAdminEmailAddress("");
+  	     gc.setApprovalNotificationFromAddress(""); 
+       }
+       
+       if(request.getParameter(LIST_VIEWPUKREQUIREDAPPROVALS) != null ){
+    	   gc.setNumberOfApprovalsToViewPUK(Integer.parseInt(request.getParameter(LIST_VIEWPUKREQUIREDAPPROVALS)));    	   
+       }else{
+    	   gc.setNumberOfApprovalsToViewPUK(0);
+       }
+       
 
 %>  
            <%@ include file="defaultuserpreferences.jspf" %>
@@ -146,7 +171,8 @@
         if(request.getParameter(LIST_ENTIESPERPAGE) != null){
           String entriesperpage = request.getParameter(LIST_ENTIESPERPAGE); 
           dup.setEntriesPerPage(Integer.parseInt(entriesperpage.trim()));
-        }
+        }        
+        
         ejbcawebbean.saveGlobalConfiguration();
         ejbcawebbean.saveDefaultAdminPreference(dup);
 %>          

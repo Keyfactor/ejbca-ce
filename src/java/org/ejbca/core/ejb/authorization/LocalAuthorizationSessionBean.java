@@ -38,6 +38,7 @@ import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.authorization.AccessRule;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
@@ -56,7 +57,7 @@ import org.ejbca.util.JDBCUtil;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.3 2006-09-26 09:54:11 anatom Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.4 2006-09-27 09:28:26 herrvendil Exp $
  *
  * @ejb.bean
  *   description="Session bean handling interface with ra authorization"
@@ -158,6 +159,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      * Constant indicating minimum time between updates. In milliseconds
      */
     public static final long MIN_TIME_BETWEEN_UPDATES = 60000 * 1;
+    
+    private InternalResources intres = InternalResources.getInstance();
 
     /**
      * The home interface of  AdminGroupData entity bean
@@ -415,6 +418,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
     public boolean isAuthorized(Admin admin, String resource) throws AuthorizationDeniedException {
         if (updateNeccessary())
             updateAuthorizationTree();
+        
         return authorizer.isAuthorized(admin, resource);
     }
 

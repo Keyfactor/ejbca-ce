@@ -191,6 +191,8 @@
     <property name="httpsserver.password" value="serverpwd" />
     <property name="web.availablelanguages" value="EN,FR,IT,ES,SE,ZH,DE" />
     <property name="web.contentencoding" value="ISO-8859-1" />
+    <property name="intresources.preferredlanguage" value="EN" />
+    <property name="intresources.secondarylanguage" value="SE" />
     <property name="hardtoken.diplaysensitiveinfo" value="true" />
 	<property name="approval.defaultrequestvalidity" value="28800" />
 	<property name="approval.defaultapprovalvalidity" value="28800" />
@@ -266,6 +268,8 @@ httpserver.privhttps   = ${httpserver.privhttps}
 httpsserver.password   = ${httpsserver.password}
 web.availablelanguages = ${web.availablelanguages}
 web.contentencoding    = ${web.contentencoding}
+intresources.preferredlanguage   = ${intresources.preferredlanguage}     	
+intresources.secondarylanguage   = ${intresources.secondarylanguage}
 hardtoken.diplaysensitiveinfo    = ${hardtoken.diplaysensitiveinfo}
 approval.defaultrequestvalidity  = ${approval.defaultrequestvalidity}
 approval.defaultapprovalvalidity = ${approval.defaultapprovalvalidity}
@@ -560,6 +564,8 @@ protection.certprotect=${protection.certprotect}
         <copy file="src/java/org/ejbca/core/model/ca/caadmin/ExtendedX509V3CertificateGenerator.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/caadmin/ExtendedX509V3CertificateGenerator.java" overwrite="true" failonerror="false"/>
 		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@ejbca.version@" value="${app.version}"/>
 		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@hardtoken.diplaysensitiveinfo@" value="${hardtoken.diplaysensitiveinfo}"/>
+		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@intresources.preferredlanguage@" value="${intresources.preferredlanguage}"/>				
+		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@intresources.secondarylanguage@" value="${intresources.secondarylanguage}"/>				
 		<replace file="${src.java}/org/ejbca/core/model/approval/ApprovalRequest.java" token="@approval.defaultrequestvalidity@" value="${approval.defaultrequestvalidity}"/>
 		<replace file="${src.java}/org/ejbca/core/model/approval/ApprovalRequest.java" token="@approval.defaultapprovalvalidity@" value="${approval.defaultapprovalvalidity}"/>
         <replace file="${src.java}/org/ejbca/core/model/approval/ApprovalExecutorUtil.java" token="@approval.excludedClasses@" value="${approval.excludedClasses}"/>
@@ -952,6 +958,9 @@ protection.certprotect=${protection.certprotect}
             </fileset>
             <fileset dir="${src}/log"/>
             <fileset dir="${src}/upgrade"/>
+        	<fileset dir="${src}">
+        	    <include name="intresources/*.properties"/>
+        	</fileset>	
             <fileset dir="${hwtoken.class.dir}"/>
         </jar>
     </target>
@@ -1394,6 +1403,7 @@ protection.certprotect=${protection.certprotect}
             </batchtest>
             <batchtest fork="yes" todir="${test.dir}/reports">
                 <fileset dir="${test.dir}">
+                	<include name="org/ejbca/core/model/Test*" />
                     <include name="**/util/Test*" />
                     <include name="**/protocol/Test*" />
                     <include name="**/ra/Test*" />

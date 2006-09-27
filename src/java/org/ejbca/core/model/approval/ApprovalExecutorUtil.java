@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.log.Admin;
 
 /**
  * Util class with methods to get information about calling classes
@@ -61,7 +63,7 @@ ApprovalExecutorUtil.requireApproval checks all the rules and returns true or fa
 
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalExecutorUtil.java,v 1.8 2006-08-13 10:16:25 anatom Exp $
+ * @version $Id: ApprovalExecutorUtil.java,v 1.9 2006-09-27 09:28:26 herrvendil Exp $
  */
 public class ApprovalExecutorUtil {
       
@@ -145,4 +147,20 @@ public class ApprovalExecutorUtil {
 		
 		return retval;
 	}	
+	
+    /**
+     * Help method that checks the CA data config if specified action 
+     * requires approvals and how many
+     * @param action one of CAInfo.REQ_APPROVAL_ constants
+     * @param caid of the ca to check
+     * @return 0 of no approvals is required othervise the number of approvals
+     */
+    public static int getNumOfApprovalRequired(int action, CAInfo cainfo) {
+    	int retval = 0;
+    	if(cainfo.isApprovalRequired(action)){
+    		retval = cainfo.getNumOfReqApprovals();
+    	}
+    	
+		return retval;
+	}
 }

@@ -18,7 +18,6 @@ import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -73,12 +72,12 @@ import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.core.model.ra.UserAdminConstants;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
+import org.ejbca.util.NotificationParamGen;
 import org.ejbca.util.PrinterManager;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.TemplateMimeMessage;
@@ -93,7 +92,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.22 2006-09-26 09:54:11 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.23 2006-09-27 09:28:27 herrvendil Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -292,14 +291,10 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             ICertificateStoreSessionLocalHome certificatesessionhome = (ICertificateStoreSessionLocalHome) getLocator().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
             certificatesession = certificatesessionhome.create();
             
-            IKeyRecoverySessionLocalHome keyrecoverysessionhome = (IKeyRecoverySessionLocalHome) getLocator().getLocalHome(IKeyRecoverySessionLocalHome.COMP_NAME);
-            keyrecoverysession = keyrecoverysessionhome.create();
             
             ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) getLocator().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
             caadminsession = caadminsessionhome.create();
             
-            IApprovalSessionLocalHome approvalsessionhome = (IApprovalSessionLocalHome) getLocator().getLocalHome(IApprovalSessionLocalHome.COMP_NAME);
-            approvalsession = approvalsessionhome.create();
 
         } catch (Exception e) {
             error("Error creating session bean:", e);
@@ -307,7 +302,32 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         }
 
     }
+    
+    private IApprovalSessionLocal getApprovalSession(){
+      if(approvalsession == null){
+          try {
+            IApprovalSessionLocalHome approvalsessionhome = (IApprovalSessionLocalHome) getLocator().getLocalHome(IApprovalSessionLocalHome.COMP_NAME);
+			approvalsession = approvalsessionhome.create();
+		} catch (CreateException e) {
+			throw new EJBException(e);
+		}  
+      }
+      return approvalsession;
+    }
 
+    private IKeyRecoverySessionLocal getKeyRecoverySession(){
+        if(keyrecoverysession == null){
+            try {
+            	IKeyRecoverySessionLocalHome keyrecoverysessionhome = (IKeyRecoverySessionLocalHome) getLocator().getLocalHome(IKeyRecoverySessionLocalHome.COMP_NAME);
+                keyrecoverysession = keyrecoverysessionhome.create();
+  		} catch (CreateException e) {
+  			throw new EJBException(e);
+  		}  
+        }
+        return keyrecoverysession;
+      }
+
+    
     /**
      * Gets the Global Configuration from ra admin session bean-
      */
@@ -438,7 +458,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, userdata.getCAId());
         AddEndEntityApprovalRequest ar = new AddEndEntityApprovalRequest(userdata,clearpwd,admin,null,numOfApprovalsRequired,userdata.getCAId(),userdata.getEndEntityProfileId());
         if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_ADDUSER)) {       		    		
-        	approvalsession.addApprovalRequest(admin, ar);
+        	getApprovalSession().addApprovalRequest(admin, ar);
         	throw new WaitingForApprovalException("Add Endity Action have been added for approval by authorized adminstrators");
         }
         
@@ -498,12 +518,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      */
     private int getNumOfApprovalRequired(Admin admin,int action, int caid) {
     	CAInfo cainfo = caadminsession.getCAInfo(admin, caid);
-    	int retval = 0;
-    	if(cainfo.isApprovalRequired(action)){
-    		retval = cainfo.getNumOfReqApprovals();
-    	}
-    	
-		return retval;
+    	return ApprovalExecutorUtil.getNumOfApprovalRequired(action, cainfo);    	
 	}
 
 	/**
@@ -612,7 +627,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 			}        	        	
 			EditEndEntityApprovalRequest ar = new EditEndEntityApprovalRequest(userdata, clearpwd, orguserdata, admin,null,numOfApprovalsRequired,userdata.getCAId(),userdata.getEndEntityProfileId());
 			if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_CHANGEUSER)){       		    		
-				approvalsession.addApprovalRequest(admin, ar);
+				getApprovalSession().addApprovalRequest(admin, ar);
 				throw new WaitingForApprovalException("Edit Endity Action have been added for approval by authorized adminstrators");
 			}
 
@@ -636,7 +651,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             data1.setExtendedInformation(userdata.getExtendedinformation());
             oldstatus = data1.getStatus();
             if(oldstatus == UserDataConstants.STATUS_KEYRECOVERY && !(userdata.getStatus() == UserDataConstants.STATUS_KEYRECOVERY || userdata.getStatus() == UserDataConstants.STATUS_INPROCESS)){
-              keyrecoverysession.unmarkUser(admin,userdata.getUsername());	
+              getKeyRecoverySession().unmarkUser(admin,userdata.getUsername());	
             }
             statuschanged = userdata.getStatus() != oldstatus;
             data1.setStatus(userdata.getStatus());
@@ -764,12 +779,12 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             int numOfApprovalsRequired = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, caid);
             ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest(username, data1.getStatus(), status ,  admin,null,numOfApprovalsRequired,data1.getCaId(),data1.getEndEntityProfileId());
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_SETUSERSTATUS)){       		    		
-            	approvalsession.addApprovalRequest(admin, ar);
+            	getApprovalSession().addApprovalRequest(admin, ar);
             	throw new WaitingForApprovalException("Edit Endity Action have been added for approval by authorized adminstrators");
             }  
             
             if(data1.getStatus() == UserDataConstants.STATUS_KEYRECOVERY && !(status == UserDataConstants.STATUS_KEYRECOVERY || status == UserDataConstants.STATUS_INPROCESS || status == UserDataConstants.STATUS_INITIALIZED)){
-                keyrecoverysession.unmarkUser(admin,username);	
+                getKeyRecoverySession().unmarkUser(admin,username);	
             }
             
             data1.setStatus(status);
@@ -1657,17 +1672,8 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 
             String mailJndi = getLocator().getString("java:comp/env/MailJNDIName");
             Session mailSession = getLocator().getMailSession(mailJndi);
-            DNFieldExtractor dnfields = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
-            HashMap params = new HashMap();
-            params.put("USERNAME", username);
-            params.put("PASSWORD", password);
-            params.put("CN", dnfields.getField(DNFieldExtractor.CN, 0));
-            params.put("O", dnfields.getField(DNFieldExtractor.O, 0));
-            params.put("OU", dnfields.getField(DNFieldExtractor.OU, 0));
-            params.put("C", dnfields.getField(DNFieldExtractor.C, 0));
-            params.put("NL", System.getProperty("line.separator"));
-            String date = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date());
-            params.put("DATE", date);
+            NotificationParamGen paramGen = new NotificationParamGen(username,password,dn);
+            HashMap params = paramGen.getParams();
 
             Message msg = new TemplateMimeMessage(params, mailSession);
             msg.setFrom(new InternetAddress(profile.getNotificationSender()));

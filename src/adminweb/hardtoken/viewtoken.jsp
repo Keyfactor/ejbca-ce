@@ -49,6 +49,8 @@
 
   String   username = null;
   String   tokensn  = null;
+  
+  String message = null;
 
   RequestHelper.setDefaultCharacterEncoding(request);
 
@@ -108,7 +110,13 @@
      }         
     }
     if(markforrecovery && tokenbean.isTokenKeyRecoverable(recoverytokensn, username, rabean)){             
+    	try{
          tokenbean.markTokenForKeyRecovery(recoverytokensn, username, rabean);
+        }catch(org.ejbca.core.model.approval.ApprovalException e){
+     	   message = ejbcawebbean.getText("THEREALREADYEXISTSAPPROVAL");
+        }catch(org.ejbca.core.model.approval.WaitingForApprovalException e){
+     	   message = ejbcawebbean.getText("REQHAVEBEENADDEDFORAPPR");
+        } 
     } 
   }
 
@@ -216,7 +224,9 @@ function viewcopies(link){
          if(!authorized){ %>
   <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("NOTAUTHORIZEDTOVIEWTOKEN") %></h4></div> 
      <%  }else{%>
-
+    <% if(message != null){ %>
+  <div align="center"><h4 id="alert"><%= message%></h4></div>
+  <% } %>
   <form name="viewtoken" action="<%= THIS_FILENAME %>" method="post">
      <input type="hidden" name='<%= USER_PARAMETER %>' value='<%=username %>'>
      <% if (tokensn != null){ %>
