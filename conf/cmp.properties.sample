@@ -1,5 +1,5 @@
 #
-# $Id: cmp.properties.sample,v 1.5 2006-09-28 13:11:33 anatom Exp $
+# $Id: cmp.properties.sample,v 1.6 2006-09-28 13:39:12 anatom Exp $
 #
 # This is a sample file to override properties used
 # during deployment of EJBCA
@@ -11,18 +11,14 @@
 
 #------------------- CMP (RFC4210) settings -------------
 # 
-# Allow the client/RA to specify that the CA should not verify POP, 
-# set to true to allow no POP (raVerify in the rfc). 
-#
-# Default: false
-#cmp.allowraverifypopo=false
-
 # Enforce a particual CA instead of taking it from the request. 
 #
 # Default: empty
 #cmp.defaultca=
 
-# Defines which component from the DN should be used to look up username in EJBCA. Can be CN, UID or nothing. Nothing means that the DN will be used to look up the user. 
+# Defines which component from the DN should be used to look up username in EJBCA. 
+# Can be CN, UID or nothing. 
+# Nothing means that the DN will be used to look up the user (EJBCA will search for a user with the specified DN). 
 #
 # Default: empty
 #cmp.extractusernamecomponent=
@@ -37,28 +33,37 @@
 # Default normal (empty value means the same)
 #cmp.operationmode=normal
 
+# Allow the client/RA to specify that the CA should not verify POP, 
+# set to true to allow no POP (raVerify in the rfc). 
+#
+# Default: false
+#cmp.allowraverifypopo=false
+
 # Shared secret between the CA and the RA used to authenticate valid RA messages.
 #
 # Default: empty
 #cmp.ra.authenticationsecret=
 
-# Which generation scheme should be used, RANDOM or DN.
+# Which generation scheme should be used, RANDOM or DN for base username.
+# Random will generate a 12 character long random username.
+# DN will take a part of the request DN, which part is defined by cmp.ra.namegenerationparameters, and use as the username.
 #
 # Default: DN
 #cmp.ra.namegenerationscheme=DN
 
 # Parameters for name generation, for DN it can be CN or UID. 
+# Either the CN or the UID from the request can be used.
 #
 # Default: CN
 #cmp.ra.namegenerationparameters=CN
 
-# Prefix to generated name, a string that can contain the markup ${RANDOM} to inser random chars.
-# Example: MyPrefix - ${RANDOM}
+# Prefix to generated name, a string that can contain the markup ${RANDOM} to insert 10 random chars.
+# Example: 'MyPrefix - ${RANDOM}-' using RANDOM password generation will create a username like 'MyPrefix - DGR89NN54QW-GDHR473NH87Q
 #
 # Default: empty
 #cmp.ra.namegenerationprefix=
 
-# Postfix to generated name, a string that can contain the markup ${RANDOM} to inser random chars.
+# Postfix to generated name, a string that can contain the markup ${RANDOM} to insert 10 random chars.
 # Example: MyPostfix - ${RANDOM}
 #
 # Default: empty
@@ -83,7 +88,7 @@
 #
 # The TCP listener is not enabled by default, because it is an MBean, which 
 # requires special things. If possible you should stick to the HTTP transport
-# protocol for CMP, it is much better
+# protocol for CMP, it is much better.
 
 # Enabled or disabled
 #
