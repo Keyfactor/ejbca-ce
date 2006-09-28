@@ -1,0 +1,75 @@
+# ------------- Database configuration ------------------------
+
+# jndi name of the datasource to use in deployment descriptors of ejbs.
+# default: EjbcaDS
+#datasource.jndi-name=EjbcaDS
+
+# Prefix for the jndi name of the datasource to use in deployment descriptors of ejbs. 
+# JBoss requires 'java:/' as prefix, while weblogic does not want anything ('')
+# default: java:/
+#datasource.jndi-name-prefix=java:/
+#datasource.jndi-name-prefix=
+
+# Weblogic in combination with Oracle requires special handling of LONG/BLOB columns
+# If, and only if, you are using Weblogic and Oracle, uncomment the row below.
+# default: 
+#weblogic-oracle-columntype=@weblogic.dbms-column-type OracleBlob
+
+# The database name selected for deployment, used to copy XDoclet merge files.
+# All supported databases are defined below, others can easily be added
+# See the document doc/howto/HOWTO-database.txt for database specifics and tips and tricks.
+# Default: hsqldb
+#database.name=mysql
+#database.name=postgres
+#database.name=mssql2000
+#database.name=oracle
+#database.name=sapdb
+#database.name=sybase
+#database.name=informix
+
+# The datasource mapping selected for deployment.
+# The J2EE server needs to be configured with the appropriate datasource mapping. 
+# For JBoss this maps to a setting in standardjbosscmp-jdbc.xml and must match the database chosen above.
+# All supported mappings are defined below, others can easily be added
+# Default: Hypersonic SQL
+#datasource.mapping=mySQL
+#datasource.mapping=PostgreSQL 7.2
+#datasource.mapping=PostgreSQL 8.0
+#datasource.mapping=MS SQLSERVER2000
+#datasource.mapping=Oracle8
+#datasource.mapping=Oracle9i
+#datasource.mapping=SapDB
+#datasource.mapping=Sybase
+#datasource.mapping=Informix92
+#datasource.mapping=InformixDB
+
+# Database connection url.
+# This is the URL used to connect to the database, used to configure a new datasource in JBoss.
+# Default: jdbc:hsqldb:${jboss.server.data.dir}${/}hypersonic${/}localDB
+#database.url=jdbc:mysql://127.0.0.1:3306/ejbca
+#database.url=jdbc:mysql://127.0.0.1:3306/ejbca?characterEncoding=UTF-8
+#database.url=jdbc:postgresql://127.0.0.1/ejbca
+#database.url=jdbc:microsoft:sqlserver://localhost:1433;DatabaseName=ejbca
+#database.url=jdbc:oracle:thin:@127.0.0.1:1521:ejbca
+#database.url=jdbc:datadirect:oracle://127.0.0.1:1521;SID=ejbca
+#database.url=jdbc:informix-sqli://127.0.0.1:1525/ejbca:informixserver=mydbservername;DBDATE=DMY4/;
+
+# JDBC driver classname.
+# The J2EE server needs to be configured with the appropriate JDBC driver for the selected database
+# Default: org.hsqldb.jdbcDriver
+#database.driver=com.mysql.jdbc.Driver
+#database.driver=org.postgresql.Driver
+#database.driver=com.microsoft.jdbc.sqlserver.SQLServerDriver
+#database.driver=oracle.jdbc.driver.OracleDriver
+#database.driver=com.ddtek.jdbc.oracle.OracleDriver
+#database.driver=com.informix.jdbc.IfxDriver
+
+# Database username.
+# Default: sa (works with hsqldb)
+#database.username=ejbca
+#database.username=postgres
+
+# Database password.
+# Default: (blank works with hsqldb)
+#database.password=ejbca
+#database.password=postgres

@@ -17,7 +17,12 @@
     <property file="${app.name}.properties" />
     <property file="conf/${app.name}.properties" />
     <property file="conf/protection.properties" />
+    <property file="conf/database.properties" />
+    <property file="conf/mail.properties" />
+    <property file="conf/ocsp.properties" />
+    <property file="conf/web.properties" />
     <property file="conf/cmp.properties" />
+    
 	<property name="java.ver" value="14" />
 
 	

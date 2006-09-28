@@ -1,0 +1,129 @@
+# ------------ OCSP configuration ---------------------
+
+# Specifies the subject of a certificate which is used to identifiy the 
+# responder which will generate responses when no real CA can be found from the request. 
+# This is used to generate 'unknown' responses when a request is received for a certificate 
+# that is not signed by any CA on this server. Recommended to use same as ca.dn.
+ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
+
+# If set to true the OCSP reponses will be signed directly by the CAs certificate instead 
+# of the CAs OCSP responder. Default true.
+ocsp.usecasigningcert=true
+
+# Specifies OCSP extension oids that will result in a call to an extension class, 
+# separate multiple entries with ;"
+# Leave out if you do not know what this is.
+# Example value: 2.16.578.1.16.3.2
+# Default: nothing 
+#ocsp.extensionoid=
+
+# Specifies classes implementing OCSP extensions matching oids above, 
+# separate multiple entries with ;"
+# Leave out if you do not know what this is.
+# Example value: org.ejbca.core.protocol.ocsp.OCSPUnidExtension
+# Default: nothing
+#ocsp.extensionclass=
+
+# Datasource for Unid-Fnr mapping OCSP extension. 
+# Leave out if you do not know what this is.
+# No default value, must be set if the extension is used
+#ocsp.uniddatsource=
+
+# Directory containing certificates of trusted entities allowed to query for Fnrs. 
+# Leave out if you do not know what this is.
+# No default value, must be set if the extension is used
+#ocsp.unidtrustdir=
+
+# File containing the CA-certificate, in PEM format, that signed the trusted clients. 
+# Leave out if you do not know what this is.
+# No default value, must be set if the extension is used
+#ocsp.unidcacert=
+
+# The ocsp.keys.* preferences has a meaning only to the External OCSP responder.
+# Please read the doc/howto/HOWTO-OCSP-RESPONDER.txt for inforamtion.
+
+# If you are not using SSL on the external OCSP responder (normally not needed for OCSP), you should define
+# this property, e.g. remove the comment sign. See 'Configuring TLS on the Unid lookup server' in the Howto.
+# Note! If defining this property on the EJBCA server, SSL will not be configured there either, and the admin-GUI will not work.
+#j2ee.web-noconfigure=true
+
+# Directory containing soft keys or certificates for keys on cards. The soft keys are in jks or p12 format.
+# The certificates of the cards keys are in pem format. All CAs using the OCSP responser must have a soft
+# key or a certificate to a card key in this directory.
+# Normally as with the default value, the target directory is actually JBOSS_HOME/bin/keys if started in JBOSS_HOME.
+# Default: ./keys
+#ocsp.keys.dir=./keys
+
+# The password for the all the soft keys of the OCSP responder. All keys must have the same password.
+# Default: foo123
+#ocsp.keys.keyPassword=foo123
+
+# The password to all soft keystores. If the keystore is created by EJBCA then this password is equal to 
+# the key password above. If it is equal you may leave it empty.
+# Default: empty
+#ocsp.keys.storePassword=
+
+# The password for key stored on card
+# Default: empty
+ocsp.keys.cardPassword=6231
+
+# The class that implements hardware signing of the OCSP response
+# Default: se.primeKey.caToken.card.CardKeysImpl
+#ocsp.hardToken.className=se.primeKey.caToken.card.CardKeysImpl
+
+# Directory of classes implementing hardware signing of the OCSP response
+# Default ./ocspHardTokenClasses
+#ocspHardTokenClasses=../primeCard/ocspHardTokenClasses-1.5
+
+#------------------- OCSP publisher db configuration------------------------------
+# All these "ocsp-database.*" properties is used to configure the connection to the database that the
+# ExternalOCSPPublisher will publish to. Please read the doc/howto/HOWTO-OCSP-RESPONDER.txt for inforamtion.
+# If no ExternalOCSPPublisher will be used these properties should not be configured.
+# Note that the External OCSP responder itself uses the configuration options database.*.
+#
+# Configure these options if you are configuring EJBCA that will publish certificates to an external OCSP responder.
+
+# jndi name of the datasource to use in deployment descriptors of ejbs.
+#ocsp-datasource.jndi-name=OcspDS
+
+# Database connection url.
+# This is the URL used to connect to the database, used to configure a new datasource in JBoss.
+#ocsp-database.url=jdbc:mysql://127.0.0.1:3306/ejbca
+#ocsp-database.url=jdbc:postgresql://127.0.0.1/ejbca
+#ocsp-database.url=jdbc:microsoft:sqlserver://localhost:1433;DatabaseName=ejbca
+#ocsp-database.url=jdbc:oracle:thin:@127.0.0.1:1521:ejbca
+#ocsp-database.url=jdbc:datadirect:oracle://127.0.0.1:1521;SID=ejbca
+
+# JDBC driver classname.
+# The J2EE server needs to be configured with the appropriate JDBC driver for the selected database
+#ocsp-database.driver=com.mysql.jdbc.Driver
+#ocsp-database.driver=org.postgresql.Driver
+#ocsp-database.driver=com.microsoft.jdbc.sqlserver.SQLServerDriver
+#ocsp-database.driver=oracle.jdbc.driver.OracleDriver
+#ocsp-database.driver=com.ddtek.jdbc.oracle.OracleDriver
+
+# Database username.
+#ocsp-database.username=ocsp
+
+# Database password.
+#ocsp-database.password=ocsp
+
+#------------------- External OCSP Healthcheck settings -------------
+# Specifies the basic settings of the external OCSP Healtcheck servlet 
+# (i.e. health check servlet that is running on the external OCSP responder).
+# for more detailed configuration edit the file src/publicweb/healthcheck/WEB-INF/web.xml
+#
+# Configure these options if you are configuring an external OCSP responder now.
+
+# Parameter specifying amount of free memory (Mb) before alarming
+# Default: 1
+#ocsphealthcheck.amountfreemem=1
+
+# Parameter specifying database test query string. Used to check that
+# the database is operational.
+# Default : Select 1 From CertificateData 
+#ocsphealthcheck.dbquery=Select 1 From CertificateData
+
+# Parameter specifying IP addresses authorized to access the healthcheck
+# servlet. Use ';' for between multiple IPs. 
+#ocsphealthcheck.authorizedips=127.0.0.1

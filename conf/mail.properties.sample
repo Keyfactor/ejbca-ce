@@ -1,0 +1,40 @@
+# ------------ Mail configuration ---------------------
+
+# Used to send notification email from the RA.
+# See ${ejbca.home}/src/appserver/ejbca-mail-service.xml
+# It will be copied in ${jboss.server.dir}/deploy/ejbca-mail-service.xml
+
+# The JNDI-name used to send email notifications from EJBCA.
+# Default: java:/EjbcaMail
+#mail.jndi-name=java:/EjbcaMail
+
+# user/password to connect to server for sending email notifications from EJBCA.
+# Default: ejbca_user, primekey
+#mail.user=ejbca_user
+#mail.password=primekey
+
+# SMTP server for sending mail.
+# Default: localhost
+#mail.smtp.host=localhost
+
+# Use SMTP authentication if you smtp host requires it
+# Default: false
+#mail.smtp.auth=false
+
+# Email address used to send emails.
+# Default: ejbca-donotreply@domain.com
+#mail.from=ejbca-donotreply@domain.com
+
+# JavaMail debug info.
+# Default: false
+#mail.debug=false
+
+# Default subject of notification messages sent from EJBCA.
+# Default: 'Retrieve your certificate'
+#mail.subject=Retrieve your certificate
+
+# Defines the default message of the notification. 
+# Use the values ${USERNAME}, ${PASSWORD}, ${CN}, ${O}, ${OU}, ${C}, ${DATE} to indicate which texts 
+# that should be replaced (Case sensitive), ${NL} stands for newline.
+# Default: below
+#mail.message=Hello ${CN}${NL}${NL} This is a notification. ${NL}${NL} Your username: ${USERNAME}${NL} password: ${PASSWORD}${NL}${NL} Your are NOT supposed to go and fetch your certificate, this is only a test.

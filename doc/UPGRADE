@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.24 2006-08-15 14:05:01 anatom Exp $
+$Id: UPGRADE,v 1.25 2006-09-28 13:52:43 anatom Exp $
 
 UPGRADE
 =======
@@ -18,6 +18,20 @@ If you use the patch file to upgrade use a command like:
 After this you must do:
 - ant clean
 - ant deploy
+
+From EJBCA 3.3.x to EJBCA 3.4.x
+-------------------------------
+Upgrade from EJBCA 3.2.x to EJBCA 3.3.x is a plug-in upgrade, because there are
+no database changes, or the database changes are only new tables and not changed ones.
+
+You should still follow this advice:
+Backup your database first! If the upgrade fails, you can always go back to the earlier version.
+
+Simply copy ejbca.properties from the earlier installation into the conf directory of the new release.
+Merge changes from the *.properties.sample into your ejbca.properties, or better yet, split up your file 
+to match the new improved conf structure.
+
+Copy the directory 'p12' from the earlier installation and 'ant deploy'.
 
 From EJBCA 3.2.x to EJBCA 3.3.x
 -------------------------------
