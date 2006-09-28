@@ -136,6 +136,12 @@
         </fileset>
     </path>
 
+    <path id="jbossservices.classpath">
+        <pathelement location="${jboss.home}/lib/jboss-system.jar" />
+        <pathelement location="${jboss.home}/lib/jboss-common.jar" />
+        <pathelement location="${jboss.home}/lib/jboss-jmx.jar" />
+    </path>
+        
     <path id="xdoclet.classpath">
         <fileset dir="lib" includes="*.jar" />
         <fileset dir="lib/ext" includes="*.jar" />

@@ -5,11 +5,6 @@
     <!-- Build Jboss Specific Services                       -->
     <!-- =================================================================== -->
     <target name="createcrlservice" depends="compile">
-        <path id="jbossservices.classpath">
-            <pathelement location="${jboss.home}/lib/jboss-system.jar" />
-            <pathelement location="${jboss.home}/lib/jboss-common.jar" />
-            <pathelement location="${jboss.home}/lib/jboss-jmx.jar" />
-        </path>
         <javac srcdir="${src.java}" extdirs="${lib}" destdir="${build}" debug="on" encoding="iso8859-1">
             <exclude name="**/CVS/**" />
             <include name="**/appserver/**/CRL*" />
@@ -58,7 +53,7 @@
     <!-- =================================================================== -->
     <!--Deploy EJBCA with Jboss Specific Services inside the ear file.       -->
     <!-- =================================================================== -->
-    <target name="buildwithcreatecrlservice" depends="crlserviceconditioncheck, createcrlservice, ca.ear" description="Deploys EJBCA with CRL creation service">    	
+    <target name="buildwithcreatecrlservice" if="crlserviceconditioncheck" depends="crlserviceconditioncheck, createcrlservice, ca.ear" description="Deploys EJBCA with CRL creation service">    	
     	<echo>Including create CRL service</echo>
         <copy todir="${tmp}" overwrite="false">
         	<fileset dir="${eardd.src}">

@@ -7,11 +7,6 @@
     <!-- Build Jboss CMP tmp listener                       -->
     <!-- =================================================================== -->
     <target name="jbosscmptcplistener" depends="compile">
-        <path id="jbossservices.classpath">
-            <pathelement location="${jboss.home}/lib/jboss-system.jar" />
-            <pathelement location="${jboss.home}/lib/jboss-common.jar" />
-            <pathelement location="${jboss.home}/lib/jboss-jmx.jar" />
-        </path>
         <javac srcdir="${src.java}" extdirs="${lib}" destdir="${build}" debug="on" encoding="iso8859-1">
             <exclude name="**/CVS/**" />
             <include name="**/ui/tcp/**/CmpTcp*" />
