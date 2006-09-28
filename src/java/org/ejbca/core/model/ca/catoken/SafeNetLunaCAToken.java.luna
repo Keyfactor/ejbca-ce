@@ -21,7 +21,7 @@ import com.chrysalisits.crypto.LunaTokenManager;
 
 /**
  * @author lars
- * @version $Id: SafeNetLunaCAToken.java.luna,v 1.5 2006-09-21 07:36:17 primelars Exp $
+ * @version $Id: SafeNetLunaCAToken.java.luna,v 1.6 2006-09-28 06:39:38 primelars Exp $
  *
  */
 public class SafeNetLunaCAToken extends BaseCAToken implements IHardCAToken {
@@ -68,12 +68,13 @@ public class SafeNetLunaCAToken extends BaseCAToken implements IHardCAToken {
         } catch( Throwable t ) {
             log.error("Authentication failed: ", t);
             deactivate();
-            if ( t instanceof Exception ) {
+            if ( t instanceof Error ) {
+                throw (Error)t;
+            } else {
                 CATokenAuthenticationFailedException failedE = new CATokenAuthenticationFailedException(t.toString());
                 failedE.initCause(t);
                 throw failedE;
-            } else
-                throw t;
+            }
         }
     }
     /* (non-Javadoc)
