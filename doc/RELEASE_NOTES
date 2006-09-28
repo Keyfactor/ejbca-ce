@@ -1,3 +1,9 @@
+EJBCA 3.4.0
+-----------
+
+Important changes:
+- The default encoding of DN components for new CAs (old are unaffected) is now UTF8, as required by RFC3280.
+
 EJBCA 3.3.0
 -----------
 This is a major release with new features, improvements and bugfixes.
