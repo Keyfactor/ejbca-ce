@@ -46,8 +46,8 @@ public class CmpTcpService extends ServiceMBeanSupport implements CmpTcpServiceM
 	/** Parameter used to authenticate RA messages if we are using RA mode to create users */
 	private String raAuthenticationSecret = null;
 
-	private String raNameGenerationParameters = null;
-	private String raModeNameGenerationScheme = "CN"; // Can be CN or UID
+	private String raNameGenerationParameters = "CN"; // Can be CN or UID
+	private String raModeNameGenerationScheme = "DN"; 
 	private String prefix = null;
 	private String postfix = null;
 	
@@ -83,12 +83,12 @@ public class CmpTcpService extends ServiceMBeanSupport implements CmpTcpServiceM
 		if (StringUtils.isNotEmpty(str)) {
 			properties.setProperty("operationMode", str);
 		}
-		str = getRaNameGenerationParameters();
+		str = getRaModeNameGenerationScheme();
 		log.debug("raModeNameGenerationScheme="+str);
 		if (StringUtils.isNotEmpty(str)) {
 			properties.setProperty("raModeNameGenerationScheme", str);
 		}
-		str = getRaModeNameGenerationScheme();
+		str = getRaNameGenerationParameters();
 		log.debug("raModeNameGenerationParameters="+str);
 		if (StringUtils.isNotEmpty(str)) {
 			properties.setProperty("raModeNameGenerationParameters", str);

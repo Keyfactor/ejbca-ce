@@ -13,10 +13,10 @@
 
 package se.anatom.ejbca.protocol.cmp;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
@@ -106,6 +106,8 @@ public class CrmfRATcpRequestTest extends TestCase {
 	
     private static Logger log = Logger.getLogger(CrmfRATcpRequestTest.class);
 
+    private static final int PORT_NUMBER = 5587;
+    
     private static String userDN = "CN=tomas1,UID=tomas2,O=PrimeKey Solutions AB,C=SE";
     private static String issuerDN = "CN=AdminCA1,O=EJBCA Sample,C=SE";
     private KeyPair keys = null;  
@@ -190,7 +192,7 @@ public class CrmfRATcpRequestTest extends TestCase {
 		checkCmpCertRepMessage(resp, reqId);
 	}
 	
-	/*
+	
 	public void test02CrmfHttpOkUser() throws Exception {
 
 		// Create a new good user
@@ -283,7 +285,7 @@ public class CrmfRATcpRequestTest extends TestCase {
 		checkCmpResponseGeneral(resp, userDN, nonce, transid, false);
 		checkCmpPKIErrorMessage(resp, issuerDN, userDN, 2, "Received CMP message with unknown protection alg: 1.2.840.113533.7.66.13.7");
 	}
-	*/
+	
 
 	private PKIMessage genCertReq(byte[] nonce, byte[] transid) throws NoSuchAlgorithmException, NoSuchProviderException, IOException {
 		OptionalValidity myOptionalValidity = new OptionalValidity();
@@ -438,20 +440,39 @@ public class CrmfRATcpRequestTest extends TestCase {
 	private byte[] sendCmp(byte[] message) throws IOException, NoSuchProviderException {
 		byte[] respBytes = null;
 		try {
-			int port = 5587;
+			int port = PORT_NUMBER;
 			Socket socket = new Socket("127.0.0.1", port);
 
 			byte[] msg = createTcpMessage(message);
 
-			BufferedInputStream is = new BufferedInputStream(socket.getInputStream());
 			BufferedOutputStream os = new BufferedOutputStream(socket.getOutputStream());
 			os.write(msg);
 			os.flush();
+
+			DataInputStream dis = new DataInputStream(socket.getInputStream());
+			// Read the length, 32 bits
+			int len = dis.readInt();
+			System.out.println("Got a message claiming to be of length: " + len);
+			// Read the version, 8 bits. Version should be 10 (protocol draft nr 5)
+			int ver = dis.readByte();
+			System.out.println("Got a message with version: " + ver);
+			assertEquals(10, ver);
 			
-			ByteArrayOutputStream baos = new ByteArrayOutputStream(512);
-			while (is.available() > 0) {
-				baos.write(is.read());
+			// Read flags, 8 bits for version 10
+			byte flags = dis.readByte();
+			System.out.println("Got a message with flags (1 means close): " + flags);
+			// Check if the client wants us to close the connection (LSB is 1 in that case according to spec)
+			
+			// Read message type, 8 bits
+			int msgType = dis.readByte();
+			System.out.println("Got a message of type: " +msgType);
+			
+			// Read message
+			ByteArrayOutputStream baos = new ByteArrayOutputStream(3072);
+			while (dis.available() > 0) {
+				baos.write(dis.read());
 			}
+			System.out.println("Read "+baos.size()+" bytes");
 			respBytes = baos.toByteArray();
 		} catch(Exception e) {
 			e.printStackTrace();

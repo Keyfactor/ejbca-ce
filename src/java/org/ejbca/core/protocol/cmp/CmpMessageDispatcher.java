@@ -14,6 +14,7 @@
 package org.ejbca.core.protocol.cmp;
 
 import java.io.ByteArrayInputStream;
+import java.rmi.RemoteException;
 import java.util.Properties;
 
 import javax.ejb.CreateException;
@@ -49,7 +50,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * - Certificate Confirmation - accept or reject by client - will return a PKIConfirm
  * 
  * @author tomas
- * @version $Id: CmpMessageDispatcher.java,v 1.6 2006-09-27 15:33:27 anatom Exp $
+ * @version $Id: CmpMessageDispatcher.java,v 1.7 2006-09-28 09:45:31 anatom Exp $
  */
 public class CmpMessageDispatcher {
 	private static final Logger log = Logger.getLogger(CmpMessageDispatcher.class);
@@ -153,6 +154,8 @@ public class CmpMessageDispatcher {
 				log.error("Something is null! Handler= "+handler+", cmpMessage="+cmpMessage);
 			}
 		} catch (CreateException e) {
+			log.error("Exception during CMP processing: ", e);
+		} catch (RemoteException e) {
 			log.error("Exception during CMP processing: ", e);
 		}
 

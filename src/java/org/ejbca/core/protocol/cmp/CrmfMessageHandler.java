@@ -13,6 +13,7 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -32,16 +33,16 @@ import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
+import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
+import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
+import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -72,7 +73,7 @@ import com.novosec.pkix.asn1.crmf.PBMParameter;
 /**
  * Message handler for certificate request messages in the CRMF format
  * @author tomas
- * @version $Id: CrmfMessageHandler.java,v 1.9 2006-09-27 15:33:27 anatom Exp $
+ * @version $Id: CrmfMessageHandler.java,v 1.10 2006-09-28 09:45:31 anatom Exp $
  */
 public class CrmfMessageHandler implements ICmpMessageHandler {
 	
@@ -92,24 +93,35 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 	private String raAuthenticationSecret = null;
 	
 	private Admin admin;
-	private ISignSessionLocal signsession = null;
-	private IUserAdminSessionLocal usersession = null;
-	private ICAAdminSessionLocal casession = null;
-	private IRaAdminSessionLocal rasession = null;
-	private ICertificateStoreSessionLocal storesession = null;
+//	private ISignSessionLocal signsession = null;
+	private ISignSessionRemote signsession = null;
+//	private IUserAdminSessionLocal usersession = null;
+	private IUserAdminSessionRemote usersession = null;
+//	private ICAAdminSessionLocal casession = null;
+	private ICAAdminSessionRemote casession = null;
+//	private IRaAdminSessionLocal rasession = null;
+	private IRaAdminSessionRemote rasession = null;
+//	private ICertificateStoreSessionLocal storesession = null;
+	private ICertificateStoreSessionRemote storesession = null;
 	
-	public CrmfMessageHandler(Admin admin, Properties prop) throws CreateException {
+	
+	public CrmfMessageHandler(Admin admin, Properties prop) throws CreateException, RemoteException {
 		this.admin = admin;
 		// Get EJB local bean
-		ISignSessionLocalHome signHome = (ISignSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
+		ISignSessionHome signHome = (ISignSessionHome)ServiceLocator.getInstance().getRemoteHome(ISignSessionHome.JNDI_NAME, ISignSessionHome.class);		
+//		ISignSessionLocalHome signHome = (ISignSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
+		IUserAdminSessionHome userHome = (IUserAdminSessionHome) ServiceLocator.getInstance().getRemoteHome(IUserAdminSessionHome.JNDI_NAME, IUserAdminSessionHome.class);
+//		IUserAdminSessionLocalHome userHome = (IUserAdminSessionLocalHome) ServiceLocator.getInstance().getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
+		ICAAdminSessionHome caHome = (ICAAdminSessionHome) ServiceLocator.getInstance().getRemoteHome(ICAAdminSessionHome.JNDI_NAME, ICAAdminSessionHome.class);
+//		ICAAdminSessionLocalHome caHome = (ICAAdminSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
+		IRaAdminSessionHome raHome = (IRaAdminSessionHome) ServiceLocator.getInstance().getRemoteHome(IRaAdminSessionHome.JNDI_NAME, IRaAdminSessionHome.class);
+//		IRaAdminSessionLocalHome raHome = (IRaAdminSessionLocalHome) ServiceLocator.getInstance().getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
+		ICertificateStoreSessionHome storeHome = (ICertificateStoreSessionHome) ServiceLocator.getInstance().getRemoteHome(ICertificateStoreSessionHome.JNDI_NAME, ICertificateStoreSessionHome.class);
+//		ICertificateStoreSessionLocalHome storeHome = (ICertificateStoreSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
 		this.signsession = signHome.create();
-		IUserAdminSessionLocalHome userHome = (IUserAdminSessionLocalHome) ServiceLocator.getInstance().getLocalHome(IUserAdminSessionLocalHome.COMP_NAME);
 		this.usersession = userHome.create();
-		ICAAdminSessionLocalHome caHome = (ICAAdminSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
 		this.casession = caHome.create();
-		IRaAdminSessionLocalHome raHome = (IRaAdminSessionLocalHome) ServiceLocator.getInstance().getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
 		this.rasession = raHome.create();
-		ICertificateStoreSessionLocalHome storeHome = (ICertificateStoreSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
 		this.storesession = storeHome.create();
 
 		String str = prop.getProperty("operationMode");
@@ -261,7 +273,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 							} catch (WaitingForApprovalException e) {
 								log.error("Exception adding user: ", e);
 								resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
-							}							
+							}
 						}
 					} else {
 						log.error("Recevied an unathenticated message in RA mode!");
@@ -317,7 +329,11 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 			log.error("Exception during CMP processing: ", e);
 		} catch (ClassNotFoundException e) {
 			log.error("Exception during CMP processing: ", e);
-		}
+		} catch (RemoteException e) {
+			// Fatal error
+			log.error("Exception adding user: ", e);
+			resp = null;
+		}							
 		return resp;
 	}
 	

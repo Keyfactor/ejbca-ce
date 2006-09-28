@@ -13,12 +13,13 @@
 
 package se.anatom.ejbca.protocol.cmp;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.Socket;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -436,25 +437,36 @@ public class CrmfRARequestTest extends TestCase {
 	}
 
 	private byte[] sendCmp(byte[] message) throws IOException, NoSuchProviderException {
-		byte[] respBytes = null;
-		try {
-			int port = 5587;
-			Socket socket = new Socket("127.0.0.1", port);
+        // POST the CMP request
+        // we are going to do a POST
+    	String resource = resourceCmp;
+    	String urlString = httpReqPath + '/' + resource;
+    	log.debug("UrlString =" + urlString);
+        HttpURLConnection con = null;
+        URL url = new URL(urlString);
+        con = (HttpURLConnection)url.openConnection();
+        con.setDoOutput(true);
+        con.setRequestMethod("POST");
+        con.setRequestProperty("Content-type", "application/pkixcmp");
+        con.connect();
+        // POST it
+        OutputStream os = con.getOutputStream();
+        os.write(message);
+        os.close();
 
-
-			BufferedInputStream is = new BufferedInputStream(socket.getInputStream());
-			BufferedOutputStream os = new BufferedOutputStream(socket.getOutputStream());
-			os.write(message);
-			
-			ByteArrayOutputStream baos = new ByteArrayOutputStream(512);
-			while (is.available() > 0) {
-				baos.write(is.read());
-			}
-			respBytes = baos.toByteArray();
-		} catch(Exception e) {
-			e.printStackTrace();
-			assertTrue(false);
-		}
+        assertEquals("Response code", 200, con.getResponseCode());
+        assertEquals("Content-Type", "application/pkixcmp", con.getContentType());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        // This works for small requests, and CMP requests are small enough
+        InputStream in = con.getInputStream();
+        int b = in.read();
+        while (b != -1) {
+            baos.write(b);
+            b = in.read();
+        }
+        baos.flush();
+        in.close();
+        byte[] respBytes = baos.toByteArray();
         assertNotNull("Response can not be null.", respBytes);
         assertTrue(respBytes.length > 0);
         return respBytes;

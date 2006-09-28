@@ -29,6 +29,7 @@ package org.ejbca.ui.tcp;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.security.cert.CertificateEncodingException;
@@ -83,15 +84,15 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 			DataInputStream dis = new DataInputStream(bai);
 			// Read the length, 32 bits
 			int len = dis.readInt();
-			log.info("Got a message claiming to be of length: " + len);
+			log.debug("Got a message claiming to be of length: " + len);
 			
 			// Read the version, 8 bits. Version should be 10 (protocol draft nr 5)
 			int ver = dis.readByte();
-			log.info("Got a message with version: " + ver);
+			log.debug("Got a message with version: " + ver);
 			
 			// Read flags, 8 bits for version 10
 			byte flags = dis.readByte();
-			log.info("Got a message with flags: " + flags);
+			log.debug("Got a message with flags (1 means close): " + flags);
 			// Check if the client wants us to close the connection (LSB is 1 in that case according to spec)
 			if ((flags & 0xFE) == 1) {
 				close = true;
@@ -99,7 +100,7 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 			
 			// Read message type, 8 bits
 			int msgType = dis.readByte();
-			log.info("Got a message of type: " +msgType);
+			log.debug("Got a message of type: " +msgType);
 			
 			// Read message
 			int msgLen = command.length - 4;
@@ -123,7 +124,7 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 						// unknown error?
 						log.error("CMP message dispatcher returned a null response!");
 					} else {
-						log.info("Sending back CMP response to client.");
+						log.debug("Sending back CMP response to client.");
 					}
 
 				} else {
@@ -144,6 +145,7 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 			// TODO:
 		}
 		if (sendBack != null) {
+			log.debug("Sending "+sendBack.length+" bytes to client");
 			handler.sendClientBinary(sendBack);			
 		} else {
 			close = true;
@@ -174,12 +176,22 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 			doClose = true;
 		}
 		int len = msg.length;
+		DataOutputStream dos = new DataOutputStream(bao); 
 		// return msg length = msg.length + 3; 1 byte version, 1 byte flags and 1 byte message type
-		bao.write(len+3);
-		bao.write((byte)10);
-		bao.write((byte)(doClose == true ? 1 : 0)); // 1 if we should close, 0 otherwise
-		bao.write((byte)msgType); 
-		bao.write(msg);
+		dos.writeInt(len+3);
+		dos.writeByte(10);
+		int flags = (doClose == true ? 1 : 0); // 1 if we should close, 0 otherwise
+		dos.writeByte(flags); 
+		dos.writeByte(msgType); 
+		dos.write(msg);
+		dos.flush();
+		if (log.isDebugEnabled()) {
+			log.debug("Wrote length: "+len+3);
+			log.debug("Wrote version: 10");
+			log.debug("Wrote flags: "+flags);
+			log.debug("Wrote msgType: "+msgType);
+			log.debug("Wrote msg with length: "+msg.length);
+		}
 		return bao.toByteArray();
 	}
 	    
