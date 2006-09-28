@@ -200,6 +200,9 @@
 	<property name="approval.defaultapprovalvalidity" value="28800" />
     <property name="approval.excludedClasses" value="" />
 
+	<!-- If the create CRL service MBean should be deployed -->
+    <property name="createcrl.service.enabled" value="false" />    
+
     <!-- Extra Protection settings for internal log signing etc -->
     <property name="protection.enabled" value="false" />
     <property name="protection.logprotect" value="false" />
@@ -221,6 +224,8 @@
 	<property name="cmp.ra.endentityprofile" value="EMPTY" />
 	<property name="cmp.ra.certificateprofile" value="ENDUSER" />
 	<property name="cmp.ra.caname" value="AdminCA1" />
+	<!-- If the CMP TCP service MBean should be deployed -->
+	<property name="cmp.tcp.enabled" value="false" />
 	<property name="cmp.tcp.portno" value="829" />
 	<property name="cmp.tcp.logdir" value="./log" />
 	<property name="cmp.tcp.conffile" value="" />

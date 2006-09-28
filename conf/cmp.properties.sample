@@ -1,5 +1,5 @@
 #
-# $Id: cmp.properties.sample,v 1.4 2006-09-28 09:45:31 anatom Exp $
+# $Id: cmp.properties.sample,v 1.5 2006-09-28 13:11:33 anatom Exp $
 #
 # This is a sample file to override properties used
 # during deployment of EJBCA
@@ -78,6 +78,17 @@
 #
 # Default: AdminCA1
 #cmp.ra.caname=AdminCA1
+
+# ---------- Settings for the CMP TCP listener ----------
+#
+# The TCP listener is not enabled by default, because it is an MBean, which 
+# requires special things. If possible you should stick to the HTTP transport
+# protocol for CMP, it is much better
+
+# Enabled or disabled
+#
+# Default: false
+#cmp.tcp.enabled=false
 
 # The port number to listen to for TCP connections, if TCP transport is enabled.
 # Please not that the default port number, below 1024, requires JBoss to be run with root privileges.

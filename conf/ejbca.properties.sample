@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.2 2006-09-27 09:29:12 herrvendil Exp $
+# $Id: ejbca.properties.sample,v 1.3 2006-09-28 13:11:33 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -216,6 +216,12 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 # Default: (blank works with hsqldb)
 #database.password=ejbca
 #database.password=postgres
+
+# ------------ CRL Creation service configuration ---------------------
+# 
+# Enable this (set to true) if you want to deploy the create CRL service MBean
+# Default: false
+#createcrl.service.enabled=false
 
 # ------------ OCSP configuration ---------------------
 

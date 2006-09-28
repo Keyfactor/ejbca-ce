@@ -66,10 +66,17 @@
 	<target name="ca.ear">
 	</target>
 	
+	<target name="cmptcpserviceconditioncheck">
+		<condition property="cmptcpservices.enabled">
+			<istrue value="${cmp.tcp.enabled}"/>
+		</condition>
+	</target>
+	
     <!-- =================================================================== -->
-    <!--Deploy EJBCA with Jboss Specific Services inside the ear file.       -->
+    <!--Build EJBCA with Jboss Specific Services inside the ear file.       -->
     <!-- =================================================================== -->
-    <target name="deploywithcmptcpservices" depends="jbosscmptcplistener, ca.ear" description="Deploys EJBCA with CMP TCP listener">    	
+    <target name="buildwithcmptcpservice" if="cmptcpservices.enabled" depends="cmptcpserviceconditioncheck, jbosscmptcplistener, ca.ear" description="Deploys EJBCA with CMP TCP listener">    	
+    	<echo>Including CMP TCP service</echo>
         <copy todir="${tmp}" overwrite="false">
         	<fileset dir="${eardd.src}">
         	   <include name="META-INF/jboss-app.xml" />
@@ -84,7 +91,6 @@
                 <include name="${cmptcpservice.name}" />
             </fileset>
 		</ear>
-        <antcall target="j2ee:deploy" />
     </target>
 
 </project>

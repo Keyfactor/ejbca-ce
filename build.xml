@@ -444,7 +444,7 @@
     <!-- ======================================================================= -->
     <!-- Deploy EJBCA ear to JBoss                                               -->
     <!-- ======================================================================= -->
-    <target name="deploy" depends="build">
+    <target name="deploy" depends="build, buildwithcmptcpservice, buildwithcreatecrlservice">
         <antcall target="j2ee:deploy" />
     </target>
     <target name="ocsp-deploy" depends="ocsp-ear">

@@ -4,7 +4,7 @@
 	<!-- =================================================================== -->
     <!-- Build Jboss Specific Services                       -->
     <!-- =================================================================== -->
-    <target name="jbossservices" depends="compile">
+    <target name="createcrlservice" depends="compile">
         <path id="jbossservices.classpath">
             <pathelement location="${jboss.home}/lib/jboss-system.jar" />
             <pathelement location="${jboss.home}/lib/jboss-common.jar" />
@@ -45,14 +45,21 @@
     <!-- =================================================================== -->
     <!--Deploy Jboss Specific Services                       -->
     <!-- =================================================================== -->
-    <target name="deployjbossservices" depends="jbossservices">
+    <target name="deploycreatecrlservice" depends="createcrlservice">
         <copy file="${createcrlservicejar}" tofile="${jboss.farm.dir}/createcrlservice.jar" verbose="true" />
     </target>
+	
+	<target name="crlserviceconditioncheck">
+		<condition property="createcrlservices.enabled">
+			<istrue value="${createcrl.service.enabled}"/>
+		</condition>
+	</target>
 	
     <!-- =================================================================== -->
     <!--Deploy EJBCA with Jboss Specific Services inside the ear file.       -->
     <!-- =================================================================== -->
-    <target name="deploywithjbossservices" depends="jbossservices, ca.ear" description="Deploys EJBCA with CRL creation service">    	
+    <target name="buildwithcreatecrlservice" depends="crlserviceconditioncheck, createcrlservice, ca.ear" description="Deploys EJBCA with CRL creation service">    	
+    	<echo>Including create CRL service</echo>
         <copy todir="${tmp}" overwrite="false">
         	<fileset dir="${eardd.src}">
         	   <include name="META-INF/jboss-app.xml" />
@@ -67,7 +74,6 @@
                 <include name="${createcrlservice.name}" />
             </fileset>
 		</ear>
-        <antcall target="j2ee:deploy" />
     </target>
 
 </project>
