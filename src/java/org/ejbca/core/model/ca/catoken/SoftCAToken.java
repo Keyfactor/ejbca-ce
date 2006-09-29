@@ -22,9 +22,9 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.HashMap;
 
 import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException;
 import org.ejbca.util.Base64;
@@ -34,7 +34,7 @@ import org.ejbca.util.KeyTools;
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: SoftCAToken.java,v 1.2 2006-05-28 14:21:11 anatom Exp $
+ * @version $Id: SoftCAToken.java,v 1.3 2006-09-29 08:25:11 anatom Exp $
  */
 public class SoftCAToken extends CAToken implements java.io.Serializable{
 
@@ -67,46 +67,36 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
     public SoftCAToken(HashMap data) throws IllegalArgumentException, IllegalKeyStoreException {
       loadData(data);  
       if(data.get(KEYSTORE) != null){    
-         // lookup keystore passwords      
-         String keystorepass = null;
-         try {
-             InitialContext ictx = new InitialContext();
-             keystorepass = (String) ictx.lookup("java:comp/env/keyStorePass");      
-             if (keystorepass == null)
-                 throw new IllegalArgumentException("Missing keyStorePass property.");
-         } catch (NamingException ne) {
-             throw new IllegalArgumentException("Missing keyStorePass property.");
-         }
-               
-        try {
-            KeyStore keystore=KeyStore.getInstance("PKCS12", "BC");
-            keystore.load(new java.io.ByteArrayInputStream(Base64.decode(((String) data.get(KEYSTORE)).getBytes())),keystorepass.toCharArray());
-      
-            this.privateSignKey = (PrivateKey) keystore.getKey(PRIVATESIGNKEYALIAS, null);
-            this.privateDecKey = (PrivateKey) keystore.getKey(PRIVATEDECKEYALIAS, null);      
-      
-            this.publicSignKey = keystore.getCertificateChain(PRIVATESIGNKEYALIAS)[0].getPublicKey();
-            this.encCert =  keystore.getCertificateChain(PRIVATEDECKEYALIAS)[0];
-            this.publicEncKey = this.encCert.getPublicKey();
-            
-        } catch (Exception e) {
-            throw new IllegalKeyStoreException(e);
-        }
-        
-        data.put(CATOKENTYPE, new Integer(CATokenInfo.CATOKENTYPE_P12));        
-     } 
+    	  // lookup keystore passwords      
+    	  String keystorepass = ServiceLocator.getInstance().getString("java:comp/env/keyStorePass");      
+    	  if (keystorepass == null)
+    		  throw new IllegalArgumentException("Missing keyStorePass property.");
+    	  try {
+    		  KeyStore keystore=KeyStore.getInstance("PKCS12", "BC");
+    		  keystore.load(new java.io.ByteArrayInputStream(Base64.decode(((String) data.get(KEYSTORE)).getBytes())),keystorepass.toCharArray());
+    		  
+    		  this.privateSignKey = (PrivateKey) keystore.getKey(PRIVATESIGNKEYALIAS, null);
+    		  this.privateDecKey = (PrivateKey) keystore.getKey(PRIVATEDECKEYALIAS, null);      
+    		  
+    		  this.publicSignKey = keystore.getCertificateChain(PRIVATESIGNKEYALIAS)[0].getPublicKey();
+    		  this.encCert =  keystore.getCertificateChain(PRIVATEDECKEYALIAS)[0];
+    		  this.publicEncKey = this.encCert.getPublicKey();
+    		  
+    	  } catch (Exception e) {
+    		  throw new IllegalKeyStoreException(e);
+    	  }
+    	  
+    	  data.put(CATOKENTYPE, new Integer(CATokenInfo.CATOKENTYPE_P12));        
+      } 
    }
     
    /**
     * Method that generates the keys that will be used by the CAToken.
     */
    public void generateKeys(CATokenInfo catokeninfo) throws Exception{  
-      // lookup keystore passwords      
-      InitialContext ictx = new InitialContext();
-      String keystorepass = (String) ictx.lookup("java:comp/env/keyStorePass");      
-      if (keystorepass == null)
-        throw new IllegalArgumentException("Missing keyStorePass property.");
-        
+
+	   // Get key store password
+	   String keystorepass = ServiceLocator.getInstance().getString("java:comp/env/keyStorePass");      
        // Currently only RSA keys are supported
        SoftCATokenInfo info = (SoftCATokenInfo) catokeninfo;       
        int keysize = info.getKeySize();  

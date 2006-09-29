@@ -25,12 +25,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.OCSPException;
+import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.model.ca.NotSupportedException;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException;
@@ -45,7 +43,7 @@ import org.ejbca.util.KeyTools;
 
 /** Handles and maintains the CA-part of the OCSP functionality
  * 
- * @version $Id: OCSPCAService.java,v 1.6 2006-07-28 16:00:39 anatom Exp $
+ * @version $Id: OCSPCAService.java,v 1.7 2006-09-29 08:26:01 anatom Exp $
  */
 public class OCSPCAService extends ExtendedCAService implements java.io.Serializable{
 
@@ -93,19 +91,15 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
       loadData(data);  
       if(data.get(OCSPKEYSTORE) != null){    
          // lookup keystore passwords      
-         String keystorepass = null;
-         try {
-             InitialContext ictx = new InitialContext();
-             keystorepass = (String) ictx.lookup("java:comp/env/OCSPKeyStorePass");      
-             if (keystorepass == null)
-                 throw new IllegalArgumentException("Missing OCSPKeyStorePass property.");
-         } catch (NamingException ne) {
-             throw new IllegalArgumentException("Missing OCSPKeyStorePass property.");
-         }
+         String keystorepass = ServiceLocator.getInstance().getString("java:comp/env/OCSPKeyStorePass");      
+         if (keystorepass == null)
+        	 throw new IllegalArgumentException("Missing OCSPKeyStorePass property.");
                
         try {
+        	m_log.debug("Loading OCSP keystore");
             KeyStore keystore=KeyStore.getInstance("PKCS12", "BC");
             keystore.load(new java.io.ByteArrayInputStream(Base64.decode(((String) data.get(OCSPKEYSTORE)).getBytes())),keystorepass.toCharArray());
+        	m_log.debug("Finished loading OCSP keystore");
       
             this.ocspsigningkey = (PrivateKey) keystore.getKey(PRIVATESIGNKEYALIAS, null);
             this.ocspcertificatechain =  Arrays.asList(keystore.getCertificateChain(PRIVATESIGNKEYALIAS));      
@@ -129,11 +123,10 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
    /* 
 	* @see org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAService#extendedService(org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest)
 	*/   
-   public void init(CA ca) throws Exception{
+   public void init(CA ca) throws Exception {
    	 m_log.debug("OCSPCAService : init ");
 	 // lookup keystore passwords      
-	 InitialContext ictx = new InitialContext();
-	 String keystorepass = (String) ictx.lookup("java:comp/env/OCSPKeyStorePass");      
+     String keystorepass = ServiceLocator.getInstance().getString("java:comp/env/OCSPKeyStorePass");      
 	 if (keystorepass == null)
 	   throw new IllegalArgumentException("Missing OCSPKeyPass property.");
         
