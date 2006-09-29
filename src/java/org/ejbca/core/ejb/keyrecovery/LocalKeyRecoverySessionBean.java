@@ -58,7 +58,7 @@ import org.ejbca.util.CertTools;
  * Stores key recovery data. Uses JNDI name for datasource as defined in env 'Datasource' in
  * ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.4 2006-09-27 09:28:26 herrvendil Exp $
+ * @version $Id: LocalKeyRecoverySessionBean.java,v 1.5 2006-09-29 08:26:26 anatom Exp $
  *
  * @ejb.bean
  *   display-name="Stores key recovery data"
@@ -553,6 +553,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      *
      * @param admin the administrator calling the function
      * @param username or the user.
+     * @param the end entity profile of the user, used for access control
      *
      * @return true if operation went successful or false if no certificates could be found for
      *         user, or user already marked.
