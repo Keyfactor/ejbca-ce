@@ -46,7 +46,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Tests authentication session used by signer.
  *
- * @version $Id: TestAuthenticationSession.java,v 1.11 2006-08-12 09:49:54 herrvendil Exp $
+ * @version $Id: TestAuthenticationSession.java,v 1.12 2006-09-29 08:24:25 anatom Exp $
  */
 public class TestAuthenticationSession extends TestCase {
     private static Logger log = Logger.getLogger(TestAuthenticationSession.class);
@@ -240,7 +240,7 @@ public class TestAuthenticationSession extends TestCase {
     	
     	// First mark the user for recovery
     	keyrecsession.addKeyRecoveryData(admin, cert, username, keys);
-		keyrecsession.markNewestAsRecoverable(admin,username);
+		keyrecsession.markNewestAsRecoverable(admin,username,SecConst.EMPTY_ENDENTITYPROFILE);
     	
 		assertTrue("Failure the users keyrecovery session should have been marked", keyrecsession.isUserMarked(admin,username));
 		
