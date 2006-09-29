@@ -23,17 +23,11 @@ import java.util.List;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
-import javax.ejb.FinderException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal;
 import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome;
-import org.ejbca.core.ejb.keyrecovery.KeyRecoveryDataLocal;
-import org.ejbca.core.ejb.keyrecovery.KeyRecoveryDataLocalHome;
-import org.ejbca.core.ejb.keyrecovery.KeyRecoveryDataPK;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
-import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -42,7 +36,6 @@ import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
@@ -53,7 +46,7 @@ import org.ejbca.util.CertTools;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: KeyRecoveryApprovalRequest.java,v 1.1 2006-09-27 09:28:28 herrvendil Exp $
+ * @version $Id: KeyRecoveryApprovalRequest.java,v 1.2 2006-09-29 13:46:21 anatom Exp $
  */
 public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 

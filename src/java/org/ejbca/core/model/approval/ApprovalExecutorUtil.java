@@ -17,7 +17,6 @@ import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.log.Admin;
 
 /**
  * Util class with methods to get information about calling classes
@@ -63,7 +62,7 @@ ApprovalExecutorUtil.requireApproval checks all the rules and returns true or fa
 
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalExecutorUtil.java,v 1.9 2006-09-27 09:28:26 herrvendil Exp $
+ * @version $Id: ApprovalExecutorUtil.java,v 1.10 2006-09-29 13:46:21 anatom Exp $
  */
 public class ApprovalExecutorUtil {
       
