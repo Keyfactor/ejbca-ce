@@ -5,6 +5,13 @@ Important changes:
 - The default encoding of DN components for new CAs (old are unaffected) is now UTF8, as required by RFC3280.
   The behaviour can be changed with the 'Always use UTF8 strings in subject DN' in the CA configuration (edit CAs).
 
+EJBCA 3.3.1
+-----------
+This is a minor release with some bugfixes, most notably for Luna HSM.
+Read the changelog for details.
+
+This is a plug-in upgrade from 3.3.0. See UPGRADE for the simple instructions.
+
 EJBCA 3.3.0
 -----------
 This is a major release with new features, improvements and bugfixes.

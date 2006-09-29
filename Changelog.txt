@@ -1,3 +1,11 @@
+3.3.1
+---
+
+Bug
+    * [ECA-326] - Use MySQL specific command in ExternalOCSPPublisher.java
+    * [ECA-334] - Not possible to activate a Luna HSM CA
+    * [ECA-340] - Some errors in deployment descriptors (not noticable in JBoss)
+
 3.3.0
 ---
 New Feature
