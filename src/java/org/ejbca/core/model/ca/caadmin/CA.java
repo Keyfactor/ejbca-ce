@@ -60,7 +60,7 @@ import org.ejbca.util.CertTools;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.7 2006-09-29 08:49:56 anatom Exp $
+ * @version $Id: CA.java,v 1.8 2006-09-29 10:14:53 anatom Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -145,13 +145,22 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     public String getSubjectDN(){
     	return cainfo.getSubjectDN();
     }
+    public void setSubjectDN(String subjectdn){
+    	cainfo.subjectdn = subjectdn;
+    }
     
     public int getCAId(){
     	return cainfo.getCAId();
     }    
+    public void setCAId(int caid){
+    	cainfo.caid = caid;
+    }    
     
     public String getName(){
     	return cainfo.getName();
+    }
+    public void setName(String caname){
+    	cainfo.name = caname;
     }
     
     public int getStatus(){

@@ -15,7 +15,6 @@ package org.ejbca.core.ejb.ca.caadmin;
 
 import java.io.UnsupportedEncodingException;
 import java.security.cert.X509Certificate;
-import java.util.Date;
 import java.util.HashMap;
 
 import javax.ejb.CreateException;
@@ -24,6 +23,7 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.BaseEntityBean;
 import org.ejbca.core.model.UpgradeableDataHashMap;
 import org.ejbca.core.model.ca.caadmin.CA;
+import org.ejbca.core.model.ca.caadmin.CACacheManager;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException;
 import org.ejbca.core.model.ca.caadmin.X509CA;
@@ -46,7 +46,7 @@ import org.ejbca.util.Base64PutHashMap;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.5 2006-09-29 08:49:56 anatom Exp $
+ * @version $Id: CADataBean.java,v 1.6 2006-09-29 10:14:54 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a publisher"
@@ -186,28 +186,30 @@ public abstract class CADataBean extends BaseEntityBean {
      */
     public CA getCA() throws java.io.UnsupportedEncodingException, IllegalKeyStoreException {
         CA ca = null;
-        Date now = new Date();
-        log.info("Start: "+now);
-        java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
-        HashMap h = (HashMap) decoder.readObject();
-        decoder.close();
-        // Handle Base64 encoded string values
-        HashMap data = new Base64GetHashMap(h);
-        
-        // If CA-data is upgraded we want to save the new data, so we must get the old version before loading the data 
-        // and perhaps upgrading
-        float oldversion = ((Float) data.get(UpgradeableDataHashMap.VERSION)).floatValue();
-        switch(((Integer)(data.get(CA.CATYPE))).intValue()){
-            case CAInfo.CATYPE_X509:
-                ca = new X509CA(data, getCaId().intValue(), getSubjectDN(), getName(), getStatus());
-                break;
+        // First check if we already have a cached instance of the CA
+        ca = CACacheManager.instance().getCA(getCaId().intValue(), this);
+        if (ca == null) {
+            java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
+            HashMap h = (HashMap) decoder.readObject();
+            decoder.close();
+            // Handle Base64 encoded string values
+            HashMap data = new Base64GetHashMap(h);
+            
+            // If CA-data is upgraded we want to save the new data, so we must get the old version before loading the data 
+            // and perhaps upgrading
+            float oldversion = ((Float) data.get(UpgradeableDataHashMap.VERSION)).floatValue();
+            switch(((Integer)(data.get(CA.CATYPE))).intValue()){
+                case CAInfo.CATYPE_X509:
+                    ca = new X509CA(data, getCaId().intValue(), getSubjectDN(), getName(), getStatus());
+                    break;
+            }
+            // Compare old version with current version and save the data if there has been a change
+            if ( (ca != null) && (Float.compare(oldversion, ca.getVersion()) != 0) ) {
+                setCA(ca);
+            }
+            // Add CA to the cache
+            CACacheManager.instance().addCA(getCaId().intValue(), ca);
         }
-        // Compare old version with current version and save the data if there has been a change
-        if ( (ca != null) && (Float.compare(oldversion, ca.getVersion()) != 0) ) {
-            setCA(ca);
-        }
-        Date end = new Date();
-        log.info("end: "+end+", took "+(end.getTime()-now.getTime())+" milliseconds");
         return ca;              
     }
     
@@ -225,6 +227,8 @@ public abstract class CADataBean extends BaseEntityBean {
         encoder.writeObject(a);
         encoder.close();
         setData(baos.toString("UTF8"));
+        // remove the CA from the cache to force an update the next time we load it
+        CACacheManager.instance().removeCA(getCaId().intValue());
     }   
     
     //
