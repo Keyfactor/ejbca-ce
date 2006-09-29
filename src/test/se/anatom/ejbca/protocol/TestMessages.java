@@ -35,7 +35,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Protocol messages.
  *
- * @version $Id: TestMessages.java,v 1.6 2006-01-17 20:28:08 anatom Exp $
+ * @version $Id: TestMessages.java,v 1.7 2006-09-29 11:55:13 anatom Exp $
  */
 public class TestMessages extends TestCase {
 
@@ -48,13 +48,8 @@ public class TestMessages extends TestCase {
      *
      * @param name name
      */
-    public TestMessages(String name) {
+    public TestMessages(String name) throws Exception {
         super(name);
-    }
-
-    protected void setUp() throws Exception {
-        log.debug(">setUp()");
-
         // Install BouncyCastle provider
         CertTools.installBCProvider();
 
@@ -78,7 +73,9 @@ public class TestMessages extends TestCase {
 
         
         //System.out.println(caCert.toString());
-        log.debug("<setUp()");
+    }
+
+    protected void setUp() throws Exception {
     }
 
     protected void tearDown() throws Exception {
