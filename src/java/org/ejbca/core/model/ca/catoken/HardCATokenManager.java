@@ -24,7 +24,7 @@ import org.apache.log4j.Logger;
  * Each HardCaToken plug-in should register itself by using the method register.
  * The CA keeps a registry of CA tokens created here.
  * 
- * @version $Id: HardCATokenManager.java,v 1.3 2006-06-04 13:02:43 primelars Exp $
+ * @version $Id: HardCATokenManager.java,v 1.4 2006-09-29 10:12:25 anatom Exp $
  * 
  */
 public class HardCATokenManager {
@@ -84,7 +84,7 @@ public class HardCATokenManager {
      * @param token the token to be added
      */
     public synchronized void addCAToken(int caid, CAToken token) {
-        if (caTokenRegistry.contains(new Integer(caid))) {
+        if (caTokenRegistry.containsKey(new Integer(caid))) {
             caTokenRegistry.remove(new Integer(caid));
             log.debug("Removed old CA token for CA: "+caid);
         }
@@ -107,7 +107,7 @@ public class HardCATokenManager {
 	 */
 	public synchronized boolean addAvailableHardCAToken(String classpath, String name, boolean translateable, boolean use) {
 	    boolean retval = false;	
-	    if (!availablehardcatokens.contains(classpath)) {
+	    if (!availablehardcatokens.containsKey(classpath)) {
 	        log.debug("HardCATokenManager registering " + classpath);                
 	        if (loadClass(classpath)) {
 	            // Add to the available tokens
