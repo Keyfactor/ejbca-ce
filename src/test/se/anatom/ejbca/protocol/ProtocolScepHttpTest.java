@@ -200,6 +200,11 @@ public class ProtocolScepHttpTest extends TestCase {
         IUserAdminSessionHome userhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, IUserAdminSessionHome.class);
         usersession = userhome.create();
 
+        if (keys == null) {
+            // Pre-generate key for all requests to speed things up a bit
+            keys = KeyTools.genKeys(512);        	
+        }
+
         log.debug("<setUp()");
     }
 
@@ -207,9 +212,7 @@ public class ProtocolScepHttpTest extends TestCase {
     }
 
     private Context getInitialContext() throws NamingException {
-        log.debug(">getInitialContext");
         Context ctx = new javax.naming.InitialContext();
-        log.debug("<getInitialContext");
         return ctx;
     }
  
@@ -247,8 +250,6 @@ public class ProtocolScepHttpTest extends TestCase {
         // Make user that we know...
         createScepUser();
         
-        // Pre-generate key for all requests to speed things up a bit
-        keys = KeyTools.genKeys(512);
         byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes, false);
@@ -265,8 +266,6 @@ public class ProtocolScepHttpTest extends TestCase {
         // Make user that we know...
         createScepUser();
         
-        // Pre-generate key for all requests to speed things up a bit
-        keys = KeyTools.genKeys(512);
         byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_MD5);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes, false);

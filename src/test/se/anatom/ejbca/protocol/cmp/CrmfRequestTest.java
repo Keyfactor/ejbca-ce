@@ -156,7 +156,7 @@ public class CrmfRequestTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		if (keys == null) {
-			keys = KeyTools.genKeys(1024);
+			keys = KeyTools.genKeys(512);
 		}
 	}
 	
