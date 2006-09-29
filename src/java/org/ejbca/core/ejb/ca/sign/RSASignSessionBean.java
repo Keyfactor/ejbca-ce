@@ -95,16 +95,6 @@ import org.ejbca.util.CertTools;
  *
  * @weblogic.enable-call-by-reference True
  *
- * @ejb.env-entry description="Used internally to keystores in database"
- *   name="keyStorePass"
- *   type="java.lang.String"
- *   value="${ca.keystorepass}"
-
- * @ejb.env-entry description="Password for OCSP keystores"
- *   name="OCSPKeyStorePass"
- *   type="java.lang.String"
- *   value="${ca.ocspkeystorepass}"
- *
  * @ejb.env-entry description="Name of PRNG algorithm used for random source - refer to Appendix A in the
  * Java Cryptography Architecture API Specification And Reference for
  * information about standard PRNG algorithm names"
@@ -274,6 +264,8 @@ public class RSASignSessionBean extends BaseSessionBean {
             ca = cadata.getCA();
         } catch (java.io.UnsupportedEncodingException uee) {
             throw new EJBException(uee);
+        } catch(IllegalKeyStoreException e){
+            throw new EJBException(e);
         }
 
         return ca.getCertificateChain();
@@ -341,6 +333,8 @@ public class RSASignSessionBean extends BaseSessionBean {
             ca = cadata.getCA();
         } catch (java.io.UnsupportedEncodingException uee) {
             throw new CADoesntExistsException(uee);
+        } catch(IllegalKeyStoreException e){
+            throw new EJBException(e);
         }
 
         // Check that CA hasn't expired.
@@ -350,6 +344,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         } catch (CertificateExpiredException e) {
             // Signers Certificate has expired.
             cadata.setStatus(SecConst.CA_EXPIRED);
+            ca.setStatus(SecConst.CA_EXPIRED);
             throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " has expired");
         } catch (CertificateNotYetValidException cve) {
             throw new CADoesntExistsException(cve);
@@ -500,6 +495,8 @@ public class RSASignSessionBean extends BaseSessionBean {
                 ca = cadata.getCA();
             } catch (java.io.UnsupportedEncodingException uee) {
                 throw new EJBException(uee);
+            } catch(IllegalKeyStoreException e){
+                throw new EJBException(e);
             }
             // Check that CA hasn't expired.
             X509Certificate cacert = (X509Certificate) ca.getCACertificate();
@@ -514,6 +511,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             } catch (CertificateExpiredException cee) {
                 // Signers Certificate has expired.
                 cadata.setStatus(SecConst.CA_EXPIRED);
+                ca.setStatus(SecConst.CA_EXPIRED);
                 getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Signing CA " + cadata.getSubjectDN() + " has expired", cee);
                 throw new EJBException("Signing CA " + cadata.getSubjectDN() + " has expired");
             } catch (CertificateNotYetValidException cve) {
@@ -980,6 +978,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             } catch (CertificateExpiredException cee) {
                 // Signers Certificate has expired.
                 cadata.setStatus(SecConst.CA_EXPIRED);
+                ca.setStatus(SecConst.CA_EXPIRED);
                 getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_GETLASTCRL, "Signing CA " + cadata.getSubjectDN() + " has expired", cee);
                 throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " has expired");
             } catch (CertificateNotYetValidException cve) {
@@ -1080,24 +1079,28 @@ public class RSASignSessionBean extends BaseSessionBean {
             throw new EJBException(ce);
         }
         
-        CA ca = cadata.getCA();
-
-        if (ca.getStatus() != SecConst.CA_ACTIVE) {
-            getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Signing CA " + cadata.getSubjectDN() + " isn't active.");
-            throw new EJBException("Signing CA " + cadata.getSubjectDN() + " isn't active.");
-        }
-
-        // Check that CA hasn't expired.
-        X509Certificate cacert = (X509Certificate) ca.getCACertificate();
+        CA ca = null;
         try {
-            cacert.checkValidity();
+        	ca = cadata.getCA();
+        	
+        	if (ca.getStatus() != SecConst.CA_ACTIVE) {
+        		getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Signing CA " + cadata.getSubjectDN() + " isn't active.");
+        		throw new EJBException("Signing CA " + cadata.getSubjectDN() + " isn't active.");
+        	}
+        	
+        	// Check that CA hasn't expired.
+        	X509Certificate cacert = (X509Certificate) ca.getCACertificate();
+        	cacert.checkValidity();
         } catch (CertificateExpiredException cee) {
             // Signers Certificate has expired.
             cadata.setStatus(SecConst.CA_EXPIRED);
+            ca.setStatus(SecConst.CA_EXPIRED);
             getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Signing CA " + cadata.getSubjectDN() + " has expired", cee);
             throw new CADoesntExistsException("Signing CA " + cadata.getSubjectDN() + " has expired");
         } catch (CertificateNotYetValidException cve) {
             throw new CADoesntExistsException(cve);
+        } catch (IllegalKeyStoreException e) {
+        	throw new EJBException(e);
         }
         
         return cadata;
@@ -1186,6 +1189,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             } catch (CertificateExpiredException e) {
                 // Signers Certificate has expired.
                 cadata.setStatus(SecConst.CA_EXPIRED);
+                ca.setStatus(SecConst.CA_EXPIRED);
                 getLogSession().log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECRL, "Signing CA " + cadata.getSubjectDN() + " has expired", e);
                 throw new EJBException("Signing CA " + cadata.getSubjectDN() + " has expired");
             } catch (CertificateNotYetValidException e) {
@@ -1415,6 +1419,8 @@ public class RSASignSessionBean extends BaseSessionBean {
             throw new CADoesntExistsException(fe);
         } catch (UnsupportedEncodingException ue) {
             throw new EJBException(ue);
+        } catch(IllegalKeyStoreException e){
+            throw new EJBException(e);
         }
 
 

@@ -29,7 +29,6 @@ import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSException;
-import org.ejbca.core.ejb.ca.caadmin.CADataBean;
 import org.ejbca.core.model.UpgradeableDataHashMap;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAService;
@@ -61,7 +60,7 @@ import org.ejbca.util.CertTools;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.6 2006-08-09 07:29:49 herrvendil Exp $
+ * @version $Id: CA.java,v 1.7 2006-09-29 08:49:56 anatom Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -131,50 +130,38 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
     
     /** Constructor used when retrieving existing CA from database. */
-    public CA(HashMap data, CADataBean owner){
+    public CA(HashMap data){
       loadData(data);
-      this.owner = owner;
-      
-	  extendedcaservicemap = new HashMap();
+      extendedcaservicemap = new HashMap();
+    }
+    public void setCAInfo(CAInfo cainfo) {
+        this.cainfo = cainfo;    	
+    }
+    public CAInfo getCAInfo() {
+        return this.cainfo;    	
     }
 
     // Public Methods.
     public String getSubjectDN(){
-    	if(owner == null)
-      	  return cainfo.getSubjectDN();
-    	
-    	return owner.getSubjectDN();
+    	return cainfo.getSubjectDN();
     }
     
     public int getCAId(){
-    	if(owner == null)
-    		return cainfo.getCAId();
-    	
-    	return owner.getCaId().intValue();
+    	return cainfo.getCAId();
     }    
-    
-    public int getCAType(){ return ((Integer)data.get(CATYPE)).intValue();}
     
     public String getName(){
-    	if(owner == null)
-    	  return cainfo.getName();
-    	
-    	return owner.getName();
+    	return cainfo.getName();
     }
     
-    public void setName(String name) { owner.setName(name);}
-
     public int getStatus(){
-    	    	    	
-    	if(owner == null)
-      	  return cainfo.getStatus();	
-    	
-    	return owner.getStatus();
+    	return cainfo.getStatus();	
+    }
+    public void setStatus(int status){
+    	cainfo.status = status;	
     }
     
-    public void setStatus(int status) {     	
-    	owner.setStatus(status);    	
-    }    
+    public int getCAType(){ return ((Integer)data.get(CATYPE)).intValue();}
     
     public int getValidity(){ return ((Integer) data.get(VALIDITY)).intValue();}
     public void setValidity(int validity){ data.put(VALIDITY,  new Integer(validity));}
@@ -213,8 +200,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @return The CAs token, be it soft or hard.
      * @throws IllegalKeyStoreException If the token keystore is invalid (crypto error thrown by crypto provider), or the CA token type is undefined.
      */
-    public CAToken getCAToken() throws IllegalKeyStoreException {
-        CAToken ret = HardCATokenManager.instance().getCAToken(getCAId());
+    public CAToken getCAToken(int caid) throws IllegalKeyStoreException {
+        CAToken ret = HardCATokenManager.instance().getCAToken(caid);
         if (ret == null) {
             switch(((Integer) ((HashMap)data.get(CATOKENDATA)).get(CAToken.CATOKENTYPE)).intValue()) {
             case CATokenInfo.CATOKENTYPE_P12:
@@ -229,9 +216,17 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
             default:
                 throw new IllegalKeyStoreException("No CA Token type defined!");
             }
-            HardCATokenManager.instance().addCAToken(getCAId(), ret);
+            HardCATokenManager.instance().addCAToken(caid, ret);
         }            
-      return ret;
+      return ret;    	
+    }
+    /** Returns the CAs token. The token is fetched from the token registry, or created and added to the token registry.
+     * 
+     * @return The CAs token, be it soft or hard.
+     * @throws IllegalKeyStoreException If the token keystore is invalid (crypto error thrown by crypto provider), or the CA token type is undefined.
+     */
+    public CAToken getCAToken() throws IllegalKeyStoreException {
+    	return getCAToken(getCAId());
     }    
         
     /** Sets the CA token. Adds or updates the token in the token registry.
@@ -380,31 +375,30 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 	
     public void updateCA(CAInfo cainfo) throws Exception{            
-      data.put(VALIDITY, new Integer(cainfo.getValidity()));                 
-      data.put(DESCRIPTION, cainfo.getDescription());      
-      data.put(CRLPERIOD, new Integer(cainfo.getCRLPeriod()));
-	  data.put(CRLISSUEINTERVAL, new Integer(cainfo.getCRLIssueInterval()));
-	  data.put(CRLOVERLAPTIME, new Integer(cainfo.getCRLOverlapTime()));
-	  data.put(CRLPUBLISHERS, cainfo.getCRLPublishers());
-	  data.put(APPROVALSETTINGS,cainfo.getApprovalSettings());
-	  data.put(NUMBEROFREQAPPROVALS,new Integer(cainfo.getNumOfReqApprovals()));
-      CAToken token = getCAToken();
-      if (token != null) {
-          token.updateCATokenInfo(cainfo.getCATokenInfo());
-          setCAToken(token);
-      }
-      setFinishUser(cainfo.getFinishUser());
-      
-      Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
-      while(iter.hasNext()){
-      	ExtendedCAServiceInfo info = (ExtendedCAServiceInfo) iter.next();
-      	if(info instanceof OCSPCAServiceInfo){
-      	  this.getExtendedCAService(OCSPCAService.TYPE).update(info, this);	
-      	}
-      }
+    	data.put(VALIDITY, new Integer(cainfo.getValidity()));                 
+    	data.put(DESCRIPTION, cainfo.getDescription());      
+    	data.put(CRLPERIOD, new Integer(cainfo.getCRLPeriod()));
+    	data.put(CRLISSUEINTERVAL, new Integer(cainfo.getCRLIssueInterval()));
+    	data.put(CRLOVERLAPTIME, new Integer(cainfo.getCRLOverlapTime()));
+    	data.put(CRLPUBLISHERS, cainfo.getCRLPublishers());
+    	data.put(APPROVALSETTINGS,cainfo.getApprovalSettings());
+    	data.put(NUMBEROFREQAPPROVALS,new Integer(cainfo.getNumOfReqApprovals()));
+    	CAToken token = getCAToken();
+    	if (token != null) {
+    		token.updateCATokenInfo(cainfo.getCATokenInfo());
+    		setCAToken(token);
+    	}
+    	setFinishUser(cainfo.getFinishUser());
+    	
+    	Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
+    	while(iter.hasNext()){
+    		ExtendedCAServiceInfo info = (ExtendedCAServiceInfo) iter.next();
+    		if(info instanceof OCSPCAServiceInfo){
+    			this.getExtendedCAService(OCSPCAService.TYPE).update(info, this);	
+    		}
+    	}
+    	this.cainfo = cainfo;
     }
-    
-    public abstract CAInfo getCAInfo() throws Exception;
     
     public Certificate  generateCertificate(UserDataVO subject, 
                                             PublicKey publicKey, 
@@ -494,14 +488,14 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     protected ExtendedCAService getExtendedCAService(int type){
       ExtendedCAService returnval = null;
 	  try{
-	    returnval = (ExtendedCAService) extendedcaservicemap.get(new Integer(type));	     		  
+	    returnval = (ExtendedCAService) extendedcaservicemap.get(Integer.valueOf(type));	     		  
         if(returnval == null){
 		switch(((Integer) ((HashMap)data.get(EXTENDEDCASERVICE+type)).get(ExtendedCAService.EXTENDEDCASERVICETYPE)).intValue()){
 		  case ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE:
 		    returnval = new OCSPCAService((HashMap)data.get(EXTENDEDCASERVICE+type));
 		    break;		    
 		}
-		extendedcaservicemap.put(new Integer(type), returnval);
+		extendedcaservicemap.put(Integer.valueOf(type), returnval);
         }
 	  }catch(Exception e){
 	  	throw new EJBException(e);  
@@ -513,7 +507,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	protected void setExtendedCAService(ExtendedCAService extendedcaservice){  
       if(extendedcaservice instanceof OCSPCAService){		
 	    data.put(EXTENDEDCASERVICE+OCSPCAService.TYPE, extendedcaservice.saveData());    
-	    extendedcaservicemap.put(new Integer(OCSPCAService.TYPE), extendedcaservice);
+	    extendedcaservicemap.put(Integer.valueOf(OCSPCAService.TYPE), extendedcaservice);
       }   	
 	}
 	/** 
@@ -528,14 +522,10 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 		return (Collection) data.get(EXTENDEDCASERVICES);	  	 
 	}
     
-	public void setOwner(CADataBean owner){
-	  this.owner = owner;	
-	}
-    
     private HashMap extendedcaservicemap = null;
+    
     private ArrayList certificatechain = null;
     private ArrayList requestcertchain = null;
     
-    private CADataBean owner = null;
     private CAInfo cainfo = null;
 }

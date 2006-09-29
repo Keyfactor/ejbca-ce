@@ -94,7 +94,6 @@ import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.OCSPException;
-import org.ejbca.core.ejb.ca.caadmin.CADataBean;
 import org.ejbca.core.ejb.ca.sign.SernoGenerator;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.NotSupportedException;
@@ -122,7 +121,7 @@ import org.ejbca.util.cert.UTF8EntryConverter;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.25 2006-08-09 07:29:49 herrvendil Exp $
+ * @version $Id: X509CA.java,v 1.26 2006-09-29 08:49:56 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -165,9 +164,22 @@ public class X509CA extends CA implements Serializable {
       data.put(VERSION, new Float(LATEST_VERSION));   
     }
     
-   /** Constructor used when retrieving existing X509CA from database. */
-    public X509CA(HashMap data, CADataBean owner){
-      super(data, owner);
+   /** Constructor used when retrieving existing X509CA from database. 
+ * @throws IllegalKeyStoreException */
+    public X509CA(HashMap data, int caId, String subjectDN, String name, int status) throws IllegalKeyStoreException{
+    	super(data);
+    	ArrayList externalcaserviceinfos = new ArrayList();
+    	Iterator iter = getExternalCAServiceTypes().iterator(); 	
+    	while(iter.hasNext()){
+    		externalcaserviceinfos.add(this.getExtendedCAServiceInfo(((Integer) iter.next()).intValue()));  	
+    	}
+        CAInfo info = new X509CAInfo(subjectDN, name, status, getSubjectAltName() ,getCertificateProfileId(),  
+        		  getValidity(), getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(),
+        		  getCAToken(caId).getCATokenInfo(), getDescription(), getRevokationReason(), getRevokationDate(), getPolicyId(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(), getCRLPublishers(),
+        		  getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(),
+        		  getUseCRLNumber(), getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultOCSPServiceLocator(), getFinishUser(), externalcaserviceinfos, 
+        		  getAlwaysUseUTF8SubjectDN(), getApprovalSettings(), getNumOfRequiredApprovals());
+        super.setCAInfo(info);
     }
 
     // Public Methods.
@@ -223,34 +235,19 @@ public class X509CA extends CA implements Serializable {
 
 
     
-    public void updateCA(CAInfo cainfo) throws Exception{
-      super.updateCA(cainfo); 
-      X509CAInfo info = (X509CAInfo) cainfo;
-
-      setUseAuthorityKeyIdentifier(info.getUseAuthorityKeyIdentifier());
-      setAuthorityKeyIdentifierCritical(info.getAuthorityKeyIdentifierCritical()); 
-      setUseCRLNumber(info.getUseCRLNumber());
-      setCRLNumberCritical(info.getCRLNumberCritical());
-      setDefaultCRLDistPoint(info.getDefaultCRLDistPoint());
-      setDefaultOCSPServiceLocator(info.getDefaultOCSPServiceLocator());
-      setAlwaysUseUTF8SubjectDN(info.getAlwaysUseUTF8SubjectDN());
-    }
-    
-    public CAInfo getCAInfo() throws Exception{
-      ArrayList externalcaserviceinfos = new ArrayList();
-      Iterator iter = getExternalCAServiceTypes().iterator(); 	
-      while(iter.hasNext()){
-      	externalcaserviceinfos.add(this.getExtendedCAServiceInfo(((Integer) iter.next()).intValue()));  	
+      public void updateCA(CAInfo cainfo) throws Exception{
+    	  super.updateCA(cainfo); 
+    	  X509CAInfo info = (X509CAInfo) cainfo;
+    	  
+    	  setUseAuthorityKeyIdentifier(info.getUseAuthorityKeyIdentifier());
+    	  setAuthorityKeyIdentifierCritical(info.getAuthorityKeyIdentifierCritical()); 
+    	  setUseCRLNumber(info.getUseCRLNumber());
+    	  setCRLNumberCritical(info.getCRLNumberCritical());
+    	  setDefaultCRLDistPoint(info.getDefaultCRLDistPoint());
+    	  setDefaultOCSPServiceLocator(info.getDefaultOCSPServiceLocator());
+    	  setAlwaysUseUTF8SubjectDN(info.getAlwaysUseUTF8SubjectDN());
       }
-    	                
-      return new X509CAInfo(getSubjectDN(), getName(), getStatus(), getSubjectAltName() ,getCertificateProfileId(),  
-                    getValidity(), getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(),
-                    getCAToken().getCATokenInfo(), getDescription(), getRevokationReason(), getRevokationDate(), getPolicyId(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(), getCRLPublishers(),
-                    getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(),
-                    getUseCRLNumber(), getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultOCSPServiceLocator(), getFinishUser(), externalcaserviceinfos, 
-                    getAlwaysUseUTF8SubjectDN(), getApprovalSettings(), getNumOfRequiredApprovals()); 
-    }
-
+    
 
     public byte[] createPKCS7(Certificate cert, boolean includeChain) throws SignRequestSignatureException {
         // First verify that we signed this certificate

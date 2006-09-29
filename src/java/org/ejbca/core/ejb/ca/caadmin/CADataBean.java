@@ -13,9 +13,10 @@
  
 package org.ejbca.core.ejb.ca.caadmin;
 
-import java.security.cert.X509Certificate;
-import java.util.HashMap;
 import java.io.UnsupportedEncodingException;
+import java.security.cert.X509Certificate;
+import java.util.Date;
+import java.util.HashMap;
 
 import javax.ejb.CreateException;
 
@@ -24,6 +25,7 @@ import org.ejbca.core.ejb.BaseEntityBean;
 import org.ejbca.core.model.UpgradeableDataHashMap;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException;
 import org.ejbca.core.model.ca.caadmin.X509CA;
 import org.ejbca.util.Base64GetHashMap;
 import org.ejbca.util.Base64PutHashMap;
@@ -44,7 +46,7 @@ import org.ejbca.util.Base64PutHashMap;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.4 2006-07-30 17:03:51 anatom Exp $
+ * @version $Id: CADataBean.java,v 1.5 2006-09-29 08:49:56 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a publisher"
@@ -65,6 +67,16 @@ import org.ejbca.util.Base64PutHashMap;
  *
  * @ejb.persistence table-name = "CAData"
  * 
+ * @ejb.env-entry description="Used internally to keystores in database"
+ *   name="keyStorePass"
+ *   type="java.lang.String"
+ *   value="${ca.keystorepass}"
+
+ * @ejb.env-entry description="Password for OCSP keystores"
+ *   name="OCSPKeyStorePass"
+ *   type="java.lang.String"
+ *   value="${ca.ocspkeystorepass}"
+ *
  * @ejb.home
  *   generate="local"
  *   local-extends="javax.ejb.EJBLocalHome"
@@ -169,10 +181,13 @@ public abstract class CADataBean extends BaseEntityBean {
     
     /** 
      * Method that retrieves the CA from the database.
+     * @throws IllegalKeyStoreException 
      * @ejb.interface-method
      */
-    public CA getCA() throws java.io.UnsupportedEncodingException{
+    public CA getCA() throws java.io.UnsupportedEncodingException, IllegalKeyStoreException {
         CA ca = null;
+        Date now = new Date();
+        log.info("Start: "+now);
         java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
         HashMap h = (HashMap) decoder.readObject();
         decoder.close();
@@ -184,13 +199,15 @@ public abstract class CADataBean extends BaseEntityBean {
         float oldversion = ((Float) data.get(UpgradeableDataHashMap.VERSION)).floatValue();
         switch(((Integer)(data.get(CA.CATYPE))).intValue()){
             case CAInfo.CATYPE_X509:
-                ca = new X509CA(data, this);
+                ca = new X509CA(data, getCaId().intValue(), getSubjectDN(), getName(), getStatus());
                 break;
         }
         // Compare old version with current version and save the data if there has been a change
         if ( (ca != null) && (Float.compare(oldversion, ca.getVersion()) != 0) ) {
             setCA(ca);
         }
+        Date end = new Date();
+        log.info("end: "+end+", took "+(end.getTime()-now.getTime())+" milliseconds");
         return ca;              
     }
     
@@ -208,10 +225,8 @@ public abstract class CADataBean extends BaseEntityBean {
         encoder.writeObject(a);
         encoder.close();
         setData(baos.toString("UTF8"));
-        ca.setOwner(this);
     }   
     
-
     //
     // Fields required by Container
     //

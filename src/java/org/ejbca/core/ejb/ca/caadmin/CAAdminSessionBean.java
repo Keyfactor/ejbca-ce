@@ -99,7 +99,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.22 2006-09-26 09:54:11 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.23 2006-09-29 08:49:56 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -1366,6 +1366,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
           error("Can't find CA: ", fe);
       } catch(UnsupportedEncodingException uee){
           throw new EJBException(uee);
+      } catch(IllegalKeyStoreException e){
+          throw new EJBException(e);
       }
       
       return returnval;
@@ -1496,6 +1498,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
         }
       }catch(javax.ejb.FinderException fe){}
        catch(java.io.UnsupportedEncodingException e){}
+       catch(IllegalKeyStoreException e){}
 
       return returnval;
     } // exitsCertificateProfileInCAs
@@ -1521,7 +1524,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
         }
       }catch(javax.ejb.FinderException fe){}
        catch(java.io.UnsupportedEncodingException e){}
-
+       catch(IllegalKeyStoreException e){}
+        
       return returnval;
     } // exitsPublisherInCAs
 
@@ -1639,10 +1643,11 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * 
      * @param admin administrator calling the method
      * @param signcadata a CADataLocal entity object of the signer to be checked
-     * @throws UnsupportedEncodingException if there is an error getting the CA from the CADataLocal
+     * @throws UnsupportedEncodingException if there is an error getting the CA from the CADataLoca
+     * @throws IllegalKeyStoreException l
      * @throws EJBException embedding a CertificateExpiredException or a CertificateNotYetValidException if the certificate has expired or is not yet valid 
      */
-    private void checkSignerValidity(Admin admin, CADataLocal signcadata) throws UnsupportedEncodingException {
+    private void checkSignerValidity(Admin admin, CADataLocal signcadata) throws UnsupportedEncodingException, IllegalKeyStoreException {
     	// Check validity of signers certificate
     	X509Certificate signcert = (X509Certificate) signcadata.getCA().getCACertificate();
     	try{
