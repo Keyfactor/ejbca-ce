@@ -140,7 +140,7 @@ import org.ejbca.util.query.Query;
  *   ejb-name="UserAdminSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome"
- *   business="org.ejbca.core.ejb.ra.IUserAdminSessionLocalLocal"
+ *   business="org.ejbca.core.ejb.ra.IUserAdminSessionLocal"
  *   link="UserAdminSession"
  *
  * @ejb.ejb-external-ref

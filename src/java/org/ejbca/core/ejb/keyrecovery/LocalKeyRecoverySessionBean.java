@@ -58,7 +58,7 @@ import org.ejbca.util.CertTools;
  * Stores key recovery data. Uses JNDI name for datasource as defined in env 'Datasource' in
  * ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.6 2006-09-29 08:53:11 anatom Exp $
+ * @version $Id: LocalKeyRecoverySessionBean.java,v 1.7 2006-09-30 09:49:00 anatom Exp $
  *
  * @ejb.bean
  *   display-name="Stores key recovery data"
@@ -119,7 +119,7 @@ import org.ejbca.util.CertTools;
  *   ejb-name="UserAdminSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome"
- *   business="org.ejbca.core.ejb.ra.IUserAdminSessionLocalLocal"
+ *   business="org.ejbca.core.ejb.ra.IUserAdminSessionLocal"
  *   link="UserAdminSession"
  *
  * @ejb.ejb-external-ref description="The Approval Session Bean"
