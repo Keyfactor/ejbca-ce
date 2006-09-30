@@ -92,7 +92,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.23 2006-09-27 09:28:27 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.24 2006-09-30 10:32:18 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -1467,7 +1467,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                     String extendedInformation = rs.getString(15);
                     UserDataVO data = new UserDataVO(user, dn, caid, subaltname, email, status, type
                             , eprofileid, cprofileid, timecreated, timemodified, tokentype, tokenissuerid,
-							UserDataBean.getExtendedInformation(extendedInformation));
+							UserDataVO.getExtendedInformation(extendedInformation));
                     data.setPassword(pwd);
 
                     if (!onlybatchusers || (data.getPassword() != null && data.getPassword().length() > 0))

@@ -27,9 +27,8 @@ import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.ejb.BaseEntityBean;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformation;
-import org.ejbca.core.model.ra.SCEPRAExtendedInformation;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.util.Base64GetHashMap;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.Base64PutHashMap;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.StringTools;
@@ -62,7 +61,7 @@ import org.ejbca.util.StringTools;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.8 2006-09-20 15:44:57 anatom Exp $
+ * @version $Id: UserDataBean.java,v 1.9 2006-09-30 10:32:19 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a Log Entry with accompanying data"
  * display-name="UserDataEB"
@@ -117,7 +116,7 @@ import org.ejbca.util.StringTools;
  */
 public abstract class UserDataBean extends BaseEntityBean {
 
-    private static Logger log = Logger.getLogger(UserDataBean.class);
+    private static final Logger log = Logger.getLogger(UserDataBean.class);
 
 
     /**
@@ -131,7 +130,6 @@ public abstract class UserDataBean extends BaseEntityBean {
      * username must be called 'striped' using StringTools.strip()
      *
      * @ejb.persistence
-     * @ejb.interface-method
      */
     public abstract void setUsername(String username);
 
@@ -446,7 +444,7 @@ public abstract class UserDataBean extends BaseEntityBean {
      * @ejb.interface-method
      */
     public ExtendedInformation getExtendedInformation() {
-        return getExtendedInformation(getExtendedInformationData());
+        return UserDataVO.getExtendedInformation(getExtendedInformationData());
     }
 
     /**
@@ -519,38 +517,4 @@ public abstract class UserDataBean extends BaseEntityBean {
         // Do nothing. Required.
     }
     
-    /**
-     * Help Method used to create an ExtendedInformation from String representation.
-     * Used when creating an ExtendedInformation from queries.
-     */
-    public static ExtendedInformation getExtendedInformation(String extendedinfostring) {
-        ExtendedInformation returnval = null;
-        if (extendedinfostring != null) {
-            java.beans.XMLDecoder decoder;
-            try {
-            	decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(extendedinfostring.getBytes("UTF8")));
-            	
-            	HashMap h = (HashMap) decoder.readObject();
-            	decoder.close();
-                // Handle Base64 encoded string values
-                HashMap data = new Base64GetHashMap(h);
-                
-            	int type = ((Integer) data.get(ExtendedInformation.TYPE)).intValue();
-            	switch(type){
-            	  case ExtendedInformation.TYPE_SCEPRA :
-            		returnval = (ExtendedInformation) UserDataBean.class.getClassLoader().loadClass(SCEPRAExtendedInformation.class.getName()).newInstance();            	
-              		returnval.loadData(data);
-              		break;
-            	  case ExtendedInformation.TYPE_BASIC :
-              		returnval = (ExtendedInformation) UserDataBean.class.getClassLoader().loadClass(ExtendedInformation.class.getName()).newInstance();            	
-              		returnval.loadData(data);
-              		break;
-
-            	}            	
-            }catch (Exception e) {
-            	throw new EJBException("Problems generating extended information from String",e);
-            }
-        }
-        return returnval;
-    }
 }

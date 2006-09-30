@@ -47,7 +47,7 @@ import org.ejbca.util.CertTools;
  * Username (username)
  * </pre>
  *
- * @version $Id: CertificateDataBean.java,v 1.1 2006-01-17 20:30:05 anatom Exp $
+ * @version $Id: CertificateDataBean.java,v 1.2 2006-09-30 10:32:31 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a certificate with accompanying data"
  * display-name="CertificateDataEB"
@@ -216,7 +216,6 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      *
      * @param fingerprint fingerprint
      * @ejb.persistence
-     * @ejb.interface-method
      */
     public abstract void setFingerprint(String fingerprint);
 

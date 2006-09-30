@@ -30,7 +30,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  * GlobalConfiguration
  * </pre>
  *
- * @version $Id: GlobalConfigurationDataBean.java,v 1.1 2006-01-17 20:30:04 anatom Exp $
+ * @version $Id: GlobalConfigurationDataBean.java,v 1.2 2006-09-30 10:33:35 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents global configuration of ra administration"
  * display-name="GlobalConfigurationDataEB"
@@ -77,7 +77,6 @@ public abstract class GlobalConfigurationDataBean extends BaseEntityBean {
     public abstract String getConfigurationId();
 
     /**
-     * @ejb.interface-method
      */
     public abstract void setConfigurationId(String id);
 

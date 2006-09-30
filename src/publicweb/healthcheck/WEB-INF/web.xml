@@ -93,7 +93,7 @@
   </ejb-local-ref>
   <ejb-local-ref>
     <ejb-ref-name>ejb/IPublisherSessionLocal</ejb-ref-name>
-    <ejb-ref-type>PublisherSessionLocal</ejb-ref-type>
+    <ejb-ref-type>Session</ejb-ref-type>
     <local-home>org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome</local-home>
     <local>org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal</local>
     <ejb-link>PublisherSession</ejb-link>

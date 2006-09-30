@@ -147,7 +147,7 @@ import org.ejbca.util.query.Query;
  *   description="The Certificate Store session bean"
  *   view-type="local"
  *   ejb-name="HardTokenSessionLocal"
- *   type="Entity"
+ *   type="Session"
  *   home="org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocalHome"
  *   business="org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal"
  *   link="HardTokenSession"

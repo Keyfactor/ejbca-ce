@@ -36,7 +36,7 @@ import java.math.BigInteger;
  *  keypair
  * </pre>
  *
- * @version $Id: KeyRecoveryDataBean.java,v 1.1 2006-01-17 20:30:05 anatom Exp $
+ * @version $Id: KeyRecoveryDataBean.java,v 1.2 2006-09-30 10:32:34 anatom Exp $
  *
  * @ejb.bean
  *   description="Stores key recovery data"
@@ -88,7 +88,7 @@ import java.math.BigInteger;
  *   jndi-name="${datasource.jndi-name}"
  */
 public abstract class KeyRecoveryDataBean extends BaseEntityBean {
-    private static Logger log = Logger.getLogger(KeyRecoveryDataBean.class);
+    private static final Logger log = Logger.getLogger(KeyRecoveryDataBean.class);
 
     /**
      * @ejb.persistence
@@ -110,7 +110,6 @@ public abstract class KeyRecoveryDataBean extends BaseEntityBean {
 
     /**
      * @ejb.persistence
-     * @ejb.interface-method view-type="local"
      */
     public abstract void setIssuerDN(String issuerdn);
 

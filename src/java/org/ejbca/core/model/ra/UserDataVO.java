@@ -15,16 +15,21 @@ package org.ejbca.core.model.ra;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 
+import javax.ejb.EJBException;
+
+import org.ejbca.core.ejb.ra.UserDataBean;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformation;
+import org.ejbca.util.Base64GetHashMap;
 import org.ejbca.util.StringTools;
 
 
 /**
  * Holds admin data collected from UserData in the database. Strings are stored in Base64 encoded format to be safe for storing in database, xml etc.
  *
- * @version $Id: UserDataVO.java,v 1.7 2006-09-22 13:05:11 herrvendil Exp $
+ * @version $Id: UserDataVO.java,v 1.8 2006-09-30 10:33:35 anatom Exp $
  */
 public class UserDataVO implements Serializable {
 
@@ -211,4 +216,40 @@ public class UserDataVO implements Serializable {
 	public void setExtendedinformation(ExtendedInformation extendedinformation) {
 		this.extendedinformation = extendedinformation;
 	}
+	
+	
+    /**
+     * Help Method used to create an ExtendedInformation from String representation.
+     * Used when creating an ExtendedInformation from queries.
+     */
+    public static ExtendedInformation getExtendedInformation(String extendedinfostring) {
+        ExtendedInformation returnval = null;
+        if (extendedinfostring != null) {
+            java.beans.XMLDecoder decoder;
+            try {
+            	decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(extendedinfostring.getBytes("UTF8")));
+            	
+            	HashMap h = (HashMap) decoder.readObject();
+            	decoder.close();
+                // Handle Base64 encoded string values
+                HashMap data = new Base64GetHashMap(h);
+                
+            	int type = ((Integer) data.get(ExtendedInformation.TYPE)).intValue();
+            	switch(type){
+            	  case ExtendedInformation.TYPE_SCEPRA :
+            		returnval = (ExtendedInformation) UserDataBean.class.getClassLoader().loadClass(SCEPRAExtendedInformation.class.getName()).newInstance();            	
+              		returnval.loadData(data);
+              		break;
+            	  case ExtendedInformation.TYPE_BASIC :
+              		returnval = (ExtendedInformation) UserDataBean.class.getClassLoader().loadClass(ExtendedInformation.class.getName()).newInstance();            	
+              		returnval.loadData(data);
+              		break;
+
+            	}            	
+            }catch (Exception e) {
+            	throw new EJBException("Problems generating extended information from String",e);
+            }
+        }
+        return returnval;
+    }
 }

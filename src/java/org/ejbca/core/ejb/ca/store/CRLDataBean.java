@@ -39,7 +39,7 @@ import org.ejbca.util.CertTools;
  * nextUpdate (nextUpdate)
  * </pre>
  *
- * @version $Id: CRLDataBean.java,v 1.1 2006-01-17 20:30:05 anatom Exp $
+ * @version $Id: CRLDataBean.java,v 1.2 2006-09-30 10:32:31 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a CRL with accompanying data"
  * display-name="CRLDataEB"
@@ -114,7 +114,6 @@ public abstract class CRLDataBean extends BaseEntityBean {
 
     /**
      * @ejb.persistence
-     * @ejb.interface-method
      */
     public abstract void setFingerprint(String fingerprint);
 
