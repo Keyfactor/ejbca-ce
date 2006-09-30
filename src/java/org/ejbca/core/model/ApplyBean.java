@@ -29,6 +29,7 @@ import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
+import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
 
@@ -39,7 +40,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * A class used as an interface between Apply jsp pages and ejbca functions.
  *
  * @author Philip Vendil
- * @version $Id: ApplyBean.java,v 1.2 2006-01-26 14:14:31 anatom Exp $
+ * @version $Id: ApplyBean.java,v 1.3 2006-09-30 11:41:42 anatom Exp $
  */
 public class ApplyBean implements java.io.Serializable {
     /**
@@ -153,8 +154,8 @@ public class ApplyBean implements java.io.Serializable {
             int certprofile = useradmindata.getCertificateProfileId();
 
             if (certprofile != SecConst.PROFILE_NO_PROFILE) {
-                returnval = certstoresession.getCertificateProfile(administrator, certprofile)
-                                            .getAvailableBitLengths();
+                CertificateProfile p = certstoresession.getCertificateProfile(administrator, certprofile);
+                returnval = p.getAvailableBitLengths();
             }
         }
         this.username = username;

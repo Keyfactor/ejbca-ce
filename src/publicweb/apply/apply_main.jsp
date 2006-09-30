@@ -27,7 +27,7 @@
 
   String THIS_FILENAME            =  "/@ejbca@/publicweb/apply/apply_main.jsp";
   int[] defaultkeylengths        = {512,1024,2048};
-  String includefile = "apply_auth.jsp";
+  String includefile = "apply_auth.jspf";
   String username = "";
   String password = "";
   String browser  = null;
@@ -56,12 +56,12 @@ try  {
             return;
          }
          if(tokentype != SecConst.TOKEN_SOFT_BROWSERGEN)
-           includefile = "apply_token.jsp";   
+           includefile = "apply_token.jspf";   
          else{
            if(browser.equals(BROWSER_NETSCAPE))
-             includefile = "apply_nav.jsp"; 
+             includefile = "apply_nav.jspf"; 
            if(browser.equals(BROWSER_EXPLORER))
-             includefile = "apply_exp.jsp";
+             includefile = "apply_exp.jspf";
            if(browser.equals(BROWSER_UNKNOWN))
              includefile = "apply_unknown.html"; 
          }
@@ -79,17 +79,17 @@ try  {
 
 <%
  // Include page
-  if( includefile.equals("apply_auth.jsp")){ 
+  if( includefile.equals("apply_auth.jspf")){ 
 %>
-   <%@ include file="apply_auth.jsp" %>
-<%}  if( includefile.equals("apply_token.jsp")){ %>
-   <%@ include file="apply_token.jsp" %> 
+   <%@ include file="apply_auth.jspf" %>
+<%}  if( includefile.equals("apply_token.jspf")){ %>
+   <%@ include file="apply_token.jspf" %> 
 <%} if( includefile.equals("apply_unknown.html")){ %>
    <%@ include file="apply_unknown.html" %> 
 <%}
-  if( includefile.equals("apply_nav.jsp")){ %>
-   <%@ include file="apply_nav.jsp" %> 
+  if( includefile.equals("apply_nav.jspf")){ %>
+   <%@ include file="apply_nav.jspf" %> 
 <%}
-  if( includefile.equals("apply_exp.jsp")){ %>
-   <%@ include file="apply_exp.jsp" %> 
+  if( includefile.equals("apply_exp.jspf")){ %>
+   <%@ include file="apply_exp.jspf" %> 
 <%} %>
