@@ -22,7 +22,7 @@ import java.util.Properties;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: IAction.java,v 1.1 2006-10-01 17:44:45 herrvendil Exp $
+ * @version $Id: IAction.java,v 1.2 2006-10-01 17:46:25 herrvendil Exp $
  */
 public interface IAction {
 	

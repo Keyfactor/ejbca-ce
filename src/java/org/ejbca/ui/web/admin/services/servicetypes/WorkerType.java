@@ -10,17 +10,37 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.model.services;
+package org.ejbca.ui.web.admin.services.servicetypes;
+
+import java.util.Collection;
+
 
 /**
- * General Class used to send information from a worker to a action.
+ * Class representing an Worker Type, should be registered in the 
+ * ServiceTypesManager. Should be inhereted by all worker managed beans.
  * 
- * Can contain any data that both the worker and action supports.
- * 
- * @author Philip Vendil 2006 sep 27
+ * Defines which actions and interval that are compatible with this worker
  *
- * @version $Id: ActionInfo.java,v 1.2 2006-10-01 17:46:25 herrvendil Exp $
+ * @author Philip Vendil 2006 sep 29
+ *
+ * @version $Id: WorkerType.java,v 1.1 2006-10-01 17:46:47 herrvendil Exp $
  */
-public interface ActionInfo {
+public abstract class WorkerType extends ServiceType {
+
+
+	
+	public WorkerType(String subViewPage, String name, boolean translatable) {
+		super(subViewPage, name, translatable);
+	}
+
+	/**
+	 * @return the names of the Compatible Action Types
+	 */
+	public abstract Collection getCompatibleActionTypeNames();
+
+	/**
+	 * @return the names of the Compatible Interval Types
+	 */
+	public abstract Collection getCompatibleIntervalTypeNames();
 
 }

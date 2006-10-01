@@ -10,17 +10,21 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.model.services;
+package org.ejbca.ui.web.admin.services.servicetypes;
+
 
 /**
- * General Class used to send information from a worker to a action.
- * 
- * Can contain any data that both the worker and action supports.
- * 
- * @author Philip Vendil 2006 sep 27
+ * Class representing an Interval Type, should be registered in the 
+ * ServiceTypesManager. Should be inhereted by all interval managed beans.
  *
- * @version $Id: ActionInfo.java,v 1.2 2006-10-01 17:46:25 herrvendil Exp $
+ * @author Philip Vendil 2006 sep 29
+ *
+ * @version $Id: IntervalType.java,v 1.1 2006-10-01 17:46:47 herrvendil Exp $
  */
-public interface ActionInfo {
+public abstract class IntervalType extends ServiceType {
+
+	public IntervalType(String subViewPage, String name, boolean translatable) {
+		super(subViewPage, name, translatable);
+	}
 
 }

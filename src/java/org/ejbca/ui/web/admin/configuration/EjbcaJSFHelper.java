@@ -32,7 +32,7 @@ import org.ejbca.ui.web.RequestHelper;
  * Contains methods for such things as language, themes ext
  * 
  * @author Philip Vendil
- * $Id: EjbcaJSFHelper.java,v 1.2 2006-09-26 09:53:48 anatom Exp $
+ * $Id: EjbcaJSFHelper.java,v 1.3 2006-10-01 17:46:47 herrvendil Exp $
  */
 
 public class EjbcaJSFHelper  {
@@ -122,6 +122,15 @@ public class EjbcaJSFHelper  {
  		if(!approveendentity && !approvecaaction){
  			throw new AuthorizationDeniedException("Not authorized to view approval pages");
  		}
+     }
+     
+     /**
+      * Only superadmins are authorized to services pages
+     * @throws AuthorizationDeniedException 
+      *
+      */
+     public void authorizedToServicesPages() throws AuthorizationDeniedException{
+		getEjbcaWebBean().isAuthorizedNoLog(AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
      }
      
     public int getEntriesPerPage(){

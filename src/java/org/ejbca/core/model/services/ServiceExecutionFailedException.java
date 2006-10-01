@@ -18,7 +18,7 @@ package org.ejbca.core.model.services;
  * 
  * @author Philip Vendil 2006 sep 28
  *
- * @version $Id: ServiceExecutionFailedException.java,v 1.1 2006-10-01 17:44:45 herrvendil Exp $
+ * @version $Id: ServiceExecutionFailedException.java,v 1.2 2006-10-01 17:46:25 herrvendil Exp $
  */
 public class ServiceExecutionFailedException extends Exception {
 

@@ -10,17 +10,29 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.model.services;
+package org.ejbca.core.model.services.intervals;
+
+import org.apache.log4j.Logger;
+import org.ejbca.core.model.services.BaseInterval;
+import org.ejbca.core.model.services.IInterval;
+import org.ejbca.core.model.services.actions.DummyAction;
 
 /**
- * General Class used to send information from a worker to a action.
- * 
- * Can contain any data that both the worker and action supports.
- * 
+ * Dummy class used for demonstration and test puporses
+ * Only implement one method 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: ActionInfo.java,v 1.2 2006-10-01 17:46:25 herrvendil Exp $
+ * @version $Id: DummyInterval.java,v 1.1 2006-10-01 17:46:47 herrvendil Exp $
  */
-public interface ActionInfo {
+public class DummyInterval extends BaseInterval {
+
+	private static final Logger log = Logger.getLogger(DummyInterval.class);
+	/**
+	 * @see org.ejbca.core.model.services.IInterval#getTimeToExecution()
+	 */
+	public long getTimeToExecution() {
+		log.debug(">DummyInterval.performAction");
+		return IInterval.DONT_EXECUTE;
+	}
 
 }

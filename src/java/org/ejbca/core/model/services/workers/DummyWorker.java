@@ -10,17 +10,36 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.model.services;
+package org.ejbca.core.model.services.workers;
+
+import org.apache.log4j.Logger;
+import org.ejbca.core.model.services.ActionException;
+import org.ejbca.core.model.services.BaseWorker;
+import org.ejbca.core.model.services.ServiceExecutionFailedException;
 
 /**
- * General Class used to send information from a worker to a action.
- * 
- * Can contain any data that both the worker and action supports.
- * 
+ * Dummy class used for demonstration and test puporses
+ * Shows what is needed to create a custom worker
+ *  
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: ActionInfo.java,v 1.2 2006-10-01 17:46:25 herrvendil Exp $
+ * @version $Id: DummyWorker.java,v 1.1 2006-10-01 17:46:48 herrvendil Exp $
  */
-public interface ActionInfo {
+public class DummyWorker extends BaseWorker {
+
+	private static final Logger log = Logger.getLogger(DummyWorker.class);
+	
+	/**
+	 * @see org.ejbca.core.model.services.IWorker#work()
+	 */
+	public void work() throws ServiceExecutionFailedException {
+		log.debug(">DummyWorker.work");
+		try {
+			getAction().performAction(null);
+		} catch (ActionException e) {
+		   // This should never happen
+		}
+		log.debug("<DummyWorker.work");
+	}
 
 }

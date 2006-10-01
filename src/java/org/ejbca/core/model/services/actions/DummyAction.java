@@ -10,17 +10,33 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.model.services;
+package org.ejbca.core.model.services.actions;
+
+import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.hardtoken.HardTokenCertificateMapBean;
+import org.ejbca.core.model.services.ActionException;
+import org.ejbca.core.model.services.ActionInfo;
+import org.ejbca.core.model.services.BaseAction;
 
 /**
- * General Class used to send information from a worker to a action.
+ * Dummy Action used for demonstration purposes and some testing
  * 
- * Can contain any data that both the worker and action supports.
- * 
+ * Shows which methods that are necessary to implement a action
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: ActionInfo.java,v 1.2 2006-10-01 17:46:25 herrvendil Exp $
+ * @version $Id: DummyAction.java,v 1.1 2006-10-01 17:46:48 herrvendil Exp $
  */
-public interface ActionInfo {
+public class DummyAction extends BaseAction {
+	
+	private static final Logger log = Logger.getLogger(DummyAction.class);
+
+	/**
+	 * @see org.ejbca.core.model.services.IAction#performAction(org.ejbca.core.model.services.ActionInfo)
+	 */
+	public void performAction(ActionInfo actionInfo) throws ActionException {
+		log.debug(">DummyAction.performAction");
+		this.properties.get("somedata");
+		// Do nothing
+	}
 
 }
