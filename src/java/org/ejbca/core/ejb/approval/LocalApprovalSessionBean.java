@@ -356,7 +356,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
     	
         ApprovalDataVO data = findNonExpiredApprovalRequest(admin, approvalId);
         if(data != null){						
-			getLogSession().log(admin,approvalRequest.getCAId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREQUESTED,"Approval with id : " +approvalId +" already exists");
+			getLogSession().log(admin,approvalRequest.getCAId(),LogEntry.MODULE_APPROVAL,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREQUESTED,"Approval with id : " +approvalId +" already exists");
 			throw new ApprovalException("Approval Request " + approvalId + " already exists in database");
 		} else {
 			// The exists no approval request with status waiting add a new one
@@ -370,9 +370,9 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 							                 intres.getLocalizedMessage("notification.newrequest.msg"),
 							                 freeId, approvalRequest.getNumOfRequiredApprovals(), new Date(), approvalRequest,null);
 				}
-				getLogSession().log(admin,approvalRequest.getCAId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_INFO_APPROVALREQUESTED,"Approval with id : " +approvalId +" added with status waiting.");
+				getLogSession().log(admin,approvalRequest.getCAId(),LogEntry.MODULE_APPROVAL,new Date(),null,null,LogEntry.EVENT_INFO_APPROVALREQUESTED,"Approval with id : " +approvalId +" added with status waiting.");
 			} catch (CreateException e1) {
-				getLogSession().log(admin,approvalRequest.getCAId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREQUESTED,"Approval with id : " +approvalId +" couldn't be created");
+				getLogSession().log(admin,approvalRequest.getCAId(),LogEntry.MODULE_APPROVAL,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREQUESTED,"Approval with id : " +approvalId +" couldn't be created");
 				log.error("Error creating approval request",e1);
 				
 			}
@@ -397,15 +397,15 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
      	try {
 			ApprovalDataLocal adl = approvalHome.findByPrimaryKey(new Integer(id));
 			adl.remove();
-			getLogSession().log(admin,admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_INFO_APPROVALREQUESTED,"Approval with unique id : " + id +" removed successfully.");
+			getLogSession().log(admin,admin.getCaId(),LogEntry.MODULE_APPROVAL,new Date(),null,null,LogEntry.EVENT_INFO_APPROVALREQUESTED,"Approval with unique id : " + id +" removed successfully.");
 		} catch (FinderException e) {
-			getLogSession().log(admin,admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREQUESTED,"Error removing approvalrequest with unique id : " +id +", doesn't exist");
+			getLogSession().log(admin,admin.getCaId(),LogEntry.MODULE_APPROVAL,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREQUESTED,"Error removing approvalrequest with unique id : " +id +", doesn't exist");
  			throw new ApprovalException("Error removing approvalrequest with unique id : " +id +", doesn't exist");
 		} catch (EJBException e) {
-			getLogSession().log(admin,admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREQUESTED,"Error removing approvalrequest with unique id : " +id);
+			getLogSession().log(admin,admin.getCaId(),LogEntry.MODULE_APPROVAL,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREQUESTED,"Error removing approvalrequest with unique id : " +id);
 		    log.error("Error removing approval request",e);
 		} catch (RemoveException e) {
-			getLogSession().log(admin,admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREQUESTED,"Error removing approvalrequest with unique id : " +id);
+			getLogSession().log(admin,admin.getCaId(),LogEntry.MODULE_APPROVAL,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREQUESTED,"Error removing approvalrequest with unique id : " +id);
 		    log.error("Error removing approval request",e);
 		}
 
@@ -449,7 +449,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 		try {
 			adl = isAuthorizedBeforeApproveOrReject(admin,approvalId,approval);
 		} catch (ApprovalException e1) {
-			getLogSession().log(admin,admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALAPPROVED,"Approval request with id : " +approvalId +" doesn't exists.");
+			getLogSession().log(admin,admin.getCaId(),LogEntry.MODULE_APPROVAL,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALAPPROVED,"Approval request with id : " +approvalId +" doesn't exists.");
 			throw e1;
 		} 
 		
@@ -462,7 +462,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 		if(data.getReqadmincertissuerdn() != null){
 			String requsername = getCertificateStoreSession().findUsernameByCertSerno(admin,new BigInteger(data.getReqadmincertsn(),16),data.getReqadmincertissuerdn());
 			if(username.equals(requsername)){
-				getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALAPPROVED,"Error administrator have already approved, rejected or requested current request, approveId " + approvalId);
+				getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_APPROVAL,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALAPPROVED,"Error administrator have already approved, rejected or requested current request, approveId " + approvalId);
 				throw new AdminAlreadyApprovedRequestException("Error administrator have already approved, rejected or requested current request, approveId : " + approvalId);			
 			}
 		}
@@ -471,13 +471,13 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 			while(iter.hasNext()){
 				Approval next = (Approval) iter.next();
 				if(next.getUsername().equals(username)){
-					getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALAPPROVED,"Error administrator have already approved or rejected current request, approveId " + approvalId);
+					getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_APPROVAL,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALAPPROVED,"Error administrator have already approved or rejected current request, approveId " + approvalId);
 					throw new AdminAlreadyApprovedRequestException("Error administrator have already approved or rejected current request, approveId : " + approvalId);					
 				}
 			}
 			approval.setApprovalCertificateAndUsername(true, approvingCert,username);
 		}else{
-			getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALAPPROVED,"Approval request with id : " +approvalId +", Error no username exists for the given approver certificate.");
+			getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_APPROVAL,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALAPPROVED,"Approval request with id : " +approvalId +", Error no username exists for the given approver certificate.");
 			throw new ApprovalException("Error no username exists for the given approver or requestor certificate");
 		}
 				
@@ -502,12 +502,12 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 				               approval);				  
 			  }
 			}
-			getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_INFO_APPROVALAPPROVED,"Approval request with id : " +approvalId +" have been approved.");
+			getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_APPROVAL,new Date(),null,null,LogEntry.EVENT_INFO_APPROVALAPPROVED,"Approval request with id : " +approvalId +" have been approved.");
 		} catch (ApprovalRequestExpiredException e) {
-			getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALAPPROVED,"Approval request with id : " +approvalId +" have expired.");
+			getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_APPROVAL,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALAPPROVED,"Approval request with id : " +approvalId +" have expired.");
 			throw e;
 		} catch (ApprovalRequestExecutionException e) {
-			getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALAPPROVED,"Approval with id : " +approvalId +" couldn't execute properly");
+			getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_APPROVAL,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALAPPROVED,"Approval with id : " +approvalId +" couldn't execute properly");
 			throw e;
 		}
 		log.debug("<approve");
@@ -549,7 +549,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 		try {
 			adl = isAuthorizedBeforeApproveOrReject(admin,approvalId,approval);
 		} catch (ApprovalException e1) {
-			getLogSession().log(admin,admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREJECTED,"Approval request with id : " +approvalId +" doesn't exists.");
+			getLogSession().log(admin,admin.getCaId(),LogEntry.MODULE_APPROVAL,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREJECTED,"Approval request with id : " +approvalId +" doesn't exists.");
 			throw e1;
 		} 
 		
@@ -562,7 +562,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 			// Check that the approver isn't the same as requested the action.
 			String requsername = getCertificateStoreSession().findUsernameByCertSerno(admin,new BigInteger(data.getReqadmincertsn(),16),data.getReqadmincertissuerdn());
 			if(username.equals(requsername)){
-				getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREJECTED,"Error administrator have already approved, rejected or requested current request, approveId ");
+				getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_APPROVAL,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREJECTED,"Error administrator have already approved, rejected or requested current request, approveId ");
 				throw new AdminAlreadyApprovedRequestException("Error administrator have already approved, rejected or requested current request, approveId : " + approvalId);			
 			}
 		}
@@ -571,13 +571,13 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 			while(iter.hasNext()){
 				Approval next = (Approval) iter.next();
 				if(next.getUsername().equals(username)){
-					getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREJECTED,"Error administrator have already approved or rejected current request, approveId ");
+					getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_APPROVAL,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREJECTED,"Error administrator have already approved or rejected current request, approveId ");
 					throw new AdminAlreadyApprovedRequestException("Error administrator have already approved or rejected current request, approveId : " + approvalId);					
 				}
 			}
 			approval.setApprovalCertificateAndUsername(false, approvingCert,username);
 		}else{
-			getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREJECTED,"Approval request with id : " +approvalId +", Error no username exists for the given approver certificate.");
+			getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_APPROVAL,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREJECTED,"Approval request with id : " +approvalId +", Error no username exists for the given approver certificate.");
 			throw new ApprovalException("Error no username exists for the given approver or requestor certificate");
 		}
 				
@@ -593,9 +593,9 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 						               adl.getApprovalDataVO().getApprovalRequest(), 
 						               approval);
 			}
-			getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_INFO_APPROVALREJECTED,"Approval request with id : " +approvalId +" have been rejected.");
+			getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_APPROVAL,new Date(),null,null,LogEntry.EVENT_INFO_APPROVALREJECTED,"Approval request with id : " +approvalId +" have been rejected.");
 		} catch (ApprovalRequestExpiredException e) {
-			getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREJECTED,"Approval request with id : " +approvalId +" have expired.");
+			getLogSession().log(admin,adl.getCaid(),LogEntry.MODULE_APPROVAL,new Date(),null,null,LogEntry.EVENT_ERROR_APPROVALREJECTED,"Approval request with id : " +approvalId +" have expired.");
 			throw e;
 		}
 		log.debug("<reject");
@@ -896,7 +896,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
         	  requestAdminUsername = getCertificateStoreSession().findUsernameByCertSerno(admin,requestAdminCert.getSerialNumber(),CertTools.getIssuerDN(requestAdminCert));
               UserDataVO requestAdminData = getUserAdminSession().findUser(admin, requestAdminUsername);        	
               if (requestAdminData == null || requestAdminData.getEmail() == null || requestAdminData.getEmail().equals("")) {
-               	getLogSession().log(admin, approvalRequest.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),requestAdminUsername, null, LogEntry.EVENT_ERROR_NOTIFICATION, "Error sending notification to administrator requesting approval. Set a correct email to the administrator");
+               	getLogSession().log(admin, approvalRequest.getCAId(), LogEntry.MODULE_APPROVAL, new java.util.Date(),requestAdminUsername, null, LogEntry.EVENT_ERROR_NOTIFICATION, "Error sending notification to administrator requesting approval. Set a correct email to the administrator");
               }else{
                	requestAdminEmail = requestAdminData.getEmail();
               }
@@ -912,7 +912,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
             fromAddress = gc.getApprovalNotificationFromAddress();                        
             
             if(approvalAdminsEmail.equals("") || fromAddress.equals("")){
-            	getLogSession().log(admin, approvalRequest.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),requestAdminUsername, null, LogEntry.EVENT_ERROR_NOTIFICATION, "Error sending approval notification. The email-addresses, either to approval administrators or from-address isn't configured properly");
+            	getLogSession().log(admin, approvalRequest.getCAId(), LogEntry.MODULE_APPROVAL, new java.util.Date(),requestAdminUsername, null, LogEntry.EVENT_ERROR_NOTIFICATION, "Error sending approval notification. The email-addresses, either to approval administrators or from-address isn't configured properly");
             }else{
               String approvalURL =  gc.getBaseUrl() + "adminweb/approval/approveaction.jsf?uniqueId=" + id;
               String approvalTypeText = intres.getLocalizedMessage(ApprovalDataVO.APPROVALTYPENAMES[approvalRequest.getApprovalType()]);
@@ -945,12 +945,12 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
               msg.setSentDate(new Date());
               Transport.send(msg);
 
-              getLogSession().log(admin, approvalRequest.getCAId(), LogEntry.MODULE_RA, new java.util.Date(), requestAdminUsername, null, LogEntry.EVENT_INFO_NOTIFICATION, "Approval notification with id " + id + " was sent successfully.");
+              getLogSession().log(admin, approvalRequest.getCAId(), LogEntry.MODULE_APPROVAL, new java.util.Date(), requestAdminUsername, null, LogEntry.EVENT_INFO_NOTIFICATION, "Approval notification with id " + id + " was sent successfully.");
             }
         } catch (Exception e) {
             error("Error when sending notification approving notification", e);
             try{
-            	getLogSession().log(admin, approvalRequest.getCAId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTIFICATION, "Error sending approval notification with id " + id + ".");
+            	getLogSession().log(admin, approvalRequest.getCAId(), LogEntry.MODULE_APPROVAL, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTIFICATION, "Error sending approval notification with id " + id + ".");
             }catch(Exception f){
                 throw new EJBException(f);
             }
