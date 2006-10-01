@@ -22,6 +22,16 @@
     <managed-bean-scope>request</managed-bean-scope>
   </managed-bean>
 
+    <managed-bean>
+    	<managed-bean-name>listServicesManagedBean</managed-bean-name>
+    	<managed-bean-class>org.ejbca.ui.web.admin.services.ListServicesManagedBean</managed-bean-class>
+    	<managed-bean-scope>session</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+    	<managed-bean-name>editService</managed-bean-name>
+    	<managed-bean-class>org.ejbca.ui.web.admin.services.EditServiceManagedBean</managed-bean-class>
+    	<managed-bean-scope>session</managed-bean-scope>
+    </managed-bean>
   <navigation-rule>
     <from-view-id>approval/approveactionlist.jsp</from-view-id>
     <navigation-case>
@@ -36,7 +46,27 @@
   		<to-view-id>/approval/approveaction.jsp</to-view-id>
   	</navigation-case>
   </navigation-rule>
-  
-
-	
+  	
+  <navigation-rule>
+  	<from-view-id>/services/listservices.jsp</from-view-id>
+  	<navigation-case>
+  		<from-outcome>listservices</from-outcome>
+  		<to-view-id>/services/listservices.jsp</to-view-id>
+  	</navigation-case>
+  	<navigation-case>
+  		<from-outcome>editservice</from-outcome>
+  		<to-view-id>/services/editservice.jsp</to-view-id>
+  	</navigation-case>
+  </navigation-rule>
+  <navigation-rule>
+  	<from-view-id>/services/editservice.jsp</from-view-id>
+  	<navigation-case>
+  		<from-outcome>listservices</from-outcome>
+  		<to-view-id>/services/listservices.jsp</to-view-id>
+  	</navigation-case>
+  	<navigation-case>
+  		<from-outcome>editservice</from-outcome>
+  		<to-view-id>/services/editservice.jsp</to-view-id>
+  	</navigation-case>
+  </navigation-rule>
   </faces-config>

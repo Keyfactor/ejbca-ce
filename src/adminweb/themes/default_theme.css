@@ -28,3 +28,9 @@ tr#LogTextRow0 { color: black; font-size: 8pt; font-family: Arial, Helvetica, Ge
 tr#LogTextRow1 { color: black; font-size: 8pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: #e5ecff }
 .jsfrow1 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: white }
 .jsfrow2 { color: black; font-size: 10pt; font-family: Arial, Helvetica, Geneva, Swiss, SunSans-Regular; background-color: #e5ecff }
+.header {
+  color: black; text-align: center; font-size: x-large
+}
+.subheader {
+	color: black;  font-size: medium;  font-weight: bold
+}
