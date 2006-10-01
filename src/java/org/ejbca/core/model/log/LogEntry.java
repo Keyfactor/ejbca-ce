@@ -34,7 +34,7 @@ import org.ejbca.core.model.protect.TableVerifyResult;
  *  This is a  class containing information about one log event in the database. Used mainly during database queries by the web interface.
  *
  * @author  TomSelleck
- * @version $Id: LogEntry.java,v 1.5 2006-08-05 09:59:37 anatom Exp $
+ * @version $Id: LogEntry.java,v 1.6 2006-10-01 17:42:36 herrvendil Exp $
  */
 public class LogEntry implements Serializable, Protectable {
 
@@ -94,6 +94,8 @@ public class LogEntry implements Serializable, Protectable {
     public static final int EVENT_INFO_APPROVALREQUESTED = 38;
     public static final int EVENT_INFO_APPROVALAPPROVED = 39;
     public static final int EVENT_INFO_APPROVALREJECTED = 40;
+    public static final int EVENT_INFO_SERVICESEDITED = 41;
+    public static final int EVENT_INFO_SERVICEEXECUTED = 42;
 
     // Error events. Important all id:s should map to the array EVENTNAMES_ERROR - EVENT_ERROR_BOUNDRARY.
     public static final int EVENT_ERROR_UNKNOWN = 1000;
@@ -137,6 +139,8 @@ public class LogEntry implements Serializable, Protectable {
     public static final int EVENT_ERROR_APPROVALREQUESTED = 1038;
     public static final int EVENT_ERROR_APPROVALAPPROVED = 1039;
     public static final int EVENT_ERROR_APPROVALREJECTED = 1040;
+    public static final int EVENT_ERROR_SERVICESEDITED = 1041;
+    public static final int EVENT_ERROR_SERVICEEXECUTED = 1042;
 
     // Indicates the module using the logsession bean.
     public static final int MODULE_CA = 0;
@@ -147,6 +151,8 @@ public class LogEntry implements Serializable, Protectable {
     public static final int MODULE_HARDTOKEN = 5;
     public static final int MODULE_KEYRECOVERY = 6;
     public static final int MODULE_AUTHORIZATION = 7;
+    public static final int MODULE_APPROVAL = 8;
+    public static final int MODULE_SERVICES = 9;
 
     public static final int EVENT_ERROR_BOUNDRARY = 1000;
 
@@ -160,7 +166,7 @@ public class LogEntry implements Serializable, Protectable {
                                                     "EVENT_INFO_HARDTOKENISSUERDATA", "EVENT_INFO_HARDTOKENCERTIFICATEMAP", "EVENT_INFO_KEYRECOVERY", "EVENT_INFO_NOTIFICATION",
                                                     "EVENT_INFO_HARDTOKENVIEWED", "EVENT_INFO_CACREATED", "EVENT_INFO_CAEDITED", "EVENT_INFO_CAREVOKED", "EVENT_INFO_HARDTOKENPROFILEDATA", 
                                                     "EVENT_INFO_PUBLISHERDATA", "EVENT_INFO_USERDATASOURCEDATA", "EVENT_INFO_USERDATAFETCHED", "EVENT_INFO_UNREVOKEDCERT",
-                                                    "EVENT_INFO_APPROVALREQUESTED","EVENT_INFO_APPROVALAPPROVED","EVENT_INFO_APPROVALREJECTED"};
+                                                    "EVENT_INFO_APPROVALREQUESTED","EVENT_INFO_APPROVALAPPROVED","EVENT_INFO_APPROVALREJECTED","EVENT_INFO_SERVICESEDITED","EVENT_INFO_SERVICEEXECUTED"};
 
 
     public static final String[] EVENTNAMES_ERROR = {"EVENT_ERROR_UNKNOWN", "EVENT_ERROR_ADDEDENDENTITY", "EVENT_ERROR_CHANGEDENDENTITY", "EVENT_ERROR_REVOKEDENDENTITY", "EVENT_ERROR_REVOKEDCERT",
@@ -172,9 +178,11 @@ public class LogEntry implements Serializable, Protectable {
                                                      "EVENT_ERROR_HARDTOKENISSUERDATA", "EVENT_ERROR_HARDTOKENCERTIFICATEMAP", "EVENT_ERROR_KEYRECOVERY", "EVENT_ERROR_NOTIFICATION",
                                                      "EVENT_ERROR_HARDTOKENVIEWED", "EVENT_ERROR_CACREATED", "EVENT_ERROR_CAEDITED", "EVENT_ERROR_CAREVOKED", "EVENT_ERROR_HARDTOKENPROFILEDATA",
                                                      "EVENT_ERROR_PUBLISHERDATA", "EVENT_ERROR_USERDATASOURCEDATA", "EVENT_ERROR_USERDATAFETCHED", "EVENT_ERROR_UNREVOKEDCERT",
-                                                     "EVENT_ERROR_APPROVALREQUESTED","EVENT_ERROR_APPROVALAPPROVED","EVENT_ERROR_APPROVALREJECTED"};
+                                                     "EVENT_ERROR_APPROVALREQUESTED","EVENT_ERROR_APPROVALAPPROVED","EVENT_ERROR_APPROVALREJECTED","EVENT_ERROR_SERVICESEDITED",
+                                                     "EVENT_ERROR_SERVICEEXECUTED"};
 
-    public static final String[] MODULETEXTS = {"CA", "RA", "LOG", "PUBLICWEB", "ADMINWEB", "HARDTOKEN", "KEYRECOVERY", "AUTHORIZATION"};
+    public static final String[] MODULETEXTS = {"CA", "RA", "LOG", "PUBLICWEB", "ADMINWEB", "HARDTOKEN", "KEYRECOVERY", "AUTHORIZATION","APPROVAL","SERVICES"};
+    
 
     /**
      * Function used by EJBCA to log information.
