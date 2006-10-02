@@ -34,7 +34,7 @@ import java.util.HashMap;
  * CertificateProfile data
  * </pre>
  *
- * @version $Id: CertificateProfileDataBean.java,v 1.1 2006-01-17 20:30:04 anatom Exp $
+ * @version $Id: CertificateProfileDataBean.java,v 1.2 2006-10-02 07:56:20 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a CRL with accompanying data"
  * display-name="CertificateProfileDataEB"
@@ -66,8 +66,7 @@ import java.util.HashMap;
  * signature="Collection findAll()"
  * query="SELECT OBJECT(a) from CertificateProfileDataBean AS a"
  *
- * @ejb.transaction
- *   type="Supports"
+ * @ejb.transaction type="Required"
  *
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"

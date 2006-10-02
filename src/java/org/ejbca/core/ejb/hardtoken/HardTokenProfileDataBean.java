@@ -79,8 +79,7 @@ import org.ejbca.util.Base64PutHashMap;
  *   signature="java.util.Collection findAll()"
  *   query="SELECT OBJECT(a) from HardTokenProfileDataBean a"
  *
- * @ejb.transaction
- *   type="Supports"
+ * @ejb.transaction type="Required"
  *
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"

@@ -32,7 +32,7 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
  * AdminPreference
  * </pre>
  *
- * @version $Id: AdminPreferencesDataBean.java,v 1.2 2006-09-30 10:33:35 anatom Exp $
+ * @version $Id: AdminPreferencesDataBean.java,v 1.3 2006-10-02 07:57:41 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a ra admins user preference."
  * display-name="AdminPreferencesDataEB"
@@ -50,7 +50,7 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
  *
  * @ejb.persistence table-name = "AdminPreferencesData"
  * 
- * @ejb.transaction type="Supports"
+ * @ejb.transaction type="Required"
  * 
  * @ejb.home
  * local-extends="javax.ejb.EJBLocalHome"

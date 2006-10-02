@@ -74,8 +74,7 @@ import org.ejbca.util.StringTools;
  *   signature="Collection findByUsername(java.lang.String username)"
  *   query="SELECT OBJECT(a) from HardTokenDataBean a WHERE a.username=?1"
  *
- * @ejb.transaction
- *   type="Supports"
+ * @ejb.transaction type="Required"
  *
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"

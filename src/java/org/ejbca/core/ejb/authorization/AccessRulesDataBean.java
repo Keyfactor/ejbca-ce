@@ -49,7 +49,7 @@ import org.ejbca.core.model.authorization.AccessRule;
  *
  * @ejb.persistence table-name = "AccessRulesData"
  * 
- * @ejb.transaction type="Supports"
+ * @ejb.transaction type="Required"
  * 
  * @ejb.home
  *   generate="local"
@@ -61,7 +61,7 @@ import org.ejbca.core.model.authorization.AccessRule;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.authorization.AccessRulesDataLocal"
  *
- * @version $Id: AccessRulesDataBean.java,v 1.1 2006-01-17 20:30:04 anatom Exp $
+ * @version $Id: AccessRulesDataBean.java,v 1.2 2006-10-02 07:54:37 anatom Exp $
  */
 public abstract class AccessRulesDataBean extends BaseEntityBean
 {

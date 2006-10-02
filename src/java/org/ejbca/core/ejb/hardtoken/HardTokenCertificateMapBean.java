@@ -63,8 +63,7 @@ import org.ejbca.core.ejb.BaseEntityBean;
  *   signature="Collection findByTokenSN(java.lang.String sn)"
  *   query="SELECT OBJECT(a) from HardTokenCertificateMapBean a WHERE a.tokenSN=?1"
  *
- * @ejb.transaction
- *   type="Supports"
+ * @ejb.transaction type="Required"
  *
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"

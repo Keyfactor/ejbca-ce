@@ -80,7 +80,7 @@ import java.util.HashMap;
  *   signature="Collection findAll()"
  *   query="SELECT OBJECT(a) from PublisherDataBean a"
  *
- * @ejb.transaction type="Supports"
+ * @ejb.transaction type="Required"
  *
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"

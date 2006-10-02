@@ -74,8 +74,7 @@ import org.ejbca.core.model.hardtoken.HardTokenIssuer;
  *   signature="java.util.Collection findAll()"
  *   query="SELECT OBJECT(a) from HardTokenIssuerDataBean AS a"
  *
- * @ejb.transaction
- *   type="Supports"
+ * @ejb.transaction type="Required"
  *
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"

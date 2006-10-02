@@ -46,7 +46,7 @@ import org.ejbca.util.Base64PutHashMap;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.7 2006-09-30 10:32:32 anatom Exp $
+ * @version $Id: CADataBean.java,v 1.8 2006-10-02 07:56:20 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a publisher"
@@ -97,8 +97,7 @@ import org.ejbca.util.Base64PutHashMap;
  *   signature="Collection findAll()"
  *   query="SELECT OBJECT(a) from CADataBean a"
  *
- * @ejb.transaction
- *   type="Supports"
+ * @ejb.transaction type="Required"
  *
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"

@@ -61,7 +61,7 @@ import org.ejbca.util.StringTools;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.9 2006-09-30 10:32:19 anatom Exp $
+ * @version $Id: UserDataBean.java,v 1.10 2006-10-02 07:57:42 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a Log Entry with accompanying data"
  * display-name="UserDataEB"
@@ -79,7 +79,7 @@ import org.ejbca.util.StringTools;
  *
  * @ejb.persistence table-name = "UserData"
  * 
- * @ejb.transaction type="Supports"
+ * @ejb.transaction type="Required"
  * 
  * @ejb.home extends="javax.ejb.EJBHome"
  * local-extends="javax.ejb.EJBLocalHome"

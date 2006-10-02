@@ -65,15 +65,14 @@ import org.ejbca.core.ejb.BaseEntityBean;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.protect.TableProtectDataLocal"
  *
- * @ejb.transaction
- *    type="Supports"
+ * @ejb.transaction type="Required"
  *
  * @ejb.finder description="findByDbTypeAndKey"
  * signature="org.ejbca.core.ejb.protect.TableProtectDataLocal findByDbTypeAndKey(java.lang.String dbType, java.lang.String dbKey)"
  * query="SELECT OBJECT(a) from TableProtectDataBean a WHERE a.dbType=?1 AND a.dbKey=?2"
  *
 
- * @version $Id: TableProtectDataBean.java,v 1.2 2006-08-06 12:37:00 anatom Exp $
+ * @version $Id: TableProtectDataBean.java,v 1.3 2006-10-02 07:57:42 anatom Exp $
  */
 public abstract class TableProtectDataBean extends BaseEntityBean {
 

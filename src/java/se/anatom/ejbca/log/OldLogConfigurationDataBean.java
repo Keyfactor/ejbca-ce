@@ -32,7 +32,7 @@ import org.ejbca.core.model.log.LogEntry;
  * logentryrownumber is the number of the last row number in the log entry database.
  * </pre>
  *
- * @version $Id: OldLogConfigurationDataBean.java,v 1.1 2006-01-26 14:18:20 anatom Exp $
+ * @version $Id: OldLogConfigurationDataBean.java,v 1.2 2006-10-02 07:58:53 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a Log Entry with accompanying data"
@@ -67,8 +67,7 @@ import org.ejbca.core.model.log.LogEntry;
  *   signature="java.util.Collection findAll()"
  *   query="SELECT OBJECT(a) from OldLogConfigurationDataBean a"
  *   
- * @ejb.transaction
- *    type="Supports"
+ * @ejb.transaction type="Required"
  *
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"

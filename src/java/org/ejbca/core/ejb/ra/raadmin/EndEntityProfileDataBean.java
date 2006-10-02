@@ -33,7 +33,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
  * Profile data
  * </pre>
  *
- * @version $Id: EndEntityProfileDataBean.java,v 1.1 2006-01-17 20:30:04 anatom Exp $
+ * @version $Id: EndEntityProfileDataBean.java,v 1.2 2006-10-02 07:57:41 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a profile"
  * display-name="EndEntityProfileDataEB"
@@ -51,7 +51,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
  *
  * @ejb.persistence table-name = "EndEntityProfileData"
  *
- * @ejb.transaction type="Supports"
+ * @ejb.transaction type="Required"
  * 
  * @ejb.home
  * local-extends="javax.ejb.EJBLocalHome"

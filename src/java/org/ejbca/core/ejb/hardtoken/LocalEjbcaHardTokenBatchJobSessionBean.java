@@ -49,7 +49,7 @@ import org.ejbca.util.JDBCUtil;
  *   type="Stateless"
  *   transaction-type="Container"
  *
- * @ejb.transaction type="Supports"
+ * @ejb.transaction type="Required"
  *
  * @weblogic.enable-call-by-reference True
  *

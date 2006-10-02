@@ -30,7 +30,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  * GlobalConfiguration
  * </pre>
  *
- * @version $Id: GlobalConfigurationDataBean.java,v 1.2 2006-09-30 10:33:35 anatom Exp $
+ * @version $Id: GlobalConfigurationDataBean.java,v 1.3 2006-10-02 07:57:41 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents global configuration of ra administration"
  * display-name="GlobalConfigurationDataEB"
@@ -48,7 +48,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  *
  * @ejb.persistence table-name = "GlobalConfigurationData"
  * 
- * @ejb.transaction type="Supports"
+ * @ejb.transaction type="Required"
  * 
  * @ejb.home
  * local-extends="javax.ejb.EJBLocalHome"

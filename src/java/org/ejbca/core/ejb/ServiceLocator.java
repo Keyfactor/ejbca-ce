@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Collections;
 import java.util.HashMap;
 import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 import javax.naming.Context;
 import javax.rmi.PortableRemoteObject;
@@ -18,7 +19,7 @@ import javax.mail.Session;
  * {@link http://developer.java.sun.com/developer/restricted/patterns/ServiceLocator.html}
  *
  * It is used to look up JNDI related resources such as EJB homes, datasources, ...
- * @version $Id: ServiceLocator.java,v 1.1 2006-01-17 20:30:04 anatom Exp $
+ * @version $Id: ServiceLocator.java,v 1.2 2006-10-02 07:54:37 anatom Exp $
  */
 public class ServiceLocator {
 
@@ -124,7 +125,16 @@ public class ServiceLocator {
      * @throws ServiceLocatorException if the lookup fails
      */
     public String getString(String envName) throws ServiceLocatorException {
-        return (String)getObject(envName);
+        String ret = null;
+        try {
+            ret = (String)getObject(envName);        	
+        } catch (ServiceLocatorException e) {
+        	if (e.getCause() instanceof NameNotFoundException) {
+				// ignore this and return null, otherwise we can not have empty values in Glassfish
+        		ret = null;
+			}
+        }
+        return ret;
     }
 
     /**

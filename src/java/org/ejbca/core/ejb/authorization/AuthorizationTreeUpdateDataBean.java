@@ -47,7 +47,7 @@ import org.ejbca.core.ejb.BaseEntityBean;
  *
  * @ejb.persistence table-name = "AuthorizationTreeUpdateData"
  * 
- * @ejb.transaction type="Supports"
+ * @ejb.transaction type="Required"
  * 
  * @ejb.home
  *   generate="local"

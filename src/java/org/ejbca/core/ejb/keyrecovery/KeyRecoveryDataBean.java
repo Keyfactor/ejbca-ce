@@ -36,7 +36,7 @@ import java.math.BigInteger;
  *  keypair
  * </pre>
  *
- * @version $Id: KeyRecoveryDataBean.java,v 1.2 2006-09-30 10:32:34 anatom Exp $
+ * @version $Id: KeyRecoveryDataBean.java,v 1.3 2006-10-02 07:57:42 anatom Exp $
  *
  * @ejb.bean
  *   description="Stores key recovery data"
@@ -77,8 +77,7 @@ import java.math.BigInteger;
  *   signature="Collection findByUserMark(java.lang.String usermark)"
  *   query="SELECT OBJECT(a) from KeyRecoveryDataBean a WHERE a.username=?1 AND a.markedAsRecoverable=TRUE"
  *
- * @ejb.transaction
- *   type="Supports"
+ * @ejb.transaction type="Required"
  *
  * @jonas.bean
  *   ejb-name="KeyRecoveryData"

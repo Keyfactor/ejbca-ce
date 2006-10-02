@@ -106,13 +106,13 @@ import org.ejbca.util.CertTools;
  *   signature="Collection findAll()"
  *   query="SELECT OBJECT(a) from ApprovalDataBean a"
  *
- * @ejb.transaction type="Supports"
+ * @ejb.transaction type="Required"
  *
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"
  *   
  * @author Philip Vendil
- * @version $Id: ApprovalDataBean.java,v 1.5 2006-08-13 10:12:58 anatom Exp $   
+ * @version $Id: ApprovalDataBean.java,v 1.6 2006-10-02 07:54:37 anatom Exp $   
  */
 public abstract class ApprovalDataBean extends BaseEntityBean {
 

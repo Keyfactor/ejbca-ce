@@ -63,8 +63,7 @@ import org.ejbca.core.ejb.BaseEntityBean;
  *   signature="Collection findIdsByPropertyAndValue(java.lang.String property, java.lang.String value)"
  *   query="SELECT OBJECT(a) from HardTokenPropertyDataBean a WHERE a.property =?1 AND a.value=?2"
  *
- * @ejb.transaction
- *   type="Supports"
+ * @ejb.transaction type="Required"
  *
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"

@@ -48,7 +48,7 @@ import org.ejbca.core.model.authorization.AdminEntity;
  *
  * @ejb.persistence table-name = "AdminEntityData"
  * 
- * @ejb.transaction type="Supports"
+ * @ejb.transaction type="Required"
  * 
  * @ejb.home
  *   generate="local"

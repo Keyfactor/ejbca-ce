@@ -66,13 +66,12 @@ import java.util.Date;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.log.LogEntryDataLocal"
  *
- * @ejb.transaction
- *    type="Supports"
+ * @ejb.transaction type="Required"
  *
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"
  *   
- * @version $Id: LogEntryDataBean.java,v 1.3 2006-08-05 09:59:37 anatom Exp $
+ * @version $Id: LogEntryDataBean.java,v 1.4 2006-10-02 07:57:42 anatom Exp $
  */
 public abstract class LogEntryDataBean extends BaseEntityBean {
 
