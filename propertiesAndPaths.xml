@@ -124,6 +124,7 @@
         <path refid="ext.classpath" />
         <fileset dir="lib" includes="*.jar" excludes="bc*.jar"/>
         <fileset dir="lib/quickserver" includes="*.jar"/>
+        <fileset dir="lib/myfaces" includes="*.jar"/>
         <fileset dir="lib" includes="bcmail-jdk${java.ver}.jar"/>
     	<fileset dir="lib" includes="bcprov-jdk${java.ver}.jar"/>
         <path refid="j2ee.classpath" />
