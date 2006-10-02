@@ -40,7 +40,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * A class used as an interface between Apply jsp pages and ejbca functions.
  *
  * @author Philip Vendil
- * @version $Id: ApplyBean.java,v 1.3 2006-09-30 11:41:42 anatom Exp $
+ * @version $Id: ApplyBean.java,v 1.4 2006-10-02 07:59:05 anatom Exp $
  */
 public class ApplyBean implements java.io.Serializable {
     /**
@@ -61,10 +61,10 @@ public class ApplyBean implements java.io.Serializable {
             }
 
             InitialContext jndicontext = new InitialContext();
-            Object obj1 = jndicontext.lookup("UserAdminSession");
+            Object obj1 = jndicontext.lookup(IUserAdminSessionHome.JNDI_NAME);
             useradminhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1,
                     IUserAdminSessionHome.class);
-            obj1 = jndicontext.lookup("CertificateStoreSession");
+            obj1 = jndicontext.lookup(ICertificateStoreSessionHome.JNDI_NAME);
             certificatesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1,
                     ICertificateStoreSessionHome.class);
             initialized = true;
