@@ -38,7 +38,7 @@
                 <item name="Contribute to EJBCA"     href="/donations.html"/>
                 <item name="Contributors"          href="/contributors.html"/>
                 <item name="Bug Database"          href="http://jira.primekey.se/"/>
-                <item name="CVS Repositories"      href="http://cvs.sourceforge.net/viewcvs.py/ejbca/ejbca/"/>
+                <item name="CVS Repositories"      href="http://ejbca.cvs.sourceforge.net/ejbca"/>
             </menu>
 
         </menusection>
