@@ -2513,7 +2513,7 @@ To be able to batch generate certificates, the users must be registered
 with clear text passwords. To set a clear text password for a user use
 </p>
 <source>
-bin/ejbca.sh.sh ra setclearpwd username password
+bin/ejbca.sh ra setclearpwd username password
 </source>
 <p>
 To generate keystore files for all users with status NEW or FAILED, run 
