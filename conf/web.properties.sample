@@ -60,3 +60,9 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 # Values should be "true" or "false".
 # Default = true
 #hardtoken.diplaysensitiveinfo=true
+
+# Specifies the JSF implementation used by the application server EJBCA is deployed on.
+# Possible values are: myfaces
+#
+# Default: myfaces
+#web.jsfimpl=myfaces
