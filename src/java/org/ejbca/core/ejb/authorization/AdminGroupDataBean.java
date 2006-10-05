@@ -40,7 +40,7 @@ import org.ejbca.core.model.authorization.AdminGroup;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.1 2006-01-17 20:30:04 anatom Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.2 2006-10-05 13:16:08 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents an authorization usergroup"
@@ -144,8 +144,8 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
      * foreign-key-column="AdminGroupData_adminEntities"
      * 
      * @sunone.relation
-     * column="pK"
-     * target="AdminGroupData_adminEntities"
+     * column="AdminGroupData.pK"
+     * target="AdminEntityData.AdminGroupData_adminEntities"
      */
     public abstract Collection getAdminEntities();
     public abstract void setAdminEntities(Collection adminentities);
@@ -164,8 +164,8 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
      * foreign-key-column="AdminGroupData_accessRules"
      * 
      * @sunone.relation
-     * column="pK"
-     * target="AdminGroupData_accessRules"
+     * column="AdminGroupData.pK"
+     * target="AccessRulesData.AdminGroupData_accessRules"
      */
     public abstract Collection getAccessRules();
     public abstract void setAccessRules(Collection accessrules);
