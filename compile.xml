@@ -159,16 +159,17 @@ protection.certprotect=${protection.certprotect}
                 datasource="${datasource.jndi-name}" 
                 persistence="weblogic"
                 createTables="Disabled" />
+            <sunone version="7.0" 
+                xmlencoding="UTF-8" 
+                destdir="${src.dd}/META-INF" 
+                cmpResourceJndiName="${datasource.jndi-name}"
+                validatexml="false" />
 <!--            
             <websphere
                 xmlencoding="UTF-8" 
                 validatexml="false" 
             	useIds="true"
                 destdir="${src.dd}/META-INF" />
-            <sunone version="7.0" 
-                xmlencoding="UTF-8" 
-                destdir="${src.dd}/META-INF" 
-                validatexml="false" />
             <jonas version="3.0" 
                 xmlencoding="UTF-8" 
                 destdir="${src.dd}/META-INF" 
