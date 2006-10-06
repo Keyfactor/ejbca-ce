@@ -58,8 +58,9 @@ Needed to build and run are:
 <li><i>Unlimited Strength Jurisdiction Policy Files</i> for your JDK</li>
 <li>JBOSS >=4.0.3 (latest tested verison is JBoss 4.0.4)</li>
 <li>Ant 1.6.x to build (http://jakarta.apache.org/ant/)</li>
-<li>Apache Myfaces 1.1 JSF libraries (included in JBoss >=4.0.3)</li>
+<li>Apache Myfaces 1.1 JSF libraries (included in JBoss >=4.0.3), without this you can still run EJBCA but with limited functionality in the adminGUI.</li>
 </ul>
+<p>EJBCA can also run on other application servers, see doc/howto/HOWTO-Appserver.txt for details.</p>
 </p><p>
 Set the environment variable JBOSS_HOME to the directory where
 JBoss's root is
@@ -145,6 +146,8 @@ example /opt/jboss-4.0.2 or C:\jboss-4.0.3SP1.
 </p><p>
 2) Copy conf/ejbca.properties.sample to conf/ejbca.properties and customize if needed.
 The default values works fine for a test installaton. 
+<br/>
+If you are using JBoss &lt; 4.0.3 you must configure the property web.jsfimpl in conf/web.properties.
 </p><p>
 <ul>
 <li>Customize the CA properties if you need to do so.
