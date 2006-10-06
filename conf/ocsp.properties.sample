@@ -65,7 +65,7 @@ ocsp.usecasigningcert=true
 
 # The password for key stored on card
 # Default: empty
-ocsp.keys.cardPassword=6231
+#ocsp.keys.cardPassword=
 
 # The class that implements hardware signing of the OCSP response
 # Default: se.primeKey.caToken.card.CardKeysImpl
