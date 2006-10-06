@@ -18,7 +18,6 @@ import java.util.Iterator;
 import java.util.Properties;
 
 import org.ejbca.core.model.UpgradeableDataHashMap;
-import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 
 /**
  * Value class used for persist the worker, interval and action configurations
@@ -26,7 +25,7 @@ import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: ServiceConfiguration.java,v 1.2 2006-10-01 17:46:25 herrvendil Exp $
+ * @version $Id: ServiceConfiguration.java,v 1.3 2006-10-06 07:52:51 anatom Exp $
  */
 public class ServiceConfiguration extends UpgradeableDataHashMap implements Serializable, Cloneable {
 

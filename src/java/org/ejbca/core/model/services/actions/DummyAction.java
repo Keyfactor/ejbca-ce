@@ -13,7 +13,6 @@
 package org.ejbca.core.model.services.actions;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.hardtoken.HardTokenCertificateMapBean;
 import org.ejbca.core.model.services.ActionException;
 import org.ejbca.core.model.services.ActionInfo;
 import org.ejbca.core.model.services.BaseAction;
@@ -24,7 +23,7 @@ import org.ejbca.core.model.services.BaseAction;
  * Shows which methods that are necessary to implement a action
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: DummyAction.java,v 1.1 2006-10-01 17:46:48 herrvendil Exp $
+ * @version $Id: DummyAction.java,v 1.2 2006-10-06 07:52:51 anatom Exp $
  */
 public class DummyAction extends BaseAction {
 	

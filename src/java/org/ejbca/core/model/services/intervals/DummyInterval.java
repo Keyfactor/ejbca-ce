@@ -15,14 +15,13 @@ package org.ejbca.core.model.services.intervals;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.services.BaseInterval;
 import org.ejbca.core.model.services.IInterval;
-import org.ejbca.core.model.services.actions.DummyAction;
 
 /**
  * Dummy class used for demonstration and test puporses
  * Only implement one method 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: DummyInterval.java,v 1.1 2006-10-01 17:46:47 herrvendil Exp $
+ * @version $Id: DummyInterval.java,v 1.2 2006-10-06 07:52:51 anatom Exp $
  */
 public class DummyInterval extends BaseInterval {
 
