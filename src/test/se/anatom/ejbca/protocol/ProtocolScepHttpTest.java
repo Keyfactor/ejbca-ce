@@ -156,13 +156,8 @@ public class ProtocolScepHttpTest extends TestCase {
     }
 
 
-    public ProtocolScepHttpTest(String name) {
+    public ProtocolScepHttpTest(String name) throws Exception {
         super(name);
-    }
-
-    protected void setUp() throws Exception {
-        log.debug(">setUp()");
-
         // Install BouncyCastle provider
         CertTools.installBCProvider();
 
@@ -204,8 +199,9 @@ public class ProtocolScepHttpTest extends TestCase {
             // Pre-generate key for all requests to speed things up a bit
             keys = KeyTools.genKeys(512);        	
         }
+    }
 
-        log.debug("<setUp()");
+    protected void setUp() throws Exception {
     }
 
     protected void tearDown() throws Exception {
