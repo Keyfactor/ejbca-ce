@@ -128,7 +128,7 @@
         </junitreport>
     </target>
 
-    <target name="test:runocsp" depends="test:compile,j2ee:assert-run" description="run JUnit web testcases">
+    <target name="test:runocsp" depends="test:compile,j2ee:assert-run" description="run JUnit standalone OCSP testcases">
         <delete dir="${test.dir}/web/reports" />
         <mkdir dir="${test.dir}/web/reports/html" />
         <junit printsummary="yes" haltonfailure="no">
