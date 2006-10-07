@@ -36,7 +36,7 @@ import java.math.BigInteger;
  *  keypair
  * </pre>
  *
- * @version $Id: KeyRecoveryDataBean.java,v 1.3 2006-10-02 07:57:42 anatom Exp $
+ * @version $Id: KeyRecoveryDataBean.java,v 1.4 2006-10-07 14:11:04 anatom Exp $
  *
  * @ejb.bean
  *   description="Stores key recovery data"
@@ -90,30 +90,28 @@ public abstract class KeyRecoveryDataBean extends BaseEntityBean {
     private static final Logger log = Logger.getLogger(KeyRecoveryDataBean.class);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="certSN"
      * @ejb.pk-field
      */
     public abstract String getCertSN();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setCertSN(String certificatesn);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="issuerDN"
      * @ejb.pk-field
      * @ejb.interface-method view-type="local"
      */
     public abstract String getIssuerDN();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setIssuerDN(String issuerdn);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="username"
      * @ejb.interface-method view-type="local"
      */
     public abstract String getUsername();
@@ -122,30 +120,27 @@ public abstract class KeyRecoveryDataBean extends BaseEntityBean {
      * username must be called 'striped' using StringTools.strip()
      *
      * @see org.ejbca.util.StringTools
-     * @ejb.persistence
      * @ejb.interface-method view-type="local"
      */
     public abstract void setUsername(String username);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="markedAsRecoverable"
      * @ejb.interface-method view-type="local"
      */
     public abstract boolean getMarkedAsRecoverable();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method view-type="local"
      */
     public abstract void setMarkedAsRecoverable(boolean markedasrecoverable);
 
     /**
-     * @ejb.persistence jdbc-type="LONGVARCHAR"
+     * @ejb.persistence jdbc-type="LONGVARCHAR" column-name="keyData"
      */
     public abstract String getKeyData();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setKeyData(String keydata);
 

@@ -91,46 +91,42 @@ public abstract class HardTokenProfileDataBean extends BaseEntityBean {
 
 	/**
      * @ejb.pk-field
-	 * @ejb.persistence
+	 * @ejb.persistence column-name="id"
      * @ejb.interface-method view-type="local"
      */
     public abstract Integer getId();
 
 	/**
-	 * @ejb.persistence
 	 */
     public abstract void setId(Integer id);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="name"
      * @ejb.interface-method view-type="local"
      */
     public abstract String getName();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method view-type="local"
      */
     public abstract void setName(String name);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="updateCounter"
      * @ejb.interface-method view-type="local"
      */
 	public abstract int getUpdateCounter();
 
     /**
-     * @ejb.persistence
      */
 	public abstract void setUpdateCounter(int updatecounter);
 
     /**
-     * @ejb.persistence jdbc-type="LONGVARCHAR"
+     * @ejb.persistence jdbc-type="LONGVARCHAR" column-name="data"
      */
     public abstract String getData();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setData(String data);
 

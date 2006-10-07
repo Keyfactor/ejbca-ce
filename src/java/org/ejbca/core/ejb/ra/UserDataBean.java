@@ -61,7 +61,7 @@ import org.ejbca.util.StringTools;
  * both the hashed password and the clear text password.
  * The method comparePassword() is used to verify a password againts the hashed password.
  *
- * @version $Id: UserDataBean.java,v 1.10 2006-10-02 07:57:42 anatom Exp $
+ * @version $Id: UserDataBean.java,v 1.11 2006-10-07 14:11:20 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a Log Entry with accompanying data"
  * display-name="UserDataEB"
@@ -121,7 +121,7 @@ public abstract class UserDataBean extends BaseEntityBean {
 
     /**
      * @ejb.pk-field
-     * @ejb.persistence
+     * @ejb.persistence column-name="username"
      * @ejb.interface-method
      */
     public abstract String getUsername();
@@ -129,18 +129,16 @@ public abstract class UserDataBean extends BaseEntityBean {
     /**
      * username must be called 'striped' using StringTools.strip()
      *
-     * @ejb.persistence
      */
     public abstract void setUsername(String username);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="subjectDN"
      * @ejb.interface-method
      */
     public abstract String getSubjectDN();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setSubjectDN(String subjectDN);
@@ -152,55 +150,50 @@ public abstract class UserDataBean extends BaseEntityBean {
     public abstract int getCaId();
 
     /**
-     * @ejb.persistence column-name="cAId"
      * @ejb.interface-method
      */
     public abstract void setCaId(int caid);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="subjectAltName"
      * @ejb.interface-method
      */
     public abstract String getSubjectAltName();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setSubjectAltName(String subjectAltName);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="subjectEmail"
      * @ejb.interface-method
      */
     public abstract String getSubjectEmail();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setSubjectEmail(String subjectEmail);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="status"
      * @ejb.interface-method
      */
     public abstract int getStatus();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setStatus(int status);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="type"
      * @ejb.interface-method
      */
     public abstract int getType();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setType(int type);
@@ -208,7 +201,7 @@ public abstract class UserDataBean extends BaseEntityBean {
     /**
      * Returns clear text password or null.
      *
-     * @ejb.persistence
+     * @ejb.persistence column-name="clearPassword"
      * @ejb.interface-method
      */
     public abstract String getClearPassword();
@@ -216,7 +209,6 @@ public abstract class UserDataBean extends BaseEntityBean {
     /**
      * Sets clear text password, the preferred method is setOpenPassword().
      *
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setClearPassword(String clearPassword);
@@ -224,7 +216,7 @@ public abstract class UserDataBean extends BaseEntityBean {
     /**
      * Returns hashed password or null.
      *
-     * @ejb.persistence
+     * @ejb.persistence column-name="passwordHash"
      * @ejb.interface-method
      */
     public abstract String getPasswordHash();
@@ -232,7 +224,6 @@ public abstract class UserDataBean extends BaseEntityBean {
     /**
      * Sets hash of password, this is the normal way to store passwords, but use the method setPassword() instead.
      *
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setPasswordHash(String passwordHash);
@@ -240,7 +231,7 @@ public abstract class UserDataBean extends BaseEntityBean {
     /**
      * Returns the time when the user was created.
      *
-     * @ejb.persistence
+     * @ejb.persistence column-name="timeCreated"
      * @ejb.interface-method
      */
     public abstract long getTimeCreated();
@@ -248,14 +239,13 @@ public abstract class UserDataBean extends BaseEntityBean {
     /**
      * Sets the time when the user was created.
      *
-     * @ejb.persistence
      */
     public abstract void setTimeCreated(long createtime);
 
     /**
      * Returns the time when the user was last modified.
      *
-     * @ejb.persistence
+     * @ejb.persistence column-name="timeModified"
      * @ejb.interface-method
      */
     public abstract long getTimeModified();
@@ -263,7 +253,6 @@ public abstract class UserDataBean extends BaseEntityBean {
     /**
      * Sets the time when the user was last modified.
      *
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setTimeModified(long createtime);
@@ -271,7 +260,7 @@ public abstract class UserDataBean extends BaseEntityBean {
     /**
      * Returns the end entity profile id the user belongs to.
      *
-     * @ejb.persistence
+     * @ejb.persistence column-name="endEntityProfileId"
      * @ejb.interface-method
      */
     public abstract int getEndEntityProfileId();
@@ -279,7 +268,6 @@ public abstract class UserDataBean extends BaseEntityBean {
     /**
      * Sets the end entity profile id the user should belong to. 0 if profileid is not applicable.
      *
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setEndEntityProfileId(int endentityprofileid);
@@ -287,7 +275,7 @@ public abstract class UserDataBean extends BaseEntityBean {
     /**
      * Returns the certificate profile id that should be generated for the user.
      *
-     * @ejb.persistence
+     * @ejb.persistence column-name="certificateProfileId"
      * @ejb.interface-method
      */
     public abstract int getCertificateProfileId();
@@ -295,7 +283,6 @@ public abstract class UserDataBean extends BaseEntityBean {
     /**
      * Sets the certificate profile id that should be generated for the user. 0 if profileid is not applicable.
      *
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setCertificateProfileId(int certificateprofileid);
@@ -303,7 +290,7 @@ public abstract class UserDataBean extends BaseEntityBean {
     /**
      * Returns the token type id that should be generated for the user.
      *
-     * @ejb.persistence
+     * @ejb.persistence column-name="tokenType"
      * @ejb.interface-method
      */
     public abstract int getTokenType();
@@ -311,7 +298,6 @@ public abstract class UserDataBean extends BaseEntityBean {
     /**
      * Sets the token type  that should be generated for the user. Available token types can be found in SecConst.
      *
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setTokenType(int tokentype);
@@ -319,7 +305,7 @@ public abstract class UserDataBean extends BaseEntityBean {
     /**
      * Returns the hard token issuer id that should genererate for the users hard token.
      *
-     * @ejb.persistence
+     * @ejb.persistence column-name="hardTokenIssuerId"
      * @ejb.interface-method
      */
     public abstract int getHardTokenIssuerId();
@@ -327,7 +313,6 @@ public abstract class UserDataBean extends BaseEntityBean {
     /**
      * Sets the hard token issuer id that should genererate for the users hard token. 0 if issuerid is not applicable.
      *
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setHardTokenIssuerId(int hardtokenissuerid);
@@ -335,26 +320,24 @@ public abstract class UserDataBean extends BaseEntityBean {
     /**
      * Non-searchable information about a user.
      *
-     * @ejb.persistence jdbc-type="LONGVARCHAR"
+     * @ejb.persistence jdbc-type="LONGVARCHAR" column-name="extendedInformationData"
      */
     public abstract String getExtendedInformationData();
 
     /**
      * Non-searchable information about a user.
      *
-     * @ejb.persistence
      */
     public abstract void setExtendedInformationData(String data);
 
 
     // Reserved for future use.
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="keyStorePassword"
      */
     public abstract String getKeyStorePassword();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setKeyStorePassword(String keystorepassword);
 

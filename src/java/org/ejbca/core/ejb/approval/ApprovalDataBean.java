@@ -112,7 +112,7 @@ import org.ejbca.util.CertTools;
  *   jndi-name="${datasource.jndi-name}"
  *   
  * @author Philip Vendil
- * @version $Id: ApprovalDataBean.java,v 1.6 2006-10-02 07:54:37 anatom Exp $   
+ * @version $Id: ApprovalDataBean.java,v 1.7 2006-10-07 14:10:31 anatom Exp $   
  */
 public abstract class ApprovalDataBean extends BaseEntityBean {
 
@@ -123,7 +123,7 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
      * unique row id
      * 
      * @ejb.pk-field
-     * @ejb.persistence
+     * @ejb.persistence column-name="id"
      * @ejb.interface-method view-type="local"
      */
     public abstract Integer getId();
@@ -131,7 +131,6 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
     /**
      * unique row id
      * 
-     * @ejb.persistence
      */
     public abstract void setId(Integer id);
     
@@ -140,7 +139,7 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
      * result in the same approvalid if the admin tries to request the same action twice.
      * 
      * @ejb.pk-field
-     * @ejb.persistence
+     * @ejb.persistence column-name="approvalid"
      */
     public abstract int getApprovalid();
 
@@ -148,7 +147,6 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
      * Constructed from action data as actiontype, admin, username etc. It should
      * result in the same approvalid if the admin tries to request the same action twice.
      * 
-     * @ejb.persistence
      */
     public abstract void setApprovalid(int approvalid);
 
@@ -157,7 +155,7 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
      * Type of action that should be approved, should be one of ApprovalDataVO.APPROVALTYPE_ 
      * constants ex: ApprovalDataVO.APPROVALTYPE_ADDUSER
      *     
-     * @ejb.persistence
+     * @ejb.persistence column-name="approvaltype"
      */
     public abstract int getApprovaltype();
 
@@ -165,7 +163,6 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
      * Type of action that should be approved, should be one of ApprovalDataVO.APPROVALTYPE_ 
      * constants ex: ApprovalDataVO.APPROVALTYPE_ADDUSER
      *     
-     * @ejb.persistence
      */
     public abstract void setApprovaltype(int approvaltype);
 
@@ -174,7 +171,7 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
      * For RA specific approval requests should the related end entity profile id be specified
      * for non ra request should this field be set to ApprovalDataVO.ANY_ENDENTITYPROFILE     
      *     
-     * @ejb.persistence
+     * @ejb.persistence column-name="endentityprofileid"
      * @ejb.interface-method view-type="local"
      */
     public abstract int getEndentityprofileid();
@@ -184,7 +181,6 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
      * For RA specific approval requests should the related end entity profile id be specified
      * for non ra request should this field be set to ApprovalDataVO.ANY_ENDENTITYPROFILE     
      *     
-     * @ejb.persistence
      */
     public abstract void setEndentityprofileid(int endentityprofileid);
     
@@ -192,7 +188,7 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
      * For CA specific approval requests should the related ca id be specified
      * for non ca request should this field be set to ApprovalDataVO.ANY_CA
      *      
-     * @ejb.persistence
+     * @ejb.persistence column-name="caid"
      * @ejb.interface-method view-type="local"
      */
     public abstract int getCaid();
@@ -202,35 +198,32 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
      * For CA specific approval requests should the related ca id be specified
      * for non ca request should this field be set to ApprovalDataVO.ANY_CA    
      *     
-     * @ejb.persistence
      */
     public abstract void setCaid(int caid);
     
     /**
      * The issuerdn of the administrator certificate that generated the request.
      * 
-     * @ejb.persistence
+     * @ejb.persistence column-name="reqadmincertissuerdn"
      */
     public abstract String getReqadmincertissuerdn();
 
     /**
      * The issuerdn of the administrator certificate that generated the request.
      * 
-     * @ejb.persistence
      */
     public abstract void setReqadmincertissuerdn(String reqadmincertissuerdn);
     
     /**
      * The serialnumber of the administrator certificate that generated the request. String in Hex.
      * 
-     * @ejb.persistence
+     * @ejb.persistence column-name="reqadmincertsn"
      */
     public abstract String getReqadmincertsn();
 
     /**
      * The serialnumber of the administrator certificate that generated the request. String in Hex.
      * 
-     * @ejb.persistence
      */
     public abstract void setReqadmincertsn(String reqadmincertsn);
     
@@ -238,7 +231,7 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
      * Should be one of ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, STATUS_APPROVED, 
      * STATUS_REJECTED, STATUS_EXPIRED
      * 
-     * @ejb.persistence
+     * @ejb.persistence column-name="status"
      * @ejb.interface-method view-type="local"
      */
     public abstract int getStatus();
@@ -247,47 +240,43 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
      * Should be one of ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, STATUS_APPROVED, 
      * STATUS_REJECTED, STATUS_EXPIRED
      * 
-     * @ejb.persistence
      */
     public abstract void setStatus(int status);
 
     /**
      * Stringrepresentation of data of approvals made by one or more administrators
      * 
-     * @ejb.persistence jdbc-type="LONGVARCHAR"
+     * @ejb.persistence jdbc-type="LONGVARCHAR" column-name="approvaldata"
      */
     public abstract String getApprovaldata();
 
     /**
      * Stringrepresentation of data of approvals made by one or more administrators
-     * @ejb.persistence
      */
     public abstract void setApprovaldata(String approvaldata);
 
     /**
      * Data containing information about the request displayed for the approval administrator.
      * 
-     * @ejb.persistence jdbc-type="LONGVARCHAR"
+     * @ejb.persistence jdbc-type="LONGVARCHAR" column-name="requestdata"
      */
     public abstract String getRequestdata();
 
     /**
      * Data containing information about the request displayed for the approval administrator.
-     * @ejb.persistence
      */
     public abstract void setRequestdata(String requestdata);            
     
     /**
      * Date the request for approval were added
      *
-     * @ejb.persistence
+     * @ejb.persistence column-name="requestdate"
      */
     public abstract long getRequestdate();
 
     /**
      * Date the request for approval were added
      *
-     * @ejb.persistence
      */
     public abstract void setRequestdate(long requestdate);
     
@@ -295,7 +284,7 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
      * Date the request for action or the approvel action will expire, Long.MAX_VALUE 
      * means that the request/approval never expires
      *
-     * @ejb.persistence
+     * @ejb.persistence column-name="expiredate"
      */
     public abstract long getExpiredate();
 
@@ -303,14 +292,13 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
      * Date the request for action or the approvel action will expire, Long.MAX_VALUE 
      * means that the request/approval never expires
      *
-     * @ejb.persistence
      */
     public abstract void setExpiredate(long expiredate);
       
     /**
      * Indicates the number of approvals that remains in order to execute the action
      *      
-     * @ejb.persistence
+     * @ejb.persistence column-name="remainingapprovals"
      */
     public abstract int getRemainingapprovals();
 
@@ -318,7 +306,6 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
     /**
      * Indicates the number of approvals that remains in order to execute the action  
      *     
-     * @ejb.persistence
      */
     public abstract void setRemainingapprovals(int remainingapprovals);
     

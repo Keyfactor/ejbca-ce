@@ -75,37 +75,34 @@ public abstract class HardTokenPropertyEntityBean extends BaseEntityBean {
 
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="id"
      * @ejb.pk-field
      * @ejb.interface-method
      */
 	public abstract String getId();
 
     /**
-     * @ejb.persistence
      */
 	public abstract void setId(String id);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="property"
      * @ejb.pk-field
      * @ejb.interface-method
      */
 	public abstract String getProperty();
 
     /**
-     * @ejb.persistence
      */
 	public abstract void setProperty(String property);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="value"
      * @ejb.interface-method
      */
 	public abstract String getValue();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method
      */
 	public abstract void setValue(String value);

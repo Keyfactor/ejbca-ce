@@ -39,7 +39,7 @@ import org.ejbca.util.CertTools;
  * nextUpdate (nextUpdate)
  * </pre>
  *
- * @version $Id: CRLDataBean.java,v 1.2 2006-09-30 10:32:31 anatom Exp $
+ * @version $Id: CRLDataBean.java,v 1.3 2006-10-07 14:10:47 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a CRL with accompanying data"
  * display-name="CRLDataEB"
@@ -86,13 +86,12 @@ public abstract class CRLDataBean extends BaseEntityBean {
     public abstract int getCrlNumber();
 
     /**
-     * @ejb.persistence column-name="cRLNumber"
      * @ejb.interface-method
      */
     public abstract void setCrlNumber(int crlNumber);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="issuerDN"
      * @ejb.interface-method
      */
     public abstract String getIssuerDN();
@@ -101,19 +100,17 @@ public abstract class CRLDataBean extends BaseEntityBean {
      * Use setIssuer instead
      *
      * @see #setIssuer(String)
-     * @ejb.persistence
      */
     public abstract void setIssuerDN(String issuerDN);
 
     /**
      * @ejb.pk-field
-     * @ejb.persistence
+     * @ejb.persistence column-name="fingerprint"
      * @ejb.interface-method
      */
     public abstract String getFingerprint();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setFingerprint(String fingerprint);
 
@@ -124,45 +121,41 @@ public abstract class CRLDataBean extends BaseEntityBean {
     public abstract String getCaFingerprint();
 
     /**
-     * @ejb.persistence column-name="cAFingerprint"
      * @ejb.interface-method
      */
     public abstract void setCaFingerprint(String caFingerprint);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="thisUpdate"
      * @ejb.interface-method
      */
     public abstract long getThisUpdate();
 
     /**
      * Date formated as seconds since 1970 (== Date.getTime())
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setThisUpdate(long thisUpdate);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="nextUpdate"
      * @ejb.interface-method
      */
     public abstract long getNextUpdate();
 
     /**
      * Date formated as seconds since 1970 (== Date.getTime())
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setNextUpdate(long nextUpdate);
 
     /**
-     * @ejb.persistence jdbc-type="LONGVARCHAR"
+     * @ejb.persistence jdbc-type="LONGVARCHAR" column-name="base64Crl"
      * @ejb.interface-method
      */
     public abstract String getBase64Crl();
 
     /**
-     * @ejb.persistence jdbc-type="LONGVARCHAR"
      * @ejb.interface-method
      */
     public abstract void setBase64Crl(String base64Crl);

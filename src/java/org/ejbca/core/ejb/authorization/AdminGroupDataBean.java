@@ -40,7 +40,7 @@ import org.ejbca.core.model.authorization.AdminGroup;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.2 2006-10-05 13:16:08 anatom Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.3 2006-10-07 14:10:31 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents an authorization usergroup"
@@ -108,13 +108,12 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
     public abstract void setPrimKey(Integer primKey);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="adminGroupName"
      * @ejb.interface-method view-type="local"
      */
     public abstract String getAdminGroupName();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method view-type="local"
      */
     public abstract void setAdminGroupName(String admingroupname);
@@ -126,7 +125,6 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
     public abstract int getCaId();
 
     /**
-     * @ejb.persistence column-name="cAId"
      * @ejb.interface-method view-type="local"
      */
     public abstract void setCaId(int caid);

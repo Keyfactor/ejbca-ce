@@ -33,7 +33,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
  * Profile data
  * </pre>
  *
- * @version $Id: EndEntityProfileDataBean.java,v 1.2 2006-10-02 07:57:41 anatom Exp $
+ * @version $Id: EndEntityProfileDataBean.java,v 1.3 2006-10-07 14:11:20 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a profile"
  * display-name="EndEntityProfileDataEB"
@@ -76,7 +76,7 @@ public abstract class EndEntityProfileDataBean extends BaseEntityBean implements
 
     /**
      * @ejb.pk-field
-     * @ejb.persistence
+     * @ejb.persistence column-name="id"
      * @ejb.interface-method
      */
     public abstract Integer getId();
@@ -86,7 +86,7 @@ public abstract class EndEntityProfileDataBean extends BaseEntityBean implements
     public abstract void setId(Integer id);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="profileName"
      * @ejb.interface-method
      */
     public abstract String getProfileName();
@@ -97,7 +97,7 @@ public abstract class EndEntityProfileDataBean extends BaseEntityBean implements
     public abstract void setProfileName(String profilename);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="data"
      * @weblogic.ora.columntyp@
      */
     public abstract HashMap getData();

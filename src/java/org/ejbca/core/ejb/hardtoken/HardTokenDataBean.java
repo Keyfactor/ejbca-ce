@@ -87,18 +87,17 @@ public abstract class HardTokenDataBean extends BaseEntityBean {
 
     /**
      * @ejb.pk-field
-     * @ejb.persistence
+     * @ejb.persistence column-name="tokenSN"
      * @ejb.interface-method view-type="local"
      */
     public abstract String getTokenSN();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setTokenSN(String tokensn);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="username"
      * @ejb.interface-method view-type="local"
      */
     public abstract String getUsername();
@@ -106,7 +105,6 @@ public abstract class HardTokenDataBean extends BaseEntityBean {
     /**
      * username must be called 'striped' using StringTools.strip()
      * @see org.ejbca.util.StringTools
-     * @ejb.persistence
      * @ejb.interface-method view-type="local"
      */
     public abstract void setUsername(String username);
@@ -117,7 +115,6 @@ public abstract class HardTokenDataBean extends BaseEntityBean {
     public abstract long getCtime();
 
     /**
-     * @ejb.persistence column-name="cTime"
      */
     public abstract void setCtime(long createtime);
 
@@ -127,42 +124,38 @@ public abstract class HardTokenDataBean extends BaseEntityBean {
     public abstract long getMtime();
 
     /**
-     * @ejb.persistence column-name="mTime"
      */
     public abstract void setMtime(long modifytime);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="tokenType"
      * @ejb.interface-method view-type="local"
      */
     public abstract int getTokenType();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method view-type="local"
      */
     public abstract void setTokenType(int tokentype);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="significantIssuerDN"
      * @ejb.interface-method view-type="local"
      */
     public abstract String getSignificantIssuerDN();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method view-type="local"
      */
     public abstract void setSignificantIssuerDN(String significantissuerdn);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="data"
      * @weblogic.ora.columntyp@
      */
     public abstract HashMap getData();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setData(HashMap data);
 

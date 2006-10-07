@@ -76,13 +76,12 @@ public abstract class AuthorizationTreeUpdateDataBean extends BaseEntityBean
      * time the authorization tree is built.
      *
      * @return the newest accessruleset number.
-     * @ejb.persistence
+     * @ejb.persistence column-name="authorizationTreeUpdateNumber"
      * @ejb.interface-method
      */
     public abstract int getAuthorizationTreeUpdateNumber();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setAuthorizationTreeUpdateNumber(int authorizationtreeupdatenumber);
 

@@ -71,106 +71,97 @@ import java.util.Date;
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"
  *   
- * @version $Id: LogEntryDataBean.java,v 1.4 2006-10-02 07:57:42 anatom Exp $
+ * @version $Id: LogEntryDataBean.java,v 1.5 2006-10-07 14:11:03 anatom Exp $
  */
 public abstract class LogEntryDataBean extends BaseEntityBean {
 
     /**
      * @ejb.pk-field
-     * @ejb.persistence
+     * @ejb.persistence column-name="id"
      * @ejb.interface-method view-type="local"
      */
     public abstract Integer getId();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setId(Integer id);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="adminType"
      * @ejb.interface-method view-type="local"
      */
     public abstract int getAdminType();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setAdminType(int admintype);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="adminData"
      * @ejb.interface-method view-type="local"
      */
     public abstract String getAdminData();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setAdminData(String admindata);
 
     /** The id of the CA performing the event.
-     * @ejb.persistence
+     * @ejb.persistence column-name="caId"
      * @ejb.interface-method view-type="local"
      */
     public abstract int getCaId();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setCaId(int caid);
 
     /** Indicates the module (CA,RA ...) using the logsession bean.
-     * @ejb.persistence
+     * @ejb.persistence column-name="module"
      * @ejb.interface-method view-type="local"
      */
     public abstract int getModule();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setModule(int module);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="time"
      */
     public abstract long getTime();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setTime(long time);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="username"
      * @ejb.interface-method view-type="local"
      */
     public abstract String getUsername();
 
     /** username must be called 'stripped' using StringTools.strip()
-     * @ejb.persistence
      */
     public abstract void setUsername(String username);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="certificateSNR"
      * @ejb.interface-method view-type="local"
      */
     public abstract String getCertificateSNR();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setCertificateSNR(String certificatesnr);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="event"
      * @ejb.interface-method view-type="local"
      */
     public abstract int getEvent();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setEvent(int event);
 
@@ -179,13 +170,12 @@ public abstract class LogEntryDataBean extends BaseEntityBean {
      * column-name="comment_"
      * to the end of the ejb persistense line.
      * 
-     * @ejb.persistence
+     * @ejb.persistence column-name="comment"
      * @ejb.interface-method view-type="local"
      */
     public abstract String getComment();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setComment(String comment);
 

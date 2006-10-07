@@ -30,7 +30,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  * GlobalConfiguration
  * </pre>
  *
- * @version $Id: GlobalConfigurationDataBean.java,v 1.3 2006-10-02 07:57:41 anatom Exp $
+ * @version $Id: GlobalConfigurationDataBean.java,v 1.4 2006-10-07 14:11:20 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents global configuration of ra administration"
  * display-name="GlobalConfigurationDataEB"
@@ -71,7 +71,7 @@ public abstract class GlobalConfigurationDataBean extends BaseEntityBean {
 
     /**
      * @ejb.pk-field
-     * @ejb.persistence
+     * @ejb.persistence column-name="configurationId"
      * @ejb.interface-method
      */
     public abstract String getConfigurationId();
@@ -81,7 +81,7 @@ public abstract class GlobalConfigurationDataBean extends BaseEntityBean {
     public abstract void setConfigurationId(String id);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="data"
      * @weblogic.ora.columntyp@
      */
     public abstract HashMap getData();

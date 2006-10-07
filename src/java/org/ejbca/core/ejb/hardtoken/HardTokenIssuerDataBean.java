@@ -86,48 +86,44 @@ public abstract class HardTokenIssuerDataBean extends BaseEntityBean {
 
 	/**
      * @ejb.pk-field
-	 * @ejb.persistence
+	 * @ejb.persistence column-name="id"
      * @ejb.interface-method view-type="local"
      */
     public abstract Integer getId();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setId(Integer id);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="alias"
      * @ejb.interface-method view-type="local"
      */
     public abstract String getAlias();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method view-type="local"
      */
     public abstract void setAlias(String alias);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="adminGroupId"
      * @ejb.interface-method view-type="local"
      */
     public abstract int getAdminGroupId();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method view-type="local"
      */
     public abstract void setAdminGroupId(int groupid);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="data"
      * @weblogic.ora.columntyp@
      */
     public abstract HashMap getData();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setData(HashMap data);
 

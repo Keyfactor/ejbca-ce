@@ -61,7 +61,7 @@ import org.ejbca.core.model.authorization.AccessRule;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.authorization.AccessRulesDataLocal"
  *
- * @version $Id: AccessRulesDataBean.java,v 1.2 2006-10-02 07:54:37 anatom Exp $
+ * @version $Id: AccessRulesDataBean.java,v 1.3 2006-10-07 14:10:31 anatom Exp $
  */
 public abstract class AccessRulesDataBean extends BaseEntityBean
 {
@@ -73,21 +73,21 @@ public abstract class AccessRulesDataBean extends BaseEntityBean
     public abstract void setPrimKey(int primKey);
 
 	/**
-	 * @ejb.persistence
+	 * @ejb.persistence column-name="accessRule"
      * @ejb.interface-method view-type="local"
 	 */
     public abstract String getAccessRule();
     public abstract void setAccessRule(String accessrule);
 
 	/**
-	 * @ejb.persistence
+	 * @ejb.persistence column-name="rule"
      * @ejb.interface-method view-type="local"
 	 */
     public abstract int getRule();
     public abstract void setRule(int rule);
 
 	/**
-	 * @ejb.persistence
+	 * @ejb.persistence column-name="isRecursive"
      * @ejb.interface-method view-type="local"
 	 */
     public abstract boolean getIsRecursive();

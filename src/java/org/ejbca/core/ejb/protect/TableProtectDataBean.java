@@ -72,7 +72,7 @@ import org.ejbca.core.ejb.BaseEntityBean;
  * query="SELECT OBJECT(a) from TableProtectDataBean a WHERE a.dbType=?1 AND a.dbKey=?2"
  *
 
- * @version $Id: TableProtectDataBean.java,v 1.3 2006-10-02 07:57:42 anatom Exp $
+ * @version $Id: TableProtectDataBean.java,v 1.4 2006-10-07 14:11:03 anatom Exp $
  */
 public abstract class TableProtectDataBean extends BaseEntityBean {
 
@@ -82,131 +82,120 @@ public abstract class TableProtectDataBean extends BaseEntityBean {
 	
     /**
      * @ejb.pk-field
-     * @ejb.persistence
+     * @ejb.persistence column-name="id"
      * @ejb.interface-method view-type="local"
      */
     public abstract String getId();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setId(String id);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="version"
      * @ejb.interface-method view-type="local"
      */
     public abstract int getVersion();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method view-type="local"
      */
     public abstract void setVersion(int version);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="hashVersion"
      * @ejb.interface-method view-type="local"
      */
     public abstract int getHashVersion();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method view-type="local"
      */
     public abstract void setHashVersion(int version);
     
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="protectionAlg"
      * @ejb.interface-method view-type="local"
      */
     public abstract String getProtectionAlg();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method view-type="local"
      */
     public abstract void setProtectionAlg(String alg);
 
     /** 
-     * @ejb.persistence
+     * @ejb.persistence column-name="hash"
      * @ejb.interface-method view-type="local"
      */
     public abstract String getHash();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method view-type="local"
      */
     public abstract void setHash(String hash);
 
     /** 
-     * @ejb.persistence
+     * @ejb.persistence column-name="signature"
      * @ejb.interface-method view-type="local"
      */
     public abstract String getSignature();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method view-type="local"
      */
     public abstract void setSignature(String signature);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="time"
      */
     public abstract long getTime();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method view-type="local"
      */
     public abstract void setTime(long time);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="dbKey"
      * @ejb.interface-method view-type="local"
      */
     public abstract String getDbKey();
 
     /** 
-     * @ejb.persistence
      * @ejb.interface-method view-type="local"
      */
     public abstract void setDbKey(String dbKey);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="dbType"
      * @ejb.interface-method view-type="local"
      */
     public abstract String getDbType();
 
     /** 
-     * @ejb.persistence
      * @ejb.interface-method view-type="local"
      */
     public abstract void setDbType(String dbType);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="keyRef"
      * @ejb.interface-method view-type="local"
      */
     public abstract String getKeyRef();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method view-type="local"
      */
     public abstract void setKeyRef(String keyRef);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="keyType"
      * @ejb.interface-method view-type="local"
      */
     public abstract String getKeyType();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method view-type="local"
      */
     public abstract void setKeyType(String keyType);

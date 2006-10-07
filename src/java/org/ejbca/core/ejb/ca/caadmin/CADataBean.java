@@ -46,7 +46,7 @@ import org.ejbca.util.Base64PutHashMap;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.8 2006-10-02 07:56:20 anatom Exp $
+ * @version $Id: CADataBean.java,v 1.9 2006-10-07 14:10:31 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a publisher"
@@ -114,65 +114,58 @@ public abstract class CADataBean extends BaseEntityBean {
     public abstract Integer getCaId();
 
     /**
-     * @ejb.pk-field
-     * @ejb.persistence column-name="cAId"
     */
     public abstract void setCaId(Integer caid);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="name"
      * @ejb.interface-method
      */
     public abstract String getName();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setName(String name);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="subjectDN"
      * @ejb.interface-method
      */
     public abstract String getSubjectDN();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setSubjectDN(String subjectdn);
     
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="status"
      * @ejb.interface-method
      */
     public abstract int getStatus();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setStatus(int status);
     
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="expireTime"
      * @ejb.interface-method
      */
     public abstract long getExpireTime();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setExpireTime(long expiretime);
     
     /**
-     * @ejb.persistence jdbc-type="LONGVARCHAR"
+     * @ejb.persistence jdbc-type="LONGVARCHAR" column-name="data"
      */
     public abstract String getData();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setData(String data);
     

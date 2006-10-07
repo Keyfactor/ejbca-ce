@@ -34,7 +34,7 @@ import java.util.HashMap;
  * CertificateProfile data
  * </pre>
  *
- * @version $Id: CertificateProfileDataBean.java,v 1.2 2006-10-02 07:56:20 anatom Exp $
+ * @version $Id: CertificateProfileDataBean.java,v 1.3 2006-10-07 14:10:31 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a CRL with accompanying data"
  * display-name="CertificateProfileDataEB"
@@ -76,36 +76,33 @@ public abstract class CertificateProfileDataBean extends BaseEntityBean {
 
     /**
      * @ejb.pk-field
-     * @ejb.persistence
+     * @ejb.persistence column-name="id"
      * @ejb.interface-method
      */
     public abstract Integer getId();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setId(Integer id);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="certificateProfileName"
      * @ejb.interface-method
      */
     public abstract String getCertificateProfileName();
 
     /**
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setCertificateProfileName(String certificateprofilename);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence column-name="data"
      * @weblogic.ora.columntyp@
      */
     public abstract HashMap getData();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setData(HashMap data);
 

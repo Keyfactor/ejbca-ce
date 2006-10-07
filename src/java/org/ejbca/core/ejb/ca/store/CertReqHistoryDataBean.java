@@ -44,7 +44,7 @@ import org.ejbca.util.CertTools;
  * UserDataVO (userAdminData)
  * </pre>
  *
- * @version $Id: CertReqHistoryDataBean.java,v 1.2 2006-01-26 14:14:30 anatom Exp $
+ * @version $Id: CertReqHistoryDataBean.java,v 1.3 2006-10-07 14:10:47 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity containing historical record over data user to generate a users certificate"
  * display-name="CertReqHistoryDataEB"
@@ -94,7 +94,7 @@ public abstract class CertReqHistoryDataBean extends BaseEntityBean {
      * Should be used outside of entity bean, use getCertReqHistory instead
      *
      * @return issuer dn
-     * @ejb.persistence
+     * @ejb.persistence column-name="issuerDN"
      * 
      */
     public abstract String getIssuerDN();
@@ -103,8 +103,6 @@ public abstract class CertReqHistoryDataBean extends BaseEntityBean {
      * Use setIssuer instead
      *
      * @param issuerDN issuer dn
-     *
-     * @ejb.persistence
      */
     public abstract void setIssuerDN(String issuerDN);
 
@@ -113,7 +111,7 @@ public abstract class CertReqHistoryDataBean extends BaseEntityBean {
      * Should be used outside of entity bean, use getCertReqHistory instead
      *
      * @return fingerprint
-     * @ejb.persistence
+     * @ejb.persistence column-name="fingerprint"
      * @ejb.interface-method
      * @ejb.pk-field 
      */
@@ -124,7 +122,6 @@ public abstract class CertReqHistoryDataBean extends BaseEntityBean {
      * Shouldn't be set after creation.
      * 
      * @param fingerprint fingerprint
-     * @ejb.persistence
      */
     public abstract void setFingerprint(String fingerprint);
 
@@ -133,7 +130,7 @@ public abstract class CertReqHistoryDataBean extends BaseEntityBean {
      * Should be used outside of entity bean, use getCertReqHistory instead
      *
      * @return serial number
-     * @ejb.persistence
+     * @ejb.persistence column-name="serialNumber"
      */
     public abstract String getSerialNumber();
 
@@ -142,7 +139,6 @@ public abstract class CertReqHistoryDataBean extends BaseEntityBean {
      * Shouldn't be set after creation.
      * 
      * @param serialNumber serial number
-     * @ejb.persistence
      */
     public abstract void setSerialNumber(String serialNumber);
 
@@ -151,7 +147,7 @@ public abstract class CertReqHistoryDataBean extends BaseEntityBean {
      * Should be used outside of entity bean, use getCertReqHistory instead
      *
      * @return timestamp 
-     * @ejb.persistence
+     * @ejb.persistence column-name="timestamp"
      */
     public abstract long getTimestamp();
 
@@ -160,7 +156,6 @@ public abstract class CertReqHistoryDataBean extends BaseEntityBean {
      * Shouldn't be set after creation.
      *
      * @param timestamp when certificate request info was stored
-     * @ejb.persistence
      */
     public abstract void setTimestamp(long timestamp);
 
@@ -170,7 +165,7 @@ public abstract class CertReqHistoryDataBean extends BaseEntityBean {
      * Should be used outside of entity bean, use getCertReqHistory instead
      *
      * @return  xmlencoded encoded UserDataVO
-     * @ejb.persistence jdbc-type="LONGVARCHAR"
+     * @ejb.persistence jdbc-type="LONGVARCHAR" column-name="userDataVO"
      */
     public abstract String getUserDataVO();
 
@@ -179,7 +174,6 @@ public abstract class CertReqHistoryDataBean extends BaseEntityBean {
      * Shouldn't be set after creation.
      *
      * @param userDataVO xmlencoded encoded UserDataVO
-     * @ejb.persistence
      */
     public abstract void setUserDataVO(String userDataVO);
 
@@ -188,7 +182,7 @@ public abstract class CertReqHistoryDataBean extends BaseEntityBean {
      * Should be used outside of entity bean, use getCertReqHistory instead
      *
      * @return username
-     * @ejb.persistence
+     * @ejb.persistence column-name="username"
      */
     public abstract String getUsername();
 
@@ -199,7 +193,6 @@ public abstract class CertReqHistoryDataBean extends BaseEntityBean {
      * @param username username
      *
      * @see org.ejbca.util.StringTools
-     * @ejb.persistence
      */
     public abstract void setUsername(String username);
 

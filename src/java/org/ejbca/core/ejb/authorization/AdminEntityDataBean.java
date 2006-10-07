@@ -72,40 +72,36 @@ public abstract class AdminEntityDataBean extends BaseEntityBean {
     public abstract int getPrimKey();
 
     /**
-     * @ejb.persistence
      */
     public abstract void setPrimKey(int primKey);
 
 	/**
-	 * @ejb.persistence
+	 * @ejb.persistence column-name="matchWith"
      * @ejb.interface-method view-type="local"
      */
     public abstract int          getMatchWith();
 
     /**
-	 * @ejb.persistence
+	 * @ejb.persistence column-name="matchType"
      * @ejb.interface-method view-type="local"
      */
     public abstract int          getMatchType();
 
     /**
-	 * @ejb.persistence
+	 * @ejb.persistence column-name="matchValue"
      * @ejb.interface-method view-type="local"
      */
     public abstract String       getMatchValue();
 
     /**
-	 * @ejb.persistence
 	 */
     public abstract void setMatchWith(int matchwith);
 
     /**
-	 * @ejb.persistence
 	 */
     public abstract void setMatchType(int matchtype);
 
     /**
-	 * @ejb.persistence
 	 */
     public abstract void setMatchValue(String matchvalue);
 

@@ -47,7 +47,7 @@ import org.ejbca.util.CertTools;
  * Username (username)
  * </pre>
  *
- * @version $Id: CertificateDataBean.java,v 1.2 2006-09-30 10:32:31 anatom Exp $
+ * @version $Id: CertificateDataBean.java,v 1.3 2006-10-07 14:10:47 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a certificate with accompanying data"
  * display-name="CertificateDataEB"
@@ -167,7 +167,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * DN of issuer of certificate
      *
      * @return issuer dn
-     * @ejb.persistence
+     * @ejb.persistence column-name="issuerDN"
      * @ejb.interface-method
      */
     public abstract String getIssuerDN();
@@ -178,7 +178,6 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * @param issuerDN issuer dn
      *
      * @see #setIssuer(String)
-     * @ejb.persistence
      */
     public abstract void setIssuerDN(String issuerDN);
 
@@ -186,7 +185,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * DN of subject in certificate
      *
      * @return subject dn
-     * @ejb.persistence
+     * @ejb.persistence column-name="subjectDN"
      * @ejb.interface-method
      */
     public abstract String getSubjectDN();
@@ -197,7 +196,6 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * @param subjectDN subject dn
      *
      * @see #setSubject(String)
-     * @ejb.persistence
      */
     public abstract void setSubjectDN(String subjectDN);
 
@@ -205,7 +203,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * Fingerprint of certificate
      *
      * @return fingerprint
-     * @ejb.persistence
+     * @ejb.persistence column-name="fingerprint"
      * @ejb.interface-method
      * @ejb.pk-field 
      */
@@ -215,7 +213,6 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * Fingerprint of certificate
      *
      * @param fingerprint fingerprint
-     * @ejb.persistence
      */
     public abstract void setFingerprint(String fingerprint);
 
@@ -232,7 +229,6 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * Fingerprint of CA certificate
      *
      * @param cAFingerprint fingerprint
-     * @ejb.persistence column-name="cAFingerprint"
      * @ejb.interface-method
      */
     public abstract void setCaFingerprint(String caFingerprint);
@@ -241,7 +237,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * status of certificate, ex CertificateData.CERT_ACTIVE
      *
      * @return status
-     * @ejb.persistence
+     * @ejb.persistence column-name="status"
      * @ejb.interface-method
      */
     public abstract int getStatus();
@@ -250,7 +246,6 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * status of certificate, ex CertificateData.CERT_ACTIVE
      *
      * @param status status
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setStatus(int status);
@@ -259,7 +254,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * What type of user the certificate belongs to, ex SecConst.USER_ENDUSER
      *
      * @return user type
-     * @ejb.persistence
+     * @ejb.persistence column-name="type"
      * @ejb.interface-method
      */
     public abstract int getType();
@@ -268,7 +263,6 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * What type of user the certificate belongs to, ex SecConst.USER_ENDUSER
      *
      * @param type type
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setType(int type);
@@ -277,7 +271,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * Serialnumber formated as BigInteger.toString()
      *
      * @return serial number
-     * @ejb.persistence
+     * @ejb.persistence column-name="serialNumber"
      * @ejb.interface-method
      */
     public abstract String getSerialNumber();
@@ -286,7 +280,6 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * Serialnumber formated as BigInteger.toString()
      *
      * @param serialNumber serial number
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setSerialNumber(String serialNumber);
@@ -295,7 +288,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * Date formated as seconds since 1970 (== Date.getTime())
      *
      * @return expire date
-     * @ejb.persistence
+     * @ejb.persistence column-name="expireDate"
      * @ejb.interface-method
      */
     public abstract long getExpireDate();
@@ -304,7 +297,6 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * Date formated as seconds since 1970 (== Date.getTime())
      *
      * @param expireDate expire date
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setExpireDate(long expireDate);
@@ -313,7 +305,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * Set to date when revocation occured if status== CERT_REVOKED. Format == Date.getTime()
      *
      * @return revocation date
-     * @ejb.persistence
+     * @ejb.persistence column-name="revocationDate"
      * @ejb.interface-method
      */
     public abstract long getRevocationDate();
@@ -322,7 +314,6 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * Set to date when revocation occured if status== CERT_REVOKED. Format == Date.getTime()
      *
      * @param revocationDate revocation date
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setRevocationDate(long revocationDate);
@@ -331,7 +322,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * Set to revocation reason if status== CERT_REVOKED
      *
      * @return revocation reason
-     * @ejb.persistence
+     * @ejb.persistence column-name="revocationReason"
      * @ejb.interface-method
      */
     public abstract int getRevocationReason();
@@ -340,7 +331,6 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * Set to revocation reason if status== CERT_REVOKED
      *
      * @param revocationReason revocation reason
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setRevocationReason(int revocationReason);
@@ -349,7 +339,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * certificate itself
      *
      * @return base64 encoded certificate
-     * @ejb.persistence jdbc-type="LONGVARCHAR"
+     * @ejb.persistence jdbc-type="LONGVARCHAR" column-name="base64Cert"
      * @ejb.interface-method
      */
     public abstract String getBase64Cert();
@@ -358,7 +348,6 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * certificate itself
      *
      * @param base64Cert base64 encoded certificate
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setBase64Cert(String base64Cert);
@@ -367,7 +356,7 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * username in database
      *
      * @return username
-     * @ejb.persistence
+     * @ejb.persistence column-name="username"
      * @ejb.interface-method
      */
     public abstract String getUsername();
@@ -378,7 +367,6 @@ public abstract class CertificateDataBean extends BaseEntityBean {
      * @param username username
      *
      * @see org.ejbca.util.StringTools
-     * @ejb.persistence
      * @ejb.interface-method
      */
     public abstract void setUsername(String username);

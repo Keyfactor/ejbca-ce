@@ -32,7 +32,7 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
  * AdminPreference
  * </pre>
  *
- * @version $Id: AdminPreferencesDataBean.java,v 1.3 2006-10-02 07:57:41 anatom Exp $
+ * @version $Id: AdminPreferencesDataBean.java,v 1.4 2006-10-07 14:11:20 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a ra admins user preference."
  * display-name="AdminPreferencesDataEB"
@@ -66,7 +66,7 @@ public abstract class AdminPreferencesDataBean extends BaseEntityBean {
 
     /**
      * @ejb.pk-field
-     * @ejb.persistence
+     * @ejb.persistence column-name="id"
      * @ejb.interface-method
      */
     public abstract String getId();
@@ -76,10 +76,12 @@ public abstract class AdminPreferencesDataBean extends BaseEntityBean {
     public abstract void setId(String id);
 
     /**
-     * @ejb.persistence
+     * @ejb.persistence  column-name="data"
      * @weblogic.ora.columntyp@
      */
     public abstract HashMap getData();
+    /**
+     */
     public abstract void setData(HashMap data);
 
     /**
