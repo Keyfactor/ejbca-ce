@@ -22,6 +22,8 @@ import java.util.ArrayList;
 
 //import org.ejbca.core.model.authorization.wsclient.AuthorizationDeniedException;
 //import org.ejbca.core.protocol.ws.wsclient.Certificate;
+import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.Certificate;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
@@ -31,7 +33,7 @@ import org.ejbca.util.CertTools;
 /**
  * Request a certificate given a pkcs10
  *
- * @version $Id: PKCS10ReqCommand.java,v 1.1 2006-09-17 23:00:25 herrvendil Exp $
+ * @version $Id: PKCS10ReqCommand.java,v 1.2 2006-10-08 22:53:26 herrvendil Exp $
  */
 public class PKCS10ReqCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
@@ -59,7 +61,7 @@ public class PKCS10ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
      * @throws ErrorAdminCommandException Error running command
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
-    	/*
+ 
         try {   
            
             if(args.length <  6 || args.length > 7){
@@ -101,7 +103,7 @@ public class PKCS10ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
             			fos.close();
             		}else{
             			FileOutputStream fos = new FileOutputStream(filepath);
-            			ArrayList list = new ArrayList();
+            			ArrayList<java.security.cert.Certificate> list = new ArrayList<java.security.cert.Certificate>();
             			list.add(CertificateHelper.getCertificate(result.getCertificateData()));
             			fos.write(CertTools.getPEMFromCerts(list));
             			fos.close();            				            				
@@ -109,12 +111,12 @@ public class PKCS10ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
             		getPrintStream().println("Certificate generated, written to " + filepath);
             	}
             	             
-            }catch(AuthorizationDeniedException e){
+            }catch(AuthorizationDeniedException_Exception e){
             	getPrintStream().println("Error : " + e.getMessage());            
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
-        }*/
+        }
     }
 
 

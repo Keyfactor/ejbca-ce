@@ -13,8 +13,15 @@
  
 package org.ejbca.core.protocol.ws.client;
 
-//import org.ejbca.core.model.authorization.wsclient.AuthorizationDeniedException;
+
+import java.util.Iterator;
+import java.util.List;
+
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
+import org.ejbca.core.protocol.ws.client.gen.UserMatch;
 //import org.ejbca.core.protocol.ws.wsclient.UserDataVOWS;
 //import org.ejbca.core.protocol.ws.wsclient.UserMatch;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -24,7 +31,7 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 /**
  * Finds a user in the database
  *
- * @version $Id: FindUserCommand.java,v 1.1 2006-09-17 23:00:25 herrvendil Exp $
+ * @version $Id: FindUserCommand.java,v 1.2 2006-10-08 22:53:26 herrvendil Exp $
  */
 public class FindUserCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
@@ -88,7 +95,7 @@ public class FindUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
      * @throws ErrorAdminCommandException Error running command
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
-    	/*
+
         try {   
            
             if(args.length !=  4){
@@ -102,47 +109,53 @@ public class FindUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
             
             
             try{
-            	UserDataVOWS[] result = getEjbcaRAWS().findUser(new UserMatch(matchtype,matchvalue,matchwith));
+            	UserMatch match = new UserMatch();
+            	match.setMatchtype(matchtype);
+            	match.setMatchvalue(matchvalue);
+            	match.setMatchwith(matchwith);
             	
-            	if(result==null || result.length == 0){
+            	List<UserDataVOWS> result = getEjbcaRAWS().findUser(match);
+            	
+            	Iterator iter = result.iterator();
+            	if(result==null || result.size() == 0){
             		getPrintStream().println("No matching users could be found in database");
             	}else{
             		getPrintStream().println("The following users found in database :");
-            		for(int i=0;i<result.length;i++){
-            			
+            		for(int i=0;i<result.size();i++){
+        			    UserDataVOWS next = (UserDataVOWS) iter.next();
                         getPrintStream().println("\nUser : " + (i +1));
-                        getPrintStream().println("  Username: "+result[i].getUsername());
-                        getPrintStream().println("  Subject DN: "+result[i].getSubjectDN());
-                        if(result[i].getSubjectAltName() == null){
+                        getPrintStream().println("  Username: "+next.getUsername());
+                        getPrintStream().println("  Subject DN: "+next.getSubjectDN());
+                        if(next.getSubjectAltName() == null){
                             getPrintStream().println("  Subject Altname: NONE");	
                         }else{
-                            getPrintStream().println("  Subject Altname: "+result[i].getSubjectAltName());
+                            getPrintStream().println("  Subject Altname: "+next.getSubjectAltName());
                         }
-                        if(result[i].getEmail() == null){
+                        if(next.getEmail() == null){
                         	getPrintStream().println("  Email: NONE");	
                         }else{
-                        	getPrintStream().println("  Email: "+result[i].getEmail());
+                        	getPrintStream().println("  Email: "+next.getEmail());
                         }                        
-                        getPrintStream().println("  CA Name: "+result[i].getCaName());                        
-                        getPrintStream().println("  Type: "+result[i].getType());
-                        getPrintStream().println("  Token: "+result[i].getTokenType());
-                        getPrintStream().println("  Status: "+ getStatus(result[i].getStatus()));
-                        getPrintStream().println("  Certificate profile: "+result[i].getCertificateProfileName());
-                        getPrintStream().println("  End entity profile: "+result[i].getEndEntityProfileName());
-                        if(result[i].getHardTokenIssuerName() == null){
+                        getPrintStream().println("  CA Name: "+next.getCaName());                        
+                        getPrintStream().println("  Type: "+getType(next));
+                        getPrintStream().println("  Token: "+next.getTokenType());
+                        getPrintStream().println("  Status: "+ getStatus(next.getStatus()));
+                        getPrintStream().println("  Certificate profile: "+next.getCertificateProfileName());
+                        getPrintStream().println("  End entity profile: "+next.getEndEntityProfileName());
+                        if(next.getHardTokenIssuerName() == null){
                         	getPrintStream().println("  Hard Token Issuer Alias: NONE");
                         }else{
-                        	getPrintStream().println("  Hard Token Issuer Alias: " + result[i].getHardTokenIssuerName());
+                        	getPrintStream().println("  Hard Token Issuer Alias: " + next.getHardTokenIssuerName());
                         }
             		}
             	}
             	             
-            }catch(AuthorizationDeniedException e){
+            }catch(AuthorizationDeniedException_Exception e){
             	getPrintStream().println("Error : " + e.getMessage());
             }           
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
-        }*/
+        }
     }
 
 	private int getMatchType(String matchtype, int matchwith) {
@@ -198,6 +211,22 @@ public class FindUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
 			}
 		}
 		return "ERROR : Status text not found";
+	}
+	
+	private int getType(UserDataVOWS userData) {
+		int type = 1;
+		
+    	if(userData.isSendNotification())
+    		type = type | SecConst.USER_SENDNOTIFICATION;
+    	else
+    		type = type & (~SecConst.USER_SENDNOTIFICATION);
+    	
+    	if(userData.isKeyRecoverable())
+    		type = type | SecConst.USER_KEYRECOVERABLE;
+    	else
+    		type = type & (~SecConst.USER_KEYRECOVERABLE);
+    			
+		return type;
 	}
 	
 	protected void usage() {

@@ -11,7 +11,7 @@
 	&compile;
 
 	<import file="bin/jboss.xml" />
-	<import file="./wsee.xml" />
+	<import file="./jaxws.xml" />
 	<import file="./cmptcp.xml" />
 	<import file="./crlservice.xml" />
 	<import file="./test.xml" />
@@ -266,7 +266,7 @@
     <!-- =================================================================== -->
     <!-- Build CA-ear                                                        -->
     <!-- =================================================================== -->
-    <target name="ca.ear" depends="apply.war, status.war, cmp.war, healthcheck.war, webdist.war, adminweb.war, publicwebroot.war, ejbca-ejb.jar, ejbca-util.jar">
+    <target name="ca.ear" depends=" apply.war, status.war, cmp.war, healthcheck.war, webdist.war, adminweb.war, publicwebroot.war, ejbca-ejb.jar, ejbca-util.jar, ejbcaws.war, ejbcaws.client">
         <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml"> 
             <fileset dir="${eardd.src}">
                 <exclude name="META-INF/application.xml" />
@@ -274,7 +274,7 @@
             <fileset dir=".">
                 <include name="${lib}/bcmail-jdk${java.ver}.jar" />
                 <include name="${lib}/bcprov-jdk${java.ver}.jar" />
-                <include name="${lib}/log4j-1.2.7.jar" />
+               <!-- <include name="${lib}/log4j-1.2.7.jar" /> -->
                 <include name="${lib}/ldap.jar" />
                 <include name="${lib}/commons-lang-2.0.jar" />
                 <include name="${lib}/commons-collections.jar" />

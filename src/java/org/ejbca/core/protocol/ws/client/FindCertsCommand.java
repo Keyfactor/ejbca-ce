@@ -16,9 +16,13 @@ package org.ejbca.core.protocol.ws.client;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 //import org.ejbca.core.model.authorization.wsclient.AuthorizationDeniedException;
 //import org.ejbca.core.protocol.ws.wsclient.Certificate;
+import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.Certificate;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
@@ -28,7 +32,7 @@ import org.ejbca.util.CertTools;
 /**
  * Finds a certificates in the database
  *
- * @version $Id: FindCertsCommand.java,v 1.1 2006-09-17 23:00:25 herrvendil Exp $
+ * @version $Id: FindCertsCommand.java,v 1.2 2006-10-08 22:53:26 herrvendil Exp $
  */
 public class FindCertsCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
@@ -54,7 +58,7 @@ public class FindCertsCommand extends EJBCAWSRABaseCommand implements IAdminComm
      * @throws ErrorAdminCommandException Error running command
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
-    	/*
+
         try {   
            
             if(args.length !=  5){
@@ -69,33 +73,37 @@ public class FindCertsCommand extends EJBCAWSRABaseCommand implements IAdminComm
             
             
             try{
-            	Certificate[] result = getEjbcaRAWS().findCerts(username, onlyValid);
+            	List<Certificate> result = getEjbcaRAWS().findCerts(username, onlyValid);
             	
-            	if(result==null || result.length == 0){
+            	if(result==null || result.size() == 0){
             		getPrintStream().println("No certificate could be found for user");
             	}else{
-            		getPrintStream().println(result.length + " certificate found, written to " + outputPath);
-            		for(int i=0;i<result.length;i++){
+            		getPrintStream().println(result.size() + " certificate found, written to " + outputPath);
+            		Iterator iter = result.iterator();
+            		int i=0;
+            		while(iter.hasNext()){
+            			i++;
+            			Certificate cert = (Certificate) iter.next();
             			if(encoding.equals("DER")){
             			    FileOutputStream fos = new FileOutputStream(outputPath + "/" + username + "-" + i +".cer");
-            			    fos.write(CertificateHelper.getCertificate(result[i].getCertificateData()).getEncoded());
+            			    fos.write(CertificateHelper.getCertificate(cert.getCertificateData()).getEncoded());
             			    fos.close();
             			}else{
             				FileOutputStream fos = new FileOutputStream(outputPath + "/" + username + "-" + i +".pem");
-            				ArrayList list = new ArrayList();
-            				list.add(CertificateHelper.getCertificate(result[i].getCertificateData()));
+            				ArrayList<java.security.cert.Certificate> list = new ArrayList<java.security.cert.Certificate>();
+            				list.add(CertificateHelper.getCertificate(cert.getCertificateData()));
             				fos.write(CertTools.getPEMFromCerts(list));
             				fos.close();            				            				
             			}                        
             		}
             	}
             	             
-            }catch(AuthorizationDeniedException e){
+            }catch(AuthorizationDeniedException_Exception e){
             	getPrintStream().println("Error : " + e.getMessage());
             }           
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
-        }*/
+        }
     }
 
 

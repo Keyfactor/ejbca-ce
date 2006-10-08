@@ -18,7 +18,7 @@ import org.ejbca.ui.cli.IAdminCommand;
 /**
  * Factory for EJBCA WS RA Admin Commands.
  *
- * @version $Id: EJBCAWSRACommandFactory.java,v 1.1 2006-09-17 23:00:25 herrvendil Exp $
+ * @version $Id: EJBCAWSRACommandFactory.java,v 1.2 2006-10-08 22:53:26 herrvendil Exp $
  */
 public class EJBCAWSRACommandFactory {
     /**
@@ -41,8 +41,7 @@ public class EJBCAWSRACommandFactory {
         
         if (args[0].equals("edituser")) {
             return new EditUserCommand(args);
-        }
-        else if (args[0].equals("finduser")) {
+        }else if (args[0].equals("finduser")) {
             return new FindUserCommand(args);
         }else if (args[0].equals("findcerts")) {
             return new FindCertsCommand(args);

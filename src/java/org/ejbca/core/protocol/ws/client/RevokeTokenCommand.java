@@ -13,8 +13,8 @@
  
 package org.ejbca.core.protocol.ws.client;
 
-//import org.ejbca.core.model.authorization.wsclient.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
@@ -22,7 +22,7 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 /**
  * Revokes a given tokens certificate
  *
- * @version $Id: RevokeTokenCommand.java,v 1.1 2006-09-17 23:00:25 herrvendil Exp $
+ * @version $Id: RevokeTokenCommand.java,v 1.2 2006-10-08 22:53:26 herrvendil Exp $
  */
 public class RevokeTokenCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
@@ -47,7 +47,7 @@ public class RevokeTokenCommand extends EJBCAWSRABaseCommand implements IAdminCo
      * @throws ErrorAdminCommandException Error running command
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
-      /*  try {   
+         try {   
            
             if(args.length != 3){
             	usage();
@@ -67,12 +67,12 @@ public class RevokeTokenCommand extends EJBCAWSRABaseCommand implements IAdminCo
 
             	getEjbcaRAWS().revokeToken(hardtokensn,reason);            	         
                 getPrintStream().println("Token revoked sucessfully");
-            }catch(AuthorizationDeniedException e){
+            }catch(AuthorizationDeniedException_Exception e){
             	getPrintStream().println("Error : " + e.getMessage());            
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
-        } */
+        } 
     }
 
 

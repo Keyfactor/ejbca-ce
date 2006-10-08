@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
-	<classpathentry kind="src" path="tmp/wseesrc/java"/>
 	<classpathentry kind="src" path="tmp/bin/gensrc"/>
 	<classpathentry kind="src" path="src/test"/>
+	<classpathentry kind="src" path="src/jaxws/gen-java/client"/>
 	<classpathentry kind="lib" path="lib/ldap.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.7.jar"/>
 	<classpathentry kind="lib" path="lib/myfaces/jstl-1.1.0.jar"/>
@@ -39,11 +39,21 @@
 	<classpathentry kind="var" path="JBOSS_HOME/lib/jboss-system.jar"/>
 	<classpathentry kind="var" path="JBOSS_HOME/server/default/lib/commons-httpclient.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/wsee/axis.jar"/>
-	<classpathentry kind="lib" path="lib/wsee/axis-ant.jar"/>
-	<classpathentry kind="lib" path="lib/wsee/commons-discovery-0.2.jar"/>
-	<classpathentry kind="lib" path="lib/wsee/jaxrpc.jar"/>
-	<classpathentry kind="lib" path="lib/wsee/saaj.jar"/>
-	<classpathentry kind="lib" path="lib/wsee/wsdl4j-1.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/jaxws/activation.jar"/>
+	<classpathentry kind="lib" path="lib/jaxws/FastInfoset.jar"/>
+	<classpathentry kind="lib" path="lib/jaxws/http.jar"/>
+	<classpathentry kind="lib" path="lib/jaxws/jaxb-api.jar"/>
+	<classpathentry kind="lib" path="lib/jaxws/jaxb-impl.jar"/>
+	<classpathentry kind="lib" path="lib/jaxws/jaxb-xjc.jar"/>
+	<classpathentry kind="lib" path="lib/jaxws/jaxws-api.jar"/>
+	<classpathentry kind="lib" path="lib/jaxws/jaxws-rt.jar"/>
+	<classpathentry kind="lib" path="lib/jaxws/jaxws-tools.jar"/>
+	<classpathentry kind="lib" path="lib/jaxws/jsr173_api.jar"/>
+	<classpathentry kind="lib" path="lib/jaxws/jsr181-api.jar"/>
+	<classpathentry kind="lib" path="lib/jaxws/jsr250-api.jar"/>
+	<classpathentry kind="lib" path="lib/jaxws/resolver.jar"/>
+	<classpathentry kind="lib" path="lib/jaxws/saaj-api.jar"/>
+	<classpathentry kind="lib" path="lib/jaxws/saaj-impl.jar"/>
+	<classpathentry kind="lib" path="lib/jaxws/sjsxp.jar"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>

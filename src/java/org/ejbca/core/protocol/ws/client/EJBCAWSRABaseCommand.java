@@ -9,10 +9,12 @@ import java.io.PrintStream;
 import java.net.URL;
 import java.util.Properties;
 
-import javax.xml.rpc.ServiceException;
+import javax.xml.namespace.QName;
 
-import org.ejbca.core.protocol.ws.RevokeStatus;
-import org.ejbca.core.protocol.ws.wsclient.EjbcaRAWS;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
+
+
 import org.ejbca.util.CertTools;
 
 /**
@@ -20,13 +22,13 @@ import org.ejbca.util.CertTools;
  * Checks the property file and creates a webservice connection.
  *  
  * @author Philip Vendil
- * $Id: EJBCAWSRABaseCommand.java,v 1.1 2006-09-17 23:00:25 herrvendil Exp $
+ * $Id: EJBCAWSRABaseCommand.java,v 1.2 2006-10-08 22:53:26 herrvendil Exp $
  */
 
 public abstract class EJBCAWSRABaseCommand {
 	
 	protected String[] args = null;
-	private org.ejbca.core.protocol.ws.wsclient.EjbcaRAWSSoapBindingStub ejbcaraws = null;
+	private org.ejbca.core.protocol.ws.client.gen.EjbcaWS ejbcaraws = null;
 	private Properties props = null;
 	private String password = null;
 	
@@ -36,12 +38,24 @@ public abstract class EJBCAWSRABaseCommand {
 		"CERTIFICATEHOLD","REMOVEFROMCRL","PRIVILEGESWITHDRAWN",
 	"AACOMPROMISE"};
 	
-	protected static final int[] REASON_VALUES = {RevokeStatus.NOT_REVOKED,RevokeStatus.REVOKATION_REASON_UNSPECIFIED, 
-		RevokeStatus.REVOKATION_REASON_KEYCOMPROMISE,RevokeStatus.REVOKATION_REASON_CACOMPROMISE,
-		RevokeStatus.REVOKATION_REASON_AFFILIATIONCHANGED,RevokeStatus.REVOKATION_REASON_SUPERSEDED,
-		RevokeStatus.REVOKATION_REASON_CESSATIONOFOPERATION,RevokeStatus.REVOKATION_REASON_CERTIFICATEHOLD,
-		RevokeStatus.REVOKATION_REASON_REMOVEFROMCRL,RevokeStatus.REVOKATION_REASON_PRIVILEGESWITHDRAWN,
-		RevokeStatus.REVOKATION_REASON_AACOMPROMISE};
+	public static final int NOT_REVOKED = RevokedCertInfo.NOT_REVOKED;
+	public static final int REVOKATION_REASON_UNSPECIFIED = RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED;
+	public static final int REVOKATION_REASON_KEYCOMPROMISE = RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE;
+	public static final int REVOKATION_REASON_CACOMPROMISE = RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE;
+	public static final int REVOKATION_REASON_AFFILIATIONCHANGED = RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED;
+	public static final int REVOKATION_REASON_SUPERSEDED = RevokedCertInfo.REVOKATION_REASON_SUPERSEDED;
+	public static final int REVOKATION_REASON_CESSATIONOFOPERATION = RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION;
+	public static final int REVOKATION_REASON_CERTIFICATEHOLD = RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD;
+	public static final int REVOKATION_REASON_REMOVEFROMCRL = RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL;
+	public static final int REVOKATION_REASON_PRIVILEGESWITHDRAWN = RevokedCertInfo.REVOKATION_REASON_PRIVILEGESWITHDRAWN;
+	public static final int REVOKATION_REASON_AACOMPROMISE = RevokedCertInfo.REVOKATION_REASON_AACOMPROMISE;
+	
+	protected static final int[] REASON_VALUES = {NOT_REVOKED,REVOKATION_REASON_UNSPECIFIED, 
+		 REVOKATION_REASON_KEYCOMPROMISE, REVOKATION_REASON_CACOMPROMISE,
+		 REVOKATION_REASON_AFFILIATIONCHANGED, REVOKATION_REASON_SUPERSEDED,
+		 REVOKATION_REASON_CESSATIONOFOPERATION, REVOKATION_REASON_CERTIFICATEHOLD,
+		 REVOKATION_REASON_REMOVEFROMCRL, REVOKATION_REASON_PRIVILEGESWITHDRAWN,
+		 REVOKATION_REASON_AACOMPROMISE};
 	
 	EJBCAWSRABaseCommand(String[] args){
 		this.args = args;
@@ -54,7 +68,7 @@ public abstract class EJBCAWSRABaseCommand {
 	 * @throws IOException 
 	 * @throws FileNotFoundException 
 	 */
-	protected EjbcaRAWS getEjbcaRAWS() throws ServiceException, FileNotFoundException, IOException{       
+	protected org.ejbca.core.protocol.ws.client.gen.EjbcaWS getEjbcaRAWS() throws  FileNotFoundException, IOException{       
 		if(ejbcaraws == null){
 			CertTools.installBCProvider();
 						
@@ -65,15 +79,10 @@ public abstract class EJBCAWSRABaseCommand {
 			System.setProperty("javax.net.ssl.keyStorePassword",getKeyStorePassword());      
 		
 
-
-			ejbcaraws = (org.ejbca.core.protocol.ws.wsclient.EjbcaRAWSSoapBindingStub)
-			new org.ejbca.core.protocol.ws.wsclient.EjbcaRAWSServiceLocator().getEjbcaRAWS(new java.net.URL("https://localhost:8443/ejbca/ejbcaws/services/EjbcaRAWS"));
-
-
-	        // Time out after a minute
-			ejbcaraws.setTimeout(60000);
+			QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
+			EjbcaWSService service = new EjbcaWSService(new URL(getWebServiceURL()),qname);
+			ejbcaraws = service.getEjbcaWSPort();
 	        
-	        System.out.println(ejbcaraws.test("test1"));
 
 		}
                 
@@ -98,9 +107,9 @@ public abstract class EJBCAWSRABaseCommand {
 		return getProperties().getProperty("ejbcawsracli.keystore.path", "keystore.jks");
 	}
 
-/*	private String getWebServiceURL() throws FileNotFoundException, IOException {	
-		return getProperties().getProperty("ejbcawsracli.url", "https://localhost:8443/ejbcaraws/ejbcaraws") + "?wsdl";
-	}*/
+	private String getWebServiceURL() throws FileNotFoundException, IOException {	
+		return getProperties().getProperty("ejbcawsracli.url", "https://localhost:8443/ejbca/ejbcaws/ejbcaws") + "?wsdl";
+	}
 
 	private Properties getProperties() throws FileNotFoundException, IOException  {
 		if(props == null){

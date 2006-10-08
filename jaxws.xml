@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="."  name="jaxws">
+	
+	<condition property="jdk15.present">
+	  <equals arg1="${ant.java.version}" arg2="1.5"/>
+	</condition>
+
+
+    <path id="jaxws.classpath">
+    	<fileset dir="lib/jaxws">
+    	  <include name="**/*.jar"/>
+    	</fileset> 
+    	<!-- <fileset dir="lib/ext">
+    	  <include name="**/servlet-2.3.jar"/>
+    	</fileset> -->
+    	<pathelement location="${java.home}/../lib/tools.jar"/>
+    	<pathelement location="${build}"/>
+    	<path refid="compile.classpath" />
+    </path>
+	
+    <path id="jaxws.client.classpath">
+    	<fileset dir="lib">
+    	  <include name="**/*.jar"/>
+    	</fileset> 
+    	<fileset dir="lib/ext">
+    	  <include name="**/*.jar"/>
+    	</fileset> 
+    	<pathelement location="${java.home}/../lib/tools.jar"/>
+    	<pathelement location="tmp/jaxws/gen-classes/client"/>
+    	<pathelement location="${build}"/>
+    </path>
+	
+	
+    <target name="ws.init" depends="init">
+    	<mkdir dir="src/jaxws/gen-java/server"/>
+    	<mkdir dir="src/jaxws/gen-java/client"/>
+    	<mkdir dir="tmp/jaxws/gen-classes/server"/>
+    	<mkdir dir="tmp/jaxws/gen-classes/client"/>
+    </target>
+	
+    <target name="ws.cleansrc">
+    	<delete dir="src/jaxws/gen-java/server"/>
+    	<delete dir="src/jaxws/gen-java/client"/>
+    </target>
+
+	<taskdef name="apt" classname="com.sun.tools.ws.ant.Apt">
+		<classpath refid="jaxws.classpath"/>
+	</taskdef>
+	
+    <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
+        <classpath refid="jaxws.classpath"/>
+    </taskdef>
+	
+	<target depends="ws.init" name="ws.gen.server">
+       <apt fork="true"  destdir="tmp/jaxws/gen-classes/server" sourcedestdir="src/jaxws/gen-java/server" sourcepath="src/java">
+		 <classpath>
+		  <path refid="jaxws.classpath" /> 
+		  <pathelement location="src" /> 
+		 </classpath>
+		 <option key="r" value="dist" />
+		  <source dir="src/java">
+		  	<include name="org/ejbca/core/protocol/ws/EjbcaWS.java"/>
+		  </source>
+		  </apt>
+	</target>
+
+    <target depends="ws.init" name="ws.build">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="${build}" >
+            <src path="src/java"/>
+            <classpath refid="jaxws.classpath"/>
+        	<exclude name="org/ejbca/core/protocol/ws/client/*.java"/>
+        	<include name="org/ejbca/core/protocol/ws/**"/>
+        </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="tmp/jaxws/gen-classes/server" >
+            <src path="src/jaxws/gen-java/server"/>
+            <classpath refid="jaxws.classpath"/>        	
+        </javac>
+
+    </target>
+	
+    <target name="ejbcaws.war" depends="ws.build" if="jdk15.present">
+        <copy todir="tmp/jaxws/gen-classes/server">
+    	  <fileset dir="${build}">
+            <include name="org/ejbca/core/protocol/ws/*.class"/>
+            <include name="org/ejbca/core/protocol/ws/common/*.class"/>
+            <include name="org/ejbca/core/protocol/ws/objects/*.class"/>            	
+          </fileset>
+        </copy>	
+    	
+    	<replace file="${eardd.src}/META-INF/application.xml" token="!--@ejbcaws.war@-->" value="module>&lt;web>&lt;web-uri>ejbcaws.war&lt;/web-uri>&lt;context-root>/${app.name}/ejbcaws&lt;/context-root>&lt;/web>&lt;/module>"/>
+        <war warfile="${dist.dir}/ejbcaws.war" webxml="src/jaxws/web.xml">
+            <webinf dir="src/jaxws" includes="sun-jaxws.xml"/>
+            <!-- <zipfileset
+                    dir="tmp/jaxws/wsdl"
+                    includes="*.wsdl, *.xsd"
+                    prefix="WEB-INF/wsdl"/> -->
+            <classes dir="tmp/jaxws/gen-classes/server"/>
+         	<lib dir="lib/jaxws" includes="*.jar"/>        		
+        </war>
+    </target>
+	
+	
+    <target name="ws.gen.client" depends="ws.init">
+    	<echo>Note: The Application server must be on and deployed in order to generate client src.</echo>
+        <wsimport 
+                keep="true"
+                extension="${extension}"
+                destdir="tmp/jaxws/gen-classes/client"
+        	    sourcedestdir="src/jaxws/gen-java/client"
+                wsdl="http://localhost:8080/ejbca/ejbcaws/ejbcaws?wsdl">
+            <binding dir="src/jaxws" includes="custom-client.xml, custom-schema.xml"/>
+        </wsimport>
+    </target>
+	
+    <target name="ws.build.client" depends="ws.init, ejbca-util.jar">
+        <javac debug="true" debuglevel="${debuglevel}" destdir="tmp/jaxws/gen-classes/client" >
+            <src path="src/jaxws/gen-java/client"/>
+            <classpath refid="jaxws.client.classpath"/>        	
+        </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="${build}" >
+            <src path="src/java"/>
+            <classpath refid="jaxws.client.classpath"/>
+        	<include name="org/ejbca/core/protocol/ws/client/*.java"/>            
+        </javac>
+    	
+    	<mkdir dir="tmp/ejbcawscli.jar"/>
+    	<mkdir dir="tmp/ejbcawscli.jar/META-INF"/>
+    	<mkdir dir="dist/ejbcawscli/lib"/>
+
+        <copy todir="tmp/ejbcawscli.jar">
+            <fileset dir="${build}">
+              <include name="org/ejbca/core/protocol/ws/client/*.class"/>
+              <include name="org/ejbca/core/protocol/ws/common/*.class"/>
+              <include name="org/ejbca/core/protocol/ws/objects/*.class"/>            	
+            </fileset>	
+            <fileset dir="tmp/jaxws/gen-classes/client">
+              <include name="**/*.class"/>
+            </fileset>	
+	    </copy> 
+ 
+        <copy todir="dist/ejbcawscli/lib">
+            <fileset dir="${ejbca.home}/lib">        
+              <include name="bcprov-jdk15.jar"/>
+              <include name="log4j-1.2.7.jar"/>      
+              <include name="commons-lang-2.0.jar"/>            	
+            </fileset>	
+            <fileset dir="${ejbca.home}/dist">
+              <include name="ejbca-util.jar"/>         
+            </fileset>	    
+	        <fileset dir="${lib}/jaxws">
+				<include name="activation.jar" />
+				<include name="FastInfoset.jar" />
+			    <include name="http.jar" />
+				<include name="jaxb-api.jar" />
+			    <include name="jaxb-impl.jar" />
+			    <include name="jaxb-xjc.jar" />
+				<include name="jaxws-api.jar" />
+			    <include name="jaxws-rt.jar" />
+			    <include name="jsr173_api.jar" />
+			 	<include name="jsr181-api.jar" />
+			    <include name="jsr250-api.jar" />
+				<include name="resolver.jar" />
+			    <include name="saaj-api.jar" />
+				<include name="saaj-impl.jar" />
+				<include name="sjsxp.jar" />
+			</fileset>
+	    </copy>    	
+	    <copy todir="dist/ejbcawscli/">
+            <fileset dir="${src}/jaxws/cli">
+                <include name="*.*" />
+            </fileset>
+        </copy> 
+    	              
+        <jar destfile="dist/ejbcawscli/ejbcawscli.jar" basedir="tmp/ejbcawscli.jar">
+          <manifest>
+          	<attribute name="Class-Path" value="lib/bcprov-jdk15.jar lib/ejbca-util.jar lib/log4j-1.2.7.jar lib/activation.jar lib/FastInfoset.jar lib/http.jar lib/jaxb-api.jar lib/jaxb-impl.jar lib/jaxb-xjc.jar lib/jaxws-api.jar lib/jaxws-rt.jar lib/jsr173_api.jar lib/jsr181-api.jar lib/jsr250-api.jar lib/resolver.jar lib/saaj-api.jar lib/saaj-impl.jar lib/sjsxp.jar lib/commons-lang-2.0.jar"/>
+            <attribute name="Main-Class" value="org.ejbca.core.protocol.ws.client.ejbcawsracli"/>
+          </manifest>
+        </jar>    	    	
+    </target>
+
+    <target name="ejbcaws.client" depends="ws.build.client" if="jdk15.present"/>
+
+</project>

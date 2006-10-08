@@ -13,9 +13,14 @@
  
 package org.ejbca.core.protocol.ws.client;
 
-//import org.ejbca.core.model.authorization.wsclient.AuthorizationDeniedException;
+
+import java.util.List;
+
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
+import org.ejbca.core.protocol.ws.client.gen.UserMatch;
 //import org.ejbca.core.protocol.ws.wsclient.UserDataVOWS;
 //import org.ejbca.core.protocol.ws.wsclient.UserMatch;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -25,7 +30,7 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 /**
  * Revokes a given users certificate and set's it status to REVOKED
  *
- * @version $Id: RevokeUserCommand.java,v 1.1 2006-09-17 23:00:25 herrvendil Exp $
+ * @version $Id: RevokeUserCommand.java,v 1.2 2006-10-08 22:53:26 herrvendil Exp $
  */
 public class RevokeUserCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
@@ -51,7 +56,7 @@ public class RevokeUserCommand extends EJBCAWSRABaseCommand implements IAdminCom
      * @throws ErrorAdminCommandException Error running command
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
-      /*  try {   
+         try {   
            
             if(args.length != 4){
             	usage();
@@ -69,25 +74,31 @@ public class RevokeUserCommand extends EJBCAWSRABaseCommand implements IAdminCom
             }
                         
             try{
-            	UserDataVOWS[] result = getEjbcaRAWS().findUser(new UserMatch(org.ejbca.util.query.UserMatch.MATCH_TYPE_EQUALS,username,org.ejbca.util.query.UserMatch.MATCH_WITH_USERNAME));
-            	if(result == null || result.length != 1){
+            	UserMatch match = new UserMatch();
+            	match.setMatchtype(org.ejbca.util.query.UserMatch.MATCH_TYPE_EQUALS);
+            	match.setMatchwith(org.ejbca.util.query.UserMatch.MATCH_WITH_USERNAME);
+            	match.setMatchvalue(username);
+            	            	
+            	List<UserDataVOWS> result = getEjbcaRAWS().findUser(match);
+            	if(result == null || result.size() != 1){
             		getPrintStream().println("Error : User doesn't exist.");
             		System.exit(-1);
             	}
             	
-            	if(result[0].getStatus() == UserDataConstants.STATUS_REVOKED){
+            	UserDataVOWS user = result.iterator().next();
+            	if(user.getStatus() == UserDataConstants.STATUS_REVOKED){
               		getPrintStream().println("Error : User already revoked.");
             		System.exit(-1);          		
             	}
             	
             	getEjbcaRAWS().revokeUser(username,reason,delete);            	         
                 getPrintStream().println("User revoked sucessfully");
-            }catch(AuthorizationDeniedException e){
+            }catch(AuthorizationDeniedException_Exception e){
             	getPrintStream().println("Error : " + e.getMessage());            
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
-        }*/
+        }
     }
 
 

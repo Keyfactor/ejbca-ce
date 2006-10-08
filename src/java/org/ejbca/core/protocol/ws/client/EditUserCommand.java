@@ -14,10 +14,10 @@
 package org.ejbca.core.protocol.ws.client;
 
 import org.ejbca.core.model.SecConst;
-//import org.ejbca.core.model.authorization.wsclient.AuthorizationDeniedException;
 import org.ejbca.core.model.ra.UserDataConstants;
-//import org.ejbca.core.model.ra.raadmin.wsclient.UserDoesntFullfillEndEntityProfile;
-//import org.ejbca.core.protocol.ws.wsclient.UserDataVOWS;
+import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
+import org.ejbca.core.protocol.ws.client.gen.UserDoesntFullfillEndEntityProfile_Exception;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
@@ -29,7 +29,7 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 /**
  * Adds a user to the database.
  *
- * @version $Id: EditUserCommand.java,v 1.1 2006-09-17 23:00:25 herrvendil Exp $
+ * @version $Id: EditUserCommand.java,v 1.2 2006-10-08 22:53:26 herrvendil Exp $
  */
 public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
@@ -72,13 +72,7 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
             	System.exit(-1);
             }
             
-            String msg = getEjbcaRAWS().test("bla");
-            if(msg.equals("bla")){
-            	System.out.println("messages are equal");
-            }else{
-            	System.out.println("messages are NOT equal");
-            }
-            /*
+
             UserDataVOWS userdata = new UserDataVOWS();
             userdata.setUsername(args[ARG_USERNAME]);
             userdata.setPassword(args[ARG_PASSWORD]);
@@ -128,18 +122,18 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
             }
             
             
-            try{
+           try{
             	getEjbcaRAWS().editUser(userdata);
 
             	
             	getPrintStream().println("User '"+userdata.getUsername()+"' has been added/edited.");
             	getPrintStream().println();              
-            }catch(AuthorizationDeniedException e){
+            }catch(AuthorizationDeniedException_Exception e){
             	getPrintStream().println("Error : " + e.getMessage());
-            }catch(UserDoesntFullfillEndEntityProfile e){
+            }catch(UserDoesntFullfillEndEntityProfile_Exception e){
             	getPrintStream().println("Error : Given userdata doesn't fullfill end entity profile. : " +  e.getMessage());
             }
-            */            
+                      
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }
@@ -175,7 +169,7 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
         getPrintStream().println("Type (mask): INVALID=0; END-USER=1; KEYRECOVERABLE=128; SENDNOTIFICATION=256");
 		
         getPrintStream().print("Existing tokens      : " + "USERGENERATED" + ", " +
-        		"P12" + ", "+ "JKS" + ", "  + "PEM");
+        		"P12" + ", "+ "JKS" + ", "  + "PEM" + "\n");
         getPrintStream().print("Existing statuses (new users will always be set as NEW) : NEW, INPROCESS, FAILED, HISTORICAL");
 	}
 

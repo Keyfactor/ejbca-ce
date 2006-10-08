@@ -17,6 +17,8 @@ import java.math.BigInteger;
 
 //import org.ejbca.core.model.authorization.wsclient.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.RevokeStatus;
 //import org.ejbca.core.protocol.ws.wsclient.RevokeStatus;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
@@ -26,7 +28,7 @@ import org.ejbca.util.CertTools;
 /**
  * Revokes a given certificate
  *
- * @version $Id: CheckRevokeStatusCommand.java,v 1.1 2006-09-17 23:00:25 herrvendil Exp $
+ * @version $Id: CheckRevokeStatusCommand.java,v 1.2 2006-10-08 22:53:26 herrvendil Exp $
  */
 public class CheckRevokeStatusCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
@@ -61,25 +63,27 @@ public class CheckRevokeStatusCommand extends EJBCAWSRABaseCommand implements IA
             
             String issuerdn = CertTools.stringToBCDNString(args[ARG_ISSUERDN]);            
             String certsn = getCertSN(args[ARG_CERTSN]);                                   
-            /*          
+                   
             try{
             	
-            	RevokeStatus status = null;// getEjbcaRAWS().checkRevokationStatus(issuerdn,certsn);
-
-            	getPrintStream().println("Revokation status :");
-            	getPrintStream().println("  IssuerDN      : " + status.getIssuerDN());
-            	getPrintStream().println("  CertificateSN : " + status.getCertificateSN());
-            	if(status.getReason() == RevokedCertInfo.NOT_REVOKED){
-            	    getPrintStream().println("  Status        : NOT REVOKED");
+            	RevokeStatus status = getEjbcaRAWS().checkRevokationStatus(issuerdn,certsn);
+            	if(status == null){
+            		getPrintStream().println("Error, No certificate found in database.");
             	}else{
-            		getPrintStream().println("  Status        : REVOKED");
-            		getPrintStream().println("  Reason        : " + getRevokeReason(status.getReason()));
-            		getPrintStream().println("  Date          : " + status.getRevocationDate().toString());
+            		getPrintStream().println("Revokation status :");
+            		getPrintStream().println("  IssuerDN      : " + status.getIssuerDN());
+            		getPrintStream().println("  CertificateSN : " + status.getCertificateSN());
+            		if(status.getReason() == RevokedCertInfo.NOT_REVOKED){
+            			getPrintStream().println("  Status        : NOT REVOKED");
+            		}else{
+            			getPrintStream().println("  Status        : REVOKED");
+            			getPrintStream().println("  Reason        : " + getRevokeReason(status.getReason()));
+            			getPrintStream().println("  Date          : " + status.getRevocationDate().toString());
+            		}
             	}
-            	
-            }catch(AuthorizationDeniedException e){
+            }catch(AuthorizationDeniedException_Exception e){
             	getPrintStream().println("Error : " + e.getMessage());            
-            }*/
+            }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

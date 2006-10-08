@@ -113,13 +113,6 @@
         <fileset dir="lib/ext" includes="*.jar" />
     </path>
 
-    <path id="wsee.classpath" >
-    	<fileset dir="lib/wsee" includes="*.jar"/>
-    	<fileset dir="lib/jasper" includes="*.jar"/>
-    	<path location="${build}" />
-    	<path refid="compile.classpath" />
-    </path>
-
     <path id="compile.classpath">
         <path refid="ext.classpath" />
         <fileset dir="lib" includes="*.jar" excludes="bc*.jar"/>
