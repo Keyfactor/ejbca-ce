@@ -92,7 +92,7 @@ import org.ejbca.util.query.Query;
  * otherwise will a AuthorizationDenied Exception be thrown.
  * 
  * @author Philip Vendil
- * $Id: EjbcaWS.java,v 1.1 2006-10-08 22:53:26 herrvendil Exp $
+ * $Id: EjbcaWS.java,v 1.2 2006-10-09 21:09:53 herrvendil Exp $
  */
 
 @WebService
@@ -284,6 +284,7 @@ public class EjbcaWS {
 	 * - /administrator
 	 * - /ra_functionality/view_end_entity
 	 * - /ra_functionality/<end entity profile of the user>/view_end_entity
+	 * - /ca_functionality/create_certificate
 	 * - /ca/<ca of user>
 	 * 
 	 * @param username the unique username
@@ -312,6 +313,8 @@ public class EjbcaWS {
 			  }
 			  int caid = userdata.getCAId();
 			  getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);
+			  
+			  getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.REGULAR_CREATECERTIFICATE);
 			  
 			  // Check tokentype
 			  if(userdata.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN){
@@ -382,6 +385,7 @@ public class EjbcaWS {
 	 * - /administrator
 	 * - /ra_functionality/view_end_entity
 	 * - /ra_functionality/<end entity profile of the user>/view_end_entity
+	 * - /ca_functionality/create_certificate
 	 * - /ca/<ca of user>
 	 * 
 	 * @param username the unique username
@@ -408,6 +412,8 @@ public class EjbcaWS {
 			  }
 			  int caid = userdata.getCAId();
 			  getAuthorizationSession().isAuthorized(admin,AvailableAccessRules.CAPREFIX +caid);
+
+			  getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.REGULAR_CREATECERTIFICATE);
 			  
 			  // Check tokentype
 			  if(userdata.getTokenType() != SecConst.TOKEN_SOFT_P12){

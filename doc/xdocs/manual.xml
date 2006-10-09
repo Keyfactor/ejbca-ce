@@ -971,6 +971,186 @@ You can configure this in the certificate profile used to issue certificates.
 </subsection>
 
 </section>
+<section name="EJBCA Web Service Interface">
+<p>
+New to EJBCA 3.4 is a JAX-WS 2.0 Web Service Interface used to access the basic
+functions remotely over client authentication HTTPS. 
+</p><p>
+The JAX-WS interface depends on java 1.5´and will otherwise not be included in the EJBCA installation.
+</p><p>
+The functionality currently available through the Web Service Interface are:
+</p>
+<ul>
+<li>editUser    : Edits/adds  userdata</li>
+<li>findUser    : Retrieves the userdata for a given user</li>
+<li>findCerts   : Retrieves the certificates generated for a user</li>
+<li>pkcs10Req   : Generates a certificate using the given userdata and the public key from the PKCS10</li>
+<li>pkcs12Req   : Generates a PKCS12 keystore (with the private key) using the given userdata</li>
+<li>revokeCert  : Revokes the given certificate</li>
+<li>revokeUser  : Revokes all certificates for a given user, it's also possible to delete the user</li>
+<li>revokeToken : Revokes all certificates placed on a given hard token</li>
+<li>checkRevokationStatus : Checks the revokation status of a certificate</li>
+</ul>
+<p>
+There is also a cli tool that can be used for remote scripting. See next section for more information.
+</p>
+<subsection name="Using the Web Services CLI">
+<p>
+When building EJBCA, a Web Service CLI tool is also generated. The tool is placed
+in the directory dist/ejbcacli and consists of the all the necessary files needed to run the cli.
+</p><p>
+To use the client do the following, copy the directory with all included files to
+the computer you want to remote administrate from. Then create a JKS file with
+the appropriate access rights (See the Using API section for details) and 
+finally configure the file ejbcawsracli.properties. In this file you should specify
+the hostname of the CA server, the name of the JKS keystore and the password to unlock it.
+</p><p>
+Use 'ejbcaraws.sh/cmd' for a list of each subcommand and 'ejbcaraws.sh/cmd "subcommand"'
+for detailed help how to use the cli.
+</p><p>
+Example usage:
+ejbcawsracli.cmd pkcs12req testuser2 foo123 2048 NONE tmp
+</p><p>
+ejbcawsracli.cmd revokeuser testuser2 false
+</p>
+</subsection>
+<subsection name="Using the Web Service API for Intergration">
+<p>
+You can use the Web Service interface to integrate EJBCA from other applications.
+</p><p>
+If you are using another language than Java you should start by downloading the WSDL
+file at http://hostname:8080/ejbca/ejbcaws/ejbcaws?wsdl
+</p><p>
+When using java you can find the required libs in 'dist/ejbcawscli' and it's 'lib' 
+subdirectory. 
+</p><p>
+Some programming examples:
+</p><p>
+To initialize the web service:
+</p>
+<source>
+  CertTools.installBCProvider();	
+  String urlstr = "https://localhost:8443/ejbca/ejbcaws/ejbcaws?wsdl";
+	
+  System.setProperty("javax.net.ssl.trustStore","p12/wstest.jks");
+  System.setProperty("javax.net.ssl.trustStorePassword","foo123");  
+	
+  System.setProperty("javax.net.ssl.keyStore","p12/wstest.jks");
+  System.setProperty("javax.net.ssl.keyStorePassword","foo123");      
+                             
+  QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
+  EjbcaWSService service = new EjbcaWSService(new URL(urlstr),qname);
+  ejbcaraws = service.getEjbcaWSPort();  
+</source>
+<p>
+Example call to find all users having 'Vendil' in their subject dn:
+</p>
+<source>
+  UserMatch usermatch = new UserMatch();
+  usermatch.setMatchwith(org.ejbca.util.query.UserMatch.MATCH_WITH_DN);
+  usermatch.setMatchtype(org.ejbca.util.query.UserMatch.MATCH_TYPE_CONTAINS);
+  usermatch.setMatchvalue("Vendil");
+  List(UserDataVOWS) result= ejbcaraws.findUser(usermatch);
+</source>
+<p>
+Example to generate a certificate form a PKCS10 request:
+</p>
+<source>
+  UserDataVOWS user1 = new UserDataVOWS();
+  user1.setUsername("WSTESTUSER1");
+  user1.setPassword("foo123");
+  user1.setClearPwd(true);
+  user1.setSubjectDN("CN=WSTESTUSER1");
+  user1.setCaName("AdminCA1");
+  user1.setEmail(null);
+  user1.setSubjectAltName(null);
+  user1.setStatus(10);
+  user1.setTokenType("USERGENERATED");
+  user1.setEndEntityProfileName("EMPTY");
+  user1.setCertificateProfileName("ENDUSER");
+			
+  ejbcaraws.editUser(user1);	
+  KeyPair keys = KeyTools.genKeys(1024);
+  PKCS10CertificationRequest  pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA",
+  CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(), null, keys.getPrivate());
+  Certificate certenv =  ejbcaraws.pkcs10Req("WSTESTUSER1","foo123",new String(Base64.encode(pkcs10.getEncoded())),null);
+		
+  X509Certificate cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getCertificateData()); 		
+</source>
+<p>
+Example checking the revocation status of a certificate:
+</p>
+<source>
+  RevokeStatus revokestatus = ejbcaraws.checkRevokationStatus(cert.getIssuerDN.toString,cert.getSerialNumber().toString(16));
+  if(revokestatus != null){
+    if(revokestatus.getReason() != RevokeCertInfo.NOT_REVOKED)){
+      // Certificate is revoked
+    }else{
+	  // Certificate isn't revoked
+    }
+  }else{
+	// Certificate doesn't exist
+  }	  
+</source>
+<p>
+See the file src/java/org/ejbca/core/protocol/ws/EjbcaWS
+for more detailed instructions of the API. And test/java/org/ejbca/core/protocol/ws/TestEjbcaWS
+for more examples on using the API.
+</p>
+</subsection>
+<subsection name="Accessrules required when using the Web Service API">
+<p>
+All the calls requires HTTPS client authentication. The keystore used
+must be set up as a regular administrator with the administrator flag set
+and access rules according to the following:
+</p><p>
+Common for all calls:
+</p>
+<ul>
+<li>Administrator flag set</li>
+<li>/administrator</li>
+<li>/ca/'related CA'</li>
+</ul>
+<p>
+editUser:
+</p>
+<ul>
+<li>/ra_functionality/create_end_entity and/or edit_end_entity</li>
+<li>/ra_functionality/'end entity profile of user'/create_end_entity and/or edit_end_entity</li>
+</ul>
+<p>
+findUser, findCert:
+</p>
+<ul>
+<li>/ra_functionality/view_end_entity</li>
+<li>/ra_functionality/'end entity profile of the user'/view_end_entity</li>
+</ul>
+<p>
+pkcs10req, pkcs12req:
+</p>
+<ul>
+<li>/ra_functionality/view_end_entity</li>
+<li>/ra_functionality/'end entity profile of the user'/view_end_entity</li>
+<li>/ca_functionality/create_certificate</li>
+</ul>
+<p>
+revokeCert, revokeToken:
+</p>
+<ul>
+<li>/ra_functionality/revoke_end_entity</li>
+<li>/ra_functionality/'end entity profile of the user owning the cert'/revoke_end_entity</li>
+</ul>
+<p>
+revokeUser:
+</p>
+<ul>
+<li>/ra_functionality/revoke_end_entity</li>
+<li>/ra_functionality/'end entity profile of the user'/revoke_end_entity</li>
+<li>/ra_functionality/delete_end_entity  (only if users should be deleted)</li>
+<li>/ra_functionality/'end entity profile of the user'/delete_end_entity  (only if users should be deleted)</li>
+</ul>
+</subsection>
+</section>
 
 <section name="External RA API">
 <p>

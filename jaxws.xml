@@ -31,6 +31,10 @@
     	<pathelement location="${build}"/>
     </path>
 	
+    <path id="jaxws.test.classpath">
+    	<path refid="jaxws.client.classpath" />
+    </path>
+	
 	
     <target name="ws.init" depends="init">
     	<mkdir dir="src/jaxws/gen-java/server"/>
@@ -183,4 +187,41 @@
 
     <target name="ejbcaws.client" depends="ws.build.client" if="jdk15.present"/>
 
+    <target name="test:compilews" depends="ws.build, ws.build.client" description="compile JAXWS JUnit testcases">
+        <mkdir dir="${test.dir}" />
+        <javac srcdir="${test.src.dir}" destdir="${test.dir}" debug="on" includeantruntime="no" encoding="iso8859-1">
+            <classpath refid="jaxws.test.classpath" />
+        	<include name="org/ejbca/core/protocol/ws/Test*" />
+        </javac>
+    </target>
+	
+    <target name="test:runws" depends="test:compilews,j2ee:assert-run" description="run JAXWS JUnit testcases">
+    	<echo>Important: In order to run the tests you have to create a JKS 
+named testws.jks with Superadmin rights and password 'foo123' 
+in the p12 subdirectory.
+    	</echo>
+        <delete dir="${test.dir}/ws/reports" />
+        <mkdir dir="${test.dir}/ws/reports/html" />
+        <junit printsummary="yes" haltonfailure="no">
+			<sysproperty key="testtype" value="WEB"/>
+            <classpath>
+                <path refid="jaxws.test.classpath" />
+                <path location="${test.dir}" />
+            </classpath>
+            <formatter type="xml" />
+        	<!-- we must use fork=yes or the BC JCE won't be authenticated due to some problem with ant classloading -->
+            <batchtest fork="yes" todir="${test.dir}/ws/reports">
+                <fileset dir="${test.dir}">
+                    <include name="**/protocol/ws/Test*" />
+                </fileset>
+            </batchtest>
+        </junit>
+        <junitreport todir="${test.dir}/ws/reports">
+            <fileset dir="${test.dir}/ws/reports">
+                <include name="TEST-*.xml" />
+            </fileset>
+            <report format="frames" todir="${test.dir}/ws/reports/html" />
+        </junitreport>
+    </target>
+	
 </project>

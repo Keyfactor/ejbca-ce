@@ -5,6 +5,7 @@
         <mkdir dir="${test.dir}" />
         <javac srcdir="${test.src.dir}" destdir="${test.dir}" debug="on" includeantruntime="no" encoding="iso8859-1">
             <classpath refid="test.compile.classpath" />
+        	<exclude name="org/ejbca/core/protocol/ws/Test*" />
         </javac>
         <!-- jndi.properties needs to be in the classpath -->
         <copy file="${src.java}/jndi.properties" todir="${test.dir}" />
@@ -28,6 +29,7 @@
             <batchtest fork="yes" todir="${test.dir}/reports">
                 <fileset dir="${test.dir}">
                 	<include name="org/ejbca/core/model/Test*" />
+                	<exclude name="org/ejbca/core/protocol/ws/Test*" />
                     <include name="**/util/Test*" />
                     <include name="**/protocol/Test*" />
                     <include name="**/ra/Test*" />
