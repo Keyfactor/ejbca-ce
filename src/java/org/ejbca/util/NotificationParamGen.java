@@ -62,7 +62,7 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
  * 
  * @author Philip Vendil 2006 sep 26
  *
- * @version $Id: NotificationParamGen.java,v 1.1 2006-09-27 09:28:27 herrvendil Exp $
+ * @version $Id: NotificationParamGen.java,v 1.2 2006-10-09 15:56:08 herrvendil Exp $
  */
 
 public class NotificationParamGen {
@@ -133,9 +133,9 @@ public class NotificationParamGen {
 		  params.put("approvalRequest.DATE", "");	
 	  }
 	  		  
-	  paramPut("approvalRequest.ID", approvalRequestID.toString());	      	  
+	  paramPut("approvalRequest.ID", approvalRequestID);	      	  
 	  paramPut("approvalRequest.TYPE", approvalRequestType);	      	 	  		  
-	  paramPut("approvalReqiest.APPROVALSLEFT", numberOfApprovalLeft.toString());	      	  	  	  		  
+	  paramPut("approvalReqiest.APPROVALSLEFT", numberOfApprovalLeft);	      	  	  	  		  
 	  paramPut("approvalRequest.APROVEURL", approvalRequestURL);	      
 	  paramPut("approvalRequest.APPROVALCOMMENT", approveComment);	      
 	  paramPut("requestAdmin.USERNAME", requestAdminUsername);	  
@@ -175,6 +175,19 @@ public class NotificationParamGen {
 		  params.put(key, "");
 	  }else{
 		  params.put(key, value);
+	  }
+  }
+  
+  /**
+   * method that makes sure that a "" is inserted instead of null
+   * @param key
+   * @param value
+   */
+  private void paramPut(String key, Integer value){
+	  if(value == null){
+		  params.put(key, "");
+	  }else{
+		  params.put(key, value.toString());
 	  }
   }
 	
