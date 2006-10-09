@@ -64,32 +64,6 @@ import org.ejbca.core.model.services.ServiceExistsException;
  *   type="java.lang.String"
  *   value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
  *
- *
- * @ejb.ejb-external-ref description="The Service entity bean"
- *   view-type="local"
- *   ejb-name="ServiceDataLocal"
- *   type="Entity"
- *   home="org.ejbca.core.ejb.services.ServiceDataLocalHome"
- *   business="org.ejbca.core.ejb.services.ServiceDataLocal"
- *   link="ServiceData"
- *
- * @ejb.ejb-external-ref description="The Authorization Session Bean"
- *   view-type="local"
- *   ejb-name="AuthorizationSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
- *   business="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
- *   link="AuthorizationSession"
- *
- *
- * @ejb.ejb-external-ref description="The log session bean"
- *   view-type="local"
- *   ejb-name="LogSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
- *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
- *   link="LogSession"
- *
  * @ejb.home extends="javax.ejb.EJBHome"
  *   local-extends="javax.ejb.EJBLocalHome"
  *   local-class="org.ejbca.core.ejb.services.IServiceSessionLocalHome"
@@ -99,6 +73,31 @@ import org.ejbca.core.model.services.ServiceExistsException;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.services.IServiceSessionLocal"
  *   remote-class="org.ejbca.core.ejb.services.IServiceSessionRemote"
+ *
+ * @ejb.ejb-external-ref description="The Service entity bean"
+ *   view-type="local"
+ *   ref-name="ejb/ServiceDataLocal"
+ *   type="Entity"
+ *   home="org.ejbca.core.ejb.services.ServiceDataLocalHome"
+ *   business="org.ejbca.core.ejb.services.ServiceDataLocal"
+ *   link="ServiceData"
+ *
+ * @ejb.ejb-external-ref description="The Authorization Session Bean"
+ *   view-type="local"
+ *   ref-name="ejb/AuthorizationSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
+ *   business="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
+ *   link="AuthorizationSession"
+ *
+ *
+ * @ejb.ejb-external-ref description="The log session bean"
+ *   view-type="local"
+ *   ref-name="ejb/LogSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
+ *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
+ *   link="LogSession"
  *
  *  @jonas.bean ejb-name="ServiceSession"
  */

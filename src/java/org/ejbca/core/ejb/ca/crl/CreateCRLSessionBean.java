@@ -52,7 +52,7 @@ import org.ejbca.util.CertTools;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.11 2006-09-12 15:12:39 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.12 2006-10-09 12:05:20 anatom Exp $
  * @ejb.bean
  *   description="Session bean handling hard token data, both about hard tokens and hard token issuers."
  *   display-name="CreateCRLSB"
@@ -67,51 +67,6 @@ import org.ejbca.util.CertTools;
  *
  * @weblogic.enable-call-by-reference True
  *
- * @ejb.ejb-external-ref
- *   description="The log session bean"
- *   view-type="local"
- *   ejb-name="LogSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
- *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
- *   link="LogSession"
- *
- * @ejb.ejb-external-ref
- *   description="The Certificate entity bean used manipulate certificates"
- *   view-type="local"
- *   ejb-name="CertificateDataLocal"
- *   type="Entity"
- *   home="org.ejbca.core.ejb.ca.store.CertificateDataLocalHome"
- *   business="org.ejbca.core.ejb.ca.store.CertificateDataLocal"
- *   link="CertificateData"
- *
- * @ejb.ejb-external-ref
- *   description="The CA Admin Session"
- *   view-type="local"
- *   ejb-name="CAAdminSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
- *   link="CAAdminSession"
- *
- * @ejb.ejb-external-ref
- *   description="The Certificate Store session bean"
- *   view-type="local"
- *   ejb-name="CertificateStoreSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
- *   link="CertificateStoreSession"
- *
- * @ejb.ejb-external-ref
- *   description="The signing session used to create CRL"
- *   view-type="local"
- *   ejb-name="RSASignSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
- *   link="RSASignSession"
- *
  * @ejb.home
  *   extends="javax.ejb.EJBHome"
  *   local-extends="javax.ejb.EJBLocalHome"
@@ -123,6 +78,52 @@ import org.ejbca.util.CertTools;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal"
  *   remote-class="org.ejbca.core.ejb.ca.crl.ICreateCRLSessionRemote"
+ *   
+ * @ejb.ejb-external-ref
+ *   description="The log session bean"
+ *   view-type="local"
+ *   ref-name="ejb/LogSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
+ *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
+ *   link="LogSession"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The Certificate entity bean used manipulate certificates"
+ *   view-type="local"
+ *   ref-name="ejb/CertificateDataLocal"
+ *   type="Entity"
+ *   home="org.ejbca.core.ejb.ca.store.CertificateDataLocalHome"
+ *   business="org.ejbca.core.ejb.ca.store.CertificateDataLocal"
+ *   link="CertificateData"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The CA Admin Session"
+ *   view-type="local"
+ *   ref-name="ejb/CAAdminSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
+ *   link="CAAdminSession"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The Certificate Store session bean"
+ *   view-type="local"
+ *   ref-name="ejb/CertificateStoreSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
+ *   link="CertificateStoreSession"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The signing session used to create CRL"
+ *   view-type="local"
+ *   ref-name="ejb/RSASignSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
+ *   link="RSASignSession"
+ *
  */
 public class CreateCRLSessionBean extends BaseSessionBean {
 

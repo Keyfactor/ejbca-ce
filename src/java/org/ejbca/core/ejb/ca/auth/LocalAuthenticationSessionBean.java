@@ -43,7 +43,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.3 2006-09-26 09:54:11 anatom Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.4 2006-10-09 12:05:53 anatom Exp $
  *
  * @ejb.bean
  *   display-name="AuthenticationSB"
@@ -58,42 +58,6 @@ import org.ejbca.core.model.ra.UserDataVO;
  *
  * @weblogic.enable-call-by-reference True
  *
- * @ejb.ejb-external-ref
- *   description="The User entity bean"
- *   view-type="local"
- *   ejb-name="UserDataLocal"
- *   type="Entity"
- *   home="org.ejbca.core.ejb.ra.UserDataLocalHome"
- *   business="org.ejbca.core.ejb.ra.UserDataLocal"
- *   link="UserData"
- *
- * @ejb.ejb-external-ref
- *   description="The Log session bean"
- *   view-type="local"
- *   ejb-name="LogSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
- *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
- *   link="LogSession"
- *
- * @ejb.ejb-external-ref
- *   description="The RA Admin session bean"
- *   view-type="local"
- *   ejb-name="RaAdminSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome"
- *   business="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal"
- *   link="RaAdminSession"
- *
- * @ejb.ejb-external-ref
- *   description="The Key Recovery Session Bean"
- *   view-type="local"
- *   ejb-name="KeyRecoverySessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome"
- *   business="org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal"
- *   link="KeyRecoverySession"  
- *
  * @ejb.home
  *   extends="javax.ejb.EJBHome"
  *   local-extends="javax.ejb.EJBLocalHome"
@@ -105,6 +69,42 @@ import org.ejbca.core.model.ra.UserDataVO;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocal"
  *   remote-class="org.ejbca.core.ejb.ca.auth.IAuthenticationSessionRemote"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The User entity bean"
+ *   view-type="local"
+ *   ref-name="ejb/UserDataLocal"
+ *   type="Entity"
+ *   home="org.ejbca.core.ejb.ra.UserDataLocalHome"
+ *   business="org.ejbca.core.ejb.ra.UserDataLocal"
+ *   link="UserData"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The Log session bean"
+ *   view-type="local"
+ *   ref-name="ejb/LogSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
+ *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
+ *   link="LogSession"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The RA Admin session bean"
+ *   view-type="local"
+ *   ref-name="ejb/RaAdminSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal"
+ *   link="RaAdminSession"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The Key Recovery Session Bean"
+ *   view-type="local"
+ *   ref-name="ejb/KeyRecoverySessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome"
+ *   business="org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal"
+ *   link="KeyRecoverySession"  
  *
  */
 public class LocalAuthenticationSessionBean extends BaseSessionBean {

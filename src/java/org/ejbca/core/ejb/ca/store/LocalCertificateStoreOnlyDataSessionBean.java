@@ -55,7 +55,7 @@ import org.ejbca.util.CertTools;
  *   
  * @ejb.ejb-external-ref description="The Certificate entity bean used to store and fetch certificates"
  * view-type="local"
- * ejb-name="CertificateDataLocal"
+ * ref-name="ejb/CertificateDataLocal"
  * type="Entity"
  * home="org.ejbca.core.ejb.ca.store.CertificateDataLocalHome"
  * business="org.ejbca.core.ejb.ca.store.CertificateDataLocal"
@@ -64,7 +64,7 @@ import org.ejbca.util.CertTools;
  * @ejb.ejb-external-ref
  *   description="The table protection session bean"
  *   view-type="local"
- *   ejb-name="TableProtectSessionLocal"
+ *   ref-name="ejb/TableProtectSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.protect.TableProtectSessionLocalHome"
  *   business="org.ejbca.core.ejb.protect.TableProtectSessionLocal"
@@ -80,7 +80,7 @@ import org.ejbca.util.CertTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreOnlyDataSessionBean.java,v 1.6 2006-08-06 12:37:00 anatom Exp $
+ * @version $Id: LocalCertificateStoreOnlyDataSessionBean.java,v 1.7 2006-10-09 12:05:18 anatom Exp $
  */
 public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
 

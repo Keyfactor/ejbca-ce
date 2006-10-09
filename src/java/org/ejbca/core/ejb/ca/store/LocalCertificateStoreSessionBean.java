@@ -96,7 +96,7 @@ import org.ejbca.util.StringTools;
  *   
  * @ejb.ejb-external-ref description="The Certificate entity bean used to store and fetch certificates"
  * view-type="local"
- * ejb-name="CertificateDataLocal"
+ * ref-name="ejb/CertificateDataLocal"
  * type="Entity"
  * home="org.ejbca.core.ejb.ca.store.CertificateDataLocalHome"
  * business="org.ejbca.core.ejb.ca.store.CertificateDataLocal"
@@ -104,7 +104,7 @@ import org.ejbca.util.StringTools;
  *
  * @ejb.ejb-external-ref description="The CRL entity bean used to store and fetch CRLs"
  * view-type="local"
- * ejb-name="CRLDataLocal"
+ * ref-name="ejb/CRLDataLocal"
  * type="Entity"
  * home="org.ejbca.core.ejb.ca.store.CRLDataLocalHome"
  * business="org.ejbca.core.ejb.ca.store.CRLDataLocal"
@@ -112,7 +112,7 @@ import org.ejbca.util.StringTools;
  *
  * @ejb.ejb-external-ref description="The CertReqHistoryData Entity bean"
  * view-type="local"
- * ejb-name="CertReqHistoryDataLocal"
+ * ref-name="ejb/CertReqHistoryDataLocal"
  * type="Entity"
  * home="org.ejbca.core.ejb.ca.store.CertReqHistoryDataLocalHome"
  * business="org.ejbca.core.ejb.ca.store.CertReqHistoryDataLocal"
@@ -120,7 +120,7 @@ import org.ejbca.util.StringTools;
  *
  * @ejb.ejb-external-ref description="The CertificateProfileData Entity bean"
  * view-type="local"
- * ejb-name="CertificateProfileDataLocal"
+ * ref-name="ejb/CertificateProfileDataLocal"
  * type="Entity"
  * home="org.ejbca.core.ejb.ca.store.CertificateProfileDataLocalHome"
  * business="org.ejbca.core.ejb.ca.store.CertificateProfileDataLocal"
@@ -128,7 +128,7 @@ import org.ejbca.util.StringTools;
  * 
  * @ejb.ejb-external-ref description="The Log session bean"
  * view-type="local"
- * ejb-name="LogSessionLocal"
+ * ref-name="ejb/LogSessionLocal"
  * type="Session"
  * home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
  * business="org.ejbca.core.ejb.log.ILogSessionLocal"
@@ -136,7 +136,7 @@ import org.ejbca.util.StringTools;
  *
  * @ejb.ejb-external-ref description="The Authorization session bean"
  * view-type="local"
- * ejb-name="AuthorizationSessionLocal"
+ * ref-name="ejb/AuthorizationSessionLocal"
  * type="Session"
  * home="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
  * business="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
@@ -145,7 +145,7 @@ import org.ejbca.util.StringTools;
  * @ejb.ejb-external-ref description="Publishers are configured to store certificates and CRLs in additional places from the main database.
  * Publishers runs as local beans"
  * view-type="local"
- * ejb-name="PublisherSessionLocal"
+ * ref-name="ejb/PublisherSessionLocal"
  * type="Session"
  * home="org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome"
  * business="org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal"
@@ -154,7 +154,7 @@ import org.ejbca.util.StringTools;
  * @ejb.ejb-external-ref
  *   description="The table protection session bean"
  *   view-type="local"
- *   ejb-name="TableProtectSessionLocal"
+ *   ref-name="ejb/TableProtectSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.protect.TableProtectSessionLocalHome"
  *   business="org.ejbca.core.ejb.protect.TableProtectSessionLocal"
@@ -170,7 +170,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.18 2006-08-22 17:28:35 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.19 2006-10-09 12:05:18 anatom Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {

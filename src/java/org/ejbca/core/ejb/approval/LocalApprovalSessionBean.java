@@ -103,7 +103,7 @@ import org.ejbca.util.query.Query;
  *
  * @ejb.ejb-external-ref description="The Approval entity bean"
  *   view-type="local"
- *   ejb-name="ApprovalDataLocal"
+ *   ref-name="ejb/ApprovalDataLocal"
  *   type="Entity"
  *   home="org.ejbca.core.ejb.approval.ApprovalDataLocalHome"
  *   business="org.ejbca.core.ejb.approval.ApprovalDataLocal"
@@ -111,7 +111,7 @@ import org.ejbca.util.query.Query;
  *   
  * @ejb.ejb-external-ref description="The Certificate store used to store and fetch certificates"
  *   view-type="local"
- *   ejb-name="CertificateStoreSessionLocal"
+ *   ref-name="ejb/CertificateStoreSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
  *   business="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
@@ -119,7 +119,7 @@ import org.ejbca.util.query.Query;
  *
  * @ejb.ejb-external-ref description="The Authorization Session Bean"
  *   view-type="local"
- *   ejb-name="AuthorizationSessionLocal"
+ *   ref-name="ejb/AuthorizationSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
  *   business="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
@@ -128,7 +128,7 @@ import org.ejbca.util.query.Query;
  * @ejb.ejb-external-ref
  *   description="The Ra Admin session bean"
  *   view-type="local"
- *   ejb-name="RaAdminSessionLocal"
+ *   ref-name="ejb/RaAdminSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome"
  *   business="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal"
@@ -137,7 +137,7 @@ import org.ejbca.util.query.Query;
  * @ejb.ejb-external-ref
  *   description="The User Admin session bean"
  *   view-type="local"
- *   ejb-name="UserAdminSessionLocal"
+ *   ref-name="ejb/UserAdminSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome"
  *   business="org.ejbca.core.ejb.ra.IUserAdminSessionLocal"
@@ -146,7 +146,7 @@ import org.ejbca.util.query.Query;
  * @ejb.ejb-external-ref
  *   description="The Certificate Store session bean"
  *   view-type="local"
- *   ejb-name="HardTokenSessionLocal"
+ *   ref-name="ejb/HardTokenSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocalHome"
  *   business="org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal"
@@ -155,7 +155,7 @@ import org.ejbca.util.query.Query;
  * @ejb.ejb-external-ref
  *   description="The Key Recovery session bean"
  *   view-type="local"
- *   ejb-name="KeyRecoverySessionLocal"
+ *   ref-name="ejb/KeyRecoverySessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome"
  *   business="org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal"
@@ -163,23 +163,15 @@ import org.ejbca.util.query.Query;
  *
  * @ejb.ejb-external-ref description="The CAAdmin Session Bean"
  *   view-type="local"
- *   ejb-name="CAAdminSessionLocal"
+ *   ref-name="ejb/CAAdminSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
  *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
  *   link="CAAdminSession"
  *   
- * @ejb.ejb-external-ref description="The user admin Session Bean"
- *   view-type="local"
- *   ejb-name="UserAdminSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome"
- *   business="org.ejbca.core.ejb.ra.IUserAdminSessionLocal"
- *   link="UserAdminSession"
- *   
  * @ejb.ejb-external-ref description="The log session bean"
  *   view-type="local"
- *   ejb-name="LogSessionLocal"
+ *   ref-name="ejb/LogSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
  *   business="org.ejbca.core.ejb.log.ILogSessionLocal"

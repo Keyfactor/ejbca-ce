@@ -99,7 +99,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.23 2006-09-29 08:49:56 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.24 2006-10-09 12:05:53 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -124,54 +124,6 @@ import org.ejbca.util.KeyTools;
  *   type="java.lang.String"
  *   value="${ca.ocspkeystorepass}"
  *
- * @ejb.ejb-external-ref description="The CA entity bean"
- *   view-type="local"
- *   ejb-name="CADataLocal"
- *   type="Entity"
- *   home="org.ejbca.core.ejb.ca.caadmin.CADataLocalHome"
- *   business="org.ejbca.core.ejb.ca.caadmin.CADataLocal"
- *   link="CAData"
- *
- * @ejb.ejb-external-ref description="The log session bean"
- *   view-type="local"
- *   ejb-name="LogSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
- *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
- *   link="LogSession"
- *
- * @ejb.ejb-external-ref description="The Authorization Session Bean"
- *   view-type="local"
- *   ejb-name="AuthorizationSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
- *   business="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
- *   link="AuthorizationSession"
- *
- * @ejb.ejb-external-ref description="The Certificate store used to store and fetch certificates"
- *   view-type="local"
- *   ejb-name="CertificateStoreSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
- *   link="CertificateStoreSession"
- *
- * @ejb.ejb-external-ref description="The Sign Session Bean"
- *   view-type="local"
- *   ejb-name="RSASignSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
- *   link="RSASignSession"
- *
- * @ejb.ejb-external-ref description="The CRL Create bean"
- *   view-type="local"
- *   ejb-name="CreateCRLSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal"
- *   link="CreateCRLSession"
- *
  * @ejb.home
  *   extends="javax.ejb.EJBHome"
  *   remote-class="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome"
@@ -183,6 +135,54 @@ import org.ejbca.util.KeyTools;
  *   remote-class="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote"
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
+ *
+ * @ejb.ejb-external-ref description="The CA entity bean"
+ *   view-type="local"
+ *   ref-name="ejb/CADataLocal"
+ *   type="Entity"
+ *   home="org.ejbca.core.ejb.ca.caadmin.CADataLocalHome"
+ *   business="org.ejbca.core.ejb.ca.caadmin.CADataLocal"
+ *   link="CAData"
+ *
+ * @ejb.ejb-external-ref description="The log session bean"
+ *   view-type="local"
+ *   ref-name="ejb/LogSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
+ *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
+ *   link="LogSession"
+ *
+ * @ejb.ejb-external-ref description="The Authorization Session Bean"
+ *   view-type="local"
+ *   ref-name="ejb/AuthorizationSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
+ *   business="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
+ *   link="AuthorizationSession"
+ *
+ * @ejb.ejb-external-ref description="The Certificate store used to store and fetch certificates"
+ *   view-type="local"
+ *   ref-name="ejb/CertificateStoreSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
+ *   link="CertificateStoreSession"
+ *
+ * @ejb.ejb-external-ref description="The Sign Session Bean"
+ *   view-type="local"
+ *   ref-name="ejb/RSASignSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
+ *   link="RSASignSession"
+ *
+ * @ejb.ejb-external-ref description="The CRL Create bean"
+ *   view-type="local"
+ *   ref-name="ejb/CreateCRLSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal"
+ *   link="CreateCRLSession"
  *
  */
 public class CAAdminSessionBean extends BaseSessionBean {

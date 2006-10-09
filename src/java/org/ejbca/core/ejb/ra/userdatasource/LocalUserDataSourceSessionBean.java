@@ -64,7 +64,7 @@ import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
  *
  * @ejb.ejb-external-ref description="The UserDataSource entity bean"
  *   view-type="local"
- *   ejb-name="UserDataSourceDataLocal"
+ *   ref-name="ejb/UserDataSourceDataLocal"
  *   type="Entity"
  *   home="org.ejbca.core.ejb.ra.userdatasource.UserDataSourceDataLocalHome"
  *   business="org.ejbca.core.ejb.ra.userdatasource.UserDataSourceDataLocal"
@@ -72,7 +72,7 @@ import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
  *
  * @ejb.ejb-external-ref description="The Authorization Session Bean"
  *   view-type="local"
- *   ejb-name="AuthorizationSessionLocal"
+ *   ref-name="ejb/AuthorizationSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
  *   business="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
@@ -81,7 +81,7 @@ import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
  *
  * @ejb.ejb-external-ref description="The log session bean"
  *   view-type="local"
- *   ejb-name="LogSessionLocal"
+ *   ref-name="ejb/LogSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
  *   business="org.ejbca.core.ejb.log.ILogSessionLocal"

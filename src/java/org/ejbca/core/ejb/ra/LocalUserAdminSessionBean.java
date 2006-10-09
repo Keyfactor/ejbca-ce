@@ -92,7 +92,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.24 2006-09-30 10:32:18 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.25 2006-10-09 12:04:13 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -133,10 +133,22 @@ import org.ejbca.util.query.UserMatch;
  *   type="java.lang.String"
  *   value="${mail.message}"
  *
+ * @ejb.home
+ *   extends="javax.ejb.EJBHome"
+ *   local-extends="javax.ejb.EJBLocalHome"
+ *   local-class="org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome"
+ *   remote-class="org.ejbca.core.ejb.ra.IUserAdminSessionHome"
+ *
+ * @ejb.interface
+ *   extends="javax.ejb.EJBObject"
+ *   local-extends="javax.ejb.EJBLocalObject"
+ *   local-class="org.ejbca.core.ejb.ra.IUserAdminSessionLocal"
+ *   remote-class="org.ejbca.core.ejb.ra.IUserAdminSessionRemote"
+ *   
  * @ejb.ejb-external-ref
  *   description="The Certificate Store session bean"
  *   view-type="local"
- *   ejb-name="CertificateStoreSessionLocal"
+ *   ref-name="ejb/CertificateStoreSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
  *   business="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
@@ -145,7 +157,7 @@ import org.ejbca.util.query.UserMatch;
  * @ejb.ejb-external-ref
  *   description="The Log session bean"
  *   view-type="local"
- *   ejb-name="LogSessionLocal"
+ *   ref-name="ejb/LogSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
  *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
@@ -154,7 +166,7 @@ import org.ejbca.util.query.UserMatch;
  * @ejb.ejb-external-ref
  *   description="The Authorization session bean"
  *   view-type="local"
- *   ejb-name="AuthorizationSessionLocal"
+ *   ref-name="ejb/AuthorizationSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
  *   business="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
@@ -163,7 +175,7 @@ import org.ejbca.util.query.UserMatch;
  * @ejb.ejb-external-ref
  *   description="The Ra Admin session bean"
  *   view-type="local"
- *   ejb-name="RaAdminSessionLocal"
+ *   ref-name="ejb/RaAdminSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome"
  *   business="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal"
@@ -172,7 +184,7 @@ import org.ejbca.util.query.UserMatch;
  * @ejb.ejb-external-ref
  *   description="The Key Recovery session bean"
  *   view-type="local"
- *   ejb-name="KeyRecoverySessionLocal"
+ *   ref-name="ejb/KeyRecoverySessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome"
  *   business="org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal"
@@ -180,7 +192,7 @@ import org.ejbca.util.query.UserMatch;
  *   
  * @ejb.ejb-external-ref description="The Approval Session Bean"
  *   view-type="local"
- *   ejb-name="ApprovalSessionLocal"
+ *   ref-name="ejb/ApprovalSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.approval.IApprovalSessionLocalHome"
  *   business="org.ejbca.core.ejb.approval.IApprovalSessionLocal"
@@ -188,7 +200,7 @@ import org.ejbca.util.query.UserMatch;
  *   
  * @ejb.ejb-external-ref description="The CAAdmin Session Bean"
  *   view-type="local"
- *   ejb-name="CAAdminSessionLocal"
+ *   ref-name="ejb/CAAdminSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
  *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
@@ -197,7 +209,7 @@ import org.ejbca.util.query.UserMatch;
  * @ejb.ejb-external-ref
  *   description="The User entity bean"
  *   view-type="local"
- *   ejb-name="UserDataLocal"
+ *   ref-name="ejb/UserDataLocal"
  *   type="Entity"
  *   home="org.ejbca.core.ejb.ra.UserDataLocalHome"
  *   business="org.ejbca.core.ejb.ra.UserDataLocal"
@@ -212,17 +224,6 @@ import org.ejbca.util.query.UserMatch;
  *   res-ref-name="mail/DefaultMail"
  *   jndi-name="EjbcaMail"
  *   
- * @ejb.home
- *   extends="javax.ejb.EJBHome"
- *   local-extends="javax.ejb.EJBLocalHome"
- *   local-class="org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome"
- *   remote-class="org.ejbca.core.ejb.ra.IUserAdminSessionHome"
- *
- * @ejb.interface
- *   extends="javax.ejb.EJBObject"
- *   local-extends="javax.ejb.EJBLocalObject"
- *   local-class="org.ejbca.core.ejb.ra.IUserAdminSessionLocal"
- *   remote-class="org.ejbca.core.ejb.ra.IUserAdminSessionRemote"
  */
 public class LocalUserAdminSessionBean extends BaseSessionBean {
 

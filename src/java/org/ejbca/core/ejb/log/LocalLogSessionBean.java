@@ -89,7 +89,7 @@ import org.ejbca.util.query.Query;
  * @ejb.ejb-external-ref
  *   description="The Log Entry Data entity bean"
  *   view-type="local"
- *   ejb-name="LogEntryDataLocal"
+ *   ref-name="ejb/LogEntryDataLocal"
  *   type="Entity"
  *   home="org.ejbca.core.ejb.log.LogEntryDataLocalHome"
  *   business="org.ejbca.core.ejb.log.LogEntryDataLocal"
@@ -98,7 +98,7 @@ import org.ejbca.util.query.Query;
  * @ejb.ejb-external-ref
  *   description="The Log Configuration Data Entity bean"
  *   view-type="local"
- *   ejb-name="LogConfigurationDataLocal"
+ *   ref-name="ejb/LogConfigurationDataLocal"
  *   type="Entity"
  *   home="org.ejbca.core.ejb.log.LogConfigurationDataLocalHome"
  *   business="org.ejbca.core.ejb.log.LogConfigurationDataLocal"
@@ -107,7 +107,7 @@ import org.ejbca.util.query.Query;
  * @ejb.ejb-external-ref
  *   description="The table protection session bean"
  *   view-type="local"
- *   ejb-name="TableProtectSessionLocal"
+ *   ref-name="ejb/TableProtectSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.protect.TableProtectSessionLocalHome"
  *   business="org.ejbca.core.ejb.protect.TableProtectSessionLocal"
@@ -128,7 +128,7 @@ import org.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.7 2006-08-20 13:35:54 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.8 2006-10-09 12:04:46 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 

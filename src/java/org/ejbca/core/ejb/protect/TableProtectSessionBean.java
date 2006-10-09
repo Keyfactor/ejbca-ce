@@ -81,7 +81,7 @@ import org.ejbca.util.StringTools;
  * @ejb.ejb-external-ref
  *   description="The Protect Entry Data entity bean"
  *   view-type="local"
- *   ejb-name="TableProtectDataLocal"
+ *   ref-name="ejb/TableProtectDataLocal"
  *   type="Entity"
  *   home="org.ejbca.core.ejb.protect.TableProtectDataLocalHome"
  *   business="org.ejbca.core.ejb.protect.TableProtectDataLocal"
@@ -99,7 +99,7 @@ import org.ejbca.util.StringTools;
  *   local-class="org.ejbca.core.ejb.protect.TableProtectSessionLocal"
  *   remote-class="org.ejbca.core.ejb.protect.TableProtectSessionRemote"
  *
- * @version $Id: TableProtectSessionBean.java,v 1.3 2006-09-24 13:18:29 anatom Exp $
+ * @version $Id: TableProtectSessionBean.java,v 1.4 2006-10-09 12:04:47 anatom Exp $
  */
 public class TableProtectSessionBean extends BaseSessionBean {
 

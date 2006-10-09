@@ -68,7 +68,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
  *
  * @ejb.ejb-external-ref description="The Publisher entity bean"
  *   view-type="local"
- *   ejb-name="PublisherDataLocal"
+ *   ref-name="ejb/PublisherDataLocal"
  *   type="Entity"
  *   home="org.ejbca.core.ejb.ca.publisher.PublisherDataLocalHome"
  *   business="org.ejbca.core.ejb.ca.publisher.PublisherDataLocal"
@@ -76,7 +76,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
  *
  * @ejb.ejb-external-ref description="The Authorization Session Bean"
  *   view-type="local"
- *   ejb-name="AuthorizationSessionLocal"
+ *   ref-name="ejb/AuthorizationSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
  *   business="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
@@ -84,7 +84,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
  *
  * @ejb.ejb-external-ref description="The CAAdmin Session Bean"
  *   view-type="local"
- *   ejb-name="CAAdminSessionLocal"
+ *   ref-name="ejb/CAAdminSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
  *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
@@ -92,7 +92,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
  *
  * @ejb.ejb-external-ref description="The log session bean"
  *   view-type="local"
- *   ejb-name="LogSessionLocal"
+ *   ref-name="ejb/LogSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
  *   business="org.ejbca.core.ejb.log.ILogSessionLocal"

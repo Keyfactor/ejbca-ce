@@ -44,7 +44,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.2 2006-09-27 09:28:26 herrvendil Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.3 2006-10-09 12:04:13 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="RaAdminSB"
@@ -73,7 +73,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  *
  * @ejb.ejb-external-ref description="The log session bean"
  *   view-type="local"
- *   ejb-name="LogSessionLocal"
+ *   ref-name="ejb/LogSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
  *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
@@ -81,7 +81,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  *
  * @ejb.ejb-external-ref description="The Authorization session bean"
  *   view-type="local"
- *   ejb-name="AuthorizationSessionLocal"
+ *   ref-name="ejb/AuthorizationSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
  *   business="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
@@ -89,7 +89,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  *
  * @ejb.ejb-external-ref description="The AdminPreferencesData Entity bean"
  *   view-type="local"
- *   ejb-name="AdminPreferencesDataLocal"
+ *   ref-name="ejb/AdminPreferencesDataLocal"
  *   type="Entity"
  *   home="org.ejbca.core.ejb.ra.raadmin.AdminPreferencesDataLocalHome"
  *   business="org.ejbca.core.ejb.ra.raadmin.AdminPreferencesDataLocal"
@@ -97,7 +97,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  *
  * @ejb.ejb-external-ref description="The EndEntityProfileData Entity bean"
  *   view-type="local"
- *   ejb-name="EndEntityProfileDataLocal"
+ *   ref-name="ejb/EndEntityProfileDataLocal"
  *   type="Entity"
  *   home="org.ejbca.core.ejb.ra.raadmin.EndEntityProfileDataLocalHome"
  *   business="org.ejbca.core.ejb.ra.raadmin.EndEntityProfileDataLocal"
@@ -105,7 +105,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  *
  * @ejb.ejb-external-ref description="The GlobalConfigurationData Entity bean"
  *   view-type="local"
- *   ejb-name="GlobalConfigurationDataLocal"
+ *   ref-name="ejb/GlobalConfigurationDataLocal"
  *   type="Entity"
  *   home="org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationDataLocalHome"
  *   business="org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationDataLocal"

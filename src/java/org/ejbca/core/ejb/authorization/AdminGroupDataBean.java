@@ -40,7 +40,7 @@ import org.ejbca.core.model.authorization.AdminGroup;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.3 2006-10-07 14:10:31 anatom Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.4 2006-10-09 12:05:53 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents an authorization usergroup"
@@ -82,7 +82,7 @@ import org.ejbca.core.model.authorization.AdminGroup;
  * @ejb.ejb-external-ref
  *   description=""
  *   view-type="local"
- *   ejb-name="AdminEntityDataLocal"
+ *   ref-name="ejb/AdminEntityDataLocal"
  *   type="Entity"
  *   home="org.ejbca.core.ejb.authorization.AdminEntityDataLocalHome"
  *   business="org.ejbca.core.ejb.authorization.AdminEntityDataLocal"
@@ -91,7 +91,7 @@ import org.ejbca.core.model.authorization.AdminGroup;
  * @ejb.ejb-external-ref
  *   description=""
  *   view-type="local"
- *   ejb-name="AccessRulesDataLocal"
+ *   ref-name="ejb/AccessRulesDataLocal"
  *   type="Entity"
  *   home="org.ejbca.core.ejb.authorization.AccessRulesDataLocalHome"
  *   business="org.ejbca.core.ejb.authorization.AccessRulesDataLocal"

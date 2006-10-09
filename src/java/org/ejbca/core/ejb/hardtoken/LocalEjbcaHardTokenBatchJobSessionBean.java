@@ -59,33 +59,6 @@ import org.ejbca.util.JDBCUtil;
  *  type="java.lang.String"
  *  value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
  *
- * @ejb.ejb-external-ref
- *   description="The User entity bean"
- *   view-type="local"
- *   ejb-name="UserDataLocal"
- *   type="Entity"
- *   home="org.ejbca.core.ejb.ra.UserDataLocalHome"
- *   business="org.ejbca.core.ejb.ra.UserDataLocal"
- *   link="UserData"
- *
- * @ejb.ejb-external-ref
- *   description="The Certificate Store session bean"
- *   view-type="local"
- *   ejb-name="HardTokenSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocalHome"
- *   business="org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal"
- *   link="HardTokenSession"
- *
- * @ejb.ejb-external-ref
- *   description="The log session bean"
- *   view-type="local"
- *   ejb-name="LogSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
- *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
- *   link="LogSession"
- *
  * @ejb.home
  *   extends="javax.ejb.EJBHome"
  *   local-extends="javax.ejb.EJBLocalHome"
@@ -97,6 +70,33 @@ import org.ejbca.util.JDBCUtil;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.hardtoken.IHardTokenBatchJobSessionLocal"
  *   remote-class="org.ejbca.core.ejb.hardtoken.IHardTokenBatchJobSessionRemote"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The User entity bean"
+ *   view-type="local"
+ *   ref-name="ejb/UserDataLocal"
+ *   type="Entity"
+ *   home="org.ejbca.core.ejb.ra.UserDataLocalHome"
+ *   business="org.ejbca.core.ejb.ra.UserDataLocal"
+ *   link="UserData"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The Certificate Store session bean"
+ *   view-type="local"
+ *   ref-name="ejb/HardTokenSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocalHome"
+ *   business="org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal"
+ *   link="HardTokenSession"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The log session bean"
+ *   view-type="local"
+ *   ref-name="ejb/LogSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
+ *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
+ *   link="LogSession"
  *
  * @jonas.bean
  *   ejb-name="HardTokenSession"

@@ -104,7 +104,7 @@ import org.ejbca.util.CertTools;
  *
  * @ejb.ejb-external-ref description="The CA entity bean"
  *   view-type="local"
- *   ejb-name="CADataLocal"
+ *   ref-name="ejb/CADataLocal"
  *   type="Entity"
  *   home="org.ejbca.core.ejb.ca.caadmin.CADataLocalHome"
  *   business="org.ejbca.core.ejb.ca.caadmin.CADataLocal"
@@ -112,7 +112,7 @@ import org.ejbca.util.CertTools;
  *
  * @ejb.ejb-external-ref description="The log session bean"
  *   view-type="local"
- *   ejb-name="LogSessionLocal"
+ *   ref-name="ejb/LogSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
  *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
@@ -120,7 +120,7 @@ import org.ejbca.util.CertTools;
  *
  * @ejb.ejb-external-ref description="The Certificate store used to store and fetch certificates"
  *   view-type="local"
- *   ejb-name="CertificateStoreSessionLocal"
+ *   ref-name="ejb/CertificateStoreSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
  *   business="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
@@ -130,7 +130,7 @@ import org.ejbca.util.CertTools;
  * Alter this to enable a custom made authentication session implementing the
  * IAuthenticationSessionLocal interface"
  *   view-type="local"
- *   ejb-name="AuthenticationSessionLocal"
+ *   ref-name="ejb/AuthenticationSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocalHome"
  *   business="org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocal"
@@ -139,7 +139,7 @@ import org.ejbca.util.CertTools;
  * @ejb.ejb-external-ref description="Publishers are configured to store certificates and CRLs in additional places
  * from the main database. Publishers runs as local beans"
  *   view-type="local"
- *   ejb-name="PublisherSessionLocal"
+ *   ref-name="ejb/PublisherSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome"
  *   business="org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal"

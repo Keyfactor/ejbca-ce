@@ -57,7 +57,7 @@ import org.ejbca.util.JDBCUtil;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.4 2006-09-27 09:28:26 herrvendil Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.5 2006-10-09 12:05:53 anatom Exp $
  *
  * @ejb.bean
  *   description="Session bean handling interface with ra authorization"
@@ -87,7 +87,7 @@ import org.ejbca.util.JDBCUtil;
  * @ejb.ejb-external-ref
  *   description="The log session bean"
  *   view-type="local"
- *   ejb-name="LogSessionLocal"
+ *   ref-name="ejb/LogSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
  *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
@@ -96,7 +96,7 @@ import org.ejbca.util.JDBCUtil;
  * @ejb.ejb-external-ref
  *   description="The RA Session Bean"
  *   view-type="local"
- *   ejb-name="RaAdminSessionLocal"
+ *   ref-name="ejb/RaAdminSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome"
  *   business="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal"
@@ -105,7 +105,7 @@ import org.ejbca.util.JDBCUtil;
  * @ejb.ejb-external-ref
  *   description="The CAAdmin Session Bean"
  *   view-type="local"
- *   ejb-name="CAAdminSessionLocal"
+ *   ref-name="ejb/CAAdminSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
  *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
@@ -114,7 +114,7 @@ import org.ejbca.util.JDBCUtil;
  * @ejb.ejb-external-ref
  *   description="The Certificate Store Session bean"
  *   view-type="local"
- *   ejb-name="CertificateStoreSessionLocal"
+ *   ref-name="ejb/CertificateStoreSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
  *   business="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
@@ -123,7 +123,7 @@ import org.ejbca.util.JDBCUtil;
  * @ejb.ejb-external-ref
  *   description="Authorization Tree Update Bean"
  *   view-type="local"
- *   ejb-name="AuthorizationTreeUpdateDataLocal"
+ *   ref-name="ejb/AuthorizationTreeUpdateDataLocal"
  *   type="Entity"
  *   home="org.ejbca.core.ejb.authorization.AuthorizationTreeUpdateDataLocalHome"
  *   business="org.ejbca.core.ejb.authorization.AuthorizationTreeUpdateDataLocal"
@@ -132,7 +132,7 @@ import org.ejbca.util.JDBCUtil;
  * @ejb.ejb-external-ref
  *   description="Admin Groups"
  *   view-type="local"
- *   ejb-name="AdminGroupDataLocal"
+ *   ref-name="ejb/AdminGroupDataLocal"
  *   type="Entity"
  *   home="org.ejbca.core.ejb.authorization.AdminGroupDataLocalHome"
  *   business="org.ejbca.core.ejb.authorization.AdminGroupDataLocal"

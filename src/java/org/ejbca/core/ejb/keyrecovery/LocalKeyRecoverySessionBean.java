@@ -58,7 +58,7 @@ import org.ejbca.util.CertTools;
  * Stores key recovery data. Uses JNDI name for datasource as defined in env 'Datasource' in
  * ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.7 2006-09-30 09:49:00 anatom Exp $
+ * @version $Id: LocalKeyRecoverySessionBean.java,v 1.8 2006-10-09 12:04:47 anatom Exp $
  *
  * @ejb.bean
  *   display-name="Stores key recovery data"
@@ -81,7 +81,7 @@ import org.ejbca.util.CertTools;
  * @ejb.ejb-external-ref
  *   description="The key recovery data entity bean"
  *   view-type="local"
- *   ejb-name="KeyRecoveryDataLocal"
+ *   ref-name="ejb/KeyRecoveryDataLocal"
  *   type="Entity"
  *   home="org.ejbca.core.ejb.keyrecovery.KeyRecoveryDataLocalHome"
  *   business="org.ejbca.core.ejb.keyrecovery.KeyRecoveryDataLocal"
@@ -90,7 +90,7 @@ import org.ejbca.util.CertTools;
  * @ejb.ejb-external-ref
  *   description="The Sign Session Bean"
  *   view-type="local"
- *   ejb-name="RSASignSessionLocal"
+ *   ref-name="ejb/RSASignSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome"
  *   business="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
@@ -99,7 +99,7 @@ import org.ejbca.util.CertTools;
  * @ejb.ejb-external-ref
  *   description="The Certificate Store session bean"
  *   view-type="local"
- *   ejb-name="CertificateStoreSessionLocal"
+ *   ref-name="ejb/CertificateStoreSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
  *   business="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
@@ -107,7 +107,7 @@ import org.ejbca.util.CertTools;
  *   
  * @ejb.ejb-external-ref description="The CAAdmin Session Bean"
  *   view-type="local"
- *   ejb-name="CAAdminSessionLocal"
+ *   ref-name="ejb/CAAdminSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
  *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
@@ -116,7 +116,7 @@ import org.ejbca.util.CertTools;
  * @ejb.ejb-external-ref
  *   description="The User Admin session bean"
  *   view-type="local"
- *   ejb-name="UserAdminSessionLocal"
+ *   ref-name="ejb/UserAdminSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome"
  *   business="org.ejbca.core.ejb.ra.IUserAdminSessionLocal"
@@ -124,7 +124,7 @@ import org.ejbca.util.CertTools;
  *
  * @ejb.ejb-external-ref description="The Approval Session Bean"
  *   view-type="local"
- *   ejb-name="ApprovalSessionLocal"
+ *   ref-name="ejb/ApprovalSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.approval.IApprovalSessionLocalHome"
  *   business="org.ejbca.core.ejb.approval.IApprovalSessionLocal"
@@ -133,7 +133,7 @@ import org.ejbca.util.CertTools;
  * @ejb.ejb-external-ref
  *   description="The Authorization session bean"
  *   view-type="local"
- *   ejb-name="AuthorizationSessionLocal"
+ *   ref-name="ejb/AuthorizationSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
  *   business="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
@@ -142,7 +142,7 @@ import org.ejbca.util.CertTools;
  * @ejb.ejb-external-ref
  *   description="The log session bean"
  *   view-type="local"
- *   ejb-name="LogSessionLocal"
+ *   ref-name="ejb/LogSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
  *   business="org.ejbca.core.ejb.log.ILogSessionLocal"

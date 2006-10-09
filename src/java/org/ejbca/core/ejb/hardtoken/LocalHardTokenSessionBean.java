@@ -88,78 +88,6 @@ import org.ejbca.util.JDBCUtil;
  *  type="java.lang.String"
  *  value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
  *
- * @ejb.ejb-external-ref
- *   description="The hard token profile data entity bean"
- *   view-type="local"
- *   ejb-name="HardTokenProfileDataLocal"
- *   type="Entity"
- *   home="org.ejbca.core.ejb.hardtoken.HardTokenProfileDataLocalHome"
- *   business="org.ejbca.core.ejb.hardtoken.HardTokenProfileDataLocal"
- *   link="HardTokenProfileData"
- *
- * @ejb.ejb-external-ref
- *   description="The hard token issuers data entity bean"
- *   view-type="local"
- *   ejb-name="HardTokenIssuerDataLocal"
- *   type="Entity"
- *   home="org.ejbca.core.ejb.hardtoken.HardTokenIssuerDataLocalHome"
- *   business="org.ejbca.core.ejb.hardtoken.HardTokenIssuerDataLocal"
- *   link="HardTokenIssuerData"
- *
- * @ejb.ejb-external-ref
- *   description="The hard token data entity bean"
- *   view-type="local"
- *   ejb-name="HardTokenDataLocal"
- *   type="Entity"
- *   home="org.ejbca.core.ejb.hardtoken.HardTokenDataLocalHome"
- *   business="org.ejbca.core.ejb.hardtoken.HardTokenDataLocal"
- *   link="HardTokenData"
- *
- * @ejb.ejb-external-ref
- *   description="The hard token property data entity bean"
- *   view-type="local"
- *   ejb-name="HardTokenPropertyDataLocal"
- *   type="Entity"
- *   home="org.ejbca.core.ejb.hardtoken.HardTokenPropertyLocalHome"
- *   business="org.ejbca.core.ejb.hardtoken.HardTokenPropertyLocal"
- *   link="HardTokenPropertyData"
- *
- * @ejb.ejb-external-ref
- *   description="The hard token to certificate map data entity bean"
- *   view-type="local"
- *   ejb-name="HardTokenCertificateMapLocal"
- *   type="Entity"
- *   home="org.ejbca.core.ejb.hardtoken.HardTokenCertificateMapLocalHome"
- *   business="org.ejbca.core.ejb.hardtoken.HardTokenCertificateMapLocal"
- *   link="HardTokenCertificateMap"
- *
- * @ejb.ejb-external-ref
- *   description="The Authorization session bean"
- *   view-type="local"
- *   ejb-name="AuthorizationSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
- *   business="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
- *   link="AuthorizationSession"
- *
- * @ejb.ejb-external-ref
- *   description="The Certificate Store session bean"
- *   view-type="local"
- *   ejb-name="CertificateStoreSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
- *   business="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
- *   link="CertificateStoreSession"
- *
- * @ejb.ejb-external-ref
- *   description="The log session bean"
- *   view-type="local"
- *   ejb-name="LogSessionLocal"
- *   type="Session"
- *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
- *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
- *   link="LogSession"
- *
  * @ejb.home
  *   extends="javax.ejb.EJBHome"
  *   local-extends="javax.ejb.EJBLocalHome"
@@ -171,6 +99,78 @@ import org.ejbca.util.JDBCUtil;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal"
  *   remote-class="org.ejbca.core.ejb.hardtoken.IHardTokenSessionRemote"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The hard token profile data entity bean"
+ *   view-type="local"
+ *   ref-name="ejb/HardTokenProfileDataLocal"
+ *   type="Entity"
+ *   home="org.ejbca.core.ejb.hardtoken.HardTokenProfileDataLocalHome"
+ *   business="org.ejbca.core.ejb.hardtoken.HardTokenProfileDataLocal"
+ *   link="HardTokenProfileData"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The hard token issuers data entity bean"
+ *   view-type="local"
+ *   ref-name="ejb/HardTokenIssuerDataLocal"
+ *   type="Entity"
+ *   home="org.ejbca.core.ejb.hardtoken.HardTokenIssuerDataLocalHome"
+ *   business="org.ejbca.core.ejb.hardtoken.HardTokenIssuerDataLocal"
+ *   link="HardTokenIssuerData"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The hard token data entity bean"
+ *   view-type="local"
+ *   ref-name="ejb/HardTokenDataLocal"
+ *   type="Entity"
+ *   home="org.ejbca.core.ejb.hardtoken.HardTokenDataLocalHome"
+ *   business="org.ejbca.core.ejb.hardtoken.HardTokenDataLocal"
+ *   link="HardTokenData"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The hard token property data entity bean"
+ *   view-type="local"
+ *   ref-name="ejb/HardTokenPropertyDataLocal"
+ *   type="Entity"
+ *   home="org.ejbca.core.ejb.hardtoken.HardTokenPropertyLocalHome"
+ *   business="org.ejbca.core.ejb.hardtoken.HardTokenPropertyLocal"
+ *   link="HardTokenPropertyData"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The hard token to certificate map data entity bean"
+ *   view-type="local"
+ *   ref-name="ejb/HardTokenCertificateMapLocal"
+ *   type="Entity"
+ *   home="org.ejbca.core.ejb.hardtoken.HardTokenCertificateMapLocalHome"
+ *   business="org.ejbca.core.ejb.hardtoken.HardTokenCertificateMapLocal"
+ *   link="HardTokenCertificateMap"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The Authorization session bean"
+ *   view-type="local"
+ *   ref-name="ejb/AuthorizationSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
+ *   business="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
+ *   link="AuthorizationSession"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The Certificate Store session bean"
+ *   view-type="local"
+ *   ref-name="ejb/CertificateStoreSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
+ *   link="CertificateStoreSession"
+ *
+ * @ejb.ejb-external-ref
+ *   description="The log session bean"
+ *   view-type="local"
+ *   ref-name="ejb/LogSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
+ *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
+ *   link="LogSession"
  *
  * @jonas.bean
  *   ejb-name="HardTokenSession"

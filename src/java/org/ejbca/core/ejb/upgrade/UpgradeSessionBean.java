@@ -45,7 +45,7 @@ import se.anatom.ejbca.log.OldLogConfigurationDataLocalHome;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.7 2006-09-26 09:53:48 anatom Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.8 2006-10-09 12:04:13 anatom Exp $
  * @ejb.bean
  *   display-name="UpgradeSB"
  *   name="UpgradeSession"
@@ -76,7 +76,7 @@ import se.anatom.ejbca.log.OldLogConfigurationDataLocalHome;
  * @ejb.ejb-external-ref
  *   description="The Log Configuration Data Entity bean"
  *   view-type="local"
- *   ejb-name="LogConfigurationDataLocal"
+ *   ref-name="ejb/LogConfigurationDataLocal"
  *   type="Entity"
  *   home="org.ejbca.core.ejb.log.LogConfigurationDataLocalHome"
  *   business="org.ejbca.core.ejb.log.LogConfigurationDataLocal"
@@ -85,7 +85,7 @@ import se.anatom.ejbca.log.OldLogConfigurationDataLocalHome;
  * @ejb.ejb-external-ref
  *   description="The Old Log Configuration Data Entity bean"
  *   view-type="local"
- *   ejb-name="OldLogConfigurationDataLocal"
+ *   ref-name="ejb/OldLogConfigurationDataLocal"
  *   type="Entity"
  *   home="se.anatom.ejbca.log.OldLogConfigurationDataLocalHome"
  *   business="se.anatom.ejbca.log.OldLogConfigurationDataLocal"
@@ -94,7 +94,7 @@ import se.anatom.ejbca.log.OldLogConfigurationDataLocalHome;
  * @ejb.ejb-external-ref
  *   description="The CA Admin Session"
  *   view-type="local"
- *   ejb-name="CAAdminSessionLocal"
+ *   ref-name="ejb/CAAdminSessionLocal"
  *   type="Session"
  *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
  *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
