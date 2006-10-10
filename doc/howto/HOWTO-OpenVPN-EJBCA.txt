@@ -1,3 +1,7 @@
+NOTE: This guide is not updated with the frequency of the official User Guide, 
+so please go there first.
+Howto orignally made for EJBCA 3.1.x
+
 This document describes how to use EJBCA to create OpenVPN windows
 installer programs using the nsis package. It was developed and
 tested under debian.

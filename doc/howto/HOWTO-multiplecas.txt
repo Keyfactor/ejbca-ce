@@ -1,3 +1,6 @@
+NOTE: This guide is not updated with the frequency of the official User Guide, 
+so please go there first.
+Howto originally made for EJBCA 3.0.x.
 
 Setting up EJBCA with multiple CAs
 ==================================
@@ -9,7 +12,8 @@ This CA is not exposed to users and other administrator.
 
 Installing EJBCA 
 ----------------
-Installation of ejbca is done with the install.sh script. This will create an initial RootCA.
+Installation of ejbca is done with the regular installation instruction. 
+This will create an initial RootCA.
 You can call this AdminCA. The certificate for the superadministrator and for the tomcat server
 is issued by this CA.
 Follow the regular installation instructions to the point where you can access the admin GUI as

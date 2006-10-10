@@ -1,3 +1,9 @@
+NOTE: This guide is not updated with the frequency of the official User Guide, 
+so please go there first.
+
+Note, this HOWTO is old, for EJBCA 3.0.x. 
+Try to follow the regular installation instructions first before going to this for possible hints if you have any problems.
+The regular installation instruction should work on MacOSX as well.
 
 Running EJBCA on MacOSX
 ========================
