@@ -12,7 +12,7 @@ ant doc
 from the ejbca home directory (EJBCA_HOME). This will produce the same site as displayed on http://www.ejbca.org/ 
 (or an earlier or later version).
 The docs will be located in EJBCA_HOME/tmp/htdocs.
-The user's guid is in the file xdocs/manual.xml.
+The User's Guide is in the file xdocs/manual.xml.
 
 In the subdirectories here hides some other docs:
 - xdocs contains the main xml documentation distributed with ejbca, build into html as noted above.
@@ -23,6 +23,10 @@ In the subdirectories here hides some other docs:
 - developer contains architecture documents and information for developers.
 
 There is also a good batch of documentation at http://docs.primekey.se/
+
+Installation
+------------
+Follow the installation instructions in the User's Guide, either built above, or from http://www.ejbca.org/.
 
 Release notes and upgrade
 -------------------------
