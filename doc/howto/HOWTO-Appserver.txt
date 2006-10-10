@@ -76,6 +76,9 @@ for both sun's JDK and BEA's JDK first before installation.
 If installing with Oracle, perhaps you need to replace jdbc driver at weblogic_home\server\lib, weblogic_home\server\ext\jdbc\oracle\920, 10g 
 all to 10.1.0.2, in my case which is Oracle 9.2.0.
 
+12. Unset JBOSS_HOME. If you want to use the CLI (command line interface) bin/ejbca.sh, you must have WEBLOGIC_HOME set, 
+but you can not have JBOSS_HOME set.
+
 TransactionTimeoutException in Weblogic
 ---------------------------------------
 If you are running on a not-so-fast machine, you may experience TransationTimeoutException during 'ant install'.
