@@ -4,7 +4,7 @@ CONFIGURING Weblogic
 
 Note: EJBCA should work fine with Weblogic 7.x/8.x/9.x
 
-1. Edit ejbca.properties, it's important to at least set up the database parameters.
+1. Edit conf/ejbca.properties, it's important to at least set up the database parameters.
 Make special note to:
 datasource.jndi-name-prefix - which is specific for Weblogic.
 weblogic-oracle-columntype - which is specific for Weblogic.
@@ -14,7 +14,9 @@ If you had issued an 'ant' command before, it is now important to do 'ant clean'
 
 Also edit bin/cli.xml and remove the comments for the two weblogic lines.
 
-2. If you are using Oracle go into file src/java/se/anatom/ejbca/log/LogEntryDataBean.java and change
+Edit conf/web.properties and set 'web.jsfimpl=nojsf', this must be done until we have fixed JSF configuration for weblogic.
+
+2. If you are using Oracle go into file src/java/org/ejbca/core/ejb/log/LogEntryDataBean.java and change
 a line above the method 'getComment()' according to the documentation there.
 
 3. Create EJBCA domain with weblogic configuration wizard, select Basic weblogic server domain, Express,
