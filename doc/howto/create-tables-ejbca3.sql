@@ -1,4 +1,8 @@
 
+# Note that this file is more of a guidance/reference document. 
+# It is not always updated with database changes, so follow the installation instructions and don't use
+# this file unless the instructions tell you to.
+ 
 Hypersonic
 ==========
 CREATE TABLE HARDTOKENDATA(TOKENSN VARCHAR(256) NOT NULL,USERNAME VARCHAR(256),CTIME BIGINT NOT NULL,MTIME BIGINT NOT NULL,TOKENTYPE INTEGER NOT NULL,SIGNIFICANTISSUERDN VARCHAR(256),DATA VARBINARY,CONSTRAINT PK_HARDTOKENDATA PRIMARY KEY(TOKENSN))
@@ -225,7 +229,7 @@ CREATE TABLE userdata (
     certificateProfileId int(11) NOT NULL DEFAULT '0',
     tokenType int(11) NOT NULL DEFAULT '0',
     hardTokenIssuerId int(11) NOT NULL DEFAULT '0',
-    extendedInformationData longblob NULL DEFAULT NULL,
+    extendedInformationData longtext NULL DEFAULT NULL,
     keyStorePassword varchar(250) binary NULL DEFAULT NULL,
     PRIMARY KEY (username)
 );
