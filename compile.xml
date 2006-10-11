@@ -323,6 +323,7 @@ protection.certprotect=${protection.certprotect}
 				<replacestring from="@page.encoding@" to="${web.contentencoding}"/>
 				<replacestring from="@certtools.dnorderreverse@" to="${certtools.dnorderreverse}"/>
 				<replacestring from="@development.provider.installation@" to="${development.provider.installation}"/>
+				<replacestring from="@database.comment.column@" to="${database.comment.column}"/>
 			</tokenfilter>
 			</filterchain>
 	    </copy>

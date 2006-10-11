@@ -205,6 +205,9 @@
 	<property name="approval.defaultrequestvalidity" value="28800" />
 	<property name="approval.defaultapprovalvalidity" value="28800" />
     <property name="approval.excludedClasses" value="" />
+    <condition property="database.comment.column" value="comment_" else="comment" >
+        <equals arg1="${database.name}" arg2="oracle"/>
+    </condition>
 
 	<!-- If the create CRL service MBean should be deployed -->
     <property name="createcrl.service.enabled" value="false" />    
