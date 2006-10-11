@@ -91,7 +91,7 @@ import org.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.7 2006-06-08 14:45:34 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.8 2006-10-11 14:48:04 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(CertReqServlet.class);
@@ -537,6 +537,9 @@ public class CertReqServlet extends HttpServlet {
                 sn = CertTools.getSubjectDN(tmpX509Cert);
 
                 String cn = CertTools.getPartFromDN(sn, "CN");
+                if (StringUtils.isEmpty(cn)) {
+                	cn="Unknown";
+                }
 
                 subjectdnpem = sn.replace(',', '/');
                 issuerdnpem = CertTools.getIssuerDN(tmpX509Cert).replace(',', '/');
