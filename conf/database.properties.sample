@@ -12,6 +12,7 @@
 
 # Weblogic in combination with Oracle requires special handling of LONG/BLOB columns
 # If, and only if, you are using Weblogic and Oracle, uncomment the row below.
+# Use OracleBlob in Weblogic 8.x and Blob in Weblogic 9.x
 # default: 
 #weblogic-oracle-columntype=@weblogic.dbms-column-type OracleBlob
 
