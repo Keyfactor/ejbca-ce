@@ -1,6 +1,6 @@
 <!DOCTYPE project [
-      <!ENTITY propertiesAndPaths SYSTEM "propertiesAndPaths.xml">
-      <!ENTITY compile SYSTEM "compile.xml">
+      <!ENTITY propertiesAndPaths SYSTEM "propertiesAndPaths.xmli">
+      <!ENTITY compile SYSTEM "compile.xmli">
     ]>  
     
 <project name="ejbca" default="build" basedir=".">
@@ -11,10 +11,11 @@
 	&compile;
 
 	<import file="bin/jboss.xml" />
-	<import file="./jaxws.xml" />
-	<import file="./cmptcp.xml" />
-	<import file="./crlservice.xml" />
-	<import file="./test.xml" />
+	<import file="./jaxws.xmli" />
+	<import file="./cmptcp.xmli" />
+	<import file="./crlservice.xmli" />
+	<import file="./test.xmli" />
+	<import file="./docs.xmli" />
 
 	
     <!-- =================================================================== -->
@@ -366,13 +367,6 @@
     	</zip>
     </target>
 	
-    <!-- ===================================================================
-         Build documentation website from doc/xdocs
-         =================================================================== -->
-    <target name="doc" description="Build EJBCA web site and docs">
-        <ant dir="${ejbca.home}" antfile="docs.xml" />
-    </target>
-    
     <!-- =================================================================== -->
     <!-- Build Javadoc part                                                  -->
     <!-- =================================================================== -->

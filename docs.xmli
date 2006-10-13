@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project name="build-site" default="docs" basedir=".">
+<project name="build-site" default="doc" basedir=".">
 
     <description>
         Build documentation - XDocs and Javadoc.
@@ -40,7 +40,7 @@
         <mkdir dir="${docs.dest}"/>
     </target>
 
-    <target name="docs" if="AnakiaTask.present" depends="prepare-error" description="Create XDocs.">
+    <target name="doc" if="AnakiaTask.present" depends="prepare-error" description="Build EJBCA web site and docs">
         <taskdef name="anakia" classname="org.apache.velocity.anakia.AnakiaTask">
             <classpath refid="anakia.classpath"/>
         </taskdef>
@@ -61,7 +61,7 @@
         </copy>
     </target>
     
-    <target name="site:publish" depends="docs" description="Publish the website">
+    <target name="site:publish" depends="doc" description="Publish the website">
     	<property name="publish.dir" value="ejbca/htdocs/sandbox"/>
     	<tar destfile="htdocs.tgz" compression="gzip">
     		<tarfileset dir="${docs.dest}" mode="664" dirmode="775" username="${username}" group="ejbca"/>
