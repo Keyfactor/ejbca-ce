@@ -2,7 +2,7 @@
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
 <%@ taglib uri="http://myfaces.apache.org/tomahawk" prefix="t" %>
 <%@ page pageEncoding="ISO-8859-1"%>
-<%@ page contentType="text/html; charset=@page.encoding@" %>
+<%@ page contentType="text/html" %>
 <%@page errorPage="/errorpage.jsp" import="org.ejbca.core.model.ra.raadmin.GlobalConfiguration,org.ejbca.ui.web.RequestHelper,
                                            org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper, org.ejbca.ui.web.admin.services.EditServiceManagedBean" %>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -24,11 +24,12 @@
   <link rel=STYLESHEET href="<%= ejbcawebbean.getCssFile() %>">
   <meta http-equiv="Content-Type" content="text/html; charset=<%= RequestHelper.getDefaultContentEncoding() %>">
   <link href="/themes/default_theme.css" rel="stylesheet" type="text/css"/>
-  </head>
+</head>
 
 
 <f:view>
 <body>
+
 <div align="center"><h:outputText value="#{web.text.EDITSERVICE}" styleClass="header" style="text-align: center"/></div>
 <div align="center"><h:outputText value="#{web.text.NAME}" styleClass="subheader" style="text-align: center"/><f:verbatim> : </f:verbatim><h:outputText value="#{editService.serviceName}" styleClass="subheader" style="text-align: center"/></div>
 
@@ -36,43 +37,72 @@
 		<h:outputText value="#{web.text.BACKTOSERVICES}" style="text-align: right"/>
 	</h:commandLink>
   </div>	
-<h:form>
+<h:form id="edit"> 
 
 <h:panelGrid width="100%" columns="2" rowClasses="jsfrow1, jsfrow2">
 	<h:panelGroup>
 		<h:outputText value="#{web.text.SELECTWORKER}"/>
 	</h:panelGroup>
 	<h:panelGroup>
-		<h:selectOneMenu value="#{editService.selectedWorker}" valueChangeListener="#{editService.changeWorker}">
-			<f:selectItems value="#{editService.availableWorkers}"/>
+		<h:selectOneMenu value="#{editService.serviceConfigurationView.selectedWorker}" valueChangeListener="#{editService.changeWorker}"
+		                 onchange="document.getElementById('edit:updateButton').click();">
+			<f:selectItems value="#{editService.serviceConfigurationView.availableWorkers}"/>
 		</h:selectOneMenu>
 	</h:panelGroup>
-    <jsp:include page="<%= workerPage %>"/>
+
+  
+     <jsp:include page="<%=workerPage %>"/>
+  
+  	<h:panelGroup>
+		<f:verbatim><f:verbatim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</f:verbatim></f:verbatim>
+	</h:panelGroup>
+	<h:panelGroup>				
+		<f:verbatim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</f:verbatim>
+	</h:panelGroup>
     <h:panelGroup>
 		<h:outputText value="#{web.text.SELECTINTERVAL}"/>
 	</h:panelGroup>
 	<h:panelGroup>
-		<h:selectOneMenu value="#{editService.selectedInterval}" valueChangeListener="#{editService.changeInterval}">
-			<f:selectItems value="#{editService.availableIntervals}"/>
+		<h:selectOneMenu value="#{editService.serviceConfigurationView.selectedInterval}" valueChangeListener="#{editService.changeInterval}" 
+		                 onchange="document.getElementById('edit:updateButton').click();">
+			<f:selectItems value="#{editService.serviceConfigurationView.availableIntervals}"/>
+			
 		</h:selectOneMenu>			
 	</h:panelGroup>
-    <jsp:include page="<%= intervalPage %>"/>
-    	<h:panelGroup>
+	
+  
+     <jsp:include page="<%=intervalPage %>"/>
+  
+ 
+ 	<h:panelGroup>
+		<f:verbatim><f:verbatim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</f:verbatim></f:verbatim>
+	</h:panelGroup>
+	<h:panelGroup>				
+		<f:verbatim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</f:verbatim>
+	</h:panelGroup>
+    <h:panelGroup>
 		<h:outputText value="#{web.text.SELECTACTION}"/>
 	</h:panelGroup>
 	<h:panelGroup>
-		<h:selectOneMenu value="#{editService.selectedAction}" valueChangeListener="#{editService.changeAction}">
-			<f:selectItems value="#{editService.availableActions}"/>
+		<h:selectOneMenu value="#{editService.serviceConfigurationView.selectedAction}" valueChangeListener="#{editService.changeAction}"
+		                 onchange="document.getElementById('edit:updateButton').click();">
+			<f:selectItems value="#{editService.serviceConfigurationView.availableActions}"/>
 		</h:selectOneMenu>			
 	</h:panelGroup>
-    <jsp:include page="<%= actionPage %>"/>        
+  
+     <jsp:include page="<%=actionPage %>"/>
+      
+	<h:panelGroup>
+		<f:verbatim><f:verbatim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</f:verbatim></f:verbatim>
+	</h:panelGroup>
+	<h:panelGroup>				
+		<f:verbatim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</f:verbatim>
+	</h:panelGroup>      
 	<h:panelGroup>
 		<h:outputText value="#{web.text.ACTIVE}"/>
 	</h:panelGroup>
 	<h:panelGroup>
-
 			<h:selectBooleanCheckbox id="activeCheckbox" value="#{editService.serviceConfigurationView.active}"/>
-
 	</h:panelGroup>
 	<h:panelGroup>
 		<h:outputText value="#{web.text.DESCRIPTION}"/>
@@ -87,6 +117,7 @@
 		<h:commandButton id="saveButton" action="#{editService.save}" value="#{web.text.SAVE}"/>		
 		<f:verbatim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</f:verbatim>
 		<h:commandButton id="cancelButton" action="#{editService.cancel}" value="#{web.text.CANCEL}"/>		
+		<h:commandButton id="updateButton" action="#{editService.update}" value="Update" style="visibility:hidden;" />		
 	</h:panelGroup>
 </h:panelGrid>
 </h:form>

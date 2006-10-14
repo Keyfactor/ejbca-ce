@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.model.services;
 
+import org.ejbca.core.model.log.Admin;
+
 /**
  * The worker interface of a service. It is the main class of a service.
  * A worker has one IInterval and one IAction.
@@ -21,7 +23,7 @@ package org.ejbca.core.model.services;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: IWorker.java,v 1.2 2006-10-01 17:46:25 herrvendil Exp $
+ * @version $Id: IWorker.java,v 1.3 2006-10-14 05:01:46 herrvendil Exp $
  */
 public interface IWorker {
 
@@ -31,7 +33,7 @@ public interface IWorker {
 	 * @param serviceConfiguration
 	 * @param serviceName
 	 */
-	public void init(ServiceConfiguration serviceConfiguration, String serviceName);
+	public void init(Admin admin, ServiceConfiguration serviceConfiguration, String serviceName);
 	
 	/**
 	 * The main method that is called by the TimeSessionBean each time

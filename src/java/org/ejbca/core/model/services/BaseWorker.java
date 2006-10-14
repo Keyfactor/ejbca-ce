@@ -15,6 +15,7 @@ package org.ejbca.core.model.services;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.services.intervals.DummyInterval;
 
 /**
@@ -22,7 +23,7 @@ import org.ejbca.core.model.services.intervals.DummyInterval;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: BaseWorker.java,v 1.2 2006-10-01 17:46:25 herrvendil Exp $
+ * @version $Id: BaseWorker.java,v 1.3 2006-10-14 05:01:46 herrvendil Exp $
  */
 public abstract class BaseWorker implements IWorker {
 
@@ -32,12 +33,15 @@ public abstract class BaseWorker implements IWorker {
     protected String serviceName = null;
     private IAction action = null;
     private IInterval interval = null;
+    
+    private Admin admin = null;
 
 	/**
 	 * @see org.ejbca.core.model.services.IWorker#init(org.ejbca.core.model.services.ServiceConfiguration, java.lang.String)
 	 */
-	public void init(ServiceConfiguration serviceConfiguration,
+	public void init(Admin admin, ServiceConfiguration serviceConfiguration,
 			String serviceName) {
+		this.admin = admin;
 		this.serviceName = serviceName;
 		this.properties = serviceConfiguration.getWorkerProperties();
 		
@@ -86,6 +90,12 @@ public abstract class BaseWorker implements IWorker {
 		return action;
 	}
 	
+	/**
+	 * Returns the admin that should be used for other calls.
+	 */
+	protected Admin getAdmin(){
+		return admin;
+	}
 	
 
 }

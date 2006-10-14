@@ -10,19 +10,46 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.model.services;
+package org.ejbca.ui.web.admin.services.servicetypes;
 
-import java.io.Serializable;
+import java.io.IOException;
+import java.util.Properties;
 
 /**
- * General Class used to send information from a worker to a action.
+ * Class used to populate the fields in the noaction subpage. 
  * 
- * Can contain any data that both the worker and action supports.
- * 
- * @author Philip Vendil 2006 sep 27
+ * @author Philip Vendil 2006 sep 30
  *
- * @version $Id: ActionInfo.java,v 1.3 2006-10-14 05:01:46 herrvendil Exp $
+ * @version $Id: NoActionType.java,v 1.1 2006-10-14 05:01:44 herrvendil Exp $
  */
-public interface ActionInfo extends Serializable {
+public class NoActionType extends ActionType {
+	
+	public static final String NAME = "NOACTION";
+	
+	
+	public NoActionType() {
+		super("noaction.jsp", NAME, true);
+	}
+
+    String unit;
+    String value;
+
+
+	public String getClassPath() {
+		return "org.ejbca.core.model.services.actions.NoAction";
+	}
+
+	public Properties getProperties() throws IOException{
+		Properties retval = new Properties();
+		return retval;
+	}
+	
+	public void setProperties(Properties properties) throws IOException{
+	}
+
+	public boolean isCustom() {
+		return false;
+	}
+
 
 }

@@ -26,18 +26,20 @@ import java.util.Properties;
  * 
  * @author Philip Vendil 2006 sep 30
  *
- * @version $Id: CustomWorkerType.java,v 1.1 2006-10-01 17:46:47 herrvendil Exp $
+ * @version $Id: CustomWorkerType.java,v 1.2 2006-10-14 05:01:41 herrvendil Exp $
  */
 public class CustomWorkerType extends WorkerType {
 	
 	public static final String NAME = "CUSTOMWORKER";
 	
 	public CustomWorkerType() {
-		super("customworker.jsp", "NAME", false);
+		super("customworker.jsp", NAME, true);
 		
 		compatibleActionTypeNames.add(CustomActionType.NAME);
+		compatibleActionTypeNames.add(NoActionType.NAME);
 		
 		compatibleIntervalTypeNames.add(CustomIntervalType.NAME);
+		compatibleIntervalTypeNames.add(PeriodicalIntervalType.NAME);
 	}
 
 	private String classPath;	

@@ -4,21 +4,22 @@
 
 
 	<h:panelGroup>
-		<h:outputText value="#{web.text.CUSTOMACTIONSETTINGS}"/>
+		<h:outputText value="#{web.text.MAILACTIONSETTINGS}"/>
 	</h:panelGroup>
 	<h:panelGroup>	
 	     <f:verbatim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</f:verbatim>	
 	</h:panelGroup>
 	<h:panelGroup>
-		<h:outputText value="#{web.text.CUSTOMACTIONCLASSPATH}"/>
+		<h:outputText value="#{web.text.MAILACTIONSENDERADDRESS}"/>
 	</h:panelGroup>
 	<h:panelGroup>
-			<h:inputText id="actionClassPathTextField" value="#{editService.customActionType.classPath}" size="40"/>		
+			<h:inputText id="mailActionSenderAddressTextField" value="#{editService.mailActionType.senderAddress}" size="40"/>		
 	</h:panelGroup>
 	<h:panelGroup>
-		<h:outputText value="#{web.text.CUSTOMACTIONPROPERTIES}"/>
+		<h:outputText value="#{web.text.MAILACTIONRECIEVERADDRESS}"/>
 	</h:panelGroup>
 	<h:panelGroup>
-		<h:inputTextarea id="actionPropsTextArea" value="#{editService.customActionType.propertyText}" rows="6" cols="40"/>
+			<h:inputText id="mailActionRecieverAddressTextField" value="#{editService.mailActionType.recieverAddress}" size="40"/>
 	</h:panelGroup>
+
 

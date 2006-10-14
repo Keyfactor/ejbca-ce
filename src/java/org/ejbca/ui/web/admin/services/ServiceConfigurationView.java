@@ -15,13 +15,21 @@ package org.ejbca.ui.web.admin.services;
 
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.faces.model.SelectItem;
 
 import org.ejbca.core.model.services.ServiceConfiguration;
+import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.services.servicetypes.ActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomIntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.IntervalType;
+import org.ejbca.ui.web.admin.services.servicetypes.ServiceType;
 import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
 
 /**
@@ -30,7 +38,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
  * 
  * @author Philip Vendil 2006 sep 30
  *
- * @version $Id: ServiceConfigurationView.java,v 1.1 2006-10-01 17:46:48 herrvendil Exp $
+ * @version $Id: ServiceConfigurationView.java,v 1.2 2006-10-14 05:01:48 herrvendil Exp $
  */
 public class ServiceConfigurationView {
 	
@@ -38,36 +46,51 @@ public class ServiceConfigurationView {
 	private ActionType actionType;
 	private IntervalType intervalType;
 	
+    private String selectedWorker;
+    private String selectedInterval;
+    private String selectedAction;
+    
+    private ServiceTypeManager typeManager;
+	
 	private boolean active = false;
 	private String description = "";
 	
 	public ServiceConfigurationView(ServiceConfiguration serviceConfiguration) throws IOException {
-		IntervalType intervalType = (IntervalType) ServiceTypeManager.getServiceTypeByClassPath(serviceConfiguration.getIntervalClassPath());
-		if(intervalType == null){
-		  intervalType = new CustomIntervalType();
-		  ((CustomIntervalType) intervalType).setClassPath(serviceConfiguration.getIntervalClassPath());
-		}		
-		intervalType.setProperties(serviceConfiguration.getIntervalProperties());
-		setIntervalType(intervalType);
 		
-		ActionType actionType = (ActionType) ServiceTypeManager.getServiceTypeByClassPath(serviceConfiguration.getActionClassPath());
-		if(actionType == null){
-		  actionType = new CustomActionType();
-		  ((CustomActionType) actionType).setClassPath(serviceConfiguration.getActionClassPath());
-		}		
-		actionType.setProperties(serviceConfiguration.getActionProperties());
-	    setActionType(actionType);
+		typeManager = new ServiceTypeManager();
 		
-		WorkerType workerType = (WorkerType) ServiceTypeManager.getServiceTypeByClassPath(serviceConfiguration.getWorkerClassPath());
+		WorkerType workerType = (WorkerType) typeManager.getServiceTypeByClassPath(serviceConfiguration.getWorkerClassPath());
 		if(workerType == null){
 		   workerType = new CustomWorkerType();
 		  ((CustomWorkerType) workerType).setClassPath(serviceConfiguration.getWorkerClassPath());
 		}		
 		workerType.setProperties(serviceConfiguration.getWorkerProperties());
 	    setWorkerType(workerType);
+	    selectedWorker = workerType.getName();			
+		
+		IntervalType intervalType = (IntervalType) typeManager.getServiceTypeByClassPath(serviceConfiguration.getIntervalClassPath());
+		if(intervalType == null){
+		  intervalType = new CustomIntervalType();
+		  ((CustomIntervalType) intervalType).setClassPath(serviceConfiguration.getIntervalClassPath());
+		}		
+		intervalType.setProperties(serviceConfiguration.getIntervalProperties());
+		setIntervalType(intervalType);
+		selectedInterval = intervalType.getName();
+		
+		ActionType actionType = (ActionType) typeManager.getServiceTypeByClassPath(serviceConfiguration.getActionClassPath());
+		if(actionType == null){
+		  actionType = new CustomActionType();
+		  ((CustomActionType) actionType).setClassPath(serviceConfiguration.getActionClassPath());
+		}		
+		actionType.setProperties(serviceConfiguration.getActionProperties());
+	    setActionType(actionType);
+		selectedAction = actionType.getName();
+	      
 		
 		setDescription(serviceConfiguration.getDescription());
 		setActive(serviceConfiguration.isActive());
+		
+		
 	}
 	
 	/**
@@ -139,7 +162,7 @@ public class ServiceConfigurationView {
 	/**
 	 * @param intervalType the intervalType to set
 	 */
-	public void setIntervalType(IntervalType intervalType) {
+	public void setIntervalType(IntervalType intervalType) {		
 		this.intervalType = intervalType;
 	}
 
@@ -155,8 +178,119 @@ public class ServiceConfigurationView {
 	 */
 	public void setWorkerType(WorkerType workerType) {
 		this.workerType = workerType;
+		
+		
+		if(selectedInterval != null &&!getAvailableIntervals().contains(selectedInterval)){				
+			setSelectedInterval((String) workerType.getCompatibleIntervalTypeNames().iterator().next());
+			setIntervalType((IntervalType) typeManager.getServiceTypeByName(getSelectedInterval()));
+		}
+		
+		if(selectedAction != null && !getAvailableActions().contains(selectedAction)){
+			setSelectedAction((String) workerType.getCompatibleActionTypeNames().iterator().next());
+			setActionType((ActionType) typeManager.getServiceTypeByName(getSelectedAction()));
+		}
+	}
+	
+	/**
+	 * @return the selectedAction
+	 */
+	public String getSelectedAction() {
+		return selectedAction;
+	}
+
+	/**
+	 * @param selectedAction the selectedAction to set
+	 */
+	public void setSelectedAction(String selectedAction) {
+		this.selectedAction = selectedAction;
+	}
+
+	/**
+	 * @return the selectedInterval
+	 */
+	public String getSelectedInterval() {
+		return selectedInterval;
+	}
+
+	/**
+	 * @param selectedInterval the selectedInterval to set
+	 */
+	public void setSelectedInterval(String selectedInterval) {
+		this.selectedInterval = selectedInterval;
+	}
+
+	/**
+	 * @return the selectedWorker
+	 */
+	public String getSelectedWorker() {
+		return selectedWorker;
+	}
+
+	/**
+	 * @param selectedWorker the selectedWorker to set
+	 */
+	public void setSelectedWorker(String selectedWorker) {
+		this.selectedWorker = selectedWorker;
+	}	
+	
+	public List getAvailableWorkers(){
+		ArrayList retval = new ArrayList();
+		Collection available = typeManager.getAvailableWorkerTypes();
+		Iterator iter = available.iterator();
+		while(iter.hasNext()){
+			ServiceType next = (ServiceType) iter.next();
+			String label = next.getName();
+			if(next.isTranslatable()){
+				label = (String) EjbcaJSFHelper.getBean().getText().get(next.getName());
+			}
+			retval.add(new SelectItem(next.getName(),label));
+		}
+		
+		return retval;
+	}
+	
+	public List getAvailableIntervals(){
+		ArrayList retval = new ArrayList();
+		WorkerType currentWorkerType = (WorkerType) typeManager.getServiceTypeByName(selectedWorker);
+		Iterator iter = currentWorkerType.getCompatibleIntervalTypeNames().iterator();
+		while(iter.hasNext()){
+			String name = (String) iter.next();
+			ServiceType next = typeManager.getServiceTypeByName(name);
+			String label = name;
+			if(next.isTranslatable()){
+				label = (String) EjbcaJSFHelper.getBean().getText().get(name);
+			}
+			
+			retval.add(new SelectItem(name,label));
+		}
+		
+		
+		return retval;
+	}
+	
+	public List getAvailableActions(){
+		ArrayList retval = new ArrayList();
+		WorkerType currentWorkerType = (WorkerType) typeManager.getServiceTypeByName(selectedWorker);
+		Iterator iter = currentWorkerType.getCompatibleActionTypeNames().iterator();
+		while(iter.hasNext()){
+			String name = (String) iter.next();
+			ServiceType next = typeManager.getServiceTypeByName(name);
+			String label = name;
+			if(next.isTranslatable()){
+				label = (String) EjbcaJSFHelper.getBean().getText().get(name);
+			}
+			retval.add(new SelectItem(name,label));
+		}		
+		return retval;
+	}
+	
+	/** returns this sessions service type manager */
+	public ServiceTypeManager getServiceTypeManager(){
+		return typeManager;
 	}
 	
 	
+	
+
 
 }

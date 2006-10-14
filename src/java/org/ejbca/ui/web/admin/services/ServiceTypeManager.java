@@ -12,14 +12,26 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.services;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
+import org.apache.log4j.Logger;
+import org.ejbca.ui.web.admin.services.servicetypes.CRLUpdateWorkerType;
+import org.ejbca.ui.web.admin.services.servicetypes.CertificateExpirationNotifierWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomIntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomWorkerType;
+import org.ejbca.ui.web.admin.services.servicetypes.MailActionType;
+import org.ejbca.ui.web.admin.services.servicetypes.NoActionType;
+import org.ejbca.ui.web.admin.services.servicetypes.PeriodicalIntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.ServiceType;
+import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
 
 /**
  * Central class managing available services types. New workers, actions, intervals
@@ -29,23 +41,56 @@ import org.ejbca.ui.web.admin.services.servicetypes.ServiceType;
  *
  * @author Philip Vendil 2006 sep 29
  *
- * @version $Id: ServiceTypeManager.java,v 1.1 2006-10-01 17:46:48 herrvendil Exp $
+ * @version $Id: ServiceTypeManager.java,v 1.2 2006-10-14 05:01:48 herrvendil Exp $
  */
 public class ServiceTypeManager {
 	
+    private static Logger log = Logger.getLogger(ServiceTypeManager.class);
+	
+	// static variables common for the application
 	private static HashMap availableTypesByName = new HashMap();
 	private static HashMap availableTypesByClassPath = new HashMap();
 	private static ArrayList workerTypes = new ArrayList();
 	
+
+	private HashMap localAvailableTypesByName;
+	private HashMap localAvailableTypesByClassPath;
+	private ArrayList localWorkerTypes;
+	
 	static{
 		ServiceTypeManager.registerServiceType(new CustomIntervalType());
-		ServiceTypeManager.registerServiceType(new CustomActionType());		
+		ServiceTypeManager.registerServiceType(new PeriodicalIntervalType());
+		ServiceTypeManager.registerServiceType(new CustomActionType());
+		ServiceTypeManager.registerServiceType(new NoActionType());	
+		ServiceTypeManager.registerServiceType(new MailActionType());	
 		ServiceTypeManager.registerServiceType(new CustomWorkerType());
+		ServiceTypeManager.registerServiceType(new CRLUpdateWorkerType());
+		ServiceTypeManager.registerServiceType(new CertificateExpirationNotifierWorkerType());
 	}
 	
 
 
-	protected ServiceTypeManager(){}
+	public  ServiceTypeManager(){
+		// Create a deep clone of the static global data.
+		try{
+		  ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		  ObjectOutputStream oos = new ObjectOutputStream(baos);
+		  oos.writeObject(availableTypesByName);
+		  oos.writeObject(availableTypesByClassPath);
+		  oos.writeObject(workerTypes);
+		  ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+		  ObjectInputStream ois = new ObjectInputStream(bais);
+		  localAvailableTypesByName = (HashMap) ois.readObject();
+		  localAvailableTypesByClassPath = (HashMap) ois.readObject();
+		  localWorkerTypes = (ArrayList) ois.readObject();
+		}catch(IOException e){
+			log.error(e);
+		} catch (ClassNotFoundException e) {
+			log.error(e);
+		}
+
+		
+	}
 	
 	/**
 	 * Method that registers a service type in system.
@@ -57,40 +102,33 @@ public class ServiceTypeManager {
 		if(!serviceType.isCustom()){
 			availableTypesByClassPath.put(serviceType.getClassPath(), serviceType);
 		}
+		if(serviceType instanceof WorkerType){
+			workerTypes.add(serviceType);
+		}
+		
 	}
 	
-	/**
-	 * Method that removes a service type from the system
-	 * 
-	 */
-	public static void deRegisterServiceType(ServiceType serviceType){
-		String name = serviceType.getName();
-		availableTypesByName.remove(name);
-		if(!serviceType.isCustom()){
-			availableTypesByClassPath.remove(serviceType.getClassPath());
-		}
-	}
 	
 	/**
 	 * Returns the service type with the given name.
 	 */
-	public static ServiceType getServiceTypeByName(String name){
-		return (ServiceType) availableTypesByName.get(name);
+	public  ServiceType getServiceTypeByName(String name){
+		return (ServiceType) localAvailableTypesByName.get(name);
 	}
 	
 	/**
 	 * Returns the service type with the classpath or
 	 * null if the classpath should have a custom page.
 	 */
-	public static ServiceType getServiceTypeByClassPath(String classPath){		
-		return (ServiceType) availableTypesByClassPath.get(classPath);
+	public ServiceType getServiceTypeByClassPath(String classPath){		
+		return (ServiceType) localAvailableTypesByClassPath.get(classPath);
 	}
 	
 	/**
 	 * @return returns all available workers in the GUI
 	 */
-	public static Collection getAvailableWorkerTypes(){
-		return workerTypes;
+	public Collection getAvailableWorkerTypes(){
+		return localWorkerTypes;
 	}
 	
 	

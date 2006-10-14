@@ -124,7 +124,10 @@ public class LocalServiceSessionBean extends BaseSessionBean implements javax.ej
     private static InternalResources intres = InternalResources.getInstance(); 
 
 
-    
+    /**
+     * The administrator that the services should be runned as.
+     */
+    Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
     
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -145,8 +148,7 @@ public class LocalServiceSessionBean extends BaseSessionBean implements javax.ej
      * @param timer
      */
 	public void ejbTimeout(Timer timer) {
-		Integer timerInfo = (Integer) timer.getInfo();
-		Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
+		Integer timerInfo = (Integer) timer.getInfo();		
 			try {
 					ServiceDataLocal serviceData = getServiceDataHome().findByPrimaryKey(timerInfo);
 					IWorker worker = getWorker(serviceData.getServiceConfiguration(),serviceData.getName());
@@ -228,7 +230,7 @@ public class LocalServiceSessionBean extends BaseSessionBean implements javax.ej
 		IWorker worker = null;
     	try {
 			worker = (IWorker) this.getClass().getClassLoader().loadClass(serviceConfiguration.getWorkerClassPath()).newInstance();
-			worker.init(serviceConfiguration, serviceName);
+			worker.init(intAdmin, serviceConfiguration, serviceName);
 		} catch (Exception e) {						
 			log.error("Worker is missconfigured, check the classpath",e);
 		}    	

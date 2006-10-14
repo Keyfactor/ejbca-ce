@@ -14,8 +14,6 @@ package org.ejbca.ui.web.admin.services;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.faces.application.Application;
@@ -26,10 +24,14 @@ import javax.faces.model.SelectItem;
 
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.services.servicetypes.ActionType;
+import org.ejbca.ui.web.admin.services.servicetypes.CertificateExpirationNotifierWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomIntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomWorkerType;
-import org.ejbca.ui.web.admin.services.servicetypes.ServiceType;
+import org.ejbca.ui.web.admin.services.servicetypes.IntervalType;
+import org.ejbca.ui.web.admin.services.servicetypes.MailActionType;
+import org.ejbca.ui.web.admin.services.servicetypes.PeriodicalIntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
 
 /**
@@ -37,7 +39,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
  * 
  * @author Philip Vendil 2006 sep 30
  *
- * @version $Id: EditServiceManagedBean.java,v 1.1 2006-10-01 17:46:48 herrvendil Exp $
+ * @version $Id: EditServiceManagedBean.java,v 1.2 2006-10-14 05:01:48 herrvendil Exp $
  */
 public class EditServiceManagedBean extends BaseManagedBean {
 	
@@ -45,9 +47,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
 	
 	private String serviceName = "";
 	
-    private String selectedWorker;
-    private String selectedInterval;
-    private String selectedAction;
+
 	
 	public EditServiceManagedBean(){
 		try {
@@ -104,117 +104,104 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		return "listservices";
 	}
 	
+	public String update(){
+		System.out.println("update pressed");
+		return "editservice";
+	}
+	
 	
 	/**
 	 * Help method used to edit data in the custom worker type.
 	 */
 	public CustomWorkerType getCustomWorkerType(){
-		return (CustomWorkerType) this.serviceConfigurationView.getWorkerType();
+		return (CustomWorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(CustomWorkerType.NAME);
 	}
 	
 	/**
 	 * Help method used to edit data in the custom action type.
 	 */
 	public CustomActionType getCustomActionType(){
-		return (CustomActionType) this.serviceConfigurationView.getActionType();
+		return (CustomActionType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(CustomActionType.NAME);
 	}	
 	
 	/**
 	 * Help method used to edit data in the custom interval type.
 	 */
 	public CustomIntervalType getCustomIntervalType(){
-		return (CustomIntervalType) this.serviceConfigurationView.getIntervalType();
+		return (CustomIntervalType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(CustomIntervalType.NAME);
 	}
-
+	
 	/**
-	 * @return the selectedAction
+	 * Help method used to edit data in the mail action type.
 	 */
-	public String getSelectedAction() {
-		return selectedAction;
-	}
-
-	/**
-	 * @param selectedAction the selectedAction to set
-	 */
-	public void setSelectedAction(String selectedAction) {
-		this.selectedAction = selectedAction;
-	}
-
-	/**
-	 * @return the selectedInterval
-	 */
-	public String getSelectedInterval() {
-		return selectedInterval;
-	}
-
-	/**
-	 * @param selectedInterval the selectedInterval to set
-	 */
-	public void setSelectedInterval(String selectedInterval) {
-		this.selectedInterval = selectedInterval;
-	}
-
-	/**
-	 * @return the selectedWorker
-	 */
-	public String getSelectedWorker() {
-		return selectedWorker;
-	}
-
-	/**
-	 * @param selectedWorker the selectedWorker to set
-	 */
-	public void setSelectedWorker(String selectedWorker) {
-		this.selectedWorker = selectedWorker;
+	public MailActionType getMailActionType(){
+		return (MailActionType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(MailActionType.NAME);
 	}	
 	
-	public List getAvailableWorkers(){
-		ArrayList retval = new ArrayList();
-		Collection available = ServiceTypeManager.getAvailableWorkerTypes();
-		Iterator iter = available.iterator();
-		while(iter.hasNext()){
-			ServiceType next = (ServiceType) iter.next();
-			retval.add(new SelectItem(next.getName(),next.getName()));
-		}
-		
-		return retval;
+	/**
+	 * Help method used to edit data in the certificate expriation worker type.
+	 */
+	public CertificateExpirationNotifierWorkerType getCertificateExpriationType(){
+		return (CertificateExpirationNotifierWorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(CertificateExpirationNotifierWorkerType.NAME);
 	}
 	
-	public List getAvailableIntervals(){
-		ArrayList retval = new ArrayList();
-		WorkerType currentWorkerType = (WorkerType) ServiceTypeManager.getServiceTypeByName(selectedWorker);
-		Iterator iter = currentWorkerType.getCompatibleIntervalTypeNames().iterator();
-		while(iter.hasNext()){
-			String name = (String) iter.next();
-			retval.add(new SelectItem(name,name));
-		}
-		
-		
-		return retval;
+	/**
+	 * Help method used to edit data in the custom interval type.
+	 */
+	public PeriodicalIntervalType getPeriodicalIntervalType(){
+		return (PeriodicalIntervalType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(PeriodicalIntervalType.NAME);
 	}
-	
-	public List getAvailableActions(){
-		ArrayList retval = new ArrayList();
-		WorkerType currentWorkerType = (WorkerType) ServiceTypeManager.getServiceTypeByName(selectedWorker);
-		Iterator iter = currentWorkerType.getCompatibleActionTypeNames().iterator();
-		while(iter.hasNext()){
-			String name = (String) iter.next();
-			retval.add(new SelectItem(name,name));
-		}		
-		return retval;
-	}
-	
+
 	public void changeWorker(ValueChangeEvent e){
+		
+		String newName = (String) e.getNewValue();
+		WorkerType newWorkerType = (WorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(newName);
+		serviceConfigurationView.setWorkerType(newWorkerType);
+		serviceConfigurationView.setSelectedWorker(newName);
+		
         System.out.println("changeWorker called to " + e.getNewValue());
 		
 	}
 	
 	public void changeInterval(ValueChangeEvent e){
-        System.out.println("changeInterval called to " + e.getNewValue());
+		String newName = (String) e.getNewValue();
+		
+		WorkerType workerType = (WorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(serviceConfigurationView.getSelectedWorker());
+		if(workerType.getCompatibleIntervalTypeNames().contains(newName)){
+			IntervalType newIntervalType = (IntervalType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(newName);
+			serviceConfigurationView.setIntervalType(newIntervalType);
+			serviceConfigurationView.setSelectedInterval(newName);
+			System.out.println("changeInterval called to " + e.getNewValue());
+		}else{
+			System.out.println("changeInterval called to not changed");
+		}
 	}
 	
 	public void changeAction(ValueChangeEvent e){
-        System.out.println("changeAction called to " + e.getNewValue());
+		
+		String newName = (String) e.getNewValue();
+		
+		WorkerType workerType = (WorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(serviceConfigurationView.getSelectedWorker());
+		if(workerType.getCompatibleActionTypeNames().contains(newName)){
+		  ActionType newActionType = (ActionType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(newName);
+		  serviceConfigurationView.setActionType(newActionType);
+		  serviceConfigurationView.setSelectedAction(newName);
+		  System.out.println("changeAction called to " + e.getNewValue());
+		}else{
+			 System.out.println("changeAction called to not changed");
+		}
 	}
+	
+	public List getAvailableCAs(){
+		//TODO
+		ArrayList retval = new ArrayList();
+		retval.add(new SelectItem("AdminCA1","AdminCA1"));
+		retval.add(new SelectItem("AdminCA2","AdminCA2"));
+		retval.add(new SelectItem("AdminCA3","AdminCA3"));
+		
+		return retval;
+		
+	}
+
 }
 

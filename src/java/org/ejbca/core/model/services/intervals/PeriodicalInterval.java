@@ -24,7 +24,7 @@ import org.ejbca.core.model.services.BaseInterval;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: PeriodicalInterval.java,v 1.1 2006-10-01 17:46:47 herrvendil Exp $
+ * @version $Id: PeriodicalInterval.java,v 1.2 2006-10-14 05:01:47 herrvendil Exp $
  */
 public class PeriodicalInterval extends BaseInterval {
 	
@@ -87,7 +87,7 @@ public class PeriodicalInterval extends BaseInterval {
 			}
 			interval = intvalue * unitval;
 		}
-		log.debug("zPeriodicalInterval.getTimeToExecution() : " + interval);
+		log.debug("PeriodicalInterval.getTimeToExecution() : " + interval);
 		return interval;
 	}
 

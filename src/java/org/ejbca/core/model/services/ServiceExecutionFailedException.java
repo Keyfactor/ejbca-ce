@@ -18,8 +18,22 @@ package org.ejbca.core.model.services;
  * 
  * @author Philip Vendil 2006 sep 28
  *
- * @version $Id: ServiceExecutionFailedException.java,v 1.2 2006-10-01 17:46:25 herrvendil Exp $
+ * @version $Id: ServiceExecutionFailedException.java,v 1.3 2006-10-14 05:01:46 herrvendil Exp $
  */
 public class ServiceExecutionFailedException extends Exception {
+
+	public ServiceExecutionFailedException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+	public ServiceExecutionFailedException(String message) {
+		super(message);
+	}
+
+	public ServiceExecutionFailedException(Throwable cause) {
+		super(cause);
+	}
+	
+	
 
 }

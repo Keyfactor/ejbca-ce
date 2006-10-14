@@ -22,14 +22,14 @@ import java.util.Properties;
  * 
  * @author Philip Vendil 2006 sep 30
  *
- * @version $Id: CustomIntervalType.java,v 1.1 2006-10-01 17:46:47 herrvendil Exp $
+ * @version $Id: CustomIntervalType.java,v 1.2 2006-10-14 05:01:45 herrvendil Exp $
  */
 public class CustomIntervalType extends IntervalType {
 	
 	public static final String NAME = "CUSTOMINTERVAL";
 	
 	public CustomIntervalType() {
-		super("custominterval.jsp", NAME, false);
+		super("custominterval.jsp", NAME, true);
 	}
 
 	private String classPath;

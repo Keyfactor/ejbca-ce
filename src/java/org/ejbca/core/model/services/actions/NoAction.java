@@ -10,19 +10,28 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.model.services;
+package org.ejbca.core.model.services.actions;
 
-import java.io.Serializable;
+
+import org.ejbca.core.model.services.ActionException;
+import org.ejbca.core.model.services.ActionInfo;
+import org.ejbca.core.model.services.BaseAction;
 
 /**
- * General Class used to send information from a worker to a action.
- * 
- * Can contain any data that both the worker and action supports.
+ * No Action that does nothing
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: ActionInfo.java,v 1.3 2006-10-14 05:01:46 herrvendil Exp $
+ * @version $Id: NoAction.java,v 1.1 2006-10-14 05:01:47 herrvendil Exp $
  */
-public interface ActionInfo extends Serializable {
+public class NoAction extends BaseAction {
+	
+
+	/**
+	 * @see org.ejbca.core.model.services.IAction#performAction(org.ejbca.core.model.services.ActionInfo)
+	 */
+	public void performAction(ActionInfo actionInfo) throws ActionException {
+		// Do nothing
+	}
 
 }

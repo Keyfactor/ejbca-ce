@@ -13,6 +13,7 @@
 package org.ejbca.ui.web.admin.services.servicetypes;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Properties;
 
 /**
@@ -21,9 +22,9 @@ import java.util.Properties;
  * 
  * @author Philip Vendil 2006 sep 29
  *
- * @version $Id: ServiceType.java,v 1.1 2006-10-01 17:46:47 herrvendil Exp $
+ * @version $Id: ServiceType.java,v 1.2 2006-10-14 05:01:45 herrvendil Exp $
  */
-public abstract class ServiceType {
+public abstract class ServiceType implements Serializable{
 	
 	private String jSFSubViewPage;
 	private String name;

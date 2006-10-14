@@ -22,14 +22,14 @@ import java.util.Properties;
  * 
  * @author Philip Vendil 2006 sep 30
  *
- * @version $Id: CustomActionType.java,v 1.1 2006-10-01 17:46:47 herrvendil Exp $
+ * @version $Id: CustomActionType.java,v 1.2 2006-10-14 05:01:41 herrvendil Exp $
  */
 public class CustomActionType extends ActionType {
 	
 	public static final String NAME = "CUSTOMACTION";
 	
 	public CustomActionType() {
-		super("customaction.jsp", NAME, false);
+		super("customaction.jsp", NAME, true);
 	}
 
 	private String classPath;
