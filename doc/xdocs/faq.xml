@@ -93,6 +93,9 @@ else
   ANT_HOME=/your/ant/home
 fi      
       </pre>
+      <p>
+      For Ubuntu things are much easier, just 'sudo apt-get install ant' and 'sudo apt-get install ant-optional'.
+      </p>
       </answer>
     </faq>
     <faq>
