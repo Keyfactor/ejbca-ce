@@ -57,7 +57,7 @@ Needed to build and run are:
 <li>JDK 1.4.x or 1.5.x</li>
 <li><i>Unlimited Strength Jurisdiction Policy Files</i> for your JDK</li>
 <li>JBOSS >=4.0.3 (latest tested verison is JBoss 4.0.4)</li>
-<li>Ant 1.6.x to build (http://jakarta.apache.org/ant/)</li>
+<li>Ant >= 1.6.5 to build (http://jakarta.apache.org/ant/)</li>
 <li>Apache Myfaces 1.1 JSF libraries (included in JBoss >=4.0.3), without this you can still run EJBCA but with limited functionality in the adminGUI.</li>
 </ul>
 <p>EJBCA can also run on other application servers, see doc/howto/HOWTO-Appserver.txt for details.</p>
