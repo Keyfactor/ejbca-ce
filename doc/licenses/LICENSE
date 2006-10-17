@@ -26,3 +26,9 @@ the RA (IUserAdminSession through rmi) to create users for EJBCA from another so
 constraints on the whole application itself. A notice that the application uses 
 EJBCA and the possibility to get the source of EJBCA used in the application 
 should be provided.
+
+Using the plug-in APIs it is possible to add functionality to EJBCA that does not fall under the LGPL.
+Implementing the plug-in API usually means implementing an interface in EJBCA and entering the
+classpath in a configuration page (for example custom publishers).
+A custom publisher would not have to be released as LGPL.
+
