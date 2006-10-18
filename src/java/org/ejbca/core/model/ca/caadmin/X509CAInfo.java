@@ -24,7 +24,7 @@ import org.ejbca.util.StringTools;
 /**
  * Holds nonsensitive information about a X509CA.
  *
- * @version $Id: X509CAInfo.java,v 1.5 2006-08-09 07:29:49 herrvendil Exp $
+ * @version $Id: X509CAInfo.java,v 1.6 2006-10-18 08:58:38 anatom Exp $
  */
 public class X509CAInfo extends CAInfo{
    
@@ -36,7 +36,7 @@ public class X509CAInfo extends CAInfo{
   String defaultcrldistpoint;
   String defaultocsplocator;
   String subjectaltname;
-  boolean alwaysUseUTF8SubjectDN;
+  boolean useUTF8PolicyText;
     
     /**
      * Constructor that should be used when creating CA and retreiving CA info.
@@ -46,7 +46,7 @@ public class X509CAInfo extends CAInfo{
                     CATokenInfo catokeninfo, String description, int revokationreason, Date revokationdate, String policyid, int crlperiod, int crlIssueInterval, int crlOverlapTime, Collection crlpublishers,
                     boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
                     boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultocspservicelocator, boolean finishuser,
-                    Collection extendedcaserviceinfos, boolean alwaysuse8tf8subjectdn, Collection approvalSettings, int numOfReqApprovals) {
+                    Collection extendedcaserviceinfos, boolean useUTF8PolicyText, Collection approvalSettings, int numOfReqApprovals) {
         this.subjectdn = StringTools.strip(CertTools.stringToBCDNString(subjectdn));
         this.caid = this.subjectdn.hashCode();
         this.name = name;
@@ -75,7 +75,7 @@ public class X509CAInfo extends CAInfo{
         this.subjectaltname = subjectaltname;
         this.certificateprofileid = certificateprofileid;
         this.extendedcaserviceinfos = extendedcaserviceinfos; 
-        this.alwaysUseUTF8SubjectDN = alwaysuse8tf8subjectdn;
+        this.useUTF8PolicyText = useUTF8PolicyText;
         this.approvalSettings = approvalSettings;
         this.numOfReqApprovals = numOfReqApprovals;
     }
@@ -88,7 +88,7 @@ public class X509CAInfo extends CAInfo{
                       boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
                       boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultocspservicelocator, 
                       boolean finishuser, Collection extendedcaserviceinfos, 
-                      boolean alwaysuse8tf8subjectdn, Collection approvalSettings, int numOfReqApprovals) {        
+                      boolean useUTF8PolicyText, Collection approvalSettings, int numOfReqApprovals) {        
         this.caid = caid;
         this.validity=validity;
         this.catokeninfo = catokeninfo; 
@@ -105,7 +105,7 @@ public class X509CAInfo extends CAInfo{
         this.defaultocsplocator = defaultocspservicelocator;
         this.finishuser = finishuser;
 		this.extendedcaserviceinfos = extendedcaserviceinfos; 
-        this.alwaysUseUTF8SubjectDN = alwaysuse8tf8subjectdn;
+        this.useUTF8PolicyText = useUTF8PolicyText;
         this.approvalSettings = approvalSettings;
         this.numOfReqApprovals = numOfReqApprovals;
     }  
@@ -136,6 +136,6 @@ public class X509CAInfo extends CAInfo{
   
   public String getSubjectAltName(){ return subjectaltname; }
   
-  public boolean getAlwaysUseUTF8SubjectDN() { return alwaysUseUTF8SubjectDN; } 
+  public boolean getUseUTF8PolicyText() { return useUTF8PolicyText; } 
   
 }

@@ -71,10 +71,8 @@ import org.bouncycastle.asn1.x509.PolicyQualifierInfo;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.UserNotice;
-import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
-import org.bouncycastle.asn1.x509.X509NameEntryConverter;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.Iso4217CurrencyCode;
@@ -112,7 +110,6 @@ import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.cert.SubjectDirAttrExtension;
-import org.ejbca.util.cert.UTF8EntryConverter;
 
 
 
@@ -121,14 +118,14 @@ import org.ejbca.util.cert.UTF8EntryConverter;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.26 2006-09-29 08:49:56 anatom Exp $
+ * @version $Id: X509CA.java,v 1.27 2006-10-18 08:58:38 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
     private static final Logger log = Logger.getLogger(X509CA.class);
 
     // Default Values
-    public static final float LATEST_VERSION = 5;
+    public static final float LATEST_VERSION = 6;
 
     private byte[]  keyId = new byte[] { 1, 2, 3, 4, 5 };
     
@@ -142,7 +139,7 @@ public class X509CA extends CA implements Serializable {
     protected static final String CRLNUMBERCRITICAL              = "crlnumbercritical";
     protected static final String DEFAULTCRLDISTPOINT            = "defaultcrldistpoint";
     protected static final String DEFAULTOCSPSERVICELOCATOR      = "defaultocspservicelocator";
-    protected static final String ALWAYSUSEUTF8SUBJECTDN         = "alwaysuseutf8subjectdn";
+    protected static final String USEUTF8POLICYTEXT              = "useutf8policytext";
 
     // Public Methods
     /** Creates a new instance of CA, this constuctor should be used when a new CA is created */
@@ -158,7 +155,7 @@ public class X509CA extends CA implements Serializable {
       setDefaultCRLDistPoint(cainfo.getDefaultCRLDistPoint());
       setDefaultOCSPServiceLocator(cainfo.getDefaultOCSPServiceLocator());
       setFinishUser(cainfo.getFinishUser());
-      setAlwaysUseUTF8SubjectDN(cainfo.getAlwaysUseUTF8SubjectDN());
+      setUseUTF8PolicyText(cainfo.getUseUTF8PolicyText());
       
       data.put(CA.CATYPE, new Integer(CAInfo.CATYPE_X509));
       data.put(VERSION, new Float(LATEST_VERSION));   
@@ -178,7 +175,7 @@ public class X509CA extends CA implements Serializable {
         		  getCAToken(caId).getCATokenInfo(), getDescription(), getRevokationReason(), getRevokationDate(), getPolicyId(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(), getCRLPublishers(),
         		  getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(),
         		  getUseCRLNumber(), getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultOCSPServiceLocator(), getFinishUser(), externalcaserviceinfos, 
-        		  getAlwaysUseUTF8SubjectDN(), getApprovalSettings(), getNumOfRequiredApprovals());
+        		  getUseUTF8PolicyText(), getApprovalSettings(), getNumOfRequiredApprovals());
         super.setCAInfo(info);
     }
 
@@ -226,11 +223,11 @@ public class X509CA extends CA implements Serializable {
     	}     
     }
 
-    public boolean  getAlwaysUseUTF8SubjectDN(){
-        return ((Boolean)data.get(ALWAYSUSEUTF8SUBJECTDN)).booleanValue();
+    public boolean  getUseUTF8PolicyText(){
+        return ((Boolean)data.get(USEUTF8POLICYTEXT)).booleanValue();
       }
-      public void setAlwaysUseUTF8SubjectDN(boolean alwaysuseutf8) {
-        data.put(ALWAYSUSEUTF8SUBJECTDN, Boolean.valueOf(alwaysuseutf8));
+      public void setUseUTF8PolicyText(boolean useutf8) {
+        data.put(USEUTF8POLICYTEXT, Boolean.valueOf(useutf8));
       }
 
 
@@ -245,7 +242,7 @@ public class X509CA extends CA implements Serializable {
     	  setCRLNumberCritical(info.getCRLNumberCritical());
     	  setDefaultCRLDistPoint(info.getDefaultCRLDistPoint());
     	  setDefaultOCSPServiceLocator(info.getDefaultOCSPServiceLocator());
-    	  setAlwaysUseUTF8SubjectDN(info.getAlwaysUseUTF8SubjectDN());
+    	  setUseUTF8PolicyText(info.getUseUTF8PolicyText());
       }
     
 
@@ -334,18 +331,12 @@ public class X509CA extends CA implements Serializable {
         	altName = certProfile.createSubjectAltNameSubSet(altName);
         }
         
-        X509NameEntryConverter converter = null;
-        if (getAlwaysUseUTF8SubjectDN()) {
-        	converter = new UTF8EntryConverter();
-        } else {
-        	converter = new X509DefaultEntryConverter();
-        }
-        certgen.setSubjectDN(CertTools.stringToBcX509Name(dn, converter));
+        certgen.setSubjectDN(CertTools.stringToBcX509Name(dn));
         // We must take the issuer DN directly from the CA-certificate otherwise we risk re-ordering the DN
         // which many applications do not like.
         if (cacert == null) {
         	// This will be an initial root CA, since no CA-certificate exists
-            X509Name caname = CertTools.stringToBcX509Name(getSubjectDN(), converter);
+            X509Name caname = CertTools.stringToBcX509Name(getSubjectDN());
             certgen.setIssuerDN(caname);
         } else {
             certgen.setIssuerDN(cacert.getSubjectX500Principal());        	
@@ -439,7 +430,7 @@ public class X509CA extends CA implements Serializable {
         // Certificate Policies
         if ( (certProfile.getUseCertificatePolicies() == true) && (StringUtils.isNotEmpty(certProfile.getCertificatePolicyId())) ) {
             int displayencoding = DisplayText.CONTENT_TYPE_BMPSTRING;
-            if (getAlwaysUseUTF8SubjectDN()) {
+            if (getUseUTF8PolicyText()) {
                 displayencoding = DisplayText.CONTENT_TYPE_UTF8STRING;
             }
             PolicyInformation pi = getPolicyInformation(certProfile.getCertificatePolicyId(), certProfile.getCpsUrl(), certProfile.getUserNoticeText(), displayencoding);
@@ -577,7 +568,7 @@ public class X509CA extends CA implements Serializable {
         	 String dirAttrString = subject.getExtendedinformation().getSubjectDirectoryAttributes();
         	 if (StringUtils.isNotEmpty(dirAttrString)) {
             	 // Subject Directory Attributes is a sequence of Attribute
-            	 Collection attr = SubjectDirAttrExtension.getSubjectDirectoryAttributes(dirAttrString, converter);
+            	 Collection attr = SubjectDirAttrExtension.getSubjectDirectoryAttributes(dirAttrString);
             	 DEREncodableVector vec = new DEREncodableVector();
             	 Iterator iter = attr.iterator();
             	 while (iter.hasNext()) {
@@ -674,9 +665,13 @@ public class X509CA extends CA implements Serializable {
             	// Default value 10 minutes
             	setCRLOverlapTime(10);
             }
-            if (data.get(ALWAYSUSEUTF8SUBJECTDN) == null) {
-            	// Default value false (as before)
-            	setAlwaysUseUTF8SubjectDN(false);
+            if (data.get("alwaysuseutf8subjectdn") == null) {
+            	// Default value false
+            	setUseUTF8PolicyText(false);
+            } else {
+            	// Use the same value as we had before when we had alwaysuseutf8subjectdn
+                Boolean useutf8 = ((Boolean)data.get("alwaysuseutf8subjectdn")).booleanValue();
+            	setUseUTF8PolicyText(useutf8);
             }
             
             data.put(VERSION, new Float(LATEST_VERSION));

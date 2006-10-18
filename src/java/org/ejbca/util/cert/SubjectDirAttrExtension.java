@@ -33,14 +33,13 @@ import org.bouncycastle.asn1.DERString;
 import org.bouncycastle.asn1.x509.Attribute;
 import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
 import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.asn1.x509.X509NameEntryConverter;
 import org.ejbca.util.CertTools;
 
 /**
  * A class for reading values from SubjectDirectoryAttributes extension.
  *
  * @author  Tomas Gustavsson
- * @version $Id: SubjectDirAttrExtension.java,v 1.3 2006-07-28 07:14:16 anatom Exp $
+ * @version $Id: SubjectDirAttrExtension.java,v 1.4 2006-10-18 08:58:39 anatom Exp $
  */
 public class SubjectDirAttrExtension extends CertTools {
 
@@ -133,11 +132,10 @@ public class SubjectDirAttrExtension extends CertTools {
     /**
      * From subjectDirAttributes string as defined in getSubjectDirAttribute 
      * @param string of SubjectDirectoryAttributes
-     * @param converter BC converter for DirectoryStrings, that determines which encoding is chosen
      * @return A Collection of ASN.1 Attribute (org.bouncycastle.asn1.x509), or an empty Collection, never null
      * @see #getSubjectDirectoryAttributes(X509Certificate)
      */
-    public static Collection getSubjectDirectoryAttributes(String dirAttr, X509NameEntryConverter converter) {
+    public static Collection getSubjectDirectoryAttributes(String dirAttr) {
     	ArrayList ret = new ArrayList();
     	Attribute attr = null;
         String value = CertTools.getPartFromDN(dirAttr, "countryOfResidence");

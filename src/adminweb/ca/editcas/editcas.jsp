@@ -76,7 +76,7 @@
   static final String CHECKBOX_USECRLNUMBER                       = "checkboxusecrlnumber";
   static final String CHECKBOX_CRLNUMBERCRITICAL                  = "checkboxcrlnumbercritical";
   static final String CHECKBOX_FINISHUSER                         = "checkboxfinishuser";
-  static final String CHECKBOX_USEUTF8SUBJECTDN                   = "checkboxuseutf8subjectdn";
+  static final String CHECKBOX_USEUTF8POLICYTEXT                  = "checkboxuseutf8policytext";
   
   static final String CHECKBOX_ACTIVATEOCSPSERVICE                = "checkboxactivateocspservice";  
   static final String CHECKBOX_RENEWKEYS                          = "checkboxrenewkeys";  
@@ -375,10 +375,10 @@
              if(value != null)
                finishuser = value.equals(CHECKBOX_VALUE);         
 
-             boolean alwaysuseuft8subjectdn = false;
-             value = request.getParameter(CHECKBOX_USEUTF8SUBJECTDN);
+             boolean useutf8policytext = false;
+             value = request.getParameter(CHECKBOX_USEUTF8POLICYTEXT);
              if(value != null)
-            	 alwaysuseuft8subjectdn = value.equals(CHECKBOX_VALUE);                             
+            	 useutf8policytext = value.equals(CHECKBOX_VALUE);                             
 
              String[] values = request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
              ArrayList crlpublishers = new ArrayList(); 
@@ -430,7 +430,7 @@
                                                         defaultcrldistpoint,
                                                         defaultocsplocator,
                                                         finishuser, extendedcaservices,
-                                                        alwaysuseuft8subjectdn,
+                                                        useutf8policytext,
                                                         approvalsettings,
                                                         numofreqapprovals);
                  try{
@@ -464,7 +464,7 @@
                                                         defaultcrldistpoint,
                                                         defaultocsplocator,
                                                         finishuser, extendedcaservices,
-                                                        alwaysuseuft8subjectdn,
+                                                        useutf8policytext,
                                                         approvalsettings,
                                                         numofreqapprovals);
                  cabean.saveRequestInfo(x509cainfo);                
@@ -557,10 +557,10 @@
              if(value != null)
                finishuser = value.equals(CHECKBOX_VALUE);         
 
-             boolean  alwaysuseuft8subjectdn = false;
-             value = request.getParameter(CHECKBOX_USEUTF8SUBJECTDN);
+             boolean  useutf8policytext = false;
+             value = request.getParameter(CHECKBOX_USEUTF8POLICYTEXT);
              if(value != null)
-            	 alwaysuseuft8subjectdn = value.equals(CHECKBOX_VALUE);         
+            	 useutf8policytext = value.equals(CHECKBOX_VALUE);         
 
              String[] values = request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
              ArrayList crlpublishers = new ArrayList(); 
@@ -614,7 +614,7 @@
                                                       defaultcrldistpoint,
                                                       defaultocsplocator,
                                                       finishuser,extendedcaservices,
-                                                      alwaysuseuft8subjectdn,
+                                                      useutf8policytext,
                                                       approvalsettings,
                                                       numofreqapprovals);
                  
@@ -811,7 +811,7 @@
               boolean crlnumbercritical = false;
                                                                       
               boolean finishuser = false;
-              boolean alwaysuseuft8subjectdn = false;
+              boolean useutf8policytext = false;
               ArrayList crlpublishers = new ArrayList(); 
               ArrayList approvalsettings = new ArrayList(); 
               int numofreqapprovals = 1;
@@ -830,7 +830,7 @@
                                                         "","",
                                                         finishuser, 
                                                         new ArrayList(),
-                                                        alwaysuseuft8subjectdn,
+                                                        useutf8policytext,
                                                         approvalsettings,
                                                         numofreqapprovals);
                  try{
