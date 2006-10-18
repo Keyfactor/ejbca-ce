@@ -43,9 +43,16 @@ and datasource.* and database.* are relevant to the responder but you may keep e
 from the EJBCA setup since definitions of other properties does no harm. 
 Note that the External OCSP responder itself uses the configuration options database.* and not the ocsp-database.* options.
 The ocsp.keys.* preferences that has no meaning for EJBCA has also to be configured, 
-please read description of these properties in ejbca.properties.samples.
+please read description of these properties in conf/web.properties.sample, ocsp.properties.sample and databse.properties.sample.
 ocsp.usecasigningcert should be set to false. If card keys (see below) should be used then the property
 'ocspHardTokenClasses' must be set to the corresponding directory of PrimeCard.
+
+The responder is then built and deployed with:
+    ant ocsp-deploy
+on the external OCSP responder.
+
+The database that OcspDS in EJBCA points to only have to contain the CertificateData table. This table is 
+created automatically by JBoss when it starts on the external OCSP responder.
 
 The keys used to sign the OCSP response could either be stored on a smart card or soft on the file system
 of the host. It should be one key for each CA.
@@ -76,14 +83,11 @@ certificate request for each key.
 the certificates and then just store these files in the 'ocsp.keys.dir' directory.
 The property 'ocsp.keys.cardPassword' should be set to the password of the card.
 
-The responder is then built and deployed with:
-    ant ocsp-deploy
+Re-start the application server for the external OCSP responder.
 When the application server is started it should just work.
 
-The database that OcspDS points to only have to contain the CertificateData table. This table is 
-created automatically by JBoss when it starts.
-
-The database connection settings are configured and deployed in JBoss in the file JBOSS_HOME/server/default/deploy/ejbca-ds.xml.
+The database connection settings on the external OCSP responder is configured and deployed in JBoss in the file 
+JBOSS_HOME/server/default/deploy/ejbca-ds.xml.
 
 
 Error publishing to OCSP database
