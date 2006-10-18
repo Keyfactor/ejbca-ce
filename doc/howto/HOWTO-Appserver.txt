@@ -47,13 +47,14 @@ script to work, at least until someone provides a weblogic.xml corresponding to 
 
 8. Deploy the ear file in weblogic, it should works straight away.
 
-7. Edit 'jndi.properties' in the directories 'ejbca/bin' and 'ejbca/src/java' to
+9. Edit 'jndi.properties' in the directories 'ejbca/bin' and 'ejbca/src/java' to
 call Weblogic instead of JBoss, modify the principal and credentials according to you weblogic 
 domain's setting (same as the user name/password to login weblogic console).
 
-8. Run 'ant install' to do the installation.
+10. Run 'ant install' to do the installation. Everything should work here with no errors. 
+If you get errors these must be resolved before we can move on.
 
-10. Configure SSL in Weblogic:
+11. Configure SSL in Weblogic:
 a) Copy %JAVA_HOME%/jre/lib/security/cacerts to %BEA_HOME%/jre/lib/security, so that Weblogic can trust the initial CA installed 
 when doing 'ant install', you can get the cert with 'bin/ejbca.sh ca getrootcert cert.pem'.
 b) Configure weblogic server for SSL.
@@ -67,7 +68,7 @@ b) Configure weblogic server for SSL.
 
    server->configuration->general, check "SSL Listen Port Enabled", note that the port should be same as httpserver.privhttps in ejbca.properties.
 
-11.Copy %EJBCA_HOME%/src/adminweb/languages/*.* to /tmp/languages/*.* , where /tmp should be at the same disk with weblogic,
+12.Copy %EJBCA_HOME%/src/adminweb/languages/*.* to /tmp/languages/*.* , where /tmp should be at the same disk with weblogic,
    d:\ for example, as org.ejbca.ui.web.admin.configuration.WebLanguages.init() has a bug of reading those property files
    within the servlet context on weblogic. Need to be addressed in the future.
    
@@ -76,7 +77,7 @@ for both sun's JDK and BEA's JDK first before installation.
 If installing with Oracle, perhaps you need to replace jdbc driver at weblogic_home\server\lib, weblogic_home\server\ext\jdbc\oracle\920, 10g 
 all to 10.1.0.2, in my case which is Oracle 9.2.0.
 
-12. Unset JBOSS_HOME. If you want to use the CLI (command line interface) bin/ejbca.sh, you must have WEBLOGIC_HOME set, 
+13. Unset JBOSS_HOME. If you want to use the CLI (command line interface) bin/ejbca.sh, you must have WEBLOGIC_HOME set, 
 but you can not have JBOSS_HOME set.
 
 TransactionTimeoutException in Weblogic
