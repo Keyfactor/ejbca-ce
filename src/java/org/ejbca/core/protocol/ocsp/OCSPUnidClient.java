@@ -70,7 +70,7 @@ import org.ejbca.util.KeyTools;
  * 3.There was no Unid in the certificate (serialNumber DN component)
  *
  * @author Tomas Gustavsson, PrimeKey Solutions AB
- * @version $Id: OCSPUnidClient.java,v 1.8 2006-07-30 17:04:32 anatom Exp $
+ * @version $Id: OCSPUnidClient.java,v 1.9 2006-10-19 21:02:08 primelars Exp $
  *
  */
 public class OCSPUnidClient {
@@ -266,13 +266,11 @@ public class OCSPUnidClient {
         trustks.load(null, "foo123".toCharArray());
         // add trusted CA cert
         Enumeration en = ks.aliases();
-        String alias = (String)en.nextElement();
+        String alias = null;
         // If this alias is a trusted certificate entry, we don't want to fetch that, we want the key entry
-        if (ks.isCertificateEntry(alias)) {
-            if (en.hasMoreElements()) {
-                alias = (String)en.nextElement();
-            }
-        }        Certificate[] certs = KeyTools.getCertChain(ks, alias);
+        while ( (alias==null || ks.isCertificateEntry(alias)) && en.hasMoreElements() )
+            alias = (String)en.nextElement();
+        Certificate[] certs = KeyTools.getCertChain(ks, alias);
         if (certs == null) {
             throw new IOException("Can not find a certificate entry in PKCS12 keystore for alias "+alias);
         }
