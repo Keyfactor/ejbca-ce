@@ -91,7 +91,7 @@ import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silvén PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.27 2006-08-16 16:37:43 anatom Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.28 2006-10-19 07:14:43 anatom Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChecker {
 
@@ -164,7 +164,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
                 cert.getSerialNumber());
         String sDebug = "Signing certificate with serial number "+cert.getSerialNumber() + " from issuer " + cert.getIssuerDN();
         if ( revokedInfo==null ) {
-            m_log.warn(sDebug + " can not be found.");
+            m_log.warn(sDebug + " can not be found in database (signing- and CA-certs must be published to OCSP responder).");
             return null;
         }
         if ( revokedInfo.getReason()!=RevokedCertInfo.NOT_REVOKED ) {
