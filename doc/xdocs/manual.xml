@@ -856,6 +856,10 @@ When the message has been authenticated, a user is created in EJBCA.
 </ul>
 After the user has been created in EJBCA, a certificate is generated as usual and sent back to the RA, who will distribute it to the end-user.
 </p>
+<p>
+If the same username is constructed (for exmaple UID) as an already existing user, 
+the existing user will be modified with new values for profile etc, and a new certificate will be issued for that user.
+</p>
 </subsubsection>
 </subsection>
 </section>

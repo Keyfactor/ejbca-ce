@@ -1,5 +1,5 @@
 #
-# $Id: cmp.properties.sample,v 1.6 2006-09-28 13:39:12 anatom Exp $
+# $Id: cmp.properties.sample,v 1.7 2006-10-20 15:53:50 anatom Exp $
 #
 # This is a sample file to override properties used
 # during deployment of EJBCA
@@ -47,6 +47,8 @@
 # Which generation scheme should be used, RANDOM or DN for base username.
 # Random will generate a 12 character long random username.
 # DN will take a part of the request DN, which part is defined by cmp.ra.namegenerationparameters, and use as the username.
+# If the same username is constructed (for exmaple UID) as an already existing user, the existing user will be modified with
+# new values for profile etc, and a new certificate will be issued for that user.
 #
 # Default: DN
 #cmp.ra.namegenerationscheme=DN
