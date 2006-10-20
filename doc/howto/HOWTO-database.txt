@@ -194,6 +194,46 @@ configuration to recognize the new data space.
 Informix JDBC driver:
 http://www14.software.ibm.com/webapp/download/product.jsp?id=MCOS-5MKKAB&s=z&cat=&S_TACT=TrialsAndBetas&S_CMP=
 
+Derby specifics
+---------------
+JavaDB has a command-line utility called "ij" (ij is actually generic
+and may be used with any compliant JDBC driver), and you may use
+general open source tools like SQuirreL SQL
+(http://squirrel-sql.sourceforge.net/).
+
+Ij started like this:
+    java -jar db-derby-10.2.1.3-bin/lib/derbyrun.jar ij
+in JavaDB 10.2, and like this
+    java -cp db-derby-10.1.3.1-bin/lib/derby.jar:db-derby-10.1.3.1-b in/lib/derbytools.jar org.apache.derby.tools.ij
+in JavaDB 10.1
+
+Sample run of ij:
+java -cp db-derby-10.1.3.1-bin/lib/derby.jar:db-derby-10.1.3.1-b in/lib/derbytools.jar org.apache.derby.tools.ij
+ij version 10.1
+ij> connect 'jdbc:derby:/tmp/testdb;create=true';
+ij> select tablename from sys.systables;
+TABLENAME
+--------------------------------------------------------------------------------------------------------------------------------
+SYSALIASES
+SYSCHECKS
+SYSCOLUMNS
+SYSCONGLOMERATES
+SYSCONSTRAINTS
+SYSDEPENDS
+SYSDUMMY1
+SYSFILES
+SYSFOREIGNKEYS
+SYSKEYS
+SYSSCHEMAS
+SYSSTATEMENTS
+SYSSTATISTICS
+SYSTABLES
+SYSTRIGGERS
+SYSVIEWS
+
+16 rows selected
+ij> exit;
+
 
 Indexes for higher performance
 ==============================
