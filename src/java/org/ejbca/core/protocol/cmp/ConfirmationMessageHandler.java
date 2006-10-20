@@ -29,7 +29,7 @@ import org.ejbca.util.Base64;
 /**
  * Message handler for certificate request messages in the CRMF format
  * @author tomas
- * @version $Id: ConfirmationMessageHandler.java,v 1.1 2006-09-21 11:33:33 anatom Exp $
+ * @version $Id: ConfirmationMessageHandler.java,v 1.2 2006-10-20 18:47:11 anatom Exp $
  */
 public class ConfirmationMessageHandler implements ICmpMessageHandler {
 	
@@ -39,26 +39,34 @@ public class ConfirmationMessageHandler implements ICmpMessageHandler {
 	}
 	public IResponseMessage handleMessage(BaseCmpMessage msg) {
 		log.debug(">handleMessage");
-		CmpConfirmResponseMessage resp = new CmpConfirmResponseMessage();
-		resp.setRecipientNonce(msg.getSenderNonce());
-		resp.setSenderNonce(new String(Base64.encode(CmpMessageHelper.createSenderNonce())));
-		resp.setSender(msg.getRecipient());
-		resp.setRecipient(msg.getSender());
-		resp.setTransactionId(msg.getTransactionId());
-		try {
-			resp.create();
-		} catch (InvalidKeyException e) {
-			log.error("Exception during CMP processing: ", e);			
-		} catch (NoSuchAlgorithmException e) {
-			log.error("Exception during CMP processing: ", e);			
-		} catch (NoSuchProviderException e) {
-			log.error("Exception during CMP processing: ", e);			
-		} catch (SignRequestException e) {
-			log.error("Exception during CMP processing: ", e);			
-		} catch (NotFoundException e) {
-			log.error("Exception during CMP processing: ", e);			
-		} catch (IOException e) {
-			log.error("Exception during CMP processing: ", e);			
+		int version = msg.getHeader().getPvno().getValue().intValue();
+		CmpConfirmResponseMessage resp = null;
+		// if version == 1 it is cmp1999 and we should not return a message back
+		if (version > 1) {
+			log.debug("Creating a PKI confirm message response");
+			resp = new CmpConfirmResponseMessage();
+			resp.setRecipientNonce(msg.getSenderNonce());
+			resp.setSenderNonce(new String(Base64.encode(CmpMessageHelper.createSenderNonce())));
+			resp.setSender(msg.getRecipient());
+			resp.setRecipient(msg.getSender());
+			resp.setTransactionId(msg.getTransactionId());
+			try {
+				resp.create();
+			} catch (InvalidKeyException e) {
+				log.error("Exception during CMP processing: ", e);			
+			} catch (NoSuchAlgorithmException e) {
+				log.error("Exception during CMP processing: ", e);			
+			} catch (NoSuchProviderException e) {
+				log.error("Exception during CMP processing: ", e);			
+			} catch (SignRequestException e) {
+				log.error("Exception during CMP processing: ", e);			
+			} catch (NotFoundException e) {
+				log.error("Exception during CMP processing: ", e);			
+			} catch (IOException e) {
+				log.error("Exception during CMP processing: ", e);			
+			}			
+		} else {
+			log.debug("Cmp1999 - Not creating a PKI confirm meessage response");
 		}
 		return resp;
 	}

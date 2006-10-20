@@ -39,7 +39,7 @@ import org.ejbca.util.Base64;
  * Servlet implementing server side of the Certificate Management Protocols (CMP) 
  *
  * @author tomas
- * @version $Id: CmpServlet.java,v 1.10 2006-09-27 15:34:37 anatom Exp $
+ * @version $Id: CmpServlet.java,v 1.11 2006-10-20 18:48:07 anatom Exp $
  * 
  * @web.servlet name = "CmpServlet"
  *              display-name = "CmpServlet"
@@ -277,16 +277,13 @@ public class CmpServlet extends HttpServlet {
 			
 			CmpMessageDispatcher dispatcher = new CmpMessageDispatcher(administrator, properties);
 			IResponseMessage resp = dispatcher.dispatch(message);
-			if (resp == null) {
-				// unknown error?
-				log.error("CMP message dispatcher returned a null response!");
-				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Null response");
-				return;
-			}
-			// Add no-cache headers as defined in draft-ietf-pkix-cmp-transport-protocols-05.txt
-			ServletUtils.addCacheHeaders(response);
-			// Send back CMP response
-			RequestHelper.sendBinaryBytes(resp.getResponseMessage(), response, "application/pkixcmp");
+			// If resp is null, it means we have nothing to send back
+			if (resp != null) {
+				// Add no-cache headers as defined in draft-ietf-pkix-cmp-transport-protocols-05.txt
+				ServletUtils.addCacheHeaders(response);
+				// Send back CMP response
+				RequestHelper.sendBinaryBytes(resp.getResponseMessage(), response, "application/pkixcmp");				
+			} 
 		} catch (Exception e) {
 			log.error("Error in CmpServlet:", e);
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
