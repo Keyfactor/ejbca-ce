@@ -54,6 +54,7 @@ import org.ejbca.core.protocol.ResponseStatus;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
+import com.novosec.pkix.asn1.cmp.CMPObjectIdentifiers;
 import com.novosec.pkix.asn1.cmp.PKIBody;
 import com.novosec.pkix.asn1.cmp.PKIHeader;
 import com.novosec.pkix.asn1.cmp.PKIMessage;
@@ -63,7 +64,7 @@ import com.novosec.pkix.asn1.crmf.PBMParameter;
  * Helper class to create different standard parts of CMP messages
  * 
  * @author tomas
- * @version $Id: CmpMessageHelper.java,v 1.5 2006-10-20 18:46:03 anatom Exp $
+ * @version $Id: CmpMessageHelper.java,v 1.6 2006-10-20 18:50:50 anatom Exp $
  */
 public class CmpMessageHelper {
 	private static Logger log = Logger.getLogger(CmpMessageHelper.class);
@@ -121,7 +122,7 @@ public class CmpMessageHelper {
 		pKIMessage.addExtraCert( cert );
 	}
 	
-	public static byte[] protectPKIMessageWithPBE(PKIMessage msg, String keyId, String raSecret, String digestAlgId, String macAlgId, String protAlgId) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, IOException {
+	public static byte[] protectPKIMessageWithPBE(PKIMessage msg, String keyId, String raSecret, String digestAlgId, String macAlgId) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, IOException {
 		log.debug(">protectPKIMessageWithPBE()");
 		// Create the PasswordBased protection of the message
 		PKIHeader head = msg.getHeader();
@@ -140,8 +141,8 @@ public class CmpMessageHelper {
 		DEROctetString derSalt = new DEROctetString(saltbytes);
 		
 		// Create the new protected return message
-		//String objectId = "1.2.840.113533.7.66.13";
-		String objectId = protAlgId;
+		//String objectId = "1.2.840.113533.7.66.13" = passwordBasedMac;
+		String objectId = CMPObjectIdentifiers.passwordBasedMac.getId();
 		PBMParameter pp = new PBMParameter(derSalt, owfAlg, iteration, macAlg);
 		AlgorithmIdentifier pAlg = new AlgorithmIdentifier(new DERObjectIdentifier(objectId), pp);
 		head.setProtectionAlg(pAlg);
