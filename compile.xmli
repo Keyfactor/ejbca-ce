@@ -424,7 +424,7 @@ protection.certprotect=${protection.certprotect}
             <!-- jar all files -->
             <jar basedir="${@{name}.build.dir}" jarfile="${dist.dir}/${@{name}.id}">
                 <manifest>
-                    <attribute name="Class-Path" value="${jar.classpath}" />
+                    <attribute name="Class-Path" value="${jar.extclasspath}" />
                 </manifest>
             </jar>
 

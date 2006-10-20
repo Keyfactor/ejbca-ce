@@ -32,7 +32,7 @@
         </copy>
         <jar basedir="${createcrlservice.build}" jarfile="${createcrlservicejar}">
             <manifest>
-                <attribute name="Class-Path" value="${jar.classpath}" />
+                <!-- <attribute name="Class-Path" value="${jar.extclasspath}" /> -->
             </manifest>
         </jar>
     </target>

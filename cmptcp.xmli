@@ -51,9 +51,14 @@
                 <include name="lib/quickserver/*.jar" />
             </fileset>
         </copy>
+        <copy todir="${cmptcpservice.build}/lib/quickserver">
+            <fileset dir="./lib">
+                <include name="commons-collections.jar" />
+            </fileset>
+        </copy>
         <jar basedir="${cmptcpservice.build}" jarfile="${cmptcpservicejar}">
             <manifest>
-                <attribute name="Class-Path" value="${jar.classpath}" />
+                <!-- <attribute name="Class-Path" value="${jar.extclasspath}" /> -->
             </manifest>
         </jar>
     </target>

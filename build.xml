@@ -275,7 +275,7 @@
             <fileset dir=".">
                 <include name="${lib}/bcmail-jdk${java.ver}.jar" />
                 <include name="${lib}/bcprov-jdk${java.ver}.jar" />
-               <!-- <include name="${lib}/log4j-1.2.7.jar" /> -->
+                <include name="${lib}/log4j-1.2.7.jar" />
                 <include name="${lib}/ldap.jar" />
                 <include name="${lib}/commons-lang-2.0.jar" />
                 <include name="${lib}/commons-collections.jar" />
@@ -431,7 +431,7 @@
         </copy>
         <jar basedir="${logsigning.build}" jarfile="${logsigningjar}">
             <manifest>
-                <attribute name="Class-Path" value="${jar.classpath}" />
+                <!-- <attribute name="Class-Path" value="${jar.extclasspath}" /> -->
             </manifest>
         </jar>
     </target>
