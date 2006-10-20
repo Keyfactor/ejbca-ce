@@ -51,7 +51,7 @@ import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
 /**
  * CMP certificate response message
  * @author tomas
- * @version $Id: CmpResponseMessage.java,v 1.3 2006-09-21 15:34:31 anatom Exp $
+ * @version $Id: CmpResponseMessage.java,v 1.4 2006-10-20 15:18:46 anatom Exp $
  */
 public class CmpResponseMessage implements IResponseMessage {
 	
@@ -190,7 +190,7 @@ public class CmpResponseMessage implements IResponseMessage {
 					CertOrEncCert retCert = new CertOrEncCert(struct, 0);
 					CertifiedKeyPair myCertifiedKeyPair = new CertifiedKeyPair(retCert);
 					myCertResponse.setCertifiedKeyPair(myCertifiedKeyPair);
-					myCertResponse.setRspInfo(new DEROctetString(new byte[] { 101, 111, 121 }));
+					//myCertResponse.setRspInfo(new DEROctetString(new byte[] { 101, 111, 121 }));
 					
 					CertRepMessage myCertRepMessage = new CertRepMessage(myCertResponse);
 					
