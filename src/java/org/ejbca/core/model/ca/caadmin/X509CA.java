@@ -118,7 +118,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.27 2006-10-18 08:58:38 anatom Exp $
+ * @version $Id: X509CA.java,v 1.28 2006-10-20 07:12:45 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -670,7 +670,7 @@ public class X509CA extends CA implements Serializable {
             	setUseUTF8PolicyText(false);
             } else {
             	// Use the same value as we had before when we had alwaysuseutf8subjectdn
-                Boolean useutf8 = ((Boolean)data.get("alwaysuseutf8subjectdn")).booleanValue();
+                boolean useutf8 = ((Boolean)data.get("alwaysuseutf8subjectdn")).booleanValue();
             	setUseUTF8PolicyText(useutf8);
             }
             
