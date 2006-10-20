@@ -44,7 +44,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.4 2006-10-20 15:00:37 anatom Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.5 2006-10-20 15:03:08 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="RaAdminSB"
@@ -555,7 +555,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
       * @ejb.interface-method
      */
     public EndEntityProfile getEndEntityProfile(Admin admin, String profilename){
-        debug(">getEndEntityProfile(profilename)");
+    	if (log.isDebugEnabled()) {
+            debug(">getEndEntityProfile("+profilename+")");    		
+    	}
         EndEntityProfile returnval=null;
         try{
           if(profilename.equals(EMPTY_ENDENTITYPROFILENAME)) {
@@ -578,6 +580,9 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
       * @ejb.interface-method
      */
     public int getEndEntityProfileId(Admin admin, String profilename){
+    	if (log.isDebugEnabled()) {
+            debug(">getEndEntityProfileId("+profilename+")");    		
+    	}
       int returnval = 0;
       if(profilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME))
         return SecConst.EMPTY_ENDENTITYPROFILE;
@@ -587,7 +592,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
       }catch(FinderException e){
           // Ignore so we'll return 0
       }
-
+      debug(">getEndEntityProfileId(profilename)");    		
       return returnval;
     } // getEndEntityrofileId
 
