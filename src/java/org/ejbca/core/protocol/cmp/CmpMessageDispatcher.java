@@ -50,7 +50,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * - Certificate Confirmation - accept or reject by client - will return a PKIConfirm
  * 
  * @author tomas
- * @version $Id: CmpMessageDispatcher.java,v 1.7 2006-09-28 09:45:31 anatom Exp $
+ * @version $Id: CmpMessageDispatcher.java,v 1.8 2006-10-20 18:45:15 anatom Exp $
  */
 public class CmpMessageDispatcher {
 	private static final Logger log = Logger.getLogger(CmpMessageDispatcher.class);
@@ -94,7 +94,7 @@ public class CmpMessageDispatcher {
 	/** The message may have been received by any transport protocol, and is passed here in it's binary asn.1 form.
 	 * 
 	 * @param message der encoded CMP message
-	 * @return IResponseMessage containing the CMP response message
+	 * @return IResponseMessage containing the CMP response message or null if there is no message to send back
 	 */
 	public IResponseMessage dispatch(byte[] message) {
 		IResponseMessage ret = null;
@@ -151,7 +151,7 @@ public class CmpMessageDispatcher {
 					log.error("CmpMessageHandler returned a null message");
 				}
 			} else {
-				log.error("Something is null! Handler= "+handler+", cmpMessage="+cmpMessage);
+				log.error("Something is null! Handler="+handler+", cmpMessage="+cmpMessage);
 			}
 		} catch (CreateException e) {
 			log.error("Exception during CMP processing: ", e);

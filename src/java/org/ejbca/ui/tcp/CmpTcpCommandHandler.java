@@ -141,8 +141,7 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 		if (resp != null) {
 			sendBack = createReturnTcpMessage(resp, close);			
 		} else {
-			log.debug("Creating error message to send back.");
-			// TODO:
+			log.debug("Not sending back anything.");
 		}
 		if (sendBack != null) {
 			log.debug("Sending "+sendBack.length+" bytes to client");
