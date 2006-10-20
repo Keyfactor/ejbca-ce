@@ -8,6 +8,10 @@
     <property name="ejbca.home" location="." />
     <property environment="env" />
 
+    <condition property="jboss.home" value="${env.JBOSS_HOME}" >
+        <equals arg1="${jboss.home}" arg2="${jboss.home}"/>
+    </condition>
+
     <!-- Give user a chance to override without editing this file
        (and without typing -D each time it compiles it).
        First it checks your home directory for ejbca.properties
