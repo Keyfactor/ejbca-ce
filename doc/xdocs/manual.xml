@@ -189,6 +189,7 @@ If you want to use jboss specific service for automatic creation of the CRL:s yo
 8) Import the certificate from EJBCA_HOME/p12/superadmin.p12 in your web browser. 
 This is the super administrators certificate used to access the admin GUI. 
 Other administrators with specific privileges can be created later on.
+The default password for superadmin.p12 is ejbca, and is configured in ejbca.properties.
 </p><p>
 9) Start JBoss again and go to https://localhost:8443/ejbca/ to access the admin-GUI, 
 or http://localhost:8080/ejbca for the public pages.
