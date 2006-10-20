@@ -107,6 +107,7 @@ public class CrmfRATcpRequestTest extends TestCase {
     private static Logger log = Logger.getLogger(CrmfRATcpRequestTest.class);
 
     private static final int PORT_NUMBER = 5587;
+    private static final String CMP_HOST = "127.0.0.1";
     
     private static String userDN = "CN=tomas1,UID=tomas2,O=PrimeKey Solutions AB,C=SE";
     private static String issuerDN = "CN=AdminCA1,O=EJBCA Sample,C=SE";
@@ -441,7 +442,8 @@ public class CrmfRATcpRequestTest extends TestCase {
 		byte[] respBytes = null;
 		try {
 			int port = PORT_NUMBER;
-			Socket socket = new Socket("127.0.0.1", port);
+			String host = CMP_HOST;
+			Socket socket = new Socket(host, port);
 
 			byte[] msg = createTcpMessage(message);
 
