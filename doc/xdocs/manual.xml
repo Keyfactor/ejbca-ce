@@ -832,6 +832,7 @@ The following POPs in the CRMF are supported by EJBCA:
 Currently these are the only POPs supported by EJBCA, so if you don't use raVerify or signature your request will fail becuase POP is not verified.
 </p>
 </subsection>
+
 <subsection name="Normal or RA mode for CMP">
 <p>
 CMP in EJBCA can work in two modes:
@@ -862,6 +863,12 @@ the existing user will be modified with new values for profile etc, and a new ce
 </p>
 </subsubsection>
 </subsection>
+
+<subsection name="Interoperability">
+<p>CMP has been tested using RSA jCert toolkit for initialization requests.
+</p>
+</subsection>
+
 </section>
 
 <section name="Ocsp">
