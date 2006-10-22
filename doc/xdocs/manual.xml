@@ -804,7 +804,7 @@ You can enable a CMP TCP service by changing the option 'cmp.tcp.enabled' in con
 The service MBean is so far JBoss specific (at least the deployment of it).
 <br/>
 When re-deploying EJBCA this will start a TCP listener on the default port for CMP over TCP. You must run JBoss as root to use the default port, since it is a low port (&lt;1024).
-See the documentation in conf/cmp.properties for information about configuration options for TCP.
+See the documentation in conf/cmp.properties for information about configuration options for TCP. We recommend using a non standard port > 1024.
 </p>
 </subsection>
 <subsection name="User authentication">
@@ -865,7 +865,8 @@ the existing user will be modified with new values for profile etc, and a new ce
 </subsection>
 
 <subsection name="Interoperability">
-<p>CMP has been tested using RSA jCert toolkit for initialization requests.
+<p>CMP has been tested using RSA jCert toolkit for initialization requests. To run this as an RA you should configure CMP 
+with cmp.operationmode=ra and cmp.responseprotection=pbe, and other configurations you want for your RA.
 </p>
 </subsection>
 
