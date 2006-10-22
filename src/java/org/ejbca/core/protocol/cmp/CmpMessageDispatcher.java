@@ -50,7 +50,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * - Certificate Confirmation - accept or reject by client - will return a PKIConfirm
  * 
  * @author tomas
- * @version $Id: CmpMessageDispatcher.java,v 1.8 2006-10-20 18:45:15 anatom Exp $
+ * @version $Id: CmpMessageDispatcher.java,v 1.9 2006-10-22 09:05:25 anatom Exp $
  */
 public class CmpMessageDispatcher {
 	private static final Logger log = Logger.getLogger(CmpMessageDispatcher.class);
@@ -132,12 +132,12 @@ public class CmpMessageDispatcher {
 				break;
 			case 19:
 				// PKI confirm
-				handler = new ConfirmationMessageHandler();
+				handler = new ConfirmationMessageHandler(properties);
 				cmpMessage = new ConfirmationMessage(req);
 				break;
 			case 24:
 				// Certificate confirmation
-				handler = new ConfirmationMessageHandler();
+				handler = new ConfirmationMessageHandler(properties);
 				cmpMessage = new ConfirmationMessage(req);
 				break;
 			default:

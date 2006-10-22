@@ -34,7 +34,7 @@ import org.ejbca.util.CertTools;
 /**
  * A response message consisting of a single X509 Certificate.
  *
- * @version $Id: X509ResponseMessage.java,v 1.4 2006-09-20 15:44:56 anatom Exp $
+ * @version $Id: X509ResponseMessage.java,v 1.5 2006-10-22 09:05:05 anatom Exp $
  */
 public class X509ResponseMessage implements IResponseMessage {
     /**
@@ -280,5 +280,10 @@ public class X509ResponseMessage implements IResponseMessage {
     /** @see org.ejca.core.protocol.IResponseMessage
      */
     public void setRequestId(int reqid) {
+    }
+
+    /** @see org.ejca.core.protocol.IResponseMessage
+     */
+    public void setProtectionParamsFromRequest(IRequestMessage reqMsg) {
     }
 }

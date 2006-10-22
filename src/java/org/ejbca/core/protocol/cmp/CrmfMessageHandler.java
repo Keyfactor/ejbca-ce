@@ -74,7 +74,7 @@ import com.novosec.pkix.asn1.crmf.PBMParameter;
 /**
  * Message handler for certificate request messages in the CRMF format
  * @author tomas
- * @version $Id: CrmfMessageHandler.java,v 1.11 2006-10-20 15:52:28 anatom Exp $
+ * @version $Id: CrmfMessageHandler.java,v 1.12 2006-10-22 09:05:25 anatom Exp $
  */
 public class CrmfMessageHandler implements ICmpMessageHandler {
 	
@@ -92,6 +92,8 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 	private int caId = 0;
 	/** Parameter used to authenticate RA messages if we are using RA mode to create users */
 	private String raAuthenticationSecret = null;
+	/** Parameter used to determine the type of prtection for the response message */
+	private String responseProtection = null;
 	
 	private Admin admin;
 //	private ISignSessionLocal signsession = null;
@@ -172,7 +174,11 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 				caId = info.getCAId();
 			}			
 		}
-
+		str = prop.getProperty("responseProtection");
+		if (StringUtils.isNotEmpty(str)) {
+			log.debug("responseProtection="+str);
+			responseProtection = str;
+		}			
 	}
 	public IResponseMessage handleMessage(BaseCmpMessage msg) {
 		log.debug(">handleMessage");
@@ -226,7 +232,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 									basekey = dig.digest(basekey);
 									dig.reset();
 								}
-								// HMAC/SHA1 os normal 1.3.6.1.5.5.8.1.2 or 1.2.840.113549.2.7 
+								// HMAC/SHA1 is normal 1.3.6.1.5.5.8.1.2 or 1.2.840.113549.2.7 
 								String macOid = macAlg.getObjectId().getId();
 						        Mac mac = Mac.getInstance(macOid, "BC");
 						        SecretKey key = new SecretKeySpec(basekey, macOid);
@@ -253,6 +259,10 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 						    		}
 						    		crmfreq.setUsername(username);
 						    		crmfreq.setPassword(pwd);
+						    		// Set all protection parameters
+						    		if (StringUtils.equals(responseProtection, "pbe")) {
+						    			crmfreq.setPbeParameters(keyId, raAuthenticationSecret, owfAlg.getObjectId().getId(), macAlg.getObjectId().getId(), iterationCount);
+						    		}
 						        	// Now we are all set to go ahead and generate a certificate for the poor bastard
 						        } else {
 									log.error("Authentication failed for message!");
@@ -299,7 +309,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 					}
 				}
 			} else {
-				log.error("ICmpMessage if not a CrmfRequestMessage!");
+				log.error("ICmpMessage is not a CrmfRequestMessage!");
 			}
 			// This is a request message, so we want to enroll for a certificate, if we have not created an error already
 			if (resp == null) {

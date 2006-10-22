@@ -64,7 +64,7 @@ import com.novosec.pkix.asn1.crmf.PBMParameter;
  * Helper class to create different standard parts of CMP messages
  * 
  * @author tomas
- * @version $Id: CmpMessageHelper.java,v 1.6 2006-10-20 18:50:50 anatom Exp $
+ * @version $Id: CmpMessageHelper.java,v 1.7 2006-10-22 09:05:25 anatom Exp $
  */
 public class CmpMessageHelper {
 	private static Logger log = Logger.getLogger(CmpMessageHelper.class);
@@ -122,7 +122,7 @@ public class CmpMessageHelper {
 		pKIMessage.addExtraCert( cert );
 	}
 	
-	public static byte[] protectPKIMessageWithPBE(PKIMessage msg, String keyId, String raSecret, String digestAlgId, String macAlgId) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, IOException {
+	public static byte[] protectPKIMessageWithPBE(PKIMessage msg, String keyId, String raSecret, String digestAlgId, String macAlgId, int iterationCount) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, IOException {
 		log.debug(">protectPKIMessageWithPBE()");
 		// Create the PasswordBased protection of the message
 		PKIHeader head = msg.getHeader();
@@ -130,8 +130,7 @@ public class CmpMessageHelper {
 		// SHA1
 		//AlgorithmIdentifier owfAlg = new AlgorithmIdentifier("1.3.14.3.2.26");
 		AlgorithmIdentifier owfAlg = new AlgorithmIdentifier(digestAlgId);
-		// 1024 iterations
-		int iterationCount = 1024;
+		// iterations, usually something like 1024
 		DERInteger iteration = new DERInteger(iterationCount);
 		// HMAC/SHA1
 		//AlgorithmIdentifier macAlg = new AlgorithmIdentifier("1.2.840.113549.2.7");

@@ -26,6 +26,12 @@ public abstract class BaseCmpMessage {
 	private String b64TransId = null;
 	private GeneralName recipient = null;
 	private GeneralName sender = null;
+	private String protectionType = null;
+	private String pbeDigestAlg = null;
+	private String pbeMacAlg = null;
+	private int pbeIterationCount = 1024;
+	private String pbeKeyId = null;
+	private String pbeKey = null;
 
 	public void setSenderNonce(String b64nonce) {
 		this.b64SenderNonce = b64nonce;
@@ -68,6 +74,33 @@ public abstract class BaseCmpMessage {
 	public void setMessage(PKIMessage msg) {
 		this.msg = msg;
 	}
-	
+	public String getProtectionType() {
+		return protectionType;
+	}
+	public void setProtectionType(String protectionType) {
+		this.protectionType = protectionType;
+	}
+	public void setPbeParameters(String keyId, String key, String digestAlg, String macAlg, int iterationCount) {
+		this.pbeKeyId = keyId;
+		this.pbeKey = key;
+		this.pbeDigestAlg = digestAlg;
+		this.pbeMacAlg = macAlg;
+		this.pbeIterationCount = iterationCount;
+	}
+	public String getPbeDigestAlg() {
+		return pbeDigestAlg;
+	}
+	public String getPbeKey() {
+		return pbeKey;
+	}
+	public String getPbeKeyId() {
+		return pbeKeyId;
+	}
+	public String getPbeMacAlg() {
+		return pbeMacAlg;
+	}
+	public int getPbeIterationCount() {
+		return pbeIterationCount;
+	}
 	
 }

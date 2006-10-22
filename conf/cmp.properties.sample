@@ -1,5 +1,5 @@
 #
-# $Id: cmp.properties.sample,v 1.7 2006-10-20 15:53:50 anatom Exp $
+# $Id: cmp.properties.sample,v 1.8 2006-10-22 09:04:49 anatom Exp $
 #
 # This is a sample file to override properties used
 # during deployment of EJBCA
@@ -38,6 +38,13 @@
 #
 # Default: false
 #cmp.allowraverifypopo=false
+
+# Which sort of protection the response messages will have, the certificate response messages can be signed by the CA
+# or they can use password based mac (PBE) using the ra authenticationsecret and the same keyId and PBE algorithm that was sent in the 
+# request. PBE is currently only used in RA mode.
+# Possible values: signature, pbe
+# Default: signature
+#cmp.responseprotection=signature
 
 # Shared secret between the CA and the RA used to authenticate valid RA messages.
 #

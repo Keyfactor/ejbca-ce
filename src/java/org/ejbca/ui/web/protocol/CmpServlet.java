@@ -39,7 +39,7 @@ import org.ejbca.util.Base64;
  * Servlet implementing server side of the Certificate Management Protocols (CMP) 
  *
  * @author tomas
- * @version $Id: CmpServlet.java,v 1.11 2006-10-20 18:48:07 anatom Exp $
+ * @version $Id: CmpServlet.java,v 1.12 2006-10-22 09:05:44 anatom Exp $
  * 
  * @web.servlet name = "CmpServlet"
  *              display-name = "CmpServlet"
@@ -67,6 +67,11 @@ import org.ejbca.util.Base64;
  *   name="operationMode"
  *   type="java.lang.String"
  *   value="${cmp.operationmode}"
+ *   
+ * @web.env-entry description="Which sort of protection the response messages will have. Default signature."
+ *   name="responseProtection"
+ *   type="java.lang.String"
+ *   value="${cmp.responseprotection}"
  *   
  * @web.env-entry description="Shared secret between the CA and the RA used to authenticate valid RA messages. Default empty."
  *   name="raAuthenticationSecret"
@@ -191,6 +196,11 @@ public class CmpServlet extends HttpServlet {
 		if (StringUtils.isNotEmpty(str)) {
 			properties.setProperty("raModeNameGenerationPostfix", str);
 		}
+		str = ServiceLocator.getInstance().getString("java:comp/env/responseProtection");
+		if (StringUtils.isNotEmpty(str)) {
+			log.debug("responseProtection="+str);
+			properties.setProperty("responseProtection", str);
+		}			
 		str = ServiceLocator.getInstance().getString("java:comp/env/raAuthenticationSecret");
 		if (StringUtils.isNotEmpty(str)) {
 			log.debug("raAuthenticationSecret is not null");

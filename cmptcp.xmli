@@ -35,6 +35,7 @@
 		        <replacestring from="cmp.ra.namegenerationpostfix" to="${cmp.ra.namegenerationpostfix}"/>
 		        <replacestring from="cmp.ra.namegenerationprefix" to="${cmp.ra.namegenerationprefix}"/>
 		        <replacestring from="cmp.ra.authenticationsecret" to="${cmp.ra.authenticationsecret}"/>
+		        <replacestring from="cmp.responseprotection" to="${cmp.responseprotection}"/>
 		        <replacestring from="cmp.tcp.portno" to="${cmp.tcp.portno}"/>
 		        <replacestring from="cmp.tcp.logdir" to="${cmp.tcp.logdir}"/>
 		        <replacestring from="cmp.tcp.conffile" to="${cmp.tcp.conffile}"/>

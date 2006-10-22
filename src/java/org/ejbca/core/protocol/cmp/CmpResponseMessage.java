@@ -28,12 +28,12 @@ import java.security.cert.X509Certificate;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.X509CertificateStructure;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.ejbca.core.protocol.FailInfo;
+import org.ejbca.core.protocol.IRequestMessage;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.ResponseStatus;
 
@@ -51,7 +51,7 @@ import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
 /**
  * CMP certificate response message
  * @author tomas
- * @version $Id: CmpResponseMessage.java,v 1.4 2006-10-20 15:18:46 anatom Exp $
+ * @version $Id: CmpResponseMessage.java,v 1.5 2006-10-22 09:05:25 anatom Exp $
  */
 public class CmpResponseMessage implements IResponseMessage {
 	
@@ -64,7 +64,7 @@ public class CmpResponseMessage implements IResponseMessage {
 	 * /serialization/spec/version.doc.html> details. </a>
 	 *
 	 */
-	static final long serialVersionUID = 10001L;
+	static final long serialVersionUID = 10002L;
 	
 	private static Logger log = Logger.getLogger(CmpResponseMessage.class);
 	
@@ -107,18 +107,21 @@ public class CmpResponseMessage implements IResponseMessage {
 	/** used to match request with response */
 	private transient int requestId;
 	
+	private transient int pbeIterationCount = 1024;
+	private transient String pbeDigestAlg = null;
+	private transient String pbeMacAlg = null;
+	private transient String pbeKeyId = null;
+	private transient String pbeKey = null;
+	
 	public void setCertificate(Certificate cert) {
 		this.cert = cert;
 	}
 	
 	public void setCrl(CRL crl) {
-		// TODO Auto-generated method stub
 		
 	}
 	
 	public void setIncludeCACert(boolean incCACert) {
-		// TODO Auto-generated method stub
-		
 	}
 	
 	public byte[] getResponseMessage() throws IOException, CertificateEncodingException {
@@ -199,7 +202,11 @@ public class CmpResponseMessage implements IResponseMessage {
 					PKIBody myPKIBody = new PKIBody(myCertRepMessage, respType); 
 					PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
 					
-					responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCert, signKey, digestAlg, provider);
+					if ( (pbeKeyId != null) && (pbeKey != null) && (pbeDigestAlg != null) && (pbeMacAlg != null) ) {
+						responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, pbeKeyId, pbeKey, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
+					} else {
+						responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCert, signKey, digestAlg, provider);
+					}
 					ret = true;	
 				}
 			} else {
@@ -281,6 +288,18 @@ public class CmpResponseMessage implements IResponseMessage {
      */
     public void setRequestId(int reqid) {
     	this.requestId = reqid;
+    }
+    
+    public void setProtectionParamsFromRequest(IRequestMessage reqMsg) {
+    	if (reqMsg instanceof CrmfRequestMessage) {
+			CrmfRequestMessage crmf = (CrmfRequestMessage) reqMsg;
+			this.pbeIterationCount = crmf.getPbeIterationCount();
+			this.pbeDigestAlg = crmf.getPbeDigestAlg();
+			this.pbeMacAlg = crmf.getPbeMacAlg();
+			this.pbeKeyId = crmf.getPbeKeyId();
+			this.pbeKey = crmf.getPbeKey();
+			
+		}
     }
 
 }

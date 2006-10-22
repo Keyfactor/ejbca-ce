@@ -16,7 +16,7 @@ package org.ejbca.appserver.jboss;
 
 /** A Jboss service that has a lot of configuration options for CMP operations
  * 
- * version $Id: CmpTcpServiceMBean.java,v 1.1 2006-09-27 15:33:25 anatom Exp $
+ * version $Id: CmpTcpServiceMBean.java,v 1.2 2006-10-22 09:04:49 anatom Exp $
 */
 public interface CmpTcpServiceMBean extends org.jboss.system.ServiceMBean
 {   
@@ -63,6 +63,10 @@ public interface CmpTcpServiceMBean extends org.jboss.system.ServiceMBean
 	public String getPrefix();
 
 	public void setPrefix(String prefix);
+
+	public String getResponseProtection();
+	
+	public void setResponseProtection(String responseProtection);
 
 	public String getRaAuthenticationSecret();
 

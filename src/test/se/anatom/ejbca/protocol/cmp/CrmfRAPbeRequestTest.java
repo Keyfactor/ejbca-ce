@@ -13,12 +13,16 @@
 
 package se.anatom.ejbca.protocol.cmp;
 
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.Socket;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
@@ -105,17 +109,20 @@ import com.novosec.pkix.asn1.crmf.PBMParameter;
 import com.novosec.pkix.asn1.crmf.ProofOfPossession;
 
 /**
- * This test requires RA mode and responseProtection=signature
+ * This test requires RA mode and responseProtection=pbe
  * @author tomas
  *
  */
-public class CrmfRARequestTest extends TestCase {
+public class CrmfRAPbeRequestTest extends TestCase {
 	
-    private static Logger log = Logger.getLogger(CrmfRARequestTest.class);
+    private static Logger log = Logger.getLogger(CrmfRAPbeRequestTest.class);
 
     private static final String httpReqPath = "http://127.0.0.1:8080/ejbca";
     private static final String resourceCmp = "publicweb/cmp";
 
+    private static final int PORT_NUMBER = 5587;
+    private static final String CMP_HOST = "127.0.0.1";
+    
     private static String userDN = "CN=tomas1,UID=tomas2,O=PrimeKey Solutions AB,C=SE";
     private static String issuerDN = "CN=AdminCA1,O=EJBCA Sample,C=SE";
     private KeyPair keys = null;  
@@ -125,7 +132,7 @@ public class CrmfRARequestTest extends TestCase {
     private static Admin admin;
     private static X509Certificate cacert = null;
 
-	public CrmfRARequestTest(String arg0) throws NamingException, RemoteException, CreateException, CertificateEncodingException, CertificateException {
+	public CrmfRAPbeRequestTest(String arg0) throws NamingException, RemoteException, CreateException, CertificateEncodingException, CertificateException {
 		super(arg0);
         admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
 		CertTools.installBCProvider();
@@ -195,7 +202,7 @@ public class CrmfRARequestTest extends TestCase {
 		out.writeObject(req);
 		byte[] ba = bao.toByteArray();
 		// Send request and receive response
-		byte[] resp = sendCmp(ba);
+		byte[] resp = sendCmpHttp(ba);
 		assertNotNull(resp);
 		assertTrue(resp.length > 0);
 		checkCmpResponseGeneral(resp, userDN, nonce, transid, false, true);
@@ -205,15 +212,57 @@ public class CrmfRARequestTest extends TestCase {
 		String hash = "foo123";
         PKIMessage confirm = genCertConfirm(nonce, transid, hash, reqId);
 		assertNotNull(confirm);
+        PKIMessage req1 = protectPKIMessage(confirm, false);
 		bao = new ByteArrayOutputStream();
 		out = new DEROutputStream(bao);
-		out.writeObject(confirm);
+		out.writeObject(req1);
 		ba = bao.toByteArray();
 		// Send request and receive response
-		resp = sendCmp(ba);
+		resp = sendCmpHttp(ba);
 		assertNotNull(resp);
 		assertTrue(resp.length > 0);
-		checkCmpResponseGeneral(resp, userDN, nonce, transid, false, false);
+		checkCmpResponseGeneral(resp, userDN, nonce, transid, false, true);
+		checkCmpPKIConfirmMessage(resp);
+	}
+	
+	public void test02CrmfTcpOkUser() throws Exception {
+
+		// Create a new good user
+		createCmpUser();
+
+		byte[] nonce = CmpMessageHelper.createSenderNonce();
+		byte[] transid = CmpMessageHelper.createSenderNonce();
+		
+        PKIMessage one = genCertReq(nonce, transid);
+        PKIMessage req = protectPKIMessage(one, false);
+
+        int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+		assertNotNull(req);
+		ByteArrayOutputStream bao = new ByteArrayOutputStream();
+		DEROutputStream out = new DEROutputStream(bao);
+		out.writeObject(req);
+		byte[] ba = bao.toByteArray();
+		// Send request and receive response
+		byte[] resp = sendCmpTcp(ba);
+		assertNotNull(resp);
+		assertTrue(resp.length > 0);
+		checkCmpResponseGeneral(resp, userDN, nonce, transid, false, true);
+		checkCmpCertRepMessage(resp, reqId);
+		
+		// Send a confirm message to the CA
+		String hash = "foo123";
+        PKIMessage confirm = genCertConfirm(nonce, transid, hash, reqId);
+		assertNotNull(confirm);
+        PKIMessage req1 = protectPKIMessage(confirm, false);
+		bao = new ByteArrayOutputStream();
+		out = new DEROutputStream(bao);
+		out.writeObject(req1);
+		ba = bao.toByteArray();
+		// Send request and receive response
+		resp = sendCmpTcp(ba);
+		assertNotNull(resp);
+		assertTrue(resp.length > 0);
+		checkCmpResponseGeneral(resp, userDN, nonce, transid, false, true);
 		checkCmpPKIConfirmMessage(resp);
 	}
 	
@@ -352,7 +401,7 @@ public class CrmfRARequestTest extends TestCase {
 				
 		PKIHeader myPKIHeader =
 			new PKIHeader(
-					new DERInteger(1),
+					new DERInteger(2),
 					new GeneralName(new X509Name(userDN)),
 					new GeneralName(new X509Name(cacert.getSubjectDN().getName())));
 		myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
@@ -367,7 +416,7 @@ public class CrmfRARequestTest extends TestCase {
 		return myPKIMessage;
 	}
 
-	private byte[] sendCmp(byte[] message) throws IOException, NoSuchProviderException {
+	private byte[] sendCmpHttp(byte[] message) throws IOException, NoSuchProviderException {
         // POST the CMP request
         // we are going to do a POST
     	String resource = resourceCmp;
@@ -402,7 +451,70 @@ public class CrmfRARequestTest extends TestCase {
         assertTrue(respBytes.length > 0);
         return respBytes;
     }
+	
+	private byte[] sendCmpTcp(byte[] message) throws IOException, NoSuchProviderException {
+		byte[] respBytes = null;
+		try {
+			int port = PORT_NUMBER;
+			String host = CMP_HOST;
+			Socket socket = new Socket(host, port);
 
+			byte[] msg = createTcpMessage(message);
+
+			BufferedOutputStream os = new BufferedOutputStream(socket.getOutputStream());
+			os.write(msg);
+			os.flush();
+
+			DataInputStream dis = new DataInputStream(socket.getInputStream());
+			// Read the length, 32 bits
+			int len = dis.readInt();
+			System.out.println("Got a message claiming to be of length: " + len);
+			// Read the version, 8 bits. Version should be 10 (protocol draft nr 5)
+			int ver = dis.readByte();
+			System.out.println("Got a message with version: " + ver);
+			assertEquals(10, ver);
+			
+			// Read flags, 8 bits for version 10
+			byte flags = dis.readByte();
+			System.out.println("Got a message with flags (1 means close): " + flags);
+			// Check if the client wants us to close the connection (LSB is 1 in that case according to spec)
+			
+			// Read message type, 8 bits
+			int msgType = dis.readByte();
+			System.out.println("Got a message of type: " +msgType);
+			
+			// Read message
+			ByteArrayOutputStream baos = new ByteArrayOutputStream(3072);
+			while (dis.available() > 0) {
+				baos.write(dis.read());
+			}
+			System.out.println("Read "+baos.size()+" bytes");
+			respBytes = baos.toByteArray();
+		} catch(Exception e) {
+			e.printStackTrace();
+			assertTrue(false);
+		}
+        assertNotNull("Response can not be null.", respBytes);
+        assertTrue(respBytes.length > 0);
+        return respBytes;
+    }
+
+	private byte[] createTcpMessage(byte[] msg) throws IOException {
+		ByteArrayOutputStream bao = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(bao); 
+		// 0 is pkiReq
+		int msgType = 0;
+		int len = msg.length;
+		// return msg length = msg.length + 3; 1 byte version, 1 byte flags and 1 byte message type
+		dos.writeInt(len+3);
+		dos.writeByte(10);
+		dos.writeByte(0); // 1 if we should close, 0 otherwise
+		dos.writeByte(msgType); 
+		dos.write(msg);
+		dos.flush();
+		return bao.toByteArray();
+	}
+	
     private void checkCmpResponseGeneral(byte[] retMsg, String userDN, byte[] senderNonce, byte[] transId, boolean signed, boolean pbe) throws Exception {
         //
         // Parse response message

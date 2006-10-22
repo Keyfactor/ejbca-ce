@@ -43,9 +43,10 @@ public class CmpTcpService extends ServiceMBeanSupport implements CmpTcpServiceM
 	private String certProfile = "ENDUSER";
 	/** Tha CA to user when adding users in RA mode */
 	private String caName = "AdminCA1";
+	/** Parameter used to determine which protection response messages will have */
+	private String responseProtection = null;
 	/** Parameter used to authenticate RA messages if we are using RA mode to create users */
 	private String raAuthenticationSecret = null;
-
 	private String raNameGenerationParameters = "CN"; // Can be CN or UID
 	private String raModeNameGenerationScheme = "DN"; 
 	private String prefix = null;
@@ -102,6 +103,12 @@ public class CmpTcpService extends ServiceMBeanSupport implements CmpTcpServiceM
 		log.debug("raModeNameGenerationPostfix="+str);
 		if (StringUtils.isNotEmpty(str)) {
 			properties.setProperty("raModeNameGenerationPostfix", str);
+		}
+		
+		str = getResponseProtection();
+		if (StringUtils.isNotEmpty(str)) {
+			log.debug("responseProtection="+str);
+			properties.setProperty("responseProtection", str);
 		}
 		str = getRaAuthenticationSecret();
 		if (StringUtils.isNotEmpty(str)) {
@@ -228,6 +235,14 @@ public class CmpTcpService extends ServiceMBeanSupport implements CmpTcpServiceM
 		this.prefix = prefix;
 	}
 
+	public String getResponseProtection() {
+		return responseProtection;
+	}
+	
+	public void setResponseProtection(String responseProtection) {
+		this.responseProtection = responseProtection;
+	}
+	
 	public String getRaAuthenticationSecret() {
 		return raAuthenticationSecret;
 	}

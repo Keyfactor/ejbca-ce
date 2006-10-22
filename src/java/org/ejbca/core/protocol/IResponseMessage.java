@@ -43,7 +43,7 @@ import org.ejbca.core.model.ra.NotFoundException;
  * byte[] responseMessage = resp.getResponseMessage(); 
  * </code>
  *
- * @version $Id: IResponseMessage.java,v 1.3 2006-09-20 15:44:56 anatom Exp $
+ * @version $Id: IResponseMessage.java,v 1.4 2006-10-22 09:05:05 anatom Exp $
  */
 public interface IResponseMessage extends Serializable {
 
@@ -227,4 +227,11 @@ public interface IResponseMessage extends Serializable {
      * @param reqId the id from the request matching to this response
      */
     public void setRequestId(int reqid);
+    
+    /**
+     * For some types of requests, the protection used depends on parameters from the request,
+     * for example password based protection where algorithms, keyId etc is the same in the response as in the request
+     * @param IRequestMessage the request from where to pick protection parameters
+     */
+    public void setProtectionParamsFromRequest(IRequestMessage reqMsg);
 }

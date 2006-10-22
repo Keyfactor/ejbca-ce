@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE server>
-<!-- $Id: cmptcp-service.xml,v 1.1 2006-09-27 15:33:27 anatom Exp $ -->
+<!-- $Id: cmptcp-service.xml,v 1.2 2006-10-22 09:04:49 anatom Exp $ -->
 
 <server>
 
@@ -26,6 +26,7 @@
    <attribute name="Postfix">cmp.ra.namegenerationpostfix</attribute>
    <attribute name="Prefix">cmp.ra.namegenerationprefix</attribute>
    <attribute name="RaAuthenticationSecret">cmp.ra.authenticationsecret</attribute>   
+   <attribute name="ResponseProtection">cmp.responseprotection</attribute>   
    <attribute name="PortNo">cmp.tcp.portno</attribute>   
    <attribute name="LogDir">cmp.tcp.logdir</attribute>   
    <attribute name="ConfFile">cmp.tcp.conffile</attribute>   

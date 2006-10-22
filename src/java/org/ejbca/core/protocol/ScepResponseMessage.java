@@ -56,7 +56,7 @@ import org.ejbca.util.CertTools;
 /**
  * A response message for scep (pkcs7).
  *
- * @version $Id: ScepResponseMessage.java,v 1.6 2006-09-20 15:44:56 anatom Exp $
+ * @version $Id: ScepResponseMessage.java,v 1.7 2006-10-22 09:05:05 anatom Exp $
  */
 public class ScepResponseMessage implements IResponseMessage {
     /**
@@ -488,4 +488,8 @@ public class ScepResponseMessage implements IResponseMessage {
     public void setRequestId(int reqid) {
     }
 
+    /** @see org.ejca.core.protocol.IResponseMessage
+     */
+    public void setProtectionParamsFromRequest(IRequestMessage reqMsg) {
+    }
 }
