@@ -61,6 +61,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.caadmin.CA;
+import org.ejbca.core.model.ca.caadmin.CACacheManager;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -99,7 +100,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.24 2006-10-09 12:05:53 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.25 2006-10-22 16:30:04 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -510,6 +511,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
             CADataLocal cadata = cadatahome.findByPrimaryKey(new Integer(caid));
             // Remove CA
             cadata.remove();
+			// Invalidate CA cache to refresh information
+			CACacheManager.instance().removeCA(cadata.getCaId().intValue());
             // Remove an eventual CA token from the token registry
             HardCATokenManager.instance().addCAToken(caid, null);
             getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_INFO_CAEDITED,"CA Removed");
@@ -545,6 +548,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
             }catch(javax.ejb.FinderException fe) {
                 // new CA doesn't exits, it's ok to rename old one.
                 cadata.setName(newname);
+				// Invalidate CA cache to refresh information
+				CACacheManager.instance().removeCA(cadata.getCaId().intValue());
                 getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_INFO_CAEDITED,"CA : " + oldname + " renamed to " + newname);
             }
         }catch(javax.ejb.FinderException fe) {
@@ -1418,6 +1423,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
         		try {
     				cadata.getCA().getCAToken().activate(authorizationcode);
     				cadata.setStatus(SecConst.CA_ACTIVE);
+    				// Invalidate CA cache to refresh information
+    				CACacheManager.instance().removeCA(cadata.getCaId().intValue());
     				getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_INFO_CAEDITED,"CA " + cadata.getName() + " activated successfully.");
     			} catch (IllegalKeyStoreException e) {
                     throw new EJBException(e);
@@ -1466,6 +1473,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
             	try {
             		cadata.getCA().getCAToken().deactivate();
             		cadata.setStatus(SecConst.CA_OFFLINE);
+    				// Invalidate CA cache to refresh information
+    				CACacheManager.instance().removeCA(cadata.getCaId().intValue());
             		getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_INFO_CAEDITED,"CA " + cadata.getName() + "have been deactivated successfully.");
             	} catch (IllegalKeyStoreException e) {
             		throw new EJBException(e);
