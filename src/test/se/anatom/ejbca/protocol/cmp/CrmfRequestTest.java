@@ -96,6 +96,12 @@ import com.novosec.pkix.asn1.crmf.OptionalValidity;
 import com.novosec.pkix.asn1.crmf.POPOSigningKey;
 import com.novosec.pkix.asn1.crmf.ProofOfPossession;
 
+/**
+ * This test must be run in normal mode (default mode)
+ * 
+ * @author tomas
+ *
+ */
 public class CrmfRequestTest extends TestCase {
 	
     private static Logger log = Logger.getLogger(CrmfRequestTest.class);
