@@ -373,9 +373,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
-        debug(">createCertificate(pk)");
         // Default key usage is defined in certificate profiles
-        debug("<createCertificate(pk)");
         return createCertificate(admin, username, password, pk, -1);
     } // createCertificate
 
@@ -430,33 +428,25 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
-        return createCertificate(admin, username, password, pk, keyusage, SecConst.PROFILE_NO_PROFILE, SecConst.CAID_USEUSERDEFINED);
+        return createCertificate(admin, username, password, pk, keyusage, null, SecConst.PROFILE_NO_PROFILE, SecConst.CAID_USEUSERDEFINED);
     }
-
 
     /**
      * Requests for a certificate to be created for the passed public key with the passed key
-     * usage and using the given certificate profile. This method is primarily intended to be used when
-     * issueing hardtokens having multiple certificates per user.
-     * The method queries the user database for authorization of the user. CAs are only
+     * usage. The method queries the user database for authorization of the user. CAs are only
      * allowed to have certificateSign and CRLSign set.
      *
-     * @param admin                Information about the administrator or admin preforming the event.
-     * @param username             unique username within the instance.
-     * @param password             password for the user.
-     * @param pk                   the public key to be put in the created certificate.
-     * @param keyusage             integer with bit mask describing desired keys usage, overrides keyUsage from
-     *                             CertificateProfiles if allowed. Bit mask is packed in in integer using constants
-     *                             from CertificateData. -1 means use default keyUsage from CertificateProfile. ex. int
-     *                             keyusage = CertificateData.digitalSignature | CertificateData.nonRepudiation; gives
-     *                             digitalSignature and nonRepudiation. ex. int keyusage = CertificateData.keyCertSign
-     *                             | CertificateData.cRLSign; gives keyCertSign and cRLSign
-     * @param certificateprofileid used to override the one set in userdata.
-     *                             Should be set to SecConst.PROFILE_NO_PROFILE if the usedata certificateprofileid should be used
-     * @param caid                 used to override the one set in userdata.¨
-     *                             Should be set to SecConst.CAID_USEUSERDEFINED if the regular certificateprofileid should be used
-     * 
-     * 
+     * @param admin    Information about the administrator or admin preforming the event.
+     * @param username unique username within the instance.
+     * @param password password for the user.
+     * @param pk       the public key to be put in the created certificate.
+     * @param keyusage integer with bit mask describing desired keys usage, overrides keyUsage from
+     *                 CertificateProfiles if allowed. Bit mask is packed in in integer using constants
+     *                 from CertificateData. -1 means use default keyUsage from CertificateProfile. ex. int
+     *                 keyusage = CertificateData.digitalSignature | CertificateData.nonRepudiation; gives
+     *                 digitalSignature and nonRepudiation. ex. int keyusage = CertificateData.keyCertSign
+     *                 | CertificateData.cRLSign; gives keyCertSign and cRLSign
+     * @param notAfter an optional validity to set in the created certificate, if the profile allows validity override, null if the profiles default validity should be used.
      * @return The newly created certificate or null.
      * @throws ObjectNotFoundException if the user does not exist.
      * @throws AuthStatusException     If the users status is incorrect.
@@ -465,79 +455,9 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
      */
-    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, int certificateprofileid, int caid) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
-        debug(">createCertificate(pk, ku)");
-        try {
-            // Authorize user and get DN
-            UserDataVO data = authUser(admin, username, password);
-            debug("Authorized user " + username + " with DN='" + data.getDN() + "'." + " with CA=" + data.getCAId());
-            if (certificateprofileid != SecConst.PROFILE_NO_PROFILE) {
-                debug("Overriding user certificate profile with :" + certificateprofileid);
-                data.setCertificateProfileId(certificateprofileid);
-            }
-            
-            if (caid != SecConst.CAID_USEUSERDEFINED) {
-                debug("Overriding user caid with :" + caid);
-                data.setCAId(caid);
-            }
-
-
-            debug("type=" + data.getType());
-            // get CA
-            CADataLocal cadata = null;
-            try {
-                cadata = cadatahome.findByPrimaryKey(new Integer(data.getCAId()));
-            } catch (javax.ejb.FinderException fe) {
-                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Invalid CA Id", fe);
-                throw new CADoesntExistsException();
-            }
-            CA ca = null;
-            try {
-                ca = cadata.getCA();
-            } catch (java.io.UnsupportedEncodingException uee) {
-                throw new EJBException(uee);
-            } catch(IllegalKeyStoreException e){
-                throw new EJBException(e);
-            }
-            // Check that CA hasn't expired.
-            X509Certificate cacert = (X509Certificate) ca.getCACertificate();
-
-            if (ca.getStatus() != SecConst.CA_ACTIVE) {
-                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Signing CA " + cadata.getSubjectDN() + " isn't active.");
-                throw new EJBException("Signing CA " + cadata.getSubjectDN() + " isn't active.");
-            }
-
-            try {
-                cacert.checkValidity();
-            } catch (CertificateExpiredException cee) {
-                // Signers Certificate has expired.
-                cadata.setStatus(SecConst.CA_EXPIRED);
-                ca.setStatus(SecConst.CA_EXPIRED);
-                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Signing CA " + cadata.getSubjectDN() + " has expired", cee);
-                throw new EJBException("Signing CA " + cadata.getSubjectDN() + " has expired");
-            } catch (CertificateNotYetValidException cve) {
-                throw new EJBException(cve);
-            }
-
-
-            // Now finally after all these checks, get the certificate
-            Certificate cert = createCertificate(admin, data, ca, pk, keyusage, null);
-            // Call authentication session and tell that we are finished with this user
-            if (ca.getFinishUser() == true) {
-                finishUser(admin, username, password);
-            }
-            debug("<createCertificate(pk, ku)");
-            return cert;
-        } catch (ObjectNotFoundException oe) {
-            throw oe;
-        } catch (AuthStatusException se) {
-            throw se;
-        } catch (AuthLoginException le) {
-            throw le;
-        } catch (IllegalKeyException ke) {
-            throw ke;
-        }
-    } // createCertificate
+    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, Date notAfter) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
+        return createCertificate(admin, username, password, pk, keyusage, notAfter, SecConst.PROFILE_NO_PROFILE, SecConst.CAID_USEUSERDEFINED);
+    }
 
     /**
      * Requests for a certificate of the specified type to be created for the passed public key.
@@ -652,6 +572,42 @@ public class RSASignSessionBean extends BaseSessionBean {
         return createCertificate(admin, req, -1, responseClass);
     }
 
+    /**
+     * Requests for a certificate to be created for the passed public key with the passed key
+     * usage and using the given certificate profile. This method is primarily intended to be used when
+     * issueing hardtokens having multiple certificates per user.
+     * The method queries the user database for authorization of the user. CAs are only
+     * allowed to have certificateSign and CRLSign set.
+     *
+     * @param admin                Information about the administrator or admin preforming the event.
+     * @param username             unique username within the instance.
+     * @param password             password for the user.
+     * @param pk                   the public key to be put in the created certificate.
+     * @param keyusage             integer with bit mask describing desired keys usage, overrides keyUsage from
+     *                             CertificateProfiles if allowed. Bit mask is packed in in integer using constants
+     *                             from CertificateData. -1 means use default keyUsage from CertificateProfile. ex. int
+     *                             keyusage = CertificateData.digitalSignature | CertificateData.nonRepudiation; gives
+     *                             digitalSignature and nonRepudiation. ex. int keyusage = CertificateData.keyCertSign
+     *                             | CertificateData.cRLSign; gives keyCertSign and cRLSign
+     * @param certificateprofileid used to override the one set in userdata.
+     *                             Should be set to SecConst.PROFILE_NO_PROFILE if the usedata certificateprofileid should be used
+     * @param caid                 used to override the one set in userdata.¨
+     *                             Should be set to SecConst.CAID_USEUSERDEFINED if the regular certificateprofileid should be used
+     * 
+     * 
+     * @return The newly created certificate or null.
+     * @throws ObjectNotFoundException if the user does not exist.
+     * @throws AuthStatusException     If the users status is incorrect.
+     * @throws AuthLoginException      If the password is incorrect.
+     * @throws IllegalKeyException     if the public key is of wrong type.
+     * 
+     * @ejb.permission unchecked="true"
+     * @ejb.interface-method view-type="both"
+     */
+    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, int certificateprofileid, int caid) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
+    	return createCertificate(admin, username, password, pk, keyusage, null, certificateprofileid, caid);
+    }
+    
     /**
      * Requests for a certificate to be created for the passed public key wrapped in a
      * certification request message (ex PKCS10).  The username and password used to authorize is
@@ -1290,6 +1246,111 @@ public class RSASignSessionBean extends BaseSessionBean {
         	log.info("Called finishUser fdor no existing user: ", e);
         }
     } // finishUser
+
+    /**
+     * Requests for a certificate to be created for the passed public key with the passed key
+     * usage and using the given certificate profile. This method is primarily intended to be used when
+     * issueing hardtokens having multiple certificates per user.
+     * The method queries the user database for authorization of the user. CAs are only
+     * allowed to have certificateSign and CRLSign set.
+     *
+     * @param admin                Information about the administrator or admin preforming the event.
+     * @param username             unique username within the instance.
+     * @param password             password for the user.
+     * @param pk                   the public key to be put in the created certificate.
+     * @param keyusage             integer with bit mask describing desired keys usage, overrides keyUsage from
+     *                             CertificateProfiles if allowed. Bit mask is packed in in integer using constants
+     *                             from CertificateData. -1 means use default keyUsage from CertificateProfile. ex. int
+     *                             keyusage = CertificateData.digitalSignature | CertificateData.nonRepudiation; gives
+     *                             digitalSignature and nonRepudiation. ex. int keyusage = CertificateData.keyCertSign
+     *                             | CertificateData.cRLSign; gives keyCertSign and cRLSign
+     * @param notAfter an optional validity to set in the created certificate, if the profile allows validity override, null if the profiles default validity should be used.
+     * @param certificateprofileid used to override the one set in userdata.
+     *                             Should be set to SecConst.PROFILE_NO_PROFILE if the usedata certificateprofileid should be used
+     * @param caid                 used to override the one set in userdata.¨
+     *                             Should be set to SecConst.CAID_USEUSERDEFINED if the regular certificateprofileid should be used
+     * 
+     * 
+     * @return The newly created certificate or null.
+     * @throws ObjectNotFoundException if the user does not exist.
+     * @throws AuthStatusException     If the users status is incorrect.
+     * @throws AuthLoginException      If the password is incorrect.
+     * @throws IllegalKeyException     if the public key is of wrong type.
+     * 
+     */
+    private Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, Date notAfter, int certificateprofileid, int caid) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
+        debug(">createCertificate(pk, ku, date)");
+        try {
+            // Authorize user and get DN
+            UserDataVO data = authUser(admin, username, password);
+            debug("Authorized user " + username + " with DN='" + data.getDN() + "'." + " with CA=" + data.getCAId());
+            if (certificateprofileid != SecConst.PROFILE_NO_PROFILE) {
+                debug("Overriding user certificate profile with :" + certificateprofileid);
+                data.setCertificateProfileId(certificateprofileid);
+            }
+            
+            if (caid != SecConst.CAID_USEUSERDEFINED) {
+                debug("Overriding user caid with :" + caid);
+                data.setCAId(caid);
+            }
+
+
+            debug("type=" + data.getType());
+            // get CA
+            CADataLocal cadata = null;
+            try {
+                cadata = cadatahome.findByPrimaryKey(new Integer(data.getCAId()));
+            } catch (javax.ejb.FinderException fe) {
+                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Invalid CA Id", fe);
+                throw new CADoesntExistsException();
+            }
+            CA ca = null;
+            try {
+                ca = cadata.getCA();
+            } catch (java.io.UnsupportedEncodingException uee) {
+                throw new EJBException(uee);
+            } catch(IllegalKeyStoreException e){
+                throw new EJBException(e);
+            }
+            // Check that CA hasn't expired.
+            X509Certificate cacert = (X509Certificate) ca.getCACertificate();
+
+            if (ca.getStatus() != SecConst.CA_ACTIVE) {
+                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Signing CA " + cadata.getSubjectDN() + " isn't active.");
+                throw new EJBException("Signing CA " + cadata.getSubjectDN() + " isn't active.");
+            }
+
+            try {
+                cacert.checkValidity();
+            } catch (CertificateExpiredException cee) {
+                // Signers Certificate has expired.
+                cadata.setStatus(SecConst.CA_EXPIRED);
+                ca.setStatus(SecConst.CA_EXPIRED);
+                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "Signing CA " + cadata.getSubjectDN() + " has expired", cee);
+                throw new EJBException("Signing CA " + cadata.getSubjectDN() + " has expired");
+            } catch (CertificateNotYetValidException cve) {
+                throw new EJBException(cve);
+            }
+
+
+            // Now finally after all these checks, get the certificate
+            Certificate cert = createCertificate(admin, data, ca, pk, keyusage, notAfter);
+            // Call authentication session and tell that we are finished with this user
+            if (ca.getFinishUser() == true) {
+                finishUser(admin, username, password);
+            }
+            debug("<createCertificate(pk, ku, date)");
+            return cert;
+        } catch (ObjectNotFoundException oe) {
+            throw oe;
+        } catch (AuthStatusException se) {
+            throw se;
+        } catch (AuthLoginException le) {
+            throw le;
+        } catch (IllegalKeyException ke) {
+            throw ke;
+        }
+    } // createCertificate
 
     /**
      * Creates the certificate, does NOT check any authorization on user, profiles or CA!

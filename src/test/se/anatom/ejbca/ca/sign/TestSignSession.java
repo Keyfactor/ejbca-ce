@@ -21,7 +21,9 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 
 import javax.ejb.DuplicateKeyException;
@@ -46,6 +48,7 @@ import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.IllegalKeyException;
+import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
@@ -61,7 +64,7 @@ import org.ejbca.util.cert.QCStatementExtension;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.13 2006-08-12 09:49:53 herrvendil Exp $
+ * @version $Id: TestSignSession.java,v 1.14 2006-10-23 12:51:48 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -593,6 +596,80 @@ public class TestSignSession extends TestCase {
 
         log.debug("<test10TestQcCert()");        
     }
+
+    /** Tests creting a certificate with QC statement
+     * 
+     */
+    public void test11TestValidityOverride() throws Exception {
+        log.debug(">test11TestValidityOverride()");
+
+        // Create a good certificate profile (good enough), using QC statement
+        storesession.removeCertificateProfile(admin,"TESTVALOVERRIDE");
+        EndUserCertificateProfile certprof = new EndUserCertificateProfile();
+        certprof.setAllowValidityOverride(false);
+        certprof.setValidity(3065);
+        storesession.addCertificateProfile(admin, "TESTVALOVERRIDE", certprof);
+        int cprofile = storesession.getCertificateProfileId(admin,"TESTVALOVERRIDE");
+
+        // Create a good end entity profile (good enough), allowing multiple UPN names
+        rasession.removeEndEntityProfile(admin, "TESTVALOVERRIDE");
+        EndEntityProfile profile = new EndEntityProfile();
+        profile.addField(EndEntityProfile.COUNTRY);
+        profile.addField(EndEntityProfile.COMMONNAME);
+        profile.setValue(EndEntityProfile.AVAILCAS,0, Integer.toString(SecConst.ALLCAS));
+        profile.setValue(EndEntityProfile.AVAILCERTPROFILES,0,Integer.toString(cprofile));
+        rasession.addEndEntityProfile(admin, "TESTVALOVERRIDE", profile);
+        int eeprofile = rasession.getEndEntityProfileId(admin, "TESTVALOVERRIDE");
+        try {
+            // Change a user that we know...
+            usersession.changeUser(admin, "foo", "foo123", "C=SE,CN=validityoverride",
+                    null,
+                    "foo@anatom.nu", false,
+                    eeprofile,
+                    cprofile,
+                    SecConst.USER_ENDUSER,
+                    SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, caid);
+            log.debug("created user: foo, foo123, C=SE, CN=validityoverride");
+        } catch (RemoteException re) {
+            assertTrue("User foo does not exist, or error changing user", false);
+        } 
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_MONTH, 10);
+        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", keys.getPublic(), -1, cal.getTime());
+        assertNotNull("Failed to create certificate", cert);
+        String dn = cert.getSubjectDN().getName();
+        assertEquals(CertTools.stringToBCDNString("cn=validityoverride,c=SE"), CertTools.stringToBCDNString(dn));
+        Date notAfter = cert.getNotAfter();
+        cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_MONTH, 3064);
+        // Override was not enabled, the cert should have notAfter more than 3064 days in the future (3065 to be exact)
+        assertTrue(notAfter.compareTo(cal.getTime()) > 0);
+        
+        // Change so that we allow override of validity time
+        CertificateProfile prof = storesession.getCertificateProfile(admin,cprofile);
+        prof.setAllowValidityOverride(true);
+        prof.setValidity(3065);
+        storesession.changeCertificateProfile(admin, "TESTVALOVERRIDE", prof);
+        cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_MONTH, 10);
+        usersession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
+        cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", keys.getPublic(), -1, cal.getTime());
+        assertNotNull("Failed to create certificate", cert);
+        assertEquals(CertTools.stringToBCDNString("cn=validityoverride,c=SE"), CertTools.stringToBCDNString(dn));
+        notAfter = cert.getNotAfter();
+        cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_MONTH, 11);
+        // Override was enabled enabled, the cert should have notAfter less than 11 days in the future (10 to be exact)
+        assertTrue(notAfter.compareTo(cal.getTime()) < 0);
+        
+
+        // Clean up
+        rasession.removeEndEntityProfile(admin, "TESTVALOVERRIDE");
+        storesession.removeCertificateProfile(admin,"TESTVALOVERRIDE");
+
+        log.debug("<test11TestValidityOverride()");        
+    }
+
     /**
      * Tests scep message
      */
