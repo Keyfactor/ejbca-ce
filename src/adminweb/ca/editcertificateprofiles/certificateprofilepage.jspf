@@ -390,7 +390,19 @@ function checkallfields(){
         <input type="text" name="<%=TEXTFIELD_VALIDITY%>" size="5" maxlength="255" 
            value="<%= certificateprofiledata.getValidity()  %>"><br>
       </td>
-    </tr><tr  id="Row<%=row++%2%>"> 
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("ALLOWVALIDITYOVERRIDE") %>
+      </td>
+      <td width="50%">
+           <input type="checkbox" name="<%=CHECKBOX_ALLOWVALIDITYOVERRIDE %>"  value="<%=CHECKBOX_VALUE %>" 
+           <% if(certificateprofiledata.getAllowValidityOverride())
+                 out.write("CHECKED");
+           %>> 
+      </td>
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("USEBASICCONSTRAINTS") %> <br>  <%= ejbcawebbean.getText("BASICCONSTRAINTSCRITICAL") %>
 

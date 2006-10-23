@@ -60,7 +60,7 @@ import org.ejbca.util.CertTools;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.8 2006-09-29 10:14:53 anatom Exp $
+ * @version $Id: CA.java,v 1.9 2006-10-23 12:02:06 anatom Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -409,18 +409,22 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     	this.cainfo = cainfo;
     }
     
-    public Certificate  generateCertificate(UserDataVO subject, 
-                                            PublicKey publicKey, 
-                                            int keyusage,                                             
-                                            CertificateProfile certProfile) throws Exception{
-      return generateCertificate(subject, publicKey, keyusage, -1, certProfile);                                            
-    }
     
+    public Certificate generateCertificate(UserDataVO subject, 
+            PublicKey publicKey, 
+            int keyusage, 
+            long validity,
+            CertificateProfile certProfile) throws Exception {
+    	// Calculate the notAfter date
+        Date notAfter = new Date();
+        notAfter.setTime(notAfter.getTime() + ( validity * 24 * 60 * 60 * 1000));        	
+    	return generateCertificate(subject, publicKey, keyusage, notAfter, certProfile);
+    }
     
     public abstract Certificate generateCertificate(UserDataVO subject, 
                                                     PublicKey publicKey, 
                                                     int keyusage, 
-                                                    long validity,
+                                                    Date notAfter,
                                                     CertificateProfile certProfile) throws Exception;
     
     public abstract CRL generateCRL(Vector certs, int crlnumber) throws Exception;

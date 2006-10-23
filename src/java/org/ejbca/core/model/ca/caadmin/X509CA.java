@@ -118,7 +118,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.28 2006-10-20 07:12:45 anatom Exp $
+ * @version $Id: X509CA.java,v 1.29 2006-10-23 12:02:06 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -281,7 +281,7 @@ public class X509CA extends CA implements Serializable {
     public Certificate generateCertificate(UserDataVO subject, 
                                            PublicKey publicKey, 
                                            int keyusage, 
-                                           long validity,
+                                           Date notAfter,
                                            CertificateProfile certProfile) throws Exception{
                                                
     	    	
@@ -290,12 +290,14 @@ public class X509CA extends CA implements Serializable {
         // Set back startdate ten minutes to avoid some problems with wrongly set clocks.
         firstDate.setTime(firstDate.getTime() - 10 * 60 * 1000);
         Date lastDate = new Date();
-        // validity in days = validity*24*60*60*1000 milliseconds
-        long val = validity;
-        if(val == -1)
-          val = certProfile.getValidity();
-        
-        lastDate.setTime(lastDate.getTime() + ( val * 24 * 60 * 60 * 1000));
+        if ( (notAfter == null) || (!certProfile.getAllowValidityOverride()) ){
+            // validity in days = validity*24*60*60*1000 milliseconds
+            long val = certProfile.getValidity();        
+            lastDate.setTime(lastDate.getTime() + ( val * 24 * 60 * 60 * 1000));        	
+        } else {
+        	// only of nut null and we allow validity override
+        	lastDate = notAfter;
+        }
         X509Certificate cacert = (X509Certificate)getCACertificate();
         // If our desired after date is after the CA expires, we will not allow this
         // The CA will only issue certificates with maximum the same validity time as it-self

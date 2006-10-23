@@ -30,6 +30,7 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -520,7 +521,7 @@ public class RSASignSessionBean extends BaseSessionBean {
 
 
             // Now finally after all these checks, get the certificate
-            Certificate cert = createCertificate(admin, data, ca, pk, keyusage);
+            Certificate cert = createCertificate(admin, data, ca, pk, keyusage, null);
             // Call authentication session and tell that we are finished with this user
             if (ca.getFinishUser() == true) {
                 finishUser(admin, username, password);
@@ -734,7 +735,8 @@ public class RSASignSessionBean extends BaseSessionBean {
                     }
 
                     if (status.equals(ResponseStatus.SUCCESS)) {
-                    	cert = createCertificate(admin, data, ca, reqpk, keyUsage);
+                    	Date notAfter = req.getRequestValidityNotAfter(); // Optionally requested validity
+                    	cert = createCertificate(admin, data, ca, reqpk, keyUsage, notAfter);
                     }
             	} catch (ObjectNotFoundException oe) {
             		// If we didn't find the entity return error message
@@ -1298,10 +1300,11 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @param ca       the CA that will sign the certificate
      * @param pk       ther users public key to be put in the certificate
      * @param keyusage requested key usage for the certificate, may be ignored by the CA
+     * @param notAfter an optional validity to set in the created certificate, if the profile allows validity override, null if the profiles default validity should be used.
      * @return Certificate that has been generated and signed by the CA
      * @throws IllegalKeyException if the public key given is invalid
      */
-    private Certificate createCertificate(Admin admin, UserDataVO data, CA ca, PublicKey pk, int keyusage) throws IllegalKeyException {
+    private Certificate createCertificate(Admin admin, UserDataVO data, CA ca, PublicKey pk, int keyusage, Date notAfter) throws IllegalKeyException {
         debug(">createCertificate(pk, ku)");
         try {
             // If the user is of type USER_INVALID, it cannot have any other type (in the mask)
@@ -1358,7 +1361,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                     throw new IllegalKeyException(msg);
                 }
 
-                X509Certificate cert = (X509Certificate) ca.generateCertificate(data, pk, keyusage, certProfile);
+                X509Certificate cert = (X509Certificate) ca.generateCertificate(data, pk, keyusage, notAfter, certProfile);
 
                 getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), data.getUsername(), cert, LogEntry.EVENT_INFO_CREATECERTIFICATE, "");
                 debug("Generated certificate with SerialNumber '" + Hex.encode(cert.getSerialNumber().toByteArray()) + "' for user '" + data.getUsername() + "'.");

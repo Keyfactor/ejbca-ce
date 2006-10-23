@@ -64,6 +64,7 @@
   static final String CHECKBOX_CRLDISTRIBUTIONPOINTCRITICAL       = "checkboxcrldistributionpointcritical";
   static final String CHECKBOX_USECERTIFICATEPOLICIES             = "checkusecertificatepolicies";
   static final String CHECKBOX_CERTIFICATEPOLICIESCRITICAL        = "checkcertificatepoliciescritical";
+  static final String CHECKBOX_ALLOWVALIDITYOVERRIDE              = "checkallowvalidityoverride";
   static final String CHECKBOX_ALLOWKEYUSAGEOVERRIDE              = "checkallowkeyusageoverride";
   static final String CHECKBOX_USEEXTENDEDKEYUSAGE                = "checkuseextendedkeyusage";
   static final String CHECKBOX_EXTENDEDKEYUSAGECRITICAL           = "checkboxextendedkeyusagecritical";
@@ -238,8 +239,15 @@ int[]    defaultavailablebitlengths = {512,1024,2048,4096};
                  certificateprofiledata.setValidity(Long.parseLong(value));
              }
   
-
              boolean use = false;
+             value = request.getParameter(CHECKBOX_ALLOWVALIDITYOVERRIDE);
+             if(value != null){
+                use = value.equals(CHECKBOX_VALUE);
+                certificateprofiledata.setAllowValidityOverride(use);
+             }
+             else
+                certificateprofiledata.setAllowValidityOverride(false);
+             
              value = request.getParameter(CHECKBOX_BASICCONSTRAINTS);
              if(value != null){
                  use = value.equals(CHECKBOX_VALUE);
