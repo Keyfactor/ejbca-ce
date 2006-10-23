@@ -34,12 +34,12 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.10 2006-06-06 16:20:13 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.11 2006-10-23 12:01:47 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
     // Default Values
-    public static final float LATEST_VERSION = (float) 18.0;
+    public static final float LATEST_VERSION = (float) 19.0;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -50,7 +50,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * /serialization/spec/version.doc.html> details. </a>
      *
      */
-    private static final long serialVersionUID = -8069608639716545201L;
+    private static final long serialVersionUID = -8069608639716545202L;
 
     /** KeyUsage constants */
     public static final int DIGITALSIGNATURE = 0;
@@ -102,6 +102,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     // protected fields.
     protected static final String CERTVERSION                    = "certversion";
     protected static final String VALIDITY                       = "validity";
+    protected static final String ALLOWVALIDITYOVERRIDE          = "allowvalidityoverride";
     protected static final String USEBASICCONSTRAINTS            = "usebasicconstrants";
     protected static final String BASICCONSTRAINTSCRITICAL       = "basicconstraintscritical";
     protected static final String USEKEYUSAGE                    = "usekeyusage";
@@ -179,6 +180,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public CertificateProfile() {
       setCertificateVersion(VERSION_X509V3);
       setValidity(730);
+      setAllowValidityOverride(false);
 
       setUseBasicConstraints(true);
       setBasicConstraintsCritical(true);
@@ -275,6 +277,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     public long getValidity(){return ((Long)data.get(VALIDITY)).longValue();}
     public void setValidity(long validity) { data.put(VALIDITY,new Long(validity));}
+
+    public boolean getAllowValidityOverride(){ return ((Boolean)data.get(ALLOWVALIDITYOVERRIDE)).booleanValue(); }
+    public void setAllowValidityOverride(boolean allowvalidityoverride) {data.put(ALLOWVALIDITYOVERRIDE, Boolean.valueOf(allowvalidityoverride));}
 
     public boolean getUseBasicConstraints(){ return ((Boolean)data.get(USEBASICCONSTRAINTS)).booleanValue(); }
     public void setUseBasicConstraints(boolean usebasicconstraints) {data.put(USEBASICCONSTRAINTS, Boolean.valueOf(usebasicconstraints));}
@@ -884,6 +889,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             if (data.get(USESUBJECTDIRATTRIBUTES) == null) {
             	setUseSubjectDirAttributes(false);
             }
+            if(data.get(ALLOWVALIDITYOVERRIDE) == null) {
+                setAllowValidityOverride(false);
+            }
+
             
             data.put(VERSION, new Float(LATEST_VERSION));
         }

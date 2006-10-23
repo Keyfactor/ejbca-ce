@@ -22,6 +22,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.X509Certificate;
+import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Set;
@@ -44,7 +45,7 @@ import org.ejbca.util.CertTools;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.7 2006-09-20 15:44:56 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.8 2006-10-23 12:01:48 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage {
     /**
@@ -56,7 +57,7 @@ public class PKCS10RequestMessage implements IRequestMessage {
      * /serialization/spec/version.doc.html> details. </a>
      *
      */
-    static final long serialVersionUID = 3597275157018205136L;
+    static final long serialVersionUID = 3597275157018205137L;
 
     private static final Logger log = Logger.getLogger(PKCS10RequestMessage.class);
 
@@ -331,6 +332,13 @@ public class PKCS10RequestMessage implements IRequestMessage {
         return ret;
     }
 
+    /**
+     * @see org.ejbca.core.protocol.IRequestMessage
+     */
+	public Date getRequestValidityNotAfter() {
+		return null;
+	}
+	
     /**
      * Gets the underlying BC <code>PKCS10CertificationRequest</code> object.
      *

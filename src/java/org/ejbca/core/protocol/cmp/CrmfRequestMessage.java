@@ -27,6 +27,7 @@ import java.security.SignatureException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -37,6 +38,7 @@ import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x509.Time;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.ejbca.core.protocol.IRequestMessage;
@@ -52,6 +54,7 @@ import com.novosec.pkix.asn1.crmf.CertReqMessages;
 import com.novosec.pkix.asn1.crmf.CertReqMsg;
 import com.novosec.pkix.asn1.crmf.CertRequest;
 import com.novosec.pkix.asn1.crmf.CertTemplate;
+import com.novosec.pkix.asn1.crmf.OptionalValidity;
 import com.novosec.pkix.asn1.crmf.POPOSigningKey;
 import com.novosec.pkix.asn1.crmf.ProofOfPossession;
 
@@ -62,7 +65,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
  * -- Self signature
  * 
  * @author tomas
- * @version $Id: CrmfRequestMessage.java,v 1.7 2006-09-25 12:54:59 anatom Exp $
+ * @version $Id: CrmfRequestMessage.java,v 1.8 2006-10-23 12:01:33 anatom Exp $
  */
 public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessage {
 	
@@ -77,7 +80,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
      * /serialization/spec/version.doc.html> details. </a>
      *
      */
-    static final long serialVersionUID = 1000L;
+    static final long serialVersionUID = 1001L;
 
     private int requestType = 0;
     private int requestId = 0;
@@ -250,6 +253,20 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 		return ret;
 	}
 
+	public Date getRequestValidityNotAfter() {
+		Date ret = null;
+		CertTemplate templ = req.getCertReq().getCertTemplate();
+		OptionalValidity val = templ.getValidity();
+		if (val != null) {
+			Time time = val.getNotAfter();
+			if (time != null) {
+				ret = time.getDate();
+			}
+		}
+		log.debug("Request validity notAfter is: "+ret.toString());
+		return ret;
+	}
+	
 	public boolean verify() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
 		boolean ret = false;
 		ProofOfPossession pop = req.getPop();

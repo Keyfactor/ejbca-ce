@@ -34,7 +34,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * of ejbca web interface.
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.8 2006-09-22 13:05:11 herrvendil Exp $
+ * @version $Id: EndEntityProfile.java,v 1.9 2006-10-23 12:01:48 anatom Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -785,7 +785,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
       }
       
       if(!found)
-          throw new UserDoesntFullfillEndEntityProfile("Couldn't find certificate profile among available certificate profiles.");
+          throw new UserDoesntFullfillEndEntityProfile("Couldn't find certificate profile ("+certificateprofileid+") among available certificate profiles.");
 
       // Check if tokentype is among available  token types.
       String[] availablesofttokentypes;

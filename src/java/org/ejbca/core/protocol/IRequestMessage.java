@@ -21,13 +21,14 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.util.Date;
 
 
 /**
  * Base interface for request messages sent to the CA. Implementors of this interface must also
  * implement Serializable if they are to be sent to any EJB bussiness methods.
  *
- * @version $Id: IRequestMessage.java,v 1.4 2006-09-20 15:44:56 anatom Exp $
+ * @version $Id: IRequestMessage.java,v 1.5 2006-10-23 12:01:48 anatom Exp $
  */
 public interface IRequestMessage extends Serializable {
     /**
@@ -65,6 +66,15 @@ public interface IRequestMessage extends Serializable {
      * @return requested DN or null.
      */
     public String getRequestDN();
+
+    /**
+     * Gets a validity date from the request, if the request contains a desired validity.
+     * The requested validity may, or may not be used, it depends if allowValidityOverride is set in 
+     * the certificate profile.
+     * 
+     * @return A date in the future for notAfter validity in the certificate, or null if no desired validity is in the certificate.
+     */
+	public Date getRequestValidityNotAfter();
 
     /**
      * Gets the issuer DN (of CA cert) from IssuerAndSerialNumber when this is a CRL request.

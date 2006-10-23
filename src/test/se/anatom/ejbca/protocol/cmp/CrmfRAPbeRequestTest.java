@@ -269,7 +269,7 @@ public class CrmfRAPbeRequestTest extends TestCase {
 	private PKIMessage genCertReq(byte[] nonce, byte[] transid) throws NoSuchAlgorithmException, NoSuchProviderException, IOException {
 		OptionalValidity myOptionalValidity = new OptionalValidity();
 		myOptionalValidity.setNotBefore( new org.bouncycastle.asn1.x509.Time( new DERGeneralizedTime("20030211002120Z") ) );
-		myOptionalValidity.setNotAfter( new org.bouncycastle.asn1.x509.Time(new Date()) );
+		myOptionalValidity.setNotAfter( new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20061029152120Z")) );
 		
 		CertTemplate myCertTemplate = new CertTemplate();
 		myCertTemplate.setValidity( myOptionalValidity );
@@ -658,6 +658,7 @@ public class CrmfRAPbeRequestTest extends TestCase {
 		assertNotNull(struct);
 		assertEquals(CertTools.stringToBCDNString(struct.getSubject().toString()), CertTools.stringToBCDNString(userDN));
 		assertEquals(CertTools.stringToBCDNString(struct.getIssuer().toString()), CertTools.stringToBCDNString(cacert.getSubjectDN().getName()));
+		System.out.println("notAfter="+struct.getEndDate().getDate().toString());
     }
 
     private void checkCmpPKIConfirmMessage(byte[] retMsg) throws IOException {
