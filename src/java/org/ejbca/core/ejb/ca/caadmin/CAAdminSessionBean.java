@@ -100,7 +100,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.25 2006-10-22 16:30:04 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.26 2006-10-23 13:13:36 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -512,7 +512,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
             // Remove CA
             cadata.remove();
 			// Invalidate CA cache to refresh information
-			CACacheManager.instance().removeCA(cadata.getCaId().intValue());
+			CACacheManager.instance().removeCA(caid);
             // Remove an eventual CA token from the token registry
             HardCATokenManager.instance().addCAToken(caid, null);
             getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_INFO_CAEDITED,"CA Removed");
