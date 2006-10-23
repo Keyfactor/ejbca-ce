@@ -784,6 +784,9 @@ The following CMP messages are supported:
 </ul>
 Certificate requests use the CRMF (RFC4211).
 </p>
+<p>
+CMP support in RA mode (see below) is currently limited to one keyId, making RA requests for one CA.
+</p>
 <subsection name="Configuration">
 <p>
 Copy conf/cmp.properties.sample to conf/cmp.properties and configure. The options in the configuration file should
