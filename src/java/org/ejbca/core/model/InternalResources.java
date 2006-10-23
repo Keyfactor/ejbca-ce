@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.model;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -29,7 +31,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  *  
  * @author Philip Vendil 2006 sep 24
  *
- * @version $Id: InternalResources.java,v 1.1 2006-09-27 09:22:42 herrvendil Exp $
+ * @version $Id: InternalResources.java,v 1.2 2006-10-23 16:25:10 anatom Exp $
  */
 public class InternalResources {
 	
@@ -46,12 +48,23 @@ public class InternalResources {
 	 * @param globalConfiguration used to retrieve the internal language
 	 * of the application, configured in the System Configuration.
 	 */
-	protected InternalResources(){		
+	protected InternalResources(boolean test) {		
 		String primaryLanguage = GlobalConfiguration.PREFEREDINTERNALRESOURCES.toLowerCase();
 		String secondaryLanguage = GlobalConfiguration.SECONDARYINTERNALRESOURCES.toLowerCase();
-		
-		InputStream primaryStream = InternalResources.class.getResourceAsStream(RESOURCE_LOCATION + primaryLanguage + ".properties");
-		InputStream secondaryStream = InternalResources.class.getResourceAsStream(RESOURCE_LOCATION + secondaryLanguage + ".properties");
+		// The test flag is defined when called from test code (junit)		
+	    InputStream primaryStream = null;
+	    InputStream secondaryStream = null;
+	    if (test) {
+			primaryLanguage = "se";
+			secondaryLanguage = "en";
+		    try {
+				primaryStream = new FileInputStream("src/intresources/intresources." + primaryLanguage + ".properties");
+			    secondaryStream = new FileInputStream("src/intresources/intresources." + secondaryLanguage + ".properties");	    	
+			} catch (FileNotFoundException e) {}
+	    } else {
+			primaryStream = InternalResources.class.getResourceAsStream(RESOURCE_LOCATION + primaryLanguage + ".properties");
+			secondaryStream = InternalResources.class.getResourceAsStream(RESOURCE_LOCATION + secondaryLanguage + ".properties");	    	
+	    }
 		
 		try {
 			primaryResource.load(primaryStream);
@@ -59,7 +72,6 @@ public class InternalResources {
 		} catch (IOException e) {			
 			throw new EJBException("Error reading internal resourcefile", e);
 		}
-		
 	}
 	
 	/**
@@ -68,7 +80,7 @@ public class InternalResources {
 	 */
 	public static InternalResources getInstance(){
 		if(instance == null){
-			instance = new InternalResources();
+			instance = new InternalResources(false);
 		}
 		return instance;
 	}

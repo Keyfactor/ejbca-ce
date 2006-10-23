@@ -12,13 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.model;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.FileInputStream;
-
-import javax.ejb.EJBException;
-
-import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
 /**
  * Class inheriting the internal resources class. and overloads the load
@@ -26,23 +19,12 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  * 
  * @author Philip Vendil 2006 sep 25
  *
- * @version $Id: InternalResourcesTestClass.java,v 1.1 2006-09-27 09:28:53 herrvendil Exp $
+ * @version $Id: InternalResourcesTestClass.java,v 1.2 2006-10-23 16:25:11 anatom Exp $
  */
 public class InternalResourcesTestClass extends InternalResources {
 
-	public InternalResourcesTestClass(){		
-		String primaryLanguage = "se";
-		String secondaryLanguage = "en";
-		try {
-		    InputStream primaryStream = new FileInputStream("src/intresources/intresources." + primaryLanguage + ".properties");
-		    InputStream secondaryStream = new FileInputStream("src/intresources/intresources." + secondaryLanguage + ".properties");
-
-			primaryResource.load(primaryStream);
-			secondaryResource.load(secondaryStream);
-		} catch (IOException e) {			
-			throw new EJBException("Error reading internal resourcefile", e);
-		}
-		
+	public InternalResourcesTestClass(boolean test) {
+		super(test);
 	}
 	
 	/**
@@ -51,7 +33,7 @@ public class InternalResourcesTestClass extends InternalResources {
 	 */
 	public static InternalResources getInstance(){
 		if(instance == null){
-			instance = new InternalResourcesTestClass();
+			instance = new InternalResourcesTestClass(true);
 		}
 		return instance;
 	}
