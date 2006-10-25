@@ -138,11 +138,31 @@ fi
       <question>How do I configure log level in JBoss?</question>
       <answer>
         <p>
-        JBOSS_HOME/server/default/conf/lo4j.xml. It is a good idea to limit the log level to INFO. You can do this by adding this line to the FILE appender in the beginning of log4j.xml.
+        JBOSS_HOME/server/default/conf/lo4j.xml. It is a good idea to limit the log level to not include debug logs. You can do this by changing the root category towards the end of log4j.xml:
         </p>
 <source>
-&lt;param name="Threshold" value="INFO"/&gt;
+&lt;root&gt;
+  &lt;priority value="ERROR" /&gt;
+  &lt;appender-ref ref="CONSOLE"/&gt;
+  &lt;appender-ref ref="FILE"/&gt;
+&lt;/root> 
 </source>
+<p>
+You may also choose to remove the CONSOLE logging completely.
+</p>
+<p>
+You can also add this to limit the EJBCA logging to INFO, this will enable the logging system to avoid formatting
+debug messages that will not be printed, enhancing performance some.
+</p>
+<source>
+&lt;category name="org.ejbca"&gt;
+   &lt;priority value="INFO"/&gt;
+&lt;/category&gt;
+</source>
+<p>
+You can here enable DEBUG logging for EJBCA by changing INFO to DEBUG. By doing all of the above (and playing around a little) 
+you can get nice logging with only the things you are interested in logged to the log file.
+</p>
       </answer>
     </faq>
     <faq>
