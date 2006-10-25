@@ -1366,7 +1366,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @throws IllegalKeyException if the public key given is invalid
      */
     private Certificate createCertificate(Admin admin, UserDataVO data, CA ca, PublicKey pk, int keyusage, Date notAfter) throws IllegalKeyException {
-        debug(">createCertificate(pk, ku)");
+        debug(">createCertificate(pk, ku, notAfter)");
         try {
             // If the user is of type USER_INVALID, it cannot have any other type (in the mask)
             if (data.getType() == SecConst.USER_INVALID) {
@@ -1442,7 +1442,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                 if (certProfile.getPublisherList() != null)
                     pub.storeCertificate(admin, certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), cafingerprint, CertificateDataBean.CERT_ACTIVE, certProfile.getType(), -1, RevokedCertInfo.NOT_REVOKED, data.getExtendedinformation());
 
-                debug("<createCertificate(pk, ku)");
+                debug("<createCertificate(pk, ku, notAfter)");
                 return cert;
             }
         } catch (IllegalKeyException ke) {
