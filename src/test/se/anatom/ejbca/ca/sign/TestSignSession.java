@@ -64,7 +64,7 @@ import org.ejbca.util.cert.QCStatementExtension;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.14 2006-10-23 12:51:48 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.15 2006-10-25 10:58:45 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -607,7 +607,7 @@ public class TestSignSession extends TestCase {
         storesession.removeCertificateProfile(admin,"TESTVALOVERRIDE");
         EndUserCertificateProfile certprof = new EndUserCertificateProfile();
         certprof.setAllowValidityOverride(false);
-        certprof.setValidity(3065);
+        certprof.setValidity(298);
         storesession.addCertificateProfile(admin, "TESTVALOVERRIDE", certprof);
         int cprofile = storesession.getCertificateProfileId(admin,"TESTVALOVERRIDE");
 
@@ -641,9 +641,12 @@ public class TestSignSession extends TestCase {
         assertEquals(CertTools.stringToBCDNString("cn=validityoverride,c=SE"), CertTools.stringToBCDNString(dn));
         Date notAfter = cert.getNotAfter();
         cal = Calendar.getInstance();
-        cal.add(Calendar.DAY_OF_MONTH, 3064);
+        cal.add(Calendar.DAY_OF_MONTH, 297);
         // Override was not enabled, the cert should have notAfter more than 3064 days in the future (3065 to be exact)
         assertTrue(notAfter.compareTo(cal.getTime()) > 0);
+        cal.add(Calendar.DAY_OF_MONTH, 2);
+        // Override was not enabled, the cert should have notAfter more than 3064 days in the future (3065 to be exact)
+        assertTrue(notAfter.compareTo(cal.getTime()) < 0);
         
         // Change so that we allow override of validity time
         CertificateProfile prof = storesession.getCertificateProfile(admin,cprofile);
