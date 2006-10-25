@@ -135,6 +135,17 @@ fi
       </answer>
     </faq>
     <faq>
+      <question>How do I configure log level in JBoss?</question>
+      <answer>
+        <p>
+        JBOSS_HOME/server/default/conf/lo4j.xml. It is a good idea to limit the log level to INFO. You can do this by adding this line to the FILE appender in the beginning of log4j.xml.
+        </p>
+<source>
+&lt;param name="Threshold" value="INFO"/&gt;
+</source>
+      </answer>
+    </faq>
+    <faq>
       <question>I want to add my own static pages under http://hostname:8080/ejbca/ ?</question>
       <answer>
         <p>
