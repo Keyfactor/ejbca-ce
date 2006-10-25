@@ -865,6 +865,34 @@ If the same username is constructed (for exmaple UID) as an already existing use
 the existing user will be modified with new values for profile etc, and a new certificate will be issued for that user.
 </p>
 </subsubsection>
+<subsubsection name="Sample config">
+<p>
+A sample config of EJBCA to allow an RA to request certificates for users. 
+The RA uses password based mac (pbe) protection of CMP messages with password 'password'.
+Users will be created using UID from the request DN and with a prefix, so the resulting username will be: cmp&lt;UsersUID&gt;.
+End entity profiles names CMP_ENTITY and CMP_CERT is created in EJBCA allowing the request DN.
+</p>
+<source>
+cmp.operationmode=ra
+cmp.allowraverifypopo=true
+cmp.responseprotection=pbe
+cmp.ra.authenticationsecret=password
+cmp.ra.namegenerationscheme=DN
+cmp.ra.namegenerationparameters=UID
+cmp.ra.namegenerationprefix=cmp
+#cmp.ra.namegenerationpostfix=
+cmp.ra.endentityprofile=CMP_ENTITY
+cmp.ra.certificateprofile=CMP_CERT
+cmp.ra.caname=AdminCA1
+</source>
+</subsubsection>
+</subsection>
+
+<subsection name="Certificate validity">
+<p>Normally the validity period of issued certificates are controlled by the certificate profile. 
+If you enable 'Allow validity override' in the certificate profile, and the CMP initialization- or certificattion request contains a 
+validity time in the CRMF request template, this validity period will be used.
+</p>
 </subsection>
 
 <subsection name="Interoperability">
