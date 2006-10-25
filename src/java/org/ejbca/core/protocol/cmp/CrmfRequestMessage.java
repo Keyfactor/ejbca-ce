@@ -65,7 +65,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
  * -- Self signature
  * 
  * @author tomas
- * @version $Id: CrmfRequestMessage.java,v 1.8 2006-10-23 12:01:33 anatom Exp $
+ * @version $Id: CrmfRequestMessage.java,v 1.9 2006-10-25 11:39:16 anatom Exp $
  */
 public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessage {
 	
@@ -263,7 +263,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 				ret = time.getDate();
 			}
 		}
-		log.debug("Request validity notAfter is: "+ret.toString());
+		log.debug("Request validity notAfter is: "+ret == null ? "null" : ret.toString());
 		return ret;
 	}
 	
