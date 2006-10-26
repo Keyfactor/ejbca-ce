@@ -21,9 +21,9 @@ import java.util.Properties;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: BaseInterval.java,v 1.2 2006-10-01 17:46:25 herrvendil Exp $
+ * @version $Id: BaseInterval.java,v 1.3 2006-10-26 11:01:01 herrvendil Exp $
  */
-public abstract class BaseInterval implements IInterval{
+public abstract class BaseInterval  extends BaseServiceComponent implements IInterval{
 
 	protected Properties properties = null;
 	protected String serviceName = null;

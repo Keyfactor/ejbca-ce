@@ -20,7 +20,7 @@
         <!-- Optional parameters -->
         <init-param>
             <param-name>AuthorizedIPs</param-name>
-            <param-value>@ocsphealthcheck.authorizedips@</param-value>
+            <param-value>127.0.0.1</param-value>
             <description>Specifies which remote IPs that may call this healthcheck servlet. Use ';' for between multiple IPs. 
                          Comment out this parameter to allow from all IPs.</description>
         </init-param>
@@ -28,7 +28,7 @@
         <!-- EJBCAHealthCheck specific init parameters -->
         <init-param>
             <param-name>MinimumFreeMemory</param-name>
-            <param-value>@ocsphealthcheck.amountfreemem@</param-value>
+            <param-value>1</param-value>
             <description>
                 Parameter to set the number of Mega Bytes of memory that must be free before removing 
                 the node out of the cluster.
@@ -36,7 +36,7 @@
         </init-param>
         <init-param>
             <param-name>checkDBString</param-name>
-            <param-value>@ocsphealthcheck.dbquery@</param-value>
+            <param-value>Select 1 From CertificateData</param-value>
             <description>
                 Parameter indicating the string that should be used to do 
                 a minimal check that the database is working.
@@ -81,7 +81,7 @@
     </servlet-mapping>
   <env-entry>
     <env-entry-name>DataSource</env-entry-name>
-    <env-entry-value>@datasource.jndi-name-prefix@@datasource.jndi-name@</env-entry-value>
+    <env-entry-value>java:/EjbcaDS</env-entry-value>
     <env-entry-type>java.lang.String</env-entry-type>
   </env-entry>
 

@@ -47,7 +47,7 @@ import org.ejbca.util.CertTools;
  * Username (username)
  * </pre>
  *
- * @version $Id: CertificateDataBean.java,v 1.3 2006-10-07 14:10:47 anatom Exp $
+ * @version $Id: CertificateDataBean.java,v 1.4 2006-10-26 11:00:41 herrvendil Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a certificate with accompanying data"
  * display-name="CertificateDataEB"
@@ -114,6 +114,10 @@ public abstract class CertificateDataBean extends BaseEntityBean {
 
     /** Certificate is active and assigned */
     public static final int CERT_ACTIVE = 20;
+    
+    /** Certificate is still active and the user is notified that it 
+     * will soon expire. */
+    public static final int CERT_NOTIFIEDABOUTEXPIRATION = 21;
 
     /** Certificate is temporarily blocked (reversible) */
     public static final int CERT_TEMP_REVOKED = 30;

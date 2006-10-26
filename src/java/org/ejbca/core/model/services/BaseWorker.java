@@ -23,9 +23,9 @@ import org.ejbca.core.model.services.intervals.DummyInterval;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: BaseWorker.java,v 1.3 2006-10-14 05:01:46 herrvendil Exp $
+ * @version $Id: BaseWorker.java,v 1.4 2006-10-26 11:01:01 herrvendil Exp $
  */
-public abstract class BaseWorker implements IWorker {
+public abstract class BaseWorker extends BaseServiceComponent implements IWorker {
 
 	private static final Logger log = Logger.getLogger(BaseWorker.class);
 	

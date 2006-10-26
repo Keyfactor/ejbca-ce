@@ -14,18 +14,26 @@ package org.ejbca.core.model.services;
 
 import java.util.Properties;
 
+import javax.ejb.CreateException;
+import javax.ejb.EJBException;
+
+import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.log.ILogSessionLocal;
+import org.ejbca.core.ejb.log.ILogSessionLocalHome;
+
 /**
  * Help base class that manages that implements the init method of the interface
  * and manages the propertes.
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: BaseAction.java,v 1.2 2006-10-01 17:46:25 herrvendil Exp $
+ * @version $Id: BaseAction.java,v 1.3 2006-10-26 11:01:01 herrvendil Exp $
  */
-public abstract class BaseAction implements IAction{
+public abstract class BaseAction extends BaseServiceComponent implements IAction{
 
 	protected Properties properties = null;
 	protected String serviceName = null;
+	
 	/**
 	 * @see org.ejbca.core.model.services.IAction#init(Properties)
 	 */
@@ -33,6 +41,8 @@ public abstract class BaseAction implements IAction{
        this.properties = properties;
        this.serviceName = serviceName;
 	}
+	
+
 
 
 
