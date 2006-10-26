@@ -26,7 +26,7 @@ import java.util.Properties;
  * 
  * @author Philip Vendil 2006 sep 30
  *
- * @version $Id: CustomWorkerType.java,v 1.2 2006-10-14 05:01:41 herrvendil Exp $
+ * @version $Id: CustomWorkerType.java,v 1.3 2006-10-26 11:02:17 herrvendil Exp $
  */
 public class CustomWorkerType extends WorkerType {
 	
@@ -37,6 +37,7 @@ public class CustomWorkerType extends WorkerType {
 		
 		compatibleActionTypeNames.add(CustomActionType.NAME);
 		compatibleActionTypeNames.add(NoActionType.NAME);
+		compatibleActionTypeNames.add(MailActionType.NAME);
 		
 		compatibleIntervalTypeNames.add(CustomIntervalType.NAME);
 		compatibleIntervalTypeNames.add(PeriodicalIntervalType.NAME);
@@ -72,7 +73,7 @@ public class CustomWorkerType extends WorkerType {
 		return classPath;
 	}
 
-	public Properties getProperties() throws IOException{
+	public Properties getProperties(ArrayList errorMessages) throws IOException{
 		Properties retval = new Properties();
 	    retval.load(new ByteArrayInputStream(getPropertyText().getBytes()));		
 		return retval;

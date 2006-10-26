@@ -27,14 +27,14 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
  * 
  * @author Philip Vendil 2006 sep 30
  *
- * @version $Id: PeriodicalIntervalType.java,v 1.1 2006-10-14 05:01:45 herrvendil Exp $
+ * @version $Id: PeriodicalIntervalType.java,v 1.2 2006-10-26 11:02:17 herrvendil Exp $
  */
 public class PeriodicalIntervalType extends IntervalType {
 	
 	public static final String NAME = "PERIODICALINTERVAL";
 	
-	public static final String DEFAULT_UNIT = PeriodicalInterval.UNIT_SECONDS;
-	public static final String DEFAULT_VALUE = "3";
+	public static final String DEFAULT_UNIT = PeriodicalInterval.UNIT_MINUTES;
+	public static final String DEFAULT_VALUE = "5";
 	
 	public PeriodicalIntervalType() {
 		super("periodicalinterval.jsp", NAME, true);
@@ -50,20 +50,30 @@ public class PeriodicalIntervalType extends IntervalType {
 		return "org.ejbca.core.model.services.intervals.PeriodicalInterval";
 	}
 
-	public Properties getProperties() throws IOException{
+	public Properties getProperties(ArrayList errorMessages) throws IOException{
 		Properties retval = new Properties();
+		
+		
+		try{
+			int val = Integer.parseInt(value);
+			if(val < 1){
+				throw new NumberFormatException();
+			}
+		}catch(NumberFormatException e){
+			errorMessages.add("PERIODICALVALUEERROR");
+		}
 	    retval.setProperty(PeriodicalInterval.PROP_VALUE, value);
 	    retval.setProperty(PeriodicalInterval.PROP_UNIT, unit);
 		return retval;
 	}
 	
 	public void setProperties(Properties properties) throws IOException{
-		value = properties.getProperty(PeriodicalInterval.PROP_VALUE);
-		unit = properties.getProperty(PeriodicalInterval.PROP_UNIT);
+		value = properties.getProperty(PeriodicalInterval.PROP_VALUE,DEFAULT_VALUE);
+		unit = properties.getProperty(PeriodicalInterval.PROP_UNIT,DEFAULT_UNIT);
 	}
 
 	public boolean isCustom() {
-		return true;
+		return false;
 	}
 
 	public String getUnit() {
@@ -90,4 +100,6 @@ public class PeriodicalIntervalType extends IntervalType {
 	public void setValue(String value) {
 		this.value = value;
 	}
+	
+	
 }

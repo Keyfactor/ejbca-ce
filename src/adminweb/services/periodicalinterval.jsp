@@ -13,7 +13,7 @@
 		<h:outputText value="#{web.text.PERIOD}"/>
 	</h:panelGroup>
 	<h:panelGroup>				
-			<h:inputText id="periodicalValueTextField" value="#{editService.periodicalIntervalType.value}" size="6"/>
+			<h:inputText id="periodicalValueTextField" value="#{editService.periodicalIntervalType.value}" size="6" />
 			<h:selectOneMenu id="periodicalUnitSelect" value="#{editService.periodicalIntervalType.unit}">
 			  <f:selectItems value="#{editService.periodicalIntervalType.availableUnits}"/>
 		    </h:selectOneMenu>		

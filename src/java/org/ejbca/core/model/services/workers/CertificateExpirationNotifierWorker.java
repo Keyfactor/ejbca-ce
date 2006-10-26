@@ -12,12 +12,26 @@
  *************************************************************************/
 package org.ejbca.core.model.services.workers;
 
+import java.security.cert.X509Certificate;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.JNDINames;
+import org.ejbca.core.ejb.ca.store.CertificateDataBean;
+import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
+import org.ejbca.core.model.services.actions.MailActionInfo;
+import org.ejbca.util.Base64;
+import org.ejbca.util.CertTools;
+import org.ejbca.util.JDBCUtil;
+import org.ejbca.util.NotificationParamGen;
 
 /**
  * Email Notifier Worker
@@ -34,7 +48,7 @@ public class CertificateExpirationNotifierWorker extends BaseWorker {
 	private static final Logger log = Logger.getLogger(CertificateExpirationNotifierWorker.class);
 
 	/** Should be a ';' separated string of CANames. */
-	public static final String PROP_CANAMESTOCHECK     = "worker.emailexpiration.canamestocheck";
+	public static final String PROP_CAIDSTOCHECK     = "worker.emailexpiration.caidstocheck";
 	
 	/** The time in 'timeunit' remaining of a certificate before sending a notification */
 	public static final String PROP_TIMEBEFOREEXPIRING = "worker.emailexpiration.timebeforeexpiring";
@@ -76,12 +90,33 @@ public class CertificateExpirationNotifierWorker extends BaseWorker {
 	public static final String[] AVAILABLE_UNITS = {UNIT_SECONDS, UNIT_MINUTES, UNIT_HOURS, UNIT_DAYS};
 	public static final int[] AVAILABLE_UNITSVALUES = {UNITVAL_SECONDS, UNITVAL_MINUTES, UNITVAL_HOURS, UNITVAL_DAYS};
 	
-	private transient Collection cANamesToCheck = null;
+	private transient Collection cAIdsToCheck = null;
 	private transient long timeBeforeExpire = -1;
 	private transient String endUserSubject = null;
 	private transient String adminSubject = null;
 	private transient String endUserMessage = null;
 	private transient String adminMessage = null;
+	
+	private class EmailCertData{
+		
+		private String fingerPrint = null;
+		private MailActionInfo actionInfo = null;
+		
+		public EmailCertData(String fingerPrint, MailActionInfo actionInfo) {
+			super();
+			this.fingerPrint = fingerPrint;
+			this.actionInfo = actionInfo;
+		}
+
+		public String getFingerPrint() {
+			return fingerPrint;
+		}
+
+		public MailActionInfo getActionInfo() {
+			return actionInfo;
+		}
+		
+	}
 	
 	/**
 	 * Worker that makes a query to the Certificate Store about
@@ -91,20 +126,135 @@ public class CertificateExpirationNotifierWorker extends BaseWorker {
 	 */
 	public void work() throws ServiceExecutionFailedException {
 		log.debug(">CertificateExpirationNotifierWorker.work started");
-		//TODO
 		
+		ArrayList userEmailQueue = new ArrayList();
+		ArrayList adminEmailQueue = new ArrayList();
+		
+		// Build Query
+		String cASelectString = "";
+		if(getCAIdsToCheck().size() >0){
+			Iterator iter = getCAIdsToCheck().iterator();
+			while(iter.hasNext()){
+				String caid = (String) iter.next();
+				String cadn = getCAAdminSession().getCAInfo(getAdmin(), Integer.parseInt(caid)).getSubjectDN();
+				if(cASelectString.equals("")){
+					cASelectString = "issuerDN='" + cadn +"' ";
+				}else{
+					cASelectString += " OR issuerDN='" + cadn +"' ";
+				}
+			}
+
+			String checkDate = "expireDate <= " + ((new Date()).getTime() + getTimeBeforeExpire());			
+			String statuses = "status=" +CertificateDataBean.CERT_ACTIVE;
+
+			// Execute Query
+			Connection con = null;
+			PreparedStatement ps = null;
+			PreparedStatement updateStatus = null;
+			ResultSet result = null;
+
+			try{		
+				con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
+				ps = con.prepareStatement("SELECT DISTINCT fingerprint, base64Cert, username"
+						+ " FROM CertificateData WHERE ("
+						+ cASelectString + ") AND (" 
+						+ checkDate + ") AND (" 
+						+ statuses + ")");            
+				
+				result = ps.executeQuery();
+
+				while(result.next()){
+					// For each certificate update status.
+					String fingerprint = result.getString(1);
+					String certBase64 = result.getString(2);
+					String username = result.getString(3);
+					X509Certificate cert = CertTools.getCertfromByteArray(Base64.decode(certBase64.getBytes()));					                  
+					
+					UserDataVO userData = getUserAdminSession().findUser(getAdmin(), username);
+					if(userData != null){
+						String userDN = userData.getDN();
+
+						if(isSendToEndUsers()){
+							NotificationParamGen paramGen = new NotificationParamGen(userDN,cert);
+							if(userData.getEmail() == null || userData.getEmail().trim().equals("")){
+								log.info("Sending email notification to user " + username + " failed, no email address configured.");
+							}else{
+								// Populate end user message            	    	        		    
+								String message = NotificationParamGen.interpolate(paramGen.getParams(), getEndUserMessage());
+								MailActionInfo mailActionInfo = new MailActionInfo(userData.getEmail(),getEndUserSubject(), message);
+								userEmailQueue.add(new EmailCertData(fingerprint,mailActionInfo));
+							}					  
+						}
+					}
+					if(isSendToAdmins()){
+						// Populate admin message        		    
+						NotificationParamGen paramGen = new NotificationParamGen(cert.getSubjectDN().toString(),cert);
+						String message = NotificationParamGen.interpolate(paramGen.getParams(), getAdminMessage());
+						MailActionInfo mailActionInfo = new MailActionInfo(null,getAdminSubject(), message);						
+						adminEmailQueue.add(new EmailCertData(fingerprint,mailActionInfo));
+					}	
+					
+
+				}
+
+
+
+			} catch (Exception fe) {
+				fe.printStackTrace();
+				throw new ServiceExecutionFailedException(fe);
+			} finally {
+				if(updateStatus != null){
+					JDBCUtil.close(updateStatus);
+				}
+				JDBCUtil.close(con, ps, result);
+			}
+			
+			
+			if(isSendToEndUsers()){
+				sendEmails(userEmailQueue);
+			}
+			if(isSendToAdmins()){
+                sendEmails(adminEmailQueue);
+			}	
+
+		}
 		log.debug("<CertificateExpirationNotifierWorker.work ended");
 	}
 	
-	private Collection getCANamesToCheck(){
-		if(cANamesToCheck == null){
-			cANamesToCheck = new ArrayList();
-			String[] canames = properties.getProperty(PROP_CANAMESTOCHECK).split(";");
-			for(int i=0;i<canames.length;i++ ){
-				cANamesToCheck.add(canames[i]);
+	private void sendEmails(ArrayList queue) throws ServiceExecutionFailedException{
+		Iterator iter = queue.iterator();
+		while(iter.hasNext()){			
+			Connection con = null;
+			PreparedStatement updateStatus = null;
+			try{
+				con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
+				EmailCertData next = (EmailCertData) iter.next();								
+				getAction().performAction(next.getActionInfo());
+				updateStatus = con.prepareStatement("UPDATE CertificateData SET status=" + CertificateDataBean.CERT_NOTIFIEDABOUTEXPIRATION +" WHERE fingerprint='" + next.getFingerPrint() + "'"); 												
+				updateStatus.execute();
+			} catch (Exception fe) {
+				fe.printStackTrace();
+				throw new ServiceExecutionFailedException(fe);
+			} finally {
+				if(updateStatus != null){
+					JDBCUtil.close(updateStatus);
+				}
+				if(con != null){
+				  JDBCUtil.close(con);
+				}
 			}
 		}
-		return cANamesToCheck;
+	}
+	
+	private Collection getCAIdsToCheck(){
+		if(cAIdsToCheck == null){
+			cAIdsToCheck = new ArrayList();
+			String[] canames = properties.getProperty(PROP_CAIDSTOCHECK).split(";");
+			for(int i=0;i<canames.length;i++ ){
+				cAIdsToCheck.add(canames[i]);
+			}
+		}
+		return cAIdsToCheck;
 	}
 	
 	private long getTimeBeforeExpire() throws ServiceExecutionFailedException{
@@ -138,7 +288,7 @@ public class CertificateExpirationNotifierWorker extends BaseWorker {
 			timeBeforeExpire = intvalue * unitval;			
 		}
 
-		return timeBeforeExpire;
+		return timeBeforeExpire * 1000;
 	}
 
 	private String getAdminMessage() {

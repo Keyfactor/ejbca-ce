@@ -14,6 +14,7 @@ package org.ejbca.ui.web.admin.services.servicetypes;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Properties;
 
 /**
@@ -22,7 +23,7 @@ import java.util.Properties;
  * 
  * @author Philip Vendil 2006 sep 29
  *
- * @version $Id: ServiceType.java,v 1.2 2006-10-14 05:01:45 herrvendil Exp $
+ * @version $Id: ServiceType.java,v 1.3 2006-10-26 11:02:17 herrvendil Exp $
  */
 public abstract class ServiceType implements Serializable{
 	
@@ -69,7 +70,7 @@ public abstract class ServiceType implements Serializable{
 	 * All implementing classes should populate the properties
 	 * @return
 	 */
-	public abstract Properties getProperties() throws IOException;
+	public abstract Properties getProperties(ArrayList errorMessages) throws IOException;
 	
 	/**
 	 * All implementing classes should populate the gui data

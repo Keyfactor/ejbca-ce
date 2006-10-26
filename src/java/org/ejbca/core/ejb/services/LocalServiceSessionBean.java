@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
 
@@ -39,7 +38,6 @@ import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.core.model.services.IInterval;
 import org.ejbca.core.model.services.IWorker;
 import org.ejbca.core.model.services.ServiceConfiguration;
-import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.ServiceExistsException;
 
 
@@ -63,6 +61,13 @@ import org.ejbca.core.model.services.ServiceExistsException;
  * @ejb.env-entry name="DataSource"
  *   type="java.lang.String"
  *   value="${datasource.jndi-name-prefix}${datasource.jndi-name}"
+ *   
+ *
+ * @ejb.env-entry
+ *   description="Defines the JNDI name of the mail service used"
+ *   name="MailJNDIName"
+ *   type="java.lang.String"
+ *   value="${mail.jndi-name}"
  *
  * @ejb.home extends="javax.ejb.EJBHome"
  *   local-extends="javax.ejb.EJBLocalHome"
@@ -82,6 +87,7 @@ import org.ejbca.core.model.services.ServiceExistsException;
  *   business="org.ejbca.core.ejb.services.ServiceDataLocal"
  *   link="ServiceData"
  *
+ *
  * @ejb.ejb-external-ref description="The Authorization Session Bean"
  *   view-type="local"
  *   ref-name="ejb/AuthorizationSessionLocal"
@@ -89,7 +95,7 @@ import org.ejbca.core.model.services.ServiceExistsException;
  *   home="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
  *   business="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
  *   link="AuthorizationSession"
- *
+ *   
  *
  * @ejb.ejb-external-ref description="The log session bean"
  *   view-type="local"
@@ -98,15 +104,37 @@ import org.ejbca.core.model.services.ServiceExistsException;
  *   home="org.ejbca.core.ejb.log.ILogSessionLocalHome"
  *   business="org.ejbca.core.ejb.log.ILogSessionLocal"
  *   link="LogSession"
+ *   
+ * @ejb.ejb-external-ref description="The CAAdmin Session Bean"
+ *   view-type="local"
+ *   ref-name="ejb/CAAdminSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
+ *   link="CAAdminSession"
+ *   
+ * @ejb.ejb-external-ref description="The Service Timer Session Bean"
+ *   view-type="local"
+ *   ref-name="ejb/ServiceTimerSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.services.IServiceTimerSessionLocalHome"
+ *   business="org.ejbca.core.ejb.services.IServiceTimerSessionLocal"
+ *   link="ServiceTimerSession"
  *
  *  @jonas.bean ejb-name="ServiceSession"
  */
-public class LocalServiceSessionBean extends BaseSessionBean implements javax.ejb.TimedObject {
+public class LocalServiceSessionBean extends BaseSessionBean  {
 
     /**
      * The local home interface of service data source entity bean.
      */
     private transient ServiceDataLocalHome servicehome = null;
+    
+    /**
+     * The local  interface of service timer session
+     */
+    private transient IServiceTimerSessionLocal serviceTimerSession = null;
+    
 
     /**
      * The local interface of authorization session bean
@@ -140,84 +168,7 @@ public class LocalServiceSessionBean extends BaseSessionBean implements javax.ej
     
     
 
-    /**
-     * Method implemented from the TimerObject and is the main method of this
-     * session bean. It calls the work object for each object.
-     * 
-     * @ejb.transaction type="Supports"
-     * @param timer
-     */
-	public void ejbTimeout(Timer timer) {
-		Integer timerInfo = (Integer) timer.getInfo();		
-			try {
-					ServiceDataLocal serviceData = getServiceDataHome().findByPrimaryKey(timerInfo);
-					IWorker worker = getWorker(serviceData.getServiceConfiguration(),serviceData.getName());
-					try{
-						if(serviceData.getServiceConfiguration().isActive() && worker.getNextInterval() != IInterval.DONT_EXECUTE){
-							worker.work();			  
-							getSessionContext().getTimerService().createTimer(worker.getNextInterval()*1000, timerInfo);
-							getLogSession().log(intAdmin, intAdmin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_INFO_SERVICEEXECUTED, intres.getLocalizedMessage("services.serviceexecuted", serviceData.getName()));
-						}
-					}catch (ServiceExecutionFailedException e) {
-						getLogSession().log(intAdmin, intAdmin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_SERVICEEXECUTED, intres.getLocalizedMessage("services.serviceexecutionfailed", serviceData.getName()));
-					}
-			} catch (FinderException e) {
-				getLogSession().log(intAdmin, intAdmin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_SERVICEEXECUTED, intres.getLocalizedMessage("services.servicenotfound", timerInfo));
-			} 
-		
-	}    
-
-    /**
-     * Loads and activates all the services from database that are active
-     *
-     * @throws EJBException             if a communication or other error occurs.
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="both"
-     */
-	public void load(){
-    	// Get all services
-    	try {
-    		Collection currentTimers = getSessionContext().getTimerService().getTimers();
-    		Iterator iter = currentTimers.iterator();
-    		HashSet existingTimers = new HashSet();
-    		while(iter.hasNext()){
-    			Timer timer = (Timer) iter.next();
-    			existingTimers.add(timer.getInfo());    			
-    		}
-    		
-			Collection allServices = getServiceDataHome().findAll();
-			iter = allServices.iterator();
-			while(iter.hasNext()){
-				ServiceDataLocal dataLocal = (ServiceDataLocal) iter.next();
-				if(!existingTimers.contains(dataLocal.getId())){
-					IWorker worker = getWorker(dataLocal.getServiceConfiguration(), dataLocal.getName());
-					if(worker != null && dataLocal.getServiceConfiguration().isActive()  && worker.getNextInterval() != IInterval.DONT_EXECUTE){
-					  getSessionContext().getTimerService().createTimer((worker.getNextInterval()) *1000, dataLocal.getId());
-					}
-				}
-			}
-			
-		} catch (FinderException e) {
-			log.debug("Error fetching services",e);
-		}
-	}
-	
-    /**
-     * Cancels all existing timers a unload
-     *
-     * @throws EJBException             if a communication or other error occurs.
-     * @ejb.transaction type="Supports"
-     * @ejb.interface-method view-type="both"
-     */
-	public void unload(){
-		// Get all servicess
-		Collection currentTimers = getSessionContext().getTimerService().getTimers();
-		Iterator iter = currentTimers.iterator();
-		while(iter.hasNext()){
-			Timer timer = (Timer) iter.next();			
-			timer.cancel(); 			
-		}
-	}
+ 
 
    /**
     * Method that creates a worker from the service configuration. 
@@ -288,6 +239,23 @@ public class LocalServiceSessionBean extends BaseSessionBean implements javax.ej
     } //getAuthorizationSession
 
     /**
+     * Gets connection to service timer session bean
+     *
+     * @return IServiceTimerSessionLocal
+     */
+    private IServiceTimerSessionLocal getServiceTimerSession() {
+        if (serviceTimerSession == null) {
+            try {
+                IServiceTimerSessionLocalHome servicetimersessionhome = (IServiceTimerSessionLocalHome) getLocator().getLocalHome(IServiceTimerSessionLocalHome.COMP_NAME);
+                serviceTimerSession = servicetimersessionhome.create();
+            } catch (CreateException e) {
+                throw new EJBException(e);
+            }
+        }
+        return serviceTimerSession;
+    } //getServiceTimerSession
+    
+    /**
      * Adds a Service to the database.
      *
      * @throws ServiceExistsException if  service already exists.
@@ -323,13 +291,7 @@ public class LocalServiceSessionBean extends BaseSessionBean implements javax.ej
         		} catch (FinderException f) {
         			try {
         				getServiceDataHome().create(new Integer(id), name, serviceConfiguration);        				
-        				IWorker worker = getWorker(serviceConfiguration, name);
-        				if(worker != null){
-        					if(serviceConfiguration.isActive()  && worker.getNextInterval() != IInterval.DONT_EXECUTE){
-        				        getSessionContext().getTimerService().createTimer(worker.getNextInterval() * 1000, new Integer(id));
-        					}
-        					success = true;
-        				}
+        				success = true;
         				
         			} catch (CreateException g) {
         				error("Unexpected error creating new service: ", g);
@@ -365,17 +327,10 @@ public class LocalServiceSessionBean extends BaseSessionBean implements javax.ej
         		htp.setServiceConfiguration(serviceConfiguration);
         		IWorker worker = getWorker(serviceConfiguration, name);
         		if(worker != null){
-        		  Collection timers = getSessionContext().getTimerService().getTimers();
-        		  Iterator iter = timers.iterator();
-        		  while(iter.hasNext()){
-        			  Timer next = (Timer) iter.next();
-        			  if(htp.getId().equals(next.getInfo())){
-        				  next.cancel();
-        				  if(serviceConfiguration.isActive() && worker.getNextInterval() != IInterval.DONT_EXECUTE){
-        				    getSessionContext().getTimerService().createTimer(worker.getNextInterval() *1000, htp.getId());
-        				  }
-        			  }
-        		  }
+                  getServiceTimerSession().cancelTimer(htp.getId());
+				  if(serviceConfiguration.isActive() && worker.getNextInterval() != IInterval.DONT_EXECUTE){
+					  getServiceTimerSession().addTimer(worker.getNextInterval() *1000, htp.getId());
+    			  }
         		  success = true;
         		}
         	} catch (FinderException e) {
@@ -664,13 +619,6 @@ public class LocalServiceSessionBean extends BaseSessionBean implements javax.ej
         }
         return new Integer(id);
     } // findFreeServiceId
-
-
-
-
-
-
-
 
 
 } // LocalServiceSessionBean

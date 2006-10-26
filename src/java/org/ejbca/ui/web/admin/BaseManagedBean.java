@@ -19,6 +19,7 @@ import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.log.Admin;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 
@@ -26,7 +27,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Base EJBCA JSF Managed Bean, all managed beans of EJBCA should inherit this class
  * 
  * @author Philip Vendil
- * @version $Id: BaseManagedBean.java,v 1.2 2006-09-05 09:23:28 anatom Exp $
+ * @version $Id: BaseManagedBean.java,v 1.3 2006-10-26 11:06:29 herrvendil Exp $
  */
 public abstract class BaseManagedBean implements Serializable{
    
@@ -44,7 +45,15 @@ public abstract class BaseManagedBean implements Serializable{
 	  ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_ERROR,getEjbcaWebBean().getText(messageResource, true),getEjbcaWebBean().getText(messageResource, true)));
   }
   
-
+  protected void addNonTranslatedErrorMessage(String messageResource){
+	  FacesContext ctx = FacesContext.getCurrentInstance();
+	  ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_ERROR,messageResource,messageResource));
+  }
+  
+  
+  protected Admin getAdmin(){
+	  return EjbcaJSFHelper.getBean().getAdmin();
+  }
   
 
 	

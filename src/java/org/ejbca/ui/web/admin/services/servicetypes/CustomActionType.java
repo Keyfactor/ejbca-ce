@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.services.servicetypes;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Properties;
 
 /**
@@ -22,7 +23,7 @@ import java.util.Properties;
  * 
  * @author Philip Vendil 2006 sep 30
  *
- * @version $Id: CustomActionType.java,v 1.2 2006-10-14 05:01:41 herrvendil Exp $
+ * @version $Id: CustomActionType.java,v 1.3 2006-10-26 11:02:17 herrvendil Exp $
  */
 public class CustomActionType extends ActionType {
 	
@@ -61,7 +62,7 @@ public class CustomActionType extends ActionType {
 		return classPath;
 	}
 
-	public Properties getProperties() throws IOException{
+	public Properties getProperties(ArrayList errorMessages) throws IOException{
 		Properties retval = new Properties();
 	    retval.load(new ByteArrayInputStream(getPropertyText().getBytes()));		
 		return retval;

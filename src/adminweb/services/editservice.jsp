@@ -2,13 +2,13 @@
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
 <%@ taglib uri="http://myfaces.apache.org/tomahawk" prefix="t" %>
 <%@ page pageEncoding="ISO-8859-1"%>
-<%@ page contentType="text/html" %>
-<%@page errorPage="/errorpage.jsp" import="org.ejbca.core.model.ra.raadmin.GlobalConfiguration,org.ejbca.ui.web.RequestHelper,
+<%@ page contentType="text/html; charset=@page.encoding@" %>
+<%@page errorPage="/errorpage.jsp" import="org.ejbca.core.model.ra.raadmin.GlobalConfiguration,org.ejbca.ui.web.RequestHelper, org.ejbca.core.model.authorization.AvailableAccessRules,
                                            org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper, org.ejbca.ui.web.admin.services.EditServiceManagedBean" %>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 <%   // Initialize environment
- GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/administrator"); 
+ GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,AvailableAccessRules.ROLE_SUPERADMINISTRATOR); 
  EjbcaJSFHelper helpbean = EjbcaJSFHelper.getBean();
  helpbean.setEjbcaWebBean(ejbcawebbean);
  helpbean.authorizedToServicesPages();
@@ -37,6 +37,7 @@
 		<h:outputText value="#{web.text.BACKTOSERVICES}" style="text-align: right"/>
 	</h:commandLink>
   </div>	
+
 <h:form id="edit"> 
 
 <h:panelGrid width="100%" columns="2" rowClasses="jsfrow1, jsfrow2">
@@ -114,7 +115,25 @@
 		
 	</h:panelGroup>
 	<h:panelGroup>
-		<h:commandButton id="saveButton" action="#{editService.save}" value="#{web.text.SAVE}"/>		
+		<f:verbatim>
+<SCRIPT language="JavaScript">
+<!--  
+
+function enableAll(){  
+  var all=document.getElementsByTagName("*");
+  
+  for(var i=0; i<all.length; i++){
+     all[i].disabled = false;
+  }
+} 
+
+-->
+</SCRIPT>
+  <div align="center">
+    <h:messages styleClass="alert" layout="table"/>
+  </div>
+        </f:verbatim>
+		<h:commandButton id="saveButton" action="#{editService.save}" value="#{web.text.SAVE}" onclick="enableAll()"/>		
 		<f:verbatim>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</f:verbatim>
 		<h:commandButton id="cancelButton" action="#{editService.cancel}" value="#{web.text.CANCEL}"/>		
 		<h:commandButton id="updateButton" action="#{editService.update}" value="Update" style="visibility:hidden;" />		

@@ -19,6 +19,8 @@ import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
+import org.ejbca.core.ejb.services.IServiceSessionLocal;
+import org.ejbca.core.ejb.services.IServiceSessionLocalHome;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.log.Admin;
@@ -32,7 +34,7 @@ import org.ejbca.ui.web.RequestHelper;
  * Contains methods for such things as language, themes ext
  * 
  * @author Philip Vendil
- * $Id: EjbcaJSFHelper.java,v 1.3 2006-10-01 17:46:47 herrvendil Exp $
+ * $Id: EjbcaJSFHelper.java,v 1.4 2006-10-26 11:02:45 herrvendil Exp $
  */
 
 public class EjbcaJSFHelper  {
@@ -46,6 +48,7 @@ public class EjbcaJSFHelper  {
 	private IRaAdminSessionLocal raadminsession;
 	private ICAAdminSessionLocal caadminsession;
 	private IApprovalSessionLocal approvalsession;
+	private IServiceSessionLocal servicesession;
 
 	
 	private FacesContext ctx = FacesContext.getCurrentInstance();
@@ -219,4 +222,17 @@ public class EjbcaJSFHelper  {
     	return approvalsession;
     }    
 	
+    
+    public IServiceSessionLocal getServiceSession(){
+    	if(servicesession == null){ 
+    		ServiceLocator locator = ServiceLocator.getInstance();
+    		IServiceSessionLocalHome servicesessionhome = (IServiceSessionLocalHome) locator.getLocalHome(IServiceSessionLocalHome.COMP_NAME);
+    		try {
+    			servicesession = servicesessionhome.create();
+    		} catch (CreateException e) {
+    			throw new EJBException(e);
+    		}
+    	}
+    	return servicesession;
+    } 
 }

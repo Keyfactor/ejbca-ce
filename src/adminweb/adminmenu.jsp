@@ -40,6 +40,9 @@
                                                   + "/logconfiguration/logconfiguration.jsp";
   final String CONFIGURATION_LINK       =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() 
                                                   + "/configuration.jsp";
+  
+  final String SERVICES_LINK            =   ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "services/listservices.jsf";
+  
   final String ADMINISTRATORPRIV_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAuthorizationPath() 
                                                   + "/administratorprivileges.jsp";
   
@@ -63,7 +66,8 @@
   final String HTEDITHARDTOKENPROFILES_RESOURCE       = "/hardtoken_functionality/edit_hardtoken_profiles";
   final String LOGVIEW_RESOURCE                       = "/log_functionality/view_log";
   final String LOGCONFIGURATION_RESOURCE              = "/log_functionality/edit_log_configuration";
-  final String SYSTEMCONFIGURATION_RESOURCE           = "/super_administrator";
+  final String SYSTEMCONFIGURATION_RESOURCE           = AvailableAccessRules.REGULAR_EDITSYSTEMCONFIGURATION;
+  final String SERVICES_RESOURCE                      = "/super_administrator";
   final String ADMINPRIVILEGES_RESOURCE               = "/system_functionality/edit_administrator_privileges";
 
 
@@ -250,6 +254,17 @@
       &nbsp;&nbsp;<A href="<%= CONFIGURATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("SYSTEMCONFIGURATION") %></A><br>
 <%   }
    }catch(AuthorizationDeniedException e){}
+   // If authorized to edit services then display related links.
+   try{
+     if(ejbcawebbean.isAuthorizedNoLog(SERVICES_RESOURCE)){
+       if(!systemheaderprinted){
+         out.write("<br>" + ejbcawebbean.getText("SYSTEMFUNCTIONS")+"<br>"); 
+         systemheaderprinted=true;
+         }
+%>
+    &nbsp;&nbsp;<A href="<%= SERVICES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("EDITSERVICES") %></A><br>
+<%   }
+  }catch(AuthorizationDeniedException e){} 
     // If authorized to edit authorizations then display related links.
     try{
       if(ejbcawebbean.isAuthorizedNoLog(ADMINPRIVILEGES_RESOURCE)){

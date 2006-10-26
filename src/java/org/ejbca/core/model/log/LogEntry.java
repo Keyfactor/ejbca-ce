@@ -34,7 +34,7 @@ import org.ejbca.core.model.protect.TableVerifyResult;
  *  This is a  class containing information about one log event in the database. Used mainly during database queries by the web interface.
  *
  * @author  TomSelleck
- * @version $Id: LogEntry.java,v 1.6 2006-10-01 17:42:36 herrvendil Exp $
+ * @version $Id: LogEntry.java,v 1.7 2006-10-26 11:06:06 herrvendil Exp $
  */
 public class LogEntry implements Serializable, Protectable {
 
@@ -181,7 +181,7 @@ public class LogEntry implements Serializable, Protectable {
                                                      "EVENT_ERROR_APPROVALREQUESTED","EVENT_ERROR_APPROVALAPPROVED","EVENT_ERROR_APPROVALREJECTED","EVENT_ERROR_SERVICESEDITED",
                                                      "EVENT_ERROR_SERVICEEXECUTED"};
 
-    public static final String[] MODULETEXTS = {"CA", "RA", "LOG", "PUBLICWEB", "ADMINWEB", "HARDTOKEN", "KEYRECOVERY", "AUTHORIZATION","APPROVAL","SERVICES"};
+    public static final String[] MODULETEXTS = {"CA", "RA", "LOG", "PUBLICWEB", "ADMINWEB", "HARDTOKEN", "KEYRECOVERY", "AUTHORIZATION","APPROVAL","SERVICE"};
     
 
     /**

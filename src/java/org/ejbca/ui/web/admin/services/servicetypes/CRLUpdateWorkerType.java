@@ -30,7 +30,7 @@ public class CRLUpdateWorkerType extends WorkerType {
 	private Collection compatibleActionTypeNames = new ArrayList();
 	private Collection compatibleIntervalTypeNames = new ArrayList();
 	
-	private transient Properties properties = null;
+	private transient Properties properties = new Properties();
 	
 	public CRLUpdateWorkerType() {
 		super("crlupdateworker.jsp", NAME, true);
@@ -65,7 +65,7 @@ public class CRLUpdateWorkerType extends WorkerType {
 	/**
 	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#getProperties()
 	 */
-	public Properties getProperties() throws IOException {
+	public Properties getProperties(ArrayList errorMessages) throws IOException {		
 		return properties;
 	}
 

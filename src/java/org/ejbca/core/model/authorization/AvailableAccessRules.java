@@ -26,7 +26,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 /**
  * 
  *
- * @version $Id: AvailableAccessRules.java,v 1.5 2006-09-17 23:02:04 herrvendil Exp $
+ * @version $Id: AvailableAccessRules.java,v 1.6 2006-10-26 11:04:12 herrvendil Exp $
  */
 public class AvailableAccessRules {
         
@@ -137,8 +137,10 @@ public class AvailableAccessRules {
                                                           "/log_functionality/view_log/adminweb_entries",
                                                           "/log_functionality/view_log/hardtoken_entries",
                                                           "/log_functionality/view_log/keyrecovery_entries",
-                                                          "/log_functionality/view_log/authorization_entries"};
-    
+                                                          "/log_functionality/view_log/authorization_entries",
+                                                          "/log_functionality/view_log/approval_entries",
+                                                          "/log_functionality/view_log/services_entries",
+                                                          };
                                                         
         // Hard Token specific accessrules used in authorization module.
     public static final String[] HARDTOKENACCESSRULES    = 

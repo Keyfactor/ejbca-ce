@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.services;
 
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -22,6 +23,7 @@ import java.util.List;
 
 import javax.faces.model.SelectItem;
 
+import org.apache.log4j.Logger;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.services.servicetypes.ActionType;
@@ -38,9 +40,10 @@ import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
  * 
  * @author Philip Vendil 2006 sep 30
  *
- * @version $Id: ServiceConfigurationView.java,v 1.2 2006-10-14 05:01:48 herrvendil Exp $
+ * @version $Id: ServiceConfigurationView.java,v 1.3 2006-10-26 11:02:18 herrvendil Exp $
  */
-public class ServiceConfigurationView {
+public class ServiceConfigurationView implements Serializable{
+	private static final Logger log = Logger.getLogger(ServiceConfigurationView.class);
 	
 	private WorkerType workerType;
 	private ActionType actionType;
@@ -55,37 +58,36 @@ public class ServiceConfigurationView {
 	private boolean active = false;
 	private String description = "";
 	
-	public ServiceConfigurationView(ServiceConfiguration serviceConfiguration) throws IOException {
+	private ServiceConfiguration serviceConfiguration;
+	
+	public ServiceConfigurationView(ServiceConfiguration serviceConfiguration)  throws IOException {
 		
 		typeManager = new ServiceTypeManager();
-		
+	
+		this.serviceConfiguration = serviceConfiguration;
 		WorkerType workerType = (WorkerType) typeManager.getServiceTypeByClassPath(serviceConfiguration.getWorkerClassPath());
 		if(workerType == null){
-		   workerType = new CustomWorkerType();
+		   workerType = (WorkerType) typeManager.getServiceTypeByName(CustomWorkerType.NAME);
 		  ((CustomWorkerType) workerType).setClassPath(serviceConfiguration.getWorkerClassPath());
-		}		
-		workerType.setProperties(serviceConfiguration.getWorkerProperties());
+		}			
 	    setWorkerType(workerType);
 	    selectedWorker = workerType.getName();			
 		
 		IntervalType intervalType = (IntervalType) typeManager.getServiceTypeByClassPath(serviceConfiguration.getIntervalClassPath());
 		if(intervalType == null){
-		  intervalType = new CustomIntervalType();
+		  intervalType = (IntervalType) typeManager.getServiceTypeByName(CustomIntervalType.NAME);
 		  ((CustomIntervalType) intervalType).setClassPath(serviceConfiguration.getIntervalClassPath());
-		}		
-		intervalType.setProperties(serviceConfiguration.getIntervalProperties());
+		}						
 		setIntervalType(intervalType);
 		selectedInterval = intervalType.getName();
 		
 		ActionType actionType = (ActionType) typeManager.getServiceTypeByClassPath(serviceConfiguration.getActionClassPath());
 		if(actionType == null){
-		  actionType = new CustomActionType();
+		  actionType = (ActionType) typeManager.getServiceTypeByName(CustomActionType.NAME);
 		  ((CustomActionType) actionType).setClassPath(serviceConfiguration.getActionClassPath());
-		}		
-		actionType.setProperties(serviceConfiguration.getActionProperties());
+		}						
 	    setActionType(actionType);
-		selectedAction = actionType.getName();
-	      
+	    selectedAction = actionType.getName();
 		
 		setDescription(serviceConfiguration.getDescription());
 		setActive(serviceConfiguration.isActive());
@@ -97,16 +99,16 @@ public class ServiceConfigurationView {
 	 * Method that populates a service configuration from a
 	 * GUI data.
 	 */
-	public ServiceConfiguration getServiceConfiguration() throws IOException{
+	public ServiceConfiguration getServiceConfiguration(ArrayList errorMessages) throws IOException{
 		ServiceConfiguration retval = new ServiceConfiguration();
 		retval.setActive(isActive());
 		retval.setDescription(getDescription());
 		retval.setActionClassPath(getActionType().getClassPath());
-		retval.setActionProperties(getActionType().getProperties()); 
+		retval.setActionProperties(getActionType().getProperties(errorMessages)); 
 		retval.setIntervalClassPath(getIntervalType().getClassPath());
-		retval.setIntervalProperties(getIntervalType().getProperties());
+		retval.setIntervalProperties(getIntervalType().getProperties(errorMessages));
 		retval.setWorkerClassPath(getWorkerType().getClassPath());
-		retval.setWorkerProperties(getWorkerType().getProperties());
+		retval.setWorkerProperties(getWorkerType().getProperties(errorMessages));
 		return retval;
 	}
 
@@ -121,6 +123,11 @@ public class ServiceConfigurationView {
 	 * @param actionType the actionType to set
 	 */
 	public void setActionType(ActionType actionType) {
+		try {
+			actionType.setProperties(serviceConfiguration.getActionProperties());
+		} catch (IOException e) {
+		  log.error(e);
+		}
 		this.actionType = actionType;
 	}
 
@@ -162,7 +169,12 @@ public class ServiceConfigurationView {
 	/**
 	 * @param intervalType the intervalType to set
 	 */
-	public void setIntervalType(IntervalType intervalType) {		
+	public void setIntervalType(IntervalType intervalType) {	
+		try {
+			intervalType.setProperties(serviceConfiguration.getIntervalProperties());
+		} catch (IOException e) {
+		  log.error(e);
+		}
 		this.intervalType = intervalType;
 	}
 
@@ -177,20 +189,29 @@ public class ServiceConfigurationView {
 	 * @param workerType the workerType to set
 	 */
 	public void setWorkerType(WorkerType workerType) {
-		this.workerType = workerType;
+		try{
+		  workerType.setProperties(serviceConfiguration.getWorkerProperties());
+		  this.workerType = workerType;
+		  
 		
-		
-		if(selectedInterval != null &&!getAvailableIntervals().contains(selectedInterval)){				
+		  if(selectedInterval != null && !workerType.getCompatibleIntervalTypeNames().contains(selectedInterval)){				
 			setSelectedInterval((String) workerType.getCompatibleIntervalTypeNames().iterator().next());
 			setIntervalType((IntervalType) typeManager.getServiceTypeByName(getSelectedInterval()));
-		}
+		  }
+		  
 		
-		if(selectedAction != null && !getAvailableActions().contains(selectedAction)){
+		  if(selectedAction != null && !workerType.getCompatibleActionTypeNames().contains(selectedAction)){
 			setSelectedAction((String) workerType.getCompatibleActionTypeNames().iterator().next());
 			setActionType((ActionType) typeManager.getServiceTypeByName(getSelectedAction()));
+		  }
+		  
+		}catch(IOException e){
+			log.error(e);
 		}
 	}
 	
+
+
 	/**
 	 * @return the selectedAction
 	 */

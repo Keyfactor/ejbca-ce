@@ -10,37 +10,44 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.model.services.workers;
 
-import org.apache.log4j.Logger;
-import org.ejbca.core.model.services.ActionException;
-import org.ejbca.core.model.services.BaseWorker;
-import org.ejbca.core.model.services.ServiceExecutionFailedException;
+package org.ejbca.ui.web.admin.configuration;
+
+import java.util.Collection;
+
+import javax.faces.model.SelectItem;
 
 /**
- * Dummy class used for demonstration and test puporses
- * Shows what is needed to create a custom worker
- *  
+ * An extention to the SelectItem class that is
+ * sortable, used by select lists that should be alphabetic
+ * order. 
+ * 
+ * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: DummyWorker.java,v 1.2 2006-10-26 11:01:24 herrvendil Exp $
+ * @version $Id: SortableSelectItem.java,v 1.1 2006-10-26 11:02:17 herrvendil Exp $
  */
-public class DummyWorker extends BaseWorker {
 
-	private static final Logger log = Logger.getLogger(DummyWorker.class);
-	
-	/**
-	 * @see org.ejbca.core.model.services.IWorker#work()
-	 */
-	public void work() throws ServiceExecutionFailedException {
-		log.debug(">DummyWorker.work");
-		try {
-			log.info("DummyWorker executed");
-			getAction().performAction(null);
-		} catch (ActionException e) {
-		   // This should never happen
+public class SortableSelectItem extends SelectItem implements Comparable{
+
+	public SortableSelectItem(Object arg0, String arg1, String arg2, boolean arg3) {
+		super(arg0, arg1, arg2, arg3);
+	}
+
+	public SortableSelectItem(Object arg0, String arg1, String arg2) {
+		super(arg0, arg1, arg2);
+	}
+
+	public SortableSelectItem(Object arg0, String arg1) {
+		super(arg0, arg1);
+	}
+
+	public int compareTo(Object arg0) {
+		int retval = 0;
+		if(arg0 instanceof SelectItem){
+			return this.getLabel().compareTo(((SelectItem) arg0).getLabel());
 		}
-		log.debug("<DummyWorker.work");
+		return retval;
 	}
 
 }

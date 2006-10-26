@@ -91,40 +91,54 @@ public class CertificateExpirationNotifierWorkerType extends WorkerType {
 	/**
 	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#getProperties()
 	 */
-	public Properties getProperties() throws IOException {
+	public Properties getProperties(ArrayList errorMessages) throws IOException {
 		Properties retval = new Properties();
 		
-		Iterator iter = selectedCANamesToCheck.iterator();
-		String caNameString = "";
+		Iterator iter = selectedCANamesToCheck.iterator();		
+		String caIdString = "";
 		while(iter.hasNext()){
-			String cAName = (String) iter.next();
-			if(caNameString.equals("")){
-				caNameString = cAName;
-			}else{
-				caNameString += ";"+cAName;
+			String cAid = (String) iter.next();
+			if(!cAid.trim().equals("")){
+			  if(caIdString.equals("")){
+				caIdString = cAid;
+			  }else{
+				caIdString += ";"+cAid;
+			  }
 			}
 		}
-		retval.setProperty(CertificateExpirationNotifierWorker.PROP_CANAMESTOCHECK, caNameString);
+		retval.setProperty(CertificateExpirationNotifierWorker.PROP_CAIDSTOCHECK, caIdString);
 		
 		retval.setProperty(CertificateExpirationNotifierWorker.PROP_TIMEUNIT, timeUnit);
+		
+		try{
+			int value = Integer.parseInt(timeValue);
+			if(value < 1){
+				throw new NumberFormatException();
+			}
+		}catch(NumberFormatException e){
+			errorMessages.add("TIMEBEFOREEXPIRATIONERROR");
+		}
 		retval.setProperty(CertificateExpirationNotifierWorker.PROP_TIMEBEFOREEXPIRING, timeValue);
 		
 		if(useEndUserNotifications){
 			retval.setProperty(CertificateExpirationNotifierWorker.PROP_SENDTOENDUSERS, "TRUE");
+			retval.setProperty(CertificateExpirationNotifierWorker.PROP_USERSUBJECT,endUserSubject);
+			retval.setProperty(CertificateExpirationNotifierWorker.PROP_USERMESSAGE,endUserMessage);
 		}else{
 			retval.setProperty(CertificateExpirationNotifierWorker.PROP_SENDTOENDUSERS, "FALSE");
+			retval.setProperty(CertificateExpirationNotifierWorker.PROP_USERSUBJECT,"");
+			retval.setProperty(CertificateExpirationNotifierWorker.PROP_USERMESSAGE,"");
 		}
 		
 		if(useAdminNotifications){
 			retval.setProperty(CertificateExpirationNotifierWorker.PROP_SENDTOADMINS, "TRUE");
+			retval.setProperty(CertificateExpirationNotifierWorker.PROP_ADMINSUBJECT,adminSubject);
+			retval.setProperty(CertificateExpirationNotifierWorker.PROP_ADMINMESSAGE,adminMessage);
 		}else{
-			retval.setProperty(CertificateExpirationNotifierWorker.PROP_SENDTOADMINS, "FALSE");
+			retval.setProperty(CertificateExpirationNotifierWorker.PROP_SENDTOADMINS, "FALSE");			
+			retval.setProperty(CertificateExpirationNotifierWorker.PROP_ADMINSUBJECT,"");
+			retval.setProperty(CertificateExpirationNotifierWorker.PROP_ADMINMESSAGE,"");
 		}
-		
-		retval.setProperty(CertificateExpirationNotifierWorker.PROP_USERSUBJECT,endUserSubject);
-		retval.setProperty(CertificateExpirationNotifierWorker.PROP_ADMINSUBJECT,adminSubject);
-		retval.setProperty(CertificateExpirationNotifierWorker.PROP_USERMESSAGE,endUserMessage);
-		retval.setProperty(CertificateExpirationNotifierWorker.PROP_ADMINMESSAGE,adminMessage);
 		
 	
 		return retval;
@@ -143,16 +157,18 @@ public class CertificateExpirationNotifierWorkerType extends WorkerType {
 	public void setProperties(Properties properties) throws IOException {
 		selectedCANamesToCheck = new ArrayList();
 		
-		String[] caNamesToCheck = properties.getProperty(CertificateExpirationNotifierWorker.PROP_CANAMESTOCHECK).split(";");
-		for(int i=0;i<caNamesToCheck.length;i++){
-			selectedCANamesToCheck.add(caNamesToCheck[i]);
+		
+		String[] caIdsToCheck = properties.getProperty(CertificateExpirationNotifierWorker.PROP_CAIDSTOCHECK,"").split(";");
+		for(int i=0;i<caIdsToCheck.length;i++){
+			selectedCANamesToCheck.add(caIdsToCheck[i]);
 		}
-		 
-		timeUnit = properties.getProperty(CertificateExpirationNotifierWorker.PROP_TIMEUNIT);
-		timeValue = properties.getProperty(CertificateExpirationNotifierWorker.PROP_TIMEBEFOREEXPIRING);
 
-		useEndUserNotifications = properties.getProperty(CertificateExpirationNotifierWorker.PROP_SENDTOENDUSERS).equalsIgnoreCase("TRUE");
-		useAdminNotifications = properties.getProperty(CertificateExpirationNotifierWorker.PROP_SENDTOADMINS).equalsIgnoreCase("TRUE");
+		 
+		timeUnit = properties.getProperty(CertificateExpirationNotifierWorker.PROP_TIMEUNIT,DEFAULT_TIMEUNIT);
+		timeValue = properties.getProperty(CertificateExpirationNotifierWorker.PROP_TIMEBEFOREEXPIRING,DEFAULT_TIMEVALUE);
+
+		useEndUserNotifications = properties.getProperty(CertificateExpirationNotifierWorker.PROP_SENDTOENDUSERS,"").equalsIgnoreCase("TRUE");
+		useAdminNotifications = properties.getProperty(CertificateExpirationNotifierWorker.PROP_SENDTOADMINS,"").equalsIgnoreCase("TRUE");
 		
        	endUserSubject = properties.getProperty(CertificateExpirationNotifierWorker.PROP_USERSUBJECT,"");
 		adminSubject = properties.getProperty(CertificateExpirationNotifierWorker.PROP_ADMINSUBJECT,"");

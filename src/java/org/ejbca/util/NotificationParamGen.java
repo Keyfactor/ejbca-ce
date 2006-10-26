@@ -12,9 +12,12 @@
  *************************************************************************/
 package org.ejbca.util;
 
+import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 
@@ -58,22 +61,40 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
  * ${approvalAdmin.SN}              = The common name of the requesting administrator.
  * ${approvalAdmin.O}               = The requesting administrator's organization
  * ${approvalAdmin.OU}              = The requesting administrator's organization unit
- * ${approvalAdmin.C}               = The requesting administrator's country  
+ * ${approvalAdmin.C}               = The requesting administrator's country
+ * 
+ * Variables used with  expiring certificates. 
+ * ${expiringCert.CERTSERIAL}      = The serial number of the certificate about to expire 
+ * ${expiringCert.EXPIREDATE}      = The date the certificate will expire
+ * ${expiringCert.CERTSUBJECTDN}   = The certificate subject dn
+ * ${expiringCert.CERTISSUERDN}    = The certificate issuer dn
+ * The variables ${CN}, ${SN}, ${O}, ${OU}, ${C} are also available.
+ * 
  * 
  * @author Philip Vendil 2006 sep 26
  *
- * @version $Id: NotificationParamGen.java,v 1.2 2006-10-09 15:56:08 herrvendil Exp $
+ * @version $Id: NotificationParamGen.java,v 1.3 2006-10-26 11:03:24 herrvendil Exp $
  */
 
 public class NotificationParamGen {
 
   private HashMap params = new HashMap();	
+  
+  /** regexp pattern to match ${identifier} patterns */
+  private final static Pattern PATTERN = Pattern.compile("\\$\\{(.+?)\\}");
+  
+  /**
+   * Constuctor that mainly should be used when notifining about expiring certificates.
+   */
+  public NotificationParamGen(String userdn, X509Certificate expiringCert){
+	  populate(null, null, userdn,null,null,null,null,null,null, null,null,null,null,expiringCert);
+  }
 	
   /**
    * Constuctor that mainly should be used when generating user data notifications 
    */
   public NotificationParamGen(String userUsername, String userPassword, String userDN){
-	  populate(userUsername, userPassword, userDN,null,null,null,null,null,null, null,null,null,null);
+	  populate(userUsername, userPassword, userDN,null,null,null,null,null,null, null,null,null,null,null);
   }
 
   /**
@@ -84,7 +105,7 @@ public class NotificationParamGen {
           String approvalAdminUsername, String approvalAdminDN){
 	  populate(null, null, null, approvalRequestDate, approvalRequestID, approvalRequestType,
 			  numberOfApprovalLeft, approvalRequestURL, approveComment, requestAdminUsername, requestAdminDN,
-               approvalAdminUsername, approvalAdminDN);
+               approvalAdminUsername, approvalAdminDN,null);
   }
   
   /**
@@ -99,7 +120,8 @@ public class NotificationParamGen {
 		                Date approvalRequestDate, Integer approvalRequestID, String approvalRequestType,
 		                Integer numberOfApprovalLeft, String approvalRequestURL, String approveComment,
 		                String requestAdminUsername, String requestAdminDN,
-		                String approvalAdminUsername, String approvalAdminDN){
+		                String approvalAdminUsername, String approvalAdminDN,
+		                X509Certificate expiringCert){
       params.put("NL", System.getProperty("line.separator"));
       String date = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date());
       params.put("DATE", date);
@@ -110,9 +132,6 @@ public class NotificationParamGen {
       paramPut("PASSWORD", userPassword);
       paramPut("user.PASSWORD", userPassword);
 
-      if(userDN != null){
-    	  userDN = "";
-      }
 	  DNFieldExtractor dnfields = new DNFieldExtractor(userDN, DNFieldExtractor.TYPE_SUBJECTDN);
 	  paramPut("CN", dnfields.getField(DNFieldExtractor.CN, 0));
 	  paramPut("user.CN", dnfields.getField(DNFieldExtractor.CN, 0));
@@ -161,6 +180,14 @@ public class NotificationParamGen {
 	  paramPut("approvalAdmin.O", dnfields.getField(DNFieldExtractor.O, 0));
 	  paramPut("approvalAdmin.OU", dnfields.getField(DNFieldExtractor.OU, 0));
 	  paramPut("approvalAdmin.C", dnfields.getField(DNFieldExtractor.C, 0));
+	  
+	  if(expiringCert != null){
+		  paramPut("expiringCert.CERTSERIAL",expiringCert.getSerialNumber().toString(16));
+		  String dateString = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(expiringCert.getNotAfter());
+		  paramPut("expiringCert.EXPIREDATE",dateString);
+          paramPut("expiringCert.CERTSUBJECTDN",expiringCert.getSubjectDN().toString());
+          paramPut("expiringCert.CERTISSUERDN",expiringCert.getIssuerDN().toString());          
+	  }
 
 	  
   }
@@ -191,4 +218,33 @@ public class NotificationParamGen {
 	  }
   }
 	
+  // Help method used to populate a message 
+  /**
+   * Interpolate the patterns that exists on the input on the form '${pattern}'.
+   * @param input the input content to be interpolated
+   * @return the interpolated content
+   */
+  public static String interpolate(HashMap patterns, String input) {
+      final Matcher m = PATTERN.matcher(input);
+      final StringBuffer sb = new StringBuffer(input.length());
+      while (m.find()) {
+          // when the pattern is ${identifier}, group 0 is 'identifier'
+          String key = m.group(1);
+          String value = (String)patterns.get(key);
+          // if the pattern does exists, replace it by its value
+          // otherwise keep the pattern ( it is group(0) )
+          if (value != null) {
+              m.appendReplacement(sb, value);
+          } else {
+              // I'm doing this to avoid the backreference problem as there will be a $
+              // if I replace directly with the group 0 (which is also a pattern)
+              m.appendReplacement(sb, "");
+              String unknown = m.group(0);
+              sb.append(unknown);
+          }
+      }
+      m.appendTail(sb);
+      return sb.toString();
+  }
+  
 }

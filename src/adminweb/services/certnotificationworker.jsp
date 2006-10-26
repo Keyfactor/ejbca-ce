@@ -22,6 +22,7 @@ function checkUseAdminNotification(){
 
 } 
 
+
 function checkUseEndUserNotification(){
   if(document.getElementById('edit:certCheckSendUserNotification').checked){
     document.getElementById('edit:certCheckEndUserSubjectTextField').disabled = false;
@@ -47,7 +48,7 @@ function checkUseEndUserNotification(){
 		<h:outputText value="#{web.text.CASTOCHECK}"/>
 	</h:panelGroup>
 	<h:panelGroup>							
-			<h:selectManyListbox id="certCheckCASelect" value="#{editService.certificateExpriationType.selectedCANamesToCheck}" size="10">
+		<h:selectManyListbox id="certCheckCASelect" value="#{editService.certificateExpriationType.selectedCANamesToCheck}" size="10">
 			<f:selectItems value="#{editService.availableCAs}"/>
 		</h:selectManyListbox>		
 	</h:panelGroup>	
@@ -72,7 +73,7 @@ function checkUseEndUserNotification(){
 		<h:outputText value="#{web.text.ENDUSERSUBJECT}"/>
 	</h:panelGroup>
 	<h:panelGroup>				
-		<h:inputText id="certCheckEndUserSubjectTextField" value="#{editService.certificateExpriationType.endUserSubject}" size="40" disabled="#{!editService.certificateExpriationType.useEndUserNotifications}"/>
+		<h:inputText id="certCheckEndUserSubjectTextField" value="#{editService.certificateExpriationType.endUserSubject}" size="40" />
 	</h:panelGroup>	
 	<h:panelGroup>
 		<h:outputText value="#{web.text.ENDUSERMESSAGE1}"/><f:verbatim><br/></f:verbatim>
@@ -80,7 +81,7 @@ function checkUseEndUserNotification(){
 		<h:outputText value="#{web.text.ENDUSERMESSAGE3}"/><f:verbatim><br/></f:verbatim>
 	</h:panelGroup>
 	<h:panelGroup>				
-		<h:inputTextarea id="certCheckEndUserMessageTextArea" value="#{editService.certificateExpriationType.endUserMessage}" rows="6" cols="40" disabled="#{!editService.certificateExpriationType.useEndUserNotifications}"/>
+		<h:inputTextarea id="certCheckEndUserMessageTextArea" value="#{editService.certificateExpriationType.endUserMessage}" rows="6" cols="40" />
 	</h:panelGroup>
 		<h:panelGroup>
 		<h:outputText value="#{web.text.SENDNOTIFICATIONTOADMIN1}"/><f:verbatim><br/></f:verbatim>
@@ -94,7 +95,7 @@ function checkUseEndUserNotification(){
 		<h:outputText value="#{web.text.ADMINSUBJECT}"/>
 	</h:panelGroup>
 	<h:panelGroup>				
-		<h:inputText id="certCheckAdminSubjectTextField" value="#{editService.certificateExpriationType.adminSubject}" size="40" disabled="#{!editService.certificateExpriationType.useAdminNotifications}"/>
+		<h:inputText id="certCheckAdminSubjectTextField" value="#{editService.certificateExpriationType.adminSubject}" size="40"/>
 	</h:panelGroup>	
 	<h:panelGroup>
 		<h:outputText value="#{web.text.ADMINMESSAGE1}"/><f:verbatim><br/></f:verbatim>
@@ -102,7 +103,14 @@ function checkUseEndUserNotification(){
 	    <h:outputText value="#{web.text.ADMINMESSAGE3}"/>
 	</h:panelGroup>
 	<h:panelGroup>				
-		<h:inputTextarea id="certCheckAdminMessageTextArea" value="#{editService.certificateExpriationType.adminMessage}" rows="6" cols="40" disabled="#{!editService.certificateExpriationType.useAdminNotifications}"/>
+		<h:inputTextarea id="certCheckAdminMessageTextArea" value="#{editService.certificateExpriationType.adminMessage}" rows="6" cols="40" />
+			<f:verbatim>
+<SCRIPT language="JavaScript">
+<!--  
+checkUseAdminNotification();
+checkUseEndUserNotification();
+-->
+</SCRIPT></f:verbatim>
 	</h:panelGroup>
 
 

@@ -29,6 +29,7 @@ import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.services.IServiceSessionLocalHome;
+import org.ejbca.core.ejb.services.IServiceTimerSessionLocalHome;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
@@ -40,7 +41,7 @@ import org.ejbca.util.CertTools;
  *
  * 
  *
- * @version $Id: StartServicesServlet.java,v 1.1 2006-10-01 17:46:47 herrvendil Exp $
+ * @version $Id: StartServicesServlet.java,v 1.2 2006-10-26 11:02:17 herrvendil Exp $
  * 
  * @web.servlet name = "StartServices"
  *              display-name = "StartServicesServlet"
@@ -74,12 +75,12 @@ public class StartServicesServlet extends HttpServlet {
 
 
 
-    private IServiceSessionLocalHome servicehome = null;
+    private IServiceTimerSessionLocalHome servicehome = null;
 
-    private synchronized IServiceSessionLocalHome getServiceHome() throws IOException {
+    private synchronized IServiceTimerSessionLocalHome getServiceHome() throws IOException {
         try{
             if(servicehome == null){
-            	servicehome = (IServiceSessionLocalHome)ServiceLocator.getInstance().getLocalHome(IServiceSessionLocalHome.COMP_NAME);
+            	servicehome = (IServiceTimerSessionLocalHome)ServiceLocator.getInstance().getLocalHome(IServiceTimerSessionLocalHome.COMP_NAME);
             }
           } catch(Exception e){
              throw new java.io.IOException("Authorization Denied");

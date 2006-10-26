@@ -161,7 +161,7 @@ public abstract class ServiceDataBean extends BaseEntityBean {
 
         try {
             if (log.isDebugEnabled()) {
-                log.debug("Profiledata: \n" + baos.toString("UTF8"));
+                log.debug("Service data: \n" + baos.toString("UTF8"));
             }
             setData(baos.toString("UTF8"));
         } catch (UnsupportedEncodingException e) {

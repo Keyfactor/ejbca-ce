@@ -14,6 +14,8 @@ package org.ejbca.ui.web.admin.services;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.faces.application.Application;
@@ -22,8 +24,10 @@ import javax.faces.el.ValueBinding;
 import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
 
+import org.apache.log4j.Logger;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.services.servicetypes.ActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.CertificateExpirationNotifierWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomActionType;
@@ -39,9 +43,10 @@ import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
  * 
  * @author Philip Vendil 2006 sep 30
  *
- * @version $Id: EditServiceManagedBean.java,v 1.2 2006-10-14 05:01:48 herrvendil Exp $
+ * @version $Id: EditServiceManagedBean.java,v 1.3 2006-10-26 11:02:18 herrvendil Exp $
  */
 public class EditServiceManagedBean extends BaseManagedBean {
+	private static final Logger log = Logger.getLogger(EditServiceManagedBean.class);
 	
 	private ServiceConfigurationView serviceConfigurationView;
 	
@@ -50,14 +55,11 @@ public class EditServiceManagedBean extends BaseManagedBean {
 
 	
 	public EditServiceManagedBean(){
-		try {
+        try {
 			setServiceConfiguration(new ServiceConfiguration());
-			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error(e);
 		}
-		setServiceName("TestService");
 	}
 	
     public static EditServiceManagedBean getBean(){    
@@ -79,7 +81,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
 	 * @param serviceName the serviceName to set
 	 */
 	public void setServiceName(String serviceName) {
-		this.serviceName = serviceName;
+		this.serviceName = serviceName;		
 	}
 
 	/**
@@ -91,21 +93,36 @@ public class EditServiceManagedBean extends BaseManagedBean {
 	
 	public void setServiceConfiguration(ServiceConfiguration serviceConfiguration) throws IOException{
 		this.serviceConfigurationView = new ServiceConfigurationView(serviceConfiguration);
+		
 	}
 
 	public String save(){
-		System.out.println("Save pressed");
+		String retval = "listservices";
+		ArrayList errorMessages = new ArrayList();
+		try {
+			ServiceConfiguration conf = serviceConfigurationView.getServiceConfiguration(errorMessages);
+			if(errorMessages.size() == 0){
+			  EjbcaJSFHelper.getBean().getServiceSession().changeService(getAdmin(), serviceName, serviceConfigurationView.getServiceConfiguration(errorMessages));
+			}else{
+				Iterator iter = errorMessages.iterator();
+				while(iter.hasNext()){
+					addErrorMessage((String) iter.next());
+				}
+				
+				retval = null;				
+			}
+		} catch (IOException e) {
+			addErrorMessage((String) EjbcaJSFHelper.getBean().getText().get("ERROREDITINGSERVICE") + " " + e.getMessage());
+		}
 		
-		return "listservices";
+		return retval;
 	}
 	
-	public String cancel(){
-		System.out.println("Cancel pressed");
+	public String cancel(){		
 		return "listservices";
 	}
 	
 	public String update(){
-		System.out.println("update pressed");
 		return "editservice";
 	}
 	
@@ -159,7 +176,6 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		serviceConfigurationView.setWorkerType(newWorkerType);
 		serviceConfigurationView.setSelectedWorker(newName);
 		
-        System.out.println("changeWorker called to " + e.getNewValue());
 		
 	}
 	
@@ -170,10 +186,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		if(workerType.getCompatibleIntervalTypeNames().contains(newName)){
 			IntervalType newIntervalType = (IntervalType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(newName);
 			serviceConfigurationView.setIntervalType(newIntervalType);
-			serviceConfigurationView.setSelectedInterval(newName);
-			System.out.println("changeInterval called to " + e.getNewValue());
-		}else{
-			System.out.println("changeInterval called to not changed");
+			serviceConfigurationView.setSelectedInterval(newName);			
 		}
 	}
 	
@@ -185,21 +198,20 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		if(workerType.getCompatibleActionTypeNames().contains(newName)){
 		  ActionType newActionType = (ActionType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(newName);
 		  serviceConfigurationView.setActionType(newActionType);
-		  serviceConfigurationView.setSelectedAction(newName);
-		  System.out.println("changeAction called to " + e.getNewValue());
-		}else{
-			 System.out.println("changeAction called to not changed");
+		  serviceConfigurationView.setSelectedAction(newName);		  
 		}
 	}
 	
 	public List getAvailableCAs(){
-		//TODO
-		ArrayList retval = new ArrayList();
-		retval.add(new SelectItem("AdminCA1","AdminCA1"));
-		retval.add(new SelectItem("AdminCA2","AdminCA2"));
-		retval.add(new SelectItem("AdminCA3","AdminCA3"));
+		List availableCANames = new ArrayList();
+		Collection cAIds = EjbcaJSFHelper.getBean().getCAAdminSession().getAvailableCAs(getAdmin());
+		Iterator iter = cAIds.iterator();
+		while(iter.hasNext()){
+			int next = ((Integer) iter.next()).intValue();
+			availableCANames.add(new SelectItem(new Integer(EjbcaJSFHelper.getBean().getCAAdminSession().getCAInfo(getAdmin(), next).getCAId()).toString(),EjbcaJSFHelper.getBean().getCAAdminSession().getCAInfo(getAdmin(), next).getName()));
+		}
 		
-		return retval;
+		return availableCANames;
 		
 	}
 

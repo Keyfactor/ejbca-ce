@@ -41,7 +41,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
  *
  * @author Philip Vendil 2006 sep 29
  *
- * @version $Id: ServiceTypeManager.java,v 1.2 2006-10-14 05:01:48 herrvendil Exp $
+ * @version $Id: ServiceTypeManager.java,v 1.3 2006-10-26 11:02:18 herrvendil Exp $
  */
 public class ServiceTypeManager {
 	
@@ -97,7 +97,7 @@ public class ServiceTypeManager {
 	 * Should mainly be called from the static block in this class.
 	 * @param serviceType
 	 */
-	public static void registerServiceType(ServiceType serviceType){
+	public static void registerServiceType(ServiceType serviceType){		
 		availableTypesByName.put(serviceType.getName(), serviceType);
 		if(!serviceType.isCustom()){
 			availableTypesByClassPath.put(serviceType.getClassPath(), serviceType);

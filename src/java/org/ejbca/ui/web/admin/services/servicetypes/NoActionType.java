@@ -13,6 +13,7 @@
 package org.ejbca.ui.web.admin.services.servicetypes;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Properties;
 
 /**
@@ -20,12 +21,13 @@ import java.util.Properties;
  * 
  * @author Philip Vendil 2006 sep 30
  *
- * @version $Id: NoActionType.java,v 1.1 2006-10-14 05:01:44 herrvendil Exp $
+ * @version $Id: NoActionType.java,v 1.2 2006-10-26 11:02:17 herrvendil Exp $
  */
 public class NoActionType extends ActionType {
 	
 	public static final String NAME = "NOACTION";
 	
+	private transient Properties properties = new Properties();
 	
 	public NoActionType() {
 		super("noaction.jsp", NAME, true);
@@ -39,12 +41,12 @@ public class NoActionType extends ActionType {
 		return "org.ejbca.core.model.services.actions.NoAction";
 	}
 
-	public Properties getProperties() throws IOException{
-		Properties retval = new Properties();
-		return retval;
+	public Properties getProperties(ArrayList errorMessages) throws IOException {		
+		return properties;
 	}
 	
-	public void setProperties(Properties properties) throws IOException{
+	public void setProperties(Properties properties) throws IOException {
+		this.properties = properties;
 	}
 
 	public boolean isCustom() {

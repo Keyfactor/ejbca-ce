@@ -39,15 +39,12 @@ import java.util.regex.Matcher;
  *
  * </code>
  * 
- * @version $Id: TemplateMimeMessage.java,v 1.2 2006-02-08 07:31:48 anatom Exp $
+ * @version $Id: TemplateMimeMessage.java,v 1.3 2006-10-26 11:03:24 herrvendil Exp $
  */
 public class TemplateMimeMessage extends MimeMessage {
 
     /** the map of Pattern/String objects to interpolate in the content */
     private HashMap patterns;
-
-    /** regexp pattern to match ${identifier} patterns */
-    private final static Pattern PATTERN = Pattern.compile("\\$\\{(.+?)\\}");
 
     /**
      * Construct a new TemplateMimeMessage which content is to be interpolated
@@ -87,26 +84,7 @@ public class TemplateMimeMessage extends MimeMessage {
      * @return the interpolated content
      */
     protected String interpolate(String input) {
-        final Matcher m = PATTERN.matcher(input);
-        final StringBuffer sb = new StringBuffer(input.length());
-        while (m.find()) {
-            // when the pattern is ${identifier}, group 0 is 'identifier'
-            String key = m.group(1);
-            String value = (String)patterns.get(key);
-            // if the pattern does exists, replace it by its value
-            // otherwise keep the pattern ( it is group(0) )
-            if (value != null) {
-                m.appendReplacement(sb, value);
-            } else {
-                // I'm doing this to avoid the backreference problem as there will be a $
-                // if I replace directly with the group 0 (which is also a pattern)
-                m.appendReplacement(sb, "");
-                String unknown = m.group(0);
-                sb.append(unknown);
-            }
-        }
-        m.appendTail(sb);
-        return sb.toString();
+        return NotificationParamGen.interpolate(patterns, input);
     }
 
 }

@@ -13,6 +13,7 @@
 package org.ejbca.ui.web.admin.services.servicetypes;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Properties;
 
 import org.ejbca.core.model.services.actions.MailAction;
@@ -68,8 +69,11 @@ public class MailActionType extends ActionType {
 	/**
 	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#getProperties()
 	 */
-	public Properties getProperties() throws IOException {		
+	public Properties getProperties(ArrayList errorMessages) throws IOException {		
 		Properties properties = new Properties();
+		if(senderAddress == null || senderAddress.trim().equals("")){
+			errorMessages.add("MAILACTIONSENDERADDRESSERR");
+		}
 		properties.setProperty(MailAction.PROP_SENDERADDRESS, senderAddress);
 		properties.setProperty(MailAction.PROP_RECIEVERADDRESS, recieverAddress);
 		
@@ -86,9 +90,9 @@ public class MailActionType extends ActionType {
 	/**
 	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#setProperties(java.util.Properties)
 	 */
-	public void setProperties(Properties properties) throws IOException {
-	   properties.setProperty(MailAction.PROP_SENDERADDRESS, senderAddress);
-	   properties.setProperty(MailAction.PROP_RECIEVERADDRESS, recieverAddress);
+	public void setProperties(Properties properties) throws IOException {		
+	   senderAddress = properties.getProperty(MailAction.PROP_SENDERADDRESS, "");
+	   recieverAddress = properties.getProperty(MailAction.PROP_RECIEVERADDRESS, "");
 
 	}
 
