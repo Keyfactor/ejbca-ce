@@ -92,7 +92,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.26 2006-10-17 14:39:54 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.27 2006-10-26 11:05:44 herrvendil Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -114,8 +114,8 @@ import org.ejbca.util.query.UserMatch;
  *   name="MailJNDIName"
  *   type="java.lang.String"
  *   value="${mail.jndi-name}"
-
- *  * @ejb.env-entry
+ *
+ * @ejb.env-entry
  *   description="Defines the sender of the notification message"
  *   name="sender"
  *   type="java.lang.String"
@@ -1384,7 +1384,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @param numberofrows  the number of rows to fetch, use 0 for default UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT 
      */
     private Collection query(Admin admin, Query query, boolean withlimit, String caauthorizationstr, String endentityprofilestr, boolean onlybatchusers, int numberofrows) throws IllegalQueryException {
-        debug(">query(): withlimit(not implemented)="+withlimit);
+        debug(">query(): withlimit="+withlimit);
         boolean authorizedtoanyprofile = true;
         Connection con = null;
         PreparedStatement ps = null;
