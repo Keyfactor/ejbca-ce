@@ -45,7 +45,7 @@ import se.anatom.ejbca.log.OldLogConfigurationDataLocalHome;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.8 2006-10-09 12:04:13 anatom Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.9 2006-10-26 14:35:04 anatom Exp $
  * @ejb.bean
  *   display-name="UpgradeSB"
  *   name="UpgradeSession"
@@ -213,15 +213,15 @@ public class UpgradeSessionBean extends BaseSessionBean {
         if (!upgradeUserDataVO()) {
             return false;
         }
-        ArrayList datas = logConfStep1(); 
-        if (datas == null) {
-            return false;            
-        }
-        if (!logConfStep2(datas)) {
-            return false;
-        }
-        if (!logConfStep3(datas)) {
-            return false;
+        ArrayList datas = logConfStep1();
+        // If we got some datas, we have something to upgrade, otherwise we don't
+        if (datas != null) {
+            if (!logConfStep2(datas)) {
+                return false;
+            }
+            if (!logConfStep3(datas)) {
+                return false;
+            }
         }
         debug("<upgrade()");
         return true;
