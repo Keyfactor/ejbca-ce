@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.26 2006-09-29 13:18:41 anatom Exp $
+$Id: UPGRADE,v 1.27 2006-10-26 13:02:16 anatom Exp $
 
 UPGRADE
 =======
@@ -32,6 +32,9 @@ Merge changes from the *.properties.sample into your ejbca.properties, or better
 to match the new improved conf structure.
 
 Copy the directory 'p12' from the earlier installation and 'ant deploy'.
+
+You should be ablo to upgrade from EJBCA 3.1.x directly to 3.3.x, by following the same instructions
+as when upgrading from 3.1.x to 3.2.x (untested though).
 
 From EJBCA 3.3.x to EJBCA 3.3.x
 -------------------------------
