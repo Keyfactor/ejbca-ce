@@ -3,6 +3,7 @@ package org.ejbca.core.protocol.ws;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.rmi.RemoteException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyStoreException;
@@ -92,7 +93,7 @@ import org.ejbca.util.query.Query;
  * otherwise will a AuthorizationDenied Exception be thrown.
  * 
  * @author Philip Vendil
- * $Id: EjbcaWS.java,v 1.2 2006-10-09 21:09:53 herrvendil Exp $
+ * $Id: EjbcaWS.java,v 1.3 2006-10-31 08:21:28 anatom Exp $
  */
 
 @WebService
@@ -393,13 +394,14 @@ public class EjbcaWS {
 	 * @param hardTokenSN If the certificate should be connected with a hardtoken, it is
 	 * possible to map it by give the hardTokenSN here, this will simplyfy revokation of a tokens
 	 * certificates. Use null if no hardtokenSN should be assiciated with the certificate.
-	 * @param keysize that the generated RSA should have.
+	 * @param keyspec that the generated key should have, examples are 1024 for RSA or prime192v1 for ECDSA.
+	 * @param keyalg that the generated key should have, RSA, ECDSA. Use one of the constants in CATokenConstants.org.ejbca.core.model.ca.catoken.KEYALGORITHM_XX.
 	 * @return the generated keystore
 	 * @throws AuthorizationDeniedException if client isn't authorized to request
 	 * @throws NotFoundException if user cannot be found
 	 */
 	
-	public KeyStore pkcs12Req(String username, String password, String hardTokenSN, int keysize) throws AuthorizationDeniedException, NotFoundException, EjbcaException {
+	public KeyStore pkcs12Req(String username, String password, String hardTokenSN, String keyspec, String keyalg) throws AuthorizationDeniedException, NotFoundException, EjbcaException {
 		KeyStore retval = null;
 		
 		try{
@@ -420,7 +422,7 @@ public class EjbcaWS {
 				  throw new EjbcaException("Error: Wrong Token Type of user, must be 'P12' for PKCS12 requests");
 			  }
 			  
-			  KeyPair keys = KeyTools.genKeys(keysize);
+			  KeyPair keys = KeyTools.genKeys(keyspec, keyalg);
 		      // Generate Certificate
 		      X509Certificate cert = (X509Certificate) getSignSession().createCertificate(admin,username,password, keys.getPublic());
 		      
@@ -460,6 +462,9 @@ public class EjbcaWS {
 				log.error("EJBCA WebService error, pkcs12Req : ",e);
 			    throw new EjbcaException(e.getMessage());
 			} catch (IllegalKeyException e) {
+				log.error("EJBCA WebService error, pkcs12Req : ",e);
+			    throw new EjbcaException(e.getMessage());
+			} catch (InvalidAlgorithmParameterException e) {
 				log.error("EJBCA WebService error, pkcs12Req : ",e);
 			    throw new EjbcaException(e.getMessage());
 			} catch (CADoesntExistsException e) {

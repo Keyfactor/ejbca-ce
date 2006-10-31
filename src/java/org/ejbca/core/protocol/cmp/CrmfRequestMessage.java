@@ -65,7 +65,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
  * -- Self signature
  * 
  * @author tomas
- * @version $Id: CrmfRequestMessage.java,v 1.10 2006-10-25 13:04:36 anatom Exp $
+ * @version $Id: CrmfRequestMessage.java,v 1.11 2006-10-31 08:21:29 anatom Exp $
  */
 public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessage {
 	
@@ -162,6 +162,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 	public String getPassword() {
 		String ret = null;
 		if (password != null) {
+			log.debug("Returning a pre-set password in CRMF request");
 			ret = password;
 		} else {
 			// If there is "Registration Token Control" containing a password, we can use that

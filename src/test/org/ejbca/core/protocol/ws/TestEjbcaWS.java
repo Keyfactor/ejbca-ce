@@ -10,8 +10,9 @@ import javax.xml.namespace.QName;
 
 import junit.framework.TestCase;
 
+import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
-import org.ejbca.core.protocol.ExtendedPKCS10CertificationRequest;
 import org.ejbca.core.protocol.ws.client.gen.Certificate;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
@@ -176,8 +177,8 @@ public class TestEjbcaWS extends TestCase {
 	}
 	
 	public void test03GeneratePkcs10() throws Exception{
-		KeyPair keys = KeyTools.genKeys(1024);
-		ExtendedPKCS10CertificationRequest  pkcs10 = new ExtendedPKCS10CertificationRequest("SHA1WithRSA",
+		KeyPair keys = KeyTools.genKeys("1024", CATokenConstants.KEYALGORITHM_RSA);
+		PKCS10CertificationRequest  pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA",
                 CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(), null, keys.getPrivate());
 		
 		Certificate certenv =  ejbcaraws.pkcs10Req("WSTESTUSER1","foo123",new String(Base64.encode(pkcs10.getEncoded())),null);
@@ -197,7 +198,7 @@ public class TestEjbcaWS extends TestCase {
 
 		boolean exceptionThrown = false;
 		try{
-           ejbcaraws.pkcs12Req("WSTESTUSER1","foo123",null,1024);
+           ejbcaraws.pkcs12Req("WSTESTUSER1","foo123",null,"1024", CATokenConstants.KEYALGORITHM_RSA);
 		}catch(EjbcaException_Exception e){
 			exceptionThrown = true;
 		}
@@ -216,7 +217,7 @@ public class TestEjbcaWS extends TestCase {
         
         exceptionThrown = false;
 		try{
-          ejbcaraws.pkcs12Req("WSTESTUSER1","foo123",null,1024);
+          ejbcaraws.pkcs12Req("WSTESTUSER1","foo123",null,"1024", CATokenConstants.KEYALGORITHM_RSA);
 		}catch(EjbcaException_Exception e){
 			exceptionThrown = true;
 		}
@@ -230,7 +231,7 @@ public class TestEjbcaWS extends TestCase {
         
         KeyStore ksenv = null;
         try{
-          ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo456",null,1024);
+          ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo456",null,"1024", CATokenConstants.KEYALGORITHM_RSA);
         }catch(EjbcaException_Exception e){        	
         	assertTrue(e.getMessage(),false);
         }
@@ -265,7 +266,7 @@ public class TestEjbcaWS extends TestCase {
         ejbcaraws.editUser(userdatas.get(0));        
         KeyStore ksenv = null;
         try{
-            ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo123",null,1024);
+            ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo123",null,"1024", CATokenConstants.KEYALGORITHM_RSA);
         }catch(EjbcaException_Exception e){        	
           	assertTrue(e.getMessage(),false);
         }
@@ -326,7 +327,7 @@ public class TestEjbcaWS extends TestCase {
 		
         KeyStore ksenv = null;
         try{
-          ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo456",null,1024);
+          ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo456",null,"1024", CATokenConstants.KEYALGORITHM_RSA);
         }catch(EjbcaException_Exception e){        	
         	assertTrue(e.getMessage(),false);
         }
@@ -366,7 +367,7 @@ public class TestEjbcaWS extends TestCase {
 		ejbcaraws.editUser(userdatas.get(0));        
 		KeyStore ksenv = null;
 		try{
-			ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo123","12345678",1024);
+			ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo123","12345678","1024", CATokenConstants.KEYALGORITHM_RSA);
 		}catch(EjbcaException_Exception e){        	
 			assertTrue(e.getMessage(),false);
 		}
@@ -383,7 +384,7 @@ public class TestEjbcaWS extends TestCase {
 		ejbcaraws.editUser(userdatas.get(0));  
 		
 		try{
-			ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo123","12345678",1024);
+			ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo123","12345678","1024", CATokenConstants.KEYALGORITHM_RSA);
 		}catch(EjbcaException_Exception e){        	
 			assertTrue(e.getMessage(),false);
 		}
@@ -425,7 +426,7 @@ public class TestEjbcaWS extends TestCase {
 		ejbcaraws.editUser(userdatas.get(0));        
 		KeyStore ksenv = null;
 		try{
-			ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo123","12345678",1024);
+			ksenv = ejbcaraws.pkcs12Req("WSTESTUSER1","foo123","12345678","1024", CATokenConstants.KEYALGORITHM_RSA);
 		}catch(EjbcaException_Exception e){        	
 			assertTrue(e.getMessage(),false);
 		}

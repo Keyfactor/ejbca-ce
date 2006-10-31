@@ -33,6 +33,7 @@ import java.security.SignatureException;
 import java.security.cert.CRLException;
 import java.security.cert.CertStore;
 import java.security.cert.CertStoreException;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
@@ -75,6 +76,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -197,7 +199,7 @@ public class ProtocolScepHttpTest extends TestCase {
 
         if (keys == null) {
             // Pre-generate key for all requests to speed things up a bit
-            keys = KeyTools.genKeys(512);        	
+            keys = KeyTools.genKeys("512", CATokenConstants.KEYALGORITHM_RSA);        	
         }
     }
 
@@ -395,7 +397,7 @@ public class ProtocolScepHttpTest extends TestCase {
         
     }
 
-    private byte[] genScepRequest(boolean makeCrlReq, String digestoid) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, InvalidAlgorithmParameterException, CertStoreException, IOException, CMSException {
+    private byte[] genScepRequest(boolean makeCrlReq, String digestoid) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, InvalidAlgorithmParameterException, CertStoreException, IOException, CMSException, CertificateEncodingException, IllegalStateException {
         ScepRequestGenerator gen = new ScepRequestGenerator();
         gen.setKeys(keys);
         gen.setDigestOid(digestoid);

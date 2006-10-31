@@ -22,13 +22,14 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
 
 /** Handles maintenance of the device producing signatures and handling the private key.
  * 
- * @version $Id: CAToken.java,v 1.1 2006-01-17 20:31:51 anatom Exp $
+ * @version $Id: CAToken.java,v 1.2 2006-10-31 08:19:41 anatom Exp $
  */
 public abstract class CAToken extends UpgradeableDataHashMap implements java.io.Serializable{
     
     public static final String CATOKENTYPE = "catokentype";
     
     protected static final String SIGNATUREALGORITHM = "signaturealgorithm";
+    protected static final String ENCRYPTIONALGORITHM = "encryptionalgorithm";
    /**
     *  Returns information about this CAToken.
     */

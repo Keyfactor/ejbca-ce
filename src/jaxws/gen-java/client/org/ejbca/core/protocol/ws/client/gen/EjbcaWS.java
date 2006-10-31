@@ -69,8 +69,8 @@ public interface EjbcaWS {
      * @param arg0
      * @return
      *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.UserDataVOWS>
-     * @throws EjbcaException_Exception
      * @throws IllegalQueryException_Exception
+     * @throws EjbcaException_Exception
      * @throws AuthorizationDeniedException_Exception
      */
     @WebMethod
@@ -157,10 +157,11 @@ public interface EjbcaWS {
      * @param arg1
      * @param arg0
      * @param arg2
+     * @param arg4
      * @return
      *     returns org.ejbca.core.protocol.ws.client.gen.KeyStore
-     * @throws EjbcaException_Exception
      * @throws NotFoundException_Exception
+     * @throws EjbcaException_Exception
      * @throws AuthorizationDeniedException_Exception
      */
     @WebMethod
@@ -175,7 +176,9 @@ public interface EjbcaWS {
         @WebParam(name = "arg2", targetNamespace = "")
         String arg2,
         @WebParam(name = "arg3", targetNamespace = "")
-        int arg3)
+        String arg3,
+        @WebParam(name = "arg4", targetNamespace = "")
+        String arg4)
         throws AuthorizationDeniedException_Exception, EjbcaException_Exception, NotFoundException_Exception
     ;
 
@@ -183,8 +186,8 @@ public interface EjbcaWS {
      * 
      * @param arg1
      * @param arg0
-     * @throws EjbcaException_Exception
      * @throws NotFoundException_Exception
+     * @throws EjbcaException_Exception
      * @throws AuthorizationDeniedException_Exception
      */
     @WebMethod

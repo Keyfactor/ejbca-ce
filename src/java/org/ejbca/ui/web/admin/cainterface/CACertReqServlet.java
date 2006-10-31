@@ -26,10 +26,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
-import org.ejbca.core.protocol.ExtendedPKCS10CertificationRequest;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.pub.ServletUtils;
@@ -43,7 +43,7 @@ import org.ejbca.ui.web.pub.ServletUtils;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: CACertReqServlet.java,v 1.3 2006-02-09 10:05:38 anatom Exp $
+ * @version $Id: CACertReqServlet.java,v 1.4 2006-10-31 08:24:11 anatom Exp $
  * 
  * @web.servlet name = "CACertReq"
  *              display-name = "CACertReqServlet"
@@ -149,7 +149,7 @@ public class CACertReqServlet extends HttpServlet {
         if (command.equalsIgnoreCase(COMMAND_CERTREQ)) {
             try {
                 
-            	ExtendedPKCS10CertificationRequest pkcs10request = cabean.getPKCS10RequestData();
+            	PKCS10CertificationRequest pkcs10request = cabean.getPKCS10RequestData();
 				ByteArrayOutputStream bOut = new ByteArrayOutputStream();
 				DEROutputStream dOut = new DEROutputStream(bOut);
 				dOut.writeObject(pkcs10request);

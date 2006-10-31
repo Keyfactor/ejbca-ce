@@ -36,6 +36,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
+import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
@@ -53,7 +54,6 @@ import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.protocol.ExtendedPKCS10CertificationRequest;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.util.Base64;
@@ -64,7 +64,7 @@ import org.ejbca.util.cert.QCStatementExtension;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.15 2006-10-25 10:58:45 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.16 2006-10-31 08:24:54 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -281,7 +281,7 @@ public class TestSignSession extends TestCase {
         usersession.setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
-        ExtendedPKCS10CertificationRequest req = new ExtendedPKCS10CertificationRequest("SHA1WithRSA",
+        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA",
                 CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"), keys.getPublic(), null,
                 keys.getPrivate());
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
@@ -289,7 +289,7 @@ public class TestSignSession extends TestCase {
         dOut.writeObject(req);
         dOut.close();
 
-        ExtendedPKCS10CertificationRequest req2 = new ExtendedPKCS10CertificationRequest(bOut.toByteArray());
+        PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
         boolean verify = req2.verify();
         log.debug("Verify returned " + verify);
         if (verify == false) {

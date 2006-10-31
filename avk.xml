@@ -1,4 +1,4 @@
-<project name="avk" default="avk:check"  xmlns:avk="avk">
+<project name="avk" default=""  xmlns:avk="avk">
 	<!--
 	 
 	 Java Application Verification Kit (AVK) for the Enterprise User's Guide

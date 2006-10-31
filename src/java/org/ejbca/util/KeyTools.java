@@ -13,7 +13,9 @@
  
 package org.ejbca.util;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -23,23 +25,36 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.cert.*;
-import java.security.interfaces.*;
-import java.security.spec.*;
-import java.util.*;
+import java.security.SecureRandom;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.ArrayList;
+import java.util.Collection;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
-import org.bouncycastle.asn1.*;
-import org.bouncycastle.asn1.pkcs.*;
-import org.bouncycastle.asn1.x509.*;
-import org.bouncycastle.jce.interfaces.*;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DERBMPString;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.jce.interfaces.PKCS12BagAttributeCarrier;
+import org.bouncycastle.jce.provider.JCEECPublicKey;
+import org.ejbca.core.model.ca.catoken.CATokenConstants;
 
 
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.3 2006-07-26 21:41:27 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.4 2006-10-31 08:24:12 anatom Exp $
  */
 public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);
@@ -53,28 +68,87 @@ public class KeyTools {
     /**
      * Generates a keypair
      *
-     * @param keysize size of keys to generate, typical value is 1024 for RSA keys
-     *
+     * @param keyspec specification of keys to generate, typical value is 1024 for RSA keys or prime192v1 for ECDSA keys
+     * @param keyalg algorithm of keys to generate, typical value is RSA or ECDSA, see org.ejbca.core.model.ca.catoken.CATokenConstants.KEYALGORITHM_XX
+     * 
+     * @see org.ejbca.core.model.ca.catoken.CATokenConstants
+     * @see org.bouncycastle.asn1.x9.X962NamedCurves
+     * @see org.bouncycastle.asn1.nist.NISTNamedCurves
+     * @see org.bouncycastle.asn1.sec.SECNamedCurves
+     * 
      * @return KeyPair the generated keypair
+     * @throws InvalidAlgorithmParameterException 
      */
-    public static KeyPair genKeys(int keysize)
-        throws NoSuchAlgorithmException, NoSuchProviderException {
+    public static KeyPair genKeys(String keySpec, String keyAlg)
+        throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
     	if (log.isDebugEnabled()) {
-            log.debug(">genKeys("+keysize+")");    		
+            log.debug(">genKeys("+keySpec+", "+keyAlg+")");    		
     	}
 
-        KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA", "BC");
-        keygen.initialize(keysize);
+        KeyPairGenerator keygen = KeyPairGenerator.getInstance(keyAlg, "BC");
+        if (StringUtils.equals(keyAlg, CATokenConstants.KEYALGORITHM_ECDSA)) {
+        	org.bouncycastle.jce.spec.ECParameterSpec ecSpec = null;
+        	if ( (keySpec == null) || StringUtils.equals(keySpec,"implicitlyCA") ) {
+        		log.debug("Generating implicitlyCA encoded ECDSA key pair");
+            	// If the keySpec is null, we have "implicitlyCA" defined EC parameters
+        		// The parameters were already installed when we installed the provider
+        		// We just make sure that ecSpec == null here
+        	} else {
+        		log.debug("Generating named curve ECDSA key pair");
+            	// We have EC keys
+            	ecSpec = ECNamedCurveTable.getParameterSpec(keySpec);        		
+        	}
+        	keygen.initialize(ecSpec, new SecureRandom());
+        } else {
+        	// RSA keys
+        	int keysize = Integer.parseInt(keySpec);
+            keygen.initialize(keysize);
+        }
 
-        KeyPair rsaKeys = keygen.generateKeyPair();
+        KeyPair keys = keygen.generateKeyPair();
 
-        log.debug("Generated " + rsaKeys.getPublic().getAlgorithm() + " keys with length " +
-            ((RSAPrivateKey) rsaKeys.getPrivate()).getPrivateExponent().bitLength());
+        if (log.isDebugEnabled()) {
+            PublicKey pk = keys.getPublic();
+        	int len = getKeyLength(pk);
+            log.debug("Generated " + keys.getPublic().getAlgorithm() + " keys with length " + len);        	
+    		log.debug("<genKeys()");
+        }
 
-        log.debug("<genKeys()");
-
-        return rsaKeys;
+        return keys;
     } // genKeys
+
+    /**
+     * Gets the key length of supported keys
+     * @param priv PrivateKey to check
+     * @return -1 if key is unsupported, otherwise a number >= 0. 0 usually means the length can not be calculated, 
+     * for example if the key is en EC key and the "implicitlyCA" encoding is used.
+     */
+	public static int getKeyLength(PublicKey pk) {
+		int len = -1;
+		if (pk instanceof RSAPublicKey) {
+			RSAPublicKey rsapub = (RSAPublicKey) pk;
+			len = rsapub.getModulus().bitLength();
+		} else if (pk instanceof JCEECPublicKey) {
+			JCEECPublicKey ecpriv = (JCEECPublicKey) pk;
+			org.bouncycastle.jce.spec.ECParameterSpec spec = ecpriv.getParameters();
+			if (spec != null) {
+				len = spec.getN().bitLength();				
+			} else {
+				// We support the key, but we don't know the key length
+				len = 0;
+			}
+		} else if (pk instanceof ECPublicKey) {
+			ECPublicKey ecpriv = (ECPublicKey) pk;
+			java.security.spec.ECParameterSpec spec = ecpriv.getParams();
+			if (spec != null) {
+				len = spec.getOrder().bitLength(); // does this really return something we expect?
+			} else {
+				// We support the key, but we don't know the key length
+				len = 0;
+			}
+		}
+		return len;
+	}
 
     /**
      * Creates PKCS12-file that can be imported in IE or Netscape. The alias for the private key is

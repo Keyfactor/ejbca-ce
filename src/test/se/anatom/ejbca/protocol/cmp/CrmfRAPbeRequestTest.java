@@ -78,6 +78,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -140,13 +141,20 @@ public class CrmfRAPbeRequestTest extends TestCase {
         Object obj = ctx.lookup("CAAdminSession");
         ICAAdminSessionHome cahome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICAAdminSessionHome.class);
         ICAAdminSessionRemote casession = cahome.create();
-        Collection caids = casession.getAvailableCAs(admin);
-        Iterator iter = caids.iterator();
-        if (iter.hasNext()) {
-            caid = ((Integer) iter.next()).intValue();
+        // Try to use AdminCA1 if it exists
+        CAInfo adminca1 = casession.getCAInfo(admin, "AdminCA1");
+        if (adminca1 == null) {
+            Collection caids = casession.getAvailableCAs(admin);
+            Iterator iter = caids.iterator();
+            while (iter.hasNext()) {
+            	caid = ((Integer) iter.next()).intValue();
+            }        	
         } else {
-            assertTrue("No active CA! Must have at least one active CA to run tests!", false);
+        	caid = adminca1.getCAId();
         }
+        if (caid == 0) {
+        	assertTrue("No active CA! Must have at least one active CA to run tests!", false);
+        }        	
         CAInfo cainfo = casession.getCAInfo(admin, caid);
         Collection certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
@@ -176,7 +184,7 @@ public class CrmfRAPbeRequestTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		if (keys == null) {
-			keys = KeyTools.genKeys(1024);
+			keys = KeyTools.genKeys("512", CATokenConstants.KEYALGORITHM_RSA);
 		}
 	}
 	
@@ -264,6 +272,10 @@ public class CrmfRAPbeRequestTest extends TestCase {
 		assertTrue(resp.length > 0);
 		checkCmpResponseGeneral(resp, userDN, nonce, transid, false, true);
 		checkCmpPKIConfirmMessage(resp);
+	}
+	
+	public void test99CleanUp() throws Exception {
+		usersession.deleteUser(admin, "cmptest");
 	}
 	
 	private PKIMessage genCertReq(byte[] nonce, byte[] transid) throws NoSuchAlgorithmException, NoSuchProviderException, IOException {
@@ -731,7 +743,8 @@ public class CrmfRAPbeRequestTest extends TestCase {
 
         if (userExists) {
             log.debug("User cmptest already exists.");
-            usersession.setUserStatus(admin,"cmptest",UserDataConstants.STATUS_NEW);
+            usersession.changeUser(admin, "cmptest", "foo123", userDN, null, "cmptest@primekey.se", false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, caid);
+            //usersession.setUserStatus(admin,"cmptest",);
             log.debug("Reset status to NEW");
         }
         

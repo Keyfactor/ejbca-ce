@@ -33,6 +33,7 @@ import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
+import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.log.Admin;
@@ -41,7 +42,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the ca data entity bean.
  *
- * @version $Id: TestCAs.java,v 1.11 2006-08-09 07:26:50 herrvendil Exp $
+ * @version $Id: TestCAs.java,v 1.12 2006-10-31 08:24:53 anatom Exp $
  */
 public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -112,16 +113,19 @@ public class TestCAs extends TestCase {
             authorizationsession.initialize(admin, "CN=TEST".hashCode());
 
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-            catokeninfo.setKeySize(2048);
-            catokeninfo.setAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
+            catokeninfo.setSignKeySpec("1024");
+            catokeninfo.setEncKeySpec("1024");
+            catokeninfo.setSignKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
+            catokeninfo.setEncKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
             catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
+            catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             ArrayList extendedcaservices = new ArrayList();
             extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
                     "CN=OCSPSignerCertificate, " + "CN=TEST",
                     "",
-                    2048,
-                    OCSPCAServiceInfo.KEYALGORITHM_RSA));
+                    "2048",
+                    CATokenConstants.KEYALGORITHM_RSA));
 
 
             X509CAInfo cainfo = new X509CAInfo("CN=TEST",

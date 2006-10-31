@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.math.BigInteger;
 import java.net.URL;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
@@ -80,7 +81,9 @@ import org.bouncycastle.asn1.x509.X509NameEntryConverter;
 import org.bouncycastle.asn1.x509.X509NameTokenizer;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.interfaces.ConfigurableProvider;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
@@ -89,7 +92,7 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.19 2006-09-26 07:51:47 anatom Exp $
+ * @version $Id: CertTools.java,v 1.20 2006-10-31 08:24:12 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -149,6 +152,15 @@ public class CertTools {
     //public static final DERObjectIdentifier unstructuredName = new DERObjectIdentifier("1.2.840.113549.1.9.2");
     /** ObjectID for unstructuredAddress DN attribute */
     //public static final DERObjectIdentifier unstructuredAddress = new DERObjectIdentifier("1.2.840.113549.1.9.8");
+
+    /** Parameters used when generating or verifying ECDSA keys/certs using the "implicitlyCA" key encoding.
+     * The curve parameters is then defined outside of the key and configured in the BC provider.
+     */
+    private static final String IMPLICITLYCA_Q = "883423532389192164791648750360308885314476597252960362792450860609699839";
+    private static final String IMPLICITLYCA_A = "7fffffffffffffffffffffff7fffffffffff8000000000007ffffffffffc"; 
+    private static final String IMPLICITLYCA_B = "6b016c3bdcf18941d0d654921475ca71a9db2fb27d1d37796185c2942c0a"; 
+    private static final String IMPLICITLYCA_G = "020ffa963cdca8816ccc33b8642bedf905c3d358573d3f27fbbd3b3cb9aaaf"; 
+    private static final String IMPLICITLYCA_N = "883423532389192164791648750360308884807550341691627752275345424702807307";
 
     /** Flag indicating if the BC provider should be removed before installing it again. When developing and re-deploying alot
      * this is needed so you don't have to restart JBoss all the time. 
@@ -611,9 +623,25 @@ public class CertTools {
                 Security.removeProvider("BC");
                 if (Security.addProvider(new BouncyCastleProvider()) < 0) {
                     log.error("Cannot even install BC provider again!");
-                }        		
+                }
         	}
         }
+        // Install EC parameters for implicitlyCA encoding of EC keys, we have default curve parameters if no new ones have been given.
+        // The parameters are only used if implicitlyCA is used for generating keys, or verifying certs
+    	ECCurve curve = new ECCurve.Fp(
+    			new BigInteger(IMPLICITLYCA_Q), // q
+    			new BigInteger(IMPLICITLYCA_A, 16), // a
+    			new BigInteger(IMPLICITLYCA_B, 16)); // b
+    	org.bouncycastle.jce.spec.ECParameterSpec implicitSpec = new org.bouncycastle.jce.spec.ECParameterSpec(
+    			curve,
+    			curve.decodePoint(Hex.decode(IMPLICITLYCA_G)), // G
+    			new BigInteger(IMPLICITLYCA_N)); // n
+    	ConfigurableProvider config = (ConfigurableProvider)Security.getProvider("BC");
+    	if (config != null) {
+        	config.setParameter(ConfigurableProvider.EC_IMPLICITLY_CA, implicitSpec);        		                	    		
+    	} else {
+    		log.error("Can not get ConfigurableProvider, implicitlyCA EC parameters NOT set!");
+    	}
     }
 
     /**
@@ -792,6 +820,7 @@ public class CertTools {
      * @param policyId policy string ('2.5.29.32.0') or null
      * @param privKey private key
      * @param pubKey public key
+     * @param sigAlg signature algorithm, you can use one of the contants CATokenInfo.SIGALG_XXX
      * @param isCA boolean true or false
      *
      * @return X509Certificate, self signed
@@ -799,12 +828,13 @@ public class CertTools {
      * @throws NoSuchAlgorithmException DOCUMENT ME!
      * @throws SignatureException DOCUMENT ME!
      * @throws InvalidKeyException DOCUMENT ME!
+     * @throws IllegalStateException 
+     * @throws CertificateEncodingException 
      */
     public static X509Certificate genSelfCert(String dn, long validity, String policyId,
-        PrivateKey privKey, PublicKey pubKey, boolean isCA)
-        throws NoSuchAlgorithmException, SignatureException, InvalidKeyException {
+        PrivateKey privKey, PublicKey pubKey, String sigAlg, boolean isCA)
+        throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, CertificateEncodingException, IllegalStateException {
         // Create self signed certificate
-        String sigAlg = "SHA1WithRSA";
         Date firstDate = new Date();
 
         // Set back startdate ten minutes to avoid some problems with wrongly set clocks.
@@ -866,7 +896,7 @@ public class CertTools {
                 certgen.addExtension(X509Extensions.CertificatePolicies.getId(), false, seq);
         }
 
-        X509Certificate selfcert = certgen.generateX509Certificate(privKey);
+        X509Certificate selfcert = certgen.generate(privKey);
 
         return selfcert;
     } //genselfCert
@@ -1470,11 +1500,14 @@ public class CertTools {
     /** Converts Sun Key usage bits to Bouncy castle key usage kits
      * 
      * @param sku key usage bit fields according to java.security.cert.X509Certificate#getKeyUsage, must be a boolean aray of size 9.
-     * @return key usage int according to org.bouncycastle.jce.X509KeyUsage#X509KeyUsage.
+     * @return key usage int according to org.bouncycastle.jce.X509KeyUsage#X509KeyUsage, or -1 if input is null.
      * @see java.security.cert.X509Certificate#getKeyUsage
      * @see org.bouncycastle.jce.X509KeyUsage#X509KeyUsage
      */
     public static int sunKeyUsageToBC(boolean[] sku) {
+    	if (sku == null) {
+    		return -1;
+    	}
         int bcku = 0;
         if (sku[0] == true)
             bcku = bcku | X509KeyUsage.digitalSignature;

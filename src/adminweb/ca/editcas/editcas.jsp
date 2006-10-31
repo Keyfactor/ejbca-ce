@@ -2,9 +2,9 @@
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, java.io.*, org.apache.commons.fileupload.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.SecConst, org.ejbca.util.FileTools, org.ejbca.util.CertTools, org.ejbca.core.model.authorization.AuthorizationDeniedException,
     org.ejbca.ui.web.RequestHelper, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.caadmin.CAInfo, org.ejbca.core.model.ca.caadmin.X509CAInfo, org.ejbca.core.model.ca.catoken.CATokenInfo, org.ejbca.core.model.ca.catoken.SoftCATokenInfo, org.ejbca.ui.web.admin.cainterface.CADataHandler,
-               org.ejbca.ui.web.admin.rainterface.RevokedInfoView, org.ejbca.ui.web.admin.configuration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.ejbca.core.protocol.ExtendedPKCS10CertificationRequest, org.ejbca.core.EjbcaException,
+               org.ejbca.ui.web.admin.rainterface.RevokedInfoView, org.ejbca.ui.web.admin.configuration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.bouncycastle.jce.PKCS10CertificationRequest, org.ejbca.core.EjbcaException,
                org.ejbca.core.protocol.PKCS10RequestMessage, org.ejbca.core.model.ca.caadmin.CAExistsException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.model.ca.catoken.CATokenOfflineException, org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException,
-               org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, org.ejbca.core.model.ca.catoken.HardCATokenManager, org.ejbca.core.model.ca.catoken.AvailableHardCAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo"%>
+               org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, org.ejbca.core.model.ca.catoken.HardCATokenManager, org.ejbca.core.model.ca.catoken.AvailableHardCAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo, org.ejbca.core.model.ca.catoken.CATokenConstants" %>
 
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -70,6 +70,7 @@
   static final String TEXTFIELD_AUTHENTICATIONCODE    = "textfieldauthenticationcode";
   static final String TEXTFIELD_DEFAULTCRLDISTPOINT   = "textfielddefaultcrldistpoint";
   static final String TEXTFIELD_DEFAULTOCSPLOCATOR    = "textfielddefaultocsplocator";
+  static final String TEXTFIELD_KEYSPEC               = "textfieldkeyspec";
 
   static final String CHECKBOX_AUTHORITYKEYIDENTIFIER             = "checkboxauthoritykeyidentifier";
   static final String CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL     = "checkboxauthoritykeyidentifiercritical";
@@ -266,14 +267,30 @@
           
          CATokenInfo catoken = null;
          catokentype = Integer.parseInt(request.getParameter(HIDDEN_CATOKENTYPE));
+         String signkeyspec = "2048"; // Default signature key, for OCSP, is 2048 bit RSA
+         String signkeytype = CATokenConstants.KEYALGORITHM_RSA;
+         
          if(catokentype == CATokenInfo.CATOKENTYPE_P12){
-           int keysize = Integer.parseInt(request.getParameter(SELECT_KEYSIZE));
            String signalg = request.getParameter(SELECT_SIGNATUREALGORITHM);
-           if(keysize == 0 || signalg == null)
+           String encalg = request.getParameter(SELECT_SIGNATUREALGORITHM);
+           signkeyspec = request.getParameter(SELECT_KEYSIZE);
+           signkeytype = CATokenConstants.KEYALGORITHM_RSA;
+           String enckeyspec = request.getParameter(SELECT_KEYSIZE);
+           String enckeytype = CATokenConstants.KEYALGORITHM_RSA;
+           if (signalg.indexOf("ECDSA") != -1) {
+        	   signkeyspec = request.getParameter(TEXTFIELD_KEYSPEC);
+               signkeytype = CATokenConstants.KEYALGORITHM_ECDSA;
+               encalg = CATokenConstants.SIGALG_SHA1_WITH_RSA;
+           }
+           if(signkeyspec == null || signalg == null)
              throw new Exception("Error in CATokenData");  
            catoken = new SoftCATokenInfo();
            catoken.setSignatureAlgorithm(signalg);
-           ((SoftCATokenInfo) catoken).setKeySize(keysize);              
+           ((SoftCATokenInfo) catoken).setSignKeyAlgorithm(signkeytype);
+           ((SoftCATokenInfo) catoken).setSignKeySpec(signkeyspec);              
+           catoken.setEncryptionAlgorithm(encalg);
+           ((SoftCATokenInfo) catoken).setEncKeyAlgorithm(enckeytype);
+           ((SoftCATokenInfo) catoken).setEncKeySpec(enckeyspec);              
          } 
          if(catokentype == CATokenInfo.CATOKENTYPE_HSM){
             catokenpath = request.getParameter(HIDDEN_CATOKENPATH);
@@ -412,12 +429,21 @@
       
 		 // Create and active OSCP CA Service.
 		 ArrayList extendedcaservices = new ArrayList();
+		 String keySpec = signkeyspec;
+		 String keyAlg = signkeytype;
+		 if (keyAlg.equals(CATokenConstants.KEYALGORITHM_RSA)) {
+			 // Never use larger keys than 2048 bit RSA for OCSP signing
+			 int len = Integer.parseInt(keySpec);
+			 if (len > 2048) {
+				 keySpec = "2048";				 
+			 }
+		 }
 		 extendedcaservices.add(
 		             new OCSPCAServiceInfo(ocspactive,
 						  "CN=OCSPSignerCertificate, " + subjectdn,
 			     		  "",
-						  2048,
-						  OCSPCAServiceInfo.KEYALGORITHM_RSA));
+			     		  keySpec,
+						  keyAlg));
                  X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, 0, subjectaltname,
                                                         certprofileid, validity, 
                                                         null, catype, signedby,
@@ -446,12 +472,21 @@
                  caid = CertTools.stringToBCDNString(subjectdn).hashCode();  
 		 // Create and OSCP CA Service.
 		 ArrayList extendedcaservices = new ArrayList();
+		 String keySpec = signkeyspec;
+		 String keyAlg = signkeytype;
+		 if (keyAlg.equals(CATokenConstants.KEYALGORITHM_RSA)) {
+			 // Never use larger keys than 2048 bit RSA for OCSP signing
+			 int len = Integer.parseInt(keySpec);
+			 if (len > 2048) {
+				 keySpec = "2048";				 
+			 }
+		 }
 		 extendedcaservices.add(
 		             new OCSPCAServiceInfo(ocspactive,
 						  "CN=OCSPSignerCertificate, " + subjectdn,
 			     		          "",
-						  2048,
-						  OCSPCAServiceInfo.KEYALGORITHM_RSA));
+						  keySpec,
+						  keyAlg));
                  X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, caid, subjectaltname,
                                                         certprofileid, validity,
                                                         null, catype, CAInfo.SIGNEDBYEXTERNALCA,
@@ -673,7 +708,7 @@
            try{
              CAInfo cainfo = cabean.getRequestInfo();              
              cadatahandler.createCA(cainfo);                           
-             ExtendedPKCS10CertificationRequest certreq = null;
+             PKCS10CertificationRequest certreq = null;
              try{ 
                certreq=cadatahandler.makeRequest(caid, certchain, true);
                cabean.savePKCS10RequestData(certreq);     
@@ -749,7 +784,7 @@
            errorrecievingfile = true; 
          } 
        }else{
-         cabean.savePKCS10RequestData((ExtendedPKCS10CertificationRequest) null);  
+         cabean.savePKCS10RequestData((PKCS10CertificationRequest) null);  
        }
       }
       if( action.equals(ACTION_PROCESSREQUEST2)){        
@@ -834,7 +869,7 @@
                                                         approvalsettings,
                                                         numofreqapprovals);
                  try{
-                   ExtendedPKCS10CertificationRequest req = cabean.getPKCS10RequestData(); 
+                   PKCS10CertificationRequest req = cabean.getPKCS10RequestData(); 
                    java.security.cert.Certificate result = cadatahandler.processRequest(x509cainfo, new PKCS10RequestMessage(req));
                    cabean.saveProcessedCertificate(result);
                    filemode = CERTGENMODE;   
@@ -853,7 +888,7 @@
         if(!buttoncancel){
           try{
            Collection certchain = CertTools.getCertsFromPEM(file);                       
-           ExtendedPKCS10CertificationRequest certreq = cadatahandler.makeRequest(caid, certchain, false);
+           PKCS10CertificationRequest certreq = cadatahandler.makeRequest(caid, certchain, false);
            cabean.savePKCS10RequestData(certreq);   
                
            filemode = CERTREQGENMODE;

@@ -26,6 +26,8 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.ca.catoken.CATokenConstants;
+import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
@@ -33,7 +35,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestKeyTools.java,v 1.2 2006-01-17 20:34:15 anatom Exp $
+ * @version $Id: TestKeyTools.java,v 1.3 2006-10-31 08:24:53 anatom Exp $
  */
 public class TestKeyTools extends TestCase {
 
@@ -169,19 +171,19 @@ public class TestKeyTools extends TestCase {
         log.debug("<test01GetCertChain()");
     }
 
-    public void test02GenKeys() throws Exception {
-        log.debug(">test02GenKeys()");
-        KeyPair keys = KeyTools.genKeys(1024);
+    public void test02GenKeysRSA() throws Exception {
+        log.debug(">test02GenKeysRSA()");
+        KeyPair keys = KeyTools.genKeys("512", CATokenConstants.KEYALGORITHM_RSA);
         assertNotNull("keys must not be null", keys);
         String b64private = new String(Base64.encode(keys.getPrivate().getEncoded()));
         assertNotNull("b64private must not be null", b64private);
         //System.out.println(b64private);
-        X509Certificate cert = CertTools.genSelfCert("C=SE,O=Test,CN=Test", 365, null, keys.getPrivate(), keys.getPublic(), true);
+        X509Certificate cert = CertTools.genSelfCert("C=SE,O=Test,CN=Test", 365, null, keys.getPrivate(), keys.getPublic(), CATokenInfo.SIGALG_SHA1_WITH_RSA, true);
         assertNotNull("cert must not be null", cert);
         String b64cert = new String(Base64.encode(cert.getEncoded()));
         assertNotNull("b64cert cannot be null", b64cert);
         //System.out.println(b64cert);
-        log.debug("<test02GenKeys()");
+        log.debug("<test02GenKeysRSA()");
     }
 
     public void test03CreateP12() throws Exception {
@@ -199,4 +201,51 @@ public class TestKeyTools extends TestCase {
         log.debug("<test03CreateP12()");
     }
 
+    public void test03GenKeysECDSAx9() throws Exception {
+        log.debug(">test03GenKeysECDSA()");
+        KeyPair keys = KeyTools.genKeys("prime192v1", CATokenConstants.KEYALGORITHM_ECDSA);
+        assertNotNull("keys must not be null", keys);
+        String b64private = new String(Base64.encode(keys.getPrivate().getEncoded()));
+        assertNotNull("b64private must not be null", b64private);
+        //System.out.println(b64private);
+        X509Certificate cert = CertTools.genSelfCert("C=SE,O=Test,CN=Test", 365, null, keys.getPrivate(), keys.getPublic(), CATokenInfo.SIGALG_SHA256_WITH_ECDSA, true);
+        //System.out.println(cert);
+        assertNotNull("cert must not be null", cert);
+        String b64cert = new String(Base64.encode(cert.getEncoded()));
+        assertNotNull("b64cert cannot be null", b64cert);
+        //System.out.println(b64cert);
+        log.debug("<test03GenKeysECDSA()");
+    }
+
+    public void test04GenKeysECDSANist() throws Exception {
+        log.debug(">test04GenKeysECDSANist()");
+        KeyPair keys = KeyTools.genKeys("secp384r1", CATokenConstants.KEYALGORITHM_ECDSA);
+        assertNotNull("keys must not be null", keys);
+        String b64private = new String(Base64.encode(keys.getPrivate().getEncoded()));
+        assertNotNull("b64private must not be null", b64private);
+        //System.out.println(b64private);
+        X509Certificate cert = CertTools.genSelfCert("C=SE,O=Test,CN=Test", 365, null, keys.getPrivate(), keys.getPublic(), CATokenInfo.SIGALG_SHA256_WITH_ECDSA, true);
+        //System.out.println(cert);
+        assertNotNull("cert must not be null", cert);
+        String b64cert = new String(Base64.encode(cert.getEncoded()));
+        assertNotNull("b64cert cannot be null", b64cert);
+        System.out.println(b64cert);
+        log.debug("<test04GenKeysECDSANist()");
+    }
+    
+    public void test05GenKeysECDSAImplicitlyCA() throws Exception {
+        log.debug(">test05GenKeysECDSAImplicitlyCA()");
+        KeyPair keys = KeyTools.genKeys("implicitlyCA", CATokenConstants.KEYALGORITHM_ECDSA);
+        assertNotNull("keys must not be null", keys);
+        String b64private = new String(Base64.encode(keys.getPrivate().getEncoded()));
+        assertNotNull("b64private must not be null", b64private);
+        //System.out.println(b64private);
+        X509Certificate cert = CertTools.genSelfCert("C=SE,O=Test,CN=Test", 365, null, keys.getPrivate(), keys.getPublic(), CATokenInfo.SIGALG_SHA256_WITH_ECDSA, true);
+        //System.out.println(cert);
+        assertNotNull("cert must not be null", cert);
+        String b64cert = new String(Base64.encode(cert.getEncoded()));
+        assertNotNull("b64cert cannot be null", b64cert);
+        System.out.println(b64cert);
+        log.debug("<test05GenKeysECDSAImplicitlyCA()");
+    }
 }

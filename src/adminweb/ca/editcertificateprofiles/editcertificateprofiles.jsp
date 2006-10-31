@@ -119,7 +119,7 @@
 
   String[] keyusagetexts = CertificateView.KEYUSAGETEXTS;
   String[] extendedkeyusagetexts = CertificateView.EXTENDEDKEYUSAGETEXTS;
-int[]    defaultavailablebitlengths = {512,1024,2048,4096};  
+int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
 %>
  
 <head>

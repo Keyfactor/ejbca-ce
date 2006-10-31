@@ -56,6 +56,7 @@ import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
+import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
@@ -91,7 +92,7 @@ import org.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.8 2006-10-11 14:48:04 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.9 2006-10-31 08:24:10 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(CertReqServlet.class);
@@ -164,8 +165,10 @@ public class CertReqServlet extends HttpServlet {
             String username = request.getParameter("user");
             String password = request.getParameter("password");
             String keylengthstring = request.getParameter("keylength");
+            String keyalgstring = request.getParameter("keyalg");
             String openvpn = request.getParameter("openvpn");
-			int keylength = 1024;
+			String keylength = "1024";
+			String keyalg = CATokenConstants.KEYALGORITHM_RSA;
 			
             int resulttype = 0;
             if(request.getParameter("resulttype") != null)
@@ -180,7 +183,10 @@ public class CertReqServlet extends HttpServlet {
             }
 
             if (keylengthstring != null) {
-                keylength = Integer.parseInt(keylengthstring);
+                keylength = keylengthstring;
+            }
+            if (keyalgstring != null) {
+                keyalg = keyalgstring;
             }
 
             Admin administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
@@ -211,18 +217,18 @@ public class CertReqServlet extends HttpServlet {
             // get users Token Type.
             tokentype = data.getTokenType();
             if(tokentype == SecConst.TOKEN_SOFT_P12){
-              KeyStore ks = generateToken(administrator, username, password, data.getCAId(), keylength, false, loadkeys, savekeys, data.getEndEntityProfileId());
+              KeyStore ks = generateToken(administrator, username, password, data.getCAId(), keylength, keyalg, false, loadkeys, savekeys, data.getEndEntityProfileId());
               if (StringUtils.equals(openvpn, "on")) {            	  
                   sendOpenVPNToken(ks, username, password, response);
               }
               sendP12Token(ks, username, password, response);
             }
             if(tokentype == SecConst.TOKEN_SOFT_JKS){
-              KeyStore ks = generateToken(administrator, username, password, data.getCAId(), keylength, true, loadkeys, savekeys, data.getEndEntityProfileId());
+              KeyStore ks = generateToken(administrator, username, password, data.getCAId(), keylength, keyalg, true, loadkeys, savekeys, data.getEndEntityProfileId());
               sendJKSToken(ks, username, password, response);
             }
             if(tokentype == SecConst.TOKEN_SOFT_PEM){
-              KeyStore ks = generateToken(administrator, username, password, data.getCAId(), keylength, false, loadkeys, savekeys, data.getEndEntityProfileId());
+              KeyStore ks = generateToken(administrator, username, password, data.getCAId(), keylength, keyalg, false, loadkeys, savekeys, data.getEndEntityProfileId());
               sendPEMTokens(ks, username, password, response);
             }
             if(tokentype == SecConst.TOKEN_SOFT_BROWSERGEN){
@@ -575,7 +581,7 @@ public class CertReqServlet extends HttpServlet {
     }
 
 
-    private KeyStore generateToken(Admin administrator, String username, String password, int caid, int keylength, boolean createJKS, 
+    private KeyStore generateToken(Admin administrator, String username, String password, int caid, String keylength, String keyalg, boolean createJKS, 
     		                       boolean loadkeys, boolean savekeys, int endEntityProfileId)
        throws Exception{
     	
@@ -600,7 +606,7 @@ public class CertReqServlet extends HttpServlet {
          }
          else{
            // generate new keys.
-           rsaKeys = KeyTools.genKeys(keylength);
+           rsaKeys = KeyTools.genKeys(keylength, keyalg);
          }
          
          ISignSessionRemote signsession = signsessionhome.create();

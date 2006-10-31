@@ -16,16 +16,19 @@
                      <option value="<%= SoftCATokenInfo.AVAILABLE_SIGALGS[i]%>"><%= SoftCATokenInfo.AVAILABLE_SIGALGS[i] %></option>  
                 <% } %> 
 	 </select>
-           <% } %> 
+           <% } %>
       </td>
     </tr>
+    <%
+    if (!editca || (softcatokeninfo.getSignatureAlgorithm().indexOf("RSA") != -1) ) {
+    %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("KEYSIZE") %>
       </td>
       <td width="50%"> 
            <% if(editca){
-                out.write(Integer.toString(softcatokeninfo.getKeySize()));
+                out.write(softcatokeninfo.getSignKeySpec());
               }else{%>
         <select name="<%=SELECT_KEYSIZE %>" size="1" >                
                 <% for(int i=0; i < AVAILABLEKEYSIZES.length; i++){ %>
@@ -35,4 +38,21 @@
            <% } %> 
       </td>
     </tr>
+    <% } %>
+    <%
+    if (!editca || (softcatokeninfo.getSignatureAlgorithm().indexOf("ECDSA") != -1) ) {
+    %>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("KEYSPEC") %>
+      </td>
+      <td width="50%"> 
+           <% if(editca){
+                out.write(softcatokeninfo.getSignKeySpec());
+              }else{%>
+                <input type="text" name="<%=TEXTFIELD_KEYSPEC%>" size="40" maxlength="255">              
+           <% } %> 
+      </td>
+    </tr>
+    <% } %>
  

@@ -13,7 +13,8 @@ import javax.xml.bind.annotation.XmlType;
     "arg0",
     "arg1",
     "arg2",
-    "arg3"
+    "arg3",
+    "arg4"
 })
 public class Pkcs12Req {
 
@@ -24,7 +25,9 @@ public class Pkcs12Req {
     @XmlElement(name = "arg2", namespace = "")
     private String arg2;
     @XmlElement(name = "arg3", namespace = "")
-    private int arg3;
+    private String arg3;
+    @XmlElement(name = "arg4", namespace = "")
+    private String arg4;
 
     /**
      * 
@@ -83,9 +86,9 @@ public class Pkcs12Req {
     /**
      * 
      * @return
-     *     returns int
+     *     returns String
      */
-    public int getArg3() {
+    public String getArg3() {
         return this.arg3;
     }
 
@@ -94,8 +97,26 @@ public class Pkcs12Req {
      * @param arg3
      *     the value for the arg3 property
      */
-    public void setArg3(int arg3) {
+    public void setArg3(String arg3) {
         this.arg3 = arg3;
+    }
+
+    /**
+     * 
+     * @return
+     *     returns String
+     */
+    public String getArg4() {
+        return this.arg4;
+    }
+
+    /**
+     * 
+     * @param arg4
+     *     the value for the arg4 property
+     */
+    public void setArg4(String arg4) {
+        this.arg4 = arg4;
     }
 
 }

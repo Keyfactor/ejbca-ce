@@ -46,7 +46,7 @@ import org.ejbca.util.Base64PutHashMap;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.9 2006-10-07 14:10:31 anatom Exp $
+ * @version $Id: CADataBean.java,v 1.10 2006-10-31 08:15:57 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a publisher"
@@ -196,8 +196,11 @@ public abstract class CADataBean extends BaseEntityBean {
             }
             // Compare old version with current version and save the data if there has been a change
             if ( (ca != null) && (Float.compare(oldversion, ca.getVersion()) != 0) ) {
+            	// Make sure we upgrade the CAToken as well, if needed
+                ca.getCAToken();
                 setCA(ca);
             }
+            // We have to do the same if CAToken was upgraded
             // Add CA to the cache
             CACacheManager.instance().addCA(getCaId().intValue(), ca);
         }

@@ -24,20 +24,22 @@ import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
+import org.ejbca.util.KeyTools;
 
 /**
  * Request a keystore given a pkcs12
  *
- * @version $Id: PKCS12ReqCommand.java,v 1.2 2006-10-08 22:53:26 herrvendil Exp $
+ * @version $Id: PKCS12ReqCommand.java,v 1.3 2006-10-31 08:21:28 anatom Exp $
  */
 public class PKCS12ReqCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
 	
 	private static final int ARG_USERNAME                 = 1;
 	private static final int ARG_PASSWORD                 = 2;
-	private static final int ARG_KEYSIZE                  = 3;
-	private static final int ARG_HARDTOKENSN              = 4;
-	private static final int ARG_OUTPUTPATH               = 5;
+	private static final int ARG_KEYSPEC                  = 3;
+	private static final int ARG_KEYALG                   = 4;
+	private static final int ARG_HARDTOKENSN              = 5;
+	private static final int ARG_OUTPUTPATH               = 6;
 	
     /**
      * Creates a new instance of PKCS12ReqCommand
@@ -65,7 +67,8 @@ public class PKCS12ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
             
             String username = args[ARG_USERNAME];            
             String password = args[ARG_PASSWORD];
-            int keysize = getKeySize(args[ARG_KEYSIZE]);
+            String keyspec = args[ARG_KEYSPEC];
+            String keyalg = args[ARG_KEYALG];
             String hardtokensn = getHardTokenSN(args[ARG_HARDTOKENSN]);
             
             String outputPath = null;
@@ -74,7 +77,7 @@ public class PKCS12ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
             }
             
             try{
-            	KeyStore result = getEjbcaRAWS().pkcs12Req(username,password,hardtokensn,keysize);
+            	KeyStore result = getEjbcaRAWS().pkcs12Req(username,password,hardtokensn,keyspec,keyalg);
             	
             	if(result==null){
             		getPrintStream().println("No keystore could be generated for user, check server logs for error.");
@@ -100,29 +103,6 @@ public class PKCS12ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
         }
     }
 
-
-
-	
-
-	private int getKeySize(String keysize) {
-		if(keysize.equals("512")){
-			return 512;
-		}
-		if(keysize.equals("1024")){
-			return 1024;
-		}
-		if(keysize.equals("2048")){
-			return 2048;
-		}
-		if(keysize.equals("4096")){
-			return 4096;
-		}		
-		getPrintStream().println("Error in keysize : " + keysize);
-		usage();
-		System.exit(-1);
-		
-		return 0;
-	}
 
 	private String getHardTokenSN(String hardtokensn) {
 		if(hardtokensn.equalsIgnoreCase("NONE")){
@@ -156,7 +136,7 @@ public class PKCS12ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
 
 	protected void usage() {
 		getPrintStream().println("Command used to generate a users keystore");
-		getPrintStream().println("Usage : pkcs12req <username> <password>  <keysize (512|1024|2048|4096)> <hardtokensn (or NONE)> <outputpath (optional)> \n\n");                
+		getPrintStream().println("Usage : pkcs12req <username> <password>  <keyspec (512|1024|2048|4096|prime192v1 etc)> <keyalg (RSA|ECDSA)> <hardtokensn (or NONE)> <outputpath (optional)> \n\n");                
    }
 
 

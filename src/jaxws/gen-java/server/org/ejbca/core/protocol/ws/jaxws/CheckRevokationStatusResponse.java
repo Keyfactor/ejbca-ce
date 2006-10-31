@@ -6,6 +6,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import org.ejbca.core.protocol.ws.objects.RevokeStatus;
 
 @XmlRootElement(name = "checkRevokationStatusResponse", namespace = "http://ws.protocol.core.ejbca.org/")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -13,14 +14,14 @@ import javax.xml.bind.annotation.XmlType;
 public class CheckRevokationStatusResponse {
 
     @XmlElement(name = "return", namespace = "")
-    private org.ejbca.core.protocol.ws.objects.RevokeStatus _return;
+    private RevokeStatus _return;
 
     /**
      * 
      * @return
      *     returns RevokeStatus
      */
-    public org.ejbca.core.protocol.ws.objects.RevokeStatus get_return() {
+    public RevokeStatus get_return() {
         return this._return;
     }
 
@@ -29,7 +30,7 @@ public class CheckRevokationStatusResponse {
      * @param _return
      *     the value for the _return property
      */
-    public void set_return(org.ejbca.core.protocol.ws.objects.RevokeStatus _return) {
+    public void set_return(RevokeStatus _return) {
         this._return = _return;
     }
 

@@ -50,6 +50,7 @@ import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserAdminConstants;
@@ -66,7 +67,7 @@ import org.ejbca.util.P12toPEM;
  * This class generates keys and request certificates for all users with status NEW. The result is
  * generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.7 2006-09-22 13:05:10 herrvendil Exp $
+ * @version $Id: BatchMakeP12.java,v 1.8 2006-10-31 08:24:10 anatom Exp $
  */
 public class BatchMakeP12 {
     /**
@@ -219,7 +220,7 @@ public class BatchMakeP12 {
     } // storeKeyStore
 
     /**
-     * Creates files for a user, sends request to CA, receives reploy and creates P12.
+     * Creates files for a user, sends request to CA, receives reply and creates P12.
      *
      * @param username  username
      * @param password  user's password
@@ -255,8 +256,14 @@ public class BatchMakeP12 {
           
           
         }else{       
-          cert = (X509Certificate) ss.createCertificate(administrator, username,
-                password, rsaKeys.getPublic());
+        	// Create self signed certificate, because ECDSA keys are not serializable
+        	String sigAlg = CATokenConstants.SIGALG_SHA1_WITH_RSA;
+        	if (props.getKeyAlg().equals("ECDSA")) {
+        		sigAlg = CATokenConstants.SIGALG_SHA256_WITH_ECDSA;
+        	}
+        	X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, rsaKeys.getPrivate(), rsaKeys.getPublic(), sigAlg, false);
+        	cert = (X509Certificate) ss.createCertificate(administrator, username,
+        			password, selfcert);
         }
 
         //System.out.println("issuer " + CertTools.getIssuerDN(cert) + ", " + cert.getClass().getName());
@@ -339,7 +346,7 @@ public class BatchMakeP12 {
                 throw new Exception("No Key Recovery Data available for user, " + data.getUsername() + " can not be generated.");
             }
         } else {
-            rsaKeys = KeyTools.genKeys(props.getKeySize());
+            rsaKeys = KeyTools.genKeys(props.getKeySpec(), props.getKeyAlg());
         }
         // Get certificate for user and create P12
         if (rsaKeys != null) {

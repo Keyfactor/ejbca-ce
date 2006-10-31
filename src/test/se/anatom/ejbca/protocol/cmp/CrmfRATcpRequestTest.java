@@ -73,6 +73,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -106,6 +107,8 @@ public class CrmfRATcpRequestTest extends TestCase {
 	
     private static Logger log = Logger.getLogger(CrmfRATcpRequestTest.class);
 
+    private static final String PBEPASSWORD = "password";
+    
     private static final int PORT_NUMBER = 5587;
     private static final String CMP_HOST = "127.0.0.1";
     
@@ -126,13 +129,20 @@ public class CrmfRATcpRequestTest extends TestCase {
         Object obj = ctx.lookup("CAAdminSession");
         ICAAdminSessionHome cahome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICAAdminSessionHome.class);
         ICAAdminSessionRemote casession = cahome.create();
-        Collection caids = casession.getAvailableCAs(admin);
-        Iterator iter = caids.iterator();
-        if (iter.hasNext()) {
-            caid = ((Integer) iter.next()).intValue();
+        // Try to use AdminCA1 if it exists
+        CAInfo adminca1 = casession.getCAInfo(admin, "AdminCA1");
+        if (adminca1 == null) {
+            Collection caids = casession.getAvailableCAs(admin);
+            Iterator iter = caids.iterator();
+            while (iter.hasNext()) {
+            	caid = ((Integer) iter.next()).intValue();
+            }        	
         } else {
-            assertTrue("No active CA! Must have at least one active CA to run tests!", false);
+        	caid = adminca1.getCAId();
         }
+        if (caid == 0) {
+        	assertTrue("No active CA! Must have at least one active CA to run tests!", false);
+        }        	
         CAInfo cainfo = casession.getCAInfo(admin, caid);
         Collection certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
@@ -162,7 +172,7 @@ public class CrmfRATcpRequestTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		if (keys == null) {
-			keys = KeyTools.genKeys(1024);
+			keys = KeyTools.genKeys("512", CATokenConstants.KEYALGORITHM_RSA);
 		}
 	}
 	
@@ -374,7 +384,7 @@ public class CrmfRATcpRequestTest extends TestCase {
 		DERInteger iteration = new DERInteger(iterationCount);
 		// HMAC/SHA1
 		AlgorithmIdentifier macAlg = new AlgorithmIdentifier("1.2.840.113549.2.7");
-		byte[] salt = "foo123".getBytes();
+		byte[] salt = PBEPASSWORD.getBytes();
 		DEROctetString derSalt = new DEROctetString(salt);
 		
 		// Create the new protected return message

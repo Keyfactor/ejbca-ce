@@ -79,7 +79,7 @@ class Test {
 
 /**
  * @author lars
- * @version $Id: HSMKeyTool.java,v 1.6 2006-09-11 09:12:21 primelars Exp $
+ * @version $Id: HSMKeyTool.java,v 1.7 2006-10-31 08:24:11 anatom Exp $
  *
  */
 public class HSMKeyTool {
@@ -137,7 +137,7 @@ public class HSMKeyTool {
         cg.setNotBefore(firstDate);
         cg.setNotAfter(lastDate);
         cg.setIssuerDN(new X500Principal(myname));
-        return cg.generateX509Certificate(keyPair.getPrivate(), providerName);
+        return cg.generate(keyPair.getPrivate(), providerName);
     }
     private static KeyPair generate( final String provider,
                                      final String algName,

@@ -92,6 +92,8 @@ import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.OCSPException;
+import org.bouncycastle.x509.X509V2CRLGenerator;
+import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.ejbca.core.ejb.ca.sign.SernoGenerator;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.NotSupportedException;
@@ -118,14 +120,14 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.29 2006-10-23 12:02:06 anatom Exp $
+ * @version $Id: X509CA.java,v 1.30 2006-10-31 08:15:56 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
     private static final Logger log = Logger.getLogger(X509CA.class);
 
     // Default Values
-    public static final float LATEST_VERSION = 6;
+    public static final float LATEST_VERSION = 8;
 
     private byte[]  keyId = new byte[] { 1, 2, 3, 4, 5 };
     
@@ -307,7 +309,7 @@ public class X509CA extends CA implements Serializable {
                 lastDate = cacert.getNotAfter();
             }            
         }
-        ExtendedX509V3CertificateGenerator certgen = new ExtendedX509V3CertificateGenerator();
+        X509V3CertificateGenerator certgen = new X509V3CertificateGenerator();
         // Serialnumber is random bits, where random generator is initialized by the
         // serno generator.
         BigInteger serno = SernoGenerator.instance().getSerno();
@@ -585,7 +587,7 @@ public class X509CA extends CA implements Serializable {
 		          
          X509Certificate cert;
          try{
-           cert = certgen.generateX509Certificate(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), 
+           cert = certgen.generate(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), 
                                             getCAToken().getProvider());
          }catch(CATokenOfflineException e){
              log.debug("X509CA : CA Token STATUS OFFLINE: ", e);
@@ -608,7 +610,7 @@ public class X509CA extends CA implements Serializable {
 
         // crlperiod is hours = crlperiod*60*60*1000 milliseconds
         nextUpdate.setTime(nextUpdate.getTime() + (getCRLPeriod() * (long)(60 * 60 * 1000)));
-        ExtendedX509V2CRLGenerator crlgen = new ExtendedX509V2CRLGenerator();
+        X509V2CRLGenerator crlgen = new X509V2CRLGenerator();
         crlgen.setThisUpdate(thisUpdate);
         crlgen.setNextUpdate(nextUpdate);
         crlgen.setSignatureAlgorithm(sigAlg);
@@ -637,7 +639,7 @@ public class X509CA extends CA implements Serializable {
         }
         
         X509CRL crl;
-        crl = crlgen.generateX509CRL(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CRLSIGN),getCAToken().getProvider());
+        crl = crlgen.generate(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CRLSIGN),getCAToken().getProvider());
         // Verify before sending back
         crl.verify(getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CRLSIGN));
 

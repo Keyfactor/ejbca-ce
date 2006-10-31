@@ -26,6 +26,7 @@ import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
+import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.util.CertTools;
@@ -35,7 +36,7 @@ import org.ejbca.util.StringTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.5 2006-08-09 07:29:50 herrvendil Exp $
+ * @version $Id: CaInitCommand.java,v 1.6 2006-10-31 08:24:11 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
@@ -57,9 +58,11 @@ public class CaInitCommand extends BaseCaAdminCommand {
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         // Create new CA.
         if (args.length < 6) {
-           String msg = "Used to create a Root CA.";
-           msg += "\nUsage: CA init <caname> <dn> <keysize> <validity-days> <policyID>";
+           String msg = "Used to create a Root CA using RSA keys.";
+           msg += "\nUsage: CA init <caname> <dn> <keyspec> <validity-days> <policyID>";
+           msg += "\nkeyspec is size of RSA keys (1024, 2048, 4096).";
            msg += "\npolicyId can be 'null' if no Certificate Policy extension should be present, or\nobjectID as '2.5.29.32.0'.";
+           msg += "\ndefault key type is RSA and default sign algorithm is SHA1WithRSA.";
            throw new IllegalAdminCommandException(msg);
         }
             
@@ -67,7 +70,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             String caname = args[1];
             String dn = CertTools.stringToBCDNString(args[2]);
             dn = StringTools.strip(dn);
-            int keysize = Integer.parseInt(args[3]);
+            String keyspec = args[3];
             int validity = Integer.parseInt(args[4]);
             String policyId = args[5];
             if (policyId.equals("null"))
@@ -79,25 +82,36 @@ public class CaInitCommand extends BaseCaAdminCommand {
             getOutputStream().println("Generating rootCA keystore:");
             getOutputStream().println("CA name: "+caname);
             getOutputStream().println("DN: "+dn);
-            getOutputStream().println("Keysize: "+keysize);
+            getOutputStream().println("Keysize: "+keyspec);
             getOutputStream().println("Validity (days): "+validity);
             getOutputStream().println("Policy ID: "+policyId);
                             
             initAuthorizationModule(dn.hashCode());
 
-                       
+            String keytype = CATokenInfo.KEYALGORITHM_RSA;
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-            catokeninfo.setKeySize(keysize);
-            catokeninfo.setAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
+            catokeninfo.setSignKeySpec(keyspec);
+            catokeninfo.setSignKeyAlgorithm(keytype);
             catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
+            catokeninfo.setEncKeySpec(keyspec);
+            catokeninfo.setEncKeyAlgorithm(keytype);
+            catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             ArrayList extendedcaservices = new ArrayList();
+            String keySpec = keyspec;
+            if (keytype.equals(CATokenConstants.KEYALGORITHM_RSA)) {
+            	// Never use larger keys than 2048 bit RSA for OCSP signing
+            	int len = Integer.parseInt(keySpec);
+            	if (len > 2048) {
+            		keySpec = "2048";				 
+            	}
+            }
             extendedcaservices.add(
               new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
                                     "CN=OCSPSignerCertificate, " + dn,
                                     "",
-                                    2048,
-                                    OCSPCAServiceInfo.KEYALGORITHM_RSA));
+                                    keySpec,
+                                    keytype));
               
             
             X509CAInfo cainfo = new X509CAInfo(dn, 

@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
@@ -41,7 +42,6 @@ import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.protocol.ExtendedPKCS10CertificationRequest;
 import org.ejbca.core.protocol.IRequestMessage;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
@@ -54,7 +54,7 @@ import org.ejbca.util.CertTools;
  * A class help administrating CAs. 
  *
  * @author  TomSelleck
- * @version $Id: CADataHandler.java,v 1.2 2006-07-20 17:48:44 herrvendil Exp $
+ * @version $Id: CADataHandler.java,v 1.3 2006-10-31 08:24:11 anatom Exp $
  */
 public class CADataHandler implements Serializable {
 
@@ -157,7 +157,7 @@ public class CADataHandler implements Serializable {
   /**
    *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */  
-  public ExtendedPKCS10CertificationRequest  makeRequest(int caid, Collection cachain, boolean setstatustowaiting) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
+  public PKCS10CertificationRequest  makeRequest(int caid, Collection cachain, boolean setstatustowaiting) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
   	
 	  PKCS10RequestMessage result = (PKCS10RequestMessage) caadminsession.makeRequest(administrator, caid,cachain,setstatustowaiting);
 	  return result.getCertificationRequest();    

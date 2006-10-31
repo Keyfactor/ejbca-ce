@@ -34,14 +34,17 @@ import org.ejbca.util.KeyTools;
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: SoftCAToken.java,v 1.3 2006-09-29 08:25:11 anatom Exp $
+ * @version $Id: SoftCAToken.java,v 1.4 2006-10-31 08:19:41 anatom Exp $
  */
 public class SoftCAToken extends CAToken implements java.io.Serializable{
 
     /** Log4j instance */
     private static Logger log = Logger.getLogger(SoftCAToken.class);
 
-    public static final float LATEST_VERSION = 1; 
+    /** When upgradeing this version, you must up the version of the CA as well, 
+     * otherwise the upgraded CA token will not be stored in the database.
+     */
+    public static final float LATEST_VERSION = 3; 
     
     private static final String  PROVIDER = "BC";
 
@@ -54,10 +57,17 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
     private static final String PRIVATESIGNKEYALIAS = "privatesignkeyalias";
     private static final String PRIVATEDECKEYALIAS = "privatedeckeyalias";
     
-    protected static final String KEYSIZE       = "KEYSIZE";
+    protected static final String SIGNKEYSPEC       = "SIGNKEYSPEC";
+    protected static final String ENCKEYSPEC        = "ENCKEYSPEC";
+    protected static final String SIGNKEYALGORITHM  = "SIGNKEYALGORITHM";
+    protected static final String ENCKEYALGORITHM   = "ENCKEYALGORITHM";
+    protected static final String KEYSTORE          = "KEYSTORE";
+
+    /** Old provided for upgrade purposes from 3.3. -> 3.4 */
     protected static final String KEYALGORITHM  = "KEYALGORITHM";
-    protected static final String KEYSTORE      = "KEYSTORE";
-    
+    /** Old provided for upgrade purposes from 3.3. -> 3.4 */
+    protected static final String KEYSIZE       = "KEYSIZE";
+
     public SoftCAToken(){
       data = new HashMap();   
       data.put(CATOKENTYPE, new Integer(CATokenInfo.CATOKENTYPE_P12));
@@ -99,30 +109,35 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
 	   String keystorepass = ServiceLocator.getInstance().getString("java:comp/env/keyStorePass");      
        // Currently only RSA keys are supported
        SoftCATokenInfo info = (SoftCATokenInfo) catokeninfo;       
-       int keysize = info.getKeySize();  
+       String signkeyspec = info.getSignKeySpec();  
        KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
        keystore.load(null, null);
        
        // generate sign keys.
-       KeyPair signkeys = KeyTools.genKeys(keysize);
+       KeyPair signkeys = KeyTools.genKeys(signkeyspec, info.getSignKeyAlgorithm());
        // generate dummy certificate
        Certificate[] certchain = new Certificate[1];
-       certchain[0] = CertTools.genSelfCert("CN=dummy", 36500, null, signkeys.getPrivate(), signkeys.getPublic(), true);
+       certchain[0] = CertTools.genSelfCert("CN=dummy", 36500, null, signkeys.getPrivate(), signkeys.getPublic(), info.getSignatureAlgorithm(), true);
        
        keystore.setKeyEntry(PRIVATESIGNKEYALIAS,signkeys.getPrivate(),null, certchain);             
        
        // generate enc keys.  
-       KeyPair enckeys = KeyTools.genKeys(keysize);
+       // Encryption keys must be RSA still
+       String enckeyspec = info.getEncKeySpec();  
+       KeyPair enckeys = KeyTools.genKeys(enckeyspec, info.getEncKeyAlgorithm());
        // generate dummy certificate
-       certchain[0] = CertTools.genSelfCert("CN=dummy2", 36500, null, enckeys.getPrivate(), enckeys.getPublic(), true);
+       certchain[0] = CertTools.genSelfCert("CN=dummy2", 36500, null, enckeys.getPrivate(), enckeys.getPublic(), info.getEncryptionAlgorithm(), true);
        this.encCert = certchain[0]; 
        keystore.setKeyEntry(PRIVATEDECKEYALIAS,enckeys.getPrivate(),null,certchain);              
        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
        keystore.store(baos, keystorepass.toCharArray());
        data.put(KEYSTORE, new String(Base64.encode(baos.toByteArray())));
-       data.put(KEYSIZE, new Integer(keysize));
-       data.put(KEYALGORITHM, info.getAlgorithm());
+       data.put(SIGNKEYSPEC, signkeyspec);
+       data.put(SIGNKEYALGORITHM, info.getSignKeyAlgorithm());
        data.put(SIGNATUREALGORITHM, info.getSignatureAlgorithm());
+       data.put(ENCKEYSPEC, enckeyspec);
+       data.put(ENCKEYALGORITHM, info.getEncKeyAlgorithm());
+       data.put(ENCRYPTIONALGORITHM, info.getEncryptionAlgorithm());
        // initalize CAToken
        this.publicSignKey  = signkeys.getPublic();
        this.privateSignKey = signkeys.getPrivate();
@@ -146,27 +161,42 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
        KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
        keystore.load(null,null);
      
+       String sigAlg = CATokenInfo.SIGALG_SHA1_WITH_RSA; 
+       String keyAlg  = SoftCATokenInfo.KEYALGORITHM_RSA;
+       if ( !(p12publickey instanceof RSAPublicKey) ) {
+    	   sigAlg = CATokenInfo.SIGALG_SHA256_WITH_ECDSA;
+    	   keyAlg = CATokenInfo.KEYALGORITHM_ECDSA;
+       }
        // import sign keys.
-       int keysize = ((RSAPublicKey) p12publickey).getModulus().bitLength();
-       log.debug("KeySize="+keysize);
+       String keyspec = Integer.toString( ((RSAPublicKey) p12publickey).getModulus().bitLength() );
+       log.debug("KeySize="+keyspec);
        // generate dummy certificate
        Certificate[] certchain = new Certificate[1];
-       certchain[0] = CertTools.genSelfCert("CN=dummy", 36500, null, p12privatekey, p12publickey, true);
+       certchain[0] = CertTools.genSelfCert("CN=dummy", 36500, null, p12privatekey, p12publickey, sigAlg, true);
        keystore.setKeyEntry(PRIVATESIGNKEYALIAS, p12privatekey,null,certchain);       
-     
+       data.put(SIGNKEYSPEC, keyspec);
+       data.put(SIGNKEYALGORITHM, keyAlg);
+       data.put(SIGNATUREALGORITHM, sigAlg);
+
        // generate enc keys.  
-       KeyPair enckeys = KeyTools.genKeys(keysize);
+       // Encryption keys must be RSA still
+       if (sigAlg.equals(CATokenInfo.SIGALG_SHA256_WITH_ECDSA)) {
+           sigAlg = CATokenInfo.SIGALG_SHA1_WITH_RSA;
+           keyAlg = CATokenInfo.KEYALGORITHM_RSA;
+           keyspec = "2048";
+       }
+       KeyPair enckeys = KeyTools.genKeys(keyspec, keyAlg);
        // generate dummy certificate
-       certchain[0] = CertTools.genSelfCert("CN=dummy2", 36500, null, enckeys.getPrivate(), enckeys.getPublic(), true);
+       certchain[0] = CertTools.genSelfCert("CN=dummy2", 36500, null, enckeys.getPrivate(), enckeys.getPublic(), sigAlg, true);
        this.encCert = certchain[0]; 
        keystore.setKeyEntry(PRIVATEDECKEYALIAS,enckeys.getPrivate(),null,certchain);              
      
        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
        keystore.store(baos, keystorepass.toCharArray());
        data.put(KEYSTORE, new String(Base64.encode(baos.toByteArray())));
-       data.put(KEYSIZE, new Integer(keysize));
-       data.put(KEYALGORITHM, SoftCATokenInfo.KEYALGORITHM_RSA);
-       data.put(SIGNATUREALGORITHM, CATokenInfo.SIGALG_SHA1_WITH_RSA);
+       data.put(ENCKEYSPEC, keyspec);
+       data.put(ENCKEYALGORITHM, keyAlg);
+       data.put(ENCRYPTIONALGORITHM, sigAlg);
        
        // initalize CAToken
        this.publicSignKey  = p12publickey;
@@ -179,10 +209,14 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
    public CATokenInfo getCATokenInfo(){
      SoftCATokenInfo info = new SoftCATokenInfo();
      
-     info.setKeySize(((Integer) data.get(KEYSIZE)).intValue());
-     info.setAlgorithm((String) data.get(KEYALGORITHM));  
+     info.setSignKeySpec((String) data.get(SIGNKEYSPEC));
+     info.setSignKeyAlgorithm((String) data.get(SIGNKEYALGORITHM));  
      info.setSignatureAlgorithm((String) data.get(SIGNATUREALGORITHM));
-        
+     
+     info.setEncKeySpec((String) data.get(ENCKEYSPEC));
+     info.setEncKeyAlgorithm((String) data.get(ENCKEYALGORITHM));  
+     info.setEncryptionAlgorithm((String) data.get(ENCRYPTIONALGORITHM));
+     
      return info;
    }
    
@@ -236,7 +270,22 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
     public void upgrade(){
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
     		// New version of the class, upgrade
-    		
+            log.info("upgrading softCAToken with version "+getVersion());
+            if(data.get(SIGNKEYALGORITHM) == null) {
+            	String oldKeyAlg = (String)data.get(KEYALGORITHM);            	
+                data.put(SIGNKEYALGORITHM, oldKeyAlg);
+                data.put(ENCKEYALGORITHM, oldKeyAlg);
+            }            
+            if(data.get(SIGNKEYSPEC) == null) {
+            	Integer oldKeySize = ((Integer) data.get(KEYSIZE));
+                data.put(SIGNKEYSPEC, oldKeySize.toString());
+                data.put(ENCKEYSPEC, oldKeySize.toString());
+            }
+            if(data.get(ENCRYPTIONALGORITHM) == null) {
+            	String signAlg = (String)data.get(SIGNATUREALGORITHM);            	
+                data.put(ENCRYPTIONALGORITHM, signAlg);
+            }
+            
     		data.put(VERSION, new Float(LATEST_VERSION));
     	}  
     }

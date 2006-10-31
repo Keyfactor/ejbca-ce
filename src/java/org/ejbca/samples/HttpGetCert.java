@@ -26,7 +26,8 @@ import java.security.KeyPair;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
-import org.ejbca.core.protocol.ExtendedPKCS10CertificationRequest;
+import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
@@ -58,7 +59,7 @@ import org.ejbca.util.KeyTools;
  * </li>
  * </ul>
  *
- * @version $Id: HttpGetCert.java,v 1.1 2006-01-17 20:31:52 anatom Exp $
+ * @version $Id: HttpGetCert.java,v 1.2 2006-10-31 08:21:29 anatom Exp $
  */
 public class HttpGetCert {
     private static Logger log = Logger.getLogger(HttpGetCert.class);
@@ -249,11 +250,11 @@ public class HttpGetCert {
         // Generate keys (512 bit for sample purposes)
         System.out.print("Generating 512 bit RSA keys.");
 
-        KeyPair rsaKeys = KeyTools.genKeys(512);
+        KeyPair rsaKeys = KeyTools.genKeys("512", CATokenConstants.KEYALGORITHM_RSA);
         System.out.println("Keys generated.");
 
         // Generate PKCS10 certificate request
-        ExtendedPKCS10CertificationRequest req = new ExtendedPKCS10CertificationRequest("SHA1WithRSA",
+        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA",
                 CertTools.stringToBcX509Name("C=SE,O=AnaTom,CN=HttpTest"), rsaKeys.getPublic(),
                 null, rsaKeys.getPrivate());
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();

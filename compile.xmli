@@ -328,9 +328,7 @@ protection.certprotect=${protection.certprotect}
 			</filterchain>
 	    </copy>
 		<echo>Ignore warnings about 'Couldn't find file' during preprocessing if you are running jdk 1.4</echo>
-        <copy file="src/java/org/ejbca/core/model/ca/catoken/CATokenInfo.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/catoken/CATokenInfo.java" overwrite="true" failonerror="false"/>
-        <copy file="src/java/org/ejbca/core/model/ca/caadmin/ExtendedX509CertificateObject.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/caadmin/ExtendedX509CertificateObject.java" overwrite="true" failonerror="false"/>
-        <copy file="src/java/org/ejbca/core/model/ca/caadmin/ExtendedX509CRLObject.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/caadmin/ExtendedX509CRLObject.java" overwrite="true" failonerror="false"/>
+        <copy file="src/java/org/ejbca/core/model/ca/catoken/CATokenConstants.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/catoken/CATokenConstants.java" overwrite="true" failonerror="false"/>
         <copy file="src/java/org/ejbca/core/model/ca/caadmin/ExtendedX509Util.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/caadmin/ExtendedX509Util.java" overwrite="true" failonerror="false"/>
         <copy file="src/java/org/ejbca/core/model/ca/caadmin/ExtendedX509V3CertificateGenerator.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/caadmin/ExtendedX509V3CertificateGenerator.java" overwrite="true" failonerror="false"/>
 		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@ejbca.version@" value="${app.version}"/>

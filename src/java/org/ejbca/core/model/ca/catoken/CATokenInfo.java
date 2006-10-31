@@ -18,9 +18,9 @@ import java.io.Serializable;
 /**
  * Holds nonsensitive information about a CAToken.
  *
- * @version $Id: CATokenInfo.java,v 1.2 2006-02-03 12:01:00 anatom Exp $
+ * @version $Id: CATokenInfo.java,v 1.3 2006-10-31 08:19:41 anatom Exp $
  */
-public abstract class CATokenInfo implements Serializable {
+public abstract class CATokenInfo extends CATokenConstants implements Serializable {
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -33,23 +33,28 @@ public abstract class CATokenInfo implements Serializable {
      */
     private static final long serialVersionUID = -8484441028763008079L;
 
-    public static final String SIGALG_SHA1_WITH_RSA = "SHA1WithRSA";
-    public static final String SIGALG_SHA256_WITH_RSA = "SHA256WithRSA";
-   
-    public static final String[] AVAILABLE_SIGALGS = {SIGALG_SHA1_WITH_RSA, SIGALG_SHA256_WITH_RSA};
-    
-    public static final int CATOKENTYPE_P12          = 1;
-    public static final int CATOKENTYPE_HSM          = 2;
-	public static final int CATOKENTYPE_NULL         = 3;
-	
-    private String signaturealgoritm = null;
+	/** Default algorithm i SHA1WithRSA, can be set to any of the supported constants */
+    private String signaturealgoritm = SIGALG_SHA1_WITH_RSA;
+	/** Default algorithm i SHA1WithRSA, can be set to any of the supported constants */
+    private String encryptionalgoritm = SIGALG_SHA1_WITH_RSA;
     
     public CATokenInfo(){}
     
     /**
-     * Method to retrieve which algoritm that should be used for signing of certificates and CRLs.
+     * Method to retrieve which algoritm that should be used for signing certificate.
      */
     public String getSignatureAlgorithm(){ return signaturealgoritm; }
+	/** Default algorithm i SHA1WithRSA, can be set to any of the supported constants 
+	 * @param signaturealgorithm Any of the supported algorithms CATokenInfo.SIGALG_XX 
+	 */
     public void setSignatureAlgorithm(String signaturealgoritm){ this.signaturealgoritm=signaturealgoritm;}
+    /**
+     * Method to retrieve which algoritm that should be used for encryption certificate.
+     */
+    public String getEncryptionAlgorithm(){ return encryptionalgoritm; }
+	/** Default algorithm i SHA1WithRSA, can be set to any of the supported constants 
+	 * @param encryptionalgoritm Any of the supported algorithms CATokenInfo.SIGALG_XX 
+	 */
+    public void setEncryptionAlgorithm(String encryptionalgoritm){ this.encryptionalgoritm=encryptionalgoritm;}
     
 }

@@ -68,6 +68,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -126,13 +127,20 @@ public class CrmfRequestTest extends TestCase {
         Object obj = ctx.lookup("CAAdminSession");
         ICAAdminSessionHome cahome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICAAdminSessionHome.class);
         ICAAdminSessionRemote casession = cahome.create();
-        Collection caids = casession.getAvailableCAs(admin);
-        Iterator iter = caids.iterator();
-        if (iter.hasNext()) {
-            caid = ((Integer) iter.next()).intValue();
+        // Try to use AdminCA1 if it exists
+        CAInfo adminca1 = casession.getCAInfo(admin, "AdminCA1");
+        if (adminca1 == null) {
+            Collection caids = casession.getAvailableCAs(admin);
+            Iterator iter = caids.iterator();
+            while (iter.hasNext()) {
+            	caid = ((Integer) iter.next()).intValue();
+            }        	
         } else {
-            assertTrue("No active CA! Must have at least one active CA to run tests!", false);
+        	caid = adminca1.getCAId();
         }
+        if (caid == 0) {
+        	assertTrue("No active CA! Must have at least one active CA to run tests!", false);
+        }        	
         CAInfo cainfo = casession.getCAInfo(admin, caid);
         Collection certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
@@ -162,7 +170,7 @@ public class CrmfRequestTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		if (keys == null) {
-			keys = KeyTools.genKeys(512);
+			keys = KeyTools.genKeys("512", CATokenConstants.KEYALGORITHM_RSA);
 		}
 	}
 	
@@ -343,7 +351,7 @@ public class CrmfRequestTest extends TestCase {
 				
 		PKIHeader myPKIHeader =
 			new PKIHeader(
-					new DERInteger(1),
+					new DERInteger(2),
 					new GeneralName(new X509Name(userDN)),
 					new GeneralName(new X509Name(cacert.getSubjectDN().getName())));
 		myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));

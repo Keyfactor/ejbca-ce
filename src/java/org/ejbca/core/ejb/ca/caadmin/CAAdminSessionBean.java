@@ -44,6 +44,7 @@ import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 
 import org.bouncycastle.asn1.ASN1Set;
+import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
@@ -73,6 +74,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAService;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.CAToken;
 import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
+import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.catoken.HardCATokenContainer;
@@ -87,7 +89,6 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.core.protocol.ExtendedPKCS10CertificationRequest;
 import org.ejbca.core.protocol.IRequestMessage;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
@@ -100,7 +101,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.26 2006-10-23 13:13:36 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.27 2006-10-31 08:19:41 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -707,7 +708,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
                      req.setAttributes(kName);
                      */
                     
-                    ExtendedPKCS10CertificationRequest req = new ExtendedPKCS10CertificationRequest("SHA1WithRSA",
+                    PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA",
                             CertTools.stringToBcX509Name(ca.getSubjectDN()), ca.getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), attributes, ca.getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), ca.getCAToken().getProvider());
                     
                     // create PKCS10RequestMessage
@@ -1184,6 +1185,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
     /**
      * Method that is used to create a new CA from an imported keystore from another type of CA, for example OpenSSL.
+     * Method only works for RSA keystores.
      *
      * @param admin Administrator
      * @param caname the CA-name (human readable) the newly created CA will get
@@ -1273,8 +1275,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			  new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
 			                        "CN=OCSPSignerCertificate, " + cacertificate.getSubjectDN().toString(),
 			                        "",
-			                        2048,
-			                        OCSPCAServiceInfo.KEYALGORITHM_RSA));
+			                        "2048",
+			                        CATokenConstants.KEYALGORITHM_RSA));
 
 
 			int validity = (int)((cacertificate.getNotAfter().getTime() - cacertificate.getNotBefore().getTime()) / (24*3600*1000));

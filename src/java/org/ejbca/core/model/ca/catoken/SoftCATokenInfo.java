@@ -18,14 +18,14 @@ import java.io.Serializable;
 /**
  * Holds nonsensitive information about a CAToken.
  *
- * @version $Id: SoftCATokenInfo.java,v 1.1 2006-01-17 20:31:51 anatom Exp $
+ * @version $Id: SoftCATokenInfo.java,v 1.2 2006-10-31 08:19:41 anatom Exp $
  */
 public class SoftCATokenInfo extends CATokenInfo implements Serializable {
     
-    public static final String KEYALGORITHM_RSA = "RSA";
-
-    private int keysize = 1024; 
-    private String algorithm = KEYALGORITHM_RSA;
+    private String signkeyspec = "1024"; 
+    private String enckeyspec = "1024"; 
+    private String signalgorithm = KEYALGORITHM_RSA;
+    private String encalgorithm = KEYALGORITHM_RSA;
     
     
     public SoftCATokenInfo(){}
@@ -33,21 +33,38 @@ public class SoftCATokenInfo extends CATokenInfo implements Serializable {
     /**
      * KeySize data is used when generating CAToken.
      */
-    public int getKeySize(){ return keysize; }    
+    public String getSignKeySpec(){ return signkeyspec; }    
     /**
      * KeySize data is used when generating CAToken.
      */
-    public void setKeySize(int keysize){ this.keysize = keysize; }
+    public void setSignKeySpec(String keyspec){ this.signkeyspec = keyspec; }
+    /**
+     * KeySize data is used when generating CAToken.
+     */
+    public String getEncKeySpec(){ return enckeyspec; }    
+    /**
+     * KeySize data is used when generating CAToken.
+     */
+    public void setEncKeySpec(String keyspec){ this.enckeyspec = keyspec; }
+
+    /**
+     * Algorithm indicates which type of key that should be generated.
+     */
+    public String getSignKeyAlgorithm(){ return signalgorithm; }
+    
+    /**
+     * Algorithm indicates which type of key that should be generated.
+     */
+    public void setSignKeyAlgorithm(String algorithm){ this.signalgorithm = algorithm; }
+    /**
+     * Algorithm indicates which type of key that should be generated.
+     * Currently only RSA keys are supported.
+     */
+    public String getEncKeyAlgorithm(){ return encalgorithm; }
     
     /**
      * Algorithm indicates which type of key that should be generated.
      * Currently only RSA keys are supported.
      */
-    public String getAlgorithm(){ return algorithm; }
-    
-    /**
-     * Algorithm indicates which type of key that should be generated.
-     * Currently only RSA keys are supported.
-     */
-    public void setAlgorithm(String algorithm){ this.algorithm = algorithm; }
+    public void setEncKeyAlgorithm(String algorithm){ this.encalgorithm = algorithm; }
 }

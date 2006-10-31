@@ -32,6 +32,8 @@ import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ca.catoken.CATokenConstants;
+import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ca.store.CertificateInfo;
@@ -46,7 +48,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Tests certificate store.
  *
- * @version $Id: TestCertificateData.java,v 1.8 2006-01-26 14:18:20 anatom Exp $
+ * @version $Id: TestCertificateData.java,v 1.9 2006-10-31 08:24:53 anatom Exp $
  */
 public class TestCertificateData extends TestCase {
 
@@ -96,12 +98,12 @@ public class TestCertificateData extends TestCase {
      *
      * @throws Exception error
      */
-    public void test01CreateNewCert() throws Exception {
+    public void test01CreateNewCertRSASha1() throws Exception {
         log.debug(">test01CreateNewCert()");
         // create a key pair and a new self signed certificate
         log.info("Generating a small key pair, might take a few seconds...");
-        keyPair = KeyTools.genKeys(512);
-        cert = CertTools.genSelfCert("C=SE,O=PrimeCA,OU=TestCertificateData,CN=MyNameIsFoo", 24, null, keyPair.getPrivate(), keyPair.getPublic(), false);
+        keyPair = KeyTools.genKeys("512", CATokenConstants.KEYALGORITHM_RSA);
+        cert = CertTools.genSelfCert("C=SE,O=PrimeCA,OU=TestCertificateData,CN=MyNameIsFoo", 24, null, keyPair.getPrivate(), keyPair.getPublic(), CATokenInfo.SIGALG_SHA1_WITH_RSA, false);
         String fp = CertTools.getFingerprintAsString(cert);
 
         ICertificateStoreSessionRemote store = storehome.create();
@@ -378,8 +380,8 @@ public class TestCertificateData extends TestCase {
         log.debug(">test09addCertReqHist()");
         ICertificateStoreSessionRemote store = storehome.create();
                 
-        cert1 = CertTools.genSelfCert("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist1", 24, null, keyPair.getPrivate(), keyPair.getPublic(), false);
-        cert2 = CertTools.genSelfCert("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist2", 24, null, keyPair.getPrivate(), keyPair.getPublic(), false);
+        cert1 = CertTools.genSelfCert("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist1", 24, null, keyPair.getPrivate(), keyPair.getPublic(), CATokenInfo.SIGALG_SHA1_WITH_RSA, false);
+        cert2 = CertTools.genSelfCert("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist2", 24, null, keyPair.getPrivate(), keyPair.getPublic(), CATokenInfo.SIGALG_SHA1_WITH_RSA, false);
         
         UserDataVO userdata = new UserDataVO();
         Random rand = new Random(new Date().getTime() + 4711);        

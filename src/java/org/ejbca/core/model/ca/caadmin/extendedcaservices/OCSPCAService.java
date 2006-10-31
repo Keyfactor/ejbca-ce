@@ -43,13 +43,13 @@ import org.ejbca.util.KeyTools;
 
 /** Handles and maintains the CA-part of the OCSP functionality
  * 
- * @version $Id: OCSPCAService.java,v 1.7 2006-09-29 08:26:01 anatom Exp $
+ * @version $Id: OCSPCAService.java,v 1.8 2006-10-31 08:19:41 anatom Exp $
  */
 public class OCSPCAService extends ExtendedCAService implements java.io.Serializable{
 
     private static Logger m_log = Logger.getLogger(OCSPCAService.class);
 
-    public static final float LATEST_VERSION = 1; 
+    public static final float LATEST_VERSION = 2; 
     
     public static final String SERVICENAME = "OCSPCASERVICE";
     public static final int TYPE = 1; 
@@ -61,13 +61,15 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
     private OCSPCAServiceInfo info = null;  
     
     private static final String OCSPKEYSTORE   = "ocspkeystore"; 
-    private static final String KEYSIZE        = "keysize";
+    private static final String KEYSPEC        = "keyspec";
 	private static final String KEYALGORITHM   = "keyalgorithm";
 	private static final String SUBJECTDN      = "subjectdn";
 	private static final String SUBJECTALTNAME = "subjectaltname";
     
 	private static final String PRIVATESIGNKEYALIAS = "privatesignkeyalias";   
-    
+
+	/** kept for upgrade purposes 3.3 -> 3.4 */
+    private static final String KEYSIZE        = "keysize";
             
     public OCSPCAService(ExtendedCAServiceInfo serviceinfo)  {
       m_log.debug("OCSPCAService : constructor " + serviceinfo.getStatus()); 
@@ -77,7 +79,7 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
       data = new HashMap();   
       data.put(EXTENDEDCASERVICETYPE, new Integer(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE));
 
-	  data.put(KEYSIZE, new Integer(info.getKeySize()));
+	  data.put(KEYSPEC, info.getKeySpec());
 	  data.put(KEYALGORITHM, info.getKeyAlgorithm());
 	  setSubjectDN(info.getSubjectDN());
 	  setSubjectAltName(info.getSubjectAltName());                       
@@ -106,7 +108,7 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
             this.info = new OCSPCAServiceInfo(getStatus(),
                                               getSubjectDN(),
                                               getSubjectAltName(), 
-                                              ((Integer) data.get(KEYSIZE)).intValue(), 
+                                              (String)data.get(KEYSPEC), 
                                               (String) data.get(KEYALGORITHM),
                                               this.ocspcertificatechain);
       
@@ -137,7 +139,7 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 	 KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
 	 keystore.load(null, null);                              
       
-	 KeyPair ocspkeys = KeyTools.genKeys(info.getKeySize());
+	 KeyPair ocspkeys = KeyTools.genKeys(info.getKeySpec(), info.getKeyAlgorithm());
 	   	  
 	 Certificate ocspcertificate =
 	  ca.generateCertificate(new UserDataVO("NOUSERNAME", 	                                          
@@ -166,7 +168,7 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 	 this.info = new OCSPCAServiceInfo(info.getStatus(),
 									  getSubjectDN(),
 									  getSubjectAltName(), 
-									  ((Integer) data.get(KEYSIZE)).intValue(), 
+									  (String)data.get(KEYSPEC), 
 									  (String) data.get(KEYALGORITHM),
 	                                   ocspcertificatechain);
       
@@ -188,7 +190,7 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 	   this.info = new OCSPCAServiceInfo(serviceinfo.getStatus(),
 										  getSubjectDN(),
 										  getSubjectAltName(), 
-										  ((Integer) data.get(KEYSIZE)).intValue(), 
+										  (String) data.get(KEYSPEC), 
 										  (String) data.get(KEYALGORITHM),
 	                                      this.ocspcertificatechain);
 										         									    	 									  
@@ -243,6 +245,12 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 	public void upgrade() {
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
 		  // New version of the class, upgrade
+            m_log.info("upgrading OCSPCAService with version "+getVersion());
+            if(data.get(KEYSPEC) == null) {
+            	// Upgrade old rsa keysize to new general keyspec
+            	Integer oldKeySize = (Integer)data.get(KEYSIZE);            	
+                data.put(KEYSPEC, oldKeySize.toString());
+            }            
 
 		  data.put(VERSION, new Float(LATEST_VERSION));
 		}  		
@@ -256,7 +264,7 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 		  info = new OCSPCAServiceInfo(getStatus(),
 		                              getSubjectDN(),
 		                              getSubjectAltName(), 
-		                              ((Integer) data.get(KEYSIZE)).intValue(), 
+		                              (String) data.get(KEYSPEC), 
 		                              (String) data.get(KEYALGORITHM),
 		                              this.ocspcertificatechain);
 		

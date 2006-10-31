@@ -57,6 +57,7 @@ import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
+import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
@@ -65,7 +66,7 @@ import org.ejbca.util.CertTools;
  * Class to handle SCEP request messages sent to the CA. 
  * TODO: don't forget extensions, e.g. KeyUsage requested by end entity 
  *
- * @version $Id: ScepRequestMessage.java,v 1.6 2006-08-06 15:48:04 anatom Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.7 2006-10-31 08:21:28 anatom Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage {
     /**
@@ -352,7 +353,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
         DERObject derobj = new ASN1InputStream(new ByteArrayInputStream(decBytes)).readObject();
         if (messageType == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
             ASN1Sequence seq = (ASN1Sequence) derobj;
-            pkcs10 = new ExtendedPKCS10CertificationRequest(seq);
+            pkcs10 = new PKCS10CertificationRequest(seq);
             log.debug("Successfully extracted PKCS10.");
             //log.debug("Successfully extracted PKCS10:"+new String(Base64.encode(pkcs10.getEncoded())));
         }

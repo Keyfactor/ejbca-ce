@@ -31,6 +31,7 @@ import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
@@ -57,7 +58,6 @@ import org.ejbca.core.model.ca.store.CRLInfo;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.protocol.ExtendedPKCS10CertificationRequest;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
@@ -71,7 +71,7 @@ import org.ejbca.util.CertTools;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.4 2006-07-21 15:28:26 anatom Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.5 2006-10-31 08:24:11 anatom Exp $
  */
 public class CAInterfaceBean implements java.io.Serializable {
 
@@ -279,11 +279,11 @@ public class CAInterfaceBean implements java.io.Serializable {
     	return this.cainfo;
     }
     
-	public void savePKCS10RequestData(ExtendedPKCS10CertificationRequest request){
+	public void savePKCS10RequestData(PKCS10CertificationRequest request){
 		this.request = request;
 	}
     
-	public ExtendedPKCS10CertificationRequest getPKCS10RequestData(){
+	public PKCS10CertificationRequest getPKCS10RequestData(){
 		return this.request;
 	}    
 	
@@ -388,7 +388,7 @@ public class CAInterfaceBean implements java.io.Serializable {
     private Admin                              administrator;
     private InformationMemory                  informationmemory;
     private CAInfo                                      cainfo;
-    transient private ExtendedPKCS10CertificationRequest       request;
+    transient private PKCS10CertificationRequest       request;
     private Certificate	                             processedcert;
     
 }

@@ -58,6 +58,62 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link FindUser }
+     * 
+     */
+    public FindUser createFindUser() {
+        return new FindUser();
+    }
+
+    /**
+     * Create an instance of {@link WaitingForApprovalException }
+     * 
+     */
+    public WaitingForApprovalException createWaitingForApprovalException() {
+        return new WaitingForApprovalException();
+    }
+
+    /**
+     * Create an instance of {@link EditUser }
+     * 
+     */
+    public EditUser createEditUser() {
+        return new EditUser();
+    }
+
+    /**
+     * Create an instance of {@link RevokeUser }
+     * 
+     */
+    public RevokeUser createRevokeUser() {
+        return new RevokeUser();
+    }
+
+    /**
+     * Create an instance of {@link RevokeUserResponse }
+     * 
+     */
+    public RevokeUserResponse createRevokeUserResponse() {
+        return new RevokeUserResponse();
+    }
+
+    /**
+     * Create an instance of {@link UserDoesntFullfillEndEntityProfile }
+     * 
+     */
+    public UserDoesntFullfillEndEntityProfile createUserDoesntFullfillEndEntityProfile() {
+        return new UserDoesntFullfillEndEntityProfile();
+    }
+
+    /**
+     * Create an instance of {@link NotFoundException }
+     * 
+     */
+    public NotFoundException createNotFoundException() {
+        return new NotFoundException();
+    }
+
+    /**
      * Create an instance of {@link Pkcs12ReqResponse }
      * 
      */
@@ -74,155 +130,11 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link UserDoesntFullfillEndEntityProfile }
-     * 
-     */
-    public UserDoesntFullfillEndEntityProfile createUserDoesntFullfillEndEntityProfile() {
-        return new UserDoesntFullfillEndEntityProfile();
-    }
-
-    /**
-     * Create an instance of {@link RevokeCertResponse }
-     * 
-     */
-    public RevokeCertResponse createRevokeCertResponse() {
-        return new RevokeCertResponse();
-    }
-
-    /**
-     * Create an instance of {@link NotFoundException }
-     * 
-     */
-    public NotFoundException createNotFoundException() {
-        return new NotFoundException();
-    }
-
-    /**
-     * Create an instance of {@link FindUserResponse }
-     * 
-     */
-    public FindUserResponse createFindUserResponse() {
-        return new FindUserResponse();
-    }
-
-    /**
-     * Create an instance of {@link RevokeTokenResponse }
-     * 
-     */
-    public RevokeTokenResponse createRevokeTokenResponse() {
-        return new RevokeTokenResponse();
-    }
-
-    /**
-     * Create an instance of {@link RevokeUser }
-     * 
-     */
-    public RevokeUser createRevokeUser() {
-        return new RevokeUser();
-    }
-
-    /**
-     * Create an instance of {@link KeyStore }
-     * 
-     */
-    public KeyStore createKeyStore() {
-        return new KeyStore();
-    }
-
-    /**
-     * Create an instance of {@link RevokeToken }
-     * 
-     */
-    public RevokeToken createRevokeToken() {
-        return new RevokeToken();
-    }
-
-    /**
-     * Create an instance of {@link RevokeStatus }
-     * 
-     */
-    public RevokeStatus createRevokeStatus() {
-        return new RevokeStatus();
-    }
-
-    /**
-     * Create an instance of {@link FindCerts }
-     * 
-     */
-    public FindCerts createFindCerts() {
-        return new FindCerts();
-    }
-
-    /**
-     * Create an instance of {@link FindUser }
-     * 
-     */
-    public FindUser createFindUser() {
-        return new FindUser();
-    }
-
-    /**
-     * Create an instance of {@link CheckRevokationStatusResponse }
-     * 
-     */
-    public CheckRevokationStatusResponse createCheckRevokationStatusResponse() {
-        return new CheckRevokationStatusResponse();
-    }
-
-    /**
-     * Create an instance of {@link UserDataVOWS }
-     * 
-     */
-    public UserDataVOWS createUserDataVOWS() {
-        return new UserDataVOWS();
-    }
-
-    /**
-     * Create an instance of {@link UserMatch }
-     * 
-     */
-    public UserMatch createUserMatch() {
-        return new UserMatch();
-    }
-
-    /**
-     * Create an instance of {@link EditUser }
-     * 
-     */
-    public EditUser createEditUser() {
-        return new EditUser();
-    }
-
-    /**
      * Create an instance of {@link FindCertsResponse }
      * 
      */
     public FindCertsResponse createFindCertsResponse() {
         return new FindCertsResponse();
-    }
-
-    /**
-     * Create an instance of {@link Pkcs10ReqResponse }
-     * 
-     */
-    public Pkcs10ReqResponse createPkcs10ReqResponse() {
-        return new Pkcs10ReqResponse();
-    }
-
-    /**
-     * Create an instance of {@link RevokeCert }
-     * 
-     */
-    public RevokeCert createRevokeCert() {
-        return new RevokeCert();
-    }
-
-    /**
-     * Create an instance of {@link AuthorizationDeniedException }
-     * 
-     */
-    public AuthorizationDeniedException createAuthorizationDeniedException() {
-        return new AuthorizationDeniedException();
     }
 
     /**
@@ -242,14 +154,6 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link EditUserResponse }
-     * 
-     */
-    public EditUserResponse createEditUserResponse() {
-        return new EditUserResponse();
-    }
-
-    /**
      * Create an instance of {@link Pkcs12Req }
      * 
      */
@@ -258,27 +162,67 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link WaitingForApprovalException }
+     * Create an instance of {@link RevokeStatus }
      * 
      */
-    public WaitingForApprovalException createWaitingForApprovalException() {
-        return new WaitingForApprovalException();
+    public RevokeStatus createRevokeStatus() {
+        return new RevokeStatus();
     }
 
     /**
-     * Create an instance of {@link RevokeUserResponse }
+     * Create an instance of {@link RevokeToken }
      * 
      */
-    public RevokeUserResponse createRevokeUserResponse() {
-        return new RevokeUserResponse();
+    public RevokeToken createRevokeToken() {
+        return new RevokeToken();
     }
 
     /**
-     * Create an instance of {@link IllegalQueryException }
+     * Create an instance of {@link EjbcaException }
      * 
      */
-    public IllegalQueryException createIllegalQueryException() {
-        return new IllegalQueryException();
+    public EjbcaException createEjbcaException() {
+        return new EjbcaException();
+    }
+
+    /**
+     * Create an instance of {@link RevokeCert }
+     * 
+     */
+    public RevokeCert createRevokeCert() {
+        return new RevokeCert();
+    }
+
+    /**
+     * Create an instance of {@link FindCerts }
+     * 
+     */
+    public FindCerts createFindCerts() {
+        return new FindCerts();
+    }
+
+    /**
+     * Create an instance of {@link UserDataVOWS }
+     * 
+     */
+    public UserDataVOWS createUserDataVOWS() {
+        return new UserDataVOWS();
+    }
+
+    /**
+     * Create an instance of {@link EditUserResponse }
+     * 
+     */
+    public EditUserResponse createEditUserResponse() {
+        return new EditUserResponse();
+    }
+
+    /**
+     * Create an instance of {@link CheckRevokationStatusResponse }
+     * 
+     */
+    public CheckRevokationStatusResponse createCheckRevokationStatusResponse() {
+        return new CheckRevokationStatusResponse();
     }
 
     /**
@@ -290,11 +234,67 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link EjbcaException }
+     * Create an instance of {@link AuthorizationDeniedException }
      * 
      */
-    public EjbcaException createEjbcaException() {
-        return new EjbcaException();
+    public AuthorizationDeniedException createAuthorizationDeniedException() {
+        return new AuthorizationDeniedException();
+    }
+
+    /**
+     * Create an instance of {@link IllegalQueryException }
+     * 
+     */
+    public IllegalQueryException createIllegalQueryException() {
+        return new IllegalQueryException();
+    }
+
+    /**
+     * Create an instance of {@link RevokeCertResponse }
+     * 
+     */
+    public RevokeCertResponse createRevokeCertResponse() {
+        return new RevokeCertResponse();
+    }
+
+    /**
+     * Create an instance of {@link UserMatch }
+     * 
+     */
+    public UserMatch createUserMatch() {
+        return new UserMatch();
+    }
+
+    /**
+     * Create an instance of {@link KeyStore }
+     * 
+     */
+    public KeyStore createKeyStore() {
+        return new KeyStore();
+    }
+
+    /**
+     * Create an instance of {@link Pkcs10ReqResponse }
+     * 
+     */
+    public Pkcs10ReqResponse createPkcs10ReqResponse() {
+        return new Pkcs10ReqResponse();
+    }
+
+    /**
+     * Create an instance of {@link FindUserResponse }
+     * 
+     */
+    public FindUserResponse createFindUserResponse() {
+        return new FindUserResponse();
+    }
+
+    /**
+     * Create an instance of {@link RevokeTokenResponse }
+     * 
+     */
+    public RevokeTokenResponse createRevokeTokenResponse() {
+        return new RevokeTokenResponse();
     }
 
     /**

@@ -16,6 +16,8 @@ package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 import java.io.Serializable;
 import java.util.List;
 
+import org.ejbca.core.model.ca.catoken.CATokenConstants;
+
 
 
 /**
@@ -23,16 +25,14 @@ import java.util.List;
  * is neesed
  * 
  * 
- * @version $Id: OCSPCAServiceInfo.java,v 1.1 2006-01-17 20:30:56 anatom Exp $
+ * @version $Id: OCSPCAServiceInfo.java,v 1.2 2006-10-31 08:19:41 anatom Exp $
  */
 public class OCSPCAServiceInfo extends ExtendedCAServiceInfo implements Serializable {    
        
-    public static final String KEYALGORITHM_RSA = "RSA";   
-       
     private String subjectdn      = null;
     private String subjectaltname = null;   
-	private int    keysize        = 1024;
-    private String keyalgorithm   = KEYALGORITHM_RSA; // Currently not used.
+	private String keyspec        = "1024"; // Default key length
+    private String keyalgorithm   = CATokenConstants.KEYALGORITHM_RSA; // Default key algo
     private List   ocspcertchain  = null;
     
     private boolean renew = false;
@@ -44,12 +44,12 @@ public class OCSPCAServiceInfo extends ExtendedCAServiceInfo implements Serializ
     public OCSPCAServiceInfo(int status,
                              String subjectdn, 
                              String subjectaltname, 
-                             int keysize, 
+                             String keyspec, 
                              String keyalgorithm){
       super(status);                       	
       this.subjectdn = subjectdn;
       this.subjectaltname = subjectaltname;    	
-      this.keysize = keysize;
+      this.keyspec = keyspec;
       this.keyalgorithm = keyalgorithm; 	 
     }
     
@@ -60,13 +60,13 @@ public class OCSPCAServiceInfo extends ExtendedCAServiceInfo implements Serializ
 	public OCSPCAServiceInfo(int status,
 							 String subjectdn, 
 							 String subjectaltname, 
-							 int keysize, 
+							 String keyspec, 
 							 String keyalgorithm,
 							 List ocspcertpath){
 	  super(status);                       	
 	  this.subjectdn = subjectdn;
 	  this.subjectaltname = subjectaltname;    	
-	  this.keysize = keysize;
+	  this.keyspec = keyspec;
 	  this.keyalgorithm = keyalgorithm; 	 
 	  this.ocspcertchain = ocspcertpath;
 	}    
@@ -81,7 +81,7 @@ public class OCSPCAServiceInfo extends ExtendedCAServiceInfo implements Serializ
     
     public String getSubjectDN(){ return this.subjectdn; }
     public String getSubjectAltName(){ return this.subjectaltname; }
-    public int getKeySize(){ return this.keysize; }
+    public String getKeySpec(){ return this.keyspec; }
     public String getKeyAlgorithm(){ return this.keyalgorithm; }
     public boolean getRenewFlag(){ return this.renew; } 
     public List getOCSPSignerCertificatePath(){ return this.ocspcertchain;}   

@@ -27,7 +27,6 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -79,6 +78,7 @@ import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.ResponseStatus;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.KeyTools;
 
 /**
  * Creates and signs certificates.
@@ -688,6 +688,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                     	failText = "CA from request ("+ca.getCAId()+") does not match users CA ("+data.getCAId()+")!";
                         status = ResponseStatus.FAILURE;
                         failInfo = FailInfo.WRONG_AUTHORITY;
+                        log.info(failText);
                     }
 
                     if (status.equals(ResponseStatus.SUCCESS)) {
@@ -1243,7 +1244,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             log.error(e);
             throw new EJBException(e);
         } catch (ObjectNotFoundException e) {
-        	log.info("Called finishUser fdor no existing user: ", e);
+        	log.info("Called finishUser for non existing user: ", e);
         }
     } // finishUser
 
@@ -1405,16 +1406,12 @@ public class RSASignSessionBean extends BaseSessionBean {
                 }
 
                 log.debug("Using certificate profile with id " + certProfileId);
-                int keyLength;
-                try {
-                    keyLength = ((RSAPublicKey) pk).getModulus().bitLength();
-                } catch (ClassCastException e) {
+                int keyLength = KeyTools.getKeyLength(pk);
+                if (keyLength == -1) {
                     throw new
-                            IllegalKeyException("Unsupported public key (" +
-                            pk.getClass().getName() +
-                            "), only RSA keys are supported.");
+                            IllegalKeyException("Unsupported public key (" + pk.getClass().getName() +"), only RSA and ECDSA keys are supported.");
                 }
-                log.debug("Keylength = " + keyLength); // bitBength() will return 1 less bit if BigInt i negative
+                log.debug("Keylength = " + keyLength); 
                 if ((keyLength < (certProfile.getMinimumAvailableBitLength() - 1))
                         || (keyLength > (certProfile.getMaximumAvailableBitLength()))) {
                     String msg = "Illegal key length " + keyLength;

@@ -32,6 +32,7 @@ import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
@@ -40,7 +41,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Tests the key recovery modules.
  *
- * @version $Id: TestKeyRecovery.java,v 1.5 2006-09-28 13:10:19 herrvendil Exp $
+ * @version $Id: TestKeyRecovery.java,v 1.6 2006-10-31 08:24:55 anatom Exp $
  */
 public class TestKeyRecovery extends TestCase {
     private static Logger log = Logger.getLogger(TestKeyRecovery.class);
@@ -115,7 +116,7 @@ public class TestKeyRecovery extends TestCase {
 
             String email = "test@test.se";
             if (!usersession.existsUser(admin, user)) {
-                keypair = KeyTools.genKeys(1024);
+                keypair = KeyTools.genKeys("512", CATokenConstants.KEYALGORITHM_RSA);
                 usersession.addUser(admin, user, "foo123", "CN=TESTKEYREC", "rfc822name=" + email, email, false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, "CN=TEST".hashCode());
                 cert = (X509Certificate) ss.createCertificate(admin, user, "foo123", keypair.getPublic());
             }

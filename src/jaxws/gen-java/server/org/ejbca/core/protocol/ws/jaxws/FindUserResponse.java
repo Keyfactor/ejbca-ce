@@ -7,6 +7,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 
 @XmlRootElement(name = "findUserResponse", namespace = "http://ws.protocol.core.ejbca.org/")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -14,14 +15,14 @@ import javax.xml.bind.annotation.XmlType;
 public class FindUserResponse {
 
     @XmlElement(name = "return", namespace = "")
-    private List<org.ejbca.core.protocol.ws.objects.UserDataVOWS> _return;
+    private List<UserDataVOWS> _return;
 
     /**
      * 
      * @return
      *     returns List<UserDataVOWS>
      */
-    public List<org.ejbca.core.protocol.ws.objects.UserDataVOWS> get_return() {
+    public List<UserDataVOWS> get_return() {
         return this._return;
     }
 
@@ -30,7 +31,7 @@ public class FindUserResponse {
      * @param _return
      *     the value for the _return property
      */
-    public void set_return(List<org.ejbca.core.protocol.ws.objects.UserDataVOWS> _return) {
+    public void set_return(List<UserDataVOWS> _return) {
         this._return = _return;
     }
 

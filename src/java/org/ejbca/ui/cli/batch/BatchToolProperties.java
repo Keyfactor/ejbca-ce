@@ -25,11 +25,12 @@ import org.apache.log4j.Logger;
  * 
  * @author Philip Vendil 2006 sep 19
  *
- * @version $Id: BatchToolProperties.java,v 1.2 2006-09-22 13:05:10 herrvendil Exp $
+ * @version $Id: BatchToolProperties.java,v 1.3 2006-10-31 08:24:10 anatom Exp $
  */
 public class BatchToolProperties {
 	
-	private static final String PROPERTY_KEYSIZE           = "keys.size";
+	private static final String PROPERTY_KEYSPEC          = "keys.spec";
+	private static final String PROPERTY_KEYALG           = "keys.alg";
 	
 
 	Properties batchToolProperties = new Properties();
@@ -43,10 +44,17 @@ public class BatchToolProperties {
 	 * Returns the configured keysize
 	 * Default is 1024
 	 */
-	public int getKeySize(){
-		return Integer.parseInt(batchToolProperties.getProperty(PROPERTY_KEYSIZE,"1024"));
+	public String getKeySpec(){
+		return batchToolProperties.getProperty(PROPERTY_KEYSPEC,"1024");
 	}
 	
+	/**
+	 * Returns the configured key algorithm
+	 * Default is RSA, can be ECDSA
+	 */
+	public String getKeyAlg(){
+		return batchToolProperties.getProperty(PROPERTY_KEYALG,"RSA");
+	}
 
 	
 	

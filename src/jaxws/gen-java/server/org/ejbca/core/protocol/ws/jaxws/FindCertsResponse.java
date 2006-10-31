@@ -7,6 +7,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import org.ejbca.core.protocol.ws.objects.Certificate;
 
 @XmlRootElement(name = "findCertsResponse", namespace = "http://ws.protocol.core.ejbca.org/")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -14,14 +15,14 @@ import javax.xml.bind.annotation.XmlType;
 public class FindCertsResponse {
 
     @XmlElement(name = "return", namespace = "")
-    private List<org.ejbca.core.protocol.ws.objects.Certificate> _return;
+    private List<Certificate> _return;
 
     /**
      * 
      * @return
      *     returns List<Certificate>
      */
-    public List<org.ejbca.core.protocol.ws.objects.Certificate> get_return() {
+    public List<Certificate> get_return() {
         return this._return;
     }
 
@@ -30,7 +31,7 @@ public class FindCertsResponse {
      * @param _return
      *     the value for the _return property
      */
-    public void set_return(List<org.ejbca.core.protocol.ws.objects.Certificate> _return) {
+    public void set_return(List<Certificate> _return) {
         this._return = _return;
     }
 

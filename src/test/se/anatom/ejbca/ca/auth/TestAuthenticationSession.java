@@ -35,6 +35,7 @@ import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -46,7 +47,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Tests authentication session used by signer.
  *
- * @version $Id: TestAuthenticationSession.java,v 1.12 2006-09-29 08:24:25 anatom Exp $
+ * @version $Id: TestAuthenticationSession.java,v 1.13 2006-10-31 08:24:54 anatom Exp $
  */
 public class TestAuthenticationSession extends TestCase {
     private static Logger log = Logger.getLogger(TestAuthenticationSession.class);
@@ -233,7 +234,7 @@ public class TestAuthenticationSession extends TestCase {
     	
         
     	// Create a dummy certificate and keypair.
-    	KeyPair keys = KeyTools.genKeys(1024);
+    	KeyPair keys = KeyTools.genKeys("1024", CATokenConstants.KEYALGORITHM_RSA);
         ISignSessionHome home = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(getInitialContext().lookup("RSASignSession"), ISignSessionHome.class);
         ISignSessionRemote ss = home.create();
     	X509Certificate cert = (X509Certificate) ss.createCertificate(admin,username,"foo123",keys.getPublic()); 

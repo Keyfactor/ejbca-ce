@@ -10,6 +10,7 @@ import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.security.cert.CertStore;
 import java.security.cert.CertStoreException;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -37,7 +38,9 @@ import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSSignedGenerator;
-import org.ejbca.core.protocol.ExtendedPKCS10CertificationRequest;
+import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.ejbca.core.model.ca.catoken.CATokenConstants;
+import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.protocol.ScepRequestMessage;
 import org.ejbca.core.protocol.ScepResponseMessage;
 import org.ejbca.util.Base64;
@@ -53,13 +56,13 @@ public class ScepRequestGenerator {
     private String reqdn = null;
     private KeyPair keys = null;
     private String digestOid = CMSSignedGenerator.DIGEST_SHA1;
-    private ExtendedPKCS10CertificationRequest p10request;
-    int keysize = 1024;
+    private PKCS10CertificationRequest p10request;
+    String keyspec = "1024";
     private String senderNonce = null;
     private String transactionId = null;
     
-    public void setKeySize(int size) {
-        this.keysize = size;
+    public void setKeySpec(String spec) {
+        this.keyspec = spec;
     }
     public void setKeys(KeyPair myKeys) {
         this.keys = myKeys;
@@ -75,24 +78,24 @@ public class ScepRequestGenerator {
     public String getTransactionId() {
         return transactionId;
     }
-    public byte[] generateCrlReq(String dn, X509Certificate ca) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException, IOException, CMSException, InvalidAlgorithmParameterException, CertStoreException {
+    public byte[] generateCrlReq(String dn, X509Certificate ca) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException, IOException, CMSException, InvalidAlgorithmParameterException, CertStoreException, CertificateEncodingException, IllegalStateException {
         this.cacert = ca;
         this.reqdn = dn;
         X509Name name = CertTools.stringToBcX509Name(cacert.getIssuerDN().getName());
         IssuerAndSerialNumber ias = new IssuerAndSerialNumber(name, cacert.getSerialNumber());
         // Create self signed cert, validity 1 day
-        cert = CertTools.genSelfCert(reqdn,24*60*60*1000,null,keys.getPrivate(),keys.getPublic(),false);
+        cert = CertTools.genSelfCert(reqdn,24*60*60*1000,null,keys.getPrivate(),keys.getPublic(),CATokenInfo.SIGALG_SHA1_WITH_RSA,false);
         
         // wrap message in pkcs#7
         byte[] msg = wrap(ias.getEncoded(), "22");        
         return msg;
     }
-    public byte[] generateCertReq(String dn, String password, X509Certificate ca) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException, IOException, CMSException, InvalidAlgorithmParameterException, CertStoreException {
+    public byte[] generateCertReq(String dn, String password, X509Certificate ca) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException, IOException, CMSException, InvalidAlgorithmParameterException, CertStoreException, CertificateEncodingException, IllegalStateException {
         this.cacert = ca;
         this.reqdn = dn;
         // Generate keys
         if (keys == null) {
-            keys = KeyTools.genKeys(keysize);            
+            keys = KeyTools.genKeys(keyspec, CATokenConstants.KEYALGORITHM_RSA);            
         }
 
         // Create challenge password attribute for PKCS10
@@ -111,11 +114,11 @@ public class ScepRequestGenerator {
         v.add(new DERSequence(vec));
         DERSet set = new DERSet(v);
         // Create PKCS#10 certificate request
-        p10request = new ExtendedPKCS10CertificationRequest("SHA1WithRSA",
+        p10request = new PKCS10CertificationRequest("SHA1WithRSA",
                 CertTools.stringToBcX509Name(reqdn), keys.getPublic(), set, keys.getPrivate());
         
         // Create self signed cert, validity 1 day
-        cert = CertTools.genSelfCert(reqdn,24*60*60*1000,null,keys.getPrivate(),keys.getPublic(),false);
+        cert = CertTools.genSelfCert(reqdn,24*60*60*1000,null,keys.getPrivate(),keys.getPublic(),CATokenInfo.SIGALG_SHA1_WITH_RSA,false);
         
         // wrap message in pkcs#7
         byte[] msg = wrap(p10request.getEncoded(), "19");

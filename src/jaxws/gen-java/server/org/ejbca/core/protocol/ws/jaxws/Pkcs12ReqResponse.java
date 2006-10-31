@@ -6,6 +6,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import org.ejbca.core.protocol.ws.objects.KeyStore;
 
 @XmlRootElement(name = "pkcs12ReqResponse", namespace = "http://ws.protocol.core.ejbca.org/")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -13,14 +14,14 @@ import javax.xml.bind.annotation.XmlType;
 public class Pkcs12ReqResponse {
 
     @XmlElement(name = "return", namespace = "")
-    private org.ejbca.core.protocol.ws.objects.KeyStore _return;
+    private KeyStore _return;
 
     /**
      * 
      * @return
      *     returns KeyStore
      */
-    public org.ejbca.core.protocol.ws.objects.KeyStore get_return() {
+    public KeyStore get_return() {
         return this._return;
     }
 
@@ -29,7 +30,7 @@ public class Pkcs12ReqResponse {
      * @param _return
      *     the value for the _return property
      */
-    public void set_return(org.ejbca.core.protocol.ws.objects.KeyStore _return) {
+    public void set_return(KeyStore _return) {
         this._return = _return;
     }
 
