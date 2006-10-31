@@ -73,6 +73,14 @@ protection.keytype=${protection.keytype}
 protection.key=${protection.key}
 protection.certprotect=${protection.certprotect}
 -->   
+<!--
+ecdsa.implicitlyca.q=${ecdsa.implicitlyca.q}
+ecdsa.implicitlyca.a=${ecdsa.implicitlyca.a}
+ecdsa.implicitlyca.b=${ecdsa.implicitlyca.b}
+ecdsa.implicitlyca.g=${ecdsa.implicitlyca.g}
+ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
+-->   
+
         <!-- Create the time stamp -->
         <tstamp/>
         <!-- Create the build directory structure used by compile -->
@@ -324,13 +332,16 @@ protection.certprotect=${protection.certprotect}
 				<replacestring from="@certtools.dnorderreverse@" to="${certtools.dnorderreverse}"/>
 				<replacestring from="@development.provider.installation@" to="${development.provider.installation}"/>
 				<replacestring from="@database.comment.column@" to="${database.comment.column}"/>
+				<replacestring from="@ecdsa.implicitlyca.q@" to="${ecdsa.implicitlyca.q}"/>
+				<replacestring from="@ecdsa.implicitlyca.a@" to="${ecdsa.implicitlyca.a}"/>
+				<replacestring from="@ecdsa.implicitlyca.b@" to="${ecdsa.implicitlyca.b}"/>
+				<replacestring from="@ecdsa.implicitlyca.g@" to="${ecdsa.implicitlyca.g}"/>
+				<replacestring from="@ecdsa.implicitlyca.n@" to="${ecdsa.implicitlyca.n}"/>
 			</tokenfilter>
 			</filterchain>
 	    </copy>
 		<echo>Ignore warnings about 'Couldn't find file' during preprocessing if you are running jdk 1.4</echo>
         <copy file="src/java/org/ejbca/core/model/ca/catoken/CATokenConstants.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/catoken/CATokenConstants.java" overwrite="true" failonerror="false"/>
-        <copy file="src/java/org/ejbca/core/model/ca/caadmin/ExtendedX509Util.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/caadmin/ExtendedX509Util.java" overwrite="true" failonerror="false"/>
-        <copy file="src/java/org/ejbca/core/model/ca/caadmin/ExtendedX509V3CertificateGenerator.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/caadmin/ExtendedX509V3CertificateGenerator.java" overwrite="true" failonerror="false"/>
 		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@ejbca.version@" value="${app.version}"/>
 		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@hardtoken.diplaysensitiveinfo@" value="${hardtoken.diplaysensitiveinfo}"/>
 		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@intresources.preferredlanguage@" value="${intresources.preferredlanguage}"/>				

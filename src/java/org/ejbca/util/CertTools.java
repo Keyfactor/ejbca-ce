@@ -92,7 +92,7 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.20 2006-10-31 08:24:12 anatom Exp $
+ * @version $Id: CertTools.java,v 1.21 2006-10-31 10:39:26 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -156,11 +156,11 @@ public class CertTools {
     /** Parameters used when generating or verifying ECDSA keys/certs using the "implicitlyCA" key encoding.
      * The curve parameters is then defined outside of the key and configured in the BC provider.
      */
-    private static final String IMPLICITLYCA_Q = "883423532389192164791648750360308885314476597252960362792450860609699839";
-    private static final String IMPLICITLYCA_A = "7fffffffffffffffffffffff7fffffffffff8000000000007ffffffffffc"; 
-    private static final String IMPLICITLYCA_B = "6b016c3bdcf18941d0d654921475ca71a9db2fb27d1d37796185c2942c0a"; 
-    private static final String IMPLICITLYCA_G = "020ffa963cdca8816ccc33b8642bedf905c3d358573d3f27fbbd3b3cb9aaaf"; 
-    private static final String IMPLICITLYCA_N = "883423532389192164791648750360308884807550341691627752275345424702807307";
+    private static final String IMPLICITLYCA_Q = "@ecdsa.implicitlyca.q@";
+    private static final String IMPLICITLYCA_A = "@ecdsa.implicitlyca.a@"; 
+    private static final String IMPLICITLYCA_B = "@ecdsa.implicitlyca.b@"; 
+    private static final String IMPLICITLYCA_G = "@ecdsa.implicitlyca.g@"; 
+    private static final String IMPLICITLYCA_N = "@ecdsa.implicitlyca.n@";
 
     /** Flag indicating if the BC provider should be removed before installing it again. When developing and re-deploying alot
      * this is needed so you don't have to restart JBoss all the time. 

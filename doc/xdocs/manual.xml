@@ -2507,6 +2507,20 @@ then restart the server.
 EJBCA support ECDSA signature keys in addition to RSA. You can create a CA using ECDSA keys both using the admin-GUI 
 and using the cli (bin/ejbca.sh ca init).
 </p>
+<subsection name="Ganarated keys and certificate">
+<p>
+When generating a CA in EJBCA up to three keys and certificates are generated:
+<ul>
+<li>A CA signing keypair and certificate</li>
+<li>An encryption keypair, used for encrypting keyrecovery information</li>
+<li>An OCSP signer keypair and certificate</li>
+</ul>
+When using ECDSA keys, the CA signing keypair and the OCSP signer keypair will be the ECDSA keytype you select when creating the CA.
+The CA signing and OCSP signing certificate will be signed using your selected signature algorithm.
+<br/>
+The encryption keypair will always be RSA, using 1024 or 2048 bit key length. It uses the key length set in the admin-GUI or 2048 bit by default using the cli. A dummy encryption certificate will be created using SHA1WithRSA.
+</p>
+</subsection>
 <subsection name="Named curves">
 <p>
 EJBCA supports the curves that BouncyCastle supports, they include named curves from Nist, SEC and X9.62.
@@ -2573,6 +2587,21 @@ The CA certificate will now be created with the NULL encoding of the public key.
 <p>
 See <a href="http://www.bouncycastle.org/wiki/">Bouncycastle wiki</a> for more information about the implicitlyCA facility.
 </p>
+<p>
+The curve parameters in <i>conf/ejbca.parameters</i> are configured in Bouncycastle using the following code:'
+</p>
+<source>
+ECCurve curve = new ECCurve.Fp(
+    new BigInteger(ecdsa.implicitlyca.q), // q
+    new BigInteger(ecdsa.implicitlyca.a, 16), // a
+    new BigInteger(ecdsa.implicitlyca.b, 16)); // b
+org.bouncycastle.jce.spec.ECParameterSpec implicitSpec = new org.bouncycastle.jce.spec.ECParameterSpec(
+    curve,
+    curve.decodePoint(Hex.decode(ecdsa.implicitlyca.g)), // G
+    new BigInteger(ecdsa.implicitlyca.n)); // n
+ConfigurableProvider config = (ConfigurableProvider)Security.getProvider("BC");
+config.setParameter(ConfigurableProvider.EC_IMPLICITLY_CA, implicitSpec);
+</source>
 </subsection>
 <subsection name="Creating client certificates">
 <p>
