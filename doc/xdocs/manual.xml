@@ -772,7 +772,7 @@ CA Certificate
 </subsection>
 </section>
 
-<section name="CMP (available in EJBCA >=3.4)">
+<section name="CMP (EJBCA >=3.4)">
 <p>
 CMP (RFC4210) is a very complex protocol, which EJBCA does implement some parts of.
 <br/> 
@@ -2500,6 +2500,99 @@ then restart the server.
 </p>
 </subsubsection>
 
+</section>
+
+<section name="ECDSA keys and signatures">
+<p>
+EJBCA support ECDSA signature keys in addition to RSA. You can create a CA using ECDSA keys both using the admin-GUI 
+and using the cli (bin/ejbca.sh ca init).
+</p>
+<subsection name="Named curves">
+<p>
+EJBCA supports the curves that BouncyCastle supports, they include named curves from Nist, SEC and X9.62.
+New curves may be supported without this list beeing updates, give it a try!
+See <a href="http://www.bouncycastle.org/wiki/">Bouncycastle wiki</a> for more information about ECDSA curves.
+</p>
+<p>
+X9.62 curves:
+<ul>
+<li>prime192v1</li>
+<li>prime192v2</li>
+<li>prime192v3</li>
+<li>prime239v1</li>
+<li>prime239v2</li>
+<li>prime239v3</li>
+<li>prime256v1</li>
+</ul>
+SEC curves:
+<ul>
+<li>sect571r1</li>
+<li>sect409r1</li>
+<li>sect283r1</li>
+<li>sect233r1</li>
+<li>sect163r2</li>
+<li>secp521r1</li>
+<li>secp256r1</li>
+<li>secp224r1</li>
+<li>secp384r1</li>
+</ul>
+Nist curves:
+<ul>
+<li>P-224</li>
+<li>P-256</li>
+<li>P-384</li>
+<li>P-521</li>
+<li>B-163</li>
+<li>B-233</li>
+<li>B-283</li>
+<li>B-409</li>
+<li>B-571</li>
+</ul>
+</p>
+</subsection>
+<subsection name="ImplicitlyCA curves">
+<p>
+X9.62 provides 3 alternatives for the parameters that can be found in an EC public key.
+One of these is named implicitlyCA and indicates that the parameters are defined else where, implicit in the name of the 
+certification authority (CA) that issued the key. 
+In this stiuation the actual parameters appear in the ASN.1 encoding of the key as a DER encoded NULL.
+<br/>
+As the definition says, when the key is used, the parameters will have to come from elsewhere. 
+In EJBCA the parameters are configured in <i>conf/ejbca.properties</i>.
+</p>
+<p>
+When creating a new CA using the implicitlyCA facility, you first configure your curve parameters in conf/ejbca.properties and issue commands:
+<ul>
+<li>ant clean</li>
+<li>ant deploy</li>
+</ul>
+After restarting the application server you can now create a new CA using the name 'implicitlyCA' instead of a curve name as keyspec in the admin-GUI or CLI.
+<br/>
+The CA certificate will now be created with the NULL encoding of the public key.
+</p>
+<p>
+See <a href="http://www.bouncycastle.org/wiki/">Bouncycastle wiki</a> for more information about the implicitlyCA facility.
+</p>
+</subsection>
+<subsection name="Creating client certificates">
+<p>
+You can also issue normal requests for client certificates using ECDSA keys. 
+<br/>
+All certificates signed by an ECDSA CA will naturally use ECDSA signatures, regardless if the client keys are RSA or ECDSA.
+</p>
+<p>
+When batch generating client keys using the cli command 'bin/ejbca.sh batch' you configure the type of client keys that will 
+be generated in the file <i>bin/batch.properties</i>. The possible parameters are explained there. 
+If using the implicitlyCA facility the same parameters as configured for the ca in <i>conf/ejbca.properties</i> are used.
+</p>
+</subsection>
+<subsection name="Limitations">
+<p>
+When using the 'implicitlyCA' mode only one set of curve parameters can be set for the whole EJBCA instance.
+This means that if you have several CAs using ECDSA with 'implicitlyCA', they will all use the same curve parameters.
+You can mix 'implicitlyCA' with named curves any way you like though.
+</p>
+</subsection>
 </section>
 
 <section name="Export and import profiles">
