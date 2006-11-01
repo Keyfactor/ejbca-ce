@@ -23,7 +23,7 @@ package org.ejbca.core.model.ca.certificateprofiles;
 /**
  * CACertificateProfile is a class defining the fixed characteristics of a CA certificate profile.
  *
- * @version $Id: CACertificateProfile.java,v 1.3 2006-05-28 14:21:08 anatom Exp $
+ * @version $Id: CACertificateProfile.java,v 1.4 2006-11-01 11:54:01 anatom Exp $
  */
 public class CACertificateProfile extends CertificateProfile{
 
@@ -40,7 +40,7 @@ public class CACertificateProfile extends CertificateProfile{
     public CACertificateProfile() {
 
       setType(TYPE_SUBCA);
-
+      setAllowValidityOverride(true);
       setUseKeyUsage(true);
       setKeyUsage(new boolean[9]);
       setKeyUsage(DIGITALSIGNATURE,true);
