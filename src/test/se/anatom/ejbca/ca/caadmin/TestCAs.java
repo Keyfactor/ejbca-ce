@@ -13,7 +13,9 @@
 
 package se.anatom.ejbca.ca.caadmin;
 
+import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -23,6 +25,7 @@ import javax.naming.NamingException;
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionHome;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
@@ -42,7 +45,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the ca data entity bean.
  *
- * @version $Id: TestCAs.java,v 1.12 2006-10-31 08:24:53 anatom Exp $
+ * @version $Id: TestCAs.java,v 1.13 2006-11-01 10:08:17 anatom Exp $
  */
 public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -96,14 +99,14 @@ public class TestCAs extends TestCase {
 
 
     /**
-     * adds a CA to the database.
+     * adds a CA using RSA keys to the database.
      *
      * It also checks that the CA is stored correctly.
      *
      * @throws Exception error
      */
-    public void test01AddCA() throws Exception {
-        log.debug(">test01AddCA()");
+    public void test01AddRSACA() throws Exception {
+        log.debug(">test01AddRSACA()");
         boolean ret = false;
         try {
 
@@ -124,7 +127,7 @@ public class TestCAs extends TestCase {
             extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
                     "CN=OCSPSignerCertificate, " + "CN=TEST",
                     "",
-                    "2048",
+                    "1024",
                     CATokenConstants.KEYALGORITHM_RSA));
 
 
@@ -137,7 +140,7 @@ public class TestCAs extends TestCase {
                     CAInfo.SELFSIGNED,
                     (Collection) null,
                     catokeninfo,
-                    "Initial CA",
+                    "JUnit RSA CA",
                     -1, null,
                     null, // PolicyId
                     24, // CRLPeriod
@@ -165,14 +168,22 @@ public class TestCAs extends TestCase {
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=TEST"));
             assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=TEST"));
+            PublicKey pk = cert.getPublicKey();
+            System.out.println(pk.getClass().getName());
+            if (pk instanceof RSAPublicKey) {
+            	RSAPublicKey rsapk = (RSAPublicKey) pk;
+				assertEquals(rsapk.getAlgorithm(), "RSA");
+			} else {
+				assertTrue("Public key is not EC", false);
+			}
 
             ret = true;
         } catch (CAExistsException pee) {
             log.info("CA exists.");
         }
 
-        assertTrue("Creating CA failed", ret);
-        log.debug("<test01AddCA()");
+        assertTrue("Creating RSA CA failed", ret);
+        log.debug("<test01AddRSACA()");
     }
 
     /**
@@ -213,5 +224,183 @@ public class TestCAs extends TestCase {
         log.debug("<test03EditCA()");
     }
 
+    /**
+     * adds a CA Using ECDSA keys to the database.
+     *
+     * It also checks that the CA is stored correctly.
+     *
+     * @throws Exception error
+     */
+    public void test04AddECDSACA() throws Exception {
+        log.debug(">test04AddECDSACA()");
+        boolean ret = false;
+        try {
+
+            Context context = getInitialContext();
+            IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("AuthorizationSession"), IAuthorizationSessionHome.class);
+            IAuthorizationSessionRemote authorizationsession = authorizationsessionhome.create();
+            authorizationsession.initialize(admin, "CN=TESTECDSA".hashCode());
+
+            SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
+            catokeninfo.setSignKeySpec("prime192v1");
+            catokeninfo.setEncKeySpec("1024");
+            catokeninfo.setSignKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_ECDSA);
+            catokeninfo.setEncKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
+            catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA256_WITH_ECDSA);
+            catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
+            // Create and active OSCP CA Service.
+            ArrayList extendedcaservices = new ArrayList();
+            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
+                    "CN=OCSPSignerCertificate, " + "CN=TESTECDSA",
+                    "",
+                    "prime192v1",
+                    CATokenConstants.KEYALGORITHM_ECDSA));
+
+
+            X509CAInfo cainfo = new X509CAInfo("CN=TESTECDSA",
+                    "TESTECDSA", SecConst.CA_ACTIVE,
+                    "", SecConst.CERTPROFILE_FIXED_ROOTCA,
+                    1,
+                    null, // Expiretime
+                    CAInfo.CATYPE_X509,
+                    CAInfo.SELFSIGNED,
+                    (Collection) null,
+                    catokeninfo,
+                    "JUnit ECDSA CA",
+                    -1, null,
+                    "2.5.29.32.0", // PolicyId
+                    24, // CRLPeriod
+                    0, // CRLIssueInterval
+                    10, // CRLOverlapTime
+                    new ArrayList(),
+                    true, // Authority Key Identifier
+                    false, // Authority Key Identifier Critical
+                    true, // CRL Number
+                    false, // CRL Number Critical
+                    null, // defaultcrldistpoint 
+                    null, // defaultocsplocator
+                    true, // Finish User
+                    extendedcaservices,
+                    false, // use default utf8 settings
+                    new ArrayList(), // Approvals Settings
+                    1); // Number of Req approvals    
+
+
+            cacheAdmin.createCA(admin, cainfo);
+
+
+            CAInfo info = cacheAdmin.getCAInfo(admin, "TESTECDSA");
+
+            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=TESTECDSA"));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=TESTECDSA"));
+            PublicKey pk = cert.getPublicKey();
+            if (pk instanceof JCEECPublicKey) {
+				JCEECPublicKey ecpk = (JCEECPublicKey) pk;
+				assertEquals(ecpk.getAlgorithm(), "EC");
+				org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
+				assertNotNull("ImplicitlyCA must have null spec", spec);
+			} else {
+				assertTrue("Public key is not EC", false);
+			}
+
+            ret = true;
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+        }
+
+        assertTrue("Creating ECDSA CA failed", ret);
+        log.debug("<test04AddECDSACA()");
+    }
+
+    /**
+     * adds a CA Using ECDSA 'implicitlyCA' keys to the database.
+     *
+     * It also checks that the CA is stored correctly.
+     *
+     * @throws Exception error
+     */
+    public void test05AddECDSAImplicitlyCACA() throws Exception {
+        log.debug(">test05AddECDSAImplicitlyCACA()");
+        boolean ret = false;
+        try {
+
+            Context context = getInitialContext();
+            IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("AuthorizationSession"), IAuthorizationSessionHome.class);
+            IAuthorizationSessionRemote authorizationsession = authorizationsessionhome.create();
+            authorizationsession.initialize(admin, "CN=TESTECDSAImplicitlyCA".hashCode());
+
+            SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
+            catokeninfo.setSignKeySpec("implicitlyCA");
+            catokeninfo.setEncKeySpec("1024");
+            catokeninfo.setSignKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_ECDSA);
+            catokeninfo.setEncKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
+            catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA256_WITH_ECDSA);
+            catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
+            // Create and active OSCP CA Service.
+            ArrayList extendedcaservices = new ArrayList();
+            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
+                    "CN=OCSPSignerCertificate, " + "CN=TESTECDSAImplicitlyCA",
+                    "",
+                    "prime192v1",
+                    CATokenConstants.KEYALGORITHM_ECDSA));
+
+
+            X509CAInfo cainfo = new X509CAInfo("CN=TESTECDSAImplicitlyCA",
+                    "TESTECDSAImplicitlyCA", SecConst.CA_ACTIVE,
+                    "", SecConst.CERTPROFILE_FIXED_ROOTCA,
+                    1,
+                    null, // Expiretime
+                    CAInfo.CATYPE_X509,
+                    CAInfo.SELFSIGNED,
+                    (Collection) null,
+                    catokeninfo,
+                    "JUnit ECDSA ImplicitlyCA CA",
+                    -1, null,
+                    "2.5.29.32.0", // PolicyId
+                    24, // CRLPeriod
+                    0, // CRLIssueInterval
+                    10, // CRLOverlapTime
+                    new ArrayList(),
+                    true, // Authority Key Identifier
+                    false, // Authority Key Identifier Critical
+                    true, // CRL Number
+                    false, // CRL Number Critical
+                    null, // defaultcrldistpoint 
+                    null, // defaultocsplocator
+                    true, // Finish User
+                    extendedcaservices,
+                    false, // use default utf8 settings
+                    new ArrayList(), // Approvals Settings
+                    1); // Number of Req approvals    
+
+
+            cacheAdmin.createCA(admin, cainfo);
+
+
+            CAInfo info = cacheAdmin.getCAInfo(admin, "TESTECDSAImplicitlyCA");
+
+            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=TESTECDSAImplicitlyCA"));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=TESTECDSAImplicitlyCA"));
+            PublicKey pk = cert.getPublicKey();
+            if (pk instanceof JCEECPublicKey) {
+				JCEECPublicKey ecpk = (JCEECPublicKey) pk;
+				assertEquals(ecpk.getAlgorithm(), "EC");
+				org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
+				assertNull("ImplicitlyCA must have null spec", spec);
+				
+			} else {
+				assertTrue("Public key is not EC", false);
+			}
+
+            ret = true;
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+        }
+
+        assertTrue("Creating ECDSA ImplicitlyCA CA failed", ret);
+        log.debug("<test05AddECDSAImplicitlyCACA()");
+    }
 
 }

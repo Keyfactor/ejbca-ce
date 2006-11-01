@@ -16,15 +16,13 @@ package se.anatom.ejbca.ca.sign;
 import java.io.ByteArrayOutputStream;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
-import java.security.KeyPairGenerator;
+import java.security.PublicKey;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPrivateKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 
 import javax.ejb.DuplicateKeyException;
 import javax.naming.Context;
@@ -37,6 +35,7 @@ import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
@@ -49,6 +48,8 @@ import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.IllegalKeyException;
+import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
 import org.ejbca.core.model.log.Admin;
@@ -58,13 +59,14 @@ import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.KeyTools;
 import org.ejbca.util.cert.QCStatementExtension;
 
 
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.16 2006-10-31 08:24:54 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.17 2006-11-01 10:08:17 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -141,8 +143,15 @@ public class TestSignSession extends TestCase {
     private static IUserAdminSessionRemote usersession;
     private static IRaAdminSessionRemote rasession;
     private static ICertificateStoreSessionRemote storesession;
-    private static KeyPair keys;
-    private static int caid = 0;
+    private static KeyPair rsakeys=null;
+    private static KeyPair ecdsakeys=null;
+    private static KeyPair ecdsaimplicitlyca=null;
+    private static int rsacaid = 0;
+    private static int ecdsacaid = 0;
+    private static int ecdsaimplicitlycacaid = 0;
+    X509Certificate rsacacert = null;
+    X509Certificate ecdsacacert = null;
+    X509Certificate ecdsaimplicitlycacacert = null;
     private Admin admin;
 
     /**
@@ -150,15 +159,20 @@ public class TestSignSession extends TestCase {
      *
      * @param name name
      */
-    public TestSignSession(String name) {
+    public TestSignSession(String name) throws Exception {
         super(name);
-    }
-
-    protected void setUp() throws Exception {
-        log.debug(">setUp()");
 
         // Install BouncyCastle provider
         CertTools.installBCProvider();
+        if (rsakeys == null) {
+        	rsakeys = KeyTools.genKeys("1024", CATokenConstants.KEYALGORITHM_RSA);
+        }
+        if (ecdsakeys == null) {
+        	ecdsakeys = KeyTools.genKeys("prime192v1", CATokenConstants.KEYALGORITHM_ECDSA);
+        }
+        if (ecdsaimplicitlyca == null) {
+        	ecdsaimplicitlyca = KeyTools.genKeys("implicitlyCA", CATokenConstants.KEYALGORITHM_ECDSA);
+        }
 
         admin = new Admin(Admin.TYPE_BATCHCOMMANDLINE_USER);
 
@@ -166,13 +180,31 @@ public class TestSignSession extends TestCase {
         Object obj = ctx.lookup("CAAdminSession");
         ICAAdminSessionHome cahome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICAAdminSessionHome.class);
         ICAAdminSessionRemote casession = cahome.create();
-        Collection caids = casession.getAvailableCAs(admin);
-        Iterator iter = caids.iterator();
-        if (iter.hasNext()) {
-            caid = ((Integer) iter.next()).intValue();
-        } else {
-            assertTrue("No active CA! Must have at least one active CA to run tests!", false);
+        CAInfo inforsa = casession.getCAInfo(admin, "TEST");
+        rsacaid = inforsa.getCAId();
+        if (rsacaid == 0){
+            assertTrue("No active RSA CA! Must have at least one active CA to run tests!", false);
         }
+        CAInfo infoecdsa = casession.getCAInfo(admin, "TESTECDSA");
+        ecdsacaid = infoecdsa.getCAId();
+        if (ecdsacaid == 0){
+            assertTrue("No active ECDSA CA! Must have at least one active CA to run tests!", false);
+        }
+        CAInfo infoecdsaimplicitlyca = casession.getCAInfo(admin, "TESTECDSAImplicitlyCA");
+        ecdsaimplicitlycacaid = infoecdsaimplicitlyca.getCAId();
+        if (ecdsaimplicitlycacaid == 0){
+            assertTrue("No active ECDSA ImplicitlyCA CA! Must have at least one active CA to run tests!", false);
+        }
+        Collection coll = inforsa.getCertificateChain();
+        Object[] objs = coll.toArray();
+        rsacacert = (X509Certificate)objs[0]; 
+        coll = infoecdsa.getCertificateChain();
+        objs = coll.toArray();
+        ecdsacacert = (X509Certificate)objs[0]; 
+        coll = infoecdsaimplicitlyca.getCertificateChain();
+        objs = coll.toArray();
+        ecdsaimplicitlycacacert = (X509Certificate)objs[0]; 
+        
         obj = ctx.lookup("RSASignSession");
         home = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ISignSessionHome.class);
         remote = home.create();
@@ -189,6 +221,11 @@ public class TestSignSession extends TestCase {
         ICertificateStoreSessionHome storehome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICertificateStoreSessionHome.class);
         storesession = storehome.create();
 
+    }
+
+    protected void setUp() throws Exception {
+        log.debug(">setUp()");
+
         log.debug("<setUp()");
     }
 
@@ -204,23 +241,6 @@ public class TestSignSession extends TestCase {
         return ctx;
     }
 
-    /**
-     * Generates a RSA key pair.
-     *
-     * @return KeyPair the generated key pair
-     *
-     * @throws Exception if en error occurs...
-     */
-    private static KeyPair genKeys() throws Exception {
-        KeyPairGenerator keygen = KeyPairGenerator.getInstance("RSA", "BC");
-        keygen.initialize(512);
-        log.debug("Generating keys, please wait...");
-        KeyPair rsaKeys = keygen.generateKeyPair();
-        log.debug("Generated " + rsaKeys.getPrivate().getAlgorithm() + " keys with length" +
-                ((RSAPrivateKey) rsaKeys.getPrivate()).getModulus().bitLength());
-
-        return rsaKeys;
-    } // genKeys
 
     /**
      * creates new user
@@ -233,7 +253,7 @@ public class TestSignSession extends TestCase {
         // Make user that we know...
         boolean userExists = false;
         try {
-            usersession.addUser(admin,"foo","foo123","C=SE,O=AnaTom,CN=foo",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
+            usersession.addUser(admin,"foo","foo123","C=SE,O=AnaTom,CN=foo",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsacaid);
             log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
         } catch (RemoteException re) {
             if (re.detail instanceof DuplicateKeyException) {
@@ -247,6 +267,38 @@ public class TestSignSession extends TestCase {
             usersession.setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
+        userExists = false;
+        try {
+            usersession.addUser(admin,"fooecdsa","foo123","C=SE,O=AnaTom,CN=fooecdsa",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,ecdsacaid);
+            log.debug("created user: fooecdsa, foo123, C=SE, O=AnaTom, CN=fooecdsa");
+        } catch (RemoteException re) {
+            if (re.detail instanceof DuplicateKeyException) {
+                userExists = true;
+            }
+        } catch (DuplicateKeyException dke) {
+            userExists = true;
+        }
+        if (userExists) {
+            log.info("User fooecdsa already exists, resetting status.");
+            usersession.setUserStatus(admin,"fooecdsa",UserDataConstants.STATUS_NEW);
+            log.debug("Reset status to NEW");
+        }
+        userExists = false;
+        try {
+            usersession.addUser(admin,"fooecdsaimpca","foo123","C=SE,O=AnaTom,CN=fooecdsaimpca",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,ecdsaimplicitlycacaid);
+            log.debug("created user: fooecdsaimpca, foo123, C=SE, O=AnaTom, CN=fooecdsaimpca");
+        } catch (RemoteException re) {
+            if (re.detail instanceof DuplicateKeyException) {
+                userExists = true;
+            }
+        } catch (DuplicateKeyException dke) {
+            userExists = true;
+        }
+        if (userExists) {
+            log.info("User fooecdsaimpca already exists, resetting status.");
+            usersession.setUserStatus(admin,"fooecdsaimpca",UserDataConstants.STATUS_NEW);
+            log.debug("Reset status to NEW");
+        }
 
         log.debug("<test01CreateNewUser()");
     }
@@ -258,13 +310,17 @@ public class TestSignSession extends TestCase {
      */
     public void test02SignSession() throws Exception {
         log.debug(">test02SignSession()");
-        keys = genKeys();
 
         // user that we know exists...
-        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", keys.getPublic());
+        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
 
+        try {
+            cert.verify(rsacacert.getPublicKey());        	
+        } catch (Exception e) {
+        	assertTrue("Verify failed: "+e.getMessage(), false);
+        }
         //FileOutputStream fos = new FileOutputStream("testcert.crt");
         //fos.write(cert.getEncoded());
         //fos.close();
@@ -282,8 +338,8 @@ public class TestSignSession extends TestCase {
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA",
-                CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"), keys.getPublic(), null,
-                keys.getPrivate());
+                CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"), rsakeys.getPublic(), null,
+                rsakeys.getPrivate());
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         DEROutputStream dOut = new DEROutputStream(bOut);
         dOut.writeObject(req);
@@ -373,7 +429,7 @@ public class TestSignSession extends TestCase {
         // keyEncipherment
         keyusage1[2] = true;
 
-        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", keys.getPublic(), keyusage1);
+        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), keyusage1);
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
         boolean[] retKU = cert.getKeyUsage();
@@ -391,7 +447,7 @@ public class TestSignSession extends TestCase {
         // cRLSign
         keyusage2[6] = true;
 
-        X509Certificate cert1 = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", keys.getPublic(), keyusage2);
+        X509Certificate cert1 = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), keyusage2);
         assertNotNull("Misslyckades skapa cert", cert1);
         retKU = cert1.getKeyUsage();
         assertTrue("Fel KeyUsage, keyCertSign finns ej!", retKU[5]);
@@ -440,7 +496,7 @@ public class TestSignSession extends TestCase {
         // Make user that we know...
         boolean userExists = false;
         try {
-            usersession.addUser(admin,"swede","foo123","C=SE, O=ÅÄÖ, CN=åäö",null,"swede@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
+            usersession.addUser(admin,"swede","foo123","C=SE, O=ÅÄÖ, CN=åäö",null,"swede@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsacaid);
             log.debug("created user: swede, foo123, C=SE, O=ÅÄÖ, CN=åäö");
         } catch (RemoteException re) {
             if (re.detail instanceof DuplicateKeyException) {
@@ -456,9 +512,8 @@ public class TestSignSession extends TestCase {
             log.debug("Reset status to NEW");
         }
 
-        keys = genKeys();
         // user that we know exists...
-        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "swede", "foo123", keys.getPublic());
+        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "swede", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         assertEquals("Wrong DN med swedechars", CertTools.getSubjectDN(cert),
@@ -500,12 +555,12 @@ public class TestSignSession extends TestCase {
                     eeprofile,
                     SecConst.CERTPROFILE_FIXED_ENDUSER,
                     SecConst.USER_ENDUSER,
-                    SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, caid);
+                    SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsacaid);
             log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
         } catch (RemoteException re) {
             assertTrue("User foo does not exist, or error changing user", false);
         } 
-        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", keys.getPublic());
+        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
 //        FileOutputStream fos = new FileOutputStream("cert.crt");
 //        fos.write(cert.getEncoded());
@@ -569,12 +624,12 @@ public class TestSignSession extends TestCase {
                     eeprofile,
                     cprofile,
                     SecConst.USER_ENDUSER,
-                    SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, caid);
+                    SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsacaid);
             log.debug("created user: foo, foo123, C=SE, CN=qc");
         } catch (RemoteException re) {
             assertTrue("User foo does not exist, or error changing user", false);
         } 
-        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", keys.getPublic());
+        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
 //        FileOutputStream fos = new FileOutputStream("cert.crt");
 //        fos.write(cert.getEncoded());
@@ -628,14 +683,14 @@ public class TestSignSession extends TestCase {
                     eeprofile,
                     cprofile,
                     SecConst.USER_ENDUSER,
-                    SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, caid);
+                    SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsacaid);
             log.debug("created user: foo, foo123, C=SE, CN=validityoverride");
         } catch (RemoteException re) {
             assertTrue("User foo does not exist, or error changing user", false);
         } 
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_MONTH, 10);
-        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", keys.getPublic(), -1, cal.getTime());
+        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), -1, cal.getTime());
         assertNotNull("Failed to create certificate", cert);
         String dn = cert.getSubjectDN().getName();
         assertEquals(CertTools.stringToBCDNString("cn=validityoverride,c=SE"), CertTools.stringToBCDNString(dn));
@@ -656,7 +711,7 @@ public class TestSignSession extends TestCase {
         cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_MONTH, 10);
         usersession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
-        cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", keys.getPublic(), -1, cal.getTime());
+        cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), -1, cal.getTime());
         assertNotNull("Failed to create certificate", cert);
         assertEquals(CertTools.stringToBCDNString("cn=validityoverride,c=SE"), CertTools.stringToBCDNString(dn));
         notAfter = cert.getNotAfter();
@@ -673,6 +728,288 @@ public class TestSignSession extends TestCase {
         log.debug("<test11TestValidityOverride()");        
     }
 
+    /**
+     * creates cert
+     *
+     * @throws Exception if en error occurs...
+     */
+    public void test12SignSessionECDSAWithRSACA() throws Exception {
+        log.debug(">test12SignSessionECDSAWithRSACA()");
+
+        usersession.setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
+        log.debug("Reset status of 'foo' to NEW");
+        // user that we know exists...
+    	X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, ecdsakeys.getPrivate(), ecdsakeys.getPublic(), CATokenConstants.SIGALG_SHA256_WITH_ECDSA, false);
+        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", selfcert);
+        assertNotNull("Misslyckades skapa cert", cert);
+        log.debug("Cert=" + cert.toString());
+        PublicKey pk = cert.getPublicKey();
+        if (pk instanceof JCEECPublicKey) {
+			JCEECPublicKey ecpk = (JCEECPublicKey) pk;
+			assertEquals(ecpk.getAlgorithm(), "EC");
+			org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
+			assertNotNull("ImplicitlyCA must have null spec", spec);
+		} else {
+			assertTrue("Public key is not EC", false);
+		}
+        try {
+            cert.verify(rsacacert.getPublicKey());        	
+        } catch (Exception e) {
+        	assertTrue("Verify failed: "+e.getMessage(), false);
+        }
+
+        //FileOutputStream fos = new FileOutputStream("testcert.crt");
+        //fos.write(cert.getEncoded());
+        //fos.close();
+        log.debug("<test12SignSessionECDSAWithRSACA()");
+    }
+
+    /**
+     * tests bouncy PKCS10
+     *
+     * @throws Exception if en error occurs...
+     */
+    public void test13TestBCPKCS10ECDSAWithRSACA() throws Exception {
+        log.debug(">test13TestBCPKCS10ECDSAWithRSACA()");
+        usersession.setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
+        log.debug("Reset status of 'foo' to NEW");
+        // Create certificate request
+        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA256WithECDSA",
+                CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"), ecdsakeys.getPublic(), null,
+                ecdsakeys.getPrivate());
+        ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+        DEROutputStream dOut = new DEROutputStream(bOut);
+        dOut.writeObject(req);
+        dOut.close();
+
+        PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
+        boolean verify = req2.verify();
+        log.debug("Verify returned " + verify);
+        if (verify == false) {
+            log.debug("Aborting!");
+            return;
+        }
+        log.debug("CertificationRequest generated successfully.");
+        byte[] bcp10 = bOut.toByteArray();
+        PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
+        p10.setUsername("foo");
+        p10.setPassword("foo123");
+        IResponseMessage resp = remote.createCertificate(admin,
+                p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
+        X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+        assertNotNull("Failed to create certificate", cert);
+        log.debug("Cert=" + cert.toString());
+        PublicKey pk = cert.getPublicKey();
+        if (pk instanceof JCEECPublicKey) {
+			JCEECPublicKey ecpk = (JCEECPublicKey) pk;
+			assertEquals(ecpk.getAlgorithm(), "EC");
+			org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
+			assertNotNull("ImplicitlyCA must have null spec", spec);
+		} else {
+			assertTrue("Public key is not EC", false);
+		}
+        try {
+            cert.verify(rsacacert.getPublicKey());        	
+        } catch (Exception e) {
+        	assertTrue("Verify failed: "+e.getMessage(), false);
+        }
+        log.debug("<test13TestBCPKCS10ECDSAWithRSACA()");
+    }
+
+    /**
+     * creates cert
+     *
+     * @throws Exception if en error occurs...
+     */
+    public void test14SignSessionECDSAWithECDSACA() throws Exception {
+        log.debug(">test14SignSessionECDSAWithECDSACA()");
+
+        usersession.setUserStatus(admin,"fooecdsa",UserDataConstants.STATUS_NEW);
+        log.debug("Reset status of 'fooecdsa' to NEW");
+        // user that we know exists...
+    	X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, ecdsakeys.getPrivate(), ecdsakeys.getPublic(), CATokenConstants.SIGALG_SHA256_WITH_ECDSA, false);
+        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "fooecdsa", "foo123", selfcert);
+        assertNotNull("Misslyckades skapa cert", cert);
+        log.debug("Cert=" + cert.toString());
+        PublicKey pk = cert.getPublicKey();
+        if (pk instanceof JCEECPublicKey) {
+			JCEECPublicKey ecpk = (JCEECPublicKey) pk;
+			assertEquals(ecpk.getAlgorithm(), "EC");
+			org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
+			assertNotNull("ImplicitlyCA must have null spec", spec);
+		} else {
+			assertTrue("Public key is not EC", false);
+		}
+        try {
+            cert.verify(ecdsacacert.getPublicKey());        	
+        } catch (Exception e) {
+        	assertTrue("Verify failed: "+e.getMessage(), false);
+        }
+
+        //FileOutputStream fos = new FileOutputStream("testcert.crt");
+        //fos.write(cert.getEncoded());
+        //fos.close();
+        log.debug("<test14SignSessionECDSAWithECDSACA()");
+    }
+
+    /**
+     * tests bouncy PKCS10
+     *
+     * @throws Exception if en error occurs...
+     */
+    public void test15TestBCPKCS10ECDSAWithECDSACA() throws Exception {
+        log.debug(">test15TestBCPKCS10ECDSAWithECDSACA()");
+        usersession.setUserStatus(admin,"fooecdsa",UserDataConstants.STATUS_NEW);
+        log.debug("Reset status of 'foo' to NEW");
+        // Create certificate request
+        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA256WithECDSA",
+                CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=fooecdsa"), ecdsakeys.getPublic(), null,
+                ecdsakeys.getPrivate());
+        ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+        DEROutputStream dOut = new DEROutputStream(bOut);
+        dOut.writeObject(req);
+        dOut.close();
+
+        PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
+        boolean verify = req2.verify();
+        log.debug("Verify returned " + verify);
+        if (verify == false) {
+            log.debug("Aborting!");
+            return;
+        }
+        log.debug("CertificationRequest generated successfully.");
+        byte[] bcp10 = bOut.toByteArray();
+        PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
+        p10.setUsername("fooecdsa");
+        p10.setPassword("foo123");
+        IResponseMessage resp = remote.createCertificate(admin,
+                p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
+        X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+        assertNotNull("Failed to create certificate", cert);
+        log.debug("Cert=" + cert.toString());
+        PublicKey pk = cert.getPublicKey();
+        if (pk instanceof JCEECPublicKey) {
+			JCEECPublicKey ecpk = (JCEECPublicKey) pk;
+			assertEquals(ecpk.getAlgorithm(), "EC");
+			org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
+			assertNotNull("ImplicitlyCA must have null spec", spec);
+		} else {
+			assertTrue("Public key is not EC", false);
+		}
+        try {
+            cert.verify(ecdsacacert.getPublicKey());        	
+        } catch (Exception e) {
+        	assertTrue("Verify failed: "+e.getMessage(), false);
+        }
+        log.debug("<test15TestBCPKCS10ECDSAWithECDSACA()");
+    }
+    /**
+     * creates cert
+     *
+     * @throws Exception if en error occurs...
+     */
+    public void test16SignSessionECDSAWithECDSAImplicitlyCACA() throws Exception {
+        log.debug(">test16SignSessionECDSAWithECDSAImplicitlyCACA()");
+
+        usersession.setUserStatus(admin,"fooecdsaimpca",UserDataConstants.STATUS_NEW);
+        log.debug("Reset status of 'fooecdsaimpca' to NEW");
+        // user that we know exists...
+    	X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, ecdsakeys.getPrivate(), ecdsakeys.getPublic(), CATokenConstants.SIGALG_SHA256_WITH_ECDSA, false);
+        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "fooecdsaimpca", "foo123", selfcert);
+        assertNotNull("Misslyckades skapa cert", cert);
+        log.debug("Cert=" + cert.toString());
+        PublicKey pk = cert.getPublicKey();
+        if (pk instanceof JCEECPublicKey) {
+			JCEECPublicKey ecpk = (JCEECPublicKey) pk;
+			assertEquals(ecpk.getAlgorithm(), "EC");
+			org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
+			assertNotNull("ImplicitlyCA must have null spec", spec);
+		} else {
+			assertTrue("Public key is not EC", false);
+		}
+        try {
+            cert.verify(ecdsaimplicitlycacacert.getPublicKey());        	
+        } catch (Exception e) {
+        	assertTrue("Verify failed: "+e.getMessage(), false);
+        }
+
+        //FileOutputStream fos = new FileOutputStream("testcert.crt");
+        //fos.write(cert.getEncoded());
+        //fos.close();
+        log.debug("<test16SignSessionECDSAWithECDSAImplicitlyCACA()");
+    }
+
+    /**
+     * tests bouncy PKCS10
+     *
+     * @throws Exception if en error occurs...
+     */
+    public void test17TestBCPKCS10ECDSAWithECDSAImplicitlyCACA() throws Exception {
+        log.debug(">test17TestBCPKCS10ECDSAWithECDSAImplicitlyCACA()");
+        usersession.setUserStatus(admin,"fooecdsaimpca",UserDataConstants.STATUS_NEW);
+        log.debug("Reset status of 'foo' to NEW");
+        // Create certificate request
+        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA256WithECDSA",
+                CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=fooecdsaimpca"), ecdsakeys.getPublic(), null,
+                ecdsakeys.getPrivate());
+        ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+        DEROutputStream dOut = new DEROutputStream(bOut);
+        dOut.writeObject(req);
+        dOut.close();
+
+        PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
+        boolean verify = req2.verify();
+        log.debug("Verify returned " + verify);
+        if (verify == false) {
+            log.debug("Aborting!");
+            return;
+        }
+        log.debug("CertificationRequest generated successfully.");
+        byte[] bcp10 = bOut.toByteArray();
+        PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
+        p10.setUsername("fooecdsaimpca");
+        p10.setPassword("foo123");
+        IResponseMessage resp = remote.createCertificate(admin,
+                p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
+        X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+        assertNotNull("Failed to create certificate", cert);
+        log.debug("Cert=" + cert.toString());
+        PublicKey pk = cert.getPublicKey();
+        if (pk instanceof JCEECPublicKey) {
+			JCEECPublicKey ecpk = (JCEECPublicKey) pk;
+			assertEquals(ecpk.getAlgorithm(), "EC");
+			org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
+			assertNotNull("ImplicitlyCA must have null spec", spec);
+		} else {
+			assertTrue("Public key is not EC", false);
+		}
+        try {
+            cert.verify(ecdsaimplicitlycacacert.getPublicKey());        	
+        } catch (Exception e) {
+        	assertTrue("Verify failed: "+e.getMessage(), false);
+        }
+        log.debug("<test17TestBCPKCS10ECDSAWithECDSAImplicitlyCACA()");
+    }
+
+    /**
+     * creates new user
+     *
+     * @throws Exception if en error occurs...
+     */
+    public void test99DeleteUsers() throws Exception {
+        log.debug(">test99DeleteUsers()");
+
+        // delete users that we know...
+        usersession.deleteUser(admin, "foo");
+        log.debug("deleted user: foo, foo123, C=SE, O=AnaTom, CN=foo");
+        usersession.deleteUser(admin, "fooecdsa");
+        log.debug("deleted user: fooecdsa, foo123, C=SE, O=AnaTom, CN=foo");
+        usersession.deleteUser(admin, "fooecdsaimpca");
+        log.debug("deleted user: fooecdsaimpca, foo123, C=SE, O=AnaTom, CN=foo");
+
+        log.debug("<test99DeleteUsers()");
+    }
+    
     /**
      * Tests scep message
      */

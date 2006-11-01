@@ -30,7 +30,7 @@ import org.ejbca.core.model.log.Admin;
 /**
  * Tests and removes the ca data entity bean.
  *
- * @version $Id: TestRemoveCA.java,v 1.3 2006-07-20 17:50:52 herrvendil Exp $
+ * @version $Id: TestRemoveCA.java,v 1.4 2006-11-01 10:08:17 anatom Exp $
  */
 public class TestRemoveCA extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -110,22 +110,46 @@ public class TestRemoveCA extends TestCase {
     }
 
     /**
-     * removes CA
+     * removes RSA CA
      *
      * @throws Exception error
      */
-    public void test02removeCA() throws Exception {
-        log.debug(">test02removeCA()");
+    public void test02removeRSACA() throws Exception {
+        log.debug(">test02removeRSACA()");
         boolean ret = false;
         try {
             cacheAdmin.removeCA(admin, "CN=TEST".hashCode());
             ret = true;
         } catch (Exception pee) {
         }
-        assertTrue("Removing CA failed", ret);
+        assertTrue("Removing RSA CA failed", ret);
 
-        log.debug("<test02removeCA()");
+        log.debug("<test02removeRSACA()");
     }
 
+    /**
+     * removes ECDSA CA
+     *
+     * @throws Exception error
+     */
+    public void test03removeECDSACA() throws Exception {
+        log.debug(">test03removeECDSACA()");
+        boolean ret = false;
+        try {
+            cacheAdmin.removeCA(admin, "CN=TESTECDSA".hashCode());
+            ret = true;
+        } catch (Exception pee) {
+        }
+        assertTrue("Removing ECDSA CA failed", ret);
+
+        try {
+            cacheAdmin.removeCA(admin, "CN=TESTECDSAImplicitlyCA".hashCode());
+            ret = true;
+        } catch (Exception pee) {
+        }
+        assertTrue("Removing ECDSA ImplicitlyCA CA failed", ret);
+
+        log.debug("<test03removeECDSACA()");
+    }
 
 }

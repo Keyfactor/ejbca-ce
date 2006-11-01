@@ -92,7 +92,7 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.21 2006-10-31 10:39:26 anatom Exp $
+ * @version $Id: CertTools.java,v 1.22 2006-11-01 10:08:18 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -156,11 +156,11 @@ public class CertTools {
     /** Parameters used when generating or verifying ECDSA keys/certs using the "implicitlyCA" key encoding.
      * The curve parameters is then defined outside of the key and configured in the BC provider.
      */
-    private static final String IMPLICITLYCA_Q = "@ecdsa.implicitlyca.q@";
-    private static final String IMPLICITLYCA_A = "@ecdsa.implicitlyca.a@"; 
-    private static final String IMPLICITLYCA_B = "@ecdsa.implicitlyca.b@"; 
-    private static final String IMPLICITLYCA_G = "@ecdsa.implicitlyca.g@"; 
-    private static final String IMPLICITLYCA_N = "@ecdsa.implicitlyca.n@";
+    private static String IMPLICITLYCA_Q = "@ecdsa.implicitlyca.q@";
+    private static String IMPLICITLYCA_A = "@ecdsa.implicitlyca.a@"; 
+    private static String IMPLICITLYCA_B = "@ecdsa.implicitlyca.b@"; 
+    private static String IMPLICITLYCA_G = "@ecdsa.implicitlyca.g@"; 
+    private static String IMPLICITLYCA_N = "@ecdsa.implicitlyca.n@";
 
     /** Flag indicating if the BC provider should be removed before installing it again. When developing and re-deploying alot
      * this is needed so you don't have to restart JBoss all the time. 
@@ -628,6 +628,7 @@ public class CertTools {
         }
         // Install EC parameters for implicitlyCA encoding of EC keys, we have default curve parameters if no new ones have been given.
         // The parameters are only used if implicitlyCA is used for generating keys, or verifying certs
+        checkImplicitParams();
     	ECCurve curve = new ECCurve.Fp(
     			new BigInteger(IMPLICITLYCA_Q), // q
     			new BigInteger(IMPLICITLYCA_A, 16), // a
@@ -644,6 +645,32 @@ public class CertTools {
     	}
     }
 
+    /** Check if parameters have been set correctly during pre-process, otherwise log an error and
+     * set default values. Mostly used to be able to do JUnit testing
+     */
+    private static void checkImplicitParams() {
+        if (StringUtils.equals(IMPLICITLYCA_Q, "@ecdsa.implicitlyca.q@")) {
+        	log.error("IMPLICITLYCA_Q not set!");
+        	IMPLICITLYCA_Q = "883423532389192164791648750360308885314476597252960362792450860609699839";
+        }
+        if (StringUtils.equals(IMPLICITLYCA_A, "@ecdsa.implicitlyca.a@")) {
+        	log.error("IMPLICITLYCA_A not set!");
+        	IMPLICITLYCA_A = "7fffffffffffffffffffffff7fffffffffff8000000000007ffffffffffc";
+        }
+        if (StringUtils.equals(IMPLICITLYCA_B, "@ecdsa.implicitlyca.b@")) {
+        	log.error("IMPLICITLYCA_B not set!");
+        	IMPLICITLYCA_B = "6b016c3bdcf18941d0d654921475ca71a9db2fb27d1d37796185c2942c0a";
+        }
+        if (StringUtils.equals(IMPLICITLYCA_G, "@ecdsa.implicitlyca.g@")) {
+        	log.error("IMPLICITLYCA_G not set!");
+        	IMPLICITLYCA_G = "020ffa963cdca8816ccc33b8642bedf905c3d358573d3f27fbbd3b3cb9aaaf";
+        }
+        if (StringUtils.equals(IMPLICITLYCA_N, "@ecdsa.implicitlyca.n@")) {
+        	log.error("IMPLICITLYCA_N not set!");
+        	IMPLICITLYCA_N = "883423532389192164791648750360308884807550341691627752275345424702807307";
+        }
+    }
+    
     /**
      * Reads a certificate in PEM-format from a file. The file may contain other things,
      * the first certificate in the file is read.
