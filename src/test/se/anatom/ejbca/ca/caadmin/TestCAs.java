@@ -45,7 +45,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the ca data entity bean.
  *
- * @version $Id: TestCAs.java,v 1.13 2006-11-01 10:08:17 anatom Exp $
+ * @version $Id: TestCAs.java,v 1.14 2006-11-01 15:04:03 anatom Exp $
  */
 public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -169,7 +169,6 @@ public class TestCAs extends TestCase {
             assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=TEST"));
             assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=TEST"));
             PublicKey pk = cert.getPublicKey();
-            System.out.println(pk.getClass().getName());
             if (pk instanceof RSAPublicKey) {
             	RSAPublicKey rsapk = (RSAPublicKey) pk;
 				assertEquals(rsapk.getAlgorithm(), "RSA");
