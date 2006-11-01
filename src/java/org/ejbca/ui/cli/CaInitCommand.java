@@ -18,6 +18,7 @@ import java.util.Collection;
 
 import javax.naming.Context;
 
+import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionHome;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
@@ -27,7 +28,6 @@ import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
-import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.StringTools;
@@ -36,7 +36,7 @@ import org.ejbca.util.StringTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.6 2006-10-31 08:24:11 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.7 2006-11-01 11:54:46 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
@@ -57,12 +57,14 @@ public class CaInitCommand extends BaseCaAdminCommand {
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         // Create new CA.
-        if (args.length < 6) {
+        if (args.length < 7) {
            String msg = "Used to create a Root CA using RSA keys.";
-           msg += "\nUsage: CA init <caname> <dn> <keyspec> <validity-days> <policyID>";
-           msg += "\nkeyspec is size of RSA keys (1024, 2048, 4096).";
+           msg += "\nUsage: CA init <caname> <dn> <keyspec> <keytype> <validity-days> <policyID> [<signalgorithm>]";
+           msg += "\nkeytype is RSA or ECDSA.";
+           msg += "\nkeyspec for RSA keys is size of RSA keys (1024, 2048, 4096).";
+           msg += "\nkeyspec for ECDSA keys is name of curve or 'implicitlyCA', see docs.";
            msg += "\npolicyId can be 'null' if no Certificate Policy extension should be present, or\nobjectID as '2.5.29.32.0'.";
-           msg += "\ndefault key type is RSA and default sign algorithm is SHA1WithRSA.";
+           msg += "\ndefault sign algorithm is SHA1WithRSA or SHA1WithECDSA.";
            throw new IllegalAdminCommandException(msg);
         }
             
@@ -71,10 +73,18 @@ public class CaInitCommand extends BaseCaAdminCommand {
             String dn = CertTools.stringToBCDNString(args[2]);
             dn = StringTools.strip(dn);
             String keyspec = args[3];
-            int validity = Integer.parseInt(args[4]);
-            String policyId = args[5];
+            String keytype = args[4];
+            int validity = Integer.parseInt(args[5]);
+            String policyId = args[6];
             if (policyId.equals("null"))
               policyId = null;
+            String signAlg = CATokenConstants.SIGALG_SHA1_WITH_RSA;
+            if (StringUtils.equals(keytype, CATokenConstants.KEYALGORITHM_ECDSA)) {
+            	signAlg = CATokenConstants.SIGALG_SHA1_WITH_ECDSA;
+            }
+            if (args.length > 7) {
+                signAlg = args[7];            	
+            }
               
             getOutputStream().println("Initializing CA");            
             ICAAdminSessionRemote caadminsession = getCAAdminSessionRemote();
@@ -82,20 +92,21 @@ public class CaInitCommand extends BaseCaAdminCommand {
             getOutputStream().println("Generating rootCA keystore:");
             getOutputStream().println("CA name: "+caname);
             getOutputStream().println("DN: "+dn);
-            getOutputStream().println("Keysize: "+keyspec);
+            getOutputStream().println("Keyspec: "+keyspec);
+            getOutputStream().println("Keytype: "+keytype);
             getOutputStream().println("Validity (days): "+validity);
             getOutputStream().println("Policy ID: "+policyId);
+            getOutputStream().println("Signature alg: "+signAlg);
                             
             initAuthorizationModule(dn.hashCode());
 
-            String keytype = CATokenInfo.KEYALGORITHM_RSA;
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
             catokeninfo.setSignKeySpec(keyspec);
             catokeninfo.setSignKeyAlgorithm(keytype);
-            catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
-            catokeninfo.setEncKeySpec(keyspec);
-            catokeninfo.setEncKeyAlgorithm(keytype);
-            catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
+            catokeninfo.setSignatureAlgorithm(signAlg);
+            catokeninfo.setEncKeySpec("2048");
+            catokeninfo.setEncKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
+            catokeninfo.setEncryptionAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
             // Create and active OSCP CA Service.
             ArrayList extendedcaservices = new ArrayList();
             String keySpec = keyspec;

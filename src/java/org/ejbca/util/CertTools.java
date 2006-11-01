@@ -92,7 +92,7 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.22 2006-11-01 10:08:18 anatom Exp $
+ * @version $Id: CertTools.java,v 1.23 2006-11-01 11:54:46 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -649,23 +649,23 @@ public class CertTools {
      * set default values. Mostly used to be able to do JUnit testing
      */
     private static void checkImplicitParams() {
-        if (StringUtils.equals(IMPLICITLYCA_Q, "@ecdsa.implicitlyca.q@")) {
+        if (StringUtils.contains(IMPLICITLYCA_Q, "ecdsa.implicitlyca.q")) {
         	log.error("IMPLICITLYCA_Q not set!");
         	IMPLICITLYCA_Q = "883423532389192164791648750360308885314476597252960362792450860609699839";
         }
-        if (StringUtils.equals(IMPLICITLYCA_A, "@ecdsa.implicitlyca.a@")) {
+        if (StringUtils.contains(IMPLICITLYCA_A, "ecdsa.implicitlyca.a")) {
         	log.error("IMPLICITLYCA_A not set!");
         	IMPLICITLYCA_A = "7fffffffffffffffffffffff7fffffffffff8000000000007ffffffffffc";
         }
-        if (StringUtils.equals(IMPLICITLYCA_B, "@ecdsa.implicitlyca.b@")) {
+        if (StringUtils.contains(IMPLICITLYCA_B, "ecdsa.implicitlyca.b")) {
         	log.error("IMPLICITLYCA_B not set!");
         	IMPLICITLYCA_B = "6b016c3bdcf18941d0d654921475ca71a9db2fb27d1d37796185c2942c0a";
         }
-        if (StringUtils.equals(IMPLICITLYCA_G, "@ecdsa.implicitlyca.g@")) {
+        if (StringUtils.contains(IMPLICITLYCA_G, "ecdsa.implicitlyca.g")) {
         	log.error("IMPLICITLYCA_G not set!");
         	IMPLICITLYCA_G = "020ffa963cdca8816ccc33b8642bedf905c3d358573d3f27fbbd3b3cb9aaaf";
         }
-        if (StringUtils.equals(IMPLICITLYCA_N, "@ecdsa.implicitlyca.n@")) {
+        if (StringUtils.contains(IMPLICITLYCA_N, "ecdsa.implicitlyca.n")) {
         	log.error("IMPLICITLYCA_N not set!");
         	IMPLICITLYCA_N = "883423532389192164791648750360308884807550341691627752275345424702807307";
         }
