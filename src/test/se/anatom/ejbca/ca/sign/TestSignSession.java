@@ -66,7 +66,7 @@ import org.ejbca.util.cert.QCStatementExtension;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.17 2006-11-01 10:08:17 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.18 2006-11-02 07:51:12 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -264,7 +264,8 @@ public class TestSignSession extends TestCase {
         }
         if (userExists) {
             log.info("User foo already exists, resetting status.");
-            usersession.setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
+            usersession.changeUser(admin,"foo","foo123","C=SE,O=AnaTom,CN=foo",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW,rsacaid);
+            //usersession.setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
         userExists = false;

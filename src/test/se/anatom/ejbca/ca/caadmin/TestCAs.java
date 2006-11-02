@@ -45,7 +45,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the ca data entity bean.
  *
- * @version $Id: TestCAs.java,v 1.14 2006-11-01 15:04:03 anatom Exp $
+ * @version $Id: TestCAs.java,v 1.15 2006-11-02 07:49:54 anatom Exp $
  */
 public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -134,7 +134,7 @@ public class TestCAs extends TestCase {
             X509CAInfo cainfo = new X509CAInfo("CN=TEST",
                     "TEST", SecConst.CA_ACTIVE,
                     "", SecConst.CERTPROFILE_FIXED_ROOTCA,
-                    1,
+                    365,
                     null, // Expiretime
                     CAInfo.CATYPE_X509,
                     CAInfo.SELFSIGNED,
@@ -259,7 +259,7 @@ public class TestCAs extends TestCase {
             X509CAInfo cainfo = new X509CAInfo("CN=TESTECDSA",
                     "TESTECDSA", SecConst.CA_ACTIVE,
                     "", SecConst.CERTPROFILE_FIXED_ROOTCA,
-                    1,
+                    365,
                     null, // Expiretime
                     CAInfo.CATYPE_X509,
                     CAInfo.SELFSIGNED,
@@ -348,7 +348,7 @@ public class TestCAs extends TestCase {
             X509CAInfo cainfo = new X509CAInfo("CN=TESTECDSAImplicitlyCA",
                     "TESTECDSAImplicitlyCA", SecConst.CA_ACTIVE,
                     "", SecConst.CERTPROFILE_FIXED_ROOTCA,
-                    1,
+                    365,
                     null, // Expiretime
                     CAInfo.CATYPE_X509,
                     CAInfo.SELFSIGNED,
