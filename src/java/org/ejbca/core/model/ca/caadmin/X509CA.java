@@ -120,7 +120,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.30 2006-10-31 08:15:56 anatom Exp $
+ * @version $Id: X509CA.java,v 1.31 2006-11-02 07:48:27 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -295,10 +295,16 @@ public class X509CA extends CA implements Serializable {
         if ( (notAfter == null) || (!certProfile.getAllowValidityOverride()) ){
             // validity in days = validity*24*60*60*1000 milliseconds
             long val = certProfile.getValidity();        
+        	if (log.isDebugEnabled()) {
+        		log.debug("Using validity from profile: "+val);
+        	}
             lastDate.setTime(lastDate.getTime() + ( val * 24 * 60 * 60 * 1000));        	
         } else {
         	// only of nut null and we allow validity override
         	lastDate = notAfter;
+        	if (log.isDebugEnabled()) {
+            	log.debug("Using validity from request: "+lastDate);        		
+        	}
         }
         X509Certificate cacert = (X509Certificate)getCACertificate();
         // If our desired after date is after the CA expires, we will not allow this
