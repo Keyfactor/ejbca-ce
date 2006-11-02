@@ -96,7 +96,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
 /**
  * Helper class for CMP Junit tests
  * @author tomas
- * @version $Id: CmpTestCase.java,v 1.1 2006-11-02 17:02:44 anatom Exp $
+ * @version $Id: CmpTestCase.java,v 1.2 2006-11-02 18:05:20 anatom Exp $
  *
  */
 public class CmpTestCase extends TestCase {
@@ -611,9 +611,10 @@ public class CmpTestCase extends TestCase {
      * @param retMsg
      * @param failMsg
      * @param tag 1 is answer to initicalization resp, 3 certification resp etc, 
+     * @param err a number from FailInfo
      * @throws IOException
      */
-    protected void checkCmpFailMessage(byte[] retMsg, String failMsg, int exptag, int requestId) throws IOException {
+    protected void checkCmpFailMessage(byte[] retMsg, String failMsg, int exptag, int requestId, int err) throws IOException {
         //
         // Parse response message
         //
@@ -623,22 +624,33 @@ public class CmpTestCase extends TestCase {
 		PKIBody body = respObject.getBody();
 		int tag = body.getTagNo();
 		assertEquals(tag, exptag);
-		CertRepMessage c = null;
-		if (exptag == 1) {
-			c = body.getIp();
-		} else if (exptag == 3) {
-			c = body.getCp();
+		if (exptag == 23) {
+			ErrorMsgContent c = body.getError();
+			assertNotNull(c);
+			PKIStatusInfo info = c.getPKIStatus();
+			assertNotNull(info);
+			assertEquals(2, info.getStatus().getValue().intValue());
+			int i = info.getFailInfo().intValue();
+			assertEquals(i,1<<err); // bit nr 7 (INCORRECT_DATA) set is 128
+			assertEquals(failMsg, info.getStatusString().getString(0).getString());
+		} else {
+			CertRepMessage c = null;
+			if (exptag == 1) {
+				c = body.getIp();
+			} else if (exptag == 3) {
+				c = body.getCp();
+			} 
+			assertNotNull(c);
+			CertResponse resp = c.getResponse(0);
+			assertNotNull(resp);
+			assertEquals(resp.getCertReqId().getValue().intValue(), requestId); 
+			PKIStatusInfo info = resp.getStatus();
+			assertNotNull(info);
+			assertEquals(2, info.getStatus().getValue().intValue());
+			int i = info.getFailInfo().intValue();
+			assertEquals(i,1<<7); // bit nr 7 (INCORRECT_DATA) set is 128
+			assertEquals(failMsg, info.getStatusString().getString(0).getString());			
 		}
-		assertNotNull(c);
-		CertResponse resp = c.getResponse(0);
-		assertNotNull(resp);
-		assertEquals(resp.getCertReqId().getValue().intValue(), requestId); 
-		PKIStatusInfo info = resp.getStatus();
-		assertNotNull(info);
-		assertEquals(2, info.getStatus().getValue().intValue());
-		int i = info.getFailInfo().intValue();
-		assertEquals(i,1<<7); // bit nr 7 (INCORRECT_DATA) set is 128
-		assertEquals(failMsg, info.getStatusString().getString(0).getString());
     }
     
     protected void checkCmpPKIErrorMessage(byte[] retMsg, String sender, String recipient, int errorCode, String errorMsg) throws IOException {

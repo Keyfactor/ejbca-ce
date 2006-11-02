@@ -196,9 +196,24 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 		checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), cacert, resp, true);
 		int reason = checkRevokeStatus(issuerDN, cert.getSerialNumber());
 		assertEquals(reason, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+		
+		// Create a revocation request for a non existing cert, chould fail!
+		rev = genRevReq(issuerDN, userDN, new BigInteger("1"), cacert, nonce, transid);
+		assertNotNull(rev);
+		bao = new ByteArrayOutputStream();
+		out = new DEROutputStream(bao);
+		out.writeObject(rev);
+		ba = bao.toByteArray();
+		// Send request and receive response
+		resp = sendCmpHttp(ba);
+		assertNotNull(resp);
+		assertTrue(resp.length > 0);
+		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, true);
+		checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), cacert, resp, false);
+
 	}
 	
-	/*
+	
 	public void test02CrmfTcpOkUser() throws Exception {
 
 		// Create a new good user
@@ -239,7 +254,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, true);
 		checkCmpPKIConfirmMessage(userDN, cacert, resp);
 	}
-	*/
+	
 	
 	public void test99CleanUp() throws Exception {
 		usersession.deleteUser(admin, "cmptest");

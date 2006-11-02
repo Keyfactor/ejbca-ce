@@ -14,7 +14,6 @@
 package se.anatom.ejbca.protocol.cmp;
 
 import java.io.ByteArrayOutputStream;
-import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.cert.CertificateEncodingException;
@@ -45,7 +44,6 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
-import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -161,7 +159,7 @@ public class CrmfRequestTest extends CmpTestCase {
 		assertNotNull(resp);
 		assertTrue(resp.length > 0);
 		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, false);
-		checkCmpFailMessage(resp, "User not found: abc123rry5774466", 1, reqId);
+		checkCmpFailMessage(resp, "User not found: abc123rry5774466", 1, reqId, 7);
 	}
 	
 	public void test02CrmfHttpOkUser() throws Exception {
@@ -186,8 +184,7 @@ public class CrmfRequestTest extends CmpTestCase {
 		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, false);
 		X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
 		String altNames = CertTools.getSubjectAlternativeName(cert);
-		assertTrue(altNames.indexOf("upn=fooupn@bar.com") != -1);
-		assertTrue(altNames.indexOf("rfc822name=fooemail@bar.com") != -1);
+		assertNull(altNames);
 		
 		// Send a confirm message to the CA
 		String hash = "foo123";
@@ -215,24 +212,10 @@ public class CrmfRequestTest extends CmpTestCase {
 		resp = sendCmpHttp(ba);
 		assertNotNull(resp);
 		assertTrue(resp.length > 0);
-		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, true);
-		checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), cacert, resp, true);
-		int reason = checkRevokeStatus(issuerDN, cert.getSerialNumber());
-		assertEquals(reason, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, false);
+		checkCmpFailMessage(resp, "No PKI protection to verify", 23, reqId, 1);
+		
 
-		// Create a revocation request for a non existing cert, chould fail!
-		rev = genRevReq(issuerDN, userDN, new BigInteger("1"), cacert, nonce, transid);
-		assertNotNull(rev);
-		bao = new ByteArrayOutputStream();
-		out = new DEROutputStream(bao);
-		out.writeObject(rev);
-		ba = bao.toByteArray();
-		// Send request and receive response
-		resp = sendCmpHttp(ba);
-		assertNotNull(resp);
-		assertTrue(resp.length > 0);
-		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, true);
-		checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), cacert, resp, false);
 	}
 
 	public void test03BlueXCrmf() throws Exception {
@@ -282,13 +265,6 @@ public class CrmfRequestTest extends CmpTestCase {
             log.debug("Reset status to NEW");
         }
         
-    }
-
-    private int checkRevokeStatus(String issuerDN, BigInteger serno) throws RemoteException {
-    	int ret = RevokedCertInfo.NOT_REVOKED;
-    	RevokedCertInfo info = storesession.isRevoked(admin, issuerDN, serno);
-    	ret = info.getReason();
-    	return ret;
     }
 
     static byte[] bluexir = Base64.decode(("MIICIjCB1AIBAqQCMACkVjBUMQswCQYDVQQGEwJOTDEbMBkGA1UEChMSQS5FLlQu"+
