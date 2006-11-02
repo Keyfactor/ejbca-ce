@@ -28,7 +28,7 @@ import java.util.Date;
  * Base interface for request messages sent to the CA. Implementors of this interface must also
  * implement Serializable if they are to be sent to any EJB bussiness methods.
  *
- * @version $Id: IRequestMessage.java,v 1.5 2006-10-23 12:01:48 anatom Exp $
+ * @version $Id: IRequestMessage.java,v 1.6 2006-11-02 17:03:21 anatom Exp $
  */
 public interface IRequestMessage extends Serializable {
     /**
@@ -67,6 +67,13 @@ public interface IRequestMessage extends Serializable {
      */
     public String getRequestDN();
 
+    /**
+     * Gets the requested altNames if contained in the request (the desired altNames for the user).
+     *
+     * @return requested altNames or null.
+     */
+    public String getRequestAltNames();
+    
     /**
      * Gets a validity date from the request, if the request contains a desired validity.
      * The requested validity may, or may not be used, it depends if allowValidityOverride is set in 

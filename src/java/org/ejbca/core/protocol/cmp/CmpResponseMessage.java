@@ -51,7 +51,7 @@ import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
 /**
  * CMP certificate response message
  * @author tomas
- * @version $Id: CmpResponseMessage.java,v 1.5 2006-10-22 09:05:25 anatom Exp $
+ * @version $Id: CmpResponseMessage.java,v 1.6 2006-11-02 17:03:01 anatom Exp $
  */
 public class CmpResponseMessage implements IResponseMessage {
 	
@@ -66,7 +66,7 @@ public class CmpResponseMessage implements IResponseMessage {
 	 */
 	static final long serialVersionUID = 10002L;
 	
-	private static Logger log = Logger.getLogger(CmpResponseMessage.class);
+	private static final Logger log = Logger.getLogger(CmpResponseMessage.class);
 	
     /** The encoded response message */
     private byte[] responseMessage = null;
@@ -154,15 +154,6 @@ public class CmpResponseMessage implements IResponseMessage {
 
     public boolean create() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
 		boolean ret = false;
-		if (status.equals(ResponseStatus.SUCCESS)) {
-			log.debug("Creating a 'accepted' message.");
-		} else {
-			if (status.equals(ResponseStatus.FAILURE)) {
-				log.debug("Creating a 'rejection' message.");
-			} else {
-				log.debug("Creating a 'waiting' message?");
-			}               
-		}
 		// Some general stuff, common for all types of messages
 		String issuer = null;
 		String subject = null;
@@ -185,7 +176,7 @@ public class CmpResponseMessage implements IResponseMessage {
 		try {
 			if (status.equals(ResponseStatus.SUCCESS)) {
 				if (cert != null) {
-					log.debug("Creating a CertRepMessage");
+					log.debug("Creating a CertRepMessage 'accepted'");
 					PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(new DERInteger(0)); // 0 = accepted
 					CertResponse myCertResponse = new CertResponse(new DERInteger(requestId), myPKIStatusInfo);
 					
@@ -209,18 +200,46 @@ public class CmpResponseMessage implements IResponseMessage {
 					}
 					ret = true;	
 				}
-			} else {
+			} else if (status.equals(ResponseStatus.FAILURE)) {
+				log.debug("Creating a CertRepMessage 'rejected'");
 				// Create a failure message
 				PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(new DERInteger(2)); // 2 = rejection
 				myPKIStatusInfo.setFailInfo(failInfo.getAsBitString());
-				myPKIStatusInfo.setStatusString(new PKIFreeText(new DERUTF8String(failText)));
+				if (failText != null) {
+					myPKIStatusInfo.setStatusString(new PKIFreeText(new DERUTF8String(failText)));					
+				}
+				CertResponse myCertResponse = new CertResponse(new DERInteger(requestId), myPKIStatusInfo);
+				CertRepMessage myCertRepMessage = new CertRepMessage(myCertResponse);
 				
+				int respType = requestType + 1; // 1 = intitialization response, 3 = certification response etc
+				log.debug("Creating response body of type respType.");
+				PKIBody myPKIBody = new PKIBody(myCertRepMessage, respType); 
+				PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
+				
+				if ( (pbeKeyId != null) && (pbeKey != null) && (pbeDigestAlg != null) && (pbeMacAlg != null) ) {
+					responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, pbeKeyId, pbeKey, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
+				} else {
+					responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCert, signKey, digestAlg, provider);
+				}
+				ret = true;	
+			} else {
+				log.debug("Creating a 'waiting' message?");
+				// Not supported, lets create a PKIError failure instead
+				// Create a failure message
+				PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(new DERInteger(2)); // 2 = rejection
+				myPKIStatusInfo.setFailInfo(failInfo.getAsBitString());
+				if (failText != null) {
+					myPKIStatusInfo.setStatusString(new PKIFreeText(new DERUTF8String(failText)));					
+				}
 				ErrorMsgContent myErrorContent = new ErrorMsgContent(myPKIStatusInfo);
 				PKIBody myPKIBody = new PKIBody(myErrorContent, 23); // 23 = error
 				PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
-				
-				responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCert, signKey, digestAlg, provider);
-				ret = true;
+				if ( (pbeKeyId != null) && (pbeKey != null) && (pbeDigestAlg != null) && (pbeMacAlg != null) ) {
+					responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, pbeKeyId, pbeKey, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
+				} else {
+					responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCert, signKey, digestAlg, provider);
+				}
+				ret = true;	
 			}
 		} catch (CertificateEncodingException e) {
 			log.error("Error creating CertRepMessage: ", e);

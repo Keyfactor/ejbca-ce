@@ -50,7 +50,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * - Certificate Confirmation - accept or reject by client - will return a PKIConfirm
  * 
  * @author tomas
- * @version $Id: CmpMessageDispatcher.java,v 1.9 2006-10-22 09:05:25 anatom Exp $
+ * @version $Id: CmpMessageDispatcher.java,v 1.10 2006-11-02 17:03:02 anatom Exp $
  */
 public class CmpMessageDispatcher {
 	private static final Logger log = Logger.getLogger(CmpMessageDispatcher.class);
@@ -120,6 +120,7 @@ public class CmpMessageDispatcher {
 			}
 			BaseCmpMessage cmpMessage = null;
 			ICmpMessageHandler handler = null;
+			int unknownMessageType = -1;
 			switch (tagno) {
 			case 0:
 				// 0 and 2 are both certificate requests
@@ -133,14 +134,20 @@ public class CmpMessageDispatcher {
 			case 19:
 				// PKI confirm
 				handler = new ConfirmationMessageHandler(properties);
-				cmpMessage = new ConfirmationMessage(req);
+				cmpMessage = new GeneralCmpMessage(req);
 				break;
 			case 24:
 				// Certificate confirmation
 				handler = new ConfirmationMessageHandler(properties);
-				cmpMessage = new ConfirmationMessage(req);
+				cmpMessage = new GeneralCmpMessage(req);
+				break;
+			case 11:
+				// Revocation request
+				handler = new RevocationMessageHandler(admin, properties);
+				cmpMessage = new GeneralCmpMessage(req);
 				break;
 			default:
+				unknownMessageType = tagno;
 				break;
 			}
 			if ( (handler != null) && (cmpMessage != null) ) {
@@ -152,6 +159,11 @@ public class CmpMessageDispatcher {
 				}
 			} else {
 				log.error("Something is null! Handler="+handler+", cmpMessage="+cmpMessage);
+				if (unknownMessageType > -1) {
+					log.error("Unknown message type "+unknownMessageType+" received, creating error message");
+					ret = CmpMessageHelper.createUnprotectedErrorMessage(null, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, "Can not handle message type");					
+				}
+
 			}
 		} catch (CreateException e) {
 			log.error("Exception during CMP processing: ", e);

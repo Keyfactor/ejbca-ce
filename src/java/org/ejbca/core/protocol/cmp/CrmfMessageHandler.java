@@ -65,7 +65,7 @@ import com.novosec.pkix.asn1.cmp.PKIHeader;
 /**
  * Message handler for certificate request messages in the CRMF format
  * @author tomas
- * @version $Id: CrmfMessageHandler.java,v 1.13 2006-10-23 12:01:33 anatom Exp $
+ * @version $Id: CrmfMessageHandler.java,v 1.14 2006-11-02 17:03:02 anatom Exp $
  */
 public class CrmfMessageHandler implements ICmpMessageHandler {
 	
@@ -199,11 +199,13 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 								String username = gen.generateUsername(dn);
 								IPasswordGenerator pwdgen = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_ALLPRINTABLE);
 								String pwd = pwdgen.getNewPassword(12, 12);
+								// AltNames may be in the request template
+								String altNames = crmfreq.getRequestAltNames();
 								try {
-									usersession.addUser(admin, username, pwd, dn, null, null, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, caId);
+									usersession.addUser(admin, username, pwd, dn, altNames, null, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, caId);
 								} catch (DuplicateKeyException e) {
 									// If the user already exists, we will change him instead and go for that
-									usersession.changeUser(admin, username, pwd, dn, null, null, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, UserDataConstants.STATUS_NEW, caId);
+									usersession.changeUser(admin, username, pwd, dn, altNames, null, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, UserDataConstants.STATUS_NEW, caId);
 								}
 								crmfreq.setUsername(username);
 								crmfreq.setPassword(pwd);
@@ -291,6 +293,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 			log.error("Exception during CMP processing: ", e);
 		} catch (SignRequestSignatureException e) {
 			log.error("Exception during CMP processing: ", e);
+			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_POP, e.getMessage());
 		} catch (ClassNotFoundException e) {
 			log.error("Exception during CMP processing: ", e);
 		} catch (RemoteException e) {

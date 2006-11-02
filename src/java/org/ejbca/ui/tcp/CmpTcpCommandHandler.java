@@ -37,7 +37,6 @@ import java.security.cert.CertificateEncodingException;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.IResponseMessage;
-import org.ejbca.core.protocol.ResponseStatus;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcher;
 import org.ejbca.util.Base64;
 import org.quickserver.net.server.ClientBinaryHandler;
@@ -164,10 +163,11 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 		} 
 		boolean doClose = close;
 		// 5 is pkiRep, 6 is errorMsgRep, 3 is finRep
+		// errorMsgRep should only be used for TCP protocol errors, see 3.5.6 in cmp-transport-protocols
 		int msgType = 5;
-		if (resp.getStatus() != ResponseStatus.SUCCESS) {
-			msgType = 6;
-		}
+		//if (resp.getStatus() != ResponseStatus.SUCCESS) {
+		//	msgType = 6;
+		//}
 		if ( (msg == null) || (msg.length == 0) ) {
 			msg = new byte[1];
 			msg[0] = 0;

@@ -46,7 +46,7 @@ import org.ejbca.util.CertTools;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.9 2006-10-31 08:21:28 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.10 2006-11-02 17:03:21 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage {
     /**
@@ -331,6 +331,10 @@ public class PKCS10RequestMessage implements IRequestMessage {
         }
 
         return ret;
+    }
+
+    public String getRequestAltNames() {
+    	return null;
     }
 
     /**

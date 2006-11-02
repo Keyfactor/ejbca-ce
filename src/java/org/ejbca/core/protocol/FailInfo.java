@@ -12,9 +12,9 @@
  *************************************************************************/
  
 /**
- * $Header: /home/tomas/Dev/cvs2svn/ejbca-cvsbackup/ejbca/src/java/org/ejbca/core/protocol/FailInfo.java,v 1.4 2006-09-25 12:54:59 anatom Exp $
- * $Revision: 1.4 $
- * $Date: 2006-09-25 12:54:59 $
+ * $Header: /home/tomas/Dev/cvs2svn/ejbca-cvsbackup/ejbca/src/java/org/ejbca/core/protocol/FailInfo.java,v 1.5 2006-11-02 17:03:21 anatom Exp $
+ * $Revision: 1.5 $
+ * $Date: 2006-11-02 17:03:21 $
  *
  */
 package org.ejbca.core.protocol;
@@ -28,7 +28,7 @@ import org.bouncycastle.asn1.x509.ReasonFlags;
  * Encapsulates the possible values for the failinfo part of a SCEP FAILURE response.
  *
  * @author Jon Barber (jon.barber@acm.org)
- * @version $Id: FailInfo.java,v 1.4 2006-09-25 12:54:59 anatom Exp $
+ * @version $Id: FailInfo.java,v 1.5 2006-11-02 17:03:21 anatom Exp $
  */
 
 public class FailInfo implements Serializable {
@@ -69,6 +69,10 @@ public class FailInfo implements Serializable {
      * Verification of Proof of possession failed
      */
     public static final FailInfo BAD_POP = new FailInfo(9);
+    /**
+     * Not authorized
+     */
+    public static final FailInfo NOT_AUTHORIZED = new FailInfo(23);
     /**
      * The value actually encoded into the response message as the failinfo attribute
      */

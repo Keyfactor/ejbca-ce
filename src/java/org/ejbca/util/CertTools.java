@@ -56,6 +56,7 @@ import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
+import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DEREncodableVector;
 import org.bouncycastle.asn1.DERIA5String;
@@ -72,6 +73,7 @@ import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.PolicyInformation;
+import org.bouncycastle.asn1.x509.ReasonFlags;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
@@ -86,13 +88,14 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 
 
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.23 2006-11-01 11:54:46 anatom Exp $
+ * @version $Id: CertTools.java,v 1.24 2006-11-02 17:02:46 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -1264,7 +1267,7 @@ public class CertTools {
      * @throws IOException 
      * @see #getSubjectAlternativeName
      */
-    protected static String getGeneralNameString(int tag, DEREncodable value) throws IOException {
+    public static String getGeneralNameString(int tag, DEREncodable value) throws IOException {
         String ret = null;
         switch (tag) {
         case 0: ASN1Sequence seq = getAltnameSequence(value.getDERObject().getEncoded());
@@ -1557,6 +1560,46 @@ public class CertTools {
         return bcku;
     }
     
+    /** Converts DERBitString ResonFlags to a RevokedCertInfo constant 
+     * 
+     * @param reasonFlags DERBITString received from org.bouncycastle.asn1.x509.ReasonFlags.
+     * @return int according to org.ejbca.core.model.ca.crl.RevokedCertInfo
+     */
+    public static int bitStringToRevokedCertInfo(DERBitString reasonFlags) {
+        int ret = RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED;
+    	if (reasonFlags == null) {
+    		return ret;
+    	}
+    	int val = reasonFlags.intValue();
+    	if ( (val & ReasonFlags.aACompromise) != 0) {
+    		ret = RevokedCertInfo.REVOKATION_REASON_AACOMPROMISE;
+    	}
+    	if ( (val & ReasonFlags.affiliationChanged) != 0) {
+    		ret = RevokedCertInfo.REVOKATION_REASON_AFFILIATIONCHANGED;
+    	}
+    	if ( (val & ReasonFlags.cACompromise) != 0) {
+    		ret = RevokedCertInfo.REVOKATION_REASON_CACOMPROMISE;
+    	}
+    	if ( (val & ReasonFlags.certificateHold) != 0) {
+    		ret = RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD;
+    	}
+    	if ( (val & ReasonFlags.cessationOfOperation) != 0) {
+    		ret = RevokedCertInfo.REVOKATION_REASON_CESSATIONOFOPERATION;
+    	}
+    	if ( (val & ReasonFlags.keyCompromise) != 0) {
+    		ret = RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE;
+    	}
+    	if ( (val & ReasonFlags.privilegeWithdrawn) != 0) {
+    		ret = RevokedCertInfo.REVOKATION_REASON_PRIVILEGESWITHDRAWN;
+    	}
+    	if ( (val & ReasonFlags.superseded) != 0) {
+    		ret = RevokedCertInfo.REVOKATION_REASON_SUPERSEDED;
+    	}
+    	if ( (val & ReasonFlags.unused) != 0) {
+    		ret = RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED;
+    	}
+        return ret;
+    }
     /**
      * Method used to insert a CN postfix into DN by extracting the first found CN appending cnpostfix and then replacing the original CN 
      * with the new one in DN.

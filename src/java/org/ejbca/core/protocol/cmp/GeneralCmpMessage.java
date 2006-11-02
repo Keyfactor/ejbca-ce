@@ -13,7 +13,9 @@
 package org.ejbca.core.protocol.cmp;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.x509.X509Name;
 import org.ejbca.util.Base64;
 
 import com.novosec.pkix.asn1.cmp.CertConfirmContent;
@@ -21,15 +23,18 @@ import com.novosec.pkix.asn1.cmp.PKIBody;
 import com.novosec.pkix.asn1.cmp.PKIHeader;
 import com.novosec.pkix.asn1.cmp.PKIMessage;
 import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
+import com.novosec.pkix.asn1.cmp.RevDetails;
+import com.novosec.pkix.asn1.cmp.RevReqContent;
+import com.novosec.pkix.asn1.crmf.CertTemplate;
 
 /**
  * Message class for CMP PKI confirm and CertCOnf messages
  * @author tomas
- * @version $Id: ConfirmationMessage.java,v 1.3 2006-09-24 13:20:06 anatom Exp $
+ * @version $Id: GeneralCmpMessage.java,v 1.1 2006-11-02 17:03:01 anatom Exp $
  */
-public class ConfirmationMessage extends BaseCmpMessage {
+public class GeneralCmpMessage extends BaseCmpMessage {
 
-	private static final Logger log = Logger.getLogger(ConfirmationMessage .class);
+	private static final Logger log = Logger.getLogger(GeneralCmpMessage .class);
 	
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -42,7 +47,7 @@ public class ConfirmationMessage extends BaseCmpMessage {
      */
     static final long serialVersionUID = 1000L;
 
-	public ConfirmationMessage(PKIMessage msg) {
+	public GeneralCmpMessage(PKIMessage msg) {
 		PKIBody body = msg.getBody();
 		int tag = body.getTagNo();
 		if (tag == 19) {
@@ -62,6 +67,20 @@ public class ConfirmationMessage extends BaseCmpMessage {
 					log.error("Received a Cert Confirm with status "+st);
 					// TODO: if it is rejected, we should revoke the cert?
 				}
+			}
+		}
+		if (tag == 11) {
+			// this is a RevReqContent,
+			log.debug("Received a RevReqContent");
+			RevReqContent rr = body.getRr();
+			RevDetails rd = rr.getRevDetails(0);
+			CertTemplate ct = rd.getCertDetails();
+			DERInteger serno = ct.getSerialNumber();
+			X509Name issuer = ct.getIssuer();
+			if ( (serno != null) && (issuer != null) ) {
+				log.info("Received a revocation request for issuer: "+issuer.toString()+" and serno: "+serno.getValue().toString(16));
+			} else {
+				log.info("Received a revocation request missing issuer or serno");
 			}
 		}
 		setMessage(msg);

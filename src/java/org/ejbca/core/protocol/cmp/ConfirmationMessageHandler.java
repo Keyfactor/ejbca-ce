@@ -36,7 +36,7 @@ import com.novosec.pkix.asn1.cmp.PKIHeader;
 /**
  * Message handler for certificate request messages in the CRMF format
  * @author tomas
- * @version $Id: ConfirmationMessageHandler.java,v 1.4 2006-10-23 12:01:33 anatom Exp $
+ * @version $Id: ConfirmationMessageHandler.java,v 1.5 2006-11-02 17:03:01 anatom Exp $
  */
 public class ConfirmationMessageHandler implements ICmpMessageHandler {
 	
@@ -63,7 +63,6 @@ public class ConfirmationMessageHandler implements ICmpMessageHandler {
 	public IResponseMessage handleMessage(BaseCmpMessage msg) {
 		log.debug(">handleMessage");
 		int version = msg.getHeader().getPvno().getValue().intValue();
-		//IResponseMessage resp = null;
 		IResponseMessage resp = null;
 		// if version == 1 it is cmp1999 and we should not return a message back
 		if (version > 1) {

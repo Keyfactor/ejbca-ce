@@ -13,6 +13,7 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -31,14 +32,21 @@ import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DEREncodable;
+import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.Time;
+import org.bouncycastle.asn1.x509.X509Extension;
+import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.ejbca.core.protocol.IRequestMessage;
@@ -65,7 +73,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
  * -- Self signature
  * 
  * @author tomas
- * @version $Id: CrmfRequestMessage.java,v 1.11 2006-10-31 08:21:29 anatom Exp $
+ * @version $Id: CrmfRequestMessage.java,v 1.12 2006-11-02 17:03:02 anatom Exp $
  */
 public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessage {
 	
@@ -253,6 +261,47 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 		log.debug("Request DN is: "+ret);
 		return ret;
 	}
+	
+    public String getRequestAltNames() {
+    	String ret = null;
+		CertTemplate templ = req.getCertReq().getCertTemplate();
+		X509Extensions exts = templ.getExtensions();
+		if (exts != null) {
+			X509Extension ext = exts.getExtension(X509Extensions.SubjectAlternativeName);
+			if (ext != null) {
+				//GeneralNames
+				ASN1OctetString octs = ext.getValue();
+				if (octs != null) {
+					ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
+					DERObject obj;
+					try {
+						obj = aIn.readObject();
+						GeneralNames gan = GeneralNames.getInstance(obj);
+						GeneralName[] gns = gan.getNames();
+						String altName = null;
+						for (int i = 0; i < gns.length; i++) {
+							GeneralName gn = gns[i];
+							int tag = gn.getTagNo();
+							DEREncodable name = gn.getName();
+							String str = CertTools.getGeneralNameString(tag, name);
+							if (altName == null) {
+								altName = str;
+							} else {
+								altName += ", "+str;
+							}
+						}
+						ret = altName;
+					} catch (IOException e) {
+						log.error("IOExceptioon parsing altNames: ", e);
+						return null;
+					}					     
+				}
+			}
+		}
+		log.debug("Request altName is: "+ret);
+    	return ret;
+    }
+
 
 	public Date getRequestValidityNotAfter() {
 		Date ret = null;
