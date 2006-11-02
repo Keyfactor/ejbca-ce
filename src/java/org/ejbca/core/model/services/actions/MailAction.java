@@ -12,9 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.services.actions;
 
-import java.security.cert.X509Certificate;
 import java.util.Date;
-import java.util.HashMap;
 
 import javax.ejb.EJBException;
 import javax.mail.Message;
@@ -24,25 +22,18 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogEntry;
-import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.services.ActionException;
 import org.ejbca.core.model.services.ActionInfo;
 import org.ejbca.core.model.services.BaseAction;
-import org.ejbca.core.model.services.workers.DummyWorker;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.NotificationParamGen;
-import org.ejbca.util.TemplateMimeMessage;
 
 /**
  * Class managing the sending of emails from a service.
  * 
  * 
  * @author Philip Vendil
- *
- * $id$
+ * @version $Id: MailAction.java,v 1.3 2006-11-02 08:03:25 anatom Exp $
  */
 public class MailAction extends BaseAction {
 	

@@ -164,7 +164,7 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 		Integer timerInfo = (Integer) timer.getInfo();
 		
 		
-	    ServiceConfiguration serviceData = getServiceSession().getServiceConfiguration(intAdmin, timerInfo);
+	    ServiceConfiguration serviceData = getServiceSession().getServiceConfiguration(intAdmin, timerInfo.intValue());
 	    if(serviceData != null){
 	    	String serviceName = getServiceSession().getServiceName(intAdmin, timerInfo.intValue());
 	    	IWorker worker = getWorker(serviceData,serviceName);

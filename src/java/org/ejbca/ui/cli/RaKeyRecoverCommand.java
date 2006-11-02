@@ -22,13 +22,12 @@ import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionHome;
 import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionRemote;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 
 /**
  * Find details of a user in the database.
  *
- * @version $Id: RaKeyRecoverCommand.java,v 1.4 2006-09-27 09:28:25 herrvendil Exp $
+ * @version $Id: RaKeyRecoverCommand.java,v 1.5 2006-11-02 08:03:22 anatom Exp $
  */
 public class RaKeyRecoverCommand extends BaseRaAdminCommand {
     /**

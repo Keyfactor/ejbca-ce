@@ -13,8 +13,6 @@
 
 package org.ejbca.ui.web.admin.configuration;
 
-import java.util.Collection;
-
 import javax.faces.model.SelectItem;
 
 /**
@@ -25,7 +23,7 @@ import javax.faces.model.SelectItem;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: SortableSelectItem.java,v 1.1 2006-10-26 11:02:17 herrvendil Exp $
+ * @version $Id: SortableSelectItem.java,v 1.2 2006-11-02 08:03:23 anatom Exp $
  */
 
 public class SortableSelectItem extends SelectItem implements Comparable{

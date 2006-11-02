@@ -14,8 +14,6 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import java.io.IOException;
-import java.security.cert.X509CRL;
-import java.security.cert.X509Certificate;
 
 import javax.ejb.CreateException;
 import javax.servlet.ServletConfig;
@@ -26,22 +24,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
-import org.ejbca.core.ejb.services.IServiceSessionLocalHome;
 import org.ejbca.core.ejb.services.IServiceTimerSessionLocalHome;
-import org.ejbca.core.model.log.Admin;
-import org.ejbca.ui.web.RequestHelper;
-import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
-import org.ejbca.ui.web.pub.ServletUtils;
-import org.ejbca.util.CertTools;
 
 /**
  * Servlet used to start services by calling the ServiceSession.load() at startup<br>
  *
  * 
  *
- * @version $Id: StartServicesServlet.java,v 1.2 2006-10-26 11:02:17 herrvendil Exp $
+ * @version $Id: StartServicesServlet.java,v 1.3 2006-11-02 08:03:23 anatom Exp $
  * 
  * @web.servlet name = "StartServices"
  *              display-name = "StartServicesServlet"
@@ -49,7 +39,8 @@ import org.ejbca.util.CertTools;
  *              load-on-startup = "1"
  *
  * @web.servlet-mapping url-pattern = "/configuration/startservices"
- *
+ * 
+ * @version $Id: StartServicesServlet.java,v 1.3 2006-11-02 08:03:23 anatom Exp $
  */
 public class StartServicesServlet extends HttpServlet {
 

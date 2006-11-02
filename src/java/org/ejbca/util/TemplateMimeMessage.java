@@ -13,12 +13,11 @@
 
 package org.ejbca.util;
 
-import javax.mail.internet.MimeMessage;
-import javax.mail.Session;
-import javax.mail.MessagingException;
 import java.util.HashMap;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
+
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.internet.MimeMessage;
 
 /**
  * This is an extremely simple template message to be used to interpolate some values that exists
@@ -39,7 +38,7 @@ import java.util.regex.Matcher;
  *
  * </code>
  * 
- * @version $Id: TemplateMimeMessage.java,v 1.3 2006-10-26 11:03:24 herrvendil Exp $
+ * @version $Id: TemplateMimeMessage.java,v 1.4 2006-11-02 08:03:23 anatom Exp $
  */
 public class TemplateMimeMessage extends MimeMessage {
 

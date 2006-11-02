@@ -16,20 +16,17 @@ package org.ejbca.core.protocol.ws.client;
 import java.io.File;
 import java.io.FileOutputStream;
 
-//import org.ejbca.core.model.authorization.wsclient.AuthorizationDeniedException;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.KeyStore;
 import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
-//import org.ejbca.core.protocol.ws.wsclient.KeyStore;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
-import org.ejbca.util.KeyTools;
 
 /**
  * Request a keystore given a pkcs12
  *
- * @version $Id: PKCS12ReqCommand.java,v 1.3 2006-10-31 08:21:28 anatom Exp $
+ * @version $Id: PKCS12ReqCommand.java,v 1.4 2006-11-02 08:03:22 anatom Exp $
  */
 public class PKCS12ReqCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 

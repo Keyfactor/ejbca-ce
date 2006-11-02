@@ -20,10 +20,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.faces.application.Application;
-import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
-import javax.faces.model.SelectItem;
 
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.ServiceExistsException;
@@ -37,7 +35,7 @@ import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
  * 
  * @author Philip Vendil 2006 sep 29
  *
- * @version $Id: ListServicesManagedBean.java,v 1.2 2006-10-26 11:02:18 herrvendil Exp $
+ * @version $Id: ListServicesManagedBean.java,v 1.3 2006-11-02 08:03:24 anatom Exp $
  */
 public class ListServicesManagedBean extends BaseManagedBean {
 	
@@ -67,8 +65,8 @@ public class ListServicesManagedBean extends BaseManagedBean {
 	    Iterator iter = availableServicesIds.iterator();
 	    while(iter.hasNext()){
 	    	Integer id = (Integer) iter.next();
-	    	ServiceConfiguration serviceConfig =  EjbcaJSFHelper.getBean().getServiceSession().getServiceConfiguration(getAdmin(), id);
-	    	String serviceName = EjbcaJSFHelper.getBean().getServiceSession().getServiceName(getAdmin(), id); 
+	    	ServiceConfiguration serviceConfig =  EjbcaJSFHelper.getBean().getServiceSession().getServiceConfiguration(getAdmin(), id.intValue());
+	    	String serviceName = EjbcaJSFHelper.getBean().getServiceSession().getServiceName(getAdmin(), id.intValue()); 
 	    	if(serviceConfig.isActive()){
 	    		availableServices.add(new SortableSelectItem(serviceName, serviceName+ " (" + EjbcaJSFHelper.getBean().getText().get("ACTIVE") + ")"));
 	    	}else{

@@ -18,37 +18,20 @@
  */
 package org.ejbca.ui.cli;
 
-import java.awt.print.PageFormat;
-import java.awt.print.Paper;
-import java.awt.print.PrinterJob;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringReader;
 import java.util.Date;
 import java.util.Properties;
 
-import javax.print.DocFlavor;
-import javax.print.PrintService;
-import javax.print.PrintServiceLookup;
-import javax.print.attribute.HashPrintRequestAttributeSet;
-import javax.print.attribute.PrintRequestAttributeSet;
-
-import org.ejbca.core.model.hardtoken.profiles.SVGImageManipulator;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.PrinterManager;
-
-
-
-
-
 
 /**
  * @author philip
  *
  * Class used as a help tool when creating hard token visual layout templates
+ * @version $Id: SVGTemplatePrinter.java,v 1.5 2006-11-02 08:03:22 anatom Exp $
  */
 public class SVGTemplatePrinter {
 
