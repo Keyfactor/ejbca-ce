@@ -84,6 +84,7 @@
                     <include name="**/protocol/cmp/CrmfRequestTest*" />
                     <exclude name="**/protocol/cmp/CrmfRARequestTest*" />
                     <exclude name="**/protocol/cmp/CrmfRATcpRequestTest*" />
+                    <exclude name="**/protocol/cmp/CrmfRAPbeRequestTest*" />
                     <exclude name="**/protocol/ProtocolLookupServerHttpTest*" />
                     <exclude name="**/protocol/ProtocolOcspHttpStandaloneTest*" />
                 	<include name="**/webdist/WebdistHttpTest*" />
@@ -116,6 +117,7 @@
                     <exclude name="**/protocol/cmp/CrmfRequestTest*" />
                     <include name="**/protocol/cmp/CrmfRARequestTest*" />
                     <include name="**/protocol/cmp/CrmfRATcpRequestTest*" />
+                    <include name="**/protocol/cmp/CrmfRAPbeRequestTest*" />
                     <exclude name="**/protocol/ProtocolLookupServerHttpTest*" />
                     <exclude name="**/protocol/ProtocolOcspHttpStandaloneTest*" />
                 	<exclude name="**/webdist/WebdistHttpTest*" />
