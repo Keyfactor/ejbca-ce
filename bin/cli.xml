@@ -65,6 +65,7 @@
 ca.name             : ${ca.name}
 ca.dn               : ${ca.dn}
 ca.keysize          : ${ca.keysize}
+ca.keytype          : ${ca.keytype}
 ca.validity         : ${ca.validity}
 ca.policy           : ${ca.policy}
 httpsserver.hostname: ${httpsserver.hostname}
@@ -84,8 +85,8 @@ java.trustpassword  : ${java.trustpassword}
 	</target>
 
     <target name="ejbca:install" depends="check:bootstrapdone, ejbca:init" description="Install">
-        <echo message="Initializing CA with ${ca.name} '${ca.dn}' ${ca.keysize} ${ca.validity} ${ca.policy} ..."/>
-        <ejbca:cli name="ca" arg='init ${ca.name} "${ca.dn}" ${ca.keysize} ${ca.validity} ${ca.policy}'/>
+        <echo message="Initializing CA with ${ca.name} '${ca.dn}' ${ca.keysize} ${ca.keytype} ${ca.validity} ${ca.policy} ..."/>
+        <ejbca:cli name="ca" arg='init ${ca.name} "${ca.dn}" ${ca.keysize} ${ca.keytype} ${ca.validity} ${ca.policy}'/>
         <antcall target="ejbca:adminweb"/>
     	<antcall target="ejbca:javatruststore"/>
     </target>
