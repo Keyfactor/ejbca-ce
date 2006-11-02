@@ -229,6 +229,7 @@
 	<property name="cmp.defaultca" value="" />
 	<property name="cmp.extractusernamecomponent" value="" />
 	<property name="cmp.operationmode" value="normal" />
+	<property name="cmp.responseprotection" value="signature" />
 	<property name="cmp.ra.authenticationsecret" value="" />
 	<property name="cmp.ra.namegenerationscheme" value="DN" />
 	<property name="cmp.ra.namegenerationparameters" value="CN" />

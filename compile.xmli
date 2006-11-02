@@ -50,6 +50,7 @@ cmp.allowraverifypopo           = ${cmp.allowraverifypopo}
 cmp.defaultca                   = ${cmp.defaultca}
 cmp.extractusernamecomponent    = ${cmp.extractusernamecomponent}
 cmp.operationmode               = ${cmp.operationmode}
+cmp.responseprotection          = ${cmp.responseprotection}
 cmp.ra.authenticationsecret     = ${cmp.ra.authenticationsecret}
 cmp.ra.namegenerationscheme     = ${cmp.ra.namegenerationscheme}
 cmp.ra.namegenerationparameters = ${cmp.ra.namegenerationparameters}
