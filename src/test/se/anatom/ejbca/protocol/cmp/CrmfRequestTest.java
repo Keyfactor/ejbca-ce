@@ -34,8 +34,6 @@ import org.bouncycastle.asn1.DEROutputStream;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -69,7 +67,6 @@ public class CrmfRequestTest extends CmpTestCase {
     private KeyPair keys = null;  
 
     private static IUserAdminSessionRemote usersession;
-	private ICertificateStoreSessionRemote storesession = null;
     private static int caid = 0;
     private static Admin admin;
     private static X509Certificate cacert = null;
@@ -111,8 +108,6 @@ public class CrmfRequestTest extends CmpTestCase {
         }
         IUserAdminSessionHome userhome = (IUserAdminSessionHome) ServiceLocator.getInstance().getRemoteHome(IUserAdminSessionHome.JNDI_NAME, IUserAdminSessionHome.class);
         usersession = userhome.create();
-		ICertificateStoreSessionHome storeHome = (ICertificateStoreSessionHome) ServiceLocator.getInstance().getRemoteHome(ICertificateStoreSessionHome.JNDI_NAME, ICertificateStoreSessionHome.class);
-		this.storesession = storeHome.create();
         
         issuerDN = cacert.getIssuerDN().getName();
 	}
@@ -214,8 +209,6 @@ public class CrmfRequestTest extends CmpTestCase {
 		assertTrue(resp.length > 0);
 		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, false);
 		checkCmpFailMessage(resp, "No PKI protection to verify", 23, reqId, 1);
-		
-
 	}
 
 	public void test03BlueXCrmf() throws Exception {
