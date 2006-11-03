@@ -112,7 +112,7 @@ import org.ejbca.util.CertTools;
  *   
  * @author Thomas Meckel (Ophios GmbH)
  * @author Tomas Gustavsson
- * @version  $Id: OCSPServletBase.java,v 1.17 2006-08-06 12:37:00 anatom Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.18 2006-11-03 16:35:07 anatom Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
@@ -180,28 +180,32 @@ abstract class OCSPServletBase extends HttpServlet {
         Iterator iter = certs.iterator();
         while (iter.hasNext()) {
             X509Certificate cacert = (X509Certificate) iter.next();
-            CertificateID issuerId = new CertificateID(certId.getHashAlgOID(), cacert, cacert.getSerialNumber());
-            if (m_log.isDebugEnabled()) {
-                m_log.debug("Comparing the following certificate hashes:\n"
-                        + " Hash algorithm : '" + certId.getHashAlgOID() + "'\n"
-                        + " CA certificate\n"
-                        + "      CA SubjectDN: '" + cacert.getSubjectDN().getName() + "'\n"
-                        + "      SerialNumber: '" + cacert.getSerialNumber().toString(16) + "'\n"
-                        + " CA certificate hashes\n"
-                        + "      Name hash : '" + new String(Hex.encode(issuerId.getIssuerNameHash())) + "'\n"
-                        + "      Key hash  : '" + new String(Hex.encode(issuerId.getIssuerKeyHash())) + "'\n"
-                        + " OCSP certificate hashes\n"
-                        + "      Name hash : '" + new String(Hex.encode(certId.getIssuerNameHash())) + "'\n"
-                        + "      Key hash  : '" + new String(Hex.encode(certId.getIssuerKeyHash())) + "'\n");
-            }
-            if ((issuerId.toASN1Object().getIssuerNameHash().equals(certId.toASN1Object().getIssuerNameHash()))
-                    && (issuerId.toASN1Object().getIssuerKeyHash().equals(certId.toASN1Object().getIssuerKeyHash()))) {
+            try {
+                CertificateID issuerId = new CertificateID(certId.getHashAlgOID(), cacert, cacert.getSerialNumber());
                 if (m_log.isDebugEnabled()) {
-                    m_log.debug("Found matching CA-cert with:\n"
+                    m_log.debug("Comparing the following certificate hashes:\n"
+                            + " Hash algorithm : '" + certId.getHashAlgOID() + "'\n"
+                            + " CA certificate\n"
+                            + "      CA SubjectDN: '" + cacert.getSubjectDN().getName() + "'\n"
+                            + "      SerialNumber: '" + cacert.getSerialNumber().toString(16) + "'\n"
+                            + " CA certificate hashes\n"
                             + "      Name hash : '" + new String(Hex.encode(issuerId.getIssuerNameHash())) + "'\n"
-                            + "      Key hash  : '" + new String(Hex.encode(issuerId.getIssuerKeyHash())) + "'\n");                    
+                            + "      Key hash  : '" + new String(Hex.encode(issuerId.getIssuerKeyHash())) + "'\n"
+                            + " OCSP certificate hashes\n"
+                            + "      Name hash : '" + new String(Hex.encode(certId.getIssuerNameHash())) + "'\n"
+                            + "      Key hash  : '" + new String(Hex.encode(certId.getIssuerKeyHash())) + "'\n");
                 }
-                return cacert;
+                if ((issuerId.toASN1Object().getIssuerNameHash().equals(certId.toASN1Object().getIssuerNameHash()))
+                        && (issuerId.toASN1Object().getIssuerKeyHash().equals(certId.toASN1Object().getIssuerKeyHash()))) {
+                    if (m_log.isDebugEnabled()) {
+                        m_log.debug("Found matching CA-cert with:\n"
+                                + "      Name hash : '" + new String(Hex.encode(issuerId.getIssuerNameHash())) + "'\n"
+                                + "      Key hash  : '" + new String(Hex.encode(issuerId.getIssuerKeyHash())) + "'\n");                    
+                    }
+                    return cacert;
+                }
+            } catch (OCSPException e) {
+                m_log.error("OCSPexception comparing certificate hashes, skipping cacert for '"+cacert.getIssuerDN()+": ", e);
             }
         }
         if (m_log.isDebugEnabled()) {
