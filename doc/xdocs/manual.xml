@@ -216,6 +216,10 @@ keytool -import -trustcacerts -alias AdminCA1 -keystore $JAVA_HOME/jre/lib/secur
 <p>
 where AdminCA1 is the CA name as configured in conf/ejbca.properties (default is AdminCA1).
 You must stop and start JBoss after doing this.
+</p>
+<p>
+You can use this command to install the certificate of any CA in the java truststore by giving an argument: 
+<br/>ant javatruststore -Dca.name=MyCaName
 </p></subsection>
 
 <subsection name="Additional howtos">
