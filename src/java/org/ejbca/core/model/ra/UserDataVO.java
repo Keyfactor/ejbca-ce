@@ -29,9 +29,20 @@ import org.ejbca.util.StringTools;
 /**
  * Holds admin data collected from UserData in the database. Strings are stored in Base64 encoded format to be safe for storing in database, xml etc.
  *
- * @version $Id: UserDataVO.java,v 1.8 2006-09-30 10:33:35 anatom Exp $
+ * @version $Id: UserDataVO.java,v 1.9 2006-11-03 17:10:23 anatom Exp $
  */
 public class UserDataVO implements Serializable {
+
+    /**
+     * Determines if a de-serialized file is compatible with this class.
+     *
+     * Maintainers must change this value if and only if the new version
+     * of this class is not compatible with old versions. See Sun docs
+     * for <a href=http://java.sun.com/products/jdk/1.1/docs/guide
+     * /serialization/spec/version.doc.html> details. </a>
+     *
+     */
+    private static final long serialVersionUID = 3837505643343885941L;
 
     // Public constants
     public static final int NO_ENDENTITYPROFILE    = 0;
