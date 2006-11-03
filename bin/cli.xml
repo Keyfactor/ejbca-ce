@@ -39,6 +39,7 @@
         <property name="ca.name" value="AdminCA1"/>
         <property name="ca.dn" value="CN=AdminCA1,O=${app.name.cap} Sample,C=SE"/>
         <property name="ca.keysize" value="2048"/>
+        <property name="ca.keytype" value="RSA"/>
         <property name="ca.validity" value="3650"/>
         <property name="ca.policy" value="null"/>
         <property name="httpsserver.hostname" value="localhost"/>
@@ -51,6 +52,7 @@
         <input message="Please enter the CA name (default: AdminCA1) ?" addproperty="ca.name" defaultvalue="AdminCA1"/>
         <input message="Please enter the CA dn (default: CN=AdminCA1,O=${app.name.cap} Sample,C=SE) ?" addproperty="ca.dn" defaultvalue="CN=AdminCA1,O=${app.name.cap} Sample,C=SE"/>
         <input message="Please enter the CA key size (default: 2048) ?" addproperty="ca.keysize" defaultvalue="2048" />
+        <input message="Please enter the CA key type (default: RSA) ?" addproperty="ca.keytype" defaultvalue="RSA" />
         <input message="Please enter the CA validity in days (default: 3650) ?" addproperty="ca.validity" defaultvalue="3650"/>
         <input message="Please enter the CA policy id (default, no policy) ?" addproperty="ca.policy" defaultvalue="null"/>
         <input message="Please enter the server httpsserver.hostname (default 'localhost') ?" addproperty="httpsserver.hostname" defaultvalue="localhost"/>
