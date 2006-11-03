@@ -21,9 +21,20 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 /**
  * SwedishEIDHardToken is a class defining data stored in database for a Swedish EID token.
  *
- * @version $Id: SwedishEIDHardToken.java,v 1.2 2006-09-17 23:02:22 herrvendil Exp $
+ * @version $Id: SwedishEIDHardToken.java,v 1.3 2006-11-03 17:30:27 anatom Exp $
  */
 public class SwedishEIDHardToken extends HardToken {
+    /**
+     * Determines if a de-serialized file is compatible with this class.
+     *
+     * Maintainers must change this value if and only if the new version
+     * of this class is not compatible with old versions. See Sun docs
+     * for <a href=http://java.sun.com/products/jdk/1.1/docs/guide
+     * /serialization/spec/version.doc.html> details. </a>
+     *
+     */
+    private static final long serialVersionUID = 5695294040446656470L;
+
     // Public Constants
 	public static final int THIS_TOKENTYPE = SecConst.TOKEN_SWEDISHEID;
 	
