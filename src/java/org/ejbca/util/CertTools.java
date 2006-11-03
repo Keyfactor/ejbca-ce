@@ -95,7 +95,7 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.24 2006-11-02 17:02:46 anatom Exp $
+ * @version $Id: CertTools.java,v 1.25 2006-11-03 15:56:22 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -617,35 +617,43 @@ public class CertTools {
     }
 
     public static synchronized void installBCProvider() {
+        // A flag that ensures that we intall the parameters for implcitlyCA only when we have installed a new provider
+        boolean installImplicitlyCA = false;
         if (Security.addProvider(new BouncyCastleProvider()) < 0) {
             // If already installed, remove so we can handle redeploy
-        	// Nope, we ignore re-deploy on this level, because it can happen
-        	// that the BC-provider is uninstalled, in just the second another
-        	// thread tries to use the provider, and then that request will fail.
-        	if (developmentProviderInstallation) {
+            // Nope, we ignore re-deploy on this level, because it can happen
+            // that the BC-provider is uninstalled, in just the second another
+            // thread tries to use the provider, and then that request will fail.
+            if (developmentProviderInstallation) {
                 Security.removeProvider("BC");
                 if (Security.addProvider(new BouncyCastleProvider()) < 0) {
                     log.error("Cannot even install BC provider again!");
+                } else {
+                    installImplicitlyCA = true;
                 }
-        	}
+            }
+        } else {
+            installImplicitlyCA = true;
         }
-        // Install EC parameters for implicitlyCA encoding of EC keys, we have default curve parameters if no new ones have been given.
-        // The parameters are only used if implicitlyCA is used for generating keys, or verifying certs
-        checkImplicitParams();
-    	ECCurve curve = new ECCurve.Fp(
-    			new BigInteger(IMPLICITLYCA_Q), // q
-    			new BigInteger(IMPLICITLYCA_A, 16), // a
-    			new BigInteger(IMPLICITLYCA_B, 16)); // b
-    	org.bouncycastle.jce.spec.ECParameterSpec implicitSpec = new org.bouncycastle.jce.spec.ECParameterSpec(
-    			curve,
-    			curve.decodePoint(Hex.decode(IMPLICITLYCA_G)), // G
-    			new BigInteger(IMPLICITLYCA_N)); // n
-    	ConfigurableProvider config = (ConfigurableProvider)Security.getProvider("BC");
-    	if (config != null) {
-        	config.setParameter(ConfigurableProvider.EC_IMPLICITLY_CA, implicitSpec);        		                	    		
-    	} else {
-    		log.error("Can not get ConfigurableProvider, implicitlyCA EC parameters NOT set!");
-    	}
+        if (installImplicitlyCA) {
+            // Install EC parameters for implicitlyCA encoding of EC keys, we have default curve parameters if no new ones have been given.
+            // The parameters are only used if implicitlyCA is used for generating keys, or verifying certs
+            checkImplicitParams();
+            ECCurve curve = new ECCurve.Fp(
+                    new BigInteger(IMPLICITLYCA_Q), // q
+                    new BigInteger(IMPLICITLYCA_A, 16), // a
+                    new BigInteger(IMPLICITLYCA_B, 16)); // b
+            org.bouncycastle.jce.spec.ECParameterSpec implicitSpec = new org.bouncycastle.jce.spec.ECParameterSpec(
+                    curve,
+                    curve.decodePoint(Hex.decode(IMPLICITLYCA_G)), // G
+                    new BigInteger(IMPLICITLYCA_N)); // n
+            ConfigurableProvider config = (ConfigurableProvider)Security.getProvider("BC");
+            if (config != null) {
+                config.setParameter(ConfigurableProvider.EC_IMPLICITLY_CA, implicitSpec);                                               
+            } else {
+                log.error("Can not get ConfigurableProvider, implicitlyCA EC parameters NOT set!");
+            }                
+        }
     }
 
     /** Check if parameters have been set correctly during pre-process, otherwise log an error and
