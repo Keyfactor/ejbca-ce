@@ -57,7 +57,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspHttpTest {
     }
 
 
-    public ProtocolOcspHttpStandaloneTest(String name) {
+    public ProtocolOcspHttpStandaloneTest(String name) throws Exception {
         super(name, "http://"+myOcspIp+":8080/ejbca", "publicweb/status/ocsp");
     }
 

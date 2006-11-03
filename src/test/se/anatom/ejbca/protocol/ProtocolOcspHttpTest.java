@@ -119,28 +119,14 @@ public class ProtocolOcspHttpTest extends TestCase {
     }
 
 
-    public ProtocolOcspHttpTest(String name) {
+    public ProtocolOcspHttpTest(String name) throws Exception {
         this(name,"http://127.0.0.1:8080/ejbca", "publicweb/status/ocsp");
     }
 
-    protected  ProtocolOcspHttpTest(String name, String reqP, String res) {
+    protected  ProtocolOcspHttpTest(String name, String reqP, String res) throws Exception {
         super(name);
         httpReqPath = reqP;
         resourceOcsp = res;
-    }
-
-    protected void setCAID(ICAAdminSessionRemote casession) throws RemoteException {
-        Collection caids = casession.getAvailableCAs(admin);
-        Iterator iter = caids.iterator();
-        if (iter.hasNext()) {
-            caid = ((Integer) iter.next()).intValue();
-        } else {
-            assertTrue("No active CA! Must have at least one active CA to run tests!", false);
-        }
-    }
-    protected void setUp() throws Exception {
-        log.debug(">setUp()");
-
         // We want to get error responses without exceptions
         HttpUnitOptions.setExceptionsThrownOnErrorStatus(false);
 
@@ -172,6 +158,21 @@ public class ProtocolOcspHttpTest extends TestCase {
         usersession = userhome.create();
 
         unknowncacert = CertTools.getCertfromByteArray(unknowncacertBytes);
+
+    }
+
+    protected void setCAID(ICAAdminSessionRemote casession) throws RemoteException {
+        Collection caids = casession.getAvailableCAs(admin);
+        Iterator iter = caids.iterator();
+        if (iter.hasNext()) {
+            caid = ((Integer) iter.next()).intValue();
+        } else {
+            assertTrue("No active CA! Must have at least one active CA to run tests!", false);
+        }
+    }
+    protected void setUp() throws Exception {
+        log.debug(">setUp()");
+
         log.debug("<setUp()");
     }
 
