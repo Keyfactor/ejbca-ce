@@ -2878,6 +2878,9 @@ with clear text passwords. To set a clear text password for a user use
 bin/ejbca.sh ra setclearpwd username password
 </source>
 <p>
+The same is accomplished in the ADmin-GUI bu checking the checkox 'Batch generation' when adding the user.
+</p>
+<p>
 To generate keystore files for all users with status NEW or FAILED, run 
 </p>
 <source>
