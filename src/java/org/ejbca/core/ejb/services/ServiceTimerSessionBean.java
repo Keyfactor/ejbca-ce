@@ -46,8 +46,6 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
  *   type="Stateless"
  *   transaction-type="Bean"
  *
- * @ejb.transaction type="Never"
- *
  * @weblogic.enable-call-by-reference True
  *
  * @ejb.env-entry name="DataSource"
@@ -74,7 +72,7 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
  * @ejb.ejb-external-ref description="The Service session bean"
  *   view-type="local"
  *   ref-name="ejb/ServiceSessionLocal"
- *   type="Entity"
+ *   type="Session"
  *   home="org.ejbca.core.ejb.services.IServiceSessionLocalHome"
  *   business="org.ejbca.core.ejb.services.IServiceSessionLocal"
  *   link="ServiceSession"
