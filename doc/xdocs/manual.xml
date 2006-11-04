@@ -2589,6 +2589,10 @@ After restarting the application server you can now create a new CA using the na
 The CA certificate will now be created with the NULL encoding of the public key.
 </p>
 <p>
+When issuing client certificates where the client public key uses implicitlyCA, you must allow key length 0 in the certificate profile, because EJBCA can not read the 
+key length, since the parameters are defined elsewhere.
+</p>
+<p>
 See <a href="http://www.bouncycastle.org/wiki/">Bouncycastle wiki</a> for more information about the implicitlyCA facility.
 </p>
 <p>

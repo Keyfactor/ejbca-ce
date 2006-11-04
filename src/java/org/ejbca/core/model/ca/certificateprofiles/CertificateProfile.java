@@ -34,7 +34,7 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.12 2006-10-31 08:21:28 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.13 2006-11-04 14:00:23 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
@@ -100,7 +100,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public static final int ANYCA = -1;
 
     /** Contant holding the default available bit lengths for certificate profiles */
-    public static final int[] DEFAULTBITLENGTHS= {192,239,256,384,512,1024,2048,4096};
+    public static final int[] DEFAULTBITLENGTHS= {0,192,239,256,384,512,1024,2048,4096};
     
     // protected fields.
     protected static final String CERTVERSION                    = "certversion";
