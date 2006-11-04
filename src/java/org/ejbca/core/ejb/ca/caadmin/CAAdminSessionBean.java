@@ -101,7 +101,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.27 2006-10-31 08:19:41 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.28 2006-11-04 14:48:59 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -557,7 +557,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
             getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,"Error when trying to rename CA.");
             throw new EJBException(fe);
         }
-    } // renewCA
+    } // renamewCA
 
     /**
      * Returns a value object containing nonsensitive information about a CA give it's name.
