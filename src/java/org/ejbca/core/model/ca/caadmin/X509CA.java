@@ -120,7 +120,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.31 2006-11-02 07:48:27 anatom Exp $
+ * @version $Id: X509CA.java,v 1.32 2006-11-04 14:48:40 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -482,10 +482,12 @@ public class X509CA extends CA implements Serializable {
              if(certProfile.getUseDefaultOCSPServiceLocator()){
             	 ocspUrl = getDefaultOCSPServiceLocator();
              }
-             // OCSP access location is a URL (GeneralName no 6)
-             GeneralName ocspLocation = new GeneralName(6, new DERIA5String(ocspUrl));
-             certgen.addExtension(X509Extensions.AuthorityInfoAccess.getId(),
-                 false, new AuthorityInformationAccess(X509ObjectIdentifiers.ocspAccessMethod, ocspLocation));
+             if (StringUtils.isNotEmpty(ocspUrl)) {
+                 // OCSP access location is a URL (GeneralName no 6)
+                 GeneralName ocspLocation = new GeneralName(6, new DERIA5String(ocspUrl));
+                 certgen.addExtension(X509Extensions.AuthorityInfoAccess.getId(),
+                     false, new AuthorityInformationAccess(X509ObjectIdentifiers.ocspAccessMethod, ocspLocation));                 
+             }
          }
          
          // Microsoft Template
