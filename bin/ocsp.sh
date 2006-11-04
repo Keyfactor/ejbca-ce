@@ -11,10 +11,16 @@ case "`uname`" in
   CYGWIN*) cygwin=true ;;
 esac
 
+JAVACMD=`which java`
 # Check that JAVA_HOME is set
-if [ "x$JAVA_HOME" == "x" ]; then
-    echo "You must set JAVA_HOME before running the OCSP cli."
-    exit 1
+if [ ! -n "$JAVA_HOME" ]; then
+    if [ ! -n "$JAVACMD" ]
+    then
+        echo "You must set JAVA_HOME before running the EJBCA cli."
+        exit 1
+    fi
+else
+    JAVACMD=$JAVA_HOME/bin/java
 fi
 
 EJBCA_HOME=.
@@ -31,5 +37,5 @@ if $cygwin; then
   CP=`cygpath --path --windows "$CP"`
 fi
 
-exec "$JAVA_HOME/bin/java" -Dlog4j.properties=log4j.properties -jar ocspclient.jar "$@"
+exec "$JAVACMD" -Dlog4j.properties=log4j.properties -jar ocspclient.jar "$@"
 
