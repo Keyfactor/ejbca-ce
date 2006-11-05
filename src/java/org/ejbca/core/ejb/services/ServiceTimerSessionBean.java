@@ -155,7 +155,6 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
      * Method implemented from the TimerObject and is the main method of this
      * session bean. It calls the work object for each object.
      * 
-     * @ejb.transaction type="Never"
      * @param timer
      */
 	public void ejbTimeout(Timer timer) {
@@ -185,7 +184,6 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
      * Loads and activates all the services from database that are active
      *
      * @throws EJBException             if a communication or other error occurs.
-     * @ejb.transaction type="Supports"
      * @ejb.interface-method view-type="both"
      */
 	public void load(){
@@ -220,7 +218,6 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
      * Cancels all existing timers a unload
      *
      * @throws EJBException             if a communication or other error occurs.
-     * @ejb.transaction type="Supports"
      * @ejb.interface-method view-type="both"
      */
 	public void unload(){
@@ -238,7 +235,6 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
      * Adds a timer to the bean
      *
      * @throws EJBException             if a communication or other error occurs.
-     * @ejb.transaction type="Supports"
      * @ejb.interface-method view-type="both"
      */
 	public void addTimer(long interval, Integer id){
@@ -249,7 +245,6 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
      * cancels a timer with the given Id
      *
      * @throws EJBException             if a communication or other error occurs.
-     * @ejb.transaction type="Supports"
      * @ejb.interface-method view-type="both"
      */
 	public void cancelTimer(Integer id){
