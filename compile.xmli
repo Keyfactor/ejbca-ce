@@ -169,9 +169,10 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
                 persistence="weblogic"
                 createTables="Disabled" />
             <sunone version="7.0" 
+                cmpSchema="ejbca.dbschema"
                 xmlencoding="UTF-8" 
                 destdir="${src.dd}/META-INF" 
-                cmpResourceJndiName="${datasource.jndi-name}"
+                cmpResourceJndiName="${datasource.jndi-name-prefix}${datasource.jndi-name}"
                 validatexml="false" />
             <websphere
                 xmlencoding="UTF-8" 
@@ -341,7 +342,11 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 			</tokenfilter>
 			</filterchain>
 	    </copy>
+		<echo>Ignore warnings about 'Couldn't find file' during preprocessing</echo>
+		<copy file="${appserver.src}/sun/schema/${database.name}/ejbca.dbschema" todir="${src.dd}/META-INF" overwrite="true" failonerror="false"/>
+		<!--
 		<echo>Ignore warnings about 'Couldn't find file' during preprocessing if you are running jdk 1.4</echo>
+		-->
         <copy file="src/java/org/ejbca/core/model/ca/catoken/CATokenConstants.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/catoken/CATokenConstants.java" overwrite="true" failonerror="false"/>
 		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@ejbca.version@" value="${app.version}"/>
 		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@hardtoken.diplaysensitiveinfo@" value="${hardtoken.diplaysensitiveinfo}"/>
