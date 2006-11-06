@@ -128,7 +128,7 @@ import org.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.8 2006-10-09 12:04:46 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.9 2006-11-06 11:21:25 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 
@@ -350,6 +350,9 @@ public class LocalLogSessionBean extends BaseSessionBean {
                     + query.getQueryString() + ") and (" + capriviledges + ")";
             if (StringUtils.isNotEmpty(viewlogprivileges)) {
                 sql += " and (" + viewlogprivileges + ")";
+            }
+            if (log.isDebugEnabled()) {
+            	log.debug("Query: "+sql);
             }
             ps = con.prepareStatement(sql);
             //ps.setFetchDirection(ResultSet.FETCH_REVERSE);
