@@ -128,7 +128,7 @@ import org.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.9 2006-11-06 11:21:25 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.10 2006-11-06 11:39:34 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 
@@ -339,15 +339,14 @@ public class LocalLogSessionBean extends BaseSessionBean {
         try {
             // Construct SQL query.
             con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
+            String sql = "select "+LOGENTRYDATA_COL+", "+LOGENTRYDATA_COL_COMMENT_OLD+" from "+LOGENTRYDATA_TABLE+" where ( "
+                    + query.getQueryString() + ") and (" + capriviledges + ")";
             // Different column names is an unforturnalte workaround because of Orcale, you cannot have a column named 'comment' in Oracle.
             // The workaround 'comment_' was spread in the wild in 2005, so we have to use it so far.
-            String commentCol = LOGENTRYDATA_COL_COMMENT_OLD;
             if (!JDBCUtil.columnExists(con, LOGENTRYDATA_TABLE, LOGENTRYDATA_COL_COMMENT_OLD)) {
                 log.debug("Using oracle column name 'comment_' in LogEntryData.");
-                commentCol = LOGENTRYDATA_COL_COMMENT_ORA;
+                StringUtils.replace(sql, LOGENTRYDATA_COL_COMMENT_OLD, LOGENTRYDATA_COL_COMMENT_ORA);
             }
-            String sql = "select "+LOGENTRYDATA_COL+", "+commentCol+" from "+LOGENTRYDATA_TABLE+" where ( "
-                    + query.getQueryString() + ") and (" + capriviledges + ")";
             if (StringUtils.isNotEmpty(viewlogprivileges)) {
                 sql += " and (" + viewlogprivileges + ")";
             }
