@@ -128,7 +128,7 @@ import org.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.10 2006-11-06 11:39:34 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.11 2006-11-06 11:42:54 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 
@@ -345,7 +345,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
             // The workaround 'comment_' was spread in the wild in 2005, so we have to use it so far.
             if (!JDBCUtil.columnExists(con, LOGENTRYDATA_TABLE, LOGENTRYDATA_COL_COMMENT_OLD)) {
                 log.debug("Using oracle column name 'comment_' in LogEntryData.");
-                StringUtils.replace(sql, LOGENTRYDATA_COL_COMMENT_OLD, LOGENTRYDATA_COL_COMMENT_ORA);
+                sql = StringUtils.replace(sql, LOGENTRYDATA_COL_COMMENT_OLD, LOGENTRYDATA_COL_COMMENT_ORA);
             }
             if (StringUtils.isNotEmpty(viewlogprivileges)) {
                 sql += " and (" + viewlogprivileges + ")";
