@@ -25,7 +25,7 @@
 <cmp-field>
   <field-name>approvaldata</field-name>
   <jdbc-type>LONGVARCHAR</jdbc-type>
-  <sql-type>LONG</sql-type>
+  <sql-type>VARCHAR2(4000)</sql-type>
 </cmp-field>
 <cmp-field>
   <field-name>requestdata</field-name>
