@@ -45,12 +45,12 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the ca data entity bean.
  *
- * @version $Id: TestCAs.java,v 1.15 2006-11-02 07:49:54 anatom Exp $
+ * @version $Id: TestCAs.java,v 1.16 2006-11-07 15:45:41 anatom Exp $
  */
 public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
 
-    private ICAAdminSessionRemote cacheAdmin;
+    private static ICAAdminSessionRemote cacheAdmin;
 
 
     private static ICAAdminSessionHome cacheHome;

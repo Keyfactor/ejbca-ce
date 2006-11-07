@@ -157,10 +157,12 @@
     </path>
 
     <!-- those are the default values used within JBoss for easy startup -->
+    <property name="ca.name" value="AdminCA1"/>
     <property name="ca.keystorepass" value="foo123"/>
     <property name="ca.ocspkeystorepass" value="foo123"/>
     <property name="ocsp.defaultresponder" value="CN=AdminCA1,O=${app.name.cap} Sample,C=SE"/>
     <property name="ocsp.usecasigningcert" value="true"/>
+    <property name="ocsp.signaturealgorithm" value="SHA1WithRSA;SHA1WithECDSA"/>
     <property name="ocsp.extensionoid" value=""/>
     <property name="ocsp.extensionclass" value=""/>
     <property name="ocsp.uniddatsource" value=""/>

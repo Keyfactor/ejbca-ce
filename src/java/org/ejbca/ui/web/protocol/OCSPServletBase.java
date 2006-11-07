@@ -72,7 +72,7 @@ import org.ejbca.util.CertTools;
 /**
  * @web.servlet-init-param description="Algorithm used by server to generate signature on OCSP responses"
  *   name="SignatureAlgorithm"
- *   value="SHA1WithRSA"
+ *   value="${ocsp.signaturealgorithm}"
  *   
  * @web.servlet-init-param description="If set to true the servlet will enforce OCSP request signing"
  *   name="enforceRequestSigning"
@@ -112,7 +112,7 @@ import org.ejbca.util.CertTools;
  *   
  * @author Thomas Meckel (Ophios GmbH)
  * @author Tomas Gustavsson
- * @version  $Id: OCSPServletBase.java,v 1.18 2006-11-03 16:35:07 anatom Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.19 2006-11-07 15:45:41 anatom Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 

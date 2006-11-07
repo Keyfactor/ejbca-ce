@@ -12,6 +12,7 @@ ca.keystorepass        = ${ca.keystorepass}
 ca.ocspkeystorepass    = ${ca.ocspkeystorepass}
 ocsp.defaultresponder  = ${ocsp.defaultresponder}
 ocsp.usecasigningcert  = ${ocsp.usecasigningcert}
+ocsp.signaturealgorithm = ${ocsp.signaturealgorithm}
 ocsp.extensionoid      = ${ocsp.extensionoid}
 ocsp.extensionclass    = ${ocsp.extensionclass}
 datasource.jndi-name   = ${datasource.jndi-name}

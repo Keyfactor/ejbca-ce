@@ -10,6 +10,13 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 # of the CAs OCSP responder. Default true.
 ocsp.usecasigningcert=true
 
+# Specifies which signature algorithms should be used on OCSP responses. You can specify several algorithm
+# separated by ';'. If RSA keys are used in the OCSP signing certificate, the algorithm with RSA will be used, and
+# if ECDSA keys are used in the OCSP signing certificate, the algorithm with ECDSA will be used.
+#
+# Default: SHA1WithRSA;SHA1WithECDSA
+#ocsp.signaturealgorithm=SHA1WithRSA;SHA1WithECDSA
+
 # Specifies OCSP extension oids that will result in a call to an extension class, 
 # separate multiple entries with ;"
 # Leave out if you do not know what this is.

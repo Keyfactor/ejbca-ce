@@ -34,6 +34,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -90,6 +91,7 @@ import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.OCSPException;
 import org.bouncycastle.x509.X509V2CRLGenerator;
@@ -105,6 +107,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRespo
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
+import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
@@ -120,7 +123,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.32 2006-11-04 14:48:40 anatom Exp $
+ * @version $Id: X509CA.java,v 1.33 2006-11-07 15:45:42 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -702,6 +705,26 @@ public class X509CA extends CA implements Serializable {
         	  X509Certificate signerCert = signerChain[0];
         	  OCSPCAServiceRequest ocspServiceReq = (OCSPCAServiceRequest)request;
               String sigAlg = ocspServiceReq.getSigAlg();
+              String[] algs = StringUtils.split(sigAlg, ';');
+              if ( (algs != null) && (algs.length > 1) ) {
+              	PublicKey pk = signerCert.getPublicKey();
+              	if (pk instanceof RSAPublicKey) {
+              		if (StringUtils.contains(algs[0], CATokenConstants.KEYALGORITHM_RSA)) {
+              			sigAlg = algs[0];
+              		}
+              		if (StringUtils.contains(algs[1], CATokenConstants.KEYALGORITHM_RSA)) {
+              			sigAlg = algs[1];
+              		}
+              	} else if (pk instanceof JCEECPublicKey) {
+              		if (StringUtils.contains(algs[0], CATokenConstants.KEYALGORITHM_ECDSA)) {
+              			sigAlg = algs[0];
+              		}
+              		if (StringUtils.contains(algs[1], CATokenConstants.KEYALGORITHM_ECDSA)) {
+              			sigAlg = algs[1];
+              		}
+              	}
+              	log.debug("Using signature algorithm for response: "+sigAlg);
+              }
               boolean useCACert = ocspServiceReq.useCACert();
               boolean includeChain = ocspServiceReq.includeChain();
               PrivateKey pk = null;
