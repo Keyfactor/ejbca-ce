@@ -13,20 +13,21 @@
 
 package org.ejbca.core.model.log;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.Priority;
-
 import java.io.Serializable;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Properties;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.Priority;
+
 
 /**
  * Implements a log device using Log4j, implementes the Singleton pattern.
  *
- * @version $Id: Log4jLogDevice.java,v 1.1 2006-01-17 20:28:08 anatom Exp $
+ * @version $Id: Log4jLogDevice.java,v 1.2 2006-11-09 07:21:18 anatom Exp $
  */
 public class Log4jLogDevice implements ILogDevice, Serializable {
 
@@ -96,10 +97,10 @@ public class Log4jLogDevice implements ILogDevice, Serializable {
             admin = Admin.ADMINTYPETEXTS[admininfo.getAdminType()];
         }
 
-        Priority priority = Priority.INFO;
+        Priority priority = Level.INFO;
         String eventText = "";
         if (event >= LogEntry.EVENT_ERROR_BOUNDRARY) {
-            priority = Priority.ERROR;
+            priority = Level.ERROR;
             event -= LogEntry.EVENT_ERROR_BOUNDRARY;
             eventText = LogEntry.EVENTNAMES_ERROR[event];
         }else{
