@@ -52,7 +52,7 @@ public class KeyStore {
      *     byte[]
      */
     public void setKeystoreData(byte[] value) {
-        this.keystoreData = ((byte[]) value);
+        this.keystoreData = value;
     }
 
 }

@@ -170,7 +170,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.19 2006-10-09 12:05:18 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.20 2006-11-09 07:04:51 anatom Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
@@ -708,7 +708,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public String findUsernameByCertSerno(Admin admin, BigInteger serno, String issuerdn) {
-        debug(">findUsernameByCertSerno(), serno: " + serno + ", issuerdn: " + issuerdn);
+    	if (log.isDebugEnabled()) {
+            debug(">findUsernameByCertSerno(), serno: " + serno.toString(16) + ", issuerdn: " + issuerdn);    		
+    	}
         String dn = CertTools.stringToBCDNString(issuerdn);
         try {
             Collection coll = certHome.findByIssuerDNSerialNumber(dn, serno.toString());

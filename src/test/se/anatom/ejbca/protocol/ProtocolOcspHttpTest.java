@@ -466,7 +466,7 @@ public class ProtocolOcspHttpTest extends TestCase {
     private X509Certificate addECDSACA() throws Exception {
         log.debug(">addECDSACA()");
         boolean ret = false;
-        X509Certificate cacert = null;;
+        X509Certificate cacert = null;
         try {
             Context context = getInitialContext();
             IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("AuthorizationSession"), IAuthorizationSessionHome.class);

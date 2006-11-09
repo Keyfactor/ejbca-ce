@@ -47,7 +47,7 @@ public class EjbcaWSService
      */
     @WebEndpoint(name = "EjbcaWSPort")
     public EjbcaWS getEjbcaWSPort() {
-        return (EjbcaWS)super.getPort(new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSPort"), EjbcaWS.class);
+        return super.getPort(new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSPort"), EjbcaWS.class);
     }
 
 }

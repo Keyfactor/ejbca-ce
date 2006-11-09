@@ -52,7 +52,7 @@ public class Certificate {
      *     byte[]
      */
     public void setCertificateData(byte[] value) {
-        this.certificateData = ((byte[]) value);
+        this.certificateData = value;
     }
 
 }
