@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.protocol.cmp;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -24,7 +23,6 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 
 import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -41,7 +39,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
 /**
  * A very simple confirmation message, no protection and a nullbody
  * @author tomas
- * @version $Id: CmpConfirmResponseMessage.java,v 1.4 2006-11-09 11:03:14 anatom Exp $
+ * @version $Id: CmpConfirmResponseMessage.java,v 1.5 2006-11-09 18:26:43 anatom Exp $
  */
 public class CmpConfirmResponseMessage extends BaseCmpMessage implements IResponseMessage {
 
