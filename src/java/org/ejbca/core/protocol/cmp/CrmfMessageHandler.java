@@ -67,7 +67,7 @@ import com.novosec.pkix.asn1.cmp.PKIHeader;
 /**
  * Message handler for certificate request messages in the CRMF format
  * @author tomas
- * @version $Id: CrmfMessageHandler.java,v 1.15 2006-11-09 11:03:14 anatom Exp $
+ * @version $Id: CrmfMessageHandler.java,v 1.16 2006-11-09 17:39:41 anatom Exp $
  */
 public class CrmfMessageHandler implements ICmpMessageHandler {
 	
@@ -221,7 +221,6 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 								} catch (UserDoesntFullfillEndEntityProfile e) {
 									log.error("Exception adding user: ", e);
 									failText = e.getMessage();
-									failInfo = FailInfo.INCORRECT_DATA;
 								} catch (ApprovalException e) {
 									log.error("Exception adding user: ", e);
 									failText = e.getMessage();
