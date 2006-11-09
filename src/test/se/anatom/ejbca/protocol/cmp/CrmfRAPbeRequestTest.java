@@ -199,10 +199,11 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 		
 		// Create a revocation request for a non existing cert, chould fail!
 		rev = genRevReq(issuerDN, userDN, new BigInteger("1"), cacert, nonce, transid);
-		assertNotNull(rev);
+        revReq = protectPKIMessage(rev, false, PBEPASSWORD);
+		assertNotNull(revReq);
 		bao = new ByteArrayOutputStream();
 		out = new DEROutputStream(bao);
-		out.writeObject(rev);
+		out.writeObject(revReq);
 		ba = bao.toByteArray();
 		// Send request and receive response
 		resp = sendCmpHttp(ba);

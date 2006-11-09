@@ -51,7 +51,7 @@ import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
 /**
  * CMP certificate response message
  * @author tomas
- * @version $Id: CmpResponseMessage.java,v 1.6 2006-11-02 17:03:01 anatom Exp $
+ * @version $Id: CmpResponseMessage.java,v 1.7 2006-11-09 11:03:14 anatom Exp $
  */
 public class CmpResponseMessage implements IResponseMessage {
 	
@@ -208,12 +208,7 @@ public class CmpResponseMessage implements IResponseMessage {
 				if (failText != null) {
 					myPKIStatusInfo.setStatusString(new PKIFreeText(new DERUTF8String(failText)));					
 				}
-				CertResponse myCertResponse = new CertResponse(new DERInteger(requestId), myPKIStatusInfo);
-				CertRepMessage myCertRepMessage = new CertRepMessage(myCertResponse);
-				
-				int respType = requestType + 1; // 1 = intitialization response, 3 = certification response etc
-				log.debug("Creating response body of type respType.");
-				PKIBody myPKIBody = new PKIBody(myCertRepMessage, respType); 
+				PKIBody myPKIBody = CmpMessageHelper.createCertRequestRejectBody(myPKIHeader, myPKIStatusInfo, requestId, requestType);
 				PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
 				
 				if ( (pbeKeyId != null) && (pbeKey != null) && (pbeDigestAlg != null) && (pbeMacAlg != null) ) {

@@ -41,7 +41,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
 /**
  * A very simple confirmation message, no protection and a nullbody
  * @author tomas
- * @version $Id: CmpConfirmResponseMessage.java,v 1.3 2006-10-22 09:05:25 anatom Exp $
+ * @version $Id: CmpConfirmResponseMessage.java,v 1.4 2006-11-09 11:03:14 anatom Exp $
  */
 public class CmpConfirmResponseMessage extends BaseCmpMessage implements IResponseMessage {
 
@@ -107,11 +107,7 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements IRespon
 		if ((getPbeDigestAlg() != null) && (getPbeMacAlg() != null) && (getPbeKeyId() != null) && (getPbeKey() != null) ) {
 			responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, getPbeKeyId(), getPbeKey(), getPbeDigestAlg(), getPbeMacAlg(), getPbeIterationCount());
 		} else {
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			DEROutputStream mout = new DEROutputStream( baos );
-			mout.writeObject( myPKIMessage );
-			mout.close();
-			responseMessage = baos.toByteArray();			
+			responseMessage = CmpMessageHelper.pkiMessageToByteArray(myPKIMessage);			
 		}
 		return true;
 	}

@@ -46,7 +46,7 @@ import com.novosec.pkix.asn1.cmp.RevRepContent;
 /**
  * A very simple confirmation message, no protection and a nullbody
  * @author tomas
- * @version $Id: CmpRevokeResponseMessage.java,v 1.1 2006-11-02 17:03:02 anatom Exp $
+ * @version $Id: CmpRevokeResponseMessage.java,v 1.2 2006-11-09 11:03:14 anatom Exp $
  */
 public class CmpRevokeResponseMessage extends BaseCmpMessage implements IResponseMessage {
 
@@ -117,7 +117,7 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements IRespons
 
 		PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(new DERInteger(0)); // 0 = accepted
 		if (status != ResponseStatus.SUCCESS) {
-			log.debug("Creating a rejaction message");
+			log.debug("Creating a rejection message");
 			myPKIStatusInfo = new PKIStatusInfo(new DERInteger(2)); // 2 = rejection			
 			myPKIStatusInfo.setFailInfo(failInfo.getAsBitString());
 			if (failText != null) {

@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.protocol.cmp;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -23,8 +22,8 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.ejbca.core.model.ca.SignRequestException;
@@ -45,10 +44,11 @@ import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
 /**
  * A very simple error message, no protection
  * @author tomas
- * @version $Id: CmpErrorResponseMessage.java,v 1.2 2006-10-22 09:05:25 anatom Exp $
+ * @version $Id: CmpErrorResponseMessage.java,v 1.3 2006-11-09 11:03:14 anatom Exp $
  */
 public class CmpErrorResponseMessage extends BaseCmpMessage implements IResponseMessage {
 
+	private static Logger log = Logger.getLogger(CrmfMessageHandler.class);
 	/**
 	 * Determines if a de-serialized file is compatible with this class.
 	 *
@@ -65,6 +65,8 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements IResponse
     private String failText = null;
     private FailInfo failInfo = null;
     private ResponseStatus status = null;
+    private int requestId = 0;
+	private int requestType = 23; // 23 is general error message
 
     public void setCertificate(Certificate cert) {
 	}
@@ -117,15 +119,20 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements IResponse
 		if (failText != null) {		
 			myPKIStatusInfo.setStatusString(new PKIFreeText(new DERUTF8String(failText)));
 		}
-		
-		ErrorMsgContent myErrorContent = new ErrorMsgContent(myPKIStatusInfo);
-		PKIBody myPKIBody = new PKIBody(myErrorContent, 23); // 23 = error
+		PKIBody myPKIBody = null;
+		log.debug("Create error message from requestType: "+requestType);
+		if (requestType==0 || requestType==2) {
+			myPKIBody = CmpMessageHelper.createCertRequestRejectBody(myPKIHeader, myPKIStatusInfo, requestId, requestType);
+		} else {
+			ErrorMsgContent myErrorContent = new ErrorMsgContent(myPKIStatusInfo);
+			myPKIBody = new PKIBody(myErrorContent, 23); // 23 = error						
+		}
 		PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		DEROutputStream mout = new DEROutputStream( baos );
-		mout.writeObject( myPKIMessage );
-		mout.close();
-		responseMessage= baos.toByteArray();
+		if ((getPbeDigestAlg() != null) && (getPbeMacAlg() != null) && (getPbeKeyId() != null) && (getPbeKey() != null) ) {
+			responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, getPbeKeyId(), getPbeKey(), getPbeDigestAlg(), getPbeMacAlg(), getPbeIterationCount());
+		} else {
+			responseMessage = CmpMessageHelper.pkiMessageToByteArray(myPKIMessage);			
+		}
 		return true;		
 	}
 
@@ -164,9 +171,11 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements IResponse
 	}
 
 	public void setRequestType(int reqtype) {
+		this.requestType = reqtype;
 	}
 
 	public void setRequestId(int reqid) {
+		this.requestId = reqid;
 	}
 
     /** @see org.ejca.core.protocol.IResponseMessage

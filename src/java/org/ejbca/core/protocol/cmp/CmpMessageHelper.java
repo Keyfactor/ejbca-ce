@@ -55,16 +55,19 @@ import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
 import com.novosec.pkix.asn1.cmp.CMPObjectIdentifiers;
+import com.novosec.pkix.asn1.cmp.CertRepMessage;
+import com.novosec.pkix.asn1.cmp.CertResponse;
 import com.novosec.pkix.asn1.cmp.PKIBody;
 import com.novosec.pkix.asn1.cmp.PKIHeader;
 import com.novosec.pkix.asn1.cmp.PKIMessage;
+import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
 import com.novosec.pkix.asn1.crmf.PBMParameter;
 
 /**
  * Helper class to create different standard parts of CMP messages
  * 
  * @author tomas
- * @version $Id: CmpMessageHelper.java,v 1.7 2006-10-22 09:05:25 anatom Exp $
+ * @version $Id: CmpMessageHelper.java,v 1.8 2006-11-09 11:03:14 anatom Exp $
  */
 public class CmpMessageHelper {
 	private static Logger log = Logger.getLogger(CmpMessageHelper.class);
@@ -93,12 +96,9 @@ public class CmpMessageHelper {
 		X509CertificateStructure signStruct = X509CertificateStructure.getInstance(new ASN1InputStream(new ByteArrayInputStream(signCert.getEncoded())).readObject());
 		CmpMessageHelper.buildCertBasedPKIProtection( myPKIMessage, signStruct, signKey, digestAlg, provider);
 
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		DEROutputStream mout = new DEROutputStream( baos );
-		mout.writeObject( myPKIMessage );
-		mout.close();
 		log.debug("<signPKIMessage()");
-		return baos.toByteArray();
+		// Return response as byte array 
+		return CmpMessageHelper.pkiMessageToByteArray(myPKIMessage);
     }
     
 	public static void buildCertBasedPKIProtection( PKIMessage pKIMessage, X509CertificateStructure cert, PrivateKey key, String digestAlg, String provider )
@@ -177,15 +177,20 @@ public class CmpMessageHelper {
 		// Finally store the protection bytes in the msg
 		ret.setProtection(bs);
 		
+		log.debug("<protectPKIMessageWithPBE()");
+		// Return response as byte array 
+		return CmpMessageHelper.pkiMessageToByteArray(ret);
+	}
+
+	public static byte[] pkiMessageToByteArray(PKIMessage msg) throws IOException {
 		// Return response as byte array 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		DEROutputStream mout = new DEROutputStream( baos );
-		mout.writeObject( ret );
+		mout.writeObject( msg );
 		mout.close();
-		log.debug("<protectPKIMessageWithPBE()");
 		return baos.toByteArray();
+		
 	}
-
 
 	/** Creates a 16 bytes random sender nonce
 	 * 
@@ -243,5 +248,41 @@ public class CmpMessageHelper {
 			log.error("Exception during CMP processing: ", e);			
 		}
 		return resp;
+	}
+	
+	/**
+	 * creates a very simple error message in response to msg (that's why we switch sender and recipient)
+	 * @param msg
+	 * @param status
+	 * @param failInfo
+	 * @param failText
+	 * @return IResponseMessage that can be sent to user
+	 */
+	public static PKIBody createCertRequestRejectBody(PKIHeader header, PKIStatusInfo info, int requestId, int requestType) {
+		// Create a failure message
+		if (log.isDebugEnabled()) {
+			log.debug("Creating a cert request rejection message");
+		}
+
+		log.debug("Creating a CertRepMessage 'rejected'");
+
+		/*
+		String senderNonce = new String(Base64.encode(CmpMessageHelper.createSenderNonce()));
+		String rcptNonce = null;
+		X509Name sender = CertTools.stringToBcX509Name("CN=Failure Sender");
+		X509Name rcpt = CertTools.stringToBcX509Name("CN=Failure Recipient");
+		String transactionId = msg.getTransactionId();
+		PKIHeader myPKIHeader = CmpMessageHelper.createPKIHeader(sender, rcpt, senderNonce, rcptNonce, transactionId);
+		*/
+		
+		CertResponse myCertResponse = new CertResponse(new DERInteger(requestId), info);
+		CertRepMessage myCertRepMessage = new CertRepMessage(myCertResponse);
+
+
+		int respType = requestType + 1; // 1 = intitialization response, 3 = certification response etc
+		log.debug("Creating response body of type respType.");
+		PKIBody myPKIBody = new PKIBody(myCertRepMessage, respType); 
+		
+		return myPKIBody;
 	}
 }

@@ -13,6 +13,7 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -57,6 +58,7 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.ResponseStatus;
+import org.ejbca.util.Base64;
 import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
@@ -65,7 +67,7 @@ import com.novosec.pkix.asn1.cmp.PKIHeader;
 /**
  * Message handler for certificate request messages in the CRMF format
  * @author tomas
- * @version $Id: CrmfMessageHandler.java,v 1.14 2006-11-02 17:03:02 anatom Exp $
+ * @version $Id: CrmfMessageHandler.java,v 1.15 2006-11-09 11:03:14 anatom Exp $
  */
 public class CrmfMessageHandler implements ICmpMessageHandler {
 	
@@ -179,7 +181,8 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 			if (msg instanceof CrmfRequestMessage) {
 				crmfreq = (CrmfRequestMessage) msg;
 				crmfreq.getMessage();
-				
+				int requestId = crmfreq.getRequestId();
+				int requestType = crmfreq.getRequestType();
 				// If we have usernameGeneratorParams we want to generate usernames automagically for requests
 				if (usernameGeneratorParams != null) {
 					// Try to find a HMAC/SHA1 protection key
@@ -191,6 +194,9 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 						try {
 							CmpPbeVerifyer verifyer = new CmpPbeVerifyer(raAuthenticationSecret, msg.getMessage());
 							boolean ret = verifyer.verify();
+							String pbeDigestAlg = verifyer.getOwfOid();
+							String pbeMacAlg = verifyer.getMacOid();
+							int pbeIterationCount = verifyer.getIterationCount();
 							if (ret) {
 								// If authentication was correct, we will now create a username and password and register the new user in EJBCA
 								UsernameGenerator gen = UsernameGenerator.getInstance(usernameGeneratorParams);
@@ -201,17 +207,69 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 								String pwd = pwdgen.getNewPassword(12, 12);
 								// AltNames may be in the request template
 								String altNames = crmfreq.getRequestAltNames();
+								boolean addedUser = false; // flag indicating if adding was succesful
+								String failText = null;
+								FailInfo failInfo = null;
 								try {
-									usersession.addUser(admin, username, pwd, dn, altNames, null, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, caId);
-								} catch (DuplicateKeyException e) {
-									// If the user already exists, we will change him instead and go for that
-									usersession.changeUser(admin, username, pwd, dn, altNames, null, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, UserDataConstants.STATUS_NEW, caId);
+									try {
+										usersession.addUser(admin, username, pwd, dn, altNames, null, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, caId);
+									} catch (DuplicateKeyException e) {
+										// If the user already exists, we will change him instead and go for that
+										usersession.changeUser(admin, username, pwd, dn, altNames, null, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, UserDataConstants.STATUS_NEW, caId);
+									}
+									addedUser = true;
+								} catch (UserDoesntFullfillEndEntityProfile e) {
+									log.error("Exception adding user: ", e);
+									failText = e.getMessage();
+									failInfo = FailInfo.INCORRECT_DATA;
+								} catch (ApprovalException e) {
+									log.error("Exception adding user: ", e);
+									failText = e.getMessage();
+									failInfo = FailInfo.NOT_AUTHORIZED;
+								} catch (WaitingForApprovalException e) {
+									log.error("Exception adding user: ", e);
+									failText = e.getMessage();
+									failInfo = FailInfo.NOT_AUTHORIZED;
+								}
+								if (!addedUser) {
+									CmpErrorResponseMessage cresp = new CmpErrorResponseMessage();
+									cresp.setRecipientNonce(msg.getSenderNonce());
+									cresp.setSenderNonce(new String(Base64.encode(CmpMessageHelper.createSenderNonce())));
+									cresp.setSender(msg.getRecipient());
+									cresp.setRecipient(msg.getSender());
+									cresp.setTransactionId(msg.getTransactionId());
+									cresp.setFailText(failText);
+									cresp.setFailInfo(failInfo);
+									cresp.setRequestId(requestId);
+									cresp.setRequestType(requestType);
+									
+									// Set all protection parameters
+									log.debug(responseProtection+", "+pbeDigestAlg+", "+pbeMacAlg+", "+keyId+", "+raAuthenticationSecret);
+									if (StringUtils.equals(responseProtection, "pbe") && (pbeDigestAlg != null) && (pbeMacAlg != null) && (keyId != null) && (raAuthenticationSecret != null) ) {
+										cresp.setPbeParameters(keyId, raAuthenticationSecret, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
+									}
+									resp = cresp;
+									try {
+										resp.create();
+									} catch (InvalidKeyException e1) {
+										log.error("Exception during CMP processing: ", e1);			
+									} catch (NoSuchAlgorithmException e1) {
+										log.error("Exception during CMP processing: ", e1);			
+									} catch (NoSuchProviderException e1) {
+										log.error("Exception during CMP processing: ", e1);			
+									} catch (SignRequestException e1) {
+										log.error("Exception during CMP processing: ", e1);			
+									} catch (NotFoundException e1) {
+										log.error("Exception during CMP processing: ", e1);			
+									} catch (IOException e1) {
+										log.error("Exception during CMP processing: ", e1);			
+									}																
 								}
 								crmfreq.setUsername(username);
 								crmfreq.setPassword(pwd);
 								// Set all protection parameters
 								if (StringUtils.equals(responseProtection, "pbe")) {
-									crmfreq.setPbeParameters(keyId, raAuthenticationSecret, verifyer.getOwfOid(), verifyer.getMacOid(), verifyer.getIterationCount());
+									crmfreq.setPbeParameters(keyId, raAuthenticationSecret, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
 								}
 								// Now we are all set to go ahead and generate a certificate for the poor bastard
 							} else {
@@ -231,15 +289,6 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 						} catch (InvalidKeyException e) {
 							log.error("Exception calculating protection: ", e);
 							resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
-						} catch (UserDoesntFullfillEndEntityProfile e) {
-							log.error("Exception adding user: ", e);
-							resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
-						} catch (ApprovalException e) {
-							log.error("Exception adding user: ", e);
-							resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
-						} catch (WaitingForApprovalException e) {
-							log.error("Exception adding user: ", e);
-							resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
 						}
 					} else {
 						log.error("Recevied an unathenticated message in RA mode!");
