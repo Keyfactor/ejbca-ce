@@ -66,7 +66,7 @@ import org.ejbca.util.cert.QCStatementExtension;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.19 2006-11-09 17:55:38 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.20 2006-11-09 18:20:37 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -710,16 +710,26 @@ public class TestSignSession extends TestCase {
         prof.setValidity(3065);
         storesession.changeCertificateProfile(admin, "TESTVALOVERRIDE", prof);
         cal = Calendar.getInstance();
+        Calendar notBefore = Calendar.getInstance();
+        notBefore.add(Calendar.DAY_OF_MONTH, 2);
         cal.add(Calendar.DAY_OF_MONTH, 10);
         usersession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
-        cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), -1, null, cal.getTime());
+        cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), -1, notBefore.getTime(), cal.getTime());
         assertNotNull("Failed to create certificate", cert);
         assertEquals(CertTools.stringToBCDNString("cn=validityoverride,c=SE"), CertTools.stringToBCDNString(dn));
         notAfter = cert.getNotAfter();
         cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_MONTH, 11);
-        // Override was enabled enabled, the cert should have notAfter less than 11 days in the future (10 to be exact)
+        // Override was enabled, the cert should have notAfter less than 11 days in the future (10 to be exact)
         assertTrue(notAfter.compareTo(cal.getTime()) < 0);
+        notAfter= cert.getNotBefore();
+        cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_MONTH, 1);
+        // Override was enabled, the cert should have notBefore more than 1 days in the future (2 to be exact)
+        assertTrue(notAfter.compareTo(cal.getTime()) > 0);
+        cal.add(Calendar.DAY_OF_MONTH, 2);
+        assertTrue(notAfter.compareTo(cal.getTime()) < 0);
+        
         
 
         // Clean up
