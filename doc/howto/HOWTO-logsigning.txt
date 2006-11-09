@@ -75,11 +75,11 @@ log.sign.sh is a simple shell script use to manually sign and verify files:
 
 # Openssl command to convert a p12 file to cert and key files in pem
 # First cert:
-#openssl pkcs12 -in qc1.p12 -nodes -nokeys -clcerts -out qc1.pem
+#openssl pkcs12 -in signer.p12 -nodes -nokeys -clcerts -out signer.pem
 # Then public key
-#openssl x509 -in qc1.pem -pubkey -noout > qc1.pub
+#openssl x509 -in signer.pem -pubkey -noout > signer.pub
 # Then private key:
-#openssl pkcs12 -in qc1.p12 -nodes -nocerts -out qc1.priv
+#openssl pkcs12 -in signer.p12 -nodes -nocerts -out signer.priv
 
 OPENSSL=/usr/bin/openssl
 SCRIPTNAME=`basename $0`
@@ -105,7 +105,6 @@ elif [ "$OPTION" = "verify" ]; then
 
 else
     echo "Usage:"
-    echo "To sign files you have to edit the script and add the files you want signed."
     echo "$SCRIPTNAME sign <path to private key> <path to file to sign> <path to signature>"
     echo "$SCRIPTNAME verify <path to public key> <file that IS signed> <file which contains the signature>"
     exit 0
@@ -384,7 +383,7 @@ See HOWTO-database.txt for some indexes that might speed things up a little bit 
 
 -----
 #
-# $Id: HOWTO-logsigning.txt,v 1.16 2006-09-26 12:42:36 anatom Exp $
+# $Id: HOWTO-logsigning.txt,v 1.17 2006-11-09 17:07:57 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
