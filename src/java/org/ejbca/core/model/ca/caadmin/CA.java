@@ -60,7 +60,7 @@ import org.ejbca.util.CertTools;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.10 2006-11-01 11:54:09 anatom Exp $
+ * @version $Id: CA.java,v 1.11 2006-11-09 17:55:37 anatom Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -421,12 +421,14 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
             notAfter = new Date();
             notAfter.setTime(notAfter.getTime() + ( validity * 24 * 60 * 60 * 1000));        	
         }
-    	return generateCertificate(subject, publicKey, keyusage, notAfter, certProfile); 
+        Date notBefore = new Date(); 
+    	return generateCertificate(subject, publicKey, keyusage, notBefore, notAfter, certProfile); 
     }
     
     public abstract Certificate generateCertificate(UserDataVO subject, 
                                                     PublicKey publicKey, 
-                                                    int keyusage, 
+                                                    int keyusage,
+                                                    Date notBefore,
                                                     Date notAfter,
                                                     CertificateProfile certProfile) throws Exception;
     

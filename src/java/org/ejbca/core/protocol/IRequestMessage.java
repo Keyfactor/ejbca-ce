@@ -28,7 +28,7 @@ import java.util.Date;
  * Base interface for request messages sent to the CA. Implementors of this interface must also
  * implement Serializable if they are to be sent to any EJB bussiness methods.
  *
- * @version $Id: IRequestMessage.java,v 1.6 2006-11-02 17:03:21 anatom Exp $
+ * @version $Id: IRequestMessage.java,v 1.7 2006-11-09 17:55:37 anatom Exp $
  */
 public interface IRequestMessage extends Serializable {
     /**
@@ -74,6 +74,15 @@ public interface IRequestMessage extends Serializable {
      */
     public String getRequestAltNames();
     
+    /**
+     * Gets a validity date from the request, if the request contains a desired validity.
+     * The requested validity may, or may not be used, it depends if allowValidityOverride is set in 
+     * the certificate profile.
+     * 
+     * @return A date now or in the future for notBefore validity in the certificate, or null if no desired validity is in the certificate.
+     */
+	public Date getRequestValidityNotBefore();
+	
     /**
      * Gets a validity date from the request, if the request contains a desired validity.
      * The requested validity may, or may not be used, it depends if allowValidityOverride is set in 

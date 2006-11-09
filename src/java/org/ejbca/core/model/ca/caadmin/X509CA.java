@@ -123,7 +123,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.34 2006-11-09 17:16:07 anatom Exp $
+ * @version $Id: X509CA.java,v 1.35 2006-11-09 17:55:37 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -286,6 +286,7 @@ public class X509CA extends CA implements Serializable {
     public Certificate generateCertificate(UserDataVO subject, 
                                            PublicKey publicKey, 
                                            int keyusage, 
+                                           Date notBefore,
                                            Date notAfter,
                                            CertificateProfile certProfile) throws Exception{
                                                
@@ -295,7 +296,14 @@ public class X509CA extends CA implements Serializable {
         // Set back startdate ten minutes to avoid some problems with wrongly set clocks.
         firstDate.setTime(firstDate.getTime() - 10 * 60 * 1000);
         Date lastDate = new Date();
-        if ( (notAfter == null) || (!certProfile.getAllowValidityOverride()) ){
+        if ( (notBefore != null) && (certProfile.getAllowValidityOverride()) ) {
+        	// If we allow the client (or ra) to specify the startdate
+        	firstDate = notBefore;
+        	if (log.isDebugEnabled()) {
+            	log.debug("Using notBefore validity from request: "+firstDate);        		
+        	}
+        }
+        if ( (notAfter == null) || (!certProfile.getAllowValidityOverride()) ) {
             // validity in days = validity*24*60*60*1000 milliseconds
             long val = certProfile.getValidity();        
         	if (log.isDebugEnabled()) {
@@ -303,10 +311,10 @@ public class X509CA extends CA implements Serializable {
         	}
             lastDate.setTime(lastDate.getTime() + ( val * 24 * 60 * 60 * 1000));        	
         } else {
-        	// only of nut null and we allow validity override
+        	// only if not null and we allow validity override
         	lastDate = notAfter;
         	if (log.isDebugEnabled()) {
-            	log.debug("Using validity from request: "+lastDate);        		
+            	log.debug("Using notAfter validity from request: "+lastDate);        		
         	}
         }
         // Do not allow last date to be before first date

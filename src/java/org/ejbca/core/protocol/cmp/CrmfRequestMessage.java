@@ -73,7 +73,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
  * -- Self signature
  * 
  * @author tomas
- * @version $Id: CrmfRequestMessage.java,v 1.12 2006-11-02 17:03:02 anatom Exp $
+ * @version $Id: CrmfRequestMessage.java,v 1.13 2006-11-09 17:55:37 anatom Exp $
  */
 public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessage {
 	
@@ -303,6 +303,20 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
     }
 
 
+	public Date getRequestValidityNotBefore() {
+		Date ret = null;
+		CertTemplate templ = req.getCertReq().getCertTemplate();
+		OptionalValidity val = templ.getValidity();
+		if (val != null) {
+			Time time = val.getNotBefore();
+			if (time != null) {
+				ret = time.getDate();
+			}
+		}
+		log.debug("Request validity notBefore is: "+(ret == null ? "null" : ret.toString()));
+		return ret;
+	}
+	
 	public Date getRequestValidityNotAfter() {
 		Date ret = null;
 		CertTemplate templ = req.getCertReq().getCertTemplate();

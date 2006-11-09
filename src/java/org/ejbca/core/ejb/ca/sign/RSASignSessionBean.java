@@ -428,7 +428,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
-        return createCertificate(admin, username, password, pk, keyusage, null, SecConst.PROFILE_NO_PROFILE, SecConst.CAID_USEUSERDEFINED);
+        return createCertificate(admin, username, password, pk, keyusage, null, null, SecConst.PROFILE_NO_PROFILE, SecConst.CAID_USEUSERDEFINED);
     }
 
     /**
@@ -455,8 +455,8 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @ejb.permission unchecked="true"
      * @ejb.interface-method view-type="both"
      */
-    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, Date notAfter) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
-        return createCertificate(admin, username, password, pk, keyusage, notAfter, SecConst.PROFILE_NO_PROFILE, SecConst.CAID_USEUSERDEFINED);
+    public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, Date notBefore, Date notAfter) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
+        return createCertificate(admin, username, password, pk, keyusage, notBefore, notAfter, SecConst.PROFILE_NO_PROFILE, SecConst.CAID_USEUSERDEFINED);
     }
 
     /**
@@ -591,7 +591,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      *                             | CertificateData.cRLSign; gives keyCertSign and cRLSign
      * @param certificateprofileid used to override the one set in userdata.
      *                             Should be set to SecConst.PROFILE_NO_PROFILE if the usedata certificateprofileid should be used
-     * @param caid                 used to override the one set in userdata.¨
+     * @param caid                 used to override the one set in userdata.ï¿½
      *                             Should be set to SecConst.CAID_USEUSERDEFINED if the regular certificateprofileid should be used
      * 
      * 
@@ -605,7 +605,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      */
     public Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, int certificateprofileid, int caid) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
-    	return createCertificate(admin, username, password, pk, keyusage, null, certificateprofileid, caid);
+    	return createCertificate(admin, username, password, pk, keyusage, null, null, certificateprofileid, caid);
     }
     
     /**
@@ -692,8 +692,9 @@ public class RSASignSessionBean extends BaseSessionBean {
                     }
 
                     if (status.equals(ResponseStatus.SUCCESS)) {
+                    	Date notBefore = req.getRequestValidityNotBefore(); // Optionally requested validity
                     	Date notAfter = req.getRequestValidityNotAfter(); // Optionally requested validity
-                    	cert = createCertificate(admin, data, ca, reqpk, keyUsage, notAfter);
+                    	cert = createCertificate(admin, data, ca, reqpk, keyUsage, notBefore, notAfter);
                     }
             	} catch (ObjectNotFoundException oe) {
             		// If we didn't find the entity return error message
@@ -1268,7 +1269,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @param notAfter an optional validity to set in the created certificate, if the profile allows validity override, null if the profiles default validity should be used.
      * @param certificateprofileid used to override the one set in userdata.
      *                             Should be set to SecConst.PROFILE_NO_PROFILE if the usedata certificateprofileid should be used
-     * @param caid                 used to override the one set in userdata.¨
+     * @param caid                 used to override the one set in userdata.ï¿½
      *                             Should be set to SecConst.CAID_USEUSERDEFINED if the regular certificateprofileid should be used
      * 
      * 
@@ -1279,7 +1280,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @throws IllegalKeyException     if the public key is of wrong type.
      * 
      */
-    private Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, Date notAfter, int certificateprofileid, int caid) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
+    private Certificate createCertificate(Admin admin, String username, String password, PublicKey pk, int keyusage, Date notBefore, Date notAfter, int certificateprofileid, int caid) throws ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException {
         debug(">createCertificate(pk, ku, date)");
         try {
             // Authorize user and get DN
@@ -1335,7 +1336,7 @@ public class RSASignSessionBean extends BaseSessionBean {
 
 
             // Now finally after all these checks, get the certificate
-            Certificate cert = createCertificate(admin, data, ca, pk, keyusage, notAfter);
+            Certificate cert = createCertificate(admin, data, ca, pk, keyusage, notBefore, notAfter);
             // Call authentication session and tell that we are finished with this user
             if (ca.getFinishUser() == true) {
                 finishUser(admin, username, password);
@@ -1366,7 +1367,7 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @return Certificate that has been generated and signed by the CA
      * @throws IllegalKeyException if the public key given is invalid
      */
-    private Certificate createCertificate(Admin admin, UserDataVO data, CA ca, PublicKey pk, int keyusage, Date notAfter) throws IllegalKeyException {
+    private Certificate createCertificate(Admin admin, UserDataVO data, CA ca, PublicKey pk, int keyusage, Date notBefore, Date notAfter) throws IllegalKeyException {
         debug(">createCertificate(pk, ku, notAfter)");
         try {
             // If the user is of type USER_INVALID, it cannot have any other type (in the mask)
@@ -1419,7 +1420,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                     throw new IllegalKeyException(msg);
                 }
 
-                X509Certificate cert = (X509Certificate) ca.generateCertificate(data, pk, keyusage, notAfter, certProfile);
+                X509Certificate cert = (X509Certificate) ca.generateCertificate(data, pk, keyusage, notBefore, notAfter, certProfile);
 
                 getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), data.getUsername(), cert, LogEntry.EVENT_INFO_CREATECERTIFICATE, "");
                 debug("Generated certificate with SerialNumber '" + Hex.encode(cert.getSerialNumber().toByteArray()) + "' for user '" + data.getUsername() + "'.");

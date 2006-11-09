@@ -66,7 +66,7 @@ import org.ejbca.util.cert.QCStatementExtension;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.18 2006-11-02 07:51:12 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.19 2006-11-09 17:55:38 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -497,8 +497,8 @@ public class TestSignSession extends TestCase {
         // Make user that we know...
         boolean userExists = false;
         try {
-            usersession.addUser(admin,"swede","foo123","C=SE, O=ÅÄÖ, CN=åäö",null,"swede@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsacaid);
-            log.debug("created user: swede, foo123, C=SE, O=ÅÄÖ, CN=åäö");
+            usersession.addUser(admin,"swede","foo123","C=SE, O=ï¿½ï¿½ï¿½, CN=ï¿½ï¿½ï¿½",null,"swede@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsacaid);
+            log.debug("created user: swede, foo123, C=SE, O=ï¿½ï¿½ï¿½, CN=ï¿½ï¿½ï¿½");
         } catch (RemoteException re) {
             if (re.detail instanceof DuplicateKeyException) {
                 userExists = true;
@@ -518,7 +518,7 @@ public class TestSignSession extends TestCase {
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         assertEquals("Wrong DN med swedechars", CertTools.getSubjectDN(cert),
-                CertTools.stringToBCDNString("C=SE, O=ÅÄÖ, CN=åäö"));
+                CertTools.stringToBCDNString("C=SE, O=ï¿½ï¿½ï¿½, CN=ï¿½ï¿½ï¿½"));
         //FileOutputStream fos = new FileOutputStream("swedecert.crt");
         //fos.write(cert.getEncoded());
         //fos.close();
@@ -691,7 +691,7 @@ public class TestSignSession extends TestCase {
         } 
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_MONTH, 10);
-        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), -1, cal.getTime());
+        X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), -1, null, cal.getTime());
         assertNotNull("Failed to create certificate", cert);
         String dn = cert.getSubjectDN().getName();
         assertEquals(CertTools.stringToBCDNString("cn=validityoverride,c=SE"), CertTools.stringToBCDNString(dn));
@@ -712,7 +712,7 @@ public class TestSignSession extends TestCase {
         cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_MONTH, 10);
         usersession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
-        cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), -1, cal.getTime());
+        cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), -1, null, cal.getTime());
         assertNotNull("Failed to create certificate", cert);
         assertEquals(CertTools.stringToBCDNString("cn=validityoverride,c=SE"), CertTools.stringToBCDNString(dn));
         notAfter = cert.getNotAfter();
