@@ -352,6 +352,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 		        <include name="deploy/*.xml"/>
 		    </fileset> 
 		</copy>
+        <copy file="${appserver.src}/sun/deploy/adminweb/sun-web.xml" tofile="${src.dd}/WEB-INF/sun-web.xml" overwrite="true" failonerror="false"/>
 		<!--
 		<echo>Ignore warnings about 'Couldn't find file' during preprocessing if you are running jdk 1.4</echo>
 		-->
