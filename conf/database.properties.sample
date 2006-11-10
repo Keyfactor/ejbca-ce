@@ -5,10 +5,11 @@
 #datasource.jndi-name=EjbcaDS
 
 # Prefix for the jndi name of the datasource to use in deployment descriptors of ejbs. 
-# JBoss requires 'java:/' as prefix, while weblogic does not want anything ('')
+# JBoss requires 'java:/' as prefix, while Weblogic does not want anything (''), and Glassfish wants jdbc/
 # default: java:/
 #datasource.jndi-name-prefix=java:/
 #datasource.jndi-name-prefix=
+#datasource.jndi-name-prefix=jdbc/
 
 # Weblogic in combination with Oracle requires special handling of LONG/BLOB columns
 # If, and only if, you are using Weblogic and Oracle, uncomment the row below.

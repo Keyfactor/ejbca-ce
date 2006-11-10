@@ -40,7 +40,7 @@ import org.ejbca.core.model.authorization.AdminGroup;
  * Admin entities
  * </pre>
  *
- * @version $Id: AdminGroupDataBean.java,v 1.5 2006-11-10 09:28:50 anatom Exp $
+ * @version $Id: AdminGroupDataBean.java,v 1.6 2006-11-10 11:22:18 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents an authorization usergroup"
@@ -131,18 +131,18 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
     public abstract void setCaId(int caid);
 
     /**
-     * ejb.relation name="AdminGroupDataToAdminEntities" role-name="AdminGroupData"
+     * @ejb.relation name="AdminGroupDataToAdminEntities" role-name="AdminGroupData"
      * target-role-name="AdminEntityData" target-ejb="AdminEntityData"
      * 
-     * jboss.target-relation
+     * @jboss.target-relation
      * related-pk-field="primKey"
      * fk-column="AdminGroupData_adminEntities"  
      * 
-     * weblogic.target-column-map
+     * @weblogic.target-column-map
      * key-column="pK"
      * foreign-key-column="AdminGroupData_adminEntities"
      * 
-     * sunone.relation
+     * @sunone.relation
      * column="AdminGroupData.pK"
      * target="AdminEntityData.AdminGroupData_adminEntities"
      */
@@ -150,19 +150,19 @@ public abstract class AdminGroupDataBean extends BaseEntityBean {
     public abstract void setAdminEntities(Collection adminentities);
 
     /**
-     * ejb.relation
+     * @ejb.relation
      * name="AdminGroupDataToAccessRules" role-name="AdminGroupData"
      * target-role-name="AccessRulesData" target-ejb="AccessRulesData"
      * 
-     * jboss.target-relation
+     * @jboss.target-relation
      * related-pk-field="primKey"
      * fk-column="AdminGroupData_accessRules"
      *      
-     * weblogic.target-column-map
+     * @weblogic.target-column-map
      * key-column="pK"
      * foreign-key-column="AdminGroupData_accessRules"
      * 
-     * sunone.relation
+     * @sunone.relation
      * column="AdminGroupData.pK"
      * target="AccessRulesData.AdminGroupData_accessRules"
      */
