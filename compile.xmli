@@ -169,12 +169,14 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
                 datasource="${datasource.jndi-name}" 
                 persistence="weblogic"
                 createTables="Disabled" />
+ <!--
             <sunone version="7.0" 
                 cmpSchema="ejbca.dbschema"
                 xmlencoding="UTF-8" 
                 destdir="${src.dd}/META-INF" 
                 cmpResourceJndiName="${datasource.jndi-name-prefix}${datasource.jndi-name}"
                 validatexml="false" />
+ -->
             <websphere
                 xmlencoding="UTF-8" 
                 validatexml="false" 
@@ -344,7 +346,12 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 			</filterchain>
 	    </copy>
 		<echo>Ignore warnings about 'Couldn't find file' during preprocessing</echo>
-		<copy file="${appserver.src}/sun/schema/${database.name}/EJBCA.dbschema" todir="${src.dd}/META-INF" overwrite="true" failonerror="false"/>
+		<copy todir="${src.dd}/META-INF" overwrite="true" failonerror="false" flatten="true">
+		    <fileset dir="${appserver.src}/sun/">
+		        <include name="schema/${database.name}/EJBCA.dbschema"/>
+		        <include name="deploy/*.xml"/>
+		    </fileset> 
+		</copy>
 		<!--
 		<echo>Ignore warnings about 'Couldn't find file' during preprocessing if you are running jdk 1.4</echo>
 		-->

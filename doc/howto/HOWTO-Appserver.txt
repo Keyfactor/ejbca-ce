@@ -115,11 +115,11 @@ This is only starter instruction to help you get started as a developer, EJBCA d
 
 - Start the application server: asadmin start-domain
 
-- Create a datasource called jdbc/EjbcaDS, in the admin console this is done in Resources->JDBC->JDBC Resources.
-Use the pool DerbyPool.
+- Create a datasource called EjbcaDS, in the admin console this is done in Resources->JDBC->JDBC Resources.
+Use the pool DerbyPool, or connect to another database pool you have created.
 NOTE! Important to add a description to both the ConnectionPool and DataSource.
 
 - Start the database: asadmin start-database
 
-- Deploy ejbca.ear using: ./asadmin deploy --createtables=true --dbvendorname=mysql ~/dev/workspace/ejbca/dist/ejbca.ear
-
+- Deploy ejbca.ear using: ./asadmin deploy --createtables=true --dbvendorname=mysql ../../ejbca/dist/ejbca.ear
+mysql is changed for the database you are using, see glassfish documentation.
