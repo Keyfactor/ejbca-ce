@@ -344,7 +344,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 			</filterchain>
 	    </copy>
 		<echo>Ignore warnings about 'Couldn't find file' during preprocessing</echo>
-		<copy file="${appserver.src}/sun/schema/${database.name}/ejbca.dbschema" todir="${src.dd}/META-INF" overwrite="true" failonerror="false"/>
+		<copy file="${appserver.src}/sun/schema/${database.name}/EJBCA.dbschema" todir="${src.dd}/META-INF" overwrite="true" failonerror="false"/>
 		<!--
 		<echo>Ignore warnings about 'Couldn't find file' during preprocessing if you are running jdk 1.4</echo>
 		-->
