@@ -382,6 +382,7 @@ public class ProtocolOcspHttpTest extends TestCase {
 
         int ecdsacaid = "CN=OCSPECDSATEST".hashCode();
         X509Certificate ecdsacacert = addECDSACA();
+        reloadKeys();
         
         // Make user that we know...
         boolean userExists = false;
@@ -597,5 +598,20 @@ public class ProtocolOcspHttpTest extends TestCase {
         assertEquals("No of SingResps should be 1.", singleResps.length, 1);
         SingleResp singleResp = singleResps[0];
         return singleResp;
+    }
+    
+    protected void reloadKeys() throws IOException, OCSPException, NoSuchProviderException {
+        // POST the OCSP request
+        URL url = new URL(httpReqPath + '/' + resourceOcsp+"?reloadkeys=true");
+        HttpURLConnection con = (HttpURLConnection)url.openConnection();
+        // we are going to do a POST
+        con.setDoOutput(true);
+        con.setRequestMethod("GET");
+
+        // POST it
+        con.setRequestProperty("reloadkeys", "true");
+        con.connect();
+        assertEquals("Response code", 405, con.getResponseCode());
+        con.disconnect();
     }
 }

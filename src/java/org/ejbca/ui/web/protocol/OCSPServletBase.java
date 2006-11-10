@@ -112,7 +112,7 @@ import org.ejbca.util.CertTools;
  *   
  * @author Thomas Meckel (Ophios GmbH)
  * @author Tomas Gustavsson
- * @version  $Id: OCSPServletBase.java,v 1.19 2006-11-07 15:45:41 anatom Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.20 2006-11-10 08:09:55 anatom Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
@@ -416,6 +416,15 @@ abstract class OCSPServletBase extends HttpServlet {
          * We only support POST operation, so return
          * an appropriate HTTP error code to caller.
          */
+        // We have one command though, to force reloading of keys, can only be run from localhost
+        String reloadCAKeys = request.getParameter("reloadkeys");
+        if (StringUtils.equals(reloadCAKeys, "true")) {
+        	String remote = request.getRemoteAddr();
+            if (StringUtils.equals(remote, "127.0.0.1")) {
+            	m_log.info("Reloading keys due to request from 127.0.0.1");
+            	m_certValidTo = 0;
+            }
+        }
         response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "OCSP only supports POST");
         m_log.debug("<doGet()");
     } // doGet
