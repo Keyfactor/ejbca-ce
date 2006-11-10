@@ -57,7 +57,7 @@ import org.ejbca.util.JDBCUtil;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.5 2006-10-09 12:05:53 anatom Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.6 2006-11-10 17:55:22 anatom Exp $
  *
  * @ejb.bean
  *   description="Session bean handling interface with ra authorization"
@@ -219,7 +219,12 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
         ServiceLocator locator = ServiceLocator.getInstance();
         admingrouphome = (AdminGroupDataLocalHome) locator.getLocalHome(AdminGroupDataLocalHome.COMP_NAME);
         authorizationtreeupdatehome = (AuthorizationTreeUpdateDataLocalHome) locator.getLocalHome(AuthorizationTreeUpdateDataLocalHome.COMP_NAME);
-        customaccessrules = locator.getString("java:comp/env/CustomAvailableAccessRules").split(";");
+        String customrules = locator.getString("java:comp/env/CustomAvailableAccessRules");
+        if (customrules != null) {
+            customaccessrules = customrules.split(";");
+        } else {
+            customaccessrules = new String[0];
+        }
 
         try {
             authorizer = new Authorizer(getAdminGroups(), admingrouphome,
