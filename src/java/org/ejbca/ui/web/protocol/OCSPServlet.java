@@ -67,8 +67,13 @@ import org.ejbca.core.model.log.Admin;
  *  home="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome"
  *  local="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
  *
+ * @web.resource-ref
+ *  name="${datasource.jndi-name-prefix}${datasource.jndi-name}"
+ *  type="javax.sql.DataSource"
+ *  auth="Container"
+ *
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson
- * @version  $Id: OCSPServlet.java,v 1.7 2006-02-05 15:51:02 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.8 2006-11-10 17:56:04 anatom Exp $
  */
 public class OCSPServlet extends OCSPServletBase {
 

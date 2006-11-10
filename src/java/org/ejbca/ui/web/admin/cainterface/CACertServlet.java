@@ -44,7 +44,7 @@ import org.ejbca.util.Base64;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CACertServlet.java,v 1.8 2006-10-26 11:03:42 herrvendil Exp $
+ * @version $Id: CACertServlet.java,v 1.9 2006-11-10 17:56:04 anatom Exp $
  *
  * @web.servlet name = "CACert"
  *              display-name = "CACertServlet"
@@ -202,6 +202,10 @@ import org.ejbca.util.Base64;
  *  home="org.ejbca.core.ejb.services.IServiceTimerSessionLocalHome"
  *  local="org.ejbca.core.ejb.services.IServiceTimerSessionLocal"
  *  
+ * @web.resource-ref
+ *  name="${datasource.jndi-name-prefix}${datasource.jndi-name}"
+ *  type="javax.sql.DataSource"
+ *  auth="Container"
  */
 public class CACertServlet extends HttpServlet {
 

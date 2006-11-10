@@ -1,136 +1,172 @@
-<?xml version = '1.0' encoding = 'ISO-8859-1'?>
+<?xml version="1.0" encoding="UTF-8"?>
+
 <!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" "http://java.sun.com/dtd/web-app_2_3.dtd">
-<web-app>
-    <display-name>CA status information</display-name>
-    <servlet>
-        <servlet-name>OCSPServlet</servlet-name>
-        <display-name>OCSPServlet</display-name>
-        <servlet-class>org.ejbca.ui.web.protocol.OCSPServlet</servlet-class>
-        <init-param>
-            <param-name>SignatureAlgorithm</param-name>
-            <param-value>SHA1WithRSA</param-value>
-            <description>Algorithm used by server to generate signature on OCSP responses</description>
-        </init-param>
-        <init-param>
-            <param-name>enforceRequestSigning</param-name>
-            <param-value>false</param-value>
-            <description>
-                If set to true the servlet will enforce OCSP request signing.
-            </description>
-        </init-param>
-        <init-param>
-            <param-name>useCASigningCert</param-name>
-            <param-value>true</param-value>
-            <description>
-                If set to true the OCSP reponses will be signed directly by the CAs certificate
-                instead of the CAs OCSP responder.
-            </description>
-        </init-param>
-        <init-param>
-            <param-name>includeCertChain</param-name>
-            <param-value>true</param-value>
-            <description>
-                If set to true the certificate chain will be returned with the OCSP response.
-            </description>
-        </init-param>
-        <init-param>
-            <param-name>defaultResponderID</param-name>
-            <param-value>CN=TestCA,O=AnaTom,C=SE</param-value>
-            <description>
-                Specifies the subject of a certificate which is used to
-                identifiy the responder which will generate responses when no
-                real CA can be found from the request. This is used to generate 
-                'unknown' responses when a request is received for a certificate 
-                that is not signed by any CA on this server.
-            </description>
-        </init-param>
-    </servlet>
-    <servlet>
-        <servlet-name>EJBCAHealthCheckServlet</servlet-name>
-        <display-name>EJBCAHealthCheckServlet</display-name>
-        <servlet-class>org.ejbca.ui.web.pub.HealthCheckServlet</servlet-class>
-        <!-- Required parameters -->
-        <init-param>
-            <param-name>HealthCheckClassPath</param-name>
-            <param-value>org.ejbca.ui.web.pub.cluster.EJBCAHealthCheck</param-value>
-            <description>Class performing the healthcheck. Must implement the IHealthCheck interface.</description>
-        </init-param>
-        <init-param>
-            <param-name>HealthResponseClassPath</param-name>
-            <param-value>org.ejbca.ui.web.pub.cluster.TextResponse</param-value>
-            <description>Class creating the response to the loadbalancer or monitor software. Must implement the IHealthResponse interface.</description>
-        </init-param>
-        <!-- Optional parameters -->
-        <init-param>
-            <param-name>AuthorizedIPs</param-name>
-            <param-value>127.0.0.1</param-value>
-            <description>Specifies which remote IPs that may call this healthcheck servlet. Use ';' for between multiple IPs. 
-                         Comment out this parameter to allow from all IPs.</description>
-        </init-param>
 
-        <!-- EJBCAHealthCheck specific init parameters -->
-        <init-param>
-            <param-name>MinimumFreeMemory</param-name>
-            <param-value>0</param-value>
-            <description>
-                Parameter to set the number of bytes of memory that must be free before removing 
-                the node out of the cluster.
-            </description>
-        </init-param>
-        <!-- TextResponse specific init parameters -->
-        <init-param>
-            <param-name>OKMessage</param-name>
-            <param-value>EJBCAOK</param-value>
-            <description>
-                Text string used to say that every thing is ok with this node.
-            </description>
-        </init-param>
-        <init-param>
-            <param-name>SendServerError</param-name>
-            <param-value>false</param-value>
-            <description>
-               Parameter saying if a errorcode 500 should be sent in case of error.
-            </description>
-        </init-param>
-       <!-- 
-        <init-param>
-            <param-name>customErrorMessage</param-name>
-            <param-value>EJBCANOTOK</param-value>
-            <description>
-                Uncomment this parameter if you want a static error message instead of 
-                one generated´by the HealthChecker.
-            </description>
-        </init-param> -->
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>OCSPServlet</servlet-name>
-        <url-pattern>/ocsp</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>EJBCAHealthCheckServlet</servlet-name>
-        <url-pattern>/ejbcahealth</url-pattern>
-    </servlet-mapping>
+<web-app >
+   <description><![CDATA[OCSP responder]]></description>
 
-  <ejb-local-ref>
-    <ejb-ref-name>ejb/CertificateStoreSessionLocal</ejb-ref-name>
-    <ejb-ref-type>Session</ejb-ref-type>
-    <local-home>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome</local-home>
-    <local>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal</local>
-    <ejb-link>CertificateStoreSession</ejb-link>
-  </ejb-local-ref>
-  <ejb-local-ref>
-    <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
-    <ejb-ref-type>Session</ejb-ref-type>
-    <local-home>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome</local-home>
-    <local>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal</local>
-    <ejb-link>CAAdminSession</ejb-link>
-  </ejb-local-ref>
-  <ejb-local-ref>
-    <ejb-ref-name>ejb/SignSessionLocal</ejb-ref-name>
-    <ejb-ref-type>Session</ejb-ref-type>
-    <local-home>org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome</local-home>
-    <local>org.ejbca.core.ejb.ca.sign.ISignSessionLocal</local>
-    <ejb-link>RSASignSession</ejb-link>
-  </ejb-local-ref>
-    
+    <!--
+    To use non XDoclet filters, create a filters.xml file that
+    contains the additional filters (eg Sitemesh) and place it in your
+    project's merge dir.  Don't include filter-mappings in this file,
+    include them in a file called filter-mappings.xml and put that in
+    the same directory.
+    -->
+
+    <!--
+    To use non XDoclet filter-mappings, create a filter-mappings.xml file that
+    contains the additional filter-mappings and place it in your
+    project's merge dir.
+    -->
+
+    <!--
+    To use non XDoclet listeners, create a listeners.xml file that
+    contains the additional listeners and place it in your
+    project's merge dir.
+    -->
+
+   <servlet>
+      <servlet-name>OCSP</servlet-name>
+      <display-name>OCSPServlet</display-name>
+      <description><![CDATA[Answers OCSP requests]]></description>
+      <servlet-class>org.ejbca.ui.web.protocol.OCSPServlet</servlet-class>
+
+      <init-param>
+         <param-name>SignatureAlgorithm</param-name>
+         <param-value>SHA1WithRSA;SHA1WithECDSA</param-value>
+         <description><![CDATA[Algorithm used by server to generate signature on OCSP responses]]></description>
+      </init-param>
+      <init-param>
+         <param-name>enforceRequestSigning</param-name>
+         <param-value>false</param-value>
+         <description><![CDATA[If set to true the servlet will enforce OCSP request signing]]></description>
+      </init-param>
+      <init-param>
+         <param-name>includeCertChain</param-name>
+         <param-value>true</param-value>
+         <description><![CDATA[If set to true the certificate chain will be returned with the OCSP response]]></description>
+      </init-param>
+      <init-param>
+         <param-name>useCASigningCert</param-name>
+         <param-value>true</param-value>
+         <description><![CDATA[If set to true the OCSP reponses will be signed directly by the CAs certificate instead of the CAs OCSP responder]]></description>
+      </init-param>
+      <init-param>
+         <param-name>defaultResponderID</param-name>
+         <param-value>CN=AdminCA1,O=EJBCA Sample,C=SE</param-value>
+         <description><![CDATA[Specifies the subject of a certificate which is used to identifiy the responder which will generate responses when no real CA can be found from the request. This is used to generate 'unknown' responses when a request is received for a certificate that is not signed by any CA on this server]]></description>
+      </init-param>
+      <init-param>
+         <param-name>extensionOid</param-name>
+         <param-value></param-value>
+         <description><![CDATA[Specifies OCSP extension oids that will result in a call to an extension class, separate multiple entries with ;]]></description>
+      </init-param>
+      <init-param>
+         <param-name>extensionClass</param-name>
+         <param-value></param-value>
+         <description><![CDATA[Specifies classes implementing OCSP extensions matching oids above, separate multiple entries with ;]]></description>
+      </init-param>
+      <init-param>
+         <param-name>unidDataSource</param-name>
+         <param-value></param-value>
+         <description><![CDATA[Specifies classes implementing OCSP extensions matching oids above, separate multiple entries with ;]]></description>
+      </init-param>
+      <init-param>
+         <param-name>unidTrustDir</param-name>
+         <param-value>${ocsp.unidtrustdir}</param-value>
+         <description><![CDATA[Directory containing certificates of trusted entities allowed to query for Fnrs.]]></description>
+      </init-param>
+      <init-param>
+         <param-name>unidCACert</param-name>
+         <param-value></param-value>
+         <description><![CDATA[File containing the CA-certificate, in PEM format, that signed the trusted clients.]]></description>
+      </init-param>
+
+      <load-on-startup>99</load-on-startup>
+
+   </servlet>
+
+  <!--
+  To use non XDoclet servlets, create a servlets.xml file that
+  contains the additional servlets (eg Struts) and place it in your
+  project's merge dir.  Don't include servlet-mappings in this file,
+  include them in a file called servlet-mappings.xml and put that in
+  the same directory.
+  -->
+
+   <servlet-mapping>
+      <servlet-name>OCSP</servlet-name>
+      <url-pattern>/ocsp</url-pattern>
+   </servlet-mapping>
+
+   <session-config>
+      <session-timeout>30</session-timeout>
+   </session-config>
+
+   <!--
+   To specify mime mappings, create a file named mime-mappings.xml, put it in your project's mergedir.
+   Organize mime-mappings.xml following this DTD slice:
+
+   <!ELEMENT mime-mapping (extension, mime-type)>
+   -->
+
+   <!--
+   To specify error pages, create a file named error-pages.xml, put it in your project's mergedir.
+   Organize error-pages.xml following this DTD slice:
+
+   <!ELEMENT error-page ((error-code | exception-type), location)>
+   -->
+
+  <!--
+  To add taglibs by xml, create a file called taglibs.xml and place it
+  in your merge dir.
+  -->
+
+   <resource-ref >
+      <res-ref-name>jdbc/EjbcaDS</res-ref-name>
+      <res-type>javax.sql.DataSource</res-type>
+      <res-auth>Container</res-auth>
+   </resource-ref>
+
+   <!--
+   To set up security settings for your web app, create a file named web-security.xml, put it in your project's mergedir.
+   Organize web-security.xml following this DTD slice:
+
+   <!ELEMENT security-constraint (display-name?, web-resource-collection+, auth-constraint?, user-data-constraint?)>
+   <!ELEMENT web-resource-collection (web-resource-name, description?, url-pattern*, http-method*)>
+   <!ELEMENT web-resource-name (#PCDATA)>
+   <!ELEMENT url-pattern (#PCDATA)>
+   <!ELEMENT http-method (#PCDATA)>
+   <!ELEMENT user-data-constraint (description?, transport-guarantee)>
+   <!ELEMENT transport-guarantee (#PCDATA)>
+
+   <!ELEMENT login-config (auth-method?, realm-name?, form-login-config?)>
+   <!ELEMENT auth-method (#PCDATA)>
+   <!ELEMENT realm-name (#PCDATA)>
+   <!ELEMENT form-login-config (form-login-page, form-error-page)>
+   <!ELEMENT form-login-page (#PCDATA)>
+   <!ELEMENT form-error-page (#PCDATA)>
+   -->
+
+   <ejb-local-ref >
+      <ejb-ref-name>ejb/CertificateStoreSessionLocal</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome</local-home>
+      <local>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal</local>
+      <ejb-link>CertificateStoreSession</ejb-link>
+   </ejb-local-ref>
+   <ejb-local-ref >
+      <ejb-ref-name>ejb/RSASignSessionLocal</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome</local-home>
+      <local>org.ejbca.core.ejb.ca.sign.ISignSessionLocal</local>
+      <ejb-link>RSASignSession</ejb-link>
+   </ejb-local-ref>
+   <ejb-local-ref >
+      <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome</local-home>
+      <local>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal</local>
+      <ejb-link>CAAdminSession</ejb-link>
+   </ejb-local-ref>
 </web-app>
