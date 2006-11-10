@@ -123,3 +123,25 @@ NOTE! Important to add a description to both the ConnectionPool and DataSource.
 
 - Deploy ejbca.ear using: ./asadmin deploy --createtables=true --dbvendorname=mysql ../../ejbca/dist/ejbca.ear
 mysql is changed for the database you are using, see glassfish documentation.
+
+Creating deployment descriptors for Glassfish:
+Whan a new release of EJBCA should be running on glassfish, the deployment descriptors may have to be updated.
+Uncomment the section in compile.xmli to generate sun ejb deployment descriptors, you only need sun-ejb-jar.xml. 
+Compare the generated one with src/appserver/sun/deploy/sun-ejb-jar.xml, and merge if needed.
+
+sun-web.xml files must be updated with any new references that exist in the web.xml files.
+
+Of particular interest on Glassfish is that in order for web-apps to call EJBs, the webapp must define a datasource ref,
+both in web.xml and sun-web.xml.
+web.xml
+<resource-ref >
+   <res-ref-name>jdbc/EjbcaDS</res-ref-name>
+   <res-type>javax.sql.DataSource</res-type>
+   <res-auth>Container</res-auth>
+</resource-ref>
+
+sun-web.xml
+<resource-ref>
+    <res-ref-name>jdbc/EjbcaDS</res-ref-name>
+    <jndi-name>jdbc/EjbcaDS</jndi-name>
+</resource-ref>
