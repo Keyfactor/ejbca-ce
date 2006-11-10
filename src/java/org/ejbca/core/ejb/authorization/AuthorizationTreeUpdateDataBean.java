@@ -33,6 +33,7 @@ import org.ejbca.core.ejb.BaseEntityBean;
  *   description="This enterprise bean entity represents an access rule"
  *   display-name="AuthorizationTreeUpdateDataEB"
  *   name="AuthorizationTreeUpdateData"
+ *   jndi-name="AuthorizationTreeUpdateData"
  *   view-type="local"
  *   type="CMP"
  *   reentrant="False"

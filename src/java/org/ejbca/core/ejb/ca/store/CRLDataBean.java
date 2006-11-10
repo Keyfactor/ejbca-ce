@@ -39,11 +39,12 @@ import org.ejbca.util.CertTools;
  * nextUpdate (nextUpdate)
  * </pre>
  *
- * @version $Id: CRLDataBean.java,v 1.3 2006-10-07 14:10:47 anatom Exp $
+ * @version $Id: CRLDataBean.java,v 1.4 2006-11-10 09:28:51 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a CRL with accompanying data"
  * display-name="CRLDataEB"
  * name="CRLData"
+ * jndi-name="CRLData"
  * view-type="local"
  * type="CMP"
  * reentrant="False"

@@ -34,11 +34,12 @@ import java.util.HashMap;
  * CertificateProfile data
  * </pre>
  *
- * @version $Id: CertificateProfileDataBean.java,v 1.3 2006-10-07 14:10:31 anatom Exp $
+ * @version $Id: CertificateProfileDataBean.java,v 1.4 2006-11-10 09:28:51 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a CRL with accompanying data"
  * display-name="CertificateProfileDataEB"
  * name="CertificateProfileData"
+ * jndi-name="CertificateProfileData"
  * view-type="local"
  * type="CMP"
  * reentrant="False"

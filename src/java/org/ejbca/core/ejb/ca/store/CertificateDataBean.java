@@ -47,11 +47,12 @@ import org.ejbca.util.CertTools;
  * Username (username)
  * </pre>
  *
- * @version $Id: CertificateDataBean.java,v 1.4 2006-10-26 11:00:41 herrvendil Exp $
+ * @version $Id: CertificateDataBean.java,v 1.5 2006-11-10 09:28:51 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a certificate with accompanying data"
  * display-name="CertificateDataEB"
  * name="CertificateData"
+ * jndi-name="CertificateData"
  * view-type="local"
  * type="CMP"
  * reentrant="False"

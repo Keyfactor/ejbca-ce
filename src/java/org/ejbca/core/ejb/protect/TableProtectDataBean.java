@@ -41,6 +41,7 @@ import org.ejbca.core.ejb.BaseEntityBean;
  *   description="This enterprise bean entity represents a Table Protection entry with accompanying data"
  *   display-name="TableProtectDataEB"
  *   name="TableProtectData"
+ *   jndi-name="TableProtectData"
  *   view-type="local"
  *   type="CMP"
  *   reentrant="False"
@@ -72,7 +73,7 @@ import org.ejbca.core.ejb.BaseEntityBean;
  * query="SELECT OBJECT(a) from TableProtectDataBean a WHERE a.dbType=?1 AND a.dbKey=?2"
  *
 
- * @version $Id: TableProtectDataBean.java,v 1.4 2006-10-07 14:11:03 anatom Exp $
+ * @version $Id: TableProtectDataBean.java,v 1.5 2006-11-10 09:29:11 anatom Exp $
  */
 public abstract class TableProtectDataBean extends BaseEntityBean {
 

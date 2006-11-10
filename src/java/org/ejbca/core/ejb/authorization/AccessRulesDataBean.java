@@ -34,6 +34,7 @@ import org.ejbca.core.model.authorization.AccessRule;
  *   description="This enterprise bean entity represents an access rule"
  *   display-name="AccessRuleDataEB"
  *   name="AccessRulesData"
+ *   jndi-name="AccessRulesData"
  *   view-type="local"
  *   type="CMP"
  *   reentrant="False"
@@ -61,7 +62,7 @@ import org.ejbca.core.model.authorization.AccessRule;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.authorization.AccessRulesDataLocal"
  *
- * @version $Id: AccessRulesDataBean.java,v 1.3 2006-10-07 14:10:31 anatom Exp $
+ * @version $Id: AccessRulesDataBean.java,v 1.4 2006-11-10 09:28:50 anatom Exp $
  */
 public abstract class AccessRulesDataBean extends BaseEntityBean
 {

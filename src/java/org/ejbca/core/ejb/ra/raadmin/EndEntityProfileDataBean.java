@@ -33,11 +33,12 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
  * Profile data
  * </pre>
  *
- * @version $Id: EndEntityProfileDataBean.java,v 1.3 2006-10-07 14:11:20 anatom Exp $
+ * @version $Id: EndEntityProfileDataBean.java,v 1.4 2006-11-10 09:29:34 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a profile"
  * display-name="EndEntityProfileDataEB"
  * name="EndEntityProfileData"
+ * jndi-name="EndEntityProfileData"
  * view-type="local"
  * type="CMP"
  * reentrant="False"

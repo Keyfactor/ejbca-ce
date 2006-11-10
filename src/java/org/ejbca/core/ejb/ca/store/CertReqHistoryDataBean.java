@@ -44,11 +44,12 @@ import org.ejbca.util.CertTools;
  * UserDataVO (userAdminData)
  * </pre>
  *
- * @version $Id: CertReqHistoryDataBean.java,v 1.3 2006-10-07 14:10:47 anatom Exp $
+ * @version $Id: CertReqHistoryDataBean.java,v 1.4 2006-11-10 09:28:51 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity containing historical record over data user to generate a users certificate"
  * display-name="CertReqHistoryDataEB"
  * name="CertReqHistoryData"
+ * jndi-name="CertReqHistoryData"
  * view-type="local"
  * type="CMP"
  * reentrant="False"

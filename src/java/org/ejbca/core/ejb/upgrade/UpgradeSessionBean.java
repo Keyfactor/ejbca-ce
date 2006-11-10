@@ -45,10 +45,11 @@ import se.anatom.ejbca.log.OldLogConfigurationDataLocalHome;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.9 2006-10-26 14:35:04 anatom Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.10 2006-11-10 09:29:34 anatom Exp $
  * @ejb.bean
  *   display-name="UpgradeSB"
  *   name="UpgradeSession"
+ *   jndi-name="UpgradeSession"
  *   view-type="both"
  *   type="Stateless"
  *   transaction-type="Container"

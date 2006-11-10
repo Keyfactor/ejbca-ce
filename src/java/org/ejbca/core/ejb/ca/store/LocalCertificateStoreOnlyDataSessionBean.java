@@ -35,6 +35,7 @@ import org.ejbca.util.CertTools;
  *
  * @ejb.bean display-name="CertificateStoreOnlyDataSB"
  * name="CertificateStoreOnlyDataSession"
+ * jndi-name="CertificateStoreOnlyDataSession"
  * view-type="both"
  * type="Stateless"
  * transaction-type="Container"
@@ -80,7 +81,7 @@ import org.ejbca.util.CertTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreOnlyDataSessionBean.java,v 1.7 2006-10-09 12:05:18 anatom Exp $
+ * @version $Id: LocalCertificateStoreOnlyDataSessionBean.java,v 1.8 2006-11-10 09:28:51 anatom Exp $
  */
 public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
 

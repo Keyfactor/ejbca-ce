@@ -33,6 +33,7 @@ import org.ejbca.core.model.authorization.AdminEntity;
  *   description="This enterprise bean entity represents a user entity"
  *   display-name="AdminEntityDataEB"
  *   name="AdminEntityData"
+ *   jndi-name="AdminEntityData"
  *   view-type="local"
  *   type="CMP"
  *   reentrant="False"

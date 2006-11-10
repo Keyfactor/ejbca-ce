@@ -31,7 +31,6 @@ import org.ejbca.core.ejb.BaseEntityBean;
  *   display-name="HardTokenPropertyDataEB"
  *   name="HardTokenPropertyData"
  *   jndi-name="HardTokenPropertyData"
- *   local-jndi-name="HardTokenPropertyData"
  *   view-type="local"
  *   type="CMP"
  *   reentrant="False"

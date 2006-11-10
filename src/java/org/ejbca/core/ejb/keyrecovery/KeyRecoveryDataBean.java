@@ -36,13 +36,13 @@ import java.math.BigInteger;
  *  keypair
  * </pre>
  *
- * @version $Id: KeyRecoveryDataBean.java,v 1.4 2006-10-07 14:11:04 anatom Exp $
+ * @version $Id: KeyRecoveryDataBean.java,v 1.5 2006-11-10 09:29:11 anatom Exp $
  *
  * @ejb.bean
  *   description="Stores key recovery data"
  *   display-name="KeyRecoveryDataEB"
  *   name="KeyRecoveryData"
- *   local-jndi-name="KeyRecoveryData"
+ *   jndi-name="KeyRecoveryData"
  *   view-type="local"
  *   type="CMP"
  *   reentrant="False"

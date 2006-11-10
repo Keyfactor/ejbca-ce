@@ -45,7 +45,6 @@ import org.ejbca.util.StringTools;
  *   display-name="HardTokenDataEB"
  *   name="HardTokenData"
  *   jndi-name="HardTokenData"
- *   local-jndi-name="HardTokenDataLocal"
  *   view-type="local"
  *   type="CMP"
  *   reentrant="False"

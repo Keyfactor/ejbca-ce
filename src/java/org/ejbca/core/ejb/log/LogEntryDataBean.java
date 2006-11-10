@@ -42,6 +42,7 @@ import java.util.Date;
  *   description="This enterprise bean entity represents a Log Entry with accompanying data"
  *   display-name="LogEntryDataEB"
  *   name="LogEntryData"
+ *   jndi-name="LogEntryData"
  *   view-type="local"
  *   type="CMP"
  *   reentrant="False"
@@ -71,7 +72,7 @@ import java.util.Date;
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"
  *   
- * @version $Id: LogEntryDataBean.java,v 1.6 2006-10-11 13:27:37 anatom Exp $
+ * @version $Id: LogEntryDataBean.java,v 1.7 2006-11-10 09:29:11 anatom Exp $
  */
 public abstract class LogEntryDataBean extends BaseEntityBean {
 

@@ -92,10 +92,11 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.28 2006-11-09 10:59:47 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.29 2006-11-10 09:29:34 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
+ *   jndi-name="UserAdminSession"
  *   view-type="both"
  *   type="Stateless"
  *   transaction-type="Container"

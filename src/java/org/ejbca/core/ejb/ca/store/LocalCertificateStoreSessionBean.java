@@ -76,6 +76,7 @@ import org.ejbca.util.StringTools;
  *
  * @ejb.bean display-name="CertificateStoreSB"
  * name="CertificateStoreSession"
+ * jndi-name="CertificateStoreSession"
  * view-type="both"
  * type="Stateless"
  * transaction-type="Container"
@@ -170,7 +171,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.20 2006-11-09 07:04:51 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.21 2006-11-10 09:28:51 anatom Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {

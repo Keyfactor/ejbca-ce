@@ -32,11 +32,12 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
  * AdminPreference
  * </pre>
  *
- * @version $Id: AdminPreferencesDataBean.java,v 1.4 2006-10-07 14:11:20 anatom Exp $
+ * @version $Id: AdminPreferencesDataBean.java,v 1.5 2006-11-10 09:29:34 anatom Exp $
  *
  * @ejb.bean description="This enterprise bean entity represents a ra admins user preference."
  * display-name="AdminPreferencesDataEB"
  * name="AdminPreferencesData"
+ * jndi-name="AdminPreferencesData"
  * view-type="local"
  * type="CMP"
  * reentrant="False"
