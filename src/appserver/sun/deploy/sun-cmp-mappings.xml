@@ -6,7 +6,7 @@
 <sun-cmp-mappings>
 
     <sun-cmp-mapping>
-        <schema></schema>
+        <schema/>
 
         <entity-mapping>
             <ejb-name>PublisherData</ejb-name>
