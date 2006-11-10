@@ -28,13 +28,14 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.SecConst;
 
 
 /**
  * @author lars
- * @version $Id: BaseCAToken.java,v 1.8 2006-09-05 13:18:02 primelars Exp $
+ * @version $Id: BaseCAToken.java,v 1.9 2006-11-10 08:16:40 anatom Exp $
  */
 public abstract class BaseCAToken implements IHardCAToken {
 
@@ -76,15 +77,23 @@ public abstract class BaseCAToken implements IHardCAToken {
             }
     }
     private void testKey( KeyPair pair ) throws Exception {
-        final byte input[] = "Lillan gick på vägen ut, mötte där en katt ...".getBytes();
+        final byte input[] = "Lillan gick pï¿½ vï¿½gen ut, mï¿½tte dï¿½r en katt ...".getBytes();
         final byte signBV[];
+        String keyalg = pair.getPublic().getAlgorithm();
+        if (log.isDebugEnabled()) {
+            log.debug("Testing keys with algorithm: "+keyalg);        	
+        }
+        String testSigAlg = "SHA1withRSA";
+        if (StringUtils.equals(keyalg, "EC")) {
+        	testSigAlg = "SHA1withECDSA";
+        }
         {
-            Signature signature = Signature.getInstance("SHA1withRSA", getProvider());
+            Signature signature = Signature.getInstance(testSigAlg, getProvider());
             signature.initSign( pair.getPrivate() );
             signature.update( input );
             signBV = signature.sign();
         }{
-            Signature signature = Signature.getInstance("SHA1withRSA", "BC");
+            Signature signature = Signature.getInstance(testSigAlg, "BC");
             signature.initVerify(pair.getPublic());
             signature.update(input);
             if ( !signature.verify(signBV) )
