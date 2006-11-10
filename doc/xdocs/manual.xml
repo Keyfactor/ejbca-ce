@@ -1483,10 +1483,10 @@ the token will not be usable in EJBCA (as the flag suggests).
 </p><p>
 When configuring a CA to use a HSM in the administration GUI it is a property field where properties unique to this very HSM is specified. All implemented HSM modules are using the same property keywords to define the identity and the purpose of the keys to be used. These keywords are:
 <ul>
-<li>certSignKey   - the key to be used when signing certificates </li>
-<li>crlSignKey    - the key to be used when signing CLSs </li>
-<li>keyEncryptKey - the key to be used for key encryption and decryption.</li>
-<li>testKey       - the key to be used by HSM status checks.</li>
+<li>certSignKey   - the key to be used when signing certificates, can be RSA or ECDSA.</li>
+<li>crlSignKey    - the key to be used when signing CLSs, can be RSA or ECDSA.</li>
+<li>keyEncryptKey - the key to be used for key encryption and decryption, this must be an RSA key.</li>
+<li>testKey       - the key to be used by HSM status checks, can be RSA or ECDSA.</li>
 <li>defaultKey    - the key to be used when no other key is defined for a purpose. If this is the only definition then this key will be used for all purposes.</li>
 </ul>
 </p><p>
@@ -1499,6 +1499,9 @@ Same activation code must be used for all keys used by a CA. To be able to autom
 EJBCA 3.1 and later has build-in support for the nCipher NFast HSM.
 </p><p>
 EJBCA 3.2 and later also has an implementation for the Eracom HSM. The configuration was changed to 3.3.
+</p><p>
+</p><p>
+EJBCA 3.3 and later has an implementation for the SafeNet Luna HSM.
 </p><p>
 PrimeKey Solutions sell a module called PrimeCardHSM that implements a flexible HSM using low cost smart cards. 
 </p>
@@ -2511,7 +2514,7 @@ then restart the server.
 EJBCA support ECDSA signature keys in addition to RSA. You can create a CA using ECDSA keys both using the admin-GUI 
 and using the cli (bin/ejbca.sh ca init).
 </p>
-<subsection name="Ganarated keys and certificate">
+<subsection name="Genarated keys and certificate">
 <p>
 When generating a CA in EJBCA up to three keys and certificates are generated:
 <ul>
@@ -2523,6 +2526,12 @@ When using ECDSA keys, the CA signing keypair and the OCSP signer keypair will b
 The CA signing and OCSP signing certificate will be signed using your selected signature algorithm.
 <br/>
 The encryption keypair will always be RSA, using 1024 or 2048 bit key length. It uses the key length set in the admin-GUI or 2048 bit by default using the cli. A dummy encryption certificate will be created using SHA1WithRSA.
+</p>
+</subsection>
+<subsection name="Using ECDSA with an HSM">
+<p>
+See the section about HSM property parameters to see which keys can be of different sorts. 
+Note that the keyEncryptKey can not be ECDSA, but should be an RSA key. Your HSM must support both ECDSA and RSA keys.
 </p>
 </subsection>
 <subsection name="Named curves">
