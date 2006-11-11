@@ -41,6 +41,7 @@ import org.ejbca.core.model.hardtoken.profiles.IPINEnvelopeSettings;
 import org.ejbca.core.model.hardtoken.profiles.IReceiptSettings;
 import org.ejbca.core.model.hardtoken.profiles.IVisualLayoutSettings;
 import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
+import org.ejbca.core.model.hardtoken.profiles.TurkishEIDProfile;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 
@@ -49,7 +50,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Contains help methods used to parse a hard token profile jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditHardTokenProfileJSPHelper.java,v 1.4 2006-07-20 17:49:10 herrvendil Exp $
+ * @version $Id: EditHardTokenProfileJSPHelper.java,v 1.5 2006-11-11 12:46:05 herrvendil Exp $
  */
 public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 	
@@ -88,6 +89,7 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
  
 	public static final String TYPE_SWEDISHEID          = "typeswedisheid";
 	public static final String TYPE_ENCHANCEDEID        = "typeenchancedeid";
+	public static final String TYPE_TURKISHEID          = "typeturkisheid";
 
 	public static final String TEXTFIELD_VISUALVALIDITY = "textfieldvisualvalidity";
 	public static final String TEXTFIELD_SNPREFIX       = "textfieldsnprefix";
@@ -298,6 +300,8 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 					 profiledata = new SwedishEIDProfile();
 				   if(tokentype.equals(TYPE_ENCHANCEDEID))
 					 profiledata = new EnhancedEIDProfile();
+				   if(tokentype.equals(TYPE_TURKISHEID))
+					 profiledata = new TurkishEIDProfile();
 				 }
 				 // Save changes.
                     
@@ -411,6 +415,49 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
                      
 				 }
 
+				 if(profiledata instanceof TurkishEIDProfile){
+					   TurkishEIDProfile turkprof = (TurkishEIDProfile) profiledata;
+	                   
+					   value = request.getParameter(SELECT_MINKEYLENGTH);
+					   if(value!= null){
+						 int val = Integer.parseInt(value);				   
+						 turkprof.setMinimumKeyLength(TurkishEIDProfile.CERTUSAGE_SIGN, val);
+						 turkprof.setMinimumKeyLength(TurkishEIDProfile.CERTUSAGE_AUTHENC, val);
+						 turkprof.setKeyType(TurkishEIDProfile.CERTUSAGE_SIGN, EIDProfile.KEYTYPE_RSA);
+						 turkprof.setKeyType(TurkishEIDProfile.CERTUSAGE_AUTHENC, EIDProfile.KEYTYPE_RSA);
+					   }
+					   value = request.getParameter(CHECKBOX_CERTWRITABLE);
+					   if(value != null){                              
+						   turkprof.setCertWritable(TurkishEIDProfile.CERTUSAGE_SIGN, value.equals(CHECKBOX_VALUE));
+						   turkprof.setCertWritable(TurkishEIDProfile.CERTUSAGE_AUTHENC, value.equals(CHECKBOX_VALUE));
+					   }else{
+						   turkprof.setCertWritable(TurkishEIDProfile.CERTUSAGE_SIGN, false);
+						   turkprof.setCertWritable(TurkishEIDProfile.CERTUSAGE_AUTHENC, false);
+					   }
+					   	  
+	                   value = request.getParameter(SELECT_CERTIFICATEPROFILE + "0");
+	                   if(value!= null)
+	                	   turkprof.setCertificateProfileId(TurkishEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
+					   
+					   value = request.getParameter(SELECT_CA + "0");
+					   if(value!= null)
+						   turkprof.setCAId(TurkishEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
+					   value = request.getParameter(SELECT_PINTYPE + "0");
+					   if(value!= null)
+						   turkprof.setPINType(TurkishEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value));
+					   value = request.getParameter(SELECT_MINPINLENGTH + "0");
+					   if(value!= null)
+						   turkprof.setMinimumPINLength(TurkishEIDProfile.CERTUSAGE_SIGN, Integer.parseInt(value)); 
+					   
+					   value = request.getParameter(SELECT_CERTIFICATEPROFILE + "1");
+					   if(value!= null)
+						   turkprof.setCertificateProfileId(TurkishEIDProfile.CERTUSAGE_AUTHENC, Integer.parseInt(value));
+					   
+					   value = request.getParameter(SELECT_CA + "1");
+					   if(value!= null)
+						   turkprof.setCAId(TurkishEIDProfile.CERTUSAGE_AUTHENC, Integer.parseInt(value));										  	                     
+			     }				 
+				 
 				 if(profiledata instanceof EnhancedEIDProfile){
 				   EnhancedEIDProfile enhprof = (EnhancedEIDProfile) profiledata;
 
@@ -538,7 +585,10 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 				break;
 			  case EnhancedEIDProfile.TYPE_ENHANCEDEID:
 				profiledata =  new EnhancedEIDProfile();				      
-				break;  		
+				break;  	
+			  case TurkishEIDProfile.TYPE_TURKISHEID:
+				profiledata =  new TurkishEIDProfile();				      
+				break; 
 			}   
 		  }
 
@@ -639,7 +689,10 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
         retval = SwedishEIDProfile.TYPE_SWEDISHEID;	
       
 	  if(profiledata instanceof EnhancedEIDProfile)
-      	retval = EnhancedEIDProfile.TYPE_ENHANCEDEID;	  
+      	retval = EnhancedEIDProfile.TYPE_ENHANCEDEID;	
+	  
+	  if(profiledata instanceof TurkishEIDProfile)
+	      	retval = TurkishEIDProfile.TYPE_TURKISHEID;
 	      	
 	  return retval;    	
     }

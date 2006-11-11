@@ -194,6 +194,9 @@ public abstract class HardTokenDataBean extends BaseEntityBean {
           case SecConst.TOKEN_ENHANCEDEID :
       	     returnval = new EnhancedEIDHardToken();
       	     break;
+          case SecConst.TOKEN_TURKISHEID :
+       	     returnval = new TurkishEIDHardToken();
+       	     break;
           case SecConst.TOKEN_EID :    // Left for backward compability
              returnval = new EIDHardToken();
              break;

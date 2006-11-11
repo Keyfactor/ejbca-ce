@@ -24,6 +24,8 @@ import org.ejbca.core.ejb.BaseEntityBean;
 import org.ejbca.core.model.hardtoken.profiles.EnhancedEIDProfile;
 import org.ejbca.core.model.hardtoken.profiles.HardTokenProfile;
 import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
+import org.ejbca.core.model.hardtoken.profiles.TurkishEIDProfile;
+import org.ejbca.core.model.hardtoken.types.TurkishEIDHardToken;
 import org.ejbca.util.Base64GetHashMap;
 import org.ejbca.util.Base64PutHashMap;
 
@@ -158,6 +160,9 @@ public abstract class HardTokenProfileDataBean extends BaseEntityBean {
         case EnhancedEIDProfile.TYPE_ENHANCEDEID:
             profile =  new EnhancedEIDProfile();
             break;
+        case TurkishEIDProfile.TYPE_TURKISHEID :
+            profile =  new TurkishEIDProfile();
+            break;            
         }
         
         profile.loadData(data);

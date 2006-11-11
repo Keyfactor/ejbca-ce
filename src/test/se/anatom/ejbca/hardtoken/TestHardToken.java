@@ -31,6 +31,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.hardtoken.HardTokenData;
 import org.ejbca.core.model.hardtoken.HardTokenExistsException;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
+import org.ejbca.core.model.hardtoken.types.TurkishEIDHardToken;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
@@ -38,7 +39,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the hard token related entity beans.
  *
- * @version $Id: TestHardToken.java,v 1.5 2006-01-17 20:33:58 anatom Exp $
+ * @version $Id: TestHardToken.java,v 1.6 2006-11-11 12:46:04 herrvendil Exp $
  */
 public class TestHardToken extends TestCase {
     private static Logger log = Logger.getLogger(TestHardToken.class);
@@ -132,6 +133,10 @@ public class TestHardToken extends TestCase {
             certs.add(CertTools.getCertfromByteArray(testcert));
 
             cacheAdmin.addHardToken(admin, "1234", "TESTUSER", "CN=TEST", SecConst.TOKEN_SWEDISHEID, token, certs, null);
+            
+            TurkishEIDHardToken token2 = new TurkishEIDHardToken("1234",  "123456", 1);
+
+            cacheAdmin.addHardToken(admin, "2345", "TESTUSER", "CN=TEST", SecConst.TOKEN_TURKISHEID, token2, certs, null);
 
             ret = true;
         } catch (HardTokenExistsException pee) {
@@ -199,6 +204,7 @@ public class TestHardToken extends TestCase {
         boolean ret = false;
         try {
             cacheAdmin.removeHardToken(admin, "1234");
+            cacheAdmin.removeHardToken(admin, "2345");
 
             ret = true;
         } catch (Exception pee) {

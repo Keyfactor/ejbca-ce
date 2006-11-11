@@ -27,6 +27,7 @@ import org.ejbca.core.model.hardtoken.HardTokenProfileExistsException;
 import org.ejbca.core.model.hardtoken.profiles.EnhancedEIDProfile;
 import org.ejbca.core.model.hardtoken.profiles.HardTokenProfile;
 import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
+import org.ejbca.core.model.hardtoken.profiles.TurkishEIDProfile;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
 
@@ -34,7 +35,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the hard token profile entity bean.
  *
- * @version $Id: TestHardTokenProfile.java,v 1.2 2006-01-17 20:33:58 anatom Exp $
+ * @version $Id: TestHardTokenProfile.java,v 1.3 2006-11-11 12:46:04 herrvendil Exp $
  */
 public class TestHardTokenProfile extends TestCase {
     private static Logger log = Logger.getLogger(TestHardTokenProfile.class);
@@ -100,6 +101,7 @@ public class TestHardTokenProfile extends TestCase {
         try {
             SwedishEIDProfile profile = new SwedishEIDProfile();
             EnhancedEIDProfile profile2 = new EnhancedEIDProfile();
+            TurkishEIDProfile turprofile = new TurkishEIDProfile();
 
 
             String svgdata = createSVGData();
@@ -109,14 +111,17 @@ public class TestHardTokenProfile extends TestCase {
 
             cacheAdmin.addHardTokenProfile(admin, "SWETEST", profile);
             cacheAdmin.addHardTokenProfile(admin, "ENHTEST", profile2);
+            cacheAdmin.addHardTokenProfile(admin, "TURTEST", turprofile);
 
             SwedishEIDProfile profile3 = (SwedishEIDProfile) cacheAdmin.getHardTokenProfile(admin, "SWETEST");
             EnhancedEIDProfile profile4 = (EnhancedEIDProfile) cacheAdmin.getHardTokenProfile(admin, "ENHTEST");
+            TurkishEIDProfile turprofile2 = (TurkishEIDProfile) cacheAdmin.getHardTokenProfile(admin, "TURTEST");
 
             String svgdata2 = profile3.getPINEnvelopeData();
 
             assertTrue("Saving SVG Data failed", svgdata.equals(svgdata2));
             assertTrue("Saving Hard Token Profile failed", profile4.getIsKeyRecoverable(EnhancedEIDProfile.CERTUSAGE_ENC));
+            assertTrue("Saving Turkish Hard Token Profile failed", (turprofile2 instanceof TurkishEIDProfile));
 
             ret = true;
         } catch (HardTokenProfileExistsException pee) {
@@ -203,6 +208,7 @@ public class TestHardTokenProfile extends TestCase {
             cacheAdmin.removeHardTokenProfile(admin, "SWETEST");
             cacheAdmin.removeHardTokenProfile(admin, "SWETEST2");
             cacheAdmin.removeHardTokenProfile(admin, "ENHTEST");
+            cacheAdmin.removeHardTokenProfile(admin, "TURTEST");
             ret = true;
         } catch (Exception pee) {
         }

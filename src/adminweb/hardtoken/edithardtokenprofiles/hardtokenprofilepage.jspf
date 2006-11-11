@@ -7,11 +7,9 @@
  
   HashMap caidtonamemap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
     
-  int[] hardtokentypes = {SwedishEIDProfile.TYPE_SWEDISHEID, EnhancedEIDProfile.TYPE_ENHANCEDEID};
-  String[] hardtokentypetexts = {"SWEDISHEID", "ENHANCEDEID"};
+  int[] hardtokentypes = {SwedishEIDProfile.TYPE_SWEDISHEID, EnhancedEIDProfile.TYPE_ENHANCEDEID, TurkishEIDProfile.TYPE_TURKISHEID};
+  String[] hardtokentypetexts = {"SWEDISHEID", "ENHANCEDEID", "TURKISHEID"};
 
-//  int[] hardtokentypes = {SwedishEIDProfile.TYPE_SWEDISHEID};
-//  String[] hardtokentypetexts = {"SWEDISHEID"};
 
   int row = 0;
 %>
@@ -131,6 +129,9 @@ function checkallfields(){
        if(edithardtokenprofile.profiledata instanceof EnhancedEIDProfile){%>
          <%@ include file="enhancedeidpage.jspf" %> 
     <% }
+       if(edithardtokenprofile.profiledata instanceof TurkishEIDProfile){%>
+       <%@ include file="turkisheidpage.jspf" %> 
+     <% }
        if(edithardtokenprofile.profiledata instanceof IPINEnvelopeSettings){%>
          <%@ include file="pinenvelopepage.jspf" %> 
     <% }
