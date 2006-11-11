@@ -13,6 +13,7 @@
 package org.ejbca.core.model.services;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
@@ -25,7 +26,7 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: ServiceConfiguration.java,v 1.3 2006-10-06 07:52:51 anatom Exp $
+ * @version $Id: ServiceConfiguration.java,v 1.4 2006-11-11 12:57:23 herrvendil Exp $
  */
 public class ServiceConfiguration extends UpgradeableDataHashMap implements Serializable, Cloneable {
 
@@ -39,6 +40,7 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 	private static final String ACTIONPROPERTIES = "ACTIONPROPERTIES";
 	private static final String DESCRIPTION = "DESCRIPTION";
 	private static final String ACTIVE = "ACTIVE";
+	private static final String NEXTRUNTIMESTAMP = "NEXTRUNTIMESTAMP";
 	
 	/**
 	 * Constructor used to create a new service configuration.
@@ -52,6 +54,7 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 		setWorkerProperties(new Properties());
 		setIntervalClassPath("");
 		setIntervalProperties(new Properties());
+		setNextRunTimestamp(new Date(0));
 	}
 	
 	
@@ -95,6 +98,27 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 	 */
 	public void setActive(boolean active) {
 		data.put(ACTIVE, new Boolean(active));
+	}
+	
+	/**
+	 * @return the date of the next time this service should run.
+	 * This is a special service flag ensuring that not two nodes
+	 * runs the service at the same time.
+	 * 
+	 */
+	public Date getNextRunTimestamp() {
+		if(data.get(NEXTRUNTIMESTAMP) == null){
+			return new Date(0);
+		}
+		
+		return new Date(((Long) data.get(NEXTRUNTIMESTAMP)).longValue());
+	}
+
+	/**
+	 * @param active the active to set
+	 */
+	public void setNextRunTimestamp(Date nextRunTimeStamp) {
+		data.put(NEXTRUNTIMESTAMP, new Long(nextRunTimeStamp.getTime()));
 	}
 
 	/**

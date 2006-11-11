@@ -14,6 +14,7 @@
 package org.ejbca.core.ejb.services;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -21,6 +22,12 @@ import java.util.Iterator;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.Timer;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
+import javax.transaction.UserTransaction;
 
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
@@ -160,23 +167,58 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 	public void ejbTimeout(Timer timer) {
 		Integer timerInfo = (Integer) timer.getInfo();
 		
-		
-	    ServiceConfiguration serviceData = getServiceSession().getServiceConfiguration(intAdmin, timerInfo.intValue());
-	    if(serviceData != null){
-	    	String serviceName = getServiceSession().getServiceName(intAdmin, timerInfo.intValue());
-	    	IWorker worker = getWorker(serviceData,serviceName);
-	    	try{
-	    		if(serviceData.isActive() && worker.getNextInterval() != IInterval.DONT_EXECUTE){
-	    			getSessionContext().getTimerService().createTimer(worker.getNextInterval()*1000, timerInfo);
-	    			worker.work();			  							
-	    			getLogSession().log(intAdmin, intAdmin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_INFO_SERVICEEXECUTED, intres.getLocalizedMessage("services.serviceexecuted", serviceName));
-	    		}
-	    	}catch (ServiceExecutionFailedException e) {
-	    		getLogSession().log(intAdmin, intAdmin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_SERVICEEXECUTED, intres.getLocalizedMessage("services.serviceexecutionfailed", serviceName));
-	    	}
-		} else {
-			getLogSession().log(intAdmin, intAdmin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_SERVICEEXECUTED, intres.getLocalizedMessage("services.servicenotfound", timerInfo));
-		} 
+		ServiceConfiguration serviceData = null;
+		IWorker worker = null;
+		String serviceName = null;
+		boolean run = false;
+		try{
+		  UserTransaction ut = getSessionContext().getUserTransaction();
+		  ut.begin();
+	      serviceData = getServiceSession().getServiceConfiguration(intAdmin, timerInfo);
+	      if(serviceData != null){
+	    	  serviceName = getServiceSession().getServiceName(intAdmin, timerInfo.intValue());
+		      worker = getWorker(serviceData,serviceName);
+	      	  Date nextRunDate = serviceData.getNextRunTimestamp();
+	      	  Date currentDate = new Date();
+	      	  if(currentDate.after(nextRunDate)){
+	      		  nextRunDate = new Date(currentDate.getTime() + worker.getNextInterval());
+	      		  serviceData.setNextRunTimestamp(nextRunDate);
+	      		  run=true;
+	      	  }         	      	  
+	      }
+	      ut.commit();
+		}catch(NotSupportedException e){
+			log.error(e);
+		} catch (SystemException e) {
+			log.error(e);
+		} catch (SecurityException e) {
+			log.error(e);
+		} catch (IllegalStateException e) {
+			log.error(e);
+		} catch (RollbackException e) {
+			log.error(e);
+		} catch (HeuristicMixedException e) {
+			log.error(e);
+		} catch (HeuristicRollbackException e) {
+			log.error(e);
+		}
+	      
+		if(run){
+			if(serviceData != null){
+
+				try{
+					if(serviceData.isActive() && worker.getNextInterval() != IInterval.DONT_EXECUTE){
+						getSessionContext().getTimerService().createTimer(worker.getNextInterval()*1000, timerInfo);
+						worker.work();			  							
+						getLogSession().log(intAdmin, intAdmin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_INFO_SERVICEEXECUTED, intres.getLocalizedMessage("services.serviceexecuted", serviceName));
+					}
+				}catch (ServiceExecutionFailedException e) {
+					getLogSession().log(intAdmin, intAdmin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_SERVICEEXECUTED, intres.getLocalizedMessage("services.serviceexecutionfailed", serviceName));
+				}
+			} else {
+				getLogSession().log(intAdmin, intAdmin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_SERVICEEXECUTED, intres.getLocalizedMessage("services.servicenotfound", timerInfo));
+			} 
+		}
 
 	}    
 

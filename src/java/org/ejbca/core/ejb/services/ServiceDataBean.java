@@ -122,6 +122,7 @@ public abstract class ServiceDataBean extends BaseEntityBean {
      * Method that returns the service configuration data and updates it if nessesary.
      *
      * @ejb.interface-method view-type="local"
+     * @jboss.persistence row-locking="true" 
      */
     public ServiceConfiguration getServiceConfiguration() {
 
