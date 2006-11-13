@@ -194,6 +194,7 @@
             <fileset dir="${src.dd}">
             	<exclude name="WEB-INF/**"/>
             	<exclude name="status/**"/>
+            	<exclude name="cmp/**"/>
             </fileset>
             <fileset dir="${build}">            	
         	    <exclude name="org/ejbca/core/protocol/ws/**"/>
