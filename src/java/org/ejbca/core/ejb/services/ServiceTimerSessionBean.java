@@ -218,6 +218,8 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 			} else {
 				getLogSession().log(intAdmin, intAdmin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_SERVICEEXECUTED, intres.getLocalizedMessage("services.servicenotfound", timerInfo));
 			} 
+		}else{
+			getLogSession().log(intAdmin, intAdmin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_INFO_SERVICEEXECUTED, intres.getLocalizedMessage("services.servicerunonothernode", timerInfo));
 		}
 
 	}    
