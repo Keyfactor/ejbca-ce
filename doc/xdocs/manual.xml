@@ -1281,9 +1281,8 @@ and create the notification message. Make sure the checkbox 'Use Send Notificati
 <li>
 Add a new end entity. You must select the new end entity profile you
 created above. Make sure the checkbox 'Send Notification' is checked.
-Enter the from-address and subject. Enter a message using the following variables 
-for dynamic substitution: ${USERNAME}, ${PASSWORD}, ${CN}, ${O}, ${OU}, ${C}, ${DATE}. 
-Use ${NL} for newline in the mail message.
+Enter the from-address and subject. Enter a message using the variables defined
+for dynamic substitution in the next section. Use ${NL} for newline in the mail message.
 </li>
 </ol>
 </p>
@@ -1295,7 +1294,123 @@ sent with the email.
 </p><p>
 If you want to re-send a notification for a user, reset the status to NEW. 
 If the status is already NEW, set the status to GENERATED and then back to NEW.
-</p></section>
+</p>
+<subsection name="Dynamic Substitution Variables">
+<p>
+Parameters that can be used with different usages of email notification.All parameters isn't always set, it depends on the input data.
+</p><p>
+The following parameters can be set:
+<ul>
+<li>
+${NL}                           = New Line in message
+</li>
+<li>
+${DATE} or ${current.DATE}      = The current date
+</li>
+</ul>
+</p><p>
+Variables used with userdata:
+<ul>
+<li>
+  ${USERNAME} or ${user.USERNAME} = The users username
+</li>
+<li>
+  ${PASSWORD} or ${user.PASSWORD} = The users password
+</li>
+<li>
+  ${CN} or ${user.CN}             = The common name of the user.
+</li>
+<li>
+  ${SN} or ${user.SN}             = The serial number (in DN) of the user.
+</li>
+<li>
+  ${O} or ${user.O}               = The user's organization
+</li>
+<li>
+  ${OU} or ${user.OU}             = The user's organization unit
+</li>
+<li>
+  ${C} or ${user.C}               = The user's country
+</li>
+</ul>
+</p><p>
+Variables used with approvals:
+<ul>
+<li>
+  ${approvalRequest.DATE}            = The time the approval request was created
+</li>
+<li>
+  ${approvalRequest.ID}              = The id of the approval request
+</li>
+<li>
+  ${approvalRequest.TYPE}            = The type of approval request
+</li>
+<li>
+  ${approvalRequest.APROVEURL}       = A URL to the review approval page with the current request.
+</li>
+<li>
+  ${approvalReqiest.APPROVALSLEFT}   = The number of approvals remaining.
+</li>
+<li>
+  ${approvalRequest.APPROVALCOMMENT} = The comment made by the approving/rejecting administrator
+</li>
+<li>
+  ${requestAdmin.USERNAME}         = The requesting administrator's username
+</li>
+<li>
+  ${requestAdmin.CN}               = The common name of the requesting administrator.
+</li>
+<li>
+  ${requestAdmin.SN}               = The common name of the requesting administrator.
+</li>
+<li>
+  ${requestAdmin.O}                = The requesting administrator's organization
+</li>
+<li>
+  ${requestAdmin.OU}               = The requesting administrator's organization unit
+</li>
+<li>
+  ${requestAdmin.C}                = The requesting administrator's country
+</li>
+<li>
+  ${approvalAdmin.USERNAME}        = The requesting administrator's username
+</li>
+<li>
+ ${approvalAdmin.CN}              = The common name of the requesting administrator.
+</li>
+<li>
+ ${approvalAdmin.SN}              = The common name of the requesting administrator. 
+</li>
+<li>
+ ${approvalAdmin.O}               = The requesting administrator's organization
+</li>
+<li>
+ ${approvalAdmin.OU}              = The requesting administrator's organization unit
+</li>
+<li>
+ ${approvalAdmin.C}               = The requesting administrator's country
+</li>
+</ul>
+</p><p>
+Variables used with  expiring certificates:
+<ul>
+<li>
+  ${expiringCert.CERTSERIAL}      = The serial number of the certificate about to expire
+</li>
+<li>
+  ${expiringCert.EXPIREDATE}      = The date the certificate will expire
+</li>
+<li>
+  ${expiringCert.CERTSUBJECTDN}   = The certificate subject DN
+</li>
+<li>
+  ${expiringCert.CERTISSUERDN}    = The certificate issuer DN
+</li>
+</ul>
+The variables ${CN}, ${SN}, ${O}, ${OU}, ${C} are also available.
+</p>
+</subsection>
+</section>
 
 <section name="Printing of User Data">
 <p>
@@ -1408,7 +1523,7 @@ Then whenever an approval request is created an e-mail is sent both to the reque
 </p><p>
 When the approving administrators have recieved the mail, there is a link directly to the approve request page where he can review the requests. When he has approved and rejected the requested all the other administrators in notified about this.
 </p><p>
-The text of notifications is configured in src/intresources.xx.properties
+The text of notifications is configured in src/intresources.xx.properties. See the ' Dynamic Substitution Variables' section in this manual for a list of available variables.
 </p><p>
 Remember to configure mail-server settings in the ejbca.properties file.
 </p>
@@ -1459,7 +1574,143 @@ java.util.Collection IUserDataSourceSessionLocal.fetch(Admin admin, Collection u
 </ol>
 </p>
 </section>
-
+<section name="Monitoring Services Framework">
+<p>
+New to EJBCA 3.4 is a framework for monitoring services. I.e. procedures 
+that should be run on a timely basis. Currently there exists two types of 
+services a CRL updater that automatically updates the CRL and a Certificate 
+Expiration Checker that checks if a CA have certificates about to expire and 
+sends an email notification to the end user and/or the administrator. 
+Too this it is also possible to write plug-inable customized services.
+</p><p>
+A service consists of the components, a worker doing the actual work, an interval 
+determing the time to the next time the service should run and a action (optional) 
+of what should be done if a certain condition occurs.
+</p>
+<subsection name="Currently Available Services">
+<subsection name="Workers">
+<p><i>CRL Update Worker</i></p>
+<p>
+The CRL Updater have the same functionality as the current JBoss Service and will in 
+the future replace the old variant. I checks if any of the CA:s need a new CRL 
+and updates it if necessary. The worker have no settings and only supports the 
+periodical interval and no action.
+</p>
+<p><i>Certificate Expiration Check Worker</i></p>
+<p>
+A worker that checks if a CA have certificates about to expire and sends a email 
+notification the the end user and/or administrator. 
+The worker have the following settings:
+<ul>
+<li>
+<i>CAs to Check</i> Select here which CAs that should be searched for expiring certificates
+</li>
+<li>
+<i>Time before notification is sent</i> The number of Days/Hours/Minutes/Seconds that should 
+remain of the certificates validity before the notification is sent.
+</li>
+<li>
+<i>Send notification to end user</i> Check this if a notification should be sent to 
+the owner of the certificate. Observe that the end user must have an email set in 
+the user database (not necessarily in the certificate) in order for the service to 
+send the notification.
+</li>
+<li>
+<i>Notification Subject to End User</i> The e-mail subject
+</li>
+<li>
+<i>End User Message</i> Message body of the notification. Here can the substitution 
+variables be used defined in the 'Email Notifications' section
+</li>
+<li>
+<i>Send notification to Administrator</i> Check this if a notification should be sent 
+to some defined administrator-mail address. The address of the administrator is 
+configured in the Mail Action component.
+</li>
+<li>
+<i>Notification Subject to Administrator</i> The e-mail subject
+</li>
+<li>
+<i>Administrator Message</i> Message body of the notification. Here can the 
+substitution variables be used defined in the 'Email Notifications' section.
+</li>
+</ul>
+</p>
+</subsection>
+<subsection name="Intervals">
+<p><i>Periodical Interval</i></p>
+<p>
+Defines in days/hours/minutes/seconds of how often the worker will be run.
+</p>
+</subsection>
+<subsection name="Actions">
+<p><i>Mail Action</i></p>
+<p>
+Action that's sends an email notification and have the following settings:
+<ul>
+<li>
+<i>Sender Address</i> The from-address used in the email.
+</li>
+<li>
+<i>Receiver Address</i> The to-address of the email of it 
+isn't specified by the worker.
+</li>
+</ul>
+</p>
+</subsection>
+</subsection>
+<subsection name="Writing Customized Services">
+<p>
+It is possible to write customized component plug-ins that can be used with 
+other standard (or customized plug-ins) and this section explains the steps 
+necessary.
+</p><p>
+Common for all the components is that it's required to create a class implementing 
+the components interface. Then you have to create a jar containing the necessary 
+plug-in classes and deploy it to application server so it's included in the 
+class-path. The next step is to create a service using the custom component by 
+specifying the class path and optional the custom properties used by the component. 
+The properties field have the same syntax as a regular Java property file.
+</p>
+<subsection name="CustomWorker">
+<p>
+A Custom worker must implement the org.ejbca.core.model.services.IWorker interface. 
+But a simpler way is to inherit the BaseWorker class. Then you have to implement one 
+method 'void work()'  doing the actual work every time the service framework decides 
+it is time. The work method can make a call to the action (optional) component by 
+'getAction().performAction(someActionInfo);' The action info can vary depending on 
+the action component but it must implement the ActionInfo interface.
+</p><p>
+If something goes wrong during the work should a ServiceExecutionFailedException be 
+thrown with a good error message.
+</p><p>
+See org.ejbca.core.model.services.workers.DummyWorker for an example implementation.
+</p>
+</subsection>
+<subsection name="CustomInterval">
+<p>
+A Custom Interval must implement the org.ejbca.core.model.services.IInterval 
+interface. But a simpler way is to inherit the BaseInterval class. You then have to 
+implement one method 'public long getTimeToExecution();' which should return the 
+time in seconds until the next time the service is runned. Or it should return 
+DONT_EXECUTE it the service should stop running.
+</p><p>
+See org.ejbca.core.model.services.intervals.DummyInterval for an example implementation.
+</p>
+</subsection>
+<subsection name="CustomAction">
+<p>
+A Custom Interval must implement the org.ejbca.core.model.services.IAction interface. 
+But a simpler way is to inherit the BaseAction class. Then should only one method be 
+implemented 'performAction(ActionInfo actionInfo)' that should perform the action 
+according to the defined properties and the ActionInfo (all optional). If something 
+goes wrong during the processing of the action should a ActionException be thrown.
+</p><p>
+See org.ejbca.core.model.services.actions.DummyAction for an example implementation.
+</p>
+</subsection>
+</subsection>
+</section>
 <section name="Hardware Security Modules (HSM)">
 <p>
 EJBCA have a moduler API for HSMs, HardCAToken. For every CA that is created
