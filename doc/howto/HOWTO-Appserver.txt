@@ -117,19 +117,22 @@ This is only starter instruction to help you get started as a developer, EJBCA d
 
 - Create a datasource called EjbcaDS, in the admin console this is done in Resources->JDBC->JDBC Resources.
 Use the pool DerbyPool, or connect to another database pool you have created.
-NOTE! Important to add a description to both the ConnectionPool and DataSource.
+When adding for example a MySQL Pool use values: Name=MysqlPool, Type=javax.sql.DataSource, Vendor=mysql. 
+It seems almost random which properties are pre-created on the next page...
 
-- Start the database: asadmin start-database
+- Start the database (if using Derby): asadmin start-database
 
 - Deploy ejbca.ear using: ./asadmin deploy --createtables=true --dbvendorname=mysql ../../ejbca/dist/ejbca.ear
 mysql is changed for the database you are using, see glassfish documentation.
+createtables=true is only need the fdirst time you deploy.
 
 Creating deployment descriptors for Glassfish:
+----------------------------------------------
 Whan a new release of EJBCA should be running on glassfish, the deployment descriptors may have to be updated.
-Uncomment the section in compile.xmli to generate sun ejb deployment descriptors, you only need sun-ejb-jar.xml. 
+Uncomment the section in compile.xmli to generate sun ejb deployment descriptors. 
 Compare the generated one with src/appserver/sun/deploy/sun-ejb-jar.xml, and merge if needed.
 
-sun-web.xml files must be updated with any new references that exist in the web.xml files.
+* sun-web.xml files must be updated with any new references that exist in the web.xml files.
 
 Of particular interest on Glassfish is that in order for web-apps to call EJBs, the webapp must define a datasource ref,
 both in web.xml and sun-web.xml.
@@ -145,3 +148,15 @@ sun-web.xml
     <res-ref-name>jdbc/EjbcaDS</res-ref-name>
     <jndi-name>jdbc/EjbcaDS</jndi-name>
 </resource-ref>
+
+* sun-ejb-jar.xml must be updated with new beans.
+
+* sun-cmp-mapping.xml must be updated with database changes.
+
+* database schema must be updated.
+Example for postgres:
+CLASSPATH=../lib/postgresql-8.1-407.jdbc3.jar:$CLASSPATH 
+./capture-schema -username ejbca -password ejbca -dburl jdbc:postgresql://127.0.0.1/ejbca -driver org.postgresql.Driver -out ejbca-ejb
+
+Copy the generated ejbca-ejb.bcschema file to src/deploy/sun/schema/<database>
+
