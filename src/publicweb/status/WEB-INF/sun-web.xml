@@ -4,8 +4,8 @@
 <sun-web-app>
 
     <resource-ref>
-        <res-ref-name>jdbc/EjbcaDS</res-ref-name>
-        <jndi-name>jdbc/EjbcaDS</jndi-name>
+        <res-ref-name>@datasource.jndi-name-prefix@@datasource.jndi-name@</res-ref-name>
+        <jndi-name>@datasource.jndi-name-prefix@@datasource.jndi-name@</jndi-name>
     </resource-ref>
 
     <ejb-ref>

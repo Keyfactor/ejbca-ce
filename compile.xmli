@@ -333,7 +333,9 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 		        <replacestring from="@ejbca@" to="${app.name}"/>
 		    	<replacestring from="@EJBCA@" to="${app.name.cap}"/>
 		    	<replacestring from="@weblogic.ora.columntyp@" to="${weblogic-oracle-columntype}"/>
-				<replacestring from="@page.encoding@" to="${web.contentencoding}"/>
+				<replacestring from="@page.encoding@" to="${web.contentencoding}"/>				
+				<replacestring from="@datasource.jndi-name-prefix@" to="${datasource.jndi-name-prefix}"/>
+				<replacestring from="@datasource.jndi-name@" to="${datasource.jndi-name}"/>
 				<replacestring from="@certtools.dnorderreverse@" to="${certtools.dnorderreverse}"/>
 				<replacestring from="@development.provider.installation@" to="${development.provider.installation}"/>
 				<replacestring from="@database.comment.column@" to="${database.comment.column}"/>
@@ -347,12 +349,27 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 	    </copy>
 		<echo>Ignore warnings about 'Couldn't find file' during preprocessing</echo>
 		<copy todir="${src.dd}/META-INF" overwrite="true" failonerror="false" flatten="true">
-		    <fileset dir="${appserver.src}/sun/">
+		    <fileset dir="${deploy.src}/sun/">
 		        <include name="schema/${database.name}/EJBCA.dbschema"/>
-		        <include name="deploy/*.xml"/>
+		        <include name="sun-*.xml"/>
 		    </fileset> 
 		</copy>
-        <copy file="${appserver.src}/sun/deploy/adminweb/sun-web.xml" tofile="${src.dd}/WEB-INF/sun-web.xml" overwrite="true" failonerror="false"/>
+        <copy file="${deploy.src}/sun/adminweb/sun-web.xml" tofile="${src.dd}/WEB-INF/sun-web.xml" overwrite="true" failonerror="false" >
+			<filterchain>
+			<tokenfilter>			    
+				<replacestring from="@datasource.jndi-name-prefix@" to="${datasource.jndi-name-prefix}"/>
+				<replacestring from="@datasource.jndi-name@" to="${datasource.jndi-name}"/>
+			</tokenfilter>
+			</filterchain>
+        </copy>
+        <copy file="${deploy.src}/jboss/adminweb/jboss-web.xml" tofile="${src.dd}/WEB-INF/jboss-web.xml" overwrite="true" failonerror="false" >
+			<filterchain>
+			<tokenfilter>			    
+				<replacestring from="@datasource.jndi-name-prefix@" to="${datasource.jndi-name-prefix}"/>
+				<replacestring from="@datasource.jndi-name@" to="${datasource.jndi-name}"/>
+			</tokenfilter>
+			</filterchain>
+        </copy>
 		<!--
 		<echo>Ignore warnings about 'Couldn't find file' during preprocessing if you are running jdk 1.4</echo>
 		-->

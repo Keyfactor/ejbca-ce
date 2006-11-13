@@ -92,10 +92,11 @@
     <property name="root.warsrc" value="${src}/publicweb/root" />
     <property name="rootwar" value="${dist.dir}/publicwebroot.war" />
 
-    <property name="ejbdd.src" value="${src}/deploy/ejb" />
-    <property name="webdd.src" value="${src}/deploy/web" />
-    <property name="eardd.src" value="${src}/deploy/ear" />
-    <property name="ocsp-eardd.src" value="${src}/deploy/ocsp-ear" />
+    <property name="deploy.src" value="${src}/deploy" />
+    <property name="ejbdd.src" value="${deploy.src}/ejb" />
+    <property name="webdd.src" value="${deploy.src}/web" />
+    <property name="eardd.src" value="${deploy.src}/ear" />
+    <property name="ocsp-eardd.src" value="${deploy.src}/ocsp-ear" />
     <property name="caear" value="${dist.dir}/${app.name}.ear" />
     <property name="ocspear" value="${ocsp-dist.dir}/${app.name}.ear" />
 
