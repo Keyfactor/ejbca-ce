@@ -13,6 +13,13 @@ In EJBCA 3.4.0 the ASN.1 string encoding for DNs are now UTF8. In EJBCA 3.3.x an
 PrintableString, unless the character set forced the usage of UTF8 (international characters). 
 Now DN components are always encoded as UTF8 (except for components that does not allow UTF8 such as C and SerialNumber).
 
+EJBCA 3.3.2
+-----------
+This is a minor release with some bugfixes, most notably for oracle and weblogic.
+Read the changelog for details.
+
+This is a plug-in upgrade from 3.3.x. See UPGRADE for the simple instructions.
+
 EJBCA 3.3.1
 -----------
 This is a minor release with some bugfixes, most notably for Luna HSM.

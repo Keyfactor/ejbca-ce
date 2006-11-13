@@ -1,3 +1,22 @@
+3.3.2
+---
+Bug
+
+    * [ECA-328] - EJBCA requires Myfaces in appserver to deploy admin-GUI
+    * [ECA-350] - Errors deploying on Weblogic
+    * [ECA-357] - OCSP with lookup test not workin. ocspclient.jar
+    * [ECA-363] - EJBCA does not work with Oracle DB
+
+Improvement
+
+    * [ECA-353] - Automatic column name change for logentrydata.comment in Weblogic/Oracle
+    * [ECA-356] - ant javatruststore should be able to install any CAs certificate
+    * [ECA-365] - Turkish profile
+
+Task
+
+    * [ECA-358] - Upgrade to latest log4j jar
+
 3.3.1
 ---
 
