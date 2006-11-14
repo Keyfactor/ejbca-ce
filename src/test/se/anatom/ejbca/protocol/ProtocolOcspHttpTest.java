@@ -40,6 +40,7 @@ import javax.naming.NamingException;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
@@ -381,7 +382,7 @@ public class ProtocolOcspHttpTest extends TestCase {
         log.debug(">test07OcspEcdsaGood()");
 
         int ecdsacaid = "CN=OCSPECDSATEST".hashCode();
-        X509Certificate ecdsacacert = addECDSACA();
+        X509Certificate ecdsacacert = addECDSACA("CN=OCSPECDSATEST", "prime192v1");
         reloadKeys();
         
         // Make user that we know...
@@ -431,6 +432,63 @@ public class ProtocolOcspHttpTest extends TestCase {
         log.debug("<test07OcspEcdsaGood()");
     }
 
+    /** Tests ocsp message
+     * @throws Exception error
+     */
+    public void test08OcspEcdsaImplicitlyCAGood() throws Exception {
+        log.debug(">test08OcspEcdsaImplicitlyCAGood()");
+
+        int ecdsacaid = "CN=OCSPECDSAIMPCATEST".hashCode();
+        X509Certificate ecdsacacert = addECDSACA("CN=OCSPECDSAIMPCATEST", "implicitlyCA");
+        reloadKeys();
+        
+        // Make user that we know...
+        boolean userExists = false;
+        try {
+            usersession.addUser(admin,"ocsptest","foo123","C=SE,O=AnaTom,CN=OCSPTest",null,"ocsptest@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,ecdsacaid);
+            log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
+        } catch (RemoteException re) {
+            if (re.detail instanceof DuplicateKeyException) {
+                userExists = true;
+            }
+        } catch (DuplicateKeyException dke) {
+            userExists = true;
+        }
+
+        if (userExists) {
+            log.debug("User ocsptest already exists.");
+            usersession.changeUser(admin, "ocsptest", "foo123", "C=SE,O=AnaTom,CN=OCSPTest",null,"ocsptest@anatom.se",false, SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW, ecdsacaid);
+            //usersession.setUserStatus(admin,"ocsptest",UserDataConstants.STATUS_NEW);
+            log.debug("Reset status to NEW");
+        }
+        // Generate certificate for the new user
+        KeyPair keys = KeyTools.genKeys("implicitlyCA", "ECDSA");
+
+        // user that we know exists...
+    	X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, keys.getPrivate(), keys.getPublic(), CATokenConstants.SIGALG_SHA256_WITH_ECDSA, false);
+        ocspTestCert = (X509Certificate) remote.createCertificate(admin, "ocsptest", "foo123", selfcert);
+        assertNotNull("Misslyckades skapa cert", ocspTestCert);
+
+        // And an OCSP request
+        OCSPReqGenerator gen = new OCSPReqGenerator();
+        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, ecdsacacert, ocspTestCert.getSerialNumber()));
+        Hashtable exts = new Hashtable();
+        X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
+        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
+        gen.setRequestExtensions(new X509Extensions(exts));
+        OCSPReq req = gen.generate();
+
+        // Send the request and receive a singleResponse
+        SingleResp singleResp = sendOCSPPost(req.getEncoded(), "123456789");
+        
+        CertificateID certId = singleResp.getCertID();
+        assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
+        Object status = singleResp.getCertStatus();
+        assertEquals("Status is not null (good)", status, null);
+        
+        log.debug("<test08OcspEcdsaImplicitlyCAGood()");
+    }
+
     /**
      * removes ECDSA CA
      *
@@ -438,18 +496,12 @@ public class ProtocolOcspHttpTest extends TestCase {
      */
     public void test08RemoveECDSACA() throws Exception {
         log.debug(">test08RemoveECDSACA()");
-        boolean ret = false;
-        try {
-            Context context = getInitialContext();
-            Object obj1 = context.lookup("CAAdminSession");
-            ICAAdminSessionHome cacheHome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICAAdminSessionHome.class);
-            ICAAdminSessionRemote cacheAdmin = cacheHome.create();
-            cacheAdmin.removeCA(admin, "CN=OCSPECDSATEST".hashCode());
-            ret = true;
-        } catch (Exception pee) {
-        }
-        assertTrue("Removing ECDSA CA failed", ret);
-
+        Context context = getInitialContext();
+        Object obj1 = context.lookup("CAAdminSession");
+        ICAAdminSessionHome cacheHome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICAAdminSessionHome.class);
+        ICAAdminSessionRemote cacheAdmin = cacheHome.create();
+        cacheAdmin.removeCA(admin, "CN=OCSPECDSATEST".hashCode());
+        cacheAdmin.removeCA(admin, "CN=OCSPECDSAIMPCATEST".hashCode());
         log.debug("<test08RemoveECDSACA()");
     }
 
@@ -464,7 +516,7 @@ public class ProtocolOcspHttpTest extends TestCase {
      *
      * @throws Exception error
      */
-    private X509Certificate addECDSACA() throws Exception {
+    private X509Certificate addECDSACA(String dn, String keySpec) throws Exception {
         log.debug(">addECDSACA()");
         boolean ret = false;
         X509Certificate cacert = null;
@@ -472,13 +524,13 @@ public class ProtocolOcspHttpTest extends TestCase {
             Context context = getInitialContext();
             IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("AuthorizationSession"), IAuthorizationSessionHome.class);
             IAuthorizationSessionRemote authorizationsession = authorizationsessionhome.create();
-            authorizationsession.initialize(admin, "CN=OCSPECDSATEST".hashCode());
+            authorizationsession.initialize(admin, dn.hashCode());
             Object obj1 = context.lookup("CAAdminSession");
             ICAAdminSessionHome cacheHome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICAAdminSessionHome.class);
             ICAAdminSessionRemote cacheAdmin = cacheHome.create();
 
             SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-            catokeninfo.setSignKeySpec("prime192v1");
+            catokeninfo.setSignKeySpec(keySpec);
             catokeninfo.setEncKeySpec("1024");
             catokeninfo.setSignKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_ECDSA);
             catokeninfo.setEncKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
@@ -487,14 +539,14 @@ public class ProtocolOcspHttpTest extends TestCase {
             // Create and active OSCP CA Service.
             ArrayList extendedcaservices = new ArrayList();
             extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
-                    "CN=OCSPSignerCertificate, " + "CN=OCSPECDSATEST",
+                    "CN=OCSPSignerCertificate, " + dn,
                     "",
-                    "prime192v1",
+                    keySpec,
                     CATokenConstants.KEYALGORITHM_ECDSA));
 
 
-            X509CAInfo cainfo = new X509CAInfo("CN=OCSPECDSATEST",
-                    "OCSPECDSATEST", SecConst.CA_ACTIVE,
+            X509CAInfo cainfo = new X509CAInfo(dn,
+                    dn, SecConst.CA_ACTIVE,
                     "", SecConst.CERTPROFILE_FIXED_ROOTCA,
                     365,
                     null, // Expiretime
@@ -525,17 +577,21 @@ public class ProtocolOcspHttpTest extends TestCase {
             cacheAdmin.createCA(admin, cainfo);
 
 
-            CAInfo info = cacheAdmin.getCAInfo(admin, "OCSPECDSATEST");
+            CAInfo info = cacheAdmin.getCAInfo(admin, dn);
 
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
-            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=OCSPECDSATEST"));
-            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=OCSPECDSATEST"));
+            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals(dn));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals(dn));
             PublicKey pk = cert.getPublicKey();
             if (pk instanceof JCEECPublicKey) {
 				JCEECPublicKey ecpk = (JCEECPublicKey) pk;
 				assertEquals(ecpk.getAlgorithm(), "EC");
 				org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
-				assertNotNull("ImplicitlyCA must have null spec", spec);
+				if (StringUtils.equals(keySpec, "implicitlyCA")) {
+					assertNull("ImplicitlyCA must have null spec", spec);					
+				} else {
+					assertNotNull("prime192v1 must not have null spec", spec);
+				}
 			} else {
 				assertTrue("Public key is not EC", false);
 			}
