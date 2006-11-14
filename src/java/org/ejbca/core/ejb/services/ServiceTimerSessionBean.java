@@ -174,7 +174,7 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 		try{
 		  UserTransaction ut = getSessionContext().getUserTransaction();
 		  ut.begin();
-	      serviceData = getServiceSession().getServiceConfiguration(intAdmin, timerInfo);
+	      serviceData = getServiceSession().getServiceConfiguration(intAdmin, timerInfo.intValue());
 	      if(serviceData != null){
 	    	  serviceName = getServiceSession().getServiceName(intAdmin, timerInfo.intValue());
 		      worker = getWorker(serviceData,serviceName);

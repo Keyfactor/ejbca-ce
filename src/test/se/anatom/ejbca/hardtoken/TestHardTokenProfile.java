@@ -35,7 +35,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the hard token profile entity bean.
  *
- * @version $Id: TestHardTokenProfile.java,v 1.3 2006-11-11 12:46:04 herrvendil Exp $
+ * @version $Id: TestHardTokenProfile.java,v 1.4 2006-11-14 08:42:08 anatom Exp $
  */
 public class TestHardTokenProfile extends TestCase {
     private static Logger log = Logger.getLogger(TestHardTokenProfile.class);
@@ -121,7 +121,7 @@ public class TestHardTokenProfile extends TestCase {
 
             assertTrue("Saving SVG Data failed", svgdata.equals(svgdata2));
             assertTrue("Saving Hard Token Profile failed", profile4.getIsKeyRecoverable(EnhancedEIDProfile.CERTUSAGE_ENC));
-            assertTrue("Saving Turkish Hard Token Profile failed", (turprofile2 instanceof TurkishEIDProfile));
+            assertTrue("Saving Turkish Hard Token Profile failed", (turprofile2 != null));
 
             ret = true;
         } catch (HardTokenProfileExistsException pee) {
