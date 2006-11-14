@@ -1,7 +1,8 @@
-MySQL
-=====
+--
+-- These definitions should work for EJBCA 3.4.x, MySQL 4.x or 5.x.
+--
 
-CREATE TABLE accessrulesdata (
+CREATE TABLE AccessRulesData (
     pK int(11) NOT NULL DEFAULT '0',
     accessRule varchar(250) binary NULL DEFAULT NULL,
     rule int(11) NOT NULL DEFAULT '0',
@@ -10,7 +11,7 @@ CREATE TABLE accessrulesdata (
     PRIMARY KEY (pK)
 );
 
-CREATE TABLE adminentitydata (
+CREATE TABLE AdminEntityData (
     pK int(11) NOT NULL DEFAULT '0',
     matchWith int(11) NOT NULL DEFAULT '0',
     matchType int(11) NOT NULL DEFAULT '0',
@@ -19,30 +20,43 @@ CREATE TABLE adminentitydata (
     PRIMARY KEY (pK)
 );
 
-CREATE TABLE admingroupdata (
+CREATE TABLE AdminGroupData (
     pK int(11) NOT NULL DEFAULT '0',
     adminGroupName varchar(250) binary NULL DEFAULT NULL,
     cAId int(11) NOT NULL DEFAULT '0',
     PRIMARY KEY (pK)
 );
 
-CREATE TABLE adminpreferencesdata (
+CREATE TABLE AdminPreferencesData (
     id varchar(250) binary NOT NULL DEFAULT '',
     data longblob NULL DEFAULT NULL,
     PRIMARY KEY (id)
 );
 
-CREATE TABLE approvaldata (
-TODO
+CREATE TABLE ApprovalData (
+    id int(11) NOT NULL DEFAULT '0',
+    approvalid int(11) NOT NULL DEFAULT '0',
+    approvaltype int(11) NOT NULL DEFAULT '0',
+    endentityprofileid int(11) NOT NULL DEFAULT '0',
+    caid int(11) NOT NULL DEFAULT '0',
+    reqadmincertissuerdn varchar(250) binary NULL DEFAULT NULL,
+    reqadmincertsn varchar(250) binary NULL DEFAULT NULL,
+    status int(11) NOT NULL DEFAULT '0',
+    approvaldata longtext NULL DEFAULT NULL,
+    requestdata longtext NULL DEFAULT NULL,    
+    requestdate bigint(20) NOT NULL DEFAULT '0',
+    expiredate bigint(20) NOT NULL DEFAULT '0',    
+    remainingapprovals int(11) NOT NULL DEFAULT '0',
+    PRIMARY KEY (id)
 );
 
-CREATE TABLE authorizationtreeupdatedata (
+CREATE TABLE AuthorizationTreeUpdateData (
     pK int(11) NOT NULL DEFAULT '0',
     authorizationTreeUpdateNumber int(11) NOT NULL DEFAULT '0',
     PRIMARY KEY (pK)
 );
 
-CREATE TABLE cadata (
+CREATE TABLE CAData (
     cAId int(11) NOT NULL DEFAULT '0',
     name varchar(250) binary NULL DEFAULT NULL,
     subjectDN varchar(250) binary NULL DEFAULT NULL,
@@ -52,7 +66,28 @@ CREATE TABLE cadata (
     PRIMARY KEY (cAId)
 );
 
-CREATE TABLE certificatedata (
+CREATE TABLE CRLData (
+    fingerprint varchar(250) binary NOT NULL DEFAULT '',
+    cRLNumber int(11) NOT NULL DEFAULT '0',
+    issuerDN varchar(250) binary NULL DEFAULT NULL,
+    cAFingerprint varchar(250) binary NULL DEFAULT NULL,
+    thisUpdate bigint(20) NOT NULL DEFAULT '0',
+    nextUpdate bigint(20) NOT NULL DEFAULT '0',
+    base64Crl longtext NULL DEFAULT NULL,
+    PRIMARY KEY (fingerprint)
+);
+
+CREATE TABLE CertReqHistoryData (
+    fingerprint varchar(250) binary NOT NULL DEFAULT '',
+    issuerDN varchar(250) binary NULL DEFAULT NULL,
+    serialNumber varchar(250) binary NULL DEFAULT NULL,
+    `timestamp` bigint(20) NOT NULL DEFAULT '0',
+    userDataVO longtext NULL DEFAULT NULL,
+    username varchar(250) binary NULL DEFAULT NULL,
+    PRIMARY KEY (fingerprint)
+);
+
+CREATE TABLE CertificateData (
     fingerprint varchar(250) binary NOT NULL DEFAULT '',
     issuerDN varchar(250) binary NULL DEFAULT NULL,
     subjectDN varchar(250) binary NULL DEFAULT NULL,
@@ -68,54 +103,33 @@ CREATE TABLE certificatedata (
     PRIMARY KEY (fingerprint)
 );
 
-CREATE TABLE certificateprofiledata (
+CREATE TABLE CertificateProfileData (
     id int(11) NOT NULL DEFAULT '0',
     certificateProfileName varchar(250) binary NULL DEFAULT NULL,
     data longblob NULL DEFAULT NULL,
     PRIMARY KEY (id)
 );
 
-CREATE TABLE certreqhistorydata (
-    fingerprint varchar(250) binary NOT NULL DEFAULT '',
-    issuerDN varchar(250) binary NULL DEFAULT NULL,
-    serialNumber varchar(250) binary NULL DEFAULT NULL,
-    `timestamp` bigint(20) NOT NULL DEFAULT '0',
-    userDataVO longtext NULL DEFAULT NULL,
-    username varchar(250) binary NULL DEFAULT NULL,
-    PRIMARY KEY (fingerprint)
-);
-
-CREATE TABLE crldata (
-    fingerprint varchar(250) binary NOT NULL DEFAULT '',
-    cRLNumber int(11) NOT NULL DEFAULT '0',
-    issuerDN varchar(250) binary NULL DEFAULT NULL,
-    cAFingerprint varchar(250) binary NULL DEFAULT NULL,
-    thisUpdate bigint(20) NOT NULL DEFAULT '0',
-    nextUpdate bigint(20) NOT NULL DEFAULT '0',
-    base64Crl longtext NULL DEFAULT NULL,
-    PRIMARY KEY (fingerprint)
-);
-
-CREATE TABLE endentityprofiledata (
+CREATE TABLE EndEntityProfileData (
     id int(11) NOT NULL DEFAULT '0',
     profileName varchar(250) binary NULL DEFAULT NULL,
     data longblob NULL DEFAULT NULL,
     PRIMARY KEY (id)
 );
 
-CREATE TABLE globalconfigurationdata (
+CREATE TABLE GlobalConfigurationData (
     configurationId varchar(250) binary NOT NULL DEFAULT '',
     data longblob NULL DEFAULT NULL,
     PRIMARY KEY (configurationId)
 );
 
-CREATE TABLE hardtokencertificatemap (
+CREATE TABLE HardTokenCertificateMap (
     certificateFingerprint varchar(250) binary NOT NULL DEFAULT '',
     tokenSN varchar(250) binary NULL DEFAULT NULL,
     PRIMARY KEY (certificateFingerprint)
 );
 
-CREATE TABLE hardtokendata (
+CREATE TABLE HardTokenData (
     tokenSN varchar(250) binary NOT NULL DEFAULT '',
     username varchar(250) binary NULL DEFAULT NULL,
     cTime bigint(20) NOT NULL DEFAULT '0',
@@ -126,7 +140,7 @@ CREATE TABLE hardtokendata (
     PRIMARY KEY (tokenSN)
 );
 
-CREATE TABLE hardtokenissuerdata (
+CREATE TABLE HardTokenIssuerData (
     id int(11) NOT NULL DEFAULT '0',
     alias varchar(250) binary NULL DEFAULT NULL,
     adminGroupId int(11) NOT NULL DEFAULT '0',
@@ -134,7 +148,7 @@ CREATE TABLE hardtokenissuerdata (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE hardtokenprofiledata (
+CREATE TABLE HardTokenProfileData (
     id int(11) NOT NULL DEFAULT '0',
     name varchar(250) binary NULL DEFAULT NULL,
     updateCounter int(11) NOT NULL DEFAULT '0',
@@ -142,14 +156,14 @@ CREATE TABLE hardtokenprofiledata (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE hardtokenpropertydata (
+CREATE TABLE HardTokenPropertyData (
     id varchar(250) binary NOT NULL DEFAULT '',
     property varchar(250) binary NOT NULL DEFAULT '',
     value varchar(250) binary NULL DEFAULT NULL,
     PRIMARY KEY (id, property)
 );
 
-CREATE TABLE keyrecoverydata (
+CREATE TABLE KeyRecoveryData (
     certSN varchar(250) binary NOT NULL DEFAULT '',
     issuerDN varchar(250) binary NOT NULL DEFAULT '',
     username varchar(250) binary NULL DEFAULT NULL,
@@ -158,14 +172,14 @@ CREATE TABLE keyrecoverydata (
     PRIMARY KEY (certSN, issuerDN)
 );
 
-CREATE TABLE logconfigurationdata (
+CREATE TABLE LogConfigurationData (
     id int(11) NOT NULL DEFAULT '0',
     logConfiguration longblob NULL DEFAULT NULL,
     logEntryRowNumber int(11) NOT NULL DEFAULT '0',
     PRIMARY KEY (id)
 );
 
-CREATE TABLE logentrydata (
+CREATE TABLE LogEntryData (
     id int(11) NOT NULL DEFAULT '0',
     adminType int(11) NOT NULL DEFAULT '0',
     adminData varchar(250) binary NULL DEFAULT NULL,
@@ -179,7 +193,7 @@ CREATE TABLE logentrydata (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE publisherdata (
+CREATE TABLE PublisherData (
     id int(11) NOT NULL DEFAULT '0',
     name varchar(250) binary NULL DEFAULT NULL,
     updateCounter int(11) NOT NULL DEFAULT '0',
@@ -187,19 +201,29 @@ CREATE TABLE publisherdata (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE servicedata (
-TODO
+CREATE TABLE ServiceData (
+    id int(11) NOT NULL DEFAULT '0',
+    name varchar(250) binary NULL DEFAULT NULL,
+    data text NULL DEFAULT NULL,
+    PRIMARY KEY (id)
 );
 
-CREATE TABLE tableprotectdata (
-TODO
+CREATE TABLE TableProtectData (
+    id varchar(250) binary NOT NULL DEFAULT '',
+    version int(11) NOT NULL DEFAULT '0',
+    hashVersion int(11) NOT NULL DEFAULT '0',
+    protectionAlg varchar(250) binary NULL DEFAULT NULL,
+    hash varchar(250) binary NULL DEFAULT NULL,
+    signature varchar(250) binary NULL DEFAULT NULL,
+    time bigint(20) NOT NULL DEFAULT '0',
+    dbKey varchar(250) binary NULL DEFAULT NULL,
+    dbType varchar(250) binary NULL DEFAULT NULL,
+    keyRef varchar(250) binary NULL DEFAULT NULL,
+    keyType varchar(250) binary NULL DEFAULT NULL,
+    PRIMARY KEY (id)
 );
 
-CREATE TABLE servicedata (
-TODO
-);
-
-CREATE TABLE userdata (
+CREATE TABLE UserData (
     username varchar(250) binary NOT NULL DEFAULT '',
     subjectDN varchar(250) binary NULL DEFAULT NULL,
     cAId int(11) NOT NULL DEFAULT '0',
@@ -220,6 +244,10 @@ CREATE TABLE userdata (
     PRIMARY KEY (username)
 );
 
-CREATE TABLE userdatasourcedata (
-TODO
+CREATE TABLE UserDataSourceData (
+    id int(11) NOT NULL DEFAULT '0',
+    name varchar(250) binary NULL DEFAULT NULL,
+    updateCounter int(11) NOT NULL DEFAULT '0',
+    data text NULL DEFAULT NULL,
+    PRIMARY KEY (id)
 );

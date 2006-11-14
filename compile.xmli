@@ -6,7 +6,8 @@
     <target name="init" depends="j2ee:check">
         <echo>
 ---------- ${app.version} CONFIGURATION PROPERTIES ----------
-jboss.home             = ${jboss.home}
+appserver.type         = ${appserver.type}
+appserver.home         = ${appserver.home}
 java.ver               = ${java.ver}
 ca.keystorepass        = ${ca.keystorepass}
 ca.ocspkeystorepass    = ${ca.ocspkeystorepass}
@@ -481,8 +482,8 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
             <java classname="org.jboss.verifier.Main" fork="true">
                 <classpath>
                     <fileset dir="${jboss.server.home.dir}/lib" includes="*.jar" />
-                    <fileset dir="${jboss.home}/client" includes="*.jar" />
-                    <fileset dir="${jboss.home}/lib" includes="*.jar" />
+                    <fileset dir="${appserver.home}/client" includes="*.jar" />
+                    <fileset dir="${appserver.home}/lib" includes="*.jar" />
                     <fileset dir="${dist.dir}" includes="*.jar" />
                     <pathelement location="${jboss.conf.dir}" />
                 </classpath>

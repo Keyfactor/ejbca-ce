@@ -3,11 +3,11 @@
 <!--
 
 This is the template used to configure ocsp datasource with the appropriate ocsp-database
-You need to drop your jdbc driver in ${jboss.home}/server/default/lib
+You need to drop your jdbc driver in ${appserver.home}/server/default/lib
 
 Customize at will as this is mainly for development.
 
-$Id: ocsp-ds.xml,v 1.1 2006-02-06 14:38:23 primelars Exp $
+$Id: ocsp-ds.xml,v 1.2 2006-11-14 13:07:51 anatom Exp $
 
  -->
 

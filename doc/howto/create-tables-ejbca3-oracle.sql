@@ -1,5 +1,5 @@
 --
--- These definitions should work for EJBCA 3.3.x, Oracle 9.2.0.1.0 and the JDBC driver version 10.1.0.2.
+-- These definitions should work for EJBCA 3.4.x, Oracle 9.x or 10.x and the JDBC driver version 10.1.0.2.
 --
 
 CREATE TABLE "ACCESSRULESDATA" (

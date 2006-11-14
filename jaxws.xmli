@@ -11,9 +11,6 @@
     	<fileset dir="lib/jaxws">
     	  <include name="**/*.jar"/>
     	</fileset> 
-    	<!-- <fileset dir="lib/ext">
-    	  <include name="**/servlet-2.3.jar"/>
-    	</fileset> -->
     	<pathelement location="${java.home}/../lib/tools.jar"/>
     	<pathelement location="${build}"/>
     	<path refid="compile.classpath" />

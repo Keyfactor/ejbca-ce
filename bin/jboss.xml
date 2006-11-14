@@ -1,10 +1,10 @@
 <project name="jboss" basedir=".." default="j2ee:deploy">
 	<property environment="env"/>
 
-    <property name="jboss.home" value="${env.JBOSS_HOME}"/>
+    <property name="appserver.home" value="${env.JBOSS_HOME}"/>
     <property name="jboss.config" value="default"/>
     <property name="jboss.farm.name" value="deploy"/>
-	<property name="jboss.server.home.dir" location="${jboss.home}/server/${jboss.config}"/>
+	<property name="jboss.server.home.dir" location="${appserver.home}/server/${jboss.config}"/>
     <property name="jboss.conf.dir" location="${jboss.server.home.dir}/conf"/>
 	<property name="jboss.farm.dir" location="${jboss.server.home.dir}/${jboss.farm.name}"/>
 	<property name="jboss.deploy.dir" location="${jboss.server.home.dir}/deploy"/>
@@ -22,10 +22,10 @@
             we could have a dedicated jboss for ejbca, so give users a chance to override
             otherwise, try to pick the one from environment if it exists
             -->
-        <fail message="Please set the property 'jboss.home' for this project" unless="jboss.home"/>
-        <available file="${jboss.home}/client/jboss-j2ee.jar" property="jboss.home.valid"/>
-        <fail message="'jboss.home' (${jboss.home}) does not seem to be a valid JBoss home directory" unless="jboss.home.valid"/>
-        <echo message="Using jboss.home : ${jboss.home}"/>
+        <fail message="Please set the property 'appserver.home' for this project" unless="appserver.home"/>
+        <available file="${appserver.home}/client/jboss-j2ee.jar" property="appserver.home.valid"/>
+        <fail message="'appserver.home' (${appserver.home}) does not seem to be a valid JBoss home directory" unless="appserver.home.valid"/>
+        <echo message="Using appserver.home : ${appserver.home}"/>
 	</target>
 
 
@@ -137,20 +137,20 @@
 
 
 	<target name="j2ee:run" description="Start the J2EE server">
-    	<j2ee-server classname="org.jboss.Main" classpath="${jboss.home}/bin/run.jar">
+    	<j2ee-server classname="org.jboss.Main" classpath="${appserver.home}/bin/run.jar">
             <args>
-                <jvmarg value="-Djboss.home=${jboss.home}"/>
+                <jvmarg value="-Djboss.home=${appserver.home}"/>
             </args>
     	</j2ee-server>
     <!--
-            jboss.home.dir
-            jboss.home.url			${jboss.home.dir}
+            appserver.home.dir
+            appserver.home.url		${appserver.home.dir}
             jboss.server.name		default
-            jboss.server.base.dir	${jboss.home.dir}/server	
+            jboss.server.base.dir	${appserver.home.dir}/server	
             jboss.server.home.dir	${jboss.base.dir}/${jboss.server.name}
             jboss.server.temp.dir	${jboss.server.home.dir}/tmp
             jboss.server.data.dir	${jboss.server.home.dir}/data
-            jboss.server.base.url	${jboss.home.url}/server
+            jboss.server.base.url	${appserver.home.url}/server
             jboss.server.home.url	${jboss.base.url}/${jboss.server.name}
             jboss.server.config.url ${jboss.server.home.url}/conf
             jboss.server.lib.url	${jboss.server.home.url}/lib

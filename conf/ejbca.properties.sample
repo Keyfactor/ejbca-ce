@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.6 2006-11-02 10:25:43 asyd Exp $
+# $Id: ejbca.properties.sample,v 1.7 2006-11-14 13:07:51 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -8,10 +8,15 @@
 # and customize at will.
 #
 
-# JBoss used during development
-# Default: $JBOSS_HOME
+# Which application server is used?
+# Possible values: jboss, glassfish, weblogic
+# Default jboss
+#appserver.type=jboss
+
+# Application server home directory used during development
+# Default: $JBOSS_HOME or $APPSRV_HOME
 #jboss.home=${basedir}/../../jboss-4.0.1
-jboss.home=${env.JBOSS_HOME}
+#appserver.home=${env.JBOSS_HOME}
 
 # which compiler to use
 # default: javac

@@ -393,7 +393,7 @@
             <classpath>
                 <pathelement location="./bin" />
                 <pathelement location="${build}" />
-                <fileset dir="${jboss.home}/client" includes="**/*.jar" />
+                <fileset dir="${appserver.home}/client" includes="**/*.jar" />
                 <fileset dir="${lib}" includes="**/*.jar" />
             </classpath>
         </java>

@@ -8,14 +8,12 @@
     <property name="ejbca.home" location="." />
     <property environment="env" />
 
-    <condition property="jboss.home" value="${env.JBOSS_HOME}" >
-        <equals arg1="${jboss.home}" arg2="${jboss.home}"/>
-    </condition>
-
-    <!-- Give user a chance to override without editing this file
+    <!-- 
+       Give user a chance to override without editing this file
        (and without typing -D each time it compiles it).
        First it checks your home directory for ejbca.properties
-       next it checks the properties file here. -->
+       next it checks the properties file here. 
+    -->
     <property file="${user.home}/${app.name}.properties" />
 	<!-- Keep reading the old file to be simply backwards compatible, the new one (conf/x overrides -->
     <property file="${app.name}.properties" />
@@ -26,10 +24,25 @@
     <property file="conf/ocsp.properties" />
     <property file="conf/web.properties" />
     <property file="conf/cmp.properties" />
-    
-	<property name="java.ver" value="14" />
+
+    <!--
+        Start setting default values and classpaths etc here
+    -->
+
+    <!-- A littel special something to handle backward compatiblity with 
+         people using JBOSS_HOME. They can switch to APPSRV_HOME now, and both will work. 
+    -->        
+    <condition property="jboss.home" value="${env.JBOSS_HOME}" >
+        <equals arg1="${appserver.home}" arg2="${appserver.home}"/>
+    </condition>
+    <condition property="appserver.home" value="${env.APPSRV_HOME}" else="${jboss.home}">
+        <contains string="${jboss.home}" substring="JBOSS_HOME"/>
+    </condition>
 
 	
+    <!-- Default to 14 -->    
+	<property name="java.ver" value="14" />
+		
     <!-- set global properties for this build -->
 	<property name="tmp" value="./tmp" />
     <property name="bin" value="./${tmp}/bin" />
@@ -129,25 +142,29 @@
         <path refid="j2ee.classpath" />
     </path>
 
+    <!-- this one is different for all different appservers -->
+    
+
+
     <path id="j2ee.classpath">
-        <fileset dir="${jboss.home}/client">
-            <include name="jbossall-client.jar" />
-            <include name="jboss-j2ee.jar" />
+        <fileset dir="${appserver.home}">
+            <include name="client/jbossall-client.jar" />
+            <include name="client/jboss-j2ee.jar" />
         </fileset>
     </path>
 
     <path id="jbossservices.classpath">
-        <pathelement location="${jboss.home}/lib/jboss-system.jar" />
-        <pathelement location="${jboss.home}/lib/jboss-common.jar" />
-        <pathelement location="${jboss.home}/lib/jboss-jmx.jar" />
+        <pathelement location="${appserver.home}/lib/jboss-system.jar" />
+        <pathelement location="${appserver.home}/lib/jboss-common.jar" />
+        <pathelement location="${appserver.home}/lib/jboss-jmx.jar" />
     </path>
         
     <path id="xdoclet.classpath">
         <fileset dir="lib" includes="*.jar" />
         <fileset dir="lib/ext" includes="*.jar" />
         <fileset dir="lib/xdoclet/lib" includes="*.jar" />    
-        <fileset dir="${jboss.home}/client">
-            <include name="jboss-j2ee.jar" />
+        <fileset dir="${appserver.home}">
+            <include name="client/jboss-j2ee.jar" />
         </fileset>
     </path>
 
@@ -158,6 +175,7 @@
     </path>
 
     <!-- those are the default values used within JBoss for easy startup -->
+    <property name="appserver.type" value="jboss"/>
     <property name="ca.name" value="AdminCA1"/>
     <property name="ca.keystorepass" value="foo123"/>
     <property name="ca.ocspkeystorepass" value="foo123"/>
