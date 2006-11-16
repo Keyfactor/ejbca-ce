@@ -10,7 +10,7 @@
 	<!-- include the main compile targets -->
 	&compile;
 
-	<import file="bin/jboss.xml" />
+	<import file="bin/${appserver.type}.xml" />
 	<import file="./jaxws.xmli" />
 	<import file="./cmptcp.xmli" />
 	<import file="./crlservice.xmli" />
@@ -268,7 +268,7 @@
     <!-- =================================================================== -->
     <!-- Build CA-ear                                                        -->
     <!-- =================================================================== -->
-    <target name="ca.ear" depends=" apply.war, status.war, cmp.war, healthcheck.war, webdist.war, adminweb.war, publicwebroot.war, ejbca-ejb.jar, ejbca-util.jar, ejbcaws.war, ejbcaws.client">
+    <target name="ca.ear" depends="apply.war, status.war, cmp.war, healthcheck.war, webdist.war, adminweb.war, publicwebroot.war, ejbca-ejb.jar, ejbca-util.jar, ejbcaws.war, ejbcaws.client">
         <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml"> 
             <fileset dir="${eardd.src}">
                 <exclude name="META-INF/application.xml" />

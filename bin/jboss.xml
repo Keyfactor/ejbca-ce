@@ -1,7 +1,7 @@
 <project name="jboss" basedir=".." default="j2ee:deploy">
 	<property environment="env"/>
 
-    <property name="appserver.home" value="${env.JBOSS_HOME}"/>
+    <property name="appserver.home" value="${env.APPSRV_HOME}"/>
     <property name="jboss.config" value="default"/>
     <property name="jboss.farm.name" value="deploy"/>
 	<property name="jboss.server.home.dir" location="${appserver.home}/server/${jboss.config}"/>
