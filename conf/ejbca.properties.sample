@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.7 2006-11-14 13:07:51 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.8 2006-11-16 11:39:51 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -15,7 +15,7 @@
 
 # Application server home directory used during development
 # Default: $JBOSS_HOME or $APPSRV_HOME
-#jboss.home=${basedir}/../../jboss-4.0.1
+#appserver.home=${basedir}/../../jboss-4.0.1
 #appserver.home=${env.JBOSS_HOME}
 
 # which compiler to use
