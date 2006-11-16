@@ -95,7 +95,7 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.25 2006-11-03 15:56:22 anatom Exp $
+ * @version $Id: CertTools.java,v 1.26 2006-11-16 12:36:38 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -258,8 +258,7 @@ public class CertTools {
      * @return X509Name or null if input is null
      */
     public static X509Name stringToBcX509Name(String dn, X509NameEntryConverter converter) {
-
-      // log.debug(">stringToBcX509Name: " + dn);
+      //log.debug(">stringToBcX509Name: " + dn);
       if (dn == null)
         return null;
 
@@ -301,10 +300,8 @@ public class CertTools {
       //-- Reorder fields
       X509Name orderedX509Name = getOrderedX509Name(x509Name, getDefaultX509FieldOrder(), converter);
 
-      log.debug("<stringToBcX509Name");
+      //log.debug("<stringToBcX509Name");
       return orderedX509Name;
-      
-      
     } // stringToBcX509Name
     
 
