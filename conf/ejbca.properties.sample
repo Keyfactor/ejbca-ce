@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.8 2006-11-16 11:39:51 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.9 2006-11-18 16:20:03 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -90,6 +90,13 @@ ca.ocspkeystorepass=foo123
 # Enable this (set to true) if you want to deploy the create CRL service MBean
 # Default: false
 #createcrl.service.enabled=false
+
+# ------------ Log4j logging configuration ---------------------
+# 
+# Enable this by setting it to a log4j.xml configuration file configuring the logging for EJBCA.
+# Not needed for JBoss, that configures log4j itself. Glassfish does not use log4j, so here we need to configure this.
+# Default: false
+#logging.log4j.config=/home/glassfish/glassfish/domains/domain1/config/log4j.xml
 
 # ----------------- cluster configuration ----------------
 # The configuration. Use "all" when clustering.

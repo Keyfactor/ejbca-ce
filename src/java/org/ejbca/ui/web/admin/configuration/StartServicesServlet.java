@@ -22,6 +22,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.services.IServiceTimerSessionLocalHome;
@@ -31,7 +33,7 @@ import org.ejbca.core.ejb.services.IServiceTimerSessionLocalHome;
  *
  * 
  *
- * @version $Id: StartServicesServlet.java,v 1.3 2006-11-02 08:03:23 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.4 2006-11-18 16:19:56 anatom Exp $
  * 
  * @web.servlet name = "StartServices"
  *              display-name = "StartServicesServlet"
@@ -40,7 +42,12 @@ import org.ejbca.core.ejb.services.IServiceTimerSessionLocalHome;
  *
  * @web.servlet-mapping url-pattern = "/configuration/startservices"
  * 
- * @version $Id: StartServicesServlet.java,v 1.3 2006-11-02 08:03:23 anatom Exp $
+ * @web.env-entry description="Determines if log4j should be initilized explicitly, needed for glassfish"
+ *   name="LOG4JCONFIG"
+ *   type="java.lang.String"
+ *   value="${logging.log4j.config}"
+ * 
+ * @version $Id: StartServicesServlet.java,v 1.4 2006-11-18 16:19:56 anatom Exp $
  */
 public class StartServicesServlet extends HttpServlet {
 
@@ -51,11 +58,9 @@ public class StartServicesServlet extends HttpServlet {
 	public void destroy() {
         log.debug(">destroy calling ServiceSession.unload");
         try {
-
 			getServiceHome().create().unload();
 		} catch (CreateException e) {
 			log.error(e);
-		
 		} catch (IOException e) {
 			log.error(e);
 	    }
@@ -84,7 +89,6 @@ public class StartServicesServlet extends HttpServlet {
         super.init(config);
         log.debug(">init calling ServiceSession.load");
         try {
-
 			getServiceHome().create().load();
 		} catch (CreateException e) {
 			log.debug(e);
@@ -93,6 +97,13 @@ public class StartServicesServlet extends HttpServlet {
 			log.debug(e);
 			throw new ServletException(e);
 	    }
+        log.debug(">init initializing log4j");
+        String configfile = ServiceLocator.getInstance().getString("java:comp/env/LOG4JCONFIG");
+        if (!StringUtils.equals(configfile, "false")) {
+            // Configure log4j
+            // Set up a simple configuration that logs on the console.
+            BasicConfigurator.configure();
+        }
     }
 
     public void doPost(HttpServletRequest req, HttpServletResponse res)

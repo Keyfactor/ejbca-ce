@@ -236,6 +236,8 @@
 
 	<!-- If the create CRL service MBean should be deployed -->
     <property name="createcrl.service.enabled" value="false" />    
+	<!-- Log4j configuration for glassfish -->
+    <property name="logging.log4j.config" value="false" />    
 
     <!-- Extra Protection settings for internal log signing etc -->
     <property name="protection.enabled" value="false" />

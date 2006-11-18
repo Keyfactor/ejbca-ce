@@ -113,7 +113,7 @@ Glassfish
 
 This is only starter instruction to help you get started as a developer, EJBCA does not work on Glassfish yet.
 
-- Create a database and a databes user with privileges.
+- Create a database and a database user with privileges.
 
 - Create the database tables using one of the scripts in doc/howto/create-tables-xxx. Choose the correct file for your database.
   Example for MySQL:
