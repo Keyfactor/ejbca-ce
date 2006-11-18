@@ -22,8 +22,20 @@ import org.apache.log4j.Logger;
 
 /**
  * Implements a singleton serial number generator using SecureRandom.
+ * 
+ * RFC3280 defines serialNumber be positive INTEGER, and X.690 defines
+ * INTEGER consist of one or more octets. X.690 also defines as follows:
  *
- * @version $Id: SernoGenerator.java,v 1.1 2006-01-17 20:30:04 anatom Exp $
+ * If the contents octets of an integer value encoding consist of more than
+ * one octet, then the bits of the first octet and bit 8 of the second
+ * octet:
+ *  a) shall not all be ones; and
+ *  b) shall not all be zero.
+ *
+ * Therefore, minimum 8 octets value is 0080000000000000 and maximum value
+ * is 7FFFFFFFFFFFFFFF."
+ *
+ * @version $Id: SernoGenerator.java,v 1.2 2006-11-18 14:05:06 anatom Exp $
  */
 public class SernoGenerator implements ISernoGenerator {
     /** Log4j instance */
@@ -37,6 +49,9 @@ public class SernoGenerator implements ISernoGenerator {
 
     /** A handle to the unique Singleton instance. */
     private static SernoGenerator instance = null;
+
+    private static final BigInteger lowest = new BigInteger("0080000000000000", 16);
+    private static final BigInteger highest = new BigInteger("7FFFFFFFFFFFFFFF", 16);
 
     /**
      * Creates a serialn number generator using SecureRandom
@@ -90,17 +105,26 @@ public class SernoGenerator implements ISernoGenerator {
         return instance;
     }
 
+    private static int count = 0;
     /**
      * Generates a number of serial number bytes. The number returned should be a positive number.
      *
-     * @return an array of serial number bytes.
+     * @return a BigInteger with a new random serial number.
      */
     public synchronized BigInteger getSerno() {
         byte[] sernobytes = new byte[8];
-        random.nextBytes(sernobytes);
-
-        BigInteger serno = (new java.math.BigInteger(sernobytes)).abs();
-
+        boolean ok = false;
+        BigInteger serno = null;
+        while (!ok) {
+            random.nextBytes(sernobytes);
+            serno = (new java.math.BigInteger(sernobytes)).abs();
+            // Must be within the range 0080000000000000 - 7FFFFFFFFFFFFFFF
+            if ( (serno.compareTo(lowest) > 0) && (serno.compareTo(highest) < 0) ) {
+                ok = true;
+            } else {
+                log.info("Discarding serial number out of range "+ count++);
+            }
+        }
         return serno;
     }
 
