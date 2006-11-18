@@ -3016,6 +3016,33 @@ This is a global setting that cannot be overridden by administrators own setting
 
 </section>
 
+<section name="Custom DN oids">
+<p>
+EJBCA supports custom (your own) oids in DN components in some special cases.
+<ul>
+<li>You can have a DN with a custom oid in CA names.</li>
+</ul>
+In order to add such a DN you can simply call the DN for example: CN=MyCommonName,1.1.1.1=MyCustomOid,C=SE
+<br/>
+Where 1.1.1.1 is your custom oid.
+</p>
+<p>
+EJBCA will be default put unknown OIDs in the end so the DN will probably be displayed as: CN=MyCommonName,C=SE,1.1.1.1=MyCustomOid
+<br/>
+If you need a particular order of DN components, you can add a file 'dncomponents.properties' in the directory ejbca/src. 
+There is a file calld dncomponents.properties.sample in the distribution as a starting point (it shows the default ordering in EJBCA). 
+You custom oid must be placed in the right place in that file, and all components from the sample file should be included, or you will get 
+strange behaviour.
+</p>
+<p>
+A word of caution:
+<br/>If you use custom oids, they better not become standard ones later on, because if the underlying asn.1 library in EJBCA starts to 
+know the oids as standard ones, things will be renamed in the database and you will have to do a database migration.
+Also you must keep track of dncomponents.properties when upgrading EJBCA.
+<br/>
+Stick to the standard it my advice!
+</p>
+</section>
 <section name="Reference manual">
 <p>
 All configuration options, JNDI names etc is configured through the use of a conf/ejbca.properties file. 
