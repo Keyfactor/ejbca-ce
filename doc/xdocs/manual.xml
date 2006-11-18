@@ -3033,6 +3033,11 @@ If you need a particular order of DN components, you can add a file 'dncomponent
 There is a file calld dncomponents.properties.sample in the distribution as a starting point (it shows the default ordering in EJBCA). 
 You custom oid must be placed in the right place in that file, and all components from the sample file should be included, or you will get 
 strange behaviour.
+<br/>
+If you have added dncomponents.properties you can specify you DN as:
+CN=MyCommonName,myCustomName=MyCustomOid,C=SE
+<br/>
+When creating the CA.
 </p>
 <p>
 A word of caution:
