@@ -42,7 +42,6 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -90,15 +89,21 @@ import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
+import org.ejbca.util.dn.DnComponents;
 
 
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.26 2006-11-16 12:36:38 anatom Exp $
+ * @version $Id: CertTools.java,v 1.27 2006-11-18 13:37:29 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
+    
+    // Initialize dnComponents
+    static {
+        DnComponents.getDnObjects();
+    }
     public static final String EMAIL = "rfc822name";
     public static final String EMAIL1 = "email";
     public static final String EMAIL2 = "EmailAddress";
@@ -178,53 +183,6 @@ public class CertTools {
     protected CertTools() {
     }
 
-    /** BC X509Name contains some lookup tables that could maybe be used here. */
-    private static final HashMap oids = new HashMap();
-
-    static {
-        oids.put("c", X509Name.C);
-        oids.put("dc", X509Name.DC);
-        oids.put("st", X509Name.ST);
-        oids.put("l", X509Name.L);
-        oids.put("o", X509Name.O);
-        oids.put("ou", X509Name.OU);
-        oids.put("t", X509Name.T);
-        oids.put("surname", X509Name.SURNAME);
-        oids.put("initials", X509Name.INITIALS);
-        oids.put("givenname", X509Name.GIVENNAME);
-        oids.put("gn", X509Name.GIVENNAME);
-        oids.put("sn", X509Name.SN);
-        oids.put("serialnumber", X509Name.SN);
-        oids.put("cn", X509Name.CN);
-        oids.put("uid", X509Name.UID);
-        oids.put("emailaddress", X509Name.EmailAddress);
-        oids.put("e", X509Name.EmailAddress);
-        oids.put("email", X509Name.EmailAddress);
-        oids.put("unstructuredname", X509Name.UnstructuredName); //unstructuredName 
-        oids.put("unstructuredaddress", X509Name.UnstructuredAddress); //unstructuredAddress
-    }
-
-    
-    private static final String[] dNObjectsForward = {
-        "unstructuredaddress", "unstructuredname", "emailaddress", "e", "email", "uid", "cn", "sn", "serialnumber", "gn", "givenname",
-        "initials", "surname", "t", "ou", "o", "l", "st", "dc", "c"
-    };
-    
-    private static final String[] dNObjectsReverse = {
-        "c", "dc", "st", "l", "o", "ou", "t", "surname", "initials",
-        "givenname", "gn", "serialnumber", "sn", "cn", "uid", "email", "e", "emailaddress", "unstructuredname", "unstructuredaddress"
-    };
-    
-    /** This property is true if reverse DN order should be used. Default value is false (forward order).
-     * This setting is changed from ejbca.properties
-     */
-    private static final boolean reverseOrder = BooleanUtils.toBoolean("@certtools.dnorderreverse@");
-    
-    
-    private static DERObjectIdentifier getOid(String o) {
-        return (DERObjectIdentifier) oids.get(o.toLowerCase());
-    } // getOid
-
     /** See stringToBcX509Name(String, X509NameEntryConverter), this method uses the default BC converter (X509DefaultEntryConverter)
      * @see #stringToBcX509Name(String, X509NameEntryConverter)
      * @param dn
@@ -276,7 +234,7 @@ public class CertTools {
           String val = pair.substring(ix + 1);
 
           // -- First search the OID by name in declared OID's
-          DERObjectIdentifier oid = getOid(key);
+          DERObjectIdentifier oid = DnComponents.getOid(key);
 
           try {
               // -- If isn't declared, we try to create it
@@ -442,7 +400,7 @@ public class CertTools {
             while (xt.hasMoreTokens()) {
                 last = xt.nextToken();
             }
-            String[] dNObjects = getDnObjects();
+            String[] dNObjects = DnComponents.getDnObjects();
             if ( (first != null) && (last != null) ) {
             	first = first.substring(0,first.indexOf('='));
             	last = last.substring(0,last.indexOf('='));
@@ -1730,21 +1688,11 @@ public class CertTools {
      */
     private static Vector getDefaultX509FieldOrder(){
       Vector fieldOrder = new Vector();
-      String[] dNObjects = getDnObjects();
+      String[] dNObjects = DnComponents.getDnObjects();
       for (int i = 0; i < dNObjects.length; i++) {
-          fieldOrder.add(getOid(dNObjects[i]));
+          fieldOrder.add(DnComponents.getOid(dNObjects[i]));
       }
       return fieldOrder;
-    }
-    
-    /**
-     * Returns the dnObject (forward or reverse) that is in use
-     */
-    private static String[]getDnObjects() {
-    	if (!reverseOrder) {
-    		return dNObjectsForward;
-    	}
-    	return dNObjectsReverse;
     }
     
     /**

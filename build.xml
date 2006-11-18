@@ -203,6 +203,7 @@
             <fileset dir="${src}/upgrade"/>
         	<fileset dir="${src}">
         	    <include name="intresources/*.properties"/>
+        	    <include name="dncomponents.properties"/>
         	</fileset>	
             <fileset dir="${hwtoken.class.dir}"/>
         </jar>

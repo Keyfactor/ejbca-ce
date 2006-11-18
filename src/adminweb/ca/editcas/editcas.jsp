@@ -309,9 +309,10 @@
          catype  = Integer.parseInt(request.getParameter(HIDDEN_CATYPE));
          String subjectdn = request.getParameter(TEXTFIELD_SUBJECTDN);
          try{
-           X509Name dummy = new X509Name(subjectdn);
+             X509Name dummy = CertTools.stringToBcX509Name(subjectdn);
          }catch(Exception e){
-           illegaldnoraltname = true;
+             //System.out.println("Illegal DN: "+subjectdn);
+             illegaldnoraltname = true;
          }
          int certprofileid = 0;
          if(request.getParameter(SELECT_CERTIFICATEPROFILE) != null)
@@ -795,7 +796,7 @@
          catype  = Integer.parseInt(request.getParameter(HIDDEN_CATYPE));
          String subjectdn = request.getParameter(TEXTFIELD_SUBJECTDN);
          try{
-           X509Name dummy = new X509Name(subjectdn);
+             X509Name dummy = CertTools.stringToBcX509Name(subjectdn);
          }catch(Exception e){
            illegaldnoraltname = true;
          }
