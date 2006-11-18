@@ -35,7 +35,7 @@ import org.apache.log4j.Logger;
  * Therefore, minimum 8 octets value is 0080000000000000 and maximum value
  * is 7FFFFFFFFFFFFFFF."
  *
- * @version $Id: SernoGenerator.java,v 1.2 2006-11-18 14:05:06 anatom Exp $
+ * @version $Id: SernoGenerator.java,v 1.3 2006-11-18 14:23:09 anatom Exp $
  */
 public class SernoGenerator implements ISernoGenerator {
     /** Log4j instance */
@@ -105,7 +105,6 @@ public class SernoGenerator implements ISernoGenerator {
         return instance;
     }
 
-    private static int count = 0;
     /**
      * Generates a number of serial number bytes. The number returned should be a positive number.
      *
@@ -119,10 +118,10 @@ public class SernoGenerator implements ISernoGenerator {
             random.nextBytes(sernobytes);
             serno = (new java.math.BigInteger(sernobytes)).abs();
             // Must be within the range 0080000000000000 - 7FFFFFFFFFFFFFFF
-            if ( (serno.compareTo(lowest) > 0) && (serno.compareTo(highest) < 0) ) {
+            if ( (serno.compareTo(lowest) >= 0) && (serno.compareTo(highest) <= 0) ) {
                 ok = true;
             } else {
-                log.info("Discarding serial number out of range "+ count++);
+                log.info("Discarding serial number out of range");
             }
         }
         return serno;
