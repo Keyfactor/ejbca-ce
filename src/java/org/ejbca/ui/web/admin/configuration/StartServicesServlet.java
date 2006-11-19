@@ -33,7 +33,7 @@ import org.ejbca.core.ejb.services.IServiceTimerSessionLocalHome;
  *
  * 
  *
- * @version $Id: StartServicesServlet.java,v 1.4 2006-11-18 16:19:56 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.5 2006-11-19 09:57:08 anatom Exp $
  * 
  * @web.servlet name = "StartServices"
  *              display-name = "StartServicesServlet"
@@ -47,7 +47,7 @@ import org.ejbca.core.ejb.services.IServiceTimerSessionLocalHome;
  *   type="java.lang.String"
  *   value="${logging.log4j.config}"
  * 
- * @version $Id: StartServicesServlet.java,v 1.4 2006-11-18 16:19:56 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.5 2006-11-19 09:57:08 anatom Exp $
  */
 public class StartServicesServlet extends HttpServlet {
 
@@ -101,8 +101,12 @@ public class StartServicesServlet extends HttpServlet {
         String configfile = ServiceLocator.getInstance().getString("java:comp/env/LOG4JCONFIG");
         if (!StringUtils.equals(configfile, "false")) {
             // Configure log4j
-            // Set up a simple configuration that logs on the console.
-            BasicConfigurator.configure();
+            if (StringUtils.equals(configfile, "basic")) {
+                // Set up a simple configuration that logs on the console.
+                BasicConfigurator.configure();            	
+            } else {
+            	// TODO: log4j.xml configuration
+            }
         }
     }
 
