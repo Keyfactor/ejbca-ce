@@ -393,6 +393,8 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.amountfreemem@" value="${ocsphealthcheck.amountfreemem}"/>	
 		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.dbquery@" value="${ocsphealthcheck.dbquery}"/>	
 		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.authorizedips@" value="${ocsphealthcheck.authorizedips}"/>	
+		<!-- Copy the correct jndi settings for the selected application server -->
+		<copy file="${mainbin}/jndi.properties.${appserver.type}" tofile="${mainbin}/jndi.properties" overwrite="true" failonerror="false"/>
 	</target>
 
     <!--
