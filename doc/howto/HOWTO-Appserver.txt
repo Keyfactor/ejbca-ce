@@ -135,6 +135,7 @@ Currently EJBCA support the MySQL database on Glassfish.
 - Configure ejbca: 
     in conf/ejbca.properties you should at least set appserver.type, appserver.home and logging.log4j.config
     in conf/database.properties you should at least set datasource.jndi-name-prefix, and the database settings for your chosen database.
+    in conf/web.properties you should set 'web.jsfimpl=nojsf'
     
 - Deploy ejbca.ear using: 
     ./asadmin deploy --dbvendorname=mysql ../../ejbca/dist/ejbca.ear
