@@ -123,7 +123,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.36 2006-11-19 11:29:10 anatom Exp $
+ * @version $Id: X509CA.java,v 1.37 2006-11-19 16:15:49 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -473,18 +473,54 @@ public class X509CA extends CA implements Serializable {
         		 crldistpoint = getDefaultCRLDistPoint();
         	 }
              // Multiple CDPs are spearated with the ';' sign        	         	 
-            StringTokenizer tokenizer = new StringTokenizer(crldistpoint, ";", false);
+            ArrayList dpns = new ArrayList();
+            if (StringUtils.isNotEmpty(crldistpoint)) {
+                StringTokenizer tokenizer = new StringTokenizer(crldistpoint, ";", false);
+                while (tokenizer.hasMoreTokens()) {
+                    // 6 is URI
+                    String uri = tokenizer.nextToken();
+                    GeneralName gn = new GeneralName(6, new DERIA5String(uri));
+                    log.debug("Added CRL distpoint: "+uri);
+                    ASN1EncodableVector vec = new ASN1EncodableVector();
+                    vec.add(gn);
+                    GeneralNames gns = new GeneralNames(new DERSequence(vec));
+                    DistributionPointName dpn = new DistributionPointName(0, gns);
+                    dpns.add(dpn);
+                }            	
+            }
+            String crlissuer=certProfile.getCRLIssuer();
+            ArrayList issuers = new ArrayList();
+            if (StringUtils.isNotEmpty(crlissuer)) {
+                StringTokenizer tokenizer = new StringTokenizer(crlissuer, ";", false);
+                while (tokenizer.hasMoreTokens()) {
+                	String issuer = tokenizer.nextToken();
+                	GeneralName gn = new GeneralName(new X509Name(issuer));
+                    log.debug("Added CRL issuer: "+issuer);
+                    ASN1EncodableVector vec = new ASN1EncodableVector();
+                    vec.add(gn);
+                    GeneralNames gns = new GeneralNames(new DERSequence(vec));
+                    issuers.add(gns);
+                }            	
+            }
             ArrayList distpoints = new ArrayList();
-            while (tokenizer.hasMoreTokens()) {
-                // 6 is URI
-                String uri = tokenizer.nextToken();
-                GeneralName gn = new GeneralName(6, new DERIA5String(uri));
-                log.debug("Added CRL distpoint: "+uri);
-                ASN1EncodableVector vec = new ASN1EncodableVector();
-                vec.add(gn);
-                GeneralNames gns = new GeneralNames(new DERSequence(vec));
-                DistributionPointName dpn = new DistributionPointName(0, gns);
-                distpoints.add(new DistributionPoint(dpn, null, null));
+            if ( (issuers.size() > 0) || (dpns.size() > 0) ) {
+            	int i = dpns.size();
+            	if (issuers.size() > i) {
+            		i = issuers.size();
+            	}
+            	for (int j = 0; j < i; j++) {
+            		DistributionPointName dpn = null;
+            		GeneralNames issuer = null;
+            		if (dpns.size() > j) {
+            			dpn = (DistributionPointName)dpns.get(j);
+            		}
+            		if (issuers.size() > j) {
+            			issuer = (GeneralNames)issuers.get(j);
+            		}
+            		if ( (dpn != null) || (issuer != null) ) {
+                        distpoints.add(new DistributionPoint(dpn, null, issuer));            	            			
+            		}
+            	}
             }
             if (distpoints.size() > 0) {
                 CRLDistPoint ext = new CRLDistPoint((DistributionPoint[])distpoints.toArray(new DistributionPoint[0]));

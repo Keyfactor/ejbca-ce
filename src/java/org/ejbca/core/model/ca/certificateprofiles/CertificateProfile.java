@@ -34,12 +34,12 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.13 2006-11-04 14:00:23 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.14 2006-11-19 16:15:49 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
     // Default Values
-    public static final float LATEST_VERSION = (float) 19.0;
+    public static final float LATEST_VERSION = (float) 20.0;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -50,7 +50,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * /serialization/spec/version.doc.html> details. </a>
      *
      */
-    private static final long serialVersionUID = -8069608639716545202L;
+    private static final long serialVersionUID = -8069608639716545203L;
 
     /** KeyUsage constants */
     public static final int DIGITALSIGNATURE = 0;
@@ -122,6 +122,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USEDEFAULTCRLDISTRIBUTIONPOINT = "usedefaultcrldistributionpoint";
     protected static final String CRLDISTRIBUTIONPOINTCRITICAL   = "crldistributionpointcritical";
     protected static final String CRLDISTRIBUTIONPOINTURI        = "crldistributionpointuri";
+    protected static final String CRLISSUER                      = "crlissuer";
     protected static final String USECERTIFICATEPOLICIES         = "usecertificatepolicies";
     protected static final String CERTIFICATEPOLICIESCRITICAL    = "certificatepoliciescritical";
     protected static final String CERTIFICATEPOLICYID            = "certificatepolicyid";
@@ -329,6 +330,13 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(CRLDISTRIBUTIONPOINTURI,"");
       else
         data.put(CRLDISTRIBUTIONPOINTURI,crldistributionpointuri);
+    }
+    public String getCRLIssuer(){ return (String) data.get(CRLISSUER); }
+    public void setCRLIssuer(String crlissuer) {
+      if(crlissuer==null)
+        data.put(CRLISSUER,"");
+      else
+        data.put(CRLISSUER,crlissuer);
     }
 
     public boolean getUseCertificatePolicies() { return ((Boolean) data.get(USECERTIFICATEPOLICIES)).booleanValue(); }
@@ -895,7 +903,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             if(data.get(ALLOWVALIDITYOVERRIDE) == null) {
                 setAllowValidityOverride(false);
             }
-
+            
+            if(data.get(CRLISSUER) == null) {
+                setCRLIssuer(null); // v20
+            }
             
             data.put(VERSION, new Float(LATEST_VERSION));
         }

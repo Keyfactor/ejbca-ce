@@ -70,6 +70,8 @@ function checkusecrldisturifield(){
     document.editcertificateprofile.<%= CHECKBOX_USEDEFAULTCRLDISTRIBUTIONPOINT %>.checked = false;
     document.editcertificateprofile.<%= TEXTFIELD_CRLDISTURI %>.disabled = true;
     document.editcertificateprofile.<%= TEXTFIELD_CRLDISTURI %>.value = "";   
+    document.editcertificateprofile.<%= TEXTFIELD_CRLISSUER %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_CRLISSUER %>.value = "";   
   }
 
 }
@@ -78,10 +80,14 @@ function checkusedefaultsecrldisturifield(){
   if(!document.editcertificateprofile.<%=CHECKBOX_USEDEFAULTCRLDISTRIBUTIONPOINT %>.checked){
     document.editcertificateprofile.<%= TEXTFIELD_CRLDISTURI %>.disabled = false;
     document.editcertificateprofile.<%= TEXTFIELD_CRLDISTURI %>.value = "<%= globalconfiguration.getStandardCRLDistributionPointURI() %>";
+    document.editcertificateprofile.<%= TEXTFIELD_CRLISSUER %>.disabled = false;
+    document.editcertificateprofile.<%= TEXTFIELD_CRLISSUER %>.value = "";
   }
   else{
     document.editcertificateprofile.<%= TEXTFIELD_CRLDISTURI %>.disabled = true;
     document.editcertificateprofile.<%= TEXTFIELD_CRLDISTURI %>.value = "";
+    document.editcertificateprofile.<%= TEXTFIELD_CRLISSUER %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_CRLISSUER %>.value = "";
   }
 
 }
@@ -542,7 +548,7 @@ function checkallfields(){
     </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("CRLDISTPOINT") %> <br>  <%= ejbcawebbean.getText("CRLDISTPOINTCRITICAL") %> <br> <%= ejbcawebbean.getText("USEDEFAULTCRLDISTPOINT") %> <br> <%= ejbcawebbean.getText("CRLDISTPOINTURI") %>
+        <%= ejbcawebbean.getText("CRLDISTPOINT") %> <br>  <%= ejbcawebbean.getText("CRLDISTPOINTCRITICAL") %> <br> <%= ejbcawebbean.getText("USEDEFAULTCRLDISTPOINT") %> <br> <%= ejbcawebbean.getText("CRLDISTPOINTURI") %> <br> <%= ejbcawebbean.getText("CRLISSUER") %>
 
       </td>
       <td width="50%">
@@ -574,6 +580,12 @@ function checkallfields(){
                        out.write(" value=\"" + certificateprofiledata.getCRLDistributionPointURI() + "\""); 
                       else
                        out.write(" value=\"" + globalconfiguration.getStandardCRLDistributionPointURI()+ "\"");%>>
+           <br>
+           <input type="text" name="<%=TEXTFIELD_CRLISSUER%>" size="60" maxlength="255" 
+           <%       if(!certificateprofiledata.getUseCRLDistributionPoint() || certificateprofiledata.getUseDefaultCRLDistributionPoint())
+                      out.write(" disabled "); 
+                    else 
+                       out.write(" value=\"" + certificateprofiledata.getCRLIssuer() + "\"");%>>
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 

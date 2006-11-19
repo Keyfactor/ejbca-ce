@@ -32,6 +32,7 @@
  
   static final String TEXTFIELD_VALIDITY               = "textfieldvalidity";
   static final String TEXTFIELD_CRLDISTURI             = "textfieldcrldisturi";
+  static final String TEXTFIELD_CRLISSUER              = "textfieldcrlissuer";
 
   static final String TEXTFIELD_CERTIFICATEPOLICYID    = "textfieldcertificatepolicyid";
   static final String TEXTFIELD_POLICYNOTICE_CPSURL    = "textfielpolicynoticedcpsurl";
