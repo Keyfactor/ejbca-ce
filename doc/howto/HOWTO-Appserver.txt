@@ -113,25 +113,32 @@ Glassfish
 
 This is only starter instruction to help you get started as a developer, EJBCA does not work on Glassfish yet.
 
+Currently EJBCA support the MySQL database on Glassfish.
+
 - Create a database and a database user with privileges.
 
 - Create the database tables using one of the scripts in doc/howto/create-tables-xxx. Choose the correct file for your database.
-  Example for MySQL:
+    Example for MySQL:
     mysql -u ejbca -p ejbca
     \. create-tables-ejbca3-mysql.sql
   
 - Start the application server: asadmin start-domain
 
 - Create a datasource called EjbcaDS, in the admin console this is done in Resources->JDBC->JDBC Resources.
-Use the pool DerbyPool, or connect to another database pool you have created.
+    Use the pool DerbyPool, or connect to another database pool you have created.
 
-When adding for example a MySQL Pool use values: Name=MysqlPool, Type=javax.sql.DataSource, Vendor=mysql. 
-It seems almost random which properties are pre-created on the next page...
+    When adding for example a MySQL Pool use values: Name=MysqlPool, Type=javax.sql.DataSource, Vendor=mysql. 
+    It seems almost random which properties are pre-created on the next page...
 
 - Start the database (if using Derby): asadmin start-database
 
-- Deploy ejbca.ear using: ./asadmin deploy --dbvendorname=mysql ../../ejbca/dist/ejbca.ear
-mysql is changed for the database you are using, see glassfish documentation.
+- Configure ejbca: 
+    in conf/ejbca.properties you should at least set appserver.type, appserver.home and logging.log4j.config
+    in conf/database.properties you should at least set datasource.jndi-name-prefix, and the database settings for your chosen database.
+    
+- Deploy ejbca.ear using: 
+    ./asadmin deploy --dbvendorname=mysql ../../ejbca/dist/ejbca.ear
+    mysql is changed for the database you are using, see glassfish documentation.
 
 Creating deployment descriptors for Glassfish:
 ----------------------------------------------
