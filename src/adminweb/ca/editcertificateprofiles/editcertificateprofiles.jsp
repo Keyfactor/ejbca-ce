@@ -373,6 +373,11 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
                    value=value.trim();
                    certificateprofiledata.setCRLDistributionPointURI(value);
                  } 
+                 value = request.getParameter(TEXTFIELD_CRLISSUER);
+                 if(value != null && !certificateprofiledata.getUseDefaultCRLDistributionPoint()){
+                   value=value.trim();
+                   certificateprofiledata.setCRLIssuer(value);
+                 } 
                  
              }
              else{
