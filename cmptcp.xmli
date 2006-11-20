@@ -6,7 +6,7 @@
     <!-- =================================================================== -->
     <!-- Build Jboss CMP tmp listener                       -->
     <!-- =================================================================== -->
-    <target name="jbosscmptcplistener" depends="compile">
+    <target name="jbosscmptcplistener" if="cmptcpservices.enabled" depends="compile">
         <javac srcdir="${src.java}" extdirs="${lib}" destdir="${build}" debug="on" encoding="iso8859-1">
             <exclude name="**/CVS/**" />
             <include name="**/ui/tcp/**/CmpTcp*" />
