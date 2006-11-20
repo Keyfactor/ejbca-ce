@@ -492,7 +492,11 @@ and can also be done by running 'ca.sh/cmd createcrl <i>caname</i>'.
 </p><p>
 Note on CRL Distribution Points (CDPs): it is possible to configure
 multiple URLs for CDPs if they are separated by ';'. 
-For example: http://cdpurl-1/mycrl.der;http://cdpurl-2/crl.crl
+For example: 
+<br/>http://cdpurl-1/mycrl.der;http://cdpurl-2/crl.crl
+</p><p>
+The same applies to CRLIssuer, for example: 
+<br/>CN=Foo,C=SE;CN=Bar,C=US
 </p><p>
 A CRLDistributionPoint for a CA in EJBCA could look like:
 </p>
@@ -501,6 +505,11 @@ http://host:port/ejbca/publicweb/webdist/certdist?cmd=crl&amp;issuer=url-encoded
 </source>
 <p>
 (such as the link from the webdist pages)
+</p>
+<p>
+When defining CRL distribution point and CRL issuer in a certificate profile, you can choose to set the values in either 
+the certificate profile, or in the CA configuration (edit CAs). By having the setting in the CA configuration it is possible to use the same 
+certificate profile for several CAs, otherwise you would have to create a new certificate profile for all CRL distribution points.
 </p>
 <p>
 There are three settings in CA configuration dictating the times when CRL generation is done:
