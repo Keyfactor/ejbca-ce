@@ -69,6 +69,7 @@
   static final String TEXTFIELD_HARDCATOKENPROPERTIES = "textfieldhardcatokenproperties";
   static final String TEXTFIELD_AUTHENTICATIONCODE    = "textfieldauthenticationcode";
   static final String TEXTFIELD_DEFAULTCRLDISTPOINT   = "textfielddefaultcrldistpoint";
+  static final String TEXTFIELD_DEFAULTCRLISSUER      = "textfielddefaultcrlissuer";
   static final String TEXTFIELD_DEFAULTOCSPLOCATOR    = "textfielddefaultocsplocator";
   static final String TEXTFIELD_KEYSPEC               = "textfieldkeyspec";
 
@@ -386,6 +387,7 @@
               }              
               
              String defaultcrldistpoint = request.getParameter(TEXTFIELD_DEFAULTCRLDISTPOINT);
+             String defaultcrlissuer = request.getParameter(TEXTFIELD_DEFAULTCRLISSUER);
              String defaultocsplocator  = request.getParameter(TEXTFIELD_DEFAULTOCSPLOCATOR);
               
              boolean finishuser = false;
@@ -455,6 +457,7 @@
                                                         usecrlnumber, 
                                                         crlnumbercritical, 
                                                         defaultcrldistpoint,
+                                                        defaultcrlissuer,
                                                         defaultocsplocator,
                                                         finishuser, extendedcaservices,
                                                         useutf8policytext,
@@ -498,6 +501,7 @@
                                                         usecrlnumber, 
                                                         crlnumbercritical, 
                                                         defaultcrldistpoint,
+                                                        defaultcrlissuer,
                                                         defaultocsplocator,
                                                         finishuser, extendedcaservices,
                                                         useutf8policytext,
@@ -586,6 +590,7 @@
               }              
               
              String defaultcrldistpoint = request.getParameter(TEXTFIELD_DEFAULTCRLDISTPOINT);
+             String defaultcrlissuer = request.getParameter(TEXTFIELD_DEFAULTCRLISSUER);
              String defaultocsplocator  = request.getParameter(TEXTFIELD_DEFAULTOCSPLOCATOR);
               
              boolean finishuser = false;
@@ -648,6 +653,7 @@
                                                       usecrlnumber, 
                                                       crlnumbercritical, 
                                                       defaultcrldistpoint,
+                                                      defaultcrlissuer,
                                                       defaultocsplocator,
                                                       finishuser,extendedcaservices,
                                                       useutf8policytext,
@@ -863,7 +869,7 @@
                                                         authoritykeyidentifiercritical,
                                                         usecrlnumber, 
                                                         crlnumbercritical, 
-                                                        "","",
+                                                        "","","",
                                                         finishuser, 
                                                         new ArrayList(),
                                                         useutf8policytext,

@@ -650,7 +650,20 @@ function checkallfields(){
               }else{ %>
          <input type="text" name="<%=TEXTFIELD_DEFAULTCRLDISTPOINT%>" size="80" maxlength="255"
             <% if(editca) out.write(" value='" + x509cainfo.getDefaultCRLDistPoint()+ "'");%>>
-           <% } %> <input type="button" name="<%=BUTTON_GENDEFAULTOCSPLOCATOR%>" onClick="gendefaultcrldistpoint()" value="<%= ejbcawebbean.getText("GENERATE") %>" >
+           <% } %> 
+           <input type="button" name="<%=BUTTON_GENDEFAULTCRLDISTPOINT%>" onClick="gendefaultcrldistpoint()" value="<%= ejbcawebbean.getText("GENERATE") %>" >
+      </td>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("DEFAULTCRLISSUER") %>
+      </td>
+      <td width="50%">
+           <% if(isexternal){
+                out.write("" + x509cainfo.getDefaultCRLIssuer());
+              }else{ %>
+         <input type="text" name="<%=TEXTFIELD_DEFAULTCRLISSUER%>" size="80" maxlength="255"
+            <% if(editca) out.write(" value='" + x509cainfo.getDefaultCRLIssuer()+ "'");%>>
+           <% } %> 
       </td>
     </tr>
         <tr  id="Row<%=row++%2%>"> 

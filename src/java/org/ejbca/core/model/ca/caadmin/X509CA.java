@@ -123,14 +123,14 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.37 2006-11-19 16:15:49 anatom Exp $
+ * @version $Id: X509CA.java,v 1.38 2006-11-20 14:43:38 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
     private static final Logger log = Logger.getLogger(X509CA.class);
 
     // Default Values
-    public static final float LATEST_VERSION = 8;
+    public static final float LATEST_VERSION = 9;
 
     private byte[]  keyId = new byte[] { 1, 2, 3, 4, 5 };
     
@@ -143,6 +143,7 @@ public class X509CA extends CA implements Serializable {
     protected static final String USECRLNUMBER                   = "usecrlnumber";
     protected static final String CRLNUMBERCRITICAL              = "crlnumbercritical";
     protected static final String DEFAULTCRLDISTPOINT            = "defaultcrldistpoint";
+    protected static final String DEFAULTCRLISSUER               = "defaultcrlissuer";
     protected static final String DEFAULTOCSPSERVICELOCATOR      = "defaultocspservicelocator";
     protected static final String USEUTF8POLICYTEXT              = "useutf8policytext";
 
@@ -158,6 +159,7 @@ public class X509CA extends CA implements Serializable {
       setUseCRLNumber(cainfo.getUseCRLNumber());
       setCRLNumberCritical(cainfo.getCRLNumberCritical());
       setDefaultCRLDistPoint(cainfo.getDefaultCRLDistPoint());
+      setDefaultCRLIssuer(cainfo.getDefaultCRLIssuer());
       setDefaultOCSPServiceLocator(cainfo.getDefaultOCSPServiceLocator());
       setFinishUser(cainfo.getFinishUser());
       setUseUTF8PolicyText(cainfo.getUseUTF8PolicyText());
@@ -179,7 +181,7 @@ public class X509CA extends CA implements Serializable {
         		  getValidity(), getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(),
         		  getCAToken(caId).getCATokenInfo(), getDescription(), getRevokationReason(), getRevokationDate(), getPolicyId(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(), getCRLPublishers(),
         		  getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(),
-        		  getUseCRLNumber(), getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultOCSPServiceLocator(), getFinishUser(), externalcaserviceinfos, 
+        		  getUseCRLNumber(), getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultCRLIssuer(), getDefaultOCSPServiceLocator(), getFinishUser(), externalcaserviceinfos, 
         		  getUseUTF8PolicyText(), getApprovalSettings(), getNumOfRequiredApprovals());
         super.setCAInfo(info);
     }
@@ -218,6 +220,14 @@ public class X509CA extends CA implements Serializable {
     		data.put(DEFAULTCRLDISTPOINT, defailtcrldistpoint);
     	}     
     }
+    public String  getDefaultCRLIssuer(){return (String) data.get(DEFAULTCRLISSUER);}
+    public void setDefaultCRLIssuer(String defailtcrlissuer) {
+    	if(defailtcrlissuer == null){
+    		data.put(DEFAULTCRLISSUER, "");
+    	}else{
+    		data.put(DEFAULTCRLISSUER, defailtcrlissuer);
+    	}     
+    }
     
     public String  getDefaultOCSPServiceLocator(){return (String) data.get(DEFAULTOCSPSERVICELOCATOR);}
     public void setDefaultOCSPServiceLocator(String defaultocsplocator) {
@@ -246,6 +256,7 @@ public class X509CA extends CA implements Serializable {
     	  setUseCRLNumber(info.getUseCRLNumber());
     	  setCRLNumberCritical(info.getCRLNumberCritical());
     	  setDefaultCRLDistPoint(info.getDefaultCRLDistPoint());
+    	  setDefaultCRLIssuer(info.getDefaultCRLIssuer());
     	  setDefaultOCSPServiceLocator(info.getDefaultOCSPServiceLocator());
     	  setUseUTF8PolicyText(info.getUseUTF8PolicyText());
       }
@@ -469,8 +480,10 @@ public class X509CA extends CA implements Serializable {
          // CRL Distribution point URI
          if (certProfile.getUseCRLDistributionPoint() == true) {
         	 String crldistpoint = certProfile.getCRLDistributionPointURI();
+             String crlissuer=certProfile.getCRLIssuer();
         	 if(certProfile.getUseDefaultCRLDistributionPoint()){
         		 crldistpoint = getDefaultCRLDistPoint();
+        		 crlissuer = getDefaultCRLIssuer();
         	 }
              // Multiple CDPs are spearated with the ';' sign        	         	 
             ArrayList dpns = new ArrayList();
@@ -488,7 +501,8 @@ public class X509CA extends CA implements Serializable {
                     dpns.add(dpn);
                 }            	
             }
-            String crlissuer=certProfile.getCRLIssuer();
+            // CRL issuer works much like Dist point URI. If separated by ; it is put in the same global distPoint as the URI, 
+            // if there is more of one of them, the one with more is put in an own global distPoint.
             ArrayList issuers = new ArrayList();
             if (StringUtils.isNotEmpty(crlissuer)) {
                 StringTokenizer tokenizer = new StringTokenizer(crlissuer, ";", false);
@@ -742,6 +756,9 @@ public class X509CA extends CA implements Serializable {
             	// Use the same value as we had before when we had alwaysuseutf8subjectdn
                 boolean useutf8 = ((Boolean)data.get("alwaysuseutf8subjectdn")).booleanValue();
             	setUseUTF8PolicyText(useutf8);
+            }
+            if (data.get(DEFAULTCRLISSUER) == null) {
+            	setDefaultCRLIssuer(null);
             }
             
             data.put(VERSION, new Float(LATEST_VERSION));
