@@ -123,7 +123,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.38 2006-11-20 14:43:38 anatom Exp $
+ * @version $Id: X509CA.java,v 1.39 2006-11-21 13:32:26 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -470,11 +470,25 @@ public class X509CA extends CA implements Serializable {
             if (getUseUTF8PolicyText()) {
                 displayencoding = DisplayText.CONTENT_TYPE_UTF8STRING;
             }
-            PolicyInformation pi = getPolicyInformation(certProfile.getCertificatePolicyId(), certProfile.getCpsUrl(), certProfile.getUserNoticeText(), displayencoding);
-            
-            DERSequence seq = new DERSequence(pi);
-            certgen.addExtension(X509Extensions.CertificatePolicies.getId(),
-                    certProfile.getCertificatePoliciesCritical(), seq);
+            String policyId = certProfile.getCertificatePolicyId();
+            String cpsurl = certProfile.getCpsUrl();
+            String usernotice = certProfile.getUserNoticeText();
+            ASN1EncodableVector policys = new ASN1EncodableVector();
+            if (StringUtils.isNotEmpty(policyId )) {
+                StringTokenizer tokenizer = new StringTokenizer(policyId, ";", false);
+                while (tokenizer.hasMoreTokens()) {
+                    String id = tokenizer.nextToken();
+                    PolicyInformation pi = getPolicyInformation(id, cpsurl, usernotice, displayencoding);
+                    // We only support a cpsurl and usernotice on the first policyid
+                    cpsurl = null;
+                    usernotice = null;
+                    policys.add(pi);
+                }
+                // Add the final extension
+                DERSequence seq = new DERSequence(policys);
+                certgen.addExtension(X509Extensions.CertificatePolicies.getId(),
+                        certProfile.getCertificatePoliciesCritical(), seq);
+            }
         }
 
          // CRL Distribution point URI
@@ -891,13 +905,13 @@ public class X509CA extends CA implements Serializable {
     private PolicyInformation getPolicyInformation(String policyOID, String cps, String unotice, int displayencoding) {
         
         DEREncodableVector qualifiers = new DEREncodableVector();
-        if (!StringUtils.isEmpty(unotice.trim())) {
+        if ((unotice != null) && !StringUtils.isEmpty(unotice.trim())) {
             // Normally we would just use 'DisplayText(unotice)' here. IE has problems with UTF8 though, so lets stick with BMSSTRING to satisfy Bills sick needs.
             UserNotice un = new UserNotice(null, new DisplayText(displayencoding, unotice));
             PolicyQualifierInfo pqiUNOTICE = new PolicyQualifierInfo(PolicyQualifierId.id_qt_unotice, un);
             qualifiers.add(pqiUNOTICE);
         }
-        if (!StringUtils.isEmpty(cps.trim())) {
+        if ((cps != null) && !StringUtils.isEmpty(cps.trim())) {
             PolicyQualifierInfo pqiCPS = new PolicyQualifierInfo(cps);
             qualifiers.add(pqiCPS);
         }
