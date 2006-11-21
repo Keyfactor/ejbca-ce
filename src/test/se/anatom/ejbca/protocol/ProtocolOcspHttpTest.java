@@ -566,6 +566,7 @@ public class ProtocolOcspHttpTest extends TestCase {
                     true, // CRL Number
                     false, // CRL Number Critical
                     null, // defaultcrldistpoint 
+                    null, // defaultcrlissuer 
                     null, // defaultocsplocator
                     true, // Finish User
                     extendedcaservices,

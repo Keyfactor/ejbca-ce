@@ -45,7 +45,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the ca data entity bean.
  *
- * @version $Id: TestCAs.java,v 1.16 2006-11-07 15:45:41 anatom Exp $
+ * @version $Id: TestCAs.java,v 1.17 2006-11-21 13:08:12 anatom Exp $
  */
 public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -152,6 +152,7 @@ public class TestCAs extends TestCase {
                     true, // CRL Number
                     false, // CRL Number Critical
                     null, // defaultcrldistpoint 
+                    null, // defaultcrlissuer 
                     null, // defaultocsplocator
                     true, // Finish User
                     extendedcaservices,
@@ -277,6 +278,7 @@ public class TestCAs extends TestCase {
                     true, // CRL Number
                     false, // CRL Number Critical
                     null, // defaultcrldistpoint 
+                    null, // defaultcrlissuer 
                     null, // defaultocsplocator
                     true, // Finish User
                     extendedcaservices,
@@ -366,6 +368,7 @@ public class TestCAs extends TestCase {
                     true, // CRL Number
                     false, // CRL Number Critical
                     null, // defaultcrldistpoint 
+                    null, // defaultcrlissuer 
                     null, // defaultocsplocator
                     true, // Finish User
                     extendedcaservices,

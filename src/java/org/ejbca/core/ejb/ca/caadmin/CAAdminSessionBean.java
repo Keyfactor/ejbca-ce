@@ -101,7 +101,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.28 2006-11-04 14:48:59 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.29 2006-11-21 13:08:13 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -1301,6 +1301,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
                                                true, // CRL Number
                                                false, // CRL Number Critical
                                                "", // Default CRL Dist Point
+                                               "", // Default CRL Issuer
                                                "", // Default OCSP Service Locator                                               
                                                true, // Finish User
 			                                   extendedcaservices,
