@@ -120,6 +120,9 @@ ocsp.usecasigningcert=true
 # (i.e. health check servlet that is running on the external OCSP responder).
 # for more detailed configuration edit the file src/publicweb/healthcheck/WEB-INF/web.xml
 #
+# The url for the external OCSP healthcheck is:
+# http://127.0.0.1:8080/ejbca/publicweb/ocsphealthcheck/extocsphealth
+#
 # Configure these options if you are configuring an external OCSP responder now.
 
 # Parameter specifying amount of free memory (Mb) before alarming
@@ -132,5 +135,6 @@ ocsp.usecasigningcert=true
 #ocsphealthcheck.dbquery=Select 1 From CertificateData
 
 # Parameter specifying IP addresses authorized to access the healthcheck
-# servlet. Use ';' for between multiple IPs. 
+# servlet. Use ';' between multiple IPs. Leave empty to allow all clients (not recommended).
+# Default: 127.0.0.1  
 #ocsphealthcheck.authorizedips=127.0.0.1
