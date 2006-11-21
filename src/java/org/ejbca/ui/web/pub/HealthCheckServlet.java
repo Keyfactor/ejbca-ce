@@ -42,7 +42,7 @@ import org.ejbca.util.CertTools;
  * to the url defined in web.xml.
  *
  * @author Philip Vendil
- * @version $Id: HealthCheckServlet.java,v 1.4 2006-11-21 12:36:31 anatom Exp $
+ * @version $Id: HealthCheckServlet.java,v 1.5 2006-11-21 13:21:39 anatom Exp $
  */
 public class HealthCheckServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(HealthCheckServlet.class);
@@ -118,33 +118,32 @@ public class HealthCheckServlet extends HttpServlet {
     }
     
     private void check(HttpServletRequest request, HttpServletResponse response){
-    	
-      boolean authorizedIP = false;
-      String remoteIP = request.getRemoteAddr();
-      if ( (authIPs != null) && (authIPs.length > 0) ) {
-    	  for(int i=0; i < authIPs.length ; i++){
-    		  if(remoteIP.equals(authIPs[i])){
-    			  authorizedIP = true;
-    		  }
-    	  }
-      }else{
-    	  authorizedIP = true;
-      }
-      
-      if(authorizedIP){    	
-        healthresponse.respond(healthcheck.checkHealth(request),response);
-      }else{
-    	  try {
-    		  if ((remoteIP == null) || (remoteIP.length() > 100) ) {
-    			  remoteIP="unknown";    			  
-    		  }
-    		  response.sendError(HttpServletResponse.SC_UNAUTHORIZED,"ERROR : Healthcheck request recieved from an non authorized IP: "+remoteIP);
-		} catch (IOException e) {
-			log.error("ERROR : Problems generating unauthorized http response.");
-		}
-    	  
-    	  log.error("ERROR : Healthcheck request recieved from an non authorized IP.");
-      }
+    	boolean authorizedIP = false;
+    	String remoteIP = request.getRemoteAddr();
+    	if ( (authIPs != null) && (authIPs.length > 0) ) {
+    		for(int i=0; i < authIPs.length ; i++) {
+    			if(remoteIP.equals(authIPs[i])) {
+    				authorizedIP = true;
+    			}
+    		}
+    	} else {
+    		log.info("All IPs are authorized");
+    		authorizedIP = true;
+    	}
+
+    	if (authorizedIP) {    	
+    		healthresponse.respond(healthcheck.checkHealth(request),response);
+    	} else {
+			if ((remoteIP == null) || (remoteIP.length() > 100) ) {
+				remoteIP="unknown";    			  
+			}
+    		try {
+    			response.sendError(HttpServletResponse.SC_UNAUTHORIZED,"ERROR : Healthcheck request recieved from an non authorized IP: "+remoteIP);
+    		} catch (IOException e) {
+    			log.error("ERROR : Problems generating unauthorized http response.");
+    		}
+    		log.error("ERROR : Healthcheck request recieved from an non authorized IP: "+remoteIP);
+    	}
     }
 
 }
