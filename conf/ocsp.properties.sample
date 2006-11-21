@@ -135,6 +135,6 @@ ocsp.usecasigningcert=true
 #ocsphealthcheck.dbquery=Select 1 From CertificateData
 
 # Parameter specifying IP addresses authorized to access the healthcheck
-# servlet. Use ';' between multiple IPs. Leave empty to allow all clients (not recommended).
+# servlet. Use ';' between multiple IPs.
 # Default: 127.0.0.1  
 #ocsphealthcheck.authorizedips=127.0.0.1
