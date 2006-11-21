@@ -83,6 +83,11 @@ import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
  *   name="hardTokenClassName"
  *   value="${ocsp.hardToken.className}"
  *
+ * @web.resource-ref
+ *  name="${datasource.jndi-name-prefix}${datasource.jndi-name}"
+ *  type="javax.sql.DataSource"
+ *  auth="Container"
+ *  
  * @web.ejb-local-ref
  *  name="ejb/CertificateStoreOnlyDataSessionLocal"
  *  type="Session"
@@ -91,7 +96,7 @@ import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silvén PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.28 2006-10-19 07:14:43 anatom Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.29 2006-11-21 12:51:19 anatom Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChecker {
 
