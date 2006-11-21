@@ -53,6 +53,11 @@ For Netscape/Mozilla to be able to verify client certificates
 the CA-certificates must have the extensions BasicConstraints and
 AuthorityKeyIdentifier. Client certificates also need AuthorityKeyIdentifier
 </p>
+<p>
+There is new key generation using javascript, generating a CRMF request:
+<br/>
+<a href="http://developer.mozilla.org/en/docs/JavaScript_crypto">JavaScript crypto</a>.
+</p>
 </subsection>
 
 <subsection name="Microsoft Internet Explorer Key Generation">
