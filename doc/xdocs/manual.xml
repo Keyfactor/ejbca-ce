@@ -2730,6 +2730,49 @@ A guide for configuring OpenLDAP on Solaris can be found at
 <a href="http://www.bolthole.com/solaris/LDAP.html">bolthole.com</a>
 </p>
 </subsubsection>
+<subsubsection name="Sample Ubuntu installation">
+<source>
+- apt-get install slapd ldap-utils
+- vi slapd.conf
+  change dc=nodomain -> dc=PrimeKey,dc=com (three places)
+  after 'suffix "dc=PrimeKey,dc=com"'
+  add
+  rootdn          "cn=admin,dc=PrimeKey,dc=com"
+  rootpw          foo123
+- /etc/init.d/slapd restart
+- 'ps -ef|grep slap' 
+  should show a slapd running
+- ldapadd -x -D "cn=admin,dc=PrimeKey,dc=com" -W -f primekey.ldif
+  where primekey.ldif is:
+
+dn: dc=PrimeKey,dc=com
+dc: PrimeKey
+objectclass: dcObject
+objectclass: organization
+o: PrimeKey Solutions AB
+description: Parent Object for PrimeKey LDAP Directory
+
+dn: ou=Standard,dc=PrimeKey,dc=com
+ou: Standard
+objectClass: top
+objectClass: organizationalUnit
+description: Parent Object for all Standard Certificates
+
+dn: ou=High,dc=PrimeKey,dc=com
+ou: High
+objectClass: top
+objectClass: organizationalUnit
+description: Parent Object for all High Certificates
+
+- ldapsearch -x -b 'dc=PrimeKey,dc=com' '(objectclass=*)'
+  To look at the results
+- slapcat -l backup.ldif
+  Make backup
+- slapadd -l backup.ldif
+- /etc/init.d/slapd restart
+  Restore backup
+</source>
+</subsubsection>
 
 <subsection name="Extra device schema">
 <p>
