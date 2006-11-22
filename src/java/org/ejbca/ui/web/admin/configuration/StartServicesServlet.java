@@ -33,7 +33,7 @@ import org.ejbca.core.ejb.services.IServiceTimerSessionLocalHome;
  *
  * 
  *
- * @version $Id: StartServicesServlet.java,v 1.5 2006-11-19 09:57:08 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.6 2006-11-22 11:24:00 anatom Exp $
  * 
  * @web.servlet name = "StartServices"
  *              display-name = "StartServicesServlet"
@@ -47,7 +47,7 @@ import org.ejbca.core.ejb.services.IServiceTimerSessionLocalHome;
  *   type="java.lang.String"
  *   value="${logging.log4j.config}"
  * 
- * @version $Id: StartServicesServlet.java,v 1.5 2006-11-19 09:57:08 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.6 2006-11-22 11:24:00 anatom Exp $
  */
 public class StartServicesServlet extends HttpServlet {
 
@@ -56,6 +56,8 @@ public class StartServicesServlet extends HttpServlet {
 	 * @see javax.servlet.GenericServlet#destroy()
 	 */
 	public void destroy() {
+        log.info(">destroy EJBCA shutdown");
+        
         log.debug(">destroy calling ServiceSession.unload");
         try {
 			getServiceHome().create().unload();
@@ -87,6 +89,8 @@ public class StartServicesServlet extends HttpServlet {
 
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
+        log.info(">init EJBCA startup");
+        
         log.debug(">init calling ServiceSession.load");
         try {
 			getServiceHome().create().load();
