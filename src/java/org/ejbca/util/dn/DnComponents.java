@@ -31,7 +31,7 @@ import org.bouncycastle.asn1.x509.X509Name;
 /** Class holding information and utilitites for handling different DN components, CN, O etc
  * 
  * @author tomas
- * @version $Id: DnComponents.java,v 1.1 2006-11-18 13:37:28 anatom Exp $
+ * @version $Id: DnComponents.java,v 1.2 2006-11-22 08:36:14 anatom Exp $
  */
 public class DnComponents {
     private static Logger log = Logger.getLogger(DnComponents.class);
@@ -155,11 +155,11 @@ public class DnComponents {
                 // Set the maps to the desired ordering
                 dNObjectsForward = (String[])keys.toArray(new String[0]);                
             } else {
-                log.info("Using default values for DN components");                
+                log.debug("Using default values for DN components");                
             }
         }
         catch (IOException e) {
-            log.info("Using default values for DN components");
+            log.debug("Using default values for DN components");
         } finally {
             try {
                 if (inf != null) inf.close();
