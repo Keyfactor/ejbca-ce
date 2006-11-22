@@ -39,7 +39,7 @@ import org.ejbca.util.Base64;
  * Servlet implementing server side of the Certificate Management Protocols (CMP) 
  *
  * @author tomas
- * @version $Id: CmpServlet.java,v 1.12 2006-10-22 09:05:44 anatom Exp $
+ * @version $Id: CmpServlet.java,v 1.13 2006-11-22 17:38:25 anatom Exp $
  * 
  * @web.servlet name = "CmpServlet"
  *              display-name = "CmpServlet"
@@ -284,7 +284,7 @@ public class CmpServlet extends HttpServlet {
 			if (log.isDebugEnabled()) {
 				log.debug("Received a CMP message by HTTP: " + new String(Base64.encode(message)));
 			}
-			
+			log.info("Received a CMP message from "+remoteAddr);
 			CmpMessageDispatcher dispatcher = new CmpMessageDispatcher(administrator, properties);
 			IResponseMessage resp = dispatcher.dispatch(message);
 			// If resp is null, it means we have nothing to send back

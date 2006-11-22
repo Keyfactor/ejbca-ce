@@ -50,6 +50,7 @@ import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
@@ -181,12 +182,16 @@ public class RSASignSessionBean extends BaseSessionBean {
      * The local interface of the log session bean
      */
     private ILogSessionLocal logsession;
+
+    /**
+     * The internal resources instance
+     */
+    private static InternalResources intres = InternalResources.getInstance(); 
+    
     /**
      * Source of good random data
      */
     SecureRandom randomSource = null;
-    
-
 
     /**
      * Default create for SessionBean without any creation Arguments.
@@ -1370,6 +1375,7 @@ public class RSASignSessionBean extends BaseSessionBean {
     private Certificate createCertificate(Admin admin, UserDataVO data, CA ca, PublicKey pk, int keyusage, Date notBefore, Date notAfter) throws IllegalKeyException {
         debug(">createCertificate(pk, ku, notAfter)");
         try {
+            getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogEntry.EVENT_INFO_REQUESTCERTIFICATE, intres.getLocalizedMessage("signsession.requestcert", data.getUsername(), Integer.valueOf(data.getCAId()), Integer.valueOf(data.getCertificateProfileId())));
             // If the user is of type USER_INVALID, it cannot have any other type (in the mask)
             if (data.getType() == SecConst.USER_INVALID) {
                 getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, "User type is invalid, cannot create certificate for this user.");

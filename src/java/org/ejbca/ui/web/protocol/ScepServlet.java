@@ -63,7 +63,7 @@ import org.ejbca.util.CertTools;
  * 7. output the result as a der encoded block on stdout 
  * -----
  *
- * @version $Id: ScepServlet.java,v 1.2 2006-02-09 08:45:22 anatom Exp $
+ * @version $Id: ScepServlet.java,v 1.3 2006-11-22 17:38:25 anatom Exp $
  */
 public class ScepServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(ScepServlet.class);
@@ -171,7 +171,7 @@ public class ScepServlet extends HttpServlet {
             Admin administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteAddr);
             log.debug("Got request '" + operation + "'");
             log.debug("Message: " + message);
-            
+			log.info("Received a SCEP message from "+remoteAddr);
             if (operation.equals("PKIOperation")) {
                 byte[] scepmsg = Base64.decode(message.getBytes());
                 ISignSessionRemote signsession = signhome.create();

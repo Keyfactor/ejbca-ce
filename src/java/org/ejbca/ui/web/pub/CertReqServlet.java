@@ -92,7 +92,7 @@ import org.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.9 2006-10-31 08:24:10 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.10 2006-11-22 17:38:18 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(CertReqServlet.class);
@@ -196,7 +196,7 @@ public class CertReqServlet extends HttpServlet {
             ISignSessionRemote signsession = signsessionhome.create();
             RequestHelper helper = new RequestHelper(administrator, debug);
 
-            log.debug("Got request for " + username + "/hiddenpwd");
+            log.info("Received certificate request for user " + username + " from "+request.getRemoteAddr());
             debug.print("<h3>username: " + username + "</h3>");
 
             // Check user
