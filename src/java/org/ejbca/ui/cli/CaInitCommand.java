@@ -21,6 +21,7 @@ import javax.naming.Context;
 import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionHome;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
@@ -35,7 +36,7 @@ import org.ejbca.util.StringTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.9 2006-11-21 13:08:14 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.10 2006-11-22 08:36:44 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
@@ -153,9 +154,10 @@ public class CaInitCommand extends BaseCaAdminCommand {
 			                                 1); // Number of Req approvals       
             
             getOutputStream().println("Creating CA...");
-            getCAAdminSessionRemote().createCA(administrator, cainfo);
+            ICAAdminSessionRemote remote = getCAAdminSessionRemote();
+            remote.createCA(administrator, cainfo);
             
-            CAInfo newInfo = getCAAdminSessionRemote().getCAInfo(administrator, caname);
+            CAInfo newInfo = remote.getCAInfo(administrator, caname);
             int caid = newInfo.getCAId();
             getOutputStream().println("CAId for created CA: " + caid);
               

@@ -26,17 +26,28 @@ rem echo Class name to run is %class_name%
 rem J2EE server classpath
 set J2EE_DIR=""
 set J2EE_CP=""
-if not "%JBOSS_HOME%" == ""  ( 
-    echo Using JBoss JNDI provider...
-    set J2EE_DIR=%JBOSS_HOME%\client
-    set J2EE_CP=%JBOSS_HOME%\client\jnp-client.jar;%JBOSS_HOME%\client\jboss-j2ee.jar;%JBOSS_HOME%\client\jbossall-client.jar;%JBOSS_HOME%\client\jboss-client.jar;%JBOSS_HOME%\client\jbosssx-client.jar;%JBOSS_HOME%\client\jboss-common-client.jar
+if "%APPSRV_HOME%" == "" (
+    if not "%JBOSS_HOME%" == ""  ( 
+        set APPSRV_HOME=%JBOSS_HOME%
+    )
+)
+if not "%APPSRV_HOME%" == ""  ( 
+    set J2EE_DIR=%APPSRV_HOME%\client
+    if not exist %APPSRV_HOME%\client\jnp-client.jar (
+        echo Using Glassfish JNDI provider...
+        set J2EE_DIR=%APPSRV_HOME%\lib
+        set J2EE_CP=%APPSRV_HOME%\lib\appserv-rt.jar;%APPSRV_HOME%\lib\javaee.jar
+    ) else (
+        echo Using JBoss JNDI provider...
+        set J2EE_CP=%APPSRV_HOME%\client\jnp-client.jar;%APPSRV_HOME%\client\jboss-j2ee.jar;%APPSRV_HOME%\client\jbossall-client.jar;%APPSRV_HOME%\client\jboss-client.jar;%APPSRV_HOME%\client\jbosssx-client.jar;%APPSRV_HOME%\client\jboss-common-client.jar
+    )
 ) else if not "%WEBLOGIC_HOME%" == ""  ( 
     echo Using Weblogic JNDI provider...
     set J2EE_DIR=%WEBLOGIC_HOME%\server
     set J2EE_CP=%WEBLOGIC_HOME%\server\lib\weblogic.jar
 ) else (
     echo Could not find a valid J2EE server for JNDI provider.
-    echo Specify a JBOSS_HOME or WEBLOGIC_HOME environment variable
+    echo Specify a APPSRV_HOME or WEBLOGIC_HOME environment variable
     goto end
 )
 rem echo J2EE directory is %J2EE_DIR%
@@ -87,6 +98,7 @@ set l=%9
 shift
 set m=%9
 rem echo %a% %b% %c% %d% %e% %f% %g% %h% %i% %j% %k% %l% %m%
+rem echo %CLASSPATH%
 "%JAVA_HOME%\bin\java" -cp %CLASSPATH% %class_name% %a% %b% %c% %d% %e% %f% %g% %h% %i% %j% %k% %l% %m%
 
 :end
