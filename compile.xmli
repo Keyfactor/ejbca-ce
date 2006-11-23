@@ -111,6 +111,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
         <delete dir="${ocsp-client.build}" />
         <delete dir="${apidoc}" />
         <delete dir="${tmp}"/>
+        <delete file="${mainbin}/jndi.properties" />
     </target>
 
     <!-- =================================================================== -->
