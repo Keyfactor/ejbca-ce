@@ -115,6 +115,9 @@ This is only starter instruction to help you get started as a developer, EJBCA d
 
 Currently EJBCA support the MySQL database on Glassfish.
 
+- Set the envorinment variable APPSRV_HOME to the directory where Glassfish is installed. For example APPSRV_HOME=/home/sun/glassfish.
+  The variable must be available when working with EJBCA.
+  
 - Create a database and a database user with privileges.
 
 - Create the database tables using one of the scripts in doc/howto/create-tables-xxx. Choose the correct file for your database.
