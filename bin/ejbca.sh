@@ -46,15 +46,25 @@ fi
 shift
 
 # J2EE server classpath
-if [ -n "$JBOSS_HOME" ]; then
-    echo "Using JBoss JNDI provider..."
-    J2EE_DIR="${JBOSS_HOME}"/client
+if [ ! -n "$APPSRV_HOME" ]; then
+    if [ -n "$JBOSS_HOME" ]; then
+        APPSRV_HOME=$JBOSS_HOME
+    fi
+fi
+if [ -n "$APPSRV_HOME" ]; then
+    J2EE_DIR="${APPSRV_HOME}"/client
+    if [ ! -d "$APPSRV_HOME"/client ]; then
+        echo Using Glassfish JNDI provider...
+        J2EE_DIR="${APPSRV_HOME}"/lib
+    else 
+        echo "Using JBoss JNDI provider..."
+    fi
 elif [ -n "$WEBLOGIC_HOME" ]; then
     echo "Using Weblogic JNDI provider..."
     J2EE_DIR="${WEBLOGIC_HOME}"/server/lib
 else
     echo "Could not find a valid J2EE server for JNDI provider.."
-    echo "Specify a JBOSS_HOME or WEBLOGIC_HOME environment variable"
+    echo "Specify a APPSRV_HOME or WEBLOGIC_HOME environment variable"
     exit 1
 fi
 
