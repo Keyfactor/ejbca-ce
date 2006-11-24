@@ -157,6 +157,8 @@ import org.ejbca.util.KeyTools;
  *   remote-class="org.ejbca.core.ejb.ca.sign.ISignSessionRemote"
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
+ *   
+ *   @version $Id: RSASignSessionBean.java,v 1.25 2006-11-24 11:48:15 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
