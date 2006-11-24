@@ -39,7 +39,7 @@ import org.ejbca.util.Base64;
  * Servlet implementing server side of the Certificate Management Protocols (CMP) 
  *
  * @author tomas
- * @version $Id: CmpServlet.java,v 1.13 2006-11-22 17:38:25 anatom Exp $
+ * @version $Id: CmpServlet.java,v 1.14 2006-11-24 14:13:18 anatom Exp $
  * 
  * @web.servlet name = "CmpServlet"
  *              display-name = "CmpServlet"
@@ -293,6 +293,7 @@ public class CmpServlet extends HttpServlet {
 				ServletUtils.addCacheHeaders(response);
 				// Send back CMP response
 				RequestHelper.sendBinaryBytes(resp.getResponseMessage(), response, "application/pkixcmp");				
+    			log.info("Sent a CMP response to "+remoteAddr);
 			} 
 		} catch (Exception e) {
 			log.error("Error in CmpServlet:", e);

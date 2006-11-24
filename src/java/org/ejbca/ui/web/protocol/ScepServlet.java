@@ -63,7 +63,7 @@ import org.ejbca.util.CertTools;
  * 7. output the result as a der encoded block on stdout 
  * -----
  *
- * @version $Id: ScepServlet.java,v 1.3 2006-11-22 17:38:25 anatom Exp $
+ * @version $Id: ScepServlet.java,v 1.4 2006-11-24 14:13:18 anatom Exp $
  */
 public class ScepServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(ScepServlet.class);
@@ -185,12 +185,12 @@ public class ScepServlet extends HttpServlet {
                 byte[] reply = helper.scepCertRequest(scepmsg, includeCACert);
                 if (reply == null) {
                     // This is probably a getCert message?
-                    response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED,
-                    "Can not handle request");
+                    response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "Can not handle request");
                     return;
                 }
                 // Send back Scep response, PKCS#7 which contains the end entity's certificate (or failure)
                 RequestHelper.sendBinaryBytes(reply, response, "application/x-pki-message");
+    			log.info("Sent a SCEP PKIOperation response to "+remoteAddr);
             } else if (operation.equals("GetCACert")) {
                 // The response has the content type tagged as application/x-x509-ca-cert. 
                 // The body of the response is a DER encoded binary X.509 certificate. 
@@ -210,10 +210,10 @@ public class ScepServlet extends HttpServlet {
                     X509Certificate cert = (X509Certificate) iter.next();
                     log.debug("Sent certificate for CA '" + message + "' to SCEP client.");
                     RequestHelper.sendNewX509CaCert(cert.getEncoded(), response);
+        			log.info("Sent a SCEP GetCACert response to "+remoteAddr);
                 } else {
                     log.error("SCEP cert request for unknown CA '" + message + "'");
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND,
-                    "No CA certificates found.");
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND, "No CA certificates found.");
                 }
             } else if (operation.equals("GetCACertChain")) {
                 // The response for GetCACertChain is a certificates-only PKCS#7 
@@ -229,10 +229,10 @@ public class ScepServlet extends HttpServlet {
                 if ((pkcs7 != null) && (pkcs7.length > 0)) {
                     log.debug("Sent PKCS7 for CA '" + message + "' to SCEP client.");
                     RequestHelper.sendBinaryBytes(pkcs7, response, "application/x-x509-ca-ra-cert-chain");
+        			log.info("Sent a SCEP GetCACertChain response to "+remoteAddr);
                 } else {
                     log.error("SCEP pkcs7 request for unknown CA '" + message + "'");
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND,
-                    "No CA certificates found.");
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND,"No CA certificates found.");
                 }
             } else if (operation.equals("GetCACaps")) {
                 // The response for GetCACaps is a <lf> separated list of capabilities
@@ -255,37 +255,30 @@ public class ScepServlet extends HttpServlet {
                 log.error("Invalid parameter '" + operation);
                 
                 // TODO: Send back proper Failure Response
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                        "Invalid parameter: " + operation);
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameter: " + operation);
             }
         } catch (CADoesntExistsException cae) {
             log.error("SCEP cert request for unknown CA, or can't find user.", cae);
-            
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_NOT_FOUND, cae.getMessage());
         } catch (java.lang.ArrayIndexOutOfBoundsException ae) {
             log.error("Empty or invalid request received.", ae);
-            
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, ae.getMessage());
         } catch (AuthorizationDeniedException ae) {
             log.error("Authorization denied.", ae);
-            
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ae.getMessage());
         } catch (AuthLoginException ae) {
             log.error("Authorization denied.", ae);
-            
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ae.getMessage());
         } catch (AuthStatusException ae) {
             log.error("Wrong client status.", ae);
-            
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ae.getMessage());
         } catch (Exception e) {
             log.error("Error in ScepServlet:", e);
-            
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         }

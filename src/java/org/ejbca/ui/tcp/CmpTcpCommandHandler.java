@@ -146,6 +146,7 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 		if (sendBack != null) {
 			log.debug("Sending "+sendBack.length+" bytes to client");
 			handler.sendClientBinary(sendBack);			
+			log.info("Sent a CMP response to: "+handler.getHostAddress());
 		} else {
 			close = true;
 		}
