@@ -66,7 +66,7 @@ import org.ejbca.util.cert.QCStatementExtension;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.20 2006-11-09 18:20:37 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.21 2006-11-24 10:09:00 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -518,7 +518,7 @@ public class TestSignSession extends TestCase {
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         assertEquals("Wrong DN med swedechars", CertTools.getSubjectDN(cert),
-                CertTools.stringToBCDNString("C=SE, O=ï¿½ï¿½ï¿½, CN=ï¿½ï¿½ï¿½"));
+                CertTools.stringToBCDNString("C=SE, O=ÅÄÖ, CN=åäö"));
         //FileOutputStream fos = new FileOutputStream("swedecert.crt");
         //fos.write(cert.getEncoded());
         //fos.close();
