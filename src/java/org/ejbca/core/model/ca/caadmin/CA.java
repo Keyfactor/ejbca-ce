@@ -60,7 +60,7 @@ import org.ejbca.util.CertTools;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.11 2006-11-09 17:55:37 anatom Exp $
+ * @version $Id: CA.java,v 1.12 2006-11-24 08:25:13 anatom Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -212,7 +212,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     public CAToken getCAToken(int caid) throws IllegalKeyStoreException {
         CAToken ret = HardCATokenManager.instance().getCAToken(caid);
         if (ret == null) {
-            switch(((Integer) ((HashMap)data.get(CATOKENDATA)).get(CAToken.CATOKENTYPE)).intValue()) {
+        	Integer tokentype = (Integer) ((HashMap)data.get(CATOKENDATA)).get(CAToken.CATOKENTYPE);
+            switch(tokentype.intValue()) {
             case CATokenInfo.CATOKENTYPE_P12:
                 ret = new SoftCAToken((HashMap)data.get(CATOKENDATA));
                 break;
@@ -223,7 +224,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
                 ret = new NullCAToken();
                 break;
             default:
-                throw new IllegalKeyStoreException("No CA Token type defined!");
+                throw new IllegalKeyStoreException("No CA Token type defined: "+tokentype.intValue());
             }
             HardCATokenManager.instance().addCAToken(caid, ret);
         }            
