@@ -498,6 +498,8 @@ For example:
 The same applies to CRLIssuer, for example: 
 <br/>CN=Foo,C=SE;CN=Bar,C=US
 </p><p>
+Note that you are responsible for the order and encoding of your CRLIssuer, if this is important check it!
+</p><p>
 A CRLDistributionPoint for a CA in EJBCA could look like:
 </p>
 <source>
