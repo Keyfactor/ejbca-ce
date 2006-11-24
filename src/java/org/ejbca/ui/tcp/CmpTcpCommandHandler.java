@@ -51,7 +51,7 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 	
 	public void gotConnected(ClientHandler handler)
 	throws SocketTimeoutException, IOException {
-		log.debug("Connection opened: "+handler.getHostAddress());
+		log.debug("CMP connection opened: "+handler.getHostAddress());
 		handler.setDataMode(DataMode.BINARY, DataType.IN);
 		handler.setDataMode(DataMode.BINARY, DataType.OUT);
 	}
@@ -72,6 +72,7 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 			handler.closeConnection(); // this is something fishy
 			return;
 		}
+		log.info("CMP message received from: "+handler.getHostAddress());
 		if (log.isDebugEnabled()) {
 			log.debug("Got data of length "+command.length+": "+new String(Base64.encode(command)));			
 		}
