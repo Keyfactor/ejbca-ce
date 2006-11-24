@@ -44,7 +44,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.5 2006-10-20 15:03:08 anatom Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.6 2006-11-24 14:27:34 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="RaAdminSB"
@@ -544,7 +544,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
             // Ignore so we'll return null
         }
         if (log.isDebugEnabled()) {
-            debug("<getEndEntityProfile(id): "+returnval == null ? "null":"not null");        	
+            debug("<getEndEntityProfile(id): "+(returnval == null ? "null":"not null"));        	
         }
         return returnval;
     } // getEndEntityProfile
