@@ -101,7 +101,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.30 2006-11-23 15:00:54 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.31 2006-11-24 11:44:51 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -1080,7 +1080,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     		throw new EJBException(e);
     	}
 
-    	getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_INFO_CAEDITED,"CA Renew Successfully.");
+    	getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_INFO_CARENEWED,"CA Renew Successfully.");
     	debug("<CAAdminSession, renewCA(), caid=" + caid);
     } // renewCA
 

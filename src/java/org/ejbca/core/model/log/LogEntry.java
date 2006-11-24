@@ -34,7 +34,7 @@ import org.ejbca.core.model.protect.TableVerifyResult;
  *  This is a  class containing information about one log event in the database. Used mainly during database queries by the web interface.
  *
  * @author  TomSelleck
- * @version $Id: LogEntry.java,v 1.8 2006-11-22 17:38:25 anatom Exp $
+ * @version $Id: LogEntry.java,v 1.9 2006-11-24 11:44:51 anatom Exp $
  */
 public class LogEntry implements Serializable, Protectable {
 
@@ -97,6 +97,7 @@ public class LogEntry implements Serializable, Protectable {
     public static final int EVENT_INFO_SERVICESEDITED = 41;
     public static final int EVENT_INFO_SERVICEEXECUTED = 42;
     public static final int EVENT_INFO_REQUESTCERTIFICATE = 43;
+    public static final int EVENT_INFO_CARENEWED = 44;
 
     // Error events. Important all id:s should map to the array EVENTNAMES_ERROR - EVENT_ERROR_BOUNDRARY.
     public static final int EVENT_ERROR_UNKNOWN = 1000;
@@ -168,7 +169,7 @@ public class LogEntry implements Serializable, Protectable {
                                                     "EVENT_INFO_HARDTOKENVIEWED", "EVENT_INFO_CACREATED", "EVENT_INFO_CAEDITED", "EVENT_INFO_CAREVOKED", "EVENT_INFO_HARDTOKENPROFILEDATA", 
                                                     "EVENT_INFO_PUBLISHERDATA", "EVENT_INFO_USERDATASOURCEDATA", "EVENT_INFO_USERDATAFETCHED", "EVENT_INFO_UNREVOKEDCERT",
                                                     "EVENT_INFO_APPROVALREQUESTED","EVENT_INFO_APPROVALAPPROVED","EVENT_INFO_APPROVALREJECTED","EVENT_INFO_SERVICESEDITED","EVENT_INFO_SERVICEEXECUTED",
-                                                    "EVENT_INFO_REQUESTCERTIFICATE"};
+                                                    "EVENT_INFO_REQUESTCERTIFICATE", "EVENT_INFO_CARENEWED"};
 
 
     public static final String[] EVENTNAMES_ERROR = {"EVENT_ERROR_UNKNOWN", "EVENT_ERROR_ADDEDENDENTITY", "EVENT_ERROR_CHANGEDENDENTITY", "EVENT_ERROR_REVOKEDENDENTITY", "EVENT_ERROR_REVOKEDCERT",

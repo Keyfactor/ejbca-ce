@@ -42,7 +42,7 @@ import org.ejbca.util.query.Query;
  * A java bean handling the interface between EJBCA log module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: LogInterfaceBean.java,v 1.1 2006-01-17 20:32:20 anatom Exp $
+ * @version $Id: LogInterfaceBean.java,v 1.2 2006-11-24 11:44:52 anatom Exp $
  */
 public class LogInterfaceBean implements java.io.Serializable {
 
@@ -268,7 +268,7 @@ public class LogInterfaceBean implements java.io.Serializable {
       for(int i = 0; i < localerroreventnames.length; i++){
         localerroreventnames[i] = ejbcawebbean.getText(LogEntry.EVENTNAMES_ERROR[i]);
         localerroreventnamesunsorted[i] = localerroreventnames[i];        
-        alllocaleventnames[LogEntry.EVENTNAMES_ERROR.length + i] = localerroreventnames[i];
+        alllocaleventnames[LogEntry.EVENTNAMES_INFO.length + i] = localerroreventnames[i];
         localeventnamestoid.put(localerroreventnames[i], new Integer(i + LogEntry.EVENT_ERROR_BOUNDRARY));
       }
       Arrays.sort(localerroreventnames);     

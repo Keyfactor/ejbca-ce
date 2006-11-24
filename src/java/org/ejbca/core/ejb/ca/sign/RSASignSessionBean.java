@@ -37,7 +37,6 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.ObjectNotFoundException;
 
-import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocalHome;
@@ -669,12 +668,12 @@ public class RSASignSessionBean extends BaseSessionBean {
             }
             
             if (req.getUsername() == null) {
-                log.error("No username in request, request DN: "+req.getRequestDN());
+                getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, intres.getLocalizedMessage("signsession.nouserinrequest", req.getRequestDN()));
                 throw new SignRequestException("No username in request, request DN: "+req.getRequestDN());
                 //ret.setFailInfo(FailInfo.BAD_REQUEST);
                 //ret.setStatus(ResponseStatus.FAILURE);
             } else if (req.getPassword() == null) {
-                log.error("No password in request");
+                getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, intres.getLocalizedMessage("signsession.nopasswordinrequest"));
                 throw new SignRequestException("No password in request!");
             } else {        
             	ResponseStatus status = ResponseStatus.SUCCESS;
@@ -686,14 +685,15 @@ public class RSASignSessionBean extends BaseSessionBean {
             		data = authUser(admin, req.getUsername(), req.getPassword());
                     PublicKey reqpk = req.getRequestPublicKey();
                     if (reqpk == null) {
+                        getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, intres.getLocalizedMessage("signsession.nokeyinrequest"));
                         throw new InvalidKeyException("Key is null!");
                     }
                     // We need to make sure we use the users registered CA here
                     if (data.getCAId() != ca.getCAId()) {
-                    	failText = "CA from request ("+ca.getCAId()+") does not match users CA ("+data.getCAId()+")!";
+                    	failText = intres.getLocalizedMessage("signsession.wrongauthority", Integer.valueOf(ca.getCAId()), Integer.valueOf(data.getCAId()));
                         status = ResponseStatus.FAILURE;
                         failInfo = FailInfo.WRONG_AUTHORITY;
-                        log.info(failText);
+                        getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, failText);
                     }
 
                     if (status.equals(ResponseStatus.SUCCESS)) {
@@ -704,9 +704,10 @@ public class RSASignSessionBean extends BaseSessionBean {
             	} catch (ObjectNotFoundException oe) {
             		// If we didn't find the entity return error message
             		log.error("User not found: ", oe);
-                	failText = "User not found: "+req.getUsername();
+                	failText = intres.getLocalizedMessage("signsession.nosuchuser", req.getUsername());
                     status = ResponseStatus.FAILURE;
                     failInfo = FailInfo.INCORRECT_DATA;
+                    getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, failText);
             	}
                 
                 //Create the response message with all nonces and checks etc
@@ -1415,21 +1416,23 @@ public class RSASignSessionBean extends BaseSessionBean {
                 log.debug("Using certificate profile with id " + certProfileId);
                 int keyLength = KeyTools.getKeyLength(pk);
                 if (keyLength == -1) {
-                    throw new
-                            IllegalKeyException("Unsupported public key (" + pk.getClass().getName() +"), only RSA and ECDSA keys are supported.");
+                	String text = intres.getLocalizedMessage("signsession.unsupportedkeytype", pk.getClass().getName()); 
+                    getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, text);
+                    throw new IllegalKeyException(text);
                 }
                 log.debug("Keylength = " + keyLength); 
                 if ((keyLength < (certProfile.getMinimumAvailableBitLength() - 1))
                         || (keyLength > (certProfile.getMaximumAvailableBitLength()))) {
-                    String msg = "Illegal key length " + keyLength;
-                    log.error(msg);
-                    throw new IllegalKeyException(msg);
+                	String text = intres.getLocalizedMessage("signsession.illegalkeylength", Integer.valueOf(keyLength)); 
+                    getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, text);
+                    log.error(text);
+                    throw new IllegalKeyException(text);
                 }
 
                 X509Certificate cert = (X509Certificate) ca.generateCertificate(data, pk, keyusage, notBefore, notAfter, certProfile);
 
-                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), data.getUsername(), cert, LogEntry.EVENT_INFO_CREATECERTIFICATE, "");
-                debug("Generated certificate with SerialNumber '" + Hex.encode(cert.getSerialNumber().toByteArray()) + "' for user '" + data.getUsername() + "'.");
+                getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), data.getUsername(), cert, LogEntry.EVENT_INFO_CREATECERTIFICATE, "Certificate issued");
+                debug("Generated certificate with SerialNumber '" + cert.getSerialNumber().toString(16) + "' for user '" + data.getUsername() + "'.");
                 debug(cert.toString());
 
                 // Store certificate in the database
