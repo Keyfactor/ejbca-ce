@@ -92,7 +92,7 @@ import org.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.10 2006-11-22 17:38:18 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.11 2006-11-24 12:09:56 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(CertReqServlet.class);
@@ -597,7 +597,7 @@ public class CertReqServlet extends HttpServlet {
         	 
            // used saved keys.
            IKeyRecoverySessionRemote keyrecoverysession = keyrecoveryhome.create();
-           keyData = (keyrecoverysession.keyRecovery(administrator, username, endEntityProfileId));
+           keyData = keyrecoverysession.keyRecovery(administrator, username, endEntityProfileId);
            rsaKeys = keyData.getKeyPair();
            
            if(reusecertificate){
