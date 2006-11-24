@@ -66,7 +66,7 @@ import org.ejbca.util.cert.QCStatementExtension;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.21 2006-11-24 10:09:00 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.22 2006-11-24 10:10:39 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -497,8 +497,8 @@ public class TestSignSession extends TestCase {
         // Make user that we know...
         boolean userExists = false;
         try {
-            usersession.addUser(admin,"swede","foo123","C=SE, O=ï¿½ï¿½ï¿½, CN=ï¿½ï¿½ï¿½",null,"swede@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsacaid);
-            log.debug("created user: swede, foo123, C=SE, O=ï¿½ï¿½ï¿½, CN=ï¿½ï¿½ï¿½");
+            usersession.addUser(admin,"swede","foo123","C=SE, O=ÅÄÖ, CN=åäö",null,"swede@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsacaid);
+            log.debug("created user: swede, foo123, C=SE, O=ÅÄÖ, CN=åäö");
         } catch (RemoteException re) {
             if (re.detail instanceof DuplicateKeyException) {
                 userExists = true;
