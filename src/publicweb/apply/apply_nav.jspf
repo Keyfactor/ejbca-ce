@@ -23,10 +23,12 @@ function selectKey() {
       document.writeln("Plugin installed<br>");
       var doTryNext = true;
       for ( i=0; doTryNext; i++ ) {
-         sToken = document.iID.EnumProperty('Key',i);
-         doTryNext = sToken!="";
-         if ( doTryNext )
-            document.writeln("<OPTION value=\""+sToken+"\">"+sToken+"</OPTION>");
+         sKey = document.iID.EnumProperty('Key',i);
+         doTryNext = sKey!="";
+         if ( doTryNext ) {
+            aKey = sKey.split(";");
+            document.writeln("<OPTION value=\""+aKey[2]+"\">"+aKey[2]+" "+sKey+"</OPTION>");
+         }
       }
    }
 }
@@ -34,11 +36,8 @@ function generate_pkcs10() {
    if ( plugin ) {
    document.iID.SetProperty('Base64', 'true');
    document.iID.SetProperty('URLEncode', 'false');
-   document.iID.SetProperty('Password', '');
-   document.iID.SetProperty('TokenLabel', "Prime EID IP1 (basic PIN)");
    document.iID.SetProperty('Subject', "2.5.4.5=197205250777");
-   document.iID.SetProperty('KeyId', '45');
-
+   document.iID.SetProperty('KeyId', document.netIdForm.tokenKey);
    rv = document.iID.Invoke('CreateRequest');
    if (rv == 0)
       document.netIdForm.iidPkcs10.value = document.iID.GetProperty("Request");
