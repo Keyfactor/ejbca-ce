@@ -1,0 +1,76 @@
+<HTML>
+<HEAD>
+  <META NAME="EJBCA" CONTENT="EJBCA">
+  <TITLE>Internet Explorer Certificate enrollment.</TITLE>
+  <object classid="$CLASSID" id="keystore"></object>
+</HEAD>
+<BODY bgcolor="#ffffff" link="black" vlink="black" alink="black" onload="downloadCert()">
+
+<SCRIPT language=VBScript>
+Function ControlExists(objectID)
+on error resume next
+ControlExists = IsObject(CreateObject(objectID))
+End Function
+</SCRIPT>
+
+<SCRIPT language=JavaScript>
+
+
+
+function myDeclare()
+{
+	if (navigator.appName.indexOf("Explorer") == -1)
+	{
+		explorer = false;
+		plugin = navigator.mimeTypes["application/x-iid"];
+	}
+	else
+	{
+		explorer = true;
+		plugin = ControlExists("IID.iIDCtl");
+	}
+	if (plugin)
+	{
+		if (explorer)
+			document.writeln("<OBJECT NAME='iID' CLASSID='CLSID:5BF56AD2-E297-416E-BC49-00B327C4426E' WIDTH=0 HEIGHT=0></OBJECT>");
+ 		else
+ 	 		document.writeln("<OBJECT NAME='iID' TYPE='application/x-iid' WIDTH=0 HEIGHT=0></OBJECT>");
+	}
+	else
+	{
+		document.writeln("Komponenten är inte installerad");
+	}
+}
+
+function downloadCert()
+{
+	document.iID.SetProperty('Certificate', 'TAG_cert');
+	rv = document.iID.Invoke('WriteCertificate');
+	if (rv != 0)
+		alert("Fel vid Certifikats import: "+rv);
+}
+
+
+
+myDeclare();
+
+</SCRIPT>
+
+<table align="center" cellspacing="4" cellpadding="4" border="0" width="60%">
+<tr>
+<td  valign="top">
+<font size="3" face="Arial"><strong>Lyckad nerladdning av certifikat p&aring; ditt kort</strong></font></td>
+</tr>
+<tr>
+<td  valign="top">
+<font size="2" face="Arial">
+</font></td>
+</tr>
+</table>
+<p>
+<a href="javascript:history.back()">Go back</a>
+<form name=form1>
+
+</form>
+</BODY>
+</HTML>

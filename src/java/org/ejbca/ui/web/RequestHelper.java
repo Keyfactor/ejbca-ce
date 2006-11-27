@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.regex.Pattern;
@@ -49,7 +51,7 @@ import org.ejbca.util.FileTools;
 /**
  * Helper class for hadnling certificate request from browsers or general PKCS#10
  * 
- * @version $Id: RequestHelper.java,v 1.2 2006-02-27 11:37:58 anatom Exp $
+ * @version $Id: RequestHelper.java,v 1.3 2006-11-27 12:55:58 primelars Exp $
  */
 public class RequestHelper {
     private static Logger log = Logger.getLogger(RequestHelper.class);
@@ -152,11 +154,12 @@ public class RequestHelper {
      * @param username username of requesting user
      * @param password password of requesting user
      * @param resulttype should indicate if a PKCS7 or just the certificate is wanted.
-     *
+     * @param doSplitLines
      * @return Base64 encoded byte[] 
+     * @throws Exception
      */
     public byte[] pkcs10CertRequest(ISignSessionRemote signsession, byte[] b64Encoded,
-        String username, String password, int resulttype) throws Exception {
+        String username, String password, int resulttype, boolean doSplitLines) throws Exception {
         byte[] result = null;	
         X509Certificate cert=null;
 		PKCS10RequestMessage req = genPKCS10RequestMessageFromPEM(b64Encoded);
@@ -171,10 +174,23 @@ public class RequestHelper {
         log.debug("Created certificate (PKCS7) for " + username);
         debug.print("<h4>Generated certificate:</h4>");
         debug.printInsertLineBreaks(cert.toString().getBytes());
-        return Base64.encode(result);
+        return Base64.encode(result, doSplitLines);
     } //pkcs10CertReq
     
-    
+    /**
+     * 
+     * @param signsession
+     * @param b64Encoded
+     * @param username
+     * @param password
+     * @param resulttype
+     * @return
+     * @throws Exception
+     */
+    public byte[] pkcs10CertRequest(ISignSessionRemote signsession, byte[] b64Encoded,
+                                    String username, String password, int resulttype) throws Exception {
+        return pkcs10CertRequest(signsession, b64Encoded, username, password, resulttype, true);
+    }    
 
     /**
      * Formats certificate in form to be received by IE
@@ -212,6 +228,41 @@ public class RequestHelper {
         out.println();
     } // ieCertFormat
 
+    /**
+     * @param certificate b64 encoded cert to be installed in netid
+     * @param response output stream to send to
+     * @param sc serveltcontext
+     * @param responseTemplate path to template page for response
+     * @throws Exception
+     */
+    public static void sendNewCertToIidClient(byte[] certificate, OutputStream out, ServletContext sc,
+                                                String responseTemplate) throws Exception {
+        if (certificate.length <= 0) {
+            log.error("0 length certificate can not be sent to  client!");
+            return;
+        }
+        StringWriter sw = new StringWriter();
+        {
+            BufferedReader br = new BufferedReader(new InputStreamReader(sc.getResourceAsStream(responseTemplate)));
+            PrintWriter pw = new PrintWriter(sw);
+            while (true) {
+                String line = br.readLine();
+                if (line == null)
+                    break;
+                line = line.replaceAll("TAG_cert",new String(certificate));
+                pw.println(line);
+            }
+            pw.close();
+            sw.flush();
+        }
+        {
+            PrintWriter pw = new PrintWriter(out);
+            log.debug(sw);
+            pw.print(sw);
+            pw.close();
+            out.flush();
+        }
+    } // sendCertificates
     /**
      * Reads template and inserts cert to send back to IE for installation of cert
      *

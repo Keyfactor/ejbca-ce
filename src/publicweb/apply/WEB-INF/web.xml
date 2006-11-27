@@ -11,6 +11,10 @@
             <param-name>responseTemplate</param-name>
             <param-value>certInstT.html</param-value>
         </init-param>
+        <init-param>
+            <param-name>responseIidTemplate</param-name>
+            <param-value>certInstIidT.html</param-value>
+        </init-param>
     </servlet>
     <servlet>
         <servlet-name>ScepServlet</servlet-name>
