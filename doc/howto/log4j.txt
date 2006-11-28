@@ -41,6 +41,9 @@ To get debug level logging instead of INFO.
     </category>
 -----
 
+The part 'additivity=false' configures the logging so that the EJBCA log only goes to ejbca.log and not to server.log. 
+If you remove this part the EJBCA log will go both to ejbca.log and server.log.
+
 Log4j logging in Glassfish
 ==========================
 
