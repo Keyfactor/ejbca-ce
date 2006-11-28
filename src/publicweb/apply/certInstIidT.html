@@ -1,19 +1,20 @@
 <HTML>
 <HEAD>
   <META NAME="EJBCA" CONTENT="EJBCA">
-  <TITLE>Internet Explorer Certificate enrollment.</TITLE>
+  <meta http-equiv="Content-Script-Type" content="text/javascript">
+  <TITLE>Mozilla Certificate enrollment.</TITLE>
   <object classid="$CLASSID" id="keystore"></object>
 </HEAD>
 <BODY bgcolor="#ffffff" link="black" vlink="black" alink="black" onload="downloadCert()">
 
-<SCRIPT language=VBScript>
+<SCRIPT type="text/VBScript">
 Function ControlExists(objectID)
 on error resume next
 ControlExists = IsObject(CreateObject(objectID))
 End Function
 </SCRIPT>
 
-<SCRIPT language=JavaScript>
+<SCRIPT type="text/javascript">
 
 
 
@@ -38,7 +39,7 @@ function myDeclare()
 	}
 	else
 	{
-		document.writeln("Komponenten är inte installerad");
+		document.writeln("NetID is not installed.");
 	}
 }
 
@@ -47,30 +48,16 @@ function downloadCert()
 	document.iID.SetProperty('Certificate', 'TAG_cert');
 	rv = document.iID.Invoke('WriteCertificate');
 	if (rv != 0)
-		alert("Fel vid Certifikats import: "+rv);
+		alert("Error when writing certificate to card: "+rv);
 }
-
-
 
 myDeclare();
 
 </SCRIPT>
 
-<table align="center" cellspacing="4" cellpadding="4" border="0" width="60%">
-<tr>
-<td  valign="top">
-<font size="3" face="Arial"><strong>Lyckad nerladdning av certifikat p&aring; ditt kort</strong></font></td>
-</tr>
-<tr>
-<td  valign="top">
-<font size="2" face="Arial">
-</font></td>
-</tr>
-</table>
-<p>
-<a href="javascript:history.back()">Go back</a>
-<form name=form1>
-
-</form>
+<table align="center" cellspacing="4" cellpadding="4" border="0" width="60%"><tr>
+  <td valign="top"><font size="3" face="Arial"><strong>A new certificate has been installed on your card.</strong></font></td>
+</tr></table>
+<p><a href="javascript:history.back()">Go back</a></p>
 </BODY>
 </HTML>

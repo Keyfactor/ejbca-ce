@@ -27,24 +27,26 @@ function selectKey() {
          doTryNext = sKey!="";
          if ( doTryNext ) {
             aKey = sKey.split(";");
-            document.writeln("<OPTION value=\""+aKey[2]+"\">"+aKey[2]+" "+sKey+"</OPTION>");
+	    if ( parseInt(aKey[2],16)<0x47 )
+               document.writeln("<OPTION value='"+sKey+"'>Slot: "+aKey[0]+". Key label: "+aKey[3]+". Key type: "+aKey[4]+". Key size: "+aKey[6]+".</OPTION>");
          }
       }
    }
 }
 function generate_pkcs10() {
    if ( plugin ) {
-   document.iID.SetProperty('Base64', 'true');
-   document.iID.SetProperty('URLEncode', 'false');
-   document.iID.SetProperty('Subject', "2.5.4.5=197205250777");
-   document.iID.SetProperty('KeyId', document.netIdForm.tokenKey);
-   rv = document.iID.Invoke('CreateRequest');
-   if (rv == 0)
-      document.netIdForm.iidPkcs10.value = document.iID.GetProperty("Request");
-   else
-      document.netIdForm.iidPkcs10.value = rv;
-
-   document.netIdForm.submit();
+      document.iID.SetProperty('Base64', 'true');
+      document.iID.SetProperty('URLEncode', 'false');
+      document.iID.SetProperty('Subject', "2.5.4.5=197205250777");
+      aKey = document.netIdForm.tokenKey.value.split(";");
+      document.iID.SetProperty('KeyId', aKey[2]); 
+      document.iID.SetProperty('ActiveSlot', aKey[0]); 
+      rv = document.iID.Invoke('CreateRequest');
+      if (rv == 0) {
+         document.netIdForm.iidPkcs10.value = document.iID.GetProperty("Request");
+         document.netIdForm.submit();
+      } else
+         alert("Error when fetching certificate request from NetID: "+rv+". Slot: "+aKey[0]+". KeyId: "+aKey[2]+".");
    }
 }
 myDeclare();
@@ -83,12 +85,12 @@ key on your smart card.<br>
 <input name="iidPkcs10" type="hidden">
 <script type="text/javascript">
 if ( plugin ) {
-   document.writeln("<select name=\"tokenKey\">");
+   document.writeln("Please select key:<select name=\"tokenKey\">");
    selectKey();
    document.writeln("</select>");
-   document.writeln("Please select key:<input type=\"button\" value=\"Fetch Certificate\" style=\"width: 3.25cm; height: 0.66cm\" onclick=\"generate_pkcs10()\"></p>");
+   document.writeln("<input type=\"button\" value=\"Fetch Certificate\" style=\"width: 3.25cm; height: 0.66cm\" onclick=\"generate_pkcs10()\"></p>");
 } else
-   document.writeln("NetID not installed.");
+   document.writeln("NetID not installed.</p>");
 </script>
 </form>
 <form action="certreq" enctype="x-www-form-encoded" method="post">
@@ -97,7 +99,7 @@ you may try another PKCS#11 module.<br>
 Please choose keylength, then click OK to fetch your
 certificate.<br>
 <input name="user" type="hidden" value="<%=username%>">
-<input name="password" type="hidden" value="<%=password%>"><br>
+<input name="password" type="hidden" value="<%=password%>">
 Key length<keygen type="hidden" name="keygen" value="challenge"/>
 <input type="submit" value="OK"></p>
 </form>
