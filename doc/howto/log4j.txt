@@ -1,0 +1,48 @@
+
+Log4j logging in JBoss
+======================
+
+On JBoss Log4j is configured in the file JBOSS_HOME/server/Default/conf/log4j.xml.
+
+
+If you want to log all EJBCA messages to a separate log file, you can add the following to the log4j.xml file.
+The order of entries is important in log4j.xml so you must add this AFTER the CONSOLE appender.
+The important order issue is that 'catagory' entries must appear after all 'appender' entries.
+
+Otherwise the syntax of options should be pretty self explanatory, for example you can change:
+        <priority value="INFO"/>
+to 
+        <priority value="DEBUG"/>
+
+To get debug level logging instead of INFO.
+
+----- 
+   <appender name="EJBCA_FILE" class="org.jboss.logging.appender.DailyRollingFileAppender">
+      <errorHandler class="org.jboss.logging.util.OnlyOnceErrorHandler"/>
+      <param name="File" value="${jboss.server.log.dir}/ejbca.log"/>
+      <param name="Append" value="false"/>
+
+      <!-- Rollover at midnight each day -->
+      <param name="DatePattern" value="'.'yyyy-MM-dd"/>
+
+      <!-- Rollover at the top of each hour
+      <param name="DatePattern" value="'.'yyyy-MM-dd-HH"/>
+      -->
+
+      <layout class="org.apache.log4j.PatternLayout">
+         <!-- The default pattern: Date Priority [Category] Message\n -->
+         <param name="ConversionPattern" value="%d %-5p [%c] %m%n"/>
+      </layout>
+   </appender>
+
+    <category name="org.ejbca" additivity="false">
+        <priority value="INFO"/>
+        <appender-ref ref="EJBCA_FILE"/>
+    </category>
+-----
+
+Log4j logging in Glassfish
+==========================
+
+For glassfish you must provide you own log4j configuration. You can enter the path to you configuration file in
+the entry 'logging.log4j.config' in conf/ejbca.properties.
