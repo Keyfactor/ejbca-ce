@@ -48,7 +48,7 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.15 2006-10-03 10:06:11 asyd Exp $
+ * @version $Id: LdapPublisher.java,v 1.16 2006-11-28 08:43:16 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
@@ -899,6 +899,15 @@ public class LdapPublisher extends BasePublisher {
         		if (title != null) {
         			attributeSet.add(new LDAPAttribute("title", title));
         		}
+        		// If we have selected to use the SN (serialNUmber DN field, we will also add it as an attribute
+        		// This is not present in the normal objectClass (inetOrgPerson)
+            	Collection usefields = getUseFieldInLdapDN();
+            	if (usefields.contains(Integer.valueOf(DNFieldExtractor.SN))) {
+            		String serno = CertTools.getPartFromDN(dn, "SN");
+            		if (serno != null) {
+            			attributeSet.add(new LDAPAttribute("serialNumber", serno));
+            		}            		
+            	}
         	}
         }
     	log.debug("<getAttributeSet()");
@@ -1003,7 +1012,17 @@ public class LdapPublisher extends BasePublisher {
         		if (title != null) {
                     LDAPAttribute attr = new LDAPAttribute("title", title);
                     modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
-        		}   
+        		}
+        		// If we have selected to use the SN (serialNUmber DN field, we will also add it as an attribute
+        		// This is not present in the normal objectClass (inetOrgPerson)
+            	Collection usefields = getUseFieldInLdapDN();
+            	if (usefields.contains(Integer.valueOf(DNFieldExtractor.SN))) {
+            		String serno = CertTools.getPartFromDN(dn, "SN");
+            		if (serno != null) {
+                        LDAPAttribute attr = new LDAPAttribute("serialNumber", serno);
+                        modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
+            		}            		
+            	}
         	}
         }
     	log.debug("<getModificationSet()");
