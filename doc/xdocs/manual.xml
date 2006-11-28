@@ -1769,6 +1769,12 @@ EJBCA 3.3 and later has an implementation for the SafeNet Luna HSM.
 </p><p>
 PrimeKey Solutions sell a module called PrimeCardHSM that implements a flexible HSM using low cost smart cards. 
 </p>
+<subsection name="HSMs and ECDSA">
+<p>
+Support for ECDSA in HSMs are dependant on the support for ECDSA in the HSM manufacturers JCE provider.
+You have to check if that support is available.
+</p>
+</subsection>
 <subsection name="nCipher NFast">
 <p>
 Follow these steps to create a CA that is using a nFast card:
