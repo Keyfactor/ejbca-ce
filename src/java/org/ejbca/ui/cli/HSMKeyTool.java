@@ -15,11 +15,13 @@ package org.ejbca.ui.cli;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
@@ -32,6 +34,7 @@ import java.security.Security;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
@@ -45,7 +48,7 @@ import org.bouncycastle.x509.X509V3CertificateGenerator;
 
 class Test {
     final private String sigAlgName = "SHA1withRSA";
-    final private byte signInput[] = "Lillan gick på vägen ut.".getBytes();
+    final private byte signInput[] = "Lillan gick pÃ¥ vÃ¤gen ut.".getBytes();
     final private String alias;
     final private KeyPair keyPair;
     final private String providerName;
@@ -79,13 +82,16 @@ class Test {
 
 /**
  * @author lars
- * @version $Id: HSMKeyTool.java,v 1.7 2006-10-31 08:24:11 anatom Exp $
+ * @version $Id: HSMKeyTool.java,v 1.8 2006-12-02 22:02:18 primelars Exp $
  *
  */
 public class HSMKeyTool {
     private static String GENERATE_SWITCH = "generate";
     private static String DELETE_SWITCH = "delete";
     private static String TEST_SWITCH = "test";
+    private static String CREATE_KEYSTORE = "createkeystore";
+    private static String CREATE_KEYSTORE_MODULE = "createkeystoremodule";
+    private static String MOVE = "move";
     /**
      * @param args
      */
@@ -93,25 +99,94 @@ public class HSMKeyTool {
         try {
             if ( args.length > 1 && args[1].toLowerCase().trim().equals(GENERATE_SWITCH)) {
                 if ( args.length < 5 )
-                    System.err.println(args[0] + " " + args[1] + " <key size> [<key entry name>] [<keystore ID>] [<key password>]");
+                    System.err.println(args[0] + " " + args[1] + " <key size> [<key entry name>] [<keystore ID>]");
                 else
-                    generate(args[2], args[3], Integer.parseInt(args[4].trim()), args.length>5 ? args[5] :"myKey", args.length>6 ? args[6] : null, args.length>7 ? args[7] : null);
+                    generate(args[2], args[3], Integer.parseInt(args[4].trim()), args.length>5 ? args[5] :"myKey", args.length>6 ? args[6] : null);
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(DELETE_SWITCH)) {
                 if ( args.length < 5 )
-                    System.err.println(args[0] + " " + args[1] + " [<keystore ID>] [<key entry name>]");
+                    System.err.println(args[0] + " " + args[1] + " <keystore ID> [<key entry name>]");
                 else
-                    delete(args[2], args[3], args[4], args.length>5 ? args[5] : null);
+                    new KeyStoreContainer(args[3], getProviderName(args[2]), args[4]).delete(args.length>5 ? args[5] : null);
             } else if( args.length > 1 && args[1].toLowerCase().trim().equals(TEST_SWITCH)) {
                 if ( args.length < 5 )
                     System.err.println(args[0] + " " + args[1] + " <keystore ID> [<# of tests>]");
                 else
                     test(args[2], args[3], args[4], args.length>5 ? Integer.parseInt(args[5].trim()) : 1);
+            } else if( args.length > 1 && args[1].toLowerCase().trim().equals(CREATE_KEYSTORE)) {
+                new KeyStoreContainer(args[3], getProviderName(args[2]), null).storeKeyStore();
+            } else if( args.length > 1 && args[1].toLowerCase().trim().equals(CREATE_KEYSTORE_MODULE)) {
+                System.setProperty("protect", "module");
+                new KeyStoreContainer(args[3], getProviderName(args[2]), null).storeKeyStore();
+            } else if( args.length > 1 && args[1].toLowerCase().trim().equals(MOVE)) {
+                move(args[2], args[3], args[4], args[5]);
             } else
                 System.err.println("Use \"" + args[0]+" "+GENERATE_SWITCH+"\" or \"" +
                                    args[0]+" "+DELETE_SWITCH+"\" or \"" +
                                    args[0]+" "+TEST_SWITCH+"\".");
         } catch (Throwable e) {
             e.printStackTrace(System.err);
+        }
+    }
+    private static class KeyStoreContainer {
+        private static char[] getPassWord(boolean isKeystoreException) throws IOException {
+            System.err.println((isKeystoreException ? "Setting key entry in keystore" : "Loading keystore")+". Give password of inserted card in slot:");
+            return new BufferedReader(new InputStreamReader(System.in)).readLine().toCharArray();
+        }
+        final KeyStore keyStore;
+        char passPhraseLoadSave[] = null;
+        char passPhraseGetSetEntry[] = null;
+        private KeyStoreContainer(KeyStore ks) {
+            keyStore = ks;
+        }
+        KeyStoreContainer(final String keyStoreType,
+                          final String providerName,
+                          final String storeID) throws NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, IOException {
+             this( KeyStore.getInstance(keyStoreType, providerName) );
+             try {
+                 load(keyStore, storeID, passPhraseLoadSave);
+             } catch( IOException e ) {
+                 passPhraseLoadSave = getPassWord(false);
+                 load(keyStore, storeID, passPhraseLoadSave);
+             }
+        }
+        void storeKeyStore() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+            System.err.println("Next line will contain the identity identifying the keystore:");
+            keyStore.store(System.out, passPhraseLoadSave);
+            System.out.flush();
+            System.err.println();
+        }
+        KeyStore getKeyStore() {
+            return keyStore;
+        }
+        void setKeyEntry(String alias, Key key, Certificate chain[]) throws IOException, KeyStoreException {
+            try {
+                keyStore.setKeyEntry(alias, key, passPhraseGetSetEntry, chain);
+            } catch (KeyStoreException e) {
+                passPhraseGetSetEntry = getPassWord(true);
+                keyStore.setKeyEntry(alias, key, passPhraseGetSetEntry, chain);
+            }
+        }
+        void deleteAlias(String alias) throws KeyStoreException {
+            keyStore.deleteEntry(alias);
+            System.err.println("Deleting certificate with alias "+alias+'.');
+        }
+        void delete(final String alias) throws Exception {
+            if ( alias!=null )
+                deleteAlias(alias);
+            else {
+                Enumeration e = keyStore.aliases();
+                while( e.hasMoreElements() )
+                    deleteAlias( (String)e.nextElement() );
+            }
+            storeKeyStore();
+        }
+        Key getKey(String alias) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException, IOException {
+            try {
+                return keyStore.getKey(alias, passPhraseGetSetEntry);
+            } catch (UnrecoverableKeyException e1) {
+                passPhraseGetSetEntry = getPassWord(true);
+                return keyStore.getKey(alias, passPhraseGetSetEntry );
+            }
         }
     }
     private static String getProviderName( String className ) throws IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException {
@@ -150,8 +225,7 @@ public class HSMKeyTool {
                                  final String keyStoreType,
                                  final int keySize,
                                  final String keyEntryName,
-                                 final String storeID,
-                                 final String passPrase) throws Exception {
+                                 final String storeID) throws Exception {
         // Generate the RSA Keypair
         final String keyAlgName = "RSA";
         final String sigAlgName = "SHA1withRSA";
@@ -161,59 +235,46 @@ public class HSMKeyTool {
         chain[0] = getSelfCertificate("CN=some guy, L=around, C=US",
                                       (long)30*24*60*60*365, sigAlgName, keyPair,
                                       providerName);
-        final KeyStore ks = KeyStore.getInstance(keyStoreType, providerName);
         System.err.println("Creating certificate with entry "+keyEntryName+" in KeyStore of type "+keyStoreType+" with provider "+providerName+'.');
+        KeyStoreContainer ks = new KeyStoreContainer(keyStoreType, providerName, storeID);
+        ks.setKeyEntry(keyEntryName, keyPair.getPrivate(), chain);
+        ks.storeKeyStore();
+    }
+    private static void move(final String providerClassName,
+                             final String keyStoreType,
+                             final String fromID,
+                             final String toID) throws IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException, NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, IOException, UnrecoverableKeyException {
+        String providerName=getProviderName(providerClassName);
+        KeyStoreContainer fromKS = new KeyStoreContainer(keyStoreType, providerName, fromID);
+        KeyStoreContainer toKS = new KeyStoreContainer(keyStoreType, providerName, toID);
+        Enumeration e = fromKS.getKeyStore().aliases();
+        while( e.hasMoreElements() ) {
+            String alias = (String)e.nextElement();
+            if (fromKS.getKeyStore().isKeyEntry(alias)) {
+                Key key=fromKS.getKeyStore().getKey(alias, null);
+                Certificate chain[] = fromKS.getKeyStore().getCertificateChain(alias);
+                toKS.setKeyEntry(alias, key, chain);
+            }
+            fromKS.deleteAlias( alias );
+        }
+        fromKS.storeKeyStore();
+        toKS.storeKeyStore();
+    }
+    private static void load(KeyStore ks, String storeID, char passPhrase[]) throws NoSuchAlgorithmException, CertificateException, IOException {
         if ( storeID!=null ) {
             InputStream is = new ByteArrayInputStream(storeID.getBytes());
-            ks.load(is, null);
+            ks.load(is, passPhrase);
         } else {
-            ks.load(null, null);
+            ks.load(null, passPhrase);
         }
-        try {
-            ks.setKeyEntry(keyEntryName, keyPair.getPrivate(), passPrase!=null ? passPrase.toCharArray() : null, chain);
-        } catch( KeyStoreException kse ) {
-            System.err.println("Give password of inserted card in slot:");
-            ks.setKeyEntry(keyEntryName, keyPair.getPrivate(),
-                           new BufferedReader(new InputStreamReader(System.in)).readLine().toCharArray(),
-                           chain);
-        }
-        System.err.println("Next line will contain the identity identifying the keystore:");
-        ks.store(System.out, null);
-        System.out.println();
     }
-    private static void deleteAlias(KeyStore ks, String alias, String keyStoreName, String providerName) throws KeyStoreException {
-        ks.deleteEntry(alias);
-        System.err.println("Deleting certificate with alias "+alias+" in KeyStore of type "+keyStoreName+" with provider "+providerName+'.');
-    }
-    private static void delete(final String providerClassName,
-                               final String keyStoreName,
-                               final String storeID,
-                               final String alias) throws Exception {
-        final String providerName = getProviderName(providerClassName);
-        final KeyStore ks = KeyStore.getInstance(keyStoreName, providerName);
-        {
-            InputStream is = new ByteArrayInputStream(storeID.getBytes());
-            ks.load(is, null);
-        }
-        if ( alias!=null )
-            deleteAlias( ks, alias, keyStoreName, providerName );
-        else {
-            Enumeration e = ks.aliases();
-            while( e.hasMoreElements() )
-                deleteAlias( ks, (String)e.nextElement(), keyStoreName, providerName );
-        }
-        ks.store(System.out, null);
-        System.out.println();
-    }
-    private static KeyStore getKeyStore(final String providerName,
-                                        final String keyStoreType,
-                                        final String storeID) throws Exception {
-        KeyStore keyStore = null;
+    private static KeyStoreContainer getKeyStoreTest(final String providerName,
+                                            final String keyStoreType,
+                                            final String storeID) throws Exception {
+        KeyStoreContainer keyStore = null;
         while( keyStore==null ) {
-            final InputStream is = new ByteArrayInputStream(storeID.getBytes());
-            keyStore = KeyStore.getInstance(keyStoreType, providerName);
             try {
-                keyStore.load(is, null);
+                keyStore = new KeyStoreContainer(keyStoreType, providerName, storeID);
             } catch( Throwable t ) {
                 keyStore = null;
                 t.printStackTrace(System.err);
@@ -223,22 +284,17 @@ public class HSMKeyTool {
         }
         return keyStore;
     }
-    private static Test[] getTests(final KeyStore keyStore,
+    private static Test[] getTests(final KeyStoreContainer keyStore,
                                    final String providerName) throws Exception {
-        Enumeration e = keyStore.aliases();
+        Enumeration e = keyStore.getKeyStore().aliases();
         Set testSet = new HashSet();
         while( e.hasMoreElements() ) {
             String alias = (String)e.nextElement();
-            if ( keyStore.isKeyEntry(alias) ) {
-                PrivateKey privateKey;
-                try {
-                    privateKey = (PrivateKey)keyStore.getKey(alias, null);
-                } catch (UnrecoverableKeyException e1) {
-                    System.err.println("Give password for key "+alias+':');
-                    privateKey = (PrivateKey)keyStore.getKey(alias, 
-                                                       new BufferedReader(new InputStreamReader(System.in)).readLine().toCharArray() );
-                }
-                testSet.add(new Test(alias, new KeyPair(keyStore.getCertificate(alias).getPublicKey(), privateKey), providerName));
+            if ( keyStore.getKeyStore().isKeyEntry(alias) ) {
+                PrivateKey privateKey = (PrivateKey)keyStore.getKey(alias);
+                testSet.add(new Test(alias,
+                                     new KeyPair(keyStore.getKeyStore().getCertificate(alias).getPublicKey(), privateKey),
+                                     providerName));
             }
         }
         return (Test[])testSet.toArray(new Test[0]);
@@ -250,7 +306,7 @@ public class HSMKeyTool {
         String providerName = getProviderName(providerClassName);
         System.out.println("Test of keystore with ID "+storeID+" of type "+keyStoreType+" with provider "+providerName+'.');
         Test tests[] = null;
-        final KeyStore keyStore = getKeyStore(providerName, keyStoreType, storeID);
+        final KeyStoreContainer keyStore = getKeyStoreTest(providerName, keyStoreType, storeID);
         for (int i = 0; i<nrOfTests || nrOfTests<1; i++) {
             try {
                 if ( tests==null || nrOfTests==-5 )

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # JBoss Control Script
 #
@@ -11,8 +11,12 @@ JBOSSCP=${JBOSSCP:-"$JBOSS_HOME/bin/shutdown.jar:$JBOSS_HOME/client/jnet.jar"}
 
 #define the script to use to start jboss
 #JBOSSSH=${JBOSSSH:-"$JBOSS_HOME/bin/run.sh -c all"}
-JBOSSSH=${JBOSSSH:-"/opt/nfast/bin/preload $JBOSS_HOME/bin/run.sh"}
-
+if [ "$1" != "-np" ]; then
+	JBOSSSH=${JBOSSSH:-"/opt/nfast/bin/preload $JBOSS_HOME/bin/run.sh"}
+else
+	shift
+	JBOSSSH=${JBOSSSH:-"$JBOSS_HOME/bin/run.sh"}
+fi
 CMD_START="$JBOSSSH" 
 CMD_STOP="java -classpath $JBOSSCP org.jboss.Shutdown --shutdown"
 
