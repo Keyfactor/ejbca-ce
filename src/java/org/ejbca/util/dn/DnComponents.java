@@ -37,7 +37,7 @@ import org.bouncycastle.asn1.x509.X509Name;
  * seemingly similar contents. 
  * 
  * @author tomas
- * @version $Id: DnComponents.java,v 1.3 2006-12-02 11:18:30 anatom Exp $
+ * @version $Id: DnComponents.java,v 1.4 2006-12-02 13:07:55 anatom Exp $
  */
 public class DnComponents {
     private static Logger log = Logger.getLogger(DnComponents.class);
@@ -138,6 +138,9 @@ public class DnComponents {
     private static HashMap profileNameLanguageMap = new HashMap();
     private static HashMap profileIdLanguageMap = new HashMap();
     private static HashMap dnIdErrorMap = new HashMap();
+    private static HashMap dnIdToExtractorFieldMap = new HashMap();
+    private static HashMap altNameIdToExtractorFieldMap = new HashMap();
+    private static HashMap dirAttrIdToExtractorFieldMap = new HashMap();
     private static ArrayList dnProfileFields = new ArrayList();
     private static ArrayList dnLanguageTexts = new ArrayList();
     private static ArrayList dnDnIds = new ArrayList();
@@ -197,13 +200,25 @@ public class DnComponents {
     protected static ArrayList getDnExtractorFields() {
     	return dnExtractorFields;
     }
+    protected static String getDnExtractorFieldFromDnId(int field) {
+    	String val = (String)dnIdToExtractorFieldMap.get(Integer.valueOf(field));
+    	return val;    	
+    }
     // Used only by DNFieldExtractor, don't USE
     protected static ArrayList getAltNameExtractorFields() {
     	return altNameExtractorFields;
     }
+    protected static String getAltNameExtractorFieldFromDnId(int field) {
+    	String val = (String)altNameIdToExtractorFieldMap.get(Integer.valueOf(field));
+    	return val;    	
+    }
     // Used only by DNFieldExtractor, don't USE
     protected static ArrayList getDirAttrExtractorFields() {
     	return dirAttrExtractorFields;
+    }
+    protected static String getDirAttrExtractorFieldFromDnId(int field) {
+    	String val = (String)dirAttrIdToExtractorFieldMap.get(Integer.valueOf(field));
+    	return val;    	
     }
     
     public static String dnIdToProfileName(int dnid) {
@@ -333,18 +348,21 @@ public class DnComponents {
                             	dnLanguageTexts.add(langstr);
                             	dnDnIds.add(dnid);
                             	dnExtractorFields.add(dnname+"=");
+                            	dnIdToExtractorFieldMap.put(dnid, dnname+"=");
                             }
                             if (type.equals("ALTNAME")) {
                             	altNameFields.add(dnname);
                             	altNameLanguageTexts.add(langstr);
                             	altNameDnIds.add(dnid);
                             	altNameExtractorFields.add(dnname+"=");
+                            	altNameIdToExtractorFieldMap.put(dnid, dnname+"=");
                             }
                             if (type.equals("DIRATTR")) {
                             	dirAttrFields.add(dnname);
                             	dirAttrLanguageTexts.add(langstr);
                             	dirAttrDnIds.add(dnid);
                             	dirAttrExtractorFields.add(dnname+"=");
+                            	dirAttrIdToExtractorFieldMap.put(dnid, dnname+"=");
                             }
                             lines++;
                         }                		

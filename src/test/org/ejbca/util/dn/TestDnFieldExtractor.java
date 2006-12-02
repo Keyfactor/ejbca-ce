@@ -13,6 +13,8 @@
 
 package org.ejbca.util.dn;
 
+import java.util.HashMap;
+
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
@@ -21,7 +23,7 @@ import org.apache.log4j.Logger;
 /**
  * Tests the StringTools class .
  *
- * @version $Id: TestDnFieldExtractor.java,v 1.1 2006-12-02 11:18:31 anatom Exp $
+ * @version $Id: TestDnFieldExtractor.java,v 1.2 2006-12-02 13:07:55 anatom Exp $
  */
 public class TestDnFieldExtractor extends TestCase {
     private static Logger log = Logger.getLogger(TestDnFieldExtractor.class);
@@ -51,8 +53,8 @@ public class TestDnFieldExtractor extends TestCase {
     public void test01CheckDnFields() throws Exception {
     	String dn = "cn=Tomas Gustavsson,o=PrimeKey,L=Stockholm,dc=PrimeKey,DC=com";
     	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
-    	int[] i = extractor.getNumberOfFields();
-    	assertEquals(16,i.length);
+    	HashMap i = extractor.getNumberOfFields();
+    	assertEquals(17,i.size());
     	String cn = extractor.getField(DNFieldExtractor.CN, 0);
     	assertEquals("Tomas Gustavsson", cn);
     	cn = extractor.getField(DNFieldExtractor.CN, 1);
@@ -94,17 +96,60 @@ public class TestDnFieldExtractor extends TestCase {
     public void test01CheckAltNameFields() throws Exception {
     	String dn = "DnsName=foo.bar.se,rfc822Name=foo@bar.se";
     	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTALTNAME);
-    	int[] i = extractor.getNumberOfFields();
-    	assertEquals(11,i.length);
-    	String dns = extractor.getField(DNFieldExtractor.DNSNAME, 0);
+    	HashMap i = extractor.getNumberOfFields();
+    	assertEquals(11,i.size());
+    	// Just check so we don't get any exceptions from this
+        for(int j = DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY; j < DNFieldExtractor.SUBJECTDIRATTRBOUNDRARY; j++){
+        	int num = j;
+        	//System.out.println("Getting "+num);
+        	int nof = ((Integer)i.get(Integer.valueOf(num))).intValue();
+        	//System.out.println("Got "+nof);
+        }
+        String dns = extractor.getField(DNFieldExtractor.DNSNAME, 0);
     	assertEquals("foo.bar.se", dns);
     	boolean illegal = extractor.isIllegal();
     	assertFalse(illegal);
     	boolean other = extractor.existsOther();
     	assertFalse(other);
     	String email= extractor.getField(DNFieldExtractor.RFC822NAME, 0);
-    	assertEquals("foo@bar.se", email);
-    	
+    	assertEquals("foo@bar.se", email);    	
+    	int num = extractor.getNumberOfFields(DNFieldExtractor.RFC822NAME);
+    	assertEquals(1, num);
     }
+    
+    /**
+     * @throws Exception error
+     */
+    public void test01CheckDirAttrFields() throws Exception {
+    	String dn = "PlaceOfBirth=Stockholm,DateOfBirth=10660911";
+    	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDIRATTR);
+    	HashMap i = extractor.getNumberOfFields();
+    	assertEquals(5,i.size());
+    	// Just check so we don't get any exceptions from this
+        for(int j = DNFieldExtractor.SUBJECTDIRATTRBOUNDRARY; j < DNFieldExtractor.NUMBEROFFIELDS; j++){
+        	int num = j;
+        	//System.out.println("Getting dir "+num);
+        	int nof = ((Integer)i.get(Integer.valueOf(num))).intValue();
+        	//System.out.println("Got dir "+nof);
+        }
+    	String dns = extractor.getField(DNFieldExtractor.PLACEOFBIRTH, 0);
+    	assertEquals("Stockholm", dns);
+    	boolean illegal = extractor.isIllegal();
+    	assertFalse(illegal);
+    	boolean other = extractor.existsOther();
+    	assertFalse(other);
+    	String email= extractor.getField(DNFieldExtractor.DATEOFBIRTH, 0);
+    	assertEquals("10660911", email);
+    	int num = extractor.getNumberOfFields(DNFieldExtractor.DATEOFBIRTH);
+    	assertEquals(1, num);
+
+    	extractor = new DNFieldExtractor("", DNFieldExtractor.TYPE_SUBJECTDIRATTR);
+    	i = extractor.getNumberOfFields();
+    	assertEquals(5,i.size());
+    	num = extractor.getNumberOfFields(DNFieldExtractor.DATEOFBIRTH);
+    	assertEquals(0, num);
+
+    }
+
 }
 

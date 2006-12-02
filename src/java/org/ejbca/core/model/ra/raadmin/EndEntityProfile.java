@@ -45,7 +45,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * 
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.10 2006-12-02 11:17:34 anatom Exp $
+ * @version $Id: EndEntityProfile.java,v 1.11 2006-12-02 13:07:57 anatom Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -388,7 +388,16 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     	return getNumberOfField(getParameterNumber(parameter));
     }
     public int getNumberOfField(int parameter){
-    	return ((Integer) ((ArrayList) data.get(NUMBERARRAY)).get(parameter)).intValue();
+    	ArrayList arr = (ArrayList)data.get(NUMBERARRAY);
+    	// This is an automatic upgrade function, if we have dynamically added new fields
+    	if (parameter >= arr.size()) {
+    		log.info("Adding new field, "+parameter+", to NUMBERARRAY");
+    		for (int i = arr.size(); i <= parameter; i++) {
+                arr.add(new Integer(0));
+    		}
+            data.put(NUMBERARRAY,arr);
+    	}
+    	return ((Integer) arr.get(parameter)).intValue();
     }
 
     public void setValue(int parameter, int number, String value) {
@@ -768,24 +777,24 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
      checkIfDomainFullfillProfile(EMAIL,0,email,"Email");
 
       // Check contents of Subject DN fields.
-      int[] subjectdnfieldnumbers = subjectdnfields.getNumberOfFields();
+      HashMap subjectdnfieldnumbers = subjectdnfields.getNumberOfFields();
       for(int i = 0; i < DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY; i++){
+		  int nof = ((Integer)subjectdnfieldnumbers.get(Integer.valueOf(i))).intValue();
     	  if(getReverseFieldChecks()){
-    		  int nof = subjectdnfieldnumbers[i];
     		  for(int j=getNumberOfField(DnComponents.dnIdToProfileName(i)) -1; j >= 0; j--){    			 
     			  checkIfDataFullfillProfile(DnComponents.dnIdToProfileName(i),j,subjectdnfields.getField(i,--nof), DnComponents.getErrTextFromDnId(i), email);
     		  }   		
     	  }else{
-    		  for(int j=0; j < subjectdnfieldnumbers[i]; j++){
+    		  for(int j=0; j < nof; j++){
     			  checkIfDataFullfillProfile(DnComponents.dnIdToProfileName(i),j,subjectdnfields.getField(i,j), DnComponents.getErrTextFromDnId(i), email);
     		  }
     	  }
       }
        // Check contents of Subject Alternative Name fields.
-      int[] subjectaltnamesnumbers = subjectaltnames.getNumberOfFields();
+      HashMap subjectaltnamesnumbers = subjectaltnames.getNumberOfFields();
       for(int i = DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY; i < DNFieldExtractor.SUBJECTDIRATTRBOUNDRARY; i++){
+		  int nof = ((Integer)subjectaltnamesnumbers.get(Integer.valueOf(i))).intValue();
     	  if(getReverseFieldChecks()){
-    		  int nof = subjectaltnamesnumbers[i-DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY];
     		  for(int j=getNumberOfField(DnComponents.dnIdToProfileName(i)) -1; j >= 0; j--){
     			  if(i == DNFieldExtractor.UPN){
     				  checkIfDomainFullfillProfile(DnComponents.UPN,j,subjectaltnames.getField(i,--nof),"UPN");
@@ -794,7 +803,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     			  }   
     		  }    		      		  
     	  }else{
-    		  for(int j=0; j < subjectaltnamesnumbers[i-DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY]; j++){
+    		  for(int j=0; j < nof; j++){
     			  if(i == DNFieldExtractor.UPN){
     				  checkIfDomainFullfillProfile(DnComponents.UPN,j,subjectaltnames.getField(i,j),"UPN");
     			  }else{
@@ -805,9 +814,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
       }
 
       // Check contents of Subject Directory Attributes fields.
-      int[] subjectdirattrnumbers = subjectdirattrs.getNumberOfFields();
+      HashMap subjectdirattrnumbers = subjectdirattrs.getNumberOfFields();
       for(int i = DNFieldExtractor.SUBJECTDIRATTRBOUNDRARY; i < DNFieldExtractor.NUMBEROFFIELDS; i++){
-    	  for(int j=0; j < subjectdirattrnumbers[i-DNFieldExtractor.SUBJECTDIRATTRBOUNDRARY]; j++){
+		  int nof = ((Integer)subjectdirattrnumbers.get(Integer.valueOf(i))).intValue();
+    	  for(int j=0; j < nof; j++){
     		  checkForIllegalChars(subjectdirattrs.getField(i,j));
     		  if(i == DNFieldExtractor.COUNTRYOFCITIZENSHIP){
     			  checkIfISO3166FullfillProfile(DnComponents.COUNTRYOFCITIZENSHIP,j,subjectdirattrs.getField(i,j),"COUNTRYOFCITIZENSHIP");

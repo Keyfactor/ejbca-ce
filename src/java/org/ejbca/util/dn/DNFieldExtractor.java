@@ -13,7 +13,9 @@
  
 package org.ejbca.util.dn;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.ietf.ldap.LDAPDN;
@@ -24,7 +26,7 @@ import org.ietf.ldap.LDAPDN;
  * or Subject Directory Attributes strings.
  *
  * @author Philip Vendil
- * @version $Id: DNFieldExtractor.java,v 1.1 2006-12-02 11:18:30 anatom Exp $
+ * @version $Id: DNFieldExtractor.java,v 1.2 2006-12-02 13:07:55 anatom Exp $
  */
 public class DNFieldExtractor implements java.io.Serializable {
     private static final Logger log = Logger.getLogger(DNFieldExtractor.class);
@@ -74,7 +76,7 @@ public class DNFieldExtractor implements java.io.Serializable {
     public static final int SUBJECTDIRATTRBOUNDRARY = 27;
     
     // Used only in EndEntityProfile, should be refactored away
-    public static final int NUMBEROFFIELDS = 33;
+    public static final int NUMBEROFFIELDS = 32;
     
     /**
      * Creates a new instance of DNFieldExtractor
@@ -103,16 +105,15 @@ public class DNFieldExtractor implements java.io.Serializable {
     
     public static String getFieldComponent(int field, int type) {
     	if (type == DNFieldExtractor.TYPE_SUBJECTDN) {
-            String[] fields = (String[])DnComponents.getDnExtractorFields().toArray(new String[0]);;
-        	return fields[field];    		
+    		String ret = DnComponents.getDnExtractorFieldFromDnId(field);
+    		return ret;
     	} else if (type == DNFieldExtractor.TYPE_SUBJECTALTNAME) {
-            String[] fields = (String[])DnComponents.getDnExtractorFields().toArray(new String[0]);;
-        	return fields[field - DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY];    		
+    		String ret = DnComponents.getAltNameExtractorFieldFromDnId(field);
+    		return ret;
     	} else {
-            String[] fields = (String[])DnComponents.getDnExtractorFields().toArray(new String[0]);;
-    		return fields[field  - DNFieldExtractor.SUBJECTDIRATTRBOUNDRARY];
+    		String ret = DnComponents.getDirAttrExtractorFieldFromDnId(field);
+    		return ret;
     	}
-    	
     }
 
     /**
@@ -122,20 +123,22 @@ public class DNFieldExtractor implements java.io.Serializable {
      * @param type DOCUMENT ME!
      */
     public void setDN(String dn, int type) {    	
-        String[] fields;
         this.type = type;
-        
-        if (type == TYPE_SUBJECTDN) {        	
-            fields = (String[])DnComponents.getDnExtractorFields().toArray(new String[0]);;
-            fieldnumbers = new int[fields.length];
+        ArrayList ids;
+        if (type == TYPE_SUBJECTDN) {
+        	ids = DnComponents.getDnDnIds();
         } else if (type == TYPE_SUBJECTALTNAME){
-            fields = (String[])DnComponents.getAltNameExtractorFields().toArray(new String[0]);;
-            fieldnumbers = new int[fields.length];
+        	ids = DnComponents.getAltNameDnIds();
         } else if (type == TYPE_SUBJECTDIRATTR){
-            fields = (String[])DnComponents.getDirAttrExtractorFields().toArray(new String[0]);;
-            fieldnumbers = new int[fields.length];
+        	ids = DnComponents.getDirAttrDnIds();
         } else {
-        	fields = new String[]{};
+        	ids = new ArrayList();
+        }
+        fieldnumbers = new HashMap();
+        Iterator it = ids.iterator();
+        while (it.hasNext()) {
+        	Integer id = (Integer)it.next();
+            fieldnumbers.put(id, Integer.valueOf(0));
         }
 
         if ((dn != null) && !dn.equalsIgnoreCase("null")) {
@@ -145,27 +148,41 @@ public class DNFieldExtractor implements java.io.Serializable {
                 String[] dnexploded = LDAPDN.explodeDN(dn, false);
 
                 for (int i = 0; i < dnexploded.length; i++) {
-                    boolean exists = false;                    
-                    for (int j = 0; j < fields.length; j++) {
-                        if (dnexploded[i].toUpperCase().startsWith(fields[j])) {
+                    boolean exists = false;       
+                    Iterator iter = ids.iterator();
+                    int j = 0;
+                    while (iter.hasNext()) {
+                    	Integer id = (Integer)iter.next();
+                    	Integer number = (Integer)fieldnumbers.get(id);
+                    	String field;
+                        if (type == TYPE_SUBJECTDN) {
+                        	field = DnComponents.getDnExtractorFieldFromDnId(id.intValue());
+                        } else if (type == TYPE_SUBJECTALTNAME){
+                        	field = DnComponents.getAltNameExtractorFieldFromDnId(id.intValue());
+                        } else {
+                        	field = DnComponents.getDirAttrExtractorFieldFromDnId(id.intValue());
+                        }
+                        if (dnexploded[i].toUpperCase().startsWith(field)) {
                             exists = true;
                             String rdn = LDAPDN.unescapeRDN(dnexploded[i]);
                             // We don't want the CN= (or whatever) part of the RDN
-                            if (rdn.toUpperCase().startsWith(fields[j])) {
-                                rdn = rdn.substring(fields[j].length(),rdn.length());                                
+                            if (rdn.toUpperCase().startsWith(field)) {
+                                rdn = rdn.substring(field.length(),rdn.length());                                
                             }
 
                             if (type == TYPE_SUBJECTDN) {
-                                dnfields.put(new Integer((j * BOUNDRARY) + fieldnumbers[j]), rdn);
+                                dnfields.put(new Integer((j * BOUNDRARY) + number.intValue()), rdn);
                             } else if (type == TYPE_SUBJECTALTNAME) {
                                 dnfields.put(new Integer(((j + SUBJECTALTERNATIVENAMEBOUNDRARY) * BOUNDRARY) +
-                                        fieldnumbers[j]), rdn);
+                                		number.intValue()), rdn);
                             } else if (type == TYPE_SUBJECTDIRATTR) {
                                 dnfields.put(new Integer(((j + SUBJECTDIRATTRBOUNDRARY) * BOUNDRARY) +
-                                        fieldnumbers[j]), rdn);
+                                		number.intValue()), rdn);
                             }
-                            fieldnumbers[j]++;
+                            number = Integer.valueOf(number.intValue()+1);
+                            fieldnumbers.put(id, number);
                         }
+                        j++;
                     }
                     if (!exists) {
                         existsother = true;
@@ -251,25 +268,20 @@ public class DNFieldExtractor implements java.io.Serializable {
      * @return number of componenets available for a fiels, for example 1 if DN is "dc=primekey" and 2 if DN is "dc=primekey,dc=com"
      */
     public int getNumberOfFields(int field) {
-        int returnval = 0;
-
-        if (type == TYPE_SUBJECTDN) {
-            returnval = fieldnumbers[field];
-        } else if (type == TYPE_SUBJECTALTNAME) {
-            returnval = fieldnumbers[field - OTHERNAME];
-        } else if (type == TYPE_SUBJECTDIRATTR) {
-            returnval = fieldnumbers[field - DATEOFBIRTH];
+        Integer ret = (Integer)fieldnumbers.get(Integer.valueOf(field));
+        if (ret == null) {
+        	log.error("Not finding fieldnumber value for "+field);
         }
-
-        return returnval;
+        return ret.intValue();
     }
 
     /**
-     * DOCUMENT ME!
+     * Returns the complete array determining the number of DN components of the various types 
+     * (i.e. if there are two CNs but 0 Ls etc) 
      *
      * @return DOCUMENT ME!
      */
-    public int[] getNumberOfFields() {
+    public HashMap getNumberOfFields() {
         return fieldnumbers;
     }
 
@@ -278,7 +290,8 @@ public class DNFieldExtractor implements java.io.Serializable {
     }
 
     private static final int BOUNDRARY = 100;
-    private int[] fieldnumbers;
+    // Mapping dnid to number of occurances in this DN
+    private HashMap fieldnumbers;
     private HashMap dnfields;
     private boolean existsother = false;
     private boolean illegal = false;

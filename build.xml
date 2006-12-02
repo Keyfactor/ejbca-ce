@@ -203,6 +203,8 @@
             <fileset dir="${src}/upgrade"/>
         	<fileset dir="${src}">
         	    <include name="intresources/*.properties"/>
+        	</fileset>	
+        	<fileset dir="${src}/java">
         	    <include name="dncomponents.properties"/>
         		<include name="profilemappings.properties"/>
         	</fileset>	
