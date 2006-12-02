@@ -37,7 +37,7 @@ import org.bouncycastle.asn1.x509.X509Name;
  * seemingly similar contents. 
  * 
  * @author tomas
- * @version $Id: DnComponents.java,v 1.4 2006-12-02 13:07:55 anatom Exp $
+ * @version $Id: DnComponents.java,v 1.5 2006-12-02 14:12:40 anatom Exp $
  */
 public class DnComponents {
     private static Logger log = Logger.getLogger(DnComponents.class);
@@ -67,6 +67,7 @@ public class DnComponents {
         oids.put("serialnumber", X509Name.SN);
         oids.put("cn", X509Name.CN);
         oids.put("uid", X509Name.UID);
+        oids.put("dn", X509Name.DN_QUALIFIER);
         oids.put("emailaddress", X509Name.EmailAddress);
         oids.put("e", X509Name.EmailAddress);
         oids.put("email", X509Name.EmailAddress);
@@ -77,7 +78,7 @@ public class DnComponents {
      * 
      */
     private static String[] dNObjectsForward = {
-        "unstructuredaddress", "unstructuredname", "emailaddress", "e", "email", "uid", "cn", "sn", "serialnumber", "gn", "givenname",
+        "unstructuredaddress", "unstructuredname", "emailaddress", "e", "email", "dn", "uid", "cn", "sn", "serialnumber", "gn", "givenname",
         "initials", "surname", "t", "ou", "o", "l", "st", "dc", "c"
     };
     // Default values    
@@ -92,6 +93,7 @@ public class DnComponents {
      */
     // DN components
     public static final String DNEMAIL            = "DNEMAIL";
+    public static final String DNQUALIFIER        = "DN";
     public static final String UID                = "UID";
     public static final String COMMONNAME         = "COMMONNAME";
     public static final String SN                 = "SN";
@@ -407,12 +409,14 @@ public class DnComponents {
                     throw new IOException();
                 String[] splits = null;
                 while ((line = in.readLine()) != null) {
-                    splits = StringUtils.split(line, '=');
-                    if ( (splits != null) && (splits.length > 1) ) {
-                        String name = splits[0]; 
-                        DERObjectIdentifier oid = new DERObjectIdentifier(splits[1]);
-                        map.put(name, oid);
-                    }
+                	if (!line.startsWith("#")) { // # is a comment line
+                		splits = StringUtils.split(line, '=');
+                		if ( (splits != null) && (splits.length > 1) ) {
+                			String name = splits[0]; 
+                			DERObjectIdentifier oid = new DERObjectIdentifier(splits[1]);
+                			map.put(name, oid);
+                		}
+                	}
                 }
                 in.close();
                 // Now we have read it in, transfer it to the main oid map

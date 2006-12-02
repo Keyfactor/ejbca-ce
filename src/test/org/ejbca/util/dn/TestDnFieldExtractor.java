@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 /**
  * Tests the StringTools class .
  *
- * @version $Id: TestDnFieldExtractor.java,v 1.2 2006-12-02 13:07:55 anatom Exp $
+ * @version $Id: TestDnFieldExtractor.java,v 1.3 2006-12-02 14:12:40 anatom Exp $
  */
 public class TestDnFieldExtractor extends TestCase {
     private static Logger log = Logger.getLogger(TestDnFieldExtractor.class);
@@ -51,6 +51,8 @@ public class TestDnFieldExtractor extends TestCase {
      * @throws Exception error
      */
     public void test01CheckDnFields() throws Exception {
+    	String comp = DnComponents.getDnExtractorFieldFromDnId(28);
+    	assertEquals("DN=", comp);
     	String dn = "cn=Tomas Gustavsson,o=PrimeKey,L=Stockholm,dc=PrimeKey,DC=com";
     	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
     	HashMap i = extractor.getNumberOfFields();
@@ -78,12 +80,19 @@ public class TestDnFieldExtractor extends TestCase {
     	boolean other = extractor.existsOther();
     	assertFalse(other);
     	
-    	dn = "cn=Tomas Gustavsson,1.1.1.1=Foo,o=PrimeKey,L=Stockholm,dc=PrimeKey,DC=com";
+    	dn = "dn=qualifier,cn=Tomas Gustavsson,1.1.1.1=Foo,o=PrimeKey,L=Stockholm,dc=PrimeKey,DC=com";
     	extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
     	illegal = extractor.isIllegal();
     	assertFalse(illegal);
     	other = extractor.existsOther();
     	assertTrue(other);
+    	num = extractor.getNumberOfFields(28);
+    	assertEquals(1, num);
+    	String field = extractor.getField(28,0);
+    	assertEquals("qualifier", field);
+    	field = extractor.getField(DNFieldExtractor.CN,0);
+    	assertEquals("Tomas Gustavsson", field);
+    	
     	dn = "qqq,cn=Tomas Gustavsson,1.1.1.1=Foo,o=PrimeKey,L=Stockholm,dc=PrimeKey,DC=com";
     	extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
      	illegal = extractor.isIllegal();

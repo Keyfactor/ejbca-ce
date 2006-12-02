@@ -26,7 +26,7 @@ import org.ietf.ldap.LDAPDN;
  * or Subject Directory Attributes strings.
  *
  * @author Philip Vendil
- * @version $Id: DNFieldExtractor.java,v 1.2 2006-12-02 13:07:55 anatom Exp $
+ * @version $Id: DNFieldExtractor.java,v 1.3 2006-12-02 14:12:40 anatom Exp $
  */
 public class DNFieldExtractor implements java.io.Serializable {
     private static final Logger log = Logger.getLogger(DNFieldExtractor.class);
@@ -150,7 +150,6 @@ public class DNFieldExtractor implements java.io.Serializable {
                 for (int i = 0; i < dnexploded.length; i++) {
                     boolean exists = false;       
                     Iterator iter = ids.iterator();
-                    int j = 0;
                     while (iter.hasNext()) {
                     	Integer id = (Integer)iter.next();
                     	Integer number = (Integer)fieldnumbers.get(id);
@@ -171,18 +170,17 @@ public class DNFieldExtractor implements java.io.Serializable {
                             }
 
                             if (type == TYPE_SUBJECTDN) {
-                                dnfields.put(new Integer((j * BOUNDRARY) + number.intValue()), rdn);
+                                dnfields.put(new Integer((id.intValue() * BOUNDRARY) + number.intValue()), rdn);
                             } else if (type == TYPE_SUBJECTALTNAME) {
-                                dnfields.put(new Integer(((j + SUBJECTALTERNATIVENAMEBOUNDRARY) * BOUNDRARY) +
+                                dnfields.put(new Integer((id.intValue() * BOUNDRARY) +
                                 		number.intValue()), rdn);
                             } else if (type == TYPE_SUBJECTDIRATTR) {
-                                dnfields.put(new Integer(((j + SUBJECTDIRATTRBOUNDRARY) * BOUNDRARY) +
+                                dnfields.put(new Integer((id.intValue() * BOUNDRARY) +
                                 		number.intValue()), rdn);
                             }
                             number = Integer.valueOf(number.intValue()+1);
                             fieldnumbers.put(id, number);
                         }
-                        j++;
                     }
                     if (!exists) {
                         existsother = true;

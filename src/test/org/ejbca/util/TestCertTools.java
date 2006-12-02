@@ -38,7 +38,7 @@ import com.novell.ldap.LDAPDN;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.1 2006-09-25 16:32:36 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.2 2006-12-02 14:12:40 anatom Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);
@@ -402,6 +402,12 @@ public class TestCertTools extends TestCase {
         String bcdn22 = CertTools.stringToBCDNString(dn22);
         assertEquals(bcdn22, "CN=Foo',OU=Foo,O=Foo\\, Inc,C=SE");
         assertEquals(StringTools.strip(bcdn22), "CN=Foo',OU=Foo,O=Foo\\, Inc,C=SE");
+        
+        String dn23 = "C=SE,O=Foo, OU=FooOU, CN=Foo, dnqualifier=qualf";
+        String bcdn23 = CertTools.stringToBCDNString(dn23);
+        assertEquals(bcdn23, "DN=qualf,CN=Foo,OU=FooOU,O=Foo,C=SE");
+        assertEquals(StringTools.strip(bcdn23), "DN=qualf,CN=Foo,OU=FooOU,O=Foo,C=SE");
+
         log.debug("<test02StringToBCDNString()");
     }
 

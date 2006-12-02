@@ -95,7 +95,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.28 2006-12-02 11:18:30 anatom Exp $
+ * @version $Id: CertTools.java,v 1.29 2006-12-02 14:12:41 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -368,7 +368,7 @@ public class CertTools {
             }
         }
         
-        log.debug("<reverseDN: resulting DN=" + ret);
+        log.debug("<reverseDN: resulting dn: " + ret);
         return ret;
     } //reverseDN
 
@@ -1737,7 +1737,7 @@ public class CertTools {
         
         Vector allOids    = x509Name.getOIDs();
         
-        //-- Add unespected fields to the end
+        //-- Add unexpected fields to the end
         for ( int i=0; i<allOids.size(); i++ ) {
             
             DERObjectIdentifier oid = (DERObjectIdentifier) allOids.get(i);
