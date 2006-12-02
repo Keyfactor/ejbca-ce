@@ -24,8 +24,8 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.ra.ExtendedInformation;
-import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.dn.DNFieldExtractor;
 
 
 import com.novell.ldap.LDAPAttribute;
@@ -35,7 +35,7 @@ import com.novell.ldap.LDAPEntry;
 /**
  * ActiveDirectoryPublisher is a class handling a publishing to Active Directory catalouges.  
  *
- * @version $Id: ActiveDirectoryPublisher.java,v 1.2 2006-08-04 07:39:51 anatom Exp $
+ * @version $Id: ActiveDirectoryPublisher.java,v 1.3 2006-12-02 11:17:33 anatom Exp $
  */
 public class ActiveDirectoryPublisher extends LdapPublisher{
 	

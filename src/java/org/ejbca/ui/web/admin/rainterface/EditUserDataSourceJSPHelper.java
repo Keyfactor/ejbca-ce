@@ -27,7 +27,6 @@ import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocal;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceConnectionException;
@@ -35,13 +34,14 @@ import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceVO;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
+import org.ejbca.util.dn.DNFieldExtractor;
 
 
 /**
  * Contains help methods used to parse a edit user data source jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditUserDataSourceJSPHelper.java,v 1.1 2006-07-20 17:50:18 herrvendil Exp $
+ * @version $Id: EditUserDataSourceJSPHelper.java,v 1.2 2006-12-02 11:17:57 anatom Exp $
  */
 public class EditUserDataSourceJSPHelper implements java.io.Serializable {
 

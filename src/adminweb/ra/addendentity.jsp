@@ -2,8 +2,8 @@
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page  errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.ui.web.admin.rainterface.UserView,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.UserDataConstants,
-                 javax.ejb.CreateException, java.rmi.RemoteException, org.ejbca.core.model.ra.raadmin.DNFieldExtractor, org.ejbca.core.model.ra.UserDataVO, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, 
-                 org.ejbca.core.model.hardtoken.HardTokenIssuer, org.ejbca.core.model.hardtoken.HardTokenIssuerData,   org.ejbca.core.model.SecConst, org.ejbca.util.StringTools" %>
+                 javax.ejb.CreateException, java.rmi.RemoteException, org.ejbca.util.dn.DNFieldExtractor, org.ejbca.core.model.ra.UserDataVO, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, 
+                 org.ejbca.core.model.hardtoken.HardTokenIssuer, org.ejbca.core.model.hardtoken.HardTokenIssuerData,   org.ejbca.core.model.SecConst, org.ejbca.util.StringTools, org.ejbca.util.dn.DnComponents" %>
 <html> 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -73,13 +73,6 @@
 
 %><%
   // Initialize environment.
-
-  String[] subjectfieldtexts = {"","","", "OLDEMAILDN2", "UID", "COMMONNAME", "SERIALNUMBER1", 
-                                "GIVENNAME2", "INITIALS", "SURNAME","TITLE","ORGANIZATIONUNIT","ORGANIZATION",
-                                "LOCALE","STATE","DOMAINCOMPONENT","COUNTRY",
-                                "RFC822NAME", "DNSNAME", "IPADDRESS", "OTHERNAME", "UNIFORMRESOURCEID", "X400ADDRESS", "DIRECTORYNAME",
-                                "EDIPARTNAME", "REGISTEREDID","","","","","","","","","","","UPN","","", "UNSTRUCTUREDADDRESS", "UNSTRUCTUREDNAME","GUID"
-                                ,"DATEOFBIRTH", "PLACEOFBIRTH", "GENDER", "COUNTRYOFCITIZENSHIP", "COUNTRYOFRESIDENCE"};
 
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/ra_functionality/create_end_entity"); 
                                             rabean.initialize(request, ejbcawebbean);
@@ -263,7 +256,7 @@
              value=null;
              fielddata = oldprofile.getSubjectDNFieldsInOrder(i); 
 
-             if(fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.OLDDNE)
+             if (!EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAIL))
                value = request.getParameter(TEXTFIELD_SUBJECTDN+i);
              else{
                if(request.getParameter(CHECKBOX_SUBJECTDN+i)!=null)
@@ -274,7 +267,7 @@
                value= value.trim(); 
                if(!value.equals("")){
                  oldprofile.setValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER], value);   
-                 value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.SUBJECTDNFIELDS[oldprofile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE])] +value);  
+                 value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTDN) +value);  
                  if(subjectdn.equals(""))
                    subjectdn = value;
                  else
@@ -286,7 +279,7 @@
              if(value !=null){
                if(!value.equals("")){
                  lastselectedsubjectdns[i] = value;
-                 value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.SUBJECTDNFIELDS[oldprofile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE])] +value);
+                 value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTDN) +value);
                  if(subjectdn.equals(""))
                    subjectdn = value;
                  else
@@ -303,12 +296,12 @@
            for(int i=0; i < numberofsubjectaltnamefields; i++){
              fielddata = oldprofile.getSubjectAltNameFieldsInOrder(i); 
              value=null;               
-             if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.RFC822NAME){
+             if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME)){
                 if(request.getParameter(CHECKBOX_SUBJECTALTNAME+i)!=null)
                   if(request.getParameter(CHECKBOX_SUBJECTALTNAME+i).equals(CHECKBOX_VALUE))
                     value = newuser.getEmail();             	             	             	
              }else{             	
-               if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.UPN){
+               if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.UPN)){
                   if(request.getParameter(TEXTFIELD_SUBJECTALTNAME+i) != null && !request.getParameter(TEXTFIELD_SUBJECTALTNAME+i).equals("") 
 		             && request.getParameter(TEXTFIELD_UPNNAME+i) != null && !request.getParameter(TEXTFIELD_UPNNAME+i).equals("")){
                     value = request.getParameter(TEXTFIELD_UPNNAME+i) + "@" + 
@@ -322,7 +315,7 @@
                value=value.trim(); 
                if(!value.equals("")){
                  oldprofile.setValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER], value);   
-                 value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.SUBJECTALTNAME[oldprofile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]) - DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY] +value);
+                 value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTALTNAME) +value);
                  if(subjectaltname.equals(""))
                    subjectaltname = value;
                  else
@@ -334,12 +327,12 @@
              if(value !=null){
                if(!value.equals("")){
                  lastselectedsubjectaltnames[i] = value;
-                 if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.UPN){
+                 if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.UPN)){
                    if(request.getParameter(TEXTFIELD_UPNNAME+i) != null){
                      value = request.getParameter(TEXTFIELD_UPNNAME+i)+ "@" + value;
                    } 
                  }
-                 value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.SUBJECTALTNAME[oldprofile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]) - DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY] +value);
+                 value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTALTNAME) +value);
                  if(subjectaltname.equals(""))
                    subjectaltname = value;
                  else
@@ -359,7 +352,7 @@
                value=value.trim(); 
                if(!value.equals("")){
                  oldprofile.setValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER], value);   
-                 value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.SUBJECTDIRATTR[oldprofile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]) - DNFieldExtractor.SUBJECTDIRATTRBOUNDRARY] +value);
+                 value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTDIRATTR) +value);
                  if(subjectdirattr.equals(""))
                    subjectdirattr = value;
                  else
@@ -371,7 +364,7 @@
              if(value !=null){
                if(!value.equals("")){
                  lastselectedsubjectdirattrs[i] = value;
-                 value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.SUBJECTDIRATTR[oldprofile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]) - DNFieldExtractor.SUBJECTDIRATTRBOUNDRARY] +value);
+                 value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTDIRATTR) +value);
                  if(subjectdirattr.equals(""))
                    subjectdirattr = value;
                  else
@@ -773,13 +766,13 @@ function checkallfields(){
        }
        for(int i=0; i < profile.getSubjectDNFieldOrderLength(); i++){
          fielddata = profile.getSubjectDNFieldsInOrder(i);
-         if( fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.OLDDNE ){
+         if( !EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAIL) ){
            if(profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ %>
-    if(!checkfieldforlegaldnchars("document.adduser.<%=TEXTFIELD_SUBJECTDN+i%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %>"))
+    if(!checkfieldforlegaldnchars("document.adduser.<%=TEXTFIELD_SUBJECTDN+i%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %>"))
       illegalfields++;
     <%     if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){%>
     if((document.adduser.<%= TEXTFIELD_SUBJECTDN+i %>.value == "")){
-      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]])%>");
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE]))%>");
       illegalfields++;
     } 
     <%     }
@@ -792,30 +785,29 @@ function checkallfields(){
        for(int i=0; i < profile.getSubjectAltNameFieldOrderLength(); i++){
          fielddata = profile.getSubjectAltNameFieldsInOrder(i);
          int fieldtype = fielddata[EndEntityProfile.FIELDTYPE];
-         if(fieldtype != EndEntityProfile.OTHERNAME && fieldtype != EndEntityProfile.X400ADDRESS && 
-            fieldtype != EndEntityProfile.EDIPARTNAME && fieldtype != EndEntityProfile.REGISTEREDID ){ // not implemented yet
-           if(fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.RFC822NAME){
-             if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.UPN){%>
-    if(!checkfieldforlegaldnchars("document.adduser.<%=TEXTFIELD_UPNNAME+i%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %>"))
+         if(EndEntityProfile.isFieldImplemented(fieldtype)) {
+           if(!EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME)){
+             if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE],DnComponents.UPN)){%>
+    if(!checkfieldforlegaldnchars("document.adduser.<%=TEXTFIELD_UPNNAME+i%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %>"))
       illegalfields++;
           <%   if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ %>            
               if((document.adduser.<%= TEXTFIELD_UPNNAME+i %>.value == "")){ 
-                alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]])%>");
+                alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE]))%>");
                 illegalfields++;
               }
            <%  }
              }   
              if(profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){
-               if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.IPADDRESS ){ %>
-    if(!checkfieldforipaddess("document.adduser.<%=TEXTFIELD_SUBJECTALTNAME+i%>","<%= ejbcawebbean.getText("ONLYNUMBERALSANDDOTS") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %>"))
+               if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.IPADDRESS)) { %>
+    if(!checkfieldforipaddess("document.adduser.<%=TEXTFIELD_SUBJECTALTNAME+i%>","<%= ejbcawebbean.getText("ONLYNUMBERALSANDDOTS") + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %>"))
       illegalfields++;
            <%  }else{ %> 
 
-    if(!checkfieldforlegaldnchars("document.adduser.<%=TEXTFIELD_SUBJECTALTNAME+i%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %>"))
+    if(!checkfieldforlegaldnchars("document.adduser.<%=TEXTFIELD_SUBJECTALTNAME+i%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %>"))
       illegalfields++;
     <%    if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ %>
     if((document.adduser.<%= TEXTFIELD_SUBJECTALTNAME+i %>.value == "")){
-      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]])%>");
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE]))%>");
       illegalfields++;
     } 
     <%      }
@@ -1084,10 +1076,10 @@ function checkallfields(){
             fielddata = profile.getSubjectDNFieldsInOrder(i);  %>
        <tr id="Row<%=(row++)%2%>">
 	 <td></td>
-	 <td align="right"><%= ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %></td>
+	 <td align="right"><%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %></td>
 	 <td>      
           <% 
-             if( fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.OLDDNE ){  
+             if( !EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAIL) ){  
                 if(!profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ 
                  String[] options = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]).split(EndEntityProfile.SPLITCHAR);
                %>
@@ -1131,18 +1123,17 @@ function checkallfields(){
           for(int i=0; i < numberofsubjectaltnamefields; i++){
             fielddata = profile.getSubjectAltNameFieldsInOrder(i);  
             int fieldtype = fielddata[EndEntityProfile.FIELDTYPE];
-            if(fieldtype != EndEntityProfile.OTHERNAME && fieldtype != EndEntityProfile.X400ADDRESS && 
-               fieldtype != EndEntityProfile.EDIPARTNAME && fieldtype != EndEntityProfile.REGISTEREDID ){ // Not implemented yet.%>
+            if(EndEntityProfile.isFieldImplemented(fieldtype)) { %>
        <tr id="Row<%=(row++)%2%>">
 	 <td></td>
-	 <td align="right"><%= ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %></td>
+	 <td align="right"><%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %></td>
 	 <td>      
           <%
-             if( fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.RFC822NAME ){
+             if( !EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME )) {
                if(!profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ 
                  String[] options = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]).split(EndEntityProfile.SPLITCHAR);
                
-               if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.UPN){ %>
+               if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.UPN)){ %>
                    <input type="text" name="<%= TEXTFIELD_UPNNAME+i %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" >@
                 <% } %>
            <select name="<%= SELECT_SUBJECTALTNAME + i %>" size="1" tabindex="<%=tabindex++%>">
@@ -1157,7 +1148,7 @@ function checkallfields(){
                 %>
            </select>
            <% }else{ 
-                if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.UPN){ %>
+                if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.UPN)) { %>
                    <input type="text" name="<%= TEXTFIELD_UPNNAME+i %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" >@
                 <% } %> 
              <input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value="<%= profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) %>">
@@ -1193,7 +1184,7 @@ function checkallfields(){
 			{ %>
        <tr id="Row<%=(row++)%2%>">
 	 <td></td>
-	 <td align="right"><%= ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %></td>
+	 <td align="right"><%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %></td>
 	 <td>      
           <%
                if(!profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ 

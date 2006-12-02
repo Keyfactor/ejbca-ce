@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
+import org.ejbca.util.dn.DNFieldExtractor;
 
 /**
  * Class generating parameter data for email notifications. Both
@@ -73,7 +73,7 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
  * 
  * @author Philip Vendil 2006 sep 26
  *
- * @version $Id: NotificationParamGen.java,v 1.3 2006-10-26 11:03:24 herrvendil Exp $
+ * @version $Id: NotificationParamGen.java,v 1.4 2006-12-02 11:18:30 anatom Exp $
  */
 
 public class NotificationParamGen {

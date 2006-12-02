@@ -20,26 +20,6 @@
   TreeMap authorizedpublishers = ejbcawebbean.getInformationMemory().getAuthorizedPublisherNames();
   HashMap publisheridtonamemap = ejbcawebbean.getInformationMemory().getPublisherIdToNameMap();
 
-  int[] usefieldsindn =  {DNFieldExtractor.CN, DNFieldExtractor.UID, DNFieldExtractor.SN, 
-          DNFieldExtractor.GIVENNAME, DNFieldExtractor.SURNAME, DNFieldExtractor.T, 
-          DNFieldExtractor.L, DNFieldExtractor.INITIALS, DNFieldExtractor.E, 
-          DNFieldExtractor.ST, DNFieldExtractor.C, DNFieldExtractor.O, DNFieldExtractor.OU,
-          DNFieldExtractor.UNSTRUCTUREDADDRESS, DNFieldExtractor.UNSTRUCTUREDNAME };
-
-  String[] usefieldsindntexts = {"MATCHCOMMONNAME","MATCHUID","MATCHDNSERIALNUMBER",
-               "MATCHGIVENNAME", "MATCHSURNAME","MATCHTITLE",
-               "MATCHLOCALE","MATCHINITIALS","OLDEMAILDN1", "MATCHSTATE",
-               "MATCHCOUNTRY", "MATCHORGANIZATION", "MATCHORGANIZATIONUNIT",
-               "UNSTRUCTUREDADDRESS","UNSTRUCTUREDNAME"}; 
-  
-  int[] usefieldsinaltname =  {DNFieldExtractor.RFC822NAME, DNFieldExtractor.DNSNAME, DNFieldExtractor.IPADDRESS, 
-           DNFieldExtractor.URI, DNFieldExtractor.UPN, DNFieldExtractor.GUID};
-
-  
-  String[] usefieldsinaltnametexts = {"RFC822NAME","DNSNAME","IPADDRESS",
-               "UNIFORMRESOURCEID", "UPN","GUID"}; 
-  
-  
   int row = 0;
 %>
 <SCRIPT language="JavaScript">
@@ -972,8 +952,10 @@ function checkallfields(){
       <td width="50%" valign="top">   
         <select name="<%=SELECT_SUBJECTDNSUBSET%>" size="15" multiple <%if(!certificateprofiledata.getUseSubjectDNSubSet()){out.write(" disabled ");} %>>       
             <% HashSet currentfields = new HashSet(certificateprofiledata.getSubjectDNSubSet());
+               Integer[] usefieldsindn = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTDN);
+               String[] usefieldsindntexts = (String[])DnComponents.getDnLanguageTexts().toArray(new String[0]);
                for(int i=0;i < usefieldsindn.length; i++){ %>                                  
-              <option value="<%=usefieldsindn[i]%>" <% if(currentfields.contains(new Integer(usefieldsindn[i]))) out.write(" selected "); %>> 
+              <option value="<%=usefieldsindn[i]%>" <% if(currentfields.contains(usefieldsindn[i])) out.write(" selected "); %>> 
                   <%= ejbcawebbean.getText(usefieldsindntexts[i]) %>
                </option>
             <%}%>
@@ -1000,8 +982,10 @@ function checkallfields(){
       <td width="50%" valign="top">   
         <select name="<%=SELECT_SUBJECTALTNAMESUBSET%>" size="6" multiple <%if(!certificateprofiledata.getUseSubjectAltNameSubSet()){out.write(" disabled ");} %>>       
             <% currentfields = new HashSet(certificateprofiledata.getSubjectAltNameSubSet());
+               Integer[] usefieldsinaltname = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTALTNAME);
+               String[] usefieldsinaltnametexts = (String[])DnComponents.getAltNameLanguageTexts().toArray(new String[0]);
                for(int i=0;i < usefieldsinaltname.length; i++){ %>                                  
-              <option value="<%=usefieldsinaltname[i]%>" <% if(currentfields.contains(new Integer(usefieldsinaltname[i]))) out.write(" selected "); %>> 
+              <option value="<%=usefieldsinaltname[i]%>" <% if(currentfields.contains(usefieldsinaltname[i])) out.write(" selected "); %>> 
                   <%= ejbcawebbean.getText(usefieldsinaltnametexts[i]) %>
                </option>
             <%}%>

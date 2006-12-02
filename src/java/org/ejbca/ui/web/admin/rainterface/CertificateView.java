@@ -29,11 +29,11 @@ import java.util.List;
 
 import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
-import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.cert.QCStatementExtension;
 import org.ejbca.util.cert.SubjectDirAttrExtension;
+import org.ejbca.util.dn.DNFieldExtractor;
 
 
 
@@ -42,7 +42,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * by JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: CertificateView.java,v 1.4 2006-07-02 10:00:10 anatom Exp $
+ * @version $Id: CertificateView.java,v 1.5 2006-12-02 11:17:57 anatom Exp $
  */
 public class CertificateView implements java.io.Serializable {
 

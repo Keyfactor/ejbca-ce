@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.util.dn.DnComponents;
 
 
 
@@ -65,20 +66,20 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
         int testca2 = 3;
         
         // Set so CN=modifyable required, OU0={DEP1_1,DEP1_2} required, OU1={DEP2_1,DEP2_2} required, C=OU1={SE,DK} not required 
-        profile.addField(EndEntityProfile.ORGANIZATIONUNIT);
-        profile.addField(EndEntityProfile.ORGANIZATIONUNIT);
-        profile.addField(EndEntityProfile.COUNTRY);
+        profile.addField(DnComponents.ORGANIZATIONUNIT);
+        profile.addField(DnComponents.ORGANIZATIONUNIT);
+        profile.addField(DnComponents.COUNTRY);
         
-        profile.setRequired(EndEntityProfile.ORGANIZATIONUNIT,0,true);
-        profile.setRequired(EndEntityProfile.ORGANIZATIONUNIT,1,true);
+        profile.setRequired(DnComponents.ORGANIZATIONUNIT,0,true);
+        profile.setRequired(DnComponents.ORGANIZATIONUNIT,1,true);
         
-        profile.setModifyable(EndEntityProfile.ORGANIZATIONUNIT,0,false);
-        profile.setModifyable(EndEntityProfile.ORGANIZATIONUNIT,1,false);
-        profile.setModifyable(EndEntityProfile.COUNTRY,0,false);
+        profile.setModifyable(DnComponents.ORGANIZATIONUNIT,0,false);
+        profile.setModifyable(DnComponents.ORGANIZATIONUNIT,1,false);
+        profile.setModifyable(DnComponents.COUNTRY,0,false);
         
-        profile.setValue(EndEntityProfile.ORGANIZATIONUNIT,0,"DEP1_1;DEP1_2");
-        profile.setValue(EndEntityProfile.ORGANIZATIONUNIT,1,"DEP2_1;DEP2_2");
-        profile.setValue(EndEntityProfile.COUNTRY,0,"SE;DK");
+        profile.setValue(DnComponents.ORGANIZATIONUNIT,0,"DEP1_1;DEP1_2");
+        profile.setValue(DnComponents.ORGANIZATIONUNIT,1,"DEP2_1;DEP2_2");
+        profile.setValue(DnComponents.COUNTRY,0,"SE;DK");
         
         profile.setValue(EndEntityProfile.AVAILCAS,0,""+testca1);
         
@@ -165,25 +166,25 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
         }
         
         // Add some subject altname fields
-        profile.addField(EndEntityProfile.RFC822NAME);
-        profile.addField(EndEntityProfile.DNSNAME);
-        profile.addField(EndEntityProfile.UPN);
-        profile.addField(EndEntityProfile.IPADDRESS);
+        profile.addField(DnComponents.RFC822NAME);
+        profile.addField(DnComponents.DNSNAME);
+        profile.addField(DnComponents.UPN);
+        profile.addField(DnComponents.IPADDRESS);
         
-        profile.setRequired(EndEntityProfile.RFC822NAME,0,true);
-        profile.setRequired(EndEntityProfile.DNSNAME,0,true);
-        profile.setRequired(EndEntityProfile.UPN,0,true);
-        profile.setRequired(EndEntityProfile.IPADDRESS,0,true);
+        profile.setRequired(DnComponents.RFC822NAME,0,true);
+        profile.setRequired(DnComponents.DNSNAME,0,true);
+        profile.setRequired(DnComponents.UPN,0,true);
+        profile.setRequired(DnComponents.IPADDRESS,0,true);
                 
-        profile.setModifyable(EndEntityProfile.RFC822NAME,0,false);
-        profile.setModifyable(EndEntityProfile.DNSNAME,0,false);
-        profile.setModifyable(EndEntityProfile.UPN,0,false);
-        profile.setModifyable(EndEntityProfile.IPADDRESS,0,true);
+        profile.setModifyable(DnComponents.RFC822NAME,0,false);
+        profile.setModifyable(DnComponents.DNSNAME,0,false);
+        profile.setModifyable(DnComponents.UPN,0,false);
+        profile.setModifyable(DnComponents.IPADDRESS,0,true);
         
         
-        profile.setValue(EndEntityProfile.DNSNAME,0,"test.primekey.se");
-        profile.setValue(EndEntityProfile.UPN,0,"test.com;primekey.se");
-        profile.setValue(EndEntityProfile.IPADDRESS,0,"11.11.1.1");
+        profile.setValue(DnComponents.DNSNAME,0,"test.primekey.se");
+        profile.setValue(DnComponents.UPN,0,"test.com;primekey.se");
+        profile.setValue(DnComponents.IPADDRESS,0,"11.11.1.1");
 
         profile.setRequired(EndEntityProfile.EMAIL,0,true);
         profile.setModifyable(EndEntityProfile.EMAIL,0,false);
@@ -340,24 +341,24 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
         
         
         // Set so CN=modifyable required, OU0={DEP1_1,DEP1_2} required, OU1={DEP2_1,DEP2_2} required, OU3=Optional, C=O{SE,DK} not required 
-        profile.addField(EndEntityProfile.ORGANIZATIONUNIT);
-        profile.addField(EndEntityProfile.ORGANIZATIONUNIT);
-        profile.addField(EndEntityProfile.ORGANIZATIONUNIT);
-        profile.addField(EndEntityProfile.COUNTRY);
+        profile.addField(DnComponents.ORGANIZATIONUNIT);
+        profile.addField(DnComponents.ORGANIZATIONUNIT);
+        profile.addField(DnComponents.ORGANIZATIONUNIT);
+        profile.addField(DnComponents.COUNTRY);
         
-        profile.setRequired(EndEntityProfile.ORGANIZATIONUNIT,0,true);
-        profile.setRequired(EndEntityProfile.ORGANIZATIONUNIT,1,true);
-        profile.setRequired(EndEntityProfile.ORGANIZATIONUNIT,2,false);
+        profile.setRequired(DnComponents.ORGANIZATIONUNIT,0,true);
+        profile.setRequired(DnComponents.ORGANIZATIONUNIT,1,true);
+        profile.setRequired(DnComponents.ORGANIZATIONUNIT,2,false);
         
-        profile.setModifyable(EndEntityProfile.ORGANIZATIONUNIT,0,false);
-        profile.setModifyable(EndEntityProfile.ORGANIZATIONUNIT,1,false);
-        profile.setModifyable(EndEntityProfile.ORGANIZATIONUNIT,2,true);
-        profile.setModifyable(EndEntityProfile.COUNTRY,0,false);
+        profile.setModifyable(DnComponents.ORGANIZATIONUNIT,0,false);
+        profile.setModifyable(DnComponents.ORGANIZATIONUNIT,1,false);
+        profile.setModifyable(DnComponents.ORGANIZATIONUNIT,2,true);
+        profile.setModifyable(DnComponents.COUNTRY,0,false);
         
-        profile.setValue(EndEntityProfile.ORGANIZATIONUNIT,0,"DEP1_1;DEP1_2");
-        profile.setValue(EndEntityProfile.ORGANIZATIONUNIT,1,"DEP2_1;DEP2_2");
-        profile.setValue(EndEntityProfile.ORGANIZATIONUNIT,2,"DEP3_1;DEP3_2");
-        profile.setValue(EndEntityProfile.COUNTRY,0,"SE;DK");
+        profile.setValue(DnComponents.ORGANIZATIONUNIT,0,"DEP1_1;DEP1_2");
+        profile.setValue(DnComponents.ORGANIZATIONUNIT,1,"DEP2_1;DEP2_2");
+        profile.setValue(DnComponents.ORGANIZATIONUNIT,2,"DEP3_1;DEP3_2");
+        profile.setValue(DnComponents.COUNTRY,0,"SE;DK");
         
         profile.setValue(EndEntityProfile.AVAILCAS,0,""+testca1);
                 
@@ -380,7 +381,7 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
         	assertTrue("Error Required OU fields wasn't checked propertly: " + e.getMessage(), false);        	
         } 
         
-        profile.setModifyable(EndEntityProfile.ORGANIZATIONUNIT,2,false);
+        profile.setModifyable(DnComponents.ORGANIZATIONUNIT,2,false);
         // Test with tree OU  (2 required)
         try{ 
           profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=DEP1_1,OU=DEP2_2,OU=DEP3_1,C=SE","null","","",SecConst.CERTPROFILE_FIXED_ENDUSER, false,
@@ -405,24 +406,24 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
         profile.setReverseFieldChecks(true);
         
         // Set so CN=modifyable required, OU0=Modifyable not required, OU1=Modifyable not required, OU3=required {hard,soft}, C=O{SE,DK} not required 
-        profile.addField(EndEntityProfile.ORGANIZATIONUNIT);
-        profile.addField(EndEntityProfile.ORGANIZATIONUNIT);
-        profile.addField(EndEntityProfile.ORGANIZATIONUNIT);
-        profile.addField(EndEntityProfile.COUNTRY);
+        profile.addField(DnComponents.ORGANIZATIONUNIT);
+        profile.addField(DnComponents.ORGANIZATIONUNIT);
+        profile.addField(DnComponents.ORGANIZATIONUNIT);
+        profile.addField(DnComponents.COUNTRY);
         
-        profile.setRequired(EndEntityProfile.ORGANIZATIONUNIT,0,false);
-        profile.setRequired(EndEntityProfile.ORGANIZATIONUNIT,1,false);
-        profile.setRequired(EndEntityProfile.ORGANIZATIONUNIT,2,true);
+        profile.setRequired(DnComponents.ORGANIZATIONUNIT,0,false);
+        profile.setRequired(DnComponents.ORGANIZATIONUNIT,1,false);
+        profile.setRequired(DnComponents.ORGANIZATIONUNIT,2,true);
         
-        profile.setModifyable(EndEntityProfile.ORGANIZATIONUNIT,0,true);
-        profile.setModifyable(EndEntityProfile.ORGANIZATIONUNIT,1,true);
-        profile.setModifyable(EndEntityProfile.ORGANIZATIONUNIT,2,false);
-        profile.setModifyable(EndEntityProfile.COUNTRY,0,false);
+        profile.setModifyable(DnComponents.ORGANIZATIONUNIT,0,true);
+        profile.setModifyable(DnComponents.ORGANIZATIONUNIT,1,true);
+        profile.setModifyable(DnComponents.ORGANIZATIONUNIT,2,false);
+        profile.setModifyable(DnComponents.COUNTRY,0,false);
         
-        profile.setValue(EndEntityProfile.ORGANIZATIONUNIT,0,"");
-        profile.setValue(EndEntityProfile.ORGANIZATIONUNIT,1,"");
-        profile.setValue(EndEntityProfile.ORGANIZATIONUNIT,2,"HARD;SOFT");
-        profile.setValue(EndEntityProfile.COUNTRY,0,"SE;DK");
+        profile.setValue(DnComponents.ORGANIZATIONUNIT,0,"");
+        profile.setValue(DnComponents.ORGANIZATIONUNIT,1,"");
+        profile.setValue(DnComponents.ORGANIZATIONUNIT,2,"HARD;SOFT");
+        profile.setValue(DnComponents.COUNTRY,0,"SE;DK");
         
         profile.setValue(EndEntityProfile.AVAILCAS,0,""+testca1);
         
@@ -514,24 +515,24 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
 
         
         // Set so CN=modifyable required, OU=Modifyable not required, OU1=Modifyable not required, OU3=required {hard,soft}, C=O{SE,DK} not required 
-        profile.addField(EndEntityProfile.IPADDRESS);
-        profile.addField(EndEntityProfile.IPADDRESS);
-        profile.addField(EndEntityProfile.IPADDRESS);
-        profile.addField(EndEntityProfile.DNSNAME);
+        profile.addField(DnComponents.IPADDRESS);
+        profile.addField(DnComponents.IPADDRESS);
+        profile.addField(DnComponents.IPADDRESS);
+        profile.addField(DnComponents.DNSNAME);
         
-        profile.setRequired(EndEntityProfile.IPADDRESS,0,false);
-        profile.setRequired(EndEntityProfile.IPADDRESS,1,false);
-        profile.setRequired(EndEntityProfile.IPADDRESS,2,true);
+        profile.setRequired(DnComponents.IPADDRESS,0,false);
+        profile.setRequired(DnComponents.IPADDRESS,1,false);
+        profile.setRequired(DnComponents.IPADDRESS,2,true);
         
-        profile.setModifyable(EndEntityProfile.IPADDRESS,0,true);
-        profile.setModifyable(EndEntityProfile.IPADDRESS,1,true);
-        profile.setModifyable(EndEntityProfile.IPADDRESS,2,false);
-        profile.setModifyable(EndEntityProfile.DNSNAME,0,false);
+        profile.setModifyable(DnComponents.IPADDRESS,0,true);
+        profile.setModifyable(DnComponents.IPADDRESS,1,true);
+        profile.setModifyable(DnComponents.IPADDRESS,2,false);
+        profile.setModifyable(DnComponents.DNSNAME,0,false);
         
-        profile.setValue(EndEntityProfile.IPADDRESS,0,"");
-        profile.setValue(EndEntityProfile.IPADDRESS,1,"");
-        profile.setValue(EndEntityProfile.IPADDRESS,2,"10.1.1.1;10.2.2.2");
-        profile.setValue(EndEntityProfile.DNSNAME,0,"test1.se;test2.se");
+        profile.setValue(DnComponents.IPADDRESS,0,"");
+        profile.setValue(DnComponents.IPADDRESS,1,"");
+        profile.setValue(DnComponents.IPADDRESS,2,"10.1.1.1;10.2.2.2");
+        profile.setValue(DnComponents.DNSNAME,0,"test1.se;test2.se");
         
 
         
@@ -622,29 +623,29 @@ public class TestUserFullfillEndEntityProfile extends TestCase {
 
         // Test adding required fields for Subject Directory Attributes
         // Set so CN=modifyable required, OU=Modifyable not required, OU1=Modifyable not required, OU3=required {hard,soft}, C=O{SE,DK} not required 
-        profile.addField(EndEntityProfile.DATEOFBIRTH);
-        profile.addField(EndEntityProfile.PLACEOFBIRTH);
-        profile.addField(EndEntityProfile.GENDER);
-        profile.addField(EndEntityProfile.COUNTRYOFCITIZENSHIP);
-        profile.addField(EndEntityProfile.COUNTRYOFRESIDENCE);
+        profile.addField(DnComponents.DATEOFBIRTH);
+        profile.addField(DnComponents.PLACEOFBIRTH);
+        profile.addField(DnComponents.GENDER);
+        profile.addField(DnComponents.COUNTRYOFCITIZENSHIP);
+        profile.addField(DnComponents.COUNTRYOFRESIDENCE);
         
-        profile.setRequired(EndEntityProfile.DATEOFBIRTH,0,false);
-        profile.setRequired(EndEntityProfile.PLACEOFBIRTH,0,false);
-        profile.setRequired(EndEntityProfile.GENDER,0,false);
-        profile.setRequired(EndEntityProfile.COUNTRYOFCITIZENSHIP,0,false);
-        profile.setRequired(EndEntityProfile.COUNTRYOFRESIDENCE,0,false);
+        profile.setRequired(DnComponents.DATEOFBIRTH,0,false);
+        profile.setRequired(DnComponents.PLACEOFBIRTH,0,false);
+        profile.setRequired(DnComponents.GENDER,0,false);
+        profile.setRequired(DnComponents.COUNTRYOFCITIZENSHIP,0,false);
+        profile.setRequired(DnComponents.COUNTRYOFRESIDENCE,0,false);
         
-        profile.setModifyable(EndEntityProfile.DATEOFBIRTH,0,true);
-        profile.setModifyable(EndEntityProfile.PLACEOFBIRTH,0,true);
-        profile.setModifyable(EndEntityProfile.GENDER,0,true);
-        profile.setModifyable(EndEntityProfile.COUNTRYOFCITIZENSHIP,0,true);
-        profile.setModifyable(EndEntityProfile.COUNTRYOFRESIDENCE,0,false);
+        profile.setModifyable(DnComponents.DATEOFBIRTH,0,true);
+        profile.setModifyable(DnComponents.PLACEOFBIRTH,0,true);
+        profile.setModifyable(DnComponents.GENDER,0,true);
+        profile.setModifyable(DnComponents.COUNTRYOFCITIZENSHIP,0,true);
+        profile.setModifyable(DnComponents.COUNTRYOFRESIDENCE,0,false);
         
-        profile.setValue(EndEntityProfile.DATEOFBIRTH,0,"");
-        profile.setValue(EndEntityProfile.PLACEOFBIRTH,0,"");
-        profile.setValue(EndEntityProfile.GENDER,0,"");
-        profile.setValue(EndEntityProfile.COUNTRYOFCITIZENSHIP,0,"");
-        profile.setValue(EndEntityProfile.COUNTRYOFRESIDENCE,0,"SE");
+        profile.setValue(DnComponents.DATEOFBIRTH,0,"");
+        profile.setValue(DnComponents.PLACEOFBIRTH,0,"");
+        profile.setValue(DnComponents.GENDER,0,"");
+        profile.setValue(DnComponents.COUNTRYOFCITIZENSHIP,0,"");
+        profile.setValue(DnComponents.COUNTRYOFRESIDENCE,0,"SE");
 
         try{ 
         	profile.doesUserFullfillEndEntityProfile("username","password","CN=John Smith,OU=HARD,C=SE","dnsname=test1.se,ipaddress=10.1.1.1","CountryOfCitizenship=FOO","",SecConst.CERTPROFILE_FIXED_ENDUSER, false,

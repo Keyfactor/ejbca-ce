@@ -6,37 +6,6 @@
    TreeMap certificateprofilenames = ejbcawebbean.getInformationMemory().getAuthorizedEndEntityCertificateProfileNames();
    boolean used = false;
 
-   String[] subjectfieldtexts = {"","","", "OLDEMAILDN2", "UID", "COMMONNAME", "SERIALNUMBER1", 
-                                 "GIVENNAME2", "INITIALS", "SURNAME","TITLE","ORGANIZATIONUNIT","ORGANIZATION",
-                                "LOCALE","STATE","DOMAINCOMPONENT","COUNTRY"
-                                , "RFC822NAME", "DNSNAME", "IPADDRESS", "OTHERNAME", "UNIFORMRESOURCEID", "X400ADDRESS", "DIRECTORYNAME"
-                                ,"EDIPARTNAME", "REGISTEREDID","","","","","","","","","","","UPNDOMAIN", "","", "UNSTRUCTUREDADDRESS", "UNSTRUCTUREDNAME","GUID"
-                                ,"DATEOFBIRTH", "PLACEOFBIRTH", "GENDER", "COUNTRYOFCITIZENSHIP", "COUNTRYOFRESIDENCE"};
-
-   int[] subjectdnfields = {EndEntityProfile.OLDDNE,EndEntityProfile.UID,EndEntityProfile.COMMONNAME,EndEntityProfile.SN
-                           ,EndEntityProfile.GIVENNAME,EndEntityProfile.INITIALS,EndEntityProfile.SURNAME
-                           ,EndEntityProfile.TITLE,EndEntityProfile.ORGANIZATIONUNIT,EndEntityProfile.ORGANIZATION
-                           ,EndEntityProfile.LOCALE,EndEntityProfile.STATE,EndEntityProfile.DOMAINCOMPONENT
-                           ,EndEntityProfile.COUNTRY,EndEntityProfile.UNSTRUCTUREDADDRESS,EndEntityProfile.UNSTRUCTUREDNAME};
-
-   int[] subjectaltnamefields = {EndEntityProfile.RFC822NAME
-                                 ,EndEntityProfile.DNSNAME
-                                 ,EndEntityProfile.IPADDRESS
-                                 //,EndEntityProfile.OTHERNAME
-                                 ,EndEntityProfile.UNIFORMRESOURCEID
-                                 //,EndEntityProfile.X400ADDRESS
-                                 ,EndEntityProfile.DIRECTORYNAME
-                                 //,EndEntityProfile.EDIPARTNAME
-                                 //,EndEntityProfile.REGISTEREDID
-                                 ,EndEntityProfile.UPN
-                                 ,EndEntityProfile.GUID};
-
-   int[] subjectdirattrfields = {EndEntityProfile.DATEOFBIRTH
-                                 ,EndEntityProfile.PLACEOFBIRTH
-                                 ,EndEntityProfile.GENDER
-                                 ,EndEntityProfile.COUNTRYOFCITIZENSHIP
-                                 ,EndEntityProfile.COUNTRYOFRESIDENCE};
-
    String[] tokentexts = RAInterfaceBean.tokentexts;
    int[] tokenids = RAInterfaceBean.tokenids;
    String[] hardtokenissueraliases = new String[0];
@@ -105,7 +74,7 @@ function checkallfields(){
 
 
     for(var i=0; i < numbersubjectdnfields; i++){
-      if( dnfieldtypes[i] != <%= EndEntityProfile.OLDDNE %>){
+      if( dnfieldtypes[i] != <%= DnComponents.DNEMAIL %>){
         fieldname = "document.editprofile.<%=TEXTFIELD_SUBJECTDN%>" + i;
         if(!checkfieldforlegaldncharswithchangeable(fieldname,"<%= ejbcawebbean.getText("ONLYDNCHARACTERS") %>"))
           illegalfields++;
@@ -113,7 +82,7 @@ function checkallfields(){
     } 
 
     for(var i=0; i < numbersubjectaltnamesfields; i++){
-      if(altnamesfieldtypes[i] != <%= EndEntityProfile.RFC822NAME%>){
+      if(altnamesfieldtypes[i] != <%= DnComponents.RFC822NAME%>){
         fieldname = "document.editprofile.<%=TEXTFIELD_SUBJECTALTNAME%>"+i;
         if(!checkfieldforlegaldncharswithchangeable(fieldname,"<%= ejbcawebbean.getText("ONLYDNCHARACTERS") %>"))
           illegalfields++;
@@ -417,8 +386,9 @@ function checkuseemailfield(){
       <td width="70%"> 
         <select name="<%=SELECT_ADDSUBJECTDN %>" size="1" >
             <% 
+            String[] subjectdnfields = EndEntityProfile.getSubjectDNProfileFields();
                for(int i=0; i < subjectdnfields.length; i++){ %>
-           <option  value='<%= subjectdnfields[i]%>'><%= ejbcawebbean.getText(subjectfieldtexts[subjectdnfields[i]]) %>
+           <option  value='<%= subjectdnfields[i]%>'><%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileName(subjectdnfields[i])) %>
            </option>
             <% } %>
         </select>
@@ -434,10 +404,10 @@ function checkuseemailfield(){
         <input type="checkbox" name="<%=CHECKBOX_SELECTSUBJECTDN + i%>" value="<%=CHECKBOX_VALUE %>">      
       </td>
       <td width="25%" align="right"> 
-        <%= ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %> <br>&nbsp;
+        <%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %> <br>&nbsp;
       </td>
       <td width="70%"> 
-        <% if(fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.OLDDNE ){ %>
+        <% if(!EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAIL) ){ %>
         <input type="text" name="<%=TEXTFIELD_SUBJECTDN + i%>" size="40" maxlength="1024"
            value="<% if(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) != null) out.write(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER])); %>"><br> 
         <%= ejbcawebbean.getText("REQUIRED") %>
@@ -484,9 +454,12 @@ function checkuseemailfield(){
       <td width="70%"> 
         <select name="<%=SELECT_ADDSUBJECTALTNAME %>" size="1" >
             <% 
+               String[] subjectaltnamefields = EndEntityProfile.getSubjectAltnameProfileFields();
                for(int i=0; i < subjectaltnamefields.length; i++){ %>
-           <option  value='<%= subjectaltnamefields[i]%>'><%= ejbcawebbean.getText(subjectfieldtexts[subjectaltnamefields[i]]) %>
+                 if (EndEntityProfile.isFieldImplemented(subjectaltnamefields[i])) {
+           <option  value='<%= subjectaltnamefields[i]%>'><%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileName(subjectaltnamefields[i])) %>
            </option>
+                 }
             <% }%>
         </select>
         &nbsp;<input type="submit" name="<%= BUTTON_ADDSUBJECTALTNAME %>" value="<%= ejbcawebbean.getText("ADD") %>"> 
@@ -496,18 +469,17 @@ function checkuseemailfield(){
        for(int i=0; i < numberofsubjectdnfields; i++){
          fielddata =  profiledata.getSubjectAltNameFieldsInOrder(i);
          int fieldtype = fielddata[EndEntityProfile.FIELDTYPE];
-         if(fieldtype != EndEntityProfile.OTHERNAME && fieldtype != EndEntityProfile.X400ADDRESS && 
-            fieldtype != EndEntityProfile.EDIPARTNAME && fieldtype != EndEntityProfile.REGISTEREDID ){
+         if(EndEntityProfile.isFieldImplemented(fieldtype)){
     %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
         <input type="checkbox" name="<%=CHECKBOX_SELECTSUBJECTALTNAME + i %>" value="<%=CHECKBOX_VALUE %>">      
       </td>
       <td width="25%" align="right"> 
-        <%= ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %> <br>&nbsp;
+        <%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %> <br>&nbsp;
       </td>
       <td width="70%"> 
-        <% if(fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.RFC822NAME ){ %>
+        <% if(!EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME) ){ %>
         <input type="text" name="<%=TEXTFIELD_SUBJECTALTNAME + i%>" size="40" maxlength="1024" 
            value="<% if(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) != null) out.write(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER])); %>"><br>
 
@@ -573,9 +545,7 @@ function checkuseemailfield(){
         <%= ejbcawebbean.getText("USE") %> 
         <input type="checkbox" name="<%=CHECKBOX_USE_EMAIL %>" value="<%=CHECKBOX_VALUE %>" onclick="checkusetextfield('<%=CHECKBOX_USE_EMAIL %>', '<%=TEXTFIELD_EMAIL%>', '<%=CHECKBOX_REQUIRED_EMAIL %>', '<%=CHECKBOX_MODIFYABLE_EMAIL %>')"
            <% if(used)
-                 out.write(" CHECKED ");
-              if(emailfieldexists)
-                 out.write(" disabled "); %>
+                 out.write(" CHECKED "); %>
            >&nbsp;&nbsp;
                <%= ejbcawebbean.getText("REQUIRED") %>
         <input type="checkbox" name="<%=CHECKBOX_REQUIRED_EMAIL%>" value="<%=CHECKBOX_VALUE %>"  <% if(!used) out.write(" disabled "); %>
@@ -601,8 +571,9 @@ function checkuseemailfield(){
       <td width="70%"> 
         <select name="<%=SELECT_ADDSUBJECTDIRATTR %>" size="1" >
             <% 
+               String[] subjectdirattrfields = EndEntityProfile.getSubjectDirAttrProfileFields();
                for(int i=0; i < subjectdirattrfields.length; i++){ %>
-           <option  value='<%= subjectdirattrfields[i]%>'><%= ejbcawebbean.getText(subjectfieldtexts[subjectdirattrfields[i]]) %>
+           <option  value='<%= subjectdirattrfields[i]%>'><%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileName(subjectdirattrfields[i])) %>
            </option>
             <% }%>
         </select>
@@ -620,7 +591,7 @@ function checkuseemailfield(){
         <input type="checkbox" name="<%=CHECKBOX_SELECTSUBJECTDIRATTR + i %>" value="<%=CHECKBOX_VALUE %>">      
       </td>
       <td width="25%" align="right"> 
-        <%= ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %> <br>&nbsp;
+        <%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %> <br>&nbsp;
       </td>
       <td width="70%"> 
         <input type="text" name="<%=TEXTFIELD_SUBJECTDIRATTR + i%>" size="40" maxlength="1024" 

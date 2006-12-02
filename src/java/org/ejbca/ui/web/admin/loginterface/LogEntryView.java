@@ -20,14 +20,14 @@ import java.rmi.RemoteException;
 
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogEntry;
-import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 import org.ejbca.ui.web.admin.rainterface.SortBy;
+import org.ejbca.util.dn.DNFieldExtractor;
 
 /**
  * A class used as a help class for displaying LogEntries.
  *
  * @author  TomSelleck
- * @version $Id: LogEntryView.java,v 1.2 2006-08-05 09:59:38 anatom Exp $
+ * @version $Id: LogEntryView.java,v 1.3 2006-12-02 11:17:58 anatom Exp $
  */
 public class LogEntryView implements java.io.Serializable, Cloneable, Comparable {
     // Public constants.

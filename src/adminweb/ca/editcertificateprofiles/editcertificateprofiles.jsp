@@ -2,7 +2,7 @@
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.SecConst, org.ejbca.core.model.authorization.AuthorizationDeniedException,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, org.ejbca.ui.web.admin.cainterface.CertificateProfileDataHandler, 
-               org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException, org.ejbca.ui.web.admin.rainterface.CertificateView, org.ejbca.core.model.ra.raadmin.DNFieldExtractor"%>
+               org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException, org.ejbca.ui.web.admin.rainterface.CertificateView, org.ejbca.util.dn.DNFieldExtractor, org.ejbca.util.dn.DnComponents"%>
 
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />

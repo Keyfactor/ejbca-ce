@@ -3,7 +3,7 @@
 <%@page errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.SecConst
                ,org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, 
                 org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer,
-                org.ejbca.core.model.hardtoken.HardTokenIssuerData,  org.ejbca.ui.web.admin.cainterface.CAInterfaceBean,
+                org.ejbca.core.model.hardtoken.HardTokenIssuerData, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.util.dn.DnComponents,
                 java.io.InputStream, java.io.InputStreamReader,
                 java.io.IOException, java.io.BufferedReader, org.apache.commons.fileupload.FileUploadException, org.apache.commons.fileupload.FileItem, org.apache.commons.fileupload.FileUploadBase, org.apache.commons.fileupload.DiskFileUpload"%>
 
@@ -530,7 +530,7 @@
              if(request.getParameter(BUTTON_ADDSUBJECTDN) != null){             
                value = request.getParameter(SELECT_ADDSUBJECTDN);
                if(value!=null){
-                 profiledata.addField(Integer.parseInt(value));             
+                 profiledata.addField(value);             
                }                   
              }
              if(request.getParameter(BUTTON_DELETESUBJECTALTNAME) != null){             
@@ -548,7 +548,7 @@
              if(request.getParameter(BUTTON_ADDSUBJECTALTNAME) != null){             
                value = request.getParameter(SELECT_ADDSUBJECTALTNAME);
                if(value!=null){
-                 profiledata.addField(Integer.parseInt(value));                
+                 profiledata.addField(value);                
                }                       
              }
              
@@ -567,7 +567,7 @@
              if(request.getParameter(BUTTON_ADDSUBJECTDIRATTR) != null){             
                value = request.getParameter(SELECT_ADDSUBJECTDIRATTR);
                if(value!=null){
-                 profiledata.addField(Integer.parseInt(value));                
+                 profiledata.addField(value);                
                }                       
              }
              

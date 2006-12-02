@@ -2,9 +2,9 @@
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page  errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.ui.web.admin.rainterface.UserView,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.UserDataConstants,
-                 javax.ejb.CreateException, java.rmi.RemoteException, org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.core.model.ra.raadmin.DNFieldExtractor, org.ejbca.core.model.ra.UserDataVO,
+                 javax.ejb.CreateException, java.rmi.RemoteException, org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.util.dn.DNFieldExtractor, org.ejbca.core.model.ra.UserDataVO,
                  org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer, org.ejbca.core.model.hardtoken.HardTokenIssuerData, 
-                 org.ejbca.core.model.SecConst, org.ejbca.util.StringTools" %>
+                 org.ejbca.core.model.SecConst, org.ejbca.util.StringTools, org.ejbca.util.dn.DnComponents" %>
 <html> 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -78,13 +78,6 @@
                                             rabean.initialize(request, ejbcawebbean);
                                             if(globalconfiguration.getIssueHardwareTokens())
                                               tokenbean.initialize(request, ejbcawebbean);
-
-  String[] subjectfieldtexts = {"","","", "OLDEMAILDN2", "UID", "COMMONNAME", "SERIALNUMBER1", 
-                                "GIVENNAME2", "INITIALS", "SURNAME","TITLE","ORGANIZATIONUNIT","ORGANIZATION",
-                                "LOCALE","STATE","DOMAINCOMPONENT","COUNTRY",
-                                "RFC822NAME", "DNSNAME", "IPADDRESS", "OTHERNAME", "UNIFORMRESOURCEID", "X400ADDRESS", "DIRECTORYNAME",
-                                "EDIPARTNAME", "REGISTEREDID","","","","","","","","","","","UPN", "","","UNSTRUCTUREDADDRESS", "UNSTRUCTUREDNAME","GUID"
-                                ,"DATEOFBIRTH", "PLACEOFBIRTH", "GENDER", "COUNTRYOFCITIZENSHIP", "COUNTRYOFRESIDENCE"};
 
   String THIS_FILENAME             =  globalconfiguration.getRaPath()  + "/editendentity.jsp";
   String username                  = null;
@@ -196,7 +189,7 @@
                for(int i=0; i < numberofsubjectdnfields; i++){
                  value=null;
                  fielddata = profile.getSubjectDNFieldsInOrder(i); 
-                 if(fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.OLDDNE)
+                 if(!EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAIL))
                    value = request.getParameter(TEXTFIELD_SUBJECTDN+i);
                  else{
                    if(request.getParameter(CHECKBOX_SUBJECTDN+i)!=null)
@@ -206,7 +199,7 @@
                  if(value !=null){
                    value= value.trim(); 
                    if(!value.equals("")){
-                     value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.SUBJECTDNFIELDS[profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE])] +value);
+                     value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTDN) +value);
                      if(subjectdn.equals(""))
                        subjectdn = value;
                      else
@@ -216,7 +209,7 @@
                  value = request.getParameter(SELECT_SUBJECTDN+i);
                  if(value !=null){                   
                    if(!value.equals("")){
-                     value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.SUBJECTDNFIELDS[profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE])] +value);
+                     value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTDN) +value);
                      if(subjectdn.equals(""))
                        subjectdn = value;
                      else
@@ -232,12 +225,12 @@
                for(int i=0; i < numberofsubjectaltnamefields; i++){
                  fielddata = profile.getSubjectAltNameFieldsInOrder(i); 
                  value=null; 
-                 if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.RFC822NAME){                   
+                 if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME)) {
                    if(request.getParameter(CHECKBOX_SUBJECTALTNAME+i)!=null)
                      if(request.getParameter(CHECKBOX_SUBJECTALTNAME+i).equals(CHECKBOX_VALUE))
                        value = newuser.getEmail();
                  }else{
-                   if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.UPN){
+                   if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.UPN)) {
                      if(request.getParameter(TEXTFIELD_SUBJECTALTNAME+i) != null && !request.getParameter(TEXTFIELD_SUBJECTALTNAME+i).equals("") 
 				             && request.getParameter(TEXTFIELD_UPNNAME+i) != null && !request.getParameter(TEXTFIELD_UPNNAME+i).equals("")){
                        value = request.getParameter(TEXTFIELD_UPNNAME+i) + "@" + 
@@ -249,7 +242,7 @@
                  }
                  if(value !=null){                
                    if(!value.equals("")){
-                     value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.SUBJECTALTNAME[profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]) - DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY] +value);  
+                     value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTALTNAME) +value);
                      if(subjectaltname.equals(""))
                        subjectaltname = value;
                      else
@@ -258,13 +251,13 @@
                  }
                  value = request.getParameter(SELECT_SUBJECTALTNAME+i);
                  if(value !=null){
-                   if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.UPN){
+                   if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.UPN)) {
                      if(request.getParameter(TEXTFIELD_UPNNAME+i) != null && !value.trim().equals("")){
                        value = request.getParameter(TEXTFIELD_UPNNAME+i)+ "@" + value;
                      } 
                    }
                    if(!value.equals("")){
-                       value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.SUBJECTALTNAME[profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]) - DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY] +value);                  	   
+                       value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTALTNAME) +value);
                      if(subjectaltname.equals(""))
                        subjectaltname = value;
                      else
@@ -283,7 +276,7 @@
                  if(value !=null){
                    value=value.trim(); 
                    if(!value.equals("")){
-                     value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.SUBJECTDIRATTR[profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]) - DNFieldExtractor.SUBJECTDIRATTRBOUNDRARY] +value);
+                     value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTDIRATTR) +value);
                      if(subjectdirattr.equals(""))
                        subjectdirattr = value;
                      else
@@ -294,7 +287,7 @@
                  value = request.getParameter(SELECT_SUBJECTDIRATTR+i);
                  if(value !=null){
                    if(!value.equals("")){
-                     value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.SUBJECTDIRATTR[profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]) - DNFieldExtractor.SUBJECTDIRATTRBOUNDRARY] +value);
+                     value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTDIRATTR) +value);
                      if(subjectdirattr.equals(""))
                        subjectdirattr = value;
                      else
@@ -630,16 +623,17 @@ function fillCAField(){
 
 function checkallfields(){
     var illegalfields = 0;
-
- <%    for(int i=0; i < profile.getSubjectDNFieldOrderLength(); i++){
+fileFieldTexts();
+ <%    
+     for(int i=0; i < profile.getSubjectDNFieldOrderLength(); i++){
          fielddata = profile.getSubjectDNFieldsInOrder(i);
-         if(fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.OLDDNE){
+         if(!EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAIL)) {
            if(profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ %>
-    if(!checkfieldforlegaldnchars("document.edituser.<%=TEXTFIELD_SUBJECTDN+i%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %>"))
+    if(!checkfieldforlegaldnchars("document.edituser.<%=TEXTFIELD_SUBJECTDN+i%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %>"))
       illegalfields++;
     <%     if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){%>
     if((document.edituser.<%= TEXTFIELD_SUBJECTDN+i %>.value == "")){
-      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]])%>");
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE]))%>");
       illegalfields++;
     } 
     <%     }
@@ -652,29 +646,28 @@ function checkallfields(){
        for(int i=0; i < profile.getSubjectAltNameFieldOrderLength(); i++){
          fielddata = profile.getSubjectAltNameFieldsInOrder(i);
          int fieldtype = fielddata[EndEntityProfile.FIELDTYPE];
-         if(fieldtype != EndEntityProfile.OTHERNAME && fieldtype != EndEntityProfile.X400ADDRESS && 
-            fieldtype != EndEntityProfile.EDIPARTNAME && fieldtype != EndEntityProfile.REGISTEREDID ){ // Not implemented yet.
-           if(fielddata[EndEntityProfile.FIELDTYPE] != EndEntityProfile.RFC822NAME){
-             if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.UPN){%>
-    if(!checkfieldforlegaldnchars("document.edituser.<%=TEXTFIELD_UPNNAME+i%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %>"))
+         if (EndEntityProfile.isFieldImplemented(fieldtype)) {
+           if(!EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME)) {
+             if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.UPN)) {%>
+    if(!checkfieldforlegaldnchars("document.edituser.<%=TEXTFIELD_UPNNAME+i%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %>"))
       illegalfields++;
     <%         if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ %>    
               if((document.edituser.<%= TEXTFIELD_UPNNAME+i %>.value == "")){ 
-                alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]])%>");
+                alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE]))%>");
                 illegalfields++;
               } 
         <%     }
              }  
              if(profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){
-               if(fielddata[EndEntityProfile.FIELDTYPE] == EndEntityProfile.IPADDRESS ){ %>
-    if(!checkfieldforipaddess("document.edituser.<%=TEXTFIELD_SUBJECTALTNAME+i%>","<%= ejbcawebbean.getText("ONLYNUMBERALSANDDOTS") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %>"))
+               if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.IPADDRESS)) { %>
+    if(!checkfieldforipaddess("document.edituser.<%=TEXTFIELD_SUBJECTALTNAME+i%>","<%= ejbcawebbean.getText("ONLYNUMBERALSANDDOTS") + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %>"))
       illegalfields++;
            <%  }else{ %>
-    if(!checkfieldforlegaldnchars("document.edituser.<%=TEXTFIELD_SUBJECTALTNAME+i%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %>"))
+    if(!checkfieldforlegaldnchars("document.edituser.<%=TEXTFIELD_SUBJECTALTNAME+i%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %>"))
       illegalfields++;
     <%    if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ %>
     if((document.edituser.<%= TEXTFIELD_SUBJECTALTNAME+i %>.value == "")){
-      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]])%>");
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE]))%>");
       illegalfields++;
     } 
     <%        }
@@ -979,17 +972,17 @@ function checkUseInBatch(){
           for(int i=0; i < numberofsubjectdnfields; i++){
             fielddata = profile.getSubjectDNFieldsInOrder(i);  %>
        <tr id="Row<%=(row++)%2%>">
-	 <td align="right"><%= ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %></td>
+	 <td align="right"><%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %></td>
 	 <td>      
           <% 
-             if( fielddata[EndEntityProfile.FIELDTYPE]  != EndEntityProfile.OLDDNE ){  
+             if( !EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAIL)){  
                 if(!profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ 
                  String[] options = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]).split(EndEntityProfile.SPLITCHAR);
                %>
            <select name="<%= SELECT_SUBJECTDN + i %>" size="1" tabindex="<%=tabindex++%>">
                <% if( options != null){
                     for(int j=0;j < options.length;j++){ %>
-             <option value="<%=options[j].trim()%>" <% if(userdata.getSubjectDNField(profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]).equals(options[j].trim())) out.write(" selected "); %>> 
+             <option value="<%=options[j].trim()%>" <% if(userdata.getSubjectDNField(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]).equals(options[j].trim())) out.write(" selected "); %>> 
                 <%=options[j].trim()%>
              </option>                
                <%   }
@@ -997,12 +990,12 @@ function checkUseInBatch(){
                 %>
            </select>
            <% }else{ %> 
-             <input type="text" name="<%= TEXTFIELD_SUBJECTDN + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value="<%= userdata.getSubjectDNField(profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]) %>">
+             <input type="text" name="<%= TEXTFIELD_SUBJECTDN + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value="<%= userdata.getSubjectDNField(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]) %>">
            <% }
             }
             else{ %>
               <%= ejbcawebbean.getText("USESEMAILFIELDDATA") + " :"%>&nbsp;
-        <input type="checkbox" name="<%=CHECKBOX_SUBJECTDN + i%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" <% if(!userdata.getSubjectDNField(profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]).equals("") || profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]))
+        <input type="checkbox" name="<%=CHECKBOX_SUBJECTDN + i%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" <% if(!userdata.getSubjectDNField(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]).equals("") || profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]))
                                                                                                                  out.write(" CHECKED "); 
                                                                                                                if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]))
                                                                                                                  out.write(" disabled='true' "); 
@@ -1021,20 +1014,20 @@ function checkUseInBatch(){
 	<td></td>
        </tr>
       <% } %>
-       <% for(int i=0; i < numberofsubjectaltnamefields; i++){
+       <% 
+         for(int i=0; i < numberofsubjectaltnamefields; i++){
             fielddata = profile.getSubjectAltNameFieldsInOrder(i);
             int fieldtype = fielddata[EndEntityProfile.FIELDTYPE];
-            if(fieldtype != EndEntityProfile.OTHERNAME && fieldtype != EndEntityProfile.X400ADDRESS && 
-               fieldtype != EndEntityProfile.EDIPARTNAME && fieldtype != EndEntityProfile.REGISTEREDID ){ // Not implemented yet.%>
+            if(EndEntityProfile.isFieldImplemented(fieldtype)) {%>
        <tr id="Row<%=(row++)%2%>">
-	 <td align="right"><%= ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %></td>
+	 <td align="right"><%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %></td>
 	 <td>      
           <%
-             if( fieldtype != EndEntityProfile.RFC822NAME ){
-               if(fieldtype == EndEntityProfile.UPN){ 
+             if( !EndEntityProfile.isFieldOfType(fieldtype, DnComponents.RFC822NAME) ){
+               if(EndEntityProfile.isFieldOfType(fieldtype, DnComponents.UPN)){ 
                  String upnname = "";
                  String upndomain = "";            
-                 String fullupn = userdata.getSubjectAltNameField(profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]);
+                 String fullupn = userdata.getSubjectAltNameField(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]);
                  if(fullupn != null && !fullupn.equals("")){
                    upnname   = fullupn.substring(0,fullupn.indexOf('@'));
                    upndomain = fullupn.substring(fullupn.indexOf('@')+1);
@@ -1061,7 +1054,7 @@ function checkUseInBatch(){
            <select name="<%= SELECT_SUBJECTALTNAME + i %>" size="1" tabindex="<%=tabindex++%>">
                <% if( options != null){
                     for(int j=0;j < options.length;j++){ %>
-             <option value="<%=options[j].trim()%>" <%  if(userdata.getSubjectAltNameField(profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]).equals(options[j].trim())) out.write(" selected "); %>> 
+             <option value="<%=options[j].trim()%>" <%  if(userdata.getSubjectAltNameField(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]).equals(options[j].trim())) out.write(" selected "); %>> 
                 <%=options[j].trim()%>
              </option>                
                <%   }
@@ -1069,14 +1062,14 @@ function checkUseInBatch(){
                 %>
            </select>
            <% }else{ %>
-             <input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value="<%= userdata.getSubjectAltNameField(profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]) %>">
+             <input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value="<%= userdata.getSubjectAltNameField(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]) %>">
            <% }
             }
             }else{ %>
               <%= ejbcawebbean.getText("USESEMAILFIELDDATA")+ " :"%>&nbsp;
         <input type="checkbox" name="<%=CHECKBOX_SUBJECTALTNAME + i%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" 
           <% if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])) out.write(" disabled='true' ");     
-             if(!userdata.getSubjectAltNameField(profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]).equals("") || profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]))
+             if(!userdata.getSubjectAltNameField(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]).equals("") || profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]))
                                                                                                                  out.write(" CHECKED ");
                                                                                                              %>>
          <% } %>  
@@ -1100,7 +1093,7 @@ function checkUseInBatch(){
             int fieldtype = fielddata[EndEntityProfile.FIELDTYPE];
 			{ %>
        <tr id="Row<%=(row++)%2%>">
-	 <td align="right"><%= ejbcawebbean.getText(subjectfieldtexts[fielddata[EndEntityProfile.FIELDTYPE]]) %></td>
+	 <td align="right"><%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %></td>
 	 <td>      
           <%
                if(!profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ 
@@ -1109,7 +1102,7 @@ function checkUseInBatch(){
            <select name="<%= SELECT_SUBJECTDIRATTR + i %>" size="1" tabindex="<%=tabindex++%>">
                <% if( options != null){
                     for(int j=0;j < options.length;j++){ %>
-             <option value="<%=options[j].trim()%>" <%  if(userdata.getSubjectDirAttributeField(profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]).equals(options[j].trim())) out.write(" selected "); %>> 
+             <option value="<%=options[j].trim()%>" <%  if(userdata.getSubjectDirAttributeField(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]).equals(options[j].trim())) out.write(" selected "); %>> 
                 <%=options[j].trim()%>
              </option>                
                <%   }
@@ -1117,7 +1110,7 @@ function checkUseInBatch(){
                 %>
            </select>
            <% }else{ %>
-             <input type="text" name="<%= TEXTFIELD_SUBJECTDIRATTR + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value="<%= userdata.getSubjectDirAttributeField(profile.profileFieldIdToUserFieldIdMapper(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]) %>">
+             <input type="text" name="<%= TEXTFIELD_SUBJECTDIRATTR + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value="<%= userdata.getSubjectDirAttributeField(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]),fielddata[EndEntityProfile.NUMBER]) %>">
            <% } 
            %>
         </td>

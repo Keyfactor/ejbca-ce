@@ -4,7 +4,8 @@
     org.ejbca.ui.web.RequestHelper, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.caadmin.CAInfo, org.ejbca.core.model.ca.caadmin.X509CAInfo, org.ejbca.core.model.ca.catoken.CATokenInfo, org.ejbca.core.model.ca.catoken.SoftCATokenInfo, org.ejbca.ui.web.admin.cainterface.CADataHandler,
                org.ejbca.ui.web.admin.rainterface.RevokedInfoView, org.ejbca.ui.web.admin.configuration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.bouncycastle.jce.PKCS10CertificationRequest, org.ejbca.core.EjbcaException,
                org.ejbca.core.protocol.PKCS10RequestMessage, org.ejbca.core.model.ca.caadmin.CAExistsException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.model.ca.catoken.CATokenOfflineException, org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException,
-               org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, org.ejbca.core.model.ca.catoken.HardCATokenManager, org.ejbca.core.model.ca.catoken.AvailableHardCAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo, org.ejbca.core.model.ca.catoken.CATokenConstants" %>
+               org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, org.ejbca.core.model.ca.catoken.HardCATokenManager, org.ejbca.core.model.ca.catoken.AvailableHardCAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo, org.ejbca.core.model.ca.catoken.CATokenConstants,
+               org.ejbca.util.dn.DNFieldExtractor" %>
 
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -338,8 +339,8 @@
                 subjectaltname = ""; 
               else{
                 if(!subjectaltname.trim().equals("")){
-                   org.ejbca.core.model.ra.raadmin.DNFieldExtractor subtest = 
-                     new org.ejbca.core.model.ra.raadmin.DNFieldExtractor(subjectaltname,org.ejbca.core.model.ra.raadmin.DNFieldExtractor.TYPE_SUBJECTALTNAME);                   
+                   DNFieldExtractor subtest = 
+                     new DNFieldExtractor(subjectaltname,DNFieldExtractor.TYPE_SUBJECTALTNAME);                   
                    if(subtest.isIllegal() || subtest.existsOther()){
                      illegaldnoraltname = true;
                    }
@@ -830,8 +831,8 @@
                 subjectaltname = ""; 
               else{
                 if(!subjectaltname.trim().equals("")){
-                   org.ejbca.core.model.ra.raadmin.DNFieldExtractor subtest = 
-                     new org.ejbca.core.model.ra.raadmin.DNFieldExtractor(subjectaltname,org.ejbca.core.model.ra.raadmin.DNFieldExtractor.TYPE_SUBJECTALTNAME);                   
+                   DNFieldExtractor subtest = 
+                     new DNFieldExtractor(subjectaltname,DNFieldExtractor.TYPE_SUBJECTALTNAME);                   
                    if(subtest.isIllegal() || subtest.existsOther()){
                      illegaldnoraltname = true;
                    }

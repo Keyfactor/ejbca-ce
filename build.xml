@@ -184,7 +184,7 @@
     <!-- Build ca ejb part                                                    -->
     <!-- =================================================================== -->
     <target name="ejbca-ejb.jar" depends="compile">
-    <!-- create empty direktory for HW tokens if not existing -->
+    <!-- create empty directory for HW tokens if not existing -->
         <mkdir dir="${hwtoken.class.dir}"/>
         <jar jarfile="${dist.dir}/ejbca-ejb.jar">
             <manifest>
@@ -204,6 +204,7 @@
         	<fileset dir="${src}">
         	    <include name="intresources/*.properties"/>
         	    <include name="dncomponents.properties"/>
+        		<include name="profilemappings.properties"/>
         	</fileset>	
             <fileset dir="${hwtoken.class.dir}"/>
         </jar>

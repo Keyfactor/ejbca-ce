@@ -88,14 +88,14 @@ import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
-import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
+import org.ejbca.util.dn.DNFieldExtractor;
 import org.ejbca.util.dn.DnComponents;
 
 
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.27 2006-11-18 13:37:29 anatom Exp $
+ * @version $Id: CertTools.java,v 1.28 2006-12-02 11:18:30 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);

@@ -2,16 +2,6 @@
 
    LdapSearchPublisher ldapsearchpublisher = (LdapSearchPublisher) publisherhelper.publisherdata;
 
-   int[] usefieldsindn =  {DNFieldExtractor.CN, DNFieldExtractor.UID, DNFieldExtractor.SN, 
-                           DNFieldExtractor.GIVENNAME, DNFieldExtractor.SURNAME, DNFieldExtractor.T, 
-                           DNFieldExtractor.L, DNFieldExtractor.INITIALS, DNFieldExtractor.E, 
-			   DNFieldExtractor.ST, DNFieldExtractor.C, DNFieldExtractor.O, DNFieldExtractor.OU};
-
-   String[] usefieldsindntexts = {"MATCHCOMMONNAME","MATCHUID","MATCHDNSERIALNUMBER",
-                                "MATCHGIVENNAME", "MATCHSURNAME","MATCHTITLE",
-                                "MATCHLOCALE","MATCHINITIALS","OLDEMAILDN1", "MATCHSTATE",
-				"MATCHCOUNTRY", "MATCHORGANIZATION", "MATCHORGANIZATIONUNIT"}; 
-
 %> 
    <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top"> 

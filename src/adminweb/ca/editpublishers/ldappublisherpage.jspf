@@ -2,16 +2,6 @@
 
    LdapPublisher ldappublisher = (LdapPublisher) publisherhelper.publisherdata;
 
-   int[] usefieldsindn =  {DNFieldExtractor.CN, DNFieldExtractor.UID, DNFieldExtractor.SN, 
-                           DNFieldExtractor.GIVENNAME, DNFieldExtractor.SURNAME, DNFieldExtractor.T, 
-                           DNFieldExtractor.L, DNFieldExtractor.INITIALS, DNFieldExtractor.E, 
-			   DNFieldExtractor.ST, DNFieldExtractor.C, DNFieldExtractor.O, DNFieldExtractor.OU};
-
-   String[] usefieldsindntexts = {"MATCHCOMMONNAME","MATCHUID","MATCHDNSERIALNUMBER",
-                                "MATCHGIVENNAME", "MATCHSURNAME","MATCHTITLE",
-                                "MATCHLOCALE","MATCHINITIALS","OLDEMAILDN1", "MATCHSTATE",
-				"MATCHCOUNTRY", "MATCHORGANIZATION", "MATCHORGANIZATIONUNIT"}; 
-
 %> 
    <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top"> 
@@ -254,8 +244,10 @@
       <td width="50%" valign="top">   
         <select name="<%=EditPublisherJSPHelper.SELECT_LDAPUSEFIELDINLDAPDN%>" size="13" multiple >       
             <% HashSet currentfields = new HashSet(ldappublisher.getUseFieldInLdapDN());
+               Integer[] usefieldsindn = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTDN);
+               String[] usefieldsindntexts = (String[])DnComponents.getDnLanguageTexts().toArray(new String[0]);
                for(int i=0;i < usefieldsindn.length; i++){ %>                                  
-              <option value="<%=usefieldsindn[i]%>" <% if(currentfields.contains(new Integer(usefieldsindn[i]))) out.write(" selected "); %>> 
+              <option value="<%=usefieldsindn[i]%>" <% if(currentfields.contains(usefieldsindn[i])) out.write(" selected "); %>> 
                   <%= ejbcawebbean.getText(usefieldsindntexts[i]) %>
                </option>
             <%}%>

@@ -16,7 +16,7 @@ import java.io.Serializable;
 import java.util.Set;
 
 import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
+import org.ejbca.util.dn.DNFieldExtractor;
 
 
 /**
@@ -28,7 +28,7 @@ import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
  * 
  *  
  * @author Philip Vendil
- * @version $Id: UserDataSourceVO.java,v 1.1 2006-07-20 17:47:26 herrvendil Exp $
+ * @version $Id: UserDataSourceVO.java,v 1.2 2006-12-02 11:17:57 anatom Exp $
  */
 
 public class UserDataSourceVO implements Serializable {    
@@ -53,9 +53,9 @@ public class UserDataSourceVO implements Serializable {
     	DNFieldExtractor.GIVENNAME , DNFieldExtractor.INITIALS , DNFieldExtractor.SURNAME , DNFieldExtractor.T ,
     	DNFieldExtractor.OU , DNFieldExtractor.O , DNFieldExtractor.L , DNFieldExtractor.ST ,
     	DNFieldExtractor.DC , DNFieldExtractor.C , DNFieldExtractor.UNSTRUCTUREDADDRESS , DNFieldExtractor.UNSTRUCTUREDNAME ,
-    	DNFieldExtractor.OTHERNAME ,  DNFieldExtractor.DNSNAME , DNFieldExtractor.IPADDRESS ,
-    	DNFieldExtractor.X400ADDRESS , DNFieldExtractor.DIRECTORYNAME , DNFieldExtractor.EDIPARTNAME , DNFieldExtractor.URI ,
-    	DNFieldExtractor.REGISTEREDID , DNFieldExtractor.UPN , DNFieldExtractor.GUID , 
+    	DNFieldExtractor.DNSNAME , DNFieldExtractor.IPADDRESS ,
+    	DNFieldExtractor.DIRECTORYNAME, DNFieldExtractor.URI ,
+    	DNFieldExtractor.UPN , DNFieldExtractor.GUID , 
     	DNFieldExtractor.DATEOFBIRTH , DNFieldExtractor.PLACEOFBIRTH , DNFieldExtractor.GENDER , DNFieldExtractor.COUNTRYOFCITIZENSHIP ,
     	DNFieldExtractor.COUNTRYOFRESIDENCE 
     };

@@ -18,8 +18,8 @@ import java.util.HashMap;
 
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 import org.ejbca.util.StringTools;
+import org.ejbca.util.dn.DNFieldExtractor;
 
 
 
@@ -27,7 +27,7 @@ import org.ejbca.util.StringTools;
 /**
  * A class representing a web interface view of a user in the ra user database.
  *
- * @version $Id: UserView.java,v 1.5 2006-09-22 13:05:10 herrvendil Exp $
+ * @version $Id: UserView.java,v 1.6 2006-12-02 11:17:57 anatom Exp $
  */
 public class UserView implements java.io.Serializable, Cloneable, Comparable {
     // Public constants.

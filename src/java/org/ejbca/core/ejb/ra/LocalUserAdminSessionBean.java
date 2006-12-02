@@ -92,7 +92,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.29 2006-11-10 09:29:34 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.30 2006-12-02 11:17:32 anatom Exp $
  * @ejb.bean
  *   display-name="UserAdminSB"
  *   name="UserAdminSession"
@@ -423,7 +423,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         dn = StringTools.strip(dn);
         int type = userdata.getType();
         String newpassword = userdata.getPassword();
-        debug(">addUser(" + userdata.getUsername() + ", password, " + dn + ", "+ userdata.getDN() + ", " + userdata.getEmail() + ")");
+        debug(">addUser(" + userdata.getUsername() + ", password, " + dn + ", "+ userdata.getDN() + ", " + userdata.getSubjectAltName()+", "+userdata.getEmail() + ")");
         int profileId = userdata.getEndEntityProfileId();
         String profileName = raadminsession.getEndEntityProfileName(admin, profileId);
         EndEntityProfile profile = raadminsession.getEndEntityProfile(admin, profileId);

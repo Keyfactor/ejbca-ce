@@ -127,6 +127,13 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
             <src path="${src.java}" />
             <src path="${src.gen}" />
         </javac>
+        <copy todir="${build}">
+        	<fileset dir="${src}">
+        	    <include name="intresources/*.properties"/>
+        	    <include name="dncomponents.properties"/>
+        		<include name="profilemappings.properties"/>
+        	</fileset>	
+        </copy>
     </target>
 
     <!-- =================================================================== -->

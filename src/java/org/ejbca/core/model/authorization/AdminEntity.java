@@ -17,9 +17,9 @@ import java.io.Serializable;
 import java.security.cert.X509Certificate;
 import java.util.regex.Pattern;
 
-import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.StringTools;
+import org.ejbca.util.dn.DNFieldExtractor;
 
 
 /**
@@ -30,7 +30,7 @@ import org.ejbca.util.StringTools;
  * Matchtype constants tells under which contitions the match shall be performed.
  *
  * @author  Philip Vendil
- * @version $Id: AdminEntity.java,v 1.1 2006-01-17 20:30:56 anatom Exp $
+ * @version $Id: AdminEntity.java,v 1.2 2006-12-02 11:17:32 anatom Exp $
  */
 public class AdminEntity implements Serializable, Comparable {
     // Special Users. (Constants cannot have 0 value).

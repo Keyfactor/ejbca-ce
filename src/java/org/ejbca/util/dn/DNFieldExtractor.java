@@ -11,9 +11,8 @@
  *                                                                       *
  *************************************************************************/
  
-package org.ejbca.core.model.ra.raadmin;
+package org.ejbca.util.dn;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.apache.log4j.Logger;
@@ -25,10 +24,10 @@ import org.ietf.ldap.LDAPDN;
  * or Subject Directory Attributes strings.
  *
  * @author Philip Vendil
- * @version $Id: DNFieldExtractor.java,v 1.2 2006-06-03 18:10:47 anatom Exp $
+ * @version $Id: DNFieldExtractor.java,v 1.1 2006-12-02 11:18:30 anatom Exp $
  */
 public class DNFieldExtractor implements java.io.Serializable {
-    private static Logger log = Logger.getLogger(DNFieldExtractor.class);
+    private static final Logger log = Logger.getLogger(DNFieldExtractor.class);
     // Public constants
     public static final int TYPE_SUBJECTDN = 0;
     public static final int TYPE_SUBJECTALTNAME = 1;
@@ -74,26 +73,9 @@ public class DNFieldExtractor implements java.io.Serializable {
     public static final int COUNTRYOFRESIDENCE   = 31;
     public static final int SUBJECTDIRATTRBOUNDRARY = 27;
     
-    public static final int NUMBEROFFIELDS = 32;
+    // Used only in EndEntityProfile, should be refactored away
+    public static final int NUMBEROFFIELDS = 33;
     
-    public static final String[] SUBJECTDNFIELDS = {
-        "E=", "UID=", "CN=", "SN=", "GIVENNAME=", "INITIALS=", "SURNAME=", "T=", "OU=", "O=", "L=",
-        "ST=", "DC=", "C=", "UNSTRUCTUREDADDRESS=", "UNSTRUCTUREDNAME="
-    };
-    
-    public static final String[] SUBJECTALTNAME = {
-        "OTHERNAME=", "RFC822NAME=", "DNSNAME=", "IPADDRESS=", "X400ADDRESS=", "DIRECTORYNAME=",
-        "EDIPARTNAME=", "UNIFORMRESOURCEIDENTIFIER=", "REGISTEREDID=", "UPN=",  "GUID="
-    };
-
-    public static final String[] SUBJECTDIRATTR = {
-        "DATEOFBIRTH=", "PLACEOFBIRTH=", "GENDER=", "COUNTRYOFCITIZENSHIP=", "COUNTRYOFRESIDENCE="
-    };
-    
-    // Constants used with field ordering
-    public static final int FIELDTYPE = 0;
-    public static final int NUMBER = 1;
-
     /**
      * Creates a new instance of DNFieldExtractor
      *
@@ -103,6 +85,34 @@ public class DNFieldExtractor implements java.io.Serializable {
     public DNFieldExtractor(String dn, int type) {
         dnfields = new HashMap();
         setDN(dn, type);
+    }
+    
+    /** Fields that can be selected in Certificate profile and Publisher
+     */
+    public static Integer[] getUseFields(int type) {
+    	if (type == DNFieldExtractor.TYPE_SUBJECTDN) {
+    		return (Integer[])DnComponents.getDnDnIds().toArray(new Integer[0]);
+    	} else if (type == DNFieldExtractor.TYPE_SUBJECTALTNAME) {
+    		return (Integer[])DnComponents.getAltNameDnIds().toArray(new Integer[0]);
+    	} else if (type == DNFieldExtractor.TYPE_SUBJECTDIRATTR) {
+    		return (Integer[])DnComponents.getDirAttrDnIds().toArray(new Integer[0]);
+    	} else {
+    		return new Integer[0];
+    	}
+    }
+    
+    public static String getFieldComponent(int field, int type) {
+    	if (type == DNFieldExtractor.TYPE_SUBJECTDN) {
+            String[] fields = (String[])DnComponents.getDnExtractorFields().toArray(new String[0]);;
+        	return fields[field];    		
+    	} else if (type == DNFieldExtractor.TYPE_SUBJECTALTNAME) {
+            String[] fields = (String[])DnComponents.getDnExtractorFields().toArray(new String[0]);;
+        	return fields[field - DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY];    		
+    	} else {
+            String[] fields = (String[])DnComponents.getDnExtractorFields().toArray(new String[0]);;
+    		return fields[field  - DNFieldExtractor.SUBJECTDIRATTRBOUNDRARY];
+    	}
+    	
     }
 
     /**
@@ -116,20 +126,19 @@ public class DNFieldExtractor implements java.io.Serializable {
         this.type = type;
         
         if (type == TYPE_SUBJECTDN) {        	
-            fieldnumbers = new int[SUBJECTDNFIELDS.length];
-            fields = SUBJECTDNFIELDS;
+            fields = (String[])DnComponents.getDnExtractorFields().toArray(new String[0]);;
+            fieldnumbers = new int[fields.length];
         } else if (type == TYPE_SUBJECTALTNAME){
-            fieldnumbers = new int[SUBJECTALTNAME.length];
-            fields = SUBJECTALTNAME;
+            fields = (String[])DnComponents.getAltNameExtractorFields().toArray(new String[0]);;
+            fieldnumbers = new int[fields.length];
         } else if (type == TYPE_SUBJECTDIRATTR){
-            fieldnumbers = new int[SUBJECTDIRATTR.length];
-            fields = SUBJECTDIRATTR;
+            fields = (String[])DnComponents.getDirAttrExtractorFields().toArray(new String[0]);;
+            fieldnumbers = new int[fields.length];
         } else {
         	fields = new String[]{};
         }
 
         if ((dn != null) && !dn.equalsIgnoreCase("null")) {
-            this.dn = dn;
             dnfields = new HashMap();
 
             try {
@@ -177,27 +186,18 @@ public class DNFieldExtractor implements java.io.Serializable {
                         "Illegal Subjectdirectory attribute : " + dn);
                 }
             }
-        } else {
-            this.dn = null;
         }
     }
 
     /**
-     * DOCUMENT ME!
+     * Returns the value of a certain DN component.
      *
-     * @return DOCUMENT ME!
-     */
-    public String getDN() {
-        return dn;
-    }
-
-    /**
-     * DOCUMENT ME!
+     * @param field the DN component, one of the constants DNFieldExtractor.CN, ...
+     * @param number the number of the component if several entries for this component exists, normally 0 fir the first
      *
-     * @param field DOCUMENT ME!
-     * @param number DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
+     * @return A String for example "PrimeKey" if DNFieldExtractor.O and 0 was passed, "PrimeKey" if DNFieldExtractor.DC and 0 was passed 
+     *         or "com" if DNFieldExtractor.DC and 1 was passed. 
+     *         Returns an empty String "", if no such field with the number exists.    
      */
     public String getField(int field, int number) {
         String returnval;
@@ -210,10 +210,34 @@ public class DNFieldExtractor implements java.io.Serializable {
         return returnval;
     }
 
+    /** Returns a string representation of a certain DN component
+     * 
+     * @param field the DN component, one of the constants DNFieldExtractor.CN, ...
+     * @return A String for example "CN=Tomas Gustavsson" if DNFieldExtractor.CN was passed, "DC=PrimeKey,DC=com" if DNFieldExtractor.DC was passed.    
+     */
+    public String getFieldString(int field){
+        String retval = "";
+        String[] fieldnames =  (String[])DnComponents.getDnExtractorFields().toArray(new String[0]);
+        int f = field;
+        if(type != TYPE_SUBJECTDN){
+        	fieldnames =  (String[])DnComponents.getAltNameExtractorFields().toArray(new String[0]);
+        	f = field - DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY;
+        }
+        int num = getNumberOfFields(field);
+        for(int i=0;i<num;i++){
+        	if(retval.length() == 0)
+        	  retval += fieldnames[f] + getField(field,i);
+        	else
+        	  retval += "," + fieldnames[f] + getField(field,i);	
+        }    
+        return retval;      	
+    }
+    
+
     /**
-     * Function that returns true if non standard DN field exists id dn string.
+     * Function that returns true if non standard DN field exists in dn string.
      *
-     * @return DOCUMENT ME!
+     * @return true if non standard DN field exists, false otherwise
      */
     public boolean existsOther() {
         return existsother;
@@ -222,9 +246,9 @@ public class DNFieldExtractor implements java.io.Serializable {
     /**
      * Returns the number of one kind of dn field.
      *
-     * @param field DOCUMENT ME!
+     * @param field the DN component, one of the constants DNFieldExtractor.CN, ...
      *
-     * @return DOCUMENT ME!
+     * @return number of componenets available for a fiels, for example 1 if DN is "dc=primekey" and 2 if DN is "dc=primekey,dc=com"
      */
     public int getNumberOfFields(int field) {
         int returnval = 0;
@@ -236,33 +260,6 @@ public class DNFieldExtractor implements java.io.Serializable {
         } else if (type == TYPE_SUBJECTDIRATTR) {
             returnval = fieldnumbers[field - DATEOFBIRTH];
         }
-
-        return returnval;
-    }
-
-    /**
-     * Returns the total number of fields in dn or subject alternative name. Primary use is when
-     * checking user data with it's end entity profile.
-     *
-     * @return DOCUMENT ME!
-     */
-    public int getFieldOrderLength() {
-        return fieldorder.size();
-    }
-
-    /**
-     * Function that returns the field with given index in original dn field. Primary use is when
-     * checking user data with it's end entity profile.
-     *
-     * @param index DOCUMENT ME!
-     *
-     * @return An array of integers with the size of two, the first (0) indicating the type of
-     *         field, the second (1) the current number of the field.
-     */
-    public int[] getFieldsInOrder(int index) {
-        int[] returnval = new int[2];
-        returnval[FIELDTYPE] = ((Integer) fieldorder.get(index)).intValue() / BOUNDRARY;
-        returnval[NUMBER] = ((Integer) fieldorder.get(index)).intValue() % BOUNDRARY;
 
         return returnval;
     }
@@ -283,9 +280,7 @@ public class DNFieldExtractor implements java.io.Serializable {
     private static final int BOUNDRARY = 100;
     private int[] fieldnumbers;
     private HashMap dnfields;
-    private ArrayList fieldorder;
-    private String dn;
     private boolean existsother = false;
     private boolean illegal = false;
-    int type;
+    private int type;
 }

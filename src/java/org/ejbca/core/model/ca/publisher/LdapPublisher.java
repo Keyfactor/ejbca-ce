@@ -33,9 +33,9 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
-import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.dn.DNFieldExtractor;
 
 import com.novell.ldap.LDAPAttribute;
 import com.novell.ldap.LDAPAttributeSet;
@@ -48,7 +48,7 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.16 2006-11-28 08:43:16 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.17 2006-12-02 11:17:33 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
@@ -1041,7 +1041,7 @@ public class LdapPublisher extends BasePublisher {
     	String dnField = null;
     	while(iter.hasNext()){
     		Integer next = (Integer) iter.next();
-    		dnField = getDNField(extractor, next.intValue());
+    		dnField = extractor.getFieldString(next.intValue());
     		if (StringUtils.isNotEmpty(dnField)) {
                 if (dnField.startsWith("SN")) {
                     // This is SN in Bouncycastle, but it should be serialNumber in LDAP
@@ -1057,19 +1057,6 @@ public class LdapPublisher extends BasePublisher {
     	retval = retval + "," + this.getBaseDN();
     	log.debug("LdapPublisher: constructed DN: " + retval );
     	return retval;	
-    }
-    
-    protected String getDNField(DNFieldExtractor extractor, int field){
-    	String retval = "";
-    	int num = extractor.getNumberOfFields(field);
-    	for (int i=0;i<num;i++) {
-    		if (retval.length() == 0) {
-    			retval += DNFieldExtractor.SUBJECTDNFIELDS[field] + extractor.getField(field,i);
-    		} else {
-    			retval += "," + DNFieldExtractor.SUBJECTDNFIELDS[field] + extractor.getField(field,i);
-    		}
-    	}    
-    	return retval;      	
     }
     
     protected static byte[] fakecrlbytes = Base64.decode(

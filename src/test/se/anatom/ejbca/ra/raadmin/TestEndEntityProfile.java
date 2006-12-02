@@ -24,11 +24,12 @@ import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
+import org.ejbca.util.dn.DnComponents;
 
 /**
  * Tests the end entity profile entity bean.
  *
- * @version $Id: TestEndEntityProfile.java,v 1.2 2006-01-17 20:34:15 anatom Exp $
+ * @version $Id: TestEndEntityProfile.java,v 1.3 2006-12-02 11:18:30 anatom Exp $
  */
 public class TestEndEntityProfile extends TestCase {
     private static Logger log = Logger.getLogger(TestEndEntityProfile.class);
@@ -90,7 +91,7 @@ public class TestEndEntityProfile extends TestCase {
         boolean ret = false;
         try {
             EndEntityProfile profile = new EndEntityProfile();
-            profile.addField(EndEntityProfile.ORGANIZATIONUNIT);
+            profile.addField(DnComponents.ORGANIZATIONUNIT);
 
             cacheAdmin.addEndEntityProfile(admin, "TEST", profile);
 
@@ -152,9 +153,9 @@ public class TestEndEntityProfile extends TestCase {
         boolean ret = false;
 
         EndEntityProfile profile = cacheAdmin.getEndEntityProfile(admin, "TEST");
-        assertTrue("Retrieving EndEntityProfile failed", profile.getNumberOfField(EndEntityProfile.ORGANIZATIONUNIT) == 1);
+        assertTrue("Retrieving EndEntityProfile failed", profile.getNumberOfField(DnComponents.ORGANIZATIONUNIT) == 1);
 
-        profile.addField(EndEntityProfile.ORGANIZATIONUNIT);
+        profile.addField(DnComponents.ORGANIZATIONUNIT);
 
         cacheAdmin.changeEndEntityProfile(admin, "TEST", profile);
         ret = true;

@@ -34,7 +34,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Helper class for the View End Entity Page, parses the request and performs apporiate actions.
  * 
  * @author Philip Vendil
- * @version $Id: ViewEndEntityHelper.java,v 1.4 2006-09-22 13:05:10 herrvendil Exp $
+ * @version $Id: ViewEndEntityHelper.java,v 1.5 2006-12-02 11:17:57 anatom Exp $
  */
 
 public class ViewEndEntityHelper implements java.io.Serializable{
@@ -61,13 +61,6 @@ public class ViewEndEntityHelper implements java.io.Serializable{
 	
 	public static final String CHECKBOX_VALUE             = "true";
 
-	public static final  String[] subjectfieldtexts = {"","","", "OLDEMAILDN2", "UID", "COMMONNAME", "SERIALNUMBER1", 
-        "GIVENNAME2", "INITIALS", "SURNAME","TITLE","ORGANIZATIONUNIT","ORGANIZATION",
-        "LOCALE","STATE","DOMAINCOMPONENT","COUNTRY",
-        "RFC822NAME", "DNSNAME", "IPADDRESS", "OTHERNAME", "UNIFORMRESOURCEID", "X400ADDRESS", "DIRECTORYNAME",
-        "EDIPARTNAME", "REGISTEREDID","","","","","","","","","","","UPN", "", "", "UNSTRUCTUREDADDRESS", "UNSTRUCTUREDNAME","GUID"
-        ,"DATEOFBIRTH", "PLACEOFBIRTH", "GENDER", "COUNTRYOFCITIZENSHIP", "COUNTRYOFRESIDENCE"};
-	
 	public static final   int[] statusids = {UserDataConstants.STATUS_NEW ,UserDataConstants.STATUS_FAILED, UserDataConstants.STATUS_INITIALIZED, UserDataConstants.STATUS_INPROCESS
         , UserDataConstants.STATUS_GENERATED, UserDataConstants.STATUS_REVOKED , UserDataConstants.STATUS_HISTORICAL, UserDataConstants.STATUS_KEYRECOVERY};
 	

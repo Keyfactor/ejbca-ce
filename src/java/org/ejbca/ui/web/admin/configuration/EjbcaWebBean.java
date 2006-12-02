@@ -44,16 +44,16 @@ import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
-import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.HTMLTools;
+import org.ejbca.util.dn.DNFieldExtractor;
 
 /**
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.6 2006-09-05 09:23:24 anatom Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.7 2006-12-02 11:17:57 anatom Exp $
  */
 public class EjbcaWebBean implements java.io.Serializable {
 

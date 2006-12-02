@@ -27,13 +27,13 @@ import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
 import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
+import org.ejbca.util.dn.DNFieldExtractor;
 
 
 /**
  * Tests the certificate profile entity bean.
  *
- * @version $Id: TestCertificateProfile.java,v 1.7 2006-01-17 20:33:58 anatom Exp $
+ * @version $Id: TestCertificateProfile.java,v 1.8 2006-12-02 11:18:32 anatom Exp $
  */
 public class TestCertificateProfile extends TestCase {
     private static Logger log = Logger.getLogger(TestCertificateProfile.class);

@@ -2,7 +2,7 @@
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.core.model.ra.raadmin.GlobalConfiguration, 
                  org.ejbca.core.model.SecConst, org.ejbca.core.model.ra.raadmin.EndEntityProfile,
-                 org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper" %>
+                 org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper, org.ejbca.util.dn.DnComponents" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -91,10 +91,10 @@
       <% int subjectfieldsize = viewendentityhelper.profile.getSubjectDNFieldOrderLength();
          for(int i = 0; i < subjectfieldsize; i++){
         	 viewendentityhelper.fielddata = viewendentityhelper.profile.getSubjectDNFieldsInOrder(i);
-        	 viewendentityhelper.fieldvalue = viewendentityhelper.userdata.getSubjectDNField(EndEntityProfile.profileFieldIdToUserFieldIdMapper(viewendentityhelper.fielddata[EndEntityProfile.FIELDTYPE]),viewendentityhelper.fielddata[EndEntityProfile.NUMBER]);
+        	 viewendentityhelper.fieldvalue = viewendentityhelper.userdata.getSubjectDNField(DnComponents.profileIdToDnId(viewendentityhelper.fielddata[EndEntityProfile.FIELDTYPE]),viewendentityhelper.fielddata[EndEntityProfile.NUMBER]);
          %>
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText(ViewEndEntityHelper.subjectfieldtexts[viewendentityhelper.fielddata[EndEntityProfile.FIELDTYPE]]) %></td>
+	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(viewendentityhelper.fielddata[EndEntityProfile.FIELDTYPE])) %></td>
 	 <td><% if(viewendentityhelper.fieldvalue != null) out.write(viewendentityhelper.fieldvalue); %> 
          </td>
        </tr>
@@ -115,12 +115,13 @@
          for(int i = 0; i < subjectfieldsize; i++){
         	 viewendentityhelper.fielddata = viewendentityhelper.profile.getSubjectAltNameFieldsInOrder(i);
             int fieldtype = viewendentityhelper.fielddata[EndEntityProfile.FIELDTYPE];
-            if(fieldtype != EndEntityProfile.OTHERNAME && fieldtype != EndEntityProfile.X400ADDRESS &&
-               fieldtype != EndEntityProfile.EDIPARTNAME && fieldtype != EndEntityProfile.REGISTEREDID ){ // Not implemented yet.
-            	viewendentityhelper.fieldvalue = viewendentityhelper.userdata.getSubjectAltNameField(EndEntityProfile.profileFieldIdToUserFieldIdMapper(viewendentityhelper.fielddata[EndEntityProfile.FIELDTYPE]),viewendentityhelper.fielddata[EndEntityProfile.NUMBER]);
+            System.out.println("Fieldtype: "+fieldtype);
+            if(EndEntityProfile.isFieldImplemented(fieldtype)){
+            	viewendentityhelper.fieldvalue = viewendentityhelper.userdata.getSubjectAltNameField(DnComponents.profileIdToDnId(viewendentityhelper.fielddata[EndEntityProfile.FIELDTYPE]),viewendentityhelper.fielddata[EndEntityProfile.NUMBER]);
+            	System.out.println("Fieldvalue: "+viewendentityhelper.fieldvalue);
          %>
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText(ViewEndEntityHelper.subjectfieldtexts[viewendentityhelper.fielddata[EndEntityProfile.FIELDTYPE]]) %></td>
+	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(viewendentityhelper.fielddata[EndEntityProfile.FIELDTYPE])) %></td>
 	 <td><% if(viewendentityhelper.fieldvalue != null) out.write(viewendentityhelper.fieldvalue); %> 
          </td>
        </tr>
@@ -142,10 +143,10 @@
          for(int i = 0; i < subjectfieldsize; i++){
         	 viewendentityhelper.fielddata = viewendentityhelper.profile.getSubjectDirAttrFieldsInOrder(i);
             int fieldtype = viewendentityhelper.fielddata[EndEntityProfile.FIELDTYPE];
-          	viewendentityhelper.fieldvalue = viewendentityhelper.userdata.getSubjectDirAttributeField(EndEntityProfile.profileFieldIdToUserFieldIdMapper(viewendentityhelper.fielddata[EndEntityProfile.FIELDTYPE]),viewendentityhelper.fielddata[EndEntityProfile.NUMBER]);
+          	viewendentityhelper.fieldvalue = viewendentityhelper.userdata.getSubjectDirAttributeField(DnComponents.profileIdToDnId(viewendentityhelper.fielddata[EndEntityProfile.FIELDTYPE]),viewendentityhelper.fielddata[EndEntityProfile.NUMBER]);
          %>
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
-	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText(ViewEndEntityHelper.subjectfieldtexts[viewendentityhelper.fielddata[EndEntityProfile.FIELDTYPE]]) %></td>
+	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(viewendentityhelper.fielddata[EndEntityProfile.FIELDTYPE])) %></td>
 	 <td><% if(viewendentityhelper.fieldvalue != null) out.write(viewendentityhelper.fieldvalue); %> 
          </td>
        </tr>

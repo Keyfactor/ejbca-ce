@@ -27,14 +27,14 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.model.UpgradeableDataHashMap;
-import org.ejbca.core.model.ra.raadmin.DNFieldExtractor;
+import org.ejbca.util.dn.DNFieldExtractor;
 
 
 /**
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.14 2006-11-19 16:15:49 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.15 2006-12-02 11:17:33 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
@@ -606,7 +606,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         String dnField = null;
         while(iter.hasNext()){
         	Integer next = (Integer) iter.next();
-        	dnField = getDNField(extractor, next.intValue(), subjectdn);
+        	dnField = extractor.getFieldString(next.intValue());
         	if (StringUtils.isNotEmpty(dnField)) {
             	if(retval.length() == 0)
               	  retval += dnField; // first item, don't start with a comma
@@ -620,26 +620,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         return retval;	
       }
       
-      protected String getDNField(DNFieldExtractor extractor, int field, boolean subjectdn){
-        String retval = "";
-        String[] fieldnames =  DNFieldExtractor.SUBJECTDNFIELDS;
-        int f = field;
-        if(!subjectdn){
-        	fieldnames =  DNFieldExtractor.SUBJECTALTNAME;
-        	f = field - DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY;
-        }
-        
-        int num = extractor.getNumberOfFields(field);
-        for(int i=0;i<num;i++){
-        	if(retval.length() == 0)
-        	  retval += fieldnames[f] + extractor.getField(field,i);
-        	else
-        	  retval += "," + fieldnames[f] + extractor.getField(field,i);	
-        }    
-        return retval;      	
-      }
-    
-    
     /**
      * Returns an ArrayList of OID.strings defined in constant EXTENDEDKEYUSAGEOIDSTRINGS.
      */

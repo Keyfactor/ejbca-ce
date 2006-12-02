@@ -61,12 +61,13 @@ import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
 import org.ejbca.util.cert.QCStatementExtension;
+import org.ejbca.util.dn.DnComponents;
 
 
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.22 2006-11-24 10:10:39 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.23 2006-12-02 11:18:31 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -497,8 +498,8 @@ public class TestSignSession extends TestCase {
         // Make user that we know...
         boolean userExists = false;
         try {
-            usersession.addUser(admin,"swede","foo123","C=SE, O=ÅÄÖ, CN=åäö",null,"swede@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsacaid);
-            log.debug("created user: swede, foo123, C=SE, O=ÅÄÖ, CN=åäö");
+            usersession.addUser(admin,"swede","foo123","C=SE, O=ï¿½ï¿½ï¿½, CN=ï¿½ï¿½ï¿½",null,"swede@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsacaid);
+            log.debug("created user: swede, foo123, C=SE, O=ï¿½ï¿½ï¿½, CN=ï¿½ï¿½ï¿½");
         } catch (RemoteException re) {
             if (re.detail instanceof DuplicateKeyException) {
                 userExists = true;
@@ -518,7 +519,7 @@ public class TestSignSession extends TestCase {
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         assertEquals("Wrong DN med swedechars", CertTools.getSubjectDN(cert),
-                CertTools.stringToBCDNString("C=SE, O=ÅÄÖ, CN=åäö"));
+                CertTools.stringToBCDNString("C=SE, O=ï¿½ï¿½ï¿½, CN=ï¿½ï¿½ï¿½"));
         //FileOutputStream fos = new FileOutputStream("swedecert.crt");
         //fos.write(cert.getEncoded());
         //fos.close();
@@ -535,16 +536,16 @@ public class TestSignSession extends TestCase {
         // Create a good end entity profile (good enough), allowing multiple UPN names
         rasession.removeEndEntityProfile(admin, "TESTMULALTNAME");
         EndEntityProfile profile = new EndEntityProfile();
-        profile.addField(EndEntityProfile.ORGANIZATION);
-        profile.addField(EndEntityProfile.COUNTRY);
-        profile.addField(EndEntityProfile.COMMONNAME);
-        profile.addField(EndEntityProfile.UNIFORMRESOURCEID);
-        profile.addField(EndEntityProfile.DNSNAME);
-        profile.addField(EndEntityProfile.DNSNAME);
-        profile.addField(EndEntityProfile.RFC822NAME);
-        profile.addField(EndEntityProfile.IPADDRESS);
-        profile.addField(EndEntityProfile.UPN);
-        profile.addField(EndEntityProfile.UPN);
+        profile.addField(DnComponents.ORGANIZATION);
+        profile.addField(DnComponents.COUNTRY);
+        profile.addField(DnComponents.COMMONNAME);
+        profile.addField(DnComponents.UNIFORMRESOURCEID);
+        profile.addField(DnComponents.DNSNAME);
+        profile.addField(DnComponents.DNSNAME);
+        profile.addField(DnComponents.RFC822NAME);
+        profile.addField(DnComponents.IPADDRESS);
+        profile.addField(DnComponents.UPN);
+        profile.addField(DnComponents.UPN);
         profile.setValue(EndEntityProfile.AVAILCAS,0, Integer.toString(SecConst.ALLCAS));
         rasession.addEndEntityProfile(admin, "TESTMULALTNAME", profile);
         int eeprofile = rasession.getEndEntityProfileId(admin, "TESTMULALTNAME");
@@ -611,8 +612,8 @@ public class TestSignSession extends TestCase {
         // Create a good end entity profile (good enough), allowing multiple UPN names
         rasession.removeEndEntityProfile(admin, "TESTQC");
         EndEntityProfile profile = new EndEntityProfile();
-        profile.addField(EndEntityProfile.COUNTRY);
-        profile.addField(EndEntityProfile.COMMONNAME);
+        profile.addField(DnComponents.COUNTRY);
+        profile.addField(DnComponents.COMMONNAME);
         profile.setValue(EndEntityProfile.AVAILCAS,0, Integer.toString(SecConst.ALLCAS));
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES,0,Integer.toString(cprofile));
         rasession.addEndEntityProfile(admin, "TESTQC", profile);
@@ -670,8 +671,8 @@ public class TestSignSession extends TestCase {
         // Create a good end entity profile (good enough), allowing multiple UPN names
         rasession.removeEndEntityProfile(admin, "TESTVALOVERRIDE");
         EndEntityProfile profile = new EndEntityProfile();
-        profile.addField(EndEntityProfile.COUNTRY);
-        profile.addField(EndEntityProfile.COMMONNAME);
+        profile.addField(DnComponents.COUNTRY);
+        profile.addField(DnComponents.COMMONNAME);
         profile.setValue(EndEntityProfile.AVAILCAS,0, Integer.toString(SecConst.ALLCAS));
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES,0,Integer.toString(cprofile));
         rasession.addEndEntityProfile(admin, "TESTVALOVERRIDE", profile);

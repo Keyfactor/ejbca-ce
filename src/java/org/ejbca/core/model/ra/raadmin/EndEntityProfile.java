@@ -19,6 +19,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -26,15 +28,24 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.UpgradeableDataHashMap;
 import org.ejbca.util.Base64;
 import org.ejbca.util.StringTools;
+import org.ejbca.util.dn.DNFieldExtractor;
+import org.ejbca.util.dn.DnComponents;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
 
 /**
  * The model representation of an end entity profile, used in in the ra module
  * of ejbca web interface.
+ * 
+ * The algorithm for constants in the EndEntityProfile is:
+ * Values are stored as 100*parameternumber+parameter, so the first COMMONNAME value is 105, the second 205 etc.
+ * Use flags are stored as 10000+100*parameternumber+parameter, so the first USE_COMMONNAME value is 10105, the second 10205 etc.
+ * Required flags are stored as 20000+100*parameternumber+parameter, so the first REQUIRED_COMMONNAME value is 20105, the second 20205 etc.
+ * Modifyable flags are stored as 30000+100*parameternumber+parameter, so the first MODIFYABLE_COMMONNAME value is 30105, the second 30205 etc.
+ * 
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.9 2006-10-23 12:01:48 anatom Exp $
+ * @version $Id: EndEntityProfile.java,v 1.10 2006-12-02 11:17:34 anatom Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -50,66 +61,103 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
      * /serialization/spec/version.doc.html> details. </a>
      *
      */
-    private static final long serialVersionUID = -8356152324295231460L;
+    private static final long serialVersionUID = -8356152324295231461L;
     
     // Public constants
-    // Type of data constants.
-    public static final int VALUE      = 0;
-    public static final int USE        = 1;
-    public static final int ISREQUIRED = 2;
-    public static final int MODIFYABLE = 3;
+    /** Constant values for end entity profile. */
+    private static HashMap dataConstants = new HashMap();
 
-    // Field constants.
-    public static final int USERNAME           = 0;
-    public static final int PASSWORD           = 1;
-    public static final int CLEARTEXTPASSWORD  = 2;
-    public static final int OLDDNE             = 3;
-    public static final int UID                = 4;
-    public static final int COMMONNAME         = 5;
-    public static final int SN                 = 6;
-    public static final int GIVENNAME          = 7;
-    public static final int INITIALS           = 8;
-    public static final int SURNAME            = 9;
-    public static final int TITLE              = 10;
-    public static final int ORGANIZATIONUNIT   = 11;
-    public static final int ORGANIZATION       = 12;
-    public static final int LOCALE             = 13;
-    public static final int STATE              = 14;
-    public static final int DOMAINCOMPONENT    = 15;
-    public static final int COUNTRY            = 16;
-    public static final int RFC822NAME         = 17;
-    public static final int DNSNAME            = 18;
-    public static final int IPADDRESS          = 19;
-    public static final int OTHERNAME          = 20;
-    public static final int UNIFORMRESOURCEID  = 21;
-    public static final int X400ADDRESS        = 22;
-    public static final int DIRECTORYNAME      = 23;
-    public static final int EDIPARTNAME        = 24;
-    public static final int REGISTEREDID       = 25;
-    public static final int EMAIL              = 26;
-    public static final int ADMINISTRATOR      = 27;
-    public static final int KEYRECOVERABLE     = 28;
-    public static final int DEFAULTCERTPROFILE = 29;
-    public static final int AVAILCERTPROFILES  = 30;
-    public static final int DEFKEYSTORE        = 31;
-    public static final int AVAILKEYSTORE      = 32;
-    public static final int DEFAULTTOKENISSUER = 33;
-    public static final int AVAILTOKENISSUER   = 34;
-    public static final int SENDNOTIFICATION   = 35;
-    public static final int UPN                = 36;
-    public static final int DEFAULTCA          = 37;
-    public static final int AVAILCAS           = 38;    
-    public static final int UNSTRUCTUREDADDRESS = 39;
-    public static final int UNSTRUCTUREDNAME    = 40;
-    public static final int GUID                = 41;
-    public static final int DATEOFBIRTH         = 42;
-    public static final int PLACEOFBIRTH        = 43;
-    public static final int GENDER              = 44;
-    public static final int COUNTRYOFCITIZENSHIP = 45;
-    public static final int COUNTRYOFRESIDENCE  = 46;
+    // Default values
+    // These must be in a strict order that can never change 
+    // Custom values configurable in a properties file will start at number 100
+    static {
+    	dataConstants.put("USERNAME", Integer.valueOf(0));
+    	dataConstants.put("PASSWORD", Integer.valueOf(1));
+    	dataConstants.put("CLEARTEXTPASSWORD", Integer.valueOf(2));
+        // DN components
+    	/* These are loaded through DnComponents instead
+    	dataConstants.put(DnComponents.DNEMAIL, Integer.valueOf(3));
+    	dataConstants.put(DnComponents.UID, Integer.valueOf(4));
+    	dataConstants.put(DnComponents.COMMONNAME, Integer.valueOf(5));
+    	dataConstants.put(DnComponents.SN, Integer.valueOf(6));
+    	dataConstants.put(DnComponents.GIVENNAME, Integer.valueOf(7));
+    	dataConstants.put(DnComponents.INITIALS, Integer.valueOf(8));
+    	dataConstants.put(DnComponents.SURNAME, Integer.valueOf(9));
+    	dataConstants.put(DnComponents.TITLE, Integer.valueOf(10));
+    	dataConstants.put(DnComponents.ORGANIZATIONUNIT, Integer.valueOf(11));
+    	dataConstants.put(DnComponents.ORGANIZATION, Integer.valueOf(12));
+    	dataConstants.put(DnComponents.LOCALE, Integer.valueOf(13));
+    	dataConstants.put(DnComponents.STATE, Integer.valueOf(14));
+    	dataConstants.put(DnComponents.DOMAINCOMPONENT, Integer.valueOf(15));
+    	dataConstants.put(DnComponents.COUNTRY, Integer.valueOf(16));
+
+    	dataConstants.put(DnComponents.UNSTRUCTUREDADDRESS, Integer.valueOf(39));
+    	dataConstants.put(DnComponents.UNSTRUCTUREDNAME, Integer.valueOf(40));
+        // AltNames
+    	dataConstants.put(DnComponents.RFC822NAME, Integer.valueOf(17));
+    	dataConstants.put(DnComponents.DNSNAME, Integer.valueOf(18));
+    	dataConstants.put(DnComponents.IPADDRESS, Integer.valueOf(19));
+    	dataConstants.put(DnComponents.OTHERNAME, Integer.valueOf(20));
+    	dataConstants.put(DnComponents.UNIFORMRESOURCEID, Integer.valueOf(21));
+    	dataConstants.put(DnComponents.X400ADDRESS, Integer.valueOf(22));
+    	dataConstants.put(DnComponents.DIRECTORYNAME, Integer.valueOf(23));
+    	dataConstants.put(DnComponents.EDIPARTNAME, Integer.valueOf(24));
+    	dataConstants.put(DnComponents.REGISTEREDID, Integer.valueOf(25));
+
+    	dataConstants.put(DnComponents.UPN, Integer.valueOf(36));
+
+    	dataConstants.put(DnComponents.GUID, Integer.valueOf(41));
+    	// Altnames end
+        // Subject directory attributes
+    	dataConstants.put(DnComponents.DATEOFBIRTH, Integer.valueOf(42));
+    	dataConstants.put(DnComponents.PLACEOFBIRTH, Integer.valueOf(43));
+    	dataConstants.put(DnComponents.GENDER, Integer.valueOf(44));
+    	dataConstants.put(DnComponents.COUNTRYOFCITIZENSHIP, Integer.valueOf(45));
+    	dataConstants.put(DnComponents.COUNTRYOFRESIDENCE, Integer.valueOf(46));
+        // Subject directory attributes end
+    	 */
+    	dataConstants.put("EMAIL", Integer.valueOf(26));
+    	dataConstants.put("ADMINISTRATOR", Integer.valueOf(27));
+    	dataConstants.put("KEYRECOVERABLE", Integer.valueOf(28));
+    	dataConstants.put("DEFAULTCERTPROFILE", Integer.valueOf(29));
+    	dataConstants.put("AVAILCERTPROFILES", Integer.valueOf(30));
+    	dataConstants.put("DEFKEYSTORE", Integer.valueOf(31));
+    	dataConstants.put("AVAILKEYSTORE", Integer.valueOf(32));
+    	dataConstants.put("DEFAULTTOKENISSUER", Integer.valueOf(33));
+    	dataConstants.put("AVAILTOKENISSUER", Integer.valueOf(34));
+    	dataConstants.put("SENDNOTIFICATION", Integer.valueOf(35));
+
+    	dataConstants.put("DEFAULTCA", Integer.valueOf(37));
+    	dataConstants.put("AVAILCAS", Integer.valueOf(38));
+    	
+    	// Load all DN, altName and directoryAttributes from DnComponents.
+    	dataConstants.putAll(DnComponents.getProfilenameIdMap());
+    }
+    // Type of data constants.
+    private static final int VALUE      = 0;
+    private static final int USE        = 1;
+    private static final int ISREQUIRED = 2;
+    private static final int MODIFYABLE = 3;
+
+    // Field constants, used in the map above
+    public static final String USERNAME           = "USERNAME";
+    public static final String PASSWORD           = "PASSWORD";
+    public static final String CLEARTEXTPASSWORD  = "CLEARTEXTPASSWORD";
+    
+    public static final String EMAIL              = "EMAIL";
+    public static final String ADMINISTRATOR      = "ADMINISTRATOR";
+    public static final String KEYRECOVERABLE     = "KEYRECOVERABLE";
+    public static final String DEFAULTCERTPROFILE = "DEFAULTCERTPROFILE";
+    public static final String AVAILCERTPROFILES  = "AVAILCERTPROFILES";
+    public static final String DEFKEYSTORE        = "DEFKEYSTORE";
+    public static final String AVAILKEYSTORE      = "AVAILKEYSTORE";
+    public static final String DEFAULTTOKENISSUER = "DEFAULTTOKENISSUER";
+    public static final String AVAILTOKENISSUER   = "AVAILTOKENISSUER";
+    public static final String SENDNOTIFICATION   = "SENDNOTIFICATION";
+    public static final String DEFAULTCA          = "DEFAULTCA";
+    public static final String AVAILCAS           = "AVAILCAS";
     
     
-    public static final int NUMBEROFPARAMETERS = 47;
 
     public static final String SPLITCHAR       = ";";
 
@@ -141,8 +189,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     private void init(boolean emptyprofile){
       if(emptyprofile){
         // initialize profile data
-        ArrayList numberoffields = new ArrayList(NUMBEROFPARAMETERS);
-        for(int i =0; i < NUMBEROFPARAMETERS; i++){
+        ArrayList numberoffields = new ArrayList(dataConstants.size());
+        for(int i =0; i < dataConstants.size(); i++){
           numberoffields.add(new Integer(0));
         }
         data.put(NUMBERARRAY,numberoffields);
@@ -150,23 +198,26 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         data.put(SUBJECTALTNAMEFIELDORDER,new ArrayList());
         data.put(SUBJECTDIRATTRFIELDORDER,new ArrayList());
 
-        for(int i=0; i < NUMBEROFPARAMETERS; i++){
-          if(i != SENDNOTIFICATION &&
-          	 i != OTHERNAME &&
-			 i != X400ADDRESS &&
-			 i != EDIPARTNAME &&
-			 i != REGISTEREDID ){	
-             addField(i);
-             setValue(i,0,"");
-             setRequired(i,0,false);
-             setUse(i,0,true);
-             setModifyable(i,0,true);
-          }  
+        Set keySet = dataConstants.keySet();
+        Iterator iter = keySet.iterator();
+        while (iter.hasNext()) {
+        	String key = (String)iter.next();
+        	if (key.equals(SENDNOTIFICATION) || key.equals(DnComponents.OTHERNAME)
+        	    || key.equals(DnComponents.X400ADDRESS) || key.equals(DnComponents.EDIPARTNAME) || key.equals(DnComponents.REGISTEREDID)) {
+        		continue;
+        	} else {
+                addField(key);
+                setValue(key,0,"");
+                setRequired(key,0,false);
+                setUse(key,0,true);
+                setModifyable(key,0,true);        		
+        	}
+        	
         }
 
         setRequired(USERNAME,0,true);
         setRequired(PASSWORD,0,true);
-        setRequired(COMMONNAME,0,true);
+        setRequired(DnComponents.COMMONNAME,0,true);
         setRequired(DEFAULTCERTPROFILE,0,true);
         setRequired(AVAILCERTPROFILES,0,true);
         setRequired(DEFKEYSTORE,0,true);
@@ -183,8 +234,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 
       }else{
          // initialize profile data
-         ArrayList numberoffields = new ArrayList(NUMBEROFPARAMETERS);
-         for(int i =0; i < NUMBEROFPARAMETERS; i++){
+         ArrayList numberoffields = new ArrayList(dataConstants.size());
+         for(int i =0; i < dataConstants.size(); i++){
            numberoffields.add(new Integer(0));
          }
 
@@ -195,7 +246,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 
          addField(USERNAME);
          addField(PASSWORD);
-         addField(COMMONNAME);
+         addField(DnComponents.COMMONNAME);
          addField(EMAIL);
          addField(DEFAULTCERTPROFILE);
          addField(AVAILCERTPROFILES);
@@ -208,7 +259,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
          
          setRequired(USERNAME,0,true);
          setRequired(PASSWORD,0,true);
-         setRequired(COMMONNAME,0,true);
+         setRequired(DnComponents.COMMONNAME,0,true);
          setRequired(DEFAULTCERTPROFILE,0,true);
          setRequired(AVAILCERTPROFILES,0,true);
          setRequired(DEFKEYSTORE,0,true);
@@ -227,6 +278,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
       }
     }
 
+    public void addField(String parameter){
+    	addField(getParameterNumber(parameter));
+    }
     /**
      * Function that adds a field to the profile.
      *
@@ -238,22 +292,29 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
       setRequired(parameter,size,false);
       setUse(parameter,size,true);
       setModifyable(parameter,size,true);
-      if(parameter >= OLDDNE && parameter <= COUNTRY || parameter == UNSTRUCTUREDADDRESS || parameter == UNSTRUCTUREDNAME){
+      String param = getParameter(parameter);
+      ArrayList dns = DnComponents.getDnProfileFields();
+      if(dns.contains(param)){
         ArrayList fieldorder = (ArrayList) data.get(SUBJECTDNFIELDORDER);
         fieldorder.add(new Integer((NUMBERBOUNDRARY*parameter) + size));
         Collections.sort(fieldorder);
       }
-      if((parameter >= RFC822NAME && parameter <= REGISTEREDID) || parameter == UPN  || parameter == GUID){
+      ArrayList altNames = DnComponents.getAltNameFields();
+      if(altNames.contains(param)) {
         ArrayList fieldorder = (ArrayList) data.get(SUBJECTALTNAMEFIELDORDER);
         fieldorder.add(new Integer((NUMBERBOUNDRARY*parameter) + size));
       }
-      if((parameter >= DATEOFBIRTH && parameter <= COUNTRYOFRESIDENCE)){
+      ArrayList dirAttrs = DnComponents.getDirAttrFields();
+      if(dirAttrs.contains(param)){
           ArrayList fieldorder = (ArrayList) data.get(SUBJECTDIRATTRFIELDORDER);
           fieldorder.add(new Integer((NUMBERBOUNDRARY*parameter) + size));
         }
       incrementFieldnumber(parameter);
     }
 
+    public void removeField(String parameter, int number){
+    	removeField(getParameterNumber(parameter), number);
+    }
     /**
      * Function that removes a field from the end entity profile.
      *
@@ -272,8 +333,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
           setModifyable(parameter,n,isModifyable(parameter,n+1));
         }
 
+        String param = getParameter(parameter);
         // Remove from order list.
-        if((parameter >= OLDDNE && parameter <= COUNTRY) || parameter == UNSTRUCTUREDADDRESS || parameter == UNSTRUCTUREDNAME){
+        ArrayList dns = DnComponents.getDnProfileFields();
+        if(dns.contains(param)){
           ArrayList fieldorder = (ArrayList) data.get(SUBJECTDNFIELDORDER);
           int value = (NUMBERBOUNDRARY*parameter) + number;
           for(int i=0; i < fieldorder.size(); i++){
@@ -284,7 +347,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
           }
         }
 
-        if((parameter >= RFC822NAME && parameter <= REGISTEREDID) || parameter == UPN || parameter == GUID){
+        ArrayList altNames = DnComponents.getAltNameFields();
+        if(altNames.contains(param)) {
           ArrayList fieldorder = (ArrayList) data.get(SUBJECTALTNAMEFIELDORDER);
           int value = (NUMBERBOUNDRARY*parameter) + number;
           for(int i=0; i < fieldorder.size(); i++){
@@ -295,7 +359,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
           }
         }
 
-        if((parameter >= DATEOFBIRTH && parameter <= COUNTRYOFRESIDENCE)){
+        ArrayList dirAttrs = DnComponents.getDirAttrFields();
+        if(dirAttrs.contains(param)){
             ArrayList fieldorder = (ArrayList) data.get(SUBJECTDIRATTRFIELDORDER);
             int value = (NUMBERBOUNDRARY*parameter) + number;
             for(int i=0; i < fieldorder.size(); i++){
@@ -319,29 +384,44 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
      * Function that returns the number of one kind of field.
      *
      */
+    public int getNumberOfField(String parameter){
+    	return getNumberOfField(getParameterNumber(parameter));
+    }
     public int getNumberOfField(int parameter){
-      return ((Integer) ((ArrayList) data.get(NUMBERARRAY)).get(parameter)).intValue();
+    	return ((Integer) ((ArrayList) data.get(NUMBERARRAY)).get(parameter)).intValue();
     }
 
     public void setValue(int parameter, int number, String value) {
-       if(value !=null){
-          value=value.trim();
-          data.put(new Integer((VALUE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), value);
-       }else{
-          data.put(new Integer((VALUE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), "");
-       }
+        if(value !=null){
+            value=value.trim();
+            data.put(new Integer((VALUE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), value);
+         }else{
+            data.put(new Integer((VALUE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), "");
+         }
+    }
+    public void setValue(String parameter, int number, String value) {
+    	setValue(getParameterNumber(parameter), number, value);
     }
 
     public void setUse(int parameter, int number, boolean use){
           data.put(new Integer((USE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), Boolean.valueOf(use));
     }
+    public void setUse(String parameter, int number, boolean use){
+    	setUse(getParameterNumber(parameter), number, use);
+    }
 
     public void setRequired(int parameter, int number,  boolean isrequired) {
-      data.put(new Integer((ISREQUIRED*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), Boolean.valueOf(isrequired));
+    	data.put(new Integer((ISREQUIRED*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), Boolean.valueOf(isrequired));
+    }
+    public void setRequired(String parameter, int number,  boolean isrequired) {
+    	setRequired(getParameterNumber(parameter), number, isrequired);
     }
 
     public void setModifyable(int parameter, int number, boolean changeable) {
-       data.put(new Integer((MODIFYABLE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), Boolean.valueOf(changeable));
+    	data.put(new Integer((MODIFYABLE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter), Boolean.valueOf(changeable));
+    }
+    public void setModifyable(String parameter, int number, boolean changeable) {
+    	setModifyable(getParameterNumber(parameter), number, changeable);
     }
 
     public String getValue(int parameter, int number) {
@@ -350,12 +430,18 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
             return returnval;
         return "";
     }
+    public String getValue(String parameter, int number) {
+    	return getValue(getParameterNumber(parameter), number);
+    }
 
     public boolean getUse(int parameter, int number){
         Boolean returnval = (Boolean) data.get(new Integer((USE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter));
         if(returnval != null)
             return returnval.booleanValue();
         return false;
+    }
+    public boolean getUse(String parameter, int number){
+    	return getUse(getParameterNumber(parameter), number);
     }
 
     public boolean isRequired(int parameter, int number) {
@@ -364,12 +450,18 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
             return returnval.booleanValue();
         return false;
     }
+    public boolean isRequired(String parameter, int number) {
+    	return isRequired(getParameterNumber(parameter), number);
+    }
 
     public boolean isModifyable(int parameter, int number){
         Boolean returnval = (Boolean) data.get(new Integer((MODIFYABLE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter));
         if(returnval != null)
             return returnval.booleanValue();
         return false;
+    }
+    public boolean isModifyable(String parameter, int number) {
+    	return isModifyable(getParameterNumber(parameter), number);
     }
 
     public int getSubjectDNFieldOrderLength(){
@@ -382,6 +474,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         return ((ArrayList) data.get(SUBJECTDIRATTRFIELDORDER)).size();
       }
 
+    /** returns two int : the first is the DN field which is a constant in DN field extractor,
+     * the second is in which order the attribute is, 0 is first OU and 1 can mean second OU (if OU is specified in the first value).
+     * 
+     */
     public int[] getSubjectDNFieldsInOrder(int index){
       int[] returnval = new int[2];
       ArrayList fieldorder = (ArrayList) data.get(SUBJECTDNFIELDORDER);
@@ -599,16 +695,6 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     
         
     
-    /** A function that takes an fieldid pointing to a coresponding id in UserView and DnFieldExctractor.
-     *  For example : profileFieldIdToUserFieldIdMapper(EndEntityProfile.COMMONNAME) returns DnFieldExctractor.COMMONNAME.
-     *
-     *  Should only be used with subjectDN and Subject Alternative Names fields.
-     */
-    public static int profileFieldIdToUserFieldIdMapper(int parameter){
-      return  PROFILEIDTOUSERIDMAPPER[parameter];
-    }
-
-
     public void doesUserFullfillEndEntityProfile(String username, String password, String dn, String subjectaltname, String subjectdirattr, String email,  int certificateprofileid,
                                                  boolean clearpwd, boolean administrator, boolean keyrecoverable, boolean sendnotification,
                                                  int tokentype, int hardwaretokenissuerid, int caid)
@@ -686,12 +772,12 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
       for(int i = 0; i < DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY; i++){
     	  if(getReverseFieldChecks()){
     		  int nof = subjectdnfieldnumbers[i];
-    		  for(int j=getNumberOfField(DNEXTRATORTOPROFILEMAPPER[i]) -1; j >= 0; j--){    			 
-    			  checkIfDataFullfillProfile(DNEXTRATORTOPROFILEMAPPER[i],j,subjectdnfields.getField(i,--nof), DNEXTRATORTOPROFILEMAPPERTEXTS[i], email);
+    		  for(int j=getNumberOfField(DnComponents.dnIdToProfileName(i)) -1; j >= 0; j--){    			 
+    			  checkIfDataFullfillProfile(DnComponents.dnIdToProfileName(i),j,subjectdnfields.getField(i,--nof), DnComponents.getErrTextFromDnId(i), email);
     		  }   		
     	  }else{
     		  for(int j=0; j < subjectdnfieldnumbers[i]; j++){
-    			  checkIfDataFullfillProfile(DNEXTRATORTOPROFILEMAPPER[i],j,subjectdnfields.getField(i,j), DNEXTRATORTOPROFILEMAPPERTEXTS[i], email);
+    			  checkIfDataFullfillProfile(DnComponents.dnIdToProfileName(i),j,subjectdnfields.getField(i,j), DnComponents.getErrTextFromDnId(i), email);
     		  }
     	  }
       }
@@ -700,19 +786,19 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
       for(int i = DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY; i < DNFieldExtractor.SUBJECTDIRATTRBOUNDRARY; i++){
     	  if(getReverseFieldChecks()){
     		  int nof = subjectaltnamesnumbers[i-DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY];
-    		  for(int j=getNumberOfField(DNEXTRATORTOPROFILEMAPPER[i]) -1; j >= 0; j--){
+    		  for(int j=getNumberOfField(DnComponents.dnIdToProfileName(i)) -1; j >= 0; j--){
     			  if(i == DNFieldExtractor.UPN){
-    				  checkIfDomainFullfillProfile(UPN,j,subjectaltnames.getField(i,--nof),"UPN");
+    				  checkIfDomainFullfillProfile(DnComponents.UPN,j,subjectaltnames.getField(i,--nof),"UPN");
     			  }else{
-    				  checkIfDataFullfillProfile(DNEXTRATORTOPROFILEMAPPER[i],j,subjectaltnames.getField(i,--nof), DNEXTRATORTOPROFILEMAPPERTEXTS[i], email);
+    				  checkIfDataFullfillProfile(DnComponents.dnIdToProfileName(i),j,subjectaltnames.getField(i,--nof), DnComponents.getErrTextFromDnId(i), email);
     			  }   
     		  }    		      		  
     	  }else{
     		  for(int j=0; j < subjectaltnamesnumbers[i-DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY]; j++){
     			  if(i == DNFieldExtractor.UPN){
-    				  checkIfDomainFullfillProfile(UPN,j,subjectaltnames.getField(i,j),"UPN");
+    				  checkIfDomainFullfillProfile(DnComponents.UPN,j,subjectaltnames.getField(i,j),"UPN");
     			  }else{
-    				  checkIfDataFullfillProfile(DNEXTRATORTOPROFILEMAPPER[i],j,subjectaltnames.getField(i,j), DNEXTRATORTOPROFILEMAPPERTEXTS[i], email);
+    				  checkIfDataFullfillProfile(DnComponents.dnIdToProfileName(i),j,subjectaltnames.getField(i,j), DnComponents.getErrTextFromDnId(i), email);
     			  }   
     		  }
     	  }
@@ -724,15 +810,15 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     	  for(int j=0; j < subjectdirattrnumbers[i-DNFieldExtractor.SUBJECTDIRATTRBOUNDRARY]; j++){
     		  checkForIllegalChars(subjectdirattrs.getField(i,j));
     		  if(i == DNFieldExtractor.COUNTRYOFCITIZENSHIP){
-    			  checkIfISO3166FullfillProfile(COUNTRYOFCITIZENSHIP,j,subjectdirattrs.getField(i,j),"COUNTRYOFCITIZENSHIP");
+    			  checkIfISO3166FullfillProfile(DnComponents.COUNTRYOFCITIZENSHIP,j,subjectdirattrs.getField(i,j),"COUNTRYOFCITIZENSHIP");
     		  } else if(i == DNFieldExtractor.COUNTRYOFRESIDENCE){
-    			  checkIfISO3166FullfillProfile(COUNTRYOFRESIDENCE,j,subjectdirattrs.getField(i,j),"COUNTRYOFRESIDENCE");
+    			  checkIfISO3166FullfillProfile(DnComponents.COUNTRYOFRESIDENCE,j,subjectdirattrs.getField(i,j),"COUNTRYOFRESIDENCE");
     		  } else if(i == DNFieldExtractor.DATEOFBIRTH){
-    			  checkIfDateFullfillProfile(DATEOFBIRTH,j,subjectdirattrs.getField(i,j),"DATEOFBIRTH");
+    			  checkIfDateFullfillProfile(DnComponents.DATEOFBIRTH,j,subjectdirattrs.getField(i,j),"DATEOFBIRTH");
     		  } else if(i == DNFieldExtractor.GENDER){
-    			  checkIfGenderFullfillProfile(GENDER,j,subjectdirattrs.getField(i,j),"GENDER");
+    			  checkIfGenderFullfillProfile(DnComponents.GENDER,j,subjectdirattrs.getField(i,j),"GENDER");
     		  }else{
-    			  checkIfDataFullfillProfile(DNEXTRATORTOPROFILEMAPPER[i],j,subjectdirattrs.getField(i,j), DNEXTRATORTOPROFILEMAPPERTEXTS[i], email);
+    			  checkIfDataFullfillProfile(DnComponents.dnIdToProfileName(i),j,subjectdirattrs.getField(i,j), DnComponents.getErrTextFromDnId(i), email);
     		  }   
     	  }
       }
@@ -927,34 +1013,34 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
             
             if(getVersion() < 4){
                 ArrayList numberoffields = (ArrayList)   data.get(NUMBERARRAY);                
-                for(int i =numberoffields.size(); i < NUMBEROFPARAMETERS; i++){
+                for(int i =numberoffields.size(); i < dataConstants.size(); i++){
                   numberoffields.add(new Integer(0));
                 }               
                 data.put(NUMBERARRAY,numberoffields);                
             }
             // Support for DirectoryName altname field in profile version 5
             if (getVersion() < 5) {
-                addField(DIRECTORYNAME);
-                setValue(DIRECTORYNAME,0,"");
-                setRequired(DIRECTORYNAME,0,false);
-                setUse(DIRECTORYNAME,0,true);
-                setModifyable(DIRECTORYNAME,0,true);            	
+                addField(DnComponents.DIRECTORYNAME);
+                setValue(DnComponents.DIRECTORYNAME,0,"");
+                setRequired(DnComponents.DIRECTORYNAME,0,false);
+                setUse(DnComponents.DIRECTORYNAME,0,true);
+                setModifyable(DnComponents.DIRECTORYNAME,0,true);            	
             }
             // Support for Subject Directory Attributes field in profile version 6
             if (getVersion() < 6) {
                 ArrayList numberoffields = (ArrayList)   data.get(NUMBERARRAY);                
-                for(int i =numberoffields.size(); i < NUMBEROFPARAMETERS; i++){
+                for(int i =numberoffields.size(); i < dataConstants.size(); i++){
                   numberoffields.add(new Integer(0));
                 }               
                 data.put(NUMBERARRAY,numberoffields);
                 data.put(SUBJECTDIRATTRFIELDORDER,new ArrayList());
                 
-                for(int i=DATEOFBIRTH; i <= COUNTRYOFRESIDENCE; i++){
-                	addField(i);
-                	setValue(i,0,"");
-                	setRequired(i,0,false);
-                	setUse(i,0,false);
-                	setModifyable(i,0,true);
+                for(int i=getParameterNumber(DnComponents.DATEOFBIRTH); i <= getParameterNumber(DnComponents.COUNTRYOFRESIDENCE); i++){
+                	addField(getParameter(i));
+                	setValue(getParameter(i),0,"");
+                	setRequired(getParameter(i),0,false);
+                	setUse(getParameter(i),0,false);
+                	setModifyable(getParameter(i),0,true);
                 }  
 
             }
@@ -963,13 +1049,47 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         log.debug("<upgrade");
     }
 
-    // Private Methods
 
+    public static boolean isFieldImplemented(int field) {
+    	String f = getParameter(field);
+    	if (f == null) {
+    		log.info("isFieldImplemented got call for non-implemented field: "+field);
+    		return false;
+    	}
+    	return isFieldImplemented(f);
+    }
+    public static boolean isFieldImplemented(String field) {
+    	boolean ret = true;
+        if(field.equals(DnComponents.OTHERNAME) 
+        		|| field.equals(DnComponents.X400ADDRESS) 
+        		|| field.equals(DnComponents.EDIPARTNAME) 
+        		|| field.equals(DnComponents.REGISTEREDID)) {
+    		log.info("isFieldImplemented got call for non-implemented field: "+field);
+        	ret = false;
+        }
+        return ret;
+    }
+
+	public static boolean isFieldOfType(int fieldNumber, String fieldString) {
+		boolean ret = false;
+		int number = getParameterNumber(fieldString);
+		if (fieldNumber == number) {
+			ret = true;
+		}
+		return ret;
+	}
+
+
+    //
+    // Private Methods
+    //
+
+    
     /**
      * Used for both email and upn fields
      * 
      */
-    private void checkIfDomainFullfillProfile(int field, int number, String nameAndDomain, String text) throws UserDoesntFullfillEndEntityProfile {
+    private void checkIfDomainFullfillProfile(String field, int number, String nameAndDomain, String text) throws UserDoesntFullfillEndEntityProfile {
     	    	
     	if(!nameAndDomain.trim().equals("") && nameAndDomain.indexOf('@') == -1)
     		throw new UserDoesntFullfillEndEntityProfile("Invalid " + text + ". There must have '@' in the field.");
@@ -1005,7 +1125,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
      * Used for iso 3166 country codes
      * 
      */
-    private void checkIfISO3166FullfillProfile(int field, int number, String country, String text) throws UserDoesntFullfillEndEntityProfile {
+    private void checkIfISO3166FullfillProfile(String field, int number, String country, String text) throws UserDoesntFullfillEndEntityProfile {
     	    	
     	if(!country.trim().equals("") && country.trim().length() != 2)
     		throw new UserDoesntFullfillEndEntityProfile("Invalid " + text + ". Must be of length two.");
@@ -1034,7 +1154,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
      * Used to check if it is an M or an F
      * 
      */
-    private void checkIfGenderFullfillProfile(int field, int number, String gender, String text) throws UserDoesntFullfillEndEntityProfile {
+    private void checkIfGenderFullfillProfile(String field, int number, String gender, String text) throws UserDoesntFullfillEndEntityProfile {
     	    	
     	if(!gender.trim().equals("") && !(gender.equalsIgnoreCase("m") || gender.equalsIgnoreCase("f")))
     		throw new UserDoesntFullfillEndEntityProfile("Invalid " + text + ". Must be M or F.");
@@ -1063,7 +1183,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
      * Used for date strings, should be YYYYMMDD
      * 
      */
-    private void checkIfDateFullfillProfile(int field, int number, String date, String text) throws UserDoesntFullfillEndEntityProfile {
+    private void checkIfDateFullfillProfile(String field, int number, String date, String text) throws UserDoesntFullfillEndEntityProfile {
     	    	
     	if(!date.trim().equals("") && date.trim().length() != 8)
     		throw new UserDoesntFullfillEndEntityProfile("Invalid " + text + ". Must be of length eight.");
@@ -1090,16 +1210,16 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         }
     }
     
-    private void checkIfDataFullfillProfile(int field, int number, String data, String text, String email) throws UserDoesntFullfillEndEntityProfile {
+    private void checkIfDataFullfillProfile(String field, int number, String data, String text, String email) throws UserDoesntFullfillEndEntityProfile {
 
-    	if(data == null && field != EMAIL)
+    	if(data == null && !field.equals(EMAIL))
     		throw new UserDoesntFullfillEndEntityProfile("Field " +  text + " cannot be null.");
 
     	if(data !=null)
     		if(!getUse(field,number) && !data.trim().equals(""))
     			throw new UserDoesntFullfillEndEntityProfile(text + " cannot be used in end entity profile.");
 
-    	if(field == OLDDNE || field == RFC822NAME){
+    	if(field.equals(DnComponents.DNEMAIL) || field.equals(DnComponents.RFC822NAME)){
     		if(isRequired(field,number)){
     			if(!data.trim().equals(email.trim()))
     				throw new UserDoesntFullfillEndEntityProfile("Field " + text + " data didn't match Email field.");
@@ -1141,19 +1261,21 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 
 
         // Check if all required subjectdn fields exists.
-        for(int i = 0; i < SUBJECTDNFIELDS.length; i++){
+        String[] dnfields = getSubjectDNProfileFields();
+        Integer[] dnFieldExtractorIds = (Integer[])DnComponents.getDnDnIds().toArray(new Integer[0]);
+        for(int i = 0; i < dnfields.length; i++){
         	if(getReverseFieldChecks()){
-        		int nof = subjectdnfields.getNumberOfFields(SUBJECTDNFIELDEXTRACTORNAMES[i]);
-        	    int numRequiredFields = getNumberOfRequiredFields(SUBJECTDNFIELDS[i]);
+        		int nof = subjectdnfields.getNumberOfFields(dnFieldExtractorIds[i].intValue());
+        	    int numRequiredFields = getNumberOfRequiredFields(dnfields[i]);
         	    if(nof < numRequiredFields){
-        	      throw new UserDoesntFullfillEndEntityProfile("Subject DN field '" + SUBJECTDNFIELDNAMES[i] + "' must exist.");
+        	      throw new UserDoesntFullfillEndEntityProfile("Subject DN field '" + dnfields[i] + "' must exist.");
         	    }
         	}else{
-               size = getNumberOfField(SUBJECTDNFIELDS[i]);
+               size = getNumberOfField(dnfields[i]);
                for(int j = 0; j < size; j++){
-               if(isRequired(SUBJECTDNFIELDS[i],j))
-                 if(subjectdnfields.getField(SUBJECTDNFIELDEXTRACTORNAMES[i],j).trim().equals(""))
-                  throw new UserDoesntFullfillEndEntityProfile("Subject DN field '" + SUBJECTDNFIELDNAMES[i] + "' must exist.");
+               if(isRequired(dnfields[i],j))
+                 if(subjectdnfields.getField(dnFieldExtractorIds[i].intValue(),j).trim().equals(""))
+                  throw new UserDoesntFullfillEndEntityProfile("Subject DN field '" + dnfields[i] + "' must exist.");
                }
             }
         }
@@ -1161,30 +1283,34 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         
 
          // Check if all required subject alternate name fields exists.
-        for(int i = 0; i < SUBJECTALTNAMEFIELDS.length; i++){
+        String[] altnamefields = getSubjectAltnameProfileFields();
+        Integer[] altNameFieldExtractorIds = (Integer[])DnComponents.getAltNameDnIds().toArray(new Integer[0]);
+        for(int i = 0; i < altnamefields.length; i++){
         	if(getReverseFieldChecks()){
-        		int nof = subjectaltnames.getNumberOfFields(SUBJECTALTNAMEFIELDEXTRACTORNAMES[i]);
-        		int numRequiredFields = getNumberOfRequiredFields(SUBJECTALTNAMEFIELDS[i]);
+        		int nof = subjectaltnames.getNumberOfFields(altNameFieldExtractorIds[i].intValue());
+        		int numRequiredFields = getNumberOfRequiredFields(altnamefields[i]);
         		if(nof < numRequiredFields){
-        			throw new UserDoesntFullfillEndEntityProfile("Subject DN field '" + SUBJECTALTNAMEFIELDS[i] + "' must exist.");
+        			throw new UserDoesntFullfillEndEntityProfile("Subject Alternative Name field '" + altnamefields[i] + "' must exist.");
         		}
         	}else{
-        		size = getNumberOfField(SUBJECTALTNAMEFIELDS[i]);
+        		size = getNumberOfField(altnamefields[i]);
         		for(int j = 0; j < size; j++){
-        			if(isRequired(SUBJECTALTNAMEFIELDS[i],j))
-        				if(subjectaltnames.getField(SUBJECTALTNAMEFIELDEXTRACTORNAMES[i],j).trim().equals(""))
-        					throw new UserDoesntFullfillEndEntityProfile("Subject Alterntive Name field '" + SUBJECTALTNAMEFIELDNAMES[i] + "' must exist.");
+        			if(isRequired(altnamefields[i],j))
+        				if(subjectaltnames.getField(altNameFieldExtractorIds[i].intValue(),j).trim().equals(""))
+        					throw new UserDoesntFullfillEndEntityProfile("Subject Alterntive Name field '" + altnamefields[i] + "' must exist.");
         		}
         	}
         }
 
         // Check if all required subject directory attribute fields exists.
-        for(int i = 0; i < SUBJECTDIRATTRFIELDS.length; i++){        	
-        	size = getNumberOfField(SUBJECTDIRATTRFIELDS[i]);
+        String[] dirattrfields = getSubjectDirAttrProfileFields();
+        Integer[] dirAttrFieldExtractorIds = (Integer[])DnComponents.getDirAttrDnIds().toArray(new Integer[0]);
+        for(int i = 0; i < dirattrfields.length; i++){        	
+        	size = getNumberOfField(dirattrfields[i]);
         	for(int j = 0; j < size; j++){
-        		if(isRequired(SUBJECTDIRATTRFIELDS[i],j))
-        			if(subjectdirattrs.getField(SUBJECTDIRATTRFIELDEXTRACTORNAMES[i],j).trim().equals(""))
-        				throw new UserDoesntFullfillEndEntityProfile("Subject Directory Attribute field '" + SUBJECTDIRATTRFIELDNAMES[i] + "' must exist.");
+        		if(isRequired(dirattrfields[i],j))
+        			if(subjectdirattrs.getField(dirAttrFieldExtractorIds[i].intValue(),j).trim().equals(""))
+        				throw new UserDoesntFullfillEndEntityProfile("Subject Directory Attribute field '" + dirattrfields[i] + "' must exist.");
         	}
         }
 
@@ -1195,7 +1321,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
    * @param field, one of the field constants
    * @return The number of required fields of that kind.
    */
-    private int getNumberOfRequiredFields(int field) {
+    private int getNumberOfRequiredFields(String field) {
     	int retval = 0;
     	int size = getNumberOfField(field);
     	for(int j = 0; j < size; j++){
@@ -1210,25 +1336,61 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 	private void  checkIfForIllegalNumberOfFields(DNFieldExtractor subjectdnfields, DNFieldExtractor subjectaltnames, DNFieldExtractor subjectdirattrs) throws UserDoesntFullfillEndEntityProfile{
 
         // Check number of subjectdn fields.
-        for(int i = 0; i < SUBJECTDNFIELDS.length; i++){
-            if(getNumberOfField(SUBJECTDNFIELDS[i]) < subjectdnfields.getNumberOfFields(SUBJECTDNFIELDEXTRACTORNAMES[i]))
-              throw new UserDoesntFullfillEndEntityProfile("Wrong number of " + SUBJECTDNFIELDNAMES[i] + " fields in Subject DN.");
+        String[] dnfields = getSubjectDNProfileFields();
+        Integer[] dnFieldExtractorIds = (Integer[])DnComponents.getDnDnIds().toArray(new Integer[0]);
+        for(int i = 0; i < dnfields.length; i++){
+            if(getNumberOfField(dnfields[i]) < subjectdnfields.getNumberOfFields(dnFieldExtractorIds[i].intValue()))
+              throw new UserDoesntFullfillEndEntityProfile("Wrong number of " + dnfields[i] + " fields in Subject DN.");
         }
 
          // Check number of subject alternate name fields.
-        for(int i = 0; i < SUBJECTALTNAMEFIELDS.length; i++){
-          if(getNumberOfField(SUBJECTALTNAMEFIELDS[i]) < subjectaltnames.getNumberOfFields(SUBJECTALTNAMEFIELDEXTRACTORNAMES[i]))
-           throw new UserDoesntFullfillEndEntityProfile("Wrong number of " + SUBJECTALTNAMEFIELDNAMES[i] + " fields in Subject Alternative Name.");
+        String[] altnamefields = getSubjectAltnameProfileFields();
+        Integer[] altNameFieldExtractorIds = (Integer[])DnComponents.getAltNameDnIds().toArray(new Integer[0]);
+        for(int i = 0; i < altnamefields.length; i++){
+          if(getNumberOfField(altnamefields[i]) < subjectaltnames.getNumberOfFields(altNameFieldExtractorIds[i].intValue()))
+           throw new UserDoesntFullfillEndEntityProfile("Wrong number of " + altnamefields[i] + " fields in Subject Alternative Name.");
         }
 
         // Check number of subject directory attribute fields.
-        for(int i = 0; i < SUBJECTDIRATTRFIELDS.length; i++){
-          if(getNumberOfField(SUBJECTDIRATTRFIELDS[i]) < subjectdirattrs.getNumberOfFields(SUBJECTDIRATTRFIELDEXTRACTORNAMES[i]))
-           throw new UserDoesntFullfillEndEntityProfile("Wrong number of " + SUBJECTDIRATTRFIELDNAMES[i] + " fields in Subject Directory Attributes.");
+        String[] dirattrfields = getSubjectDirAttrProfileFields();
+        Integer[] dirAttrFieldExtractorIds = (Integer[])DnComponents.getDirAttrDnIds().toArray(new Integer[0]);
+        for(int i = 0; i < dirattrfields.length; i++){
+          if(getNumberOfField(dirattrfields[i]) < subjectdirattrs.getNumberOfFields(dirAttrFieldExtractorIds[i].intValue()))
+           throw new UserDoesntFullfillEndEntityProfile("Wrong number of " + dirattrfields[i] + " fields in Subject Directory Attributes.");
         }
     }
 
-
+	/** methods for mapping the DN, AltName, DirAttr constants from string->number
+	 * 
+	 */
+	private static int getParameterNumber(String parameter) {
+		Integer number = (Integer)dataConstants.get(parameter);
+		if (number != null) {
+			return number.intValue();			
+		}
+		log.error("No parameter number for "+parameter);
+		return -1;
+	}
+	/** methods for mapping the DN, AltName, DirAttr constants from number->string
+	 * 
+	 */
+	private static String getParameter(int parameterNumber) {
+		Set set = dataConstants.entrySet();
+		Iterator iter = set.iterator();
+		String ret = null;
+		while (iter.hasNext() && ret == null) {
+			Map.Entry entry = (Map.Entry)iter.next();
+			Integer val = (Integer)entry.getValue();
+			if (val.intValue() == parameterNumber) {
+				ret = (String)entry.getKey();
+			}
+		}
+		if (ret == null) {
+			log.error("No parameter for "+parameterNumber);			
+		}
+		return ret;
+	}
+	
     private void  incrementFieldnumber(int parameter){
       ArrayList numberarray = (ArrayList) data.get(NUMBERARRAY);
       numberarray.set(parameter, new Integer(((Integer) numberarray.get(parameter)).intValue() + 1));
@@ -1239,58 +1401,24 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
       numberarray.set(parameter, new Integer(((Integer) numberarray.get(parameter)).intValue() - 1));
     }
     
-    
+
 
     // Private Constants.
     private static final int FIELDBOUNDRARY  = 10000;
     private static final int NUMBERBOUNDRARY = 100;
 
-    private static final int[] SUBJECTDNFIELDS              = {OLDDNE, UID, COMMONNAME, SN, GIVENNAME, INITIALS, SURNAME, TITLE, ORGANIZATIONUNIT, ORGANIZATION, LOCALE, STATE, DOMAINCOMPONENT, COUNTRY, UNSTRUCTUREDADDRESS, UNSTRUCTUREDNAME};
-    private static final int[] SUBJECTDNFIELDEXTRACTORNAMES = { DNFieldExtractor.E,DNFieldExtractor.UID, DNFieldExtractor.CN, DNFieldExtractor.SN,
-                                                               DNFieldExtractor.GIVENNAME,DNFieldExtractor.INITIALS,DNFieldExtractor.SURNAME, DNFieldExtractor.T,
-                                                               DNFieldExtractor.OU, DNFieldExtractor.O, DNFieldExtractor.L,
-                                                               DNFieldExtractor.ST, DNFieldExtractor.DC, DNFieldExtractor.C,
-															   DNFieldExtractor.UNSTRUCTUREDADDRESS, DNFieldExtractor.UNSTRUCTUREDNAME};
-    private static final String[] SUBJECTDNFIELDNAMES       = {"Email Address (E)", "UID","CommonName (CN)", "SerialNumber (SN)", "GivenName (GivenName)",
-                                                               "Initials (Initials)", "SurName (SurName)", "Title (T)", "OrganizationUnit (OU)", "Organization (O)",
-                                                               "Location (L)", "State (ST)", "DomainComponent (DC)", "Country (C)", "Unstructured Address (IP)", "Unstructured Name (fqdn)"};
+    
+    public static String[] getSubjectDNProfileFields() {
+    	return (String[])DnComponents.getDnProfileFields().toArray(new String[0]);
+    }
 
+    public static String[] getSubjectAltnameProfileFields() {
+    	return (String[])DnComponents.getAltNameFields().toArray(new String[0]);
+    }
 
-    private static final int[] SUBJECTALTNAMEFIELDS              = {DNSNAME,IPADDRESS, OTHERNAME, UNIFORMRESOURCEID, X400ADDRESS, DIRECTORYNAME, EDIPARTNAME, REGISTEREDID, RFC822NAME, UPN , GUID};
-    private static final int[] SUBJECTALTNAMEFIELDEXTRACTORNAMES = {DNFieldExtractor.DNSNAME,DNFieldExtractor.IPADDRESS, DNFieldExtractor.OTHERNAME,
-                                                                    DNFieldExtractor.URI, DNFieldExtractor.X400ADDRESS, DNFieldExtractor.DIRECTORYNAME,
-                                                                    DNFieldExtractor.EDIPARTNAME, DNFieldExtractor.REGISTEREDID, DNFieldExtractor.RFC822NAME, DNFieldExtractor.UPN, DNFieldExtractor.GUID};
-    private static final String[] SUBJECTALTNAMEFIELDNAMES       = {"DNSName", "IPAddress", "OtherName", "UniformResourceId (uri)", "X400Address", "DirectoryName",
-                                                                    "EDIPartName","RegisteredId","RFC822Name", "UPN", "Globally Unique Id"};
-
-    private static final int[] SUBJECTDIRATTRFIELDS              = {DATEOFBIRTH,PLACEOFBIRTH,GENDER,COUNTRYOFCITIZENSHIP,COUNTRYOFRESIDENCE};
-    private static final int[] SUBJECTDIRATTRFIELDEXTRACTORNAMES = {DNFieldExtractor.DATEOFBIRTH, DNFieldExtractor.PLACEOFBIRTH,DNFieldExtractor.GENDER,DNFieldExtractor.COUNTRYOFCITIZENSHIP,DNFieldExtractor.COUNTRYOFRESIDENCE};
-    private static final String[] SUBJECTDIRATTRFIELDNAMES       = {"DateOfBirth","PlaceOfBirth","Gender","CountryOfCitizenship","CountryOfResidence"};
-
-    // Used to map constants of DNFieldExtractor to end entity profile constants.
-    private static final int[] DNEXTRATORTOPROFILEMAPPER      = {OLDDNE, UID, COMMONNAME, SN, GIVENNAME, INITIALS, SURNAME,
-                                                                 TITLE, ORGANIZATIONUNIT, ORGANIZATION, LOCALE,
-                                                                 STATE, DOMAINCOMPONENT, COUNTRY, UNSTRUCTUREDADDRESS, UNSTRUCTUREDNAME, OTHERNAME, RFC822NAME, DNSNAME,
-                                                                 IPADDRESS, X400ADDRESS, DIRECTORYNAME, EDIPARTNAME, UNIFORMRESOURCEID, REGISTEREDID, UPN, GUID,
-                                                                 DATEOFBIRTH, PLACEOFBIRTH, GENDER, COUNTRYOFCITIZENSHIP, COUNTRYOFRESIDENCE};
-    private static final String[] DNEXTRATORTOPROFILEMAPPERTEXTS = {"Email Address (E)", "UID", "CommonName (CN)", "SerialNumber (SN)",
-                                                                    "GivenName (GivenName)", "Initials (Initials)", "SurName (SurName)",
-                                                                    "Title (T)", "OrganizationUnit (OU)", "Organization (O)", "Location (L)",
-                                                                    "State (ST)", "DomainComponent (DC)", "Country (C)", "Unstructured Address (IP)", 
-																	"Unstructured Name (fqdn)","OtherName", "RFC822Name", "DNSName",
-                                                                    "IPAddress", "X400Address", "DirectoryName", "EDIPartName", "UniformResourceId (uri)", "RegisteredId", "UPN", 
-																	"Globally Unique Id",
-																	"DateOfBirth", "PlaceOfBirth", "Gender", "CountryOfCitizenship", "CountryOfresidence"
-																	};
-
-    private static final int[] PROFILEIDTOUSERIDMAPPER        = {0,0,0, DNFieldExtractor.E, DNFieldExtractor.UID, DNFieldExtractor.CN, DNFieldExtractor.SN,
-                                                                        DNFieldExtractor.GIVENNAME,DNFieldExtractor.INITIALS, DNFieldExtractor.SURNAME,
-                                                                        DNFieldExtractor.T, DNFieldExtractor.OU, DNFieldExtractor.O,
-                                                                        DNFieldExtractor.L ,DNFieldExtractor.ST,DNFieldExtractor.DC,
-                                                                        DNFieldExtractor.C ,DNFieldExtractor.RFC822NAME ,DNFieldExtractor.DNSNAME,
-                                                                        DNFieldExtractor.IPADDRESS ,DNFieldExtractor.OTHERNAME ,DNFieldExtractor.URI, DNFieldExtractor.X400ADDRESS,
-                                                                        DNFieldExtractor.DIRECTORYNAME ,DNFieldExtractor.EDIPARTNAME ,DNFieldExtractor.REGISTEREDID,0,0,0,0,0,0,0,0,0,0,DNFieldExtractor.UPN,0,0,DNFieldExtractor.UNSTRUCTUREDADDRESS,DNFieldExtractor.UNSTRUCTUREDNAME, DNFieldExtractor.GUID,
-                                                                        DNFieldExtractor.DATEOFBIRTH, DNFieldExtractor.PLACEOFBIRTH, DNFieldExtractor.GENDER, DNFieldExtractor.COUNTRYOFCITIZENSHIP, DNFieldExtractor.COUNTRYOFRESIDENCE};
+    public static String[] getSubjectDirAttrProfileFields() {
+    	return (String[])DnComponents.getDirAttrFields().toArray(new String[0]);
+    }
 
 
     private static final String NUMBERARRAY               = "NUMBERARRAY";
