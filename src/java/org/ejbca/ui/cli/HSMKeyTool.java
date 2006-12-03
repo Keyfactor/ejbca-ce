@@ -81,16 +81,16 @@ class Test {
 
 /**
  * @author lars
- * @version $Id: HSMKeyTool.java,v 1.9 2006-12-03 14:18:10 primelars Exp $
+ * @version $Id: HSMKeyTool.java,v 1.10 2006-12-03 14:59:15 primelars Exp $
  *
  */
 public class HSMKeyTool {
     private static String GENERATE_SWITCH = "generate";
     private static String DELETE_SWITCH = "delete";
     private static String TEST_SWITCH = "test";
-    private static String CREATE_KEYSTORE = "createkeystore";
-    private static String CREATE_KEYSTORE_MODULE = "createkeystoremodule";
-    private static String MOVE = "move";
+    private static String CREATE_KEYSTORE_SWITCH = "createkeystore";
+    private static String CREATE_KEYSTORE_MODULE_SWITCH = "createkeystoremodule";
+    private static String MOVE_SWITCH = "move";
     /**
      * @param args
      */
@@ -111,29 +111,39 @@ public class HSMKeyTool {
                     System.err.println(args[0] + " " + args[1] + " <keystore ID> [<# of tests>]");
                 else
                     test(args[2], args[3], args[4], args.length>5 ? Integer.parseInt(args[5].trim()) : 1);
-            } else if( args.length > 1 && args[1].toLowerCase().trim().equals(CREATE_KEYSTORE)) {
+            } else if( args.length > 1 && args[1].toLowerCase().trim().equals(CREATE_KEYSTORE_SWITCH)) {
                 new KeyStoreContainer(args[3], getProviderName(args[2]), null).storeKeyStore();
-            } else if( args.length > 1 && args[1].toLowerCase().trim().equals(CREATE_KEYSTORE_MODULE)) {
+            } else if( args.length > 1 && args[1].toLowerCase().trim().equals(CREATE_KEYSTORE_MODULE_SWITCH)) {
                 System.setProperty("protect", "module");
                 new KeyStoreContainer(args[3], getProviderName(args[2]), null).storeKeyStore();
-            } else if( args.length > 1 && args[1].toLowerCase().trim().equals(MOVE)) {
-                move(args[2], args[3], args[4], args[5]);
+            } else if( args.length > 1 && args[1].toLowerCase().trim().equals(MOVE_SWITCH)) {
+                if ( args.length < 6 )
+                    System.err.println(args[0] + " " + args[1] + " <from keystore ID> <to keystore ID>");
+                else
+                    move(args[2], args[3], args[4], args[5]);
             } else
                 System.err.println("Use \"" + args[0]+" "+GENERATE_SWITCH+"\" or \"" +
                                    args[0]+" "+DELETE_SWITCH+"\" or \"" +
-                                   args[0]+" "+TEST_SWITCH+"\".");
+                                   args[0]+" "+TEST_SWITCH+"\" or \"" +
+                                   args[0]+" "+CREATE_KEYSTORE_SWITCH+"\" or \"" +
+                                   args[0]+" "+CREATE_KEYSTORE_MODULE_SWITCH+"\" or \"" +
+                                   args[0]+" "+MOVE_SWITCH+"\".");
         } catch (Throwable e) {
             e.printStackTrace(System.err);
         }
     }
     private static class KeyStoreContainer {
-        private static char[] getPassWord(boolean isKeystoreException) throws IOException {
+        private void setPassWord(boolean isKeystoreException) throws IOException {
             System.err.println((isKeystoreException ? "Setting key entry in keystore" : "Loading keystore")+". Give password of inserted card in slot:");
-            return new BufferedReader(new InputStreamReader(System.in)).readLine().toCharArray();
+            char result[] = new BufferedReader(new InputStreamReader(System.in)).readLine().toCharArray();
+            if ( isKeystoreException )
+                passPhraseGetSetEntry = result;
+            else
+                passPhraseLoadSave = result;
         }
-        final KeyStore keyStore;
-        char passPhraseLoadSave[] = null;
-        char passPhraseGetSetEntry[] = null;
+        private final KeyStore keyStore;
+        private char passPhraseLoadSave[] = null;
+        private char passPhraseGetSetEntry[] = null;
         private KeyStoreContainer(KeyStore ks) {
             keyStore = ks;
         }
@@ -144,7 +154,7 @@ public class HSMKeyTool {
              try {
                  load(storeID);
              } catch( IOException e ) {
-                 passPhraseLoadSave = getPassWord(false);
+                 setPassWord(false);
                  load(storeID);
              }
         }
@@ -164,7 +174,7 @@ public class HSMKeyTool {
             try {
                 keyStore.setKeyEntry(alias, key, passPhraseGetSetEntry, chain);
             } catch (KeyStoreException e) {
-                passPhraseGetSetEntry = getPassWord(true);
+                setPassWord(true);
                 keyStore.setKeyEntry(alias, key, passPhraseGetSetEntry, chain);
             }
         }
@@ -186,7 +196,7 @@ public class HSMKeyTool {
             try {
                 return keyStore.getKey(alias, passPhraseGetSetEntry);
             } catch (UnrecoverableKeyException e1) {
-                passPhraseGetSetEntry = getPassWord(true);
+                setPassWord(true);
                 return keyStore.getKey(alias, passPhraseGetSetEntry );
             }
         }
