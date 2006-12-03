@@ -16,7 +16,6 @@ package org.ejbca.ui.cli;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
@@ -82,7 +81,7 @@ class Test {
 
 /**
  * @author lars
- * @version $Id: HSMKeyTool.java,v 1.8 2006-12-02 22:02:18 primelars Exp $
+ * @version $Id: HSMKeyTool.java,v 1.9 2006-12-03 14:18:10 primelars Exp $
  *
  */
 public class HSMKeyTool {
@@ -143,11 +142,14 @@ public class HSMKeyTool {
                           final String storeID) throws NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, IOException {
              this( KeyStore.getInstance(keyStoreType, providerName) );
              try {
-                 load(keyStore, storeID, passPhraseLoadSave);
+                 load(storeID);
              } catch( IOException e ) {
                  passPhraseLoadSave = getPassWord(false);
-                 load(keyStore, storeID, passPhraseLoadSave);
+                 load(storeID);
              }
+        }
+        private void load(String storeID) throws NoSuchAlgorithmException, CertificateException, IOException {
+            keyStore.load(storeID!=null ? new ByteArrayInputStream(storeID.getBytes()):null, passPhraseLoadSave);
         }
         void storeKeyStore() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
             System.err.println("Next line will contain the identity identifying the keystore:");
@@ -259,14 +261,6 @@ public class HSMKeyTool {
         }
         fromKS.storeKeyStore();
         toKS.storeKeyStore();
-    }
-    private static void load(KeyStore ks, String storeID, char passPhrase[]) throws NoSuchAlgorithmException, CertificateException, IOException {
-        if ( storeID!=null ) {
-            InputStream is = new ByteArrayInputStream(storeID.getBytes());
-            ks.load(is, passPhrase);
-        } else {
-            ks.load(null, passPhrase);
-        }
     }
     private static KeyStoreContainer getKeyStoreTest(final String providerName,
                                             final String keyStoreType,
