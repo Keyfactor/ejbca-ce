@@ -81,7 +81,7 @@ class Test {
 
 /**
  * @author lars
- * @version $Id: HSMKeyTool.java,v 1.10 2006-12-03 14:59:15 primelars Exp $
+ * @version $Id: HSMKeyTool.java,v 1.11 2006-12-03 15:20:16 primelars Exp $
  *
  */
 public class HSMKeyTool {
@@ -263,7 +263,7 @@ public class HSMKeyTool {
         while( e.hasMoreElements() ) {
             String alias = (String)e.nextElement();
             if (fromKS.getKeyStore().isKeyEntry(alias)) {
-                Key key=fromKS.getKeyStore().getKey(alias, null);
+                Key key=fromKS.getKey(alias);
                 Certificate chain[] = fromKS.getKeyStore().getCertificateChain(alias);
                 toKS.setKeyEntry(alias, key, chain);
             }
