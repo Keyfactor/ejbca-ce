@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 /**
  * Tests the StringTools class .
  *
- * @version $Id: TestDnFieldExtractor.java,v 1.4 2006-12-04 08:17:53 anatom Exp $
+ * @version $Id: TestDnFieldExtractor.java,v 1.5 2006-12-04 09:05:19 anatom Exp $
  */
 public class TestDnFieldExtractor extends TestCase {
     private static Logger log = Logger.getLogger(TestDnFieldExtractor.class);
@@ -111,7 +111,7 @@ public class TestDnFieldExtractor extends TestCase {
         for(int j = DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY; j < DNFieldExtractor.SUBJECTDIRATTRBOUNDRARY; j++){
         	int num = j;
         	//System.out.println("Getting "+num);
-        	int nof = ((Integer)i.get(Integer.valueOf(num))).intValue();
+        	((Integer)i.get(Integer.valueOf(num))).intValue();
         	//System.out.println("Got "+nof);
         }
         String dns = extractor.getField(DNFieldExtractor.DNSNAME, 0);
@@ -131,6 +131,24 @@ public class TestDnFieldExtractor extends TestCase {
     	assertFalse(illegal);
     	other = extractor.existsOther();
     	assertFalse(other);
+    	num = extractor.getNumberOfFields(DNFieldExtractor.URI);
+    	assertEquals(1, num);
+    	dn = "uniformResourceIdentifier=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1";
+    	extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTALTNAME);
+    	illegal = extractor.isIllegal();
+    	assertFalse(illegal);
+    	other = extractor.existsOther();
+    	assertFalse(other);
+    	num = extractor.getNumberOfFields(DNFieldExtractor.URI);
+    	assertEquals(1, num);
+    	dn = "uri=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1";
+    	extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTALTNAME);
+    	illegal = extractor.isIllegal();
+    	assertFalse(illegal);
+    	other = extractor.existsOther();
+    	assertFalse(other);
+    	num = extractor.getNumberOfFields(DNFieldExtractor.URI);
+    	assertEquals(1, num);
     }
     
     /**
@@ -145,7 +163,7 @@ public class TestDnFieldExtractor extends TestCase {
         for(int j = DNFieldExtractor.SUBJECTDIRATTRBOUNDRARY; j < DNFieldExtractor.NUMBEROFFIELDS; j++){
         	int num = j;
         	//System.out.println("Getting dir "+num);
-        	int nof = ((Integer)i.get(Integer.valueOf(num))).intValue();
+        	((Integer)i.get(Integer.valueOf(num))).intValue();
         	//System.out.println("Got dir "+nof);
         }
     	String dns = extractor.getField(DNFieldExtractor.PLACEOFBIRTH, 0);

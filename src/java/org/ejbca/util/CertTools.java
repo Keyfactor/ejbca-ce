@@ -95,7 +95,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.30 2006-12-04 08:08:26 anatom Exp $
+ * @version $Id: CertTools.java,v 1.31 2006-12-04 09:05:19 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -111,6 +111,7 @@ public class CertTools {
     public static final String DNS = "dNSName";
     public static final String URI = "uniformResourceIdentifier";
     public static final String URI1 = "uri";
+    public static final String URI2 = "uniformResourceId";
     public static final String IPADDR = "iPAddress";
     public static final String DIRECTORYNAME = "directoryName";
 
@@ -1154,8 +1155,15 @@ public class CertTools {
                 vec.add(gn);
             }
         }
-
         uri = CertTools.getPartsFromDN(altName, CertTools.URI1);
+        if (!uri.isEmpty()) {            
+            Iterator iter = uri.iterator();
+            while (iter.hasNext()) {
+                GeneralName gn = new GeneralName(6, new DERIA5String((String)iter.next()));
+                vec.add(gn);
+            }
+        }
+        uri = CertTools.getPartsFromDN(altName, CertTools.URI2);
         if (!uri.isEmpty()) {            
             Iterator iter = uri.iterator();
             while (iter.hasNext()) {
