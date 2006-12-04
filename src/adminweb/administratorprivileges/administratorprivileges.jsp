@@ -163,7 +163,6 @@
          if(admingroupname != null){
            if(!admingroupname.trim().equals("") && admingroupname.indexOf(';') == -1){
              try{
-               System.out.println("Trying to add " + admingroupname.trim() + ", " + caid + "\n\n\n");
                adh.addAdminGroup(admingroupname.trim(), caid);
              }catch(AdminGroupExistsException e){ admingroupexists = true; }
            }      

@@ -19,7 +19,7 @@ import org.apache.log4j.spi.LoggingEvent;
  * This was the only way I could find to implement the desired functionality.
  * 
  * @author tomas
- * @version $Id: ScriptrunningDailyRollingFileAppender.java,v 1.1 2006-08-14 08:46:19 anatom Exp $
+ * @version $Id: ScriptrunningDailyRollingFileAppender.java,v 1.2 2006-12-04 12:44:38 anatom Exp $
  */
 public class ScriptrunningDailyRollingFileAppender extends FileAppender {
 
@@ -184,7 +184,6 @@ public class ScriptrunningDailyRollingFileAppender extends FileAppender {
 				rollingCalendar.setType(i);
 				Date next = new Date(rollingCalendar.getNextCheckMillis(epoch));
 				String r1 =  simpleDateFormat.format(next);
-				//System.out.println("Type = "+i+", r0 = "+r0+", r1 = "+r1);
 				if(r0 != null && r1 != null && !r0.equals(r1)) {
 					return i;
 				}

@@ -313,7 +313,6 @@
          try{
              X509Name dummy = CertTools.stringToBcX509Name(subjectdn);
          }catch(Exception e){
-             //System.out.println("Illegal DN: "+subjectdn);
              illegaldnoraltname = true;
          }
          int certprofileid = 0;

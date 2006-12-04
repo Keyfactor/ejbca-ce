@@ -77,7 +77,6 @@ public class RevRepContent implements DEREncodable
       
       Enumeration estatus = ((ASN1Sequence)e.nextElement()).getObjects();
       while (estatus.hasMoreElements()) {
-        System.out.println("status Element++");
         status.addElement( PKIStatusInfo.getInstance( estatus.nextElement() ) );
       }
       
@@ -91,7 +90,6 @@ public class RevRepContent implements DEREncodable
 //            Enumeration erevcerts = ((ASN1Sequence)e.nextElement()).getObjects();
           Enumeration erevcerts = ((ASN1Sequence)obj.getObject()).getObjects();
             while (erevcerts.hasMoreElements()) {
-              System.out.println("erevcerts Element++");
               revCerts.addElement( CertId.getInstance( erevcerts.nextElement() ) );
             }
             break;
@@ -99,7 +97,6 @@ public class RevRepContent implements DEREncodable
 //            Enumeration ecrls = ((ASN1Sequence)e.nextElement()).getObjects();
           Enumeration ecrls = ((ASN1Sequence)obj.getObject()).getObjects();
             while (ecrls.hasMoreElements()) {
-              System.out.println("ecrls Element++");
               crls.addElement( CertificateList.getInstance( ecrls.nextElement() ) );
             }
             break;
