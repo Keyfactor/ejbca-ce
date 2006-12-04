@@ -3099,34 +3099,42 @@ This is a global setting that cannot be overridden by administrators own setting
 
 <section name="Custom DN oids">
 <p>
-EJBCA supports custom (your own) oids in DN components in some special cases.
-<ul>
-<li>You can have a DN with a custom oid in CA names.</li>
-</ul>
+EJBCA supports custom (your own) oids in DN components.
+</p><p>
 In order to add such a DN you can simply call the DN for example: CN=MyCommonName,1.1.1.1=MyCustomOid,C=SE
 <br/>
 Where 1.1.1.1 is your custom oid.
 </p>
 <p>
-EJBCA will be default put unknown OIDs in the end so the DN will probably be displayed as: CN=MyCommonName,C=SE,1.1.1.1=MyCustomOid
+To get support for custom OIDs in the Admin-GUI you must edit the file src/java/profilemappings.properties and add your new
+OID in the end. Just follow the example in the file, and you will get the possibility to add you oid in the End Entity Profile, 
+and following that also when adding new users.
+If you edit profilemappings.properties, you should also add an entry in src/adminweb/languages/languagefile.XX.properties (where XX is you language).
+Otherwise your new field will be displayed as "No text available" in the admin-GUI. The new field you must add in the language file is
+the last field in profilemappings.properties, i.e. the LanguageConstant.
+</p><p>
+EJBCA will by default put unknown OIDs in the end so the DN will probably be displayed as: CN=MyCommonName,C=SE,1.1.1.1=MyCustomOid 
+(if looking at the asn1 coding, different application display in a different order regardless of the asn1 coding).
 <br/>
 If you need a particular order of DN components, you can add a file 'dncomponents.properties' in the directory ejbca/src. 
-There is a file calld dncomponents.properties.sample in the distribution as a starting point (it shows the default ordering in EJBCA). 
+There is a file called dncomponents.properties.sample in the distribution as a starting point (it shows the default ordering in EJBCA). 
 You custom oid must be placed in the right place in that file, and all components from the sample file should be included, or you will get 
 strange behaviour.
 <br/>
-If you have added dncomponents.properties you can specify you DN as:
-CN=MyCommonName,myCustomName=MyCustomOid,C=SE
-<br/>
-When creating the CA.
+Using the dncomponents.properties file is only needed if you need to control the asn1 ordering of DN elements.
 </p>
 <p>
 A word of caution:
 <br/>If you use custom oids, they better not become standard ones later on, because if the underlying asn.1 library in EJBCA starts to 
 know the oids as standard ones, things will be renamed in the database and you will have to do a database migration.
 Also you must keep track of dncomponents.properties when upgrading EJBCA.
+</p><p>
+Stick to the standard is my advice!
+</p>
+<p>
+Having all these customizations off-course requires some maintenance on your part, so don't forget your customizations when upgrading EJBCA to a new version.
 <br/>
-Stick to the standard it my advice!
+Check RELEASE_NOTES for important changes!
 </p>
 </section>
 <section name="Reference manual">
