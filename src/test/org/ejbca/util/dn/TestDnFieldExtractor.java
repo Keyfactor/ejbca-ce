@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 /**
  * Tests the StringTools class .
  *
- * @version $Id: TestDnFieldExtractor.java,v 1.5 2006-12-04 09:05:19 anatom Exp $
+ * @version $Id: TestDnFieldExtractor.java,v 1.6 2006-12-04 09:28:54 anatom Exp $
  */
 public class TestDnFieldExtractor extends TestCase {
     private static Logger log = Logger.getLogger(TestDnFieldExtractor.class);
@@ -133,6 +133,8 @@ public class TestDnFieldExtractor extends TestCase {
     	assertFalse(other);
     	num = extractor.getNumberOfFields(DNFieldExtractor.URI);
     	assertEquals(1, num);
+    	String field = extractor.getField(DNFieldExtractor.URI, 0);
+    	assertEquals("http://www.a.se/", field);
     	dn = "uniformResourceIdentifier=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1";
     	extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTALTNAME);
     	illegal = extractor.isIllegal();
@@ -149,6 +151,26 @@ public class TestDnFieldExtractor extends TestCase {
     	assertFalse(other);
     	num = extractor.getNumberOfFields(DNFieldExtractor.URI);
     	assertEquals(1, num);
+    	field = extractor.getField(DNFieldExtractor.URI, 0);
+    	assertEquals("http://www.a.se/", field);
+    	dn = "uniformResourceIdentifier=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1";
+    	extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTALTNAME);
+    	illegal = extractor.isIllegal();
+    	assertFalse(illegal);
+    	other = extractor.existsOther();
+    	assertFalse(other);
+    	num = extractor.getNumberOfFields(DNFieldExtractor.URI);
+    	assertEquals(1, num);
+    	dn = "uniformResourceId=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1";
+    	extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTALTNAME);
+    	illegal = extractor.isIllegal();
+    	assertFalse(illegal);
+    	other = extractor.existsOther();
+    	assertFalse(other);
+    	num = extractor.getNumberOfFields(DNFieldExtractor.URI);
+    	assertEquals(1, num);
+    	field = extractor.getField(DNFieldExtractor.URI, 0);
+    	assertEquals("http://www.a.se/", field);
     }
     
     /**

@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.util.CertTools;
 import org.ietf.ldap.LDAPDN;
@@ -28,7 +27,7 @@ import org.ietf.ldap.LDAPDN;
  * or Subject Directory Attributes strings.
  *
  * @author Philip Vendil
- * @version $Id: DNFieldExtractor.java,v 1.4 2006-12-04 09:05:18 anatom Exp $
+ * @version $Id: DNFieldExtractor.java,v 1.5 2006-12-04 09:28:54 anatom Exp $
  */
 public class DNFieldExtractor implements java.io.Serializable {
     private static final Logger log = Logger.getLogger(DNFieldExtractor.class);
@@ -164,9 +163,15 @@ public class DNFieldExtractor implements java.io.Serializable {
                         	field = DnComponents.getDirAttrExtractorFieldFromDnId(id.intValue());
                         }
                         String dnex = dnexploded[i].toUpperCase();
-                        // Fix up URI, which can have several forms
-                        dnex = StringUtils.replace(dnex, CertTools.URI.toUpperCase()+"=", CertTools.URI2.toUpperCase()+"=");
-                        dnex = StringUtils.replace(dnex, CertTools.URI1.toUpperCase()+"=", CertTools.URI2.toUpperCase()+"=");
+                        if (id.intValue() == DNFieldExtractor.URI) {
+                            // Fix up URI, which can have several forms
+                            if (dnex.indexOf(CertTools.URI.toUpperCase()+"=") > -1) {
+                            	field = CertTools.URI.toUpperCase()+"=";
+                            }
+                            if (dnex.indexOf(CertTools.URI1.toUpperCase()+"=") > -1) {
+                            	field = CertTools.URI1.toUpperCase()+"=";
+                            }                        	
+                        }
                         if (dnex.startsWith(field)) {
                             exists = true;
                             String rdn = LDAPDN.unescapeRDN(dnexploded[i]);
