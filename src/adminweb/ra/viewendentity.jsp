@@ -115,10 +115,8 @@
          for(int i = 0; i < subjectfieldsize; i++){
         	 viewendentityhelper.fielddata = viewendentityhelper.profile.getSubjectAltNameFieldsInOrder(i);
             int fieldtype = viewendentityhelper.fielddata[EndEntityProfile.FIELDTYPE];
-            System.out.println("Fieldtype: "+fieldtype);
             if(EndEntityProfile.isFieldImplemented(fieldtype)){
             	viewendentityhelper.fieldvalue = viewendentityhelper.userdata.getSubjectAltNameField(DnComponents.profileIdToDnId(viewendentityhelper.fielddata[EndEntityProfile.FIELDTYPE]),viewendentityhelper.fielddata[EndEntityProfile.NUMBER]);
-            	System.out.println("Fieldvalue: "+viewendentityhelper.fieldvalue);
          %>
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(viewendentityhelper.fielddata[EndEntityProfile.FIELDTYPE])) %></td>
