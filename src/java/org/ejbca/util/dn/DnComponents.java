@@ -37,7 +37,7 @@ import org.bouncycastle.asn1.x509.X509Name;
  * seemingly similar contents. 
  * 
  * @author tomas
- * @version $Id: DnComponents.java,v 1.5 2006-12-02 14:12:40 anatom Exp $
+ * @version $Id: DnComponents.java,v 1.6 2006-12-04 12:44:54 anatom Exp $
  */
 public class DnComponents {
     private static Logger log = Logger.getLogger(DnComponents.class);
@@ -371,7 +371,7 @@ public class DnComponents {
                 	}
                 }
                 in.close();
-                log.info("Read profile maps with "+lines+" lines.");
+                log.debug("Read profile maps with "+lines+" lines.");
             } else {
             	throw new IOException("Input stream for /profilemappings.properties is null");
             }
@@ -424,18 +424,6 @@ public class DnComponents {
                 oids.clear();
                 oids.putAll(map);
                 Set keys = map.keySet();
-                /*
-                Iterator keyIter = keys.iterator();
-                while (keyIter.hasNext()) {
-                    System.out.println((String)keyIter.next());
-                }
-                Collection values = map.values();
-                Iterator valueIter = values.iterator();
-                while (valueIter.hasNext()) {
-                    DERObjectIdentifier oid = (DERObjectIdentifier)valueIter.next();
-                    System.out.println(oid.getId());
-                }
-                */
                 // Set the maps to the desired ordering
                 dNObjectsForward = (String[])keys.toArray(new String[0]);                
             } else {
