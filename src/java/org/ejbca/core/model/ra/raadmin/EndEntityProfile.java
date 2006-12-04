@@ -45,7 +45,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * 
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.12 2006-12-04 10:06:27 anatom Exp $
+ * @version $Id: EndEntityProfile.java,v 1.13 2006-12-04 10:09:34 anatom Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -797,7 +797,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
       Integer[] altnameids = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTALTNAME);
       for(int i = 0; i < altnameids.length; i++){
     	  Integer altnameid = altnameids[i];
-		  int nof = ((Integer)subjectaltnamesnumbers.get(Integer.valueOf(altnameid.intValue()))).intValue();
+		  int nof = ((Integer)subjectaltnamesnumbers.get(altnameid)).intValue();
     	  if(getReverseFieldChecks()){
     		  for(int j=getNumberOfField(DnComponents.dnIdToProfileName(altnameid.intValue())) -1; j >= 0; j--){
     			  if(i == DNFieldExtractor.UPN){
@@ -819,10 +819,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 
       // Check contents of Subject Directory Attributes fields.
       HashMap subjectdirattrnumbers = subjectdirattrs.getNumberOfFields();
-      Integer[] dirattrids = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTALTNAME);
+      Integer[] dirattrids = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTDIRATTR);
       for(int i = 0; i < dirattrids.length; i++){
     	  Integer dirattrid = dirattrids[i];
-		  int nof = ((Integer)subjectdirattrnumbers.get(Integer.valueOf(dirattrid.intValue()))).intValue();
+		  int nof = ((Integer)subjectdirattrnumbers.get(dirattrid)).intValue();
     	  for(int j=0; j < nof; j++){
     		  checkForIllegalChars(subjectdirattrs.getField(dirattrid.intValue(),j));
     		  if(i == DNFieldExtractor.COUNTRYOFCITIZENSHIP){
