@@ -67,7 +67,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.24 2006-12-04 08:17:54 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.25 2006-12-04 09:07:19 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -574,6 +574,41 @@ public class TestSignSession extends TestCase {
         assertTrue(list.contains("foo@a.se"));
         assertTrue(list.contains("foo@b.se"));
         String name = CertTools.getPartFromDN(altNames,CertTools.URI);
+        assertEquals("http://www.a.se/", name);
+        name = CertTools.getPartFromDN(altNames,CertTools.EMAIL);
+        assertEquals("tomas@a.se", name);
+        list = CertTools.getPartsFromDN(altNames,CertTools.DNS);
+        assertEquals(2, list.size());
+        assertTrue(list.contains("www.a.se"));
+        assertTrue(list.contains("www.b.se"));
+        name = CertTools.getPartFromDN(altNames,CertTools.IPADDR);
+        assertEquals("10.1.1.1", name);
+
+        try {
+            // Change a user that we know...
+            usersession.changeUser(admin, "foo", "foo123", "C=SE,O=AnaTom,CN=foo",
+                    "uri=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1",
+                    "foo@anatom.se", false,
+                    eeprofile,
+                    SecConst.CERTPROFILE_FIXED_ENDUSER,
+                    SecConst.USER_ENDUSER,
+                    SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsacaid);
+            log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
+        } catch (RemoteException re) {
+            assertTrue("User foo does not exist, or error changing user", false);
+        } 
+        cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+        assertNotNull("Failed to create certificate", cert);
+//        FileOutputStream fos = new FileOutputStream("cert.crt");
+//        fos.write(cert.getEncoded());
+//        fos.close();
+        altNames = CertTools.getSubjectAlternativeName(cert);
+        log.debug(altNames);
+        list = CertTools.getPartsFromDN(altNames,CertTools.UPN);
+        assertEquals(2, list.size());
+        assertTrue(list.contains("foo@a.se"));
+        assertTrue(list.contains("foo@b.se"));
+        name = CertTools.getPartFromDN(altNames,CertTools.URI);
         assertEquals("http://www.a.se/", name);
         name = CertTools.getPartFromDN(altNames,CertTools.EMAIL);
         assertEquals("tomas@a.se", name);
