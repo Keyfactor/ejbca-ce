@@ -38,7 +38,7 @@ import com.novell.ldap.LDAPDN;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.2 2006-12-02 14:12:40 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.3 2006-12-04 08:08:26 anatom Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);
@@ -403,7 +403,7 @@ public class TestCertTools extends TestCase {
         assertEquals(bcdn22, "CN=Foo',OU=Foo,O=Foo\\, Inc,C=SE");
         assertEquals(StringTools.strip(bcdn22), "CN=Foo',OU=Foo,O=Foo\\, Inc,C=SE");
         
-        String dn23 = "C=SE,O=Foo, OU=FooOU, CN=Foo, dnqualifier=qualf";
+        String dn23 = "C=SE,O=Foo, OU=FooOU, CN=Foo, DN=qualf";
         String bcdn23 = CertTools.stringToBCDNString(dn23);
         assertEquals(bcdn23, "DN=qualf,CN=Foo,OU=FooOU,O=Foo,C=SE");
         assertEquals(StringTools.strip(bcdn23), "DN=qualf,CN=Foo,OU=FooOU,O=Foo,C=SE");
@@ -470,15 +470,15 @@ public class TestCertTools extends TestCase {
         bcdn1 = CertTools.stringToBCDNString(dn1);
         log.debug("dn1: " + dn1);
         log.debug("bcdn1: " + bcdn1);
-        assertEquals(bcdn1,
-                "CN=CommonName,SN=SerialNumber,GIVENNAME=GivenName,INITIALS=Initials,SURNAME=SurName,OU=OrgUnit,O=Org,C=SE,2.2.2.2=2222Oid,1.1.1.1=1111Oid,3.3.3.3=3333Oid");
+        // 3.3.3.3 is not a valid OID so it should be silently dropped
+        assertEquals(bcdn1,"CN=CommonName,SN=SerialNumber,GIVENNAME=GivenName,INITIALS=Initials,SURNAME=SurName,OU=OrgUnit,O=Org,C=SE,2.2.2.2=2222Oid,1.1.1.1=1111Oid");
 
-        dn1 = "CN=CommonName, 3.3.3.3=3333Oid,O=Org, K=KKK, OU=OrgUnit, SerialNumber=SerialNumber, SurName=SurName, GivenName=GivenName, Initials=Initials, C=SE, 1.1.1.1=1111Oid, 2.2.2.2=2222Oid";
+        dn1 = "CN=CommonName, 2.3.3.3=3333Oid,O=Org, K=KKK, OU=OrgUnit, SerialNumber=SerialNumber, SurName=SurName, GivenName=GivenName, Initials=Initials, C=SE, 1.1.1.1=1111Oid, 2.2.2.2=2222Oid";
         bcdn1 = CertTools.stringToBCDNString(dn1);
         log.debug("dn1: " + dn1);
         log.debug("bcdn1: " + bcdn1);
         assertEquals(bcdn1,
-                "CN=CommonName,SN=SerialNumber,GIVENNAME=GivenName,INITIALS=Initials,SURNAME=SurName,OU=OrgUnit,O=Org,C=SE,2.2.2.2=2222Oid,1.1.1.1=1111Oid,3.3.3.3=3333Oid");
+                "CN=CommonName,SN=SerialNumber,GIVENNAME=GivenName,INITIALS=Initials,SURNAME=SurName,OU=OrgUnit,O=Org,C=SE,2.2.2.2=2222Oid,1.1.1.1=1111Oid,2.3.3.3=3333Oid");
 
         log.debug("<test04DNComponents()");
     }

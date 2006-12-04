@@ -95,7 +95,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.29 2006-12-02 14:12:41 anatom Exp $
+ * @version $Id: CertTools.java,v 1.30 2006-12-04 08:08:26 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -245,7 +245,7 @@ public class CertTools {
               values.add(val);              
           } catch (IllegalArgumentException e) {
               // If it is not an OID we will ignore it
-              log.warn("Unknown DN component ignored and silently dropped: " + oid);
+              log.warn("Unknown DN component ignored and silently dropped: " + key);
           }
 
         } else {
