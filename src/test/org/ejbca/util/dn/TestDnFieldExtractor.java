@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 /**
  * Tests the StringTools class .
  *
- * @version $Id: TestDnFieldExtractor.java,v 1.6 2006-12-04 09:28:54 anatom Exp $
+ * @version $Id: TestDnFieldExtractor.java,v 1.7 2006-12-04 10:06:26 anatom Exp $
  */
 public class TestDnFieldExtractor extends TestCase {
     private static Logger log = Logger.getLogger(TestDnFieldExtractor.class);
@@ -107,13 +107,6 @@ public class TestDnFieldExtractor extends TestCase {
     	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTALTNAME);
     	HashMap i = extractor.getNumberOfFields();
     	assertEquals(11,i.size());
-    	// Just check so we don't get any exceptions from this
-        for(int j = DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY; j < DNFieldExtractor.SUBJECTDIRATTRBOUNDRARY; j++){
-        	int num = j;
-        	//System.out.println("Getting "+num);
-        	((Integer)i.get(Integer.valueOf(num))).intValue();
-        	//System.out.println("Got "+nof);
-        }
         String dns = extractor.getField(DNFieldExtractor.DNSNAME, 0);
     	assertEquals("foo.bar.se", dns);
     	boolean illegal = extractor.isIllegal();
@@ -181,13 +174,6 @@ public class TestDnFieldExtractor extends TestCase {
     	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDIRATTR);
     	HashMap i = extractor.getNumberOfFields();
     	assertEquals(5,i.size());
-    	// Just check so we don't get any exceptions from this
-        for(int j = DNFieldExtractor.SUBJECTDIRATTRBOUNDRARY; j < DNFieldExtractor.NUMBEROFFIELDS; j++){
-        	int num = j;
-        	//System.out.println("Getting dir "+num);
-        	((Integer)i.get(Integer.valueOf(num))).intValue();
-        	//System.out.println("Got dir "+nof);
-        }
     	String dns = extractor.getField(DNFieldExtractor.PLACEOFBIRTH, 0);
     	assertEquals("Stockholm", dns);
     	boolean illegal = extractor.isIllegal();

@@ -27,7 +27,7 @@ import org.ietf.ldap.LDAPDN;
  * or Subject Directory Attributes strings.
  *
  * @author Philip Vendil
- * @version $Id: DNFieldExtractor.java,v 1.5 2006-12-04 09:28:54 anatom Exp $
+ * @version $Id: DNFieldExtractor.java,v 1.6 2006-12-04 10:06:23 anatom Exp $
  */
 public class DNFieldExtractor implements java.io.Serializable {
     private static final Logger log = Logger.getLogger(DNFieldExtractor.class);
@@ -66,7 +66,6 @@ public class DNFieldExtractor implements java.io.Serializable {
     public static final int REGISTEREDID = 24;
     public static final int UPN = 25;
     public static final int GUID = 26;
-    public static final int SUBJECTALTERNATIVENAMEBOUNDRARY = 16;
     
     // Subject Directory Attributes
     public static final int DATEOFBIRTH  = 27;
@@ -74,10 +73,6 @@ public class DNFieldExtractor implements java.io.Serializable {
     public static final int GENDER       = 29;
     public static final int COUNTRYOFCITIZENSHIP = 30;
     public static final int COUNTRYOFRESIDENCE   = 31;
-    public static final int SUBJECTDIRATTRBOUNDRARY = 27;
-    
-    // Used only in EndEntityProfile, should be refactored away
-    public static final int NUMBEROFFIELDS = 32;
     
     /**
      * Creates a new instance of DNFieldExtractor
@@ -203,12 +198,10 @@ public class DNFieldExtractor implements java.io.Serializable {
                 if (type == TYPE_SUBJECTDN) {
                     dnfields.put(new Integer((CN * BOUNDRARY)), "Illegal DN : " + dn);
                 } else if (type == TYPE_SUBJECTALTNAME){
-                    dnfields.put(new Integer(
-                            ((RFC822NAME + SUBJECTALTERNATIVENAMEBOUNDRARY) * BOUNDRARY)),
+                    dnfields.put(new Integer((RFC822NAME * BOUNDRARY)),
                         "Illegal Subjectaltname : " + dn);
                 } else if (type == TYPE_SUBJECTDIRATTR){
-                    dnfields.put(new Integer(
-                            ((PLACEOFBIRTH + SUBJECTDIRATTRBOUNDRARY) * BOUNDRARY)),
+                    dnfields.put(new Integer((PLACEOFBIRTH * BOUNDRARY)),
                         "Illegal Subjectdirectory attribute : " + dn);
                 }
             }
@@ -243,18 +236,16 @@ public class DNFieldExtractor implements java.io.Serializable {
      */
     public String getFieldString(int field){
         String retval = "";
-        String[] fieldnames =  (String[])DnComponents.getDnExtractorFields().toArray(new String[0]);
-        int f = field;
+        String fieldname = DnComponents.getDnExtractorFieldFromDnId(field);
         if(type != TYPE_SUBJECTDN){
-        	fieldnames =  (String[])DnComponents.getAltNameExtractorFields().toArray(new String[0]);
-        	f = field - DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY;
+        	fieldname = DnComponents.getAltNameExtractorFieldFromDnId(field);
         }
         int num = getNumberOfFields(field);
         for(int i=0;i<num;i++){
         	if(retval.length() == 0)
-        	  retval += fieldnames[f] + getField(field,i);
+        	  retval += fieldname + getField(field,i);
         	else
-        	  retval += "," + fieldnames[f] + getField(field,i);	
+        	  retval += "," + fieldname + getField(field,i);	
         }    
         return retval;      	
     }

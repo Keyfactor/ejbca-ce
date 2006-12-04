@@ -45,7 +45,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * 
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.11 2006-12-02 13:07:57 anatom Exp $
+ * @version $Id: EndEntityProfile.java,v 1.12 2006-12-04 10:06:27 anatom Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -778,36 +778,40 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 
       // Check contents of Subject DN fields.
       HashMap subjectdnfieldnumbers = subjectdnfields.getNumberOfFields();
-      for(int i = 0; i < DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY; i++){
-		  int nof = ((Integer)subjectdnfieldnumbers.get(Integer.valueOf(i))).intValue();
+      Integer[] dnids = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTDN);
+      for(int i = 0; i < dnids.length; i++){
+    	  Integer dnid = dnids[i];
+		  int nof = ((Integer)subjectdnfieldnumbers.get(dnid)).intValue();
     	  if(getReverseFieldChecks()){
-    		  for(int j=getNumberOfField(DnComponents.dnIdToProfileName(i)) -1; j >= 0; j--){    			 
-    			  checkIfDataFullfillProfile(DnComponents.dnIdToProfileName(i),j,subjectdnfields.getField(i,--nof), DnComponents.getErrTextFromDnId(i), email);
+    		  for(int j=getNumberOfField(DnComponents.dnIdToProfileName(dnid.intValue())) -1; j >= 0; j--){    			 
+    			  checkIfDataFullfillProfile(DnComponents.dnIdToProfileName(dnid.intValue()),j,subjectdnfields.getField(dnid.intValue(),--nof), DnComponents.getErrTextFromDnId(dnid.intValue()), email);
     		  }   		
     	  }else{
     		  for(int j=0; j < nof; j++){
-    			  checkIfDataFullfillProfile(DnComponents.dnIdToProfileName(i),j,subjectdnfields.getField(i,j), DnComponents.getErrTextFromDnId(i), email);
+    			  checkIfDataFullfillProfile(DnComponents.dnIdToProfileName(dnid.intValue()),j,subjectdnfields.getField(dnid.intValue(),j), DnComponents.getErrTextFromDnId(dnid.intValue()), email);
     		  }
     	  }
       }
        // Check contents of Subject Alternative Name fields.
       HashMap subjectaltnamesnumbers = subjectaltnames.getNumberOfFields();
-      for(int i = DNFieldExtractor.SUBJECTALTERNATIVENAMEBOUNDRARY; i < DNFieldExtractor.SUBJECTDIRATTRBOUNDRARY; i++){
-		  int nof = ((Integer)subjectaltnamesnumbers.get(Integer.valueOf(i))).intValue();
+      Integer[] altnameids = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTALTNAME);
+      for(int i = 0; i < altnameids.length; i++){
+    	  Integer altnameid = altnameids[i];
+		  int nof = ((Integer)subjectaltnamesnumbers.get(Integer.valueOf(altnameid.intValue()))).intValue();
     	  if(getReverseFieldChecks()){
-    		  for(int j=getNumberOfField(DnComponents.dnIdToProfileName(i)) -1; j >= 0; j--){
+    		  for(int j=getNumberOfField(DnComponents.dnIdToProfileName(altnameid.intValue())) -1; j >= 0; j--){
     			  if(i == DNFieldExtractor.UPN){
-    				  checkIfDomainFullfillProfile(DnComponents.UPN,j,subjectaltnames.getField(i,--nof),"UPN");
+    				  checkIfDomainFullfillProfile(DnComponents.UPN,j,subjectaltnames.getField(altnameid.intValue(),--nof),"UPN");
     			  }else{
-    				  checkIfDataFullfillProfile(DnComponents.dnIdToProfileName(i),j,subjectaltnames.getField(i,--nof), DnComponents.getErrTextFromDnId(i), email);
+    				  checkIfDataFullfillProfile(DnComponents.dnIdToProfileName(altnameid.intValue()),j,subjectaltnames.getField(altnameid.intValue(),--nof), DnComponents.getErrTextFromDnId(altnameid.intValue()), email);
     			  }   
     		  }    		      		  
     	  }else{
     		  for(int j=0; j < nof; j++){
-    			  if(i == DNFieldExtractor.UPN){
-    				  checkIfDomainFullfillProfile(DnComponents.UPN,j,subjectaltnames.getField(i,j),"UPN");
+    			  if(altnameid.intValue() == DNFieldExtractor.UPN){
+    				  checkIfDomainFullfillProfile(DnComponents.UPN,j,subjectaltnames.getField(altnameid.intValue(),j),"UPN");
     			  }else{
-    				  checkIfDataFullfillProfile(DnComponents.dnIdToProfileName(i),j,subjectaltnames.getField(i,j), DnComponents.getErrTextFromDnId(i), email);
+    				  checkIfDataFullfillProfile(DnComponents.dnIdToProfileName(altnameid.intValue()),j,subjectaltnames.getField(altnameid.intValue(),j), DnComponents.getErrTextFromDnId(altnameid.intValue()), email);
     			  }   
     		  }
     	  }
@@ -815,20 +819,22 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 
       // Check contents of Subject Directory Attributes fields.
       HashMap subjectdirattrnumbers = subjectdirattrs.getNumberOfFields();
-      for(int i = DNFieldExtractor.SUBJECTDIRATTRBOUNDRARY; i < DNFieldExtractor.NUMBEROFFIELDS; i++){
-		  int nof = ((Integer)subjectdirattrnumbers.get(Integer.valueOf(i))).intValue();
+      Integer[] dirattrids = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTALTNAME);
+      for(int i = 0; i < dirattrids.length; i++){
+    	  Integer dirattrid = dirattrids[i];
+		  int nof = ((Integer)subjectdirattrnumbers.get(Integer.valueOf(dirattrid.intValue()))).intValue();
     	  for(int j=0; j < nof; j++){
-    		  checkForIllegalChars(subjectdirattrs.getField(i,j));
+    		  checkForIllegalChars(subjectdirattrs.getField(dirattrid.intValue(),j));
     		  if(i == DNFieldExtractor.COUNTRYOFCITIZENSHIP){
-    			  checkIfISO3166FullfillProfile(DnComponents.COUNTRYOFCITIZENSHIP,j,subjectdirattrs.getField(i,j),"COUNTRYOFCITIZENSHIP");
-    		  } else if(i == DNFieldExtractor.COUNTRYOFRESIDENCE){
-    			  checkIfISO3166FullfillProfile(DnComponents.COUNTRYOFRESIDENCE,j,subjectdirattrs.getField(i,j),"COUNTRYOFRESIDENCE");
-    		  } else if(i == DNFieldExtractor.DATEOFBIRTH){
-    			  checkIfDateFullfillProfile(DnComponents.DATEOFBIRTH,j,subjectdirattrs.getField(i,j),"DATEOFBIRTH");
-    		  } else if(i == DNFieldExtractor.GENDER){
-    			  checkIfGenderFullfillProfile(DnComponents.GENDER,j,subjectdirattrs.getField(i,j),"GENDER");
+    			  checkIfISO3166FullfillProfile(DnComponents.COUNTRYOFCITIZENSHIP,j,subjectdirattrs.getField(dirattrid.intValue(),j),"COUNTRYOFCITIZENSHIP");
+    		  } else if(dirattrid.intValue() == DNFieldExtractor.COUNTRYOFRESIDENCE){
+    			  checkIfISO3166FullfillProfile(DnComponents.COUNTRYOFRESIDENCE,j,subjectdirattrs.getField(dirattrid.intValue(),j),"COUNTRYOFRESIDENCE");
+    		  } else if(dirattrid.intValue() == DNFieldExtractor.DATEOFBIRTH){
+    			  checkIfDateFullfillProfile(DnComponents.DATEOFBIRTH,j,subjectdirattrs.getField(dirattrid.intValue(),j),"DATEOFBIRTH");
+    		  } else if(dirattrid.intValue() == DNFieldExtractor.GENDER){
+    			  checkIfGenderFullfillProfile(DnComponents.GENDER,j,subjectdirattrs.getField(dirattrid.intValue(),j),"GENDER");
     		  }else{
-    			  checkIfDataFullfillProfile(DnComponents.dnIdToProfileName(i),j,subjectdirattrs.getField(i,j), DnComponents.getErrTextFromDnId(i), email);
+    			  checkIfDataFullfillProfile(DnComponents.dnIdToProfileName(dirattrid.intValue()),j,subjectdirattrs.getField(dirattrid.intValue(),j), DnComponents.getErrTextFromDnId(dirattrid.intValue()), email);
     		  }   
     	  }
       }
