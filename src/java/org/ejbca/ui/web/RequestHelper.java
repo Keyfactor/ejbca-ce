@@ -37,7 +37,7 @@ import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.jce.netscape.NetscapeCertRequest;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ServiceLocatorException;
-import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
+import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.IResponseMessage;
@@ -51,7 +51,7 @@ import org.ejbca.util.FileTools;
 /**
  * Helper class for hadnling certificate request from browsers or general PKCS#10
  * 
- * @version $Id: RequestHelper.java,v 1.3 2006-11-27 12:55:58 primelars Exp $
+ * @version $Id: RequestHelper.java,v 1.4 2006-12-04 15:41:14 anatom Exp $
  */
 public class RequestHelper {
     private static Logger log = Logger.getLogger(RequestHelper.class);
@@ -103,7 +103,7 @@ public class RequestHelper {
      *
      * @return byte[] containing DER-encoded certificate.
      */
-    public byte[] nsCertRequest(ISignSessionRemote signsession, byte[] reqBytes, String username,
+    public byte[] nsCertRequest(ISignSessionLocal signsession, byte[] reqBytes, String username,
         String password) throws Exception {
         byte[] buffer = Base64.decode(reqBytes);
 
@@ -158,7 +158,7 @@ public class RequestHelper {
      * @return Base64 encoded byte[] 
      * @throws Exception
      */
-    public byte[] pkcs10CertRequest(ISignSessionRemote signsession, byte[] b64Encoded,
+    public byte[] pkcs10CertRequest(ISignSessionLocal signsession, byte[] b64Encoded,
         String username, String password, int resulttype, boolean doSplitLines) throws Exception {
         byte[] result = null;	
         X509Certificate cert=null;
@@ -187,7 +187,7 @@ public class RequestHelper {
      * @return
      * @throws Exception
      */
-    public byte[] pkcs10CertRequest(ISignSessionRemote signsession, byte[] b64Encoded,
+    public byte[] pkcs10CertRequest(ISignSessionLocal signsession, byte[] b64Encoded,
                                     String username, String password, int resulttype) throws Exception {
         return pkcs10CertRequest(signsession, b64Encoded, username, password, resulttype, true);
     }    

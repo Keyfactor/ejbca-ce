@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
+import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -67,7 +68,7 @@ import org.ejbca.util.CertTools;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.6 2006-06-12 10:35:35 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.7 2006-12-04 15:41:12 anatom Exp $
  */
 public class CertDistServlet extends HttpServlet {
 
@@ -93,10 +94,43 @@ public class CertDistServlet extends HttpServlet {
     private static final String MOZILLA_PROPERTY = "moz";
     private static final String FORMAT_PROPERTY = "format";
 
-    private ICertificateStoreSessionLocalHome storehome = null;
-    private ISignSessionLocalHome signhome = null;
-    private ICAAdminSessionLocalHome cahome = null;
+    private ICertificateStoreSessionLocal storesession = null;
+    private ISignSessionLocal signsession = null;
+    private ICAAdminSessionLocal casession = null;
 
+    private synchronized ISignSessionLocal getSignSession(){
+    	if(signsession == null){	
+    		try {
+    			ISignSessionLocalHome signhome = (ISignSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
+    			signsession = signhome.create();
+    		}catch(Exception e){
+    			throw new EJBException(e);      	  	    	  	
+    		}
+    	}
+    	return signsession;
+    }
+    private synchronized ICertificateStoreSessionLocal getStoreSession(){
+    	if(storesession == null){	
+    		try {
+    			ICertificateStoreSessionLocalHome storehome = (ICertificateStoreSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
+    			storesession = storehome.create();
+    		}catch(Exception e){
+    			throw new EJBException(e);      	  	    	  	
+    		}
+    	}
+    	return storesession;
+    }
+    private synchronized ICAAdminSessionLocal getCASession(){
+    	if(casession == null){	
+    		try {
+    			ICAAdminSessionLocalHome cahome = (ICAAdminSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
+    			casession = cahome.create();
+    		}catch(Exception e){
+    			throw new EJBException(e);      	  	    	  	
+    		}
+    	}
+    	return casession;
+    }
     /**
      * init servlet
      *
@@ -106,16 +140,6 @@ public class CertDistServlet extends HttpServlet {
      */
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        try {
-
-            // Get EJB context and home interfaces
-            ServiceLocator locator = ServiceLocator.getInstance();
-            storehome = (ICertificateStoreSessionLocalHome)locator.getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
-            signhome = (ISignSessionLocalHome)locator.getLocalHome(ISignSessionLocalHome.COMP_NAME);
-            cahome = (ICAAdminSessionLocalHome)locator.getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-        } catch( Exception e ) {
-            throw new ServletException(e);
-        }
     }
 
     /**
@@ -169,7 +193,7 @@ public class CertDistServlet extends HttpServlet {
             command = "";
         if (command.equalsIgnoreCase(COMMAND_CRL) && issuerdn != null) {
             try {
-                ICertificateStoreSessionLocal store = storehome.create();
+                ICertificateStoreSessionLocal store = getStoreSession();
                 byte[] crl = store.getLastCRL(administrator, issuerdn);
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 String dn = CertTools.getIssuerDN(x509crl);
@@ -202,7 +226,7 @@ public class CertDistServlet extends HttpServlet {
             }
             try {
                 log.debug("Looking for certificates for '"+dn+"'.");
-                ICertificateStoreSessionLocal store = storehome.create();
+                ICertificateStoreSessionLocal store = getStoreSession();
                 Collection certcoll = store.findCertificatesBySubject(administrator, dn);
                 Object[] certs = certcoll.toArray();
                 int latestcertno = -1;
@@ -279,7 +303,7 @@ public class CertDistServlet extends HttpServlet {
                 pkcs7 = true;
             // CA is level 0, next over root level 1 etc etc, -1 returns chain as PKCS7
             try {
-                ISignSessionLocal ss = signhome.create();
+                ISignSessionLocal ss = getSignSession();
                 Certificate[] chain = null;
                 if(caid != 0)
 				    chain = (Certificate[]) ss.getCertificateChain(administrator, caid).toArray(new Certificate[0]);
@@ -348,7 +372,7 @@ public class CertDistServlet extends HttpServlet {
             }
         } else if ((command.equalsIgnoreCase(COMMAND_NSOCSPCERT) || command.equalsIgnoreCase(COMMAND_IEOCSPCERT) || command.equalsIgnoreCase(COMMAND_OCSPCERT)) && ( issuerdn != null || caid != 0)) {
             try {
-                ICAAdminSessionLocal casession = cahome.create();
+                ICAAdminSessionLocal casession = getCASession();
                 CAInfo cainfo = null;
                 if(caid != 0) {
                     cainfo = casession.getCAInfo(administrator, caid);
@@ -426,7 +450,7 @@ public class CertDistServlet extends HttpServlet {
             }
             log.debug("Looking for certificate for '"+dn+"' and serno='"+serno+"'.");
             try {
-                ICertificateStoreSessionLocal store = storehome.create();
+                ICertificateStoreSessionLocal store = getStoreSession();
                 RevokedCertInfo revinfo = store.isRevoked(administrator, dn, new BigInteger(serno));
                 PrintWriter pout = new PrintWriter(res.getOutputStream());
                 res.setContentType("text/html");

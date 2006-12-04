@@ -12,7 +12,7 @@
         <jndi-name>CAAdminSession</jndi-name>
     </ejb-ref>
     <ejb-ref>
-        <ejb-ref-name>ejb/SignSessionLocal</ejb-ref-name>
+        <ejb-ref-name>ejb/RSASignSessionLocal</ejb-ref-name>
         <jndi-name>RSASignSession</jndi-name>
     </ejb-ref>
     <ejb-ref>

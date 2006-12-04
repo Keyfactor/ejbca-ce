@@ -18,9 +18,9 @@ import java.util.Date;
 import java.util.Enumeration;
 
 import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 import javax.ejb.ObjectNotFoundException;
 import javax.naming.InitialContext;
-import javax.rmi.PortableRemoteObject;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -28,8 +28,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
-import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
+import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
+import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
@@ -88,13 +89,12 @@ import org.ejbca.util.StringTools;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.3 2006-02-09 08:45:22 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.4 2006-12-04 15:41:12 anatom Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
   private final static Logger log = Logger.getLogger(DemoCertReqServlet.class);
 
-  private ISignSessionHome signsessionhome = null;
   private IUserAdminSessionHome useradminsessionhome = null;
   private IRaAdminSessionHome raadminsessionhome = null;
   private ICertificateStoreSessionHome storesessionhome = null;
@@ -102,6 +102,19 @@ public class DemoCertReqServlet extends HttpServlet {
   // Edit this constant to the id of your preferable ca used to sign certificate.
   private final static int DEFAULT_DEMOCAID = 0;
   
+  private ISignSessionLocal signsession = null;
+
+  private synchronized ISignSessionLocal getSignSession(){
+  	if(signsession == null){	
+  		try {
+  			ISignSessionLocalHome signhome = (ISignSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
+  			signsession = signhome.create();
+  		}catch(Exception e){
+  			throw new EJBException(e);      	  	    	  	
+  		}
+  	}
+  	return signsession;
+  }
   public void init(ServletConfig config) throws ServletException
   {
     super.init(config);
@@ -111,7 +124,6 @@ public class DemoCertReqServlet extends HttpServlet {
 
       // Get EJB context and home interfaces
       InitialContext ctx = new InitialContext();
-      signsessionhome = (ISignSessionHome) PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class);
       useradminsessionhome = (IUserAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("UserAdminSession"), IUserAdminSessionHome.class);
       raadminsessionhome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("RaAdminSession"), IRaAdminSessionHome.class);
       storesessionhome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class);
@@ -148,14 +160,14 @@ public class DemoCertReqServlet extends HttpServlet {
   {
     ServletDebug debug = new ServletDebug(request, response);
 
-    ISignSessionRemote signsession = null;
+    ISignSessionLocal signsession = null;
     ICertificateStoreSessionRemote storesession = null;
     IUserAdminSessionRemote useradminsession = null;
     IRaAdminSessionRemote raadminsession = null;
     try {
         useradminsession = useradminsessionhome.create();
         raadminsession = raadminsessionhome.create();
-        signsession = signsessionhome.create();
+        signsession = getSignSession();
         storesession = storesessionhome.create();
     } catch (CreateException e) {
       throw new ServletException(e);

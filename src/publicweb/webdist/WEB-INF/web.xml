@@ -30,7 +30,7 @@
    </env-entry>
 
   <ejb-local-ref>
-    <ejb-ref-name>ejb/SignSessionLocal</ejb-ref-name>
+    <ejb-ref-name>ejb/RSASignSessionLocal</ejb-ref-name>
     <ejb-ref-type>Session</ejb-ref-type>
     <local-home>org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome</local-home>
     <local>org.ejbca.core.ejb.ca.sign.ISignSessionLocal</local>

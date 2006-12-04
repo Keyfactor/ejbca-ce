@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
+import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.IllegalKeyException;
@@ -33,13 +33,13 @@ import org.ejbca.core.protocol.ScepRequestMessage;
 /**
  * Helper class to handle SCEP (draft-nourse-scep-06.txt) requests.
  *
- * @version  $Id: ScepPkiOpHelper.java,v 1.2 2006-09-20 15:44:56 anatom Exp $
+ * @version  $Id: ScepPkiOpHelper.java,v 1.3 2006-12-04 15:41:12 anatom Exp $
  */
 public class ScepPkiOpHelper {
     private static Logger log = Logger.getLogger(ScepPkiOpHelper.class);
     private ScepRequestMessage reqmsg = null;
     private Admin admin = null;
-    private ISignSessionRemote signsession = null;
+    private ISignSessionLocal signsession = null;
 
     /**
      * Creates a new ScepPkiOpHelper object.
@@ -47,7 +47,7 @@ public class ScepPkiOpHelper {
      * @param admin administrator performing this
      * @param signsession signsession used to request certificates
      */
-    public ScepPkiOpHelper(Admin admin, ISignSessionRemote signsession) {
+    public ScepPkiOpHelper(Admin admin, ISignSessionLocal signsession) {
         log.debug(">ScepPkiOpHelper");
         this.admin = admin;
         this.signsession = signsession;

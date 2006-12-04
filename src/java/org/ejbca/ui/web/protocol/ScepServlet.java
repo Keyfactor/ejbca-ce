@@ -19,8 +19,7 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.naming.InitialContext;
-import javax.rmi.PortableRemoteObject;
+import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
@@ -30,10 +29,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
-import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
+import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
+import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
+import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
@@ -63,13 +63,36 @@ import org.ejbca.util.CertTools;
  * 7. output the result as a der encoded block on stdout 
  * -----
  *
- * @version $Id: ScepServlet.java,v 1.4 2006-11-24 14:13:18 anatom Exp $
+ * @version $Id: ScepServlet.java,v 1.5 2006-12-04 15:41:12 anatom Exp $
  */
 public class ScepServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(ScepServlet.class);
-    private ISignSessionHome signhome = null;
-    private ICAAdminSessionHome caadminhome = null;
 
+    private ISignSessionLocal signsession = null;
+    private ICAAdminSessionLocal casession = null;
+
+    private synchronized ISignSessionLocal getSignSession(){
+    	if(signsession == null){	
+    		try {
+    			ISignSessionLocalHome signhome = (ISignSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
+    			signsession = signhome.create();
+    		}catch(Exception e){
+    			throw new EJBException(e);      	  	    	  	
+    		}
+    	}
+    	return signsession;
+    }
+    private synchronized ICAAdminSessionLocal getCASession(){
+    	if(casession == null){	
+    		try {
+    			ICAAdminSessionLocalHome cahome = (ICAAdminSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
+    			casession = cahome.create();
+    		}catch(Exception e){
+    			throw new EJBException(e);      	  	    	  	
+    		}
+    	}
+    	return casession;
+    }
     /**
      * Inits the SCEP servlet
      *
@@ -79,17 +102,9 @@ public class ScepServlet extends HttpServlet {
      */
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-
         try {
             // Install BouncyCastle provider
             CertTools.installBCProvider();
-
-            // Get EJB context and home interfaces
-            InitialContext ctx = new InitialContext();
-            signhome = (ISignSessionHome) PortableRemoteObject.narrow(ctx.lookup("RSASignSession"),
-                    ISignSessionHome.class);
-            caadminhome = (ICAAdminSessionHome) PortableRemoteObject.narrow(ctx.lookup("CAAdminSession"),
-                    ICAAdminSessionHome.class);
         } catch (Exception e) {
             throw new ServletException(e);
         }
@@ -174,7 +189,7 @@ public class ScepServlet extends HttpServlet {
 			log.info("Received a SCEP message from "+remoteAddr);
             if (operation.equals("PKIOperation")) {
                 byte[] scepmsg = Base64.decode(message.getBytes());
-                ISignSessionRemote signsession = signhome.create();
+                ISignSessionLocal signsession = getSignSession();
                 ScepPkiOpHelper helper = new ScepPkiOpHelper(administrator, signsession);
                 
                 // Read the message end get the cert, this also checksauthorization
@@ -199,7 +214,7 @@ public class ScepServlet extends HttpServlet {
                 // CA_IDENT is the message for this request to indicate which CA we are talking about
                 log.debug("Got SCEP cert request for CA '" + message + "'");
                 Collection certs = null;
-                ICAAdminSessionRemote caadminsession = caadminhome.create();
+                ICAAdminSessionLocal caadminsession = getCASession();
                 CAInfo cainfo = caadminsession.getCAInfo(administrator, message);
                 if (cainfo != null) {
                     certs = cainfo.getCertificateChain();
@@ -222,9 +237,9 @@ public class ScepServlet extends HttpServlet {
                 
                 // CA_IDENT is the message for this request to indicate which CA we are talking about
                 log.debug("Got SCEP pkcs7 request for CA '" + message + "'");
-                ICAAdminSessionRemote caadminsession = caadminhome.create();
+                ICAAdminSessionLocal caadminsession = getCASession();
                 CAInfo cainfo = caadminsession.getCAInfo(administrator, message);
-                ISignSessionRemote signsession = signhome.create();
+                ISignSessionLocal signsession = getSignSession();
                 byte[] pkcs7 = signsession.createPKCS7(administrator, cainfo.getCAId(), true);
                 if ((pkcs7 != null) && (pkcs7.length > 0)) {
                     log.debug("Sent PKCS7 for CA '" + message + "' to SCEP client.");

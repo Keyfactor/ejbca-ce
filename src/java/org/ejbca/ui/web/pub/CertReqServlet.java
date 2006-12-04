@@ -28,6 +28,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 
+import javax.ejb.EJBException;
 import javax.ejb.ObjectNotFoundException;
 import javax.naming.InitialContext;
 import javax.rmi.PortableRemoteObject;
@@ -39,12 +40,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionHome;
 import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.sign.ISignSessionHome;
-import org.ejbca.core.ejb.ca.sign.ISignSessionRemote;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
+import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
+import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionHome;
 import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
@@ -92,16 +94,10 @@ import org.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.12 2006-11-27 12:55:57 primelars Exp $
+ * @version $Id: CertReqServlet.java,v 1.13 2006-12-04 15:41:12 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(CertReqServlet.class);
-    private ISignSessionHome signsessionhome = null;
-    private IUserAdminSessionHome useradminhome = null;
-    private IRaAdminSessionHome raadminhome = null;
-    private IKeyRecoverySessionHome keyrecoveryhome = null;
-	private ICAAdminSessionHome caadminhome = null;
-	private IAuthenticationSessionHome authhome = null;
     private byte[] bagattributes = "Bag Attributes\n".getBytes();
     private byte[] friendlyname = "    friendlyName: ".getBytes();
     private byte[] subject = "subject=/".getBytes();
@@ -112,7 +108,36 @@ public class CertReqServlet extends HttpServlet {
     private byte[] endPrivateKey = "-----END PRIVATE KEY-----".getBytes();
     private byte[] NL = "\n".getBytes();
 
+    private IUserAdminSessionHome useradminhome = null;
+    private IRaAdminSessionHome raadminhome = null;
+    private IKeyRecoverySessionHome keyrecoveryhome = null;
+	private IAuthenticationSessionHome authhome = null;
 
+    private ISignSessionLocal signsession = null;
+    private ICAAdminSessionLocal casession = null;
+
+    private synchronized ISignSessionLocal getSignSession(){
+    	if(signsession == null){	
+    		try {
+    			ISignSessionLocalHome signhome = (ISignSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
+    			signsession = signhome.create();
+    		}catch(Exception e){
+    			throw new EJBException(e);      	  	    	  	
+    		}
+    	}
+    	return signsession;
+    }
+    private synchronized ICAAdminSessionLocal getCASession(){
+    	if(casession == null){	
+    		try {
+    			ICAAdminSessionLocalHome cahome = (ICAAdminSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
+    			casession = cahome.create();
+    		}catch(Exception e){
+    			throw new EJBException(e);      	  	    	  	
+    		}
+    	}
+    	return casession;
+    }
     /**
      * Servlet init
      *
@@ -129,16 +154,12 @@ public class CertReqServlet extends HttpServlet {
 
             // Get EJB context and home interfaces
             InitialContext ctx = new InitialContext();
-            signsessionhome = (ISignSessionHome) PortableRemoteObject.narrow(
-                      ctx.lookup("RSASignSession"), ISignSessionHome.class );
             useradminhome = (IUserAdminSessionHome) PortableRemoteObject.narrow(
                              ctx.lookup("UserAdminSession"), IUserAdminSessionHome.class );
             raadminhome   = (IRaAdminSessionHome) PortableRemoteObject.narrow(
                              ctx.lookup("RaAdminSession"), IRaAdminSessionHome.class );            
             keyrecoveryhome = (IKeyRecoverySessionHome) PortableRemoteObject.narrow(
                              ctx.lookup("KeyRecoverySession"), IKeyRecoverySessionHome.class );
-            
-            caadminhome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CAAdminSession"), ICAAdminSessionHome.class);
             
             authhome = (IAuthenticationSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("AuthenticationSession"), IAuthenticationSessionHome.class);
         } catch( Exception e ) {
@@ -193,7 +214,7 @@ public class CertReqServlet extends HttpServlet {
 
             IUserAdminSessionRemote adminsession = useradminhome.create();
             IRaAdminSessionRemote raadminsession = raadminhome.create();            
-            ISignSessionRemote signsession = signsessionhome.create();
+            ISignSessionLocal signsession = getSignSession();
             RequestHelper helper = new RequestHelper(administrator, debug);
 
             log.info("Received certificate request for user " + username + " from "+request.getRemoteAddr());
@@ -616,11 +637,11 @@ public class CertReqServlet extends HttpServlet {
            rsaKeys = KeyTools.genKeys(keylength, keyalg);
          }
          
-         ISignSessionRemote signsession = signsessionhome.create();
+         ISignSessionLocal signsession = getSignSession();
          X509Certificate cert = null;
          if(reusecertificate){
         	 cert = (X509Certificate) keyData.getCertificate();
-             ICAAdminSessionRemote caadminsession = caadminhome.create();
+             ICAAdminSessionLocal caadminsession = getCASession();
              boolean finishUser = caadminsession.getCAInfo(administrator,caid).getFinishUser();
              if(finishUser){
            	  IAuthenticationSessionRemote authsession = authhome.create();
