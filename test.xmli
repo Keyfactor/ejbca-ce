@@ -30,7 +30,8 @@
                 <fileset dir="${test.dir}">
                 	<include name="org/ejbca/core/model/Test*" />
                 	<exclude name="org/ejbca/core/protocol/ws/Test*" />
-                    <include name="**/util/Test*" />
+                    <include name="org/ejbca/util/**/Test*" />
+                    <include name="se/anatom/ejbca/util/**/Test*" />
                     <include name="**/protocol/Test*" />
                     <include name="**/ra/Test*" />
                     <!-- LotsosUsers creates LOOOOTS of users, only run once in a while -->
