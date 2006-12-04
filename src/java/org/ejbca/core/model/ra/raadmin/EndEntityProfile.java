@@ -45,7 +45,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * 
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.13 2006-12-04 10:09:34 anatom Exp $
+ * @version $Id: EndEntityProfile.java,v 1.14 2006-12-04 10:19:04 anatom Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -825,7 +825,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 		  int nof = ((Integer)subjectdirattrnumbers.get(dirattrid)).intValue();
     	  for(int j=0; j < nof; j++){
     		  checkForIllegalChars(subjectdirattrs.getField(dirattrid.intValue(),j));
-    		  if(i == DNFieldExtractor.COUNTRYOFCITIZENSHIP){
+    		  if(dirattrid.intValue() == DNFieldExtractor.COUNTRYOFCITIZENSHIP){
     			  checkIfISO3166FullfillProfile(DnComponents.COUNTRYOFCITIZENSHIP,j,subjectdirattrs.getField(dirattrid.intValue(),j),"COUNTRYOFCITIZENSHIP");
     		  } else if(dirattrid.intValue() == DNFieldExtractor.COUNTRYOFRESIDENCE){
     			  checkIfISO3166FullfillProfile(DnComponents.COUNTRYOFRESIDENCE,j,subjectdirattrs.getField(dirattrid.intValue(),j),"COUNTRYOFRESIDENCE");
