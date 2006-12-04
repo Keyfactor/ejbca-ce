@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 /**
  * Tests the StringTools class .
  *
- * @version $Id: TestDnFieldExtractor.java,v 1.3 2006-12-02 14:12:40 anatom Exp $
+ * @version $Id: TestDnFieldExtractor.java,v 1.4 2006-12-04 08:17:53 anatom Exp $
  */
 public class TestDnFieldExtractor extends TestCase {
     private static Logger log = Logger.getLogger(TestDnFieldExtractor.class);
@@ -124,6 +124,13 @@ public class TestDnFieldExtractor extends TestCase {
     	assertEquals("foo@bar.se", email);    	
     	int num = extractor.getNumberOfFields(DNFieldExtractor.RFC822NAME);
     	assertEquals(1, num);
+    	
+    	dn = "uniformResourceId=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1";
+    	extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTALTNAME);
+    	illegal = extractor.isIllegal();
+    	assertFalse(illegal);
+    	other = extractor.existsOther();
+    	assertFalse(other);
     }
     
     /**

@@ -67,7 +67,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.23 2006-12-02 11:18:31 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.24 2006-12-04 08:17:54 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -498,8 +498,8 @@ public class TestSignSession extends TestCase {
         // Make user that we know...
         boolean userExists = false;
         try {
-            usersession.addUser(admin,"swede","foo123","C=SE, O=ï¿½ï¿½ï¿½, CN=ï¿½ï¿½ï¿½",null,"swede@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsacaid);
-            log.debug("created user: swede, foo123, C=SE, O=ï¿½ï¿½ï¿½, CN=ï¿½ï¿½ï¿½");
+            usersession.addUser(admin,"swede","foo123","C=SE, O=ÅÄÖ, CN=åäö",null,"swede@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsacaid);
+            log.debug("created user: swede, foo123, C=SE, O=ÅÄÖ, CN=åäö");
         } catch (RemoteException re) {
             if (re.detail instanceof DuplicateKeyException) {
                 userExists = true;
@@ -519,7 +519,7 @@ public class TestSignSession extends TestCase {
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         assertEquals("Wrong DN med swedechars", CertTools.getSubjectDN(cert),
-                CertTools.stringToBCDNString("C=SE, O=ï¿½ï¿½ï¿½, CN=ï¿½ï¿½ï¿½"));
+                CertTools.stringToBCDNString("C=SE, O=ÅÄÖ, CN=åäö"));
         //FileOutputStream fos = new FileOutputStream("swedecert.crt");
         //fos.write(cert.getEncoded());
         //fos.close();
@@ -552,7 +552,7 @@ public class TestSignSession extends TestCase {
         try {
             // Change a user that we know...
             usersession.changeUser(admin, "foo", "foo123", "C=SE,O=AnaTom,CN=foo",
-                    "uniformResourceIdentifier=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1",
+                    "uniformResourceId=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1",
                     "foo@anatom.se", false,
                     eeprofile,
                     SecConst.CERTPROFILE_FIXED_ENDUSER,
