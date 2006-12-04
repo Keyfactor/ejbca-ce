@@ -61,7 +61,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * Allow rfc822Name and UPN name in altNames in the end entity profile
  *  
  * @author tomas
- * @version $Id: CrmfRAPbeRequestTest.java,v 1.7 2006-11-24 14:40:48 anatom Exp $
+ * @version $Id: CrmfRAPbeRequestTest.java,v 1.8 2006-12-04 12:58:44 anatom Exp $
  */
 public class CrmfRAPbeRequestTest extends CmpTestCase {
 	
@@ -69,7 +69,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 
     private static final String PBEPASSWORD = "password";
     
-    private static String userDN = "CN=tomas1,UID=tomas2,O=PrimeKey Solutions AB,C=SE";
+    private static String userDN = "C=SE,O=PrimeKey,CN=cmptest";
     private static String issuerDN = "CN=AdminCA1,O=EJBCA Sample,C=SE";
     private KeyPair keys = null;  
 
@@ -140,9 +140,6 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 	}
 
 	public void test02CrmfHttpOkUser() throws Exception {
-
-		// Create a new good user
-		createCmpUser();
 
 		byte[] nonce = CmpMessageHelper.createSenderNonce();
 		byte[] transid = CmpMessageHelper.createSenderNonce();
@@ -219,9 +216,6 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 	
 	public void test02CrmfTcpOkUser() throws Exception {
 
-		// Create a new good user
-		createCmpUser();
-
 		byte[] nonce = CmpMessageHelper.createSenderNonce();
 		byte[] transid = CmpMessageHelper.createSenderNonce();
 		
@@ -268,30 +262,6 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     // Private helper methods
     //
 
-    private void createCmpUser() throws RemoteException, AuthorizationDeniedException, FinderException, UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException {
-        // Make user that we know...
-        boolean userExists = false;
-		userDN = "C=SE,O=PrimeKey,CN=cmptest";
-        try {
-            usersession.addUser(admin,"cmptest","foo123",userDN,null,"cmptest@primekey.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
-            log.debug("created user: cmptest, foo123, "+userDN);
-        } catch (RemoteException re) {
-            if (re.detail instanceof DuplicateKeyException) {
-                userExists = true;
-            }
-        } catch (DuplicateKeyException dke) {
-            userExists = true;
-        }
-
-        if (userExists) {
-            log.debug("User cmptest already exists.");
-            usersession.changeUser(admin, "cmptest", "foo123", userDN, null, "cmptest@primekey.se", false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, caid);
-            //usersession.setUserStatus(admin,"cmptest",);
-            log.debug("Reset status to NEW");
-        }
-        
-    }
-    
     private int checkRevokeStatus(String issuerDN, BigInteger serno) throws RemoteException {
     	int ret = RevokedCertInfo.NOT_REVOKED;
     	RevokedCertInfo info = storesession.isRevoked(admin, issuerDN, serno);
