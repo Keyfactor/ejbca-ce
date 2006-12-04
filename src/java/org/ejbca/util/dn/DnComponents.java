@@ -37,7 +37,7 @@ import org.bouncycastle.asn1.x509.X509Name;
  * seemingly similar contents. 
  * 
  * @author tomas
- * @version $Id: DnComponents.java,v 1.6 2006-12-04 12:44:54 anatom Exp $
+ * @version $Id: DnComponents.java,v 1.7 2006-12-04 16:04:42 anatom Exp $
  */
 public class DnComponents {
     private static Logger log = Logger.getLogger(DnComponents.class);
@@ -269,6 +269,10 @@ public class DnComponents {
      */
     public static int profileIdToDnId(int profileid) {
     	Integer val = (Integer)profileIdToDnIdMap.get(Integer.valueOf(profileid));
+    	if (val == null) {
+    		log.error("No dn id mapping from profile id "+profileid);
+    		// We allow it to fail here
+    	}
     	return val.intValue();
     }
     /**
