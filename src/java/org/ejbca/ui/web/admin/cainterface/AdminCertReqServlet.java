@@ -19,7 +19,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-import javax.ejb.CreateException;
+import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -109,7 +109,7 @@ import org.ejbca.util.StringTools;
  * 
  *
  * @author Ville Skyttä
- * @version $Id: AdminCertReqServlet.java,v 1.3 2006-09-20 15:44:56 anatom Exp $
+ * @version $Id: AdminCertReqServlet.java,v 1.4 2006-12-04 15:04:59 anatom Exp $
  * 
  * @web.servlet name = "AdminCertReq"
  *              display-name = "AdminCertReqServlet"
@@ -122,7 +122,6 @@ import org.ejbca.util.StringTools;
 public class AdminCertReqServlet extends HttpServlet {
     private final static Logger log = Logger.getLogger(AdminCertReqServlet.class);
     
-    private ISignSessionLocalHome signhome = null;
     private final static byte[] BEGIN_CERT =
         "-----BEGIN CERTIFICATE-----".getBytes();
     private final static int BEGIN_CERT_LENGTH = BEGIN_CERT.length;
@@ -134,6 +133,20 @@ public class AdminCertReqServlet extends HttpServlet {
     private final static byte[] NL = "\n".getBytes();
     private final static int NL_LENGTH = NL.length;
     
+    private ISignSessionLocal signsession = null;
+
+    private synchronized ISignSessionLocal getSignSession(){
+    	if(signsession == null){	
+    		try {
+    			ISignSessionLocalHome signhome = (ISignSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
+    			signsession = signhome.create();
+    		}catch(Exception e){
+    			throw new EJBException(e);      	  	    	  	
+    		}
+    	}
+    	return signsession;
+    }
+
     public void init(ServletConfig config)
     throws ServletException
     {
@@ -141,9 +154,6 @@ public class AdminCertReqServlet extends HttpServlet {
         try {
             // Install BouncyCastle provider
             CertTools.installBCProvider();
-            
-            // Get EJB context and home interfaces
-            signhome = (ISignSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
         } catch (Exception e) {
             throw new ServletException(e);
         }
@@ -174,7 +184,7 @@ public class AdminCertReqServlet extends HttpServlet {
      */
     public void doPost(HttpServletRequest request, HttpServletResponse response)
     throws IOException, ServletException
-    {
+    {        
         // Check if authorized
         EjbcaWebBean ejbcawebbean= getEjbcaWebBean(request);
         try{
@@ -268,17 +278,11 @@ public class AdminCertReqServlet extends HttpServlet {
             throw new ServletException("Error adding user: " + e.toString(), e);
         }
         
-        ISignSessionLocal ss;
-        try {
-            ss = signhome.create();
-        } catch (CreateException e) {
-            throw new ServletException(e);
-        }
-        
         byte[] pkcs7;
         try {
             p10.setUsername(username);
             p10.setPassword(password);
+            ISignSessionLocal ss = getSignSession();
             IResponseMessage resp = ss.createCertificate(admin, p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
             X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
             pkcs7 = ss.createPKCS7(admin, cert, true);

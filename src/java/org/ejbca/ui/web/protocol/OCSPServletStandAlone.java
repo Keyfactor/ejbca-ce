@@ -40,9 +40,6 @@ import javax.servlet.ServletException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.ocsp.BasicOCSPResp;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocalHome;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
@@ -96,13 +93,12 @@ import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silvén PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.29 2006-11-21 12:51:19 anatom Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.30 2006-12-04 15:05:04 anatom Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChecker {
 
     static final protected Logger m_log = Logger.getLogger(OCSPServletStandAlone.class);
 
-    private ICertificateStoreOnlyDataSessionLocal mCertStore;
     private String mKeystoreDirectoryName;
     private char mKeyPassword[];
     private char mStorePassword[];
@@ -116,12 +112,6 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         try {
-            {
-                ServiceLocator locator = ServiceLocator.getInstance();
-                ICertificateStoreOnlyDataSessionLocalHome castorehome =
-                    (ICertificateStoreOnlyDataSessionLocalHome)locator.getLocalHome(ICertificateStoreOnlyDataSessionLocalHome.COMP_NAME);
-                mCertStore = castorehome.create();
-            }
             {
                 final String keyPassword = config.getInitParameter("keyPassword");
                 mKeyPassword = keyPassword!=null ? keyPassword.toCharArray() : null;
@@ -399,11 +389,11 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     }
 
     protected Collection findCertificatesByType(Admin adm, int type, String issuerDN) {
-        return mCertStore.findCertificatesByType(adm, type, issuerDN);
+        return getStoreSession().findCertificatesByType(adm, type, issuerDN);
     }
 
     protected Certificate findCertificateByIssuerAndSerno(Admin adm, String issuer, BigInteger serno) {
-        return mCertStore.findCertificateByIssuerAndSerno(adm, issuer, serno);
+        return getStoreSession().findCertificateByIssuerAndSerno(adm, issuer, serno);
     }
     
     protected OCSPCAServiceResponse extendedService(Admin adm, int caid, OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException,
@@ -416,6 +406,6 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     }
 
     protected RevokedCertInfo isRevoked(Admin adm, String name, BigInteger serialNumber) {
-        return mCertStore.isRevoked(adm, name, serialNumber);
+        return getStoreSession().isRevoked(adm, name, serialNumber);
     }
 }

@@ -18,6 +18,7 @@ import java.io.PrintStream;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
+import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -44,7 +45,7 @@ import org.ejbca.util.Base64;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CACertServlet.java,v 1.9 2006-11-10 17:56:04 anatom Exp $
+ * @version $Id: CACertServlet.java,v 1.10 2006-12-04 15:04:59 anatom Exp $
  *
  * @web.servlet name = "CACert"
  *              display-name = "CACertServlet"
@@ -219,15 +220,22 @@ public class CACertServlet extends HttpServlet {
     private static final String LEVEL_PROPERTY = "level";
     private static final String ISSUER_PROPERTY = "issuer";
 
-    private ISignSessionLocalHome signhome = null;
+    private ISignSessionLocal signsession = null;
+
+    private synchronized ISignSessionLocal getSignSession(){
+    	if(signsession == null){	
+    		try {
+    			ISignSessionLocalHome signhome = (ISignSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
+    			signsession = signhome.create();
+    		}catch(Exception e){
+    			throw new EJBException(e);      	  	    	  	
+    		}
+    	}
+    	return signsession;
+    }
 
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        try {
-            signhome = (ISignSessionLocalHome) ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
-        } catch( Exception e ) {
-            throw new ServletException(e);
-        }
     }
     
     public void doPost(HttpServletRequest req, HttpServletResponse res)
@@ -276,7 +284,7 @@ public class CACertServlet extends HttpServlet {
                 level = Integer.parseInt(lev);
             // Root CA is level 0, next below root level 1 etc etc
             try {
-                ISignSessionLocal ss = signhome.create();
+                ISignSessionLocal ss = getSignSession();
                 Admin admin = new Admin(((X509Certificate[]) req.getAttribute( "javax.servlet.request.X509Certificate" ))[0]);
                 Certificate[] chain = (Certificate[]) ss.getCertificateChain(admin, issuerdn.hashCode()).toArray(new Certificate[0]);
                                                             

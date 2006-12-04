@@ -20,12 +20,6 @@ import java.util.Collection;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
-import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
@@ -72,47 +66,30 @@ import org.ejbca.core.model.log.Admin;
  *  type="javax.sql.DataSource"
  *  auth="Container"
  *
- * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson
- * @version  $Id: OCSPServlet.java,v 1.8 2006-11-10 17:56:04 anatom Exp $
+ * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson, Lars Silven
+ * @version  $Id: OCSPServlet.java,v 1.9 2006-12-04 15:05:04 anatom Exp $
  */
 public class OCSPServlet extends OCSPServletBase {
-
-    static private Logger m_log = Logger.getLogger(OCSPServlet.class);
-
-    private ICertificateStoreSessionLocal m_certStore;
-    private ISignSessionLocal m_signsession = null;
 
     public void init(ServletConfig config)
             throws ServletException {
         super.init(config);
-        try {
-            ServiceLocator locator = ServiceLocator.getInstance();
-            ICertificateStoreSessionLocalHome castorehome =
-                    (ICertificateStoreSessionLocalHome) locator.getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
-            m_certStore = castorehome.create();
-            ISignSessionLocalHome signhome = (ISignSessionLocalHome) locator.getLocalHome(ISignSessionLocalHome.COMP_NAME);
-            m_signsession = signhome.create();
-            
-        } catch (Exception e) {
-            m_log.error("Unable to initialize OCSPServlet.", e);
-            throw new ServletException(e);
-        }
     }
 
     protected Collection findCertificatesByType(Admin adm, int i, String issuerDN) {
-        return m_certStore.findCertificatesByType(adm, i, issuerDN);
+        return getStoreSession().findCertificatesByType(adm, i, issuerDN);
     }
 
     protected Certificate findCertificateByIssuerAndSerno(Admin adm, String issuer, BigInteger serno) {
-        return m_certStore.findCertificateByIssuerAndSerno(adm, issuer, serno);
+        return getStoreSession().findCertificateByIssuerAndSerno(adm, issuer, serno);
     }
     
     protected OCSPCAServiceResponse extendedService(Admin adm, int caid, OCSPCAServiceRequest request) throws CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException {
-        return (OCSPCAServiceResponse)m_signsession.extendedService(adm, caid, request);
+        return (OCSPCAServiceResponse)getSignSession().extendedService(adm, caid, request);
     }
 
     protected RevokedCertInfo isRevoked(Admin adm, String name, BigInteger serialNumber) {
-        return m_certStore.isRevoked(adm, name, serialNumber);
+        return getStoreSession().isRevoked(adm, name, serialNumber);
     }
 
     protected void loadPrivateKeys(Admin adm) {

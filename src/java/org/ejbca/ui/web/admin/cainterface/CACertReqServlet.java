@@ -43,7 +43,7 @@ import org.ejbca.ui.web.pub.ServletUtils;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: CACertReqServlet.java,v 1.4 2006-10-31 08:24:11 anatom Exp $
+ * @version $Id: CACertReqServlet.java,v 1.5 2006-12-04 15:04:59 anatom Exp $
  * 
  * @web.servlet name = "CACertReq"
  *              display-name = "CACertReqServlet"
@@ -79,12 +79,6 @@ public class CACertReqServlet extends HttpServlet {
    
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        try {
-
-
-        } catch( Exception e ) {
-            throw new ServletException(e);
-        }
     }
 
     public void doPost(HttpServletRequest req, HttpServletResponse res)

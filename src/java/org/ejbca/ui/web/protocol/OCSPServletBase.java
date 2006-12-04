@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -53,7 +54,12 @@ import org.bouncycastle.ocsp.Req;
 import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.UnknownStatus;
 import org.bouncycastle.util.encoders.Hex;
+import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
+import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.model.ca.MalformedRequestException;
 import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
@@ -110,9 +116,8 @@ import org.ejbca.util.CertTools;
  *   name="unidCACert"
  *   value="${ocsp.unidcacert}"
  *   
- * @author Thomas Meckel (Ophios GmbH)
- * @author Tomas Gustavsson
- * @version  $Id: OCSPServletBase.java,v 1.20 2006-11-10 08:09:55 anatom Exp $
+ * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson, Lars Silven
+ * @version  $Id: OCSPServletBase.java,v 1.21 2006-12-04 15:05:04 anatom Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
@@ -145,6 +150,33 @@ abstract class OCSPServletBase extends HttpServlet {
     private Collection m_extensionClasses = new ArrayList();
     private HashMap m_extensionMap = null;
     
+    private ICertificateStoreSessionLocal m_certStore = null;
+    private ISignSessionLocal m_signsession = null;
+
+    protected synchronized ICertificateStoreSessionLocal getStoreSession(){
+    	if(m_signsession == null){	
+    		try {
+    			ICertificateStoreSessionLocalHome storehome = (ICertificateStoreSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
+    			m_certStore = storehome.create();
+    		}catch(Exception e){
+    			throw new EJBException(e);      	  	    	  	
+    		}
+    	}
+    	return m_certStore;
+    }
+    protected synchronized ISignSessionLocal getSignSession(){
+    	if(m_signsession == null){	
+    		try {
+    			ISignSessionLocalHome signhome = (ISignSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
+    			m_signsession = signhome.create();
+    		}catch(Exception e){
+    			throw new EJBException(e);      	  	    	  	
+    		}
+    	}
+    	return m_signsession;
+    }
+
+
     /** Loads cacertificates but holds a cache so it's reloaded only every five minutes is needed.
      */
     protected synchronized void loadCertificates() throws IOException, ServletException {
