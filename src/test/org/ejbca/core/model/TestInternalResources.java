@@ -13,6 +13,9 @@ public class TestInternalResources extends TestCase {
 	public void testGetLocalizedMessageString() {
 		InternalResources intres = InternalResourcesTestClass.getInstance();
 		String res = intres.getLocalizedMessage("raadmin.testmsg");
+		assertEquals("Test ENG", res);		
+		// This message will only exist in the secondary language file
+		res = intres.getLocalizedMessage("raadmin.testmsgsv");
 		assertEquals("Test SV", res);		
 	}
 	

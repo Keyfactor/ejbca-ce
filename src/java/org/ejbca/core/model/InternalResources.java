@@ -31,7 +31,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  *  
  * @author Philip Vendil 2006 sep 24
  *
- * @version $Id: InternalResources.java,v 1.4 2006-12-05 16:09:38 anatom Exp $
+ * @version $Id: InternalResources.java,v 1.5 2006-12-05 17:57:51 anatom Exp $
  */
 public class InternalResources {
 	
@@ -55,8 +55,8 @@ public class InternalResources {
 	    InputStream primaryStream = null;
 	    InputStream secondaryStream = null;
 	    if (test) {
-			primaryLanguage = "se";
-			secondaryLanguage = "en";
+			primaryLanguage = "en";
+			secondaryLanguage = "se";
 		    try {
 				primaryStream = new FileInputStream("src/intresources/intresources." + primaryLanguage + ".properties");
 			    secondaryStream = new FileInputStream("src/intresources/intresources." + secondaryLanguage + ".properties");	    	
