@@ -33,7 +33,7 @@ import org.ejbca.core.ejb.services.IServiceTimerSessionLocalHome;
  *
  * 
  *
- * @version $Id: StartServicesServlet.java,v 1.6 2006-11-22 11:24:00 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.7 2006-12-05 12:43:45 anatom Exp $
  * 
  * @web.servlet name = "StartServices"
  *              display-name = "StartServicesServlet"
@@ -47,7 +47,7 @@ import org.ejbca.core.ejb.services.IServiceTimerSessionLocalHome;
  *   type="java.lang.String"
  *   value="${logging.log4j.config}"
  * 
- * @version $Id: StartServicesServlet.java,v 1.6 2006-11-22 11:24:00 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.7 2006-12-05 12:43:45 anatom Exp $
  */
 public class StartServicesServlet extends HttpServlet {
 
@@ -90,17 +90,16 @@ public class StartServicesServlet extends HttpServlet {
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         log.info(">init EJBCA startup");
-        
+
         log.debug(">init calling ServiceSession.load");
         try {
 			getServiceHome().create().load();
 		} catch (CreateException e) {
-			log.debug(e);
-			throw new ServletException(e);
+			log.error("Error init ServiceSession: ", e);
 		} catch (IOException e) {
-			log.debug(e);
-			throw new ServletException(e);
+			log.error("Error init ServiceSession: ", e);
 	    }
+		
         log.debug(">init initializing log4j");
         String configfile = ServiceLocator.getInstance().getString("java:comp/env/LOG4JCONFIG");
         if (!StringUtils.equals(configfile, "false")) {
@@ -112,7 +111,7 @@ public class StartServicesServlet extends HttpServlet {
             	// TODO: log4j.xml configuration
             }
         }
-    }
+    } // init
 
     public void doPost(HttpServletRequest req, HttpServletResponse res)
         throws IOException, ServletException {
