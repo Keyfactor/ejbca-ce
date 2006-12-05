@@ -31,7 +31,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  *  
  * @author Philip Vendil 2006 sep 24
  *
- * @version $Id: InternalResources.java,v 1.3 2006-12-05 14:48:15 anatom Exp $
+ * @version $Id: InternalResources.java,v 1.4 2006-12-05 16:09:38 anatom Exp $
  */
 public class InternalResources {
 	
@@ -93,16 +93,9 @@ public class InternalResources {
 	 * 
 	 */
     public String getLocalizedMessage(String key){
-    	String retval = primaryResource.getProperty(key);
-    	if(retval == null){
-    		retval = secondaryResource.getProperty(key);
-    	}
-    	if(retval == null){
-    		retval = "No text available";
-    	}
-    	return retval.trim();
+    	Object[] params = {};    	
+    	return getLocalizedMessage(key,params, 0);
     }
-	
 
 	/**
 	 * Method returning the localized message for the given resource key.
@@ -304,8 +297,26 @@ public class InternalResources {
     	return getLocalizedMessage(key,params, 10);
     }
     
+	/**
+	 * Method returning the message from the resource file for the given resource key.
+	 * 
+	 * It first looks up in the primary language then in the secondary
+	 * If not found in any of the resource file "No text available" is returned.
+	 * 
+	 */
+    private String getMessageString(String key){
+    	String retval = primaryResource.getProperty(key);
+    	if(retval == null){
+    		retval = secondaryResource.getProperty(key);
+    	}
+    	if(retval == null){
+    		retval = "No text available";
+    	}
+    	return retval.trim();
+    }
+	
     private String getLocalizedMessage(String key, Object[] params, int numOfParams){
-    	String localizedString = getLocalizedMessage(key);
+    	String localizedString = getMessageString(key);
     	for(int i=0;i<numOfParams;i++){
     		Object obj = params[i];
     		String param = "";
@@ -314,6 +325,8 @@ public class InternalResources {
     		}
     		localizedString = localizedString.replaceAll("\\{" + i + "\\}", param);
     	}
+    	// Remove all remaining {} if any
+		localizedString = localizedString.replaceAll("\\{\\d\\}", "");
     	
     	return localizedString;
     }

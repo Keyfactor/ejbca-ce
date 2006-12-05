@@ -158,7 +158,7 @@ import org.ejbca.util.KeyTools;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
  *   
- *   @version $Id: RSASignSessionBean.java,v 1.27 2006-12-05 14:40:11 anatom Exp $
+ *   @version $Id: RSASignSessionBean.java,v 1.28 2006-12-05 16:09:49 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -760,7 +760,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         } catch (IOException e) {
             log.error("Cannot create response message: ", e);
         } catch (CATokenOfflineException ctoe) {
-        	String msg = intres.getLocalizedMessage("signsession.catokenoffline", cadata.getSubjectDN());
+        	String msg = intres.getLocalizedMessage("error.catokenoffline", cadata.getSubjectDN());
             log.error(msg, ctoe);
             getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, msg, ctoe);
             throw new CADoesntExistsException(msg);
@@ -839,7 +839,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         } catch (IOException e) {
             log.error("Cannot create response message: ", e);
         } catch (CATokenOfflineException ctoe) {
-        	String msg = intres.getLocalizedMessage("signsession.catokenoffline", cadata.getSubjectDN());
+        	String msg = intres.getLocalizedMessage("error.catokenoffline", cadata.getSubjectDN());
             log.error(msg, ctoe);
             getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, msg, ctoe);
             throw new CADoesntExistsException(msg);
@@ -906,7 +906,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         } catch (NoSuchAlgorithmException e) {
             log.error("No such algorithm: ", e);
         }  catch (CATokenOfflineException ctoe) {
-        	String msg = intres.getLocalizedMessage("signsession.catokenoffline", cadata.getSubjectDN());
+        	String msg = intres.getLocalizedMessage("error.catokenoffline", cadata.getSubjectDN());
             log.error(msg, ctoe);
             getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, msg, ctoe);
             throw new CADoesntExistsException(msg);
@@ -1005,7 +1005,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         } catch (IOException e) {
             log.error("Cannot create response message: ", e);
         } catch (CATokenOfflineException ctoe) {
-        	String msg = intres.getLocalizedMessage("signsession.catokenoffline", cadata.getSubjectDN());
+        	String msg = intres.getLocalizedMessage("error.catokenoffline", cadata.getSubjectDN());
         	log.error(msg, ctoe);
             getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_GETLASTCRL, msg, ctoe);
             throw new CADoesntExistsException(msg);
@@ -1207,7 +1207,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             if (cadata != null) {
                 cadn = cadata.getSubjectDN();
             }
-            String msg = intres.getLocalizedMessage("signsession.catokenoffline", cadn);
+            String msg = intres.getLocalizedMessage("error.catokenoffline", cadn);
             log.error(msg, ctoe);
             getLogSession().log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECRL, msg, ctoe);
             throw ctoe;
@@ -1484,7 +1484,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         } catch (IllegalKeyException ke) {
             throw ke;
         } catch (CATokenOfflineException ctoe) {
-        	String msg = intres.getLocalizedMessage("signsession.catokenoffline", ca.getSubjectDN());
+        	String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
             getLogSession().log(admin, ca.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, msg, ctoe);
             throw new EJBException(msg, ctoe);
         } catch (Exception e) {
