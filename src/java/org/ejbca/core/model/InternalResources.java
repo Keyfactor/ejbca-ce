@@ -31,7 +31,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  *  
  * @author Philip Vendil 2006 sep 24
  *
- * @version $Id: InternalResources.java,v 1.2 2006-10-23 16:25:10 anatom Exp $
+ * @version $Id: InternalResources.java,v 1.3 2006-12-05 14:48:15 anatom Exp $
  */
 public class InternalResources {
 	
@@ -307,7 +307,12 @@ public class InternalResources {
     private String getLocalizedMessage(String key, Object[] params, int numOfParams){
     	String localizedString = getLocalizedMessage(key);
     	for(int i=0;i<numOfParams;i++){
-    		localizedString = localizedString.replaceAll("\\{" + i + "\\}", params[i].toString());
+    		Object obj = params[i];
+    		String param = "";
+    		if (obj != null) {
+    			param = obj.toString();
+    		}
+    		localizedString = localizedString.replaceAll("\\{" + i + "\\}", param);
     	}
     	
     	return localizedString;

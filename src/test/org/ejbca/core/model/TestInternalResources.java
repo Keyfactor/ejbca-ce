@@ -25,4 +25,11 @@ public class TestInternalResources extends TestCase {
 		assertTrue(res,res.equals("Test 1 3 hi true bye message 1"));
 	}
 
+	public void testGetLocalizedMessageStringObjectWithNull() {
+		InternalResources intres = InternalResourcesTestClass.getInstance();
+		
+		String res = intres.getLocalizedMessage("raadmin.testparams",null, new Integer(3), null, new Boolean(true), "bye");
+		
+		assertTrue(res,res.equals("Test  3  true bye message "));
+	}
 }
