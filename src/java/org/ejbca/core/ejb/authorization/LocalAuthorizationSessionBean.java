@@ -58,7 +58,7 @@ import org.ejbca.util.JDBCUtil;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.7 2006-11-13 08:55:53 anatom Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.8 2006-12-06 14:05:41 anatom Exp $
  *
  * @ejb.bean
  *   description="Session bean handling interface with ra authorization"
@@ -161,6 +161,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      */
     public static final long MIN_TIME_BETWEEN_UPDATES = 60000 * 1;
     
+    /** Internal localization of logs and errors */
     private InternalResources intres = InternalResources.getInstance();
 
     /**
@@ -523,16 +524,19 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
                     admingrouphome.create(new Integer(findFreeAdminGroupId()), admingroupname, caid);
                     success = true;
                 } catch (CreateException e) {
-                    error("Can't add admingroup: ", e);
+            		String msg = intres.getLocalizedMessage("authorization.erroraddadmingroup", admingroupname);            	
+                    error(msg, e);
                     success = false;
                 }
             }
 
 
             if (success) {
-                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, "Administratorgroup " + admingroupname + " added.");
+        		String msg = intres.getLocalizedMessage("authorization.admingroupadded", admingroupname);            	
+                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
             } else {
-                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, "Error adding administratorgroup " + admingroupname + ".");
+        		String msg = intres.getLocalizedMessage("authorization.erroraddadmingroup", admingroupname);            	
+                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, msg);
                 throw new AdminGroupExistsException();
             }
         }
@@ -561,10 +565,12 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
                 agl.remove();
                 signalForAuthorizationTreeUpdate();
 
-                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, "Administratorgroup " + admingroupname + " removed.");
+        		String msg = intres.getLocalizedMessage("authorization.admingroupremoved", admingroupname);            	
+                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
             } catch (Exception e) {
-                error("RemoveAdminGroup: " + e);
-                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, "Error removing administratorgroup " + admingroupname + ".");
+        		String msg = intres.getLocalizedMessage("authorization.errorremoveadmingroup", admingroupname);            	
+                error(msg, e);
+                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, msg);
             }
         }
     } // removeAdminGroup
@@ -597,10 +603,13 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
                 }
             }
 
-            if (success)
-                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, "Renamed administratorgroup " + oldname + " to " + newname + ".");
-            else
-                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, "Error renaming administratorgroup " + oldname + " to " + newname + ".");
+            if (success) {
+        		String msg = intres.getLocalizedMessage("authorization.admingrouprenamed", oldname, newname);            	
+                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
+            } else {
+        		String msg = intres.getLocalizedMessage("authorization.errorrenameadmingroup", oldname, newname);            	
+                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, msg);            	
+            }
         }
     } // renameAdminGroup
 
@@ -730,11 +739,13 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
         if (!(admingroupname.equals(DEFAULTGROUPNAME) && caid == LogConstants.INTERNALCAID)) {
             try {
                 (admingrouphome.findByGroupNameAndCAId(admingroupname, caid)).addAccessRules(accessrules);
-                signalForAuthorizationTreeUpdate();
-                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, "Added accessrules to admingroup : " + admingroupname);
+                signalForAuthorizationTreeUpdate();               
+        		String msg = intres.getLocalizedMessage("authorization.accessrulesadded", admingroupname);            	
+                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
             } catch (Exception e) {
-                error("Can't add access rule: ", e);
-                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, "Error adding accessrules to admingroup : " + admingroupname);
+        		String msg = intres.getLocalizedMessage("authorization.erroraddaccessrules", admingroupname);            	
+                error(msg, e);
+                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, msg);
             }
         }
     } // addAccessRules
@@ -750,10 +761,12 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
             try {
                 (admingrouphome.findByGroupNameAndCAId(admingroupname, caid)).removeAccessRules(accessrules);
                 signalForAuthorizationTreeUpdate();
-                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, "Removed accessrules from admingroup : " + admingroupname);
+        		String msg = intres.getLocalizedMessage("authorization.accessrulesremoved", admingroupname);            	
+                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
             } catch (Exception e) {
-            	error("Can't remove access rules: ", e);
-            	logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, "Error removing accessrules from admingroup : " + admingroupname);
+        		String msg = intres.getLocalizedMessage("authorization.errorremoveaccessrules", admingroupname);            	
+            	error(msg, e);
+            	logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
             }
         }
     } // removeAccessRules
@@ -776,10 +789,12 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
                 agdl.removeAccessRules(removerules);
                 agdl.addAccessRules(accessrules);
                 signalForAuthorizationTreeUpdate();
-                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, "Replaced accessrules from admingroup : " + admingroupname);
+        		String msg = intres.getLocalizedMessage("authorization.accessrulesreplaced", admingroupname);            	
+                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
             } catch (Exception e) {
-            	error("Can't replace access rules: ", e);
-                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, "Error replacing accessrules from admingroup : " + admingroupname);
+        		String msg = intres.getLocalizedMessage("authorization.errorreplaceaccessrules", admingroupname);            	
+            	error(msg, e);
+                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
             }
         }
     } // replaceAccessRules
@@ -795,10 +810,12 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
             try {
                 (admingrouphome.findByGroupNameAndCAId(admingroupname, caid)).addAdminEntities(adminentities);
                 signalForAuthorizationTreeUpdate();
-                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, "Added administrator entities to administratorgroup " + admingroupname);
+        		String msg = intres.getLocalizedMessage("authorization.adminadded", admingroupname);            	
+                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
             } catch (Exception e) {
-                error("Can't add admin entities: ", e);
-                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, "Error adding administrator entities to administratorgroup " + admingroupname);
+        		String msg = intres.getLocalizedMessage("authorization.erroraddadmin", admingroupname);            	
+            	error(msg, e);
+                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, msg);
             }
         }
     } // addAdminEntity
@@ -814,10 +831,12 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
             try {
                 (admingrouphome.findByGroupNameAndCAId(admingroupname, caid)).removeAdminEntities(adminentities);
                 signalForAuthorizationTreeUpdate();
-                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, "Removed administrator entities from administratorgroup " + admingroupname);
+        		String msg = intres.getLocalizedMessage("authorization.adminremoved", admingroupname);            	
+                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_EDITEDADMINISTRATORPRIVILEGES, msg);
             } catch (Exception e) {
-                error("Can't remove admin entities: ", e);
-                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, "Error removing administrator entities from administratorgroup " + admingroupname);
+        		String msg = intres.getLocalizedMessage("authorization.errorremoveadmin", admingroupname);            	
+            	error(msg, e);
+                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_EDITEDADMINISTRATORPRIVILEGES, msg);
             }
         }
     } // removeAdminEntity
@@ -1007,7 +1026,8 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
             try {
                 atu = authorizationtreeupdatehome.create();
             } catch (CreateException ce) {
-                error("Error creating AuthorizationTreeUpdateDataBean :", ce);
+        		String msg = intres.getLocalizedMessage("authorization.errorcreateauthtree");            	
+                error(msg, ce);
                 throw new EJBException(ce);
             }
         }

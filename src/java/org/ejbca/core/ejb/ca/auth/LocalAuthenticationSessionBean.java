@@ -29,6 +29,7 @@ import org.ejbca.core.ejb.ra.UserDataLocalHome;
 import org.ejbca.core.ejb.ra.UserDataPK;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.log.Admin;
@@ -43,7 +44,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.4 2006-10-09 12:05:53 anatom Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.5 2006-12-06 14:05:42 anatom Exp $
  *
  * @ejb.bean
  *   display-name="AuthenticationSB"
@@ -116,6 +117,9 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
     
     /** The local interface of the keyrecovery session bean */
     private IKeyRecoverySessionLocal keyrecoverysession = null;
+    
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
     
     /** boolean indicating if keyrecovery should be used. */
     private boolean usekeyrecovery = true;
@@ -190,11 +194,13 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
                 debug("Trying to authenticate user: username="+data.getUsername()+", dn="+data.getSubjectDN()+", email="+data.getSubjectEmail()+", status="+data.getStatus()+", type="+data.getType());
                 if (data.comparePassword(password) == false)
                 {
-                  logsession.log(admin, data.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"Got request for user with invalid password: "+username);
-                  throw new AuthLoginException("Wrong password for user.");
+                	String msg = intres.getLocalizedMessage("authentication.invalidpwd", username);            	
+                	logsession.log(admin, data.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,msg);
+                	throw new AuthLoginException(msg);
                 }
 
-                logsession.log(admin, data.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_USERAUTHENTICATION,"Authenticated user: "+username);
+            	String msg = intres.getLocalizedMessage("authentication.authok", username);            	
+                logsession.log(admin, data.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_USERAUTHENTICATION,msg);
                 UserDataVO ret = new UserDataVO(data.getUsername(), data.getSubjectDN(), data.getCaId(), data.getSubjectAltName(), data.getSubjectEmail(), 
                 		data.getStatus(), data.getType(), data.getEndEntityProfileId(), data.getCertificateProfileId(),
                 		new Date(data.getTimeCreated()), new Date(data.getTimeModified()), data.getTokenType(), data.getHardTokenIssuerId(), data.getExtendedInformation());  
@@ -202,18 +208,21 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
                 debug("<authenticateUser("+username+", hiddenpwd)");
                 return ret;
             }
-            logsession.log(admin, data.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"Got request with status '"+status+"', NEW, FAILED or INPROCESS required: "+username);
+        	String msg = intres.getLocalizedMessage("authentication.wrongstatus", Integer.valueOf(status), username);            	
+            logsession.log(admin, data.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,msg);
             throw new AuthStatusException("User "+username+" has status '"+status+"', NEW, FAILED or INPROCESS required.");
         } catch (ObjectNotFoundException oe) {
-            logsession.log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"Got request for nonexisting user: "+username);
+        	String msg = intres.getLocalizedMessage("authentication.usernotfound", username);            	
+            logsession.log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,msg);
             throw oe;
         } catch (AuthStatusException se) {
             throw se;
         } catch (AuthLoginException le) {
             throw le;
         } catch (Exception e) {
-            error("Unexpected error in authenticateUser(): ", e);
-            throw new EJBException(e.toString());
+        	String msg = intres.getLocalizedMessage("error.unknown");            	
+            error(msg, e);
+            throw new EJBException(e);
         }
     } //authenticateUser
 
@@ -241,15 +250,17 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
             // Reset key recoveryflag if keyrecovery is used.
             if(this.getKeyRecoverySession(admin) != null){     
               getKeyRecoverySession(admin).unmarkUser(admin,username);
-            }
-            
-            logsession.log(admin, data.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDENDENTITY,"Changed status to STATUS_GENERATED.");
+            }            
+        	String msg = intres.getLocalizedMessage("authentication.statuschanged", username);            	
+            logsession.log(admin, data.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_CHANGEDENDENTITY,msg);
             debug("<finishUser("+username+", hiddenpwd)");
         } catch (ObjectNotFoundException oe) {
-            logsession.log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,"Got request for nonexisting user.");
+        	String msg = intres.getLocalizedMessage("authentication.usernotfound", username);            	
+            logsession.log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,msg);
             throw oe;
         } catch (Exception e) {
-            error("Unexpected error in finnishUser(): ", e);
+        	String msg = intres.getLocalizedMessage("error.unknown");            	
+            error(msg, e);
             throw new EJBException(e.toString());
         }
     } //finishUser

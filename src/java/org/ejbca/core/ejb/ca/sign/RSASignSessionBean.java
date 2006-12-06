@@ -158,7 +158,7 @@ import org.ejbca.util.KeyTools;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
  *   
- *   @version $Id: RSASignSessionBean.java,v 1.28 2006-12-05 16:09:49 anatom Exp $
+ *   @version $Id: RSASignSessionBean.java,v 1.29 2006-12-06 14:05:42 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -1192,7 +1192,8 @@ public class RSASignSessionBean extends BaseSessionBean {
             int number = certificateStore.getLastCRLNumber(admin, ca.getSubjectDN()) + 1;
             X509CRL crl = null;
             crl = (X509CRL) ca.generateCRL(certs, number);
-            getLogSession().log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_CREATECRL, intres.getLocalizedMessage("signsession.createdcrl", Integer.valueOf(number)));
+            String msg = intres.getLocalizedMessage("signsession.createdcrl", Integer.valueOf(number), cadata.getName(), cadata.getSubjectDN());
+            getLogSession().log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_CREATECRL, msg);
 
             // Store CRL in the database
             String fingerprint = CertTools.getFingerprintAsString(cacert);

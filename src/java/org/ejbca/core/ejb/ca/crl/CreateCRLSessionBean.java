@@ -36,6 +36,7 @@ import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -52,7 +53,7 @@ import org.ejbca.util.CertTools;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.12 2006-10-09 12:05:20 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.13 2006-12-06 14:05:43 anatom Exp $
  * @ejb.bean
  *   description="Session bean handling hard token data, both about hard tokens and hard token issuers."
  *   display-name="CreateCRLSB"
@@ -127,7 +128,9 @@ import org.ejbca.util.CertTools;
  */
 public class CreateCRLSessionBean extends BaseSessionBean {
 
-
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
+    
     /** The local home interface of Certificate store */
     private ICertificateStoreSessionLocalHome storeHome = null;
 
@@ -207,7 +210,9 @@ public class CreateCRLSessionBean extends BaseSessionBean {
             }
             ISignSessionLocal sign = signHome.create();
             byte[] crlBytes = sign.createCRL(admin, caid, certs);
-            log.info("Created CRL for CA: "+cainfo.getName()+", with DN: "+cainfo.getSubjectDN());
+            // This is logged in the database by SignSession 
+        	String msg = intres.getLocalizedMessage("createcrl.createdcrl", cainfo.getName(), cainfo.getSubjectDN());            	
+            log.info(msg);
             if (log.isDebugEnabled()) {
                 X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
                 debug("Created CRL with expire date: "+crl.getNextUpdate());
@@ -219,8 +224,9 @@ public class CreateCRLSessionBean extends BaseSessionBean {
         } catch (CATokenOfflineException e) {
             throw e;            
         } catch (Exception e) {
-            log.error("Error creating CRL: ", e);
-            logsession.log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,e.getMessage());
+        	String msg = intres.getLocalizedMessage("createcrl.errorcreate", Integer.valueOf(caid));            	
+            log.error(msg, e);
+            logsession.log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL, msg, e);
             throw new EJBException(e);
         }
         debug("<run()");
@@ -272,7 +278,9 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     			   CAInfo cainfo = caadmin.getCAInfo(admin, caid);
     			   if (cainfo instanceof X509CAInfo) {
     			       if (cainfo.getStatus() == SecConst.CA_OFFLINE )  {
-    			           log.error("CA "+cainfo.getName()+", "+caid+" is off-line. CRL can not be created!");
+    			    	   String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), Integer.valueOf(caid));            	    			    	   
+    			    	   log.error(msg);
+    			    	   logsession.log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL, msg);
     			       } else {
     			           try {
     			        	   if (log.isDebugEnabled()) {
@@ -287,8 +295,10 @@ public class CreateCRLSessionBean extends BaseSessionBean {
         			               }    			            	   
     			               }
                                int crlissueinterval = cainfo.getCRLIssueInterval();
-                               log.debug("crlissueinterval="+crlissueinterval);
-                               log.debug("crloverlaptime="+cainfo.getCRLOverlapTime());
+                               if (log.isDebugEnabled()) {
+                                   log.debug("crlissueinterval="+crlissueinterval);
+                                   log.debug("crloverlaptime="+cainfo.getCRLOverlapTime());                            	   
+                               }
                                long overlap = (cainfo.getCRLOverlapTime() * 60 * 1000) + addtocrloverlaptime; // Overlaptime is in minutes, default if crlissueinterval == 0
                                long nextUpdate = 0; // if crlinfo == 0, we will issue a crl now
                                if (crlinfo != null) {
@@ -298,7 +308,9 @@ public class CreateCRLSessionBean extends BaseSessionBean {
                                    nextUpdate = crlinfo.getExpireDate().getTime(); // Default if crlissueinterval == 0
                                    if (crlissueinterval > 0) {
                                 	   long crlissueintervalmillisec = ((long)crlissueinterval) * 60 * 60 * 1000;
-                                	   log.debug("crlissueinterval milliseconds: "+crlissueintervalmillisec);
+                                	   if (log.isDebugEnabled()) {                                		   
+                                    	   log.debug("crlissueinterval milliseconds: "+crlissueintervalmillisec);
+                                	   }
                                        long u = crlinfo.getCreateDate().getTime() + (crlissueintervalmillisec);
                                        // If this period for some reason (we missed to issue some?) is larger than when the CRL expires,
                                        // we need to issue one when the CRL expires
@@ -310,7 +322,8 @@ public class CreateCRLSessionBean extends BaseSessionBean {
                                    }                                   
                                    log.debug("Calculated nextUpdate to "+nextUpdate);
                                } else {
-                            	   log.info("crlinfo is null, so we use 0 as nextUpdate");
+            			    	   String msg = intres.getLocalizedMessage("createcrl.crlinfonull");            	    			    	   
+                            	   log.info(msg);
                                }
     			               if ((currenttime.getTime() + overlap) >= nextUpdate) {
     			            	   if (log.isDebugEnabled()) {
@@ -321,22 +334,26 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     			               }
     			               
     			           } catch (CATokenOfflineException e) {
-                               log.error("CA token for CA "+cainfo.getName()+", "+caid+" is off-line. CRL can not be created!");
+        			    	   String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), Integer.valueOf(caid));            	    			    	   
+        			    	   log.error(msg);
+        			    	   logsession.log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL, msg);
     			           }
     			       }
     			   }                       
                 } catch(Exception e) {
-                    error("Error generating CRL for caid: "+caid, e);
-    		    	logsession.log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,e.getMessage());
-                    if (e instanceof EJBException) {
-                        throw (EJBException)e;
-                    }
-                    throw new EJBException(e);
+                	String msg = intres.getLocalizedMessage("createcrl.generalerror", Integer.valueOf(caid));            	    			    	   
+                	error(msg, e);
+                	logsession.log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,msg,e);
+                	if (e instanceof EJBException) {
+                		throw (EJBException)e;
+                	}
+                	throw new EJBException(e);
     		    }
     		}
     	} catch (Exception e) {
-            error("Error getting available CAs: ", e);
-    		logsession.log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,e.getMessage());
+        	String msg = intres.getLocalizedMessage("createcrl.erroravailcas");            	    			    	   
+        	error(msg, e);
+    		logsession.log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,msg,e);
             if (e instanceof EJBException) {
                 throw (EJBException)e;
             }
