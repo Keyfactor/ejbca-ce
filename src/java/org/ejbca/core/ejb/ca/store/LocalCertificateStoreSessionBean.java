@@ -45,6 +45,7 @@ import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocalHome;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.certificateprofiles.CACertificateProfile;
@@ -171,11 +172,14 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.21 2006-11-10 09:28:51 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.22 2006-12-06 15:06:32 anatom Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
+    
     /**
      * The home interface of Certificate entity bean
      */
@@ -323,14 +327,16 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             data1.setCaFingerprint(cafp);
             data1.setStatus(status);
             data1.setType(type);
-            getLogSession().log(admin, cert, LogEntry.MODULE_CA, new java.util.Date(), username, (X509Certificate) incert, LogEntry.EVENT_INFO_STORECERTIFICATE, "");
+        	String msg = intres.getLocalizedMessage("store.storecert");            	
+            getLogSession().log(admin, cert, LogEntry.MODULE_CA, new java.util.Date(), username, (X509Certificate) incert, LogEntry.EVENT_INFO_STORECERTIFICATE, msg);
             if (protect) {
         		CertificateInfo entry = new CertificateInfo(data1.getFingerprint(), data1.getCaFingerprint(), data1.getSerialNumber(), data1.getIssuerDN(), data1.getSubjectDN(), data1.getStatus(), data1.getType(), data1.getExpireDate(), data1.getRevocationDate(), data1.getRevocationReason());
             	TableProtectSessionLocal protect = protecthome.create();
             	protect.protect(admin, entry);            	
             }
         } catch (Exception e) {
-            getLogSession().log(admin, (X509Certificate) incert, LogEntry.MODULE_CA, new java.util.Date(), username, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE, "");
+        	String msg = intres.getLocalizedMessage("store.errorstorecert");            	
+            getLogSession().log(admin, (X509Certificate) incert, LogEntry.MODULE_CA, new java.util.Date(), username, (X509Certificate) incert, LogEntry.EVENT_ERROR_STORECERTIFICATE, msg);
             throw new EJBException(e);
         }
         debug("<storeCertificate()");
@@ -354,9 +360,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             X509CRL crl = CertTools.getCRLfromByteArray(incrl);
             CRLDataLocal data1 = crlHome.create(crl, number);
             data1.setCaFingerprint(cafp);
-            getLogSession().log(admin, crl.getIssuerDN().toString().hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_STORECRL, "Number : " + number + " Fingerprint : " + CertTools.getFingerprintAsString(crl) + ".");
+        	String msg = intres.getLocalizedMessage("store.storecrl", Integer.valueOf(number), CertTools.getFingerprintAsString(crl));            	
+            getLogSession().log(admin, crl.getIssuerDN().toString().hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_STORECRL, msg);
         } catch (Exception e) {
-            getLogSession().log(admin, LogConstants.INTERNALCAID, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL, "Number : " + number + ".");
+        	String msg = intres.getLocalizedMessage("store.storecrl");            	
+            getLogSession().log(admin, LogConstants.INTERNALCAID, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL, msg);
             throw new EJBException(e);
         }
         debug("<storeCRL()");
@@ -777,7 +785,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         } catch (FinderException fe) {
             // Return null;
         } catch (Exception e) {
-            log.error("Error finding certificate with fp: " + fingerprint);
+        	String msg = intres.getLocalizedMessage("store.errorcertinfo", fingerprint);            	
+            log.error(msg);
             throw new EJBException(e);
         }
         return ret;
@@ -887,7 +896,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 }
             }
         } catch (FinderException e) {
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_REVOKEDCERT, ("Couldn't find certificate with username :" + username));
+        	String msg = intres.getLocalizedMessage("store.errorfindcertuser", username);            	
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_REVOKEDCERT, msg);
             throw new EJBException(e);
         }
         debug("<setRevokeStatus(),  username=" + username);
@@ -910,7 +920,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             certificate = (X509Certificate) this.findCertificateByIssuerAndSerno(admin, issuerdn, serno);
 	        setRevokeStatus(admin, certificate, publishers, reason);
         } catch (FinderException e) {
-            getLogSession().log(admin, issuerdn.hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_REVOKEDCERT, ("Couldn't find certificate with serno :" + serno));
+        	String msg = intres.getLocalizedMessage("store.errorfindcertserno", serno.toString(16));            	
+            getLogSession().log(admin, issuerdn.hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_REVOKEDCERT, msg);
             throw new EJBException(e);
         }
         debug("<setRevokeStatus(),  issuerdn=" + issuerdn + ", serno=" + serno);
@@ -939,7 +950,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             	  rev.setStatus(CertificateDataBean.CERT_REVOKED);
             	  rev.setRevocationDate(new Date());
             	  rev.setRevocationReason(reason);            	  
-            	  getLogSession().log(admin, certificate, LogEntry.MODULE_CA, new java.util.Date(), null, certificate, LogEntry.EVENT_INFO_REVOKEDCERT, ("Revoke reason: " + reason));
+            	  String msg = intres.getLocalizedMessage("store.revokedcert", Integer.valueOf(reason));            	
+            	  getLogSession().log(admin, certificate, LogEntry.MODULE_CA, new java.util.Date(), null, certificate, LogEntry.EVENT_INFO_REVOKEDCERT, msg);
             	  // Revoke in all related publishers
             	  if (publishers != null) {
             		  getPublisherSession().revokeCertificate(admin, publishers, certificate, reason);
@@ -974,14 +986,15 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             		if ( !published ) {
             			throw new Exception("Unrevoked cert:" + serialNo + " reason: " + reason + " Could not be republished.");
             		}                	  
-            		getLogSession().log(admin, certificate.getIssuerDN().hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, certificate, LogEntry.EVENT_INFO_NOTIFICATION, ("Republished unrevoked cert, reason: " + reason));
+            		String msg = intres.getLocalizedMessage("store.republishunrevokedcert", Integer.valueOf(reason));            	
+            		getLogSession().log(admin, certificate.getIssuerDN().hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, certificate, LogEntry.EVENT_INFO_NOTIFICATION, msg);
             	} catch (Exception ex) {
             		// We catch the exception thrown above, to log the message, but it is only informational, so we dont re-throw anything
             		getLogSession().log(admin, certificate.getIssuerDN().hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, certificate, LogEntry.EVENT_INFO_NOTIFICATION, ex.getMessage());
             	}
-            	getLogSession().log(admin, certificate.getIssuerDN().hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, certificate, LogEntry.EVENT_INFO_UNREVOKEDCERT, ("Reason: " + reason));                      			                    					  
-            }else{
-            	getLogSession().log(admin, certificate.getIssuerDN().hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, certificate, LogEntry.EVENT_INFO_NOTIFICATION, ("Ignored setRevokeStatus() request: " + serialNo) + " Current cert status: " + rev.getStatus() + " Revocation reason: " + reason);
+            } else {
+        		String msg = intres.getLocalizedMessage("store.ignorerevoke", serialNo, Integer.valueOf(rev.getStatus()), Integer.valueOf(reason));            	
+            	getLogSession().log(admin, certificate.getIssuerDN().hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, certificate, LogEntry.EVENT_INFO_NOTIFICATION, msg);
             }
             // Update database protection
             if (protect) {
@@ -1059,9 +1072,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
             revoked = ps2.executeUpdate();
 
-            getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_REVOKEDCERT, ("Revoked All CAs certificates successfully. Permantly revoked :" + (revoked + temprevoked) + " Certificates with reason: " + reason));
+    		String msg = intres.getLocalizedMessage("store.revokedallbyca", issuerdn, Integer.valueOf(revoked + temprevoked), Integer.valueOf(reason));            	
+            getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_REVOKEDCERT, msg);
         } catch (Exception e) {
-            getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_REVOKEDCERT, "Error when trying to revoke a CA's all certificates", e);
+    		String msg = intres.getLocalizedMessage("store.errorrevokeallbyca", issuerdn);            	
+            getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_REVOKEDCERT, msg, e);
             throw new EJBException(e);
         } finally {
             JDBCUtil.close(con, ps, null);
