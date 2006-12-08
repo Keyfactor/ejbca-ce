@@ -3106,6 +3106,9 @@ In order to add such a DN you can simply call the DN for example: CN=MyCommonNam
 Where 1.1.1.1 is your custom oid.
 </p>
 <p>
+Custom OIDs are always encoded as UTF8String in the DN.
+</p>
+<p>
 To get support for custom OIDs in the Admin-GUI you must edit the file src/java/profilemappings.properties and add your new
 OID in the end. Just follow the example in the file, and you will get the possibility to add you oid in the End Entity Profile, 
 and following that also when adding new users.
