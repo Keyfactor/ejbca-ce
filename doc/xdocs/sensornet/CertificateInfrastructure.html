@@ -21,7 +21,7 @@
     </tr>
     <tr align="center">
       <td colspan="2" rowspan="1" style="vertical-align: top;">
-      <h2>November 2004</h2>
+      <h2>November 2006</h2>
       </td>
     </tr>
   </tbody>
@@ -55,14 +55,20 @@ issuing and use process.</td>
         <li><a href="#Identity_certificate_uses">Uses of identity
 certificates</a></li>
         <li><a href="#Certificate_servers">Certificate Authority
-enrollment<br>
-          </a></li>
+enrollment</a>
+          <ul>
+            <li><a href="#Netscape">Netscape/Mozilla/Firefox</a></li>
+            <li><a href="#IE6">Internet Explorer 6</a></li>
+            <li><a href="#IE7">Internet Explorer 7</a></li>
+          </ul>
+        </li>
         <li><a href="#Managing_Certificates">Managing certificates</a></li>
         <li><a href="#Using_certificates_for_secure_e-mail">Using
 certificates for secure e-mail</a></li>
         <li><a href="IISHowTo/ServerCert.html">Obtaining server certificates for IIS</a></li>
-        <li><a href="serverHowTo/serverCert.html">Obtaining certificates for Unix servers, nodes, or applications</a></li>
-        <li><a href="TomcatHowTo/TomcatCert.html">Obtaining server certificates for Tomcat</a></li>
+        <li><a href="TomcatHowTo/TomcatCert.html">Obtaining server certificates
+            for Tomcat (jks)</a></li>
+        <li><a href="LDAPHowTo/LDAPServer.html">Obtaining server certificates for OpenLDAP (PEM)</a></li>
       </ul>
       </td>
     </tr>
@@ -274,7 +280,7 @@ attacks) requiring that all users get new passwords. This has proved to
 be a logistical problem. Passwords can be easily sniffed if the user's
 computer gets hacked, and
 good passwords are hard to remember and thus get written down on
-stickys attached to the computer for all to see. There is also
+sticky notes attached to the computer for all to see. There is also
 generally no restriction to the number of times that a password-based
 Web access pop up can fail (or else there could be easy denial of
 service attacks). Therefore, access via user id and password is subject
@@ -375,7 +381,14 @@ programs. Otherwise, your private key will be at risk, and security
 will be compromised. We strongly recommend that you use Mozilla,
 Firefox, or Netscape 7.x because they handle certificates much better
 than Internet Explorer and have many fewer security holes.<br>
-      </td>
+<hr size="5">
+      <p>&nbsp;</p></td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">
+	 <span
+ style="font-family: Helvetica,Arial,sans-serif; color: rgb(0, 102, 0); font-weight: bold;"><a name="Netscape"></a>Certificate
+Import for Netscape/Mozilla/Firefox</span>&nbsp;</td>
     </tr>
     <tr>
       <td style="vertical-align: top;">Open the URL in your mail
@@ -434,17 +447,18 @@ uses this same password to protect other sensitive information you ask
 the browser to save, such as site passwords. Now learn to <a
  href="MozillaHowTo/MozillaCertificateManagement.html">manage your
 certificates in Mozilla</a>.<br>
-      </td>
+<hr size="5">
+      <p>&nbsp;</p></td>
     </tr>
     <tr>
       <td style="vertical-align: top;"><span
- style="font-family: Helvetica,Arial,sans-serif; color: rgb(0, 102, 0); font-weight: bold;">Certificate
-Import for Internet Explorer</span><br>
+ style="font-family: Helvetica,Arial,sans-serif; color: rgb(0, 102, 0); font-weight: bold;"><a name="IE6"></a>Certificate
+Import for Internet Explorer 6</span><br>
       </td>
     </tr>
     <tr>
-      <td style="vertical-align: top;">If you used Internet Explorer
-(IE), the situation is different (Figure 4). Be sure to choose the
+      <td style="vertical-align: top;">If you used Internet Explorer 6
+(IE6), the situation is different (Figure 4). Be sure to choose the
 Microsoft enhanced Cryptographic Provider v1.0 in the drop-down box.
 When you click OK, the "Creating a new RSA exchange key" pop-up will
 appear. <span style="font-weight: bold;">It is essential that you
@@ -517,7 +531,126 @@ complete (Figure 6).<br>
     </tr>
     <tr>
       <td style="vertical-align: top;"><br>
+        <hr size="5">
       </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><span
+ style="font-family: Helvetica,Arial,sans-serif; color: rgb(0, 102, 0); font-weight: bold;"><a name="IE7"></a>Certificate
+Import for Internet Explorer 7</span>&nbsp;</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">The certificate import process has changed
+        for Internet Explorer version 7 (IE7). Open the URL in the e-mail message
+        and you will see the screen in Fig. 7.</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><div align="center">
+        <p><img src="IE7/Welcome.png" width="776" height="627"></p>
+        <p><strong>Figure 7</strong></p>
+      </div></td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Choose the <em>for your browser</em> link
+        and you will see Fig. 8. Enter your user name and password (from the
+        e-mail) and click OK.</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><div align="center">
+        <p><img src="IE7/Enrollment.png" width="776" height="401"></p>
+        <p><strong>Figure 8</strong></p>
+      </div></td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">You will then get numerous warnings about
+        allowing Active-X controls, running add-ons, and resending the page contents
+        (Fig. 9). Click OK for Active-X, Retry to redisplay the page, and click
+        the yellow top panel to run the Microsoft Certificate Enrollment Control.</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><p align="center"><img src="IE7/AllowActiveX.png" width="347" height="137"><img src="IE7/ResendPage.png" width="375" height="168"></p>
+      <p align="center"><img src="IE7/RunTheAddOn.png" width="786" height="412"></p>
+      <p align="center"><strong>Figure 9</strong></p></td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">The Web page (Fig. 10) then allows you
+        to select the key size in the certificate. Choose 2048 or higher if you
+        can do
+        so. Click OK to start the certificate generation process.</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><p align="center"><img src="IE7/GenerateCert.png" width="864" height="679"></p>
+      <p align="center"><strong>Figure 10</strong></p></td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Ignore the warning about a potential scripting
+        violation (Fig. 11). Click yes to accept the certificate.</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><div align="center"><img src="IE7/PotentialScritpViolation.png" width="713" height="118"></div></td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Now (<font color="#FF0000"><strong>very
+            important!</strong></font>) be sure to set the
+        security level to high (Fig 12) by clicking the<em> Set Security Level</em> button.</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><div align="center">
+        <p><img src="IE7/SetSecurityLevel.png" width="443" height="600"></p>
+        <p><strong>Figure 12</strong></p>
+      </div></td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">When you set the security level to High,
+        you will be asked for a password to protect your certificate (Fig. 13).
+        Be sure to remember it.</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><div align="center">
+        <p><img src="IE7/CreatePasswd.png" width="447" height="349"></p>
+        <p><strong>Figure 13</strong></p>
+      </div></td>
+    </tr>
+    <tr>
+      <td height="35" style="vertical-align: top;"><p>You will then get a popup saying that
+          the certificate was imported, and the Browser page will tell you where
+        to go to see it (Fig. 14).</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><div align="center"><img src="IE7/Installed.png" width="236" height="102"></div></td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><div align="center">
+        <p><img src="IE7/BrowserOK.png" width="862" height="354"></p>
+        <p><strong>Figure 14</strong></p>
+      </div></td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Navigate in the browser to look at your
+        certificate. You will see your client certificate store as shown in Fig.
+        15.</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><div align="center">
+        <p><img src="IE7/CertStore.png" width="510" height="699"></p>
+        <p><strong>Figure 15</strong></p>
+      </div></td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">Select your certificate and click the
+        <em>Advanced</em> button. Be sure that the Client Authentication usage
+        is checked as shown in Figure 16. Then export your certificate as described
+        in the next section.</td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"><div align="center">
+        <p><img src="IE7/ClientAuth.png" width="383" height="378"></p>
+        <p><strong>Figure 16</strong></p>
+      </div></td>
+    </tr>
+    <tr style="font-family: Helvetica,Arial,sans-serif;">
+      <td style="vertical-align: top;"><hr size="5"></td>
     </tr>
     <tr style="font-family: Helvetica,Arial,sans-serif;">
       <td style="vertical-align: top;">
@@ -533,8 +666,9 @@ also be managed. This means<br>
     <tr>
       <td style="vertical-align: top;">
       <ul>
-        <li>The certificate must be backed up <br>
-        </li>
+        <li>The certificate must be backed up. In order to use certificate-enabled
+          applications, your certificate must be available in a file outside
+          of the context of the browser.        </li>
         <li>The certificate must be protected with a good password</li>
         <li>The certificate must be exported from the browser on which
 the certificate was created and imported into other browsers (on other

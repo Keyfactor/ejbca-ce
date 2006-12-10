@@ -1,0 +1,57 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>LDAP Certificates</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+</head>
+
+<body>
+<h2><font color="#006600">Obtaining a Certificate
+  for OpenLDAP</font> </h2>
+<p>Send an e-mail to the SensorNetCA (romeja@ornl.gov) requesting a Tomcat certificate.
+The e-mail should contain:</p>
+<ul>
+  <li>  The ip name of your server</li>
+  <li> Your name and e-mail address</li>
+  <li> Your phone number</li>
+  <li> Your Organization</li>
+  <li> Your Organizational Unit</li>
+  <li>Your City</li>
+  <li> Your State</li>
+  <li> Your Country</li>
+</ul>
+<p>When your request is approved, I will send you an e-mail with a link for you
+to pick up your certificate.</p>
+<p>OpenLDAP requires PEM keys, so you should choose a PEM file when you get the
+certificate. The resulting PEM file actually contains three items:</p>
+<ul>
+  <li>The private key for your server certificate</li>
+  <li>The server certificate</li>
+  <li>The CA certificate</li>
+</ul>
+<p>If you look at the file (I called it ldap.pem) you will see:</p>
+<pre>Bag Attributes<br>    friendlyName: ldap.sensornet.gov<br>-----BEGIN PRIVATE KEY-----<br>MIICdwIBADANBgkaoiejlkxjda8HkoHyiIzMTIwWhcNMTAxMjIyMTY0MTIwWjCB<br>. . .<br>zrqk9dUogKOBPc0=<br>-----END PRIVATE KEY-----<br>Bag Attributes<br>    friendlyName: ldap.sensornet.gov<br>subject=/E=jar@ornl.gov/UID=ORNL-ldap/CN=ldap.sensornet.gov/SURNAME=ldap.sensornet.gov/T=Server/OU=SensorNet/O=Oak Ridge National Laboratory/L=Oak Ridge/ST=TN/C=US<br>issuer=/CN=SensorNetCA/DC=sensornet/DC=gov<br>-----BEGIN CERTIFICATE-----<br>MIIEzzCCA7egAwIBAgIIQtakRK/6fRAwDQYJKoZIhvcNAQEFBQAwRjEUMBIGA1UE<br>. . .<br>aUgze7N7OXu3HhttxkX0YDiLA0L4SyrtyYlbo8Cu+XYIZaM=<br>-----END CERTIFICATE-----<br>Bag Attributes<br>    friendlyName: SensorNetCA<br>subject=/CN=SensorNetCA/DC=sensornet/DC=gov<br>issuer=/CN=SensorNetCA/DC=sensornet/DC=gov<br>-----BEGIN CERTIFICATE-----<br>MIIDcTCCAlmgAwIBAgIINrFilyCRqvgwDQYJKoZIhvcNAQEFBQAwRjEUMBIGA1UE<br>. . .<br>Ua5i8dgCFEqNnVJutU22Z2Ad6T/u<br>-----END CERTIFICATE-----<br>
+</pre>
+<p>You will need to use a text editor to split this file into three parts starting
+  with the line</p>
+<pre>-----BEGIN CERTIFICATE (or PRIVATE KEY)-----</pre>
+<p>and ending with the line</p>
+<pre>-----END CERTIFICATE (or PRIVATE KEY)-----</pre>
+<p>Your /etc/openldap/slapd file should have lines like:</p>
+<pre># TLS options for slapd<br># Use SSL<br>TLSCipherSuite HIGH:MEDIUM:+SSLv3<br>TLSCertificateKeyFile /etc/openldap/keys/ldap.sensornet.gov-Key.pem<br>TLSCertificateFile /etc/openldap/keys/ldap.sensornet.gov.pem<br>TLSCACertificateFile /etc/openldap/keys/ldap.sensornet.gov-CA.pem
+</pre>
+<p>This is the order the certificates appear in the PEM file. Extract them with
+  the appropriate names and save them in /etc/openldap/keys.</p>
+<p>    The private key in the SensorNetCA PEM files is unencrypted. You want
+  it unencrypted
+for your LDAP server. However, if you need to encrypt it do:</p>
+<pre>openssl rsa -in &quot;ldap.sensornet.gov-KeyUnEnc.pem&quot; -des3 -out &quot;ldap.sensornet.gov-Key.pem&quot;
+ </pre>
+<p>But actually, you need to have the key unencrypted.</p>
+<p>To hash the root password do:</p>
+<pre>$ /usr/sbin/slappasswd
+New password:
+Re-enter new password:
+{SSHA}nRJ7Y0ur_Hash1QsFcL</pre>
+</body>
+</html>
