@@ -172,7 +172,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.22 2006-12-06 15:06:32 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.23 2006-12-10 16:19:59 anatom Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
@@ -620,28 +620,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         try {
 
             final StringBuffer sb = new StringBuffer();
-            /*
-             * tmeckel:
-             * JBoss seems to have problems loading anoymous classes :(
-             * i always get an java.lang.NoClassDefFound exception when
-             * i try to use the following code snipped
-             *
-             * the code in the following block is only a dingy
-             * replacement as long as the problem with anonymous
-             * classes are solved :)
-            CollectionUtils.forAllDo(sernos, new Closure() {
-                                                public void execute(Object input) {
-                                                    if (null != input) {
-                                                        sb.append(", ");
-                                                        sb.append(input.toString());
-                                                    }
-                                                }} );
-            */
             {
                 Iterator iter = sernos.iterator();
                 while (iter.hasNext()) {
                     sb.append(", '");
-// Make sure this is really a BigInteger passed in as (untrusted param)
+                    // Make sure this is really a BigInteger passed in as (untrusted param)
                     BigInteger serno = (BigInteger) iter.next();
                     sb.append(serno.toString());
                     sb.append("'");
@@ -1004,7 +987,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             		protect = protecthome.create();
             		protect.protect(admin, entry);            	
             	} catch (CreateException e) {
-            		error("PROTECT ERROR: Can not create TableProtectSession: ", e);
+                	String msg = intres.getLocalizedMessage("protect.errorcreatesession");            	
+            		error(msg, e);
             	}
             }
 
@@ -1118,7 +1102,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                     			//error("Verify failed, but we go on anyway.");
                     		}
                     	} catch (CreateException e) {
-                    		error("PROTECT ERROR: Can not create TableProtectSession: ", e);
+                        	String msg = intres.getLocalizedMessage("protect.errorcreatesession");            	
+                    		error(msg, e);
                     	}
                     }
                     if (rev.getStatus() != CertificateDataBean.CERT_REVOKED) {
@@ -1171,10 +1156,12 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             if (crl == null)
                 return null;
 
-            getLogSession().log(admin, crl.getIssuerDN().toString().hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_GETLASTCRL, "Number :" + maxnumber);
+        	String msg = intres.getLocalizedMessage("store.getcrl", issuerdn, Integer.valueOf(maxnumber));            	
+            getLogSession().log(admin, crl.getIssuerDN().toString().hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_GETLASTCRL, msg);
             return crl.getEncoded();
         } catch (Exception e) {
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_GETLASTCRL, "Error retrieving last crl.");
+        	String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn);            	
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_GETLASTCRL, msg);
             throw new EJBException(e);
         }
     } //getLastCRL
@@ -1196,13 +1183,15 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 CRLDataLocal data = crlHome.findByIssuerDNAndCRLNumber(issuerdn, maxnumber);
                 crlinfo = new CRLInfo(data.getIssuerDN(), maxnumber, data.getThisUpdate(), data.getNextUpdate());
             } catch (FinderException e) {
-                log.error("Can not find CRL for issuer: "+issuerdn+", with number: "+maxnumber, e);
+            	String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn, Integer.valueOf(maxnumber));            	
+                log.error(msg, e);
                 crlinfo = null;
             }
             debug("<getLastCRLInfo()");
             return crlinfo;
         } catch (Exception e) {
-            getLogSession().log(admin, issuerdn.hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_GETLASTCRL, "Error retrieving crl info.");
+        	String msg = intres.getLocalizedMessage("store.errorgetcrlinfo", issuerdn);            	
+            getLogSession().log(admin, issuerdn.hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_GETLASTCRL, msg);
             throw new EJBException(e);
         }
     } //getLastCRL
@@ -1255,9 +1244,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             CertReqHistoryDataPK pk = new CertReqHistoryDataPK();
             pk.fingerprint = CertTools.getFingerprintAsString(cert);
             certReqHistoryHome.create(cert,useradmindata);
-            getLogSession().log(admin, cert, LogEntry.MODULE_CA, new java.util.Date(), useradmindata.getUsername(), cert, LogEntry.EVENT_INFO_STORECERTIFICATE, "Storing certificate request history successful.");            
+        	String msg = intres.getLocalizedMessage("store.storehistory", useradmindata.getUsername());            	
+            getLogSession().log(admin, cert, LogEntry.MODULE_CA, new java.util.Date(), useradmindata.getUsername(), cert, LogEntry.EVENT_INFO_STORECERTIFICATE, msg);            
         } catch (Exception e) {
-            getLogSession().log(admin, cert, LogEntry.MODULE_CA, new java.util.Date(), useradmindata.getUsername(), cert, LogEntry.EVENT_ERROR_STORECERTIFICATE, "Error storing certificate request history.");
+        	String msg = intres.getLocalizedMessage("store.errorstorehistory", useradmindata.getUsername());            	
+            getLogSession().log(admin, cert, LogEntry.MODULE_CA, new java.util.Date(), useradmindata.getUsername(), cert, LogEntry.EVENT_ERROR_STORECERTIFICATE, msg);
             throw new EJBException(e);
         }
         debug("<addCertReqHistData()");    	
@@ -1275,10 +1266,12 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         try {          
             CertReqHistoryDataPK pk = new CertReqHistoryDataPK();
             pk.fingerprint = certFingerprint;
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_STORECERTIFICATE, "Removal of certificate request history successful.");
+        	String msg = intres.getLocalizedMessage("store.removehistory", certFingerprint);            	
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_STORECERTIFICATE, msg);
             this.certReqHistoryHome.remove(pk);
         } catch (Exception e) {
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECERTIFICATE, "Error removing certificate request history.");
+        	String msg = intres.getLocalizedMessage("store.errorremovehistory", certFingerprint);            	
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECERTIFICATE, msg);
             throw new EJBException(e);
         }
         debug("<removeCertReqHistData()");       	
@@ -1359,21 +1352,25 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     public void addCertificateProfile(Admin admin, int certificateprofileid, String certificateprofilename,
                                       CertificateProfile certificateprofile) throws CertificateProfileExistsException {
         if (isCertificateProfileNameFixed(certificateprofilename)) {
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, "Error adding certificaterprofile " + certificateprofilename);
-            throw new CertificateProfileExistsException();
+        	String msg = intres.getLocalizedMessage("store.errorcertprofilefixed", certificateprofilename);            	
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, msg);
+            throw new CertificateProfileExistsException(msg);
         }
 
         if (isFreeCertificateProfileId(certificateprofileid)) {
             try {
                 certprofilehome.findByCertificateProfileName(certificateprofilename);
-                throw new CertificateProfileExistsException("Certificate Profile Name already exists.");
+            	String msg = intres.getLocalizedMessage("store.errorcertprofileexists", certificateprofilename);            	
+                throw new CertificateProfileExistsException(msg);
             } catch (FinderException e) {
                 try {
                     certprofilehome.create(new Integer(certificateprofileid), certificateprofilename,
                             certificateprofile);
-                    getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_CERTPROFILE, "New certificateprofile " + certificateprofilename + " added successfully");
+                	String msg = intres.getLocalizedMessage("store.addedcertprofile", certificateprofilename);            	
+                    getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_CERTPROFILE, msg);
                 } catch (Exception f) {
-                    getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, "Error when creating new certificateprofile " + certificateprofilename);
+                	String msg = intres.getLocalizedMessage("store.errorcreatecertprofile", certificateprofilename);            	
+                    getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, msg);
                 }
             }
         }
@@ -1392,8 +1389,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         CertificateProfile certificateprofile = null;
 
         if (isCertificateProfileNameFixed(newcertificateprofilename)) {
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, "Error adding certificaterprofile " + newcertificateprofilename + " using profile " + originalcertificateprofilename + " as template.");
-            throw new CertificateProfileExistsException();
+        	String msg = intres.getLocalizedMessage("store.errorcertprofilefixed", newcertificateprofilename);            	
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, msg);
+            throw new CertificateProfileExistsException(msg);
         }
 
         try {
@@ -1413,12 +1411,14 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
 
             try {
                 certprofilehome.findByCertificateProfileName(newcertificateprofilename);
-                getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, "Error adding certificaterprofile " + newcertificateprofilename + " using profile " + originalcertificateprofilename + " as template.");
+            	String msg = intres.getLocalizedMessage("store.erroraddprofilewithtempl", newcertificateprofilename, originalcertificateprofilename);            	
+                getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, msg);
                 throw new CertificateProfileExistsException();
             } catch (FinderException e) {
                 try {
                     certprofilehome.create(new Integer(findFreeCertificateProfileId()), newcertificateprofilename, certificateprofile);
-                    getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_CERTPROFILE, "New certificateprofile " + newcertificateprofilename + " used profile " + originalcertificateprofilename + " as template.");
+                	String msg = intres.getLocalizedMessage("store.addedprofilewithtempl", newcertificateprofilename, originalcertificateprofilename);            	
+                    getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_CERTPROFILE, msg);
                 } catch (CreateException f) {
                 }
             }
@@ -1438,9 +1438,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         try {
             CertificateProfileDataLocal pdl = certprofilehome.findByCertificateProfileName(certificateprofilename);
             pdl.remove();
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_CERTPROFILE, "Removed certificateprofile " + certificateprofilename + ".");
+        	String msg = intres.getLocalizedMessage("store.removedcertprofile", certificateprofilename);            	
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_CERTPROFILE, msg);
         } catch (Exception e) {
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, "Error removing certificateprofile " + certificateprofilename + ".");
+        	String msg = intres.getLocalizedMessage("store.errorremoveprofile", certificateprofilename);            	
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, msg);
         }
     } // removeCertificateProfile
 
@@ -1451,22 +1453,31 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      */
     public void renameCertificateProfile(Admin admin, String oldcertificateprofilename, String newcertificateprofilename) throws CertificateProfileExistsException {
-        if (isCertificateProfileNameFixed(oldcertificateprofilename) || isCertificateProfileNameFixed(newcertificateprofilename)) {
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, "Error renaming certificateprofile " + oldcertificateprofilename + " to " + newcertificateprofilename + ".");
-            throw new CertificateProfileExistsException("Cannot rename fixed profiles.");
+        if (isCertificateProfileNameFixed(newcertificateprofilename)) {
+        	String msg = intres.getLocalizedMessage("store.errorcertprofilefixed", newcertificateprofilename);            	
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, msg);
+            throw new CertificateProfileExistsException(msg);
+        }
+        if (isCertificateProfileNameFixed(oldcertificateprofilename)) {
+        	String msg = intres.getLocalizedMessage("store.errorcertprofilefixed", oldcertificateprofilename);            	
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, msg);
+            throw new CertificateProfileExistsException(msg);
         }
 
         try {
             certprofilehome.findByCertificateProfileName(newcertificateprofilename);
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, "Error renaming certificateprofile " + oldcertificateprofilename + " to " + newcertificateprofilename + ".");
+        	String msg = intres.getLocalizedMessage("store.errorcertprofileexists", newcertificateprofilename);            	
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, msg);
             throw new CertificateProfileExistsException();
         } catch (FinderException e) {
             try {
                 CertificateProfileDataLocal pdl = certprofilehome.findByCertificateProfileName(oldcertificateprofilename);
                 pdl.setCertificateProfileName(newcertificateprofilename);
-                getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_CERTPROFILE, "Renamed certificateprofile " + oldcertificateprofilename + " to " + newcertificateprofilename + ".");
+            	String msg = intres.getLocalizedMessage("store.renamedprofile", oldcertificateprofilename, newcertificateprofilename);            	
+                getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_CERTPROFILE, msg);
             } catch (FinderException f) {
-                getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, "Error renaming certificateprofile " + oldcertificateprofilename + " to " + newcertificateprofilename + ".");
+            	String msg = intres.getLocalizedMessage("store.errorrenameprofile", oldcertificateprofilename, newcertificateprofilename);            	
+                getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, msg);
             }
         }
     } // renameCertificateProfile
@@ -1482,9 +1493,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         try {
             CertificateProfileDataLocal pdl = certprofilehome.findByCertificateProfileName(certificateprofilename);
             pdl.setCertificateProfile(certificateprofile);
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_CERTPROFILE, "Certificateprofile " + certificateprofilename + " edited.");
+        	String msg = intres.getLocalizedMessage("store.editedprofile", certificateprofilename);            	
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_CERTPROFILE, msg);
         } catch (FinderException e) {
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, " Error editing certificateprofile " + certificateprofilename + ".");
+        	String msg = intres.getLocalizedMessage("store.erroreditprofile", certificateprofilename);            	
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CERTPROFILE, msg);
         }
     }// changeCertificateProfile
 
@@ -1852,7 +1865,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         return id;
     } // findFreeCertificateProfileId
 
-
+    
     private boolean isCertificateProfileNameFixed(String certificateprofilename) {
         boolean returnval = false;
 
@@ -1906,6 +1919,12 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
          */
         public void error(String s) {
             LocalCertificateStoreSessionBean.this.error(s);        	
+        }
+        /* (non-Javadoc)
+         * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#error(java.lang.String)
+         */
+        public void error(String s, Exception e) {
+            LocalCertificateStoreSessionBean.this.error(s, e);        	
         }
     }
 } // CertificateStoreSessionBean

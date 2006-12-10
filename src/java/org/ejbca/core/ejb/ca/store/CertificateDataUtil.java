@@ -32,6 +32,7 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocalHome;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
@@ -44,13 +45,17 @@ import org.ejbca.util.StringTools;
 /** Common code between CertificateStoreSessionBean and CertificateStoreOnlyDataSessionBean
  * 
  * @author lars
- * @version $Id: CertificateDataUtil.java,v 1.8 2006-08-06 12:37:00 anatom Exp $
+ * @version $Id: CertificateDataUtil.java,v 1.9 2006-12-10 16:19:59 anatom Exp $
  *
  */
 public class CertificateDataUtil {
+    /** Internal localization of logs and errors */
+    private static InternalResources intres = InternalResources.getInstance();
+    
     public interface Adapter {
         void debug( String s );
         void error( String s );
+        void error( String s, Exception e );
         Logger getLogger();
         void log(Admin admin, int caid, int module, Date time, String username,
                  X509Certificate certificate, int event, String comment);
@@ -189,10 +194,9 @@ public class CertificateDataUtil {
             Collection coll = certHome.findByIssuerDNSerialNumber(dn, serno.toString());
             if (coll != null) {
                 if (coll.size() > 1) {
+                	String msg = intres.getLocalizedMessage("store.errorseveralissuerserno", issuerDN, serno.toString(16));            	
                     adapter.log(admin, issuerDN.hashCode(), LogEntry.MODULE_CA, new java.util.Date(),
-                                null, null, LogEntry.EVENT_ERROR_DATABASE,
-                                "Error in database, more than one certificate has the same Issuer : " +
-                                issuerDN + " and serialnumber " + serno.toString(16) + ".");
+                                null, null, LogEntry.EVENT_ERROR_DATABASE, msg);
                 }
                 Iterator iter = coll.iterator();
                 if (iter.hasNext()) {
@@ -209,7 +213,8 @@ public class CertificateDataUtil {
                 				//adapter.error("Verify failed, but we go on anyway.");
                 			}
                 		} catch (CreateException e) {
-                			adapter.error("PROTECT ERROR: Can not create TableProtectSession: "+e.getMessage());
+                        	String msg = intres.getLocalizedMessage("protect.errorcreatesession");            	
+                			adapter.error(msg, e);
                 		}
                 	}
                 	revinfo = new RevokedCertInfo(serno, new Date(data.getRevocationDate()), data.getRevocationReason());

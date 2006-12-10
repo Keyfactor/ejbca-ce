@@ -81,7 +81,7 @@ import org.ejbca.util.CertTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreOnlyDataSessionBean.java,v 1.8 2006-11-10 09:28:51 anatom Exp $
+ * @version $Id: LocalCertificateStoreOnlyDataSessionBean.java,v 1.9 2006-12-10 16:19:59 anatom Exp $
  */
 public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
 
@@ -222,6 +222,12 @@ public class LocalCertificateStoreOnlyDataSessionBean extends BaseSessionBean {
          */
         public void error(String s) {
             LocalCertificateStoreOnlyDataSessionBean.this.error(s);
+        }
+        /* (non-Javadoc)
+         * @see org.ejbca.core.ejb.ca.store.CertificateDataUtil.Adapter#error(java.lang.String)
+         */
+        public void error(String s, Exception e) {
+        	LocalCertificateStoreOnlyDataSessionBean.this.error(s, e);        	
         }
     }
 
