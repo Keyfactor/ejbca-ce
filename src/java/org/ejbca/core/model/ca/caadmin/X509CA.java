@@ -97,6 +97,7 @@ import org.bouncycastle.ocsp.OCSPException;
 import org.bouncycastle.x509.X509V2CRLGenerator;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.ejbca.core.ejb.ca.sign.SernoGenerator;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.NotSupportedException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
@@ -123,11 +124,14 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.39 2006-11-21 13:32:26 anatom Exp $
+ * @version $Id: X509CA.java,v 1.40 2006-12-10 16:51:18 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
     private static final Logger log = Logger.getLogger(X509CA.class);
+
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
 
     // Default Values
     public static final float LATEST_VERSION = 9;
@@ -338,7 +342,8 @@ public class X509CA extends CA implements Serializable {
         // The CA will only issue certificates with maximum the same validity time as it-self
         if (cacert != null) {
             if (lastDate.after(cacert.getNotAfter())) {
-                log.info("Limiting validity of certificate because requested validity is beyond CA validity");
+            	String msg = intres.getLocalizedMessage("signsession.limitingvalidity", lastDate.toString());
+            	log.info(msg);
                 lastDate = cacert.getNotAfter();
             }            
         }
