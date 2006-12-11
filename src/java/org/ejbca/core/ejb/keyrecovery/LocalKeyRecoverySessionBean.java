@@ -37,6 +37,7 @@ import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
 import org.ejbca.core.ejb.approval.IApprovalSessionLocal;
 import org.ejbca.core.ejb.approval.IApprovalSessionLocalHome;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalExecutorUtil;
 import org.ejbca.core.model.approval.ApprovalOveradableClassName;
@@ -58,7 +59,7 @@ import org.ejbca.util.CertTools;
  * Stores key recovery data. Uses JNDI name for datasource as defined in env 'Datasource' in
  * ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.8 2006-10-09 12:04:47 anatom Exp $
+ * @version $Id: LocalKeyRecoverySessionBean.java,v 1.9 2006-12-11 14:53:31 anatom Exp $
  *
  * @ejb.bean
  *   display-name="Stores key recovery data"
@@ -166,6 +167,9 @@ import org.ejbca.util.CertTools;
  */
 public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
+    
     /** The local home interface of hard token issuer entity bean. */
     private KeyRecoveryDataLocalHome keyrecoverydatahome = null;
 
@@ -272,7 +276,8 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 			KeyRecoveryApprovalRequest ar = new KeyRecoveryApprovalRequest(certificate,username,checkNewest, admin,null,numOfApprovalsRequired,caid,endEntityProfileId);
 			if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_KEYRECOVERY)){       		    		
 				approvalsession.addApprovalRequest(admin, ar);
-				throw new WaitingForApprovalException("Key Recovery Action have been added for approval by authorized adminstrators");
+	            String msg = intres.getLocalizedMessage("keyrecovery.addedforapproval");            	
+				throw new WaitingForApprovalException(msg);
 			}
 
         } 
@@ -343,18 +348,14 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
             keyrecoverydatahome.create(certificate.getSerialNumber(),
                     CertTools.getIssuerDN(certificate), username, response.getKeyData());
+            String msg = intres.getLocalizedMessage("keyrecovery.addeddata", certificate.getSerialNumber().toString(16), CertTools.getIssuerDN(certificate));            	
             logsession.log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), username,
-                    certificate, LogEntry.EVENT_INFO_KEYRECOVERY,
-                    "Keyrecovery data for certificate with serial number : " +
-                    certificate.getSerialNumber().toString(16) + ", " +
-                    CertTools.getIssuerDN(certificate) + " added.");
+                    certificate, LogEntry.EVENT_INFO_KEYRECOVERY, msg);
             returnval = true;
         } catch (Exception e) {
+            String msg = intres.getLocalizedMessage("keyrecovery.erroradddata", certificate.getSerialNumber().toString(16), CertTools.getIssuerDN(certificate));            	
             logsession.log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
-                    username, certificate, LogEntry.EVENT_ERROR_KEYRECOVERY,
-                    "Error when trying to add keyrecovery data for certificate with serial number : " +
-                    certificate.getSerialNumber().toString(16) + ", " +
-                    CertTools.getIssuerDN(certificate) + ".");
+                    username, certificate, LogEntry.EVENT_ERROR_KEYRECOVERY, msg);
         }
 
         debug("<addKeyRecoveryData()");
@@ -378,7 +379,7 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
      */
     public boolean changeKeyRecoveryData(Admin admin, X509Certificate certificate,
                                          boolean markedasrecoverable, KeyPair keypair) {
-        debug(">changeKeyRecoveryData(certsn: " + certificate.getSerialNumber().toString() + ", " +
+        debug(">changeKeyRecoveryData(certsn: " + certificate.getSerialNumber().toString(16) + ", " +
                 CertTools.getIssuerDN(certificate) + ")");
 
         boolean returnval = false;
@@ -395,18 +396,14 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
 
             krd.setKeyDataFromByteArray(response.getKeyData());
+            String msg = intres.getLocalizedMessage("keyrecovery.changeddata", hexSerial, dn);            	
             logsession.log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
-                    krd.getUsername(), certificate, LogEntry.EVENT_INFO_KEYRECOVERY,
-                    "Keyrecovery data for certificate with serial number : " +
-                    hexSerial + ", " +
-                    dn + " changed.");
+                    krd.getUsername(), certificate, LogEntry.EVENT_INFO_KEYRECOVERY, msg);
             returnval = true;
         } catch (Exception e) {
+            String msg = intres.getLocalizedMessage("keyrecovery.errorchangedata", hexSerial, dn);            	
             logsession.log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), null,
-                    certificate, LogEntry.EVENT_ERROR_KEYRECOVERY,
-                    "Error when trying to update keyrecovery data for certificate with serial number : " +
-                    hexSerial + ", " +
-                    dn + ".");
+                    certificate, LogEntry.EVENT_ERROR_KEYRECOVERY, msg);
         }
 
         debug("<changeKeyRecoveryData()");
@@ -434,17 +431,13 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
             KeyRecoveryDataLocal krd = keyrecoverydatahome.findByPrimaryKey(new KeyRecoveryDataPK(hexSerial, dn));
             username = krd.getUsername();
             krd.remove();
+            String msg = intres.getLocalizedMessage("keyrecovery.removeddata", hexSerial, dn);            	
             logsession.log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), username,
-                    certificate, LogEntry.EVENT_INFO_KEYRECOVERY,
-                    "Keyrecovery data for certificate with serial number : " +
-                    hexSerial + ", " +
-                    dn + " removed.");
+                    certificate, LogEntry.EVENT_INFO_KEYRECOVERY, msg);
         } catch (Exception e) {
+            String msg = intres.getLocalizedMessage("keyrecovery.errorremovedata", hexSerial, dn);            	
             logsession.log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), null,
-                    certificate, LogEntry.EVENT_ERROR_KEYRECOVERY,
-                    "Error when removing keyrecovery data for certificate with serial number : " +
-                    hexSerial + ", " +
-                    dn + ".");
+                    certificate, LogEntry.EVENT_ERROR_KEYRECOVERY, msg);
         }
 
         debug("<removeKeyRecoveryData()");
@@ -471,13 +464,13 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
                 ((KeyRecoveryDataLocal) iter.next()).remove();
             }
 
+            String msg = intres.getLocalizedMessage("keyrecovery.removeduser", username);            	
             logsession.log(admin, admin.getCaId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), username,
-                    null, LogEntry.EVENT_INFO_KEYRECOVERY,
-                    "All keyrecovery data for user: " + username + " removed.");
+                    null, LogEntry.EVENT_INFO_KEYRECOVERY, msg);
         } catch (Exception e) {
+            String msg = intres.getLocalizedMessage("keyrecovery.errorremoveuser", username);            	
             logsession.log(admin, admin.getCaId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), null,
-                    null, LogEntry.EVENT_ERROR_KEYRECOVERY,
-                    "Error when removing all keyrecovery data for user: " + username + ".");
+                    null, LogEntry.EVENT_ERROR_KEYRECOVERY, msg);
         }
 
         debug("<removeAllKeyRecoveryData()");
@@ -533,14 +526,14 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
         				// krd.setMarkedAsRecoverable(false);
         			}
         			
+                    String msg = intres.getLocalizedMessage("keyrecovery.sentdata", username);            	
         			logsession.log(admin, admin.getCaId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
-        					username, certificate, LogEntry.EVENT_INFO_KEYRECOVERY,
-        					"Keydata for user: " + username + " have been sent for key recovery.");
+        					username, certificate, LogEntry.EVENT_INFO_KEYRECOVERY, msg);
         		} catch (Exception e) {
-        			log.error("-keyRecovery: ", e);
+                    String msg = intres.getLocalizedMessage("keyrecovery.errorsenddata", username);            	
+        			log.error(msg, e);
         			logsession.log(admin, admin.getCaId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
-        					username, null, LogEntry.EVENT_ERROR_KEYRECOVERY,
-        			"Error when trying to revover key data.");
+        					username, null, LogEntry.EVENT_ERROR_KEYRECOVERY, msg);
         		}
         	} catch (FinderException e) {
         	}
@@ -617,13 +610,13 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
                     returnval = true;
                 }
 
+                String msg = intres.getLocalizedMessage("keyrecovery.markeduser", username);            	
                 logsession.log(admin, admin.getCaId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
-                        username, newestcertificate, LogEntry.EVENT_INFO_KEYRECOVERY,
-                        "User's newest certificate marked for recovery.");
+                        username, newestcertificate, LogEntry.EVENT_INFO_KEYRECOVERY, msg);
             } catch (FinderException e) {
+                String msg = intres.getLocalizedMessage("keyrecovery.errormarkuser", username);            	
                 logsession.log(admin, admin.getCaId(), LogEntry.MODULE_KEYRECOVERY, new java.util.Date(),
-                        username, null, LogEntry.EVENT_ERROR_KEYRECOVERY,
-                        "Error when trying to mark users newest certificate for recovery.");
+                        username, null, LogEntry.EVENT_ERROR_KEYRECOVERY, msg);
             }
         }
 
@@ -664,15 +657,15 @@ public class LocalKeyRecoverySessionBean extends BaseSessionBean {
             checkIfApprovalRequired(admin,certificate,username,endEntityProfileId,false); 
             krd.setMarkedAsRecoverable(true);
             getUserAdminSession().setUserStatus(admin, username, UserDataConstants.STATUS_KEYRECOVERY);
+            String msg = intres.getLocalizedMessage("keyrecovery.markedcert", hexSerial, dn);            	
             logsession.log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), username,
-                    certificate, LogEntry.EVENT_INFO_KEYRECOVERY,
-                    "User's certificate marked for recovery.");
+                    certificate, LogEntry.EVENT_INFO_KEYRECOVERY, msg);
             returnval = true;
         } catch (FinderException e) {
-        	log.debug(e);
+            String msg = intres.getLocalizedMessage("keyrecovery.errormarkcert", hexSerial, dn);            	
+        	log.error(msg, e);
             logsession.log(admin, certificate, LogEntry.MODULE_KEYRECOVERY, new java.util.Date(), null,
-                    certificate, LogEntry.EVENT_ERROR_KEYRECOVERY,
-                    "Error when trying to mark certificate for recovery.");
+                    certificate, LogEntry.EVENT_ERROR_KEYRECOVERY, msg);
         } 
 
         debug("<markAsRecoverable()");
