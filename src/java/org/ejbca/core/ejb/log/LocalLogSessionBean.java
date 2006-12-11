@@ -34,6 +34,7 @@ import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocalHome;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.ILogDevice;
 import org.ejbca.core.model.log.LogConfiguration;
@@ -128,9 +129,12 @@ import org.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.11 2006-11-06 11:42:54 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.12 2006-12-11 15:06:54 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
+
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
 
     /** The home interface of  LogEntryData entity bean */
     private LogEntryDataLocalHome logentryhome;
@@ -304,11 +308,13 @@ public class LocalLogSessionBean extends BaseSessionBean {
             }
         } catch (DuplicateKeyException e) {
             // FIXME we are losing a db audit entry in this case, what do we do ?
-            log.error("ERROR MISSING LOG ENTRY: DuplicateKeyException during log, missing log entry: ", e);
+            String msg = intres.getLocalizedMessage("log.errormissingentry");            	
+            log.error(msg, e);
             getAndIncrementRowCount();
         } catch (CreateException e) {
             // FIXME we are losing a db audit entry in this case, what do we do ?
-            log.error("ERROR MISSING LOG ENTRY: DuplicateKeyException during log, missing log entry: ", e);
+            String msg = intres.getLocalizedMessage("log.errormissingentry");            	
+            log.error(msg, e);
             getAndIncrementRowCount();
         }
     }
@@ -401,7 +407,8 @@ public class LocalLogSessionBean extends BaseSessionBean {
                 logconfiguration = new LogConfiguration();
                 logconfigdata = logconfigurationhome.create(new Integer(caid), logconfiguration);
             } catch (CreateException f) {
-                log.error("Error creating new log configuration data for caid "+caid+": ", f);
+                String msg = intres.getLocalizedMessage("log.errorcreateconf", Integer.valueOf(caid));            	
+                log.error(msg, f);
                 throw new EJBException(f);
             }
         }
@@ -424,8 +431,9 @@ public class LocalLogSessionBean extends BaseSessionBean {
                 (logconfigurationhome.findByPrimaryKey(new Integer(caid))).saveLogConfiguration(logconfiguration);
                 log(admin, caid, LogEntry.MODULE_LOG, new Date(), null, null, LogEntry.EVENT_INFO_EDITLOGCONFIGURATION, "");
             } catch (FinderException e) {
-                log.info("Can't find logconfiguaration during save, creating new");
-                logconfigurationhome.create(new Integer(caid), logconfiguration);
+                String msg = intres.getLocalizedMessage("log.createconf", Integer.valueOf(caid));            	
+                log.info(msg);
+                logconfigurationhome.create(Integer.valueOf(caid), logconfiguration);
                 log(admin, caid, LogEntry.MODULE_LOG, new Date(), null, null, LogEntry.EVENT_INFO_EDITLOGCONFIGURATION, "");
             }
         } catch (Exception e) {

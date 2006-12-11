@@ -30,6 +30,7 @@ import javax.ejb.ObjectNotFoundException;
 import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.ejb.BaseSessionBean;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.protect.Protectable;
 import org.ejbca.core.model.protect.TableVerifyResult;
@@ -99,11 +100,14 @@ import org.ejbca.util.StringTools;
  *   local-class="org.ejbca.core.ejb.protect.TableProtectSessionLocal"
  *   remote-class="org.ejbca.core.ejb.protect.TableProtectSessionRemote"
  *
- * @version $Id: TableProtectSessionBean.java,v 1.4 2006-10-09 12:04:47 anatom Exp $
+ * @version $Id: TableProtectSessionBean.java,v 1.5 2006-12-11 15:06:55 anatom Exp $
  */
 public class TableProtectSessionBean extends BaseSessionBean {
 
-	private static final String HMAC_ALG = "HMac-SHA256";
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
+
+    private static final String HMAC_ALG = "HMac-SHA256";
 	
     /** The home interface of  LogEntryData entity bean */
     private TableProtectDataLocalHome protectentryhome;
@@ -173,7 +177,8 @@ public class TableProtectSessionBean extends BaseSessionBean {
     			
     		}
     		if (id != null) {
-				info("PROTECT INFO: protection row for entry type: "+dbType+", with key: "+dbKey+" already exists, updating!");
+                String msg = intres.getLocalizedMessage("protect.rowexistsupdate", dbType, dbKey);            	
+				info(msg);
 				ProtectPreparer uprep = new ProtectPreparer(id, TableProtectDataBean.CURRENT_VERSION, hashVersion, HMAC_ALG, hash, signature, (new Date()).getTime(), dbKey, dbType, keyRef,keyType);
     			try {
     				JDBCUtil.execute( "UPDATE TableProtectData SET version=?,hashVersion=?,protectionAlg=?,hash=?,signature=?,time=?,dbKey=?,dbType=?,keyRef=?,keyType=? WHERE id=?",
@@ -188,11 +193,13 @@ public class TableProtectSessionBean extends BaseSessionBean {
 	        		JDBCUtil.execute( "INSERT INTO TableProtectData (version,hashVersion,protectionAlg,hash,signature,time,dbKey,dbType,keyRef,keyType,id) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
 	        				prep, dataSource );
 	        	} catch (Exception e) {
-					error("PROTECT ERROR: can not create protection row for entry type: "+dbType+", with key: "+dbKey, e);
+	                String msg = intres.getLocalizedMessage("protect.errorcreate", dbType, dbKey);            	
+					error(msg, e);
 	        	}
 			} 
     	} catch (Exception e) {
-    		error("PROTECT ERROR: can not create protection row for entry type: "+dbType+", with key: "+dbKey, e);
+            String msg = intres.getLocalizedMessage("protect.errorcreate", dbType, dbKey);            	
+    		error(msg, e);
     	}
     }
     
@@ -221,7 +228,8 @@ public class TableProtectSessionBean extends BaseSessionBean {
     		try {
     			TableProtectDataLocal data = protectentryhome.findByDbTypeAndKey(dbType, dbKey);
     			if (data != null) {
-    				info("PROTECT INFO: protection row for entry type: "+dbType+", with key: "+dbKey+" already exists, updating!");
+                    String msg = intres.getLocalizedMessage("protect.rowexistsupdate", dbType, dbKey);            	
+    				info(msg);
     				data.setHashVersion(hashVersion);
     				data.setHash(hash);
     				data.setProtectionAlg(HMAC_ALG);
@@ -236,11 +244,13 @@ public class TableProtectSessionBean extends BaseSessionBean {
     			try {
     				protectentryhome.create(id, hashVersion, HMAC_ALG, hash, signature, new Date(), dbKey, dbType, keyRef, keyType);
     			} catch (Exception e) {
-    				error("PROTECT ERROR: can not create protection row for entry type: "+dbType+", with key: "+dbKey, e);
+    	            String msg = intres.getLocalizedMessage("protect.errorcreate", dbType, dbKey);            	
+    				error(msg, e);
     			}
     		}
     	} catch (Exception e) {
-    		error("PROTECT ERROR: can not create protection row for entry type: "+dbType+", with key: "+dbKey, e);
+            String msg = intres.getLocalizedMessage("protect.errorcreate", dbType, dbKey);            	
+    		error(msg, e);
     	}
     } // protect
 
@@ -269,10 +279,12 @@ public class TableProtectSessionBean extends BaseSessionBean {
     		String hash = entry.getHash(hashVersion);
     		if (!StringUtils.equals(keyRef, data.getKeyRef())) {
     			ret.setResultCode(TableVerifyResult.VERIFY_NO_KEY);    			
-    			error("PROTECT ERROR: verify failed for entry type: "+dbType+", with key: "+dbKey+". No key exists!");
+                String msg = intres.getLocalizedMessage("protect.errorverifynokey", dbType, dbKey);            	
+    			error(msg);
     		} else if (!StringUtils.equals(alg, data.getProtectionAlg())) {
         			ret.setResultCode(TableVerifyResult.VERIFY_INCOMPATIBLE_ALG);    			
-        			error("PROTECT ERROR: verify failed for entry type: "+dbType+", with key: "+dbKey+". incompatible algorithm!");
+                    String msg = intres.getLocalizedMessage("protect.errorverifyalg", dbType, dbKey);            	
+        			error(msg);
     		} else {
         		// Create a new signature on the passed in object, and compare it with the one we have stored in the db'
     			if (log.isDebugEnabled()) {
@@ -284,22 +296,26 @@ public class TableProtectSessionBean extends BaseSessionBean {
     			}
         		if (!StringUtils.equals(signature, data.getSignature())) {
         			ret.setResultCode(TableVerifyResult.VERIFY_FAILED);
-        			error("PROTECT ERROR: verify failed for entry type: "+dbType+", with key: "+dbKey);
+                    String msg = intres.getLocalizedMessage("protect.errorverify", dbType, dbKey);            	
+        			error(msg);
         		} else {
         			// This can actually never happen
             		if (!StringUtils.equals(hash, data.getHash())) {
             			ret.setResultCode(TableVerifyResult.VERIFY_WRONG_HASH);
-            			error("PROTECT ERROR: wrong hash for entry type: "+dbType+", with key: "+dbKey);
+                        String msg = intres.getLocalizedMessage("protect.errorverifywronghash", dbType, dbKey);            	
+            			error(msg);
             		}    			
         		}    			
     		}
 		} catch (ObjectNotFoundException e) {
 			if (warnOnMissingRow) {
-				error("PROTECT ERROR: can not find protection row for entry type: "+dbType+", with key: "+dbKey);				
+                String msg = intres.getLocalizedMessage("protect.errorverifynorow", dbType, dbKey);            	
+				error(msg);				
 			}
 			ret.setResultCode(TableVerifyResult.VERIFY_NO_ROW);
 		}catch (Exception e) {
-			error("PROTECT ERROR: can not verify protection row for entry type: "+dbType+", with key: "+dbKey, e);
+            String msg = intres.getLocalizedMessage("protect.errorverifycant", dbType, dbKey);            	
+			error(msg, e);
 		}
 		return ret;
     } // verify
