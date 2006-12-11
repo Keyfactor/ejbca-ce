@@ -385,7 +385,6 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 		<!--
 		<echo>Ignore warnings about 'Couldn't find file' during preprocessing if you are running jdk 1.4</echo>
 		-->
-        <copy file="src/java/org/ejbca/core/model/ca/catoken/CATokenConstants.java.${java.ver}" tofile="${preprocessed}/java/org/ejbca/core/model/ca/catoken/CATokenConstants.java" overwrite="true" failonerror="false"/>
 		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@ejbca.version@" value="${app.version}"/>
 		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@hardtoken.diplaysensitiveinfo@" value="${hardtoken.diplaysensitiveinfo}"/>
 		<replace file="${src.java}/org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java" token="@intresources.preferredlanguage@" value="${intresources.preferredlanguage}"/>				
