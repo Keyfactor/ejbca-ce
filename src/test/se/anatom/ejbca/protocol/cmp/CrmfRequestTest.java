@@ -56,6 +56,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * This test must be run in normal mode (default mode)
  * 
  * @author tomas
+ * @version $Id: CrmfRequestTest.java,v 1.13 2006-12-11 11:31:36 anatom Exp $
  *
  */
 public class CrmfRequestTest extends CmpTestCase {
@@ -154,7 +155,7 @@ public class CrmfRequestTest extends CmpTestCase {
 		assertNotNull(resp);
 		assertTrue(resp.length > 0);
 		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, false);
-		checkCmpFailMessage(resp, "User not found: abc123rry5774466", 1, reqId, 7);
+		checkCmpFailMessage(resp, "User not found: abc123rry5774466.", 1, reqId, 7);
 	}
 	
 	public void test02CrmfHttpOkUser() throws Exception {
