@@ -493,7 +493,7 @@
 		<antcall target="clean" />
         <input message="Version tag for zipfile (ex 3_2_1):" addproperty="ejbca.zipversion" /> 
 		<zip destfile="../ejbca_${ejbca.zipversion}.zip">
-		    <zipfileset dir="." prefix="ejbca" filemode="600" dirmode="700"> 
+		    <zipfileset dir="." prefix="ejbca_${ejbca.zipversion}" filemode="600" dirmode="700"> 
 		    	<include name="**/**" />
 		    	<exclude name="**/CVS/**" />
 		    	<exclude name="tmp/**" />
@@ -510,7 +510,7 @@
 		    	<exclude name="conf/*.properties" />
 		    	<exclude name="**/*.sh" />
 		    </zipfileset>
-		    <zipfileset dir="." prefix="ejbca" filemode="700" dirmode="700"> 
+		    <zipfileset dir="." prefix="ejbca_${ejbca.zipversion}" filemode="700" dirmode="700"> 
 		    	<include name="**/*.sh" />
 		    </zipfileset>
 		</zip>
