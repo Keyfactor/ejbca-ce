@@ -25,6 +25,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.ejbca.core.model.InternalResources;
 
 import com.novosec.pkix.asn1.cmp.CMPObjectIdentifiers;
 import com.novosec.pkix.asn1.cmp.PKIHeader;
@@ -34,11 +35,13 @@ import com.novosec.pkix.asn1.crmf.PBMParameter;
 /**
  * Helper class to verify PBE of CMP messages, also extracts owf, mac Oids and iteration count.
  * @author tomas
- * @version $Id: CmpPbeVerifyer.java,v 1.1 2006-10-23 12:01:32 anatom Exp $
+ * @version $Id: CmpPbeVerifyer.java,v 1.2 2006-12-12 17:18:46 anatom Exp $
  */
 public class CmpPbeVerifyer {
 	private static Logger log = Logger.getLogger(CmpPbeVerifyer.class);
-	
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
+
 	private PKIMessage msg = null;
 	private String raAuthenticationSecret = null;
 	private String errMsg = null;
@@ -60,7 +63,7 @@ public class CmpPbeVerifyer {
 		AlgorithmIdentifier pAlg = head.getProtectionAlg();
 		log.debug("Protection type is: "+pAlg.getObjectId().getId());
 		if (!pAlg.getObjectId().equals(CMPObjectIdentifiers.passwordBasedMac)) {
-			errMsg = "Received CMP message with unknown protection alg: "+pAlg.getObjectId().getId();
+			String errMsg = intres.getLocalizedMessage("cmp.errorunknownprotalg", pAlg.getObjectId().getId());
 			log.error(errMsg);
 			return ret;
 		} else {
@@ -76,7 +79,7 @@ public class CmpPbeVerifyer {
 			macOid = macAlg.getObjectId().getId();
 			log.debug("Mac type is: "+macOid);
 			byte[] salt = pp.getSalt().getOctets();
-			//log.info("Salt is: "+new String(salt));
+			//log.info("Salt: "+new String(salt));
 			byte[] raSecret = raAuthenticationSecret.getBytes();
 			byte[] basekey = new byte[raSecret.length + salt.length];
 			for (int i = 0; i < raSecret.length; i++) {

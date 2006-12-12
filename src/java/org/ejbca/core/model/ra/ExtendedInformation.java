@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.UpgradeableDataHashMap;
 
 
@@ -25,10 +26,12 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
  * like a image, in an effort to minimize the need for database alterations
  *
  * @author  Philip Vendil
- * @version $Id: ExtendedInformation.java,v 1.5 2006-06-26 08:00:06 anatom Exp $
+ * @version $Id: ExtendedInformation.java,v 1.6 2006-12-12 17:18:48 anatom Exp $
  */
 public class ExtendedInformation extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(ExtendedInformation.class);
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -100,7 +103,8 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     public void upgrade(){
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
     		// New version of the class, upgrade
-    		log.info("Upgrading extended information with version "+getVersion());
+			String msg = intres.getLocalizedMessage("ra.extendedinfoupgrade", Float.valueOf(getVersion()));
+            log.info(msg);
     		
             if(data.get(SUBJECTDIRATTRIBUTES) == null){
                 data.put(SUBJECTDIRATTRIBUTES, "");   

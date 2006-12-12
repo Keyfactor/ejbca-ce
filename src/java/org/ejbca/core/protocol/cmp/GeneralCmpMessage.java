@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.X509Name;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.util.Base64;
 
 import com.novosec.pkix.asn1.cmp.CertConfirmContent;
@@ -30,11 +31,13 @@ import com.novosec.pkix.asn1.crmf.CertTemplate;
 /**
  * Message class for CMP PKI confirm and CertCOnf messages
  * @author tomas
- * @version $Id: GeneralCmpMessage.java,v 1.1 2006-11-02 17:03:01 anatom Exp $
+ * @version $Id: GeneralCmpMessage.java,v 1.2 2006-12-12 17:18:46 anatom Exp $
  */
 public class GeneralCmpMessage extends BaseCmpMessage {
 
 	private static final Logger log = Logger.getLogger(GeneralCmpMessage .class);
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
 	
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -64,7 +67,8 @@ public class GeneralCmpMessage extends BaseCmpMessage {
 			if (status != null) {
 				int st = status.getStatus().getValue().intValue();
 				if (st != 0) {
-					log.error("Received a Cert Confirm with status "+st);
+					String errMsg = intres.getLocalizedMessage("cmp.errorcertconfirmstatus", Integer.valueOf(st));
+					log.error(errMsg);
 					// TODO: if it is rejected, we should revoke the cert?
 				}
 			}
@@ -78,9 +82,11 @@ public class GeneralCmpMessage extends BaseCmpMessage {
 			DERInteger serno = ct.getSerialNumber();
 			X509Name issuer = ct.getIssuer();
 			if ( (serno != null) && (issuer != null) ) {
-				log.info("Received a revocation request for issuer: "+issuer.toString()+" and serno: "+serno.getValue().toString(16));
+				String errMsg = intres.getLocalizedMessage("cmp.receivedrevreq", issuer.toString(), serno.getValue().toString(16));
+				log.info(errMsg);
 			} else {
-				log.info("Received a revocation request missing issuer or serno");
+				String errMsg = intres.getLocalizedMessage("cmp.receivedrevreqnoissuer");
+				log.info(errMsg);
 			}
 		}
 		setMessage(msg);

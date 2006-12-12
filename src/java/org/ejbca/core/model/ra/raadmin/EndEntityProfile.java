@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.UpgradeableDataHashMap;
 import org.ejbca.util.Base64;
@@ -45,11 +46,14 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * 
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.14 2006-12-04 10:19:04 anatom Exp $
+ * @version $Id: EndEntityProfile.java,v 1.15 2006-12-12 17:18:47 anatom Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
     private static Logger log = Logger.getLogger(EndEntityProfile.class);
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
+
     public static final float LATEST_VERSION = 6;
 
     /**
@@ -391,7 +395,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     	ArrayList arr = (ArrayList)data.get(NUMBERARRAY);
     	// This is an automatic upgrade function, if we have dynamically added new fields
     	if (parameter >= arr.size()) {
-    		log.info("Adding new field, "+parameter+", to NUMBERARRAY");
+			String msg = intres.getLocalizedMessage("ra.eeprofileaddfield", Integer.valueOf(parameter));
+    		log.info(msg);
     		for (int i = arr.size(); i <= parameter; i++) {
                 arr.add(new Integer(0));
     		}
@@ -1000,7 +1005,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     public void upgrade() {
         log.debug(">upgrade");
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
-            log.info("upgrading entityprofile with version "+getVersion());
+			String msg = intres.getLocalizedMessage("ra.eeprofileupgrade", Float.valueOf(getVersion()));
+            log.info(msg);
             // New version of the class, upgrade
             if(getVersion() < 1){
                 ArrayList numberarray = (ArrayList)   data.get(NUMBERARRAY);
