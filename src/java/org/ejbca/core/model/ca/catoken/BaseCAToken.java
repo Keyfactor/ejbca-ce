@@ -30,17 +30,20 @@ import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 
 
 /**
  * @author lars
- * @version $Id: BaseCAToken.java,v 1.9 2006-11-10 08:16:40 anatom Exp $
+ * @version $Id: BaseCAToken.java,v 1.10 2006-12-12 17:03:14 anatom Exp $
  */
 public abstract class BaseCAToken implements IHardCAToken {
 
     /** Log4j instance */
     private static final Logger log = Logger.getLogger(BaseCAToken.class);
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
 
     final private String sProviderName;
     final private String sSlotLabelKey;
@@ -160,7 +163,8 @@ public abstract class BaseCAToken implements IHardCAToken {
      * @see org.ejbca.core.model.ca.catoken.IHardCAToken#deactivate()
      */
     public boolean deactivate(){  
-        log.info("De-activating");
+		String msg = intres.getLocalizedMessage("catoken.deactivate");
+        log.info(msg);
         mKeys = null;
         return true;	
     }

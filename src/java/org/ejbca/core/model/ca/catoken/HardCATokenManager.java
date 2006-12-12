@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Hashtable;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.InternalResources;
 
 
 /**
@@ -24,13 +25,15 @@ import org.apache.log4j.Logger;
  * Each HardCaToken plug-in should register itself by using the method register.
  * The CA keeps a registry of CA tokens created here.
  * 
- * @version $Id: HardCATokenManager.java,v 1.4 2006-09-29 10:12:25 anatom Exp $
+ * @version $Id: HardCATokenManager.java,v 1.5 2006-12-12 17:03:14 anatom Exp $
  * 
  */
 public class HardCATokenManager {
 	
     /** Log4j instance for Base */
     private static transient Logger log = Logger.getLogger(HardCATokenManager.class);
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
 
     /** Registry of available hard ca token classes that can be instsiated. */
     private Hashtable availablehardcatokens = new Hashtable();
@@ -116,7 +119,8 @@ public class HardCATokenManager {
 	            log.debug("Registered " + classpath + " successfully.");                       
 	        } else {
                 // Normally not an error, since these classes are provided by HSM vendor
-	            log.info("Can not register " + classpath + ". This is normally not an error.");
+				String msg = intres.getLocalizedMessage("catoken.inforegisterclasspath", classpath);
+	            log.info(msg);
 	        }
 	    }
 	    return retval;
@@ -130,13 +134,15 @@ public class HardCATokenManager {
         try {           
             HardCATokenManager.class.getClassLoader().loadClass(classpath).newInstance();       
         } catch (ClassNotFoundException e) {
-            log.info("Class not found: "+classpath); 
+			String msg = intres.getLocalizedMessage("catoken.classnotfound", classpath);
+            log.info(msg); 
             return false;
         } catch (InstantiationException e) {
-            log.info("Can not instantiate "+classpath+". "+e.getMessage());
+			String msg = intres.getLocalizedMessage("catoken.errorinstansiate", classpath, e.getMessage());
+            log.info(msg);
             return false;
         } catch (IllegalAccessException e) {
-            log.error("IllegalAccessException: "+classpath);
+            log.error("IllegalAccessException: "+classpath, e);
             return false;
         }    
         return true;

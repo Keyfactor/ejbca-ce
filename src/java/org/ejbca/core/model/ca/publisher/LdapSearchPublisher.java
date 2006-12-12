@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.util.CertTools;
 
 import com.novell.ldap.LDAPConnection;
@@ -16,7 +17,8 @@ import com.novell.ldap.LDAPSearchResults;
 public class LdapSearchPublisher extends LdapPublisher {
 	
 	private static final Logger log = Logger.getLogger(LdapSearchPublisher.class);
-	
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();	
 	
 	public static final int TYPE_LDAPSEARCHPUBLISHER = 4;
 		
@@ -46,8 +48,8 @@ public class LdapSearchPublisher extends LdapPublisher {
         String attrs[] = { LDAPConnection.NO_ATTRS };
 
         // PARTE 1: Search for an existing entry in the LDAP directory
-		//  Si existe, sólo se añadirá al DN la parte del certificado (PARTE 2)
-		//  Si no existe, se añadirá toda una entrada LDAP nueva (PARTE 2)
+		//  If it exists, sï¿½lo se aï¿½adirï¿½ al DN la parte del certificado (PARTE 2)
+		//  if not exist, se aï¿½adirï¿½ toda una entrada LDAP nueva (PARTE 2)
 		try {
 			// connect to the server
 			log.debug("Connecting to " + getHostname());
@@ -55,7 +57,7 @@ public class LdapSearchPublisher extends LdapPublisher {
 			// authenticate to the server
 			log.debug("Logging in with BIND DN " + getLoginDN());
 			lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"));
-			// Filtro estático:
+			// Filtro estï¿½tico:
 			//searchFilter = "(&(objectclass=person)(uid=" + username + "))";
 			String searchFilter = getSearchFilter();
 			log.debug("Compiling search filter: " +searchFilter);
@@ -97,8 +99,8 @@ public class LdapSearchPublisher extends LdapPublisher {
 			} else {
 				if (searchResults.getCount() > 1) {
 					log.debug("Found " +searchResults.getCount() +" matches with filter" + searchFilter +
-							". Se usara el SubjectDN del certificado como DN para la nueva entrada LDAP: " +dn);
-					// Si queremos abortar la operación ante varias coincidencias
+							". Using SubjectDN from certificate as DN for LDAP entry: " +dn);
+					// Si queremos abortar la operaciï¿½n ante varias coincidencias
 					//new PublisherException("LdapSearchPublisher: Se han encontrado " +
 					//                       searchResults.getCount() +
 					//    " entradas usando el filtro " + searchFilter + ". Se aborta la operacion");
@@ -111,55 +113,60 @@ public class LdapSearchPublisher extends LdapPublisher {
 				oldEntry = lc.read(dn);
 			} catch (LDAPException e) {
 				if (e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
-					log.info("No old entry exist for '" + dn + "'.");
+					String msg = intres.getLocalizedMessage("publisher.noentry", dn);
+					log.info(msg);
 				} else {
-					log.info("Existe la entrada '" + dn + "', coincidente con el SubjectDN del usuario enrolado.");
+					String msg = intres.getLocalizedMessage("publisher.infoexists", dn);
+					log.info(msg);
 				}
 			}
 		} catch (LDAPException e) {
 			if (e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
-				log.info("No old entry exist for '" + dn + "'.");
+				String msg = intres.getLocalizedMessage("publisher.noentry", dn);
+				log.info(msg);
 			} else {
-				log.error("LDAP ERROR: Error binding to and reading from LDAP server: ", e);
-				throw new PublisherException("Error binding to and reading from LDAP server.");
+    			String msg = intres.getLocalizedMessage("publisher.errorldapbind", e.getMessage());
+                log.error(msg, e);
+				throw new PublisherException(msg);
 			}
         } catch (UnsupportedEncodingException e) {
-            log.error("LDAP ERROR: Can't decode password for LDAP login: "+getLoginPassword(), e);
-            throw new PublisherException("Can't decode password for LDAP login: "+getLoginPassword());            
+			String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
+            throw new PublisherException(msg);            
 		} finally {
 			// disconnect with the server
 			try {
 				lc.disconnect();
 			} catch (LDAPException e) {
-				log.error("LDAP ERROR: LDAP disconnection failed: ", e);
+				String msg = intres.getLocalizedMessage("publisher.errordisconnect");
+				log.error(msg, e);
 			}
 		}
         return oldEntry;
     }
     
 	/**
-	 *  Retorna el base de la búsqueda
+	 *  Retorna el base de la bï¿½squeda
 	 */
 	public String getSearchBaseDN() {
 		return (String) data.get(SEARCHBASEDN);
 	}
 	
 	/**
-	 *  Establece la base de la búsqueda.
+	 *  Establece la base de la bï¿½squeda.
 	 */
 	public void setSearchBaseDN(String searchbasedn) {
 		data.put(SEARCHBASEDN, searchbasedn);
 	}
 	
 	/**
-	 *  Retorna el filtro de búsqueda
+	 *  Retorna el filtro de bï¿½squeda
 	 */
 	public String getSearchFilter() {
 		return (String) data.get(SEARCHFILTER);
 	}
 	
 	/**
-	 *  Establece el filtro de búsqueda
+	 *  Establece el filtro de bï¿½squeda
 	 */
 	public void setSearchFilter(String searchfilter) {
 		data.put(SEARCHFILTER, searchfilter);

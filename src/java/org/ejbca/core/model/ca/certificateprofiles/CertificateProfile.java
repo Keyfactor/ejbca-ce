@@ -26,6 +26,7 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.UpgradeableDataHashMap;
 import org.ejbca.util.dn.DNFieldExtractor;
 
@@ -34,10 +35,13 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.15 2006-12-02 11:17:33 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.16 2006-12-12 17:03:16 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
+
     // Default Values
     public static final float LATEST_VERSION = (float) 20.0;
 
@@ -802,7 +806,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         log.debug(">upgrade");
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // New version of the class, upgrade
-            log.info("upgrading certificateprofile with version "+getVersion());
+			String msg = intres.getLocalizedMessage("certprofile.upgrade", Float.valueOf(getVersion()));
+            log.info(msg);
 
             if(data.get(ALLOWKEYUSAGEOVERRIDE) == null)
                 data.put(ALLOWKEYUSAGEOVERRIDE, Boolean.TRUE);

@@ -31,6 +31,7 @@ import java.util.StringTokenizer;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.util.Base64;
@@ -48,11 +49,13 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.18 2006-12-08 11:08:43 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.19 2006-12-12 17:02:49 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
 	private static final Logger log = Logger.getLogger(LdapPublisher.class);
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
 	
 	protected static byte[] fakecrl = null;
 	
@@ -139,7 +142,8 @@ public class LdapPublisher extends BasePublisher {
         log.debug(">storeCertificate(username="+username+")");
         // Don't publish non-active certificates
         if (status != CertificateDataBean.CERT_ACTIVE) {
-        	log.info("Not publishing revoked certificate, status="+status);
+			String msg = intres.getLocalizedMessage("publisher.notpublrevoked", Integer.valueOf(status));
+        	log.info(msg);
         	return true;
         }
         int ldapVersion = LDAPConnection.LDAP_V3;
@@ -154,8 +158,9 @@ public class LdapPublisher extends BasePublisher {
             dn = constructLDAPDN(certdn);
             log.debug("LDAP DN for user " +username +" is " + dn);
         } catch (Exception e) {
-            log.error("LDAP ERROR: Error decoding input certificate: ", e);            
-            throw new PublisherException("Error decoding input certificate.");            
+			String msg = intres.getLocalizedMessage("publisher.errorldapdecode", "certificate");
+            log.error(msg, e);            
+            throw new PublisherException(msg);            
         }
 
         // Extract the users email from the cert.
@@ -208,8 +213,9 @@ public class LdapPublisher extends BasePublisher {
                     log.debug("Added new certificate to user entry; " + username+": "+dn);
                 }
             } catch (CertificateEncodingException e) {
-                log.error("LDAP ERROR: Error encoding certificate when storing in LDAP: ", e);
-                throw new PublisherException("Error encoding certificate when storing in LDAP.");                
+    			String msg = intres.getLocalizedMessage("publisher.errorldapencodestore", "certificate");
+                log.error(msg, e);
+                throw new PublisherException(msg);                
             }
         } else if ((type == CertificateDataBean.CERTTYPE_SUBCA) || (type == CertificateDataBean.CERTTYPE_ROOTCA)) {
             log.debug("Publishing CA certificate to " + getHostname());
@@ -236,12 +242,14 @@ public class LdapPublisher extends BasePublisher {
                     log.debug("Added (fake) attribute for CRL and ARL.");
                 }
             } catch (CertificateEncodingException e) {
-                log.error("LDAP ERROR: Error encoding certificate when storing in LDAP: ", e);
-                throw new PublisherException("Error encoding certificate when storing in LDAP.");            
+    			String msg = intres.getLocalizedMessage("publisher.errorldapencodestore", "certificate");
+                log.error(msg, e);
+                throw new PublisherException(msg);            
             }
         } else {
-            log.info("Certificate of type '" + type + "' will not be published.");
-            throw new PublisherException("Certificate of type '" + type + "' will not be published.");                      
+			String msg = intres.getLocalizedMessage("publisher.notpubltype", Integer.valueOf(type));
+            log.info(msg);
+            throw new PublisherException(msg);                      
         }
 
         // PART 3: MODIFICATION AND ADDITION OF NEW USERS
@@ -254,28 +262,33 @@ public class LdapPublisher extends BasePublisher {
                 LDAPModification[] mods = new LDAPModification[modSet.size()]; 
                 mods = (LDAPModification[])modSet.toArray(mods);
                 lc.modify(dn, mods);
-                log.info("LDAP CERT: Modified object: " + dn + " successfully.");  
+    			String msg = intres.getLocalizedMessage("publisher.ldapmodify", "CERT", dn);
+                log.info(msg);  
             } else {
                 if(this.getCreateNonExisingUsers()){     
                   if (oldEntry == null) {                  	
                     newEntry = new LDAPEntry(dn, attributeSet);
                     lc.add(newEntry);
-                    log.info("LDAP CERT: Added object: " + dn + " successfully.");
+        			String msg = intres.getLocalizedMessage("publisher.ldapadd", "CERT", dn);
+                    log.info(msg);
                   }
                 }  
             }
         } catch (LDAPException e) {
-            log.error("LDAP ERROR: Error storing certificate (" + attribute + ") in LDAP (" + objectclass + ") for DN (" + dn + "): ", e);  
-            throw new PublisherException("Error storing certificate (" + attribute + ") in LDAP (" + objectclass + ") for DN (" + dn + ").");            
+			String msg = intres.getLocalizedMessage("publisher.errorldapstore", "certificate", attribute, objectclass, dn);
+            log.error(msg, e);  
+            throw new PublisherException(msg);            
         } catch (UnsupportedEncodingException e) {
-            log.error("LDAP ERROR: Can't decode password for LDAP login: "+getLoginPassword(), e);
-            throw new PublisherException("Can't decode password when storing (" + attribute + ") in LDAP (" + objectclass + ") for DN (" + dn + ").");            
+			String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
+            log.error(msg, e);
+            throw new PublisherException(msg);            
         } finally {
 			// disconnect with the server
 			try {
 				lc.disconnect();
 			} catch (LDAPException e) {
-				log.error("LDAP ERROR: LdapPublisher: LDAP disconnection failed: ", e);
+				String msg = intres.getLocalizedMessage("publisher.errordisconnect", getLoginPassword());
+				log.error(msg, e);
 			}
 		}
         log.debug("<storeCertificate()");
@@ -299,8 +312,9 @@ public class LdapPublisher extends BasePublisher {
         	crldn = CertTools.getIssuerDN(crl);
             dn = constructLDAPDN(CertTools.getIssuerDN(crl));
         } catch (Exception e) {
-        	log.error("LDAP ERROR: Error decoding input CRL: ", e);        	
-        	throw new PublisherException("Error decoding input CRL.");            
+			String msg = intres.getLocalizedMessage("publisher.errorldapdecode", "CRL");
+        	log.error(msg, e);        	
+        	throw new PublisherException(msg);            
         }
 
         // Check if the entry is already present, we will update it with the new certificate.
@@ -327,8 +341,9 @@ public class LdapPublisher extends BasePublisher {
                 attributeSet.add(arlAttr);
             }
         } catch (CRLException e) {
-            log.error("LDAP ERROR: Error encoding CRL when storing in LDAP: ", e);
-            throw new PublisherException("Error encoding CRL when storing in LDAP.");            
+			String msg = intres.getLocalizedMessage("publisher.errorldapencodestore", "CRL");
+            log.error(msg, e);
+            throw new PublisherException(msg);            
         }
         if (oldEntry == null) {
             newEntry = new LDAPEntry(dn, attributeSet);
@@ -343,23 +358,28 @@ public class LdapPublisher extends BasePublisher {
                 LDAPModification[] mods = new LDAPModification[modSet.size()]; 
                 mods = (LDAPModification[])modSet.toArray(mods);
                 lc.modify(dn, mods);
-                log.info("LDAP CRL: Modified object: " + dn + " successfully.");  
+    			String msg = intres.getLocalizedMessage("publisher.ldapmodify", "CRL", dn);
+                log.info(msg);  
             } else {
                 lc.add(newEntry);
-                log.info("LDAP CRL: Added object: " + dn + " successfully.");  
+    			String msg = intres.getLocalizedMessage("publisher.ldapadd", "CRL", dn);
+                log.info(msg);  
             }
         } catch (LDAPException e) {
-            log.error("LDAP ERROR: Error storing CRL (" + getCRLAttribute() + ") in LDAP (" + getCAObjectClass() + ") for DN (" + dn + "): ", e);
-            throw new PublisherException("Error storing CRL (" + getCRLAttribute() + ") in LDAP (" + getCAObjectClass() + ") for DN (" + dn + ").");                        
+			String msg = intres.getLocalizedMessage("publisher.errorldapstore", "CRL", getCRLAttribute(), getCAObjectClass(), dn);
+            log.error(msg, e);
+            throw new PublisherException(msg);                        
         } catch (UnsupportedEncodingException e) {
-            log.error("LDAP ERROR: Can't decode password for LDAP login: "+getLoginPassword(), e);
-            throw new PublisherException("Can't decode password when storing (" + getCRLAttribute() + ") in LDAP (" + getCAObjectClass() + ") for DN (" + dn + ").");            
+			String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
+            log.error(msg, e);
+            throw new PublisherException(msg);            
         } finally {
 			// disconnect with the server
 			try {
 				lc.disconnect();
 			} catch (LDAPException e) {
-				log.error("LDAP ERROR: LdapPublisher: LDAP disconnection failed: ", e);
+				String msg = intres.getLocalizedMessage("publisher.errordisconnect");
+				log.error(msg, e);
 			}
 		}
         return true;
@@ -386,8 +406,9 @@ public class LdapPublisher extends BasePublisher {
         	certdn = CertTools.getSubjectDN((X509Certificate) cert);
             dn = constructLDAPDN(certdn);
         } catch (Exception e) {
-            log.error("LDAP ERROR: Error decoding input certificate: ", e);            
-            throw new PublisherException("Error decoding input certificate.");            
+			String msg = intres.getLocalizedMessage("publisher.errorldapdecode", "certificate");
+            log.error(msg, e);            
+            throw new PublisherException(msg);            
         }
 
         // Check if the entry is already present, we will update it with the new certificate.
@@ -406,11 +427,13 @@ public class LdapPublisher extends BasePublisher {
                     LDAPAttribute attr = new LDAPAttribute(getUserCertAttribute());
                     modSet.add(new LDAPModification(LDAPModification.DELETE, attr));                    
                 } else {
-                    log.info("Trying to remove certificate from LDAP, but no certificate attribute exists in the entry.");
+        			String msg = intres.getLocalizedMessage("publisher.inforevokenocert");
+                    log.info(msg);
                 }
             }else{
-                log.error("LDAP ERROR: Entry holding certificate doesn't exist in LDAP");            
-                throw new PublisherException("Certificate doesn't exist in LDAP");            
+    			String msg = intres.getLocalizedMessage("publisher.errorrevokenoentry");
+                log.error(msg);            
+                throw new PublisherException(msg);            
             }
         } else  {
             log.debug("Not removing CA certificate from " + getHostname() + "Because of object class restrictions.");
@@ -435,20 +458,24 @@ public class LdapPublisher extends BasePublisher {
                 LDAPModification[] mods = new LDAPModification[modSet.size()]; 
                 mods = (LDAPModification[])modSet.toArray(mods);
                 lc.modify(dn, mods);
-                log.info("LDAP REVOKE: Removed certificate: " + dn + " successfully.");  
+    			String msg = intres.getLocalizedMessage("publisher.ldapremove", dn);
+                log.info(msg);  
             }               
         } catch (LDAPException e) {
-            log.error("LDAP ERROR: Error when removing certificate from LDAP (" + dn + "): ", e);  
-            throw new PublisherException("Error when removing certificate from LDAP (" + dn + ")");            
+			String msg = intres.getLocalizedMessage("publisher.errorldapremove", dn);
+            log.error(msg, e);  
+            throw new PublisherException(msg);            
         } catch (UnsupportedEncodingException e) {
-            log.error("LDAP ERROR: Can't decode password for LDAP login: "+getLoginPassword(), e);
-            throw new PublisherException("Can't decode password for LDAP login: "+getLoginPassword());            
+			String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
+            log.error(msg, e);
+            throw new PublisherException(msg);            
         } finally {
 			// disconnect with the server
 			try {
 				lc.disconnect();
 			} catch (LDAPException e) {
-				log.error("LDAP ERROR: LdapPublisher: LDAP disconnection failed: ", e);
+				String msg = intres.getLocalizedMessage("publisher.errordisconnect");
+				log.error(msg, e);
 			}
 		}
         log.debug("<revokeCertificate()");
@@ -470,18 +497,20 @@ public class LdapPublisher extends BasePublisher {
             if (e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
                 log.debug("No old entry exist for '" + dn + "'.");
             } else {
-                log.error("LDAP ERROR: Error binding to and reading from LDAP server: ", e);
-                throw new PublisherException("Error binding to and reading from LDAP server.");                                
+    			String msg = intres.getLocalizedMessage("publisher.errorldapbind", e.getMessage());
+                log.error(msg, e);
+                throw new PublisherException(msg);                                
             }
         } catch (UnsupportedEncodingException e) {
-            log.error("LDAP ERROR: Can't decode password for LDAP login: "+getLoginPassword(), e);
-            throw new PublisherException("Can't decode password for LDAP login: "+getLoginPassword());            
+			String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
+            throw new PublisherException(msg);            
         } finally {
 			// disconnect with the server
 			try {
 				lc.disconnect();
 			} catch (LDAPException e) {
-				log.error("LDAP ERROR: LdapPublisher: LDAP disconnection failed: ", e);
+				String msg = intres.getLocalizedMessage("publisher.errordisconnect");
+				log.error(msg, e);
 			}
 		}
         return oldEntry;
@@ -509,23 +538,24 @@ public class LdapPublisher extends BasePublisher {
 			entry = lc.read(getBaseDN());			
 			log.debug("Entry" + entry.toString());
 			if(entry == null) {
-				throw new PublisherConnectionException("Couldn't find bindDN.");
+    			String msg = intres.getLocalizedMessage("publisher.errornobinddn");
+				throw new PublisherConnectionException(msg);
 			}
 		} catch (LDAPException e) {
-			log.error("Error binding to LDAP server: ", e);
-			if(e.getMessage() != null) {
-				throw new PublisherConnectionException("Error binding to and reading from LDAP server: " + e.getMessage());            	
-			}
-			throw new PublisherConnectionException("Error binding to and reading from LDAP server. ");                            
+			String msg = intres.getLocalizedMessage("publisher.errorldapbind", e.getMessage());
+			log.error(msg, e);
+			throw new PublisherConnectionException(msg);                            
         } catch (UnsupportedEncodingException e) {
-            log.error("Can't decode password for LDAP login: "+getLoginPassword(), e);
-            throw new PublisherConnectionException("Can't decode password for LDAP login: "+getLoginPassword());            
+			String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
+            log.error(msg, e);
+            throw new PublisherConnectionException(msg);            
 		} finally {
 			// disconnect with the server
 			try {
 				lc.disconnect();
 			} catch (LDAPException e) {
-				log.error("LdapPublisher: LDAP disconnection failed: ", e);
+				String msg = intres.getLocalizedMessage("publisher.errordisconnect");
+				log.error(msg, e);
 			}
 		}
 	} 
@@ -1101,7 +1131,8 @@ public class LdapPublisher extends BasePublisher {
         log.debug(">upgrade");
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // New version of the class, upgrade
-            log.info("Upgrading LdapPublisher with version "+getVersion());
+			String msg = intres.getLocalizedMessage("publisher.upgrade", Float.valueOf(getVersion()));
+            log.info(msg);
             if(data.get(ADDMULTIPLECERTIFICATES) == null) {
                 setAddMultipleCertificates(false);                
             }

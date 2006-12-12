@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.protect.TableProtectSessionHome;
 import org.ejbca.core.ejb.protect.TableProtectSessionRemote;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
@@ -33,13 +34,18 @@ import org.ejbca.util.CertTools;
 import org.ejbca.util.JDBCUtil;
 
 /**
+ * Publisher writing certificates to an external Database, used by external OCSP responder.
+ * 
  * @author lars
- * @version $Id: ExternalOCSPPublisher.java,v 1.10 2006-09-19 05:57:10 asyd Exp $
+ * @version $Id: ExternalOCSPPublisher.java,v 1.11 2006-12-12 17:02:49 anatom Exp $
  *
  */
 public class ExternalOCSPPublisher implements ICustomPublisher {
 
-    private static Logger log = Logger.getLogger(ExternalOCSPPublisher.class);
+    private static final Logger log = Logger.getLogger(ExternalOCSPPublisher.class);
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
+
     private String dataSource;
     private boolean protect = false;
 
@@ -121,7 +127,8 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
     	} catch (Exception e) {
     		// If it is an SQL exception, we probably had a duplicate key, so we are actually trying to re-publish
     		if (e instanceof SQLException) {
-    			log.info("Duplicate entry, updating instead.");
+				String msg = intres.getLocalizedMessage("publisher.entryexists");
+    			log.info(msg);
     			//JDBCPreparer uprep = new UpdatePreparer(incert, status, revocationDate, revocationReason);
     			StoreCertPreparer uprep = new StoreCertPreparer(incert, username, cafp, status, revocationDate, revocationReason, type); 
     			try {
@@ -129,14 +136,16 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
             				uprep, dataSource );
             		fail = false;    				
     			} catch (Exception ue) {
-    	            log.error("EXTERNAL OCSP ERROR, publishing is not working for - "+uprep.getInfoString()+": ", ue);
-    	            PublisherException pe = new PublisherException("EXTERNAL OCSP ERROR, publishing is not working");
+    				String lmsg = intres.getLocalizedMessage("publisher.errorextocsppubl", uprep.getInfoString());
+    	            log.error(lmsg, ue);
+    	            PublisherException pe = new PublisherException(lmsg);
     	            pe.initCause(ue);
     	            throw pe;				    				
     			}
 			} else {
-	            log.error("EXTERNAL OCSP ERROR, publishing is not working for - "+prep.getInfoString()+": ", e);
-	            PublisherException pe = new PublisherException("EXTERNAL OCSP ERROR, publishing is not working");
+				String lmsg = intres.getLocalizedMessage("publisher.errorextocsppubl", prep.getInfoString());
+	            log.error(lmsg, e);
+	            PublisherException pe = new PublisherException(lmsg);
 	            pe.initCause(e);
 	            throw pe;				
 			}
@@ -155,7 +164,8 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
 				TableProtectSessionRemote remote = home.create();
 				remote.protectExternal(admin, entry, dataSource);
 			} catch (Exception e) {
-				log.error("PROTECT ERROR: Can not create TableProtectSession: ", e);
+				String msg = intres.getLocalizedMessage("protect.errorcreatesession");
+				log.error(msg, e);
 			} 
 
     	}
@@ -208,8 +218,9 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
 			         prep, dataSource);
 			fail = false;
 		} catch (Exception e) {
-            log.error("EXTERNAL OCSP ERROR, publishing is not working for - "+prep.getInfoString()+": ", e);
-            PublisherException pe = new PublisherException("EXTERNAL OCSP ERROR, publishing is not working");
+			String msg = intres.getLocalizedMessage("publisher.errorextocsppubl", prep.getInfoString());
+            log.error(msg, e);
+            PublisherException pe = new PublisherException(msg);
             pe.initCause(e);
             throw pe;
 		}
@@ -228,7 +239,8 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
 				TableProtectSessionRemote remote = home.create();
 				remote.protectExternal(admin, entry, dataSource);
 			} catch (Exception e) {
-				log.error("PROTECT ERROR: Can not create TableProtectSession: ", e);
+				String msg = intres.getLocalizedMessage("protect.errorcreatesession");
+				log.error(msg, e);
 			} 
     	}
     }

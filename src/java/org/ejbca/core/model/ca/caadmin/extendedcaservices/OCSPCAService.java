@@ -33,6 +33,7 @@ import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.OCSPException;
 import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.NotSupportedException;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException;
@@ -48,11 +49,13 @@ import org.ejbca.util.KeyTools;
 
 /** Handles and maintains the CA-part of the OCSP functionality
  * 
- * @version $Id: OCSPCAService.java,v 1.9 2006-11-07 15:45:40 anatom Exp $
+ * @version $Id: OCSPCAService.java,v 1.10 2006-12-12 17:03:11 anatom Exp $
  */
 public class OCSPCAService extends ExtendedCAService implements java.io.Serializable{
 
     private static Logger m_log = Logger.getLogger(OCSPCAService.class);
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
 
     public static final float LATEST_VERSION = 2; 
     
@@ -270,7 +273,8 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 	public void upgrade() {
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
 		  // New version of the class, upgrade
-            m_log.info("upgrading OCSPCAService with version "+getVersion());
+			String msg = intres.getLocalizedMessage("ocspcaservice.upgrade", Float.valueOf(getVersion()));
+            m_log.info(msg);
             if(data.get(KEYSPEC) == null) {
             	// Upgrade old rsa keysize to new general keyspec
             	Integer oldKeySize = (Integer)data.get(KEYSIZE);            	

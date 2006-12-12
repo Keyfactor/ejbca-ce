@@ -25,6 +25,7 @@ import javax.naming.InitialContext;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException;
 import org.ejbca.util.Base64;
@@ -34,12 +35,14 @@ import org.ejbca.util.KeyTools;
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: SoftCAToken.java,v 1.4 2006-10-31 08:19:41 anatom Exp $
+ * @version $Id: SoftCAToken.java,v 1.5 2006-12-12 17:03:14 anatom Exp $
  */
 public class SoftCAToken extends CAToken implements java.io.Serializable{
 
     /** Log4j instance */
-    private static Logger log = Logger.getLogger(SoftCAToken.class);
+    private static final Logger log = Logger.getLogger(SoftCAToken.class);
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
 
     /** When upgradeing this version, you must up the version of the CA as well, 
      * otherwise the upgraded CA token will not be stored in the database.
@@ -270,7 +273,8 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
     public void upgrade(){
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
     		// New version of the class, upgrade
-            log.info("upgrading softCAToken with version "+getVersion());
+			String msg = intres.getLocalizedMessage("catoken.upgradesoft", Float.valueOf(getVersion()));
+            log.info(msg);
             if(data.get(SIGNKEYALGORITHM) == null) {
             	String oldKeyAlg = (String)data.get(KEYALGORITHM);            	
                 data.put(SIGNKEYALGORITHM, oldKeyAlg);

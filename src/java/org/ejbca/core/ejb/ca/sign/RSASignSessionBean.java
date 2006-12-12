@@ -158,7 +158,7 @@ import org.ejbca.util.KeyTools;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
  *   
- *   @version $Id: RSASignSessionBean.java,v 1.29 2006-12-06 14:05:42 anatom Exp $
+ *   @version $Id: RSASignSessionBean.java,v 1.30 2006-12-12 17:03:12 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -1276,7 +1276,8 @@ public class RSASignSessionBean extends BaseSessionBean {
             log.error(e);
             throw new EJBException(e);
         } catch (ObjectNotFoundException e) {
-        	log.info("Called finishUser for non existing user: ", e);
+            String msg = intres.getLocalizedMessage("signsession.finishnouser", username);        	
+        	log.info(msg);
         }
     } // finishUser
 

@@ -18,6 +18,7 @@ import java.security.SecureRandom;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.InternalResources;
 
 
 /**
@@ -35,11 +36,13 @@ import org.apache.log4j.Logger;
  * Therefore, minimum 8 octets value is 0080000000000000 and maximum value
  * is 7FFFFFFFFFFFFFFF."
  *
- * @version $Id: SernoGenerator.java,v 1.3 2006-11-18 14:23:09 anatom Exp $
+ * @version $Id: SernoGenerator.java,v 1.4 2006-12-12 17:03:12 anatom Exp $
  */
 public class SernoGenerator implements ISernoGenerator {
     /** Log4j instance */
     private static Logger log = Logger.getLogger(SernoGenerator.class);
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
 
     /** random generator algorithm */
     private static String algorithm = "SHA1PRNG";
@@ -121,7 +124,8 @@ public class SernoGenerator implements ISernoGenerator {
             if ( (serno.compareTo(lowest) >= 0) && (serno.compareTo(highest) <= 0) ) {
                 ok = true;
             } else {
-                log.info("Discarding serial number out of range");
+                String msg = intres.getLocalizedMessage("sernogenerator.discarding");        	
+                log.info(msg);
             }
         }
         return serno;
