@@ -30,6 +30,7 @@ import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
@@ -44,7 +45,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.6 2006-11-24 14:27:34 anatom Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.7 2006-12-12 13:05:36 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="RaAdminSB"
@@ -113,6 +114,9 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  *
  */
 public class LocalRaAdminSessionBean extends BaseSessionBean  {
+
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
 
     /** The home interface of  AdminPreferences entity bean */
     private AdminPreferencesDataLocalHome adminpreferenceshome=null;
@@ -220,7 +224,8 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
         boolean ret = false;
         try {
             AdminPreferencesDataLocal apdata= adminpreferenceshome.create(certificatefingerprint, adminpreference);
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED,"Administrator preference with id "+apdata.getId()+" added");
+            String msg = intres.getLocalizedMessage("ra.adminprefadded", apdata.getId());            	
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ADMINISTRATORPREFERENCECHANGED,msg);
             ret = true;
         }
         catch (Exception e) {
