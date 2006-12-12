@@ -27,15 +27,15 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
  * Class managing the updating of CRLs.
  * 
  * This is a replacement of the old jboss service.
+ * 
  * @author Philip Vendil
- *
- * $id$
+ * @version $Id: CRLUpdateWorker.java,v 1.2 2006-12-12 15:43:22 anatom Exp $
  */
 public class CRLUpdateWorker extends BaseWorker {
 
     private static Logger log = Logger.getLogger(CRLUpdateWorker.class);	
 	
-	  private ICreateCRLSessionLocal createcrlsession = null;
+    private ICreateCRLSessionLocal createcrlsession = null;
 	
 	/**
 	 * Checks if there are any CRL that needs to be updated, and then does the creation.
