@@ -24,6 +24,7 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
@@ -46,6 +47,8 @@ import org.ejbca.util.NotificationParamGen;
 public class CertificateExpirationNotifierWorker extends BaseWorker {
 
 	private static final Logger log = Logger.getLogger(CertificateExpirationNotifierWorker.class);
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
 
 	/** Should be a ';' separated string of CANames. */
 	public static final String PROP_CAIDSTOCHECK     = "worker.emailexpiration.caidstocheck";
@@ -177,7 +180,8 @@ public class CertificateExpirationNotifierWorker extends BaseWorker {
 						if(isSendToEndUsers()){
 							NotificationParamGen paramGen = new NotificationParamGen(userDN,cert);
 							if(userData.getEmail() == null || userData.getEmail().trim().equals("")){
-								log.info("Sending email notification to user " + username + " failed, no email address configured.");
+								String msg = intres.getLocalizedMessage("services.certexpireworker.errornoemail", username);
+								log.info(msg);
 							}else{
 								// Populate end user message            	    	        		    
 								String message = NotificationParamGen.interpolate(paramGen.getParams(), getEndUserMessage());
@@ -261,7 +265,8 @@ public class CertificateExpirationNotifierWorker extends BaseWorker {
 		if(timeBeforeExpire == -1){
 			String unit = properties.getProperty(PROP_TIMEUNIT);
 			if(unit == null){				
-				throw new ServiceExecutionFailedException("Error: Email Expire Notification Worker " + serviceName + " is missconfigured, check unit value");
+				String msg = intres.getLocalizedMessage("services.certexpireworker.errorconfig", serviceName, "UNIT");
+				throw new ServiceExecutionFailedException(msg);
 			}
 			int unitval = 0;
 			for(int i=0;i<AVAILABLE_UNITS.length;i++){
@@ -271,7 +276,8 @@ public class CertificateExpirationNotifierWorker extends BaseWorker {
 				}
 			}
 			if(unitval == 0){				
-				throw new ServiceExecutionFailedException("Error: Email Expire Notification Worker " + serviceName + " is missconfigured, check UNIT value");
+				String msg = intres.getLocalizedMessage("services.certexpireworker.errorconfig", serviceName, "UNIT");
+				throw new ServiceExecutionFailedException(msg);
 			}
 						
 		    String value =  properties.getProperty(PROP_TIMEBEFOREEXPIRING);
@@ -279,11 +285,13 @@ public class CertificateExpirationNotifierWorker extends BaseWorker {
 		    try{
 		      intvalue = Integer.parseInt(value);
 		    }catch(NumberFormatException e){
-		    	throw new ServiceExecutionFailedException("Error: Email Expire Notification Worker " + serviceName + " is missconfigured, check VALUE value");
+				String msg = intres.getLocalizedMessage("services.certexpireworker.errorconfig", serviceName, "VALUE");
+		    	throw new ServiceExecutionFailedException(msg);
 		    }
 			
 			if(intvalue == 0){
-				throw new ServiceExecutionFailedException("Error: Email Expire Notification Worker " + serviceName + " is missconfigured, check VALUE value");
+				String msg = intres.getLocalizedMessage("services.certexpireworker.errorconfig", serviceName, "VALUE");
+				throw new ServiceExecutionFailedException(msg);
 			}
 			timeBeforeExpire = intvalue * unitval;			
 		}

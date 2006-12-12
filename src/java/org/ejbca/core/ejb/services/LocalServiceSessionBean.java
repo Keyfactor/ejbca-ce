@@ -183,7 +183,8 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
 			worker = (IWorker) this.getClass().getClassLoader().loadClass(serviceConfiguration.getWorkerClassPath()).newInstance();
 			worker.init(intAdmin, serviceConfiguration, serviceName);
 		} catch (Exception e) {						
-			log.error("Worker is missconfigured, check the classpath",e);
+			String msg = intres.getLocalizedMessage("services.errorworkerconfig", serviceConfiguration.getWorkerClassPath(), serviceName);
+			log.error(msg,e);
 		}    	
     	
 		return worker;

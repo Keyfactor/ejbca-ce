@@ -15,6 +15,7 @@ package org.ejbca.core.model.services;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.services.intervals.DummyInterval;
 
@@ -23,12 +24,15 @@ import org.ejbca.core.model.services.intervals.DummyInterval;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: BaseWorker.java,v 1.4 2006-10-26 11:01:01 herrvendil Exp $
+ * @version $Id: BaseWorker.java,v 1.5 2006-12-12 15:52:48 anatom Exp $
  */
 public abstract class BaseWorker extends BaseServiceComponent implements IWorker {
 
 	private static final Logger log = Logger.getLogger(BaseWorker.class);
 	
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
+    
     protected Properties properties = null;
     protected String serviceName = null;
     private IAction action = null;
@@ -51,7 +55,8 @@ public abstract class BaseWorker extends BaseServiceComponent implements IWorker
 				action = (IAction) this.getClass().getClassLoader().loadClass(actionClassPath).newInstance();
 				action.init(serviceConfiguration.getActionProperties(), serviceName);
 			} catch (Exception e) {
-				log.error("Error Monitoring Service " + serviceName + " actionClassPath is missconfigured",e);
+				String msg = intres.getLocalizedMessage("services.erroractionclasspath", serviceName);
+				log.error(msg,e);
 			}       
 		}else{
 			log.debug("Warning no action class i defined for the service " + serviceName);
@@ -63,10 +68,12 @@ public abstract class BaseWorker extends BaseServiceComponent implements IWorker
 				interval = (IInterval) this.getClass().getClassLoader().loadClass(intervalClassPath).newInstance();
 				interval.init(serviceConfiguration.getIntervalProperties(), serviceName);
 			} catch (Exception e) {
-				log.error("Error Monitoring Service " + serviceName + " intervalClassPath is missconfigured, service won't execute",e);
+				String msg = intres.getLocalizedMessage("services.errorintervalclasspath", serviceName);
+				log.error(msg,e);
 			}       
 		}else{
-			log.error("Error Monitoring Service " + serviceName + " intervalClassPath is missconfigured, service won't execute");
+			String msg = intres.getLocalizedMessage("services.errorintervalclasspath", serviceName);
+			log.error(msg);
 		}
 		
 		if(interval == null){
@@ -85,7 +92,8 @@ public abstract class BaseWorker extends BaseServiceComponent implements IWorker
 	
 	protected IAction getAction(){
 		if(action == null){
-			log.error("Error Monitoring Service " + serviceName + " actionClassPath is missconfigured");
+			String msg = intres.getLocalizedMessage("services.erroractionclasspath", serviceName);
+			log.error(msg);
 		}
 		return action;
 	}

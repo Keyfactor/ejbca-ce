@@ -22,6 +22,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.core.model.services.ActionException;
@@ -33,11 +34,13 @@ import org.ejbca.core.model.services.BaseAction;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: MailAction.java,v 1.3 2006-11-02 08:03:25 anatom Exp $
+ * @version $Id: MailAction.java,v 1.4 2006-12-12 15:52:49 anatom Exp $
  */
 public class MailAction extends BaseAction {
 	
 	private static final Logger log = Logger.getLogger(MailAction.class);
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
 	
 	private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 	
@@ -63,7 +66,8 @@ public class MailAction extends BaseAction {
 		}
 				
 		if(reciverAddress == null || reciverAddress.trim().equals("")){
-			throw new ActionException("Error: No reciver address could be found.");
+			String msg = intres.getLocalizedMessage("services.mailaction.errorreceiveraddress");
+			throw new ActionException(msg);
 		}
 		        
         try {
@@ -79,12 +83,13 @@ public class MailAction extends BaseAction {
               msg.setSentDate(new Date());
               Transport.send(msg);
 
-              getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_APPROVAL, new java.util.Date(), null, null, LogEntry.EVENT_INFO_NOTIFICATION, "Email Notification was sent to  " + reciverAddress + " successfully.");
-            
+              String logmsg = intres.getLocalizedMessage("services.mailaction.sent", reciverAddress);
+              getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_APPROVAL, new java.util.Date(), null, null, LogEntry.EVENT_INFO_NOTIFICATION, logmsg);
         } catch (Exception e) {
-            log.error("Error when sending mail action notification", e);
+			String msg = intres.getLocalizedMessage("services.mailaction.errorsend", reciverAddress);
+            log.error(msg, e);
             try{
-            	getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_APPROVAL, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTIFICATION, "Error sending email notification to  " + reciverAddress + ".");
+            	getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_APPROVAL, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_NOTIFICATION, msg);
             }catch(Exception f){
                 throw new EJBException(f);
             }
@@ -102,12 +107,14 @@ public class MailAction extends BaseAction {
 	 */
 	private void checkConfig(ActionInfo actionInfo) throws ActionException {
 		if(!(actionInfo instanceof MailActionInfo)){
-			throw new ActionException("Error: Only MailActionInfo is supported");
+			String msg = intres.getLocalizedMessage("services.mailaction.erroractioninfo");
+			throw new ActionException(msg);
 		}
 		
 		String senderAddress = properties.getProperty(PROP_SENDERADDRESS);
 		if(senderAddress == null || senderAddress.trim().equals("")){
-			throw new ActionException("Error: A sender address must be configured.");
+			String msg = intres.getLocalizedMessage("services.mailaction.errorsenderaddress");
+			throw new ActionException(msg);
 		}
 	}
 	
