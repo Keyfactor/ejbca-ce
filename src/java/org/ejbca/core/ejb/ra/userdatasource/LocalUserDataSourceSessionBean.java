@@ -30,6 +30,7 @@ import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.log.Admin;
@@ -101,12 +102,13 @@ import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
  */
 public class LocalUserDataSourceSessionBean extends BaseSessionBean {
 
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
+    
     /**
      * The local home interface of user data source entity bean.
      */
     private UserDataSourceDataLocalHome userdatasourcehome = null;
-
-
 
     /**
      * The local interface of authorization session bean
@@ -188,13 +190,13 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
                 if(isAuthorizedToUserDataSource(admin,userdatasource)){
                   try {
                     result.addAll(pdl.getUserDataSource().fetchUserDataSourceVOs(admin,searchstring));
+                    String msg = intres.getLocalizedMessage("userdatasource.fetcheduserdatasource", pdl.getName());            	
                     getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null,
-                           null, LogEntry.EVENT_INFO_USERDATAFETCHED,
-                            "Userdata fetched from user data source " + pdl.getName() + " successfully.");
+                           null, LogEntry.EVENT_INFO_USERDATAFETCHED,msg);
                   } catch (UserDataSourceException pe) {
+                      String msg = intres.getLocalizedMessage("userdatasource.errorfetchuserdatasource", pdl.getName());            	
                       getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null,
-                              null, LogEntry.EVENT_ERROR_USERDATAFETCHED,
-                               "Error fetching  from user data source " + pdl.getName() + ".");
+                              null, LogEntry.EVENT_ERROR_USERDATAFETCHED,msg);
                     throw pe;
 
                   }
@@ -202,9 +204,10 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
                 	getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Error, not authorized to user data source :" + pdl.getName());
                 }
             } catch (FinderException fe) {
+                String msg = intres.getLocalizedMessage("userdatasource.erroruserdatasourceexist", id);            	
                 getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null,
-                        LogEntry.EVENT_ERROR_USERDATAFETCHED, "User data source with id " + id + " doesn't exist.");
-                throw new UserDataSourceException("User data source with id " + id + " doesn't exist.");
+                        LogEntry.EVENT_ERROR_USERDATAFETCHED, msg);
+                throw new UserDataSourceException(msg);
 
             }
         }
@@ -227,24 +230,25 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
         	UserDataSourceDataLocal pdl = userdatasourcehome.findByPrimaryKey(new Integer(userdatasourceid));
         	BaseUserDataSource userdatasource = pdl.getUserDataSource();
         	if(isAuthorizedToEditUserDataSource(admin,userdatasource)){
-              try {
-            	  userdatasource.testConnection(admin);
-                getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null,
-                        null, LogEntry.EVENT_INFO_USERDATASOURCEDATA,
-                        "Successfully tested the connection with user data source " + pdl.getName() + ".");
-              } catch (UserDataSourceConnectionException pe) {
-                  getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null,
-                        LogEntry.EVENT_ERROR_USERDATASOURCEDATA, "Error when testing the connection with user data source " + pdl.getName() + " : " + pe.getMessage());
-
-                throw pe;
-              }
+        		try {
+        			userdatasource.testConnection(admin);
+        			String msg = intres.getLocalizedMessage("userdatasource.testedcon", pdl.getName());            	
+        			getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null,
+        					null, LogEntry.EVENT_INFO_USERDATASOURCEDATA,msg);
+        		} catch (UserDataSourceConnectionException pe) {
+        			String msg = intres.getLocalizedMessage("userdatasource.errortestcon", pdl.getName());            	
+        			getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null,
+        					LogEntry.EVENT_ERROR_USERDATASOURCEDATA, msg, pe);        			
+        			throw pe;
+        		}
         	}else{
-            	getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Error, not authorized to test user data source :" + pdl.getName());
+    			String msg = intres.getLocalizedMessage("userdatasource.errortestconauth", pdl.getName());            	
+            	getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg);
         	}
         } catch (FinderException fe) {
+			String msg = intres.getLocalizedMessage("userdatasource.erroruserdatasourceexist", Integer.valueOf(userdatasourceid));            	
             getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null,
-                    LogEntry.EVENT_ERROR_USERDATASOURCEDATA, "User data source with id " + userdatasourceid + " doesn't exist.");
-
+                    LogEntry.EVENT_ERROR_USERDATASOURCEDATA, msg);
         }
         debug("<testConnection(id: " + userdatasourceid + ")");
     }
@@ -291,14 +295,18 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
         			}
         		}
         	}
-        	if (success)
-        		getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_USERDATASOURCEDATA, "User data source " + name + " added.");
-        	else
-        		getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_USERDATASOURCEDATA, "Error adding user data source " + name);
+        	if (success) {
+    			String msg = intres.getLocalizedMessage("userdatasource.addedsource", name);            	
+        		getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_USERDATASOURCEDATA, msg);
+        	} else {
+    			String msg = intres.getLocalizedMessage("userdatasource.erroraddsource", name);            	
+        		getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_USERDATASOURCEDATA, msg);
+        	}
         	if (!success)
         		throw new UserDataSourceExistsException();
         }else{
-        	getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Error, not authorized to add user data source :" + name);
+			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", name);            	
+        	getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg);
         }
         debug("<addUserDataSource()");
     } // addUserDataSource
@@ -321,12 +329,16 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
         	} catch (FinderException e) {
         	}
         	
-        	if (success)
-        		getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_USERDATASOURCEDATA, "User data source " + name + " edited.");
-        	else
-        		getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_USERDATASOURCEDATA, "Error user data source " + name + ".");
+        	if (success) {
+    			String msg = intres.getLocalizedMessage("userdatasource.changedsource", name);            	
+        		getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_USERDATASOURCEDATA, msg);
+        	} else {
+    			String msg = intres.getLocalizedMessage("userdatasource.errorchangesource", name);            	
+        		getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_USERDATASOURCEDATA, msg);
+        	}
         }else{
-        	getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Error, not authorized to edit user data source :" + name);
+			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", name);            	
+        	getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg);
         }
         
         
@@ -350,19 +362,24 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
         	if(isAuthorizedToEditUserDataSource(admin,userdatasourcedata)){                   		
         		try {
         			addUserDataSource(admin, newname, userdatasourcedata);
-        			getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_USERDATASOURCEDATA, "New user data source " + newname + ", used user data source " + oldname + " as template.");
+        			String msg = intres.getLocalizedMessage("userdatasource.clonedsource", newname, oldname);            	
+        			getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_USERDATASOURCEDATA, msg);
         		} catch (UserDataSourceExistsException f) {
-        			getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_USERDATASOURCEDATA, "Error adding user data source " + newname + " using user data source " + oldname + " as template.");
+        			String msg = intres.getLocalizedMessage("userdatasource.errorclonesource", newname, oldname);            	
+        			getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_USERDATASOURCEDATA, msg);
         			throw f;
         		}        		
         	}else{
-        		getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Error, not authorized to clone user data source :" + oldname);
+    			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", oldname);            	
+        		getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg);
         	}            
         } catch (FinderException e) {
-            error("Error cloning user data source: ", e);
+			String msg = intres.getLocalizedMessage("userdatasource.errorclonesource", newname, oldname);            	
+            error(msg, e);
             throw new EJBException(e);
         } catch (CloneNotSupportedException e) {
-            error("Error cloning user data source: ", e);
+			String msg = intres.getLocalizedMessage("userdatasource.errorclonesource", newname, oldname);            	
+            error(msg, e);
             throw new EJBException(e);
 		}
 
@@ -383,13 +400,16 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
         	BaseUserDataSource userdatasource = htp.getUserDataSource();
         	if(isAuthorizedToEditUserDataSource(admin,userdatasource)){        	
               htp.remove();
-              getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_USERDATASOURCEDATA, "User data source " + name + " removed.");
+              String msg = intres.getLocalizedMessage("userdatasource.removedsource", name);            	
+              getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_USERDATASOURCEDATA, msg);
               retval = true;
         	}else{
-        		getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Error, not authorized to remove user data source :" + name);
+    			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", name);            	
+        		getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg);
         	}
         } catch (Exception e) {
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_USERDATASOURCEDATA, "Error removing user data source " + name + ".", e);
+            String msg = intres.getLocalizedMessage("userdatasource.errorremovesource", name);            	
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_USERDATASOURCEDATA, msg, e);
         }
         debug("<removeUserDataSource()");
         
@@ -415,16 +435,20 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
                   htp.setName(newname);
                   success = true;
             	}else{
-            		getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Error, not authorized to rename user data source :" + oldname);
+        			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", oldname);            	
+            		getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE, msg);
             	}
             } catch (FinderException g) {
             }
         }
 
-        if (success)
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_USERDATASOURCEDATA, "User data source " + oldname + " renamed to " + newname + ".");
-        else
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_USERDATASOURCEDATA, " Error renaming user data source  " + oldname + " to " + newname + ".");
+        if (success) {
+            String msg = intres.getLocalizedMessage("userdatasource.renamedsource", oldname, newname);            	
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_USERDATASOURCEDATA, msg);
+        } else {
+            String msg = intres.getLocalizedMessage("userdatasource.errorrenamesource", oldname, newname);            	
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_USERDATASOURCEDATA, msg);
+        }
 
         if (!success)
             throw new UserDataSourceExistsException();
@@ -470,7 +494,8 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
             	}
             }
         }  catch (FinderException fe) {
-        	log.error("FinderException looking for all user data sources: ", fe);
+			String msg = intres.getLocalizedMessage("userdatasource.errorfindingall");            	
+        	log.error(msg, fe);
         }
 
         return returnval;
@@ -513,7 +538,8 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
             if(isAuthorizedToEditUserDataSource(admin,result)){
             	returnval = result;
             }else{
-        		getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Error, not authorized to edit user data source :" + name);
+    			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", name);            	
+        		getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg);
             }
         } catch (FinderException e) {
             // return null if we cant find it
@@ -535,7 +561,8 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
             if(isAuthorizedToEditUserDataSource(admin,result)){
             	returnval = result;
             }else{
-        		getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Error, not authorized to edit user data source with id:" + id);
+    			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", Integer.valueOf(id));            	
+        		getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg);
             }
         } catch (FinderException e) {
             // return null if we cant find it
