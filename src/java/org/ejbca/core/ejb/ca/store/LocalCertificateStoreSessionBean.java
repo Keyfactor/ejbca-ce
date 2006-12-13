@@ -172,7 +172,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.24 2006-12-13 10:32:41 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.25 2006-12-13 10:40:18 anatom Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
@@ -1438,7 +1438,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         try {
             CertificateProfileDataLocal pdl = certprofilehome.findByCertificateProfileName(certificateprofilename);
             pdl.remove();
-        	String msg = intres.getLocalizedMessage("store.removedcertprofile", certificateprofilename);            	
+        	String msg = intres.getLocalizedMessage("store.removedprofile", certificateprofilename);            	
             getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_CERTPROFILE, msg);
         } catch (Exception e) {
         	String msg = intres.getLocalizedMessage("store.errorremoveprofile", certificateprofilename);            	
