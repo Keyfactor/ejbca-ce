@@ -3340,7 +3340,7 @@ To set up the demo servlet:
 </p>
 <ol>
 <li>Find out the CA id of the CA you want to use for signing of the demo certificates. Use the admin-GUI or 'ejbca.sh ca listcas' to find the integer value that is the CA id.</li>
-<li>Configure the CA id in src/java/se/anatom/ejbca/apply/DemoCertReqServlet.java, it's the parameter DEFAULT_DEMOCAID.</li>
+<li>Configure the CA id in rc/java/org/ejbca/ui/web/pub/DemoCertReqServlet.java, it's the parameter DEFAULT_DEMOCAID.</li>
 <li>Edit src/publicweb/apply/WEB-INF/web.xml and uncomment the two sections for the demo servlet.</li>
 <li>If using UTF-8 to display the web-page containing the demo form to the users, change ISO-8859-1 to UTF-8 for the env-entry 'contentEncoding'. Otherwise national characters in names will be encoded/displayed incorrectly in the certificates.</li>
 <li>Deploy with 'ant deploy'.</li>
