@@ -138,6 +138,9 @@ There are also lots of settings that you can do in my.cnf:
 maybe you need them all, maybe you don't need any of them...try you way forward (starting with nothing) and
 try to add stuff if it doesn't work.
 
+The SQL command to show tables in MySQL is:
+show tables;
+
 
 PostgreSQL specifics
 --------------------
@@ -148,6 +151,7 @@ For v7.x the 7.4 driver (development) is needed to support the JDBC used by JBos
 For v8.x the 8.1 driver works fine.
 
 Download JDBC driver for PostgreSQL from http://jdbc.postgresql.org/.
+
 
 Oracle specifics
 ----------------
@@ -166,6 +170,10 @@ from Oracle 9.2i works. Since oracles JDBC driver seems to be of such bad qualit
 recommend that you try different versions until you find one that works...or use another database.
 Version 10.1.0.4.0 is confirmed to work.
 
+The SQL command to show tables in Oracle is:
+select table_name from user_tables;
+
+
 MS-SQL specifics
 ----------------
 Microsofts JDBC driver:
@@ -175,6 +183,7 @@ There is also an open source JDBC driver at:
 http://jtds.sourceforge.net/
 This driver is not tested by us (yet), but it has received very good reviews as beeing much better than Microsofts
 driver, so I suggest you take it for a spin.
+
 
 Informix specifics
 ------------------
@@ -193,6 +202,7 @@ configuration to recognize the new data space.
 
 Informix JDBC driver:
 http://www14.software.ibm.com/webapp/download/product.jsp?id=MCOS-5MKKAB&s=z&cat=&S_TACT=TrialsAndBetas&S_CMP=
+
 
 Derby specifics
 ---------------
