@@ -34,6 +34,7 @@ import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
@@ -63,10 +64,12 @@ import org.ejbca.util.CertTools;
  * 7. output the result as a der encoded block on stdout 
  * -----
  *
- * @version $Id: ScepServlet.java,v 1.5 2006-12-04 15:41:12 anatom Exp $
+ * @version $Id: ScepServlet.java,v 1.6 2006-12-13 09:49:06 anatom Exp $
  */
 public class ScepServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(ScepServlet.class);
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
 
     private ISignSessionLocal signsession = null;
     private ICAAdminSessionLocal casession = null;
@@ -177,16 +180,17 @@ public class ScepServlet extends HttpServlet {
     private void service(String operation, String message, String remoteAddr, HttpServletResponse response) throws IOException {
         try {
             if ((operation == null) || (message == null)) {
-                log.error("Got request missing operation and/or message parameters.");
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                "Parameters 'operation' and 'message' must be supplied!");
+        		String errMsg = intres.getLocalizedMessage("scep.errormissingparam", remoteAddr);
+                log.error(errMsg);
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST,errMsg);
                 return;
             }
             
             Admin administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteAddr);
             log.debug("Got request '" + operation + "'");
             log.debug("Message: " + message);
-			log.info("Received a SCEP message from "+remoteAddr);
+    		String iMsg = intres.getLocalizedMessage("scep.receivedmsg", remoteAddr);
+			log.info(iMsg);
             if (operation.equals("PKIOperation")) {
                 byte[] scepmsg = Base64.decode(message.getBytes());
                 ISignSessionLocal signsession = getSignSession();
@@ -205,7 +209,8 @@ public class ScepServlet extends HttpServlet {
                 }
                 // Send back Scep response, PKCS#7 which contains the end entity's certificate (or failure)
                 RequestHelper.sendBinaryBytes(reply, response, "application/x-pki-message");
-    			log.info("Sent a SCEP PKIOperation response to "+remoteAddr);
+        		iMsg = intres.getLocalizedMessage("scep.sentresponsemsg", "PKIOperation", remoteAddr);
+    			log.info(iMsg);
             } else if (operation.equals("GetCACert")) {
                 // The response has the content type tagged as application/x-x509-ca-cert. 
                 // The body of the response is a DER encoded binary X.509 certificate. 
@@ -225,9 +230,11 @@ public class ScepServlet extends HttpServlet {
                     X509Certificate cert = (X509Certificate) iter.next();
                     log.debug("Sent certificate for CA '" + message + "' to SCEP client.");
                     RequestHelper.sendNewX509CaCert(cert.getEncoded(), response);
-        			log.info("Sent a SCEP GetCACert response to "+remoteAddr);
+            		iMsg = intres.getLocalizedMessage("scep.sentresponsemsg", "GetCACert", remoteAddr);
+        			log.info(iMsg);
                 } else {
-                    log.error("SCEP cert request for unknown CA '" + message + "'");
+            		String errMsg = intres.getLocalizedMessage("scep.errorunknownca", "cert");
+                    log.error(errMsg);
                     response.sendError(HttpServletResponse.SC_NOT_FOUND, "No CA certificates found.");
                 }
             } else if (operation.equals("GetCACertChain")) {
@@ -244,9 +251,11 @@ public class ScepServlet extends HttpServlet {
                 if ((pkcs7 != null) && (pkcs7.length > 0)) {
                     log.debug("Sent PKCS7 for CA '" + message + "' to SCEP client.");
                     RequestHelper.sendBinaryBytes(pkcs7, response, "application/x-x509-ca-ra-cert-chain");
-        			log.info("Sent a SCEP GetCACertChain response to "+remoteAddr);
+            		iMsg = intres.getLocalizedMessage("scep.sentresponsemsg", "GetCACertChain", remoteAddr);
+        			log.info(iMsg);
                 } else {
-                    log.error("SCEP pkcs7 request for unknown CA '" + message + "'");
+            		String errMsg = intres.getLocalizedMessage("scep.errorunknownca", "pkcs7");
+                    log.error(errMsg);
                     response.sendError(HttpServletResponse.SC_NOT_FOUND,"No CA certificates found.");
                 }
             } else if (operation.equals("GetCACaps")) {
@@ -268,32 +277,37 @@ public class ScepServlet extends HttpServlet {
                 response.getOutputStream().print("POSTPKIOperation\nSHA-1");
             } else {
                 log.error("Invalid parameter '" + operation);
-                
                 // TODO: Send back proper Failure Response
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameter: " + operation);
             }
         } catch (CADoesntExistsException cae) {
-            log.error("SCEP cert request for unknown CA, or can't find user.", cae);
+    		String errMsg = intres.getLocalizedMessage("scep.errorunknownca", "cert");
+            log.error(errMsg, cae);
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_NOT_FOUND, cae.getMessage());
         } catch (java.lang.ArrayIndexOutOfBoundsException ae) {
-            log.error("Empty or invalid request received.", ae);
+    		String errMsg = intres.getLocalizedMessage("scep.errorinvalidreq");
+            log.error(errMsg, ae);
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, ae.getMessage());
         } catch (AuthorizationDeniedException ae) {
-            log.error("Authorization denied.", ae);
+    		String errMsg = intres.getLocalizedMessage("scep.errorauth");
+            log.error(errMsg, ae);
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ae.getMessage());
         } catch (AuthLoginException ae) {
-            log.error("Authorization denied.", ae);
+    		String errMsg = intres.getLocalizedMessage("scep.errorauth");
+            log.error(errMsg, ae);
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ae.getMessage());
         } catch (AuthStatusException ae) {
-            log.error("Wrong client status.", ae);
+    		String errMsg = intres.getLocalizedMessage("scep.errorclientstatus");
+            log.error(errMsg, ae);
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, ae.getMessage());
         } catch (Exception e) {
-            log.error("Error in ScepServlet:", e);
+    		String errMsg = intres.getLocalizedMessage("scep.errorgeneral");
+            log.error(errMsg, e);
             // TODO: Send back proper Failure Response
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         }

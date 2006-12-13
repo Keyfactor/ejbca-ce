@@ -25,7 +25,7 @@ import org.apache.log4j.Logger;
  * 
  * @author Philip Vendil 2006 sep 19
  *
- * @version $Id: BatchToolProperties.java,v 1.3 2006-10-31 08:24:10 anatom Exp $
+ * @version $Id: BatchToolProperties.java,v 1.4 2006-12-13 09:49:04 anatom Exp $
  */
 public class BatchToolProperties {
 	
@@ -81,7 +81,7 @@ public class BatchToolProperties {
 		    			FileInputStream fis = new FileInputStream("bin/batchtool.properties");
 		    			batchToolProperties.load(fis);
 		    		}catch (FileNotFoundException e2) {
-		    			log.info("Couldn't find ant batchtool property file, default values will be used.");
+		    			log.info("Could not find any batchtool property file, default values will be used.");
 		    			log.debug(e);
 		    		}
 		    	}

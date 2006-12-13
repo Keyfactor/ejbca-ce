@@ -40,6 +40,7 @@ import javax.servlet.ServletException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.ocsp.BasicOCSPResp;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
@@ -92,12 +93,14 @@ import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
  *  home="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocalHome"
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
- * @author Lars Silvén PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.30 2006-12-04 15:05:04 anatom Exp $
+ * @author Lars Silvï¿½n PrimeKey
+ * @version  $Id: OCSPServletStandAlone.java,v 1.31 2006-12-13 09:49:06 anatom Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChecker {
 
     static final protected Logger m_log = Logger.getLogger(OCSPServletStandAlone.class);
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
 
     private String mKeystoreDirectoryName;
     private char mKeyPassword[];
@@ -132,12 +135,17 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
                             mHardTokenObject = (CardKeys)OCSPServletStandAlone.class.getClassLoader().loadClass(hardTokenClassName).newInstance();
                             mHardTokenObject.autenticate(sCardPassword);
                         } catch( ClassNotFoundException e) {
-                            m_log.info("Class " + hardTokenClassName + " could not be loaded.");
+                    		String iMsg = intres.getLocalizedMessage("ocsp.classnotfound", hardTokenClassName);
+                            m_log.info(iMsg);
                         }
-                    } else
-                        m_log.info("No card password specified.");
-                } else
-                    m_log.info("No HW OCSP signing class defined.");
+                    } else {
+                		String iMsg = intres.getLocalizedMessage("ocsp.nocardpwd");
+                        m_log.info(iMsg);
+                    }
+                } else {
+            		String iMsg = intres.getLocalizedMessage("ocsp.nohwsigningclass");
+            		m_log.info(iMsg);
+                }
             }
             if ( mStorePassword==null || mStorePassword.length==0 )
                 mStorePassword = mKeyPassword;
@@ -145,25 +153,29 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
             if ( mKeystoreDirectoryName!=null && mKeystoreDirectoryName.length()>0 ) {
                 ExtOCSPHealthCheck.setHealtChecker(this);
                 return;
-            } else
-            	throw new ServletException("no valid keys spicified");
+            } else {
+        		String errMsg = intres.getLocalizedMessage("ocsp.errornovalidkeys");
+            	throw new ServletException(errMsg);
+            }
         } catch( ServletException e ) {
             throw e;
         } catch (Exception e) {
-            m_log.error("Unable to initialize OCSPServlet.", e);
+    		String errMsg = intres.getLocalizedMessage("ocsp.errorinitialize");
+            m_log.error(errMsg, e);
             throw new ServletException(e);
         }
     }
     private X509Certificate[] getCertificateChain(X509Certificate cert, Admin adm) {
         RevokedCertInfo revokedInfo = isRevoked(adm, cert.getIssuerDN().getName(),
                 cert.getSerialNumber());
-        String sDebug = "Signing certificate with serial number "+cert.getSerialNumber() + " from issuer " + cert.getIssuerDN();
+		String wMsg = intres.getLocalizedMessage("ocsp.signcertnotindb", cert.getSerialNumber(), cert.getIssuerDN());
         if ( revokedInfo==null ) {
-            m_log.warn(sDebug + " can not be found in database (signing- and CA-certs must be published to OCSP responder).");
+            m_log.warn(wMsg);
             return null;
         }
         if ( revokedInfo.getReason()!=RevokedCertInfo.NOT_REVOKED ) {
-            m_log.warn(sDebug + " revoked.");
+    		wMsg = intres.getLocalizedMessage("ocsp.signcertrevoked", cert.getSerialNumber(), cert.getIssuerDN());
+            m_log.warn(wMsg);
             return null;
         }
         X509Certificate chain[] = null;
@@ -189,8 +201,10 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         	if ( isNotFound )
         		break;
         }
-        if ( chain==null )
-        	m_log.warn(sDebug+" has no chain to a root CA.");
+        if ( chain==null ) {
+    		wMsg = intres.getLocalizedMessage("ocsp.signcerthasnochain", cert.getSerialNumber(), cert.getIssuerDN());
+        	m_log.warn(wMsg);
+        }
         return chain;
     }
     private boolean loadFromKeyStore(Admin adm, String fileName) {
@@ -219,7 +233,8 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
                 if ( key!=null && cert!=null )
                     putSignEntity(new PrivateKeyFactorySW(key), cert, adm, "BC");
             } catch (Exception e) {
-                m_log.error("Unable to get alias "+alias+" in file "+fileName+". Exception: ", e);
+        		String errMsg = intres.getLocalizedMessage("ocsp.errorgetalias", alias, fileName);
+                m_log.error(errMsg, e);
             }
         }
         return true;
@@ -231,8 +246,10 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
                 int caid = getCaid(chain[1]);
                 m_log.debug("CA with ID "+caid+" now has a OCSP signing key.");
                 SigningEntity oldSigningEntity = (SigningEntity)mSignEntity.get(new Integer(caid));
-                if ( oldSigningEntity!=null && !oldSigningEntity.getCertificateChain().equals(chain) )
-                	m_log.warn("New OCSP signing key for CA \""+chain[1].getSubjectDN()+"\". Key cert \""+chain[0].getSubjectDN()+"\".");
+                if ( oldSigningEntity!=null && !oldSigningEntity.getCertificateChain().equals(chain) ) {
+            		String wMsg = intres.getLocalizedMessage("ocsp.newsigningkey", chain[1].getSubjectDN(), chain[0].getSubjectDN());
+                	m_log.warn(wMsg);
+                }
                 mSignEntity.put( new Integer(caid), new SigningEntity(chain, keyFactory, providerName) );
             }
             return true;
@@ -249,17 +266,15 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
 	    		SigningEntity signingEntity = (SigningEntity)i.next();
 	    		if ( !signingEntity.isOK() ) {
                     pw.println();
-	    			String sError = "OCSP signing key not useable for CA \"" +
-	    							signingEntity.getCertificateChain()[1].getSubjectDN() +
-                                    "\". Key certificate with serial number: " +
-                                    signingEntity.getCertificateChain()[0].getSerialNumber().toString(0x10);
-	    			pw.print(sError);
-	    			m_log.error(sError);
+            		String errMsg = intres.getLocalizedMessage("ocsp.errorocspkeynotusable", signingEntity.getCertificateChain()[1].getSubjectDN(), signingEntity.getCertificateChain()[0].getSerialNumber().toString(16));
+	    			pw.print(errMsg);
+	    			m_log.error(errMsg);
 	    		}
 	    	}
 		} catch (Exception e) {
-            m_log.error("Not possible to load signing certificates.", e);
-			pw.print("Not possible to load signing certificates: " + e.getMessage());
+    		String errMsg = intres.getLocalizedMessage("ocsp.errorloadsigningcerts");
+            m_log.error(errMsg, e);
+			pw.print(errMsg + ": "+e.getMessage());
 		}
     	pw.flush();
     	return sw.toString();
@@ -402,7 +417,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         if ( se!=null ) {
             return se.sign(request);            
         }
-        throw new ExtendedCAServiceNotActiveException("no ocsp signing key for caid "+caid);
+        throw new ExtendedCAServiceNotActiveException("No ocsp signing key for caid "+caid);
     }
 
     protected RevokedCertInfo isRevoked(Admin adm, String name, BigInteger serialNumber) {

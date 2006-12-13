@@ -27,13 +27,14 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.services.IServiceTimerSessionLocalHome;
+import org.ejbca.core.model.InternalResources;
 
 /**
  * Servlet used to start services by calling the ServiceSession.load() at startup<br>
  *
  * 
  *
- * @version $Id: StartServicesServlet.java,v 1.7 2006-12-05 12:43:45 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.8 2006-12-13 09:49:04 anatom Exp $
  * 
  * @web.servlet name = "StartServices"
  *              display-name = "StartServicesServlet"
@@ -47,16 +48,21 @@ import org.ejbca.core.ejb.services.IServiceTimerSessionLocalHome;
  *   type="java.lang.String"
  *   value="${logging.log4j.config}"
  * 
- * @version $Id: StartServicesServlet.java,v 1.7 2006-12-05 12:43:45 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.8 2006-12-13 09:49:04 anatom Exp $
  */
 public class StartServicesServlet extends HttpServlet {
 
+	private static Logger log = Logger.getLogger(StartServicesServlet.class);
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
+    
     /**
      * Method used to remove all active timers
 	 * @see javax.servlet.GenericServlet#destroy()
 	 */
 	public void destroy() {
-        log.info(">destroy EJBCA shutdown");
+		String iMsg = intres.getLocalizedMessage("startservice.shutdown");
+        log.info(iMsg);
         
         log.debug(">destroy calling ServiceSession.unload");
         try {
@@ -68,9 +74,6 @@ public class StartServicesServlet extends HttpServlet {
 	    }
 		super.destroy();
 	}
-
-	private static Logger log = Logger.getLogger(StartServicesServlet.class);
-
 
 
     private IServiceTimerSessionLocalHome servicehome = null;
@@ -89,7 +92,8 @@ public class StartServicesServlet extends HttpServlet {
 
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        log.info(">init EJBCA startup");
+		String iMsg = intres.getLocalizedMessage("startservice.startup");
+        log.info(iMsg);
 
         log.debug(">init calling ServiceSession.load");
         try {

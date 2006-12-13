@@ -33,6 +33,7 @@ import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.ocsp.CertificateStatus;
 import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.FileTools;
 import org.ejbca.util.JDBCUtil;
@@ -40,12 +41,14 @@ import org.ejbca.util.JDBCUtil;
 /** ASN.1 OCSP extension used to map a UNID to a Fnr, OID for this extension is 2.16.578.1.16.3.2
  * 
  * @author tomas
- * @version $Id: OCSPUnidExtension.java,v 1.10 2006-02-15 14:14:28 anatom Exp $
+ * @version $Id: OCSPUnidExtension.java,v 1.11 2006-12-13 09:49:05 anatom Exp $
  *
  */
 public class OCSPUnidExtension implements IOCSPExtension {
 
-    static private final Logger m_log = Logger.getLogger(OCSPUnidExtension.class);
+	private static final Logger m_log = Logger.getLogger(OCSPUnidExtension.class);
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
 
 	/** Constants capturing the possible error returned by the Unid-Fnr OCSP Extension 
 	 * 
@@ -71,13 +74,15 @@ public class OCSPUnidExtension implements IOCSPExtension {
 		// Datasource
 		dataSourceJndi = config.getInitParameter("unidDataSource");
         if (StringUtils.isEmpty(dataSourceJndi)) {
-            m_log.error("unidDataSource init-parameter must be set!");
-            throw new IllegalArgumentException("unidDataSource init-parameter must be set!");
+    		String errMsg = intres.getLocalizedMessage("ocsp.errornoinitparam", "unidDataSource");
+            m_log.error(errMsg);
+            throw new IllegalArgumentException(errMsg);
         }
         String trustDir = config.getInitParameter("unidTrustDir");
         if (StringUtils.isEmpty(trustDir)) {
-            m_log.error("unidTrustDir init-parameter must be set!");
-            throw new IllegalArgumentException("unidTrustDir init-parameter must be set!");
+    		String errMsg = intres.getLocalizedMessage("ocsp.errornoinitparam", "unidTrustDir");
+            m_log.error(errMsg);
+            throw new IllegalArgumentException(errMsg);
         }
         // read all files from trustDir, expect that they are PEM formatted certificates
         CertTools.installBCProvider();
@@ -89,7 +94,8 @@ public class OCSPUnidExtension implements IOCSPExtension {
             }
             File files[] = dir.listFiles();
             if (files == null || files.length == 0) {
-                m_log.error("No files in trustDir directory: "+ dir.getCanonicalPath());                
+        		String errMsg = intres.getLocalizedMessage("ocsp.errornotrustfiles", dir.getCanonicalPath());
+                m_log.error(errMsg);                
             }
             for ( int i=0; i<files.length; i++ ) {
                 final String fileName = files[i].getCanonicalPath();
@@ -101,19 +107,23 @@ public class OCSPUnidExtension implements IOCSPExtension {
                     String key = CertTools.getIssuerDN(cert)+";"+cert.getSerialNumber().toString(16);
                     trustedCerts.put(key,cert);
                 } catch (CertificateException e) {
-                    m_log.error("Error reading "+fileName+" from trustDir: ", e);
+            		String errMsg = intres.getLocalizedMessage("ocsp.errorreadingfile", fileName, "trustDir", e.getMessage());
+                    m_log.error(errMsg, e);
                 } catch (IOException e) {
-                    m_log.error("Error reading "+fileName+" from trustDir: ", e);
+            		String errMsg = intres.getLocalizedMessage("ocsp.errorreadingfile", fileName, "trustDir", e.getMessage());
+                    m_log.error(errMsg, e);
                 }
             }
         } catch (IOException e) {
-            m_log.error("Error reading files from trustDir: ", e);
-            throw new IllegalArgumentException("Error reading files from trustDir: "+e.getMessage());
+    		String errMsg = intres.getLocalizedMessage("ocsp.errorreadingtrustfiles", e.getMessage());
+            m_log.error(errMsg, e);
+            throw new IllegalArgumentException(errMsg);
         }
         String cacertfile = config.getInitParameter("unidCACert");
         if (StringUtils.isEmpty(cacertfile)) {
-            m_log.error("unidCACert init-parameter must be set!");
-            throw new IllegalArgumentException("unidCACert init-parameter must be set!");
+    		String errMsg = intres.getLocalizedMessage("ocsp.errornoinitparam", "unidCACert");
+            m_log.error(errMsg);
+            throw new IllegalArgumentException(errMsg);
         }
         try {
             byte[] bytes = FileTools.getBytesFromPEM(FileTools
@@ -121,8 +131,9 @@ public class OCSPUnidExtension implements IOCSPExtension {
                     "-----BEGIN CERTIFICATE-----", "-----END CERTIFICATE-----");
             cacert = CertTools.getCertfromByteArray(bytes);
         } catch (Exception e) {
-            m_log.error("Error reading file from cacertfile: ", e);
-            throw new IllegalArgumentException("Error reading files from cacertfile: "+e.getMessage());
+    		String errMsg = intres.getLocalizedMessage("ocsp.errorreadingfile", "file", "cacertfile", e.getMessage());
+            m_log.error(errMsg, e);
+            throw new IllegalArgumentException(errMsg);
         }
 
 	}
@@ -160,11 +171,13 @@ public class OCSPUnidExtension implements IOCSPExtension {
                 if (m_log.isDebugEnabled()) {
                     m_log.debug("Found serialNumber: "+sn);                    
                 }
-                m_log.info("Got request (ip;fqdn): "+request.getRemoteAddr()+"; "+request.getRemoteHost()+" for Fnr mapping to Unid="+sn);
+				String iMsg = intres.getLocalizedMessage("ocsp.receivedunidreq", request.getRemoteAddr(), request.getRemoteHost(), sn);
+                m_log.info(iMsg);
         		try {
         			con = ServiceLocator.getInstance().getDataSource(dataSourceJndi).getConnection();
         		} catch (SQLException e) {
-        			m_log.error("Got SQL exception when looking up databasource for Unid-Fnr mapping: ", e);
+    				String errMsg = intres.getLocalizedMessage("ocsp.errordatabaseunid");
+        			m_log.error(errMsg, e);
         			errCode = OCSPUnidExtension.ERROR_SERVICE_UNAVAILABLE;
         			return null;
         		}
@@ -175,7 +188,8 @@ public class OCSPUnidExtension implements IOCSPExtension {
                     fnr = result.getString(1);
                 }
         	} else {
-        		m_log.error("Did not find a serialNumber in DN: "+cert.getSubjectDN().getName());
+				String errMsg = intres.getLocalizedMessage("ocsp.errorunidnosnindn", cert.getSubjectDN().getName());
+        		m_log.error(errMsg);
         		errCode = OCSPUnidExtension.ERROR_NO_SERIAL_IN_DN;
         		return null;
         	}
@@ -190,12 +204,14 @@ public class OCSPUnidExtension implements IOCSPExtension {
         
         // Construct the response extentsion if we found a mapping
         if (fnr == null) {
-            m_log.error("No Fnr mapping exists for UNID "+sn);
+			String errMsg = intres.getLocalizedMessage("ocsp.errorunidnosnmapping", sn);
+            m_log.error(errMsg);
         	errCode = OCSPUnidExtension.ERROR_NO_FNR_MAPPING;
         	return null;
         	
         }
-        m_log.info("Returned response to (ip;fqdn): "+request.getRemoteAddr()+"; "+request.getRemoteHost()+" with Fnr="+fnr+" for Unid="+sn);
+		String errMsg = intres.getLocalizedMessage("ocsp.returnedunidresponse", request.getRemoteAddr(), request.getRemoteHost(), fnr, sn);
+        m_log.info(errMsg);
         FnrFromUnidExtension ext = new FnrFromUnidExtension(fnr);
         Hashtable ret = new Hashtable();
         ret.put(FnrFromUnidExtension.FnrFromUnidOid, new X509Extension(false, new DEROctetString(ext)));
@@ -216,13 +232,15 @@ public class OCSPUnidExtension implements IOCSPExtension {
 	boolean checkAuthorization(HttpServletRequest request) {
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
         if (certs == null) {
-            m_log.error("Got request without client authentication from (ip;fqdn): "+request.getRemoteAddr()+"; "+request.getRemoteHost());
+    		String errMsg = intres.getLocalizedMessage("ocsp.errornoclientauth", request.getRemoteAddr(), request.getRemoteHost());
+            m_log.error(errMsg);
             return false;
         }
         // The entitys certificate is nr 0
         X509Certificate cert = certs[0];
         if (cert == null) {
-            m_log.error("Got request without client authentication from (ip;fqdn): "+request.getRemoteAddr()+"; "+request.getRemoteHost());
+    		String errMsg = intres.getLocalizedMessage("ocsp.errornoclientauth", request.getRemoteAddr(), request.getRemoteHost());
+            m_log.error(errMsg);
             return false;
         }
         // Check if the certificate is authorized to access the Fnr
@@ -234,13 +252,15 @@ public class OCSPUnidExtension implements IOCSPExtension {
             try {
                 cert.verify(cacert.getPublicKey());
             } catch (Exception e) {
-                m_log.error("Exception when trying to verify client certificate: ", e);
+        		String errMsg = intres.getLocalizedMessage("ocsp.errorverifycert");
+                m_log.error(errMsg, e);
                 return false;
             }
             // If verify was succesful we know if was good!
             return true;
         }
-        m_log.error("Got request with untrusted client cert from (ip;fqdn): "+request.getRemoteAddr()+"; "+request.getRemoteHost());
+		String errMsg = intres.getLocalizedMessage("ocsp.erroruntrustedclientauth", request.getRemoteAddr(), request.getRemoteHost());
+        m_log.error(errMsg);
 		return false;
 	}
 }

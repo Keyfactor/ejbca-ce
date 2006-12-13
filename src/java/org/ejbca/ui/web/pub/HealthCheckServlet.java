@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.ui.web.pub.cluster.IHealthCheck;
 import org.ejbca.ui.web.pub.cluster.IHealthResponse;
 import org.ejbca.util.CertTools;
@@ -42,10 +43,12 @@ import org.ejbca.util.CertTools;
  * to the url defined in web.xml.
  *
  * @author Philip Vendil
- * @version $Id: HealthCheckServlet.java,v 1.5 2006-11-21 13:21:39 anatom Exp $
+ * @version $Id: HealthCheckServlet.java,v 1.6 2006-12-13 09:48:58 anatom Exp $
  */
 public class HealthCheckServlet extends HttpServlet {
-    private static Logger log = Logger.getLogger(HealthCheckServlet.class);
+    private static final Logger log = Logger.getLogger(HealthCheckServlet.class);
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
     
     private IHealthCheck healthcheck = null;
     private IHealthResponse healthresponse = null;
@@ -127,7 +130,8 @@ public class HealthCheckServlet extends HttpServlet {
     			}
     		}
     	} else {
-    		log.info("All IPs are authorized");
+    		String iMsg = intres.getLocalizedMessage("healthcheck.allipsauthorized");
+    		log.info(iMsg);
     		authorizedIP = true;
     	}
 
@@ -142,7 +146,8 @@ public class HealthCheckServlet extends HttpServlet {
     		} catch (IOException e) {
     			log.error("ERROR : Problems generating unauthorized http response.");
     		}
-    		log.error("ERROR : Healthcheck request recieved from an non authorized IP: "+remoteIP);
+    		String iMsg = intres.getLocalizedMessage("healthcheck.errorauth", remoteIP);
+    		log.error(iMsg);
     	}
     }
 

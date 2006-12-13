@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
@@ -42,7 +43,7 @@ import org.ejbca.util.CertTools;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: GetCRLServlet.java,v 1.2 2006-02-09 10:05:38 anatom Exp $
+ * @version $Id: GetCRLServlet.java,v 1.3 2006-12-13 09:49:05 anatom Exp $
  * 
  * @web.servlet name = "GetCRL"
  *              display-name = "GetCRLServlet"
@@ -55,6 +56,8 @@ import org.ejbca.util.CertTools;
 public class GetCRLServlet extends HttpServlet {
 
     private static Logger log = Logger.getLogger(GetCRLServlet.class);
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
 
     private static final String COMMAND_PROPERTY_NAME = "cmd";
     private static final String COMMAND_CRL = "crl";
@@ -134,10 +137,12 @@ public class GetCRLServlet extends HttpServlet {
                 res.setContentType("application/pkix-crl");
                 res.setContentLength(crl.length);
                 res.getOutputStream().write(crl);
-                log.info("Sent latest CRL to client at " + remoteAddr);
+                String iMsg = intres.getLocalizedMessage("certreq.sentlatestcrl", remoteAddr);
+                log.info(iMsg);
             } catch (Exception e) {
-                log.error("Error sending latest CRL to " + remoteAddr, e);
-                res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting latest CRL.");
+                String errMsg = intres.getLocalizedMessage("certreq.errorsendcrl", remoteAddr, e.getMessage());
+                log.error(errMsg, e);
+                res.sendError(HttpServletResponse.SC_NOT_FOUND, errMsg);
                 return;
             }
         }

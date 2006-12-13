@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcher;
@@ -39,7 +40,7 @@ import org.ejbca.util.Base64;
  * Servlet implementing server side of the Certificate Management Protocols (CMP) 
  *
  * @author tomas
- * @version $Id: CmpServlet.java,v 1.14 2006-11-24 14:13:18 anatom Exp $
+ * @version $Id: CmpServlet.java,v 1.15 2006-12-13 09:49:06 anatom Exp $
  * 
  * @web.servlet name = "CmpServlet"
  *              display-name = "CmpServlet"
@@ -144,6 +145,8 @@ import org.ejbca.util.Base64;
  */
 public class CmpServlet extends HttpServlet {
 	private static Logger log = Logger.getLogger(CmpServlet.class);
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
 	
 	private Properties properties;
 	/**
@@ -264,7 +267,7 @@ public class CmpServlet extends HttpServlet {
 	throws java.io.IOException, ServletException {
 		log.debug(">doGet()");
 		
-		log.info("Received not allowed method GET in CMP servlet: query string=" + request.getQueryString());
+		log.info("Received un-allowed method GET in CMP servlet: query string=" + request.getQueryString());
 		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "You can only use POST!");
 		
 		log.debug("<doGet()");
@@ -274,8 +277,7 @@ public class CmpServlet extends HttpServlet {
 		try {
 			if ((message == null)) {
 				log.error("Got request missing message.");
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-				"A message must be supplied!");
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "A message must be supplied!");
 				return;
 			}
 			
@@ -284,7 +286,8 @@ public class CmpServlet extends HttpServlet {
 			if (log.isDebugEnabled()) {
 				log.debug("Received a CMP message by HTTP: " + new String(Base64.encode(message)));
 			}
-			log.info("Received a CMP message from "+remoteAddr);
+    		String iMsg = intres.getLocalizedMessage("cmp.receivedmsg", remoteAddr);
+			log.info(iMsg);
 			CmpMessageDispatcher dispatcher = new CmpMessageDispatcher(administrator, properties);
 			IResponseMessage resp = dispatcher.dispatch(message);
 			// If resp is null, it means we have nothing to send back
@@ -293,7 +296,8 @@ public class CmpServlet extends HttpServlet {
 				ServletUtils.addCacheHeaders(response);
 				// Send back CMP response
 				RequestHelper.sendBinaryBytes(resp.getResponseMessage(), response, "application/pkixcmp");				
-    			log.info("Sent a CMP response to "+remoteAddr);
+	    		iMsg = intres.getLocalizedMessage("cmp.sentresponsemsg", remoteAddr);
+    			log.info(iMsg);
 			} 
 		} catch (Exception e) {
 			log.error("Error in CmpServlet:", e);

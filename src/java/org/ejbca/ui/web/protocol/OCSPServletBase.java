@@ -60,6 +60,7 @@ import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.MalformedRequestException;
 import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
@@ -117,11 +118,13 @@ import org.ejbca.util.CertTools;
  *   value="${ocsp.unidcacert}"
  *   
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson, Lars Silven
- * @version  $Id: OCSPServletBase.java,v 1.21 2006-12-04 15:05:04 anatom Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.22 2006-12-13 09:49:06 anatom Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
-    static private final Logger m_log = Logger.getLogger(OCSPServletBase.class);
+    private static final Logger m_log = Logger.getLogger(OCSPServletBase.class);
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
 
     private Admin m_adm;
 
@@ -206,7 +209,8 @@ abstract class OCSPServletBase extends HttpServlet {
             throw new IllegalArgumentException();
         }
         if (null == certs || certs.isEmpty()) {
-            m_log.info("The passed certificate collection is empty.");
+    		String iMsg = intres.getLocalizedMessage("ocsp.certcollectionempty");
+            m_log.info(iMsg);
             return null;
         }
         Iterator iter = certs.iterator();
@@ -237,7 +241,8 @@ abstract class OCSPServletBase extends HttpServlet {
                     return cacert;
                 }
             } catch (OCSPException e) {
-                m_log.error("OCSPexception comparing certificate hashes, skipping cacert for '"+cacert.getIssuerDN()+": ", e);
+        		String errMsg = intres.getLocalizedMessage("ocsp.errorcomparehash", cacert.getIssuerDN());
+                m_log.error(errMsg, e);
             }
         }
         if (m_log.isDebugEnabled()) {
@@ -254,7 +259,8 @@ abstract class OCSPServletBase extends HttpServlet {
         }
 
         if (null == certs || certs.isEmpty()) {
-            m_log.info("The passed certificate collection is empty.");
+    		String iMsg = intres.getLocalizedMessage("ocsp.certcollectionempty");
+            m_log.info(iMsg);
             return null;
         }
         String dn = CertTools.stringToBCDNString(subjectDN);
@@ -270,7 +276,8 @@ abstract class OCSPServletBase extends HttpServlet {
                 return cacert;
             }
         }
-        m_log.info("Did not find matching CA-cert for DN: " + subjectDN);
+		String iMsg = intres.getLocalizedMessage("ocsp.nomatchingcacert", subjectDN);
+        m_log.info(iMsg);
         return null;
     }
 
@@ -453,7 +460,8 @@ abstract class OCSPServletBase extends HttpServlet {
         if (StringUtils.equals(reloadCAKeys, "true")) {
         	String remote = request.getRemoteAddr();
             if (StringUtils.equals(remote, "127.0.0.1")) {
-            	m_log.info("Reloading keys due to request from 127.0.0.1");
+        		String iMsg = intres.getLocalizedMessage("ocsp.reloadkeys", remote);
+            	m_log.info(iMsg);
             	m_certValidTo = 0;
             }
         }
@@ -509,8 +517,9 @@ abstract class OCSPServletBase extends HttpServlet {
                 }
                 if (m_reqMustBeSigned) {
                     if (!req.isSigned()) {
-                        m_log.info("OCSP request unsigned. Servlet enforces signing.");
-                        throw new SignRequestException("OCSP request unsigned. Servlet enforces signing.");
+                		String errMsg = intres.getLocalizedMessage("ocsp.errorunsignedreq");
+                        m_log.error(errMsg);
+                        throw new SignRequestException(errMsg);
                     }
                     //GeneralName requestor = req.getRequestorName();
                     X509Certificate[] certs = req.getCerts("BC");
@@ -523,20 +532,21 @@ abstract class OCSPServletBase extends HttpServlet {
                         }
                     }
                     if (!verifyOK) {
-                        m_log.info("Signature of incoming OCSPRequest is invalid.");
-                        throw new SignRequestSignatureException("Signature invalid.");
+                		String errMsg = intres.getLocalizedMessage("ocsp.errorinvalidsignature");
+                        m_log.error(errMsg);
+                        throw new SignRequestSignatureException(errMsg);
                     }
                 }
 
                 Req[] requests = req.getRequestList();
                 if (requests.length <= 0) {
-                    String msg = "The OCSP request does not contain any simpleRequest entities.";
-                    m_log.error(msg);
+            		String errMsg = intres.getLocalizedMessage("ocsp.errornoreqentities");
+                    m_log.error(errMsg);
                     {
                         // All this just so we can create an error response
                         cacert = findCertificateBySubject(m_defaultResponderId, m_cacerts);
                     }
-                    throw new MalformedRequestException(msg);
+                    throw new MalformedRequestException(errMsg);
                 }
                 if (m_log.isDebugEnabled()) {
                 	m_log.debug("The OCSP request contains " + requests.length + " simpleRequests.");
@@ -565,18 +575,19 @@ abstract class OCSPServletBase extends HttpServlet {
                             unknownCA = true;
                         }
                     } catch (OCSPException e) {
-                        m_log.error("Unable to generate CA certificate hash.", e);
+                		String errMsg = intres.getLocalizedMessage("ocsp.errorgencerthash");
+                        m_log.error(errMsg, e);
                         cacert = null;
                         continue;
                     }
                     if (cacert == null) {
-                        final String msg = "Unable to find CA certificate by issuer name hash: " + new String(Hex.encode(certId.getIssuerNameHash())) + ", or even the default responder: " + m_defaultResponderId;
-                        m_log.error(msg);
+                		String errMsg = intres.getLocalizedMessage("ocsp.errorfindcacert", new String(Hex.encode(certId.getIssuerNameHash())), m_defaultResponderId);
+                        m_log.error(errMsg);
                         continue;
                     }
                     if (unknownCA == true) {
-                        final String msg = "Unable to find CA certificate by issuer name hash: " + new String(Hex.encode(certId.getIssuerNameHash())) + ", using the default reponder to send 'UnknownStatus'";
-                        m_log.info(msg);
+                		String errMsg = intres.getLocalizedMessage("ocsp.errorfindcacertusedefault", new String(Hex.encode(certId.getIssuerNameHash())));
+                        m_log.info(errMsg);
                         // If we can not find the CA, answer UnknowStatus
                         responseList.add(new OCSPResponseItem(certId, new UnknownStatus()));
                         continue;
@@ -653,7 +664,8 @@ abstract class OCSPServletBase extends HttpServlet {
                                     		// Add the returned X509Extensions to the responseExtension we will add to the basic OCSP response
                                     		responseExtensions.putAll(retext);
                                     	} else {
-                                    		m_log.error("En error occured when processing OCSP extensions class: "+extObj.getClass().getName()+", error code="+extObj.getLastErrorCode());
+                                    		String errMsg = intres.getLocalizedMessage("ocsp.errorprocessextension", extObj.getClass().getName(), Integer.valueOf(extObj.getLastErrorCode()));
+                                    		m_log.error(errMsg);
                                     	}
                             		}
                             	}
@@ -669,24 +681,27 @@ abstract class OCSPServletBase extends HttpServlet {
                     BasicOCSPResp basicresp = signOCSPResponse(req, responseList, exts, cacert);
                     ocspresp = res.generate(OCSPRespGenerator.SUCCESSFUL, basicresp);
                 } else {
-                    final String msg = "Unable to find CA certificate and key to generate OCSP response!";
-                    m_log.error(msg);
-                    throw new ServletException(msg);
+            		String errMsg = intres.getLocalizedMessage("ocsp.errornocacreateresp");
+                    m_log.error(errMsg);
+                    throw new ServletException(errMsg);
                 }
             } catch (MalformedRequestException e) {
-                m_log.info("MalformedRequestException caught : ", e);
+        		String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
+                m_log.info(errMsg, e);
                 // generate the signed response object
                 BasicOCSPResp basicresp = signOCSPResponse(req, null, null, cacert);
                 ocspresp = res.generate(OCSPRespGenerator.MALFORMED_REQUEST, basicresp);
             } catch (SignRequestException e) {
-                m_log.info("SignRequestException caught : ", e);
+        		String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
+                m_log.info(errMsg, e);
                 // generate the signed response object
                 BasicOCSPResp basicresp = signOCSPResponse(req, null, null, cacert);
                 ocspresp = res.generate(OCSPRespGenerator.SIG_REQUIRED, basicresp);
             } catch (Exception e) {
                 if (e instanceof ServletException)
                     throw (ServletException) e;
-                m_log.error("Unable to handle OCSP request.", e);
+        		String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
+                m_log.error(errMsg, e);
                 // generate the signed response object
                 BasicOCSPResp basicresp = signOCSPResponse(req, null, null, cacert);
                 ocspresp = res.generate(OCSPRespGenerator.INTERNAL_ERROR, basicresp);
@@ -698,19 +713,24 @@ abstract class OCSPServletBase extends HttpServlet {
             response.getOutputStream().write(respBytes);
             response.getOutputStream().flush();
         } catch (OCSPException e) {
-            m_log.error("OCSPException caught, fatal error : ", e);
+    		String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
+            m_log.error(errMsg, e);
             throw new ServletException(e);
         } catch (IllegalExtendedCAServiceRequestException e) {
-            m_log.error("Can't generate any type of OCSP response: ", e);
+    		String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
+            m_log.error(errMsg, e);
             throw new ServletException(e);
         } catch (CADoesntExistsException e) {
-            m_log.error("CA used to sign OCSP response does not exist: ", e);
+    		String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
+            m_log.error(errMsg, e);
             throw new ServletException(e);
         } catch (ExtendedCAServiceNotActiveException e) {
-            m_log.error("Error in CAs extended service: ", e);
+    		String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
+            m_log.error(errMsg, e);
             throw new ServletException(e);
         } catch (ExtendedCAServiceRequestException e) {
-            m_log.error("Error in CAs extended service: ", e);
+    		String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq");
+            m_log.error(errMsg, e);
             throw new ServletException(e);
         }
         if (m_log.isDebugEnabled()) {

@@ -38,6 +38,7 @@ import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -68,11 +69,13 @@ import com.novosec.pkix.asn1.cmp.PKIHeader;
 /**
  * Message handler for certificate request messages in the CRMF format
  * @author tomas
- * @version $Id: CrmfMessageHandler.java,v 1.17 2006-12-04 13:03:44 anatom Exp $
+ * @version $Id: CrmfMessageHandler.java,v 1.18 2006-12-13 09:49:05 anatom Exp $
  */
 public class CrmfMessageHandler implements ICmpMessageHandler {
 	
 	private static Logger log = Logger.getLogger(CrmfMessageHandler.class);
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
 	
 	/** Defines which component from the DN should be used as username in EJBCA. Can be DN, UID or nothing. Nothing means that the DN will be used to look up the user. */
 	private String extractUsernameComponent = null;
@@ -224,7 +227,8 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 											usersession.addUser(admin, username, pwd, dn, altNames, null, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, caId);																					
 										} catch (DuplicateKeyException e) {
 											// This was veery strange, we didn't find it before, but now it exists?
-											log.error("Could not add user '"+username+"', although it did not exists a blink of an eye ago! Will update instead.");
+											String errMsg = intres.getLocalizedMessage("cmp.erroradduserupdate", username);
+											log.error(errMsg);
 											// If the user already exists, we will change him instead and go for that
 											usersession.changeUser(admin, username, pwd, dn, altNames, null, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, UserDataConstants.STATUS_NEW, caId);										
 										}
@@ -235,14 +239,17 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 									}
 									addedUser = true;
 								} catch (UserDoesntFullfillEndEntityProfile e) {
-									log.error("Exception adding user: ", e);
+									String errMsg = intres.getLocalizedMessage("cmp.erroradduser", username);
+									log.error(errMsg, e);
 									failText = e.getMessage();
 								} catch (ApprovalException e) {
-									log.error("Exception adding user: ", e);
+									String errMsg = intres.getLocalizedMessage("cmp.erroradduser", username);
+									log.error(errMsg, e);
 									failText = e.getMessage();
 									failInfo = FailInfo.NOT_AUTHORIZED;
 								} catch (WaitingForApprovalException e) {
-									log.error("Exception adding user: ", e);
+									String errMsg = intres.getLocalizedMessage("cmp.erroradduser", username);
+									log.error(errMsg, e);
 									failText = e.getMessage();
 									failInfo = FailInfo.NOT_AUTHORIZED;
 								}
@@ -267,17 +274,23 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 									try {
 										resp.create();
 									} catch (InvalidKeyException e1) {
-										log.error("Exception during CMP processing: ", e1);			
+										String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
+										log.error(errMsg, e1);
 									} catch (NoSuchAlgorithmException e1) {
-										log.error("Exception during CMP processing: ", e1);			
+										String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
+										log.error(errMsg, e1);
 									} catch (NoSuchProviderException e1) {
-										log.error("Exception during CMP processing: ", e1);			
+										String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
+										log.error(errMsg, e1);
 									} catch (SignRequestException e1) {
-										log.error("Exception during CMP processing: ", e1);			
+										String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
+										log.error(errMsg, e1);
 									} catch (NotFoundException e1) {
-										log.error("Exception during CMP processing: ", e1);			
+										String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
+										log.error(errMsg, e1);
 									} catch (IOException e1) {
-										log.error("Exception during CMP processing: ", e1);			
+										String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
+										log.error(errMsg, e1);
 									}																
 								}
 								crmfreq.setUsername(username);
@@ -288,26 +301,30 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 								}
 								// Now we are all set to go ahead and generate a certificate for the poor bastard
 							} else {
-								log.error("Authentication failed for message!");
-								String errMsg = "Authentication failed for message!";
+								String errMsg = intres.getLocalizedMessage("cmp.errorauthmessage");
+								log.error(msg);
 								if (verifyer.getErrMsg() != null) {
 									errMsg = verifyer.getErrMsg();
 								}
 								resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);					        	
 							}
 						} catch (NoSuchAlgorithmException e) {
-							log.error("Exception calculating protection: ", e);
+							String errMsg = intres.getLocalizedMessage("cmp.errorcalcprotection");
+							log.error(errMsg, e);
 							resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
 						} catch (NoSuchProviderException e) {
-							log.error("Exception calculating protection: ", e);
+							String errMsg = intres.getLocalizedMessage("cmp.errorcalcprotection");
+							log.error(errMsg, e);
 							resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
 						} catch (InvalidKeyException e) {
-							log.error("Exception calculating protection: ", e);
+							String errMsg = intres.getLocalizedMessage("cmp.errorcalcprotection");
+							log.error(errMsg, e);
 							resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
 						}
 					} else {
-						log.error("Recevied an unathenticated message in RA mode!");
-						resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, "Recevied an unathenticated message in RA mode!");
+						String errMsg = intres.getLocalizedMessage("cmp.errorunauthmessagera");
+						log.error(errMsg);
+						resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
 					}
 				} else {
 					// Try to find the user that is the subject for the request
@@ -321,12 +338,14 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 							log.debug("Found username: "+data.getUsername());
 							crmfreq.setUsername(data.getUsername());
 						} else {
-							log.info("Did not find a username matching dn: "+dn);
+							String errMsg = intres.getLocalizedMessage("cmp.infonouserfordn");
+							log.info(errMsg);
 						}
 					}
 				}
 			} else {
-				log.error("ICmpMessage is not a CrmfRequestMessage!");
+				String errMsg = intres.getLocalizedMessage("cmp.errornocmrfreq");
+				log.error(errMsg);
 			}
 			// This is a request message, so we want to enroll for a certificate, if we have not created an error already
 			if (resp == null) {
@@ -335,34 +354,45 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 						Class.forName("org.ejbca.core.protocol.cmp.CmpResponseMessage"));				
 			}
 			if (resp == null) {
-				log.error("Response from signSession is null!");
+				String errMsg = intres.getLocalizedMessage("cmp.errornullresp");
+				log.error(errMsg);
 			}
 		} catch (AuthorizationDeniedException e) {
-			log.error("Exception during CMP processing: ", e);			
+			String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
+			log.error(errMsg, e);			
 		} catch (NotFoundException e) {
-			log.error("Exception during CMP processing: ", e);
+			String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
+			log.error(errMsg, e);			
 			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
 		} catch (AuthStatusException e) {
-			log.error("Exception during CMP processing: ", e);
+			String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
+			log.error(errMsg, e);			
 			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
 		} catch (AuthLoginException e) {
-			log.error("Exception during CMP processing: ", e);
+			String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
+			log.error(errMsg, e);			
 			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
 		} catch (IllegalKeyException e) {
-			log.error("Exception during CMP processing: ", e);
+			String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
+			log.error(errMsg, e);			
 		} catch (CADoesntExistsException e) {
-			log.error("Exception during CMP processing: ", e);
+			String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
+			log.error(errMsg, e);			
 			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.WRONG_AUTHORITY, e.getMessage());
 		} catch (SignRequestException e) {
-			log.error("Exception during CMP processing: ", e);
+			String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
+			log.error(errMsg, e);			
 		} catch (SignRequestSignatureException e) {
-			log.error("Exception during CMP processing: ", e);
+			String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
+			log.error(errMsg, e);			
 			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_POP, e.getMessage());
 		} catch (ClassNotFoundException e) {
-			log.error("Exception during CMP processing: ", e);
+			String errMsg = intres.getLocalizedMessage("cmp.errorgeneral");
+			log.error(errMsg, e);			
 		} catch (RemoteException e) {
 			// Fatal error
-			log.error("Exception adding user: ", e);
+			String errMsg = intres.getLocalizedMessage("cmp.erroradduser");
+			log.error(errMsg, e);			
 			resp = null;
 		}							
 		return resp;

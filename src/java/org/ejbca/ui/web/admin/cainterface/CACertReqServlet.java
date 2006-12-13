@@ -30,6 +30,7 @@ import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.pub.ServletUtils;
@@ -43,7 +44,7 @@ import org.ejbca.ui.web.pub.ServletUtils;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: CACertReqServlet.java,v 1.5 2006-12-04 15:04:59 anatom Exp $
+ * @version $Id: CACertReqServlet.java,v 1.6 2006-12-13 09:49:05 anatom Exp $
  * 
  * @web.servlet name = "CACertReq"
  *              display-name = "CACertReqServlet"
@@ -56,6 +57,8 @@ import org.ejbca.ui.web.pub.ServletUtils;
 public class CACertReqServlet extends HttpServlet {
 
     private static Logger log = Logger.getLogger(CACertReqServlet.class);
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
 
     private static final String COMMAND_PROPERTY_NAME = "cmd";
     private static final String COMMAND_CERTREQ = "certreq";
@@ -159,10 +162,12 @@ public class CACertReqServlet extends HttpServlet {
                 res.setContentType("application/octet-stream");
                 res.setContentLength(out.length());
                 res.getOutputStream().write(out.getBytes());
-                log.info("Sent latest Certificate Request to client at " + remoteAddr);
+        		String iMsg = intres.getLocalizedMessage("certreq.sentlatestcertreq", remoteAddr);
+                log.info(iMsg);
             } catch (Exception e) {
-                log.error("Error sending Certificate Request to " + remoteAddr, e);
-                res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error sending Certificate Request.");
+        		String errMsg = intres.getLocalizedMessage("certreq.errorsendlatestcertreq", remoteAddr);
+                log.error(errMsg, e);
+                res.sendError(HttpServletResponse.SC_NOT_FOUND, errMsg);
                 return;
             }
         }
@@ -172,8 +177,9 @@ public class CACertReqServlet extends HttpServlet {
 				byte[] b64cert = org.ejbca.util.Base64.encode(cert.getEncoded());	
 				RequestHelper.sendNewB64Cert(b64cert, res, RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);							
 			 } catch (Exception e) {
-                 log.error("Error sending processed certificate to " + remoteAddr, e);
-				 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting processed certificate.");
+				 String errMsg = intres.getLocalizedMessage("certreq.errorsendcert", remoteAddr, e.getMessage());
+                 log.error(errMsg, e);
+				 res.sendError(HttpServletResponse.SC_NOT_FOUND, errMsg);
 				 return;
 			 }
 		 }
@@ -184,8 +190,9 @@ public class CACertReqServlet extends HttpServlet {
 			    byte[] b64cert = org.ejbca.util.Base64.encode(pkcs7);	
 			    RequestHelper.sendNewB64Cert(b64cert, res, RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);																		 					
 			 } catch (Exception e) {
-                 log.error("Error sending processed certificate to " + remoteAddr, e);
-				 res.sendError(HttpServletResponse.SC_NOT_FOUND, "Error getting processed certificate.");
+				 String errMsg = intres.getLocalizedMessage("certreq.errorsendcert", remoteAddr, e.getMessage());
+                 log.error(errMsg, e);
+				 res.sendError(HttpServletResponse.SC_NOT_FOUND, errMsg);
 				 return;
 			 }
 		 }

@@ -53,6 +53,7 @@ import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
@@ -94,10 +95,13 @@ import org.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.13 2006-12-04 15:41:12 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.14 2006-12-13 09:48:58 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
-    private static Logger log = Logger.getLogger(CertReqServlet.class);
+    private static final Logger log = Logger.getLogger(CertReqServlet.class);
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
+
     private byte[] bagattributes = "Bag Attributes\n".getBytes();
     private byte[] friendlyname = "    friendlyName: ".getBytes();
     private byte[] subject = "subject=/".getBytes();
@@ -217,7 +221,8 @@ public class CertReqServlet extends HttpServlet {
             ISignSessionLocal signsession = getSignSession();
             RequestHelper helper = new RequestHelper(administrator, debug);
 
-            log.info("Received certificate request for user " + username + " from "+request.getRemoteAddr());
+    		String iMsg = intres.getLocalizedMessage("certreq.receivedcertreq", username, request.getRemoteAddr());
+            log.info(iMsg);
             debug.print("<h3>username: " + username + "</h3>");
 
             // Check user

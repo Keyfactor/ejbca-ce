@@ -35,6 +35,7 @@ import java.net.SocketTimeoutException;
 import java.security.cert.CertificateEncodingException;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcher;
@@ -48,6 +49,8 @@ import org.quickserver.net.server.DataType;
 
 public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHandler  {
 	private static final Logger log = Logger.getLogger(CmpTcpCommandHandler.class.getName());
+    /** Internal localization of logs and errors */
+    private InternalResources intres = InternalResources.getInstance();
 	
 	public void gotConnected(ClientHandler handler)
 	throws SocketTimeoutException, IOException {
@@ -72,7 +75,8 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 			handler.closeConnection(); // this is something fishy
 			return;
 		}
-		log.info("CMP message received from: "+handler.getHostAddress());
+		String iMsg = intres.getLocalizedMessage("cmp.receivedmsg", handler.getHostAddress());
+		log.info(iMsg);
 		if (log.isDebugEnabled()) {
 			log.debug("Got data of length "+command.length+": "+new String(Base64.encode(command)));			
 		}
@@ -122,17 +126,20 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 					resp = dispatcher.dispatch(msg);
 					if (resp == null) {
 						// unknown error?
-						log.error("CMP message dispatcher returned a null response!");
+						String errMsg = intres.getLocalizedMessage("cmp.errornullresp");
+						log.error(errMsg);
 					} else {
 						log.debug("Sending back CMP response to client.");
 					}
 
 				} else {
-					log.error("Received a message of length "+msgLen+", which is way too much to be sane");	
+					String errMsg = intres.getLocalizedMessage("cmp.errortcptoolongmsg", Integer.valueOf(msgLen));
+					log.error(errMsg);	
 					handler.closeConnection(); // This is something malicious
 				}
 			} else {
-				log.error("Received a message of length "+msgLen+", that claimed to contain "+len+" bytes");
+				String errMsg = intres.getLocalizedMessage("cmp.errortcpwronglen", Integer.valueOf(msgLen), Integer.valueOf(len));
+				log.error(errMsg);
 				handler.closeConnection(); // This is something malicious
 			}
 		}
@@ -146,7 +153,8 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 		if (sendBack != null) {
 			log.debug("Sending "+sendBack.length+" bytes to client");
 			handler.sendClientBinary(sendBack);			
-			log.info("Sent a CMP response to: "+handler.getHostAddress());
+			iMsg = intres.getLocalizedMessage("cmp.sentresponsemsg", handler.getHostAddress());
+			log.info(iMsg);
 		} else {
 			close = true;
 		}

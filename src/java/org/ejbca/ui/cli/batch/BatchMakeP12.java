@@ -49,6 +49,7 @@ import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
@@ -67,13 +68,15 @@ import org.ejbca.util.P12toPEM;
  * This class generates keys and request certificates for all users with status NEW. The result is
  * generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.8 2006-10-31 08:24:10 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.9 2006-12-13 09:49:04 anatom Exp $
  */
 public class BatchMakeP12 {
     /**
      * For logging
      */
     private static final Logger log = Logger.getLogger(BatchMakeP12.class);
+    /** Internal localization of logs and errors */
+    private static InternalResources intres = InternalResources.getInstance();
 
     BatchToolProperties props = new BatchToolProperties();
 
@@ -274,17 +277,20 @@ public class BatchMakeP12 {
             try {
                 cachain[cachain.length - 1].verify(cachain[cachain.length - 1].getPublicKey());
             } catch (GeneralSecurityException se) {
-                throw new Exception("RootCA certificate does not verify");
+        		String errMsg = intres.getLocalizedMessage("batch.errorrootnotverify");
+                throw new Exception(errMsg);
             }
         } else {
-            throw new Exception("RootCA certificate not self-signed");
+    		String errMsg = intres.getLocalizedMessage("batch.errorrootnotselfsigned");
+            throw new Exception(errMsg);
         }
 
         // Verify that the user-certificate is signed by our CA
         try {
             cert.verify(cachain[0].getPublicKey());
         } catch (GeneralSecurityException se) {
-            throw new Exception("Generated certificate does not verify using CA-certificate.");
+    		String errMsg = intres.getLocalizedMessage("batch.errorgennotverify");
+            throw new Exception(errMsg);
         }
 
         if (usekeyrecovery && savekeys ) {
@@ -307,7 +313,8 @@ public class BatchMakeP12 {
         }
 
         storeKeyStore(ks, username, password, createJKS, createPEM);
-        log.info("Created Keystore for " + username + ".");
+		String iMsg = intres.getLocalizedMessage("batch.createkeystore", username);
+        log.info(iMsg);
         log.debug("<createUser: username=" + username);
     } // createUser
 
@@ -343,7 +350,8 @@ public class BatchMakeP12 {
                 	orgCert = (X509Certificate) recoveryData.getCertificate();
                 }
             } else {
-                throw new Exception("No Key Recovery Data available for user, " + data.getUsername() + " can not be generated.");
+        		String errMsg = intres.getLocalizedMessage("batch.errornokeyrecoverydata", data.getUsername());
+                throw new Exception(errMsg);
             }
         } else {
             rsaKeys = KeyTools.genKeys(props.getKeySpec(), props.getKeyAlg());
@@ -369,9 +377,11 @@ public class BatchMakeP12 {
         // Only generate supported tokens
         if (createP12 || createPEM || createJKS) {
             if (status == UserDataConstants.STATUS_KEYRECOVERY) {
-                log.info("Retrieving keys for " + data.getUsername());
+        		String iMsg = intres.getLocalizedMessage("batch.retrieveingkeys", data.getUsername());
+                log.info(iMsg);
             } else {
-                log.info("Generating keys for " + data.getUsername());
+        		String iMsg = intres.getLocalizedMessage("batch.generatingkeys", data.getUsername());
+                log.info(iMsg);
             }                               
             
             // Grab new user, set status to INPROCESS
@@ -387,10 +397,10 @@ public class BatchMakeP12 {
             // Delete clear text password
             admin.setClearTextPassword(administrator, data.getUsername(), null);
             ret = true;
-            log.info("New user generated successfully - " + data.getUsername());
+    		String iMsg = intres.getLocalizedMessage("batch.generateduser", data.getUsername());
+            log.info(iMsg);
         } else {
-            log.debug("Cannot batchmake browser generated token for user (wrong tokentype)- " +
-                    data.getUsername());
+            log.debug("Cannot batchmake browser generated token for user (wrong tokentype)- " + data.getUsername());
         }        
         return ret;
     }
@@ -402,7 +412,8 @@ public class BatchMakeP12 {
      */
     public void createAllNew() throws Exception {
         log.debug(">createAllNew:");
-        log.info("Generating for all NEW.");
+		String iMsg = intres.getLocalizedMessage("batch.generatingallstatus", "NEW");
+        log.info(iMsg);
         createAllWithStatus(UserDataConstants.STATUS_NEW);
         log.debug("<createAllNew:");
     } // createAllNew
@@ -414,7 +425,8 @@ public class BatchMakeP12 {
      */
     public void createAllFailed() throws Exception {
         log.debug(">createAllFailed:");
-        log.info("Generating for all FAILED.");
+		String iMsg = intres.getLocalizedMessage("batch.generatingallstatus", "FAILED");
+        log.info(iMsg);
         createAllWithStatus(UserDataConstants.STATUS_FAILED);
         log.debug("<createAllFailed:");
     } // createAllFailed
@@ -427,7 +439,8 @@ public class BatchMakeP12 {
     public void createAllKeyRecover() throws Exception {
         if (usekeyrecovery) {
             log.debug(">createAllKeyRecover:");
-            log.info("Generating for all KEYRECOVER.");
+    		String iMsg = intres.getLocalizedMessage("batch.generatingallstatus", "KEYRECOVER");
+            log.info(iMsg);
             createAllWithStatus(UserDataConstants.STATUS_KEYRECOVERY);
             log.debug("<createAllKeyRecover:");
         }
@@ -462,7 +475,8 @@ public class BatchMakeP12 {
             	}
             }
             
-            log.info("Batch generating " + result.size() + " users.");
+    		String iMsg = intres.getLocalizedMessage("batch.generatingnoofusers", Integer.valueOf(result.size()));
+            log.info(iMsg);
 
             int failcount = 0;
             int successcount = 0;
@@ -484,7 +498,8 @@ public class BatchMakeP12 {
                             }
                         } catch (Exception e) {
                             // If things went wrong set status to FAILED
-                            log.error("An error happened, setting status to FAILED.", e);
+                    		String errMsg = intres.getLocalizedMessage("batch.errorsetstatus", "FAILED");
+                            log.error(errMsg, e);
                             failedusers += (":" + data.getUsername());
                             failcount++;
                             if (status == UserDataConstants.STATUS_KEYRECOVERY) {
@@ -494,18 +509,18 @@ public class BatchMakeP12 {
                             }
                         }
                     } else {
-                        log.info("User '" + data.getUsername() +
-                                "' does not have clear text password.");
+                		iMsg = intres.getLocalizedMessage("batch.infonoclearpwd", data.getUsername());
+                        log.info(iMsg);
                     }
                 }
 
                 if (failedusers.length() > 0) {
-                    throw new Exception("BatchMakeP12 failed for " + failcount + " users (" +
-                            successcount + " succeeded) - " + failedusers);
+            		String errMsg = intres.getLocalizedMessage("batch.errorbatchfailed", Integer.valueOf(failcount), Integer.valueOf(successcount), failedusers);
+                    throw new Exception(errMsg);
                 }
-                  
-                
-                log.info(successcount + " new users generated successfully - " + successusers);
+                                  
+        		iMsg = intres.getLocalizedMessage("batch.success", Integer.valueOf(successcount), successusers);
+                log.info(iMsg);
             }
         } while ((result.size() > 0) && !stopnow);
 
@@ -532,18 +547,20 @@ public class BatchMakeP12 {
                     doCreate(admin, data, status);
                 } catch (Exception e) {
                     // If things went wrong set status to FAILED
-                    log.error("An error happened, setting status to FAILED (if not keyrecovery).");
-                    log.error(e);
+            		String errMsg = intres.getLocalizedMessage("batch.errorsetstatus", "FAILED");
+                    log.error(errMsg, e);
                     if (status == UserDataConstants.STATUS_KEYRECOVERY) {
                         admin.setUserStatus(administrator, data.getUsername(), UserDataConstants.STATUS_KEYRECOVERY);
                     } else {
                         admin.setUserStatus(administrator, data.getUsername(), UserDataConstants.STATUS_FAILED);
                     }
-                    throw new Exception("BatchMakeP12 failed for '" + username + "'.");
+            		errMsg = intres.getLocalizedMessage("batch.errorbatchfaileduser", username);
+                    throw new Exception(errMsg);
                 }
             } else {
-                log.error("Unknown user, or clear text password is null: " + username);
-                throw new Exception("BatchMakeP12 failed for '" + username + "'.");
+        		String errMsg = intres.getLocalizedMessage("batch.errorbatchfaileduser", username);
+                log.error(errMsg);
+                throw new Exception(errMsg);
             }
         }
 
@@ -578,7 +595,8 @@ public class BatchMakeP12 {
             File dir = new File(directory).getCanonicalFile();
             dir.mkdir();
             makep12.setMainStoreDir(directory);
-            log.info("Generating keys in directory " + dir);
+    		String iMsg = intres.getLocalizedMessage("batch.generateindir", dir);
+            log.info(iMsg);
 
             if (username != null) {
                 makep12.createUser(username);
