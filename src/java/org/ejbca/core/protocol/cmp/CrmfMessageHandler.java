@@ -69,7 +69,7 @@ import com.novosec.pkix.asn1.cmp.PKIHeader;
 /**
  * Message handler for certificate request messages in the CRMF format
  * @author tomas
- * @version $Id: CrmfMessageHandler.java,v 1.19 2006-12-13 10:35:09 anatom Exp $
+ * @version $Id: CrmfMessageHandler.java,v 1.20 2006-12-13 11:23:51 anatom Exp $
  */
 public class CrmfMessageHandler implements ICmpMessageHandler {
 	
@@ -302,7 +302,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 								// Now we are all set to go ahead and generate a certificate for the poor bastard
 							} else {
 								String errMsg = intres.getLocalizedMessage("cmp.errorauthmessage");
-								log.error(msg);
+								log.error(errMsg);
 								if (verifyer.getErrMsg() != null) {
 									errMsg = verifyer.getErrMsg();
 								}

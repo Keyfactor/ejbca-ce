@@ -49,11 +49,12 @@ import org.ejbca.util.KeyTools;
 import com.novosec.pkix.asn1.cmp.PKIMessage;
 
 /**
- * This test requires RA mode and responseProtection=pbe.
- * Allow rfc822Name and UPN name in altNames in the end entity profile
+ * This test requires:
+ * mode=ra, responseProtection=pbe, authenticationsecret=password, allowraverifypopo=true.
+ * Allow CN, O, C in DN and rfc822Name, UPN in altNames in the end entity profile configured in cmp.properties
  *  
  * @author tomas
- * @version $Id: CrmfRAPbeRequestTest.java,v 1.9 2006-12-13 10:36:04 anatom Exp $
+ * @version $Id: CrmfRAPbeRequestTest.java,v 1.10 2006-12-13 11:23:51 anatom Exp $
  */
 public class CrmfRAPbeRequestTest extends CmpTestCase {
 	
@@ -131,7 +132,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 		super.tearDown();
 	}
 
-	public void test02CrmfHttpOkUser() throws Exception {
+	public void test01CrmfHttpOkUser() throws Exception {
 
 		byte[] nonce = CmpMessageHelper.createSenderNonce();
 		byte[] transid = CmpMessageHelper.createSenderNonce();

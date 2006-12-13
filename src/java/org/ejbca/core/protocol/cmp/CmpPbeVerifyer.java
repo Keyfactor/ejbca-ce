@@ -35,7 +35,7 @@ import com.novosec.pkix.asn1.crmf.PBMParameter;
 /**
  * Helper class to verify PBE of CMP messages, also extracts owf, mac Oids and iteration count.
  * @author tomas
- * @version $Id: CmpPbeVerifyer.java,v 1.3 2006-12-13 10:35:09 anatom Exp $
+ * @version $Id: CmpPbeVerifyer.java,v 1.4 2006-12-13 11:23:51 anatom Exp $
  */
 public class CmpPbeVerifyer {
 	private static Logger log = Logger.getLogger(CmpPbeVerifyer.class);
@@ -63,7 +63,7 @@ public class CmpPbeVerifyer {
 		AlgorithmIdentifier pAlg = head.getProtectionAlg();
 		log.debug("Protection type is: "+pAlg.getObjectId().getId());
 		if (!pAlg.getObjectId().equals(CMPObjectIdentifiers.passwordBasedMac)) {
-			String errMsg = intres.getLocalizedMessage("cmp.errorunknownprotalg", pAlg.getObjectId().getId());
+			errMsg = intres.getLocalizedMessage("cmp.errorunknownprotalg", pAlg.getObjectId().getId());
 			log.error(errMsg);
 			return ret;
 		} else {

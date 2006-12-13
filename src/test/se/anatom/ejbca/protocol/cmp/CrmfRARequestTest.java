@@ -52,9 +52,10 @@ import org.ejbca.util.KeyTools;
 import com.novosec.pkix.asn1.cmp.PKIMessage;
 
 /**
- * This test requires RA mode and responseProtection=signature
+ * This test requires:
+ * mode=ra, responseProtection=signature, authenticationsecret=password, allowraverifypopo=true.
  * @author tomas
- *
+ * @version $Id: CrmfRARequestTest.java,v 1.9 2006-12-13 11:23:51 anatom Exp $
  */
 public class CrmfRARequestTest extends CmpTestCase {
 	
@@ -130,7 +131,7 @@ public class CrmfRARequestTest extends CmpTestCase {
 		super.tearDown();
 	}
 
-	public void test02CrmfHttpOkUser() throws Exception {
+	public void test01CrmfHttpOkUser() throws Exception {
 
 		// Create a new good user
 		createCmpUser();
@@ -151,7 +152,7 @@ public class CrmfRARequestTest extends CmpTestCase {
 		byte[] resp = sendCmpHttp(ba);
 		assertNotNull(resp);
 		assertTrue(resp.length > 0);
-		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, true);
+		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, false);
 		checkCmpCertRepMessage(userDN, cacert, resp, reqId);
 		
 		// Send a confirm message to the CA
@@ -167,7 +168,7 @@ public class CrmfRARequestTest extends CmpTestCase {
 		resp = sendCmpHttp(ba);
 		assertNotNull(resp);
 		assertTrue(resp.length > 0);
-		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, true);
+		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, false);
 		checkCmpPKIConfirmMessage(userDN, cacert, resp);
 	}
 	
