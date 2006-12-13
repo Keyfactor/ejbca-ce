@@ -69,13 +69,13 @@ import com.novosec.pkix.asn1.cmp.PKIHeader;
 /**
  * Message handler for certificate request messages in the CRMF format
  * @author tomas
- * @version $Id: CrmfMessageHandler.java,v 1.18 2006-12-13 09:49:05 anatom Exp $
+ * @version $Id: CrmfMessageHandler.java,v 1.19 2006-12-13 10:35:09 anatom Exp $
  */
 public class CrmfMessageHandler implements ICmpMessageHandler {
 	
 	private static Logger log = Logger.getLogger(CrmfMessageHandler.class);
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
 	
 	/** Defines which component from the DN should be used as username in EJBCA. Can be DN, UID or nothing. Nothing means that the DN will be used to look up the user. */
 	private String extractUsernameComponent = null;

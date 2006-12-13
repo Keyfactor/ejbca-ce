@@ -64,12 +64,12 @@ import org.ejbca.util.CertTools;
  * 7. output the result as a der encoded block on stdout 
  * -----
  *
- * @version $Id: ScepServlet.java,v 1.6 2006-12-13 09:49:06 anatom Exp $
+ * @version $Id: ScepServlet.java,v 1.7 2006-12-13 10:36:04 anatom Exp $
  */
 public class ScepServlet extends HttpServlet {
-    private static Logger log = Logger.getLogger(ScepServlet.class);
+    private static final Logger log = Logger.getLogger(ScepServlet.class);
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
 
     private ISignSessionLocal signsession = null;
     private ICAAdminSessionLocal casession = null;

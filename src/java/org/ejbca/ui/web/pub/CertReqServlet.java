@@ -95,12 +95,12 @@ import org.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.14 2006-12-13 09:48:58 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.15 2006-12-13 10:36:04 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(CertReqServlet.class);
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
 
     private byte[] bagattributes = "Bag Attributes\n".getBytes();
     private byte[] friendlyname = "    friendlyName: ".getBytes();

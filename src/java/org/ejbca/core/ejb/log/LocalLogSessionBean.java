@@ -129,12 +129,12 @@ import org.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.12 2006-12-11 15:06:54 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.13 2006-12-13 10:33:07 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
 
     /** The home interface of  LogEntryData entity bean */
     private LogEntryDataLocalHome logentryhome;

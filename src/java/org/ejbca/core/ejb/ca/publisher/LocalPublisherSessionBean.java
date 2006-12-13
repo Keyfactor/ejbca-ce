@@ -114,7 +114,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
 public class LocalPublisherSessionBean extends BaseSessionBean {
 
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
     
     /**
      * The local home interface of publisher entity bean.

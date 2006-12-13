@@ -25,13 +25,13 @@ import org.ejbca.core.model.services.BaseInterval;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: PeriodicalInterval.java,v 1.3 2006-12-12 15:52:48 anatom Exp $
+ * @version $Id: PeriodicalInterval.java,v 1.4 2006-12-13 10:35:10 anatom Exp $
  */
 public class PeriodicalInterval extends BaseInterval {
 	
 	private static final Logger log = Logger.getLogger(PeriodicalInterval.class);
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
 
 	public static final String PROP_UNIT  = "interval.periodical.unit";
 	public static final String PROP_VALUE = "interval.periodical.value";

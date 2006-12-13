@@ -48,7 +48,7 @@ public class CertificateExpirationNotifierWorker extends BaseWorker {
 
 	private static final Logger log = Logger.getLogger(CertificateExpirationNotifierWorker.class);
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
 
 	/** Should be a ';' separated string of CANames. */
 	public static final String PROP_CAIDSTOCHECK     = "worker.emailexpiration.caidstocheck";

@@ -40,7 +40,7 @@ import org.ejbca.util.Base64;
  * Servlet implementing server side of the Certificate Management Protocols (CMP) 
  *
  * @author tomas
- * @version $Id: CmpServlet.java,v 1.15 2006-12-13 09:49:06 anatom Exp $
+ * @version $Id: CmpServlet.java,v 1.16 2006-12-13 10:36:04 anatom Exp $
  * 
  * @web.servlet name = "CmpServlet"
  *              display-name = "CmpServlet"
@@ -144,9 +144,9 @@ import org.ejbca.util.Base64;
  *  
  */
 public class CmpServlet extends HttpServlet {
-	private static Logger log = Logger.getLogger(CmpServlet.class);
+	private static final Logger log = Logger.getLogger(CmpServlet.class);
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
 	
 	private Properties properties;
 	/**

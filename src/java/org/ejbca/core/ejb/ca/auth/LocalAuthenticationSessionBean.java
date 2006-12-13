@@ -44,7 +44,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.5 2006-12-06 14:05:42 anatom Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.6 2006-12-13 10:32:41 anatom Exp $
  *
  * @ejb.bean
  *   display-name="AuthenticationSB"
@@ -119,7 +119,7 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
     private IKeyRecoverySessionLocal keyrecoverysession = null;
     
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
     
     /** boolean indicating if keyrecovery should be used. */
     private boolean usekeyrecovery = true;

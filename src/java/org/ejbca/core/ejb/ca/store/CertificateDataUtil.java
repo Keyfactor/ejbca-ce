@@ -45,12 +45,12 @@ import org.ejbca.util.StringTools;
 /** Common code between CertificateStoreSessionBean and CertificateStoreOnlyDataSessionBean
  * 
  * @author lars
- * @version $Id: CertificateDataUtil.java,v 1.9 2006-12-10 16:19:59 anatom Exp $
+ * @version $Id: CertificateDataUtil.java,v 1.10 2006-12-13 10:32:42 anatom Exp $
  *
  */
 public class CertificateDataUtil {
     /** Internal localization of logs and errors */
-    private static InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
     
     public interface Adapter {
         void debug( String s );

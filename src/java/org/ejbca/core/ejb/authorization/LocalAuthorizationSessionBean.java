@@ -58,7 +58,7 @@ import org.ejbca.util.JDBCUtil;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.8 2006-12-06 14:05:41 anatom Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.9 2006-12-13 10:32:41 anatom Exp $
  *
  * @ejb.bean
  *   description="Session bean handling interface with ra authorization"
@@ -162,7 +162,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
     public static final long MIN_TIME_BETWEEN_UPDATES = 60000 * 1;
     
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
 
     /**
      * The home interface of  AdminGroupData entity bean

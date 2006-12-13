@@ -44,7 +44,7 @@ import org.ejbca.ui.web.pub.ServletUtils;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: CACertReqServlet.java,v 1.6 2006-12-13 09:49:05 anatom Exp $
+ * @version $Id: CACertReqServlet.java,v 1.7 2006-12-13 10:35:30 anatom Exp $
  * 
  * @web.servlet name = "CACertReq"
  *              display-name = "CACertReqServlet"
@@ -56,9 +56,9 @@ import org.ejbca.ui.web.pub.ServletUtils;
  */
 public class CACertReqServlet extends HttpServlet {
 
-    private static Logger log = Logger.getLogger(CACertReqServlet.class);
+    private static final Logger log = Logger.getLogger(CACertReqServlet.class);
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
 
     private static final String COMMAND_PROPERTY_NAME = "cmd";
     private static final String COMMAND_CERTREQ = "certreq";

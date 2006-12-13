@@ -34,13 +34,13 @@ import org.ejbca.core.model.services.BaseAction;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: MailAction.java,v 1.4 2006-12-12 15:52:49 anatom Exp $
+ * @version $Id: MailAction.java,v 1.5 2006-12-13 10:35:10 anatom Exp $
  */
 public class MailAction extends BaseAction {
 	
 	private static final Logger log = Logger.getLogger(MailAction.class);
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
 	
 	private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
 	

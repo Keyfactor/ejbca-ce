@@ -50,7 +50,7 @@ import org.quickserver.net.server.DataType;
 public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHandler  {
 	private static final Logger log = Logger.getLogger(CmpTcpCommandHandler.class.getName());
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
 	
 	public void gotConnected(ClientHandler handler)
 	throws SocketTimeoutException, IOException {

@@ -49,13 +49,13 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.19 2006-12-12 17:02:49 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.20 2006-12-13 10:34:08 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
 	private static final Logger log = Logger.getLogger(LdapPublisher.class);
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
 	
 	protected static byte[] fakecrl = null;
 	

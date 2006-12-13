@@ -55,13 +55,13 @@ import com.novosec.pkix.asn1.crmf.CertTemplate;
 /**
  * Message handler for certificate request messages in the CRMF format
  * @author tomas
- * @version $Id: RevocationMessageHandler.java,v 1.2 2006-12-13 09:49:05 anatom Exp $
+ * @version $Id: RevocationMessageHandler.java,v 1.3 2006-12-13 10:35:09 anatom Exp $
  */
 public class RevocationMessageHandler implements ICmpMessageHandler {
 	
 	private static Logger log = Logger.getLogger(RevocationMessageHandler.class);
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
 	
 	/** Parameter used to authenticate RA messages if we are using RA mode to create users */
 	private String raAuthenticationSecret = null;

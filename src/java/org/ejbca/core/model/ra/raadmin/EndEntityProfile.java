@@ -46,13 +46,13 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * 
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.15 2006-12-12 17:18:47 anatom Exp $
+ * @version $Id: EndEntityProfile.java,v 1.16 2006-12-13 10:34:10 anatom Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
-    private static Logger log = Logger.getLogger(EndEntityProfile.class);
+    private static final Logger log = Logger.getLogger(EndEntityProfile.class);
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
 
     public static final float LATEST_VERSION = 6;
 

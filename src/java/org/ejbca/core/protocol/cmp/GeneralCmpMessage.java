@@ -31,13 +31,13 @@ import com.novosec.pkix.asn1.crmf.CertTemplate;
 /**
  * Message class for CMP PKI confirm and CertCOnf messages
  * @author tomas
- * @version $Id: GeneralCmpMessage.java,v 1.2 2006-12-12 17:18:46 anatom Exp $
+ * @version $Id: GeneralCmpMessage.java,v 1.3 2006-12-13 10:35:09 anatom Exp $
  */
 public class GeneralCmpMessage extends BaseCmpMessage {
 
 	private static final Logger log = Logger.getLogger(GeneralCmpMessage .class);
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
 	
     /**
      * Determines if a de-serialized file is compatible with this class.

@@ -18,7 +18,7 @@ public class LdapSearchPublisher extends LdapPublisher {
 	
 	private static final Logger log = Logger.getLogger(LdapSearchPublisher.class);
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();	
+    private static final InternalResources intres = InternalResources.getInstance();
 	
 	public static final int TYPE_LDAPSEARCHPUBLISHER = 4;
 		

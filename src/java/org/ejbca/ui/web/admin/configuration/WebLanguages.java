@@ -26,11 +26,12 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  * the presented text in the users prefered language.
  *
  * @author  Philip Vendil
- * @version $Id: WebLanguages.java,v 1.2 2006-09-27 09:22:42 herrvendil Exp $
+ * @version $Id: WebLanguages.java,v 1.3 2006-12-13 10:36:03 anatom Exp $
  */
 public class WebLanguages implements java.io.Serializable {
 	
-	InternalResources internalResources = InternalResources.getInstance();
+    /** Internal localization of logs and errors */
+    private static final InternalResources intres = InternalResources.getInstance();
 
     /** Construtor used to load static content. An instance must be declared with this constructor before
      *  any WebLanguage object can be used. */
@@ -78,7 +79,7 @@ public class WebLanguages implements java.io.Serializable {
           returnvalue= languages[userssecondarylanguage].getProperty(template);
         }
         if(returnvalue == null){
-            returnvalue= internalResources.getLocalizedMessage(template);
+            returnvalue= intres.getLocalizedMessage(template);
         }        
       }catch(java.lang.NullPointerException e){}
       if(returnvalue == null)

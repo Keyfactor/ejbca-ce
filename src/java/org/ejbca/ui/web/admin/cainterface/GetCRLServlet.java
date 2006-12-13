@@ -43,7 +43,7 @@ import org.ejbca.util.CertTools;
  * <ul>
  * <li>crl - gets the latest CRL.
  *
- * @version $Id: GetCRLServlet.java,v 1.3 2006-12-13 09:49:05 anatom Exp $
+ * @version $Id: GetCRLServlet.java,v 1.4 2006-12-13 10:35:30 anatom Exp $
  * 
  * @web.servlet name = "GetCRL"
  *              display-name = "GetCRLServlet"
@@ -55,9 +55,9 @@ import org.ejbca.util.CertTools;
  */
 public class GetCRLServlet extends HttpServlet {
 
-    private static Logger log = Logger.getLogger(GetCRLServlet.class);
+    private static final Logger log = Logger.getLogger(GetCRLServlet.class);
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
 
     private static final String COMMAND_PROPERTY_NAME = "cmd";
     private static final String COMMAND_CRL = "crl";

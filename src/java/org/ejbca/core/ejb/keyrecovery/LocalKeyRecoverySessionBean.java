@@ -59,7 +59,7 @@ import org.ejbca.util.CertTools;
  * Stores key recovery data. Uses JNDI name for datasource as defined in env 'Datasource' in
  * ejb-jar.xml.
  *
- * @version $Id: LocalKeyRecoverySessionBean.java,v 1.9 2006-12-11 14:53:31 anatom Exp $
+ * @version $Id: LocalKeyRecoverySessionBean.java,v 1.10 2006-12-13 10:33:10 anatom Exp $
  *
  * @ejb.bean
  *   display-name="Stores key recovery data"
@@ -168,7 +168,7 @@ import org.ejbca.util.CertTools;
 public class LocalKeyRecoverySessionBean extends BaseSessionBean {
 
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
     
     /** The local home interface of hard token issuer entity bean. */
     private KeyRecoveryDataLocalHome keyrecoverydatahome = null;

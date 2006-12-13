@@ -182,7 +182,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     public static final int NO_ISSUER = 0;
 
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
     
     /** The local home interface of hard token issuer entity bean. */
     private HardTokenIssuerDataLocalHome hardtokenissuerhome = null;

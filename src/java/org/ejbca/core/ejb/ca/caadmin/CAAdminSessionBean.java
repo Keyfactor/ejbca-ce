@@ -102,7 +102,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.33 2006-12-06 12:05:49 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.34 2006-12-13 10:32:42 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -208,10 +208,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
     /** The local interface of the job runner session bean used to create crls.*/
     private ICreateCRLSessionLocal jobrunner;
 
-    /**
-     * The internal resources instance
-     */
-    private static InternalResources intres = InternalResources.getInstance(); 
+    /** Internal localization of logs and errors */
+    private static final InternalResources intres = InternalResources.getInstance();
 
     /**
      * Default create for SessionBean without any creation Arguments.

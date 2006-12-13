@@ -118,13 +118,13 @@ import org.ejbca.util.CertTools;
  *   value="${ocsp.unidcacert}"
  *   
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson, Lars Silven
- * @version  $Id: OCSPServletBase.java,v 1.22 2006-12-13 09:49:06 anatom Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.23 2006-12-13 10:36:04 anatom Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
     private static final Logger m_log = Logger.getLogger(OCSPServletBase.class);
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
 
     private Admin m_adm;
 

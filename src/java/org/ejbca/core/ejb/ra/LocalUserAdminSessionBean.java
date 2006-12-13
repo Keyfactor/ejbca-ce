@@ -93,7 +93,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.31 2006-12-12 15:21:17 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.32 2006-12-13 10:33:44 anatom Exp $
  * 
  * @ejb.bean
  *   display-name="UserAdminSB"
@@ -231,7 +231,7 @@ import org.ejbca.util.query.UserMatch;
 public class LocalUserAdminSessionBean extends BaseSessionBean {
 
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
 
     /**
      * The local interface of RaAdmin Session Bean.

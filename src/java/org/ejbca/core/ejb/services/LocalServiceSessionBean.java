@@ -146,10 +146,8 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
      */
     private transient ILogSessionLocal logsession = null;
     
-    /**
-     * The internal resources instance
-     */
-    private static InternalResources intres = InternalResources.getInstance(); 
+    /** Internal localization of logs and errors */
+    private static final InternalResources intres = InternalResources.getInstance();
 
 
     /**

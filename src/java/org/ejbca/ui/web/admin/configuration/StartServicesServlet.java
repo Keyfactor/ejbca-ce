@@ -34,7 +34,7 @@ import org.ejbca.core.model.InternalResources;
  *
  * 
  *
- * @version $Id: StartServicesServlet.java,v 1.8 2006-12-13 09:49:04 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.9 2006-12-13 10:36:03 anatom Exp $
  * 
  * @web.servlet name = "StartServices"
  *              display-name = "StartServicesServlet"
@@ -48,13 +48,13 @@ import org.ejbca.core.model.InternalResources;
  *   type="java.lang.String"
  *   value="${logging.log4j.config}"
  * 
- * @version $Id: StartServicesServlet.java,v 1.8 2006-12-13 09:49:04 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.9 2006-12-13 10:36:03 anatom Exp $
  */
 public class StartServicesServlet extends HttpServlet {
 
-	private static Logger log = Logger.getLogger(StartServicesServlet.class);
+	private static final Logger log = Logger.getLogger(StartServicesServlet.class);
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
     
     /**
      * Method used to remove all active timers

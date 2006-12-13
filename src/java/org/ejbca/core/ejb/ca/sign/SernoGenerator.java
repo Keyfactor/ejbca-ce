@@ -36,13 +36,13 @@ import org.ejbca.core.model.InternalResources;
  * Therefore, minimum 8 octets value is 0080000000000000 and maximum value
  * is 7FFFFFFFFFFFFFFF."
  *
- * @version $Id: SernoGenerator.java,v 1.4 2006-12-12 17:03:12 anatom Exp $
+ * @version $Id: SernoGenerator.java,v 1.5 2006-12-13 10:32:37 anatom Exp $
  */
 public class SernoGenerator implements ISernoGenerator {
     /** Log4j instance */
     private static Logger log = Logger.getLogger(SernoGenerator.class);
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
 
     /** random generator algorithm */
     private static String algorithm = "SHA1PRNG";

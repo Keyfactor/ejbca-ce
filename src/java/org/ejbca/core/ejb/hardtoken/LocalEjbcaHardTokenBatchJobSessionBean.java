@@ -108,7 +108,7 @@ public class LocalEjbcaHardTokenBatchJobSessionBean extends BaseSessionBean  {
     public static final int MAX_RETURNED_QUEUE_SIZE = 300;
 
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
     
     /** Columns in the database used in select */
     private static final String USERDATA_COL = "username, subjectDN, subjectAltName, subjectEmail, status, type, clearpassword, timeCreated, timeModified, endEntityprofileId, certificateProfileId, tokenType, hardTokenIssuerId, cAId";

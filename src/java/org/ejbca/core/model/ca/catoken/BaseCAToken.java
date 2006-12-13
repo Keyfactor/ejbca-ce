@@ -36,14 +36,14 @@ import org.ejbca.core.model.SecConst;
 
 /**
  * @author lars
- * @version $Id: BaseCAToken.java,v 1.10 2006-12-12 17:03:14 anatom Exp $
+ * @version $Id: BaseCAToken.java,v 1.11 2006-12-13 10:34:09 anatom Exp $
  */
 public abstract class BaseCAToken implements IHardCAToken {
 
     /** Log4j instance */
     private static final Logger log = Logger.getLogger(BaseCAToken.class);
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
 
     final private String sProviderName;
     final private String sSlotLabelKey;

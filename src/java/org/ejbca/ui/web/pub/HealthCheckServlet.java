@@ -43,12 +43,12 @@ import org.ejbca.util.CertTools;
  * to the url defined in web.xml.
  *
  * @author Philip Vendil
- * @version $Id: HealthCheckServlet.java,v 1.6 2006-12-13 09:48:58 anatom Exp $
+ * @version $Id: HealthCheckServlet.java,v 1.7 2006-12-13 10:36:04 anatom Exp $
  */
 public class HealthCheckServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(HealthCheckServlet.class);
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
     
     private IHealthCheck healthcheck = null;
     private IHealthResponse healthresponse = null;

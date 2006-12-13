@@ -37,14 +37,14 @@ import org.ejbca.util.JDBCUtil;
  * Publisher writing certificates to an external Database, used by external OCSP responder.
  * 
  * @author lars
- * @version $Id: ExternalOCSPPublisher.java,v 1.11 2006-12-12 17:02:49 anatom Exp $
+ * @version $Id: ExternalOCSPPublisher.java,v 1.12 2006-12-13 10:34:08 anatom Exp $
  *
  */
 public class ExternalOCSPPublisher implements ICustomPublisher {
 
     private static final Logger log = Logger.getLogger(ExternalOCSPPublisher.class);
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
 
     private String dataSource;
     private boolean protect = false;

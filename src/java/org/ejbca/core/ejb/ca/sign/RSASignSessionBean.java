@@ -158,7 +158,7 @@ import org.ejbca.util.KeyTools;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
  *   
- *   @version $Id: RSASignSessionBean.java,v 1.30 2006-12-12 17:03:12 anatom Exp $
+ *   @version $Id: RSASignSessionBean.java,v 1.31 2006-12-13 10:32:37 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -184,10 +184,8 @@ public class RSASignSessionBean extends BaseSessionBean {
      */
     private ILogSessionLocal logsession;
 
-    /**
-     * The internal resources instance
-     */
-    private static InternalResources intres = InternalResources.getInstance(); 
+    /** Internal localization of logs and errors */
+    private static final InternalResources intres = InternalResources.getInstance();
     
     /**
      * Source of good random data

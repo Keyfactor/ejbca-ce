@@ -103,7 +103,7 @@ import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
 public class LocalUserDataSourceSessionBean extends BaseSessionBean {
 
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
     
     /**
      * The local home interface of user data source entity bean.

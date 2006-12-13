@@ -24,14 +24,14 @@ import org.ejbca.core.model.services.intervals.DummyInterval;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: BaseWorker.java,v 1.5 2006-12-12 15:52:48 anatom Exp $
+ * @version $Id: BaseWorker.java,v 1.6 2006-12-13 10:35:09 anatom Exp $
  */
 public abstract class BaseWorker extends BaseServiceComponent implements IWorker {
 
 	private static final Logger log = Logger.getLogger(BaseWorker.class);
 	
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
     
     protected Properties properties = null;
     protected String serviceName = null;

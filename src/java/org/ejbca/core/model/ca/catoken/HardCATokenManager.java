@@ -25,7 +25,7 @@ import org.ejbca.core.model.InternalResources;
  * Each HardCaToken plug-in should register itself by using the method register.
  * The CA keeps a registry of CA tokens created here.
  * 
- * @version $Id: HardCATokenManager.java,v 1.5 2006-12-12 17:03:14 anatom Exp $
+ * @version $Id: HardCATokenManager.java,v 1.6 2006-12-13 10:34:09 anatom Exp $
  * 
  */
 public class HardCATokenManager {
@@ -33,7 +33,7 @@ public class HardCATokenManager {
     /** Log4j instance for Base */
     private static transient Logger log = Logger.getLogger(HardCATokenManager.class);
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
 
     /** Registry of available hard ca token classes that can be instsiated. */
     private Hashtable availablehardcatokens = new Hashtable();

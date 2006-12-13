@@ -24,8 +24,6 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import javax.ejb.CreateException;
-import javax.ejb.DuplicateKeyException;
-import javax.ejb.FinderException;
 import javax.naming.Context;
 import javax.naming.NamingException;
 
@@ -39,16 +37,10 @@ import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
-import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
@@ -61,7 +53,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * Allow rfc822Name and UPN name in altNames in the end entity profile
  *  
  * @author tomas
- * @version $Id: CrmfRAPbeRequestTest.java,v 1.8 2006-12-04 12:58:44 anatom Exp $
+ * @version $Id: CrmfRAPbeRequestTest.java,v 1.9 2006-12-13 10:36:04 anatom Exp $
  */
 public class CrmfRAPbeRequestTest extends CmpTestCase {
 	

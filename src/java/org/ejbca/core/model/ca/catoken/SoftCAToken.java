@@ -35,14 +35,14 @@ import org.ejbca.util.KeyTools;
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: SoftCAToken.java,v 1.5 2006-12-12 17:03:14 anatom Exp $
+ * @version $Id: SoftCAToken.java,v 1.6 2006-12-13 10:34:09 anatom Exp $
  */
 public class SoftCAToken extends CAToken implements java.io.Serializable{
 
     /** Log4j instance */
     private static final Logger log = Logger.getLogger(SoftCAToken.class);
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
 
     /** When upgradeing this version, you must up the version of the CA as well, 
      * otherwise the upgraded CA token will not be stored in the database.

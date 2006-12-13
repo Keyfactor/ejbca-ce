@@ -16,10 +16,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.Properties;
 
 import javax.ejb.EJBException;
 
+import org.apache.log4j.Logger;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
 /**
@@ -31,14 +33,27 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  *  
  * @author Philip Vendil 2006 sep 24
  *
- * @version $Id: InternalResources.java,v 1.5 2006-12-05 17:57:51 anatom Exp $
+ * @version $Id: InternalResources.java,v 1.6 2006-12-13 10:33:42 anatom Exp $
  */
-public class InternalResources {
+public class InternalResources implements Serializable {
 	
-	protected static InternalResources instance = null;
+    private static final Logger log = Logger.getLogger(InternalResources.class);
+    
+    /**
+     * Determines if a de-serialized file is compatible with this class.
+     *
+     * Maintainers must change this value if and only if the new version
+     * of this class is not compatible with old versions. See Sun docs
+     * for <a href=http://java.sun.com/products/jdk/1.1/docs/guide
+     * /serialization/spec/version.doc.html> details. </a>
+     *
+     */
+    private static final long serialVersionUID = -1001L;
+
+    protected static InternalResources instance = null;
 	
-	protected static Properties primaryResource = new Properties();
-	protected static Properties secondaryResource = new Properties();
+	private static Properties primaryResource = new Properties();
+	private static Properties secondaryResource = new Properties();
 	
 	private static final String RESOURCE_LOCATION =  "/intresources/intresources.";
 	
@@ -67,8 +82,16 @@ public class InternalResources {
 	    }
 		
 		try {
-			primaryResource.load(primaryStream);
-			secondaryResource.load(secondaryStream);
+			if (primaryStream != null) {
+				primaryResource.load(primaryStream);				
+			} else {
+				log.error("primaryResourse == null");
+			}
+			if (secondaryStream != null) {
+				secondaryResource.load(secondaryStream);				
+			} else {
+				log.error("secondaryResource == null");
+			}
 		} catch (IOException e) {			
 			throw new EJBException("Error reading internal resourcefile", e);
 		}
@@ -78,7 +101,7 @@ public class InternalResources {
 	 * Metod that returs a instance of the InternalResources
 	 * might be null if load() haven't been called before this method.
 	 */
-	public static InternalResources getInstance(){
+	public static synchronized InternalResources getInstance(){
 		if(instance == null){
 			instance = new InternalResources(false);
 		}

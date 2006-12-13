@@ -49,13 +49,13 @@ import org.ejbca.util.KeyTools;
 
 /** Handles and maintains the CA-part of the OCSP functionality
  * 
- * @version $Id: OCSPCAService.java,v 1.10 2006-12-12 17:03:11 anatom Exp $
+ * @version $Id: OCSPCAService.java,v 1.11 2006-12-13 10:33:43 anatom Exp $
  */
 public class OCSPCAService extends ExtendedCAService implements java.io.Serializable{
 
     private static Logger m_log = Logger.getLogger(OCSPCAService.class);
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
 
     public static final float LATEST_VERSION = 2; 
     

@@ -94,13 +94,13 @@ import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silv�n PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.31 2006-12-13 09:49:06 anatom Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.32 2006-12-13 10:36:04 anatom Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChecker {
 
-    static final protected Logger m_log = Logger.getLogger(OCSPServletStandAlone.class);
+    static final private Logger m_log = Logger.getLogger(OCSPServletStandAlone.class);
     /** Internal localization of logs and errors */
-    private InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
 
     private String mKeystoreDirectoryName;
     private char mKeyPassword[];
