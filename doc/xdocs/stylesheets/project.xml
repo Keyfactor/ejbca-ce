@@ -42,6 +42,10 @@
                 <item name="CVS Repositories"      href="http://ejbca.cvs.sourceforge.net/ejbca"/>
             </menu>
 
+            <menu name="Continous integration">
+                <item name="Hudson" href="/hudson.html"/>
+            </menu>
+
         </menusection>
 
     </body>

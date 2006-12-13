@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<document>
+
+  <properties>
+    <title>Continous integration</title>
+  </properties>
+
+<body>
+  <section name="Hudson">
+    <p>
+    Bruno Bonfils has set up a <a href="http://hudson.dev.java.net/">Hudson</a> server for continous integration of EJBCA.
+    </p>
+    <p>
+    The hudson for ejbca is available here [2], I keep the 10th latests build, so you're able to see the CVS logs, 
+    the result of junit tests, and so more.
+    The result of the build is available here [3], with the following superadmin.p12 [4] certificate (the password is ejbca).
+    </p>
+    <p>
+    <ol>
+    <li><a href="http://hudson.dev.java.net/">https://hudson.dev.java.net/</a></li>
+    <li><a href="http://ejbca.asyd.net/hudson/">http://ejbca.asyd.net/hudson/</a></li>
+    <li><a href="https://ejbca.asyd.net/ejbca/">https://ejbca.asyd.net/ejbca/</a></li>
+    <li><a href="http://lei.asyd.net/hudson/job/EJBCA/ws/p12/superadmin.p12">http://lei.asyd.net/hudson/job/EJBCA/ws/p12/superadmin.p12</a></li>
+    </ol>
+    </p>
+  </section>
+
+</body>
+</document>
+
