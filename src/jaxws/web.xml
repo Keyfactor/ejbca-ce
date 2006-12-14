@@ -26,8 +26,6 @@
   </listener>
   <servlet>
     <servlet-name>ejbcaws</servlet-name>
-    <display-name>ejbcaws</display-name>
-    <description>JAX-WS endpoint - ejbcaws</description>
     <servlet-class>com.sun.xml.ws.transport.http.servlet.WSServlet</servlet-class>
     <load-on-startup>1</load-on-startup>
   </servlet>
