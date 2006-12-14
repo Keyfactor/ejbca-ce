@@ -14,9 +14,10 @@ weblogic-oracle-columntype - which is specific for Weblogic.
 httpserver.privhttps=7002 - default SSL port of Weblogic is 7002, default of EJBCA on JBoss is 8443.
 
 Edit conf/web.properties:
+set 'httpserver.pubhttp=7001'
+set 'httpserver.privhttps=7002'
 set 'web.jsfimpl=nojsf', this must be done until we have fixed JSF configuration for weblogic.
-set httpserver.pubhttp=7001
-set httpserver.privhttps=7002
+set 'ejbcaws.enabled=false', this must be done until we have fixed JaxWS configuration for weblogic.
 
 If you had issued an 'ant' command before, it is now important to do 'ant clean' before building again.
 
