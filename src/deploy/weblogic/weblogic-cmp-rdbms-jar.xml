@@ -343,7 +343,7 @@
       </field-map>
       <field-map>
          <cmp-field>comment</cmp-field>
-         <dbms-column>comment</dbms-column>
+         <dbms-column>comment_</dbms-column>
       </field-map>
       </table-map>
 
