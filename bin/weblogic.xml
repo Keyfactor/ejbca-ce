@@ -1,4 +1,4 @@
-<project name="glassfish" basedir=".." default="j2ee:deploy">
+<project name="weblogic" basedir=".." default="j2ee:deploy">
 	<property environment="env"/>
 
     <property name="appserver.home" value="${env.APPSRV_HOME}"/>
