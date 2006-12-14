@@ -29,7 +29,7 @@ If you had issued an 'ant' command before, it is now important to do 'ant clean'
 Build ejbca.ear (ejbca/dist/ejbca.ear) with 'ant'.
 
 5.5 If you are using Weblogic 9.x. Replace the generated file tmp/bin/dd/META_INF/weblogic-cmp-rdbms-jar.xml with the file 
-    with the same name located in src/appserver/weblogic.
+    with the same name located in src/deploy/weblogic.
     Run 'ant' again to build an ejbca.ear using the new file.
     
 6. Create EJBCA domain with weblogic configuration wizard, select Basic weblogic server domain, Express,
