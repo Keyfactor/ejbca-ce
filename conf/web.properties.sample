@@ -69,3 +69,9 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 #
 # Default: myfaces
 #web.jsfimpl=myfaces
+
+# ------------ Web service (jaxws) configuration ---------------------
+# 
+# Disable this (set to false) if you do not want to deploy the WS-API in EJBCA
+# Default: true
+#ejbcaws.enabled=true

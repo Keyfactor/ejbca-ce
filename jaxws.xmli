@@ -2,11 +2,6 @@
 
 <project basedir="."  name="jaxws">
 	
-	<condition property="jdk15.present">
-	  <equals arg1="${ant.java.version}" arg2="1.5"/>
-	</condition>
-
-
     <path id="jaxws.classpath">
     	<fileset dir="lib/jaxws">
     	  <include name="**/*.jar"/>
@@ -81,7 +76,16 @@
 
     </target>
 	
-    <target name="ejbcaws.war" depends="ws.build" if="jdk15.present">
+	<target name="ejbcawsconditioncheck">
+		<condition property="ejbcaws.conditionenabled">
+		    <and>
+			<istrue value="${ejbcaws.enabled}"/>
+			<equals arg1="${ant.java.version}" arg2="1.5"/>
+			</and>
+		</condition>
+	</target>
+	
+    <target name="ejbcaws.war" depends="ejbcawsconditioncheck,ws.build" if="ejbcaws.conditionenabled">
         <copy todir="tmp/jaxws/gen-classes/server">
     	  <fileset dir="${build}">
             <include name="org/ejbca/core/protocol/ws/*.class"/>

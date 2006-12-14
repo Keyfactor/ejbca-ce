@@ -41,6 +41,7 @@ httpsserver.password   = ${httpsserver.password}
 web.availablelanguages = ${web.availablelanguages}
 web.contentencoding    = ${web.contentencoding}
 web.jsfimpl            = ${web.jsfimpl}
+ejbcaws.enabled        = ${ejbcaws.enabled}
 intresources.preferredlanguage   = ${intresources.preferredlanguage}     	
 intresources.secondarylanguage   = ${intresources.secondarylanguage}
 hardtoken.diplaysensitiveinfo    = ${hardtoken.diplaysensitiveinfo}

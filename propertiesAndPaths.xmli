@@ -89,6 +89,7 @@
     <property name="healthcheck.src" value="${src}/publicweb/healthcheck" />
     <property name="healthcheckwar" value="${dist.dir}/healthcheck.war" />
 	
+	<property name="ejbcaws.enabled" value="true" />
     <property name="ejbcaws.src" value="${src}/wsee" />
 	<property name="ejbcaws.build" value="${tmp}/ejbcaws.war" />  
     <property name="ejbcawswar" value="${dist.dir}/ejbcaws.war" />
