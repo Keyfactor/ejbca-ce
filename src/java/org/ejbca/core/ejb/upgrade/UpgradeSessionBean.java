@@ -45,7 +45,7 @@ import se.anatom.ejbca.log.OldLogConfigurationDataLocalHome;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.10 2006-11-10 09:29:34 anatom Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.11 2006-12-14 12:07:38 anatom Exp $
  * @ejb.bean
  *   display-name="UpgradeSB"
  *   name="UpgradeSession"
@@ -57,6 +57,8 @@ import se.anatom.ejbca.log.OldLogConfigurationDataLocalHome;
  *
  * @ejb.transaction type="RequiresNew"
  * 
+ * @weblogic.enable-call-by-reference True
+ *
  * @ejb.home
  *   extends="javax.ejb.EJBHome"
  *   local-extends="javax.ejb.EJBLocalHome"
