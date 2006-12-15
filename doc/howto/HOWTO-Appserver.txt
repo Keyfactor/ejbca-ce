@@ -64,26 +64,27 @@ See the file create-tables-ejbca3.sql for table definitions, or just run /doc/ho
 
 10. Configure SSL in Weblogic:
 a) Copy %JAVA_HOME%/jre/lib/security/cacerts to %BEA_HOME%/jre/lib/security, so that Weblogic can trust the initial CA installed 
-when doing 'ant install', you can get the cert with 'bin/ejbca.sh ca getrootcert cert.pem'.
+when doing 'ant install'.
+You can create cacerts file with 'sudo rm $JAVA_HOME/jre/lib/security/cacerts' and then 'sudo ant javatruststore'.
+You can get the CA certificate with 'bin/ejbca.sh ca getrootcert cert.pem'.
 b) Configure weblogic server for SSL.
    server->configuration->keystore&ssl, click "Change", select "Custom Identity and Java Standard Trust"
-     Custom Identity Keystore: path to tomcat.jks generated while "ant isntall",
-     Private Key Alias: localhost
-     Passphrase: serverpwd, specified in ejbca.properties.
+     Custom Identity Keystore: path to tomcat.jks generated while "ant install (ejbca/p12/tomcat.jks)",
+     Private Key Alias: localhost (httpsserver.hostname in conf/web.properties).
+     Passphrase: serverpwd (httpsserver.password in conf/web.properties).
  
    server->configuration->keystore&ssl->advanced options->Server Attributes->Two Way Client Cert Behavior:
      Client Certs Requested And Enforced
 
    server->configuration->general, check "SSL Listen Port Enabled", note that the port should be same as httpserver.privhttps in ejbca.properties.
 
-11.Copy %EJBCA_HOME%/src/adminweb/languages/*.* to /tmp/languages/*.* , where /tmp should be at the same disk with weblogic,
-   d:\ for example, as org.ejbca.ui.web.admin.configuration.WebLanguages.init() has a bug of reading those property files
-   within the servlet context on weblogic. Need to be addressed in the future.
-   
 This should make the admin-GUI work, note to install the  Unlimited Strength Jurisdiction Policy Files from java.sun.com 
 for both sun's JDK and BEA's JDK first before installation.
+
 If installing with Oracle, perhaps you need to replace jdbc driver at weblogic_home\server\lib, weblogic_home\server\ext\jdbc\oracle\920, 10g 
 all to 10.1.0.2, in my case which is Oracle 9.2.0.
+I have used Beas Oracle driver in Weblogic 9.2 with Oracle XE 10, and that works fine. 
+Your mileage may vary, some JDBC drivers were known to be buggy earlier, but it seems to have improved.
 
 
 TransactionTimeoutException in Weblogic
