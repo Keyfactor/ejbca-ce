@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.12 2006-12-11 13:47:09 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.13 2006-12-15 19:54:34 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -94,7 +94,7 @@ ca.ocspkeystorepass=foo123
 # ------------ Log4j logging configuration ---------------------
 # 
 # Enable this by setting it to a log4j.xml configuration file configuring the logging for EJBCA.
-# Not needed for JBoss, that configures log4j itself. Glassfish does not use log4j, so here we need to configure this.
+# Not needed for JBoss, that configures log4j itself. Glassfish and Weblogic does not use log4j, so here we need to configure this.
 # Possible values: false (don't explicitly configure log4j), basic (use basic configurator putting everything on the console) 
 #                  or a path to a log4j.xml configuration file.
 # Default: false

@@ -7,15 +7,18 @@ Note: EJBCA should work fine with Weblogic 8.x/9.x
 1. Set the environment variable APPSRV_HOME pointing to for example /bea/weblogic92
 (weblogic.jar is located under APPSRV_HOME/server/lib).
 
-2. Edit conf/ejbca.properties, it's important to at least set up the database parameters.
-Make special note to:
-datasource.jndi-name-prefix - which is specific for Weblogic.
-weblogic-oracle-columntype - which is specific for Weblogic.
-httpserver.privhttps=7002 - default SSL port of Weblogic is 7002, default of EJBCA on JBoss is 8443.
+2. Edit conf/*.properties, it's important to at least set up the database parameters.
+
+Edit conf/ejbca.properties:
+set 'logging.log4j.config=basic'
+
+Edit conf/database.properties
+set 'datasource.jndi-name-prefix' - which is specific for Weblogic.
+set 'weblogic-oracle-columntype' - which is specific for Weblogic.
 
 Edit conf/web.properties:
-set 'httpserver.pubhttp=7001'
-set 'httpserver.privhttps=7002'
+set 'httpserver.pubhttp=7001' - default http port of Weblogic is 7001, default of EJBCA on JBoss is 8080.
+set 'httpserver.privhttps=7002' - default SSL port of Weblogic is 7002, default of EJBCA on JBoss is 8443.
 set 'web.jsfimpl=nojsf', this must be done until we have fixed JSF configuration for weblogic.
 set 'ejbcaws.enabled=false', this must be done until we have fixed JaxWS configuration for weblogic.
 
