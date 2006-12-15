@@ -25,7 +25,7 @@ import org.ejbca.util.CertTools;
 /**
  * Gets and prints info about the CA.
  *
- * @version $Id: CaInfoCommand.java,v 1.2 2006-05-19 10:52:47 anatom Exp $
+ * @version $Id: CaInfoCommand.java,v 1.3 2006-12-15 15:07:10 anatom Exp $
  */
 public class CaInfoCommand extends BaseCaAdminCommand {
     /**
@@ -69,7 +69,7 @@ public class CaInfoCommand extends BaseCaAdminCommand {
             if (chain.size() > 0) {
                 X509Certificate rootcert = (X509Certificate)chain.get(chain.size()-1);
                 getOutputStream().println("Root CA DN: "+CertTools.getSubjectDN(rootcert));
-                getOutputStream().println("Root CA id: "+CertTools.getSubjectDN(rootcert));
+                getOutputStream().println("Root CA id: "+CertTools.getSubjectDN(rootcert).hashCode());
                 getOutputStream().println("Certificate valid from: "+rootcert.getNotBefore().toString());
                 getOutputStream().println("Certificate valid to: "+rootcert.getNotAfter().toString());
                 getOutputStream().println("Root CA keysize: "+((RSAPublicKey)rootcert.getPublicKey()).getModulus().bitLength());            
