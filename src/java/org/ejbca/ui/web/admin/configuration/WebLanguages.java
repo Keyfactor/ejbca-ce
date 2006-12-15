@@ -17,6 +17,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.servlet.ServletContext;
+
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
@@ -26,7 +28,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  * the presented text in the users prefered language.
  *
  * @author  Philip Vendil
- * @version $Id: WebLanguages.java,v 1.3 2006-12-13 10:36:03 anatom Exp $
+ * @version $Id: WebLanguages.java,v 1.4 2006-12-15 15:41:58 anatom Exp $
  */
 public class WebLanguages implements java.io.Serializable {
 	
@@ -53,7 +55,14 @@ public class WebLanguages implements java.io.Serializable {
                 String propsfile = "/" + globalconfiguration.getLanguagePath() + "/"
                 + globalconfiguration.getLanguageFilename() + "."
                 + availablelanguages[i].toLowerCase() +".properties";
-                InputStream is = this.getClass().getResourceAsStream(propsfile);          
+                
+                InputStream is = null;
+                ServletContext ctx = globalconfiguration.getServletContext();
+                if (ctx != null) {
+                	is = ctx.getResourceAsStream(propsfile);
+                } else {
+                    is = this.getClass().getResourceAsStream(propsfile);                	
+                }
                 if(is==null) {
                     //if not available as stream, try it as a file
                     is = new FileInputStream("/tmp"+propsfile);

@@ -53,7 +53,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.7 2006-12-02 11:17:57 anatom Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.8 2006-12-15 15:41:58 anatom Exp $
  */
 public class EjbcaWebBean implements java.io.Serializable {
 
@@ -160,6 +160,9 @@ public class EjbcaWebBean implements java.io.Serializable {
     		// Check if user certificate is revoked
     		authorizedatahandler.authenticate(certificates[0]);
     		
+    		// Set ServletContext for reading language files from resources
+    		globalconfiguration.setServletContext(request.getSession(true).getServletContext());
+    		
     		// Check if certificate and user is an RA Admin
     		userdn = CertTools.getSubjectDN(certificates[0]);
     		log.debug("Verifying authorization of '"+userdn);    		
@@ -227,6 +230,9 @@ public class EjbcaWebBean implements java.io.Serializable {
         commonInit(); 
         
         adminspreferences = new AdminPreferenceDataHandler(administrator);
+
+		// Set ServletContext for reading language files from resources
+		globalconfiguration.setServletContext(request.getSession(true).getServletContext());
 
         if(currentadminpreference == null){
            currentadminpreference = adminspreferences.getDefaultAdminPreference();
