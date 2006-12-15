@@ -4,6 +4,9 @@ CONFIGURING Weblogic
 
 Note: EJBCA should work fine with Weblogic 8.x/9.x
 
+Note: After installing Weblogic, don't forget to install the "Unlimited Strenth Crypto" jce files
+in Weblogics jre and jrockit. It's the same way as for a regular installation, see User's Guide.
+
 1. Set the environment variable APPSRV_HOME pointing to for example /bea/weblogic92
 (weblogic.jar is located under APPSRV_HOME/server/lib).
 
