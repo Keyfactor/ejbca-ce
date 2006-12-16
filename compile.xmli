@@ -113,6 +113,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
         <delete dir="${apidoc}" />
         <delete dir="${tmp}"/>
         <delete file="${mainbin}/jndi.properties" />
+        <delete file="${src.java}/jndi.properties" />
     </target>
 
     <!-- =================================================================== -->
@@ -139,6 +140,23 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
         </copy>
     </target>
 
+    <!-- =================================================================== -->
+    <!-- Postprocessing if there are any tasks that we must do after deployment descriptors have been created by XDoclet -->
+    <!-- =================================================================== -->
+    <target name="dd-postprocess" depends="wls-dd-postprocess">
+         <!-- This is only a placeholder target, create a new target and add to the depends for this target -->
+    </target>
+    
+    <!-- Weblogic is only supported up to version 8.1 in XDoclet. For Weblogic 9 we must use a manually edited cmp-mapping file -->
+	<condition property="weblogic.version9">
+		<contains string="${appserver.home}" substring="9"/>
+	</condition>
+
+    <target name="wls-dd-postprocess" if="weblogic.version9">
+         <!-- If we are using weblogic 9.x, we must replace the generated cmp-mappings file with a manually created one -->
+		<copy  file="${mainsrc}/deploy/weblogic/weblogic-cmp-rdbms-jar.xml" tofile="${src.dd}/META-INF/weblogic-cmp-rdbms-jar.xml" overwrite="true" failonerror="true"/>
+    </target>
+    
     <!-- =================================================================== -->
     <!-- Autogenerate all ejb interfaces and deployment descriptors          -->
     <!-- =================================================================== -->
@@ -202,6 +220,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
                 validatexml="false" /> 
 -->                
         </ejbdoclet>
+        
         <webdoclet force="true" destdir="${src.gen}" excludedtags="@version,@author">
             <fileset dir="${src.java}">
                 <include name="**/*Servlet.java" />
@@ -240,6 +259,10 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
              distributable="false" 	
              validatexml="false" />
         </webdoclet>
+        
+        <!-- Do some postprecessing on created dd's if needed -->
+        <antcall target="dd-postprocess" />
+        
     </target>
 	
     <!-- =================================================================== -->
@@ -404,7 +427,8 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.dbquery@" value="${ocsphealthcheck.dbquery}"/>	
 		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.authorizedips@" value="${ocsphealthcheck.authorizedips}"/>	
 		<!-- Copy the correct jndi settings for the selected application server -->
-		<copy file="${mainbin}/jndi.properties.${appserver.type}" tofile="${mainbin}/jndi.properties" overwrite="true" failonerror="false"/>
+		<copy file="${mainbin}/jndi.properties.${appserver.type}" tofile="${mainbin}/jndi.properties" overwrite="false" failonerror="false"/>
+		<copy file="${mainsrc}/java/jndi.properties.${appserver.type}" tofile="${mainsrc}/java/jndi.properties" overwrite="false" failonerror="false"/>
 	</target>
 
     <!--

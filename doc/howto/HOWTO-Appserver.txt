@@ -30,20 +30,17 @@ If you had issued an 'ant' command before, it is now important to do 'ant clean'
 
 Build ejbca.ear (ejbca/dist/ejbca.ear) with 'ant'.
 
-3 If you are using Weblogic 9.x. Replace the generated file tmp/bin/dd/META_INF/weblogic-cmp-rdbms-jar.xml with the file 
-    with the same name located in src/deploy/weblogic.
-    Run 'ant' again to build an ejbca.ear using the new file.
-    
-4. Edit 'jndi.properties' in the directory 'ejbca/bin'and modify the principal and credentials 
+3. Edit 'jndi.properties' in the directory 'ejbca/bin'and modify the principal and credentials 
    according to you weblogic domain's setting (same as the user name/password to login weblogic console).
+   The default in the EJBCA installation is system/weblogic. Every time you issue a 'ant clean' command, you must re-do this step.
 
-5. Create EJBCA domain with weblogic configuration wizard, select Basic weblogic server domain, Express,
+4. Create EJBCA domain with weblogic configuration wizard, select Basic weblogic server domain, Express,
    Development mode, sun's JDK at bea's home directory, and remember the admin username/password.
    - Wls 9.2 will create a default 'mydomain' for you the first time it is started.
    - Access the Weblogic management console at: http://127.0.0.1:7001/console/
    - You can set WLS_USER and WLS_PW environment variables so you don't have to enter username/pwd when starting Weblogic.
    
-6. Create EjbcaPool and EjbcaDS in Weblogic, the JNDI name should be the one specified in ejbca.properties.
+5. Create EjbcaPool and EjbcaDS in Weblogic, the JNDI name should be the one specified in ejbca.properties.
 Create tables in the database configured for EjbcaPool and EjbcaDS in Weblogic.
 - You can do an 'ant bootstrap' to JBoss if you want JBoss to create the tables for you.
 - On oracle XE you can run for example: sqlplus oracle@XE @create-tables-ejbca3-oracle.sql
@@ -53,7 +50,7 @@ Create tables in the database configured for EjbcaPool and EjbcaDS in Weblogic.
 
 See the file create-tables-ejbca3.sql for table definitions, or just run /doc/howto/create-tables-ejbca3-oracle.sql for Oracle.
 
-7.Create a new java mail session for user notification in UserAdminSessionBean. In Weblogic, the JNDI name should be "EjbcaMail".
+6.Create a new java mail session for user notification in UserAdminSessionBean. In Weblogic, the JNDI name should be "EjbcaMail".
   key in the properties:
   mail.store.protocol=pop3
   mail.transport.protocol=smtp
@@ -64,12 +61,12 @@ See the file create-tables-ejbca3.sql for table definitions, or just run /doc/ho
   mail.from=icejean@21cn.com
   mail.debug=false
   
-8. Deploy the ejbca.ear file in weblogic, it should deploy straight away without errors.
+7. Deploy the ejbca.ear file in weblogic, it should deploy straight away without errors.
 
-9. Run 'ant install' to do the installation. Everything should work here with no errors. 
+8. Run 'ant install' to do the installation. Everything should work here with no errors. 
    If you get errors these must be resolved before we can move on.
 
-10. Configure SSL in Weblogic:
+9. Configure SSL in Weblogic:
 a) Copy %JAVA_HOME%/jre/lib/security/cacerts to %BEA_HOME%/jre/lib/security, so that Weblogic can trust the initial CA installed 
 when doing 'ant install'.
 You can create cacerts file with 'sudo rm $JAVA_HOME/jre/lib/security/cacerts' and then 'sudo ant javatruststore'.

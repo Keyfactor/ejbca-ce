@@ -1,0 +1,11 @@
+
+# JBoss properites
+java.naming.factory.initial=org.jnp.interfaces.NamingContextFactory
+java.naming.provider.url=127.0.0.1:1099
+java.naming.factory.url.pkgs=org.jboss.naming
+
+# Sample weblogic properties
+#java.naming.factory.initial=weblogic.jndi.WLInitialContextFactory
+#java.naming.provider.url=t3://127.0.0.1:7001
+#java.naming.security.principal=system
+#java.naming.security.credentials=weblogic
