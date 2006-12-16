@@ -13,6 +13,7 @@ in Weblogics jre and jrockit. It's the same way as for a regular installation, s
 2. Edit conf/*.properties, it's important to at least set up the database parameters.
 
 Edit conf/ejbca.properties:
+set 'appserver.type=weblogic'
 set 'logging.log4j.config=basic'
 
 Edit conf/database.properties
