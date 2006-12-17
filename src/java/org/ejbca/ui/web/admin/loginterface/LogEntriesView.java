@@ -11,14 +11,14 @@
  *                                                                       *
  *************************************************************************/
  
-    package org.ejbca.ui.web.admin.loginterface;
+package org.ejbca.ui.web.admin.loginterface;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.HashMap;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.ui.web.admin.rainterface.SortBy;
@@ -27,7 +27,7 @@ import org.ejbca.ui.web.admin.rainterface.SortBy;
 /**
  * A class representing a set of log entry view representations.
  * @author  TomSelleck
- * @version $Id: LogEntriesView.java,v 1.1 2006-01-17 20:32:20 anatom Exp $
+ * @version $Id: LogEntriesView.java,v 1.2 2006-12-17 16:37:30 anatom Exp $
  */
 public class LogEntriesView implements java.io.Serializable {
  
@@ -42,33 +42,6 @@ public class LogEntriesView implements java.io.Serializable {
       this.caidtonamemap=caidtonamemap;
     }
     
-    /** Creates a new instance of LogEntriesView  containing one LogEntryView object.
-     * @param logentry The log entry of LogEntry class to import.
-     */
-    public LogEntriesView(LogEntry logentry, SubjectDNProxy dnproxy, String[] localinfoeventnames, String[] localerroreventnames, String[] localmodulenames, HashMap caidtonamemap) throws RemoteException {
-      logentryviews = new ArrayList();
-      sortby = new SortBy(SortBy.TIME, SortBy.DECENDING);     
-      this.dnproxy = dnproxy;      
-      logentryviews.add(new LogEntryView(logentry, dnproxy, localinfoeventnames, localerroreventnames, localmodulenames, caidtonamemap)); 
-      this.localinfoeventnames=localinfoeventnames;
-      this.localerroreventnames=localerroreventnames;   
-      this.localmodulenames=localmodulenames;      
-      this. caidtonamemap=caidtonamemap;
-    }
-
-    /** Creates a new instance of LogEntriesView  containing a collection of LogEntryView objects.
-     * @param logentries a collection of log entries of LogEntry class to import.
-     */    
-    public LogEntriesView(Collection logentries, SubjectDNProxy dnproxy , String[] localinfoeventnames, String[] localerroreventnames, String[] localmodulenames, HashMap caidtonamemap) throws RemoteException { 
-      logentryviews = new ArrayList();
-      sortby = new SortBy(SortBy.TIME, SortBy.DECENDING);
-      this.dnproxy = dnproxy;
-      this.localinfoeventnames=localinfoeventnames;
-      this.localerroreventnames=localerroreventnames;
-      this.localmodulenames=localmodulenames;
-      this.caidtonamemap=caidtonamemap;
-      setEntries(logentries);
-    }
     // Public methods.
     
     /**
@@ -111,22 +84,6 @@ public class LogEntriesView implements java.io.Serializable {
       return returnval;
     }
     
-    /*
-     * Methods that clears the internal data and adds an array of logentries.
-     */
-    public void setEntries(LogEntry[] logentries) throws RemoteException {
-      LogEntryView logentryview;  
-      this.logentryviews.clear();
-      if(logentries !=null && logentries.length > 0){ 
-        for(int i=0; i< logentries.length; i++){
-          logentryview = new LogEntryView(logentries[i], dnproxy, localinfoeventnames, localerroreventnames, localmodulenames, caidtonamemap); 
-          logentryview.setSortBy(this.sortby);
-          this.logentryviews.add(logentryview);
-        }
-        Collections.sort(this.logentryviews);
-      }
-    }
-
     /*
      * Method that clears the internal data and adds a collection of logentries.
      */ 
