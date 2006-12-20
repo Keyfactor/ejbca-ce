@@ -60,7 +60,7 @@ import org.ejbca.util.CertTools;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.12 2006-11-24 08:25:13 anatom Exp $
+ * @version $Id: CA.java,v 1.13 2006-12-20 17:15:43 anatom Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -121,7 +121,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	   	 ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();
 	   	 if(next instanceof OCSPCAServiceInfo){
 	   	   setExtendedCAService(new OCSPCAService(next));
-	   	   extendedservicetypes.add(new Integer(OCSPCAService.TYPE));
+	   	   extendedservicetypes.add(new Integer(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE));
 	   	 }
 	   }
 	   data.put(EXTENDEDCASERVICES, extendedservicetypes);
@@ -404,7 +404,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     	while(iter.hasNext()){
     		ExtendedCAServiceInfo info = (ExtendedCAServiceInfo) iter.next();
     		if(info instanceof OCSPCAServiceInfo){
-    			this.getExtendedCAService(OCSPCAService.TYPE).update(info, this);	
+    			this.getExtendedCAService(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE).update(info, this);	
     		}
     	}
     	this.cainfo = cainfo;
@@ -469,7 +469,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 	  throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException{
           ExtendedCAServiceResponse returnval = null; 
           if(request instanceof OCSPCAServiceRequest) {
-              returnval = getExtendedCAService(OCSPCAService.TYPE).extendedService(request);            
+              returnval = getExtendedCAService(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE).extendedService(request);            
           }
           
           if(request instanceof KeyRecoveryCAServiceRequest){
@@ -525,8 +525,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     
 	protected void setExtendedCAService(ExtendedCAService extendedcaservice){  
       if(extendedcaservice instanceof OCSPCAService){		
-	    data.put(EXTENDEDCASERVICE+OCSPCAService.TYPE, extendedcaservice.saveData());    
-	    extendedcaservicemap.put(Integer.valueOf(OCSPCAService.TYPE), extendedcaservice);
+	    data.put(EXTENDEDCASERVICE+ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE, extendedcaservice.saveData());    
+	    extendedcaservicemap.put(Integer.valueOf(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE), extendedcaservice);
       }   	
 	}
 	/** 

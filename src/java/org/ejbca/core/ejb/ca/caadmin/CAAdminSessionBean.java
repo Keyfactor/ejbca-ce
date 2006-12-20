@@ -71,7 +71,6 @@ import org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException;
 import org.ejbca.core.model.ca.caadmin.X509CA;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAService;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.CAToken;
 import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
@@ -102,7 +101,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.34 2006-12-13 10:32:42 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.35 2006-12-20 17:15:48 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -412,9 +411,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
         		ExtendedCAServiceInfo info = (ExtendedCAServiceInfo) iter.next();
         		if(info instanceof OCSPCAServiceInfo){
         			try{
-        				ca.initExternalService(OCSPCAService.TYPE, ca);
+        				ca.initExternalService(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE, ca);
         				ArrayList ocspcertificate = new ArrayList();
-        				ocspcertificate.add(((OCSPCAServiceInfo) ca.getExtendedCAServiceInfo(OCSPCAService.TYPE)).getOCSPSignerCertificatePath().get(0));
+        				ocspcertificate.add(((OCSPCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE)).getOCSPSignerCertificatePath().get(0));
         				getSignSession().publishCACertificate(admin, ocspcertificate, ca.getCRLPublishers(), CertificateDataBean.CERTTYPE_ENDENTITY);
         			}catch(Exception fe){
         				String msg = intres.getLocalizedMessage("caadmin.errorcreatecaservice", "OCSPCAService");            	
@@ -847,7 +846,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				    try{
     				        ca.initExternalService(type, ca);
     				        ArrayList ocspcertificate = new ArrayList();
-    				        ocspcertificate.add(((OCSPCAServiceInfo) ca.getExtendedCAServiceInfo(OCSPCAService.TYPE)).getOCSPSignerCertificatePath().get(0));
+    				        ocspcertificate.add(((OCSPCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE)).getOCSPSignerCertificatePath().get(0));
     				        getSignSession().publishCACertificate(admin, ocspcertificate, ca.getCRLPublishers(), CertificateDataBean.CERTTYPE_ENDENTITY);
     				    }catch(CATokenOfflineException e){
             	    		String msg = intres.getLocalizedMessage("caadmin.errorcreatecaservice", Integer.valueOf(caid));            	
@@ -1389,9 +1388,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
                 ExtendedCAServiceInfo info = (ExtendedCAServiceInfo) iter.next();
                 if(info instanceof OCSPCAServiceInfo){
                     try{
-                        ca.initExternalService(OCSPCAService.TYPE, ca);
+                        ca.initExternalService(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE, ca);
                         ArrayList ocspcertificate = new ArrayList();
-                        ocspcertificate.add(((OCSPCAServiceInfo) ca.getExtendedCAServiceInfo(OCSPCAService.TYPE)).getOCSPSignerCertificatePath().get(0));
+                        ocspcertificate.add(((OCSPCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE)).getOCSPSignerCertificatePath().get(0));
                         getSignSession().publishCACertificate(admin, ocspcertificate, ca.getCRLPublishers(), CertificateDataBean.CERTTYPE_ENDENTITY);
                     }catch(Exception fe){
                         getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"Couldn't Create ExternalCAService.",fe);

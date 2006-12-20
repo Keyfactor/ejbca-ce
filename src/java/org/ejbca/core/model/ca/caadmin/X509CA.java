@@ -24,7 +24,6 @@ import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.CRL;
@@ -34,13 +33,13 @@ import java.security.cert.Certificate;
 import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -49,7 +48,6 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DEREncodableVector;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;
@@ -91,15 +89,11 @@ import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.jce.X509KeyUsage;
-import org.bouncycastle.jce.provider.JCEECPublicKey;
-import org.bouncycastle.ocsp.BasicOCSPResp;
-import org.bouncycastle.ocsp.OCSPException;
 import org.bouncycastle.x509.X509V2CRLGenerator;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.ejbca.core.ejb.ca.sign.SernoGenerator;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.NotSupportedException;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest;
@@ -107,13 +101,10 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceReque
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceResponse;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.UserDataVO;
-import org.ejbca.core.protocol.ocsp.OCSPUtil;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.cert.SubjectDirAttrExtension;
 
@@ -124,7 +115,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.41 2006-12-13 10:33:45 anatom Exp $
+ * @version $Id: X509CA.java,v 1.42 2006-12-20 17:15:43 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -649,7 +640,7 @@ public class X509CA extends CA implements Serializable {
             	 }
              }
              if (qcs.size() >  0) {
-                 DEREncodableVector vec = new DEREncodableVector();
+            	 ASN1EncodableVector vec = new ASN1EncodableVector();
                  Iterator iter = qcs.iterator();
                  while (iter.hasNext()) {
                 	 QCStatement q = (QCStatement)iter.next();
@@ -666,7 +657,7 @@ public class X509CA extends CA implements Serializable {
         	 if (StringUtils.isNotEmpty(dirAttrString)) {
             	 // Subject Directory Attributes is a sequence of Attribute
             	 Collection attr = SubjectDirAttrExtension.getSubjectDirectoryAttributes(dirAttrString);
-            	 DEREncodableVector vec = new DEREncodableVector();
+            	 ASN1EncodableVector vec = new ASN1EncodableVector();
             	 Iterator iter = attr.iterator();
             	 while (iter.hasNext()) {
             		 Attribute a = (Attribute)iter.next();
@@ -790,60 +781,28 @@ public class X509CA extends CA implements Serializable {
     public ExtendedCAServiceResponse extendedService(ExtendedCAServiceRequest request) 
       throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException{
           log.debug(">extendedService()");
-          ExtendedCAServiceResponse returnval = null; 
           if(request instanceof OCSPCAServiceRequest) {
-        	  X509Certificate[] signerChain = (X509Certificate[])getCertificateChain().toArray(new X509Certificate[0]);
-        	  X509Certificate signerCert = signerChain[0];
         	  OCSPCAServiceRequest ocspServiceReq = (OCSPCAServiceRequest)request;
-              String sigAlg = ocspServiceReq.getSigAlg();
-              String[] algs = StringUtils.split(sigAlg, ';');
-              if ( (algs != null) && (algs.length > 1) ) {
-              	PublicKey pk = signerCert.getPublicKey();
-              	if (pk instanceof RSAPublicKey) {
-              		if (StringUtils.contains(algs[0], CATokenConstants.KEYALGORITHM_RSA)) {
-              			sigAlg = algs[0];
-              		}
-              		if (StringUtils.contains(algs[1], CATokenConstants.KEYALGORITHM_RSA)) {
-              			sigAlg = algs[1];
-              		}
-              	} else if (pk instanceof JCEECPublicKey) {
-              		if (StringUtils.contains(algs[0], CATokenConstants.KEYALGORITHM_ECDSA)) {
-              			sigAlg = algs[0];
-              		}
-              		if (StringUtils.contains(algs[1], CATokenConstants.KEYALGORITHM_ECDSA)) {
-              			sigAlg = algs[1];
-              		}
-              	}
-              	log.debug("Using signature algorithm for response: "+sigAlg);
-              }
               boolean useCACert = ocspServiceReq.useCACert();
-              boolean includeChain = ocspServiceReq.includeChain();
-              PrivateKey pk = null;
-              X509Certificate[] chain = null;
               try {
                   if (useCACert) {
-                      pk = getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN);
-                      if (includeChain) {
-                          chain = signerChain;
-                      } 
+                	  ocspServiceReq.setPrivKey(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN));
+                	  ocspServiceReq.setPrivKeyProvider(getCAToken().getProvider());
+                	  X509Certificate[] signerChain = (X509Certificate[])getCertificateChain().toArray(new X509Certificate[0]);
+                	  List chain = Arrays.asList(signerChain);
+                	  ocspServiceReq.setCertificateChain(chain);
+                      // Super class handles signing with the OCSP signing certificate
+                      log.debug("<extendedService(super with ca cert)");
+                      return super.extendedService(ocspServiceReq);                      
                   } else {
                       // Super class handles signing with the OCSP signing certificate
-                      log.debug("<extendedService(super)");
+                      log.debug("<extendedService(super no ca cert)");
                       return super.extendedService(request);                      
                   }
-                  BasicOCSPResp ocspresp = OCSPUtil.generateBasicOCSPResp(ocspServiceReq, sigAlg, signerCert, pk, getCAToken().getProvider(), chain);
-                  returnval = new OCSPCAServiceResponse(ocspresp, chain == null ? null : Arrays.asList(chain));              
               } catch (IllegalKeyStoreException ike) {
             	  throw new ExtendedCAServiceRequestException(ike);
-              } catch (NoSuchProviderException nspe) {
-            	  throw new ExtendedCAServiceRequestException(nspe);
-              } catch (OCSPException ocspe) {
-            	  throw new ExtendedCAServiceRequestException(ocspe);                  
               } catch (CATokenOfflineException ctoe) {
             	  throw new ExtendedCAServiceRequestException(ctoe);
-              } catch (NotSupportedException e) {
-            	  log.error("Request type not supported: ", e);
-            	  throw new IllegalExtendedCAServiceRequestException(e);
               } catch (IllegalArgumentException e) {
             	  log.error("IllegalArgumentException: ", e);
             	  throw new IllegalExtendedCAServiceRequestException(e);
@@ -852,8 +811,6 @@ public class X509CA extends CA implements Serializable {
               log.debug("<extendedService(super)");
               return super.extendedService(request);
           }
-          log.debug("<extendedService()");
-          return returnval;
     }
     
     public byte[] encryptKeys(KeyPair keypair) throws IOException, CATokenOfflineException{    
@@ -909,7 +866,7 @@ public class X509CA extends CA implements Serializable {
      */
     private PolicyInformation getPolicyInformation(String policyOID, String cps, String unotice, int displayencoding) {
         
-        DEREncodableVector qualifiers = new DEREncodableVector();
+    	ASN1EncodableVector qualifiers = new ASN1EncodableVector();
         if ((unotice != null) && !StringUtils.isEmpty(unotice.trim())) {
             // Normally we would just use 'DisplayText(unotice)' here. IE has problems with UTF8 though, so lets stick with BMSSTRING to satisfy Bills sick needs.
             UserNotice un = new UserNotice(null, new DisplayText(displayencoding, unotice));

@@ -14,7 +14,9 @@
 package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 
 import java.io.Serializable;
+import java.security.PrivateKey;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.X509Extensions;
@@ -23,7 +25,7 @@ import org.bouncycastle.ocsp.OCSPReq;
 /**
  * Class used when requesting OCSP related services from a CA.  
  *
- * @version $Id: OCSPCAServiceRequest.java,v 1.2 2006-07-19 14:05:45 anatom Exp $
+ * @version $Id: OCSPCAServiceRequest.java,v 1.3 2006-12-20 17:15:48 anatom Exp $
  */
 public class OCSPCAServiceRequest extends ExtendedCAServiceRequest implements Serializable {    
     
@@ -35,6 +37,11 @@ public class OCSPCAServiceRequest extends ExtendedCAServiceRequest implements Se
     private String sigAlg = "SHA1WithRSA";
     private boolean useCACert = false;
     private boolean includeChain = true;
+    private String privKeyProvider = "BC"; // Default for OCSP responder not using the CAs private key
+    
+    // Parameters that are used when we use the CAs private key to sign responses
+    private PrivateKey privKey = null;
+    private List certificateChain = null;
     
     /** Constructor for OCSPCAServiceRequest
      */                   
@@ -72,4 +79,30 @@ public class OCSPCAServiceRequest extends ExtendedCAServiceRequest implements Se
     public boolean includeChain() {
         return includeChain;
     }
+    /** Used when the CA passes a certificate chain for use when signing with the CAs signature key
+     * 
+     * @return List with certificates or null, if another chain should be used
+     */
+	public List getCertificateChain() {
+		return certificateChain;
+	}
+	public void setCertificateChain(List certificatechain) {
+		this.certificateChain = certificatechain;
+	}
+    /** Used when the CA passes a private key (reference) for use when signing with the CAs signature key
+     * 
+     * @return private key or null, if another private key should be used
+     */
+	public PrivateKey getPrivKey() {
+		return privKey;
+	}
+	public void setPrivKey(PrivateKey privKey) {
+		this.privKey = privKey;
+	}
+	public String getPrivKeyProvider() {
+		return privKeyProvider;
+	}
+	public void setPrivKeyProvider(String privKeyProvider) {
+		this.privKeyProvider = privKeyProvider;
+	}
 }

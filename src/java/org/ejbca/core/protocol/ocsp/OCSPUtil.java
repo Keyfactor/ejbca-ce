@@ -94,9 +94,7 @@ public class OCSPUtil {
     			m_log.error("The response is NOT verifying!");
     		}
     	}
-    	m_log.debug("<extendedService");		  		
     	return returnval;
-
     }
     
 

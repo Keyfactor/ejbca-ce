@@ -49,7 +49,7 @@ import org.ejbca.util.KeyTools;
 
 /** Handles and maintains the CA-part of the OCSP functionality
  * 
- * @version $Id: OCSPCAService.java,v 1.11 2006-12-13 10:33:43 anatom Exp $
+ * @version $Id: OCSPCAService.java,v 1.12 2006-12-20 17:15:48 anatom Exp $
  */
 public class OCSPCAService extends ExtendedCAService implements java.io.Serializable{
 
@@ -60,7 +60,6 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
     public static final float LATEST_VERSION = 2; 
     
     public static final String SERVICENAME = "OCSPCASERVICE";
-    public static final int TYPE = 1; 
       
 
     private PrivateKey      ocspsigningkey        = null;
@@ -218,8 +217,13 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
             throw new ExtendedCAServiceNotActiveException();                            
         }
         ExtendedCAServiceResponse returnval = null;
-    	X509Certificate signerCert = (X509Certificate)ocspcertificatechain.get(0);
         OCSPCAServiceRequest ocspServiceReq = (OCSPCAServiceRequest)request;
+        List certChain = ocspcertificatechain;
+        if (ocspServiceReq.getCertificateChain() != null) {
+        	m_log.debug("Using cert chain from CA");
+        	certChain = ocspServiceReq.getCertificateChain();
+        }
+    	X509Certificate signerCert = (X509Certificate)certChain.get(0);
 
         String sigAlg = ocspServiceReq.getSigAlg();
         String[] algs = StringUtils.split(sigAlg, ';');
@@ -245,10 +249,15 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
         boolean includeChain = ocspServiceReq.includeChain();
         X509Certificate[] chain = null;
         if (includeChain) {
-            chain = (X509Certificate[])this.ocspcertificatechain.toArray(new X509Certificate[0]);
+            chain = (X509Certificate[])certChain.toArray(new X509Certificate[0]);
         }        
         try {
-        	BasicOCSPResp ocspresp = OCSPUtil.generateBasicOCSPResp(ocspServiceReq, sigAlg, signerCert, this.ocspsigningkey, "BC", chain);
+        	PrivateKey privKey = this.ocspsigningkey;
+        	if (ocspServiceReq.getPrivKey() != null) {
+            	m_log.debug("Using private key from CA");
+        		privKey = ocspServiceReq.getPrivKey();
+        	}
+        	BasicOCSPResp ocspresp = OCSPUtil.generateBasicOCSPResp(ocspServiceReq, sigAlg, signerCert, privKey, ocspServiceReq.getPrivKeyProvider(), chain);
             returnval = new OCSPCAServiceResponse(ocspresp, chain == null ? null : Arrays.asList(chain));             
         } catch (OCSPException ocspe) {
             throw new ExtendedCAServiceRequestException(ocspe);
