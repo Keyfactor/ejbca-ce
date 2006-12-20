@@ -40,7 +40,7 @@ import org.ejbca.util.Base64;
  * Servlet implementing server side of the Certificate Management Protocols (CMP) 
  *
  * @author tomas
- * @version $Id: CmpServlet.java,v 1.16 2006-12-13 10:36:04 anatom Exp $
+ * @version $Id: CmpServlet.java,v 1.17 2006-12-20 08:33:31 anatom Exp $
  * 
  * @web.servlet name = "CmpServlet"
  *              display-name = "CmpServlet"
@@ -295,7 +295,7 @@ public class CmpServlet extends HttpServlet {
 				// Add no-cache headers as defined in draft-ietf-pkix-cmp-transport-protocols-05.txt
 				ServletUtils.addCacheHeaders(response);
 				// Send back CMP response
-				RequestHelper.sendBinaryBytes(resp.getResponseMessage(), response, "application/pkixcmp");				
+				RequestHelper.sendBinaryBytes(resp.getResponseMessage(), response, "application/pkixcmp", null);				
 	    		iMsg = intres.getLocalizedMessage("cmp.sentresponsemsg", remoteAddr);
     			log.info(iMsg);
 			} 

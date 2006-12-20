@@ -37,6 +37,7 @@ import org.ejbca.core.ejb.protect.TableProtectSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.ILogDevice;
+import org.ejbca.core.model.log.ILogExporter;
 import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
@@ -129,7 +130,7 @@ import org.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.13 2006-12-13 10:33:07 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.14 2006-12-20 08:33:31 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 
@@ -319,13 +320,35 @@ public class LocalLogSessionBean extends BaseSessionBean {
         }
     }
 
-
+    /**
+     * Method to export log records according to a customized query on the log db data. The parameter query should be a legal Query object.
+     *
+     * @param query a number of statments compiled by query class to a SQL 'WHERE'-clause statment.
+     * @param viewlogprivileges is a sql query string returned by a LogAuthorization object.
+     * @param logexporter is the obbject that converts the result set into the desired log format 
+     * @return an exported byte array. Maximum number of exported entries is defined i LogConstants.MAXIMUM_QUERY_ROWCOUNT
+     * @throws IllegalQueryException when query parameters internal rules isn't fullfilled.
+     * @see org.ejbca.util.query.Query
+     *
+     * @ejb.interface-method view-type="both"
+     * @ejb.transaction type="Supports"
+     *
+     */
+    public byte[] export(Query query, String viewlogprivileges, String capriviledges, ILogExporter logexporter) throws IllegalQueryException {
+    	Collection logentries = query(query, viewlogprivileges, capriviledges);
+    	if (log.isDebugEnabled()) {
+        	log.debug("Found "+logentries.size()+" entries when exporting");    		
+    	}
+    	logexporter.setEntries(logentries);
+    	return logexporter.export();
+    }
+    
     /**
      * Method to execute a customized query on the log db data. The parameter query should be a legal Query object.
      *
      * @param query a number of statments compiled by query class to a SQL 'WHERE'-clause statment.
      * @param viewlogprivileges is a sql query string returned by a LogAuthorization object.
-     * @return a collection of LogEntry. Maximum size of Collection is defined i ILogSessionRemote.MAXIMUM_QUERY_ROWCOUNT
+     * @return a collection of LogEntry. Maximum size of Collection is defined i LogConstants.MAXIMUM_QUERY_ROWCOUNT
      * @throws IllegalQueryException when query parameters internal rules isn't fullfilled.
      * @see org.ejbca.util.query.Query
      *

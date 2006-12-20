@@ -64,7 +64,7 @@ import org.ejbca.util.CertTools;
  * 7. output the result as a der encoded block on stdout 
  * -----
  *
- * @version $Id: ScepServlet.java,v 1.7 2006-12-13 10:36:04 anatom Exp $
+ * @version $Id: ScepServlet.java,v 1.8 2006-12-20 08:33:31 anatom Exp $
  */
 public class ScepServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(ScepServlet.class);
@@ -208,7 +208,7 @@ public class ScepServlet extends HttpServlet {
                     return;
                 }
                 // Send back Scep response, PKCS#7 which contains the end entity's certificate (or failure)
-                RequestHelper.sendBinaryBytes(reply, response, "application/x-pki-message");
+                RequestHelper.sendBinaryBytes(reply, response, "application/x-pki-message", null);
         		iMsg = intres.getLocalizedMessage("scep.sentresponsemsg", "PKIOperation", remoteAddr);
     			log.info(iMsg);
             } else if (operation.equals("GetCACert")) {
@@ -250,7 +250,7 @@ public class ScepServlet extends HttpServlet {
                 byte[] pkcs7 = signsession.createPKCS7(administrator, cainfo.getCAId(), true);
                 if ((pkcs7 != null) && (pkcs7.length > 0)) {
                     log.debug("Sent PKCS7 for CA '" + message + "' to SCEP client.");
-                    RequestHelper.sendBinaryBytes(pkcs7, response, "application/x-x509-ca-ra-cert-chain");
+                    RequestHelper.sendBinaryBytes(pkcs7, response, "application/x-x509-ca-ra-cert-chain", null);
             		iMsg = intres.getLocalizedMessage("scep.sentresponsemsg", "GetCACertChain", remoteAddr);
         			log.info(iMsg);
                 } else {

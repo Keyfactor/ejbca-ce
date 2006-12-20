@@ -2,7 +2,7 @@
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.core.model.ra.raadmin.GlobalConfiguration, 
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.SortBy,org.ejbca.ui.web.admin.loginterface.LogEntryView,org.ejbca.ui.web.admin.loginterface.LogEntriesView,
-             org.ejbca.ui.web.admin.loginterface.LogInterfaceBean, org.ejbca.core.model.log.Admin" %>
+             org.ejbca.ui.web.admin.loginterface.LogInterfaceBean, org.ejbca.core.model.log.LogConstants, org.ejbca.core.model.log.Admin" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="logbean" scope="session" class="org.ejbca.ui.web.admin.loginterface.LogInterfaceBean" />
@@ -205,7 +205,7 @@
 
      logentries = logdata.getEntries(record,size);
      if(logentries  != null)
-       if(logentries.length >= LogInterfaceBean.MAXIMUM_QUERY_ROWCOUNT) 
+       if(logentries.length >= LogConstants.MAXIMUM_QUERY_ROWCOUNT) 
          largeresult = true; 
     }
   }  
@@ -273,7 +273,7 @@ function viewcert(row){
       <div align="center"><h4 id="alert"><%=ejbcawebbean.getText("NOTAUTHORIZEDTOVIEWHIST") %></h4></div> 
     <% }else{ %>
     <%   if(largeresult){ %>
-         <H4 id="alert"><div align="center" ><%= ejbcawebbean.getText("TOLARGERESULT")  + " " + LogInterfaceBean.MAXIMUM_QUERY_ROWCOUNT
+         <H4 id="alert"><div align="center" ><%= ejbcawebbean.getText("TOLARGERESULT")  + " " + LogConstants.MAXIMUM_QUERY_ROWCOUNT
                                              + " " + ejbcawebbean.getText("ROWSWILLBEDISPLAYED") %> </div> </H4>  
     <%   } %>
   <p>

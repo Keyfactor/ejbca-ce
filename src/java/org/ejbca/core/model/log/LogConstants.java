@@ -1,11 +1,13 @@
 package org.ejbca.core.model.log;
 
 /**
- * @version $Id: LogConstants.java,v 1.1 2006-01-17 20:28:08 anatom Exp $
+ * @version $Id: LogConstants.java,v 1.2 2006-12-20 08:33:32 anatom Exp $
  */
 public interface LogConstants {
 
-    public static final int MAXIMUM_QUERY_ROWCOUNT = 300;
+	/** Constant limiting thenumber of rows returned when querying logfiles to be viewed by in the admin-GUI
+	 */
+    public static final int MAXIMUM_QUERY_ROWCOUNT = 1000;
 
     /**
      * Constant containing caid that couldn't be determined in any other way. Log events can only be viewed.

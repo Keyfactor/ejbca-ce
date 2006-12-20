@@ -51,7 +51,7 @@ import org.ejbca.util.FileTools;
 /**
  * Helper class for hadnling certificate request from browsers or general PKCS#10
  * 
- * @version $Id: RequestHelper.java,v 1.4 2006-12-04 15:41:14 anatom Exp $
+ * @version $Id: RequestHelper.java,v 1.5 2006-12-20 08:33:31 anatom Exp $
  */
 public class RequestHelper {
     private static Logger log = Logger.getLogger(RequestHelper.class);
@@ -390,7 +390,7 @@ public class RequestHelper {
     public static void sendNewX509CaCert(byte[] cert, HttpServletResponse out)
         throws Exception {
         // Set content-type to CA-cert
-        sendBinaryBytes(cert, out, "application/x-x509-ca-cert");
+        sendBinaryBytes(cert, out, "application/x-x509-ca-cert", null);
     } // sendNewX509CaCert
 
     /**
@@ -399,14 +399,21 @@ public class RequestHelper {
      * @param bytes DER encoded certificate to be returned
      * @param out output stream to send to
      * @param contentType mime type to send back bytes as
+     * @param fileName to call the file in a Content-disposition, can be null to leave out this header
      *
      * @throws Exception on error
      */
-    public static void sendBinaryBytes(byte[] bytes, HttpServletResponse out, String contentType)
+    public static void sendBinaryBytes(byte[] bytes, HttpServletResponse out, String contentType, String filename)
         throws Exception {
-        if (bytes.length == 0) {
+        if ( (bytes == null) || (bytes.length == 0) ) {
             log.error("0 length can not be sent to client!");
             return;
+        }
+
+        if (filename != null) {
+            // We must remove cache headers for IE
+            ServletUtils.removeCacheHeaders(out);
+            out.setHeader("Content-disposition", "filename="+filename);        	
         }
 
         // Set content-type to general file

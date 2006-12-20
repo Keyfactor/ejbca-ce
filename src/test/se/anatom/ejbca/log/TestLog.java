@@ -26,6 +26,8 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.log.ILogSessionHome;
 import org.ejbca.core.ejb.log.ILogSessionRemote;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.log.CsvLogExporter;
+import org.ejbca.core.model.log.ILogExporter;
 import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.util.query.BasicMatch;
@@ -35,7 +37,7 @@ import org.ejbca.util.query.Query;
 /**
  * Tests the log modules entity and session beans.
  *
- * @version $Id: TestLog.java,v 1.5 2006-07-30 18:19:03 herrvendil Exp $
+ * @version $Id: TestLog.java,v 1.6 2006-12-20 08:35:06 anatom Exp $
  */
 public class TestLog extends TestCase {
     private static Logger log = Logger.getLogger(TestLog.class);
@@ -131,8 +133,16 @@ public class TestLog extends TestCase {
                 found = true;
             }
         }
-
         assertTrue("Couldn't retrieve correct log data from database.", found);
+        
+ 	   ILogExporter exporter = new CsvLogExporter();
+ 	   exporter.setEntries(result);
+	   byte[] export = exporter.export();
+	   assertNotNull(export);
+	   String str = new String(export);
+	   //assertEquals("foo", str);
+	   int ind = str.indexOf("Test\t");
+	   assertTrue(ind > 0);
 
         log.debug("<test02AddAndCheckLogEvents()");
     }

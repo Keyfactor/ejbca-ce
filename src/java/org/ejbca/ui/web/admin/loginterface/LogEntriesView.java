@@ -27,7 +27,7 @@ import org.ejbca.ui.web.admin.rainterface.SortBy;
 /**
  * A class representing a set of log entry view representations.
  * @author  TomSelleck
- * @version $Id: LogEntriesView.java,v 1.2 2006-12-17 16:37:30 anatom Exp $
+ * @version $Id: LogEntriesView.java,v 1.3 2006-12-20 08:33:31 anatom Exp $
  */
 public class LogEntriesView implements java.io.Serializable {
  
@@ -84,7 +84,7 @@ public class LogEntriesView implements java.io.Serializable {
       return returnval;
     }
     
-    /*
+    /**
      * Method that clears the internal data and adds a collection of logentries.
      */ 
     public void setEntries(Collection logentries) throws RemoteException{ 
@@ -102,8 +102,8 @@ public class LogEntriesView implements java.io.Serializable {
         Collections.sort(logentryviews);
       }
     }
-
-    /*
+    
+    /**
      * Method that returns the number of available logentryviews. 
      */   
     public int size(){

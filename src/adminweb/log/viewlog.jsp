@@ -4,7 +4,7 @@
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.SortBy,org.ejbca.ui.web.admin.loginterface.LogEntryView,
                  org.ejbca.ui.web.admin.loginterface.LogInterfaceBean, org.ejbca.core.model.log.LogEntry, org.ejbca.core.model.log.Admin, org.ejbca.core.model.ra.raadmin.AdminPreference,
                  javax.ejb.CreateException, java.rmi.RemoteException, org.ejbca.util.query.*, java.util.Calendar, java.util.Date, java.text.DateFormat, java.util.Locale,
-                 java.util.HashMap, java.util.Collection, java.util.Iterator, java.util.TreeMap, org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper" %>
+                 java.util.HashMap, java.util.Collection, java.util.Iterator, java.util.TreeMap, org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper, org.ejbca.core.model.log.LogConstants, org.ejbca.core.model.log.ILogExporter, org.ejbca.core.model.log.CsvLogExporter" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="logbean" scope="session" class="org.ejbca.ui.web.admin.loginterface.LogInterfaceBean" />
@@ -51,6 +51,7 @@
 
   static final String BUTTON_VIEWLAST          = "buttonviewlast"; 
   static final String BUTTON_RELOAD            = "buttonreload";
+  static final String BUTTON_EXPORTCSV         = "buttonexportcsv";
   static final String BUTTON_ADVANCEDLIST      = "buttonadvancedlist";
 
   static final String BUTTON_NEXT              = "buttonnext";
@@ -212,6 +213,12 @@
      record += ejbcawebbean.getLogEntriesPerPage();
    }
 
+   if ( request.getParameter(BUTTON_EXPORTCSV)!=null ){
+	   ILogExporter exporter = new CsvLogExporter();
+	   byte[] export = logbean.exportLastQuery(exporter);
+	   RequestHelper.sendBinaryBytes(export, response, "text/csv", "logexport.csv");
+	   return;
+   }
 
 
    if(  request.getParameter(BUTTON_RELOAD)!=null &&  oldaction.equals(OLD_ACTION_VIEWLAST) ){
@@ -565,9 +572,11 @@
    }
 
    if(logentries  != null)
-     if(logbean.getResultSize() >= LogInterfaceBean.MAXIMUM_QUERY_ROWCOUNT) 
+     if(logbean.getResultSize() >= LogConstants.MAXIMUM_QUERY_ROWCOUNT) 
         largeresult = true; 
 
 %>
 
 <%@ include file="viewloghtml.jspf" %>
+
+</html>

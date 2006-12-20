@@ -28,6 +28,7 @@ import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.log.ILogExporter;
 import org.ejbca.core.model.log.LogConfiguration;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
@@ -35,6 +36,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.query.BasicMatch;
+import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.LogMatch;
 import org.ejbca.util.query.Query;
 
@@ -42,12 +44,9 @@ import org.ejbca.util.query.Query;
  * A java bean handling the interface between EJBCA log module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: LogInterfaceBean.java,v 1.2 2006-11-24 11:44:52 anatom Exp $
+ * @version $Id: LogInterfaceBean.java,v 1.3 2006-12-20 08:33:31 anatom Exp $
  */
 public class LogInterfaceBean implements java.io.Serializable {
-
-    // Public constants.
-    public static final int MAXIMUM_QUERY_ROWCOUNT = LogConstants.MAXIMUM_QUERY_ROWCOUNT;
 
     /** Creates new LogInterfaceBean */
     public LogInterfaceBean(){  
@@ -99,6 +98,7 @@ public class LogInterfaceBean implements java.io.Serializable {
     public LogEntryView[] filterByQuery(Query query, int index, int size) throws Exception {
       Collection logentries = logsession.query(query, informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString());
       logentriesview.setEntries(logentries);
+      lastquery = query;
 
       return logentriesview.getEntries(index,size);        
     }    
@@ -119,6 +119,7 @@ public class LogInterfaceBean implements java.io.Serializable {
         
       Collection logentries = logsession.query(query,informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString());
       returnval.setEntries(logentries);
+      lastquery = query;
 
       return returnval;        
     }        
@@ -139,6 +140,7 @@ public class LogInterfaceBean implements java.io.Serializable {
         
       Collection logentries = logsession.query(query,informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString());
       logentriesview.setEntries(logentries);
+      lastquery = query;
 
       return logentriesview.getEntries(index,size);        
     }            
@@ -248,6 +250,17 @@ public class LogInterfaceBean implements java.io.Serializable {
       return returnval;  
     }    
     
+    /**
+     * Method that exports log entries according to an exporter passed as argument.
+     * @return byte[] byte data or null if no of exported entries are 0.
+     * @throws IllegalQueryException 
+     * @see org.ejbca.core.model.log.ILogExporter
+     */
+    public byte[] exportLastQuery(ILogExporter exporter) throws IllegalQueryException {
+    	byte[] ret = logsession.export(lastquery, informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString(), exporter);
+    	return ret;
+    }
+
     // Private methods.
     private void initializeEventNameTables(EjbcaWebBean ejbcawebbean){
       int alleventsize = LogEntry.EVENTNAMES_INFO.length +  LogEntry.EVENTNAMES_ERROR.length; 
@@ -304,6 +317,7 @@ public class LogInterfaceBean implements java.io.Serializable {
     private String[]                       localerroreventnamesunsorted;        
     private String[]                       alllocaleventnames;
     private String[]                       localmodulenames;
-    private String[]                       localmodulenamesunsorted;    
+    private String[]                       localmodulenamesunsorted;
+    private Query                          lastquery;
     
 }
