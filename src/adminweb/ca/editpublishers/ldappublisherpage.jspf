@@ -158,6 +158,20 @@
            %>>
       </td>
     </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%" valign="top"> 
+        <div align="right"> 
+          <%= ejbcawebbean.getText("REMOVEUSERONCERTREVOKE") %>
+        </div>
+      </td>
+      <td width="50%" valign="top"> 
+          <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_LDAP_REVOKE_REMOVEUSERONCERTREVOKE %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>" 
+           <%  if(ldappublisher.getRemoveUsersWhenCertRevoked()) {
+                 out.write(" CHECKED ");
+			   }
+           %>>
+      </td>
+    </tr>
    <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top"> 
         <div align="right"> 
