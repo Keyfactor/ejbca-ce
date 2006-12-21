@@ -23,6 +23,7 @@ import org.ejbca.core.model.InternalResources;
 
 /**
  * Implements a singleton serial number generator using SecureRandom.
+ * This generator generates random 8 octec (64 bits) serial numbers.
  * 
  * RFC3280 defines serialNumber be positive INTEGER, and X.690 defines
  * INTEGER consist of one or more octets. X.690 also defines as follows:
@@ -36,7 +37,7 @@ import org.ejbca.core.model.InternalResources;
  * Therefore, minimum 8 octets value is 0080000000000000 and maximum value
  * is 7FFFFFFFFFFFFFFF."
  *
- * @version $Id: SernoGenerator.java,v 1.5 2006-12-13 10:32:37 anatom Exp $
+ * @version $Id: SernoGenerator.java,v 1.6 2006-12-21 15:55:55 anatom Exp $
  */
 public class SernoGenerator implements ISernoGenerator {
     /** Log4j instance */
