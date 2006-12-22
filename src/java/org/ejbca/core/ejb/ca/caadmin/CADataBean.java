@@ -46,7 +46,7 @@ import org.ejbca.util.Base64PutHashMap;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.11 2006-12-22 09:27:37 herrvendil Exp $
+ * @version $Id: CADataBean.java,v 1.12 2006-12-22 13:31:31 herrvendil Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a publisher"
@@ -196,11 +196,13 @@ public abstract class CADataBean extends BaseEntityBean {
             float oldversion = ((Float) data.get(UpgradeableDataHashMap.VERSION)).floatValue();
             switch(((Integer)(data.get(CA.CATYPE))).intValue()){
                 case CAInfo.CATYPE_X509:
-                    ca = new X509CA(data, getCaId().intValue(), getSubjectDN(), getName(), getStatus());
+                    ca = new X509CA(data, getCaId().intValue(), getSubjectDN(), getName(), getStatus());                    
                     break;
             }
+            boolean upgradedExtendedService = ca.upgradeExtendedCAServices();
             // Compare old version with current version and save the data if there has been a change
-            if ( (ca != null) && (Float.compare(oldversion, ca.getVersion()) != 0) ) {
+            if ( ((ca != null) && (Float.compare(oldversion, ca.getVersion()) != 0))
+            	  || upgradedExtendedService) {
             	// Make sure we upgrade the CAToken as well, if needed
                 ca.getCAToken();
                 setCA(ca);

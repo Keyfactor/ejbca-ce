@@ -63,7 +63,7 @@ import org.ejbca.util.CertTools;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.14 2006-12-22 09:23:35 herrvendil Exp $
+ * @version $Id: CA.java,v 1.15 2006-12-22 13:31:30 herrvendil Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -567,4 +567,12 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     private ArrayList requestcertchain = null;
     
     private CAInfo cainfo = null;
+
+    /**
+     * Method to upgrade new (or existing externacaservices)
+     * This method needs to be called outside the regular upgrade
+     * since the CA isn't instansiated in the regular upgrade.
+     *
+     */
+	public abstract boolean upgradeExtendedCAServices() ;
 }
