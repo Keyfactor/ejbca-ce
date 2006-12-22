@@ -45,7 +45,7 @@
 		</condition>
 		<fail message="Missing JKS password '${httpsserver.password}'" unless="httpsserver.password.present"/>
 
-		<copy file="p12/tomcat.jks" tofile="${jboss.server.home.dir}/${keystore.file}"/>
+		<copy file="p12/tomcat.jks" tofile="${jboss.server.home.dir}/${keystore.file}" overwrite="true"/>
 		<chmod file="${jboss.server.home.dir}/${keystore.file}" perm="600"/>
 
 		
