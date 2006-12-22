@@ -1210,7 +1210,104 @@ revokeUser:
 </ul>
 </subsection>
 </section>
+<section name="XKMS Service">
+<subsection name="Introduction">
+<p>
+From EJBCA 3.4 the XKMS protocol is supported as a service as a complement to the EJBCA Web Service interface.
+</p><p>
+It's included (but can be disabled) in the standard installation. And have the Web Service URL http://"hostname":8080/ejbca/xkms/xkms
+</p>
+</subsection>
+<subsection name="How to configure the XKMS Service">
+<p>
+The XKMS service is configured in the file conf/xkms.properties, just edit the file before building the application.
+</p><p>
+The following settings exists:
+</p>
+<ul>
+<li>xkms.enabled: Enables the XKMS Service (default: true)</li>
+<li>xkms.request.requiresignature: id signed XKMS request should be required for KISS call(locate,validate) KRSS calls are always required. (default: false)</li>
+<li>xkms.request.acceptedcas: List of CA names that are accepted for XKMS signed requests. Use ';' as a separate for multiple. (default 'AdminCA1')</li>
+<li>xkms.response.acceptsignrequest: Accept signed responses on request (default: true)</li>
+<li>xkms.response.alwayssign: Always sign responses (default: false)</li>
+<li>xkms.response.causedforsigning: Specify which CA that should be used with the signed responses. Only one can be specified. (default 'AdminCA1')</li>
+<li>xkms.keyusage.signatureisnonrep: Setting specifying the keyusage in a X509 certificate that is mapped to XKMS KeyUsage Signature, Default is non-repudiation but if set to false will XKMS KeyUsage Signature be mapped against digital signature X509 key usage.</li>
+<li>xkms.serviceport=This is a development setting that is set in the WSDL to instruct the client use a non default port. This is only needed if a WS tap listener is used to review the messages. (default: 8080)</li>
+</ul>
+<p>
+Important, if signing of responses is needed, must the XKMS CA service for the configured CA be activated in the
+'Edit CA' page. The XKMS Signer have it's own certificate for each CA just as the OCSP service and is created during the installation or upgrade of a CA.
+</p>
+</subsection>
+<subsection name="Implementation Specific Notes">
+<subsubsection name="What is implemented">
+<p>
+Currently are the methods locate and validate implemented. (Soon register, reissue, revoke and rekover). The Compond request isn't implemented.
+</p><p>
+The XKMS Service only supports syncronized calls, not asyncronised or two-phase requests.
+</p><p>
+The TimeInstant attribute of QueryKeyBinding is not supported
+</p>
+</subsubsection>
+<subsubsection name="XKMS Mappings">
+<p>
+The RespondWith tag supports X509Certificate, X509CertificateChain, X509CRL, KeyName and KeyValue
+</p><p>
+<i>The QueryKeyBinding</i> 
+The query of a QueryKeyBinding is performed in the following way:
+If KeyInfo is included, the certificate is extracted and the is used for checking the key usage and validity of the certificate
+If UseKeyWith is included (and no KeyInfo) is the user database queried using the UseKeyWith mappings (if several UseKeyWith are the queried with an 'AND' operator. Then are all certificates that fullfills all the KeyUsage mappings returned.
+</p><p>
+In KeyInfo is only X509Certificate and X509CertificateChain supported 
+</p><p>
+KeyUsage Mappings, 
+The key usage constants is mapped against the following X509 key usages 
+<ul>
+<li>SIGNATURE : either non-repudation or digital signature depending on configuration</li>
+<li>ENCRYPTION: data encipherment</li>
+<li>EXHANGE: digital signature and key encipherment</li>
+</ul>
+</p><p>
+UseKeyWith Mappings,
+All queries find their data using beginwith (except PKIX) of the idenfier.
+<ul>
+<li>XKMS: Subject Altname, UNIFORMRESOURCEIDENTIFIER</li>
+<li>XKMS/profile: Subject Altname, UNIFORMRESOURCEIDENTIFIER</li>
+<li>S/MIME: Subject Altname, RFC822 addr-spec</li>
+<li>PGP: Subject Altname, RFC822 addr-spec</li>
+<li>TLS: Subject Altname, UNIFORMRESOURCEIDENTIFIER</li>
+<li>TLS/HTTPS: SubjectDN, Common Name</li>
+<li>TLS/SMTP:Subject Altname, DNS Name</li>
+<li>IPSEC:Subject Altname, IP Address</li>
+<li>PKIX: Entire SubjectDN</li>
+</ul>
+</p>
+</subsubsection>
+</subsection>
 
+<subsection name="Using the XKMS client">
+<p>
+When building EJBCA, a XKMS CLI tool is also generated. The tool is placed
+in the directory dist/xkmscli and consists of the all the necessary files needed to run the cli.
+</p><p>
+To use the client do the following, copy the directory with all included files to
+the computer you want to remote administrate from. (Optionaly create a JKS keystore from
+one XKMS Service trusted CAs)and configure the file ejbcawsracli.properties. In this file you should specify the hostname of the CA server, the name of the JKS keystore, the alias and the password to unlock it.
+</p><p>
+Use 'xkmscli.sh/cmd' for a list of each subcommand and 'xkms.sh/cmd "subcommand"'
+for detailed help how to use the cli.
+</p>
+</subsection>
+<subsection name="Running the XKMS test script">
+<p>
+To automatic test the XKMS Service do the following:
+</p><p>
+1. Start with a fresh installation with all the default values. Then activate the XKMS CA service in the Edit CA page for AdminCA1.
+</p><p>
+2. Run 'ant xkms:test' and a report will be generated in tmp/bin/junit/xkms/reports/html/index.html
+</p>
+</subsection>
+</section>
 <section name="External RA API">
 <p>
 In some cases, for security reasons, is it preferable to deny all inbound traffic to the CA and instead let the CA 
