@@ -395,19 +395,12 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
         try {
         	ServiceDataLocal htp = getServiceDataHome().findByName(name);
         	ServiceConfiguration serviceConfiguration = htp.getServiceConfiguration();
-        	if(isAuthorizedToEditService(admin,serviceConfiguration)){        	
-              htp.remove();        		
+        	if(isAuthorizedToEditService(admin,serviceConfiguration)){        	        		
         	  IWorker worker = getWorker(serviceConfiguration, name);
         	  if(worker != null){
-        		  Collection timers = getSessionContext().getTimerService().getTimers();
-        		  Iterator iter = timers.iterator();
-        		  while(iter.hasNext()){
-        			  Timer next = (Timer) iter.next();
-        			  if(htp.getId().equals(next.getInfo())){
-        				  next.cancel();        				  
-        			  }
-        		  }
+        		  getServiceTimerSession().cancelTimer(htp.getId());
         	  }
+              htp.remove();
               getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_INFO_SERVICESEDITED, intres.getLocalizedMessage("services.serviceremoved", name));
               retval = true;
         	}else{
