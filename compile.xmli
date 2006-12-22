@@ -47,6 +47,7 @@ ejbcaws.enabled        = ${ejbcaws.enabled}
 intresources.preferredlanguage   = ${intresources.preferredlanguage}     	
 intresources.secondarylanguage   = ${intresources.secondarylanguage}
 hardtoken.diplaysensitiveinfo    = ${hardtoken.diplaysensitiveinfo}
+log.maxqueryrowcount             = ${log.maxqueryrowcount}
 approval.defaultrequestvalidity  = ${approval.defaultrequestvalidity}
 approval.defaultapprovalvalidity = ${approval.defaultapprovalvalidity}
 approval.excludedClasses         = ${approval.excludedClasses}
@@ -393,6 +394,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 				<replacestring from="@ecdsa.implicitlyca.b@" to="${ecdsa.implicitlyca.b}"/>
 				<replacestring from="@ecdsa.implicitlyca.g@" to="${ecdsa.implicitlyca.g}"/>
 				<replacestring from="@ecdsa.implicitlyca.n@" to="${ecdsa.implicitlyca.n}"/>
+				<replacestring from="@log.maxqueryrowcount@" to="${log.maxqueryrowcount}"/>
 			</tokenfilter>
 			</filterchain>
 	    </copy>

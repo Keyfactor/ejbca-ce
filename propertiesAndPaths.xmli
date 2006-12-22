@@ -235,6 +235,7 @@
     <property name="intresources.preferredlanguage" value="EN" />
     <property name="intresources.secondarylanguage" value="SE" />
     <property name="hardtoken.diplaysensitiveinfo" value="true" />
+    <property name="log.maxqueryrowcount" value="1000" />
 	<property name="approval.defaultrequestvalidity" value="28800" />
 	<property name="approval.defaultapprovalvalidity" value="28800" />
     <property name="approval.excludedClasses" value="" />
