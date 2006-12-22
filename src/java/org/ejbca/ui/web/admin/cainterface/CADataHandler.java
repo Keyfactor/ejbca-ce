@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.InputStream;
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -37,10 +38,12 @@ import org.ejbca.core.model.ca.caadmin.CAExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.IRequestMessage;
 import org.ejbca.core.protocol.IResponseMessage;
@@ -54,7 +57,7 @@ import org.ejbca.util.CertTools;
  * A class help administrating CAs. 
  *
  * @author  TomSelleck
- * @version $Id: CADataHandler.java,v 1.3 2006-10-31 08:24:11 anatom Exp $
+ * @version $Id: CADataHandler.java,v 1.4 2006-12-22 09:25:54 herrvendil Exp $
  */
 public class CADataHandler implements Serializable {
 
@@ -235,12 +238,33 @@ public class CADataHandler implements Serializable {
 	}  
  }
  
+ public void revokeXKMSCertificate(int caid){
+	 	CAInfo cainfo = caadminsession.getCAInfo(administrator, caid);
+		Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
+		while(iter.hasNext()){
+		  ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();	
+		  if(next instanceof XKMSCAServiceInfo){
+		  	X509Certificate xkmscert = (X509Certificate)((XKMSCAServiceInfo) next).getXKMSSignerCertificatePath().get(0);
+			certificatesession.revokeCertificate(administrator,xkmscert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);	  	 
+		  }
+		}  
+	 }
+ 
  public void activateCAToken(int caid, String authorizationcode) throws AuthorizationDeniedException, CATokenAuthenticationFailedException, CATokenOfflineException {
    caadminsession.activateCAToken(administrator,caid,authorizationcode);	
  }
  
  public void deactivateCAToken(int caid) throws AuthorizationDeniedException, EjbcaException{
     caadminsession.deactivateCAToken(administrator, caid);	
+ }
+ 
+ public boolean isCARevoked(CAInfo cainfo){
+	 boolean retval = false;
+	 
+	 if(cainfo != null){
+	   retval = cainfo.getRevokationReason() != RevokedCertInfo.NOT_REVOKED;
+	 }
+	 return retval;
  }
    
   private ICAAdminSessionLocal           caadminsession; 

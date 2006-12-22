@@ -62,7 +62,8 @@
       }      
     }
 
-    revokable = cainfo.getStatus() != SecConst.CA_REVOKED && cainfo.getStatus() != SecConst.CA_EXTERNAL && cainfo.getStatus() != SecConst.CA_WAITING_CERTIFICATE_RESPONSE;
+    
+    revokable = cainfo.getStatus() != SecConst.CA_REVOKED  && cainfo.getStatus() != SecConst.CA_WAITING_CERTIFICATE_RESPONSE && !cadatahandler.isCARevoked(cainfo);
 
     signbyexternal = cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA;
     isexternal = cainfo.getStatus() == SecConst.CA_EXTERNAL;
@@ -81,6 +82,20 @@
         ocspcainfo = (OCSPCAServiceInfo) serviceinfo;
         if(ocspcainfo.getOCSPSignerCertificatePath() != null)
           ocspcert = (java.security.cert.X509Certificate) ocspcainfo.getOCSPSignerCertificatePath().get(0);
+      }
+     }
+   }
+  
+  XKMSCAServiceInfo xkmscainfo = null; 
+  java.security.cert.X509Certificate xkmscert = null; 
+  if(editca && !isexternal){
+    Iterator iter = x509cainfo.getExtendedCAServiceInfos().iterator();       
+    while(iter.hasNext()){
+      ExtendedCAServiceInfo serviceinfo = (ExtendedCAServiceInfo) iter.next();
+      if(serviceinfo instanceof XKMSCAServiceInfo){
+        xkmscainfo = (XKMSCAServiceInfo) serviceinfo;
+        if(xkmscainfo.getXKMSSignerCertificatePath() != null)
+          xkmscert = (java.security.cert.X509Certificate) xkmscainfo.getXKMSSignerCertificatePath().get(0);
       }
      }
    }
@@ -143,6 +158,7 @@ function isExternal(){
    var subjectaltname  =  document.ca.<%=TEXTFIELD_SUBJECTALTNAME%>;
    var policyidfield   =  document.ca.<%=TEXTFIELD_POLICYID%>;
    var activateocsp    =  document.ca.<%=CHECKBOX_ACTIVATEOCSPSERVICE%>;
+   var activatexkms    =  document.ca.<%=CHECKBOX_ACTIVATEXKMSSERVICE%>;
    
 
    makebutton.disabled = true;
@@ -152,7 +168,9 @@ function isExternal(){
    subjectaltname.disabled = false; 
    policyidfield.disabled = false; 
    activateocsp.disabled = false;
+   activatexkms.disabled = false;
    activateocsp.checked = true;   
+   activatexkms.checked = false;   
 
    if(document.ca.<%= SELECT_SIGNEDBY %>.options[document.ca.<%= SELECT_SIGNEDBY %>.options.selectedIndex].value == <%= CAInfo.SIGNEDBYEXTERNALCA %>){
       makebutton.disabled = false;   
@@ -162,7 +180,9 @@ function isExternal(){
       subjectaltname.disabled = true; 
       policyidfield.disabled = true;   
       activateocsp.disabled = true;
-      activateocsp.checked = false;   
+      activateocsp.checked = false;
+      activatexkms.disabled = true;
+      activatexkms.checked = false;    
    } 
 }
 
@@ -227,6 +247,24 @@ function checkactivateocsp(){
 }
 
 <% } 
+  if(xkmscert != null){ %>
+  function viewxkmscert(){        
+      var link = "<%= VIEWCERT_LINK %>?<%= CERTSERNO_PARAMETER %>=<%= java.net.URLEncoder.encode(xkmscert.getSerialNumber().toString(16) + "," + CertTools.getIssuerDN(xkmscert),"UTF-8")%>";
+      link = encodeURI(link);
+      win_popup = window.open(link, 'view_cert','height=600,width=500,scrollbars=yes,toolbar=no,resizable=1');
+      win_popup.focus();
+  }
+   
+  function checkactivatexkms(){ 
+    if(document.ca.<%=CHECKBOX_ACTIVATEXKMSSERVICE%>.checked){
+      document.ca.<%=BUTTON_REVOKERENEWXKMSCERTIFICATE%>.disabled = false;
+    }
+    else{    
+      document.ca.<%=BUTTON_REVOKERENEWXKMSCERTIFICATE%>.disabled = true;
+    }
+  }
+
+  <% } 
 }  %>  
 
 function checkusefield(usefield, criticalfield){
@@ -516,6 +554,7 @@ function checkallfields(){
          <% } %>   
       </td>
     </tr> 
+    <% if(!isexternal){ %>
     <tr id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("USEUTF8POLICYTEXT") %>
@@ -526,6 +565,7 @@ function checkallfields(){
                  out.write("CHECKED");%>>         
       </td>
     </tr>
+    <% } %>
    <% if(!processrequest && !isexternal){ %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
@@ -704,7 +744,25 @@ function checkallfields(){
          <% } %>
       </td>
     </tr>    
-    <% } %>
+    <% } %>    
+    <% if(!editca || (editca && xkmscainfo != null)){ %>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("XKMSSERVICE") %>
+      </td>
+      <td width="50%"> <%= ejbcawebbean.getText("ACTIVE") %> 
+        <input type="checkbox"          <% if(editca && xkmscert != null){ %> onclick="checkactivatexkms()" <% } %> name="<%=CHECKBOX_ACTIVATEXKMSSERVICE %>" value="<%=CHECKBOX_VALUE %>" 
+           <% if(waitingresponse) out.write(" disabled ");%>
+            <% if((editca && (xkmscainfo.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE)))
+                 out.write("CHECKED");%>>
+         <% if(editca && xkmscert != null){ %> &nbsp;&nbsp;         
+         <input type="submit" name="<%= BUTTON_REVOKERENEWXKMSCERTIFICATE %>" <% if(xkmscainfo.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE || waitingresponse) out.write(" disabled ");%> value="<%= ejbcawebbean.getText("REVOKERENEWXKMSCERT") %>" >
+         <br>         
+         <a style="cursor:hand;" onClick="viewxkmscert()"><u><%= ejbcawebbean.getText("VIEWXKMSCERTIFICATE")%></u></a>
+         <% } %>
+      </td>
+    </tr>    
+    <% } %>    
     <tr id="Row<%=row%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("APPROVALSETTINGS") %> 
@@ -812,7 +870,7 @@ function checkallfields(){
       <td width="51%" valign="top">             
         <input type="submit" name="<%= BUTTON_RENEWCA %>" onClick='return confirmrenewal()' value="<%= ejbcawebbean.getText("RENEWCA") %>" > 
         <%     if(catokeninfo instanceof SoftCATokenInfo){ %>
-           &nbsp; <%= ejbcawebbean.getText("RENEWKEYS") %><input type="checkbox" name="<%=CHECKBOX_RENEWKEYS %>" value="<%=CHECKBOX_VALUE %>" 
+           &nbsp; <%= ejbcawebbean.getText("RENEWKEYS") %><input type="checkbox" name="<%=CHECKBOX_RENEWKEYS %>" value="<%=CHECKBOX_VALUE %>" >
         <%  } %>
       </td>
     </tr>
