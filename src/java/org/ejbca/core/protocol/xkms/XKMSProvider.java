@@ -1,0 +1,363 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
+package org.ejbca.core.protocol.xkms;
+
+import java.security.cert.CertPath;
+import java.security.cert.CertPathValidator;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.CertStore;
+import java.security.cert.CertificateFactory;
+import java.security.cert.CollectionCertStoreParameters;
+import java.security.cert.PKIXParameters;
+import java.security.cert.TrustAnchor;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import javax.ejb.CreateException;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.PropertyException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.ws.Provider;
+import javax.xml.ws.Service;
+import javax.xml.ws.ServiceMode;
+import javax.xml.ws.WebServiceProvider;
+
+import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
+import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
+import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
+import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceRequest;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceResponse;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.protocol.xkms.common.XKMSConstants;
+import org.ejbca.core.protocol.xkms.common.XKMSNamespacePrefixMapper;
+import org.ejbca.core.protocol.xkms.generators.LocateResponseGenerator;
+import org.ejbca.core.protocol.xkms.generators.ValidateResponseGenerator;
+import org.ejbca.core.protocol.xkms.generators.XKMSConfig;
+import org.ejbca.util.CertTools;
+import org.w3._2002._03.xkms_.LocateRequestType;
+import org.w3._2002._03.xkms_.LocateResultType;
+import org.w3._2002._03.xkms_.MessageAbstractType;
+import org.w3._2002._03.xkms_.ObjectFactory;
+import org.w3._2002._03.xkms_.RequestAbstractType;
+import org.w3._2002._03.xkms_.ValidateRequestType;
+import org.w3._2002._03.xkms_.ValidateResultType;
+import org.w3c.dom.Document;
+
+/**
+ * The XKMS Web Service in provider form
+ * 
+ * This is used as a workaround for the namespace prefix handling
+ * in the JAX-WS
+ * 
+ * 
+ * @author Philip Vendil 2006 dec 18
+ *
+ * @version $Id: XKMSProvider.java,v 1.1 2006-12-22 09:21:40 herrvendil Exp $
+ */
+
+@ServiceMode(value=Service.Mode.PAYLOAD)
+@WebServiceProvider(serviceName="XKMSService", targetNamespace = "http://www.w3.org/2002/03/xkms#wsdl", portName="XKMSPort")
+public class XKMSProvider implements Provider<Source> {
+
+	private static Logger log = Logger.getLogger(XKMSPortType.class);
+	
+	protected Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
+	
+	private ObjectFactory xKMSObjectFactory = new ObjectFactory();
+	
+    private static JAXBContext jAXBContext = null;
+    private static Marshaller marshaller = null;
+    private static Unmarshaller unmarshaller = null;
+    private static DocumentBuilderFactory dbf = null;
+    
+    static{    	
+    	try {
+    		org.apache.xml.security.Init.init();
+    		jAXBContext = JAXBContext.newInstance("org.w3._2002._03.xkms_:org.w3._2001._04.xmlenc_:org.w3._2000._09.xmldsig_");    		
+			marshaller = jAXBContext.createMarshaller();
+	        try {
+	            marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper",new XKMSNamespacePrefixMapper());
+	        } catch( PropertyException e ) {
+	           log.error("Error registering namespace mapper property",e);
+	        }
+	    	dbf = DocumentBuilderFactory.newInstance();
+	    	dbf.setNamespaceAware(true);
+	    	unmarshaller = jAXBContext.createUnmarshaller();
+
+		} catch (JAXBException e) {
+			log.error("Error initializing RequestAbstractTypeResponseGenerator",e);
+		}
+	
+    }
+	
+	/**
+	 * The main method performing the actual calls
+	 */
+	public Source invoke(Source request) {
+		Source response = null;
+		
+		boolean respMecSign = false;
+		try {
+			JAXBElement jAXBRequest = (JAXBElement) unmarshaller.unmarshal(request);
+			
+			JAXBElement jAXBResult = null;
+			if(jAXBRequest.getValue() instanceof RequestAbstractType){
+				respMecSign = ((RequestAbstractType)jAXBRequest.getValue()).getResponseMechanism().contains(XKMSConstants.RESPONSMEC_REQUESTSIGNATUREVALUE);
+			}				
+			if(jAXBRequest.getValue() instanceof ValidateRequestType ){
+				boolean requestVerifies = verifyRequest(request, true);
+				jAXBResult = validate((ValidateRequestType) jAXBRequest.getValue(), requestVerifies);
+			}	
+			if(jAXBRequest.getValue() instanceof LocateRequestType ){
+				boolean requestVerifies = verifyRequest(request, true);
+				jAXBResult = locate((LocateRequestType) jAXBRequest.getValue(), requestVerifies);
+			}			
+			String responseId = ((MessageAbstractType) jAXBResult.getValue()).getId();			
+			
+			Document doc = dbf.newDocumentBuilder().newDocument();
+			marshaller.marshal( jAXBResult, doc );
+			doc = signResponseIfNeeded(doc, responseId, respMecSign, intAdmin);
+
+		    		    
+		    response = new DOMSource(doc);
+			
+					
+		} catch (JAXBException e) {
+		   log.error("Error unmarshalling the request ",e);
+		} catch (ParserConfigurationException e) {
+			log.error("Error parsing the response ",e);
+		}
+		
+		return response;
+	}
+
+	private JAXBElement validate(ValidateRequestType value, boolean requestVerifies) {
+		ValidateResponseGenerator gen = new ValidateResponseGenerator(value);
+		
+		JAXBElement<ValidateResultType> validateresult = xKMSObjectFactory.createValidateResult(gen.getResponse(requestVerifies));
+		return validateresult;
+	}
+	
+	private JAXBElement locate(LocateRequestType value, boolean requestVerifies) {
+		LocateResponseGenerator gen = new LocateResponseGenerator(value);
+		
+		JAXBElement<LocateResultType> locateresult = xKMSObjectFactory.createLocateResult(gen.getResponse(requestVerifies));
+		return locateresult;
+	}
+	
+	
+	/**
+	 * Method that verifies the content of the requests against the
+	 * configured trusted CA.
+	 * 
+	 * @param kISSRequest if the caller is a kISSRequest
+	 *
+	 */
+	private boolean verifyRequest(Source request, boolean kISSRequest) {
+		
+		try{
+			DOMResult dom = new DOMResult();
+			Transformer trans = TransformerFactory.newInstance().newTransformer();
+			trans.transform(request, dom);
+			Document doc2 = (Document) dom.getNode();
+
+
+
+			boolean signatureExists = false;
+
+			org.w3c.dom.NodeList xmlSigs = doc2.getElementsByTagNameNS("http://www.w3.org/2000/09/xmldsig#", "Signature");
+			signatureExists = xmlSigs.getLength() > 0;
+
+			// Check that signature exists and if it's required
+			boolean sigRequired = !kISSRequest || XKMSConfig.isSignedRequestRequired();
+
+			if(sigRequired && !signatureExists){
+				log.error("Recieved XKMS request without signature, which is required");
+				return false;
+			}else{
+				if(signatureExists){
+
+					try{																					
+						org.w3c.dom.Element xmlSigElement = (org.w3c.dom.Element)xmlSigs.item(0);        
+						org.apache.xml.security.signature.XMLSignature xmlVerifySig = new org.apache.xml.security.signature.XMLSignature(xmlSigElement, null);
+
+						org.apache.xml.security.keys.KeyInfo keyInfo = xmlVerifySig.getKeyInfo();
+						java.security.cert.X509Certificate verCert = keyInfo.getX509Certificate();
+
+
+						// Check signature
+						if(xmlVerifySig.checkSignatureValue(verCert)){ 							
+							// Check that the issuer is among accepted issuers
+							int cAId = CertTools.getIssuerDN(verCert).hashCode();
+
+							Collection acceptedCAIds = XKMSConfig.getAcceptedCA(intAdmin, getCAAdminSession());
+							if(!acceptedCAIds.contains(new Integer(cAId))){
+								throw new Exception("Error XKMS request signature certificate isn't among the list of accepted CA certificates");
+							}
+
+							CAInfo cAInfo = getCAAdminSession().getCAInfo(intAdmin, cAId);
+							Collection cACertChain = cAInfo.getCertificateChain();
+							// Check issuer and validity						
+							X509Certificate rootCert = null;
+							Iterator iter = cACertChain.iterator();
+							while(iter.hasNext()){
+								X509Certificate cert = (X509Certificate) iter.next();
+								if(cert.getIssuerDN().equals(cert.getSubjectDN())){
+									rootCert = cert;
+									break;
+								}
+							}
+
+							if(rootCert == null){
+								throw new CertPathValidatorException("Error Root CA cert not found in cACertChain"); 
+							}
+
+							List list = new ArrayList();
+							list.add(verCert);
+							list.add(cACertChain);
+
+
+							CollectionCertStoreParameters ccsp = new CollectionCertStoreParameters(list);
+							CertStore store = CertStore.getInstance("Collection", ccsp);
+
+							//validating path
+							List certchain = new ArrayList();
+							certchain.addAll(cACertChain);
+							certchain.add(verCert);
+							CertPath cp = CertificateFactory.getInstance("X.509","BC").generateCertPath(certchain);
+
+							Set trust = new HashSet();
+							trust.add(new TrustAnchor(rootCert, null));
+
+							CertPathValidator cpv = CertPathValidator.getInstance("PKIX","BC");
+							PKIXParameters param = new PKIXParameters(trust);
+							param.addCertStore(store);
+							param.setDate(new Date());				        	
+							param.setRevocationEnabled(false);
+
+							cpv.validate(cp, param); 
+
+							// Check revokation status
+							RevokedCertInfo revCertInfo = getCertStoreSession().isRevoked(intAdmin, CertTools.getIssuerDN(verCert), verCert.getSerialNumber());
+							if(revCertInfo.getReason() != RevokedCertInfo.NOT_REVOKED){
+								return false;
+							}
+						}else{
+							log.error("Error XKMS request signature doesn't verify.");
+							return false;
+						}
+					}catch(Exception e){
+						log.error("Error when verifying signature request.",e);
+						return false;
+					}
+				}
+			}
+
+		} catch (TransformerConfigurationException e) {
+			log.error("Error when DOM parsing request.",e);
+		} catch (TransformerFactoryConfigurationError e) {
+			log.error("Error when DOM parsing request.",e);
+		} catch (TransformerException e) {
+			log.error("Error when DOM parsing request.",e);
+		}
+
+		return true;
+	}
+	
+	/**
+	 * Method that checks if signing is required by
+	 * checking the service configuration and the request,
+	 * It then signs the request, othervise it isn't
+	 * @param admin 
+	 * @return the document signed or null of the signature failed;
+	 */
+	private Document signResponseIfNeeded(Document result, String id, boolean respMecSign, Admin admin){
+		Document retval = result;
+
+		if(XKMSConfig.alwaysSignResponses() || (XKMSConfig.acceptSignRequests() && respMecSign)){
+			try {
+
+				XKMSCAServiceRequest cAReq = new XKMSCAServiceRequest(result, id,true,false);
+
+				XKMSCAServiceResponse resp = (XKMSCAServiceResponse) getSignSession().extendedService(admin, XKMSConfig.cAIdUsedForSigning(admin, getCAAdminSession()), cAReq);
+
+				retval = resp.getSignedDocument();
+			} catch (Exception e) {
+				log.error("Error generated response signature on XKMS request",e);
+				retval = null;
+			}
+		}
+
+		return retval;
+    }           
+	
+	private ICertificateStoreSessionLocal certificatestoresession = null;
+	protected ICertificateStoreSessionLocal getCertStoreSession() throws ClassCastException, CreateException, NamingException{
+		if(certificatestoresession == null){
+			Context context = new InitialContext();
+			certificatestoresession = ((ICertificateStoreSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
+			"CertificateStoreSessionLocal"), ICertificateStoreSessionLocalHome.class)).create();    	           	           	        
+		}
+		return certificatestoresession;
+	}
+	
+	private ICAAdminSessionLocal caadminsession = null;
+	protected ICAAdminSessionLocal getCAAdminSession() throws ClassCastException, CreateException, NamingException{ 		
+	    if(caadminsession == null){	  
+	    	Context context = new InitialContext();	    	
+	    	caadminsession = ((ICAAdminSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
+	    	"CAAdminSessionLocal"), ICAAdminSessionLocalHome.class)).create();   
+	    }
+	    return caadminsession;
+	}
+	
+	private ISignSessionLocal signsession = null;
+	protected ISignSessionLocal getSignSession() throws ClassCastException, CreateException, NamingException{
+		if(signsession == null){
+			Context context = new InitialContext();
+			signsession = ((ISignSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
+			"SignSessionLocal"), ISignSessionLocalHome.class)).create();    	           	           	        
+		}
+		return signsession;
+	}
+
+}

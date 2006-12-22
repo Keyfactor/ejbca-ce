@@ -46,7 +46,7 @@ import org.ejbca.util.Base64PutHashMap;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.10 2006-10-31 08:15:57 anatom Exp $
+ * @version $Id: CADataBean.java,v 1.11 2006-12-22 09:27:37 herrvendil Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a publisher"
@@ -71,12 +71,17 @@ import org.ejbca.util.Base64PutHashMap;
  *   name="keyStorePass"
  *   type="java.lang.String"
  *   value="${ca.keystorepass}"
-
+ *   
  * @ejb.env-entry description="Password for OCSP keystores"
  *   name="OCSPKeyStorePass"
  *   type="java.lang.String"
  *   value="${ca.ocspkeystorepass}"
  *
+ * @ejb.env-entry description="Password for XKMS keystores"
+ *   name="XKMSKeyStorePass"
+ *   type="java.lang.String"
+ *   value="${ca.xkmskeystorepass}"
+ *   
  * @ejb.home
  *   generate="local"
  *   local-extends="javax.ejb.EJBLocalHome"

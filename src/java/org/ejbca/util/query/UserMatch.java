@@ -23,7 +23,7 @@ package org.ejbca.util.query;
  * function is getQueryString which returns a fragment of SQL statment.
  *
  * @author TomSelleck
- * @version $Id: UserMatch.java,v 1.3 2006-08-09 07:29:48 herrvendil Exp $
+ * @version $Id: UserMatch.java,v 1.4 2006-12-22 09:24:28 herrvendil Exp $
  *
  * @see org.ejbca.util.query.BasicMatch
  * @see org.ejbca.util.query.TimeMatch
@@ -54,6 +54,18 @@ public class UserMatch extends BasicMatch {
     public static final int MATCH_WITH_STATE            = 110;
     public static final int MATCH_WITH_DOMAINCOMPONENT  = 111;
     public static final int MATCH_WITH_COUNTRY          = 112;
+    // Subject Altname Fields
+    public static final int MATCH_WITH_RFC822NAME       = 200;
+    public static final int MATCH_WITH_DNSNAME          = 201;
+    public static final int MATCH_WITH_IPADDRESS        = 202;
+    public static final int MATCH_WITH_X400ADDRESS      = 203;
+    public static final int MATCH_WITH_DIRECTORYNAME    = 204;
+    public static final int MATCH_WITH_EDIPARTNAME      = 205;
+    public static final int MATCH_WITH_URI              = 206;
+    public static final int MATCH_WITH_REGISTEREDID     = 207;
+    public static final int MATCH_WITH_UPN              = 208;
+    public static final int MATCH_WITH_GUID             = 209;
+
 
 
     // Private Constants.
@@ -68,7 +80,12 @@ public class UserMatch extends BasicMatch {
         "UID=", "CN=", "SN=", "GIVENNAME=", "INITIALS=", "SURNAME=", "T=", "OU=", "O=", "L=", "ST=",
         "DC", "C="
     };
-
+    
+    private static final String MATCH_WITH_SUBJECTALTNAME = "subjectAltName";
+    private static final String[] MATCH_WITH_SUBJECTALTNAME_NAMES = {
+        "RFC822NAME=", "DNSNAME=", "IPADDRESS=", "X400ADDRESS=", "DIRECTORYNAME=",
+        "EDIPARTNAME=", "UNIFORMRESOURCEIDENTIFIER=", "REGISTEREDID=", "UPN=",  "GUID="
+    };
     // Public methods.
 
     /**
@@ -102,34 +119,38 @@ public class UserMatch extends BasicMatch {
         String returnval = "";
 
         if (isSubjectDNMatch()) {
-            // Ignore MATCH_TYPE_EQUALS.
-            returnval = MATCH_WITH_SUBJECTDN + " LIKE '%" +
-                MATCH_WITH_SUBJECTDN_NAMES[matchwith - 100] + matchvalue + "%'";
-        } else {
-        	if(matchwith == MATCH_WITH_DN){
-        		if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
-        			returnval = MATCH_WITH_SUBJECTDN + " = '" + matchvalue + "'";
-        		}
-        		
-        		if (matchtype == BasicMatch.MATCH_TYPE_BEGINSWITH) {
-        			returnval = MATCH_WITH_SUBJECTDN + " LIKE '" + matchvalue + "%'";
-        		} 
-        		
-        		if (matchtype == BasicMatch.MATCH_TYPE_CONTAINS) {
-        			returnval = MATCH_WITH_SUBJECTDN + " LIKE '%" + matchvalue + "%'";
-        		} 
-        		
-        	}else{
-        		if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
-        			returnval = MATCH_WITH_SQLNAMES[matchwith] + " = '" + matchvalue + "'";
-        		}
-        		
-        		if (matchtype == BasicMatch.MATCH_TYPE_BEGINSWITH) {
-        			returnval = MATCH_WITH_SQLNAMES[matchwith] + " LIKE '" + matchvalue + "%'";
+        	// Ignore MATCH_TYPE_EQUALS.
+        	returnval = MATCH_WITH_SUBJECTDN + " LIKE '%" +
+        	MATCH_WITH_SUBJECTDN_NAMES[matchwith - 100] + matchvalue + "%'";
+        }else{
+        	if (isSubjectAltNameMatch()){
+        		returnval = MATCH_WITH_SUBJECTALTNAME + " LIKE '%" +
+        		MATCH_WITH_SUBJECTALTNAME_NAMES[matchwith - 200] + matchvalue + "%'";        	
+        	}else {
+        		if(matchwith == MATCH_WITH_DN){
+        			if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
+        				returnval = MATCH_WITH_SUBJECTDN + " = '" + matchvalue + "'";
+        			}
+
+        			if (matchtype == BasicMatch.MATCH_TYPE_BEGINSWITH) {
+        				returnval = MATCH_WITH_SUBJECTDN + " LIKE '" + matchvalue + "%'";
+        			} 
+
+        			if (matchtype == BasicMatch.MATCH_TYPE_CONTAINS) {
+        				returnval = MATCH_WITH_SUBJECTDN + " LIKE '%" + matchvalue + "%'";
+        			} 
+
+        		}else{
+        			if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
+        				returnval = MATCH_WITH_SQLNAMES[matchwith] + " = '" + matchvalue + "'";
+        			}
+
+        			if (matchtype == BasicMatch.MATCH_TYPE_BEGINSWITH) {
+        				returnval = MATCH_WITH_SQLNAMES[matchwith] + " LIKE '" + matchvalue + "%'";
+        			}
         		}
         	}
         }
-
         return returnval;
     }
 
@@ -141,12 +162,20 @@ public class UserMatch extends BasicMatch {
      * @return true if query is legal, false otherwise
      */
     public boolean isLegalQuery() {
+    	if(matchvalue == null){
+    		return false;
+    	}
         return !(matchvalue.trim().equals(""));
     }
 
     // Private Methods
     private boolean isSubjectDNMatch() {
-        return this.matchwith >= 100;
+        return this.matchwith >= 100 && this.matchwith < 200;
+    }
+    
+    // Private Methods
+    private boolean isSubjectAltNameMatch() {
+        return this.matchwith >= 200 && this.matchwith < 300;
     }
 
     // Private Fields.

@@ -11,6 +11,7 @@ appserver.home         = ${appserver.home}
 java.ver               = ${java.ver}
 ca.keystorepass        = ${ca.keystorepass}
 ca.ocspkeystorepass    = ${ca.ocspkeystorepass}
+ca.xkmskeystorepass    = ${ca.xkmskeystorepass}
 ocsp.defaultresponder  = ${ocsp.defaultresponder}
 ocsp.usecasigningcert  = ${ocsp.usecasigningcert}
 ocsp.signaturealgorithm = ${ocsp.signaturealgorithm}
@@ -37,6 +38,7 @@ mail.debug             = ${mail.debug}
 httpserver.pubhttp	   = ${httpserver.pubhttp}
 httpserver.pubhttps	   = ${httpserver.pubhttps}
 httpserver.privhttps   = ${httpserver.privhttps}
+httpsserver.hostname   = ${httpsserver.hostname}
 httpsserver.password   = ${httpsserver.password}
 web.availablelanguages = ${web.availablelanguages}
 web.contentencoding    = ${web.contentencoding}
@@ -67,6 +69,15 @@ cmp.tcp.enabled                 = ${cmp.tcp.enabled}
 cmp.tcp.portno                  = ${cmp.tcp.portno}
 cmp.tcp.logdir                  = ${cmp.tcp.logdir}
 cmp.tcp.conffile                = ${cmp.tcp.conffile}
+xkms.enabled                    = ${xkms.enabled}
+xkms.keyusage.signatureisnonrep = ${xkms.keyusage.signatureisnonrep}
+xkms.request.requiresignature   = ${xkms.request.requiresignature}
+xkms.request.acceptedcas        = ${xkms.request.acceptedcas}
+xkms.respose.acceptsignrequest  = ${xkms.response.acceptsignrequest}
+xkms.response.alwayssign        = ${xkms.response.alwayssign}
+xkms.response.causedforsigning  = ${xkms.response.causedforsigning}
+xkms.keyusage.signatureisnonrep = ${xkms.keyusage.signatureisnonrep}
+xkms.serviceport                = ${xkms.serviceport}
 certtools.dnorderreverse          = ${certtools.dnorderreverse}
 development.provider.installation = ${development.provider.installation}
       </echo>
@@ -94,6 +105,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
         <mkdir dir="${dist.dir}/${lib}"/>
         <mkdir dir="${ocsp-dist.dir}"/>
         <mkdir dir="${ocsp-client.build}"/>
+        <mkdir dir="tmp/xkms/gen-classes/server"/>
     </target>
 
     <!-- =================================================================== -->
@@ -126,6 +138,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
             <exclude name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java" />
             <exclude name="org/ejbca/ui/web/pub/cluster/ExtOCSPHealthCheck.java" />
         	<exclude name="org/ejbca/core/protocol/ws/**" />
+        	<exclude name="org/ejbca/core/protocol/xkms/**/**" />
             <src path="${src.java}" />
             <src path="${src.gen}" />
         </javac>
@@ -426,6 +439,17 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.amountfreemem@" value="${ocsphealthcheck.amountfreemem}"/>	
 		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.dbquery@" value="${ocsphealthcheck.dbquery}"/>	
 		<replace file="${ocsphealthcheck.src}/WEB-INF/web.xml" token="@ocsphealthcheck.authorizedips@" value="${ocsphealthcheck.authorizedips}"/>	
+		<replace file="${src.java}/org/ejbca/core/protocol/xkms/generators/RequestAbstractTypeResponseGenerator.java" token="@httpsserver.hostname@" value="${httpsserver.hostname}"/>	
+		<replace file="${src.java}/org/ejbca/core/protocol/xkms/generators/RequestAbstractTypeResponseGenerator.java" token="@httpserver.pubhttp@" value="${httpserver.pubhttp}"/>
+	    <replace file="${src}/xkms/wsdl/xkms.wsdl" token="@httpsserver.hostname@" value="${httpsserver.hostname}"/>	
+		<replace file="${src}/xkms/wsdl/xkms.wsdl" token="@xkms.serviceport@" value="${xkms.serviceport}"/>
+		<replace file="${src.java}/org/ejbca/core/protocol/xkms/generators/XKMSConfig.java" token="@xkms.request.requiresignature@" value="${xkms.request.requiresignature}"/>
+		<replace file="${src.java}/org/ejbca/core/protocol/xkms/generators/XKMSConfig.java" token="@xkms.request.acceptedcas@" value="${xkms.request.acceptedcas}"/>
+		<replace file="${src.java}/org/ejbca/core/protocol/xkms/generators/XKMSConfig.java" token="@xkms.response.alwayssign@" value="${xkms.response.alwayssign}"/>
+		<replace file="${src.java}/org/ejbca/core/protocol/xkms/generators/XKMSConfig.java" token="@xkms.response.causedforsigning@" value="${xkms.response.causedforsigning}"/>
+		<replace file="${src.java}/org/ejbca/core/protocol/xkms/generators/XKMSConfig.java" token="@xkms.response.acceptsignrequest@" value="${xkms.response.acceptsignrequest}"/>
+	    <replace file="${src.java}/org/ejbca/core/protocol/xkms/generators/XKMSConfig.java" token="@xkms.keyusage.signatureisnonrep@" value="${xkms.keyusage.signatureisnonrep}"/>
+
 		<!-- Copy the correct jndi settings for the selected application server -->
 		<copy file="${mainbin}/jndi.properties.${appserver.type}" tofile="${mainbin}/jndi.properties" overwrite="false" failonerror="false"/>
 		<copy file="${mainsrc}/java/jndi.properties.${appserver.type}" tofile="${mainsrc}/java/jndi.properties" overwrite="false" failonerror="false"/>

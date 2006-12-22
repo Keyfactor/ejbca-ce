@@ -186,7 +186,7 @@
         </jar>    	    	
     </target>
 
-    <target name="ejbcaws.client" depends="ws.build.client" if="jdk15.present"/>
+    <target name="ejbcaws.client" depends="ejbcawsconditioncheck,ws.build.client" if="ejbcawsconditioncheck"/>
 
     <target name="test:compilews" depends="ws.build, ws.build.client" description="compile JAXWS JUnit testcases">
         <mkdir dir="${test.dir}" />
@@ -198,7 +198,7 @@
 	
     <target name="test:runws" depends="test:compilews,j2ee:assert-run" description="run JAXWS JUnit testcases">
     	<echo>Important: In order to run the tests you have to create a JKS 
-named testws.jks with Superadmin rights and password 'foo123' 
+named wstest.jks with Superadmin rights and password 'foo123' 
 in the p12 subdirectory.
     	</echo>
         <delete dir="${test.dir}/ws/reports" />

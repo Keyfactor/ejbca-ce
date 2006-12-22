@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.14 2006-12-16 16:18:36 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.15 2006-12-22 09:31:56 herrvendil Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -67,6 +67,10 @@ ca.keystorepass=foo123
 # The default value is the same for convenience.
 ca.ocspkeystorepass=foo123
 #ca.ocspkeystorepass=ocsp!secret!
+
+# Password user to protect XKMS keystores in the database (CAs XKMS signer/enc certificate).
+# The default value is the same for convenience.
+ca.xkmskeystorepass=foo123
 
 # ------------- Approval configuration ------------------------
 # Settings working as default values in the approval functionality

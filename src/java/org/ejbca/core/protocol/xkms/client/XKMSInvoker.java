@@ -1,0 +1,333 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
+package org.ejbca.core.protocol.xkms.client;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.Key;
+import java.security.cert.CertPath;
+import java.security.cert.CertPathValidator;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.CertStore;
+import java.security.cert.CertificateFactory;
+import java.security.cert.CollectionCertStoreParameters;
+import java.security.cert.PKIXParameters;
+import java.security.cert.TrustAnchor;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.PropertyException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Source;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.ws.Dispatch;
+import javax.xml.ws.Service;
+
+import org.apache.log4j.Logger;
+import org.apache.xml.security.exceptions.XMLSecurityException;
+import org.apache.xml.security.signature.XMLSignatureException;
+import org.apache.xml.security.transforms.TransformationException;
+import org.ejbca.core.protocol.xkms.XKMSService;
+import org.ejbca.core.protocol.xkms.common.XKMSConstants;
+import org.ejbca.core.protocol.xkms.common.XKMSNamespacePrefixMapper;
+import org.ejbca.util.CertTools;
+import org.w3._2002._03.xkms_.LocateRequestType;
+import org.w3._2002._03.xkms_.LocateResultType;
+import org.w3._2002._03.xkms_.ObjectFactory;
+import org.w3._2002._03.xkms_.RequestAbstractType;
+import org.w3._2002._03.xkms_.ValidateRequestType;
+import org.w3._2002._03.xkms_.ValidateResultType;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
+/**
+ * Helper class that performs the prefix replacements
+ * and does the dispatch invokation. 
+ * 
+ * 
+ * @author Philip Vendil 2006 dec 19
+ *
+ * @version $Id: XKMSInvoker.java,v 1.1 2006-12-22 09:21:39 herrvendil Exp $
+ */
+
+public class XKMSInvoker {
+
+	private static Logger log = Logger.getLogger(XKMSInvoker.class);
+
+	private static JAXBContext jAXBContext = null;
+	private static Marshaller marshaller = null;
+	private static Unmarshaller unmarshaller = null;
+	private static DocumentBuilderFactory dbf = null;
+	
+	private Collection cacerts = null;
+
+	private static Dispatch<Source> sourceDispatch = null; 
+	private ObjectFactory xKMSObjectFactory = new ObjectFactory();	
+
+	static{    	
+		try {
+			org.apache.xml.security.Init.init();
+			CertTools.installBCProvider();				        
+
+			jAXBContext = JAXBContext.newInstance("org.w3._2002._03.xkms_:org.w3._2001._04.xmlenc_:org.w3._2000._09.xmldsig_");    		
+			marshaller = jAXBContext.createMarshaller();
+			try {
+				marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper",new XKMSNamespacePrefixMapper());
+			} catch( PropertyException e ) {
+				log.error("Error registering namespace mapper property",e);
+			}
+			dbf = DocumentBuilderFactory.newInstance();
+			dbf.setNamespaceAware(true);
+			unmarshaller = jAXBContext.createUnmarshaller();
+
+		} catch (JAXBException e) {
+			log.error("Error initializing RequestAbstractTypeResponseGenerator",e);
+		}
+
+	}
+	    
+	/**
+	 * Creates an invoker to the web service at the specified URL
+	 * 
+	 * @param serviceURL the url to the web service.
+	 * @param cacerts a collection of trusted CA signing responses. Use null if signed responeses isn't required.
+	 */
+	public XKMSInvoker(String serviceURL, Collection cacerts){
+		XKMSService xkmsService;
+		try {
+			xkmsService = new XKMSService(new URL(serviceURL + ".wsdl"),new QName("http://www.w3.org/2002/03/xkms#wsdl", "XKMSService"));
+			sourceDispatch = xkmsService.createDispatch(new QName("http://www.w3.org/2002/03/xkms#wsdl", "XKMSPort"), Source.class, Service.Mode.PAYLOAD);
+		} catch (MalformedURLException e) {
+		  log.error("Error creating XKMS Service instance",e);
+		}   
+		
+		this.cacerts = cacerts;
+		if(cacerts==null){
+			cacerts = new ArrayList();
+		}
+	}
+
+	/**
+	 * Creates a locate call to the web service
+	 * 
+	 * @param locateRequestType the request
+	 * @param signCert the certificate that should sign the request, or null of no signing should be performed
+	 * @param privateKey the key doing the signing, or null of no signing should be performed
+	 * @return a LocateResultType
+	 * @throws XKMSResponseSignatureException if the response signature didn't verify
+	 */
+	public LocateResultType locate(LocateRequestType locateRequestType, X509Certificate signCert, Key privateKey) throws XKMSResponseSignatureException{				
+		JAXBElement<LocateRequestType> locateRequest = xKMSObjectFactory.createLocateRequest(locateRequestType);
+		DOMSource domSource = performSigning(locateRequest, locateRequestType.getId(), signCert, privateKey);
+		JAXBElement<LocateResultType> response = invoke(domSource);
+				
+		return response.getValue();
+	}
+	
+	/**
+	 * Creates a validate call to the web service
+	 * 
+	 * @param validateRequestType the request
+	 * @param signCert the certificate that should sign the request, or null of no signing should be performed
+	 * @param privateKey the key doing the signing, or null of no signing should be performed
+	 * @return a ValidateResultType
+	 * @throws XKMSResponseSignatureException if the response signature didn't verify
+	 */
+	public ValidateResultType validate(ValidateRequestType validateRequestType, X509Certificate signCert, Key privateKey) throws XKMSResponseSignatureException{				
+		JAXBElement<ValidateRequestType> validateRequest = xKMSObjectFactory.createValidateRequest(validateRequestType);
+		DOMSource domSource = performSigning(validateRequest, validateRequestType.getId(), signCert, privateKey);
+		JAXBElement<ValidateResultType> response = invoke(domSource);		
+		
+		return response.getValue();
+	}
+	
+	/**
+	 * Method that performs the actual invokation.
+	 * @param abstractMessageType
+	 * @return
+	 * @throws XKMSResponseSignatureException 
+	 */
+	private JAXBElement invoke(DOMSource domSource) throws XKMSResponseSignatureException{
+		JAXBElement result =null;
+   
+		try{						
+			Source response = sourceDispatch.invoke(domSource);
+			
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			Document doc = db.parse(((StreamSource) response).getInputStream());
+						
+			verifyResponseSignature(doc);
+			result = (JAXBElement) unmarshaller.unmarshal(doc);
+		} catch(JAXBException e){
+			log.error("Error marshalling XKMS request",e);
+		} catch (ParserConfigurationException e) {
+			log.error("Error parsing XKMS response",e);
+		} catch (SAXException e) {
+			log.error("Error parsing XKMS response",e);
+		} catch (IOException e) {
+			log.error("Error parsing XKMS response",e);
+		}
+		
+		return result;
+	}
+	
+	
+	/**
+	 * Creates a signature on a request adn returns a DOM source.
+	 * 
+	 * @param messageAbstractType the request to sign
+	 * @param signCert the certificate that should sign the request, or null of no signing should be performed
+	 * @param privateKey the key doing the signing, or null of no signing should be performed
+	 * @return a DOMSource or null if request was invalid
+	 */
+	private DOMSource performSigning(JAXBElement messageAbstractType, String messageId, X509Certificate signCert, Key privateKey){
+		    DOMSource retval = null;
+		
+			try{
+				if(signCert != null && privateKey != null ){
+					RequestAbstractType requestAbstractType = (RequestAbstractType) messageAbstractType.getValue();
+					requestAbstractType.getResponseMechanism().add(XKMSConstants.RESPONSMEC_REQUESTSIGNATUREVALUE);
+				}
+				
+				Document doc = dbf.newDocumentBuilder().newDocument();
+				marshaller.marshal( messageAbstractType, doc );
+
+				if(signCert != null && privateKey != null ){
+					org.apache.xml.security.signature.XMLSignature xmlSig = new org.apache.xml.security.signature.XMLSignature(doc, "", org.apache.xml.security.signature.XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA1, org.apache.xml.security.c14n.Canonicalizer.ALGO_ID_C14N_EXCL_OMIT_COMMENTS);
+					org.apache.xml.security.transforms.Transforms transforms = new org.apache.xml.security.transforms.Transforms(doc);
+					transforms.addTransform(org.apache.xml.security.transforms.Transforms.TRANSFORM_ENVELOPED_SIGNATURE);
+					transforms.addTransform(org.apache.xml.security.transforms.Transforms.TRANSFORM_C14N_EXCL_OMIT_COMMENTS);
+					xmlSig.addDocument("#" + messageId, transforms, org.apache.xml.security.utils.Constants.ALGO_ID_DIGEST_SHA1);        			
+					xmlSig.addKeyInfo(signCert);
+					doc.getDocumentElement().insertBefore( xmlSig.getElement() ,doc.getDocumentElement().getFirstChild());
+					xmlSig.sign(privateKey);        
+				}
+
+				retval = new DOMSource(doc);
+			
+			}catch(XMLSignatureException e){
+				log.error("Error performing XML Signature ",e);
+			} catch (TransformationException e) {
+				log.error("Error parsing XML request ",e);
+			} catch (JAXBException e) {
+				log.error("Error parsing XML request ",e);
+			} catch (ParserConfigurationException e) {
+				log.error("Error parsing XML request ",e);
+			} catch (XMLSecurityException e) {
+				log.error("Error performing XML Signature ",e);
+			}						
+		
+		return retval;
+	}
+	
+	/**
+	 * Method that verifies the response signature,
+	 * 
+	 * doesn't check the revokation status of the server certificate.
+	 * 
+	 * @param response, the response from the service
+	 * @throws {@link XKMSResponseSignatureException} if the signature doesn't verify
+	 */
+	private void verifyResponseSignature(Document doc) throws XKMSResponseSignatureException{
+		try{
+
+			boolean signatureExists = false;
+
+			org.w3c.dom.NodeList xmlSigs = doc.getElementsByTagNameNS("http://www.w3.org/2000/09/xmldsig#", "Signature");
+			signatureExists = xmlSigs.getLength() > 0;
+		
+			if(signatureExists && cacerts != null){
+
+				try{																					
+					org.w3c.dom.Element xmlSigElement = (org.w3c.dom.Element)xmlSigs.item(0);        
+					org.apache.xml.security.signature.XMLSignature xmlVerifySig = new org.apache.xml.security.signature.XMLSignature(xmlSigElement, null);
+
+					org.apache.xml.security.keys.KeyInfo keyInfo = xmlVerifySig.getKeyInfo();
+					java.security.cert.X509Certificate verCert = keyInfo.getX509Certificate();
+
+					// Check signature
+					if(xmlVerifySig.checkSignatureValue(verCert)){ 							
+						
+						Collection cACertChain = cacerts;
+						// Check issuer and validity						
+						X509Certificate rootCert = null;
+						Iterator iter = cACertChain.iterator();
+						while(iter.hasNext()){
+							X509Certificate cert = (X509Certificate) iter.next();
+							if(cert.getIssuerDN().equals(cert.getSubjectDN())){
+								rootCert = cert;
+								break;
+							}
+						}
+
+						if(rootCert == null){
+							throw new CertPathValidatorException("Error Root CA cert not found in cACertChain"); 
+						}
+
+						List list = new ArrayList();
+						list.add(verCert);
+						list.add(cACertChain);
+
+						CollectionCertStoreParameters ccsp = new CollectionCertStoreParameters(list);
+						CertStore store = CertStore.getInstance("Collection", ccsp);
+
+						//validating path
+						List certchain = new ArrayList();
+						certchain.addAll(cACertChain);
+						certchain.add(verCert);
+						CertPath cp = CertificateFactory.getInstance("X.509","BC").generateCertPath(certchain);
+
+						Set trust = new HashSet();
+						trust.add(new TrustAnchor(rootCert, null));
+
+						CertPathValidator cpv = CertPathValidator.getInstance("PKIX","BC");
+						PKIXParameters param = new PKIXParameters(trust);
+						param.addCertStore(store);
+						param.setDate(new Date());				        	
+						param.setRevocationEnabled(false);
+
+						cpv.validate(cp, param); 
+					}else{
+						throw new XKMSResponseSignatureException("Error XKMS request signature doesn't verify.");						
+					}
+				}catch(Exception e){					
+					throw new XKMSResponseSignatureException("Error when verifying signature request.",e);
+				}
+			}else{
+				if(cacerts != null){
+					throw new XKMSResponseSignatureException("Error XKMS response didn't return and signed response");
+				}
+			}
+        } catch (TransformerFactoryConfigurationError e) {
+			log.error("Error when DOM parsing request.",e);
+		}
+	}
+}

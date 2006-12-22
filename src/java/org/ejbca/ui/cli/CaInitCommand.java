@@ -27,6 +27,7 @@ import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.util.CertTools;
@@ -36,7 +37,7 @@ import org.ejbca.util.StringTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.10 2006-11-22 08:36:44 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.11 2006-12-22 09:24:13 herrvendil Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
@@ -122,6 +123,12 @@ public class CaInitCommand extends BaseCaAdminCommand {
                                     "",
                                     keySpec,
                                     keytype));
+            extendedcaservices.add(
+                    new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
+                                          "CN=XKMSCertificate, " + dn,
+                                          "",
+                                          keySpec,
+                                          keytype));
               
             
             X509CAInfo cainfo = new X509CAInfo(dn, 

@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="."  name="xkms" default="xkms.war">
+
+	<condition property="jdk15.present">
+	  <equals arg1="${ant.java.version}" arg2="1.5"/>
+	</condition>
+
+    <path id="xkms.classpath">
+
+    	<fileset dir="lib/xmlsign">
+    	  <include name="**/*.jar"/>
+    	</fileset> 
+    	<pathelement location="tmp/xkms/gen-classes"/>
+    	<pathelement location="${java.home}/../lib/tools.jar"/>
+    	<path refid="compile.classpath" />
+    </path>
+
+	<path id="xkms.client.classpath">
+	  	<fileset dir="lib">
+	   	  <include name="**/*.jar"/>
+	   	</fileset> 
+	  <!-- 	<fileset dir="lib/ext">
+	   	  <include name="**/*.jar"/>
+	   	</fileset> -->
+		<path refid="xkms.classpath" />
+	   	<pathelement location="${java.home}/../lib/tools.jar"/>	   	
+	   	<pathelement location="${build}"/>
+	</path>
+		
+	<path id="xkms.test.classpath">
+	   	<path refid="xkms.client.classpath" />
+	</path>
+	
+	
+    <target name="xkms.init" depends="">
+    	
+    	<mkdir dir="src/xkms/gen-java"/>
+    	
+    	<mkdir dir="tmp/xkms/gen-classes"/>
+    </target>
+	
+	
+    <target name="xkms.cleansrc">
+    	<delete dir="src/xkms/gen-java"/>
+    </target>
+
+<!--	<taskdef name="apt" classname="com.sun.tools.ws.ant.Apt">
+		<classpath refid="xkms.classpath"/>
+	</taskdef>
+	
+    <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
+        <classpath refid="xkms.classpath"/>
+    </taskdef> -->
+	
+	<target depends="xkms.init" name="xkms.gen.server">
+        <wsimport 
+                keep="true"
+                extension="${extension}"
+                destdir="tmp/xkms/gen-classes"
+        	    sourcedestdir="src/xkms/gen-java"
+                wsdl="http://localhost:8080/ejbca/xkms/xkms?wsdl">
+            <binding dir="src/xkms" includes="custom-server.xml"/>
+        </wsimport>
+	</target>
+	
+    <target depends="xkms.init, preprocess" name="xkms.build">
+        <javac debug="true" debuglevel="${debuglevel}" destdir="tmp/xkms/gen-classes" >
+            <src path="src/xkms/gen-java"/>
+            <classpath refid="xkms.classpath"/>        	
+        </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="${build}" >
+            <classpath refid="xkms.classpath"/>
+        	<include name="org/ejbca/core/protocol/xkms/client/*.java"/>
+        	<include name="org/ejbca/core/protocol/xkms/**"/>
+        	<include name="org/ejbca/core/protocol/xkms/generators/**"/>
+        	<include name="org/ejbca/core/protocol/xkms/common/**"/>
+            <src path="${src.java}"/>
+        </javac>    	
+    </target>
+
+	<target name="xkmsconditioncheck">
+		<condition property="xkms.conditionenabled">
+		    <and>
+			<istrue value="${xkms.enabled}"/>
+			<equals arg1="${ant.java.version}" arg2="1.5"/>
+			</and>
+		</condition>
+	</target>
+	
+    <target depends="xkmsconditioncheck, xkms.build" name="xkms.war" if="xkms.conditionenabled">
+        <copy todir="tmp/xkms/gen-classes">
+    	  <fileset dir="${build}">
+            <include name="org/ejbca/core/protocol/xkms/*.class"/>
+    	  	<include name="org/ejbca/core/protocol/xkms/generators/*.class"/>
+    	  	<include name="org/ejbca/core/protocol/xkms/common/*.class"/>    	  	    	  	
+          </fileset>
+        </copy>	
+    	
+    	<replace file="${eardd.src}/META-INF/application.xml" token="!--@xkms.war@-->" value="module>&lt;web>&lt;web-uri>xkms.war&lt;/web-uri>&lt;context-root>/${app.name}/xkms&lt;/context-root>&lt;/web>&lt;/module>"/>
+        <war warfile="${dist.dir}/xkms.war" webxml="${src}/xkms/web.xml">
+            <webinf dir="${src}/xkms" includes="sun-jaxws.xml"/>
+            <classes dir="${tmp}/xkms/gen-classes"/>
+         	<lib dir="${lib}/jaxws" includes="*.jar"/>  
+        	<zipfileset dir="${src}/xkms/wsdl"/>
+        </war>
+    </target>
+	
+
+	
+
+	 <target name="xkms.build.client" depends="xkms.build, ejbca-util.jar">
+
+	        <javac debug="true" debuglevel="${debuglevel}" destdir="${build}" >
+	            <src path="src/java"/>
+	            <classpath refid="xkms.client.classpath"/>
+	        	<include name="org/ejbca/core/protocol/xkms/client/*.java"/>            
+	        	<include name="org/ejbca/core/protocol/xkms/common/*.java"/>            
+	        </javac>
+	    	
+	    	<mkdir dir="tmp/ejbcawscli.jar"/>
+	    	<mkdir dir="tmp/ejbcawscli.jar/META-INF"/>
+	    	<mkdir dir="dist/ejbcawscli/lib"/>
+
+	        <copy todir="tmp/xkmscli.jar">
+	            <fileset dir="${build}">
+	              <include name="org/ejbca/core/protocol/xkms/client/*.class"/>
+                  <include name="org/ejbca/core/protocol/xkms/common/*.class"/>
+	            </fileset>	
+	            <fileset dir="tmp/xkms/gen-classes">
+	              <include name="**/*.class"/>
+	            </fileset>	
+		    </copy> 
+	 
+	        <copy todir="dist/xkmscli/lib">
+	            <fileset dir="${ejbca.home}/lib">        
+	              <include name="bcprov-jdk15.jar"/>
+	              <include name="log4j.jar"/>      
+	              <include name="commons-lang-2.0.jar"/>            	
+	            </fileset>	
+	            <fileset dir="${ejbca.home}/dist">
+	              <include name="ejbca-util.jar"/>         
+	            </fileset>	    
+		        <fileset dir="${lib}/jaxws">
+					<include name="activation.jar" />
+					<include name="FastInfoset.jar" />
+				    <include name="http.jar" />
+					<include name="jaxb-api.jar" />
+				    <include name="jaxb-impl.jar" />
+				    <include name="jaxb-xjc.jar" />
+					<include name="jaxws-api.jar" />
+				    <include name="jaxws-rt.jar" />
+				    <include name="jsr173_api.jar" />
+				 	<include name="jsr181-api.jar" />
+				    <include name="jsr250-api.jar" />
+					<include name="resolver.jar" />
+				    <include name="saaj-api.jar" />
+					<include name="saaj-impl.jar" />
+					<include name="sjsxp.jar" />
+				</fileset>
+		        <fileset dir="${lib}/xmlsign">
+					<include name="xmlsec-1.3.0.jar" />
+				</fileset>
+		        <fileset dir="${lib}/jasper">
+					<include name="commons-logging-api.jar" />
+				</fileset>
+		    </copy>    	
+		    <copy todir="dist/xkmscli/">
+	            <fileset dir="${src}/xkms/cli">
+	                <include name="*.*" />
+	            </fileset>
+	        </copy> 
+	    	              
+	        <jar destfile="dist/xkmscli/xkmscli.jar" basedir="tmp/xkmscli.jar">
+	          <manifest>
+	          	<attribute name="Class-Path" value="lib/bcprov-jdk15.jar lib/ejbca-util.jar lib/log4j.jar lib/activation.jar lib/FastInfoset.jar lib/http.jar lib/jaxb-api.jar lib/jaxb-impl.jar lib/jaxb-xjc.jar lib/jaxws-api.jar lib/jaxws-rt.jar lib/jsr173_api.jar lib/jsr181-api.jar lib/jsr250-api.jar lib/resolver.jar lib/saaj-api.jar lib/saaj-impl.jar lib/sjsxp.jar lib/commons-lang-2.0.jar lib/xmlsec-1.3.0.jar lib/commons-logging-api.jar"/>
+	            <attribute name="Main-Class" value="org.ejbca.core.protocol.xkms.client.xkmscli"/>
+	          </manifest>
+	        </jar>    	    	
+	    </target>
+
+	<target name="xkms.client" depends="xkmsconditioncheck,xkms.build.client" if="xkmsconditioncheck"/>
+	
+    <target name="test:compile:xkms" depends="xkms.build, preprocess" description="compile XKMS JUnit testcases">
+        <mkdir dir="${test.dir}" />
+    	
+        <javac srcdir="${test.src.dir}" destdir="${test.dir}" debug="on" includeantruntime="no" encoding="iso8859-1">
+            <classpath refid="xkms.test.classpath" />
+        	<include name="org/ejbca/core/protocol/xkms/Test*" />
+        	<include name="**/caadmin/TestCAs*" />
+        	<include name="**/caadmin/TestRemoveCA*" />
+        </javac>
+    </target>
+	
+    <target name="test:xkms" depends="test:compile:xkms,j2ee:assert-run" description="run JAXWS JUnit testcases">
+
+        <delete dir="${test.dir}/xkms/reports" />
+        <mkdir dir="${test.dir}/xkms/reports/html" />
+        <junit printsummary="yes" haltonfailure="no">
+			<sysproperty key="testtype" value="WEB"/>
+            <classpath>
+                <path refid="xkms.test.classpath" />
+                <path location="${test.dir}" />
+            </classpath>
+            <formatter type="xml" />
+        	<!-- we must use fork=yes or the BC JCE won't be authenticated due to some problem with ant classloading -->
+            <!-- <batchtest fork="yes" todir="${test.dir}/xkms/reports">
+                <fileset dir="${test.dir}">
+                    <include name="**/caadmin/TestCAs*" />
+                    <exclude name="**/TestRunner*" />
+                </fileset>
+            </batchtest> -->
+            <batchtest fork="yes" todir="${test.dir}/xkms/reports">
+                <fileset dir="${test.dir}">
+                    <include name="**/protocol/xkms/Test*" /> 
+                	<!-- <include name="**/protocol/xkms/TestXKMSSig*" /> -->
+                </fileset>
+            </batchtest>
+            <!-- <batchtest fork="yes" todir="${test.dir}/xkms/reports">
+                <fileset dir="${test.dir}">
+                    <include name="**/caadmin/TestRemoveCA*" />
+                    <exclude name="**/TestRunner*" />
+                </fileset>
+            </batchtest> -->
+        </junit>
+        <junitreport todir="${test.dir}/xkms/reports">
+            <fileset dir="${test.dir}/xkms/reports">
+                <include name="TEST-*.xml" />
+            </fileset>
+            <report format="frames" todir="${test.dir}/xkms/reports/html" />
+        </junitreport>
+    </target>
+</project>

@@ -95,12 +95,16 @@ import org.ejbca.core.ejb.ca.sign.SernoGenerator;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceResponse;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAService;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
+import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
@@ -115,7 +119,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.42 2006-12-20 17:15:43 anatom Exp $
+ * @version $Id: X509CA.java,v 1.43 2006-12-22 09:23:35 herrvendil Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -125,7 +129,7 @@ public class X509CA extends CA implements Serializable {
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Default Values
-    public static final float LATEST_VERSION = 9;
+    public static final float LATEST_VERSION = 10;
 
     private byte[]  keyId = new byte[] { 1, 2, 3, 4, 5 };
     
@@ -769,6 +773,29 @@ public class X509CA extends CA implements Serializable {
             }
             if (data.get(DEFAULTCRLISSUER) == null) {
             	setDefaultCRLIssuer(null);
+            }
+            
+            Collection extendedServiceTypes = getExternalCAServiceTypes();
+            if (!extendedServiceTypes.contains(new Integer(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE))){
+            	
+            	String keytype = CATokenConstants.KEYALGORITHM_RSA;
+            	String keyspec = "2048";
+            	
+            	XKMSCAServiceInfo xKMSCAInfo =  new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
+                       "CN=XKMSCertificate, " + data.get(SUBJECTDN),
+                       "",
+                       keyspec,
+                       keytype);
+            	
+               XKMSCAService xkmsservice = new XKMSCAService(xKMSCAInfo);
+               try {
+				xkmsservice.init(this);
+			} catch (Exception e) {
+				log.error(intres.getLocalizedMessage("signsession.errorupgradingxkmsservice",this.getCAInfo().getName()));
+			}
+     		   setExtendedCAService(xkmsservice);
+     		   extendedServiceTypes.add(new Integer(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE));
+     		   data.put(EXTENDEDCASERVICES, extendedServiceTypes);
             }
             
             data.put(VERSION, new Float(LATEST_VERSION));

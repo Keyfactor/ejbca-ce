@@ -24,6 +24,7 @@
     <property file="conf/ocsp.properties" />
     <property file="conf/web.properties" />
     <property file="conf/cmp.properties" />
+    <property file="conf/xkms.properties" />
 
     <!--
         Start setting default values and classpaths etc here
@@ -141,6 +142,10 @@
         <fileset dir="lib" includes="bcmail-jdk${java.ver}.jar"/>
     	<fileset dir="lib" includes="bcprov-jdk${java.ver}.jar"/>
         <path refid="j2ee.classpath" />
+        <fileset dir="lib/jaxws">
+    	  <include name="**/*.jar"/>
+    	</fileset> 
+        <pathelement location="tmp/xkms/gen-classes"/>
     </path>
 
     <path id="j2ee.classpath">
@@ -179,6 +184,7 @@
     <property name="ca.name" value="AdminCA1"/>
     <property name="ca.keystorepass" value="foo123"/>
     <property name="ca.ocspkeystorepass" value="foo123"/>
+    <property name="ca.xkmskeystorepass" value="foo123"/>
     <property name="ocsp.defaultresponder" value="CN=AdminCA1,O=${app.name.cap} Sample,C=SE"/>
     <property name="ocsp.usecasigningcert" value="true"/>
     <property name="ocsp.signaturealgorithm" value="SHA1WithRSA;SHA1WithECDSA"/>
@@ -221,6 +227,7 @@
     <property name="httpserver.pubhttp" value="8080" />
     <property name="httpserver.pubhttps" value="8442" />
     <property name="httpserver.privhttps" value="8443" />
+    <property name="httpsserver.hostname" value="localhost" />
     <property name="httpsserver.password" value="serverpwd" />
     <property name="web.availablelanguages" value="EN,FR,IT,ES,SE,ZH,DE" />
     <property name="web.contentencoding" value="ISO-8859-1" />
@@ -267,6 +274,16 @@
 	<property name="cmp.tcp.portno" value="829" />
 	<property name="cmp.tcp.logdir" value="./log" />
 	<property name="cmp.tcp.conffile" value="" />
+	
+	<!-- XKMS settings -->
+	<property name="xkms.enabled" value="true" />				
+	<property name="xkms.request.requiresignature" value="false" />		
+	<property name="xkms.request.acceptedcas" value="AdminCA1" />
+	<property name="xkms.response.acceptsignrequest" value="true" />		
+	<property name="xkms.response.alwayssign" value="false" />
+	<property name="xkms.response.causedforsigning" value="AdminCA1" />		
+	<property name="xkms.keyusage.signatureisnonrep" value="true" />		
+	<property name="xkms.serviceport" value="8080" />
 
 	<!-- ECDSA implicitlyCA settings -->
 	<property name="ecdsa.implicitlyca.q" value="883423532389192164791648750360308885314476597252960362792450860609699839" />

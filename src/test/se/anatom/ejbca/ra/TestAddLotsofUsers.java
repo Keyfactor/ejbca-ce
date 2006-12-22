@@ -33,7 +33,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestAddLotsofUsers.java,v 1.4 2006-01-17 20:34:15 anatom Exp $
+ * @version $Id: TestAddLotsofUsers.java,v 1.5 2006-12-22 09:29:59 herrvendil Exp $
  */
 public class TestAddLotsofUsers extends TestCase {
     private static Logger log = Logger.getLogger(TestAddLotsofUsers.class);
@@ -128,7 +128,7 @@ public class TestAddLotsofUsers extends TestCase {
         log.debug(">test01Create2000Users()");
 
         //UserDataRemote data1=null;
-        Admin administrator = new Admin(Admin.TYPE_RACOMMANDLINE_USER);
+        Admin administrator = new Admin(Admin.TYPE_INTERNALUSER);
 
         for (int i = 0; i < 2000; i++) {
             String username = genUserName();

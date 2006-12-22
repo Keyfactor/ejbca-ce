@@ -55,5 +55,6 @@ applications for enrollment, distribution and administration.
         </web>
     </module> 
        <!--@ejbcaws.war@-->
+       <!--@xkms.war@-->
 </application>
 

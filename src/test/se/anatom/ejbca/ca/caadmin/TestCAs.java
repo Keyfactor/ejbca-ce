@@ -36,6 +36,7 @@ import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
@@ -45,7 +46,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the ca data entity bean.
  *
- * @version $Id: TestCAs.java,v 1.17 2006-11-21 13:08:12 anatom Exp $
+ * @version $Id: TestCAs.java,v 1.18 2006-12-22 09:29:47 herrvendil Exp $
  */
 public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -126,6 +127,11 @@ public class TestCAs extends TestCase {
             ArrayList extendedcaservices = new ArrayList();
             extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
                     "CN=OCSPSignerCertificate, " + "CN=TEST",
+                    "",
+                    "1024",
+                    CATokenConstants.KEYALGORITHM_RSA));
+            extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
+                    "CN=XKMSCertificate, " + "CN=TEST",
                     "",
                     "1024",
                     CATokenConstants.KEYALGORITHM_RSA));
@@ -255,6 +261,11 @@ public class TestCAs extends TestCase {
                     "",
                     "prime192v1",
                     CATokenConstants.KEYALGORITHM_ECDSA));
+            extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
+                    "CN=XKMSSignerCertificate, " + "CN=TESTECDSA",
+                    "",
+                    "prime192v1",
+                    CATokenConstants.KEYALGORITHM_ECDSA));
 
 
             X509CAInfo cainfo = new X509CAInfo("CN=TESTECDSA",
@@ -342,6 +353,12 @@ public class TestCAs extends TestCase {
             ArrayList extendedcaservices = new ArrayList();
             extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
                     "CN=OCSPSignerCertificate, " + "CN=TESTECDSAImplicitlyCA",
+                    "",
+                    "prime192v1",
+                    CATokenConstants.KEYALGORITHM_ECDSA));
+            
+            extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
+                    "CN=XKMSCertificate, " + "CN=TESTECDSAImplicitlyCA",
                     "",
                     "prime192v1",
                     CATokenConstants.KEYALGORITHM_ECDSA));
