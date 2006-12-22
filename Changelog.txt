@@ -1,3 +1,16 @@
+3.3.3
+---
+Bug
+
+    * [ECA-347] - Sun One Directory Server doesn't understand the gn attribute, it wait for givenName
+    * [ECA-370] - CRLs are generated with default DN encoding, not the same as issuer in ca certificate
+    * [ECA-373] - Typo in ejbca.properties.sample
+
+Improvement
+
+    * [ECA-376] - Include serialNumber LDAP attribute if selected in DN
+    * [ECA-383] - Option to remove entity in LDAP when cert revoked
+
 3.3.2
 ---
 Bug
