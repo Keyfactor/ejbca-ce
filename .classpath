@@ -29,7 +29,7 @@
 	<classpathentry path="lib/ext/httpunit.jar" kind="lib"/>
 	<classpathentry path="lib/ext/nekohtml.jar" kind="lib"/>
 	<classpathentry path="lib/xerces_2_3_0.jar" kind="lib"/>
-	<classpathentry sourcepath="/home/tomas/dev/QuickServer1.4.7/src/main" path="lib/quickserver/QuickServer.jar" kind="lib"/>
+	<classpathentry path="lib/quickserver/QuickServer.jar" kind="lib"/>
 	<classpathentry path="lib/quickserver/commons-pool.jar" kind="lib"/>
 	<classpathentry path="lib/bcprov-jdk14.jar" kind="lib"/>
 	<classpathentry path="lib/bcmail-jdk14.jar" kind="lib"/>
