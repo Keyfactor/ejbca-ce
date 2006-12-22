@@ -61,6 +61,12 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 # Default = true
 #hardtoken.diplaysensitiveinfo=true
 
+# Setting to configure the maximum number of rows to be returned when viewing logs in the admin-GUI.
+# Setting this too high may put burden on the database, and make queries take a long time if the query
+# results in a lot of rows.
+# Default = 1000
+#log.maxqueryrowcount=1000
+
 # Specifies the JSF implementation used by the application server EJBCA is deployed on.
 # Possible values are: myfaces
 # Using nojsf means that the admin-GUI will be limited with some functions not working. 
