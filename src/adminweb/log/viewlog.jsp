@@ -217,6 +217,9 @@
 	   ILogExporter exporter = new CsvLogExporter();
 	   byte[] export = logbean.exportLastQuery(exporter);
 	   RequestHelper.sendBinaryBytes(export, response, "text/csv", "logexport.csv");
+	   // This is a workaround to avoid error "getOutputStream() has already been called for this response"
+	   out.clear();
+	   out = pageContext.pushBody();
 	   return;
    }
 
