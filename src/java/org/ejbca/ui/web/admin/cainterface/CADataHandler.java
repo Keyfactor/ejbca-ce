@@ -57,7 +57,7 @@ import org.ejbca.util.CertTools;
  * A class help administrating CAs. 
  *
  * @author  TomSelleck
- * @version $Id: CADataHandler.java,v 1.5 2006-12-27 11:13:57 anatom Exp $
+ * @version $Id: CADataHandler.java,v 1.6 2006-12-27 11:36:38 anatom Exp $
  */
 public class CADataHandler implements Serializable {
 
@@ -231,15 +231,21 @@ public class CADataHandler implements Serializable {
 		ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();	
 		if(next instanceof OCSPCAServiceInfo){
 			List ocspcert = ((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath();
-			signsession.publishCACertificate(administrator, ocspcert, publishers, CertificateDataBean.CERTTYPE_ENDENTITY);
+			if (ocspcert != null) {
+				signsession.publishCACertificate(administrator, ocspcert, publishers, CertificateDataBean.CERTTYPE_ENDENTITY);
+			}
 		}
 		if(next instanceof XKMSCAServiceInfo){
 			List xkmscert = ((XKMSCAServiceInfo) next).getXKMSSignerCertificatePath();
-			signsession.publishCACertificate(administrator, xkmscert, publishers, CertificateDataBean.CERTTYPE_ENDENTITY);
+			if (xkmscert != null) {
+				signsession.publishCACertificate(administrator, xkmscert, publishers, CertificateDataBean.CERTTYPE_ENDENTITY);				
+			}
 		}
 		if(next instanceof CmsCAServiceInfo){
 			List cmscert = ((CmsCAServiceInfo) next).getCertificatePath();
-			signsession.publishCACertificate(administrator, cmscert, publishers, CertificateDataBean.CERTTYPE_ENDENTITY);
+			if (cmscert != null) {
+				signsession.publishCACertificate(administrator, cmscert, publishers, CertificateDataBean.CERTTYPE_ENDENTITY);
+			}
 		}
 	}  
  }
