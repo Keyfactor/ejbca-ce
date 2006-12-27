@@ -161,13 +161,13 @@ For production use you should use a real database instead of the embedded one.</
 you can create CAs using DC components later on once the admin GUI is up and running.</li>
 </ul>
 </p><p>
-3) Open a console (terminal) and start JBoss.
-You can start JBoss with 'ant j2ee:run' from EJBCA_HOME
-or the normal command 'run.sh/cmd' from JBOSS_HOME/bin.
+3) Open a console and type 'ant bootstrap'
+it will compile, jar, war, ear everything and deploy it to JBoss.
 </p><p>
-4) Open a console and type 'ant bootstrap'
-it will compile, jar, war, ear everything and deploy it to JBoss. You should see JBoss
-picking up all the changes and deploying the ear without errors.
+4) Open a console (terminal) and start JBoss.
+You can start JBoss with 'ant j2ee:run' from EJBCA_HOME
+or the normal command 'run.sh/cmd' from JBOSS_HOME/bin. You should see JBoss
+picking up everything and deploying the ear without errors.
 </p><p>
 5) Type 'ant install' it will generate all certificates, keys, etc needed to run with an initial CA.
 You will find admin keys in ${ejbca.home}/p12. (do not delete those files!)
