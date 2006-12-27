@@ -49,7 +49,7 @@ import org.ejbca.util.KeyTools;
 
 /** Handles and maintains the CA-part of the OCSP functionality
  * 
- * @version $Id: OCSPCAService.java,v 1.12 2006-12-20 17:15:48 anatom Exp $
+ * @version $Id: OCSPCAService.java,v 1.13 2006-12-27 11:13:56 anatom Exp $
  */
 public class OCSPCAService extends ExtendedCAService implements java.io.Serializable{
 
@@ -214,7 +214,9 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
             throw new IllegalExtendedCAServiceRequestException();            
         }
         if (this.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE) {
-            throw new ExtendedCAServiceNotActiveException();                            
+			String msg = intres.getLocalizedMessage("caservice.notactive");
+			m_log.error(msg);
+			throw new ExtendedCAServiceNotActiveException(msg);                            
         }
         ExtendedCAServiceResponse returnval = null;
         OCSPCAServiceRequest ocspServiceReq = (OCSPCAServiceRequest)request;

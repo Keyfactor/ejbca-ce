@@ -16,8 +16,6 @@ package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 import java.io.Serializable;
 import java.util.List;
 
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
-
 
 
 /**
@@ -25,18 +23,10 @@ import org.ejbca.core.model.ca.catoken.CATokenConstants;
  * is neesed
  * 
  * 
- * @version $Id: OCSPCAServiceInfo.java,v 1.2 2006-10-31 08:19:41 anatom Exp $
+ * @version $Id: OCSPCAServiceInfo.java,v 1.3 2006-12-27 11:13:56 anatom Exp $
  */
-public class OCSPCAServiceInfo extends ExtendedCAServiceInfo implements Serializable {    
+public class OCSPCAServiceInfo extends BaseSigningCAServiceInfo implements Serializable {    
        
-    private String subjectdn      = null;
-    private String subjectaltname = null;   
-	private String keyspec        = "1024"; // Default key length
-    private String keyalgorithm   = CATokenConstants.KEYALGORITHM_RSA; // Default key algo
-    private List   ocspcertchain  = null;
-    
-    private boolean renew = false;
-           
     /**
      * Used when creating new service.
      */
@@ -46,11 +36,7 @@ public class OCSPCAServiceInfo extends ExtendedCAServiceInfo implements Serializ
                              String subjectaltname, 
                              String keyspec, 
                              String keyalgorithm){
-      super(status);                       	
-      this.subjectdn = subjectdn;
-      this.subjectaltname = subjectaltname;    	
-      this.keyspec = keyspec;
-      this.keyalgorithm = keyalgorithm; 	 
+      super(status, subjectdn, subjectaltname, keyspec, keyalgorithm);                       	
     }
     
 	/**
@@ -63,28 +49,17 @@ public class OCSPCAServiceInfo extends ExtendedCAServiceInfo implements Serializ
 							 String keyspec, 
 							 String keyalgorithm,
 							 List ocspcertpath){
-	  super(status);                       	
-	  this.subjectdn = subjectdn;
-	  this.subjectaltname = subjectaltname;    	
-	  this.keyspec = keyspec;
-	  this.keyalgorithm = keyalgorithm; 	 
-	  this.ocspcertchain = ocspcertpath;
+	  super(status, subjectdn, subjectaltname, keyspec, keyalgorithm, ocspcertpath);                       	
 	}    
     
     /*
      * Used when updating existing services, only status is used.
      */
     public OCSPCAServiceInfo(int status, boolean renew){
-      super(status);	
-      this.renew = renew;
+      super(status, renew);	
     }
     
-    public String getSubjectDN(){ return this.subjectdn; }
-    public String getSubjectAltName(){ return this.subjectaltname; }
-    public String getKeySpec(){ return this.keyspec; }
-    public String getKeyAlgorithm(){ return this.keyalgorithm; }
-    public boolean getRenewFlag(){ return this.renew; } 
-    public List getOCSPSignerCertificatePath(){ return this.ocspcertchain;}   
+    public List getOCSPSignerCertificatePath(){ return super.getCertificatePath();}   
     
     
 

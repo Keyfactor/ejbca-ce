@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.signature.XMLSignatureException;
 import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException;
 import org.ejbca.core.model.ca.certificateprofiles.XKMSCertificateProfile;
@@ -43,13 +44,13 @@ import org.w3c.dom.Document;
  *  The service have it's own certificate used for signing and encryption 
  * 
  * @author Philip Vendil
- * @version $Id: XKMSCAService.java,v 1.1 2006-12-22 09:20:46 herrvendil Exp $
+ * @version $Id: XKMSCAService.java,v 1.2 2006-12-27 11:13:56 anatom Exp $
  */
 public class XKMSCAService extends ExtendedCAService implements java.io.Serializable{
 
     private static Logger m_log = Logger.getLogger(XKMSCAService.class);
     /** Internal localization of logs and errors */
-    //private static final InternalResources intres = InternalResources.getInstance();
+    private static final InternalResources intres = InternalResources.getInstance();
 
     public static final float LATEST_VERSION = 1; 
     
@@ -129,7 +130,7 @@ public class XKMSCAService extends ExtendedCAService implements java.io.Serializ
 	 // lookup keystore passwords      
      String keystorepass = ServiceLocator.getInstance().getString("java:comp/env/XKMSKeyStorePass");      
 	 if (keystorepass == null)
-	   throw new IllegalArgumentException("Missing XKMSKeyPass property.");
+	   throw new IllegalArgumentException("Missing XKMSKeyStorePass property.");
         
 	  // Currently only RSA keys are supported
 	 XKMSCAServiceInfo info = (XKMSCAServiceInfo) getExtendedCAServiceInfo();       
@@ -206,8 +207,9 @@ public class XKMSCAService extends ExtendedCAService implements java.io.Serializ
             throw new IllegalExtendedCAServiceRequestException();            
         }
         if (this.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE) {
-        	m_log.error("XKMS CA Service not activated. Activate it in the Edit CA Page.");
-            throw new ExtendedCAServiceNotActiveException("XKMS CA Service not activated. Activate it in the Edit CA Page.");                            
+			String msg = intres.getLocalizedMessage("caservice.notactive");
+			m_log.error(msg);
+			throw new ExtendedCAServiceNotActiveException(msg);                            
         }
         ExtendedCAServiceResponse returnval = null;
     	X509Certificate signerCert = (X509Certificate) xKMScertificatechain.get(0);

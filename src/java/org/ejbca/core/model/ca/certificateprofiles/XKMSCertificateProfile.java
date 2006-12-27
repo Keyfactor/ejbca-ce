@@ -18,7 +18,7 @@ package org.ejbca.core.model.ca.certificateprofiles;
  * XKMSCertificateProfile is a class defining the fixed characteristics of an CAs xkms certificate type
  *
  * @author Philip Vendil
- * @version $Id: XKMSCertificateProfile.java,v 1.1 2006-12-22 09:21:01 herrvendil Exp $
+ * @version $Id: XKMSCertificateProfile.java,v 1.2 2006-12-27 11:13:57 anatom Exp $
  */
 public class XKMSCertificateProfile extends CertificateProfile{
 
@@ -35,7 +35,7 @@ public class XKMSCertificateProfile extends CertificateProfile{
 
       setType(TYPE_ENDENTITY);
 
-      // Default key usage for an OCSP signer is digitalSignature
+      // Default key usage for an XKMS signer/encrypter is digitalSignature, keyencipherment and dataencipherment
       // Create an array for KeyUsage acoording to X509Certificate.getKeyUsage()
       setUseKeyUsage(true);
       setKeyUsage(new boolean[9]);

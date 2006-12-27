@@ -95,6 +95,8 @@ import org.ejbca.core.ejb.ca.sign.SernoGenerator;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAService;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest;
@@ -119,7 +121,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.45 2006-12-22 13:31:30 herrvendil Exp $
+ * @version $Id: X509CA.java,v 1.46 2006-12-27 11:13:52 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -684,7 +686,7 @@ public class X509CA extends CA implements Serializable {
         
         // Verify before returning
         cert.verify(getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN));
-        log.debug(">X509CA: generate certificate, CA "+ this.getCAId() + " for DN=" + subject.getDN());
+        log.debug(">X509CA: generate certificate, CA "+ this.getCAId() + " for DN: " + subject.getDN());
       return cert;                                                                                        
     }
 
@@ -780,9 +782,80 @@ public class X509CA extends CA implements Serializable {
         }  
     }
 
-    /** 
-     * Method used to perform an extended service.
+    /**
+     * Method to upgrade new (or existing externacaservices)
+     * This method needs to be called outside the regular upgrade
+     * since the CA isn't instansiated in the regular upgrade.
+     *
      */
+    public boolean upgradeExtendedCAServices() {
+    	boolean retval = false;
+    	Collection extendedServiceTypes = getExternalCAServiceTypes();
+
+    	// Create XKMS service if it does not exist
+    	if (!extendedServiceTypes.contains(new Integer(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE))){
+
+    		String keytype = CATokenConstants.KEYALGORITHM_RSA;
+    		String keyspec = "2048";
+
+    		XKMSCAServiceInfo xKMSCAInfo =  new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
+    				"CN=XKMSCertificate, " + getSubjectDN(),
+    				"",
+    				keyspec,
+    				keytype);
+
+    		XKMSCAService xkmsservice = new XKMSCAService(xKMSCAInfo);
+    		try {
+    			xkmsservice.init(this);
+    			retval = true;
+    		} catch (Exception e) {
+    			CAInfo info = this.getCAInfo();
+    			String caname = null;
+    			if (info != null) {
+    				caname = info.getName();
+    			}
+    			log.error(intres.getLocalizedMessage("signsession.errorupgradingxkmsservice",caname), e);
+    		}
+    		setExtendedCAService(xkmsservice);
+    		extendedServiceTypes.add(new Integer(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE));
+    		data.put(EXTENDEDCASERVICES, extendedServiceTypes);
+    	}		
+
+    	// Create CMS service if it does not exist
+    	if (!extendedServiceTypes.contains(new Integer(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE))){
+
+    		String keytype = CATokenConstants.KEYALGORITHM_RSA;
+    		String keyspec = "2048";
+
+    		CmsCAServiceInfo cmsCAInfo =  new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
+    				"CN=CMSCertificate, " + getSubjectDN(),
+    				"",
+    				keyspec,
+    				keytype);
+
+    		CmsCAService cmsservice = new CmsCAService(cmsCAInfo);
+    		try {
+    			cmsservice.init(this);
+    			retval = true;
+    		} catch (Exception e) {
+    			CAInfo info = this.getCAInfo();
+    			String caname = null;
+    			if (info != null) {
+    				caname = info.getName();
+    			}
+    			log.error(intres.getLocalizedMessage("signsession.errorupgradingcmsservice",caname), e);
+    		}
+    		setExtendedCAService(cmsservice);
+    		extendedServiceTypes.add(new Integer(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE));
+    		data.put(EXTENDEDCASERVICES, extendedServiceTypes);
+    	}		
+
+    	return retval;
+    }
+	
+	/** 
+	 * Method used to perform an extended service.
+	 */
     public ExtendedCAServiceResponse extendedService(ExtendedCAServiceRequest request) 
       throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException{
           log.debug(">extendedService()");
@@ -890,45 +963,5 @@ public class X509CA extends CA implements Serializable {
         }
         
         return policyInformation;
-    }
-
-    /**
-     * Method to upgrade new (or existing externacaservices)
-     * This method needs to be called outside the regular upgrade
-     * since the CA isn't instansiated in the regular upgrade.
-     *
-     */
-	public boolean upgradeExtendedCAServices() {
-		boolean retval = false;
-        Collection extendedServiceTypes = getExternalCAServiceTypes();
-        if (!extendedServiceTypes.contains(new Integer(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE))){
-        	
-        	String keytype = CATokenConstants.KEYALGORITHM_RSA;
-        	String keyspec = "2048";
-        	
-        	XKMSCAServiceInfo xKMSCAInfo =  new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
-                   "CN=XKMSCertificate, " + data.get(SUBJECTDN),
-                   "",
-                   keyspec,
-                   keytype);
-        	
-           XKMSCAService xkmsservice = new XKMSCAService(xKMSCAInfo);
-           try {
-        	   xkmsservice.init(this);
-        	   retval = true;
-           } catch (Exception e) {
-        	   CAInfo info = this.getCAInfo();
-        	   String caname = null;
-        	   if (info != null) {
-        		   caname = info.getName();
-        	   }
-        	   log.error(intres.getLocalizedMessage("signsession.errorupgradingxkmsservice",caname), e);
-           }
- 		   setExtendedCAService(xkmsservice);
- 		   extendedServiceTypes.add(new Integer(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE));
- 		   data.put(EXTENDEDCASERVICES, extendedServiceTypes);
-        }		
-        return retval;
-	}
-    
+    }   
 }

@@ -12,6 +12,7 @@ java.ver               = ${java.ver}
 ca.keystorepass        = ${ca.keystorepass}
 ca.ocspkeystorepass    = ${ca.ocspkeystorepass}
 ca.xkmskeystorepass    = ${ca.xkmskeystorepass}
+ca.cmskeystorepass    = ${ca.cmskeystorepass}
 ocsp.defaultresponder  = ${ocsp.defaultresponder}
 ocsp.usecasigningcert  = ${ocsp.usecasigningcert}
 ocsp.signaturealgorithm = ${ocsp.signaturealgorithm}

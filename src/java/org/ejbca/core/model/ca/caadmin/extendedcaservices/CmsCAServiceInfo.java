@@ -22,42 +22,40 @@ import java.util.List;
  * Class used mostly when creating service. Also used when info about the services 
  * is neesed
  * 
- * @author Philip Vendil
- * @version $Id: XKMSCAServiceInfo.java,v 1.2 2006-12-27 11:13:56 anatom Exp $
+ * @version $Id: CmsCAServiceInfo.java,v 1.1 2006-12-27 11:13:56 anatom Exp $
  */
-public class XKMSCAServiceInfo extends BaseSigningCAServiceInfo implements Serializable {    
-                  
+public class CmsCAServiceInfo extends BaseSigningCAServiceInfo implements Serializable {    
+       
     /**
      * Used when creating new service.
      */
        
-    public XKMSCAServiceInfo(int status,
+    public CmsCAServiceInfo(int status,
                              String subjectdn, 
                              String subjectaltname, 
                              String keyspec, 
                              String keyalgorithm){
-      super(status, subjectdn, subjectaltname, keyspec, keyalgorithm);                       	
+        super(status, subjectdn, subjectaltname, keyspec, keyalgorithm);                       	
     }
     
 	/**
 	 * Used when returning information from service
-	 */       
-    public XKMSCAServiceInfo(int status,
-    		String subjectdn, 
-    		String subjectaltname, 
-    		String keyspec, 
-    		String keyalgorithm,
-    		List xkmscertchain) {
-    	super(status, subjectdn, subjectaltname, keyspec, keyalgorithm, xkmscertchain);                       	
-    }    
+	 */
+       
+	public CmsCAServiceInfo(int status,
+							 String subjectdn, 
+							 String subjectaltname, 
+							 String keyspec, 
+							 String keyalgorithm,
+							 List certchain){
+		super(status, subjectdn, subjectaltname, keyspec, keyalgorithm, certchain);                       	
+	}    
     
     /*
      * Used when updating existing services, only status is used.
      */
-    public XKMSCAServiceInfo(int status, boolean renew){
+    public CmsCAServiceInfo(int status, boolean renew){
       super(status, renew);	
     }
-    
-    public List getXKMSSignerCertificatePath(){ return super.getCertificatePath();}   
 
 }

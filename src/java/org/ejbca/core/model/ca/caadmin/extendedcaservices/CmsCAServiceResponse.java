@@ -15,33 +15,20 @@ package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 
 import java.io.Serializable;
 
-
-
 /**
- * Should be enherited by all ExtendedCAServiceInfo Value objects.
- * These classes are used to retrive general information about the service
- * and alse used to send parameters to the service when creating it.  
+ * Class used when delevering CMS service response from a CA.  
  *
- * @version $Id: ExtendedCAServiceInfo.java,v 1.4 2006-12-27 11:13:55 anatom Exp $
+ * @version $Id: CmsCAServiceResponse.java,v 1.1 2006-12-27 11:13:56 anatom Exp $
  */
-public abstract class ExtendedCAServiceInfo  implements Serializable {    
-       	  
-    /**
-     * Constants indicating the status of the service.     
-     */   	  
-    public static final int STATUS_INACTIVE = 1;       	  
-	public static final int STATUS_ACTIVE   = 2;
-	
-	public static final int TYPE_OCSPEXTENDEDSERVICE   = 1; 
-	public static final int TYPE_XKMSEXTENDEDSERVICE   = 2; 
-	public static final int TYPE_CMSEXTENDEDSERVICE = 3; 
-	   
-	private int status = STATUS_INACTIVE;  
-	   
-    public ExtendedCAServiceInfo(int status){
-      this.status = status;
-    }
+public class CmsCAServiceResponse extends ExtendedCAServiceResponse implements Serializable {    
+                 
+    private byte[] doc = null;
     
-    public int getStatus(){ return this.status; }
-
+        
+    public CmsCAServiceResponse(byte[] doc) {
+        this.doc = doc;        
+    }    
+           
+    public byte[] getCmsDocument() { return this.doc; }
+        
 }

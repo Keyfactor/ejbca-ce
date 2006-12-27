@@ -15,13 +15,13 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.InputStream;
 import java.io.Serializable;
-import java.math.BigInteger;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.ejbca.core.EjbcaException;
@@ -36,6 +36,7 @@ import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.CAExistsException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
@@ -43,7 +44,6 @@ import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
-import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.IRequestMessage;
 import org.ejbca.core.protocol.IResponseMessage;
@@ -57,7 +57,7 @@ import org.ejbca.util.CertTools;
  * A class help administrating CAs. 
  *
  * @author  TomSelleck
- * @version $Id: CADataHandler.java,v 1.4 2006-12-22 09:25:54 herrvendil Exp $
+ * @version $Id: CADataHandler.java,v 1.5 2006-12-27 11:13:57 anatom Exp $
  */
 public class CADataHandler implements Serializable {
 
@@ -224,6 +224,24 @@ public class CADataHandler implements Serializable {
  	Collection publishers = cainfo.getCRLPublishers();
  	publishers.addAll(certprofile.getPublisherList());
  	signsession.publishCACertificate(administrator, cainfo.getCertificateChain(), publishers, certtype);
+
+ 	// Publish ExtendedCAServices certificates as well
+	Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
+	while(iter.hasNext()){
+		ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();	
+		if(next instanceof OCSPCAServiceInfo){
+			List ocspcert = ((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath();
+			signsession.publishCACertificate(administrator, ocspcert, publishers, CertificateDataBean.CERTTYPE_ENDENTITY);
+		}
+		if(next instanceof XKMSCAServiceInfo){
+			List xkmscert = ((XKMSCAServiceInfo) next).getXKMSSignerCertificatePath();
+			signsession.publishCACertificate(administrator, xkmscert, publishers, CertificateDataBean.CERTTYPE_ENDENTITY);
+		}
+		if(next instanceof CmsCAServiceInfo){
+			List cmscert = ((CmsCAServiceInfo) next).getCertificatePath();
+			signsession.publishCACertificate(administrator, cmscert, publishers, CertificateDataBean.CERTTYPE_ENDENTITY);
+		}
+	}  
  }
  
  public void revokeOCSPCertificate(int caid){
@@ -246,6 +264,18 @@ public class CADataHandler implements Serializable {
 		  if(next instanceof XKMSCAServiceInfo){
 		  	X509Certificate xkmscert = (X509Certificate)((XKMSCAServiceInfo) next).getXKMSSignerCertificatePath().get(0);
 			certificatesession.revokeCertificate(administrator,xkmscert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);	  	 
+		  }
+		}  
+	 }
+ 
+ public void revokeCmsCertificate(int caid){
+	 	CAInfo cainfo = caadminsession.getCAInfo(administrator, caid);
+		Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
+		while(iter.hasNext()){
+		  ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();	
+		  if(next instanceof CmsCAServiceInfo){
+		  	X509Certificate cmscert = (X509Certificate)((CmsCAServiceInfo) next).getCertificatePath().get(0);
+			certificatesession.revokeCertificate(administrator,cmscert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);	  	 
 		  }
 		}  
 	 }

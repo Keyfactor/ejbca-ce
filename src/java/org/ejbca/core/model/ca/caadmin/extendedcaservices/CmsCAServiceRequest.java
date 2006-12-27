@@ -15,33 +15,36 @@ package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 
 import java.io.Serializable;
 
-
+import org.apache.log4j.Logger;
 
 /**
- * Should be enherited by all ExtendedCAServiceInfo Value objects.
- * These classes are used to retrive general information about the service
- * and alse used to send parameters to the service when creating it.  
+ * Class used when requesting CMS related services from a CA.  
  *
- * @version $Id: ExtendedCAServiceInfo.java,v 1.4 2006-12-27 11:13:55 anatom Exp $
+ * @version $Id: CmsCAServiceRequest.java,v 1.1 2006-12-27 11:13:55 anatom Exp $
  */
-public abstract class ExtendedCAServiceInfo  implements Serializable {    
-       	  
-    /**
-     * Constants indicating the status of the service.     
-     */   	  
-    public static final int STATUS_INACTIVE = 1;       	  
-	public static final int STATUS_ACTIVE   = 2;
-	
-	public static final int TYPE_OCSPEXTENDEDSERVICE   = 1; 
-	public static final int TYPE_XKMSEXTENDEDSERVICE   = 2; 
-	public static final int TYPE_CMSEXTENDEDSERVICE = 3; 
-	   
-	private int status = STATUS_INACTIVE;  
-	   
-    public ExtendedCAServiceInfo(int status){
-      this.status = status;
-    }
+public class CmsCAServiceRequest extends ExtendedCAServiceRequest implements Serializable {    
     
-    public int getStatus(){ return this.status; }
+	public static final Logger m_log = Logger.getLogger(CmsCAServiceRequest.class);
+	
+    private byte[] doc = null;
+    private boolean sign = false;
+    private boolean encrypt = false;    
 
+    
+    /** Constructor
+     */                   
+    public CmsCAServiceRequest(byte[] doc, boolean sign, boolean encrypt) {
+        this.doc = doc;
+        this.sign = sign;
+        this.encrypt = encrypt; 
+    }
+    public byte[] getDoc() {
+        return doc;
+    }  
+    public boolean isSign() {
+    	return sign;
+    }
+    public boolean isEncrypt() {
+    	return encrypt;
+    }
 }

@@ -172,7 +172,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.25 2006-12-13 10:40:18 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.26 2006-12-27 11:13:58 anatom Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
@@ -920,6 +920,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @throws FinderException 
      */
     private void setRevokeStatus(Admin admin, X509Certificate certificate, Collection publishers, int reason) throws FinderException {
+    	if (certificate == null) {
+    		return;
+    	}
         debug(">setRevokeStatus(X509Certificate),  issuerdn=" + certificate.getIssuerDN() + ", serno=" + certificate.getSerialNumber());
 
         if (certificate != null) {        	
@@ -928,7 +931,6 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             CertificateDataLocal rev = certHome.findByPrimaryKey(revpk);            
             String serialNo = certificate.getSerialNumber().toString(16); // for logging
             if ( (rev.getStatus() != CertificateDataBean.CERT_REVOKED) 
-            	
             		&& (reason != RevokedCertInfo.NOT_REVOKED) && (reason != RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL) ) {
             	  rev.setStatus(CertificateDataBean.CERT_REVOKED);
             	  rev.setRevocationDate(new Date());
