@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.27 2006-10-26 13:02:16 anatom Exp $
+$Id: UPGRADE,v 1.28 2006-12-27 11:23:07 anatom Exp $
 
 UPGRADE
 =======
@@ -32,6 +32,10 @@ Merge changes from the *.properties.sample into your ejbca.properties, or better
 to match the new improved conf structure.
 
 Copy the directory 'p12' from the earlier installation and 'ant deploy'.
+
+Note: If you intend to use the XKMS service or the CMS service (log signing), then you should go into the Admin-GUI 
+after upgrading and press the button "Republish CA Certificates" for all CAs. 
+Otherwise you will not be able to revoke the certificates issued to these services.
 
 You should be ablo to upgrade from EJBCA 3.1.x directly to 3.3.x, by following the same instructions
 as when upgrading from 3.1.x to 3.2.x (untested though).
