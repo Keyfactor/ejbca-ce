@@ -22,7 +22,7 @@ import org.ejbca.core.model.ca.catoken.CATokenInfo;
 /**
  * Holds nonsensitive information about a CA.
  *
- * @version $Id: CAInfo.java,v 1.5 2006-09-27 09:28:26 herrvendil Exp $
+ * @version $Id: CAInfo.java,v 1.6 2006-12-28 13:48:00 anatom Exp $
  */
 public abstract class CAInfo implements Serializable {
 
@@ -124,6 +124,10 @@ public abstract class CAInfo implements Serializable {
 	public boolean getFinishUser(){ return finishuser;}
 	public void setFinishUser(boolean finishuser){ this.finishuser=finishuser;}
 	
+	/** Lists the extended CA services.
+	 * 
+	 * @return Collection of ExtendedCAServiceInfo
+	 */
 	public Collection getExtendedCAServiceInfos(){ return this.extendedcaserviceinfos;}
 	public void setExtendedCAServiceInfos(Collection extendedcaserviceinfos){ this.extendedcaserviceinfos = extendedcaserviceinfos;}
 
