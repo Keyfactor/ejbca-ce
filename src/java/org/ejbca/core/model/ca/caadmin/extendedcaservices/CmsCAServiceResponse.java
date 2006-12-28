@@ -18,11 +18,21 @@ import java.io.Serializable;
 /**
  * Class used when delevering CMS service response from a CA.  
  *
- * @version $Id: CmsCAServiceResponse.java,v 1.1 2006-12-27 11:13:56 anatom Exp $
+ * @version $Id: CmsCAServiceResponse.java,v 1.2 2006-12-28 13:51:15 anatom Exp $
  */
 public class CmsCAServiceResponse extends ExtendedCAServiceResponse implements Serializable {    
                  
-    private byte[] doc = null;
+    /**
+     * Determines if a de-serialized file is compatible with this class.
+     *
+     * Maintainers must change this value if and only if the new version
+     * of this class is not compatible with old versions. See Sun docs
+     * for <a href=http://java.sun.com/products/jdk/1.1/docs/guide
+     * /serialization/spec/version.doc.html> details. </a>
+     */
+	private static final long serialVersionUID = 7704310763496240017L;
+
+	private byte[] doc = null;
     
         
     public CmsCAServiceResponse(byte[] doc) {

@@ -13,11 +13,18 @@
 
 package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.KeyStore;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.cert.CertStore;
+import java.security.cert.CertStoreException;
 import java.security.cert.Certificate;
+import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +32,12 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.CMSProcessable;
+import org.bouncycastle.cms.CMSProcessableByteArray;
+import org.bouncycastle.cms.CMSSignedData;
+import org.bouncycastle.cms.CMSSignedDataGenerator;
+import org.bouncycastle.cms.CMSSignedGenerator;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.CA;
@@ -40,10 +53,19 @@ import org.ejbca.util.KeyTools;
 /** Handles and maintains the CA-part of the CMS message functionality.
  *  The service have it's own certificate used for signing and encryption 
  * 
- * @version $Id: CmsCAService.java,v 1.1 2006-12-27 11:13:56 anatom Exp $
+ * @version $Id: CmsCAService.java,v 1.2 2006-12-28 13:51:15 anatom Exp $
  */
 public class CmsCAService extends ExtendedCAService implements java.io.Serializable{
 
+    /** Determines if a de-serialized file is compatible with this class.
+    *
+    * Maintainers must change this value if and only if the new version
+    * of this class is not compatible with old versions. See Sun docs
+    * for <a href=http://java.sun.com/products/jdk/1.1/docs/guide
+    * /serialization/spec/version.doc.html> details. </a>
+    */
+	private static final long serialVersionUID = 5273836489592921586L;
+	
 	private static Logger m_log = Logger.getLogger(CmsCAService.class);
 	/** Internal localization of logs and errors */
 	private static final InternalResources intres = InternalResources.getInstance();
@@ -209,7 +231,38 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 		X509Certificate signerCert = (X509Certificate) certificatechain.get(0);
 		CmsCAServiceRequest serviceReq = (CmsCAServiceRequest)request;
 
-		// TODO 
+        // Create the signed data
+        CMSSignedDataGenerator gen1 = new CMSSignedDataGenerator();
+        try {
+            // Add our signer info and sign the message        
+            CertStore certs;
+        	certs = CertStore.getInstance("Collection",
+        			new CollectionCertStoreParameters(certificatechain), "BC");
+        	gen1.addCertificatesAndCRLs(certs);
+        	gen1.addSigner(privKey, signerCert, CMSSignedGenerator.DIGEST_SHA1);
+        	CMSProcessable msg = new CMSProcessableByteArray(serviceReq.getDoc());
+        	CMSSignedData s = gen1.generate(msg, true, "BC");
+        	byte[] resp = s.getEncoded();
+        	returnval = new CmsCAServiceResponse(resp);
+        } catch (InvalidAlgorithmParameterException e) {
+        	m_log.error("Error in CmsCAService", e);
+        	throw new ExtendedCAServiceRequestException(e);
+        } catch (NoSuchAlgorithmException e) {
+        	m_log.error("Error in CmsCAService", e);
+        	throw new ExtendedCAServiceRequestException(e);
+        } catch (NoSuchProviderException e) {
+        	m_log.error("Error in CmsCAService", e);
+        	throw new ExtendedCAServiceRequestException(e);
+        } catch (CertStoreException e) {
+        	m_log.error("Error in CmsCAService", e);
+        	throw new ExtendedCAServiceRequestException(e);
+		} catch (CMSException e) {
+        	m_log.error("Error in CmsCAService", e);
+        	throw new ExtendedCAServiceRequestException(e);
+		} catch (IOException e) {
+        	m_log.error("Error in CmsCAService", e);
+        	throw new ExtendedCAServiceRequestException(e);
+		}
 
 		m_log.debug("<extendedService");		  		
 		return returnval;

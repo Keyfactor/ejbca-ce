@@ -20,31 +20,36 @@ import org.apache.log4j.Logger;
 /**
  * Class used when requesting CMS related services from a CA.  
  *
- * @version $Id: CmsCAServiceRequest.java,v 1.1 2006-12-27 11:13:55 anatom Exp $
+ * @version $Id: CmsCAServiceRequest.java,v 1.2 2006-12-28 13:51:15 anatom Exp $
  */
 public class CmsCAServiceRequest extends ExtendedCAServiceRequest implements Serializable {    
     
 	public static final Logger m_log = Logger.getLogger(CmsCAServiceRequest.class);
 	
+    /**
+     * Determines if a de-serialized file is compatible with this class.
+     *
+     * Maintainers must change this value if and only if the new version
+     * of this class is not compatible with old versions. See Sun docs
+     * for <a href=http://java.sun.com/products/jdk/1.1/docs/guide
+     * /serialization/spec/version.doc.html> details. </a>
+     *
+     */
+    private static final long serialVersionUID = -762331405718560161L;
+	
     private byte[] doc = null;
     private boolean sign = false;
-    private boolean encrypt = false;    
-
     
     /** Constructor
      */                   
-    public CmsCAServiceRequest(byte[] doc, boolean sign, boolean encrypt) {
+    public CmsCAServiceRequest(byte[] doc, boolean sign) {
         this.doc = doc;
         this.sign = sign;
-        this.encrypt = encrypt; 
     }
     public byte[] getDoc() {
         return doc;
     }  
     public boolean isSign() {
     	return sign;
-    }
-    public boolean isEncrypt() {
-    	return encrypt;
     }
 }
