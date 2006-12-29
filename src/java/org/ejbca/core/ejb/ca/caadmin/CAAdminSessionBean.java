@@ -103,7 +103,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.37 2006-12-27 11:13:53 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.38 2006-12-29 11:19:11 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -707,8 +707,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
     } // getCAInfo
 
     /**
-     * Returns a HashMap containing mappings of caid to CA name of all CAs in the system.
+     * Returns a HashMap containing mappings of caid (Integer) to CA name (String) of all CAs in the system.
      * 
+     * @return HashMap with Integer->String mappings
      * @ejb.transaction type="Supports"
      * @ejb.interface-method
      */
