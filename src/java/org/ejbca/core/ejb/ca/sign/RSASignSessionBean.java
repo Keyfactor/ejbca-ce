@@ -158,7 +158,7 @@ import org.ejbca.util.KeyTools;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
  *   
- *   @version $Id: RSASignSessionBean.java,v 1.31 2006-12-13 10:32:37 anatom Exp $
+ *   @version $Id: RSASignSessionBean.java,v 1.32 2006-12-29 11:19:42 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -1518,6 +1518,9 @@ public class RSASignSessionBean extends BaseSessionBean {
         ExtendedCAServiceResponse returnval = null;
         try {
             cadata = cadatahome.findByPrimaryKey(new Integer(caid));
+            if (log.isDebugEnabled()) {
+                debug("Exteneded service with request class '"+request.getClass().getName()+"' called for CA '"+cadata.getName()+"'");            	
+            }
             returnval = cadata.getCA().extendedService(request);
         } catch (javax.ejb.FinderException fe) {
             throw new CADoesntExistsException(fe);
