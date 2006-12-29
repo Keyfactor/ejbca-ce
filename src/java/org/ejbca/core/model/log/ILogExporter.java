@@ -19,7 +19,7 @@ import java.util.Collection;
  * any format defined by the implementing class.
  * 
  * @author tomas
- * @version $Id: ILogExporter.java,v 1.1 2006-12-20 08:33:32 anatom Exp $
+ * @version $Id: ILogExporter.java,v 1.2 2006-12-29 11:21:14 anatom Exp $
  */
 public interface ILogExporter {
 
@@ -36,11 +36,17 @@ public interface ILogExporter {
 	 */
 	public int getNoOfEntries();
 
+	/** Gets a CA used to create a signed CMS message of the log export, can be null for plain export
+	 * 
+	 * @return signCA CA (caid in string format, 12345) used to create a signed CMS message of the log export, or null for plain export
+	 */
+	public String getSigningCA();
+	
 	/** Returns the exported data, determined by the exporting class. Can be binary or text data.
 	 * 
 	 * @return byte data or null if no of exported entries are 0.
 	 */
 	public byte[] export();
-	
+
 }
 

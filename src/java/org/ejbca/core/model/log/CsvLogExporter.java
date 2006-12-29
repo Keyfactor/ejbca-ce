@@ -27,6 +27,7 @@ public class CsvLogExporter implements ILogExporter {
 	private static final Logger log = Logger.getLogger(CsvLogExporter.class);
 	
 	private Collection logentries = null;
+	private String signingCA = null;
 	
 	/**
 	 * @see org.ejbca.core.model.log.ILogExporter
@@ -44,7 +45,15 @@ public class CsvLogExporter implements ILogExporter {
 		}
 		return logentries.size();
 	}
+
+	public String getSigningCA() {
+		return signingCA;
+	}
 	
+	public void setSigningCA(String ca) {
+		this.signingCA = ca;
+	}
+
 	/**
 	 * @see org.ejbca.core.model.log.ILogExporter
 	 */

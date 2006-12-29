@@ -18,6 +18,7 @@
   static final String ACTION_CHANGEFILTERMODETO_ADVANCED = "changefiltermodetoadvanced";
   static final String ACTION_CHANGEENTRIESPERPAGE        = "changeentriesperpage";
 
+
   static final String OLD_ACTION               = "oldaction";
   static final String OLD_ACTION_VIEWLAST      = "oldactionviewlast";
   static final String OLD_ACTION_ADVANCEDLIST  = "oldactionadvancedlist";
@@ -56,6 +57,9 @@
 
   static final String BUTTON_NEXT              = "buttonnext";
   static final String BUTTON_PREVIOUS          = "buttonprevious";
+
+  static final String SELECT_SIGNCSVCA         = "selectsigncsvca";
+  static final String SELECT_EMPTYVALUE        = "--";
 
   static final String SORTBY_TIME_ACC         = "sortbytimeaccending";
   static final String SORTBY_TIME_DEC         = "sortbytimedecending";
@@ -214,13 +218,26 @@
    }
 
    if ( request.getParameter(BUTTON_EXPORTCSV)!=null ){
-	   ILogExporter exporter = new CsvLogExporter();
+       String signcsvca = request.getParameter(SELECT_SIGNCSVCA);
+       if ( (signcsvca != null) && ((signcsvca.equals(SELECT_EMPTYVALUE)) || (signcsvca.length() == 0)) ) {
+    	   signcsvca = null;
+       }
+	   CsvLogExporter exporter = new CsvLogExporter();
+	   exporter.setSigningCA(signcsvca);
 	   byte[] export = logbean.exportLastQuery(exporter);
-	   RequestHelper.sendBinaryBytes(export, response, "text/csv", "logexport.csv");
-	   // This is a workaround to avoid error "getOutputStream() has already been called for this response"
-	   out.clear();
-	   out = pageContext.pushBody();
-	   return;
+	   if (export != null) {
+		   String name = "logexport.csv";
+		   String ct = "text/csv";
+		   if (signcsvca != null) {
+			   name = "logexport.p7m";
+			   ct = "application/octet-stream";
+		   }
+		   RequestHelper.sendBinaryBytes(export, response, ct, name);
+		   // This is a workaround to avoid error "getOutputStream() has already been called for this response"
+		   out.clear();
+		   out = pageContext.pushBody();
+		   return;		   
+	   }
    }
 
 

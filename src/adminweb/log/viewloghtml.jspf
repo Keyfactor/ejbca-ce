@@ -157,6 +157,27 @@ function viewcert(row){
   <p>
     <input type="submit" name="<%=BUTTON_RELOAD %>" value="<%= ejbcawebbean.getText("RELOAD") %>">
     <input type="submit" name="<%=BUTTON_EXPORTCSV %>" value="<%= ejbcawebbean.getText("EXPORTCSV") %>">
+    <%= ejbcawebbean.getText("EXPORTSIGNWITHCA") %>
+      <select name="<%=SELECT_SIGNCSVCA %>" >
+        <option  value=''><%=SELECT_EMPTYVALUE%></option>
+                <% 
+                Collection authorizedcaids = ejbcawebbean.getAuthorizedCAIds();
+                HashMap  caidtonamemap  = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
+                TreeMap canameandids = new TreeMap();
+                Iterator iter = authorizedcaids.iterator();
+                while(iter.hasNext()){
+                  Object obj = iter.next();
+                  canameandids.put(caidtonamemap.get(obj),obj);
+                }
+                   Iterator canameiter = canameandids.keySet().iterator();
+                   for(int i=0; i < canameandids.keySet().size(); i++){ %>
+          <option <% 
+                      String caname = (String) canameiter.next(); 
+                      int index = ((Integer) canameandids.get(caname)).intValue(); 
+                     %> value='<%= index %>'><%= caname %>
+          </option> 
+                 <%  } %>                  
+      </select>  
   </p>
   <br>
   <table width="100%" border="0" cellspacing="1" cellpadding="0">

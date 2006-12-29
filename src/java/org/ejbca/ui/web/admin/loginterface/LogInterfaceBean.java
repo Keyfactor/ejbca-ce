@@ -27,6 +27,10 @@ import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
+import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.ILogExporter;
 import org.ejbca.core.model.log.LogConfiguration;
@@ -44,7 +48,7 @@ import org.ejbca.util.query.Query;
  * A java bean handling the interface between EJBCA log module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: LogInterfaceBean.java,v 1.3 2006-12-20 08:33:31 anatom Exp $
+ * @version $Id: LogInterfaceBean.java,v 1.4 2006-12-29 11:21:14 anatom Exp $
  */
 public class LogInterfaceBean implements java.io.Serializable {
 
@@ -252,12 +256,17 @@ public class LogInterfaceBean implements java.io.Serializable {
     
     /**
      * Method that exports log entries according to an exporter passed as argument.
+     * @param exporter the export implementation to use, implements the ILogExporter interface
      * @return byte[] byte data or null if no of exported entries are 0.
      * @throws IllegalQueryException 
+     * @throws ExtendedCAServiceNotActiveException 
+     * @throws IllegalExtendedCAServiceRequestException 
+     * @throws ExtendedCAServiceRequestException 
+     * @throws CADoesntExistsException 
      * @see org.ejbca.core.model.log.ILogExporter
      */
-    public byte[] exportLastQuery(ILogExporter exporter) throws IllegalQueryException {
-    	byte[] ret = logsession.export(lastquery, informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString(), exporter);
+    public byte[] exportLastQuery(ILogExporter exporter) throws IllegalQueryException, CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException {    	
+    	byte[] ret = logsession.export(admin, lastquery, informationmemory.getViewLogQueryString(), informationmemory.getViewLogCAIdString(), exporter);
     	return ret;
     }
 

@@ -32,9 +32,17 @@ import javax.ejb.FinderException;
 import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
+import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
+import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceRequest;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.ILogDevice;
 import org.ejbca.core.model.log.ILogExporter;
@@ -115,6 +123,14 @@ import org.ejbca.util.query.Query;
  *   business="org.ejbca.core.ejb.protect.TableProtectSessionLocal"
  *   link="TableProtectSession"
  *   
+ * @ejb.ejb-external-ref description="The Sign Session Bean"
+ *   view-type="local"
+ *   ref-name="ejb/RSASignSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
+ *   link="RSASignSession"
+ *   
  * @ejb.home
  *   extends="javax.ejb.EJBHome"
  *   local-extends="javax.ejb.EJBLocalHome"
@@ -130,7 +146,7 @@ import org.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.14 2006-12-20 08:33:31 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.15 2006-12-29 11:21:12 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 
@@ -145,6 +161,9 @@ public class LocalLogSessionBean extends BaseSessionBean {
     
     /** The home interface of  LogConfigurationData entity bean */
     private LogConfigurationDataLocalHome logconfigurationhome;
+
+    /** The home interface of SignSession session bean */
+    private ISignSessionLocalHome signsessionhome;
 
     /** The remote interface of the LogConfigurationData entity bean */
     private LogConfigurationDataLocal logconfigurationdata;
@@ -173,6 +192,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
         try {
             logentryhome = (LogEntryDataLocalHome) getLocator().getLocalHome(LogEntryDataLocalHome.COMP_NAME);
             logconfigurationhome = (LogConfigurationDataLocalHome) getLocator().getLocalHome(LogConfigurationDataLocalHome.COMP_NAME);
+            signsessionhome = (ISignSessionLocalHome) getLocator().getLocalHome(ISignSessionLocalHome.COMP_NAME);
 
             // Setup Connection to signing devices.
             logdevices = new ArrayList();
@@ -326,21 +346,44 @@ public class LocalLogSessionBean extends BaseSessionBean {
      * @param query a number of statments compiled by query class to a SQL 'WHERE'-clause statment.
      * @param viewlogprivileges is a sql query string returned by a LogAuthorization object.
      * @param logexporter is the obbject that converts the result set into the desired log format 
-     * @return an exported byte array. Maximum number of exported entries is defined i LogConstants.MAXIMUM_QUERY_ROWCOUNT
+     * @return an exported byte array. Maximum number of exported entries is defined i LogConstants.MAXIMUM_QUERY_ROWCOUNT, returns null if there is nothing to export
      * @throws IllegalQueryException when query parameters internal rules isn't fullfilled.
+     * @throws ExtendedCAServiceNotActiveException 
+     * @throws IllegalExtendedCAServiceRequestException 
+     * @throws ExtendedCAServiceRequestException 
+     * @throws CADoesntExistsException 
      * @see org.ejbca.util.query.Query
      *
      * @ejb.interface-method view-type="both"
      * @ejb.transaction type="Supports"
      *
      */
-    public byte[] export(Query query, String viewlogprivileges, String capriviledges, ILogExporter logexporter) throws IllegalQueryException {
-    	Collection logentries = query(query, viewlogprivileges, capriviledges);
-    	if (log.isDebugEnabled()) {
-        	log.debug("Found "+logentries.size()+" entries when exporting");    		
+    public byte[] export(Admin admin, Query query, String viewlogprivileges, String capriviledges, ILogExporter logexporter) throws IllegalQueryException, CADoesntExistsException, ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException {
+    	byte[] ret = null;
+    	if (query != null) {
+        	Collection logentries = query(query, viewlogprivileges, capriviledges);
+        	if (log.isDebugEnabled()) {
+            	log.debug("Found "+logentries.size()+" entries when exporting");    		
+        	}
+        	logexporter.setEntries(logentries);
+        	ret = logexporter.export();
+        	String ca = logexporter.getSigningCA();
+        	if (log.isDebugEnabled()) {
+            	log.debug("Signing CA is '"+ca+"'");    		
+        	}        	
+        	if ( (ret != null) && StringUtils.isNotEmpty(ca) ) {
+            	try {
+            		int caid = Integer.parseInt(ca);
+            		ISignSessionLocal sign = signsessionhome.create();
+            		CmsCAServiceRequest request = new CmsCAServiceRequest(ret, true);
+            		CmsCAServiceResponse resp = (CmsCAServiceResponse)sign.extendedService(admin, caid, request);
+            		ret = resp.getCmsDocument();
+            	} catch (CreateException e) {
+            		log.error("Can not create sign session", e);
+            	}
+        	}
     	}
-    	logexporter.setEntries(logentries);
-    	return logexporter.export();
+    	return ret;
     }
     
     /**
