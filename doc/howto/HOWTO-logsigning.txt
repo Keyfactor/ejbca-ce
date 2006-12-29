@@ -5,6 +5,7 @@ The most common is to sign the logs as they are beeing archived (rotated).
 
 Some examples:
 
+- Export signed logs in CSV format using the admin GUI
 - If logs are sent to syslog, the syslog rotation can sign files when they are rotated
   - Using openssl
   - Using a time stamp server (TSA)
@@ -20,6 +21,15 @@ No such imelementation is done for the moment. If every log row should be signed
 HSM is needed, several log rows per secons is normally issued when actions are done.
 
 This document describes the three first options.
+
+
+Exporting signed logs in CSV format
+================================================
+In the 'View Log' functionality you can export the logs you view in the admin-GUI.
+You export logs by clicking the 'Export as csv' button. If you want the logs signed, you can select a CA in the drop down list besides the button. If you don't select a CA, the exported file is in plain csv format. If you select a CA, the exported file is a signed CMS/PKCS#7 file returned as 'logexport.p7m'.
+
+The signing certificate used is a special CMS signer certificate signed by the selected CA. This signing service is created when the CA is created, but it is by default disabled.
+You can enable the CMS Signing service in the 'Edit Certificate Authorities' view by editing a CA and activating the 'CMS Service'.
 
 
 Enabling log signing using logrotate and openssl
@@ -383,7 +393,7 @@ See HOWTO-database.txt for some indexes that might speed things up a little bit 
 
 -----
 #
-# $Id: HOWTO-logsigning.txt,v 1.17 2006-11-09 17:07:57 anatom Exp $
+# $Id: HOWTO-logsigning.txt,v 1.18 2006-12-29 11:31:11 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
