@@ -21,9 +21,9 @@ import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
-import org.bouncycastle.asn1.DEREncodableVector;
 import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERObjectIdentifier;
@@ -39,7 +39,7 @@ import org.ejbca.util.CertTools;
  * A class for reading values from SubjectDirectoryAttributes extension.
  *
  * @author  Tomas Gustavsson
- * @version $Id: SubjectDirAttrExtension.java,v 1.4 2006-10-18 08:58:39 anatom Exp $
+ * @version $Id: SubjectDirAttrExtension.java,v 1.5 2006-12-29 08:09:14 anatom Exp $
  */
 public class SubjectDirAttrExtension extends CertTools {
 
@@ -140,28 +140,28 @@ public class SubjectDirAttrExtension extends CertTools {
     	Attribute attr = null;
         String value = CertTools.getPartFromDN(dirAttr, "countryOfResidence");
         if (!StringUtils.isEmpty(value)) {
-        	DEREncodableVector vec = new DEREncodableVector();
+        	ASN1EncodableVector vec = new ASN1EncodableVector();
         	vec.add(new DERPrintableString(value));
         	attr = new Attribute(new DERObjectIdentifier(id_pda_countryOfResidence),new DERSet(vec));
         	ret.add(attr);
         }
         value = CertTools.getPartFromDN(dirAttr, "countryOfCitizenship");
         if (!StringUtils.isEmpty(value)) {
-        	DEREncodableVector vec = new DEREncodableVector();
+        	ASN1EncodableVector vec = new ASN1EncodableVector();
         	vec.add(new DERPrintableString(value));
         	attr = new Attribute(new DERObjectIdentifier(id_pda_countryOfCitizenship),new DERSet(vec));
         	ret.add(attr);
         }
         value = CertTools.getPartFromDN(dirAttr, "gender");
         if (!StringUtils.isEmpty(value)) {
-        	DEREncodableVector vec = new DEREncodableVector();
+        	ASN1EncodableVector vec = new ASN1EncodableVector();
         	vec.add(new DERPrintableString(value));
         	attr = new Attribute(new DERObjectIdentifier(id_pda_gender),new DERSet(vec));
         	ret.add(attr);
         }
         value = CertTools.getPartFromDN(dirAttr, "placeOfBirth");
         if (!StringUtils.isEmpty(value)) {
-        	DEREncodableVector vec = new DEREncodableVector();
+        	ASN1EncodableVector vec = new ASN1EncodableVector();
         	X509DefaultEntryConverter conv = new X509DefaultEntryConverter();
         	DERObject obj = conv.getConvertedValue(new DERObjectIdentifier(id_pda_placeOfBirth), value);
         	vec.add(obj);
@@ -174,7 +174,7 @@ public class SubjectDirAttrExtension extends CertTools {
         if (!StringUtils.isEmpty(value)) {
             if (value.length() == 8) {
                 value += "120000Z"; // standard format according to rfc3739
-                DEREncodableVector vec = new DEREncodableVector();
+            	ASN1EncodableVector vec = new ASN1EncodableVector();
                 vec.add(new DERGeneralizedTime(value));
                 attr = new Attribute(new DERObjectIdentifier(id_pda_dateOfBirth),new DERSet(vec));
                 ret.add(attr);                

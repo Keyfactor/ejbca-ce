@@ -57,7 +57,6 @@ import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DEREncodable;
-import org.bouncycastle.asn1.DEREncodableVector;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERObjectIdentifier;
@@ -95,7 +94,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.31 2006-12-04 09:05:19 anatom Exp $
+ * @version $Id: CertTools.java,v 1.32 2006-12-29 08:09:14 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -1123,7 +1122,7 @@ public class CertTools {
      * @see #getSubjectAlternativeName
      */
     public static GeneralNames getGeneralNamesFromAltName(String altName) {
-        DEREncodableVector vec = new DEREncodableVector();
+        ASN1EncodableVector vec = new ASN1EncodableVector();
         // TODO: should support several emails as well, just like for dns etc
         String email = CertTools.getEmailFromDN(altName);
         if (email != null) {

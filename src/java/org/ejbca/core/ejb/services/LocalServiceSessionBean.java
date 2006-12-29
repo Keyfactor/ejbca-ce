@@ -23,7 +23,6 @@ import java.util.Random;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
-import javax.ejb.Timer;
 
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
