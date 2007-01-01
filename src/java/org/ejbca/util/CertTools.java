@@ -94,7 +94,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.32 2006-12-29 08:09:14 anatom Exp $
+ * @version $Id: CertTools.java,v 1.33 2007-01-01 11:08:20 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -287,22 +287,27 @@ public class CertTools {
     }
 
     /**
-     * Convenience method for getting an email address from a DN. Uses {@link
-     * getPartFromDN(String,String)} internally, and searches for {@link EMAIL}, {@link EMAIL1},
+     * Convenience method for getting an email addresses from a DN. Uses {@link
+     * getPartsFromDN(String,String)} internally, and searches for {@link EMAIL}, {@link EMAIL1},
      * {@link EMAIL2}, {@link EMAIL3} and returns the first one found.
      *
      * @param dn the DN
      *
+	 * @return ArrayList containing email or empty list if email is not present
      * @return the found email address, or <code>null</code> if none is found
      */
-    public static String getEmailFromDN(String dn) {
+    public static ArrayList getEmailFromDN(String dn) {
         log.debug(">getEmailFromDN(" + dn + ")");
-        String email = null;
-        for (int i = 0; (i < EMAILIDS.length) && (email == null); i++) {
-            email = getPartFromDN(dn, EMAILIDS[i]);
+        ArrayList ret = new ArrayList();
+        for (int i = 0; i < EMAILIDS.length ; i++) {
+            ArrayList emails = getPartsFromDN(dn, EMAILIDS[i]);
+            if (emails.size() > 0) {
+            	ret.addAll(emails);
+            }
+            
         }
-        log.debug("<getEmailFromDN(" + dn + "): " + email);
-        return email;
+        log.debug("<getEmailFromDN(" + dn + "): " + ret.size());
+        return ret;
     }
     
     /**
@@ -334,7 +339,11 @@ public class CertTools {
             log.error("Error parsing certificate: ", e);
         }
         log.debug("Searching for EMail Address in Subject DN");
-        return CertTools.getEmailFromDN(certificate.getSubjectDN().getName());
+        ArrayList emails = CertTools.getEmailFromDN(certificate.getSubjectDN().getName());
+        if (emails.size() > 0) {
+        	return (String)emails.get(0);
+        }
+        return null;
     }
     
     /**
@@ -1123,11 +1132,14 @@ public class CertTools {
      */
     public static GeneralNames getGeneralNamesFromAltName(String altName) {
         ASN1EncodableVector vec = new ASN1EncodableVector();
-        // TODO: should support several emails as well, just like for dns etc
-        String email = CertTools.getEmailFromDN(altName);
-        if (email != null) {
-            GeneralName gn = new GeneralName(1, new DERIA5String(email));
-            vec.add(gn);
+
+        ArrayList emails = CertTools.getEmailFromDN(altName);
+        if (!emails.isEmpty()) {
+            Iterator iter = emails.iterator();
+            while (iter.hasNext()) {
+            	GeneralName gn = new GeneralName(1, new DERIA5String((String)iter.next()));
+            	vec.add(gn);
+            }
         }
         
         ArrayList dns = CertTools.getPartsFromDN(altName, CertTools.DNS);

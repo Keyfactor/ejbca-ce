@@ -14,6 +14,7 @@
 package org.ejbca.samples;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -77,7 +78,7 @@ import org.ejbca.util.CertTools;
  *   generate="none"
  *
  *
- * @version $Id: NullAuthenticationSessionBean.java,v 1.3 2006-09-26 09:53:48 anatom Exp $
+ * @version $Id: NullAuthenticationSessionBean.java,v 1.4 2007-01-01 11:08:21 anatom Exp $
  * 
  */
 public class NullAuthenticationSessionBean extends BaseSessionBean {
@@ -123,7 +124,11 @@ public class NullAuthenticationSessionBean extends BaseSessionBean {
             String dn = CertTools.stringToBCDNString(username);
 
             if ((dn != null) && (dn.length() > 0)) {
-                String email = CertTools.getEmailFromDN(dn);
+            	String email = null;
+                ArrayList emails = CertTools.getEmailFromDN(dn);
+                if (emails.size() > 0) {
+                	email = (String)emails.get(0);
+                }
                 try{
                   logsession.log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_INFO_USERAUTHENTICATION,"NULL-Authenticated user");
                 }catch(RemoteException re){

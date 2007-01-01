@@ -14,21 +14,20 @@
 package org.ejbca.util;
 
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEREncodable;
+import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 import org.bouncycastle.util.encoders.Hex;
-import org.ejbca.util.Base64;
-import org.ejbca.util.CertTools;
-import org.ejbca.util.StringTools;
 import org.ejbca.util.cert.QCStatementExtension;
 import org.ejbca.util.cert.SubjectDirAttrExtension;
 
@@ -38,7 +37,7 @@ import com.novell.ldap.LDAPDN;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.3 2006-12-04 08:08:26 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.4 2007-01-01 11:08:21 anatom Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);
@@ -311,13 +310,16 @@ public class TestCertTools extends TestCase {
         assertNull(CertTools.getPartFromDN(dn12, "OU"));
 
         String dn13 = "C=SE, O=PrimeKey, EmailAddress=foo@primekey.se";
-        assertEquals(CertTools.getEmailFromDN(dn13), "foo@primekey.se");
+        ArrayList emails = CertTools.getEmailFromDN(dn13);
+        assertEquals((String)emails.get(0), "foo@primekey.se");
 
         String dn14 = "C=SE, E=foo@primekey.se, O=PrimeKey";
-        assertEquals(CertTools.getEmailFromDN(dn14), "foo@primekey.se");
+        emails = CertTools.getEmailFromDN(dn14);
+        assertEquals((String)emails.get(0), "foo@primekey.se");
 
         String dn15 = "C=SE, E=foo@primekey.se, O=PrimeKey, EmailAddress=bar@primekey.se";
-        assertEquals(CertTools.getEmailFromDN(dn15), "bar@primekey.se");
+        emails = CertTools.getEmailFromDN(dn15);
+        assertEquals((String)emails.get(0), "bar@primekey.se");
 
         log.debug("<test01GetPartFromDN()");
     }
@@ -754,6 +756,32 @@ public class TestCertTools extends TestCase {
             
         }
         assertTrue(found);
+        
+        altName = "rfc822name=foo@bar.se, rfc822name=foo@bar.com, uri=http://foo.bar.se, directoryName="+LDAPDN.escapeRDN("CN=testDirName, O=Foo, OU=Bar, C=SE")+", dnsName=foo.bar.se, dnsName=foo.bar.com";
+        san = CertTools.getGeneralNamesFromAltName(altName);  
+        gns = san.getNames();
+        int dnscount = 0;
+        int rfc822count = 0;
+        for (int i = 0;i < gns.length; i++) {
+            int tag = gns[i].getTagNo();
+            if (tag == 2) {
+                dnscount++;
+                DEREncodable enc = gns[i].getName();
+                DERIA5String dir = (DERIA5String)enc;
+                String str = dir.getString();
+                log.info("DnsName: "+str);
+            }
+            if (tag == 1) {
+                rfc822count++;
+                DEREncodable enc = gns[i].getName();
+                DERIA5String dir = (DERIA5String)enc;
+                String str = dir.getString();
+                log.info("Rfc822Name: "+str);
+            }
+            
+        }
+        assertEquals(2, dnscount);
+        assertEquals(2, rfc822count);
         log.debug("<test16GetSubjectAltNameStringWithDirectoryName()");
       }  
 
