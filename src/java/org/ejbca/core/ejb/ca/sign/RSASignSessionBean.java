@@ -158,7 +158,7 @@ import org.ejbca.util.KeyTools;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
  *   
- *   @version $Id: RSASignSessionBean.java,v 1.32 2006-12-29 11:19:42 anatom Exp $
+ *   @version $Id: RSASignSessionBean.java,v 1.33 2007-01-02 16:06:33 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -1461,8 +1461,10 @@ public class RSASignSessionBean extends BaseSessionBean {
                 X509Certificate cert = (X509Certificate) ca.generateCertificate(data, pk, keyusage, notBefore, notAfter, certProfile);
 
                 getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), data.getUsername(), cert, LogEntry.EVENT_INFO_CREATECERTIFICATE, intres.getLocalizedMessage("signsession.certificateissued", data.getUsername()));
-                debug("Generated certificate with SerialNumber '" + cert.getSerialNumber().toString(16) + "' for user '" + data.getUsername() + "'.");
-                debug(cert.toString());
+                if (log.isDebugEnabled()) {
+                    debug("Generated certificate with SerialNumber '" + cert.getSerialNumber().toString(16) + "' for user '" + data.getUsername() + "'.");
+                    debug(cert.toString());                	
+                }
 
                 // Store certificate in the database
                 String cafingerprint = null;
