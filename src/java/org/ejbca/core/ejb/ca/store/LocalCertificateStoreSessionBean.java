@@ -172,7 +172,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.26 2006-12-27 11:13:58 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.27 2007-01-02 16:09:47 anatom Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
@@ -410,6 +410,13 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     } // listAllCertificates
 
     /**
+     * Lists fingerprint (primary key) of ALL certificates in the database. 
+     * NOTE: Caution should be taken with this method as execution may be very heavy indeed if many certificates exist in the database (imagine what happens if there are millinos of certificates in the DB!). 
+     * Should only be used for testing purposes.
+     * @param admin Administrator performing the operation
+     * @param issuerdn the dn of the certificates issuer.
+     * @return Collection of fingerprints, i.e. Strings, reverse ordered by expireDate where last expireDate is first in array.
+     *
      * @ejb.interface-method
      */
     public Collection listRevokedCertificates(Admin admin, String issuerdn) {
