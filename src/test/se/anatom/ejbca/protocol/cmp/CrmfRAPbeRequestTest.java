@@ -52,9 +52,11 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * This test requires:
  * mode=ra, responseProtection=pbe, authenticationsecret=password, allowraverifypopo=true.
  * Allow CN, O, C in DN and rfc822Name, UPN in altNames in the end entity profile configured in cmp.properties
- *  
+ * 
+ * You need a CMP tcp listener configured on port 5547.
+ * 
  * @author tomas
- * @version $Id: CrmfRAPbeRequestTest.java,v 1.10 2006-12-13 11:23:51 anatom Exp $
+ * @version $Id: CrmfRAPbeRequestTest.java,v 1.11 2007-01-03 12:28:44 anatom Exp $
  */
 public class CrmfRAPbeRequestTest extends CmpTestCase {
 	
