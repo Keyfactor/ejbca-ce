@@ -46,7 +46,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the ca data entity bean.
  *
- * @version $Id: TestCAs.java,v 1.18 2006-12-22 09:29:47 herrvendil Exp $
+ * @version $Id: TestCAs.java,v 1.19 2007-01-03 16:00:30 anatom Exp $
  */
 public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -164,7 +164,8 @@ public class TestCAs extends TestCase {
                     extendedcaservices,
                     false, // use default utf8 settings
                     new ArrayList(), // Approvals Settings
-                    1); // Number of Req approvals    
+                    1, // Number of Req approvals
+                    false); // Use UTF8 subject DN by default
 
 
             cacheAdmin.createCA(admin, cainfo);
@@ -295,7 +296,8 @@ public class TestCAs extends TestCase {
                     extendedcaservices,
                     false, // use default utf8 settings
                     new ArrayList(), // Approvals Settings
-                    1); // Number of Req approvals    
+                    1, // Number of Req approvals
+                    false); // Use UTF8 subject DN by default 
 
 
             cacheAdmin.createCA(admin, cainfo);
@@ -391,7 +393,8 @@ public class TestCAs extends TestCase {
                     extendedcaservices,
                     false, // use default utf8 settings
                     new ArrayList(), // Approvals Settings
-                    1); // Number of Req approvals    
+                    1, // Number of Req approvals
+                    false); // Use UTF8 subject DN by default 
 
 
             cacheAdmin.createCA(admin, cainfo);

@@ -70,8 +70,10 @@ import org.bouncycastle.asn1.x509.PolicyQualifierInfo;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.UserNotice;
+import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.asn1.x509.X509NameEntryConverter;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.Iso4217CurrencyCode;
@@ -112,6 +114,7 @@ import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.cert.PrintableStringEntryConverter;
 import org.ejbca.util.cert.SubjectDirAttrExtension;
 
 
@@ -121,7 +124,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.46 2006-12-27 11:13:52 anatom Exp $
+ * @version $Id: X509CA.java,v 1.47 2007-01-03 15:59:50 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -131,7 +134,7 @@ public class X509CA extends CA implements Serializable {
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Default Values
-    public static final float LATEST_VERSION = 10;
+    public static final float LATEST_VERSION = 11;
 
     private byte[]  keyId = new byte[] { 1, 2, 3, 4, 5 };
     
@@ -147,6 +150,7 @@ public class X509CA extends CA implements Serializable {
     protected static final String DEFAULTCRLISSUER               = "defaultcrlissuer";
     protected static final String DEFAULTOCSPSERVICELOCATOR      = "defaultocspservicelocator";
     protected static final String USEUTF8POLICYTEXT              = "useutf8policytext";
+    protected static final String USEPRINTABLESTRINGSUBJECTDN    = "useprintablestringsubjectdn";
 
     // Public Methods
     /** Creates a new instance of CA, this constuctor should be used when a new CA is created */
@@ -164,6 +168,7 @@ public class X509CA extends CA implements Serializable {
       setDefaultOCSPServiceLocator(cainfo.getDefaultOCSPServiceLocator());
       setFinishUser(cainfo.getFinishUser());
       setUseUTF8PolicyText(cainfo.getUseUTF8PolicyText());
+      setUsePrintableStringSubjectDN(cainfo.getUsePrintableStringSubjectDN());
       
       data.put(CA.CATYPE, new Integer(CAInfo.CATYPE_X509));
       data.put(VERSION, new Float(LATEST_VERSION));   
@@ -183,7 +188,7 @@ public class X509CA extends CA implements Serializable {
         		  getCAToken(caId).getCATokenInfo(), getDescription(), getRevokationReason(), getRevokationDate(), getPolicyId(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(), getCRLPublishers(),
         		  getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(),
         		  getUseCRLNumber(), getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultCRLIssuer(), getDefaultOCSPServiceLocator(), getFinishUser(), externalcaserviceinfos, 
-        		  getUseUTF8PolicyText(), getApprovalSettings(), getNumOfRequiredApprovals());
+        		  getUseUTF8PolicyText(), getApprovalSettings(), getNumOfRequiredApprovals(), getUsePrintableStringSubjectDN());
         super.setCAInfo(info);
     }
 
@@ -247,6 +252,12 @@ public class X509CA extends CA implements Serializable {
       }
 
 
+      public boolean  getUsePrintableStringSubjectDN(){
+    	  return ((Boolean)data.get(USEPRINTABLESTRINGSUBJECTDN)).booleanValue();
+      }
+      public void setUsePrintableStringSubjectDN(boolean useprintablestring) {
+    	  data.put(USEPRINTABLESTRINGSUBJECTDN, Boolean.valueOf(useprintablestring));
+      }
     
       public void updateCA(CAInfo cainfo) throws Exception{
     	  super.updateCA(cainfo); 
@@ -260,6 +271,8 @@ public class X509CA extends CA implements Serializable {
     	  setDefaultCRLIssuer(info.getDefaultCRLIssuer());
     	  setDefaultOCSPServiceLocator(info.getDefaultOCSPServiceLocator());
     	  setUseUTF8PolicyText(info.getUseUTF8PolicyText());
+          setUsePrintableStringSubjectDN(info.getUsePrintableStringSubjectDN());
+
       }
     
 
@@ -370,12 +383,18 @@ public class X509CA extends CA implements Serializable {
         	altName = certProfile.createSubjectAltNameSubSet(altName);
         }
         
-        certgen.setSubjectDN(CertTools.stringToBcX509Name(dn));
+        X509NameEntryConverter converter = null;
+        if (getUsePrintableStringSubjectDN()) {
+        	converter = new PrintableStringEntryConverter();
+        } else {
+        	converter = new X509DefaultEntryConverter();
+        }
+        certgen.setSubjectDN(CertTools.stringToBcX509Name(dn, converter));
         // We must take the issuer DN directly from the CA-certificate otherwise we risk re-ordering the DN
         // which many applications do not like.
         if (cacert == null) {
         	// This will be an initial root CA, since no CA-certificate exists
-            X509Name caname = CertTools.stringToBcX509Name(getSubjectDN());
+            X509Name caname = CertTools.stringToBcX509Name(getSubjectDN(), converter);
             certgen.setIssuerDN(caname);
         } else {
             certgen.setIssuerDN(cacert.getSubjectX500Principal());        	
@@ -765,6 +784,7 @@ public class X509CA extends CA implements Serializable {
             	// Default value 10 minutes
             	setCRLOverlapTime(10);
             }
+            boolean useprintablestring = true;
             if (data.get("alwaysuseutf8subjectdn") == null) {
             	// Default value false
             	setUseUTF8PolicyText(false);
@@ -772,6 +792,12 @@ public class X509CA extends CA implements Serializable {
             	// Use the same value as we had before when we had alwaysuseutf8subjectdn
                 boolean useutf8 = ((Boolean)data.get("alwaysuseutf8subjectdn")).booleanValue();
             	setUseUTF8PolicyText(useutf8);
+            	// If we had checked to use utf8 on an old CA, we do not want to use PrintableString after upgrading
+            	useprintablestring = !useutf8;
+            }
+            if (data.get(USEPRINTABLESTRINGSUBJECTDN) == null) {
+            	// Default value true (as before)
+            	setUsePrintableStringSubjectDN(useprintablestring);
             }
             if (data.get(DEFAULTCRLISSUER) == null) {
             	setDefaultCRLIssuer(null);

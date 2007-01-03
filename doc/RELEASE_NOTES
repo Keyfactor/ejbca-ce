@@ -9,9 +9,10 @@ Because there are binary files in EJBCA_HOME/lib and many massive changes there 
 EJBCA 3.3.x to 3.4.0. Use the full package from EJBCA 3.4.0 and follow the upgrade instructions.
 
 Important changes:
-In EJBCA 3.4.0 the ASN.1 string encoding for DNs are now UTF8. In EJBCA 3.3.x and earlier, the default encoding was
+In EJBCA 3.4.0 the default ASN.1 string encoding for DNs are now UTF8. In EJBCA 3.3.x and earlier, the default encoding was
 PrintableString, unless the character set forced the usage of UTF8 (international characters). 
 Now DN components are always encoded as UTF8 (except for components that does not allow UTF8 such as C and SerialNumber).
+See UPGRADE for information regarding upgrading from an old CA, and how the behaviour can be configured.
 
 EJBCA 3.3.3
 -----------

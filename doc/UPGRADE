@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.29 2007-01-02 09:11:18 anatom Exp $
+$Id: UPGRADE,v 1.30 2007-01-03 15:59:50 anatom Exp $
 
 UPGRADE
 =======
@@ -36,6 +36,11 @@ Copy the directory 'p12' from the earlier installation and 'ant deploy'.
 After completing an upgrade, you should go into the admin-GUI and go to "Basic Functions" in order
 for automatic CA upgrades to be performed. 
 After this you should restart the JBoss server. Also restart your browser to clear saved http sessions.
+
+Note: Since the default DN encoding changed to UTF8, there is an option in the CA configuration (Edit Certificate authorities)
+called 'Use PrintableString encoding in DN'. Checking this checkbox causes the old behaviour to be used, using PrintableString as the default
+encoding. The upgrade process tries to guess how this value should be set (upgrading an old CA we usually want to keep the old behaviour).
+After the upgrade process, check your CA configuration to verify that the option is set to your liking.
 
 Note: If you intend to use the XKMS service or the CMS service (log signing), then you should go into the Admin-GUI 
 after upgrading and press the button "Republish CA Certificates" for all CAs. 

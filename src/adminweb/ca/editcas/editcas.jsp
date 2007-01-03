@@ -82,6 +82,7 @@
   static final String CHECKBOX_CRLNUMBERCRITICAL                  = "checkboxcrlnumbercritical";
   static final String CHECKBOX_FINISHUSER                         = "checkboxfinishuser";
   static final String CHECKBOX_USEUTF8POLICYTEXT                  = "checkboxuseutf8policytext";
+  static final String CHECKBOX_USEPRINTABLESTRINGSUBJECTDN        = "checkboxuseprintablestringsubjectdn";
   
   static final String CHECKBOX_ACTIVATEOCSPSERVICE                = "checkboxactivateocspservice";  
   static final String CHECKBOX_ACTIVATEXKMSSERVICE                = "checkboxactivatexkmsservice";
@@ -403,8 +404,14 @@
 
              boolean useutf8policytext = false;
              value = request.getParameter(CHECKBOX_USEUTF8POLICYTEXT);
-             if(value != null)
+             if(value != null) {
             	 useutf8policytext = value.equals(CHECKBOX_VALUE);                             
+             }
+             boolean useprintablestringsubjectdn = false;
+             value = request.getParameter(CHECKBOX_USEPRINTABLESTRINGSUBJECTDN);
+             if(value != null) {
+            	 useprintablestringsubjectdn = value.equals(CHECKBOX_VALUE);                             
+             }
 
              String[] values = request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
              ArrayList crlpublishers = new ArrayList(); 
@@ -490,7 +497,8 @@
                                                         finishuser, extendedcaservices,
                                                         useutf8policytext,
                                                         approvalsettings,
-                                                        numofreqapprovals);
+                                                        numofreqapprovals,
+                                                        useprintablestringsubjectdn);
                  try{
                    cadatahandler.createCA((CAInfo) x509cainfo);
                  }catch(CAExistsException caee){
@@ -546,7 +554,8 @@
                                                         finishuser, extendedcaservices,
                                                         useutf8policytext,
                                                         approvalsettings,
-                                                        numofreqapprovals);
+                                                        numofreqapprovals,
+                                                        useprintablestringsubjectdn);
                  cabean.saveRequestInfo(x509cainfo);                
                  filemode = MAKEREQUESTMODE;
                  includefile="recievefile.jspf"; 
@@ -650,8 +659,15 @@
 
              boolean  useutf8policytext = false;
              value = request.getParameter(CHECKBOX_USEUTF8POLICYTEXT);
-             if(value != null)
+             if(value != null) {
             	 useutf8policytext = value.equals(CHECKBOX_VALUE);         
+             }
+             
+             boolean useprintablestringsubjectdn = false;
+             value = request.getParameter(CHECKBOX_USEPRINTABLESTRINGSUBJECTDN);
+             if(value != null) {
+            	 useprintablestringsubjectdn = value.equals(CHECKBOX_VALUE);                             
+             }
 
              String[] values = request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
              ArrayList crlpublishers = new ArrayList(); 
@@ -740,7 +756,8 @@
                                                       finishuser,extendedcaservices,
                                                       useutf8policytext,
                                                       approvalsettings,
-                                                      numofreqapprovals);
+                                                      numofreqapprovals,
+                                                      useprintablestringsubjectdn);
                  
                cadatahandler.editCA((CAInfo) x509cainfo);
                  
@@ -937,6 +954,7 @@
                                                                       
               boolean finishuser = false;
               boolean useutf8policytext = false;
+              boolean useprintablestringsubjectdn = false;
               ArrayList crlpublishers = new ArrayList(); 
               ArrayList approvalsettings = new ArrayList(); 
               int numofreqapprovals = 1;
@@ -957,7 +975,8 @@
                                                         new ArrayList(),
                                                         useutf8policytext,
                                                         approvalsettings,
-                                                        numofreqapprovals);
+                                                        numofreqapprovals, 
+                                                        useprintablestringsubjectdn);
                  try{
                    PKCS10CertificationRequest req = cabean.getPKCS10RequestData(); 
                    java.security.cert.Certificate result = cadatahandler.processRequest(x509cainfo, new PKCS10RequestMessage(req));

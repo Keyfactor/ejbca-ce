@@ -37,7 +37,7 @@ import org.ejbca.util.StringTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.11 2006-12-22 09:24:13 herrvendil Exp $
+ * @version $Id: CaInitCommand.java,v 1.12 2007-01-03 15:59:54 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
@@ -158,7 +158,8 @@ public class CaInitCommand extends BaseCaAdminCommand {
                                              extendedcaservices,
 			                                 false, // use default utf8 settings
 			                                 new ArrayList(), // Approvals Settings
-			                                 1); // Number of Req approvals       
+			                                 1, // Number of Req approvals
+			                                 false); // Use UTF8 subject DN by default       
             
             getOutputStream().println("Creating CA...");
             ICAAdminSessionRemote remote = getCAAdminSessionRemote();

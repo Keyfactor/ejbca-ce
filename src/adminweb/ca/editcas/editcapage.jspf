@@ -603,6 +603,16 @@ function checkallfields(){
       </td>
     </tr>
     <% } %>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("USEPRINTABLESTRINGSUBJECTDN") %>
+      </td>
+      <td width="50%"> 
+        <input type="checkbox" name="<%=CHECKBOX_USEPRINTABLESTRINGSUBJECTDN %>" value="<%=CHECKBOX_VALUE %>" 
+            <% if((editca && x509cainfo.getUsePrintableStringSubjectDN()))
+                 out.write("CHECKED");%>>         
+      </td>
+    </tr>
    <% if(!processrequest && !isexternal){ %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 

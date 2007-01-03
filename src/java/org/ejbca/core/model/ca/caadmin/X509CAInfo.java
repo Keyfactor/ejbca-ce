@@ -24,7 +24,7 @@ import org.ejbca.util.StringTools;
 /**
  * Holds nonsensitive information about a X509CA.
  *
- * @version $Id: X509CAInfo.java,v 1.7 2006-11-20 14:43:38 anatom Exp $
+ * @version $Id: X509CAInfo.java,v 1.8 2007-01-03 15:59:50 anatom Exp $
  */
 public class X509CAInfo extends CAInfo{
    
@@ -38,6 +38,7 @@ public class X509CAInfo extends CAInfo{
   String defaultocsplocator;
   String subjectaltname;
   boolean useUTF8PolicyText;
+  boolean usePrintableStringSubjectDN;
     
     /**
      * Constructor that should be used when creating CA and retreiving CA info.
@@ -47,7 +48,7 @@ public class X509CAInfo extends CAInfo{
                     CATokenInfo catokeninfo, String description, int revokationreason, Date revokationdate, String policyid, int crlperiod, int crlIssueInterval, int crlOverlapTime, Collection crlpublishers,
                     boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
                     boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocspservicelocator, boolean finishuser,
-                    Collection extendedcaserviceinfos, boolean useUTF8PolicyText, Collection approvalSettings, int numOfReqApprovals) {
+                    Collection extendedcaserviceinfos, boolean useUTF8PolicyText, Collection approvalSettings, int numOfReqApprovals, boolean usePrintableStringSubjectDN) {
         this.subjectdn = StringTools.strip(CertTools.stringToBCDNString(subjectdn));
         this.caid = this.subjectdn.hashCode();
         this.name = name;
@@ -80,6 +81,7 @@ public class X509CAInfo extends CAInfo{
         this.useUTF8PolicyText = useUTF8PolicyText;
         this.approvalSettings = approvalSettings;
         this.numOfReqApprovals = numOfReqApprovals;
+        this.usePrintableStringSubjectDN = usePrintableStringSubjectDN;
     }
 
     /**
@@ -90,7 +92,7 @@ public class X509CAInfo extends CAInfo{
                       boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
                       boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocspservicelocator, 
                       boolean finishuser, Collection extendedcaserviceinfos, 
-                      boolean useUTF8PolicyText, Collection approvalSettings, int numOfReqApprovals) {        
+                      boolean useUTF8PolicyText, Collection approvalSettings, int numOfReqApprovals, boolean usePrintableStringSubjectDN) {        
         this.caid = caid;
         this.validity=validity;
         this.catokeninfo = catokeninfo; 
@@ -111,6 +113,7 @@ public class X509CAInfo extends CAInfo{
         this.useUTF8PolicyText = useUTF8PolicyText;
         this.approvalSettings = approvalSettings;
         this.numOfReqApprovals = numOfReqApprovals;
+        this.usePrintableStringSubjectDN = usePrintableStringSubjectDN;
     }  
   
   
@@ -142,5 +145,8 @@ public class X509CAInfo extends CAInfo{
   public String getSubjectAltName(){ return subjectaltname; }
   
   public boolean getUseUTF8PolicyText() { return useUTF8PolicyText; } 
+  
+  public boolean getUsePrintableStringSubjectDN() { return usePrintableStringSubjectDN; } 
+
   
 }

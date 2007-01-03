@@ -572,7 +572,8 @@ public class ProtocolOcspHttpTest extends TestCase {
                     extendedcaservices,
                     false, // use default utf8 settings
                     new ArrayList(), // Approvals Settings
-                    1); // Number of Req approvals    
+                    1, // Number of Req approvals
+                    false); // Use UTF8 subject DN by default 
 
 
             cacheAdmin.createCA(admin, cainfo);
