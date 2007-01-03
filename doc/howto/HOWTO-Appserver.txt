@@ -26,6 +26,9 @@ set 'httpserver.privhttps=7002' - default SSL port of Weblogic is 7002, default 
 set 'web.jsfimpl=nojsf', this must be done until we have fixed JSF configuration for weblogic.
 set 'ejbcaws.enabled=false', this must be done until we have fixed JaxWS configuration for weblogic.
 
+Edit conf/xkms.properties:
+set 'xkms.enabled=false'
+
 If you had issued an 'ant' command before, it is now important to do 'ant clean' before building again.
 
 Build ejbca.ear (ejbca/dist/ejbca.ear) with 'ant'.
