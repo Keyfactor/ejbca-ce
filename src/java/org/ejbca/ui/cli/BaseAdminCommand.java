@@ -18,14 +18,14 @@ import java.io.PrintStream;
 /**
  * Base for all AdminCommands, contains functions for getting initial context and logging
  *
- * @version $Id: BaseAdminCommand.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: BaseAdminCommand.java,v 1.2 2007-01-03 14:34:12 anatom Exp $
  */
 public abstract class BaseAdminCommand extends BaseCommand implements IAdminCommand {
     /**
      * Creates a new instance of BaseAdminCommand
      *
      * @param args command line arguments
-     * @param adminType type of admin Admin.TYPE_RACOMMANDLINE_USER, or Admin.TYPE_CACOMMANDLINE_USER
+     * @param adminType type of admin Admin.TYPE_RA_USER, or Admin.TYPE_CACOMMANDLINE_USER
      * @param outStream stream where commands write its output
      */
     public BaseAdminCommand(String[] args, int adminType, PrintStream outStream) {
@@ -36,7 +36,7 @@ public abstract class BaseAdminCommand extends BaseCommand implements IAdminComm
      * Creates a new instance of BaseAdminCommand
      *
      * @param args command line arguments
-     * @param adminType type of admin Admin.TYPE_RACOMMANDLINE_USER, or Admin.TYPE_CACOMMANDLINE_USER
+     * @param adminType type of admin Admin.TYPE_RA_USER, or Admin.TYPE_CACOMMANDLINE_USER
      */
     public BaseAdminCommand(String[] args, int adminType) {
         init(args, adminType, null);

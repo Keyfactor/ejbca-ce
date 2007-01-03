@@ -120,7 +120,7 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 						log.debug("Received a CMP message by TCP: "+new String(Base64.encode(msg)));
 					}
 					// We must use an administrator with rights to create users
-					Admin administrator = new Admin(Admin.TYPE_RACOMMANDLINE_USER, handler.getHostAddress());
+					Admin administrator = new Admin(Admin.TYPE_RA_USER, handler.getHostAddress());
 
 					CmpMessageDispatcher dispatcher = new CmpMessageDispatcher(administrator, CmpTcpConfiguration.instance().getProperties());
 					resp = dispatcher.dispatch(msg);

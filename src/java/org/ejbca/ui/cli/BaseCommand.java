@@ -53,7 +53,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Base for Commands, contains useful functions
  *
- * @version $Id: BaseCommand.java,v 1.1 2006-01-17 20:28:05 anatom Exp $
+ * @version $Id: BaseCommand.java,v 1.2 2007-01-03 14:34:12 anatom Exp $
  */
 public abstract class BaseCommand {
     /** Log4j instance for Base */
@@ -96,7 +96,7 @@ public abstract class BaseCommand {
      * Initialize a new instance of BaseCommand
      *
      * @param args command line arguments
-     * @param adminType type of admin Admin.TYPE_RACOMMANDLINE_USER, or Admin.TYPE_CACOMMANDLINE_USER
+     * @param adminType type of admin Admin.TYPE_RA_USER, or Admin.TYPE_CACOMMANDLINE_USER
      * @param outStream stream where commands write its output
      */
     protected void init(String[] args, int adminType, PrintStream outStream) {
@@ -190,7 +190,7 @@ public abstract class BaseCommand {
      */
     protected IRaAdminSessionRemote getRaAdminSession() throws CreateException, NamingException, RemoteException {
         debug(">getRaAdminSession()");
-        administrator = new Admin(Admin.TYPE_RACOMMANDLINE_USER);
+        administrator = new Admin(Admin.TYPE_RA_USER);
         try {
             if( raadminsession == null ) {
                 if (raadminHomesession == null) {

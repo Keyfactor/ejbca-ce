@@ -30,13 +30,13 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * Matchtype constants tells under which contitions the match shall be performed.
  *
  * @author  Philip Vendil
- * @version $Id: AdminEntity.java,v 1.2 2006-12-02 11:17:32 anatom Exp $
+ * @version $Id: AdminEntity.java,v 1.3 2007-01-03 14:34:10 anatom Exp $
  */
 public class AdminEntity implements Serializable, Comparable {
     // Special Users. (Constants cannot have 0 value).
     public static final int SPECIALADMIN_PUBLICWEBUSER             = 2000;
     public static final int SPECIALADMIN_CACOMMANDLINEADMIN        = 2001;
-    public static final int SPECIALADMIN_RACOMMANDLINEADMIN        = 2002;
+    public static final int SPECIALADMIN_RAADMIN                   = 2002;
     public static final int SPECIALADMIN_BATCHCOMMANDLINEADMIN     = 2003;
     public static final int SPECIALADMIN_INTERNALUSER              = 2004;
     public static final int SPECIALADMIN_NOUSER                    = 2005;

@@ -58,7 +58,7 @@ import org.ejbca.util.JDBCUtil;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.9 2006-12-13 10:32:41 anatom Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.10 2007-01-03 14:34:11 anatom Exp $
  *
  * @ejb.bean
  *   description="Session bean handling interface with ra authorization"
@@ -350,7 +350,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
                 ArrayList adminentities = new ArrayList();
                 adminentities.add(new AdminEntity(AdminEntity.SPECIALADMIN_BATCHCOMMANDLINEADMIN));
                 adminentities.add(new AdminEntity(AdminEntity.SPECIALADMIN_CACOMMANDLINEADMIN));
-                adminentities.add(new AdminEntity(AdminEntity.SPECIALADMIN_RACOMMANDLINEADMIN));
+                adminentities.add(new AdminEntity(AdminEntity.SPECIALADMIN_RAADMIN));
                 adminentities.add(new AdminEntity(AdminEntity.SPECIALADMIN_INTERNALUSER));
                 agdl.addAdminEntities(adminentities);
 

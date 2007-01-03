@@ -90,7 +90,7 @@ import org.ejbca.util.CertTools;
  * </p>
  *
  * @author Original code by Lars Silvén
- * @version $Id: CardCertReqServlet.java,v 1.12 2006-08-18 11:52:15 primelars Exp $
+ * @version $Id: CardCertReqServlet.java,v 1.13 2007-01-03 14:34:11 anatom Exp $
  */
 public class CardCertReqServlet extends HttpServlet {
 	private final static Logger log = Logger.getLogger(CardCertReqServlet.class);
@@ -145,7 +145,7 @@ public class CardCertReqServlet extends HttpServlet {
         final ServletDebug debug = new ServletDebug(request, response);
         boolean usekeyrecovery = false;
         try {
-            Admin administrator = new Admin(Admin.TYPE_RACOMMANDLINE_USER);
+            Admin administrator = new Admin(Admin.TYPE_RA_USER);
             ICertificateStoreSessionRemote certificatestoresession = certificatestorehome.create();
             final String username; {
                 Object o = request.getAttribute("javax.servlet.request.X509Certificate");

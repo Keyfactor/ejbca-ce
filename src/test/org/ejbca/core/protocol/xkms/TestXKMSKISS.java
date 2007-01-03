@@ -73,7 +73,7 @@ import org.w3._2002._03.xkms_.ValidateResultType;
  * 
  * @author Philip Vendil 2006 sep 27 
  *
- * @version $Id: TestXKMSKISS.java,v 1.1 2006-12-22 09:29:14 herrvendil Exp $
+ * @version $Id: TestXKMSKISS.java,v 1.2 2007-01-03 14:35:51 anatom Exp $
  */
 
 public class TestXKMSKISS extends TestCase {
@@ -156,7 +156,7 @@ public class TestXKMSKISS extends TestCase {
     }
     
     public void test00SetupDatabase() throws Exception{
-    	Admin administrator = new Admin(Admin.TYPE_RACOMMANDLINE_USER);
+    	Admin administrator = new Admin(Admin.TYPE_RA_USER);
 
     	// Setup with two new Certificate profiles.
     	EndUserCertificateProfile profile1 = new EndUserCertificateProfile();
@@ -955,7 +955,7 @@ public class TestXKMSKISS extends TestCase {
         assertTrue(validateResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_NOMATCH));
         
         // Revoke certificate
-        Admin administrator = new Admin(Admin.TYPE_RACOMMANDLINE_USER);
+        Admin administrator = new Admin(Admin.TYPE_RA_USER);
         certStore.revokeCertificate(administrator, cert1, new ArrayList(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
     	// Validate with revoked certificate
     	validateRequestType = xKMSObjectFactory.createValidateRequestType();
@@ -987,7 +987,7 @@ public class TestXKMSKISS extends TestCase {
     }
     
     public void test99CleanDatabase() throws Exception{    	    	
-    	Admin administrator = new Admin(Admin.TYPE_RACOMMANDLINE_USER);
+    	Admin administrator = new Admin(Admin.TYPE_RA_USER);
     	cacheAdmin.deleteUser(administrator, username1);
         cacheAdmin.deleteUser(administrator, username2);
     	cacheAdmin.deleteUser(administrator, username3);

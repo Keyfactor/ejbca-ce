@@ -40,7 +40,7 @@ import org.ejbca.util.Base64;
  * Servlet implementing server side of the Certificate Management Protocols (CMP) 
  *
  * @author tomas
- * @version $Id: CmpServlet.java,v 1.17 2006-12-20 08:33:31 anatom Exp $
+ * @version $Id: CmpServlet.java,v 1.18 2007-01-03 14:34:12 anatom Exp $
  * 
  * @web.servlet name = "CmpServlet"
  *              display-name = "CmpServlet"
@@ -282,7 +282,7 @@ public class CmpServlet extends HttpServlet {
 			}
 			
 			// We must use an administrator with rights to create users
-			Admin administrator = new Admin(Admin.TYPE_RACOMMANDLINE_USER, remoteAddr);
+			Admin administrator = new Admin(Admin.TYPE_RA_USER, remoteAddr);
 			if (log.isDebugEnabled()) {
 				log.debug("Received a CMP message by HTTP: " + new String(Base64.encode(message)));
 			}

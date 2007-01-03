@@ -32,24 +32,30 @@ import org.ejbca.util.CertTools;
  * Data contained in the class is preferbly
  *
  * @author TomSelleck
- * @version $Id: Admin.java,v 1.2 2006-02-12 10:36:44 anatom Exp $
+ * @version $Id: Admin.java,v 1.3 2007-01-03 14:34:12 anatom Exp $
  */
 public class Admin implements Serializable {
 
     // Public Constants
     // Indicates the type of administrator.
+    /** An administrator authenticated with client certificate */
     public static final int TYPE_CLIENTCERT_USER = 0;
+    /** A user of the public web pages */
     public static final int TYPE_PUBLIC_WEB_USER = 1;
-    public static final int TYPE_RACOMMANDLINE_USER = 2;
+    /** An internal RA function, such as cmd line or CMP */
+    public static final int TYPE_RA_USER = 2;
+    /** An internal CA admin function, such as cms line */
     public static final int TYPE_CACOMMANDLINE_USER = 3;
+    /** Batch generation tool */
     public static final int TYPE_BATCHCOMMANDLINE_USER = 4;
+    /** Internal user in EJBCA, such as automatic job */
     public static final int TYPE_INTERNALUSER = 5;
 
     public static final int SPECIAL_ADMIN_BOUNDRARY = 100;
 
     public static final String[] ADMINTYPETEXTS = {"CLIENTCERT", "PUBLICWEBUSER", "RACMDLINE", "CACMDLINE", "BATCHCMDLINE", "INTERNALUSER"};
 
-    private static final int[] ADMINTYPETOADMINENTITY = {0, AdminEntity.SPECIALADMIN_PUBLICWEBUSER, AdminEntity.SPECIALADMIN_RACOMMANDLINEADMIN,
+    private static final int[] ADMINTYPETOADMINENTITY = {0, AdminEntity.SPECIALADMIN_PUBLICWEBUSER, AdminEntity.SPECIALADMIN_RAADMIN,
                                                          AdminEntity.SPECIALADMIN_CACOMMANDLINEADMIN, AdminEntity.SPECIALADMIN_BATCHCOMMANDLINEADMIN,
                                                          AdminEntity.SPECIALADMIN_INTERNALUSER};
 

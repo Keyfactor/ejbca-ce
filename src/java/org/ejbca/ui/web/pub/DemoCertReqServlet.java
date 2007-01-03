@@ -89,7 +89,7 @@ import org.ejbca.util.StringTools;
  * </dd>
  * </dl>
  *
- * @version $Id: DemoCertReqServlet.java,v 1.4 2006-12-04 15:41:12 anatom Exp $
+ * @version $Id: DemoCertReqServlet.java,v 1.5 2007-01-03 14:34:11 anatom Exp $
  */
 public class DemoCertReqServlet extends HttpServlet {
 
@@ -173,7 +173,7 @@ public class DemoCertReqServlet extends HttpServlet {
       throw new ServletException(e);
     }
 
-     Admin admin = new Admin(Admin.TYPE_RACOMMANDLINE_USER, request.getRemoteAddr());
+     Admin admin = new Admin(Admin.TYPE_RA_USER, request.getRemoteAddr());
      RequestHelper.setDefaultCharacterEncoding(request);
 
       String dn = null;

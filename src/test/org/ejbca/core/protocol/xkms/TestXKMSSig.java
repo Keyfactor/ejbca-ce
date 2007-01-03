@@ -61,7 +61,7 @@ import org.w3c.dom.Document;
  * 
  * @author Philip Vendil 2006 sep 27 
  *
- * @version $Id: TestXKMSSig.java,v 1.1 2006-12-22 09:29:14 herrvendil Exp $
+ * @version $Id: TestXKMSSig.java,v 1.2 2007-01-03 14:35:51 anatom Exp $
  */
 
 public class TestXKMSSig extends TestCase {
@@ -135,7 +135,7 @@ public class TestXKMSSig extends TestCase {
 
     
     public void test00SetupAccessRights() throws Exception {
-    	Admin administrator = new Admin(Admin.TYPE_RACOMMANDLINE_USER);
+    	Admin administrator = new Admin(Admin.TYPE_RA_USER);
         Object o = null;
         username = baseUsername + "1";
         try {
@@ -323,7 +323,7 @@ public class TestXKMSSig extends TestCase {
     
     public void test04SendRevokedRequest() throws Exception {    	    	
     	
-    	cacheAdmin.revokeUser(new Admin(Admin.TYPE_RACOMMANDLINE_USER), username, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+    	cacheAdmin.revokeUser(new Admin(Admin.TYPE_RA_USER), username, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
     	
     	KeyStore clientKeyStore = KeyStore.getInstance("JKS");
     	keystorefile = new File(tmpfile.getAbsolutePath() + "/" + username + ".jks");
@@ -382,7 +382,7 @@ public class TestXKMSSig extends TestCase {
     
     
     public void test99RemoveUser() throws Exception {
-    	Admin administrator = new Admin(Admin.TYPE_RACOMMANDLINE_USER);
+    	Admin administrator = new Admin(Admin.TYPE_RA_USER);
     	cacheAdmin.deleteUser(administrator, username);
     	keystorefile.deleteOnExit();
     } 
