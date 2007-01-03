@@ -4,7 +4,8 @@
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.SortBy,org.ejbca.ui.web.admin.loginterface.LogEntryView,
                  org.ejbca.ui.web.admin.loginterface.LogInterfaceBean, org.ejbca.core.model.log.LogEntry, org.ejbca.core.model.log.Admin, org.ejbca.core.model.ra.raadmin.AdminPreference,
                  javax.ejb.CreateException, java.rmi.RemoteException, org.ejbca.util.query.*, java.util.Calendar, java.util.Date, java.text.DateFormat, java.util.Locale,
-                 java.util.HashMap, java.util.Collection, java.util.Iterator, java.util.TreeMap, org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper, org.ejbca.core.model.log.LogConstants, org.ejbca.core.model.log.ILogExporter, org.ejbca.core.model.log.CsvLogExporter" %>
+                 java.util.HashMap, java.util.Collection, java.util.Iterator, java.util.TreeMap, org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper, org.ejbca.core.model.log.LogConstants, org.ejbca.core.model.log.ILogExporter, 
+                 org.ejbca.core.model.log.CsvLogExporter, org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="logbean" scope="session" class="org.ejbca.ui.web.admin.loginterface.LogInterfaceBean" />
@@ -168,6 +169,7 @@
 
   boolean illegalquery            = false;
   boolean largeresult             = false;
+  boolean cmsnotactive             = false;
 
 
   int filtermode = ejbcawebbean.getLastLogFilterMode();
@@ -217,6 +219,7 @@
      record += ejbcawebbean.getLogEntriesPerPage();
    }
 
+   cmsnotactive = false;
    if ( request.getParameter(BUTTON_EXPORTCSV)!=null ){
        String signcsvca = request.getParameter(SELECT_SIGNCSVCA);
        if ( (signcsvca != null) && ((signcsvca.equals(SELECT_EMPTYVALUE)) || (signcsvca.length() == 0)) ) {
@@ -224,19 +227,23 @@
        }
 	   CsvLogExporter exporter = new CsvLogExporter();
 	   exporter.setSigningCA(signcsvca);
-	   byte[] export = logbean.exportLastQuery(exporter);
-	   if (export != null) {
-		   String name = "logexport.csv";
-		   String ct = "text/csv";
-		   if (signcsvca != null) {
-			   name = "logexport.p7m";
-			   ct = "application/octet-stream";
-		   }
-		   RequestHelper.sendBinaryBytes(export, response, ct, name);
-		   // This is a workaround to avoid error "getOutputStream() has already been called for this response"
-		   out.clear();
-		   out = pageContext.pushBody();
-		   return;		   
+	   try {
+		   byte[] export = logbean.exportLastQuery(exporter);
+		   if (export != null) {
+			   String name = "logexport.csv";
+			   String ct = "text/csv";
+			   if (signcsvca != null) {
+				   name = "logexport.p7m";
+				   ct = "application/octet-stream";
+			   }
+			   RequestHelper.sendBinaryBytes(export, response, ct, name);
+			   // This is a workaround to avoid error "getOutputStream() has already been called for this response"
+			   out.clear();
+			   out = pageContext.pushBody();
+			   return;		   
+		   }		   
+	   } catch (ExtendedCAServiceNotActiveException e) {
+		   cmsnotactive = true;
 	   }
    }
 
