@@ -22,7 +22,7 @@ import org.ejbca.core.model.log.Admin;
 /**
  * Sets the base url of the web interface
  *
- * @version $Id: SetupSetBaseURLCommand.java,v 1.3 2006-09-27 09:28:25 herrvendil Exp $
+ * @version $Id: SetupSetBaseURLCommand.java,v 1.4 2007-01-03 14:49:35 anatom Exp $
  */
 public class SetupSetBaseURLCommand extends BaseAdminCommand {
     /**
@@ -31,7 +31,7 @@ public class SetupSetBaseURLCommand extends BaseAdminCommand {
      * @param args command line arguments
      */
     public SetupSetBaseURLCommand(String[] args) {
-        super(args, Admin.TYPE_CACOMMANDLINE_USER);
+        super(args, Admin.TYPE_CACOMMANDLINE_USER, "cli");
     }
 
     /**

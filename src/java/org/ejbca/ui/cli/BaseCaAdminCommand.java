@@ -40,7 +40,7 @@ import org.ejbca.util.CertTools;
 /**
  * Base for CA commands, contains comom functions for CA operations
  *
- * @version $Id: BaseCaAdminCommand.java,v 1.3 2006-10-31 08:24:11 anatom Exp $
+ * @version $Id: BaseCaAdminCommand.java,v 1.4 2007-01-03 14:49:35 anatom Exp $
  */
 public abstract class BaseCaAdminCommand extends BaseAdminCommand {
     /** Private key alias in PKCS12 keystores */
@@ -53,7 +53,7 @@ public abstract class BaseCaAdminCommand extends BaseAdminCommand {
      * @param args command line arguments
      */
     public BaseCaAdminCommand(String[] args) {
-        super(args, Admin.TYPE_CACOMMANDLINE_USER);
+        super(args, Admin.TYPE_CACOMMANDLINE_USER, "cli");
         // Install BouncyCastle provider
         CertTools.installBCProvider();
     }

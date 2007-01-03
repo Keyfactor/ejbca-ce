@@ -53,7 +53,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Base for Commands, contains useful functions
  *
- * @version $Id: BaseCommand.java,v 1.2 2007-01-03 14:34:12 anatom Exp $
+ * @version $Id: BaseCommand.java,v 1.3 2007-01-03 14:49:35 anatom Exp $
  */
 public abstract class BaseCommand {
     /** Log4j instance for Base */
@@ -89,7 +89,7 @@ public abstract class BaseCommand {
      *
      */
     public BaseCommand() {
-        init(null, Admin.TYPE_CACOMMANDLINE_USER, System.out);
+        init(null, Admin.TYPE_CACOMMANDLINE_USER, "cli", System.out);
     }
 
     /**
@@ -99,13 +99,13 @@ public abstract class BaseCommand {
      * @param adminType type of admin Admin.TYPE_RA_USER, or Admin.TYPE_CACOMMANDLINE_USER
      * @param outStream stream where commands write its output
      */
-    protected void init(String[] args, int adminType, PrintStream outStream) {
+    protected void init(String[] args, int adminType, String adminId, PrintStream outStream) {
         log = Logger.getLogger(this.getClass());
         this.args = args;
         if( outStream != null ) {
           this.outStream = outStream;
         }
-        administrator = new Admin(adminType);
+        administrator = new Admin(adminType, adminId);
     }
 
     /**
