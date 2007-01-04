@@ -11,9 +11,9 @@
 <ul>
 <li>Flexible, component based architecture.</li>
 <li>Multiple CAs and levels of CAs, build a complete infrastructure (or several) within one instance of EJBCA.</li>
-<li>Supports RSA key algorithm up to 4096 bits, also supports RSAWithMGF signatures.</li>
+<li>Supports RSA key algorithm up to 4096 bits.</li>
 <li>Supports ECDSA key algorithm with named curves or implicitlyCA.</li>
-<li>SHA-1 or SHA-256 as hash algorithm for signatures.</li>
+<li>Support multiple hash algorithms for signatures, SHA-1, SHA-256.</li>
 <li>Standalone or integrated in any J2EE application.</li>
 <li>Simple installation and configuration.</li>
 <li>Powerful Web based administration GUI using strong authentication.</li>
@@ -49,10 +49,11 @@
 <li>API for an external RA, restricting inbound traffic to CA.</li>
 <li>Optional approval mechanism for RA so several admins are required to perform an action.</li>
 <li>Component based architecture for various authorization methods of entities when issuing certificates.</li>
-<li>Easy to integrate into large java applications for optimal integration into bussiness process.</li>
+<li>Possible to integrate into large java applications for optimal integration into bussiness process.</li>
 <li>Deploys easily in a clustered high availability environment.</li>
 <li>Health check service to support efficient clustering and monitoring.</li>
-<li>Supports many databases: Hypersoniq, MySQL, PostgreSQL, Orcale, MS-SQL2000, Sybase, Informix.</li>
+<li>Supports multiple application servers: JBoss, Weblogic.</li>
+<li>Supports multiple databases: Hypersoniq, MySQL, PostgreSQL, Orcale, MS-SQL2000, Informix.</li>
 </ul>    
 
   </section>
