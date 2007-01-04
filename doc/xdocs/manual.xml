@@ -3194,7 +3194,7 @@ This is a global setting that cannot be overridden by administrators own setting
 
 </section>
 
-<section name="Custom DN oids">
+<section name="Custom DN and altName oids">
 <p>
 EJBCA supports custom (your own) oids in DN components.
 </p><p>
@@ -3236,6 +3236,20 @@ Having all these customizations off-course requires some maintenance on your par
 <br/>
 Check RELEASE_NOTES for important changes!
 </p>
+<subsection name="altNames">
+<p>
+Adding custom OIDs in altNames works the same way as for DN.
+When a custom oid is used the altName string in the database will be for example "rfc822Name=foo@bar.com, 1.1.1.1=foobar".
+<br/>
+A Custom oid is always added as OtherName using a simple UTF8String. See rfc3280 for definition of the OtherName altName.
+<br/>
+The OtherName consists of:
+<ul>
+<li>The custom oid</li>
+<li>An UTF8String with the value</li>
+</ul>
+</p>
+</subsection>
 </section>
 <section name="Reference manual">
 <p>

@@ -37,7 +37,7 @@ import com.novell.ldap.LDAPDN;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.4 2007-01-01 11:08:21 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.5 2007-01-04 14:29:05 anatom Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);
@@ -442,6 +442,22 @@ public class TestCertTools extends TestCase {
         assertEquals(upn, "guid@foo.com");
         String guid = CertTools.getGuidAltName(cert);
         assertEquals(guid, "1234567890abcdef");
+        
+        String customAlt = "rfc822Name=foo@bar.com";
+        ArrayList oids = CertTools.getCustomOids(customAlt);
+        assertEquals(0, oids.size());
+        customAlt = "rfc822Name=foo@bar.com, 1.1.1.1.2=foobar, 1.2.2.2.2=barfoo";
+        oids = CertTools.getCustomOids(customAlt);
+        assertEquals(2, oids.size());
+        String oid1 = (String)oids.get(0);
+        assertEquals("1.1.1.1.2", oid1);
+        String oid2 = (String)oids.get(1);
+        assertEquals("1.2.2.2.2", oid2);
+        String val1 = CertTools.getPartFromDN(customAlt, oid1);
+        assertEquals("foobar", val1);
+        String val2 = CertTools.getPartFromDN(customAlt, oid2);
+        assertEquals("barfoo", val2);
+        
         log.debug("<test03AltNames()");
     }
 
@@ -793,7 +809,6 @@ public class TestCertTools extends TestCase {
       cer = CertTools.getCertfromByteArray(subjDirAttrCert2);
       ret = SubjectDirAttrExtension.getSubjectDirectoryAttributes(cer);
       assertEquals("countryOfResidence=SE, countryOfCitizenship=SE, gender=M, placeOfBirth=Stockholm, dateOfBirth=19710425", ret);
-      log.debug("<test17SubjectDirectoryAttributes()");
-	  
+      log.debug("<test17SubjectDirectoryAttributes()");	  
   }
 }

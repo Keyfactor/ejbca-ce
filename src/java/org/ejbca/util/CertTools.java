@@ -94,7 +94,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.33 2007-01-01 11:08:20 anatom Exp $
+ * @version $Id: CertTools.java,v 1.34 2007-01-04 14:29:06 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -492,6 +492,40 @@ public class CertTools {
 	} //getPartFromDN
 
     /**
+	 * Gets a list of all custom OIDs defined in the string. A custom OID is defined as an OID, simply as that. Otherwise, if it is not a custom oid, the DNpart is defined by a name such as CN och rfc822Name.
+	 *
+	 * @param dn String containing DN, The DN string has the format "C=SE, O=xx, OU=yy, CN=zz", or "rfc822Name=foo@bar.com", etc.
+	 * @param dnpart String specifying which part of the DN to get, should be "CN" or "OU" etc.
+	 *
+	 * @return ArrayList containing oids or empty list if no custom OIDs are present
+	 */
+	public static ArrayList getCustomOids(String dn) {
+		log.debug(">getCustomOids: dn:'" + dn);
+		ArrayList parts = new ArrayList();
+		if (dn != null) {
+			String o;
+			X509NameTokenizer xt = new X509NameTokenizer(dn);
+			while (xt.hasMoreTokens()) {
+				o = xt.nextToken();
+				// Try to see if it is a valid OID
+				try {
+					int i = o.indexOf('=');
+					// An oid is never shorter than 3 chars and must start with 1.
+					if ( (i > 2) && (o.charAt(1) == '.') ) {
+						String oid = o.substring(0, i);
+						new DERObjectIdentifier(oid);
+						parts.add(oid);
+					}
+				} catch (IllegalArgumentException e) {
+					// Not a valid oid
+				}
+			}
+		}
+		log.debug("<getpartsFromDN: resulting DN part=" + parts.toString());
+		return parts;
+	} //getPartFromDN
+
+	/**
      * Gets subject DN in the format we are sure about (BouncyCastle),supporting UTF8.
      *
      * @param cert X509Certificate
@@ -1131,6 +1165,8 @@ public class CertTools {
      * @see #getSubjectAlternativeName
      */
     public static GeneralNames getGeneralNamesFromAltName(String altName) {
+    	log.debug(">getGeneralNamesFromAltName: "+altName);
+    	
         ASN1EncodableVector vec = new ASN1EncodableVector();
 
         ArrayList emails = CertTools.getEmailFromDN(altName);
@@ -1194,6 +1230,7 @@ public class CertTools {
             }
         }
                     
+        // UPN is an OtherName
         ArrayList upn =  CertTools.getPartsFromDN(altName, CertTools.UPN);
         if (!upn.isEmpty()) {            
             Iterator iter = upn.iterator();             
@@ -1224,6 +1261,27 @@ public class CertTools {
                 }
             }
         }
+        
+    	// To support custom OIDs in altNames, they must be added as an OtherName
+        ArrayList customoids =  CertTools.getCustomOids(altName);
+        if (!customoids.isEmpty()) {            
+        	Iterator iter = customoids.iterator();
+        	while (iter.hasNext()) {
+        		String oid = (String)iter.next();
+        		ArrayList oidval =  CertTools.getPartsFromDN(altName, oid);
+        		if (!oidval.isEmpty()) {            
+        			Iterator valiter = oidval.iterator();
+        			while (valiter.hasNext()) {
+        				ASN1EncodableVector v = new ASN1EncodableVector();
+        				v.add(new DERObjectIdentifier(oid));
+        				v.add(new DERTaggedObject(true, 0, new DERUTF8String((String)valiter.next())));
+        				DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
+        				vec.add(gn);
+        			}
+        		}
+        	}
+        }
+
         GeneralNames ret = null; 
         if (vec.size() > 0) {
             ret = new GeneralNames(new DERSequence(vec));
