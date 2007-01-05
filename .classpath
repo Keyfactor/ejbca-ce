@@ -50,6 +50,8 @@
 	<classpathentry path="lib/jaxws/saaj-api.jar" kind="lib"/>
 	<classpathentry path="lib/jaxws/saaj-impl.jar" kind="lib"/>
 	<classpathentry path="lib/jaxws/sjsxp.jar" kind="lib"/>
+	<classpathentry path="lib/jaxws/libidn.jar" kind="lib"/>
+	<classpathentry path="lib/jaxws/xalan.jar" kind="lib"/>
 	<classpathentry path="JBOSS_HOME/client/jboss-j2ee.jar" kind="var"/>
 	<classpathentry path="JBOSS_HOME/client/jbossall-client.jar" kind="var"/>
 	<classpathentry path="JBOSS_HOME/client/activation.jar" kind="var"/>

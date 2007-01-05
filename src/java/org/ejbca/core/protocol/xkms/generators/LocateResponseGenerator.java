@@ -28,15 +28,15 @@ import org.w3._2002._03.xkms_.UnverifiedKeyBindingType;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: LocateResponseGenerator.java,v 1.1 2006-12-22 09:21:39 herrvendil Exp $
+ * @version $Id: LocateResponseGenerator.java,v 1.2 2007-01-05 05:32:51 herrvendil Exp $
  */
 
 public class LocateResponseGenerator extends
 		KISSResponseGenerator {
 	
 
-	public LocateResponseGenerator(LocateRequestType req) {
-		super(req);
+	public LocateResponseGenerator(String remoteIP, LocateRequestType req) {
+		super(remoteIP, req);
 	}
 	
 	/**
@@ -61,7 +61,7 @@ public class LocateResponseGenerator extends
 					Iterator<X509Certificate> iter = queryResult.iterator();
 					while(iter.hasNext()){
 						X509Certificate nextCert = iter.next();
-						result.getUnverifiedKeyBinding().add((UnverifiedKeyBindingType) getResponseValues(req.getQueryKeyBinding(),nextCert,false));
+						result.getUnverifiedKeyBinding().add((UnverifiedKeyBindingType) getResponseValues(req.getQueryKeyBinding(),nextCert,false,false));
 
 					}		  
 				}

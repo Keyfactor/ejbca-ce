@@ -22,12 +22,16 @@ import javax.naming.NamingException;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
+import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocal;
+import org.ejbca.core.ejb.ca.auth.IAuthenticationSessionLocalHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
+import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocal;
+import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
@@ -41,17 +45,22 @@ import org.ejbca.core.model.log.Admin;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: BaseResponseGenerator.java,v 1.1 2006-12-22 09:21:39 herrvendil Exp $
+ * @version $Id: BaseResponseGenerator.java,v 1.2 2007-01-05 05:32:51 herrvendil Exp $
  */
 
 public abstract class BaseResponseGenerator {
 	
 	private static Logger log = Logger.getLogger(BaseResponseGenerator.class);
 	
-	protected Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
+	protected Admin raAdmin = null;
+	protected Admin pubAdmin = null;
 	
-	public BaseResponseGenerator(){
-		
+	protected String remoteIP = null;
+	
+	public BaseResponseGenerator(String remoteIP){
+		  this.remoteIP = remoteIP;
+		  raAdmin = new Admin(Admin.TYPE_RA_USER,remoteIP);
+		  pubAdmin = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteIP);
 	}
 
 	
@@ -125,5 +134,36 @@ public abstract class BaseResponseGenerator {
 		}
 		return authsession;
 	}
+	
+	private IKeyRecoverySessionLocal keyrecoverysession = null;
+	protected IKeyRecoverySessionLocal getKeyRecoverySession() {
+		try{
+			if(keyrecoverysession == null){
+				Context context = new InitialContext();
+				keyrecoverysession = ((IKeyRecoverySessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
+				"KeyRecoverySessionLocal"), IKeyRecoverySessionLocalHome.class)).create();   
+			}
+		}catch(Exception e)	{
+			log.error("Error instancing Key Recovery Session Bean",e);
+			throw new EJBException(e);
+		}
+		return keyrecoverysession;
+	}
+	
+	private IAuthenticationSessionLocal authenticationSession = null;
+	protected IAuthenticationSessionLocal getAuthenticationSession() {
+		try{
+			if(authenticationSession == null){
+				Context context = new InitialContext();
+				authenticationSession = ((IAuthenticationSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
+				"AuthenticationSessionLocal"), IAuthenticationSessionLocalHome.class)).create();   
+			}
+		}catch(Exception e)	{
+			log.error("Error instancing Key Recovery Session Bean",e);
+			throw new EJBException(e);
+		}
+		return authenticationSession;
+	}
+
 	
 }

@@ -30,10 +30,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Resource;
 import javax.ejb.CreateException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -53,7 +55,9 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.ws.Provider;
 import javax.xml.ws.Service;
 import javax.xml.ws.ServiceMode;
+import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.WebServiceProvider;
+import javax.xml.ws.handler.MessageContext;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
@@ -70,6 +74,10 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.core.protocol.xkms.common.XKMSNamespacePrefixMapper;
 import org.ejbca.core.protocol.xkms.generators.LocateResponseGenerator;
+import org.ejbca.core.protocol.xkms.generators.RecoverResponseGenerator;
+import org.ejbca.core.protocol.xkms.generators.RegisterResponseGenerator;
+import org.ejbca.core.protocol.xkms.generators.ReissueResponseGenerator;
+import org.ejbca.core.protocol.xkms.generators.RevokeResponseGenerator;
 import org.ejbca.core.protocol.xkms.generators.ValidateResponseGenerator;
 import org.ejbca.core.protocol.xkms.generators.XKMSConfig;
 import org.ejbca.util.CertTools;
@@ -77,10 +85,20 @@ import org.w3._2002._03.xkms_.LocateRequestType;
 import org.w3._2002._03.xkms_.LocateResultType;
 import org.w3._2002._03.xkms_.MessageAbstractType;
 import org.w3._2002._03.xkms_.ObjectFactory;
+import org.w3._2002._03.xkms_.RecoverRequestType;
+import org.w3._2002._03.xkms_.RecoverResultType;
+import org.w3._2002._03.xkms_.RegisterRequestType;
+import org.w3._2002._03.xkms_.RegisterResultType;
+import org.w3._2002._03.xkms_.ReissueRequestType;
+import org.w3._2002._03.xkms_.ReissueResultType;
 import org.w3._2002._03.xkms_.RequestAbstractType;
+import org.w3._2002._03.xkms_.RevokeRequestType;
+import org.w3._2002._03.xkms_.RevokeResultType;
 import org.w3._2002._03.xkms_.ValidateRequestType;
 import org.w3._2002._03.xkms_.ValidateResultType;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * The XKMS Web Service in provider form
@@ -91,13 +109,15 @@ import org.w3c.dom.Document;
  * 
  * @author Philip Vendil 2006 dec 18
  *
- * @version $Id: XKMSProvider.java,v 1.1 2006-12-22 09:21:40 herrvendil Exp $
+ * @version $Id: XKMSProvider.java,v 1.2 2007-01-05 05:32:53 herrvendil Exp $
  */
 
 @ServiceMode(value=Service.Mode.PAYLOAD)
 @WebServiceProvider(serviceName="XKMSService", targetNamespace = "http://www.w3.org/2002/03/xkms#wsdl", portName="XKMSPort")
 public class XKMSProvider implements Provider<Source> {
-
+	@Resource
+	private WebServiceContext wsContext;
+	
 	private static Logger log = Logger.getLogger(XKMSPortType.class);
 	
 	protected Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
@@ -135,6 +155,24 @@ public class XKMSProvider implements Provider<Source> {
 	public Source invoke(Source request) {
 		Source response = null;
 		
+		MessageContext msgContext = wsContext.getMessageContext();		
+		HttpServletRequest httpreq = (HttpServletRequest) msgContext.get(MessageContext.SERVLET_REQUEST);
+		String remoteIP = httpreq.getRemoteAddr();
+		
+		Document requestDoc = null;
+		try{
+			DOMResult dom = new DOMResult();
+			Transformer trans = TransformerFactory.newInstance().newTransformer();
+			trans.transform(request, dom);
+			requestDoc = (Document) dom.getNode();
+		} catch (TransformerConfigurationException e) {
+			log.error("Error when DOM parsing request.",e);
+		} catch (TransformerFactoryConfigurationError e) {
+			log.error("Error when DOM parsing request.",e);
+		} catch (TransformerException e) {
+			log.error("Error when DOM parsing request.",e);
+		}
+		
 		boolean respMecSign = false;
 		try {
 			JAXBElement jAXBRequest = (JAXBElement) unmarshaller.unmarshal(request);
@@ -144,13 +182,32 @@ public class XKMSProvider implements Provider<Source> {
 				respMecSign = ((RequestAbstractType)jAXBRequest.getValue()).getResponseMechanism().contains(XKMSConstants.RESPONSMEC_REQUESTSIGNATUREVALUE);
 			}				
 			if(jAXBRequest.getValue() instanceof ValidateRequestType ){
-				boolean requestVerifies = verifyRequest(request, true);
-				jAXBResult = validate((ValidateRequestType) jAXBRequest.getValue(), requestVerifies);
+				boolean requestVerifies = verifyRequest(requestDoc);
+				jAXBResult = validate(remoteIP, (ValidateRequestType) jAXBRequest.getValue(), requestVerifies);
 			}	
 			if(jAXBRequest.getValue() instanceof LocateRequestType ){
-				boolean requestVerifies = verifyRequest(request, true);
-				jAXBResult = locate((LocateRequestType) jAXBRequest.getValue(), requestVerifies);
-			}			
+				boolean requestVerifies = verifyRequest(requestDoc);
+				jAXBResult = locate(remoteIP, (LocateRequestType) jAXBRequest.getValue(), requestVerifies);
+			}	
+			if(jAXBRequest.getValue() instanceof RegisterRequestType ){
+				boolean requestVerifies = verifyRequest(requestDoc);
+				jAXBResult = register(remoteIP, (RegisterRequestType) jAXBRequest.getValue(), requestVerifies, requestDoc);
+			}	
+			if(jAXBRequest.getValue() instanceof ReissueRequestType ){
+				boolean requestVerifies = verifyRequest(requestDoc);
+				jAXBResult = reissue(remoteIP, (ReissueRequestType) jAXBRequest.getValue(), requestVerifies, requestDoc);
+			}
+			if(jAXBRequest.getValue() instanceof RecoverRequestType ){
+				boolean requestVerifies = verifyRequest(requestDoc);
+				jAXBResult = recover(remoteIP, (RecoverRequestType) jAXBRequest.getValue(), requestVerifies, requestDoc);
+			}
+			
+			if(jAXBRequest.getValue() instanceof RevokeRequestType ){
+				boolean requestVerifies = verifyRequest(requestDoc);
+				jAXBResult = revoke(remoteIP, (RevokeRequestType) jAXBRequest.getValue(), requestVerifies, requestDoc);
+			}
+			
+			
 			String responseId = ((MessageAbstractType) jAXBResult.getValue()).getId();			
 			
 			Document doc = dbf.newDocumentBuilder().newDocument();
@@ -170,18 +227,46 @@ public class XKMSProvider implements Provider<Source> {
 		return response;
 	}
 
-	private JAXBElement validate(ValidateRequestType value, boolean requestVerifies) {
-		ValidateResponseGenerator gen = new ValidateResponseGenerator(value);
+	private JAXBElement validate(String remoteIP, ValidateRequestType value, boolean requestVerifies) {
+		ValidateResponseGenerator gen = new ValidateResponseGenerator(remoteIP,value);
 		
 		JAXBElement<ValidateResultType> validateresult = xKMSObjectFactory.createValidateResult(gen.getResponse(requestVerifies));
 		return validateresult;
 	}
 	
-	private JAXBElement locate(LocateRequestType value, boolean requestVerifies) {
-		LocateResponseGenerator gen = new LocateResponseGenerator(value);
+	private JAXBElement locate(String remoteIP, LocateRequestType value, boolean requestVerifies) {
+		LocateResponseGenerator gen = new LocateResponseGenerator(remoteIP, value);
 		
 		JAXBElement<LocateResultType> locateresult = xKMSObjectFactory.createLocateResult(gen.getResponse(requestVerifies));
 		return locateresult;
+	}
+	
+	private JAXBElement register(String remoteIP, RegisterRequestType value, boolean requestVerifies, Document requestDoc) {
+		RegisterResponseGenerator gen = new RegisterResponseGenerator(remoteIP, value,requestDoc);
+		
+		JAXBElement<RegisterResultType> registerresult = xKMSObjectFactory.createRegisterResult(gen.getResponse(requestVerifies));
+		return registerresult;
+	}
+	
+	private JAXBElement reissue(String remoteIP, ReissueRequestType value, boolean requestVerifies, Document requestDoc) {
+		ReissueResponseGenerator gen = new ReissueResponseGenerator(remoteIP, value,requestDoc);
+		
+		JAXBElement<ReissueResultType> reissueresult = xKMSObjectFactory.createReissueResult(gen.getResponse(requestVerifies));
+		return reissueresult;
+	}
+	
+	private JAXBElement recover(String remoteIP, RecoverRequestType value, boolean requestVerifies, Document requestDoc) {
+		RecoverResponseGenerator gen = new RecoverResponseGenerator(remoteIP, value,requestDoc);
+		
+		JAXBElement<RecoverResultType> recoverresult = xKMSObjectFactory.createRecoverResult(gen.getResponse(requestVerifies));
+		return recoverresult;
+	}
+	
+	private JAXBElement revoke(String remoteIP, RevokeRequestType value, boolean requestVerifies, Document requestDoc) {
+		RevokeResponseGenerator gen = new RevokeResponseGenerator(remoteIP, value,requestDoc);
+		
+		JAXBElement<RevokeResultType> recoverresult = xKMSObjectFactory.createRevokeResult(gen.getResponse(requestVerifies));
+		return recoverresult;
 	}
 	
 	
@@ -192,23 +277,21 @@ public class XKMSProvider implements Provider<Source> {
 	 * @param kISSRequest if the caller is a kISSRequest
 	 *
 	 */
-	private boolean verifyRequest(Source request, boolean kISSRequest) {
-		
-		try{
-			DOMResult dom = new DOMResult();
-			Transformer trans = TransformerFactory.newInstance().newTransformer();
-			trans.transform(request, dom);
-			Document doc2 = (Document) dom.getNode();
-
-
-
+	private boolean verifyRequest(Document requestDoc) {		
 			boolean signatureExists = false;
 
-			org.w3c.dom.NodeList xmlSigs = doc2.getElementsByTagNameNS("http://www.w3.org/2000/09/xmldsig#", "Signature");
-			signatureExists = xmlSigs.getLength() > 0;
+			Node xmlSig = null;
+			NodeList nodeList = requestDoc.getChildNodes().item(0).getChildNodes();
+			for(int i=0;i<nodeList.getLength();i++){
+			  if(nodeList.item(i).getLocalName().equalsIgnoreCase("Signature")){
+				  xmlSig = nodeList.item(i);
+			  }
+			}
+			
+			signatureExists = xmlSig != null;
 
 			// Check that signature exists and if it's required
-			boolean sigRequired = !kISSRequest || XKMSConfig.isSignedRequestRequired();
+			boolean sigRequired = XKMSConfig.isSignedRequestRequired();
 
 			if(sigRequired && !signatureExists){
 				log.error("Recieved XKMS request without signature, which is required");
@@ -217,7 +300,7 @@ public class XKMSProvider implements Provider<Source> {
 				if(signatureExists){
 
 					try{																					
-						org.w3c.dom.Element xmlSigElement = (org.w3c.dom.Element)xmlSigs.item(0);        
+						org.w3c.dom.Element xmlSigElement = (org.w3c.dom.Element)xmlSig;        
 						org.apache.xml.security.signature.XMLSignature xmlVerifySig = new org.apache.xml.security.signature.XMLSignature(xmlSigElement, null);
 
 						org.apache.xml.security.keys.KeyInfo keyInfo = xmlVerifySig.getKeyInfo();
@@ -291,14 +374,6 @@ public class XKMSProvider implements Provider<Source> {
 					}
 				}
 			}
-
-		} catch (TransformerConfigurationException e) {
-			log.error("Error when DOM parsing request.",e);
-		} catch (TransformerFactoryConfigurationError e) {
-			log.error("Error when DOM parsing request.",e);
-		} catch (TransformerException e) {
-			log.error("Error when DOM parsing request.",e);
-		}
 
 		return true;
 	}

@@ -29,21 +29,24 @@ import org.ejbca.core.model.log.Admin;
  * 
  * @author Philip Vendil 2006 dec 17
  *
- * @version $Id: XKMSConfig.java,v 1.1 2006-12-22 09:21:39 herrvendil Exp $
+ * @version $Id: XKMSConfig.java,v 1.2 2007-01-05 05:32:51 herrvendil Exp $
  */
 
 public class XKMSConfig {
 	
     // Configuration variables
-    private static String REQUIRESIGNATURE  = "@xkms.request.requiresignature@";
-    private static String ACCEPTEDCAS       = "@xkms.request.acceptedcas@";
-    private static String ACCEPTSIGNREQUEST = "@xkms.response.acceptsignrequest@";
-    private static String ALWAYSSIGN        = "@xkms.response.alwayssign@";
-    private static String CAUSEDFORSIGNING  = "@xkms.response.causedforsigning@";
-    private static String SIGNATUREISNONREP = "@xkms.keyusage.signatureisnonrep@";
+    private static String REQUIRESIGNATURE   = "@xkms.request.requiresignature@";
+    private static String ACCEPTEDCAS        = "@xkms.request.acceptedcas@";
+    private static String ACCEPTSIGNREQUEST  = "@xkms.response.acceptsignrequest@";
+    private static String ALWAYSSIGN         = "@xkms.response.alwayssign@";
+    private static String CAUSEDFORSIGNING   = "@xkms.response.causedforsigning@";
+    private static String SIGNATUREISNONREP  = "@xkms.keyusage.signatureisnonrep@";
 
+    private static String POPREQUIRED        = "@xkms.krss.poprequired@";
+    private static String SERVERGENKEYLENGTH = "@xkms.krss.servergenkeylength@";
+    private static String ALLOWREVOKATION    = "@xkms.krss.allowrevokation@";
+    private static String ALLOWAUTOREISSUE   = "@xkms.krss.allowautomaticreissue@";
     
-
     private static Boolean signReq = null;
     /**
      * Method that returns the parameter in the propertyfile
@@ -191,5 +194,97 @@ public class XKMSConfig {
     	return acceptedCAs;
     }
     
+    private static Boolean pOPRequired = null;
+    /**
+     * Method that returns the parameter in the propertyfile
+     * xkms.krss.poprequired
+     */
+    public static boolean isPOPRequired(){
+    	if(pOPRequired == null){
+    		if(POPREQUIRED.equalsIgnoreCase("true")){
+    			pOPRequired = new Boolean(true);	
+    		}
+    		
+    		if(POPREQUIRED.equalsIgnoreCase("false")){
+    			pOPRequired = new Boolean(false);	
+    		}
 
+    		if(pOPRequired == null){
+    			throw new EJBException("Property parameter xkms.krss.poprequired is missconfigured, must be either 'true' or 'false'.");
+    		}    	    
+    		   		
+    	}
+    	    	
+    	
+    	return pOPRequired.booleanValue();
+    }
+
+    
+    private static Integer serverKeyLength = null;
+    /**
+     * Method that returns the parameter in the propertyfile
+     * xkms.krss.servergenkeylength
+     */
+    public static int getServerKeyLength(){
+    	if(serverKeyLength == null){
+            try{
+    			serverKeyLength = new Integer(Integer.parseInt(SERVERGENKEYLENGTH));	
+            }catch(NumberFormatException e){}
+            catch(NullPointerException e){}
+    		
+
+    		if(serverKeyLength == null){
+    			throw new EJBException("Property parameter xkms.krss.servergenkeylength is missconfigured, must contain digits only.");
+    		}    	        		   		
+    	}
+
+    	return serverKeyLength.intValue();
+    }
+    
+    private static Boolean allowRevokation = null;
+    /**
+     * Method that returns the parameter in the propertyfile
+     * xkms.krss.allowrevokation
+     */
+    public static boolean isRevokationAllowed(){
+    	if(allowRevokation == null){
+    		if(ALLOWREVOKATION.equalsIgnoreCase("true")){
+    			allowRevokation = new Boolean(true);	
+    		}
+    		
+    		if(ALLOWREVOKATION.equalsIgnoreCase("false")){
+    			allowRevokation = new Boolean(false);	
+    		}
+
+    		if(allowRevokation == null){
+    			throw new EJBException("Property parameter xkms.krss.allowrevokation is missconfigured, must be either 'true' or 'false'.");
+    		}    	       		   		
+    	}
+
+    	return allowRevokation.booleanValue();
+    }
+    
+    private static Boolean allowAutoReissue = null;
+    /**
+     * Method that returns the parameter in the propertyfile
+     * xkms.krss.allowautomaticreissue
+     */
+    public static boolean isAutomaticReissueAllowed(){
+    	if(allowAutoReissue == null){
+    		if(ALLOWAUTOREISSUE.equalsIgnoreCase("true")){
+    			allowAutoReissue = new Boolean(true);	
+    		}
+    		
+    		if(ALLOWAUTOREISSUE.equalsIgnoreCase("false")){
+    			allowAutoReissue = new Boolean(false);	
+    		}
+
+    		if(allowAutoReissue == null){
+    			throw new EJBException("Property parameter xkms.krss.allowautomaticreissue is missconfigured, must be either 'true' or 'false'.");
+    		}    	       		   		
+    	}
+
+    	return allowAutoReissue.booleanValue();
+    }
+    
 }

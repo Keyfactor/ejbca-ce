@@ -213,7 +213,7 @@
             <batchtest fork="yes" todir="${test.dir}/xkms/reports">
                 <fileset dir="${test.dir}">
                     <include name="**/protocol/xkms/Test*" /> 
-                	<!-- <include name="**/protocol/xkms/TestXKMSSig*" /> -->
+                	<!-- <include name="**/protocol/xkms/TestXKMSKRSS*" /> -->
                 </fileset>
             </batchtest>
             <!-- <batchtest fork="yes" todir="${test.dir}/xkms/reports">

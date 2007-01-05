@@ -1,5 +1,5 @@
 #
-# $Id: xkms.properties.sample,v 1.2 2006-12-22 13:31:06 herrvendil Exp $
+# $Id: xkms.properties.sample,v 1.3 2007-01-05 05:35:50 herrvendil Exp $
 #
 # This is a sample file to override properties used
 # during deployment of EJBCA
@@ -15,8 +15,7 @@
 # Default: true
 #xkms.enabled=true
 
-# Should signed XKMS request be required for KISS calls (locate,validate) 
-# KRSS calls are always required.
+# Should signed XKMS request be required 
 #
 # Default: false
 #xkms.request.requiresignature=false
@@ -56,5 +55,29 @@
 # if a WS tap listener is used to review the messages.
 #xkms.serviceport=8080
 
+# Setting indicating if a Proof Of Possesion element 
+# is required for KRSS calls. 
+#
+# Default : true
+#xkms.krss.poprequired=true
 
+# Setting indicating the size of server generated keys
+# used in the register method.
+#
+# Default : 1024
+#xkms.krss.servergenkeylength=1024
+
+# Defines if the end entity should be able to revoke his certificate
+# using the revoke call and a revokaton code identifier
+#
+# Default : true
+#xkms.krss.allowrevokation=true
+
+# Defines if it should be possible to automatically issue a new certificate
+# if the current one is valid and have a POP that verifies. In this case
+# it isn't neccessary to set status to new and password authentication is
+# ignored.
+#
+# Default : false
+#xkms.krss.allowautomaticreissue=false
 

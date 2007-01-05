@@ -4,6 +4,7 @@ package org.w3._2002._03.xkms_;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import org.w3._2001._04.xmlenc_.EncryptedDataType;
 
@@ -27,6 +28,7 @@ import org.w3._2001._04.xmlenc_.EncryptedDataType;
  * 
  * 
  */
+@XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PrivateKeyType", propOrder = {
     "encryptedData"

@@ -13,10 +13,13 @@
 
 package org.ejbca.core.protocol.xkms.client;
 
+import gnu.inet.encoding.StringprepException;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.Key;
+import java.security.PrivateKey;
 import java.security.cert.CertPath;
 import java.security.cert.CertPathValidator;
 import java.security.cert.CertPathValidatorException;
@@ -58,11 +61,20 @@ import org.apache.xml.security.transforms.TransformationException;
 import org.ejbca.core.protocol.xkms.XKMSService;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.core.protocol.xkms.common.XKMSNamespacePrefixMapper;
+import org.ejbca.core.protocol.xkms.common.XKMSUtil;
 import org.ejbca.util.CertTools;
 import org.w3._2002._03.xkms_.LocateRequestType;
 import org.w3._2002._03.xkms_.LocateResultType;
 import org.w3._2002._03.xkms_.ObjectFactory;
+import org.w3._2002._03.xkms_.RecoverRequestType;
+import org.w3._2002._03.xkms_.RecoverResultType;
+import org.w3._2002._03.xkms_.RegisterRequestType;
+import org.w3._2002._03.xkms_.RegisterResultType;
+import org.w3._2002._03.xkms_.ReissueRequestType;
+import org.w3._2002._03.xkms_.ReissueResultType;
 import org.w3._2002._03.xkms_.RequestAbstractType;
+import org.w3._2002._03.xkms_.RevokeRequestType;
+import org.w3._2002._03.xkms_.RevokeResultType;
 import org.w3._2002._03.xkms_.ValidateRequestType;
 import org.w3._2002._03.xkms_.ValidateResultType;
 import org.w3c.dom.Document;
@@ -75,7 +87,7 @@ import org.xml.sax.SAXException;
  * 
  * @author Philip Vendil 2006 dec 19
  *
- * @version $Id: XKMSInvoker.java,v 1.1 2006-12-22 09:21:39 herrvendil Exp $
+ * @version $Id: XKMSInvoker.java,v 1.2 2007-01-05 05:32:54 herrvendil Exp $
  */
 
 public class XKMSInvoker {
@@ -170,6 +182,89 @@ public class XKMSInvoker {
 	}
 	
 	/**
+	 * Creates a register call to the web service
+	 * 
+	 * @param registerRequestType the request
+	 * @param signCert the certificate that should sign the request, or null of no signing should be performed
+	 * @param privateKey the key doing the signing, or null of no signing should be performed
+	 * @param authenticationPassphrase the authenticationkeybinding passphrase, use null if it shouldn't be used.
+	 * @param pOPPrivateKey private key to sign POP Element, use null to not append POPElement
+	 * @param prototypeKeyBindingId is of the PrototypeKeyBinding tag.
+	 * @return a RegisterResultType
+	 * @throws XKMSResponseSignatureException if the response signature didn't verify
+	 * @throws StringprepException if the passphrase doesn't fullfull the SASLPrep profile
+	 */
+	public RegisterResultType register(RegisterRequestType registerRequestType, X509Certificate signCert, Key privateKey, String authenticationPassphrase, PrivateKey pOPPrivateKey, String prototypeKeyBindingId) throws XKMSResponseSignatureException, StringprepException{				
+		JAXBElement<RegisterRequestType> registerRequest = xKMSObjectFactory.createRegisterRequest(registerRequestType);
+		DOMSource domSource = performSigning(registerRequest, registerRequestType.getId(), signCert, privateKey, authenticationPassphrase, pOPPrivateKey, prototypeKeyBindingId);
+		JAXBElement<RegisterResultType> response = invoke(domSource);		
+		
+		return response.getValue();
+	}
+	
+	/**
+	 * Creates a reissue call to the web service
+	 * 
+	 * @param reissueRequestType the request
+	 * @param signCert the certificate that should sign the request, or null of no signing should be performed
+	 * @param privateKey the key doing the signing, or null of no signing should be performed
+	 * @param authenticationPassphrase the authenticationkeybinding passphrase, use null if it shouldn't be used.
+	 * @param pOPPrivateKey private key to sign POP Element, use null to not append POPElement
+	 * @param reissueKeyBindingId is of the PrototypeKeyBinding tag.
+	 * @return a ReissueResultType
+	 * @throws XKMSResponseSignatureException if the response signature didn't verify
+	 * @throws StringprepException if the passphrase doesn't fullfull the SASLPrep profile
+	 */
+	public ReissueResultType reissue(ReissueRequestType reissueRequestType, X509Certificate signCert, Key privateKey, String authenticationPassphrase, PrivateKey pOPPrivateKey, String reissueKeyBindingId) throws XKMSResponseSignatureException, StringprepException{				
+		JAXBElement<ReissueRequestType> reissueRequest = xKMSObjectFactory.createReissueRequest(reissueRequestType);
+		DOMSource domSource = performSigning(reissueRequest, reissueRequestType.getId(), signCert, privateKey, authenticationPassphrase, pOPPrivateKey, reissueKeyBindingId);
+		JAXBElement<ReissueResultType> response = invoke(domSource);		
+		
+		return response.getValue();
+	}
+	
+	/**
+	 * Creates a recover call to the web service
+	 * 
+	 * @param recoverRequestType the request
+	 * @param signCert the certificate that should sign the request, or null of no signing should be performed
+	 * @param privateKey the key doing the signing, or null of no signing should be performed
+	 * @param authenticationPassphrase the authenticationkeybinding passphrase, use null if it shouldn't be used.
+	 * @param reissueKeyBindingId is of the PrototypeKeyBinding tag.
+	 * @return a ReissueResultType
+	 * @throws XKMSResponseSignatureException if the response signature didn't verify
+	 * @throws StringprepException if the passphrase doesn't fullfull the SASLPrep profile
+	 */
+	public RecoverResultType recover(RecoverRequestType recoverRequestType, X509Certificate signCert, Key privateKey, String authenticationPassphrase, String recoverKeyBindingId) throws XKMSResponseSignatureException, StringprepException{				
+		JAXBElement<RecoverRequestType> recoverRequest = xKMSObjectFactory.createRecoverRequest(recoverRequestType);
+		DOMSource domSource = performSigning(recoverRequest, recoverRequestType.getId(), signCert, privateKey, authenticationPassphrase, null, recoverKeyBindingId);
+		JAXBElement<RecoverResultType> response = invoke(domSource);		
+		
+		return response.getValue();
+	}
+	
+	/**
+	 * Creates a revoke call to the web service
+	 * 
+	 * @param recvokeRequestType the request
+	 * @param signCert the certificate that should sign the request, or null of no signing should be performed
+	 * @param privateKey the key doing the signing, or null of no signing should be performed
+	 * @param authenticationPassphrase the authenticationkeybinding passphrase, use null if it shouldn't be used.
+	 * @param revokeKeyBindingId is of the PrototypeKeyBinding tag.
+	 * @return a RevokeResultType
+	 * @throws XKMSResponseSignatureException if the response signature didn't verify
+	 * @throws StringprepException if the passphrase doesn't fullfull the SASLPrep profile
+	 */
+	public RevokeResultType revoke(RevokeRequestType revokeRequestType, X509Certificate signCert, Key privateKey, String authenticationPassphrase, String revokeKeyBindingId) throws XKMSResponseSignatureException, StringprepException{				
+		JAXBElement<RevokeRequestType> revokeRequest = xKMSObjectFactory.createRevokeRequest(revokeRequestType);
+		DOMSource domSource = performSigning(revokeRequest, revokeRequestType.getId(), signCert, privateKey, authenticationPassphrase, null, revokeKeyBindingId);
+		JAXBElement<RevokeResultType> response = invoke(domSource);		
+		
+		return response.getValue();
+	}
+	
+	
+	/**
 	 * Method that performs the actual invokation.
 	 * @param abstractMessageType
 	 * @return
@@ -201,7 +296,7 @@ public class XKMSInvoker {
 	
 	
 	/**
-	 * Creates a signature on a request adn returns a DOM source.
+	 * Creates a signature on a request and returns a DOM source.
 	 * 
 	 * @param messageAbstractType the request to sign
 	 * @param signCert the certificate that should sign the request, or null of no signing should be performed
@@ -209,6 +304,31 @@ public class XKMSInvoker {
 	 * @return a DOMSource or null if request was invalid
 	 */
 	private DOMSource performSigning(JAXBElement messageAbstractType, String messageId, X509Certificate signCert, Key privateKey){
+		DOMSource retval = null;
+		
+		try{
+			retval = performSigning(messageAbstractType, messageId, signCert, privateKey, null, null, null); 
+		}catch(StringprepException e){
+			// Should never happen
+		}
+		
+		return retval;
+	}
+	
+	/**
+	 * Creates a signature on a request and returns a DOM source.
+	 * 
+	 * @param messageAbstractType the request to sign
+	 * @param signCert the certificate that should sign the request, or null of no signing should be performed
+	 * @param privateKey the key doing the signing, or null of no signing should be performed
+	 * @param authenticationPassphrase the authenticationkeybinding passphrase, use null if it shouldn't be used.
+	 * @param pOPPrivateKey private key to sign POP Element, use null to not append POPElement
+	 * @param prototypeKeyBindingId is of the PrototypeKeyBinding tag.
+	 * @return a DOMSource or null if request was invalid
+	 * @throws StringprepException if the passphrase doesn't fullfull the SASLPrep profile
+	 */
+	private DOMSource performSigning(JAXBElement messageAbstractType, String messageId, X509Certificate signCert, Key privateKey, 
+			                         String authenticationPassphrase, PrivateKey pOPPrivateKey, String prototypeKeyBindingId) throws StringprepException{
 		    DOMSource retval = null;
 		
 			try{
@@ -219,6 +339,14 @@ public class XKMSInvoker {
 				
 				Document doc = dbf.newDocumentBuilder().newDocument();
 				marshaller.marshal( messageAbstractType, doc );
+				
+				if(authenticationPassphrase != null){
+					doc = XKMSUtil.appendKeyBindingAuthentication(doc, authenticationPassphrase, prototypeKeyBindingId);
+				}
+				
+				if(pOPPrivateKey != null){
+					doc = XKMSUtil.appendProofOfPossession(doc, pOPPrivateKey, prototypeKeyBindingId);
+				}
 
 				if(signCert != null && privateKey != null ){
 					org.apache.xml.security.signature.XMLSignature xmlSig = new org.apache.xml.security.signature.XMLSignature(doc, "", org.apache.xml.security.signature.XMLSignature.ALGO_ID_SIGNATURE_RSA_SHA1, org.apache.xml.security.c14n.Canonicalizer.ALGO_ID_C14N_EXCL_OMIT_COMMENTS);

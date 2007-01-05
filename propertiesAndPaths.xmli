@@ -286,6 +286,10 @@
 	<property name="xkms.response.causedforsigning" value="AdminCA1" />		
 	<property name="xkms.keyusage.signatureisnonrep" value="true" />		
 	<property name="xkms.serviceport" value="8080" />
+	<property name="xkms.krss.poprequired" value="true" />
+	<property name="xkms.krss.servergenkeylength" value="1024" />
+	<property name="xkms.krss.allowrevokation" value="true" />
+	<property name="xkms.krss.allowautomaticreissue" value="false" />
 
 	<!-- ECDSA implicitlyCA settings -->
 	<property name="ecdsa.implicitlyca.q" value="883423532389192164791648750360308885314476597252960362792450860609699839" />

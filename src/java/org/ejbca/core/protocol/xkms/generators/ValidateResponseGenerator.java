@@ -28,15 +28,15 @@ import org.w3._2002._03.xkms_.ValidateResultType;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: ValidateResponseGenerator.java,v 1.1 2006-12-22 09:21:39 herrvendil Exp $
+ * @version $Id: ValidateResponseGenerator.java,v 1.2 2007-01-05 05:32:51 herrvendil Exp $
  */
 
 public class ValidateResponseGenerator extends
 		KISSResponseGenerator {
 	
 
-	public ValidateResponseGenerator(ValidateRequestType req) {
-		super(req);
+	public ValidateResponseGenerator(String remoteIP, ValidateRequestType req) {
+		super(remoteIP, req);
 	}
 	
 	/**
@@ -61,7 +61,7 @@ public class ValidateResponseGenerator extends
 					Iterator<X509Certificate> iter = queryResult.iterator();
 					while(iter.hasNext()){
 						X509Certificate nextCert = iter.next();
-						result.getKeyBinding().add((KeyBindingType) getResponseValues(req.getQueryKeyBinding(),nextCert,true));
+						result.getKeyBinding().add((KeyBindingType) getResponseValues(req.getQueryKeyBinding(),nextCert,true,false));
 
 					}		  
 				}

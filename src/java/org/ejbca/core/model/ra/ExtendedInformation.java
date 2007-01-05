@@ -19,6 +19,7 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.UpgradeableDataHashMap;
+import org.ejbca.util.Base64;
 
 
 /**
@@ -26,7 +27,7 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
  * like a image, in an effort to minimize the need for database alterations
  *
  * @author  Philip Vendil
- * @version $Id: ExtendedInformation.java,v 1.7 2006-12-13 10:34:11 anatom Exp $
+ * @version $Id: ExtendedInformation.java,v 1.8 2007-01-05 05:32:53 herrvendil Exp $
  */
 public class ExtendedInformation extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(ExtendedInformation.class);
@@ -54,6 +55,9 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     // protected fields.
     protected static final String SUBJECTDIRATTRIBUTES = "subjectdirattributes";
 
+    protected static final String XKMSREVOCATIONCODEIDENTIFIER = "revocationcodeidentifier";
+    
+    
     // Public constants
 
     // Wait for fields to use with this class. 
@@ -77,6 +81,34 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
         data.put(SUBJECTDIRATTRIBUTES,"");
       else
         data.put(SUBJECTDIRATTRIBUTES,subjdirattr);
+    }
+    
+    /**
+     * Returns the revocation code identifier primarily used
+     * in the XKMS protocol to let the end user revoke his certificate.
+     * 
+     * The method is autoupgradable
+     * 
+     * @returns The code or null if no revocationcode have been set.
+     */
+    public String getRevocationCodeIdentifier(){ 
+    	String retval = (String) data.get(XKMSREVOCATIONCODEIDENTIFIER);
+    	
+    	if(retval != null){
+    		retval = new String(Base64.decode(retval.getBytes()));
+    	}
+    	
+    	return retval;     	
+    }
+    public void setRevocationCodeIdentifier(String revocationCodeIdentifier) {
+    	String value = revocationCodeIdentifier;
+    	
+    	if(value != null){
+    		value = new String(Base64.encode(value.getBytes()));
+    	}
+    	    	
+    	data.put(XKMSREVOCATIONCODEIDENTIFIER,value);
+
     }
     
     public Object clone() throws CloneNotSupportedException {

@@ -14,13 +14,42 @@
 package org.ejbca.core.protocol.xkms.generators;
 
 import java.math.BigInteger;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPublicKey;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.ejb.CreateException;
+import javax.naming.NamingException;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.sign.SernoGenerator;
+import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
+import org.ejbca.util.CertTools;
+import org.ejbca.util.dn.DNFieldExtractor;
+import org.w3._2000._09.xmldsig_.KeyInfoType;
+import org.w3._2000._09.xmldsig_.KeyValueType;
+import org.w3._2000._09.xmldsig_.RSAKeyValueType;
+import org.w3._2000._09.xmldsig_.X509DataType;
+import org.w3._2002._03.xkms_.KeyBindingAbstractType;
+import org.w3._2002._03.xkms_.KeyBindingType;
 import org.w3._2002._03.xkms_.ObjectFactory;
 import org.w3._2002._03.xkms_.RequestAbstractType;
 import org.w3._2002._03.xkms_.ResultType;
+import org.w3._2002._03.xkms_.StatusType;
+import org.w3._2002._03.xkms_.UnverifiedKeyBindingType;
+import org.w3._2002._03.xkms_.UseKeyWithType;
+import org.w3._2002._03.xkms_.ValidityIntervalType;
 
 
 
@@ -31,7 +60,7 @@ import org.w3._2002._03.xkms_.ResultType;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: RequestAbstractTypeResponseGenerator.java,v 1.1 2006-12-22 09:21:39 herrvendil Exp $
+ * @version $Id: RequestAbstractTypeResponseGenerator.java,v 1.2 2007-01-05 05:32:51 herrvendil Exp $
  */
 
 public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseGenerator{
@@ -49,8 +78,9 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
 	protected String resultMinor = null;
 
 	
-	public RequestAbstractTypeResponseGenerator(RequestAbstractType req){
-	  super();		
+	
+	public RequestAbstractTypeResponseGenerator(String remoteIP, RequestAbstractType req){
+	  super(remoteIP);		
 	  this.req = req;	  	 
 	        
 	}
@@ -115,10 +145,310 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
     	}
     }
     
+	/**
+     * Method that returns the XKMS KeyUsage Constants that can be applied to the given 
+     * X509Certiifcate
+     * 
+     * return List<String> of size 0 to 3 of XKMSConstants.KEYUSAGE_ constants.
+     */
+   protected List<String> getCertKeyUsageSpec(X509Certificate cert) {
+	   ArrayList<String> retval = new ArrayList<String>();
+	   
+	   if(cert.getKeyUsage()[CertificateProfile.DATAENCIPHERMENT]){
+		   retval.add(XKMSConstants.KEYUSAGE_ENCRYPTION);
+	   }
+	   if(cert.getKeyUsage()[CertificateProfile.DIGITALSIGNATURE] 
+	      || cert.getKeyUsage()[CertificateProfile.KEYENCIPHERMENT]){
+		   retval.add(XKMSConstants.KEYUSAGE_EXCHANGE);
+	   }
+	   if(XKMSConfig.signatureIsNonRep()){
+		   if(cert.getKeyUsage()[CertificateProfile.NONREPUDIATION]){
+			   retval.add(XKMSConstants.KEYUSAGE_SIGNATURE);
+		   }
+	   }else{
+		     if(cert.getKeyUsage()[CertificateProfile.DIGITALSIGNATURE]){
+		    	 retval.add(XKMSConstants.KEYUSAGE_SIGNATURE);
+		     }		   
+	   }
+	   	   
+	   return retval;
+   }
+   
+   /**
+    * Method that determines the UseKeyWith attribute from an X509Certificate
+    * and the requested UseKeyWithAttributes
+    */
+   protected List<UseKeyWithType> genUseKeyWithAttributes(X509Certificate cert, List<UseKeyWithType> reqUsages) throws Exception{
+	   ArrayList<UseKeyWithType> retval = new ArrayList();
+	   
+	   Iterator<UseKeyWithType> iter = reqUsages.iterator();
+	   while(iter.hasNext()){
+		   UseKeyWithType useKeyWithType =  iter.next();
+		   DNFieldExtractor altNameExtractor = new DNFieldExtractor(CertTools.getSubjectAlternativeName(cert),DNFieldExtractor.TYPE_SUBJECTALTNAME);
+		   String cn = CertTools.getPartFromDN(cert.getSubjectDN().toString(), "CN");
+		   
+		   if(useKeyWithType.getApplication().equals(XKMSConstants.USEKEYWITH_XKMS)||
+  		      useKeyWithType.getApplication().equals(XKMSConstants.USEKEYWITH_XKMSPROFILE) ||
+  		      useKeyWithType.getApplication().equals(XKMSConstants.USEKEYWITH_TLS)){
+			    if(altNameExtractor.getField(DNFieldExtractor.URI, 0).startsWith(useKeyWithType.getIdentifier())){
+			      retval.add(useKeyWithType);
+			    }
+		   }
+		   if(useKeyWithType.getApplication().equals(XKMSConstants.USEKEYWITH_SMIME)||
+		  	  useKeyWithType.getApplication().equals(XKMSConstants.USEKEYWITH_PGP)){
+			    if(altNameExtractor.getField(DNFieldExtractor.RFC822NAME, 0).startsWith(useKeyWithType.getIdentifier())){
+				      retval.add(useKeyWithType);
+				}			   
+		   }
+		   if(useKeyWithType.getApplication().equals(XKMSConstants.USEKEYWITH_TLSHTTP)){
+			    if(cn.startsWith(useKeyWithType.getIdentifier())){
+				      retval.add(useKeyWithType);
+				}			   			   			   			   
+		   }
+		   if(useKeyWithType.getApplication().equals(XKMSConstants.USEKEYWITH_TLSSMTP)){
+			    if(altNameExtractor.getField(DNFieldExtractor.DNSNAME, 0).startsWith(useKeyWithType.getIdentifier())){
+				      retval.add(useKeyWithType);
+				}			   
+		   }
+		   if(useKeyWithType.getApplication().equals(XKMSConstants.USEKEYWITH_IPSEC)){
+			    if(altNameExtractor.getField(DNFieldExtractor.IPADDRESS, 0).startsWith(useKeyWithType.getIdentifier())){
+				      retval.add(useKeyWithType);
+				}			   
+		   }
+		   if(useKeyWithType.getApplication().equals(XKMSConstants.USEKEYWITH_PKIX)){
+			    if(cert.getSubjectDN().toString().equalsIgnoreCase(CertTools.stringToBCDNString(useKeyWithType.getIdentifier()))){
+				      retval.add(useKeyWithType);
+				}			   
+		   } 
+	   }
+	   
+	
+	   return retval;
+   }
+   
+	/**
+    * Method adding supported response values specified
+    * in the request
+    * 
+    * @param certificate to respond
+    */
+   protected KeyBindingAbstractType getResponseValues(KeyBindingAbstractType queryKeyBindingType, X509Certificate cert, boolean validateOrRevokeReq, boolean kRSSCall){
+   	UnverifiedKeyBindingType retval = xkmsFactory.createUnverifiedKeyBindingType();    	
+   	if(validateOrRevokeReq || kRSSCall){
+   		retval = xkmsFactory.createKeyBindingType();
+   		
+   		((KeyBindingType) retval).setStatus(getStatus(cert,  kRSSCall));
+   	}
+   	    	
 
+   	retval.setId(cert.getSerialNumber().toString(16));             
+   	retval.setValidityInterval(getValidityInterval(cert));
+
+   	KeyInfoType keyInfoType = sigFactory.createKeyInfoType();
+
+   	if(req.getRespondWith().contains(XKMSConstants.RESPONDWITH_KEYNAME)){
+   		String keyName = cert.getSubjectDN().toString();
+   		keyInfoType.getContent().add(sigFactory.createKeyName(keyName));    		    		    	  	
+   	}
+
+   	if(req.getRespondWith().contains(XKMSConstants.RESPONDWITH_KEYVALUE)){
+   		if(cert.getPublicKey() instanceof RSAPublicKey){  
+   			RSAPublicKey pubKey = (RSAPublicKey) cert.getPublicKey();      	
+   			RSAKeyValueType rSAKeyValueType = sigFactory.createRSAKeyValueType();
+   			rSAKeyValueType.setModulus(pubKey.getModulus().toByteArray());
+   			rSAKeyValueType.setExponent(pubKey.getPublicExponent().toByteArray());
+   			KeyValueType keyValue = sigFactory.createKeyValueType();
+   			keyValue.getContent().add(sigFactory.createRSAKeyValue(rSAKeyValueType));
+   			keyInfoType.getContent().add(sigFactory.createKeyValue(keyValue));    		    		    	  	
+   		}else{
+   			log.error("Only RSA keys are supported for key value info.");
+   			resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
+   			resultMinor = XKMSConstants.RESULTMINOR_FAILURE;
+   		}
+   	}
+
+   	if(req.getRespondWith().contains(XKMSConstants.RESPONDWITH_X509CERT) || 
+   			req.getRespondWith().contains(XKMSConstants.RESPONDWITH_X509CHAIN) ||
+   			req.getRespondWith().contains(XKMSConstants.RESPONDWITH_X509CRL)){
+   		    X509DataType x509DataType = sigFactory.createX509DataType();
+   		if(req.getRespondWith().contains(XKMSConstants.RESPONDWITH_X509CERT) && !req.getRespondWith().contains(XKMSConstants.RESPONDWITH_X509CHAIN)){
+   			try {    					
+   				x509DataType.getX509IssuerSerialOrX509SKIOrX509SubjectName().add(sigFactory.createX509DataTypeX509Certificate(cert.getEncoded()));
+   			} catch (CertificateEncodingException e) {
+   				log.error("Error decoding certificate",e);
+   				resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
+   				resultMinor = XKMSConstants.RESULTMINOR_FAILURE;
+   			}
+   		}
+   		if(req.getRespondWith().contains(XKMSConstants.RESPONDWITH_X509CHAIN)){
+   			int caid = CertTools.getIssuerDN(cert).hashCode();
+   			try {
+   				Iterator iter = getCAAdminSession().getCAInfo(pubAdmin, caid).getCertificateChain().iterator();
+   				while(iter.hasNext()){
+   					X509Certificate next = (X509Certificate) iter.next();
+   					x509DataType.getX509IssuerSerialOrX509SKIOrX509SubjectName().add(sigFactory.createX509DataTypeX509Certificate(next.getEncoded()));
+   				}
+   				x509DataType.getX509IssuerSerialOrX509SKIOrX509SubjectName().add(sigFactory.createX509DataTypeX509Certificate(cert.getEncoded()));
+   			} catch (Exception e) {
+   				log.error("Error fetching last CRL",e);
+   				resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
+   				resultMinor = XKMSConstants.RESULTMINOR_FAILURE;
+   			}
+   		}
+   		if(req.getRespondWith().contains(XKMSConstants.RESPONDWITH_X509CRL)){
+   			byte[] crl = null;
+   			try {
+   				crl = getCertStoreSession().getLastCRL(pubAdmin, CertTools.getIssuerDN(cert));
+   			} catch (Exception e) {
+   				log.error("Error fetching last CRL",e);
+   				resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
+   				resultMinor = XKMSConstants.RESULTMINOR_FAILURE;
+   			}
+   			x509DataType.getX509IssuerSerialOrX509SKIOrX509SubjectName().add(sigFactory.createX509DataTypeX509CRL(crl));
+   		}    		
+   		keyInfoType.getContent().add(sigFactory.createX509Data(x509DataType));
+   		
+   	}
+   	retval.setKeyInfo(keyInfoType);
+   	retval.getKeyUsage().addAll(getCertKeyUsageSpec(cert));
+		try {
+			retval.getUseKeyWith().addAll(genUseKeyWithAttributes(cert, queryKeyBindingType.getUseKeyWith()));
+		} catch (Exception e) {
+			log.error("Error extracting use key with attributes from cert",e);
+			resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
+			resultMinor = XKMSConstants.RESULTMINOR_FAILURE;
+			
+		}
+   	
+   	
+   	return retval;
+   }
+   
+	protected ValidityIntervalType getValidityInterval(X509Certificate cert) {
+    	ValidityIntervalType valitityIntervalType = xkmsFactory.createValidityIntervalType();
+		try {    	
+		  GregorianCalendar notBeforeGregorianCalendar = new GregorianCalendar();
+		  notBeforeGregorianCalendar.setTime(cert.getNotBefore());
+    	  XMLGregorianCalendar notBeforeXMLGregorianCalendar = javax.xml.datatype.DatatypeFactory.newInstance().newXMLGregorianCalendar(notBeforeGregorianCalendar);
+    	  notBeforeXMLGregorianCalendar.normalize();
+    	  valitityIntervalType.setNotBefore(notBeforeXMLGregorianCalendar);
+    	
+		  GregorianCalendar notAfterGregorianCalendar = new GregorianCalendar();
+		  notAfterGregorianCalendar.setTime(cert.getNotAfter());
+    	  XMLGregorianCalendar notAfterXMLGregorianCalendar = javax.xml.datatype.DatatypeFactory.newInstance().newXMLGregorianCalendar(notAfterGregorianCalendar);
+    	  notAfterXMLGregorianCalendar.normalize();
+    	  valitityIntervalType.setNotOnOrAfter(notAfterXMLGregorianCalendar);    	
+    	
+		} catch (DatatypeConfigurationException e) {
+			log.error("Error setting Validity Interval", e);
+		}  	
+    	
+    	
+		return valitityIntervalType;
+	}
     
 
+    /**
+     * Method that checks the status of the certificate used
+     * in a XKMS validate call. 
+     * 
+     * @param kRSSCall, regenerated certificate return all valid
+     * @param cert
+     */
+    private StatusType getStatus(X509Certificate cert, boolean kRSSCall) {
+        StatusType retval = xkmsFactory.createStatusType();
+        
+        if(kRSSCall){
+        	retval.setStatusValue(XKMSConstants.STATUSVALUE_VALID);
+        	retval.getValidReason().add(XKMSConstants.STATUSREASON_VALIDITYINTERVAL);
+        	retval.getValidReason().add(XKMSConstants.STATUSREASON_ISSUERTRUST);
+        	retval.getValidReason().add(XKMSConstants.STATUSREASON_SIGNATURE);
+        	retval.getValidReason().add(XKMSConstants.STATUSREASON_REVOCATIONSTATUS);
+        }else{
+        	boolean allValid = true;
+        	boolean inValidSet = false;
 
+        	//Check validity
+        	try{
+        		cert.checkValidity( new Date());
+        		retval.getValidReason().add(XKMSConstants.STATUSREASON_VALIDITYINTERVAL);
+        	}catch(Exception e){
+        		retval.getInvalidReason().add(XKMSConstants.STATUSREASON_VALIDITYINTERVAL);
+        		allValid = false;
+        		inValidSet = true;
+        	}
+
+        	// Check Issuer Trust
+        	try{
+        		int caid = CertTools.getIssuerDN(cert).hashCode();
+        		CAInfo cAInfo = getCAAdminSession().getCAInfo(pubAdmin, caid);
+        		if(cAInfo != null){
+        			retval.getValidReason().add(XKMSConstants.STATUSREASON_ISSUERTRUST);
+
+        			// Check signature	
+        			try{
+        				if(CertTools.verify(cert, cAInfo.getCertificateChain())){
+        					retval.getValidReason().add(XKMSConstants.STATUSREASON_SIGNATURE);
+        				}else{
+        					retval.getInvalidReason().add(XKMSConstants.STATUSREASON_SIGNATURE);
+        					allValid = false;
+        					inValidSet = true;
+        				}
+        			}catch(Exception e){
+        				retval.getInvalidReason().add(XKMSConstants.STATUSREASON_SIGNATURE);
+        				allValid = false;	
+        				inValidSet = true;
+        			}
+        		}else{
+        			retval.getInvalidReason().add(XKMSConstants.STATUSREASON_ISSUERTRUST);
+        			retval.getIndeterminateReason().add(XKMSConstants.STATUSREASON_SIGNATURE);
+        			allValid = false;
+        			inValidSet = true;
+        		}
+
+        		// Check RevokationReason
+        		CertificateInfo certInfo = getCertStoreSession().getCertificateInfo(pubAdmin, CertTools.getFingerprintAsString(cert));
+        		if(certInfo != null){
+        			if(certInfo.getRevocationReason() == RevokedCertInfo.NOT_REVOKED){
+        				retval.getValidReason().add(XKMSConstants.STATUSREASON_REVOCATIONSTATUS);				  
+        			}else{
+        				retval.getInvalidReason().add(XKMSConstants.STATUSREASON_REVOCATIONSTATUS);
+        				allValid = false;
+        				inValidSet = true;
+        			}			  			
+        		}else{
+        			retval.getIndeterminateReason().add(XKMSConstants.STATUSREASON_REVOCATIONSTATUS);
+        			allValid = false;
+        		}
+
+
+        	}catch(CreateException e){
+        		log.error("Error creating SessionBean",e);
+        		resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
+        		resultMinor = XKMSConstants.RESULTMINOR_FAILURE;
+        	} catch (ClassCastException e) {
+        		log.error("Error creating SessionBean",e);
+        		resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
+        		resultMinor = XKMSConstants.RESULTMINOR_FAILURE;
+        	} catch (NamingException e) {
+        		log.error("Error creating SessionBean",e);
+        		resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
+        		resultMinor = XKMSConstants.RESULTMINOR_FAILURE;
+        	}
+
+        	if(allValid){
+        		retval.setStatusValue(XKMSConstants.STATUSVALUE_VALID);
+        	}else{
+        		if(inValidSet){
+        			retval.setStatusValue(XKMSConstants.STATUSVALUE_INVALID); 
+        		}else{
+        			retval.setStatusValue(XKMSConstants.STATUSVALUE_INDETERMINATE);
+        		}
+        	}
+
+        }
+		return retval;
+	}
 	
 	
 }
