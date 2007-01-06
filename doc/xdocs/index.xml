@@ -36,11 +36,14 @@
     Simetri Yazilim A.S., <a href="http://www.simetri.com/">http://www.simetri.com/</a>.
     </p>
     <p>
-    New features in EJBCA 3.4 such as CMP, XKMS and much more was sponsored by 
+    New features in EJBCA 3.4 such as CMP, XKMS, services framework and much more was sponsored by 
     GIE cartes Bancaires and Linagora.
     </p>
     <p>
-    EJBCA 3.4 now support ECDSA for both CAs and users.
+    Marlin Trust Management Organization (MTMO) will be using EJBCA to provide key management services for the commercial 
+    adoption of  Marlin DRM. EJBCA 3.4.0 supports RSA and ECC implementations of the Marlin PKI infrastructure.
+    <br/>
+    ECC implementation and other improvements was implemented with the support of MTMO.
     </p>
   </section>
 
