@@ -14,6 +14,9 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import java.io.IOException;
+import java.security.SecureRandom;
+import java.util.Collection;
+import java.util.Iterator;
 
 import javax.ejb.CreateException;
 import javax.servlet.ServletConfig;
@@ -26,15 +29,19 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.ejb.services.IServiceTimerSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.log.Admin;
 
 /**
  * Servlet used to start services by calling the ServiceSession.load() at startup<br>
  *
  * 
  *
- * @version $Id: StartServicesServlet.java,v 1.9 2006-12-13 10:36:03 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.10 2007-01-06 08:50:35 anatom Exp $
  * 
  * @web.servlet name = "StartServices"
  *              display-name = "StartServicesServlet"
@@ -48,7 +55,7 @@ import org.ejbca.core.model.InternalResources;
  *   type="java.lang.String"
  *   value="${logging.log4j.config}"
  * 
- * @version $Id: StartServicesServlet.java,v 1.9 2006-12-13 10:36:03 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.10 2007-01-06 08:50:35 anatom Exp $
  */
 public class StartServicesServlet extends HttpServlet {
 
@@ -115,6 +122,30 @@ public class StartServicesServlet extends HttpServlet {
             	// TODO: log4j.xml configuration
             }
         }
+
+        // Run java seed collector, that can take a little time the first time it is run
+        log.debug(">init initializing random seed");
+        SecureRandom rand = new SecureRandom();
+        rand.nextInt();
+        
+        // Load CAs at startup to improve impression of speed the first time a CA is accessed, it takes a little time to load it.
+        log.debug("init loading CAs into cache");
+        try {
+        	ICAAdminSessionLocalHome casessionhome = (ICAAdminSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
+        	ICAAdminSessionLocal casession;
+        	casession = casessionhome.create();
+        	Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER, "StartServicesServlet");
+        	Collection caids = casession.getAvailableCAs(admin);
+        	Iterator iter = caids.iterator();
+        	while (iter.hasNext()) {
+        		int caid = ((Integer)iter.next()).intValue();
+        		CAInfo ca = casession.getCAInfo(admin, caid);
+        		log.debug("Found CA: "+ca.getName()+", with expire time: "+ca.getExpireTime());
+        	}
+        } catch (CreateException e) {
+        	log.error("Error creating CAAdminSession: ", e);
+        }
+
     } // init
 
     public void doPost(HttpServletRequest req, HttpServletResponse res)
