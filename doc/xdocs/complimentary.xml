@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<document>
+  <properties>
+    <title>Complimentary software</title>
+  </properties>
+
+  <body>
+<section name="Complimentary software">
+<p>
+To build a succesfull PKI you can benefit from a lot of tools available. Here are listed some tools and packages that 
+can be used together with PKI to even further improve your PKI experience.
+</p>
+
+<subsection name="CSRTool">
+    <p>
+    <a href="http://sourceforge.net/projects/csrtool/">CSRTool website</a>
+    </p>
+    <p>
+    A graphical tool for generating RSA and ECDSA cryptographic key-pairs, creating Certificate Signing Requests (CSRs) from them, 
+    and combining the key-pair with an issued digital certificate to create a secure portable container (PKCS12, JKS, JCEKS, etc.)    
+    </p><p>
+    Some features:
+    <ul>
+    <li>Generates RSA public and private key-pairs in sizes ranging from 1024 to 8192 bits.</li>
+    <li>Generates Elliptic Curve DSA public and private key-pairs using either the ANSI X9.62 named curves, or custom parameters for your own curve if so inclined.</li>
+    <li>Saves the private-key in a PKCS8 file with Password-Based-Encryption using the SHA1withTripleDES algorithm.</li>
+    <li>Generates a PEM-encoded CSR that can be submitted to a CA either through a web-form or e-mail.</li>
+    <li>Generates keyUsage and/or the subjectAltName extensions (optionally) in the RSA-based CSR.</li>
+    <li>Combines the private-key from the previously-stored PKCS8 file and the newly returned digital certificate, into a PKCS12 file that can be used for importation into desired applications.</li>
+    </ul>
+    </p>
+</subsection>
+
+<subsection name="Bouncycastle">
+    <p>
+    <a href="http://www.bouncycastle.org/">Bouncycastle website</a>
+    </p>
+    <p>
+    Using Bouncycastle you can create your own tools and applications, or PKI enable your existing java applications.
+    </p>
+    <p>
+    Bouncycastle also have a section with complimentary packages (under resources) that you should look at.
+    </p>
+</subsection>
+
+</section>
+
+  </body>
+</document>
