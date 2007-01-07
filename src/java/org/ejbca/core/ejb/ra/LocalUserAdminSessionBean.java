@@ -68,6 +68,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.core.model.ra.UserAdminConstants;
@@ -93,7 +94,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.35 2007-01-07 00:31:04 herrvendil Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.36 2007-01-07 16:38:25 anatom Exp $
  * 
  * @ejb.bean
  *   display-name="UserAdminSB"
@@ -1072,7 +1073,10 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         certificatesession.setRevokeStatus(admin, issuerdn, certserno, publishers, reason);
         
         // Reset the revocation code identifier used in XKMS
-        data.getExtendedInformation().setRevocationCodeIdentifier(null);
+        ExtendedInformation inf = data.getExtendedInformation();
+        if (inf != null) {
+            inf.setRevocationCodeIdentifier(null);        	
+        }
         
         if (certificatesession.checkIfAllRevoked(admin, username)) {
             try {
