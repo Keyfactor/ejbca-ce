@@ -32,10 +32,21 @@ import org.ejbca.util.CertTools;
  * Data contained in the class is preferbly
  *
  * @author TomSelleck
- * @version $Id: Admin.java,v 1.3 2007-01-03 14:34:12 anatom Exp $
+ * @version $Id: Admin.java,v 1.4 2007-01-07 20:08:57 anatom Exp $
  */
 public class Admin implements Serializable {
 
+    /**
+     * Determines if a de-serialized file is compatible with this class.
+     *
+     * Maintainers must change this value if and only if the new version
+     * of this class is not compatible with old versions. See Sun docs
+     * for <a href=http://java.sun.com/products/jdk/1.1/docs/guide
+     * /serialization/spec/version.doc.html> details. </a>
+     *
+     */
+    private static final long serialVersionUID = -9221031402622809524L;
+    
     // Public Constants
     // Indicates the type of administrator.
     /** An administrator authenticated with client certificate */
