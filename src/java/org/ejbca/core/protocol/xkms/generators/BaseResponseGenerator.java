@@ -36,6 +36,7 @@ import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 
 /**
@@ -45,12 +46,14 @@ import org.ejbca.core.model.log.Admin;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: BaseResponseGenerator.java,v 1.2 2007-01-05 05:32:51 herrvendil Exp $
+ * @version $Id: BaseResponseGenerator.java,v 1.3 2007-01-07 19:44:14 herrvendil Exp $
  */
 
 public abstract class BaseResponseGenerator {
 	
 	private static Logger log = Logger.getLogger(BaseResponseGenerator.class);
+	
+	private static final InternalResources intres = InternalResources.getInstance();
 	
 	protected Admin raAdmin = null;
 	protected Admin pubAdmin = null;
@@ -113,7 +116,7 @@ public abstract class BaseResponseGenerator {
 				"UserAdminSessionLocal"), IUserAdminSessionLocalHome.class)).create();   
 			}
 		}catch(Exception e)	{
-			log.error("Error instancing User Admin Session Bean",e);
+			log.error(intres.getLocalizedMessage("xkms.errorinitadminsession"));			
 			throw new EJBException(e);
 		}
 		return usersession;
@@ -129,7 +132,7 @@ public abstract class BaseResponseGenerator {
 				"AuthorizationSessionLocal"), IAuthorizationSessionLocalHome.class)).create();   
 			}
 		}catch(Exception e)	{
-			log.error("Error instancing Authorization Session Bean",e);
+			log.error(intres.getLocalizedMessage("xkms.errorinitauthsession"));			
 			throw new EJBException(e);
 		}
 		return authsession;
@@ -144,7 +147,7 @@ public abstract class BaseResponseGenerator {
 				"KeyRecoverySessionLocal"), IKeyRecoverySessionLocalHome.class)).create();   
 			}
 		}catch(Exception e)	{
-			log.error("Error instancing Key Recovery Session Bean",e);
+			log.error(intres.getLocalizedMessage("xkms.errorinitkeyrecsession"));			
 			throw new EJBException(e);
 		}
 		return keyrecoverysession;
@@ -159,7 +162,7 @@ public abstract class BaseResponseGenerator {
 				"AuthenticationSessionLocal"), IAuthenticationSessionLocalHome.class)).create();   
 			}
 		}catch(Exception e)	{
-			log.error("Error instancing Key Recovery Session Bean",e);
+			log.error(intres.getLocalizedMessage("xkms.errorinitauthentsession"));			
 			throw new EJBException(e);
 		}
 		return authenticationSession;

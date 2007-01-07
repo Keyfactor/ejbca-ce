@@ -30,6 +30,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.sign.SernoGenerator;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
@@ -60,12 +61,13 @@ import org.w3._2002._03.xkms_.ValidityIntervalType;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: RequestAbstractTypeResponseGenerator.java,v 1.3 2007-01-07 00:31:52 herrvendil Exp $
+ * @version $Id: RequestAbstractTypeResponseGenerator.java,v 1.4 2007-01-07 19:44:14 herrvendil Exp $
  */
 
 public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseGenerator{
 
     private static Logger log = Logger.getLogger(RequestAbstractTypeResponseGenerator.class);
+    private static final InternalResources intres = InternalResources.getInstance();
     
     protected static final BigInteger SERVERRESPONSELIMIT = new BigInteger("30");
     
@@ -123,7 +125,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
 		try {
 			id = SernoGenerator.instance().getSerno().toString();
 		} catch (Exception e) {
-			log.error("Error generating response ID ",e );
+			log.error(intres.getLocalizedMessage("xkms.errorgenrespid"),e);			
 		}
 		return "_" + id;
 	}
@@ -262,7 +264,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
    			keyValue.getContent().add(sigFactory.createRSAKeyValue(rSAKeyValueType));
    			keyInfoType.getContent().add(sigFactory.createKeyValue(keyValue));    		    		    	  	
    		}else{
-   			log.error("Only RSA keys are supported for key value info.");
+   			log.error(intres.getLocalizedMessage("xkms.onlyrsakeysupported"));   			
    			resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
    			resultMinor = XKMSConstants.RESULTMINOR_FAILURE;
    		}
@@ -276,7 +278,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
    			try {    					
    				x509DataType.getX509IssuerSerialOrX509SKIOrX509SubjectName().add(sigFactory.createX509DataTypeX509Certificate(cert.getEncoded()));
    			} catch (CertificateEncodingException e) {
-   				log.error("Error decoding certificate",e);
+   				log.error(intres.getLocalizedMessage("xkms.errordecodingcert"),e);   				
    				resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
    				resultMinor = XKMSConstants.RESULTMINOR_FAILURE;
    			}
@@ -291,7 +293,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
    				}
    				x509DataType.getX509IssuerSerialOrX509SKIOrX509SubjectName().add(sigFactory.createX509DataTypeX509Certificate(cert.getEncoded()));
    			} catch (Exception e) {
-   				log.error("Error fetching last CRL",e);
+   				log.error(intres.getLocalizedMessage("xkms.errorfetchinglastcrl"),e);   				
    				resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
    				resultMinor = XKMSConstants.RESULTMINOR_FAILURE;
    			}
@@ -301,7 +303,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
    			try {
    				crl = getCertStoreSession().getLastCRL(pubAdmin, CertTools.getIssuerDN(cert));
    			} catch (Exception e) {
-   				log.error("Error fetching last CRL",e);
+   				log.error(intres.getLocalizedMessage("xkms.errorfetchinglastcrl"),e);
    				resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
    				resultMinor = XKMSConstants.RESULTMINOR_FAILURE;
    			}
@@ -315,7 +317,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
 		try {
 			retval.getUseKeyWith().addAll(genUseKeyWithAttributes(cert, queryKeyBindingType.getUseKeyWith()));
 		} catch (Exception e) {
-			log.error("Error extracting use key with attributes from cert",e);
+			log.error(intres.getLocalizedMessage("xkms.errorextractingusekeyattr"),e);			
 			resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
 			resultMinor = XKMSConstants.RESULTMINOR_FAILURE;
 			
@@ -341,7 +343,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
     	  valitityIntervalType.setNotOnOrAfter(notAfterXMLGregorianCalendar);    	
     	
 		} catch (DatatypeConfigurationException e) {
-			log.error("Error setting Validity Interval", e);
+			log.error(intres.getLocalizedMessage("xkms.errorsetvalidityinterval"),e);			
 		}  	
     	
     	
@@ -424,15 +426,15 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
 
 
         	}catch(CreateException e){
-        		log.error("Error creating SessionBean",e);
+        		log.error(intres.getLocalizedMessage("xkms.errorcreatesession"),e);        		
         		resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
         		resultMinor = XKMSConstants.RESULTMINOR_FAILURE;
         	} catch (ClassCastException e) {
-        		log.error("Error creating SessionBean",e);
+        		log.error(intres.getLocalizedMessage("xkms.errorcreatesession"),e);
         		resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
         		resultMinor = XKMSConstants.RESULTMINOR_FAILURE;
         	} catch (NamingException e) {
-        		log.error("Error creating SessionBean",e);
+        		log.error(intres.getLocalizedMessage("xkms.errorcreatesession"),e);
         		resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
         		resultMinor = XKMSConstants.RESULTMINOR_FAILURE;
         	}

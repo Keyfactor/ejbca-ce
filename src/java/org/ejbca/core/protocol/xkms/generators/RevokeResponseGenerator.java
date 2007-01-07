@@ -17,7 +17,6 @@ import java.security.cert.X509Certificate;
 
 import javax.ejb.FinderException;
 
-import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -35,7 +34,7 @@ import org.w3c.dom.Document;
  * 
  * @author Philip Vendil 
  *
- * @version $Id: RevokeResponseGenerator.java,v 1.2 2007-01-07 00:31:52 herrvendil Exp $
+ * @version $Id: RevokeResponseGenerator.java,v 1.3 2007-01-07 19:44:14 herrvendil Exp $
  */
 
 public class RevokeResponseGenerator extends

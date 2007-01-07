@@ -26,6 +26,7 @@ import java.util.List;
 import javax.xml.bind.JAXBElement;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.store.CertificateInfo;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -46,7 +47,7 @@ import org.w3._2002._03.xkms_.UseKeyWithType;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: KISSResponseGenerator.java,v 1.3 2007-01-07 00:31:52 herrvendil Exp $
+ * @version $Id: KISSResponseGenerator.java,v 1.4 2007-01-07 19:44:14 herrvendil Exp $
  */
 
 public class KISSResponseGenerator extends
@@ -54,6 +55,7 @@ public class KISSResponseGenerator extends
 	
 	 private static Logger log = Logger.getLogger(KISSResponseGenerator.class);
 	
+	 private static final InternalResources intres = InternalResources.getInstance();
 	
 
 	public KISSResponseGenerator(String remoteIP,RequestAbstractType req) {
@@ -106,7 +108,7 @@ public class KISSResponseGenerator extends
 								queryCert = nextCert;
 							}
 						} catch (CertificateException e) {
-							log.error("Error decoding certificate");
+							log.error(intres.getLocalizedMessage("xkms.errordecodingcert"),e);
 							resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
 							resultMinor = XKMSConstants.RESULTMINOR_FAILURE;
 						}
@@ -160,7 +162,7 @@ public class KISSResponseGenerator extends
 								}											
 							}						
 						} catch (Exception e) {
-							log.error("Error creating session beans.",e);
+							log.error(intres.getLocalizedMessage("xkms.errorcreatesession"),e);
 							resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
 							resultMinor = XKMSConstants.RESULTMINOR_FAILURE;						
 						} 
@@ -168,7 +170,7 @@ public class KISSResponseGenerator extends
 					}
 
 				} catch (IllegalQueryException e) {
-					log.error("Illegal User Query");
+					log.error(intres.getLocalizedMessage("xkms.illegaluserquery"),e);					
 					resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
 					resultMinor = XKMSConstants.RESULTMINOR_FAILURE;
 				}
@@ -221,7 +223,7 @@ public class KISSResponseGenerator extends
 					  retval = false;			    	  
 			      }
 				}catch(Exception e){
-					log.error("Error extracting UseKeyWith Attributes from Cert");
+					log.error(intres.getLocalizedMessage("xkms.errorextractingusekeywith"),e);					
 	    			resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
 	    			resultMinor = XKMSConstants.RESULTMINOR_FAILURE;
 				}

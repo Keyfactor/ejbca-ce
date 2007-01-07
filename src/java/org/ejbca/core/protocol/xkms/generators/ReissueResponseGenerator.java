@@ -16,6 +16,7 @@ package org.ejbca.core.protocol.xkms.generators;
 import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
@@ -33,13 +34,15 @@ import org.w3c.dom.Document;
  * 
  * @author Philip Vendil 
  *
- * @version $Id: ReissueResponseGenerator.java,v 1.1 2007-01-05 05:32:52 herrvendil Exp $
+ * @version $Id: ReissueResponseGenerator.java,v 1.2 2007-01-07 19:44:14 herrvendil Exp $
  */
 
 public class ReissueResponseGenerator extends
 		KRSSResponseGenerator {
 	private static Logger log = Logger.getLogger(ReissueResponseGenerator.class);
 
+	private static final InternalResources intres = InternalResources.getInstance();
+	
 	public ReissueResponseGenerator(String remoteIP, ReissueRequestType req, Document requestDoc) {
 		super(remoteIP, req,requestDoc);
 	}
@@ -120,7 +123,7 @@ public class ReissueResponseGenerator extends
 			getUserAdminSession().changeUser(raAdmin, userdata, true);
 			retval = password;
 		} catch (Exception e) {
-			log.error("Error setting user's status to new : " + userdata.getUsername(),e);
+			log.error(intres.getLocalizedMessage("xkms.errorsettinguserstatus", userdata.getUsername()),e);			
 		}
 		
 		return retval;

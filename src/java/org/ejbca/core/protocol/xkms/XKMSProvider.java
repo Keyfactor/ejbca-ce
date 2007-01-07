@@ -66,6 +66,7 @@ import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceResponse;
@@ -109,7 +110,7 @@ import org.w3c.dom.NodeList;
  * 
  * @author Philip Vendil 2006 dec 18
  *
- * @version $Id: XKMSProvider.java,v 1.2 2007-01-05 05:32:53 herrvendil Exp $
+ * @version $Id: XKMSProvider.java,v 1.3 2007-01-07 19:44:15 herrvendil Exp $
  */
 
 @ServiceMode(value=Service.Mode.PAYLOAD)
@@ -119,6 +120,8 @@ public class XKMSProvider implements Provider<Source> {
 	private WebServiceContext wsContext;
 	
 	private static Logger log = Logger.getLogger(XKMSPortType.class);
+	
+	private static final InternalResources intres = InternalResources.getInstance();
 	
 	protected Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
 	
@@ -137,14 +140,14 @@ public class XKMSProvider implements Provider<Source> {
 	        try {
 	            marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper",new XKMSNamespacePrefixMapper());
 	        } catch( PropertyException e ) {
-	           log.error("Error registering namespace mapper property",e);
+	           log.error(intres.getLocalizedMessage("xkms.errorregisteringnamespace"),e);
 	        }
 	    	dbf = DocumentBuilderFactory.newInstance();
 	    	dbf.setNamespaceAware(true);
 	    	unmarshaller = jAXBContext.createUnmarshaller();
 
 		} catch (JAXBException e) {
-			log.error("Error initializing RequestAbstractTypeResponseGenerator",e);
+			log.error(intres.getLocalizedMessage("xkms.errorinitializinggenerator"),e);
 		}
 	
     }
@@ -166,11 +169,11 @@ public class XKMSProvider implements Provider<Source> {
 			trans.transform(request, dom);
 			requestDoc = (Document) dom.getNode();
 		} catch (TransformerConfigurationException e) {
-			log.error("Error when DOM parsing request.",e);
+			log.error(intres.getLocalizedMessage("xkms.errorparsingdomreq"),e);
 		} catch (TransformerFactoryConfigurationError e) {
-			log.error("Error when DOM parsing request.",e);
+			log.error(intres.getLocalizedMessage("xkms.errorparsingdomreq"),e);
 		} catch (TransformerException e) {
-			log.error("Error when DOM parsing request.",e);
+			log.error(intres.getLocalizedMessage("xkms.errorparsingdomreq"),e);
 		}
 		
 		boolean respMecSign = false;
@@ -219,9 +222,9 @@ public class XKMSProvider implements Provider<Source> {
 			
 					
 		} catch (JAXBException e) {
-		   log.error("Error unmarshalling the request ",e);
+		   log.error(intres.getLocalizedMessage("xkms.errorunmarshallingreq"),e);		   
 		} catch (ParserConfigurationException e) {
-			log.error("Error parsing the response ",e);
+		   log.error(intres.getLocalizedMessage("xkms.errorparsingresp"),e);
 		}
 		
 		return response;
@@ -294,7 +297,7 @@ public class XKMSProvider implements Provider<Source> {
 			boolean sigRequired = XKMSConfig.isSignedRequestRequired();
 
 			if(sigRequired && !signatureExists){
-				log.error("Recieved XKMS request without signature, which is required");
+				log.error(intres.getLocalizedMessage("xkms.recievedreqwithoutsig"));				
 				return false;
 			}else{
 				if(signatureExists){
@@ -365,11 +368,11 @@ public class XKMSProvider implements Provider<Source> {
 								return false;
 							}
 						}else{
-							log.error("Error XKMS request signature doesn't verify.");
+							log.error(intres.getLocalizedMessage("xkms.errorreqsigdoesntverify"));							
 							return false;
 						}
 					}catch(Exception e){
-						log.error("Error when verifying signature request.",e);
+						log.error(intres.getLocalizedMessage("xkms.errorwhenverifyingreq"));						
 						return false;
 					}
 				}
@@ -397,7 +400,7 @@ public class XKMSProvider implements Provider<Source> {
 
 				retval = resp.getSignedDocument();
 			} catch (Exception e) {
-				log.error("Error generated response signature on XKMS request",e);
+				log.error(intres.getLocalizedMessage("xkms.errorgenrespsig"));				
 				retval = null;
 			}
 		}

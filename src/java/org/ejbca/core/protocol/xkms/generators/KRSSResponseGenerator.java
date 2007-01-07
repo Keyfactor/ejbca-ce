@@ -50,6 +50,7 @@ import org.apache.xml.security.encryption.XMLEncryptionException;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.signature.XMLSignatureException;
 import org.bouncycastle.util.encoders.Hex;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -79,7 +80,7 @@ import org.w3c.dom.Element;
  * 
  * @author Philip Vendil 
  *
- * @version $Id: KRSSResponseGenerator.java,v 1.2 2007-01-07 00:31:52 herrvendil Exp $
+ * @version $Id: KRSSResponseGenerator.java,v 1.3 2007-01-07 19:44:14 herrvendil Exp $
  */
 
 public class KRSSResponseGenerator extends
@@ -87,6 +88,8 @@ public class KRSSResponseGenerator extends
 	
 	 private static Logger log = Logger.getLogger(KRSSResponseGenerator.class);
 	
+	 private static final InternalResources intres = InternalResources.getInstance();
+	 
 	 protected Document requestDoc = null;
 
 	public KRSSResponseGenerator(String remoteIP, RequestAbstractType req, Document requestDoc) {
@@ -124,7 +127,7 @@ public class KRSSResponseGenerator extends
 									retval = nextCert;
 								}
 							} catch (CertificateException e) {
-								log.error("Error decoding certificate");
+								log.error(intres.getLocalizedMessage("xkms.errordecodingcert"),e);								
 								resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
 								resultMinor = XKMSConstants.RESULTMINOR_FAILURE;
 							}
@@ -240,7 +243,7 @@ public class KRSSResponseGenerator extends
 
 				retval = cert;
 			}catch (Exception e) {
-				log.error("Error registering XKMS request",e);
+				log.error(intres.getLocalizedMessage("xkms.errorregisteringreq"),e);				
 			} 
 
 			if(retval == null){
@@ -249,7 +252,7 @@ public class KRSSResponseGenerator extends
 			}
 			
 		}else{
-			log.error("Error in XKMS request, wrong status " + userDataVO.getStatus() + " of user " + userDataVO.getUsername());
+			log.error(intres.getLocalizedMessage("xkms.errorinreqwrongstatus",new Integer(userDataVO.getStatus()),userDataVO.getUsername()));			
 			resultMajor = XKMSConstants.RESULTMAJOR_SENDER;
 			resultMinor = XKMSConstants.RESULTMINOR_REFUSED;
 		}
@@ -312,7 +315,7 @@ public class KRSSResponseGenerator extends
 			try {
 				retval = getUserAdminSession().findUserBySubjectDN(pubAdmin, subjectDN);
 			} catch (AuthorizationDeniedException e) {
-				log.error("Error the administrator didn't have enough priviledges to find user",e);
+				log.error(intres.getLocalizedMessage("xkms.errorinprivs"),e);				
 			}		
 			if(retval==null){
 				resultMajor = XKMSConstants.RESULTMAJOR_SENDER;
@@ -333,7 +336,7 @@ public class KRSSResponseGenerator extends
 			String username = getCertStoreSession().findUsernameByCertSerno(pubAdmin, cert.getSerialNumber(), CertTools.getIssuerDN(cert));
 			retval = getUserAdminSession().findUser(pubAdmin, username);
 		} catch (Exception e) {
-			log.error("Error finding userdata for certificate with DN : " + cert.getSubjectDN().toString());
+			log.error(intres.getLocalizedMessage("xkms.errorfindinguserdata",cert.getSubjectDN().toString()));			
 		}
 		
 		if(retval==null){
@@ -370,7 +373,7 @@ public class KRSSResponseGenerator extends
 				resultMinor = XKMSConstants.RESULTMINOR_NOAUTHENTICATION;	
 			}
 		} catch (Exception e) {
-			log.error("Error performing authentication verification :" ,e);
+			log.error(intres.getLocalizedMessage("xkms.errorauthverification"),e);			
 			resultMajor = XKMSConstants.RESULTMAJOR_SENDER;
 			resultMinor = XKMSConstants.RESULTMINOR_NOAUTHENTICATION;
 		} 
@@ -530,9 +533,9 @@ public class KRSSResponseGenerator extends
      	cpv.validate(cp, param);
      	retval = true;
      }catch(Exception e){
-			log.error("Error verifying certificate : ", e);
-			
-		} 
+    	 log.error(intres.getLocalizedMessage("xkms.errorverifyingcert"),e);			
+
+     } 
 
 		
 		return retval;
