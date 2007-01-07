@@ -20,9 +20,6 @@
 	  	<fileset dir="lib">
 	   	  <include name="**/*.jar"/>
 	   	</fileset> 
-	  <!-- 	<fileset dir="lib/ext">
-	   	  <include name="**/*.jar"/>
-	   	</fileset> -->
 		<path refid="xkms.classpath" />
 	   	<pathelement location="${java.home}/../lib/tools.jar"/>	   	
 	   	<pathelement location="${build}"/>
@@ -112,7 +109,7 @@
 	 <target name="xkms.build.client" depends="xkms.build, ejbca-util.jar">
 
 	        <javac debug="true" debuglevel="${debuglevel}" destdir="${build}" >
-	            <src path="src/java"/>
+	            <src path="${src.java}"/>
 	            <classpath refid="xkms.client.classpath"/>
 	        	<include name="org/ejbca/core/protocol/xkms/client/*.java"/>            
 	        	<include name="org/ejbca/core/protocol/xkms/common/*.java"/>            
@@ -123,6 +120,10 @@
 	    	<mkdir dir="dist/ejbcawscli/lib"/>
 
 	        <copy todir="tmp/xkmscli.jar">
+	        	<fileset dir="${src.java}">
+	              <include name="log4j.properties"/>
+	              <include name="profilemappings.properties"/>
+	            </fileset>
 	            <fileset dir="${build}">
 	              <include name="org/ejbca/core/protocol/xkms/client/*.class"/>
                   <include name="org/ejbca/core/protocol/xkms/common/*.class"/>
@@ -130,6 +131,9 @@
 	            <fileset dir="tmp/xkms/gen-classes">
 	              <include name="**/*.class"/>
 	            </fileset>	
+	            <fileset dir="tmp/xkms/gen-classes">
+	              <include name="**/*.class"/>
+	            </fileset>
 		    </copy> 
 	 
 	        <copy todir="dist/xkmscli/lib">
@@ -157,6 +161,8 @@
 				    <include name="saaj-api.jar" />
 					<include name="saaj-impl.jar" />
 					<include name="sjsxp.jar" />
+					<include name="libidn.jar" />
+					<include name="xalan.jar" />
 				</fileset>
 		        <fileset dir="${lib}/xmlsign">
 					<include name="xmlsec-1.3.0.jar" />
@@ -173,7 +179,7 @@
 	    	              
 	        <jar destfile="dist/xkmscli/xkmscli.jar" basedir="tmp/xkmscli.jar">
 	          <manifest>
-	          	<attribute name="Class-Path" value="lib/bcprov-jdk15.jar lib/ejbca-util.jar lib/log4j.jar lib/activation.jar lib/FastInfoset.jar lib/http.jar lib/jaxb-api.jar lib/jaxb-impl.jar lib/jaxb-xjc.jar lib/jaxws-api.jar lib/jaxws-rt.jar lib/jsr173_api.jar lib/jsr181-api.jar lib/jsr250-api.jar lib/resolver.jar lib/saaj-api.jar lib/saaj-impl.jar lib/sjsxp.jar lib/commons-lang-2.0.jar lib/xmlsec-1.3.0.jar lib/commons-logging-api.jar"/>
+	          	<attribute name="Class-Path" value="lib/bcprov-jdk15.jar lib/ejbca-util.jar lib/log4j.jar lib/activation.jar lib/FastInfoset.jar lib/http.jar lib/jaxb-api.jar lib/jaxb-impl.jar lib/jaxb-xjc.jar lib/jaxws-api.jar lib/jaxws-rt.jar lib/jsr173_api.jar lib/jsr181-api.jar lib/jsr250-api.jar lib/resolver.jar lib/saaj-api.jar lib/saaj-impl.jar lib/sjsxp.jar lib/commons-lang-2.0.jar lib/xmlsec-1.3.0.jar lib/commons-logging-api.jar lib/libidn.jar lib/xalan.jar"/>
 	            <attribute name="Main-Class" value="org.ejbca.core.protocol.xkms.client.xkmscli"/>
 	          </manifest>
 	        </jar>    	    	
@@ -187,8 +193,6 @@
         <javac srcdir="${test.src.dir}" destdir="${test.dir}" debug="on" includeantruntime="no" encoding="iso8859-1">
             <classpath refid="xkms.test.classpath" />
         	<include name="org/ejbca/core/protocol/xkms/Test*" />
-        	<include name="**/caadmin/TestCAs*" />
-        	<include name="**/caadmin/TestRemoveCA*" />
         </javac>
     </target>
 	
@@ -203,25 +207,13 @@
                 <path location="${test.dir}" />
             </classpath>
             <formatter type="xml" />
-        	<!-- we must use fork=yes or the BC JCE won't be authenticated due to some problem with ant classloading -->
-            <!-- <batchtest fork="yes" todir="${test.dir}/xkms/reports">
-                <fileset dir="${test.dir}">
-                    <include name="**/caadmin/TestCAs*" />
-                    <exclude name="**/TestRunner*" />
-                </fileset>
-            </batchtest> -->
             <batchtest fork="yes" todir="${test.dir}/xkms/reports">
                 <fileset dir="${test.dir}">
                     <include name="**/protocol/xkms/Test*" /> 
                 	<!-- <include name="**/protocol/xkms/TestXKMSKRSS*" /> -->
                 </fileset>
             </batchtest>
-            <!-- <batchtest fork="yes" todir="${test.dir}/xkms/reports">
-                <fileset dir="${test.dir}">
-                    <include name="**/caadmin/TestRemoveCA*" />
-                    <exclude name="**/TestRunner*" />
-                </fileset>
-            </batchtest> -->
+
         </junit>
         <junitreport todir="${test.dir}/xkms/reports">
             <fileset dir="${test.dir}/xkms/reports">

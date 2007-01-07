@@ -16,10 +16,8 @@ package org.ejbca.core.protocol.xkms;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
-import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
-import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.interfaces.RSAPrivateKey;
@@ -56,7 +54,6 @@ import org.w3._2002._03.xkms_.RegisterRequestType;
 import org.w3._2002._03.xkms_.RegisterResultType;
 import org.w3._2002._03.xkms_.UseKeyWithType;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 /**
  * 
@@ -64,7 +61,7 @@ import org.w3c.dom.Element;
  * 
  * @author Philip Vendil 2006 sep 27 
  *
- * @version $Id: TestXKMSEnc.java,v 1.1 2007-01-05 05:33:27 herrvendil Exp $
+ * @version $Id: TestXKMSEnc.java,v 1.2 2007-01-07 00:32:18 herrvendil Exp $
  */
 
 public class TestXKMSEnc extends TestCase {

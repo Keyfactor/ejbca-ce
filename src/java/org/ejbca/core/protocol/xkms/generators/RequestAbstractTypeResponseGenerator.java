@@ -60,7 +60,7 @@ import org.w3._2002._03.xkms_.ValidityIntervalType;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: RequestAbstractTypeResponseGenerator.java,v 1.2 2007-01-05 05:32:51 herrvendil Exp $
+ * @version $Id: RequestAbstractTypeResponseGenerator.java,v 1.3 2007-01-07 00:31:52 herrvendil Exp $
  */
 
 public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseGenerator{
@@ -125,7 +125,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
 		} catch (Exception e) {
 			log.error("Error generating response ID ",e );
 		}
-		return id;
+		return "_" + id;
 	}
 
 
@@ -187,6 +187,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
 		   DNFieldExtractor altNameExtractor = new DNFieldExtractor(CertTools.getSubjectAlternativeName(cert),DNFieldExtractor.TYPE_SUBJECTALTNAME);
 		   String cn = CertTools.getPartFromDN(cert.getSubjectDN().toString(), "CN");
 		   
+		   
 		   if(useKeyWithType.getApplication().equals(XKMSConstants.USEKEYWITH_XKMS)||
   		      useKeyWithType.getApplication().equals(XKMSConstants.USEKEYWITH_XKMSPROFILE) ||
   		      useKeyWithType.getApplication().equals(XKMSConstants.USEKEYWITH_TLS)){
@@ -200,7 +201,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
 				      retval.add(useKeyWithType);
 				}			   
 		   }
-		   if(useKeyWithType.getApplication().equals(XKMSConstants.USEKEYWITH_TLSHTTP)){
+		   if(useKeyWithType.getApplication().equals(XKMSConstants.USEKEYWITH_TLSHTTP)){			   
 			    if(cn.startsWith(useKeyWithType.getIdentifier())){
 				      retval.add(useKeyWithType);
 				}			   			   			   			   
@@ -241,7 +242,7 @@ public abstract class RequestAbstractTypeResponseGenerator extends BaseResponseG
    	}
    	    	
 
-   	retval.setId(cert.getSerialNumber().toString(16));             
+   	retval.setId("_" + cert.getSerialNumber().toString(16));             
    	retval.setValidityInterval(getValidityInterval(cert));
 
    	KeyInfoType keyInfoType = sigFactory.createKeyInfoType();

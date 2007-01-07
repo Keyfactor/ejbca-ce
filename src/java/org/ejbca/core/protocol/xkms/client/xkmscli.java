@@ -18,7 +18,7 @@ import org.ejbca.ui.cli.IAdminCommand;
 /**
  * Implements the EJBCA RA WS command line interface
  *
- * @version $Id: xkmscli.java,v 1.1 2006-12-22 09:21:39 herrvendil Exp $
+ * @version $Id: xkmscli.java,v 1.2 2007-01-07 00:31:51 herrvendil Exp $
  */
 public class xkmscli  {
     /**
@@ -34,7 +34,7 @@ public class xkmscli  {
                 cmd.execute();
             } else {
                 System.out.println(
-                    "Usage: locate ");
+                    "Usage: locate | register | reissue | recover | revoke");
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());

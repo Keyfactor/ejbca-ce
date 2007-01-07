@@ -19,7 +19,6 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.UpgradeableDataHashMap;
-import org.ejbca.util.Base64;
 
 
 /**
@@ -27,7 +26,7 @@ import org.ejbca.util.Base64;
  * like a image, in an effort to minimize the need for database alterations
  *
  * @author  Philip Vendil
- * @version $Id: ExtendedInformation.java,v 1.8 2007-01-05 05:32:53 herrvendil Exp $
+ * @version $Id: ExtendedInformation.java,v 1.9 2007-01-07 00:31:52 herrvendil Exp $
  */
 public class ExtendedInformation extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(ExtendedInformation.class);
@@ -86,7 +85,8 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     /**
      * Returns the revocation code identifier primarily used
      * in the XKMS protocol to let the end user revoke his certificate.
-     * 
+     *          
+     *      
      * The method is autoupgradable
      * 
      * @returns The code or null if no revocationcode have been set.
@@ -94,18 +94,19 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     public String getRevocationCodeIdentifier(){ 
     	String retval = (String) data.get(XKMSREVOCATIONCODEIDENTIFIER);
     	
-    	if(retval != null){
-    		retval = new String(Base64.decode(retval.getBytes()));
-    	}
+
     	
     	return retval;     	
     }
+    
+    
+    /**
+     * 
+     * 
+     * @param revocationCodeIdentifier the string saved
+     */
     public void setRevocationCodeIdentifier(String revocationCodeIdentifier) {
-    	String value = revocationCodeIdentifier;
-    	
-    	if(value != null){
-    		value = new String(Base64.encode(value.getBytes()));
-    	}
+    	String value = revocationCodeIdentifier;    
     	    	
     	data.put(XKMSREVOCATIONCODEIDENTIFIER,value);
 

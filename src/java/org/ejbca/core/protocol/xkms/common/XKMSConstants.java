@@ -21,7 +21,7 @@ import javax.xml.namespace.QName;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: XKMSConstants.java,v 1.1 2006-12-22 09:21:40 herrvendil Exp $
+ * @version $Id: XKMSConstants.java,v 1.2 2007-01-07 00:31:53 herrvendil Exp $
  */
 
 public class XKMSConstants {		
@@ -73,13 +73,13 @@ public class XKMSConstants {
     
     public static final String USEKEYWITH_XKMS               = DEFAULT_ANYURI;
     public static final String USEKEYWITH_XKMSPROFILE        = DEFAULT_ANYURI + "/profile";
-    public static final String USEKEYWITH_SMIME              = "urn:ietf:rc:2633";
-    public static final String USEKEYWITH_PGP                = "urn:ietf:rc:2440";
-    public static final String USEKEYWITH_TLS                = "urn:ietf:rc:2246";
-    public static final String USEKEYWITH_TLSHTTP            = "urn:ietf:rc:2818";
-    public static final String USEKEYWITH_TLSSMTP            = "urn:ietf:rc:2487";
-    public static final String USEKEYWITH_IPSEC              = "urn:ietf:rc:2401";
-    public static final String USEKEYWITH_PKIX               = "urn:ietf:rc:2459";
+    public static final String USEKEYWITH_SMIME              = "urn:ietf:rfc:2633";
+    public static final String USEKEYWITH_PGP                = "urn:ietf:rfc:2440";
+    public static final String USEKEYWITH_TLS                = "urn:ietf:rfc:2246";
+    public static final String USEKEYWITH_TLSHTTP            = "urn:ietf:rfc:2818";
+    public static final String USEKEYWITH_TLSSMTP            = "urn:ietf:rfc:2487";
+    public static final String USEKEYWITH_IPSEC              = "urn:ietf:rfc:2401";
+    public static final String USEKEYWITH_PKIX               = "urn:ietf:rfc:2459";
     
     public static final String STATUSVALUE_VALID             = DEFAULT_ANYURI + "Valid";
     public static final String STATUSVALUE_INVALID           = DEFAULT_ANYURI + "Invalid";

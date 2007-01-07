@@ -143,6 +143,10 @@
             <fileset dir="tmp/jaxws/gen-classes/client">
               <include name="**/*.class"/>
             </fileset>	
+            <fileset dir="${src.java}">
+	              <include name="log4j.properties"/>
+	              <include name="profilemappings.properties"/>
+	        </fileset>
 	    </copy> 
  
         <copy todir="dist/ejbcawscli/lib">

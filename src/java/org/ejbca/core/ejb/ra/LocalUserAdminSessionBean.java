@@ -93,7 +93,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.34 2007-01-03 12:27:52 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.35 2007-01-07 00:31:04 herrvendil Exp $
  * 
  * @ejb.bean
  *   display-name="UserAdminSB"
@@ -1070,7 +1070,10 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         }
         // revoke certificate in database and all publishers
         certificatesession.setRevokeStatus(admin, issuerdn, certserno, publishers, reason);
-
+        
+        // Reset the revocation code identifier used in XKMS
+        data.getExtendedInformation().setRevocationCodeIdentifier(null);
+        
         if (certificatesession.checkIfAllRevoked(admin, username)) {
             try {
     			setUserStatus(admin, username, UserDataConstants.STATUS_REVOKED);

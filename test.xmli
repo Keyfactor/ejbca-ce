@@ -49,6 +49,7 @@
                     <include name="**/keyrecovery/Test*" />
                 	<include name="**/approval/Test*" />
                     <include name="**/hardtoken/Test*" />
+                    <exclude name="org/ejbca/core/protocol/xkms/Test*" />
                     <exclude name="**/TestRunner*" />
                 </fileset>
             </batchtest>

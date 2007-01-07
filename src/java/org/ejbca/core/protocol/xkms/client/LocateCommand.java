@@ -13,24 +13,16 @@
  
 package org.ejbca.core.protocol.xkms.client;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.math.BigInteger;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.security.cert.CRLException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
 
 import javax.xml.bind.JAXBElement;
 
@@ -47,7 +39,6 @@ import org.w3._2002._03.xkms_.LocateRequestType;
 import org.w3._2002._03.xkms_.LocateResultType;
 import org.w3._2002._03.xkms_.ObjectFactory;
 import org.w3._2002._03.xkms_.QueryKeyBindingType;
-import org.w3._2002._03.xkms_.StatusType;
 import org.w3._2002._03.xkms_.UnverifiedKeyBindingType;
 import org.w3._2002._03.xkms_.UseKeyWithType;
 import org.w3._2002._03.xkms_.ValidateRequestType;
@@ -60,7 +51,7 @@ import org.w3._2002._03.xkms_.ValidateResultType;
 /**
  * Performes KISS calls to an web service.
  *
- * @version $Id: LocateCommand.java,v 1.1 2006-12-22 09:21:39 herrvendil Exp $
+ * @version $Id: LocateCommand.java,v 1.2 2007-01-07 00:31:51 herrvendil Exp $
  * @author Philip Vendil
  */
 public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
@@ -76,28 +67,14 @@ public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 	private static final int ARG_ENCODING           = 6;
 	private static final int ARG_OUTPUTPATH         = 7;
 	
-	private static final String QUERYTYPE_CERT               = "CERT";			
-	private static final String QUERYTYPE_SMIME              = "SMIME";	
-	private static final String QUERYTYPE_TLS                = "TLS";
-	private static final String QUERYTYPE_TLSHTTP            = "TLSHTTP";
-	private static final String QUERYTYPE_TLSSMTP            = "TLSSMTP";
-	private static final String QUERYTYPE_IPSEC              = "IPSEC";
-	private static final String QUERYTYPE_PKIX               = "PKIX";
+
 	
-	private static final String KEYUSAGE_ALL                  = "ALL";
-	private static final String KEYUSAGE_SIGNATURE            = "SIGNATURE";
-    private static final String KEYUSAGE_ENCRYPTION           = "ENCRYPTION";
-    private static final String KEYUSAGE_EXCHANGE             = "EXCHANGE";
-    
-    private static final String RESPONDWITH_X509CERT           = "X509CERT";
-    private static final String RESPONDWITH_X509CHAIN          = "X509CHAIN";
-    private static final String RESPONDWITH_X509CHAINANDCRL    = "X509CHAINANDCRL";
-    
+
+        
     private static final String VALIDATION_VALIDATE        = "validate";
     private static final String VALIDATION_NOVALIDATION    = "novalidation";
 
-    private static final String ENCODING_PEM        = "pem";
-    private static final String ENCODING_DER        = "der";
+
 	
     /**
      * Creates a new instance of RaAddUserCommand
@@ -214,40 +191,7 @@ public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
         }
     }
 
-    private void displayStatus(KeyBindingType type) {
-		StatusType status = type.getStatus();
-		getPrintStream().println("  The certificate had the following status");
-		getPrintStream().println("  Valid:");
-		displayStatusReasons(status.getValidReason());
-		getPrintStream().println("  Indeterminable:");
-		displayStatusReasons(status.getIndeterminateReason());
-		getPrintStream().println("  Invalid:");
-		displayStatusReasons(status.getInvalidReason());
-		
-	}
-
-	private void displayStatusReasons(List<String> reasons) {
-		if(reasons.size() == 0){
-			getPrintStream().println("      NONE");
-		}else{
-			Iterator<String> iter = reasons.iterator();
-			while(iter.hasNext()){
-				String next = iter.next();
-				if(next.equals(XKMSConstants.STATUSREASON_ISSUERTRUST)){
-					getPrintStream().println("      ISSUERTRUST");
-				}
-				if(next.equals(XKMSConstants.STATUSREASON_REVOCATIONSTATUS)){
-					getPrintStream().println("      REVOCATIONSTATUS");
-				}
-				if(next.equals(XKMSConstants.STATUSREASON_SIGNATURE)){
-					getPrintStream().println("      SIGNATURE");
-				}
-				if(next.equals(XKMSConstants.STATUSREASON_VALIDITYINTERVAL)){
-					getPrintStream().println("      VALIDITYINTERVAL");
-				}
-			}
-		}
-	}
+ 
 
 	private void displayAndOutputCert(UnverifiedKeyBindingType next, String outputPath, boolean pEMEncoding) throws CertificateException, CRLException, IOException {
 		List keyInfos = next.getKeyInfo().getContent();
@@ -312,54 +256,7 @@ public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 		}		
 	}
 
-	private void displayKeyUsage(UnverifiedKeyBindingType next) {
-		Iterator<String> iter = next.getKeyUsage().iterator();
-		getPrintStream().println("  Certificate have the following key usage:");
-		if(next.getKeyUsage().size() == 0){
-			getPrintStream().println("    " + KEYUSAGE_ALL );
-		}
-		while(iter.hasNext()){
-			String keyUsage = iter.next();
-			if(keyUsage.equals(XKMSConstants.KEYUSAGE_SIGNATURE)){
-				getPrintStream().println("    " + KEYUSAGE_SIGNATURE );				
-			}
-			if(keyUsage.equals(XKMSConstants.KEYUSAGE_ENCRYPTION)){
-				getPrintStream().println("    " + KEYUSAGE_ENCRYPTION);				
-			}
-			if(keyUsage.equals(XKMSConstants.KEYUSAGE_EXCHANGE)){
-				getPrintStream().println("    " + KEYUSAGE_EXCHANGE);				
-			}
-		}				
-		
-	}
 
-	private void displayUseKeyWith(UnverifiedKeyBindingType next) {
-		Iterator<UseKeyWithType> iter = next.getUseKeyWith().iterator();
-		if(next.getKeyUsage().size() != 0){
-			getPrintStream().println("  Certificate can be used with applications:");
-			while(iter.hasNext()){
-				UseKeyWithType useKeyWith = iter.next();
-				if(useKeyWith.getApplication().equals(XKMSConstants.USEKEYWITH_IPSEC)){
-					getPrintStream().println("    " + QUERYTYPE_IPSEC + " = " + useKeyWith.getIdentifier());				
-				}
-				if(useKeyWith.getApplication().equals(XKMSConstants.USEKEYWITH_PKIX)){
-					getPrintStream().println("    " + QUERYTYPE_PKIX + " = " + useKeyWith.getIdentifier());				
-				}
-				if(useKeyWith.getApplication().equals(XKMSConstants.USEKEYWITH_SMIME)){
-					getPrintStream().println("    " + QUERYTYPE_SMIME + " = " + useKeyWith.getIdentifier());				
-				}
-				if(useKeyWith.getApplication().equals(XKMSConstants.USEKEYWITH_TLS)){
-					getPrintStream().println("    " + QUERYTYPE_TLS + " = " + useKeyWith.getIdentifier());				
-				}
-				if(useKeyWith.getApplication().equals(XKMSConstants.USEKEYWITH_TLSHTTP)){
-					getPrintStream().println("    " + QUERYTYPE_TLSHTTP + " = " + useKeyWith.getIdentifier());				
-				}
-				if(useKeyWith.getApplication().equals(XKMSConstants.USEKEYWITH_TLSSMTP)){
-					getPrintStream().println("    " + QUERYTYPE_TLSSMTP + " = " + useKeyWith.getIdentifier());				
-				}
-			}
-		}
-	}
 
 	/**
      * Returns tru if 'validation' is set
@@ -421,63 +318,6 @@ public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 	}
 
 	/**
-     * Method that loads a certificate from file 
-     * @param filename
-     * @return
-     */
-    private byte[] loadCert(String arg) {
-		try {
-			BufferedInputStream bis = new BufferedInputStream(new FileInputStream(arg));
-			byte[] retval = new byte[bis.available()];
-			bis.read(retval);
-			return retval;
-			
-		} catch (FileNotFoundException e) {
-			getPrintStream().println("Couldn't find file with name " + arg);
-	        usage();
-	    	System.exit(-1);
-		} catch (IOException e) {
-			getPrintStream().println("Couldn't read file with name " + arg);
-	        usage();
-	    	System.exit(-1);
-		}
-		return null;
-	}
-
-	/**
-     * Returns a collection of resonswith tags.
-     * 
-     * @param arg
-     * @return a collection of Strings containging respond with constatns
-     */
-    private Collection getResponseWith(String arg) {
-    	ArrayList retval = new ArrayList();
-		
-    	if(arg.equalsIgnoreCase(RESPONDWITH_X509CERT)){
-    		retval.add(XKMSConstants.RESPONDWITH_X509CERT);
-    		return retval;
-    	}
-
-    	if(arg.equalsIgnoreCase(RESPONDWITH_X509CHAIN)){
-    		retval.add(XKMSConstants.RESPONDWITH_X509CHAIN);
-    		return retval;
-    	}
-    	
-    	if(arg.equalsIgnoreCase(RESPONDWITH_X509CHAINANDCRL)){
-    		retval.add(XKMSConstants.RESPONDWITH_X509CHAIN);
-    		retval.add(XKMSConstants.RESPONDWITH_X509CRL);
-    		return retval;
-    	}
-    	
-		getPrintStream().println("Illegal response with " + arg);
-        usage();
-    	System.exit(-1);
-		return null;
-	}
-
-
-
-	/**
      * Mthod returning the keyUsage tag or null if all i acceptable
      * @param keyusage from args
      * @return
@@ -522,23 +362,6 @@ public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
     	return false;
 	}
 
-	private String genId() throws NoSuchAlgorithmException {
-        BigInteger serno = null;		
-        Random random = SecureRandom.getInstance("SHA1PRNG");
-
-        long seed = Math.abs((new Date().getTime()) + this.hashCode());
-        random.setSeed(seed);
-		try {
-	        byte[] sernobytes = new byte[8];
-
-	        random.nextBytes(sernobytes);
-	        serno = (new java.math.BigInteger(sernobytes)).abs();
-	       
-		} catch (Exception e) {
-			getPrintStream().println("Error generating response ID " );
-		}
-		return serno.toString();
-	}
 	
 	protected void usage() {
 		getPrintStream().println("Command used to locate and optionaly validate a certificate");

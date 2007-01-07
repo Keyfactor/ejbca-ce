@@ -79,7 +79,7 @@ import org.w3._2002._03.xkms_.UseKeyWithType;
  * 
  * @author Philip Vendil 2006 sep 27 
  *
- * @version $Id: TestXKMSKRSS.java,v 1.1 2007-01-05 05:33:27 herrvendil Exp $
+ * @version $Id: TestXKMSKRSS.java,v 1.2 2007-01-07 00:32:18 herrvendil Exp $
  */
 
 public class TestXKMSKRSS extends TestCase {
@@ -307,8 +307,11 @@ public class TestXKMSKRSS extends TestCase {
         prototypeKeyBindingType.setKeyInfo(keyInfoType);
         prototypeKeyBindingType.setId("100231");
         registerRequestType.setPrototypeKeyBinding(prototypeKeyBindingType);                                
+                
         
-        prototypeKeyBindingType.setRevocationCodeIdentifier("UsersRevokationCodeIdentifier".getBytes());
+        byte[] first = XKMSUtil.getSecretKeyFromPassphrase("UsersRevokationCodeIdentifier", true,20, XKMSUtil.KEY_REVOCATIONCODEIDENTIFIER_PASS1).getEncoded();
+        byte[] second = XKMSUtil.getSecretKeyFromPassphrase(new String(first), false,20, XKMSUtil.KEY_REVOCATIONCODEIDENTIFIER_PASS2).getEncoded();
+        prototypeKeyBindingType.setRevocationCodeIdentifier(second);
         
 		RegisterResultType registerResultType = xKMSInvoker.register(registerRequestType, null, null, "foo123", keys1.getPrivate(), prototypeKeyBindingType.getId());
 		
@@ -352,8 +355,11 @@ public class TestXKMSKRSS extends TestCase {
       
         prototypeKeyBindingType.setId("100231");
         registerRequestType.setPrototypeKeyBinding(prototypeKeyBindingType);                
+
+        byte[] first = XKMSUtil.getSecretKeyFromPassphrase("UsersRevokationCodeId‰ÂˆË", true,20, XKMSUtil.KEY_REVOCATIONCODEIDENTIFIER_PASS1).getEncoded();
+        byte[] second = XKMSUtil.getSecretKeyFromPassphrase(new String(first), false,20, XKMSUtil.KEY_REVOCATIONCODEIDENTIFIER_PASS2).getEncoded();
+        prototypeKeyBindingType.setRevocationCodeIdentifier(second);
         
-        prototypeKeyBindingType.setRevocationCodeIdentifier("UsersRevokationCodeId‰ÂˆË".getBytes());
         
 		RegisterResultType registerResultType = xKMSInvoker.register(registerRequestType, null, null, "foo123", null, prototypeKeyBindingType.getId());
 		
@@ -911,7 +917,8 @@ public class TestXKMSKRSS extends TestCase {
         keyBindingType.setId("100123123422");
         revokeRequestType.setRevokeKeyBinding(keyBindingType);
         
-        revokeRequestType.setRevocationCode("UsersRevokationCodeIdentifier".getBytes());
+        byte[] first = XKMSUtil.getSecretKeyFromPassphrase("UsersRevokationCodeIdentifier", true,20, XKMSUtil.KEY_REVOCATIONCODEIDENTIFIER_PASS1).getEncoded();
+        revokeRequestType.setRevocationCode(first);
         
         
 		RevokeResultType revokeResultType = xKMSInvoker.revoke(revokeRequestType, null, null, null,  keyBindingType.getId());
@@ -937,8 +944,9 @@ public class TestXKMSKRSS extends TestCase {
         revokeRequestType.setRevokeKeyBinding(keyBindingType);
         
         revokeRequestType.getRespondWith().add(XKMSConstants.RESPONDWITH_X509CERT);
-        
-        revokeRequestType.setRevocationCode("Wrong".getBytes());
+
+        byte[] first = XKMSUtil.getSecretKeyFromPassphrase("Wrong", true,20, XKMSUtil.KEY_REVOCATIONCODEIDENTIFIER_PASS1).getEncoded();
+        revokeRequestType.setRevocationCode(first);        
         
         
 		RevokeResultType revokeResultType = xKMSInvoker.revoke(revokeRequestType, null, null, null,  keyBindingType.getId());
@@ -964,8 +972,9 @@ public class TestXKMSKRSS extends TestCase {
         
         revokeRequestType.getRespondWith().add(XKMSConstants.RESPONDWITH_X509CERT);
         
-        revokeRequestType.setRevocationCode("UsersRevokationCodeId‰ÂˆË".getBytes());
-        
+
+        byte[] first = XKMSUtil.getSecretKeyFromPassphrase("UsersRevokationCodeId‰ÂˆË", true,20, XKMSUtil.KEY_REVOCATIONCODEIDENTIFIER_PASS1).getEncoded();
+        revokeRequestType.setRevocationCode(first);
         
 		RevokeResultType revokeResultType = xKMSInvoker.revoke(revokeRequestType, null, null, null,  keyBindingType.getId());
 		
@@ -1009,7 +1018,11 @@ public class TestXKMSKRSS extends TestCase {
         
         revokeRequestType.getRespondWith().add(XKMSConstants.RESPONDWITH_X509CERT);                        
         
-		RevokeResultType revokeResultType = xKMSInvoker.revoke(revokeRequestType, null, null, "UsersRevokationCodeId‰ÂˆË",  keyBindingType.getId());
+        
+        byte[] first = XKMSUtil.getSecretKeyFromPassphrase("UsersRevokationCodeId‰ÂˆË", true,20, XKMSUtil.KEY_REVOCATIONCODEIDENTIFIER_PASS1).getEncoded();
+        revokeRequestType.setRevocationCode(first);
+        
+		RevokeResultType revokeResultType = xKMSInvoker.revoke(revokeRequestType, null, null, null,  keyBindingType.getId());
 		
 		assertTrue(revokeResultType.getResultMajor().equals(XKMSConstants.RESULTMAJOR_SENDER));
 		assertTrue(revokeResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_REFUSED));	

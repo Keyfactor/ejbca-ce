@@ -46,7 +46,7 @@ import org.w3._2002._03.xkms_.UseKeyWithType;
  * 
  * @author Philip Vendil 2006 sep 27
  *
- * @version $Id: KISSResponseGenerator.java,v 1.2 2007-01-05 05:32:51 herrvendil Exp $
+ * @version $Id: KISSResponseGenerator.java,v 1.3 2007-01-07 00:31:52 herrvendil Exp $
  */
 
 public class KISSResponseGenerator extends
@@ -131,7 +131,7 @@ public class KISSResponseGenerator extends
 			// Check that UseKeyWith isn't empty
 			if(queryKeyBindingType.getUseKeyWith().size() >0){
 				Query query = genQueryFromUseKeyWith(queryKeyBindingType.getUseKeyWith());
-
+                
 				try {            		
 					Collection userDatas = getUserAdminSession().query(pubAdmin, query, null, null, resSize);
 

@@ -18,7 +18,7 @@ import org.ejbca.ui.cli.IAdminCommand;
 /**
  * Factory for XKMS CLI Commands.
  *
- * @version $Id: XKMSCLICommandFactory.java,v 1.1 2006-12-22 09:21:39 herrvendil Exp $
+ * @version $Id: XKMSCLICommandFactory.java,v 1.2 2007-01-07 00:31:51 herrvendil Exp $
  * @author Philip Vendil
  */
 public class XKMSCLICommandFactory {
@@ -42,6 +42,22 @@ public class XKMSCLICommandFactory {
         
         if (args[0].equals("locate")) {
             return new LocateCommand(args);
+        }
+        
+        if (args[0].equals("register")) {
+            return new RegisterCommand(args);
+        }
+        
+        if (args[0].equals("reissue")) {
+            return new ReissueCommand(args);
+        }
+        
+        if (args[0].equals("recover")) {
+            return new RecoverCommand(args);
+        }
+        
+        if (args[0].equals("revoke")) {
+            return new RevokeCommand(args);
         }
         
         else {

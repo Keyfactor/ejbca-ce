@@ -13,6 +13,8 @@
 
 package org.ejbca.core.protocol.xkms.generators;
 
+import gnu.inet.encoding.StringprepException;
+
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -44,8 +46,10 @@ import javax.crypto.SecretKey;
 import javax.xml.bind.JAXBElement;
 
 import org.apache.log4j.Logger;
+import org.apache.xml.security.encryption.XMLEncryptionException;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.signature.XMLSignatureException;
+import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -75,7 +79,7 @@ import org.w3c.dom.Element;
  * 
  * @author Philip Vendil 
  *
- * @version $Id: KRSSResponseGenerator.java,v 1.1 2007-01-05 05:32:51 herrvendil Exp $
+ * @version $Id: KRSSResponseGenerator.java,v 1.2 2007-01-07 00:31:52 herrvendil Exp $
  */
 
 public class KRSSResponseGenerator extends
@@ -571,11 +575,19 @@ public class KRSSResponseGenerator extends
     	
     	if(req instanceof RegisterRequestType){
     		if(((RegisterRequestType) req).getPrototypeKeyBinding().getRevocationCodeIdentifier() != null){
-    			retval = new String(((RegisterRequestType) req).getPrototypeKeyBinding().getRevocationCodeIdentifier());
+    			retval = new String(Hex.encode(((RegisterRequestType) req).getPrototypeKeyBinding().getRevocationCodeIdentifier()));
     		}
     	}
     	if(req instanceof RevokeRequestType){
-    		retval = new String(((RevokeRequestType) req).getRevocationCode());
+    		byte[] unMACedCode= ((RevokeRequestType) req).getRevocationCode();
+    		if(unMACedCode != null){
+    			try{
+    				retval = new String(Hex.encode(XKMSUtil.getSecretKeyFromPassphrase(new String(unMACedCode), false, 20, XKMSUtil.KEY_REVOCATIONCODEIDENTIFIER_PASS2).getEncoded()));
+    			}catch (XMLEncryptionException e) {
+    				log.error(e);
+    			} catch (StringprepException e) {// is never thrown}
+    			}
+    		}
     	}
 		
 		return retval;

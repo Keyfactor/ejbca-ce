@@ -1226,13 +1226,17 @@ The following settings exists:
 </p>
 <ul>
 <li>xkms.enabled: Enables the XKMS Service (default: true)</li>
-<li>xkms.request.requiresignature: id signed XKMS request should be required for KISS call(locate,validate) KRSS calls are always required. (default: false)</li>
+<li>xkms.request.requiresignature: id signed XKMS request should be required  (default: false)</li>
 <li>xkms.request.acceptedcas: List of CA names that are accepted for XKMS signed requests. Use ';' as a separate for multiple. (default 'AdminCA1')</li>
 <li>xkms.response.acceptsignrequest: Accept signed responses on request (default: true)</li>
 <li>xkms.response.alwayssign: Always sign responses (default: false)</li>
 <li>xkms.response.causedforsigning: Specify which CA that should be used with the signed responses. Only one can be specified. (default 'AdminCA1')</li>
 <li>xkms.keyusage.signatureisnonrep: Setting specifying the keyusage in a X509 certificate that is mapped to XKMS KeyUsage Signature, Default is non-repudiation but if set to false will XKMS KeyUsage Signature be mapped against digital signature X509 key usage.</li>
 <li>xkms.serviceport=This is a development setting that is set in the WSDL to instruct the client use a non default port. This is only needed if a WS tap listener is used to review the messages. (default: 8080)</li>
+<li>xkms.krss.poprequired=Defines if proof of possesion of the private key is required (default: true)</li>
+<li>xkms.krss.servergenkeylength=Defines the key length of server generated keys (default: 1024)</li>
+<li>xkms.krss.allowrevokation=Defines it should be possible for users to revoke their certificate with a revocation code (default: true)</li>
+<li>xkms.krss.allowautomaticreissue=Setting to allow the user to renew automatically as long as the current key isn't revoked  (default: false)</li>
 </ul>
 <p>
 Important, if signing of responses is needed, must the XKMS CA service for the configured CA be activated in the
@@ -1242,16 +1246,42 @@ Important, if signing of responses is needed, must the XKMS CA service for the c
 <subsection name="Implementation Specific Notes">
 <subsubsection name="What is implemented">
 <p>
-Currently are the methods locate and validate implemented. (Soon register, reissue, revoke and rekover). The Compond request isn't implemented.
+Currently are the methods locate, validate, register, reissue, revoke and rekover). The Compond request isn't implemented.
 </p><p>
 The XKMS Service only supports syncronized calls, not asyncronised or two-phase requests.
 </p><p>
 The TimeInstant attribute of QueryKeyBinding is not supported
 </p>
+<p>
+In the NotBoundAuthentication isn't the 'Protocol' attribute used.
+</p>
+<p>
+The register listener expects a UseKeyWith=urn:ietf:rfc:2459 (PKIX) with the subjectDN as identifier and is mapped to the user.
+The password of the user Must be marked as cleartext in order for KRSS to work. In KeyInfo is one RSAKeyInfo required if
+the user have the type 'USERGENERATED'. All other UseKeyWith or KeyUsage is ignored.
+since it is the register userdata that is used when issuing the certificate. If the user have the type "P12" in it's userdata
+then will a server generated key be inserted in a PrivateKey in the response. It is the same password to encrypt the key as 
+for the enrollment. RespondWith RSAPublicKey, X509Certificate, X509CertificateChain and PrivateKey is supported.
+</p>
+<p>
+The reissue listener expects one X509Certificate KeyInfo in the request and the subjectDN and public is extracted
+and used for the new certificate. Revoked certificates cannot be renewed. enerated key be inserted in a PrivateKey in the response. It is the same password to encrypt the key as 
+for the enrollment. RespondWith RSAPublicKey, X509Certificate and X509CertificateChain.
+</p>
+<p>
+The recover listener expects one X509Certificate KeyInfo in the request and is used to select the user in
+the database. Before a key can be recovered the key have to be marked for recovery and a password set for the user in 
+the usual way. RespondWith RSAPublicKey, X509Certificate, X509CertificateChain and PrivateKey is supported.
+</p>
+<p>
+The revoke listener expects one X509Certificate KeyInfo in the request and is used to select the certificate
+that should be revoked. A revokation code is required, authentication tag is not supported.
+RespondWith RSAPublicKey, X509Certificate and X509CertificateChain is supported.
+</p>
 </subsubsection>
 <subsubsection name="XKMS Mappings">
 <p>
-The RespondWith tag supports X509Certificate, X509CertificateChain, X509CRL, KeyName and KeyValue
+The RespondWith tag supports X509Certificate, X509CertificateChain, X509CRL, KeyName, KeyValue (and PrivateKey for register and recover).
 </p><p>
 <i>The QueryKeyBinding</i> 
 The query of a QueryKeyBinding is performed in the following way:

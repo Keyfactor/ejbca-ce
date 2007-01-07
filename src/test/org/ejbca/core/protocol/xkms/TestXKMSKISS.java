@@ -73,7 +73,7 @@ import org.w3._2002._03.xkms_.ValidateResultType;
  * 
  * @author Philip Vendil 2006 sep 27 
  *
- * @version $Id: TestXKMSKISS.java,v 1.2 2007-01-03 14:35:51 anatom Exp $
+ * @version $Id: TestXKMSKISS.java,v 1.3 2007-01-07 00:32:18 herrvendil Exp $
  */
 
 public class TestXKMSKISS extends TestCase {
@@ -223,7 +223,7 @@ public class TestXKMSKISS extends TestCase {
     			type, token, hardtokenissuerid, caid);
     	cacheAdmin.setClearTextPassword(administrator, username3, pwd);
     	KeyPair keys3 = genKeys();        
-    	X509Certificate cert3 = (X509Certificate) rsaremote.createCertificate(administrator, username3, "foo123", keys3.getPublic());      
+    	 rsaremote.createCertificate(administrator, username3, "foo123", keys3.getPublic());      
 
     }
     

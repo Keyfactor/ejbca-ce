@@ -17,6 +17,7 @@ import java.security.cert.X509Certificate;
 
 import javax.ejb.FinderException;
 
+import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -34,7 +35,7 @@ import org.w3c.dom.Document;
  * 
  * @author Philip Vendil 
  *
- * @version $Id: RevokeResponseGenerator.java,v 1.1 2007-01-05 05:32:51 herrvendil Exp $
+ * @version $Id: RevokeResponseGenerator.java,v 1.2 2007-01-07 00:31:52 herrvendil Exp $
  */
 
 public class RevokeResponseGenerator extends
@@ -68,21 +69,13 @@ public class RevokeResponseGenerator extends
 						UserDataVO userData = findUserData(cert);
 						String revokationCodeId = getRevokationCodeFromUserData(userData);
 						if(userData != null && revokationCodeId != null){
-							String password = "";
-							boolean encryptedPassword = isPasswordEncrypted(req);
-							if(getRevocationCode(req) != null){
-								password = getRevocationCode(req);
-							}else{							
-								if(encryptedPassword){
-									password = getEncryptedPassword(requestDoc, revokationCodeId);
-								}else{
-									password = getClearPassword(req, userData.getPassword());
-								}
-							}
+							
+							
+							String revokeCode = getRevocationCode(req);
 
 							if(XKMSConfig.isRevokationAllowed()){
-							  if(password != null ){
-								X509Certificate newCert = revoke(userData,password, revokationCodeId, cert);
+							  if(revokeCode != null ){
+								X509Certificate newCert = revoke(userData,revokeCode, revokationCodeId, cert);
 								if(newCert != null && req.getRespondWith().size() > 0){
 									KeyBindingAbstractType keyBinding = getResponseValues(req.getRevokeKeyBinding(), newCert, true, false);
 									result.getKeyBinding().add((KeyBindingType) keyBinding);
@@ -131,10 +124,10 @@ public class RevokeResponseGenerator extends
 	private X509Certificate revoke(UserDataVO userData, String password, String revocationCode,  X509Certificate cert) {
 		X509Certificate retval = null;
 		// Check the password
-		
+				
 		if(revocationCode.equals(password)){				
 			// revoke cert
-			try {
+			try {								
 				getUserAdminSession().revokeCert(raAdmin, cert.getSerialNumber(), CertTools.getIssuerDN(cert), userData.getUsername(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
 				retval = cert;
 			} catch (AuthorizationDeniedException e) {
