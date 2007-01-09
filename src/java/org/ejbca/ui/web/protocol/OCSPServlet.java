@@ -17,9 +17,15 @@ import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.util.Collection;
 
+import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
+import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
+import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
@@ -67,13 +73,40 @@ import org.ejbca.core.model.log.Admin;
  *  auth="Container"
  *
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson, Lars Silven
- * @version  $Id: OCSPServlet.java,v 1.9 2006-12-04 15:05:04 anatom Exp $
+ * @version  $Id: OCSPServlet.java,v 1.10 2007-01-09 12:47:44 anatom Exp $
  */
 public class OCSPServlet extends OCSPServletBase {
 
+    private ICertificateStoreSessionLocal m_certStore = null;
+    private ISignSessionLocal m_signsession = null;
+    
     public void init(ServletConfig config)
             throws ServletException {
         super.init(config);
+    }
+    
+    private synchronized ICertificateStoreSessionLocal getStoreSession(){
+    	if(m_certStore == null){	
+    		try {
+    			ICertificateStoreSessionLocalHome storehome = (ICertificateStoreSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
+    			m_certStore = storehome.create();
+    		}catch(Exception e){
+    			throw new EJBException(e);      	  	    	  	
+    		}
+    	}
+    	return m_certStore;
+    }
+    
+    private synchronized ISignSessionLocal getSignSession(){
+    	if(m_signsession == null){	
+    		try {
+    			ISignSessionLocalHome signhome = (ISignSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ISignSessionLocalHome.COMP_NAME);
+    			m_signsession = signhome.create();
+    		}catch(Exception e){
+    			throw new EJBException(e);      	  	    	  	
+    		}
+    	}
+    	return m_signsession;
     }
 
     protected Collection findCertificatesByType(Admin adm, int i, String issuerDN) {

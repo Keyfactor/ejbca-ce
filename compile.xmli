@@ -299,11 +299,9 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
         <ejbdoclet force="false" destdir="${ocsp-src.gen}" ejbspec="2.0" excludedtags="@version,@author">
             <fileset dir="${src.java}">
                 <include name="**/CertificateDataBean.java" />
+                <include name="**/LocalCertificateStoreOnlyDataSessionBean.java" />
                 <include name="**/TableProtectDataBean.java" />
                 <include name="**/TableProtectSessionBean.java" />
-                <include name="**/RSASignSessionBean.java" />
-                <include name="**/LocalCertificateStoreSessionBean.java" />
-                <include name="**/UserDataBean.java" />
             </fileset>
             <remoteinterface />
             <homeinterface />

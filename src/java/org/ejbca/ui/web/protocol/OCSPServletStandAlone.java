@@ -35,11 +35,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.ocsp.BasicOCSPResp;
+import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotActiveException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
@@ -93,8 +97,8 @@ import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
  *  home="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocalHome"
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
- * @author Lars Silv�n PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.32 2006-12-13 10:36:04 anatom Exp $
+ * @author Lars Silven PrimeKey
+ * @version  $Id: OCSPServletStandAlone.java,v 1.33 2007-01-09 12:47:45 anatom Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChecker {
 
@@ -107,6 +111,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     private char mStorePassword[];
     private CardKeys mHardTokenObject;
 	private final Map mSignEntity;
+    private ICertificateStoreOnlyDataSessionLocal m_certStore = null;
 
     public OCSPServletStandAlone() {
         super();
@@ -165,6 +170,24 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
             throw new ServletException(e);
         }
     }
+    
+    /**
+     * Returns the certificate data only session bean
+     */
+    private synchronized ICertificateStoreOnlyDataSessionLocal getStoreSessionOnlyData(){
+    	if(m_certStore == null){	
+    		try {
+                ServiceLocator locator = ServiceLocator.getInstance();
+                ICertificateStoreOnlyDataSessionLocalHome castorehome =
+                    (ICertificateStoreOnlyDataSessionLocalHome)locator.getLocalHome(ICertificateStoreOnlyDataSessionLocalHome.COMP_NAME);
+                m_certStore = castorehome.create();
+    		}catch(Exception e){
+    			throw new EJBException(e);      	  	    	  	
+    		}
+    	}
+    	return m_certStore;
+    }
+
     private X509Certificate[] getCertificateChain(X509Certificate cert, Admin adm) {
         RevokedCertInfo revokedInfo = isRevoked(adm, cert.getIssuerDN().getName(),
                 cert.getSerialNumber());
@@ -404,11 +427,11 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     }
 
     protected Collection findCertificatesByType(Admin adm, int type, String issuerDN) {
-        return getStoreSession().findCertificatesByType(adm, type, issuerDN);
+        return getStoreSessionOnlyData().findCertificatesByType(adm, type, issuerDN);
     }
 
     protected Certificate findCertificateByIssuerAndSerno(Admin adm, String issuer, BigInteger serno) {
-        return getStoreSession().findCertificateByIssuerAndSerno(adm, issuer, serno);
+        return getStoreSessionOnlyData().findCertificateByIssuerAndSerno(adm, issuer, serno);
     }
     
     protected OCSPCAServiceResponse extendedService(Admin adm, int caid, OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException,
@@ -421,6 +444,6 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
     }
 
     protected RevokedCertInfo isRevoked(Admin adm, String name, BigInteger serialNumber) {
-        return getStoreSession().isRevoked(adm, name, serialNumber);
+        return getStoreSessionOnlyData().isRevoked(adm, name, serialNumber);
     }
 }
