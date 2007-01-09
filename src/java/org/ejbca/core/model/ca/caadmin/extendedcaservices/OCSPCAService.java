@@ -21,15 +21,12 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.OCSPException;
 import org.ejbca.core.ejb.ServiceLocator;
@@ -37,7 +34,6 @@ import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.NotSupportedException;
 import org.ejbca.core.model.ca.caadmin.CA;
 import org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException;
-import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.certificateprofiles.OCSPSignerCertificateProfile;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
@@ -49,7 +45,7 @@ import org.ejbca.util.KeyTools;
 
 /** Handles and maintains the CA-part of the OCSP functionality
  * 
- * @version $Id: OCSPCAService.java,v 1.13 2006-12-27 11:13:56 anatom Exp $
+ * @version $Id: OCSPCAService.java,v 1.14 2007-01-09 15:53:55 anatom Exp $
  */
 public class OCSPCAService extends ExtendedCAService implements java.io.Serializable{
 
@@ -227,27 +223,10 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
         }
     	X509Certificate signerCert = (X509Certificate)certChain.get(0);
 
-        String sigAlg = ocspServiceReq.getSigAlg();
-        String[] algs = StringUtils.split(sigAlg, ';');
-        if ( (algs != null) && (algs.length > 1) ) {
-        	PublicKey pk = signerCert.getPublicKey();
-        	if (pk instanceof RSAPublicKey) {
-        		if (StringUtils.contains(algs[0], CATokenConstants.KEYALGORITHM_RSA)) {
-        			sigAlg = algs[0];
-        		}
-        		if (StringUtils.contains(algs[1], CATokenConstants.KEYALGORITHM_RSA)) {
-        			sigAlg = algs[1];
-        		}
-        	} else if (pk instanceof JCEECPublicKey) {
-        		if (StringUtils.contains(algs[0], CATokenConstants.KEYALGORITHM_ECDSA)) {
-        			sigAlg = algs[0];
-        		}
-        		if (StringUtils.contains(algs[1], CATokenConstants.KEYALGORITHM_ECDSA)) {
-        			sigAlg = algs[1];
-        		}
-        	}
-        	m_log.debug("Using signature algorithm for response: "+sigAlg);
-        }
+        String sigAlgs = ocspServiceReq.getSigAlg();
+    	PublicKey pk = signerCert.getPublicKey();
+        String sigAlg = OCSPUtil.getSigningAlgFromAlgSelection(sigAlgs, pk);
+        m_log.debug("Signing algorithm: "+sigAlg);
         boolean includeChain = ocspServiceReq.includeChain();
         X509Certificate[] chain = null;
         if (includeChain) {

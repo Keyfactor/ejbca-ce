@@ -22,6 +22,7 @@ import java.io.StringWriter;
 import java.math.BigInteger;
 import java.security.KeyStore;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -98,7 +99,7 @@ import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silven PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.34 2007-01-09 15:42:17 anatom Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.35 2007-01-09 15:53:55 anatom Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChecker {
 
@@ -405,8 +406,10 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         }
         OCSPCAServiceResponse sign( OCSPCAServiceRequest request) throws ExtendedCAServiceRequestException {
         	X509Certificate signerCert = mChain[0];
-            final String sigAlg = request.getSigAlg();
-            m_log.debug("signing algorithm: "+sigAlg);
+            final String sigAlgs = request.getSigAlg();
+        	PublicKey pk = signerCert.getPublicKey();
+            String sigAlg = OCSPUtil.getSigningAlgFromAlgSelection(sigAlgs, pk);
+            m_log.debug("Signing algorithm: "+sigAlg);
             final X509Certificate[] chain = request.includeChain() ? mChain : null;
             try {
                 BasicOCSPResp ocspresp = OCSPUtil.generateBasicOCSPResp(request, sigAlg, signerCert, mKeyFactory.getKey(), providerName, chain);
