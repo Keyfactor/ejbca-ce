@@ -98,7 +98,7 @@ import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silven PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.33 2007-01-09 12:47:45 anatom Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.34 2007-01-09 15:42:17 anatom Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChecker {
 
@@ -214,8 +214,10 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         	boolean isNotFound = true;
         	while( isNotFound && j.hasNext() ) {
         		X509Certificate target = (X509Certificate)j.next();
-        		m_log.debug( "curent issuer '" + current.getIssuerX500Principal() +
-        				"'. target subject: '" + target.getSubjectX500Principal() + "'.");
+        		if (m_log.isDebugEnabled()) {
+            		m_log.debug( "current issuer '" + current.getIssuerX500Principal() +
+            				"'. target subject: '" + target.getSubjectX500Principal() + "'.");        			
+        		}
         		if ( current.getIssuerX500Principal().equals(target.getSubjectX500Principal()) ) {
         			current = target;
         			isNotFound = false;
