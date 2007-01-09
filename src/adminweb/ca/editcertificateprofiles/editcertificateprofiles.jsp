@@ -2,7 +2,8 @@
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.SecConst, org.ejbca.core.model.authorization.AuthorizationDeniedException,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, org.ejbca.ui.web.admin.cainterface.CertificateProfileDataHandler, 
-               org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException, org.ejbca.ui.web.admin.rainterface.CertificateView, org.ejbca.util.dn.DNFieldExtractor, org.ejbca.util.dn.DnComponents"%>
+               org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException, org.ejbca.ui.web.admin.rainterface.CertificateView, org.ejbca.util.dn.DNFieldExtractor, org.ejbca.util.dn.DnComponents, 
+               org.ejbca.core.model.ca.certextensions.CertificateExtensionFactory, org.ejbca.core.model.ca.certextensions.AvailableCertificateExtension"%>
 
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -93,6 +94,7 @@
   static final String SELECT_MSTEMPLATE                           = "selectmstemplate";
   static final String SELECT_SUBJECTDNSUBSET                      = "selectsubjectdnsubset";
   static final String SELECT_SUBJECTALTNAMESUBSET                 = "selectsubjectaltnamesubset";
+  static final String SELECT_USEDCERTIFICATEEXTENSIONS            = "selectusedcertificateextensions";
 
   // Declare Language file.
 
@@ -601,6 +603,15 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
              else{
                  certificateprofiledata.setUseSubjectAltNameSubSet(false);                 
                  certificateprofiledata.setSubjectAltNameSubSet(new ArrayList());
+             }
+             
+             values = request.getParameterValues(SELECT_USEDCERTIFICATEEXTENSIONS);
+             if(values != null){
+                ArrayList useextensions = new ArrayList();
+                for(int i=0;i< values.length;i++){
+                  useextensions.add(new Integer(values[i]));	
+                }                     
+                certificateprofiledata.setUsedCertificateExtensions(useextensions);
              }
              
              certificateprofiledata.setUseQCStatement(false);

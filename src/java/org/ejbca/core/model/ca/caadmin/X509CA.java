@@ -110,6 +110,8 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAService;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
+import org.ejbca.core.model.ca.certextensions.CertificateExtension;
+import org.ejbca.core.model.ca.certextensions.CertificateExtensionFactory;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -124,7 +126,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.47 2007-01-03 15:59:50 anatom Exp $
+ * @version $Id: X509CA.java,v 1.48 2007-01-09 16:47:19 herrvendil Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -693,7 +695,17 @@ public class X509CA extends CA implements Serializable {
         	 }
         	 
          }         
-		          
+
+         // Check for Certificate Extensions
+         CertificateExtensionFactory fact = CertificateExtensionFactory.getInstance();
+         List usedCertExt = certProfile.getUsedCertificateExtensions();
+         Iterator certExtIter = usedCertExt.iterator();
+         while(certExtIter.hasNext()){
+        	 Integer id = (Integer) certExtIter.next();
+        	 CertificateExtension certExt = fact.getCertificateExtensions(id);
+        	 certgen.addExtension(new DERObjectIdentifier(certExt.getOID()),certExt.isCriticalFlag(),certExt.getValue(subject, this, certProfile));        	 
+         }
+         
          X509Certificate cert;
          try{
            cert = certgen.generate(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), 

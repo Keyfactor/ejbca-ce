@@ -3281,6 +3281,100 @@ The OtherName consists of:
 </p>
 </subsection>
 </section>
+<section name="Custom Certificate Extensions">
+<p>
+From EJBCA 3.4 it is possible to add customized certificate extensions to certificates.
+Simple extensions only containing a static value can be added by simply editing a property file, these are called
+"basic certificate extension". It is also possible to generate advanced certificate extenstion by
+implementing a simple java interface.
+</p>
+<subsection name="Configuring Custom Certificate Extensions">
+<p>
+Certificate extensions is configured in the file 'src/java/certextensions.properties'
+All extentions should have a id ranging form 1 up to 255, the number order is important.
+</p>
+The following properties must be set for each extension (all beginning with idN.)
+<ul>
+<li>oid : The unique OID of the extension (Required)
+</li>
+<li>classpath : Classpath to the CertificateExtention implementing class. (Required)
+</li>
+<li>displayname : Display name of the extension in the 'Edit Certificate Profile' page (Required)
+</li>
+<li>used : Defines if the extensions should be used or be disabled. (Required)
+</li>
+<li>translatable : If the display name should be translated in the language resources. (Required)
+</li>
+<li>critical : Defines if the extension should be marked as critical in the certificate. (Required)
+</li>
+<li>property.'property' : It is possible to define properties to the actual implementation of the CertificateExtention, for example does the BasicCerticateExtension require the properties 'encoding' and 'value' to be set.
+</li>
+</ul>
+<p>
+After the file is configured rebuild and deploy EJBCA.
+</p><p>
+Efter extensions have been added it is possible to select them for a certificate profile
+in the 'Edit Certificate Profile' page.
+</p>
+</subsection>
+<subsection name="Basic Certificate Extension">
+<p>
+In order to create a Basic Certificate Extension us the classpath org.ejbca.core.model.ca.certextensions.BasicCertificateExtension
+and specify the properties idX.property.encoding and idX.property.value.
+See the following table for the available encodings and how their value is interpreted
+</p>
+<ul>
+<li>DERBITSTRING : A String containing the characters '0' and '1'.
+</li>
+<li>DERINTEGER : A String containing digits only in decimal digits.
+</li>
+<li>DEROCTETSTRING : A String containing hex data representation
+</li>
+<li>DERBOOLEAN : The string 'true' or 'false'
+</li>
+<li>DERPRINTABLESTRING : A string containing valid printable string characters.
+</li>
+<li>DERUTF8STRING : A string in UTF-8 format
+</li>
+<li>DERNULL : Value isn't used
+</li>
+</ul>
+</subsection>
+<subsection name="Implementing an Advanced Certificate Extension">
+<p>
+To create an advanced extension it's required to create a java class inheriting
+the CertificateExtension abstract class. One method getValue is required and
+the current user data, ca and certificate profile is sent to the extension in order
+to generate dynamic extensions.
+</p><p>
+Here is an example of a simple advanced extension. To add this extension to EJBCA
+add to to the classpath of certextensions.properties, make sure the class is 
+accessable in the classpath and redeploy.
+</p>
+<source>
+public class SomeAdvancedCertificateExtension extends CertificateExtension {
+
+    private static String PROPERTY_SOMEPROPERTY = "someproperty";
+
+	/**
+	 * The main method that should return a DEREncodable
+	 * using the input data (optional) or defined properties (optional)
+	 * 
+	 * @see org.ejbca.core.model.ca.certextensions.CertificateExtension#getValue(org.ejbca.core.model.ra.UserDataVO, org.ejbca.core.model.ca.caadmin.CA, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile)
+	 */	
+	public DEREncodable getValue(UserDataVO userData, CA ca,
+			CertificateProfile certProfile) {
+		
+		String value = getProperties().getProperty(PROPERTY_SOMEPROPERTY);
+		
+		return new DERPrintableString(value);
+	}
+
+}
+</source>
+
+</subsection>
+</section>
 <section name="Reference manual">
 <p>
 All configuration options, JNDI names etc is configured through the use of a conf/ejbca.properties file. 

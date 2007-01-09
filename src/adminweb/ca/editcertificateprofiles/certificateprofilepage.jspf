@@ -3,6 +3,8 @@
   CertificateProfile certificateprofiledata = cabean.getCertificateProfile(certprofile.trim());
 
  
+  CertificateExtensionFactory certExtFact = CertificateExtensionFactory.getInstance();
+ 
   String[] SUPERADMIN_TYPE_NAMES = {"ENDENTITY", "SUBCA", "ROOTCA"};
   int[] SUPERADMIN_TYPE_IDS = {CertificateDataBean.CERTTYPE_ENDENTITY,CertificateDataBean.CERTTYPE_SUBCA , CertificateDataBean.CERTTYPE_ROOTCA};
    
@@ -991,7 +993,33 @@ function checkallfields(){
             <%}%>
           </select>         
       </td>
+    </tr>
+    <% if(certExtFact.getAvailableCertificateExtensions().size() > 0){ %>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%" align="right"> 
+        <%= ejbcawebbean.getText("USEDCERTEXTENSIONS") %> <br>&nbsp;
+      </td>
+      <td width="50%"> 
+        <select name="<%=SELECT_USEDCERTIFICATEEXTENSIONS%>" size="5" multiple >
+           <%  List usedCertExt = certificateprofiledata.getUsedCertificateExtensions();               
+               List availableCertExt = certExtFact.getAvailableCertificateExtensions();
+               for(int i=0; i<availableCertExt.size();i++){ 
+                 AvailableCertificateExtension availCertExt = (AvailableCertificateExtension) availableCertExt.get(i); %>
+           <option  value="<%= availCertExt.getId() %>" 
+              <%  if(usedCertExt.contains(new Integer(availCertExt.getId()))){
+                      out.write(" selected ");
+                  }%>>
+              <% if(availCertExt.isTranslatable()){ 
+                 out.write(ejbcawebbean.getText(availCertExt.getDisplayName()));              
+              }else{
+                  out.write(availCertExt.getDisplayName());  
+              } %>         
+           </option>  
+              <% } %>
+        </select>
+      </td>
     </tr>   
+    <% } %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" align="right"> 
         <%= ejbcawebbean.getText("AVAILABLEBITLENGTHS") %> <br>&nbsp;

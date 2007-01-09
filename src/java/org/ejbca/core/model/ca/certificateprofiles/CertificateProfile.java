@@ -35,7 +35,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.17 2006-12-13 10:34:09 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.18 2007-01-09 16:47:21 herrvendil Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
@@ -173,7 +173,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String QCCUSTOMSTRINGOID              = "qccustomstringoid";
     protected static final String QCCUSTOMSTRINGTEXT             = "qccustomstringtext";
     protected static final String USESUBJECTDIRATTRIBUTES        = "usesubjectdirattributes";
-    
+    protected static final String USEDCERTIFICATEEXTENSIONS      = "usedcertificateextensions";
      
     // Public Methods
 
@@ -267,6 +267,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       setQCCustomStringText(null);
       
       setUseSubjectDirAttributes(false);
+      
+      setUsedCertificateExtensions(new ArrayList());
       
     }
 
@@ -780,6 +782,32 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public boolean getUseSubjectDirAttributes(){ return ((Boolean) data.get(USESUBJECTDIRATTRIBUTES)).booleanValue(); }
     public void setUseSubjectDirAttributes(boolean use) { data.put(USESUBJECTDIRATTRIBUTES, Boolean.valueOf(use));}
 
+    /**
+     * Method returning a list of (Integers) of ids of
+     * used certificate extensions. Never null.
+     * 
+     * Autoupgradable method
+     */
+    public List getUsedCertificateExtensions(){ 
+    	if(data.get(USEDCERTIFICATEEXTENSIONS) == null){
+    		return new ArrayList();
+    	}
+    	
+    	return (List) data.get(USEDCERTIFICATEEXTENSIONS); 
+    }
+    
+    /**
+     * Method setting a list of used certificate extensions
+     * a list of Integers containing CertificateExtension Id is expected
+     * @param usedCertificateExtensions
+     */
+    public void setUsedCertificateExtensions(List usedCertificateExtensions) {
+      if(usedCertificateExtensions==null)
+        data.put(USEDCERTIFICATEEXTENSIONS,new ArrayList());
+      else
+        data.put(USEDCERTIFICATEEXTENSIONS,usedCertificateExtensions);
+    }
+    
     public Object clone() throws CloneNotSupportedException {
       CertificateProfile clone = new CertificateProfile();
       HashMap clonedata = (HashMap) clone.saveData();
