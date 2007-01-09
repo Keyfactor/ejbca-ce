@@ -61,7 +61,7 @@
         </wsimport>
 	</target>
 	
-    <target depends="xkms.init, preprocess" name="xkms.build">
+    <target name="xkms.build" depends="xkms.init, preprocess" if="xkms.conditionenabled">
         <javac debug="true" debuglevel="${debuglevel}" destdir="tmp/xkms/gen-classes" >
             <src path="src/xkms/gen-java"/>
             <classpath refid="xkms.classpath"/>        	
@@ -85,7 +85,7 @@
 		</condition>
 	</target>
 	
-    <target depends="xkmsconditioncheck, xkms.build" name="xkms.war" if="xkms.conditionenabled">
+    <target name="xkms.war" depends="xkmsconditioncheck, xkms.build" if="xkms.conditionenabled">
         <copy todir="tmp/xkms/gen-classes">
     	  <fileset dir="${build}">
             <include name="org/ejbca/core/protocol/xkms/*.class"/>
