@@ -267,6 +267,13 @@
             <fileset dir="${ocsp-build}"/>
             <fileset dir="${src}/log"/>
             <fileset dir="${ocsp.hardToken.classes}"/>
+        	<fileset dir="${src}">
+        	    <include name="intresources/*.properties"/>
+        	</fileset>	
+        	<fileset dir="${src}/java">
+        	    <include name="dncomponents.properties"/>
+        		<include name="profilemappings.properties"/>
+        	</fileset>	
         </jar>
     </target>
     
