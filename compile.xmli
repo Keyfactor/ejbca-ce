@@ -155,6 +155,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
         	<fileset dir="${src}/java">
         	    <include name="dncomponents.properties"/>
         		<include name="profilemappings.properties"/>
+        		<include name="certextensions.properties"/>
         	</fileset>	
         </copy>
     </target>
