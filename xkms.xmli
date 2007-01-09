@@ -106,7 +106,7 @@
 
 	
 
-	 <target name="xkms.build.client" depends="xkms.build, ejbca-util.jar">
+	 <target name="xkms.build.client" depends="xkmsconditioncheck, xkms.build, ejbca-util.jar" if="xkms.conditionenabled">
 
 	        <javac debug="true" debuglevel="${debuglevel}" destdir="${build}" >
 	            <src path="${src.java}"/>
