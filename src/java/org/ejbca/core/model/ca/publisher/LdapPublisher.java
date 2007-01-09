@@ -49,7 +49,7 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.21 2006-12-21 15:10:41 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.22 2007-01-09 08:38:07 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
@@ -955,6 +955,7 @@ public class LdapPublisher extends BasePublisher {
         		}
         		// If we have selected to use the SN (serialNUmber DN field, we will also add it as an attribute
         		// This is not present in the normal objectClass (inetOrgPerson)
+        		// Modifying the schema is as simple as adding serialNumber as MAY in the inetOrgPerson object class in inetorgperson.schema.
             	Collection usefields = getUseFieldInLdapDN();
             	if (usefields.contains(Integer.valueOf(DNFieldExtractor.SN))) {
             		String serno = CertTools.getPartFromDN(dn, "SN");
