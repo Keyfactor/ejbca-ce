@@ -112,7 +112,7 @@ import org.ejbca.util.CertTools;
  *   value="${ocsp.unidcacert}"
  *   
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson, Lars Silven
- * @version  $Id: OCSPServletBase.java,v 1.24 2007-01-09 12:47:44 anatom Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.25 2007-01-09 15:40:54 anatom Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
@@ -431,6 +431,8 @@ abstract class OCSPServletBase extends HttpServlet {
         		String iMsg = intres.getLocalizedMessage("ocsp.reloadkeys", remote);
             	m_log.info(iMsg);
             	m_certValidTo = 0;
+            } else {
+            	m_log.info("Got reloadKeys command from unauthorized ip: "+remote);
             }
         }
         response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "OCSP only supports POST");
