@@ -158,7 +158,7 @@ import org.ejbca.util.KeyTools;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
  *   
- *   @version $Id: RSASignSessionBean.java,v 1.33 2007-01-02 16:06:33 anatom Exp $
+ *   @version $Id: RSASignSessionBean.java,v 1.34 2007-01-09 15:42:53 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -1225,28 +1225,37 @@ public class RSASignSessionBean extends BaseSessionBean {
      * @param admin            Information about the administrator or admin preforming the event.
      * @param certificatechain certchain of certificate to publish
      * @param usedpublishers   a collection if publisher id's (Integer) indicating which publisher that should be used.
-     * @param certtype         is one of SecConst.CERTTYPE_ constants
      * @ejb.interface-method view-type="both"
      */
-    public void publishCACertificate(Admin admin, Collection certificatechain, Collection usedpublishers, int certtype) {
+    public void publishCACertificate(Admin admin, Collection certificatechain, Collection usedpublishers) {
         try {
 
             ICertificateStoreSessionLocal certificateStore = storeHome.create();
 
             Iterator certificates = certificatechain.iterator();
             while (certificates.hasNext()) {
-                Certificate cacert = (Certificate) certificates.next();
-
-                //     Store CA certificate in the database
-                String fingerprint = CertTools.getFingerprintAsString((X509Certificate) cacert);
-
-                if (certificateStore.findCertificateByFingerprint(admin, fingerprint) == null) {
-                    certificateStore.storeCertificate(admin, cacert, "SYSTEMCA", fingerprint, CertificateDataBean.CERT_ACTIVE, certtype);
+                X509Certificate cert = (X509Certificate) certificates.next();
+                String fingerprint = CertTools.getFingerprintAsString(cert);
+                // Calculate the certtype
+                int type = CertificateDataBean.CERTTYPE_ENDENTITY;
+                if (cert.getBasicConstraints() > -1)  {
+                	// this is a ca
+                	if (CertTools.isSelfSigned(cert)) {
+                		type = CertificateDataBean.CERTTYPE_ROOTCA;
+                	} else {
+                		type = CertificateDataBean.CERTTYPE_SUBCA;
+                	}                		
+                    // Store CA certificate in the database if it does not exist
+                    if (certificateStore.findCertificateByFingerprint(admin, fingerprint) == null) {
+                        certificateStore.storeCertificate(admin, cert, "SYSTEMCA", fingerprint, CertificateDataBean.CERT_ACTIVE, type);
+                    }
                 }
+                
                 // Store cert in ca cert publishers.
                 IPublisherSessionLocal pub = publishHome.create();
-                if (usedpublishers != null)
-                    pub.storeCertificate(admin, usedpublishers, cacert, fingerprint, null, fingerprint, CertificateDataBean.CERT_ACTIVE, certtype, -1, RevokedCertInfo.NOT_REVOKED, null);
+                if (usedpublishers != null) {
+                    pub.storeCertificate(admin, usedpublishers, cert, fingerprint, null, fingerprint, CertificateDataBean.CERT_ACTIVE, type, -1, RevokedCertInfo.NOT_REVOKED, null);                	
+                }
             }
         } catch (javax.ejb.CreateException ce) {
             throw new EJBException(ce);

@@ -28,7 +28,6 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
-import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
@@ -57,7 +56,7 @@ import org.ejbca.util.CertTools;
  * A class help administrating CAs. 
  *
  * @author  TomSelleck
- * @version $Id: CADataHandler.java,v 1.6 2006-12-27 11:36:38 anatom Exp $
+ * @version $Id: CADataHandler.java,v 1.7 2007-01-09 15:42:53 anatom Exp $
  */
 public class CADataHandler implements Serializable {
 
@@ -216,14 +215,11 @@ public class CADataHandler implements Serializable {
  public void publishCA(int caid){
  	CAInfo cainfo = caadminsession.getCAInfo(administrator, caid);
  	CertificateProfile certprofile = certificatesession.getCertificateProfile(administrator, cainfo.getCertificateProfileId());
- 	int certtype = CertificateDataBean.CERTTYPE_SUBCA;
- 	if(cainfo.getSignedBy() == CAInfo.SELFSIGNED)
- 	  certtype = CertificateDataBean.CERTTYPE_ROOTCA;
  	// A CA certificate is published where the CRL is published and if there is a publisher noted in the certificate profile 
  	// (which there is probably not) 
  	Collection publishers = cainfo.getCRLPublishers();
  	publishers.addAll(certprofile.getPublisherList());
- 	signsession.publishCACertificate(administrator, cainfo.getCertificateChain(), publishers, certtype);
+ 	signsession.publishCACertificate(administrator, cainfo.getCertificateChain(), publishers);
 
  	// Publish ExtendedCAServices certificates as well
 	Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
@@ -232,19 +228,19 @@ public class CADataHandler implements Serializable {
 		if(next instanceof OCSPCAServiceInfo){
 			List ocspcert = ((OCSPCAServiceInfo) next).getOCSPSignerCertificatePath();
 			if (ocspcert != null) {
-				signsession.publishCACertificate(administrator, ocspcert, publishers, CertificateDataBean.CERTTYPE_ENDENTITY);
+				signsession.publishCACertificate(administrator, ocspcert, publishers);
 			}
 		}
 		if(next instanceof XKMSCAServiceInfo){
 			List xkmscert = ((XKMSCAServiceInfo) next).getXKMSSignerCertificatePath();
 			if (xkmscert != null) {
-				signsession.publishCACertificate(administrator, xkmscert, publishers, CertificateDataBean.CERTTYPE_ENDENTITY);				
+				signsession.publishCACertificate(administrator, xkmscert, publishers);				
 			}
 		}
 		if(next instanceof CmsCAServiceInfo){
 			List cmscert = ((CmsCAServiceInfo) next).getCertificatePath();
 			if (cmscert != null) {
-				signsession.publishCACertificate(administrator, cmscert, publishers, CertificateDataBean.CERTTYPE_ENDENTITY);
+				signsession.publishCACertificate(administrator, cmscert, publishers);
 			}
 		}
 	}  

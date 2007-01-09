@@ -27,7 +27,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
  * of publishers in the system.
  *  
  *
- * @version $Id: BasePublisher.java,v 1.3 2006-07-23 10:31:22 anatom Exp $
+ * @version $Id: BasePublisher.java,v 1.4 2007-01-09 15:42:52 anatom Exp $
  */
 public abstract class BasePublisher extends UpgradeableDataHashMap implements Serializable, Cloneable {
     // Default Values
@@ -76,7 +76,7 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      * @param username Username of end entity owning the certificate.
      * @param password Password given to the user, may be null if no password exists for the user.
      * @param status Status of the certificate (from CertificateData).
-     * @param type Type of certificate (from SecConst).
+     * @param type Type of certificate (from CertificateDataBean).
      * @param revocationDate Date for revocation (of revoked), like System.currentTimeMillis(), or -1 if not revoked.
      * @param revocationReason reason for revocation from RevokedCertInfo, RevokedCertInfo.NOT_REVOKED if not revoked.
      * @param extendedinformation contains extended information about the user, like picture, is null if no extendedinformation exists about the user.
