@@ -51,7 +51,7 @@ Create tables in the database configured for EjbcaPool and EjbcaDS in Weblogic.
 - In Weblogic9, you only create a 'Data Source', no Pools exists any longer.
 - Don't forget to apply a Target for your DataSource.
 
-See the file create-tables-ejbca3.sql for table definitions, or just run /doc/howto/create-tables-ejbca3-oracle.sql for Oracle.
+See the file create-tables-ejbca3-oracle.sql for table definitions, or just run /doc/howto/create-tables-ejbca3-oracle.sql for Oracle.
 
 6.Create a new java mail session for user notification in UserAdminSessionBean. In Weblogic, the JNDI name should be "EjbcaMail".
   key in the properties:
@@ -75,11 +75,13 @@ when doing 'ant install'.
 You can create cacerts file with 'sudo rm $JAVA_HOME/jre/lib/security/cacerts' and then 'sudo ant javatruststore'.
 You can get the CA certificate with 'bin/ejbca.sh ca getrootcert cert.pem'.
 b) Configure weblogic server for SSL.
-   server->configuration->keystore&ssl, click "Change", select "Custom Identity and Java Standard Trust"
+   Server->configuration->keystore&ssl, click "Change", select "Custom Identity and Java Standard Trust"
      Custom Identity Keystore: path to tomcat.jks generated while "ant install (ejbca/p12/tomcat.jks)",
      Private Key Alias: localhost (httpsserver.hostname in conf/web.properties).
      Passphrase: serverpwd (httpsserver.password in conf/web.properties).
- 
+   
+   (in weblogic 9 it is under 'Servers->Mysqerver->Configuration->Keystores / SSL)
+   
    server->configuration->keystore&ssl->advanced options->Server Attributes->Two Way Client Cert Behavior:
      Client Certs Requested And Enforced
 
