@@ -158,7 +158,7 @@ import org.ejbca.util.KeyTools;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
  *   
- *   @version $Id: RSASignSessionBean.java,v 1.34 2007-01-09 15:42:53 anatom Exp $
+ *   @version $Id: RSASignSessionBean.java,v 1.35 2007-01-10 07:57:17 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -1237,10 +1237,11 @@ public class RSASignSessionBean extends BaseSessionBean {
                 X509Certificate cert = (X509Certificate) certificates.next();
                 String fingerprint = CertTools.getFingerprintAsString(cert);
                 // Calculate the certtype
+                boolean isSelfSigned = CertTools.isSelfSigned(cert);
                 int type = CertificateDataBean.CERTTYPE_ENDENTITY;
                 if (cert.getBasicConstraints() > -1)  {
-                	// this is a ca
-                	if (CertTools.isSelfSigned(cert)) {
+                	// this is a CA
+                	if (isSelfSigned) {
                 		type = CertificateDataBean.CERTTYPE_ROOTCA;
                 	} else {
                 		type = CertificateDataBean.CERTTYPE_SUBCA;
@@ -1249,6 +1250,9 @@ public class RSASignSessionBean extends BaseSessionBean {
                     if (certificateStore.findCertificateByFingerprint(admin, fingerprint) == null) {
                         certificateStore.storeCertificate(admin, cert, "SYSTEMCA", fingerprint, CertificateDataBean.CERT_ACTIVE, type);
                     }
+                } else if (isSelfSigned) {
+                	// If we don't have basic constraints, but is self signed, we are still a CA, just a stupid CA
+                	type = CertificateDataBean.CERTTYPE_ROOTCA;
                 }
                 
                 // Store cert in ca cert publishers.
