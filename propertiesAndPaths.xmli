@@ -41,8 +41,8 @@
     </condition>
 
 	
-    <!-- Default to 14 -->    
-	<property name="java.ver" value="14" />
+    <!-- Default to 15 -->    
+	<property name="java.ver" value="15" />
 		
     <!-- set global properties for this build -->
 	<property name="tmp" value="./tmp" />

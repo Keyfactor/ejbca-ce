@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.16 2006-12-27 11:13:57 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.17 2007-01-10 12:38:07 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -23,8 +23,8 @@
 #build.compiler=jikes
 
 # which java version to use 14 for jdk 1.4, 15 for jdk 1.5 and jdk 6 (note use 15 for jdk6 as well)
-# default: 14
-java.ver=14
+# default: 15
+#java.ver=15
 
 # ------------ Basic CA configuration ---------------------
 # When upgrading, the important options are:
