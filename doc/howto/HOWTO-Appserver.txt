@@ -2,7 +2,12 @@
 CONFIGURING Weblogic
 ====================
 
-Note: EJBCA should work fine with Weblogic 8.x/9.x
+Note: EJBCA should work fine with Weblogic 8.x/9.x.
+Running on weblogic has some limited functionality compared to JBoss though:
+ - The createCRLService, which runs as a JBoss mBean and does not work
+ - The CMP tcp listener, which runs as a JBoss MBean and does not work
+ - The Approvals admin-GUI, which uses JSF and does not work yet (configuration issues)
+ - Web service interface (includes xkms), which uses JaxWS and does not work
 
 Note: After installing Weblogic, don't forget to install the "Unlimited Strenth Crypto" jce files
 in Weblogics jre and jrockit. It's the same way as for a regular installation, see User's Guide.
@@ -27,7 +32,7 @@ set 'web.jsfimpl=nojsf', this must be done until we have fixed JSF configuration
 set 'ejbcaws.enabled=false', this must be done until we have fixed JaxWS configuration for weblogic.
 
 Edit conf/xkms.properties:
-set 'xkms.enabled=false'
+set 'xkms.enabled=false', this must be done until we have fixed JaxWS configuration for weblogic.
 
 If you had issued an 'ant' command before, it is now important to do 'ant clean' before building again.
 
