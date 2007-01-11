@@ -26,8 +26,6 @@
   </listener>
   <servlet>
     <servlet-name>xkms</servlet-name>
-    <display-name>xkms</display-name>
-    <description>JAX-WS endpoint - xkms</description>
     <servlet-class>com.sun.xml.ws.transport.http.servlet.WSServlet</servlet-class>
     <load-on-startup>1</load-on-startup>
   </servlet>
