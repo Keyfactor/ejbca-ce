@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.30 2007-01-03 15:59:50 anatom Exp $
+$Id: UPGRADE,v 1.31 2007-01-11 10:15:12 anatom Exp $
 
 UPGRADE
 =======
@@ -46,7 +46,7 @@ Note: If you intend to use the XKMS service or the CMS service (log signing), th
 after upgrading and press the button "Republish CA Certificates" for all CAs. 
 Otherwise you will not be able to revoke the certificates issued to these services.
 
-You should be ablo to upgrade from EJBCA 3.1.x directly to 3.3.x, by following the same instructions
+You should be ablo to upgrade from EJBCA 3.1.x directly to 3.4.x, by following the same instructions
 as when upgrading from 3.1.x to 3.2.x (untested though).
 
 From EJBCA 3.3.x to EJBCA 3.3.x
