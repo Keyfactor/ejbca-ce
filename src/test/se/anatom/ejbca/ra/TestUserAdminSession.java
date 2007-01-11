@@ -19,6 +19,7 @@ import java.util.Random;
 import javax.ejb.DuplicateKeyException;
 import javax.naming.Context;
 import javax.naming.NamingException;
+import javax.transaction.TransactionRolledbackException;
 
 import junit.framework.TestCase;
 
@@ -32,7 +33,7 @@ import org.ejbca.core.model.ra.NotFoundException;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestUserAdminSession.java,v 1.3 2006-01-17 20:34:15 anatom Exp $
+ * @version $Id: TestUserAdminSession.java,v 1.4 2007-01-11 09:35:07 anatom Exp $
  */
 public class TestUserAdminSession extends TestCase {
 
@@ -128,6 +129,11 @@ public class TestUserAdminSession extends TestCase {
         } catch (DuplicateKeyException e) {
             // This is what we want
             userexists = true;
+        } catch (TransactionRolledbackException e) {
+        	// weblogic throws transactionrolledbackexception instead wrapping the duplicatekey ex
+        	if (e.getCause() instanceof DuplicateKeyException) {
+                userexists = true;
+			}
         }
         assertTrue("User already exist does not throw DuplicateKeyException", userexists);
 

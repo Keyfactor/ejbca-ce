@@ -30,7 +30,7 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
 /**
  * Tests the admin preference entity bean.
  *
- * @version $Id: TestAdminPreference.java,v 1.4 2006-01-17 20:34:15 anatom Exp $
+ * @version $Id: TestAdminPreference.java,v 1.5 2007-01-11 09:35:04 anatom Exp $
  */
 public class TestAdminPreference extends TestCase {
     private static Logger log = Logger.getLogger(TestAdminPreference.class);
@@ -89,9 +89,9 @@ public class TestAdminPreference extends TestCase {
         pref.setPreferedLanguage(1);
         pref.setTheme("TEST");
         boolean ret = this.cacheAdmin.addAdminPreference(administrator, user, pref);
-        assertTrue("Adminpref för "+user+" borde inte finnas", ret);
+        assertTrue("Adminpref for "+user+" should not exist", ret);
         ret = this.cacheAdmin.addAdminPreference(administrator, user, pref);
-        assertFalse("Adminpref för "+user+" borde redan finnas", ret);
+        assertFalse("Adminpref for "+user+" should exist", ret);
         log.debug("<test01AddAdminPreference()");
     }
 
@@ -108,10 +108,10 @@ public class TestAdminPreference extends TestCase {
         assertTrue("Error Retreiving Administrator Preference.", pref.getTheme().equals("TEST"));
         pref.setPreferedLanguage(2);
         boolean ret = this.cacheAdmin.changeAdminPreference(administrator, user, pref);
-        assertTrue("Adminpref för "+user+" borde finnas", ret);
+        assertTrue("Adminpref for "+user+" should exist", ret);
         String newuser = genRandomUserName();
         ret = this.cacheAdmin.changeAdminPreference(administrator, newuser, pref);
-        assertFalse("Adminpref för "+newuser+" borde inte finnas", ret);
+        assertFalse("Adminpref for "+newuser+" should not exist", ret);
         log.debug("<test02ModifyAdminPreference()");
     }
 

@@ -1009,25 +1009,41 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     public void addHardToken(Admin admin, String tokensn, String username, String significantissuerdn, int tokentype,  HardToken hardtokendata, Collection certificates, String copyof) throws HardTokenExistsException{
         debug(">addHardToken(tokensn : " + tokensn + ")");
 		String bcdn = CertTools.stringToBCDNString(significantissuerdn);
-        try {
-            hardtokendatahome.create(tokensn, username,new java.util.Date(), new java.util.Date(), tokentype, bcdn, hardtokendata);
-            if(certificates != null){
-              Iterator i = certificates.iterator();
-              while(i.hasNext()){
-                addHardTokenCertificateMapping(admin, tokensn, (X509Certificate) i.next());
-              }
-            }
-            if(copyof != null){
-            	hardtokenpropertyhome.create(tokensn, HardTokenPropertyEntityBean.PROPERTY_COPYOF,copyof);
-            }
-        	String msg = intres.getLocalizedMessage("hardtoken.addedtoken", tokensn);            	
-            getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogEntry.EVENT_INFO_HARDTOKENDATA,msg);
-        }
-        catch (Exception e) {
-        	String msg = intres.getLocalizedMessage("hardtoken.tokenexists", tokensn);            	
-        	getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_HARDTOKENDATA,msg);
-        	throw new HardTokenExistsException("Tokensn : " + tokensn);
-        }
+    	boolean exists = false;
+    	try {
+        	// We must actually check if there is one before we try to add it, because wls does not allow us to catch any errors if creating fails, that sux
+        	HardTokenDataLocal data = hardtokendatahome.findByPrimaryKey(tokensn);
+        	if (data != null) {
+        		exists = true;
+        	}
+    	} catch (FinderException e) {
+    		// This is what we hope will happen
+    	}
+    	if (!exists) {
+    		try {
+    			hardtokendatahome.create(tokensn, username,new java.util.Date(), new java.util.Date(), tokentype, bcdn, hardtokendata);
+    			if(certificates != null){
+    				Iterator i = certificates.iterator();
+    				while(i.hasNext()){
+    					addHardTokenCertificateMapping(admin, tokensn, (X509Certificate) i.next());
+    				}
+    			}
+    			if(copyof != null){
+    				hardtokenpropertyhome.create(tokensn, HardTokenPropertyEntityBean.PROPERTY_COPYOF,copyof);
+    			}
+    			String msg = intres.getLocalizedMessage("hardtoken.addedtoken", tokensn);            	
+    			getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogEntry.EVENT_INFO_HARDTOKENDATA,msg);
+    		}
+    		catch (Exception e) {
+    			String msg = intres.getLocalizedMessage("hardtoken.tokenexists", tokensn);            	
+    			getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_HARDTOKENDATA,msg);
+    			throw new HardTokenExistsException("Tokensn : " + tokensn);
+    		}
+    	} else {
+    		String msg = intres.getLocalizedMessage("hardtoken.tokenexists", tokensn);            	
+    		getLogSession().log(admin, bcdn.hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_HARDTOKENDATA,msg);
+    		throw new HardTokenExistsException("Tokensn : " + tokensn);    		
+    	}
         debug("<addHardToken()");
     } // addHardToken
 
