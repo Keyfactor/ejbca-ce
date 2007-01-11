@@ -1304,14 +1304,29 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         String certificatesn = certificate.getSerialNumber().toString(16);
         debug(">addHardTokenCertificateMapping(certificatesn : "+ certificatesn  +", tokensn : " + tokensn + ")");
         int caid = CertTools.getIssuerDN(certificate).hashCode();
+        String fp = CertTools.getFingerprintAsString(certificate);
+        boolean exists = false;
         try {
-            hardtokencertificatemaphome.create(CertTools.getFingerprintAsString(certificate),tokensn);
-            String msg = intres.getLocalizedMessage("hardtoken.addedtokencertmapping", certificatesn, tokensn);
-            getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENCERTIFICATEMAP,msg);
+        	// We must actually check if there is one before we try to add it, because wls does not allow us to catch any errors if creating fails, that sux
+        	HardTokenCertificateMapLocal data = hardtokencertificatemaphome.findByPrimaryKey(fp);
+        	if (data != null) {
+        		exists = true;
+        	}
+        } catch (FinderException e) {
+        	// This is what we hope will happen
         }
-        catch (Exception e) {
-        	String msg = intres.getLocalizedMessage("hardtoken.erroraddtokencertmapping", certificatesn, tokensn);
-        	getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENCERTIFICATEMAP,msg);
+        if (!exists) {
+        	try {
+        		hardtokencertificatemaphome.create(fp,tokensn);
+        		String msg = intres.getLocalizedMessage("hardtoken.addedtokencertmapping", certificatesn, tokensn);
+        		getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_INFO_HARDTOKENCERTIFICATEMAP,msg);
+        	} catch (Exception e) {
+        		String msg = intres.getLocalizedMessage("hardtoken.erroraddtokencertmapping", certificatesn, tokensn);
+        		getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENCERTIFICATEMAP,msg);
+        	}
+        } else {
+    		String msg = intres.getLocalizedMessage("hardtoken.erroraddtokencertmapping", certificatesn, tokensn);
+    		getLogSession().log(admin, caid, LogEntry.MODULE_HARDTOKEN, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_HARDTOKENCERTIFICATEMAP,msg);        	
         }
         debug("<addHardTokenCertificateMapping()");
     } // addHardTokenCertificateMapping
