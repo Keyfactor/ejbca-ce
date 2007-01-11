@@ -61,7 +61,7 @@
         </wsimport>
 	</target>
 	
-    <target name="xkms.build" depends="xkms.init, preprocess" if="xkms.conditionenabled">
+    <target name="xkms.build" depends="xkms.init, preprocess">
         <javac debug="true" debuglevel="${debuglevel}" destdir="tmp/xkms/gen-classes" >
             <src path="src/xkms/gen-java"/>
             <classpath refid="xkms.classpath"/>        	
