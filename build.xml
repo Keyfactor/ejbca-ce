@@ -408,7 +408,14 @@
             <classpath>
                 <pathelement location="./bin" />
                 <pathelement location="${build}" />
-                <fileset dir="${appserver.home}/client" includes="**/*.jar" />
+                <fileset dir="${appserver.home}">
+                	<!-- jboss -->
+                    <include name="client/*.jar"/>
+                	<!-- glassfish -->
+                    <include name="lib/*.jar"/>
+                	<!-- welogic -->
+                    <include name="server/lib/weblogic.jar"/>
+                </fileset>
                 <fileset dir="${lib}" includes="**/*.jar" />
             </classpath>
         </java>
