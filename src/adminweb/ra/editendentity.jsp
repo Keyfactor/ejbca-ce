@@ -623,7 +623,6 @@ function fillCAField(){
 
 function checkallfields(){
     var illegalfields = 0;
-fileFieldTexts();
  <%    
      for(int i=0; i < profile.getSubjectDNFieldOrderLength(); i++){
          fielddata = profile.getSubjectDNFieldsInOrder(i);
