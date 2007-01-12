@@ -380,6 +380,12 @@
             </cmp-field-mapping>
 
             <cmp-field-mapping>
+                <field-name>updateTime</field-name>
+                <column-name>updateTime</column-name>
+
+            </cmp-field-mapping>
+            
+            <cmp-field-mapping>
                 <field-name>data</field-name>
                 <column-name>data</column-name>
 

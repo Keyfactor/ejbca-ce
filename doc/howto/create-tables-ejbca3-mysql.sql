@@ -62,6 +62,7 @@ CREATE TABLE CAData (
     subjectDN varchar(250) binary NULL DEFAULT NULL,
     status int(11) NOT NULL DEFAULT '0',
     expireTime bigint(20) NOT NULL DEFAULT '0',
+    updateTime bigint(20) NOT NULL DEFAULT '0',
     data text NULL DEFAULT NULL,
     PRIMARY KEY (cAId)
 );

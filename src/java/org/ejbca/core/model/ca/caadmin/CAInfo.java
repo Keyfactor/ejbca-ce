@@ -22,7 +22,7 @@ import org.ejbca.core.model.ca.catoken.CATokenInfo;
 /**
  * Holds nonsensitive information about a CA.
  *
- * @version $Id: CAInfo.java,v 1.6 2006-12-28 13:48:00 anatom Exp $
+ * @version $Id: CAInfo.java,v 1.7 2007-01-12 09:43:07 anatom Exp $
  */
 public abstract class CAInfo implements Serializable {
 
@@ -63,6 +63,7 @@ public abstract class CAInfo implements Serializable {
     protected int status;
     protected int validity;
     protected Date expiretime;
+    protected Date updatetime;
     protected int catype;
     protected int signedby;
     protected Collection certificatechain;
@@ -93,6 +94,7 @@ public abstract class CAInfo implements Serializable {
     public void setValidity(int validity) { this.validity = validity; }
     
     public Date getExpireTime() {return this.expiretime;}
+    public Date getUpdateTime() {return this.updatetime;}
 
       
     /** Retrieves the certificate chain for the CA. The returned certificate chain MUST have the

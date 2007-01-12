@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.ca.caadmin;
 
 import java.io.UnsupportedEncodingException;
 import java.security.cert.X509Certificate;
+import java.util.Date;
 import java.util.HashMap;
 
 import javax.ejb.CreateException;
@@ -46,7 +47,7 @@ import org.ejbca.util.Base64PutHashMap;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.13 2006-12-27 11:13:53 anatom Exp $
+ * @version $Id: CADataBean.java,v 1.14 2007-01-12 09:43:28 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a publisher"
@@ -170,6 +171,17 @@ public abstract class CADataBean extends BaseEntityBean {
      */
     public abstract void setExpireTime(long expiretime);
     
+    /** When was this CA updated in the database
+     * @ejb.persistence column-name="updateTime"
+     * @ejb.interface-method
+     */
+    public abstract long getUpdateTime();
+
+    /**
+     * @ejb.interface-method
+     */
+    public abstract void setUpdateTime(long updatetime);
+    
     /**
      * @ejb.persistence jdbc-type="LONGVARCHAR" column-name="data"
      */
@@ -179,6 +191,13 @@ public abstract class CADataBean extends BaseEntityBean {
      */
     public abstract void setData(String data);
     
+    /**
+     * @ejb.interface-method view-type="local"
+     */
+    public Date getUpdateTimeAsDate() {
+        return new Date(getUpdateTime());
+    }
+
     
     /** 
      * Method that retrieves the CA from the database.
@@ -189,7 +208,19 @@ public abstract class CADataBean extends BaseEntityBean {
         CA ca = null;
         // First check if we already have a cached instance of the CA
         ca = CACacheManager.instance().getCA(getCaId().intValue(), this);
-        if (ca == null) {
+        boolean isUpdated = false;
+        if (ca != null) {
+        	long update = ca.getCAInfo().getUpdateTime().getTime();
+        	long t = getUpdateTime();
+        	//log.debug("updateTime from ca = "+update);
+        	//log.debug("updateTime from db = "+t);
+        	if (update < t) {
+        		log.debug("CA has been updated in database, need to refresh cache");
+        		isUpdated = true;
+        	}
+        }
+        if ( (ca == null) || isUpdated) {
+        	log.debug("Re-reading CA from database.");
             java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
             HashMap h = (HashMap) decoder.readObject();
             decoder.close();
@@ -201,7 +232,7 @@ public abstract class CADataBean extends BaseEntityBean {
             float oldversion = ((Float) data.get(UpgradeableDataHashMap.VERSION)).floatValue();
             switch(((Integer)(data.get(CA.CATYPE))).intValue()){
                 case CAInfo.CATYPE_X509:
-                    ca = new X509CA(data, getCaId().intValue(), getSubjectDN(), getName(), getStatus());                    
+                    ca = new X509CA(data, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate());                    
                     break;
             }
             boolean upgradedExtendedService = ca.upgradeExtendedCAServices();
@@ -233,6 +264,7 @@ public abstract class CADataBean extends BaseEntityBean {
         encoder.writeObject(a);
         encoder.close();
         setData(baos.toString("UTF8"));
+        setUpdateTime(new Date().getTime());
         // remove the CA from the cache to force an update the next time we load it
         CACacheManager.instance().removeCA(getCaId().intValue());
     }   

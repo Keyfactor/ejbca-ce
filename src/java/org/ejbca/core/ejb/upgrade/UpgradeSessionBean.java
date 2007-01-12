@@ -29,6 +29,7 @@ import java.util.Iterator;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 
+import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
 import org.ejbca.core.ejb.ServiceLocator;
@@ -45,7 +46,7 @@ import se.anatom.ejbca.log.OldLogConfigurationDataLocalHome;
 
 /** The upgrade session bean is used to upgrade the database between ejbca releases.
  *
- * @version $Id: UpgradeSessionBean.java,v 1.11 2006-12-14 12:07:38 anatom Exp $
+ * @version $Id: UpgradeSessionBean.java,v 1.12 2007-01-12 09:43:27 anatom Exp $
  * @ejb.bean
  *   display-name="UpgradeSB"
  *   name="UpgradeSession"
@@ -201,12 +202,31 @@ public class UpgradeSessionBean extends BaseSessionBean {
             debug("Database type="+dbtype);
         }
 
+        boolean upgradefrom31 = false;
+        if (args.length > 1) {
+        	String u = args[1];
+        	if (StringUtils.equalsIgnoreCase(u, "yes")) {
+        		upgradefrom31 = true;
+        	}
+        }
+
+        // Upgrade small database change between ejbca 3.3.x and 3.4.x
+        if (!migradeDatabase33(dbtype)) {
+        	// Ignore errors and continue, perhaps we have already done this manually
+        	// return false;
+        }
+
+        // If we are not upgrading from EJBCA 3.1.x we can stop here
+        if (!upgradefrom31) {
+        	return true;
+        }
+        
         if (!preCheck()) {
         	info("preCheck failed, no upgrade performed.");
             return false;
         }
 
-        if (!migradeDatabase(dbtype)) {
+        if (!migradeDatabase31(dbtype)) {
         	return false;
         }
 
@@ -231,17 +251,13 @@ public class UpgradeSessionBean extends BaseSessionBean {
     }
 
 
-    /** 
-     * @ejb.interface-method
-     * @jboss.method-attributes transaction-timeout="3600"
-     * 
+    /** Called from other migrate methods, don't call this directly, call from an interface-method
      */
-	public boolean migradeDatabase(String dbtype) {
-		error("(this is not an error) Starting upgrade from ejbca 3.1.x to ejbca 3.2.x");
+	public boolean migradeDatabase(String resource) {
         // Fetch the resource file with SQL to modify the database tables
-        InputStream in = this.getClass().getResourceAsStream("/31_32/31_32-upgrade-"+dbtype+".sql");
+        InputStream in = this.getClass().getResourceAsStream(resource);
         if (in == null) {
-        	error("Can not read resource for database type '"+dbtype+"', this database probably does not need table definition changes.");
+        	error("Can not read resource for database '"+resource+"', this database probably does not need table definition changes.");
         	// no error
         	return true;
         }
@@ -268,6 +284,29 @@ public class UpgradeSessionBean extends BaseSessionBean {
 	}
 
     /** 
+     * @ejb.interface-method
+     * @jboss.method-attributes transaction-timeout="3600"
+     * 
+     */
+	public boolean migradeDatabase31(String dbtype) {
+		error("(this is not an error) Starting upgrade from ejbca 3.1.x to ejbca 3.2.x");
+		boolean ret = migradeDatabase("/31_32/31_32-upgrade-"+dbtype+".sql");
+        error("(this is not an error) Finished migrating database.");
+        return ret;
+	}
+    /** 
+     * @ejb.interface-method
+     * @jboss.method-attributes transaction-timeout="3600"
+     * 
+     */
+	public boolean migradeDatabase33(String dbtype) {
+		error("(this is not an error) Starting upgrade from ejbca 3.3.x to ejbca 3.4.x");
+		boolean ret = migradeDatabase("/33_34/33_34-upgrade-"+dbtype+".sql");
+        error("(this is not an error) Finished migrating database.");
+        return ret;
+	}
+
+	/** 
      * @ejb.interface-method
      * @jboss.method-attributes transaction-timeout="3600"
      * 

@@ -672,6 +672,10 @@
          <dbms-column>expireTime</dbms-column>
       </field-map>
       <field-map>
+         <cmp-field>updateTime</cmp-field>
+         <dbms-column>updateTime</dbms-column>
+      </field-map>
+      <field-map>
          <cmp-field>data</cmp-field>
          <dbms-column>data</dbms-column>
       </field-map>

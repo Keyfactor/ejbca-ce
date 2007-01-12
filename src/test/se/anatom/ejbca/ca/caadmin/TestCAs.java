@@ -18,6 +18,7 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -46,7 +47,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the ca data entity bean.
  *
- * @version $Id: TestCAs.java,v 1.19 2007-01-03 16:00:30 anatom Exp $
+ * @version $Id: TestCAs.java,v 1.20 2007-01-12 09:42:53 anatom Exp $
  */
 public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -138,7 +139,7 @@ public class TestCAs extends TestCase {
 
 
             X509CAInfo cainfo = new X509CAInfo("CN=TEST",
-                    "TEST", SecConst.CA_ACTIVE,
+                    "TEST", SecConst.CA_ACTIVE, new Date(),
                     "", SecConst.CERTPROFILE_FIXED_ROOTCA,
                     365,
                     null, // Expiretime
@@ -270,7 +271,7 @@ public class TestCAs extends TestCase {
 
 
             X509CAInfo cainfo = new X509CAInfo("CN=TESTECDSA",
-                    "TESTECDSA", SecConst.CA_ACTIVE,
+                    "TESTECDSA", SecConst.CA_ACTIVE, new Date(),
                     "", SecConst.CERTPROFILE_FIXED_ROOTCA,
                     365,
                     null, // Expiretime
@@ -367,7 +368,7 @@ public class TestCAs extends TestCase {
 
 
             X509CAInfo cainfo = new X509CAInfo("CN=TESTECDSAImplicitlyCA",
-                    "TESTECDSAImplicitlyCA", SecConst.CA_ACTIVE,
+                    "TESTECDSAImplicitlyCA", SecConst.CA_ACTIVE, new Date(),
                     "", SecConst.CERTPROFILE_FIXED_ROOTCA,
                     365,
                     null, // Expiretime

@@ -102,7 +102,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.40 2007-01-09 15:42:53 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.41 2007-01-12 09:43:30 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -1420,7 +1420,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
 			int validity = (int)((cacertificate.getNotAfter().getTime() - cacertificate.getNotBefore().getTime()) / (24*3600*1000));
             X509CAInfo cainfo = new X509CAInfo(cacertificate.getSubjectDN().toString(),
-                                               caname, SecConst.CA_ACTIVE,
+                                               caname, SecConst.CA_ACTIVE, new Date(), 
                                                "", certprof,
                                                validity,
                                                cacertificate.getNotAfter(), // Expiretime

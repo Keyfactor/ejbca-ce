@@ -15,6 +15,7 @@ package org.ejbca.ui.cli;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 
 import javax.naming.Context;
 
@@ -37,7 +38,7 @@ import org.ejbca.util.StringTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.12 2007-01-03 15:59:54 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.13 2007-01-12 09:42:54 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
@@ -132,7 +133,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
               
             
             X509CAInfo cainfo = new X509CAInfo(dn, 
-                                             caname, SecConst.CA_ACTIVE,
+                                             caname, SecConst.CA_ACTIVE, new Date(),
                                              "", SecConst.CERTPROFILE_FIXED_ROOTCA,
                                              validity, 
                                              null, // Expiretime                                             

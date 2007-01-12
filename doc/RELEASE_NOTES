@@ -1,6 +1,6 @@
 EJBCA 3.4.0
 -----------
-This is a release with many new interesting features and framework improvements.
+This is a major release with many new interesting features and framework improvements.
 Read the changelog for details.
 
 For upgrade instructions, please se UPGRADE.
@@ -13,6 +13,9 @@ In EJBCA 3.4.0 the default ASN.1 string encoding for DNs are now UTF8. In EJBCA 
 PrintableString, unless the character set forced the usage of UTF8 (international characters). 
 Now DN components are always encoded as UTF8 (except for components that does not allow UTF8 such as C and SerialNumber).
 See UPGRADE for information regarding upgrading from an old CA, and how the behaviour can be configured.
+
+If you used to deploy with 'deploywithjbossservices', this is now done using the regular 'deploy', but you have to set an option
+in conf/ejbca.properties.
 
 EJBCA 3.3.3
 -----------

@@ -24,7 +24,7 @@ import org.ejbca.util.StringTools;
 /**
  * Holds nonsensitive information about a X509CA.
  *
- * @version $Id: X509CAInfo.java,v 1.8 2007-01-03 15:59:50 anatom Exp $
+ * @version $Id: X509CAInfo.java,v 1.9 2007-01-12 09:43:07 anatom Exp $
  */
 public class X509CAInfo extends CAInfo{
    
@@ -43,7 +43,7 @@ public class X509CAInfo extends CAInfo{
     /**
      * Constructor that should be used when creating CA and retreiving CA info.
      */
-    public X509CAInfo(String subjectdn, String name, int status, String subjectaltname, int certificateprofileid, 
+    public X509CAInfo(String subjectdn, String name, int status, Date updateTime, String subjectaltname, int certificateprofileid, 
                     int validity, Date expiretime, int catype, int signedby, Collection certificatechain, 
                     CATokenInfo catokeninfo, String description, int revokationreason, Date revokationdate, String policyid, int crlperiod, int crlIssueInterval, int crlOverlapTime, Collection crlpublishers,
                     boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
@@ -53,6 +53,7 @@ public class X509CAInfo extends CAInfo{
         this.caid = this.subjectdn.hashCode();
         this.name = name;
         this.status = status;
+        this.updatetime = updateTime;
         this.validity = validity;
         this.expiretime = expiretime;
         this.catype = catype;

@@ -30,6 +30,7 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
 
@@ -546,7 +547,7 @@ public class ProtocolOcspHttpTest extends TestCase {
 
 
             X509CAInfo cainfo = new X509CAInfo(dn,
-                    dn, SecConst.CA_ACTIVE,
+                    dn, SecConst.CA_ACTIVE, new Date(),
                     "", SecConst.CERTPROFILE_FIXED_ROOTCA,
                     365,
                     null, // Expiretime

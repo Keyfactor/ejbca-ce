@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.31 2007-01-11 10:15:12 anatom Exp $
+$Id: UPGRADE,v 1.32 2007-01-12 09:44:06 anatom Exp $
 
 UPGRADE
 =======
@@ -21,21 +21,34 @@ After this you must do:
 
 From EJBCA 3.3.x to EJBCA 3.4.x
 -------------------------------
-Upgrade from EJBCA 3.2.x to EJBCA 3.3.x is a plug-in upgrade, because there are
-no database changes, or the database changes are only new tables and not changed ones.
-
-You should still follow this advice:
 Backup your database first! If the upgrade fails, you can always go back to the earlier version.
 
-Simply copy ejbca.properties from the earlier installation into the conf directory of the new release.
-Merge changes from the *.properties.sample into your ejbca.properties, or better yet, split up your file 
-to match the new improved conf structure.
+Upgrade from EJBCA 3.3.x to EJBCA 3.4.x requires one small database change.
 
-Copy the directory 'p12' from the earlier installation and 'ant deploy'.
 
-After completing an upgrade, you should go into the admin-GUI and go to "Basic Functions" in order
-for automatic CA upgrades to be performed. 
-After this you should restart the JBoss server. Also restart your browser to clear saved http sessions.
+1. Copy ejbca.properties from the earlier installation into the conf directory of the new release.
+   Or better yet, split up your ejbca.properties file to match the new improved conf structure.
+
+2. Merge changes from *.properties.sample into your *.properties files.
+
+3. Copy the directory 'p12' from the earlier installation. 
+
+4. Shut down JBoss and do 'ant deploy' with the new version.
+
+5. Start up JBoss. You will see some errors during startup due to that the database is not upgraded yet.
+
+6. Issue the command 'ant upgrade' from EJBCA_HOME. This will make the neccesary database updates. 
+   If you are upgrading from EJBCA 3.2 or 3.3, answer 'no' to the second question.
+
+7. Go into the admin-GUI and verify you settings, specially verify the DN encoding in 'Edit Certificate Authorities' 
+   as noted below.
+
+8. Restart JBoss again to flush all caches.
+
+
+If you don't want to do step 6 above (doing step 6 is the recommended way though) and instead want to do the upgrade 
+of the database manually, you can simply issue the following sql command:
+
 
 Note: Since the default DN encoding changed to UTF8, there is an option in the CA configuration (Edit Certificate authorities)
 called 'Use PrintableString encoding in DN'. Checking this checkbox causes the old behaviour to be used, using PrintableString as the default
@@ -47,7 +60,8 @@ after upgrading and press the button "Republish CA Certificates" for all CAs.
 Otherwise you will not be able to revoke the certificates issued to these services.
 
 You should be ablo to upgrade from EJBCA 3.1.x directly to 3.4.x, by following the same instructions
-as when upgrading from 3.1.x to 3.2.x (untested though).
+as above, but answering yes to the second question (this upgrade is not thoroughly tested though).
+
 
 From EJBCA 3.3.x to EJBCA 3.3.x
 -------------------------------
