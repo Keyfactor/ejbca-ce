@@ -35,13 +35,14 @@ import org.ejbca.core.ejb.services.IServiceTimerSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.util.CertTools;
 
 /**
  * Servlet used to start services by calling the ServiceSession.load() at startup<br>
  *
  * 
  *
- * @version $Id: StartServicesServlet.java,v 1.10 2007-01-06 08:50:35 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.11 2007-01-12 07:47:00 anatom Exp $
  * 
  * @web.servlet name = "StartServices"
  *              display-name = "StartServicesServlet"
@@ -55,7 +56,7 @@ import org.ejbca.core.model.log.Admin;
  *   type="java.lang.String"
  *   value="${logging.log4j.config}"
  * 
- * @version $Id: StartServicesServlet.java,v 1.10 2007-01-06 08:50:35 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.11 2007-01-12 07:47:00 anatom Exp $
  */
 public class StartServicesServlet extends HttpServlet {
 
@@ -122,6 +123,11 @@ public class StartServicesServlet extends HttpServlet {
             	// TODO: log4j.xml configuration
             }
         }
+
+        // Reinstall BC-brovider to help re-deploys to work
+        log.debug("Re-installing BC-provider");
+        CertTools.removeBCProvider();
+        CertTools.installBCProvider();
 
         // Run java seed collector, that can take a little time the first time it is run
         log.debug(">init initializing random seed");

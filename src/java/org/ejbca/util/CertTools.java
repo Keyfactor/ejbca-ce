@@ -94,7 +94,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.34 2007-01-04 14:29:06 anatom Exp $
+ * @version $Id: CertTools.java,v 1.35 2007-01-12 07:47:00 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -614,6 +614,9 @@ public class CertTools {
         return null;
     }
 
+    public static synchronized void removeBCProvider() {
+        Security.removeProvider("BC");    	
+    }
     public static synchronized void installBCProvider() {
         // A flag that ensures that we intall the parameters for implcitlyCA only when we have installed a new provider
         boolean installImplicitlyCA = false;
@@ -623,7 +626,7 @@ public class CertTools {
             // that the BC-provider is uninstalled, in just the second another
             // thread tries to use the provider, and then that request will fail.
             if (developmentProviderInstallation) {
-                Security.removeProvider("BC");
+                removeBCProvider();
                 if (Security.addProvider(new BouncyCastleProvider()) < 0) {
                     log.error("Cannot even install BC provider again!");
                 } else {
