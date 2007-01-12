@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.32 2007-01-12 09:44:06 anatom Exp $
+$Id: UPGRADE,v 1.33 2007-01-12 09:45:19 anatom Exp $
 
 UPGRADE
 =======
@@ -48,6 +48,9 @@ Upgrade from EJBCA 3.3.x to EJBCA 3.4.x requires one small database change.
 
 If you don't want to do step 6 above (doing step 6 is the recommended way though) and instead want to do the upgrade 
 of the database manually, you can simply issue the following sql command:
+MySQL: alter table CAData add updateTime bigint NOT NULL DEFAULT 0;
+PostgreSQL: alter table CAData add updateTime INT8 NOT NULL DEFAULT 0;
+Oracle: alter table CAData add updateTime NUMBER(19) NOT NULL default 0;
 
 
 Note: Since the default DN encoding changed to UTF8, there is an option in the CA configuration (Edit Certificate authorities)

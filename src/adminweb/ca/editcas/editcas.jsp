@@ -482,7 +482,7 @@
 		     		  "",
 		     		  keySpec,
 					  keyAlg));
-                 X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, 0, subjectaltname,
+                 X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, 0, new Date(), subjectaltname,
                                                         certprofileid, validity, 
                                                         null, catype, signedby,
                                                         null, catoken, description, -1, null,
@@ -539,7 +539,7 @@
 		     		          "",
 					  keySpec,
 					  keyAlg));
-                 X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, caid, subjectaltname,
+                 X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, 0, new Date(), subjectaltname,
                                                         certprofileid, validity,
                                                         null, catype, CAInfo.SIGNEDBYEXTERNALCA,
                                                         null, catoken, description, -1, null, 
@@ -961,7 +961,7 @@
                             
              if(!illegaldnoraltname){
                if(request.getParameter(BUTTON_PROCESSREQUEST) != null){
-                 X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, 0, subjectaltname,
+                 X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, 0, new Date(), subjectaltname,
                                                         certprofileid, validity, 
                                                         null, catype, signedby,
                                                         null, null, description, -1, null,
