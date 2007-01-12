@@ -1,4 +1,4 @@
-3.3.3
+3.3.3, 2006-12-22
 ---
 Bug
 
@@ -11,7 +11,7 @@ Improvement
     * [ECA-376] - Include serialNumber LDAP attribute if selected in DN
     * [ECA-383] - Option to remove entity in LDAP when cert revoked
 
-3.3.2
+3.3.2, 2006-11-13
 ---
 Bug
 
@@ -30,7 +30,7 @@ Task
 
     * [ECA-358] - Upgrade to latest log4j jar
 
-3.3.1
+3.3.1, 2006-09-29
 ---
 
 Bug
@@ -38,7 +38,7 @@ Bug
     * [ECA-334] - Not possible to activate a Luna HSM CA
     * [ECA-340] - Some errors in deployment descriptors (not noticable in JBoss)
 
-3.3.0
+3.3.0, 2006-09-13
 ---
 New Feature
 
@@ -115,7 +115,7 @@ Bug
     * [ECA-323] - Html encoded characters not displayed correctly on jsf pages
     * [ECA-325] - CRL Issue interval overflows when too large value entered
 
-3.2.2
+3.2.2, 2006-06-25
 ---
 Improvement
 
@@ -130,7 +130,7 @@ Bug
     * [ECA-278] - SQLException on MS-SQL
     * [ECA-283] - Web enrollment with Eracom HSM fails
 
-3.2.1
+3.2.1, 2006-05-29
 ---
 New Feature
 
@@ -149,7 +149,7 @@ Improvement
     * [ECA-269] - Web-encoded characters in spanish language file
     * [ECA-270] - Public web cert dist sensitive to DN order
 
-3.2.0
+3.2.0, 2006-04-06
 ---
 New Feature
 
@@ -212,7 +212,7 @@ Improvement
     * [ECA-219] - Change BaseURL behaviour to work with multi-machine setups
     * [ECA-246] - Small fix to UserMatch, possible to search for subjectDN contains data from future webservice interface.
 
-3.1.4
+3.1.4, 2006-02-13
 ---
 Bug
 
@@ -231,7 +231,7 @@ Improvement
     * [ECA-222] - Make installation done with ealy pre-release of nCipher support work out-of-the-box
     * [ECA-226] - Improved error logging for nCipher HSMs
 
-3.1.3
+3.1.3, 2005-11-30
 ---
 Bug
     * [ECA-75] - SCEP not working with Hard token CAs (HSMs)
@@ -277,7 +277,7 @@ Improvement
     * [ECA-183] - Possible to configure for different JBoss targets
     * [ECA-185] - new version of batik lib
 
-3.1.2
+3.1.2, 2005-08-18
 ---
 New Feature
     * [ECA-46] - multiple instances of altNames in certificates
@@ -295,7 +295,7 @@ Bug
 Improvement
     * [ECA-108] - Add changelog to ejbca web site
 
-3.1.1
+3.1.1, 2005-06-30
 ---
 ** Bug
     * [ECA-113] - key Ids looks critical when editing certificate profiles
@@ -305,7 +305,7 @@ Improvement
     * [ECA-114] - add CA id to 'ca info' cli command
     * [ECA-116] - Added caid to create certificate method
 
-3.1
+3.1, 2005-06-20
 ---
 General (not from Jira):
 - Usage of XDoclet to generate ejb interfaces and deployment descriptors. Lots of XDoclet tagging to simplify development and deployment. 
@@ -365,19 +365,19 @@ Bugs fixed:
 * [ECA-104] - Handle language encodings in demo servlet
 * [ECA-106] - non-superadmin cannot press cancel in my_preferences page
 
-3.0.7
+3.0.7, 2005-04-04
 -----
 * [ECA-54] - HardCATokens goes off-line when bean gets passivated
 * [ECA-49] - saving of generated request from CA fails on IE
 * [ECA-50] - Key Recovery status and change password in Edit End Entity doesn't work
 * [ECA-52] - In Create CA page should the CAToken authentication info be a password field instead
 
-3.0.6
+3.0.6, 2005-02-23
 -----
 * [ECA-40] - defined hardtoken issuer and profiles disapears after some time
 * [ECA-42] - <enterpris-beans> tag missing in xml fil
 
-3.0.5
+3.0.5, 2005-02-09 
 -----
 Added support for activation of hardcatokens in View CA Info page.
 Added MS Template for DomainController functionallity.
@@ -402,7 +402,7 @@ Fixed so EMPTY profile is not selectable for admin groups not authorized to it.
 Fixed sending of notification messages not working on certain occasions. 
 Fixed cache control issues with download of ca cert and CRL from admin pages to IE.
 
-3.0.4
+3.0.4, 2004-11-11
 -----
 Fixed integer overflow when setting CRLPeriod longer than 596 hours.
 CLI command to import a CA from an existing PKCS12 file (openssl CA).
@@ -411,7 +411,7 @@ Fixed bug where an administrator could not use the admin GUI if signed by a CA u
 Fixed bugs with AD publishing, useraccountcontrol temporarly removed.
 Changed the default extended keyusages for hard token profiles.
 
-3.0.3
+3.0.3, 2004-09-27
 -----
 Fixed wrong encoding of BasicConstraints when false.
 Fixed bug in CA functions page viewing certificates with intl chars.
@@ -437,12 +437,12 @@ Check execute permission on batch.sh from install script.
 Many clarifications in docs.
 Tested on MacOSX.
 
-3.0.2
+3.0.2, 2004-06-29
 -----
 Removed writing of testfile foo.crt.
 Changed version in web-GUI.
 
-3.0.1
+3.0.1, 2004-06-27
 -----
 Fixed subject DN field removal bugg of UNSTRUCTURED IPADDRESS and UNSTRUCTURED NAME
 Fixed bugg where PKCS7 header and footer always was generated when using manual pkcs10
@@ -451,7 +451,7 @@ Long timeout for ca creation in JBoss 3.2.4.
 Fix for keystore path in Tomcat41-JBoss32.
 Some doc and xml fixes.
 
-3.0
+3.0, 2004-06-01
 ---
 Added unstructuredname, unstructuredaddress to subjectdn.
 Cleaned system.out debug logs.
@@ -464,7 +464,7 @@ Allow . in usernames i webGUI.
 SCEP GetCRL method implemented.
 Fixed minor errors in deployment descriptors.
 
-3.0 beta 3
+3.0 beta 3, 2004-05-17
 ----------
 Upgrade function from ejbca2 with MySQL.
 Added password and extendedinformation to publisher interface.
@@ -481,7 +481,7 @@ Changed so 'enable end entity limitations' is enabled by default.
 Strip DN when creating new CAs.
 Added test if strong crypto is installed in the install script.
 
-3.0 beta 2
+3.0 beta 2, 2004-03-21
 ----------
 Made SUN specific algorithms and providers configurable, to be able to use other jvm.
 Fixed serious bug that caused certs to be signed by wrong CA after ejbPassivate.
@@ -492,7 +492,7 @@ Implemented more SCEP functions, tested with Cisco VPN client.
 Compound primary key for HardTokenPropertyBean.
 Added junit tests of entity beans
 
-3.0 beta 1
+3.0 beta 1, 2004-02-09
 ----------
 Virtual CAs, run a complete hierarchy (or several) in one instance of EJBCA.
 Easier installation and configuration with new install script.
@@ -505,11 +505,15 @@ Improved support for keyrecovery.
 Improved configuration of administrative privileges.
 Many minor fixes and enhancements.
 
-2.1.2
+2.1.3, 2004-03-29
+-----
+Fixed a bug when applying with IE, wrong csp could be used.
+
+2.1.2, 2004-01-30
 -----
 LDAP schema now correctly follows RFC 2256 and works with OpenLDAP 2.2. 
 
-2.1.1
+2.1.1, 2004-01-09
 -----
 Improved error handing for batch generation.
 Fixed some SQL for PostgreSQL.
@@ -518,7 +522,7 @@ Setup-adminweb supports JBoss 3.2.3.
 For for internatinalization of admin-web with non ISO chars.
 Minor debug cleanups.
 
-2.1
+2.1, 2003-10-11
 ----
 Initial SCEP support.
 Initial OCSP support.
@@ -537,7 +541,7 @@ Fixed utitlity method that returned wrong subject key id
 Getroot cert in PEM or DER format
 Fixed bug when saving system configuration in admin-GUI.
 
-2.0.1
+2.0.1, 2003-05-12
 -----
 Java 1.4.x is now required.
 Support for JBoss_Jetty and JBoss 3.2.x.
@@ -545,7 +549,7 @@ Microsoft UPN altName and smart card logon extended key usage.
 Enrollment page can now handle both patched and unpatched IE
 clients.
 
-2.0
+2.0, 2003-03-19
 ---
 
 Added Hard Token funtionallity, EJBCA can now store store
@@ -570,7 +574,7 @@ Moved external jars into ear-file.
 Tested on Weblogic 7.1.
 Lots of bugfixes and cleanups.
 
-2.0b1
+2.0b1, 2002-12-05
 -----
 Moved to EJB 2.0 (JBoss 3 now required).
 Enhanced database schema, for EJB 2.0 and the many new features.
@@ -589,7 +593,7 @@ New logging mechanism.
 Many small improvements.
 Many bugfixes, and new bugs.
 
-1.4
+1.4, 2002-10-29
 ---
 Fixed bug with case-sensitivity for column names in Sybase.
 Fixed bug when rolling over subCAs without subjectKeyId in cert.
@@ -604,17 +608,17 @@ Architectural changes.
 New version of Log4j, 1.2.
 Tested with Orion app-server.
 
-1.3.2
+1.3.2, 2002-04-16 
 -----
 Fixed compilation error with JDK1.3.
 Fixed bug where order in IssuerDN could be wrong.
 Fixed typo in deploy.cmd/sh.
 
-1.3.1
+1.3.1, 2002-04-11
 -----
 Fixed wrong template path for IE certificate enrollment.
 
-1.3
+1.3, 2002-04-01
 ---
 Configuration howto/support for Oracle.
 Tested on Weblogic.
@@ -632,7 +636,7 @@ CA-certs can now be downloaded from webdist.
 Lots of minor cosmetic, architectural, installation and GUI
 changes.
 
-1.2
+1.2, 2002-02-01
 ---
 Command for batch processing, and other batch fixes.
 Better error messages when user applies for cert with browser.
@@ -643,7 +647,7 @@ Listusers function in ra.sh/cmd.
 Info function in ca.sh/cmd.
 Minor improvements and bugfixes.
 
-1.1
+1.1, 2002-01-09
 ---
 Tested with additional databases (mySQL, PostgreSQL).
 The Datasource used is configurable.
@@ -657,7 +661,7 @@ LDAP Publisher to store for certificates and CRLs in LDAP
 directory.
 Minor bugfixes.
 
-1.0
+1.0, 2001-12-05
 ---
 Fixed bug with not returning correct content-length to browser
 when returning
@@ -666,7 +670,7 @@ New version of BouncyCastle provider with minor PKCS12 fix.
 Updated docs.
 Added FAQ.
 
-1.0b2
+1.0b2, 2001-11-26
 -----
 New version of Bouncycastle JCE provider.
 Added and clarified some documentation.
@@ -679,7 +683,7 @@ Fixed bug during key generation of CA that always generated 1024
 bit keys.
 Creates p12-files during test in real temporary dir.
 
-1.0b1
+1.0b1, 2001-11-21
 -----
 Initial release
 
