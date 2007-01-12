@@ -112,7 +112,7 @@ import org.ejbca.util.CertTools;
  *   value="${ocsp.unidcacert}"
  *   
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson, Lars Silven
- * @version  $Id: OCSPServletBase.java,v 1.25 2007-01-09 15:40:54 anatom Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.26 2007-01-12 14:01:55 anatom Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
@@ -527,9 +527,12 @@ abstract class OCSPServletBase extends HttpServlet {
 
                 for (int i = 0; i < requests.length; i++) {
                     CertificateID certId = requests[i].getCertID();
-                    if (m_log.isDebugEnabled()) {
-                        m_log.debug("Got OCSP request for certificate with serNo: "+certId.getSerialNumber().toString(16));                    	
+                    byte[] hashbytes = certId.getIssuerNameHash();
+                    String hash = null;
+                    if (hashbytes != null) {
+                    	hash = new String(Hex.encode(hashbytes));                    	
                     }
+                    m_log.info("Received OCSP request for certificate with serNo: "+certId.getSerialNumber().toString(16)+", and issuerNameHash: "+hash);                    	
                     boolean unknownCA = false; // if the certId was issued by an unknown CA
                     // The algorithm here:
                     // We will sign the response with the CA that issued the first 
@@ -586,26 +589,38 @@ abstract class OCSPServletBase extends HttpServlet {
                                         + certId.getSerialNumber().toString(16) + "'"
                                         + " from issuer '" + cacert.getSubjectDN().getName() + "'");                                
                             }
+                    		String infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", "unknown", certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
+                            m_log.info(infoMsg);
                             responseList.add(new OCSPResponseItem(certId, new UnknownStatus()));
                         } else {
-                            if (rci.getReason() != RevokedCertInfo.NOT_REVOKED) {
-                                certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(rci.getRevocationDate()),
-                                        new CRLReason(rci.getReason())));
-                            } else {
-                                certStatus = null;
-                            }
-                            if (m_log.isDebugEnabled()) {
-                            	String status = "good";
-                            	if (certStatus != null) status ="revoked";
-                                m_log.debug("Adding status information ("+status+") for certificate with serial '"
-                                        + certId.getSerialNumber().toString(16) + "'"
-                                        + " from issuer '" + cacert.getSubjectDN().getName() + "'");
-                            }                            
-                            responseList.add(new OCSPResponseItem(certId, certStatus));
+                        	BigInteger rciSerno = rci.getUserCertificate(); 
+                        	if (rciSerno.compareTo(certId.getSerialNumber()) == 0) {
+                                if (rci.getReason() != RevokedCertInfo.NOT_REVOKED) {
+                                    certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(rci.getRevocationDate()),
+                                            new CRLReason(rci.getReason())));
+                                } else {
+                                    certStatus = null;
+                                }
+                                String status = "good";
+                                if (certStatus != null) {
+                                	status ="revoked";
+                                }
+                                String infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", status, certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
+                                m_log.info(infoMsg);
+                                responseList.add(new OCSPResponseItem(certId, certStatus));                        		
+                        	} else {
+                        		m_log.error("ERROR: Certificate serialNumber ("+rciSerno.toString(16)+") in response from database does not match request ("
+                        				+certId.getSerialNumber().toString(16)+").");
+                        		String infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", "unknown", certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
+                                m_log.info(infoMsg);
+                                responseList.add(new OCSPResponseItem(certId, new UnknownStatus()));                        		
+                        	}
                         }
                     } else {
                         certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(rci.getRevocationDate()),
                                 new CRLReason(rci.getReason())));
+                		String infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", "revoked", certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
+                        m_log.info(infoMsg);
                         responseList.add(new OCSPResponseItem(certId, certStatus));
                     }
 
