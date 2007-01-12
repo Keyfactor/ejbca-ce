@@ -158,7 +158,7 @@ import org.ejbca.util.KeyTools;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
  *   
- *   @version $Id: RSASignSessionBean.java,v 1.35 2007-01-10 07:57:17 anatom Exp $
+ *   @version $Id: RSASignSessionBean.java,v 1.36 2007-01-12 11:21:50 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -1246,15 +1246,19 @@ public class RSASignSessionBean extends BaseSessionBean {
                 	} else {
                 		type = CertificateDataBean.CERTTYPE_SUBCA;
                 	}                		
-                    // Store CA certificate in the database if it does not exist
-                    if (certificateStore.findCertificateByFingerprint(admin, fingerprint) == null) {
-                        certificateStore.storeCertificate(admin, cert, "SYSTEMCA", fingerprint, CertificateDataBean.CERT_ACTIVE, type);
-                    }
                 } else if (isSelfSigned) {
                 	// If we don't have basic constraints, but is self signed, we are still a CA, just a stupid CA
                 	type = CertificateDataBean.CERTTYPE_ROOTCA;
                 }
                 
+                String name = "SYSTEMCERT";
+                if (type != CertificateDataBean.CERTTYPE_ENDENTITY) {
+                	name = "SYSTEMCA";
+                }
+                // Store CA certificate in the database if it does not exist
+                if (certificateStore.findCertificateByFingerprint(admin, fingerprint) == null) {
+                    certificateStore.storeCertificate(admin, cert, name, fingerprint, CertificateDataBean.CERT_ACTIVE, type);
+                }
                 // Store cert in ca cert publishers.
                 IPublisherSessionLocal pub = publishHome.create();
                 if (usedpublishers != null) {
