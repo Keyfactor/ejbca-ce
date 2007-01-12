@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.34 2007-01-12 10:15:00 anatom Exp $
+$Id: UPGRADE,v 1.35 2007-01-12 10:31:29 anatom Exp $
 
 UPGRADE
 =======
@@ -25,6 +25,8 @@ Backup your database first! If the upgrade fails, you can always go back to the 
 
 Upgrade from EJBCA 3.3.x to EJBCA 3.4.x requires one small database change.
 
+If you are upgrading a cluster, you should run the upgrade process with only one node running,
+and then simply update the software on the other nodes.
 
 1. Copy ejbca.properties from the earlier installation into the conf directory of the new release.
    Or better yet, split up your ejbca.properties file to match the new improved conf structure.
