@@ -465,6 +465,15 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 		<!-- Copy the correct jndi settings for the selected application server -->
 		<copy file="${mainbin}/jndi.properties.${appserver.type}" tofile="${mainbin}/jndi.properties" overwrite="false" failonerror="false"/>
 		<copy file="${mainsrc}/java/jndi.properties.${appserver.type}" tofile="${mainsrc}/java/jndi.properties" overwrite="false" failonerror="false"/>
+
+        <!-- Fix encoding of files for internal (log) internationalization) --> 		
+		<delete file="${src}/intresources/intresources.fr.properties"/>
+    	<native2ascii  encoding="ISO8859-1" 
+    		src="${mainsrc}/intresources" 
+    		dest="${src}/intresources"
+    		includes="intresources.fr.properties" 
+    	/>
+		
 	</target>
 
     <!--
