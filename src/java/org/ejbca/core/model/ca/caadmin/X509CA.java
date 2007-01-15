@@ -126,7 +126,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.49 2007-01-12 09:43:07 anatom Exp $
+ * @version $Id: X509CA.java,v 1.50 2007-01-15 14:57:33 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -505,7 +505,9 @@ public class X509CA extends CA implements Serializable {
                     // We only support a cpsurl and usernotice on the first policyid
                     cpsurl = null;
                     usernotice = null;
-                    policys.add(pi);
+                    if (pi != null) {
+                        policys.add(pi);                    	
+                    }
                 }
                 // Add the final extension
                 DERSequence seq = new DERSequence(policys);
@@ -994,7 +996,7 @@ public class X509CA extends CA implements Serializable {
             qualifiers.add(pqiCPS);
         }
         PolicyInformation policyInformation = null;
-        if (qualifiers.size() > 0) {
+        if ( StringUtils.isNotEmpty(policyOID) && (qualifiers.size() > 0) ) {
             policyInformation = new PolicyInformation(new DERObjectIdentifier(policyOID), new DERSequence(qualifiers));            
         } else {
             policyInformation = new PolicyInformation(new DERObjectIdentifier(policyOID));

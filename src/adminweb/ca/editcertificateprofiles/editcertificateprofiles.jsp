@@ -407,13 +407,13 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
 				 }
 						
 					value = request.getParameter(TEXTFIELD_POLICYNOTICE_CPSURL);
-					if( value != null && !"".equals(value) ){
+					if( value != null ){
 						value = value.trim();
 						certificateprofiledata.setCpsUrl(value);
 					}
 						
 					value = request.getParameter(TEXTAREA_POLICYNOTICE_UNOTICE);
-					if( value != null && !"".equals(value) ){
+					if( value != null ){
 						value = value.trim();
 						certificateprofiledata.setUserNoticeText(value);
 					}
