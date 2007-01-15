@@ -4,6 +4,10 @@ Code signing:
 ------------
 sign-verify.sh - used to sign a file. Creates a signature file, that can later be verified using the same program. 
  Uses a private key to sign and a public key to verify.
+ It is actually recommended, for security reasons, that the signing and verification is done on another machine
+ than the file beeing signed. This prtects agains someone gaining privileges and using a key stored on disk to 
+ sign a bad version of the file.
+ 
  Create a new user 'Batch' in EJBCA, check 'Batch' processing and choose P12 keystore.
  When the p12 has been created you can convert it to openssl format with the following commands.
  (in these commands the created user was called signer, so the p12 file is called signer.p12)
