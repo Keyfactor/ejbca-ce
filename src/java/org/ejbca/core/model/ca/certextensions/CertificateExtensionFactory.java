@@ -33,7 +33,7 @@ import org.ejbca.core.model.InternalResources;
  * 
  * @author Philip Vendil 2007 jan 5
  *
- * @version $Id: CertificateExtensionFactory.java,v 1.1 2007-01-09 16:47:19 herrvendil Exp $
+ * @version $Id: CertificateExtensionFactory.java,v 1.2 2007-01-15 14:49:51 anatom Exp $
  */
 
 public class CertificateExtensionFactory {
@@ -120,16 +120,15 @@ public class CertificateExtensionFactory {
 				}
 			}			
 			
-			System.out.println("HERE");
 			for(int i=1;i<255;i++){
 				if(props.get("id" + i +".oid")!=null){
-					System.out.println("found " + props.get("id" + i +".oid"));
+					log.debug("found " + props.get("id" + i +".oid"));
 					retval.addCertificateExtension(props,i);
 				}else{
 					break;
 				}
 			}
-			System.out.println("HERE" + retval.availableCertificateExtensions.size());
+			log.debug("Nr of availableCeritficateExtensions: " + retval.availableCertificateExtensions.size());
 		}catch(IOException e){
 			log.error(intres.getLocalizedMessage("certext.errorparsingproperty"),e);
 		} catch (CertificateExtentionConfigurationException e) {
@@ -145,11 +144,11 @@ public class CertificateExtensionFactory {
 			String oid = props.getProperty(PROPERTY_ID + id + PROPERTY_OID);
 			String classPath = props.getProperty(PROPERTY_ID + id + PROPERTY_CLASSPATH);
 			String displayName = props.getProperty(PROPERTY_ID + id + PROPERTY_DISPLAYNAME);
-			System.out.println(PROPERTY_ID + id + PROPERTY_USED + ":" + props.getProperty(PROPERTY_ID + id + PROPERTY_USED));
+			log.debug(PROPERTY_ID + id + PROPERTY_USED + ":" + props.getProperty(PROPERTY_ID + id + PROPERTY_USED));
 			boolean used = props.getProperty(PROPERTY_ID + id + PROPERTY_USED).trim().equalsIgnoreCase("TRUE");
 			boolean translatable = props.getProperty(PROPERTY_ID + id + PROPERTY_TRANSLATABLE).trim().equalsIgnoreCase("TRUE");
 			boolean critical = props.getProperty(PROPERTY_ID + id + PROPERTY_CRITICAL).trim().equalsIgnoreCase("TRUE");
-			System.out.println(id + ", " + used + ", " +oid + ", " +critical+ ", " +translatable +  ", " + displayName);   
+			log.debug(id + ", " + used + ", " +oid + ", " +critical+ ", " +translatable +  ", " + displayName);   
 			if(used){
 				if(oid != null && classPath != null && displayName != null){					
 					AvailableCertificateExtension availableCertificateExtension = new AvailableCertificateExtension(id,oid.trim(),displayName.trim(),translatable);
