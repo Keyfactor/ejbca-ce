@@ -94,7 +94,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.36 2007-01-07 16:38:25 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.37 2007-01-15 15:27:40 anatom Exp $
  * 
  * @ejb.bean
  *   display-name="UserAdminSB"
@@ -599,7 +599,6 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         dn = StringTools.strip(dn);
         String newpassword = userdata.getPassword();
         int type = userdata.getType();
-        boolean statuschanged = false;
         debug(">changeUser(" + userdata.getUsername() + ", " + dn + ", " + userdata.getEmail() + ")");
         int oldstatus;
         EndEntityProfile profile = raadminsession.getEndEntityProfile(admin, userdata.getEndEntityProfileId());
@@ -673,7 +672,6 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             if(oldstatus == UserDataConstants.STATUS_KEYRECOVERY && !(userdata.getStatus() == UserDataConstants.STATUS_KEYRECOVERY || userdata.getStatus() == UserDataConstants.STATUS_INPROCESS)){
               getKeyRecoverySession().unmarkUser(admin,userdata.getUsername());	
             }
-            statuschanged = userdata.getStatus() != oldstatus;
             data1.setStatus(userdata.getStatus());
             data1.setTimeModified((new java.util.Date()).getTime());
 
@@ -690,10 +688,13 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                 }
             }
 
-            if ((type & SecConst.USER_SENDNOTIFICATION) != 0 && statuschanged && (userdata.getStatus() == UserDataConstants.STATUS_NEW || userdata.getStatus() == UserDataConstants.STATUS_KEYRECOVERY || userdata.getStatus() == UserDataConstants.STATUS_INITIALIZED)) {
+            boolean statuschanged = userdata.getStatus() != oldstatus;
+            // Send notification fi it should be sent. Should only be sent if new status is NEW, KEYRECOVERY or INITIALIZED, you don't send a notification to a user that has no use of the password
+            if ((type & SecConst.USER_SENDNOTIFICATION) != 0 && (userdata.getStatus() == UserDataConstants.STATUS_NEW || userdata.getStatus() == UserDataConstants.STATUS_KEYRECOVERY || userdata.getStatus() == UserDataConstants.STATUS_INITIALIZED)) {
 
                 sendNotification(admin, profile, userdata.getUsername(), newpassword, dn, userdata.getEmail(), userdata.getCAId());
             }
+            // Only print stuff on a printer on the same conditions as for notifications, we also only print if the status changes, not for every time we press save
             if ((type & SecConst.USER_PRINT) != 0 && statuschanged && (userdata.getStatus() == UserDataConstants.STATUS_NEW || userdata.getStatus() == UserDataConstants.STATUS_KEYRECOVERY || userdata.getStatus() == UserDataConstants.STATUS_INITIALIZED)) {
             	print(admin,profile,userdata);
             }
