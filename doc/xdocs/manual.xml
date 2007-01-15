@@ -1672,7 +1672,7 @@ Remember to configure mail-server settings in the ejbca.properties file.
 In EJBCA 3.3 there exists a basic framework of custom user data sources 
 for importing user data from existing databases. 
 </p>
-<p>These instuctions is intended for EJBCA developers.</p>
+<p>These instructions is intended for EJBCA developers.</p>
 <p>Currently there exists a standalone framework for implementing 
 custom user data sources in the same way as for custom publishers. Later 
 on will ready made LDAP and AD userdatasources be implemented to be used 
@@ -1685,7 +1685,7 @@ It can have a constant BaseUserDataSource.ANY_CA.
 <p>The second is a set of fields instructing the RA interface GUI which fields that 
 should be modifyable by the RA and which that should be fixed. Important, there 
 is not connection between the user data source, isModifyable data and the end entity profile 
-isModifyalbe data. The userdata source is only a instuction to the RA gui then when the 
+isModifyalbe data. The userdata source is only an instruction to the RA gui then when the 
 userdata is added will it be matched against the end entity profile, and it's the data 
 in the end entity profile that really counts. 
 </p>
@@ -1714,19 +1714,22 @@ java.util.Collection IUserDataSourceSessionLocal.fetch(Admin admin, Collection u
 </section>
 <section name="Monitoring Services Framework">
 <p>
-New to EJBCA 3.4 is a framework for monitoring services. I.e. procedures 
+New to EJBCA 3.4 is a framework for monitoring services, i.e. procedures 
 that should be run on a timely basis. Currently there exists two types of 
-services a CRL updater that automatically updates the CRL and a Certificate 
-Expiration Checker that checks if a CA have certificates about to expire and 
-sends an email notification to the end user and/or the administrator. 
-Too this it is also possible to write plug-inable customized services.
+services:
+<ul>
+<li>a CRL updater that automatically updates the CRL.</li>
+<li>a Certificate Expiration Checker that checks if a CA have certificates about to expire and 
+sends an email notification to the end user and/or the administrator.</li>
+</ul>
+It is also possible to write plug-ins for customized services.
 </p><p>
 A service consists of the components, a worker doing the actual work, an interval 
-determing the time to the next time the service should run and a action (optional) 
+determing the time to the next time the service should run and an action (optional) 
 of what should be done if a certain condition occurs.
 </p>
 <subsection name="Currently Available Services">
-<subsection name="Workers">
+<subsubsection name="Workers">
 <p><i>CRL Update Worker</i></p>
 <p>
 The CRL Updater have the same functionality as the current JBoss Service and will in 
@@ -1736,66 +1739,66 @@ periodical interval and no action.
 </p>
 <p><i>Certificate Expiration Check Worker</i></p>
 <p>
-A worker that checks if a CA have certificates about to expire and sends a email 
+A worker that checks if a CA have certificates about to expire and sends an email 
 notification the the end user and/or administrator. 
 The worker have the following settings:
 <ul>
 <li>
-<i>CAs to Check</i> Select here which CAs that should be searched for expiring certificates
+<i>CAs to Check</i> - Select here which CAs that should be searched for expiring certificates.
 </li>
 <li>
-<i>Time before notification is sent</i> The number of Days/Hours/Minutes/Seconds that should 
+<i>Time before notification is sent</i> - The number of Days/Hours/Minutes/Seconds that should 
 remain of the certificates validity before the notification is sent.
 </li>
 <li>
-<i>Send notification to end user</i> Check this if a notification should be sent to 
+<i>Send notification to end user</i> - Check this if a notification should be sent to 
 the owner of the certificate. Observe that the end user must have an email set in 
 the user database (not necessarily in the certificate) in order for the service to 
 send the notification.
 </li>
 <li>
-<i>Notification Subject to End User</i> The e-mail subject
+<i>Notification Subject to End User</i> - The e-mail subject.
 </li>
 <li>
-<i>End User Message</i> Message body of the notification. Here can the substitution 
-variables be used defined in the 'Email Notifications' section
+<i>End User Message</i> - Message body of the notification. Here can the substitution 
+variables be used defined in the 'Email Notifications' section.
 </li>
 <li>
-<i>Send notification to Administrator</i> Check this if a notification should be sent 
+<i>Send notification to Administrator</i> - Check this if a notification should be sent 
 to some defined administrator-mail address. The address of the administrator is 
 configured in the Mail Action component.
 </li>
 <li>
-<i>Notification Subject to Administrator</i> The e-mail subject
+<i>Notification Subject to Administrator</i> - The e-mail subject.
 </li>
 <li>
-<i>Administrator Message</i> Message body of the notification. Here can the 
+<i>Administrator Message</i> - Message body of the notification. Here can the 
 substitution variables be used defined in the 'Email Notifications' section.
 </li>
 </ul>
 </p>
-</subsection>
-<subsection name="Intervals">
+</subsubsection>
+<subsubsection name="Intervals">
 <p><i>Periodical Interval</i></p>
 <p>
 Defines in days/hours/minutes/seconds of how often the worker will be run.
 </p>
-</subsection>
-<subsection name="Actions">
+</subsubsection>
+<subsubsection name="Actions">
 <p><i>Mail Action</i></p>
 <p>
 Action that's sends an email notification and have the following settings:
 <ul>
 <li>
-<i>Sender Address</i> The from-address used in the email.
+<i>Sender Address</i> - The from-address used in the email.
 </li>
 <li>
-<i>Receiver Address</i> The to-address of the email of it 
+<i>Receiver Address</i> - The to-address of the email of it 
 isn't specified by the worker.
 </li>
 </ul>
 </p>
-</subsection>
+</subsubsection>
 </subsection>
 <subsection name="Writing Customized Services">
 <p>
@@ -1803,11 +1806,11 @@ It is possible to write customized component plug-ins that can be used with
 other standard (or customized plug-ins) and this section explains the steps 
 necessary.
 </p><p>
-Common for all the components is that it's required to create a class implementing 
+Common for all the components is that it is required to create a class implementing 
 the components interface. Then you have to create a jar containing the necessary 
-plug-in classes and deploy it to application server so it's included in the 
+plug-in classes and deploy it to application server so it is included in the 
 class-path. The next step is to create a service using the custom component by 
-specifying the class path and optional the custom properties used by the component. 
+specifying the class path and optionally the custom properties used by the component. 
 The properties field have the same syntax as a regular Java property file.
 </p>
 <subsection name="CustomWorker">
@@ -1851,27 +1854,10 @@ See org.ejbca.core.model.services.actions.DummyAction for an example implementat
 </section>
 <section name="Hardware Security Modules (HSM)">
 <p>
-EJBCA have a moduler API for HSMs, HardCAToken. For every CA that is created
-a HardCAToken object is also created. This object contains among other
-things references to keys (or the keys themselves of a soft token is used).
-
-For each HSM hardware that should be supported you need one HardCAToken
-class that implementes support for this particular HSM. A hard ca token
-plug-in must:
+EJBCA have support for several HSMs. Each HSM has it's own interface for key generation and maintenance, specific
+to the HSM and independant of EJBCA. You should make sure you are familiar with how your HSM works.
 </p>
-<ol>
-<li>implement IHardCAToken</li>
-<li>be loaded at the static initialization if HardCATokenManager where it is
-registered with the HardCATokenManager using the method
-addAvailableHardCAToken()</li>
-<li>Provide a JCE Security Provider that is installed by the module and can be fetched by 
-the EJBCA crypto module (BouncyCastle) through the name returned in IHardCAToken.getProvider().</li>
-</ol>
 <p>
-See HardCATokenSample and/or DummyHardCAToken for samples.
-Unlike the sample addAvailableHardCAToken() must be called with use=true, or
-the token will not be usable in EJBCA (as the flag suggests).
-</p><p>
 When configuring a CA to use a HSM in the administration GUI it is a property field where properties unique to this very HSM is specified. All implemented HSM modules are using the same property keywords to define the identity and the purpose of the keys to be used. These keywords are:
 <ul>
 <li>certSignKey   - the key to be used when signing certificates, can be RSA or ECDSA.</li>
@@ -2353,6 +2339,32 @@ Note: The pin is optional. If set, the CAToken will try to use it for automatic 
 of the slot in case of a container restart.
 </p>
 </subsection>
+
+<subsection name="Writing support for new HSMs">
+<p>
+EJBCA have a moduler API for HSMs, HardCAToken. For every CA that is created
+a HardCAToken object is also created. This object contains among other
+things references to keys (or the keys themselves of a soft token is used).
+
+For each HSM hardware that should be supported you need one HardCAToken
+class that implementes support for this particular HSM. A hard ca token
+plug-in must:
+</p>
+<ol>
+<li>implement IHardCAToken</li>
+<li>be loaded at the static initialization if HardCATokenManager where it is
+registered with the HardCATokenManager using the method
+addAvailableHardCAToken()</li>
+<li>Provide a JCE Security Provider that is installed by the module and can be fetched by 
+the EJBCA crypto module (BouncyCastle) through the name returned in IHardCAToken.getProvider().</li>
+</ol>
+<p>
+See HardCATokenSample and/or DummyHardCAToken for samples.
+Unlike the sample addAvailableHardCAToken() must be called with use=true, or
+the token will not be usable in EJBCA (as the flag suggests).
+</p>
+</subsection>
+
 </section>
 
 <section name="LDAP and Publishers">
@@ -3291,7 +3303,7 @@ implementing a simple java interface.
 <subsection name="Configuring Custom Certificate Extensions">
 <p>
 Certificate extensions is configured in the file 'src/java/certextensions.properties'
-All extentions should have a id ranging form 1 up to 255, the number order is important.
+All extentions should have a id ranging from 1 up to 255, the number order is important.
 </p>
 The following properties must be set for each extension (all beginning with idN.)
 <ul>
@@ -3313,13 +3325,13 @@ The following properties must be set for each extension (all beginning with idN.
 <p>
 After the file is configured rebuild and deploy EJBCA.
 </p><p>
-Efter extensions have been added it is possible to select them for a certificate profile
+After extensions have been added it is possible to select them for a certificate profile
 in the 'Edit Certificate Profile' page.
 </p>
 </subsection>
 <subsection name="Basic Certificate Extension">
 <p>
-In order to create a Basic Certificate Extension us the classpath org.ejbca.core.model.ca.certextensions.BasicCertificateExtension
+In order to create a Basic Certificate Extension you use the classpath org.ejbca.core.model.ca.certextensions.BasicCertificateExtension
 and specify the properties idX.property.encoding and idX.property.value.
 See the following table for the available encodings and how their value is interpreted
 </p>
@@ -3328,27 +3340,27 @@ See the following table for the available encodings and how their value is inter
 </li>
 <li>DERINTEGER : A String containing digits only in decimal digits.
 </li>
-<li>DEROCTETSTRING : A String containing hex data representation
+<li>DEROCTETSTRING : A String containing hex data representation.
 </li>
-<li>DERBOOLEAN : The string 'true' or 'false'
+<li>DERBOOLEAN : The string 'true' or 'false'.
 </li>
-<li>DERPRINTABLESTRING : A string containing valid printable string characters.
+<li>DERPRINTABLESTRING : A string containing valid printable string characters (a-z, 0-9).
 </li>
-<li>DERUTF8STRING : A string in UTF-8 format
+<li>DERUTF8STRING : A string in UTF-8 format.
 </li>
-<li>DERNULL : Value isn't used
+<li>DERNULL : Value isn't used, an empty value.
 </li>
 </ul>
 </subsection>
 <subsection name="Implementing an Advanced Certificate Extension">
 <p>
-To create an advanced extension it's required to create a java class inheriting
+To create an advanced extension it is required to create a java class extending
 the CertificateExtension abstract class. One method getValue is required and
 the current user data, ca and certificate profile is sent to the extension in order
 to generate dynamic extensions.
 </p><p>
 Here is an example of a simple advanced extension. To add this extension to EJBCA
-add to to the classpath of certextensions.properties, make sure the class is 
+add it to to the classpath in certextensions.properties, make sure the class is 
 accessable in the classpath and redeploy.
 </p>
 <source>
