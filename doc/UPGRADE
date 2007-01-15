@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.35 2007-01-12 10:31:29 anatom Exp $
+$Id: UPGRADE,v 1.36 2007-01-15 13:05:49 anatom Exp $
 
 UPGRADE
 =======
@@ -63,7 +63,7 @@ After the upgrade process, check your CA configuration to verify that the option
 
 Note: If you intend to use the XKMS service or the CMS service (log signing), then you should go into the Admin-GUI 
 after upgrading and press the button "Republish CA Certificates" for all CAs. 
-Otherwise you will not be able to revoke the certificates issued to these services.
+Otherwise you will not be able to revoke the certificates issued to these services, or view the certificates in the GUI.
 
 You should be ablo to upgrade from EJBCA 3.1.x directly to 3.4.x, by following the same instructions
 as above, but answering yes to the second question (this upgrade is not thoroughly tested though).
