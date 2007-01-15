@@ -22,20 +22,21 @@ import java.util.Properties;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Priority;
+import org.ejbca.core.model.InternalResources;
 
 
 /**
  * Implements a log device using Log4j, implementes the Singleton pattern.
  *
- * @version $Id: Log4jLogDevice.java,v 1.2 2006-11-09 07:21:18 anatom Exp $
+ * @version $Id: Log4jLogDevice.java,v 1.3 2007-01-15 14:32:32 anatom Exp $
  */
 public class Log4jLogDevice implements ILogDevice, Serializable {
 
-    /**
-     * Log4j instance for Base
-     */
+    /** Log4j instance  */
     private static final Logger log = Logger.getLogger(Log4jLogDevice.class);
 
+    /** Internal localization of logs and errors */
+    private static final InternalResources intres = InternalResources.getInstance();
 
     /**
      * A handle to the unique Singleton instance.
@@ -72,9 +73,9 @@ public class Log4jLogDevice implements ILogDevice, Serializable {
 
     public void log(Admin admininfo, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception exception) {
 
-        String user = "No User Involved";
-        String cert = "No Certificate Involved";
-        String admin = "Administrator not known";
+    	String user = intres.getLocalizedMessage("log.nouserinvolved");
+    	String cert = intres.getLocalizedMessage("log.nocertinvolved");
+    	String admin = intres.getLocalizedMessage("log.adminnotknown");
 
         if (username != null) {
             user = username;
