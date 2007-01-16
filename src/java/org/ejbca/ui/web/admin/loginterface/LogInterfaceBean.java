@@ -48,7 +48,7 @@ import org.ejbca.util.query.Query;
  * A java bean handling the interface between EJBCA log module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: LogInterfaceBean.java,v 1.4 2006-12-29 11:21:14 anatom Exp $
+ * @version $Id: LogInterfaceBean.java,v 1.5 2007-01-16 09:54:20 anatom Exp $
  */
 public class LogInterfaceBean implements java.io.Serializable {
 
@@ -196,7 +196,7 @@ public class LogInterfaceBean implements java.io.Serializable {
      *
      * @return a hasmap with error info eventname to id mappings.
      */  
-    public HashMap getEventNameToIdMap(){             
+    public HashMap getEventNameToIdMap(){  
       return localeventnamestoid;          
     }    
     
@@ -278,20 +278,28 @@ public class LogInterfaceBean implements java.io.Serializable {
       localinfoeventnamesunsorted = new String[LogEntry.EVENTNAMES_INFO.length];
       localeventnamestoid = new HashMap();
       for(int i = 0; i < localinfoeventnames.length; i++){
-        localinfoeventnames[i] = ejbcawebbean.getText(LogEntry.EVENTNAMES_INFO[i]);
-        localinfoeventnamesunsorted[i] = ejbcawebbean.getText(LogEntry.EVENTNAMES_INFO[i]);
-        alllocaleventnames[i] = localinfoeventnames[i];
-        localeventnamestoid.put(localinfoeventnames[i], new Integer(i));
+    	  // If the translation contains html characters (&eacute; etc) we must turn it into regular chars, just like the browser does
+    	  String s = ejbcawebbean.getText(LogEntry.EVENTNAMES_INFO[i]);
+    	  localinfoeventnames[i] = s;
+    	  localinfoeventnamesunsorted[i] = s;
+    	  alllocaleventnames[i] = localinfoeventnames[i];
+    	  // We must make this independent of language encoding, utf, html escaped etc
+    	  Integer hashcode = Integer.valueOf(localinfoeventnames[i].hashCode());
+    	  localeventnamestoid.put(hashcode.toString(), new Integer(i));
       }
       Arrays.sort(localinfoeventnames);          
       
       localerroreventnamesunsorted = new String[LogEntry.EVENTNAMES_ERROR.length];      
       localerroreventnames = new String[LogEntry.EVENTNAMES_ERROR.length];
       for(int i = 0; i < localerroreventnames.length; i++){
-        localerroreventnames[i] = ejbcawebbean.getText(LogEntry.EVENTNAMES_ERROR[i]);
-        localerroreventnamesunsorted[i] = localerroreventnames[i];        
-        alllocaleventnames[LogEntry.EVENTNAMES_INFO.length + i] = localerroreventnames[i];
-        localeventnamestoid.put(localerroreventnames[i], new Integer(i + LogEntry.EVENT_ERROR_BOUNDRARY));
+    	  // If the translation contains html characters (&eacute; etc) we must turn it into regular chars, just like the browser does
+    	  String s = ejbcawebbean.getText(LogEntry.EVENTNAMES_ERROR[i]);
+    	  localerroreventnames[i] = s;
+    	  localerroreventnamesunsorted[i] = s;        
+    	  alllocaleventnames[LogEntry.EVENTNAMES_INFO.length + i] = localerroreventnames[i];
+    	  // We must make this independent of language encoding, utf, html escaped etc
+    	  Integer hashcode = Integer.valueOf(localerroreventnames[i].hashCode());
+    	  localeventnamestoid.put(hashcode.toString(), new Integer(i + LogEntry.EVENT_ERROR_BOUNDRARY));
       }
       Arrays.sort(localerroreventnames);     
       Arrays.sort(alllocaleventnames);

@@ -1,7 +1,7 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page errorPage="/errorpage.jsp"  import=" org.ejbca.core.model.authorization.AuthorizationDeniedException,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, 
-    org.ejbca.ui.web.RequestHelper,org.ejbca.core.model.log.LogConfiguration,
+    org.ejbca.ui.web.RequestHelper,org.ejbca.core.model.log.LogConfiguration,org.ejbca.util.HTMLTools,
                 java.util.HashMap, java.util.Iterator, java.util.Collection"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -141,7 +141,7 @@
                 dolog=false;
 
             value = request.getParameter(HIDDEN_INFOTEXTROW + i);
-            logconfiguration.setLogEvent(((Integer) texttoid.get(value)).intValue(), dolog);
+            logconfiguration.setLogEvent(((Integer)texttoid.get(value)).intValue(), dolog);
           }
 
           for(int i=0; i <  errorrows.length; i++){
@@ -155,7 +155,7 @@
                 dolog=false;
 
             value = request.getParameter(HIDDEN_ERRORTEXTROW + i);
-            logconfiguration.setLogEvent(((Integer) texttoid.get(value)).intValue(), dolog); 
+            logconfiguration.setLogEvent(((Integer)texttoid.get(value)).intValue(), dolog); 
           }
            
         logbean.saveLogConfiguration(caid, logconfiguration);
@@ -262,9 +262,13 @@
       <td width="10%" valign="top" id="InfoRow<%= i%2 %>"> 
          <% if(inforows.length > i){ %>
         <input type="checkbox" name="<%=CHECKBOX_INFOLOGROW + i%>" value="<%=CHECKBOX_VALUE %>" 
-                                                                                          <% if(logconfiguration.getLogEvent(((Integer) texttoid.get(inforows[i])).intValue()).booleanValue())
-                                                                                                out.write(" CHECKED "); %>> 
-        <input type="hidden" name='<%=HIDDEN_INFOTEXTROW + i %>' value='<%= inforows[i] %>'>
+        <% 
+  	       // We must make this independent of language encoding, utf, html escaped etc
+           Integer hashcode = Integer.valueOf(inforows[i].hashCode());
+           String val = hashcode.toString();
+           if(logconfiguration.getLogEvent(((Integer) texttoid.get(val)).intValue()).booleanValue())
+               out.write(" CHECKED "); %>> 
+        <input type="hidden" name='<%=HIDDEN_INFOTEXTROW + i %>' value="<%= val %>">
          <% } else{ %>
             &nbsp;
          <% } %>
@@ -279,9 +283,13 @@
       <td width="10%" valign="top" id="ErrorRow<%= i%2 %>"> 
           <% if(errorrows.length > i){ %>
         <input type="checkbox" name="<%=CHECKBOX_ERRORLOGROW + i%>" value="<%=CHECKBOX_VALUE %>" 
-                                                                                          <% if(logconfiguration.getLogEvent(((Integer) texttoid.get(errorrows[i])).intValue()).booleanValue())
-                                                                                                out.write(" CHECKED "); %>> 
-        <input type="hidden" name='<%=HIDDEN_ERRORTEXTROW + i %>' value='<%= errorrows[i] %>'>
+        <% 
+     	   // We must make this independent of language encoding, utf, html escaped etc
+           Integer hashcode = Integer.valueOf(errorrows[i].hashCode());
+           String val = hashcode.toString();
+           if(logconfiguration.getLogEvent(((Integer) texttoid.get(val)).intValue()).booleanValue())
+               out.write(" CHECKED "); %>> 
+        <input type="hidden" name='<%=HIDDEN_ERRORTEXTROW + i %>' value="<%= val %>">
          <% } else{ %>
             &nbsp;
          <% } %>
