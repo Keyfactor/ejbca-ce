@@ -146,7 +146,7 @@ import org.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.15 2006-12-29 11:21:12 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.16 2007-01-16 11:42:54 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 
@@ -473,7 +473,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
                 logconfiguration = new LogConfiguration();
                 logconfigdata = logconfigurationhome.create(new Integer(caid), logconfiguration);
             } catch (CreateException f) {
-                String msg = intres.getLocalizedMessage("log.errorcreateconf", Integer.valueOf(caid));            	
+                String msg = intres.getLocalizedMessage("log.errorcreateconf", new Integer(caid));            	
                 log.error(msg, f);
                 throw new EJBException(f);
             }
@@ -497,9 +497,9 @@ public class LocalLogSessionBean extends BaseSessionBean {
                 (logconfigurationhome.findByPrimaryKey(new Integer(caid))).saveLogConfiguration(logconfiguration);
                 log(admin, caid, LogEntry.MODULE_LOG, new Date(), null, null, LogEntry.EVENT_INFO_EDITLOGCONFIGURATION, "");
             } catch (FinderException e) {
-                String msg = intres.getLocalizedMessage("log.createconf", Integer.valueOf(caid));            	
+                String msg = intres.getLocalizedMessage("log.createconf", new Integer(caid));            	
                 log.info(msg);
-                logconfigurationhome.create(Integer.valueOf(caid), logconfiguration);
+                logconfigurationhome.create(new Integer(caid), logconfiguration);
                 log(admin, caid, LogEntry.MODULE_LOG, new Date(), null, null, LogEntry.EVENT_INFO_EDITLOGCONFIGURATION, "");
             }
         } catch (Exception e) {

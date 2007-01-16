@@ -133,12 +133,12 @@ public class CmpTcpCommandHandler implements ClientEventHandler, ClientBinaryHan
 					}
 
 				} else {
-					String errMsg = intres.getLocalizedMessage("cmp.errortcptoolongmsg", Integer.valueOf(msgLen));
+					String errMsg = intres.getLocalizedMessage("cmp.errortcptoolongmsg", new Integer(msgLen));
 					log.error(errMsg);	
 					handler.closeConnection(); // This is something malicious
 				}
 			} else {
-				String errMsg = intres.getLocalizedMessage("cmp.errortcpwronglen", Integer.valueOf(msgLen), Integer.valueOf(len));
+				String errMsg = intres.getLocalizedMessage("cmp.errortcpwronglen", new Integer(msgLen), new Integer(len));
 				log.error(errMsg);
 				handler.closeConnection(); // This is something malicious
 			}

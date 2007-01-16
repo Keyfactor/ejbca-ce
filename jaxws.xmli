@@ -40,14 +40,6 @@
     	<delete dir="src/jaxws/gen-java/client"/>
     </target>
 
-	<taskdef name="apt" classname="com.sun.tools.ws.ant.Apt">
-		<classpath refid="jaxws.classpath"/>
-	</taskdef>
-	
-    <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
-        <classpath refid="jaxws.classpath"/>
-    </taskdef>
-	
 	<target depends="ws.init" name="ws.gen.server">
        <apt fork="true"  destdir="tmp/jaxws/gen-classes/server" sourcedestdir="src/jaxws/gen-java/server" sourcepath="src/java">
 		 <classpath>
@@ -61,7 +53,7 @@
 		  </apt>
 	</target>
 
-    <target depends="ws.init" name="ws.build">
+    <target depends="ws.init" name="ws.build" unless="ejbcaws.isjava14">
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="${build}" >
             <src path="src/java"/>
@@ -76,16 +68,19 @@
 
     </target>
 	
+    <target name="isjava14check">
+		<condition property="ejbcaws.isjava14">
+			<equals arg1="${ant.java.version}" arg2="1.4"/>
+		</condition>
+    </target>
+
 	<target name="ejbcawsconditioncheck">
 		<condition property="ejbcaws.conditionenabled">
-		    <and>
 			<istrue value="${ejbcaws.enabled}"/>
-			<equals arg1="${ant.java.version}" arg2="1.5"/>
-			</and>
 		</condition>
 	</target>
 	
-    <target name="ejbcaws.war" depends="ejbcawsconditioncheck,ws.build" if="ejbcaws.conditionenabled">
+    <target name="ejbcaws.war" depends="ejbcawsconditioncheck,isjava14check,ws.build" if="ejbcaws.conditionenabled" unless="ejbcaws.isjava14">
         <copy todir="tmp/jaxws/gen-classes/server">
     	  <fileset dir="${build}">
             <include name="org/ejbca/core/protocol/ws/*.class"/>
@@ -119,7 +114,7 @@
         </wsimport>
     </target>
 	
-    <target name="ws.build.client" depends="ws.init, ejbca-util.jar">
+    <target name="ws.build.client" depends="ws.init, ejbca-util.jar" unless="ejbcaws.isjava14">
         <javac debug="true" debuglevel="${debuglevel}" destdir="tmp/jaxws/gen-classes/client" >
             <src path="src/jaxws/gen-java/client"/>
             <classpath refid="jaxws.client.classpath"/>        	
@@ -190,7 +185,7 @@
         </jar>    	    	
     </target>
 
-    <target name="ejbcaws.client" depends="ejbcawsconditioncheck,ws.build.client" if="ejbcawsconditioncheck"/>
+    <target name="ejbcaws.client" depends="ejbcawsconditioncheck,isjava14check,ws.build.client" if="ejbcawsconditioncheck" unless="ejbcaws.isjava14"/>
 
     <target name="test:compilews" depends="ws.build, ws.build.client" description="compile JAXWS JUnit testcases">
         <mkdir dir="${test.dir}" />

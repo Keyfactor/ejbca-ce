@@ -27,7 +27,7 @@ import org.ietf.ldap.LDAPDN;
  * or Subject Directory Attributes strings.
  *
  * @author Philip Vendil
- * @version $Id: DNFieldExtractor.java,v 1.6 2006-12-04 10:06:23 anatom Exp $
+ * @version $Id: DNFieldExtractor.java,v 1.7 2007-01-16 11:46:13 anatom Exp $
  */
 public class DNFieldExtractor implements java.io.Serializable {
     private static final Logger log = Logger.getLogger(DNFieldExtractor.class);
@@ -134,7 +134,7 @@ public class DNFieldExtractor implements java.io.Serializable {
         Iterator it = ids.iterator();
         while (it.hasNext()) {
         	Integer id = (Integer)it.next();
-            fieldnumbers.put(id, Integer.valueOf(0));
+            fieldnumbers.put(id, new Integer(0));
         }
 
         if ((dn != null) && !dn.equalsIgnoreCase("null")) {
@@ -184,7 +184,7 @@ public class DNFieldExtractor implements java.io.Serializable {
                                 dnfields.put(new Integer((id.intValue() * BOUNDRARY) +
                                 		number.intValue()), rdn);
                             }
-                            number = Integer.valueOf(number.intValue()+1);
+                            number = new Integer(number.intValue()+1);
                             fieldnumbers.put(id, number);
                         }
                     }
@@ -268,7 +268,7 @@ public class DNFieldExtractor implements java.io.Serializable {
      * @return number of componenets available for a fiels, for example 1 if DN is "dc=primekey" and 2 if DN is "dc=primekey,dc=com"
      */
     public int getNumberOfFields(int field) {
-        Integer ret = (Integer)fieldnumbers.get(Integer.valueOf(field));
+        Integer ret = (Integer)fieldnumbers.get(new Integer(field));
         if (ret == null) {
         	log.error("Not finding fieldnumber value for "+field);
         }

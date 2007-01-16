@@ -26,7 +26,6 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Date;
 
@@ -73,7 +72,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
  * -- Self signature
  * 
  * @author tomas
- * @version $Id: CrmfRequestMessage.java,v 1.13 2006-11-09 17:55:37 anatom Exp $
+ * @version $Id: CrmfRequestMessage.java,v 1.14 2007-01-16 11:44:31 anatom Exp $
  */
 public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessage {
 	
@@ -157,8 +156,10 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 			X509EncodedKeySpec xspec = new X509EncodedKeySpec(new DERBitString(subjectPKInfo).getBytes());
 			AlgorithmIdentifier keyAlg = subjectPKInfo.getAlgorithmId ();
 			return KeyFactory.getInstance(keyAlg.getObjectId().getId (), provider).generatePublic(xspec);
-		} catch (InvalidKeySpecException e) {
-			throw new InvalidKeyException("Error decoding public key: ", e);
+		} catch (java.security.spec.InvalidKeySpecException e) {
+			InvalidKeyException newe = new InvalidKeyException("Error decoding public key.");
+			newe.initCause(e);
+			throw newe;
 		}
 	}
 	

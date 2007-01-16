@@ -37,7 +37,7 @@ import org.bouncycastle.asn1.x509.X509Name;
  * seemingly similar contents. 
  * 
  * @author tomas
- * @version $Id: DnComponents.java,v 1.7 2006-12-04 16:04:42 anatom Exp $
+ * @version $Id: DnComponents.java,v 1.8 2007-01-16 11:46:13 anatom Exp $
  */
 public class DnComponents {
     private static Logger log = Logger.getLogger(DnComponents.class);
@@ -203,7 +203,7 @@ public class DnComponents {
     	return dnExtractorFields;
     }
     protected static String getDnExtractorFieldFromDnId(int field) {
-    	String val = (String)dnIdToExtractorFieldMap.get(Integer.valueOf(field));
+    	String val = (String)dnIdToExtractorFieldMap.get(new Integer(field));
     	return val;    	
     }
     // Used only by DNFieldExtractor, don't USE
@@ -211,7 +211,7 @@ public class DnComponents {
     	return altNameExtractorFields;
     }
     protected static String getAltNameExtractorFieldFromDnId(int field) {
-    	String val = (String)altNameIdToExtractorFieldMap.get(Integer.valueOf(field));
+    	String val = (String)altNameIdToExtractorFieldMap.get(new Integer(field));
     	return val;    	
     }
     // Used only by DNFieldExtractor, don't USE
@@ -219,16 +219,16 @@ public class DnComponents {
     	return dirAttrExtractorFields;
     }
     protected static String getDirAttrExtractorFieldFromDnId(int field) {
-    	String val = (String)dirAttrIdToExtractorFieldMap.get(Integer.valueOf(field));
+    	String val = (String)dirAttrIdToExtractorFieldMap.get(new Integer(field));
     	return val;    	
     }
     
     public static String dnIdToProfileName(int dnid) {
-    	String val = (String)dnIdToProfileNameMap.get(Integer.valueOf(dnid));
+    	String val = (String)dnIdToProfileNameMap.get(new Integer(dnid));
     	return val;
     }
     public static int dnIdToProfileId(int dnid) {
-    	Integer val = (Integer)dnIdToProfileIdMap.get(Integer.valueOf(dnid));
+    	Integer val = (Integer)dnIdToProfileIdMap.get(new Integer(dnid));
     	return val.intValue();
     }
     /**
@@ -242,14 +242,14 @@ public class DnComponents {
      * Method to get a language error constant for the admin-GUI from a profile id
      */
     public static String getLanguageConstantFromProfileId(int id) {
-    	String ret = (String)profileIdLanguageMap.get(Integer.valueOf(id));
+    	String ret = (String)profileIdLanguageMap.get(new Integer(id));
     	return ret;
     }
     /**
      * Method to get a clear text error msg for the admin-GUI from a dn id
      */
     public static String getErrTextFromDnId(int id) {
-    	String ret = (String)dnIdErrorMap.get(Integer.valueOf(id));
+    	String ret = (String)dnIdErrorMap.get(new Integer(id));
     	return ret;
     }
     
@@ -268,7 +268,7 @@ public class DnComponents {
      *  Should only be used with subjectDN, Subject Alternative Names and subject directory attribute fields.
      */
     public static int profileIdToDnId(int profileid) {
-    	Integer val = (Integer)profileIdToDnIdMap.get(Integer.valueOf(profileid));
+    	Integer val = (Integer)profileIdToDnIdMap.get(new Integer(profileid));
     	if (val == null) {
     		log.error("No dn id mapping from profile id "+profileid);
     		// We allow it to fail here
@@ -292,7 +292,8 @@ public class DnComponents {
     protected static String[] getDnObjectsReverse() {
         // Create and reverse the order if it has not been initialized already
         if (dNObjectsReverse == null) {
-            dNObjectsReverse = dNObjectsForward.clone();
+        	// this cast is not needed in java 5, but is needed for java 1.4
+            dNObjectsReverse = (String[])dNObjectsForward.clone();
             ArrayUtils.reverse(dNObjectsReverse);
         }
         return dNObjectsReverse;
@@ -334,9 +335,9 @@ public class DnComponents {
                         if ( (splits != null) && (splits.length > 5) ) {
                         	String type = splits[0];
                             String dnname = splits[1]; 
-                            Integer dnid = Integer.valueOf(splits[2]); 
+                            Integer dnid = new Integer(splits[2]); 
                             String profilename = splits[3]; 
-                            Integer profileid = Integer.valueOf(splits[4]); 
+                            Integer profileid = new Integer(splits[4]); 
                             String errstr = splits[5]; 
                             String langstr = splits[6];
                             // Fill maps

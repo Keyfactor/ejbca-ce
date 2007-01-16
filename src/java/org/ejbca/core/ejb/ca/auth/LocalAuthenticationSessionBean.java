@@ -44,7 +44,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 /**
  * Authenticates users towards a user database.
  *
- * @version $Id: LocalAuthenticationSessionBean.java,v 1.6 2006-12-13 10:32:41 anatom Exp $
+ * @version $Id: LocalAuthenticationSessionBean.java,v 1.7 2007-01-16 11:42:22 anatom Exp $
  *
  * @ejb.bean
  *   display-name="AuthenticationSB"
@@ -208,7 +208,7 @@ public class LocalAuthenticationSessionBean extends BaseSessionBean {
                 debug("<authenticateUser("+username+", hiddenpwd)");
                 return ret;
             }
-        	String msg = intres.getLocalizedMessage("authentication.wrongstatus", Integer.valueOf(status), username);            	
+        	String msg = intres.getLocalizedMessage("authentication.wrongstatus", new Integer(status), username);            	
             logsession.log(admin, data.getCaId(), LogEntry.MODULE_CA, new java.util.Date(),username, null, LogEntry.EVENT_ERROR_USERAUTHENTICATION,msg);
             throw new AuthStatusException("User "+username+" has status '"+status+"', NEW, FAILED or INPROCESS required.");
         } catch (ObjectNotFoundException oe) {

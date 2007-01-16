@@ -26,7 +26,7 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
  * like a image, in an effort to minimize the need for database alterations
  *
  * @author  Philip Vendil
- * @version $Id: ExtendedInformation.java,v 1.9 2007-01-07 00:31:52 herrvendil Exp $
+ * @version $Id: ExtendedInformation.java,v 1.10 2007-01-16 11:43:53 anatom Exp $
  */
 public class ExtendedInformation extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(ExtendedInformation.class);
@@ -136,7 +136,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     public void upgrade(){
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
     		// New version of the class, upgrade
-			String msg = intres.getLocalizedMessage("ra.extendedinfoupgrade", Float.valueOf(getVersion()));
+			String msg = intres.getLocalizedMessage("ra.extendedinfoupgrade", new Float(getVersion()));
             log.info(msg);
     		
             if(data.get(SUBJECTDIRATTRIBUTES) == null){

@@ -31,7 +31,7 @@ import com.novosec.pkix.asn1.crmf.CertTemplate;
 /**
  * Message class for CMP PKI confirm and CertCOnf messages
  * @author tomas
- * @version $Id: GeneralCmpMessage.java,v 1.3 2006-12-13 10:35:09 anatom Exp $
+ * @version $Id: GeneralCmpMessage.java,v 1.4 2007-01-16 11:44:30 anatom Exp $
  */
 public class GeneralCmpMessage extends BaseCmpMessage {
 
@@ -67,7 +67,7 @@ public class GeneralCmpMessage extends BaseCmpMessage {
 			if (status != null) {
 				int st = status.getStatus().getValue().intValue();
 				if (st != 0) {
-					String errMsg = intres.getLocalizedMessage("cmp.errorcertconfirmstatus", Integer.valueOf(st));
+					String errMsg = intres.getLocalizedMessage("cmp.errorcertconfirmstatus", new Integer(st));
 					log.error(errMsg);
 					// TODO: if it is rejected, we should revoke the cert?
 				}

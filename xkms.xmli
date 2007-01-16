@@ -42,14 +42,6 @@
     	<delete dir="src/xkms/gen-java"/>
     </target>
 
-<!--	<taskdef name="apt" classname="com.sun.tools.ws.ant.Apt">
-		<classpath refid="xkms.classpath"/>
-	</taskdef>
-	
-    <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
-        <classpath refid="xkms.classpath"/>
-    </taskdef> -->
-	
 	<target depends="xkms.init" name="xkms.gen.server">
         <wsimport 
                 keep="true"
@@ -61,7 +53,7 @@
         </wsimport>
 	</target>
 	
-    <target name="xkms.build" depends="xkms.init, preprocess">
+    <target name="xkms.build" depends="xkms.init, preprocess" unless="xkms.isjava14">
         <javac debug="true" debuglevel="${debuglevel}" destdir="tmp/xkms/gen-classes" >
             <src path="src/xkms/gen-java"/>
             <classpath refid="xkms.classpath"/>        	
@@ -76,16 +68,19 @@
         </javac>    	
     </target>
 
+    <target name="xkmsisjava14check">
+		<condition property="xkms.isjava14">
+			<equals arg1="${ant.java.version}" arg2="1.4"/>
+		</condition>
+    </target>
+    
 	<target name="xkmsconditioncheck">
 		<condition property="xkms.conditionenabled">
-		    <and>
 			<istrue value="${xkms.enabled}"/>
-			<equals arg1="${ant.java.version}" arg2="1.5"/>
-			</and>
 		</condition>
 	</target>
 	
-    <target name="xkms.war" depends="xkmsconditioncheck, xkms.build" if="xkms.conditionenabled">
+    <target name="xkms.war" depends="xkmsconditioncheck, xkmsisjava14check, xkms.build" if="xkms.conditionenabled" unless="xkms.isjava14">
         <copy todir="tmp/xkms/gen-classes">
     	  <fileset dir="${build}">
             <include name="org/ejbca/core/protocol/xkms/*.class"/>
@@ -106,7 +101,7 @@
 
 	
 
-	 <target name="xkms.build.client" depends="xkmsconditioncheck, xkms.build, ejbca-util.jar" if="xkms.conditionenabled">
+	 <target name="xkms.build.client" depends="xkmsconditioncheck, xkmsisjava14check, xkms.build, ejbca-util.jar" if="xkms.conditionenabled" unless="xkms.isjava14">
 
 	        <javac debug="true" debuglevel="${debuglevel}" destdir="${build}" >
 	            <src path="${src.java}"/>
@@ -185,7 +180,7 @@
 	        </jar>    	    	
 	    </target>
 
-	<target name="xkms.client" depends="xkmsconditioncheck,xkms.build.client" if="xkmsconditioncheck"/>
+	<target name="xkms.client" depends="xkmsconditioncheck,xkmsisjava14check,xkms.build.client" if="xkms.conditionenabled" unless="xkms.isjava14"/>
 	
     <target name="test:compile:xkms" depends="xkms.build, preprocess" description="compile XKMS JUnit testcases">
         <mkdir dir="${test.dir}" />

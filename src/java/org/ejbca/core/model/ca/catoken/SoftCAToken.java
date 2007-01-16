@@ -35,7 +35,7 @@ import org.ejbca.util.KeyTools;
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: SoftCAToken.java,v 1.6 2006-12-13 10:34:09 anatom Exp $
+ * @version $Id: SoftCAToken.java,v 1.7 2007-01-16 11:43:26 anatom Exp $
  */
 public class SoftCAToken extends CAToken implements java.io.Serializable{
 
@@ -273,7 +273,7 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
     public void upgrade(){
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
     		// New version of the class, upgrade
-			String msg = intres.getLocalizedMessage("catoken.upgradesoft", Float.valueOf(getVersion()));
+			String msg = intres.getLocalizedMessage("catoken.upgradesoft", new Float(getVersion()));
             log.info(msg);
             if(data.get(SIGNKEYALGORITHM) == null) {
             	String oldKeyAlg = (String)data.get(KEYALGORITHM);            	

@@ -264,7 +264,7 @@
         <input type="checkbox" name="<%=CHECKBOX_INFOLOGROW + i%>" value="<%=CHECKBOX_VALUE %>" 
         <% 
   	       // We must make this independent of language encoding, utf, html escaped etc
-           Integer hashcode = Integer.valueOf(inforows[i].hashCode());
+           Integer hashcode =  new Integer((inforows[i].hashCode()));
            String val = hashcode.toString();
            if(logconfiguration.getLogEvent(((Integer) texttoid.get(val)).intValue()).booleanValue())
                out.write(" CHECKED "); %>> 
@@ -285,7 +285,7 @@
         <input type="checkbox" name="<%=CHECKBOX_ERRORLOGROW + i%>" value="<%=CHECKBOX_VALUE %>" 
         <% 
      	   // We must make this independent of language encoding, utf, html escaped etc
-           Integer hashcode = Integer.valueOf(errorrows[i].hashCode());
+           Integer hashcode =  new Integer((errorrows[i].hashCode()));
            String val = hashcode.toString();
            if(logconfiguration.getLogEvent(((Integer) texttoid.get(val)).intValue()).booleanValue())
                out.write(" CHECKED "); %>> 

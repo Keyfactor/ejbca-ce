@@ -23,7 +23,7 @@ import org.ejbca.core.ejb.ca.caadmin.CADataBean;
 /**
  * Class managing a cache of CAs. It is not really a cache, just an object registry.
  * 
- * @version $Id: CACacheManager.java,v 1.1 2006-09-29 10:14:53 anatom Exp $
+ * @version $Id: CACacheManager.java,v 1.2 2007-01-16 11:43:26 anatom Exp $
  * 
  */
 public class CACacheManager {
@@ -57,7 +57,7 @@ public class CACacheManager {
      * @return The previously added CA or null if the CA does not exist in the registry.
      */
     public CA getCA(int caid, CADataBean caData) {
-        CA ret = (CA)caRegistry.get(Integer.valueOf(caid));
+        CA ret = (CA)caRegistry.get(new Integer(caid));
         if (ret != null) {
         	// We mainly cache the xml data, some of the other values may change slightly at will...
         	ret.setStatus(caData.getStatus());
@@ -78,7 +78,7 @@ public class CACacheManager {
     public synchronized void addCA(int caid, CA ca) {
     	removeCA(caid);
         if (ca != null) {
-            caRegistry.put(Integer.valueOf(caid), ca);            
+            caRegistry.put(new Integer(caid), ca);            
             log.debug("Added CA to registry: "+caid);
         }
     }    
@@ -87,8 +87,8 @@ public class CACacheManager {
      * 
      */
     public synchronized void removeCA(int caid) {
-        if (caRegistry.containsKey(Integer.valueOf(caid))) {
-            caRegistry.remove(Integer.valueOf(caid));
+        if (caRegistry.containsKey(new Integer(caid))) {
+            caRegistry.remove(new Integer(caid));
             log.debug("Removed old CA from registry: "+caid);
         }
     }

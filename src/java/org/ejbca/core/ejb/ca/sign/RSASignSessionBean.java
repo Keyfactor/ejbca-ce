@@ -158,7 +158,7 @@ import org.ejbca.util.KeyTools;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
  *   
- *   @version $Id: RSASignSessionBean.java,v 1.36 2007-01-12 11:21:50 anatom Exp $
+ *   @version $Id: RSASignSessionBean.java,v 1.37 2007-01-16 11:42:23 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -696,7 +696,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                     }
                     // We need to make sure we use the users registered CA here
                     if (data.getCAId() != ca.getCAId()) {
-                    	failText = intres.getLocalizedMessage("signsession.wrongauthority", Integer.valueOf(ca.getCAId()), Integer.valueOf(data.getCAId()));
+                    	failText = intres.getLocalizedMessage("signsession.wrongauthority", new Integer(ca.getCAId()), new Integer(data.getCAId()));
                         status = ResponseStatus.FAILURE;
                         failInfo = FailInfo.WRONG_AUTHORITY;
                         getLogSession().log(admin, cadata.getCaId().intValue(), LogEntry.MODULE_CA, new java.util.Date(), req.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, failText);
@@ -1153,7 +1153,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             try {
                 cadata = cadatahome.findByPrimaryKey(new Integer(caid));
             } catch (javax.ejb.FinderException fe) {
-                String msg = intres.getLocalizedMessage("signsession.canotfoundcaid", Integer.valueOf(caid));        	
+                String msg = intres.getLocalizedMessage("signsession.canotfoundcaid", new Integer(caid));        	
                 getLogSession().log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CREATECRL, msg, fe);
                 throw new EJBException(fe);
             }
@@ -1190,7 +1190,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             int number = certificateStore.getLastCRLNumber(admin, ca.getSubjectDN()) + 1;
             X509CRL crl = null;
             crl = (X509CRL) ca.generateCRL(certs, number);
-            String msg = intres.getLocalizedMessage("signsession.createdcrl", Integer.valueOf(number), cadata.getName(), cadata.getSubjectDN());
+            String msg = intres.getLocalizedMessage("signsession.createdcrl", new Integer(number), cadata.getName(), cadata.getSubjectDN());
             getLogSession().log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_CREATECRL, msg);
 
             // Store CRL in the database
@@ -1350,7 +1350,7 @@ public class RSASignSessionBean extends BaseSessionBean {
             try {
                 cadata = cadatahome.findByPrimaryKey(new Integer(data.getCAId()));
             } catch (javax.ejb.FinderException fe) {
-                String msg = intres.getLocalizedMessage("signsession.canotfoundcaid", Integer.valueOf(data.getCAId()));        	
+                String msg = intres.getLocalizedMessage("signsession.canotfoundcaid", new Integer(data.getCAId()));        	
                 getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, msg, fe);
                 throw new CADoesntExistsException(msg);
             }
@@ -1420,7 +1420,7 @@ public class RSASignSessionBean extends BaseSessionBean {
     private Certificate createCertificate(Admin admin, UserDataVO data, CA ca, PublicKey pk, int keyusage, Date notBefore, Date notAfter) throws IllegalKeyException {
         debug(">createCertificate(pk, ku, notAfter)");
         try {
-            getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogEntry.EVENT_INFO_REQUESTCERTIFICATE, intres.getLocalizedMessage("signsession.requestcert", data.getUsername(), Integer.valueOf(data.getCAId()), Integer.valueOf(data.getCertificateProfileId())));
+            getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogEntry.EVENT_INFO_REQUESTCERTIFICATE, intres.getLocalizedMessage("signsession.requestcert", data.getUsername(), new Integer(data.getCAId()), new Integer(data.getCertificateProfileId())));
             // If the user is of type USER_INVALID, it cannot have any other type (in the mask)
             if (data.getType() == SecConst.USER_INVALID) {
             	String msg = intres.getLocalizedMessage("signsession.usertypeinvalid");
@@ -1448,13 +1448,13 @@ public class RSASignSessionBean extends BaseSessionBean {
 
                 // Sign Session bean is only able to issue certificates with a end entity type certificate profile.
                 if (certProfile.getType() != CertificateProfile.TYPE_ENDENTITY) {
-                	String msg = intres.getLocalizedMessage("signsession.errorcertprofiletype", Integer.valueOf(certProfile.getType()));
+                	String msg = intres.getLocalizedMessage("signsession.errorcertprofiletype", new Integer(certProfile.getType()));
                     getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, msg);
                     throw new EJBException(msg);
                 }
 
                 if (!caauthorized) {
-                	String msg = intres.getLocalizedMessage("signsession.errorcertprofilenotauthorized", Integer.valueOf(data.getCAId()), Integer.valueOf(certProfile.getType()));
+                	String msg = intres.getLocalizedMessage("signsession.errorcertprofilenotauthorized", new Integer(data.getCAId()), new Integer(certProfile.getType()));
                 	getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, msg);
                     throw new EJBException(msg);
                 }
@@ -1469,7 +1469,7 @@ public class RSASignSessionBean extends BaseSessionBean {
                 log.debug("Keylength = " + keyLength); 
                 if ((keyLength < (certProfile.getMinimumAvailableBitLength() - 1))
                         || (keyLength > (certProfile.getMaximumAvailableBitLength()))) {
-                	String text = intres.getLocalizedMessage("signsession.illegalkeylength", Integer.valueOf(keyLength)); 
+                	String text = intres.getLocalizedMessage("signsession.illegalkeylength", new Integer(keyLength)); 
                     getLogSession().log(admin, data.getCAId(), LogEntry.MODULE_CA, new java.util.Date(), data.getUsername(), null, LogEntry.EVENT_ERROR_CREATECERTIFICATE, text);
                     log.error(text);
                     throw new IllegalKeyException(text);

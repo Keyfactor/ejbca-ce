@@ -23,6 +23,7 @@ import javax.faces.application.Application;
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
 
+import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.ServiceExistsException;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -35,7 +36,7 @@ import org.ejbca.ui.web.admin.configuration.SortableSelectItem;
  * 
  * @author Philip Vendil 2006 sep 29
  *
- * @version $Id: ListServicesManagedBean.java,v 1.3 2006-11-02 08:03:24 anatom Exp $
+ * @version $Id: ListServicesManagedBean.java,v 1.4 2007-01-16 11:46:14 anatom Exp $
  */
 public class ListServicesManagedBean extends BaseManagedBean {
 	
@@ -192,8 +193,7 @@ public class ListServicesManagedBean extends BaseManagedBean {
 	 * @param newServiceName
 	 */
 	private boolean errorInServiceName(String newServiceName) {
-
-		return newServiceName.contains(";");
+		return StringUtils.contains(newServiceName, ";");
 	}
 
 	private EditServiceManagedBean getEditServiceBean(){

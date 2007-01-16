@@ -246,7 +246,7 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
             	getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg);
         	}
         } catch (FinderException fe) {
-			String msg = intres.getLocalizedMessage("userdatasource.erroruserdatasourceexist", Integer.valueOf(userdatasourceid));            	
+			String msg = intres.getLocalizedMessage("userdatasource.erroruserdatasourceexist", new Integer(userdatasourceid));            	
             getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null,
                     LogEntry.EVENT_ERROR_USERDATASOURCEDATA, msg);
         }
@@ -561,7 +561,7 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
             if(isAuthorizedToEditUserDataSource(admin,result)){
             	returnval = result;
             }else{
-    			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", Integer.valueOf(id));            	
+    			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", new Integer(id));            	
         		getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg);
             }
         } catch (FinderException e) {

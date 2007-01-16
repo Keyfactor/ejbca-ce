@@ -31,7 +31,7 @@ import org.apache.commons.lang.StringUtils;
  * A singleton holding configuration information about the CMP TCP service
  * 
  * @author tomas
- * @version $Id: CmpTcpConfiguration.java,v 1.1 2006-09-27 15:33:24 anatom Exp $
+ * @version $Id: CmpTcpConfiguration.java,v 1.2 2007-01-16 11:44:29 anatom Exp $
  */
 public class CmpTcpConfiguration {
 
@@ -64,7 +64,7 @@ public class CmpTcpConfiguration {
 		int ret = DEFAULT_PORT;
 		String str = prop.getProperty("portNo");
 		if (StringUtils.isNotEmpty(str)) {
-			ret = Integer.valueOf(str).intValue();
+			ret = new Integer(str).intValue();
 		}
 		return ret;
 	}

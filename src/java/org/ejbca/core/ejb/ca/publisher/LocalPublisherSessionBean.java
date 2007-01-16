@@ -334,7 +334,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
                 throw new PublisherConnectionException(pe.getMessage());
             }
         } catch (FinderException fe) {
-        	String msg = intres.getLocalizedMessage("publisher.nopublisher", Integer.valueOf(publisherid));            	
+        	String msg = intres.getLocalizedMessage("publisher.nopublisher", new Integer(publisherid));            	
             getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null,
                     LogEntry.EVENT_ERROR_PUBLISHERDATA, msg);
 

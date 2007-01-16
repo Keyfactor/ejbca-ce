@@ -112,7 +112,7 @@ import org.ejbca.util.CertTools;
  *   value="${ocsp.unidcacert}"
  *   
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson, Lars Silven
- * @version  $Id: OCSPServletBase.java,v 1.27 2007-01-12 16:45:12 anatom Exp $
+ * @version  $Id: OCSPServletBase.java,v 1.28 2007-01-16 11:46:14 anatom Exp $
  */
 abstract class OCSPServletBase extends HttpServlet {
 
@@ -650,7 +650,7 @@ abstract class OCSPServletBase extends HttpServlet {
                                     		// Add the returned X509Extensions to the responseExtension we will add to the basic OCSP response
                                     		responseExtensions.putAll(retext);
                                     	} else {
-                                    		String errMsg = intres.getLocalizedMessage("ocsp.errorprocessextension", extObj.getClass().getName(), Integer.valueOf(extObj.getLastErrorCode()));
+                                    		String errMsg = intres.getLocalizedMessage("ocsp.errorprocessextension", extObj.getClass().getName(),  new Integer(extObj.getLastErrorCode()));
                                     		m_log.error(errMsg);
                                     	}
                             		}

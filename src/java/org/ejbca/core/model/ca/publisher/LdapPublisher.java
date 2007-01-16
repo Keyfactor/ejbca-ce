@@ -49,7 +49,7 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.22 2007-01-09 08:38:07 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.23 2007-01-16 11:43:52 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
@@ -144,7 +144,7 @@ public class LdapPublisher extends BasePublisher {
         log.debug(">storeCertificate(username="+username+")");
         // Don't publish non-active certificates
         if (status != CertificateDataBean.CERT_ACTIVE) {
-			String msg = intres.getLocalizedMessage("publisher.notpublrevoked", Integer.valueOf(status));
+			String msg = intres.getLocalizedMessage("publisher.notpublrevoked", new Integer(status));
         	log.info(msg);
         	return true;
         }
@@ -249,7 +249,7 @@ public class LdapPublisher extends BasePublisher {
                 throw new PublisherException(msg);            
             }
         } else {
-			String msg = intres.getLocalizedMessage("publisher.notpubltype", Integer.valueOf(type));
+			String msg = intres.getLocalizedMessage("publisher.notpubltype", new Integer(type));
             log.info(msg);
             throw new PublisherException(msg);                      
         }
@@ -957,7 +957,7 @@ public class LdapPublisher extends BasePublisher {
         		// This is not present in the normal objectClass (inetOrgPerson)
         		// Modifying the schema is as simple as adding serialNumber as MAY in the inetOrgPerson object class in inetorgperson.schema.
             	Collection usefields = getUseFieldInLdapDN();
-            	if (usefields.contains(Integer.valueOf(DNFieldExtractor.SN))) {
+            	if (usefields.contains(new Integer(DNFieldExtractor.SN))) {
             		String serno = CertTools.getPartFromDN(dn, "SN");
             		if (serno != null) {
             			attributeSet.add(new LDAPAttribute("serialNumber", serno));
@@ -1071,7 +1071,7 @@ public class LdapPublisher extends BasePublisher {
         		// If we have selected to use the SN (serialNUmber DN field, we will also add it as an attribute
         		// This is not present in the normal objectClass (inetOrgPerson)
             	Collection usefields = getUseFieldInLdapDN();
-            	if (usefields.contains(Integer.valueOf(DNFieldExtractor.SN))) {
+            	if (usefields.contains(new Integer(DNFieldExtractor.SN))) {
             		String serno = CertTools.getPartFromDN(dn, "SN");
             		if (serno != null) {
                         LDAPAttribute attr = new LDAPAttribute("serialNumber", serno);
@@ -1156,7 +1156,7 @@ public class LdapPublisher extends BasePublisher {
         log.debug(">upgrade");
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // New version of the class, upgrade
-			String msg = intres.getLocalizedMessage("publisher.upgrade", Float.valueOf(getVersion()));
+			String msg = intres.getLocalizedMessage("publisher.upgrade", new Float(getVersion()));
             log.info(msg);
             if(data.get(ADDMULTIPLECERTIFICATES) == null) {
                 setAddMultipleCertificates(false);                

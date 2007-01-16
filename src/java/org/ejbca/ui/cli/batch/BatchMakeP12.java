@@ -68,7 +68,7 @@ import org.ejbca.util.P12toPEM;
  * This class generates keys and request certificates for all users with status NEW. The result is
  * generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.10 2006-12-13 10:35:30 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.11 2007-01-16 11:44:29 anatom Exp $
  */
 public class BatchMakeP12 {
     /**
@@ -475,7 +475,7 @@ public class BatchMakeP12 {
             	}
             }
             
-    		String iMsg = intres.getLocalizedMessage("batch.generatingnoofusers", Integer.valueOf(result.size()));
+    		String iMsg = intres.getLocalizedMessage("batch.generatingnoofusers", new Integer(result.size()));
             log.info(iMsg);
 
             int failcount = 0;
@@ -515,11 +515,11 @@ public class BatchMakeP12 {
                 }
 
                 if (failedusers.length() > 0) {
-            		String errMsg = intres.getLocalizedMessage("batch.errorbatchfailed", Integer.valueOf(failcount), Integer.valueOf(successcount), failedusers);
+            		String errMsg = intres.getLocalizedMessage("batch.errorbatchfailed", new Integer(failcount), new Integer(successcount), failedusers);
                     throw new Exception(errMsg);
                 }
                                   
-        		iMsg = intres.getLocalizedMessage("batch.success", Integer.valueOf(successcount), successusers);
+        		iMsg = intres.getLocalizedMessage("batch.success", new Integer(successcount), successusers);
                 log.info(iMsg);
             }
         } while ((result.size() > 0) && !stopnow);

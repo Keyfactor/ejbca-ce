@@ -48,7 +48,7 @@ import org.ejbca.util.query.Query;
  * A java bean handling the interface between EJBCA log module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: LogInterfaceBean.java,v 1.5 2007-01-16 09:54:20 anatom Exp $
+ * @version $Id: LogInterfaceBean.java,v 1.6 2007-01-16 11:46:15 anatom Exp $
  */
 public class LogInterfaceBean implements java.io.Serializable {
 
@@ -284,7 +284,7 @@ public class LogInterfaceBean implements java.io.Serializable {
     	  localinfoeventnamesunsorted[i] = s;
     	  alllocaleventnames[i] = localinfoeventnames[i];
     	  // We must make this independent of language encoding, utf, html escaped etc
-    	  Integer hashcode = Integer.valueOf(localinfoeventnames[i].hashCode());
+    	  Integer hashcode = new Integer(localinfoeventnames[i].hashCode());
     	  localeventnamestoid.put(hashcode.toString(), new Integer(i));
       }
       Arrays.sort(localinfoeventnames);          
@@ -298,7 +298,7 @@ public class LogInterfaceBean implements java.io.Serializable {
     	  localerroreventnamesunsorted[i] = s;        
     	  alllocaleventnames[LogEntry.EVENTNAMES_INFO.length + i] = localerroreventnames[i];
     	  // We must make this independent of language encoding, utf, html escaped etc
-    	  Integer hashcode = Integer.valueOf(localerroreventnames[i].hashCode());
+    	  Integer hashcode = new Integer(localerroreventnames[i].hashCode());
     	  localeventnamestoid.put(hashcode.toString(), new Integer(i + LogEntry.EVENT_ERROR_BOUNDRARY));
       }
       Arrays.sort(localerroreventnames);     

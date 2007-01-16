@@ -53,7 +53,7 @@ import org.ejbca.util.CertTools;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.14 2006-12-13 10:32:44 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.15 2007-01-16 11:42:23 anatom Exp $
  * @ejb.bean
  *   description="Session bean handling hard token data, both about hard tokens and hard token issuers."
  *   display-name="CreateCRLSB"
@@ -224,7 +224,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
         } catch (CATokenOfflineException e) {
             throw e;            
         } catch (Exception e) {
-        	String msg = intres.getLocalizedMessage("createcrl.errorcreate", Integer.valueOf(caid));            	
+        	String msg = intres.getLocalizedMessage("createcrl.errorcreate", new Integer(caid));            	
             log.error(msg, e);
             logsession.log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL, msg, e);
             throw new EJBException(e);
@@ -278,7 +278,7 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     			   CAInfo cainfo = caadmin.getCAInfo(admin, caid);
     			   if (cainfo instanceof X509CAInfo) {
     			       if (cainfo.getStatus() == SecConst.CA_OFFLINE )  {
-    			    	   String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), Integer.valueOf(caid));            	    			    	   
+    			    	   String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), new Integer(caid));            	    			    	   
     			    	   log.error(msg);
     			    	   logsession.log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL, msg);
     			       } else {
@@ -334,14 +334,14 @@ public class CreateCRLSessionBean extends BaseSessionBean {
     			               }
     			               
     			           } catch (CATokenOfflineException e) {
-        			    	   String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), Integer.valueOf(caid));            	    			    	   
+        			    	   String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), new Integer(caid));            	    			    	   
         			    	   log.error(msg);
         			    	   logsession.log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL, msg);
     			           }
     			       }
     			   }                       
                 } catch(Exception e) {
-                	String msg = intres.getLocalizedMessage("createcrl.generalerror", Integer.valueOf(caid));            	    			    	   
+                	String msg = intres.getLocalizedMessage("createcrl.generalerror", new Integer(caid));            	    			    	   
                 	error(msg, e);
                 	logsession.log(admin, caid, LogEntry.MODULE_CA, new java.util.Date(),null, null, LogEntry.EVENT_ERROR_CREATECRL,msg,e);
                 	if (e instanceof EJBException) {

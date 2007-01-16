@@ -23,7 +23,7 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
 /**
  * This is a  class containing global configuration parameters.
  *
- * @version $Id: GlobalConfiguration.java,v 1.7 2006-12-15 15:41:55 anatom Exp $
+ * @version $Id: GlobalConfiguration.java,v 1.8 2007-01-16 11:43:52 anatom Exp $
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
 
@@ -298,7 +298,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     }
     
     public void setNumberOfApprovalsToViewPUK(int numberOfHardTokenApprovals){ 
-    	data.put(NUMBEROFAPPROVALSTOVIEWPUK, Integer.valueOf(numberOfHardTokenApprovals));
+    	data.put(NUMBEROFAPPROVALSTOVIEWPUK, new Integer(numberOfHardTokenApprovals));
     }
     
     /**

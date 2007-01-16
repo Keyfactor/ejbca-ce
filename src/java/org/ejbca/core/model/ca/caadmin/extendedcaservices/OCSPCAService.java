@@ -45,7 +45,7 @@ import org.ejbca.util.KeyTools;
 
 /** Handles and maintains the CA-part of the OCSP functionality
  * 
- * @version $Id: OCSPCAService.java,v 1.14 2007-01-09 15:53:55 anatom Exp $
+ * @version $Id: OCSPCAService.java,v 1.15 2007-01-16 11:43:25 anatom Exp $
  */
 public class OCSPCAService extends ExtendedCAService implements java.io.Serializable{
 
@@ -263,7 +263,7 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
 	public void upgrade() {
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
 		  // New version of the class, upgrade
-			String msg = intres.getLocalizedMessage("ocspcaservice.upgrade", Float.valueOf(getVersion()));
+			String msg = intres.getLocalizedMessage("ocspcaservice.upgrade", new Float(getVersion()));
             m_log.info(msg);
             if(data.get(KEYSPEC) == null) {
             	// Upgrade old rsa keysize to new general keyspec

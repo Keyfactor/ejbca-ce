@@ -46,7 +46,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * 
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.16 2006-12-13 10:34:10 anatom Exp $
+ * @version $Id: EndEntityProfile.java,v 1.17 2007-01-16 11:43:52 anatom Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -75,9 +75,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     // These must be in a strict order that can never change 
     // Custom values configurable in a properties file will start at number 100
     static {
-    	dataConstants.put("USERNAME", Integer.valueOf(0));
-    	dataConstants.put("PASSWORD", Integer.valueOf(1));
-    	dataConstants.put("CLEARTEXTPASSWORD", Integer.valueOf(2));
+    	dataConstants.put("USERNAME", new Integer(0));
+    	dataConstants.put("PASSWORD", new Integer(1));
+    	dataConstants.put("CLEARTEXTPASSWORD", new Integer(2));
         // DN components
     	/* These are loaded through DnComponents instead
     	dataConstants.put(DnComponents.DNEMAIL, Integer.valueOf(3));
@@ -120,19 +120,19 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     	dataConstants.put(DnComponents.COUNTRYOFRESIDENCE, Integer.valueOf(46));
         // Subject directory attributes end
     	 */
-    	dataConstants.put("EMAIL", Integer.valueOf(26));
-    	dataConstants.put("ADMINISTRATOR", Integer.valueOf(27));
-    	dataConstants.put("KEYRECOVERABLE", Integer.valueOf(28));
-    	dataConstants.put("DEFAULTCERTPROFILE", Integer.valueOf(29));
-    	dataConstants.put("AVAILCERTPROFILES", Integer.valueOf(30));
-    	dataConstants.put("DEFKEYSTORE", Integer.valueOf(31));
-    	dataConstants.put("AVAILKEYSTORE", Integer.valueOf(32));
-    	dataConstants.put("DEFAULTTOKENISSUER", Integer.valueOf(33));
-    	dataConstants.put("AVAILTOKENISSUER", Integer.valueOf(34));
-    	dataConstants.put("SENDNOTIFICATION", Integer.valueOf(35));
+    	dataConstants.put("EMAIL", new Integer(26));
+    	dataConstants.put("ADMINISTRATOR", new Integer(27));
+    	dataConstants.put("KEYRECOVERABLE", new Integer(28));
+    	dataConstants.put("DEFAULTCERTPROFILE", new Integer(29));
+    	dataConstants.put("AVAILCERTPROFILES", new Integer(30));
+    	dataConstants.put("DEFKEYSTORE", new Integer(31));
+    	dataConstants.put("AVAILKEYSTORE", new Integer(32));
+    	dataConstants.put("DEFAULTTOKENISSUER", new Integer(33));
+    	dataConstants.put("AVAILTOKENISSUER", new Integer(34));
+    	dataConstants.put("SENDNOTIFICATION", new Integer(35));
 
-    	dataConstants.put("DEFAULTCA", Integer.valueOf(37));
-    	dataConstants.put("AVAILCAS", Integer.valueOf(38));
+    	dataConstants.put("DEFAULTCA", new Integer(37));
+    	dataConstants.put("AVAILCAS", new Integer(38));
     	
     	// Load all DN, altName and directoryAttributes from DnComponents.
     	dataConstants.putAll(DnComponents.getProfilenameIdMap());
@@ -395,7 +395,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     	ArrayList arr = (ArrayList)data.get(NUMBERARRAY);
     	// This is an automatic upgrade function, if we have dynamically added new fields
     	if (parameter >= arr.size()) {
-			String msg = intres.getLocalizedMessage("ra.eeprofileaddfield", Integer.valueOf(parameter));
+			String msg = intres.getLocalizedMessage("ra.eeprofileaddfield", new Integer(parameter));
     		log.info(msg);
     		for (int i = arr.size(); i <= parameter; i++) {
                 arr.add(new Integer(0));
@@ -1005,7 +1005,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     public void upgrade() {
         log.debug(">upgrade");
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
-			String msg = intres.getLocalizedMessage("ra.eeprofileupgrade", Float.valueOf(getVersion()));
+			String msg = intres.getLocalizedMessage("ra.eeprofileupgrade", new Float(getVersion()));
             log.info(msg);
             // New version of the class, upgrade
             if(getVersion() < 1){

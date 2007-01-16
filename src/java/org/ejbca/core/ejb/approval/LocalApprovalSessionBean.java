@@ -921,7 +921,8 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
               }
               String mailJndi = getLocator().getString("java:comp/env/MailJNDIName");
               Session mailSession = getLocator().getMailSession(mailJndi);
-              NotificationParamGen paramGen = new NotificationParamGen(requestDate,id,approvalTypeText,Integer.valueOf(numberOfApprovalsLeft),
+              Integer numAppr =  new Integer(numberOfApprovalsLeft);
+              NotificationParamGen paramGen = new NotificationParamGen(requestDate,id,approvalTypeText,numAppr,
             		                                                   approvalURL, approveComment, requestAdminUsername,
             		                                                   requestAdminDN,approvalAdminUsername,approvalAdminDN);
               HashMap params = paramGen.getParams();
