@@ -912,7 +912,17 @@ validity time in the CRMF request template, this validity period will be used.
 
 <subsection name="Interoperability">
 <p>CMP has been tested using RSA jCert toolkit for initialization requests. To run this as an RA you should configure CMP 
-with cmp.operationmode=ra and cmp.responseprotection=pbe, and other configurations you want for your RA.
+with:
+<ul>
+<li>cmp.operationmode=ra</li>
+<li>cmp.allowraverifypopo=true</li>
+<li>cmp.responseprotection=pbe</li>
+<li>cmp.ra.authenticationsecret=your shared password</li>
+<li>and other configurations you want for your RA.</li>
+</ul>
+</p>
+<p>CMP has been tested with BlueX from AET Europe (http://www.aeteurope.nl/). From EJBCA's point of view BlueX functions as an RA with the same configuration 
+options as for jCert.
 </p>
 </subsection>
 
