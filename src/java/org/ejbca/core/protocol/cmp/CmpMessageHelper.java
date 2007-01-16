@@ -67,7 +67,7 @@ import com.novosec.pkix.asn1.crmf.PBMParameter;
  * Helper class to create different standard parts of CMP messages
  * 
  * @author tomas
- * @version $Id: CmpMessageHelper.java,v 1.8 2006-11-09 11:03:14 anatom Exp $
+ * @version $Id: CmpMessageHelper.java,v 1.9 2007-01-16 12:34:47 anatom Exp $
  */
 public class CmpMessageHelper {
 	private static Logger log = Logger.getLogger(CmpMessageHelper.class);
@@ -215,7 +215,7 @@ public class CmpMessageHelper {
 	public static IResponseMessage createUnprotectedErrorMessage(BaseCmpMessage msg, ResponseStatus status, FailInfo failInfo, String failText) {
 		// Create a failure message
 		if (log.isDebugEnabled()) {
-			log.debug("Creating an unprotected error message with status="+status+", failInfo="+failInfo+", failText="+failText);
+			log.debug("Creating an unprotected error message with status="+status.getValue()+", failInfo="+failInfo+", failText="+failText);
 		}
 		CmpErrorResponseMessage resp = new CmpErrorResponseMessage();
 		resp.setSenderNonce(new String(Base64.encode(CmpMessageHelper.createSenderNonce())));
