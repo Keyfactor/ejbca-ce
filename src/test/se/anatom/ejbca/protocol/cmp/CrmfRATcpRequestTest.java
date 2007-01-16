@@ -57,7 +57,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * requires setup of the CMP with a tcp listener on port 5547
  * mode=ra, responseProtection=signature, authenticationsecret=password, allowraverifypopo=true.
  * @author tomas
- * @version $Id: CrmfRATcpRequestTest.java,v 1.6 2006-12-13 11:23:51 anatom Exp $
+ * @version $Id: CrmfRATcpRequestTest.java,v 1.7 2007-01-16 12:40:46 anatom Exp $
  */
 public class CrmfRATcpRequestTest extends CmpTestCase {
 	
@@ -226,7 +226,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
 		assertNotNull(resp);
 		assertTrue(resp.length > 0);
 		checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, false);
-		checkCmpPKIErrorMessage(resp, issuerDN, userDN, 2, "Recevied an unathenticated message in RA mode.");
+		checkCmpPKIErrorMessage(resp, issuerDN, userDN, 2, "Received an unathenticated message in RA mode.");
 	}
 
 	public void test05CrmfUnknownProtection() throws Exception {
