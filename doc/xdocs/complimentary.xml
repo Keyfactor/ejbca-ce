@@ -13,7 +13,7 @@ can be used together with PKI to even further improve your PKI experience.
 
 <subsection name="CSRTool">
     <p>
-    <a href="http://sourceforge.net/projects/csrtool/">CSRTool website</a>
+    <a href="http://www.strongauth.com/csrtool/">CSRTool website</a>
     </p>
     <p>
     A graphical tool for generating RSA and ECDSA cryptographic key-pairs, creating Certificate Signing Requests (CSRs) from them, 
