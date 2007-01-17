@@ -14,7 +14,7 @@ function checkallfields(){
     var illegalfields = 0;
 
     if(document.editissuer.<%=SELECT_AVAILABLEHARDTOKENPROFILES%>.options.selectedIndex == -1){
-      alert("<%=  ejbcawebbean.getText("ATLEASTONETOKENPROFILE") %>");
+      alert("<%=  ejbcawebbean.getText("ATLEASTONETOKENPROFILE", true) %>");
       illegalfields++;
     }
 

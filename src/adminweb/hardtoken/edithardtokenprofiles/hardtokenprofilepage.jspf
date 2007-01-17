@@ -35,14 +35,14 @@ function checkallfields(){
 
     <% if(edithardtokenprofile.profiledata instanceof IPINEnvelopeSettings){ %>
    if((document.editprofile.<%= EditHardTokenProfileJSPHelper.TEXTFIELD_VISUALVALIDITY %>.value == "")){
-      alert("<%= ejbcawebbean.getText("VISUALVALCANNOTBEEMPTY") %>");
+      alert("<%= ejbcawebbean.getText("VISUALVALCANNOTBEEMPTY", true) %>");
       illegalfields++;
    } 
    if(!checkfieldfordecimalnumbers("document.editprofile.<%=EditHardTokenProfileJSPHelper.TEXTFIELD_VISUALVALIDITY%>","<%= ejbcawebbean.getText("ONLYDIGITSINVISUALVALIDITY") %>"))
       illegalfields++;
    <% } %>
    if((document.editprofile.<%= EditHardTokenProfileJSPHelper.TEXTFIELD_SNPREFIX %>.value.length != 6)){
-      alert("<%= ejbcawebbean.getText("HARDTOKENSNMUSTBESIX") %>");
+      alert("<%= ejbcawebbean.getText("HARDTOKENSNMUSTBESIX", true) %>");
       illegalfields++;
    } 
    if(!checkfieldfordecimalnumbers("document.editprofile.<%=EditHardTokenProfileJSPHelper.TEXTFIELD_SNPREFIX%>","<%= ejbcawebbean.getText("ONLYDIGITSINHARDTOKENSN") %>"))

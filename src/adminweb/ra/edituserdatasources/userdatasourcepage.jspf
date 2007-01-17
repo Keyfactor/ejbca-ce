@@ -19,7 +19,7 @@ function checkallfields(){
 
  <% if( userdatasourcedata instanceof CustomUserDataSourceContainer){ %>
     if(document.edituserdatasource.<%=EditUserDataSourceJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>.value == ""){
-      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("CLASSPATH")%>");
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("CLASSPATH", true)%>");
       illegalfields++;
     }
  <% } %>

@@ -94,19 +94,19 @@ function checkallfields(){
       illegalfields++;
  
     if(document.editprofile.<%= SELECT_DEFAULTCERTPROFILE %>.options.selectedIndex == -1){
-      alert("<%=  ejbcawebbean.getText("ADEFAULTCERTPROFILE") %>");
+      alert("<%=  ejbcawebbean.getText("ADEFAULTCERTPROFILE", true) %>");
       illegalfields++;
     }
     <%    if(globalconfiguration.getIssueHardwareTokens()){ %>
     if(document.editprofile.<%= SELECT_DEFAULTHARDTOKENISSUER %>.options.selectedIndex == -1 && document.editprofile.<%=CHECKBOX_USE_HARDTOKENISSUERS %>.checked){
-      alert("<%=  ejbcawebbean.getText("ADEFAULTHARDTOKENISSUER") %>");
+      alert("<%=  ejbcawebbean.getText("ADEFAULTHARDTOKENISSUER", true) %>");
       illegalfields++;
     }
     <% } %>
 
     if(document.editprofile.<%=CHECKBOX_USE_SENDNOTIFICATION%>.checked){            
       if(trim(document.editprofile.<%=TEXTFIELD_NOTIFICATIONSENDER%>.value) == ""){
-        alert("<%=  ejbcawebbean.getText("MUSTFILLINANOTIFICATIONSENDER") %>");
+        alert("<%=  ejbcawebbean.getText("MUSTFILLINANOTIFICATIONSENDER", true) %>");
         illegalfields++;
       } 
 
@@ -114,18 +114,18 @@ function checkallfields(){
       illegalfields++;
 
       if(trim(document.editprofile.<%=TEXTFIELD_NOTIFICATIONSUBJECT%>.value) == ""){
-        alert("<%=  ejbcawebbean.getText("MUSTFILLINANOTIFICATIONSUBJECT") %>");
+        alert("<%=  ejbcawebbean.getText("MUSTFILLINANOTIFICATIONSUBJECT", true) %>");
         illegalfields++;
       } 
       if(trim(document.editprofile.<%=TEXTAREA_NOTIFICATIONMESSAGE%>.value) == ""){
-        alert("<%=  ejbcawebbean.getText("MUSTFILLINANOTIFICATIONMESSAGE") %>");
+        alert("<%=  ejbcawebbean.getText("MUSTFILLINANOTIFICATIONMESSAGE", true) %>");
         illegalfields++;
       }             
     }
     
     if(document.editprofile.<%=CHECKBOX_USE_PRINTING%>.checked){            
       if(trim(document.editprofile.<%=SELECT_PRINTINGPRINTERNAME%>.value) == "-1"){
-        alert("<%=  ejbcawebbean.getText("ERRORNOPRINTERISAVAIL") %>");
+        alert("<%=  ejbcawebbean.getText("ERRORNOPRINTERISAVAIL", true) %>");
         illegalfields++;
       }            
     }

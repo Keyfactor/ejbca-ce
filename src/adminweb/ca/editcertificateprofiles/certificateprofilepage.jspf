@@ -301,7 +301,7 @@ function checkallfields(){
     }
     
     if(selected == 0){
-      alert("<%=  ejbcawebbean.getText("ONEAVAILABLEBITLENGTH") %>");
+      alert("<%=  ejbcawebbean.getText("ONEAVAILABLEBITLENGTH", true) %>");
       illegalfields++; 
     }
 
@@ -310,7 +310,7 @@ function checkallfields(){
          illegalfields++;
       }    
       if(document.editcertificateprofile.<%=TEXTFIELD_PATHLENGTHCONSTRAINT%>.value==""){
-         alert("<%= ejbcawebbean.getText("PATHLENCANNOTBEEMPTY") %>");
+         alert("<%= ejbcawebbean.getText("PATHLENCANNOTBEEMPTY", true) %>");
          illegalfields++;
       }
     }
@@ -320,7 +320,7 @@ function checkallfields(){
          illegalfields++;
       }    
       if(document.editcertificateprofile.<%=TEXTFIELD_QCETSIVALUELIMIT%>.value==""){
-         alert("<%= ejbcawebbean.getText("ETSIVALUELIMCANNOTBEEMPTY") %>");
+         alert("<%= ejbcawebbean.getText("ETSIVALUELIMCANNOTBEEMPTY", true) %>");
          illegalfields++;
       }
     }
@@ -330,7 +330,7 @@ function checkallfields(){
          illegalfields++;
       }    
       if(document.editcertificateprofile.<%=TEXTFIELD_QCETSIVALUELIMITEXP%>.value==""){
-         alert("<%= ejbcawebbean.getText("ETSIVALUELIMCANNOTBEEMPTY") %>");
+         alert("<%= ejbcawebbean.getText("ETSIVALUELIMCANNOTBEEMPTY", true) %>");
          illegalfields++;
       }
     }
@@ -338,7 +338,7 @@ function checkallfields(){
     if(!document.editcertificateprofile.<%=TEXTFIELD_QCETSIVALUELIMITCUR%>.disabled){   
       if(document.editcertificateprofile.<%=TEXTFIELD_QCETSIVALUELIMITCUR%>.value==""){
       
-         alert("<%= ejbcawebbean.getText("ETSIVALUELIMCANNOTBEEMPTY") %>");
+         alert("<%= ejbcawebbean.getText("ETSIVALUELIMCANNOTBEEMPTY", true) %>");
          illegalfields++;
       }
     }    

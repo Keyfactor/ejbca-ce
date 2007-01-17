@@ -26,71 +26,71 @@ function checkallfields(){
       illegalfields++;
     
     if(document.editpublisher.<%=EditPublisherJSPHelper.PASSWORD_LDAPLOGINPASSWORD%>.value != document.editpublisher.<%=EditPublisherJSPHelper.PASSWORD_LDAPCONFIRMLOGINPWD%>.value ){
-      alert("<%= ejbcawebbean.getText("PASSWORDSDOESNTMATCH") %>");
+      alert("<%= ejbcawebbean.getText("PASSWORDSDOESNTMATCH", true) %>");
       illegalfields++; 
     }
 
     if(document.editpublisher.<%=EditPublisherJSPHelper.SELECT_LDAPUSEFIELDINLDAPDN%>.options.selectedIndex == -1){
-      alert("<%=  ejbcawebbean.getText("MUSTSELECTATLEASTONEFIELD") %>");
+      alert("<%=  ejbcawebbean.getText("MUSTSELECTATLEASTONEFIELD", true) %>");
       illegalfields++;
     }
 
     if(document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_LDAPHOSTNAME%>.value == ""){
-      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("HOSTNAME")%>");
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("HOSTNAME", true)%>");
       illegalfields++;
     }
 
     if(document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_LDAPPORT%>.value == ""){
-      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("PORT")%>");
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("PORT", true)%>");
       illegalfields++;
     }
 
     if(document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_LDAPBASEDN%>.value == ""){
-      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("BASEDN")%>");
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("BASEDN", true)%>");
       illegalfields++;
     }
 
     if(document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_LDAPLOGINDN%>.value == ""){
-      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("LOGINDN")%>");
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("LOGINDN", true)%>");
       illegalfields++;
     }
 
     if(document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_LDAPUSEROBJECTCLASS%>.value == ""){
-      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("USEROBJECTCLASS")%>");
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("USEROBJECTCLASS", true)%>");
       illegalfields++;
     }
 
     if(document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_LDAPCAOBJECTCLASS%>.value == ""){
-      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("CAOBJECTCLASS")%>");
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("CAOBJECTCLASS", true)%>");
       illegalfields++;
     }
 
     if(document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_LDAPUSERCERTATTRIBUTE%>.value == ""){
-      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("USERCERTIFICATEATTR")%>");
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("USERCERTIFICATEATTR", true)%>");
       illegalfields++;
     }
 
     if(document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_LDAPCACERTATTRIBUTE%>.value == ""){
-      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("CACERTIFICATEATTR")%>");
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("CACERTIFICATEATTR", true)%>");
       illegalfields++;
     }
     if(document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_LDAPCRLATTRIBUTE%>.value == ""){
-      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("CRLATTRIBUTE")%>");
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("CRLATTRIBUTE", true)%>");
       illegalfields++;
     }
     if(document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_LDAPARLATTRIBUTE%>.value == ""){
-      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("ARLATTRIBUTE")%>");
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("ARLATTRIBUTE", true)%>");
       illegalfields++;
     }
     if(document.editpublisher.<%=EditPublisherJSPHelper.PASSWORD_LDAPLOGINPASSWORD%>.value == ""){
-      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("LOGINPWD")%>");
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("LOGINPWD", true)%>");
       illegalfields++;
     }
 
  <% } %>
  <% if( publisherdata instanceof CustomPublisherContainer){ %>
     if(document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>.value == ""){
-      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("CLASSPATH")%>");
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("CLASSPATH", true)%>");
       illegalfields++;
     }
  <% } %>

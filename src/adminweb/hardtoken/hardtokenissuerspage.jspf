@@ -11,7 +11,7 @@ function checkfields(){
    returnval = !((document.editissuers.<%=TEXTFIELD_ALIAS %>.value==""))  
  
    if(!returnval)
-     alert("<%= ejbcawebbean.getText("ALIASFIELDMUSTBEFILLED")%>");
+     alert("<%= ejbcawebbean.getText("ALIASFIELDMUSTBEFILLED", true)%>");
 
    return returnval;
 }
@@ -21,7 +21,7 @@ function checkselected(){
    returnval = document.editissuers.<%= SELECT_ISSUER %>.options.selectedIndex != -1
  
    if(!returnval)
-     alert("<%= ejbcawebbean.getText("ONECURRENTISSUERMUSTBESEL")%>");
+     alert("<%= ejbcawebbean.getText("ONECURRENTISSUERMUSTBESEL", true)%>");
 
    return returnval;
 }

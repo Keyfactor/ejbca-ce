@@ -15,7 +15,7 @@ function check()
 {  
   
   if(document.recievefile.<%= FILE_RECIEVEFILE %>.value == ''){   
-     alert("<%= ejbcawebbean.getText("YOUMUSTSELECT") %>"); 
+     alert("<%= ejbcawebbean.getText("YOUMUSTSELECT", true) %>"); 
    }else{  
      return true;  
    }

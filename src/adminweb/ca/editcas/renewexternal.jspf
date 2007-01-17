@@ -10,7 +10,7 @@ function check(file)
 {  
   
   if(file.value == ''){   
-     alert("<%= ejbcawebbean.getText("YOUMUSTSELECT") %>"); 
+     alert("<%= ejbcawebbean.getText("YOUMUSTSELECT", true) %>"); 
    }else{  
      return true;  
    }

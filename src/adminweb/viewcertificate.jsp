@@ -265,7 +265,7 @@
 function confirmrevokation(){
   var returnval = false;
   if(document.viewcertificate.<%= SELECT_REVOKE_REASON %>.options.selectedIndex == -1){
-     alert("<%= ejbcawebbean.getText("AREVOKEATIONREASON") %>"); 
+     alert("<%= ejbcawebbean.getText("AREVOKEATIONREASON", true) %>"); 
      returnval = false;
   }else{
     returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREREVOKECERT") %>");

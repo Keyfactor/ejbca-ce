@@ -159,7 +159,7 @@ function checkallfields(){
     var currentrole = document.basicrules.<%=SELECT_ROLE%>.options[document.basicrules.<%=SELECT_ROLE%>.options.selectedIndex].value;        
 
     if(currentrole == <%= BasicAccessRuleSet.ROLE_NONE%>){
-      alert("<%= ejbcawebbean.getText("SELECTAROLE") %>");
+      alert("<%= ejbcawebbean.getText("SELECTAROLE", true) %>");
       illegalfields++;       
     }
 
@@ -175,7 +175,7 @@ function checkallfields(){
        }         
       }
       if(illegalselection){
-           alert("<%= ejbcawebbean.getText("SUPERVISORISONLYALLOWED") %>");
+           alert("<%= ejbcawebbean.getText("SUPERVISORISONLYALLOWED", true) %>");
            illegalfields++;       
       }        
     }

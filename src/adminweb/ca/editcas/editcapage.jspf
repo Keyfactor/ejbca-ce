@@ -224,7 +224,7 @@ function gendefaultocsplocator(){
 function confirmrevokation(){
   var returnval = false;
   if(document.ca.<%= SELECT_REVOKEREASONS %>.options.selectedIndex == -1){
-     alert("<%= ejbcawebbean.getText("AREVOKEATIONREASON") %>"); 
+     alert("<%= ejbcawebbean.getText("AREVOKEATIONREASON", true) %>"); 
      returnval = false;
   }else{
     returnval = confirm("<%= ejbcawebbean.getText("AREYOUSUREREVOKECA") %>");
@@ -325,7 +325,7 @@ function checkallfields(){
     if(!checkfieldforcompletednchars("document.ca.<%=TEXTFIELD_SUBJECTDN%>","<%= ejbcawebbean.getText("ONLYCHARACTERS") + " " + ejbcawebbean.getText("SUBJECTDN") %>"))
       illegalfields++;
     if((document.ca.<%= TEXTFIELD_SUBJECTDN %>.value == "")){
-      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("SUBJECTDN")%>");
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("SUBJECTDN", true)%>");
       illegalfields++;
     }
    <% } %> 
@@ -334,7 +334,7 @@ function checkallfields(){
     if(!checkfieldfordecimalnumbers("document.ca.<%=TEXTFIELD_VALIDITY%>","<%= ejbcawebbean.getText("ONLYDECNUMBERSINVALIDITY") %>"))
       illegalfields++;
     if((document.ca.<%= TEXTFIELD_VALIDITY %>.value == "") && document.ca.<%= SELECT_SIGNEDBY %>.options[document.ca.<%= SELECT_SIGNEDBY %>.options.selectedIndex].value != <%= CAInfo.SIGNEDBYEXTERNALCA %>){
-      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText("VALIDITY")%>");
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("VALIDITY", true)%>");
       illegalfields++;
     }   
     <% }
