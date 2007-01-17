@@ -104,8 +104,8 @@
 
   // Build configuration tables.
     String[] inforows = logbean.getLocalInfoEventNames();
-    HashMap texttoid = logbean.getEventNameToIdMap();
-    String[] errorrows = logbean.getLocalErronEventNames();
+    HashMap texthashtoid = logbean.getEventNameHashToIdMap();
+    String[] errorrows = logbean.getLocalErrorEventNames();
 
 
 
@@ -141,7 +141,7 @@
                 dolog=false;
 
             value = request.getParameter(HIDDEN_INFOTEXTROW + i);
-            logconfiguration.setLogEvent(((Integer)texttoid.get(value)).intValue(), dolog);
+            logconfiguration.setLogEvent(((Integer)texthashtoid.get(value)).intValue(), dolog);
           }
 
           for(int i=0; i <  errorrows.length; i++){
@@ -155,7 +155,7 @@
                 dolog=false;
 
             value = request.getParameter(HIDDEN_ERRORTEXTROW + i);
-            logconfiguration.setLogEvent(((Integer)texttoid.get(value)).intValue(), dolog); 
+            logconfiguration.setLogEvent(((Integer)texthashtoid.get(value)).intValue(), dolog); 
           }
            
         logbean.saveLogConfiguration(caid, logconfiguration);
@@ -266,7 +266,7 @@
   	       // We must make this independent of language encoding, utf, html escaped etc
            Integer hashcode =  new Integer((inforows[i].hashCode()));
            String val = hashcode.toString();
-           if(logconfiguration.getLogEvent(((Integer) texttoid.get(val)).intValue()).booleanValue())
+           if(logconfiguration.getLogEvent(((Integer) texthashtoid.get(val)).intValue()).booleanValue())
                out.write(" CHECKED "); %>> 
         <input type="hidden" name='<%=HIDDEN_INFOTEXTROW + i %>' value="<%= val %>">
          <% } else{ %>
@@ -287,7 +287,7 @@
      	   // We must make this independent of language encoding, utf, html escaped etc
            Integer hashcode =  new Integer((errorrows[i].hashCode()));
            String val = hashcode.toString();
-           if(logconfiguration.getLogEvent(((Integer) texttoid.get(val)).intValue()).booleanValue())
+           if(logconfiguration.getLogEvent(((Integer) texthashtoid.get(val)).intValue()).booleanValue())
                out.write(" CHECKED "); %>> 
         <input type="hidden" name='<%=HIDDEN_ERRORTEXTROW + i %>' value="<%= val %>">
          <% } else{ %>
