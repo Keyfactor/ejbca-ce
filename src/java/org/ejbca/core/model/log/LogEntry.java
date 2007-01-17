@@ -34,7 +34,7 @@ import org.ejbca.core.model.protect.TableVerifyResult;
  *  This is a  class containing information about one log event in the database. Used mainly during database queries by the web interface.
  *
  * @author  TomSelleck
- * @version $Id: LogEntry.java,v 1.9 2006-11-24 11:44:51 anatom Exp $
+ * @version $Id: LogEntry.java,v 1.10 2007-01-17 18:46:27 herrvendil Exp $
  */
 public class LogEntry implements Serializable, Protectable {
 
@@ -143,6 +143,8 @@ public class LogEntry implements Serializable, Protectable {
     public static final int EVENT_ERROR_APPROVALREJECTED = 1040;
     public static final int EVENT_ERROR_SERVICESEDITED = 1041;
     public static final int EVENT_ERROR_SERVICEEXECUTED = 1042;
+    public static final int EVENT_ERROR_REQUESTCERTIFICATE = 1043;
+    public static final int EVENT_ERROR_CARENEWED = 1044;    
 
     // Indicates the module using the logsession bean.
     public static final int MODULE_CA = 0;
@@ -182,7 +184,7 @@ public class LogEntry implements Serializable, Protectable {
                                                      "EVENT_ERROR_HARDTOKENVIEWED", "EVENT_ERROR_CACREATED", "EVENT_ERROR_CAEDITED", "EVENT_ERROR_CAREVOKED", "EVENT_ERROR_HARDTOKENPROFILEDATA",
                                                      "EVENT_ERROR_PUBLISHERDATA", "EVENT_ERROR_USERDATASOURCEDATA", "EVENT_ERROR_USERDATAFETCHED", "EVENT_ERROR_UNREVOKEDCERT",
                                                      "EVENT_ERROR_APPROVALREQUESTED","EVENT_ERROR_APPROVALAPPROVED","EVENT_ERROR_APPROVALREJECTED","EVENT_ERROR_SERVICESEDITED",
-                                                     "EVENT_ERROR_SERVICEEXECUTED"};
+                                                     "EVENT_ERROR_SERVICEEXECUTED", "EVENT_ERROR_REQUESTCERTIFICATE", "EVENT_ERROR_CARENEWED"};
 
     public static final String[] MODULETEXTS = {"CA", "RA", "LOG", "PUBLICWEB", "ADMINWEB", "HARDTOKEN", "KEYRECOVERY", "AUTHORIZATION","APPROVAL","SERVICE"};
     
