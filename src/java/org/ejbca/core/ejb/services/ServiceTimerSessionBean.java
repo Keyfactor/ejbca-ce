@@ -145,6 +145,8 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
      */
     Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
     
+    
+    
     /**
      * Default create for SessionBean without any creation Arguments.
      *
@@ -154,7 +156,14 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
     	
     }
     
+    /**
+     * Constant indicating the Id of the "service loader" service.
+     * Used in a clustered environment to perodically load avainable
+     * services
+     */
+    private static final Integer SERVICELOADER_ID = new Integer(0);
     
+    private static final long SERVICELOADER_PERIOD = 5 * 60 * 1000;
 
     /**
      * Method implemented from the TimerObject and is the main method of this
@@ -165,61 +174,68 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 	public void ejbTimeout(Timer timer) {
 		Integer timerInfo = (Integer) timer.getInfo();
 		
-		ServiceConfiguration serviceData = null;
-		IWorker worker = null;
-		String serviceName = null;
-		boolean run = false;
-		try{
-		  UserTransaction ut = getSessionContext().getUserTransaction();
-		  ut.begin();
-	      serviceData = getServiceSession().getServiceConfiguration(intAdmin, timerInfo.intValue());
-	      if(serviceData != null){
-	    	  serviceName = getServiceSession().getServiceName(intAdmin, timerInfo.intValue());
-		      worker = getWorker(serviceData,serviceName);
-	      	  Date nextRunDate = serviceData.getNextRunTimestamp();
-	      	  Date currentDate = new Date();
-	      	  if(currentDate.after(nextRunDate)){
-	      		  nextRunDate = new Date(currentDate.getTime() + worker.getNextInterval());
-	      		  serviceData.setNextRunTimestamp(nextRunDate);
-	      		  run=true;
-	      	  }         	      	  
-	      }
-	      ut.commit();
-		}catch(NotSupportedException e){
-			log.error(e);
-		} catch (SystemException e) {
-			log.error(e);
-		} catch (SecurityException e) {
-			log.error(e);
-		} catch (IllegalStateException e) {
-			log.error(e);
-		} catch (RollbackException e) {
-			log.error(e);
-		} catch (HeuristicMixedException e) {
-			log.error(e);
-		} catch (HeuristicRollbackException e) {
-			log.error(e);
-		}
-	      
-		if(run){
-			if(serviceData != null){
+		if(timerInfo.equals(SERVICELOADER_ID)){
+			log.debug("Running the internal Service loader.");
+			getSessionContext().getTimerService().createTimer(SERVICELOADER_PERIOD, SERVICELOADER_ID);
+			load();
+		}else{		
+			ServiceConfiguration serviceData = null;
+			IWorker worker = null;
+			String serviceName = null;
+			boolean run = false;
+			try{
+				UserTransaction ut = getSessionContext().getUserTransaction();
+				ut.begin();
+				serviceData = getServiceSession().getServiceConfiguration(intAdmin, timerInfo.intValue());
+				if(serviceData != null){
+					serviceName = getServiceSession().getServiceName(intAdmin, timerInfo.intValue());
 
-				try{
-					if(serviceData.isActive() && worker.getNextInterval() != IInterval.DONT_EXECUTE){
-						getSessionContext().getTimerService().createTimer(worker.getNextInterval()*1000, timerInfo);
-						worker.work();			  							
-						getLogSession().log(intAdmin, intAdmin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_INFO_SERVICEEXECUTED, intres.getLocalizedMessage("services.serviceexecuted", serviceName));
+					getSessionContext().getTimerService().createTimer(worker.getNextInterval()*1000, timerInfo);
+
+					worker = getWorker(serviceData,serviceName);
+					Date nextRunDate = serviceData.getNextRunTimestamp();
+					Date currentDate = new Date();
+					if(currentDate.after(nextRunDate)){
+						nextRunDate = new Date(currentDate.getTime() + worker.getNextInterval());
+						serviceData.setNextRunTimestamp(nextRunDate);
+						run=true;
 					}
-				}catch (ServiceExecutionFailedException e) {
-					getLogSession().log(intAdmin, intAdmin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_SERVICEEXECUTED, intres.getLocalizedMessage("services.serviceexecutionfailed", serviceName));
 				}
-			} else {
-				getLogSession().log(intAdmin, intAdmin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_SERVICEEXECUTED, intres.getLocalizedMessage("services.servicenotfound", timerInfo));
-			} 
-		}else{
-			getLogSession().log(intAdmin, intAdmin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_INFO_SERVICEEXECUTED, intres.getLocalizedMessage("services.servicerunonothernode", timerInfo));
-		}
+				ut.commit();
+			}catch(NotSupportedException e){
+				log.error(e);
+			} catch (SystemException e) {
+				log.error(e);
+			} catch (SecurityException e) {
+				log.error(e);
+			} catch (IllegalStateException e) {
+				log.error(e);
+			} catch (RollbackException e) {
+				log.error(e);
+			} catch (HeuristicMixedException e) {
+				log.error(e);
+			} catch (HeuristicRollbackException e) {
+				log.error(e);
+			}
 
+			if(run){
+				if(serviceData != null){
+
+					try{
+						if(serviceData.isActive() && worker.getNextInterval() != IInterval.DONT_EXECUTE){				
+							worker.work();			  							
+							getLogSession().log(intAdmin, intAdmin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_INFO_SERVICEEXECUTED, intres.getLocalizedMessage("services.serviceexecuted", serviceName));
+						}
+					}catch (ServiceExecutionFailedException e) {
+						getLogSession().log(intAdmin, intAdmin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_SERVICEEXECUTED, intres.getLocalizedMessage("services.serviceexecutionfailed", serviceName));
+					}
+				} else {
+					getLogSession().log(intAdmin, intAdmin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_SERVICEEXECUTED, intres.getLocalizedMessage("services.servicenotfound", timerInfo));
+				} 
+			}else{
+				getLogSession().log(intAdmin, intAdmin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_INFO_SERVICEEXECUTED, intres.getLocalizedMessage("services.servicerunonothernode", timerInfo));
+			}
+		}
 	}    
 
     /**
@@ -251,6 +267,11 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 					  getSessionContext().getTimerService().createTimer((worker.getNextInterval()) *1000, id);
 					}
 				}
+			}
+			
+			if(!existingTimers.contains(SERVICELOADER_ID)){
+				// load the service timer
+				getSessionContext().getTimerService().createTimer(SERVICELOADER_PERIOD, SERVICELOADER_ID);
 			}
 			
 
