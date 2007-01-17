@@ -38,6 +38,7 @@ import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
+import org.ejbca.util.HTMLTools;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
@@ -48,7 +49,7 @@ import org.ejbca.util.query.Query;
  * A java bean handling the interface between EJBCA log module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: LogInterfaceBean.java,v 1.6 2007-01-16 11:46:15 anatom Exp $
+ * @version $Id: LogInterfaceBean.java,v 1.7 2007-01-17 16:36:53 anatom Exp $
  */
 public class LogInterfaceBean implements java.io.Serializable {
 
@@ -282,7 +283,7 @@ public class LogInterfaceBean implements java.io.Serializable {
     	  String s = ejbcawebbean.getText(LogEntry.EVENTNAMES_INFO[i]);
     	  localinfoeventnames[i] = s;
     	  localinfoeventnamesunsorted[i] = s;
-    	  alllocaleventnames[i] = localinfoeventnames[i];
+    	  alllocaleventnames[i] = HTMLTools.htmlunescape(localinfoeventnames[i]);
     	  // We must make this independent of language encoding, utf, html escaped etc
     	  Integer hashcode = new Integer(localinfoeventnames[i].hashCode());
     	  localeventnamestoid.put(hashcode.toString(), new Integer(i));
@@ -296,7 +297,7 @@ public class LogInterfaceBean implements java.io.Serializable {
     	  String s = ejbcawebbean.getText(LogEntry.EVENTNAMES_ERROR[i]);
     	  localerroreventnames[i] = s;
     	  localerroreventnamesunsorted[i] = s;        
-    	  alllocaleventnames[LogEntry.EVENTNAMES_INFO.length + i] = localerroreventnames[i];
+    	  alllocaleventnames[LogEntry.EVENTNAMES_INFO.length + i] = HTMLTools.htmlunescape(localerroreventnames[i]);
     	  // We must make this independent of language encoding, utf, html escaped etc
     	  Integer hashcode = new Integer(localerroreventnames[i].hashCode());
     	  localeventnamestoid.put(hashcode.toString(), new Integer(i + LogEntry.EVENT_ERROR_BOUNDRARY));

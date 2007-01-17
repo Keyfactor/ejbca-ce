@@ -80,9 +80,9 @@
    matchtypefields[ID][2] = <%= BasicMatch.MATCH_TYPE_CONTAINS %>;
 
    matchtypefields[NAME] = new Array(3);
-   matchtypefields[NAME][0] = "<%= ejbcawebbean.getText("EQUALS") %>";
-   matchtypefields[NAME][1] = "<%= ejbcawebbean.getText("BEGINSWITH") %>";
-   matchtypefields[NAME][2] = "<%= ejbcawebbean.getText("CONTAINS") %>";
+   matchtypefields[NAME][0] = "<%= ejbcawebbean.getText("EQUALS", true) %>";
+   matchtypefields[NAME][1] = "<%= ejbcawebbean.getText("BEGINSWITH", true) %>";
+   matchtypefields[NAME][2] = "<%= ejbcawebbean.getText("CONTAINS", true) %>";
 
 
 
