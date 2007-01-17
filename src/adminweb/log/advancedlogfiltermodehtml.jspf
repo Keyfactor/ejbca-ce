@@ -1,6 +1,6 @@
 <% String[] eventnames     = logbean.getAllLocalEventNames();
    String[] modulenames    = logbean.getLocalModuleNames(ejbcawebbean);
-   HashMap  eventtexttoid  = logbean.getEventNameToIdMap();
+   HashMap  eventtexttoid  = logbean.getTranslatedEventNameToIdMap();
    HashMap  moduletexttoid = logbean.getModuleNameToIdMap();
    HashMap  caidtonamemap  = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
    Collection authorizedcaids = ejbcawebbean.getAuthorizedCAIds();
