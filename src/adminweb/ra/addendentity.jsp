@@ -748,7 +748,7 @@ function checkallfields(){
       illegalfields++;
     <%  if(profile.isRequired(EndEntityProfile.USERNAME,0)){%>
     if((document.adduser.<%= TEXTFIELD_USERNAME %>.value == "")){
-      alert("<%= ejbcawebbean.getText("REQUIREDUSERNAME") %>");
+      alert("<%= ejbcawebbean.getText("REQUIREDUSERNAME", true) %>");
       illegalfields++;
     } 
     <%    }
@@ -758,7 +758,7 @@ function checkallfields(){
 
     <%  if(profile.isRequired(EndEntityProfile.PASSWORD,0)){%>
     if((document.adduser.<%= TEXTFIELD_PASSWORD %>.value == "")){
-      alert("<%= ejbcawebbean.getText("REQUIREDPASSWORD") %>");
+      alert("<%= ejbcawebbean.getText("REQUIREDPASSWORD", true) %>");
       illegalfields++;
     } 
     <%    }
@@ -772,7 +772,7 @@ function checkallfields(){
       illegalfields++;
     <%     if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){%>
     if((document.adduser.<%= TEXTFIELD_SUBJECTDN+i %>.value == "")){
-      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE]))%>");
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE]), true)%>");
       illegalfields++;
     } 
     <%     }
@@ -792,7 +792,7 @@ function checkallfields(){
       illegalfields++;
           <%   if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ %>            
               if((document.adduser.<%= TEXTFIELD_UPNNAME+i %>.value == "")){ 
-                alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE]))%>");
+                alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE]), true)%>");
                 illegalfields++;
               }
            <%  }
@@ -807,7 +807,7 @@ function checkallfields(){
       illegalfields++;
     <%    if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ %>
     if((document.adduser.<%= TEXTFIELD_SUBJECTALTNAME+i %>.value == "")){
-      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED") + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE]))%>");
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE]), true)%>");
       illegalfields++;
     } 
     <%      }
@@ -825,7 +825,7 @@ function checkallfields(){
 
     <%  if(profile.isRequired(EndEntityProfile.EMAIL,0)){%>
     if((document.adduser.<%= TEXTFIELD_EMAIL %>.value == "")){
-      alert("<%= ejbcawebbean.getText("REQUIREDEMAIL") %>");
+      alert("<%= ejbcawebbean.getText("REQUIREDEMAIL", true) %>");
       illegalfields++;
     } 
     <%    }
@@ -836,7 +836,7 @@ function checkallfields(){
           
       <%  if(profile.isRequired(EndEntityProfile.EMAIL,0)){%>
     if((document.adduser.<%= TEXTFIELD_EMAILDOMAIN %>.value == "")){
-      alert("<%= ejbcawebbean.getText("REQUIREDEMAIL") %>");
+      alert("<%= ejbcawebbean.getText("REQUIREDEMAIL", true) %>");
       illegalfields++;
     } 
     <%    }
@@ -846,32 +846,32 @@ function checkallfields(){
        if(profile.getUse(EndEntityProfile.PASSWORD,0)){
          if(profile.isModifyable(EndEntityProfile.PASSWORD,0)){%>  
     if(document.adduser.<%= TEXTFIELD_PASSWORD %>.value != document.adduser.<%= TEXTFIELD_CONFIRMPASSWORD %>.value){
-      alert("<%= ejbcawebbean.getText("PASSWORDSDOESNTMATCH") %>");
+      alert("<%= ejbcawebbean.getText("PASSWORDSDOESNTMATCH", true) %>");
       illegalfields++;
     } 
     <%   }else{ %>
     if(document.adduser.<%=SELECT_PASSWORD%>.options.selectedIndex != document.adduser.<%=SELECT_CONFIRMPASSWORD%>.options.selectedIndex ){
-      alert("<%= ejbcawebbean.getText("PASSWORDSDOESNTMATCH") %>");
+      alert("<%= ejbcawebbean.getText("PASSWORDSDOESNTMATCH", true) %>");
       illegalfields++; 
     }
 <%        }   
      } %>
     if(document.adduser.<%=SELECT_CERTIFICATEPROFILE%>.options.selectedIndex == -1){
-      alert("<%=  ejbcawebbean.getText("CERTIFICATEPROFILEMUST") %>");
+      alert("<%=  ejbcawebbean.getText("CERTIFICATEPROFILEMUST", true) %>");
       illegalfields++;
     }
     if(document.adduser.<%=SELECT_CA%>.options.selectedIndex == -1){
-      alert("<%=  ejbcawebbean.getText("CAMUST") %>");
+      alert("<%=  ejbcawebbean.getText("CAMUST", true) %>");
       illegalfields++;
     }
     if(document.adduser.<%=SELECT_TOKEN%>.options.selectedIndex == -1){
-      alert("<%=  ejbcawebbean.getText("TOKENMUST") %>");
+      alert("<%=  ejbcawebbean.getText("TOKENMUST", true) %>");
       illegalfields++;
     }
 
     <%  if(profile.getUse(EndEntityProfile.SENDNOTIFICATION,0) && profile.isModifyable(EndEntityProfile.EMAIL,0)){%>
     if(document.adduser.<%=CHECKBOX_SENDNOTIFICATION %>.checked && (document.adduser.<%= TEXTFIELD_EMAIL %>.value == "")){
-      alert("<%= ejbcawebbean.getText("NOTIFICATIONADDRESSMUSTBE") %>");
+      alert("<%= ejbcawebbean.getText("NOTIFICATIONADDRESSMUSTBE", true) %>");
       illegalfields++;
     } 
     <% } %>
