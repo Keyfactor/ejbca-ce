@@ -29,6 +29,7 @@ import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
+import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
@@ -158,7 +159,7 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
     
     /**
      * Constant indicating the Id of the "service loader" service.
-     * Used in a clustered environment to perodically load avainable
+     * Used in a clustered environment to perodically load available
      * services
      */
     private static final Integer SERVICELOADER_ID = new Integer(0);
@@ -173,7 +174,6 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
      */
 	public void ejbTimeout(Timer timer) {
 		Integer timerInfo = (Integer) timer.getInfo();
-		
 		if(timerInfo.equals(SERVICELOADER_ID)){
 			log.debug("Running the internal Service loader.");
 			getSessionContext().getTimerService().createTimer(SERVICELOADER_PERIOD, SERVICELOADER_ID);
@@ -183,16 +183,14 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 			IWorker worker = null;
 			String serviceName = null;
 			boolean run = false;
+			UserTransaction ut = getSessionContext().getUserTransaction();
 			try{
-				UserTransaction ut = getSessionContext().getUserTransaction();
 				ut.begin();
 				serviceData = getServiceSession().getServiceConfiguration(intAdmin, timerInfo.intValue());
 				if(serviceData != null){
 					serviceName = getServiceSession().getServiceName(intAdmin, timerInfo.intValue());
-
-					getSessionContext().getTimerService().createTimer(worker.getNextInterval()*1000, timerInfo);
-
 					worker = getWorker(serviceData,serviceName);
+					getSessionContext().getTimerService().createTimer(worker.getNextInterval()*1000, timerInfo);
 					Date nextRunDate = serviceData.getNextRunTimestamp();
 					Date currentDate = new Date();
 					if(currentDate.after(nextRunDate)){
@@ -201,7 +199,6 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 						run=true;
 					}
 				}
-				ut.commit();
 			}catch(NotSupportedException e){
 				log.error(e);
 			} catch (SystemException e) {
@@ -210,17 +207,22 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 				log.error(e);
 			} catch (IllegalStateException e) {
 				log.error(e);
-			} catch (RollbackException e) {
-				log.error(e);
-			} catch (HeuristicMixedException e) {
-				log.error(e);
-			} catch (HeuristicRollbackException e) {
-				log.error(e);
+			} finally {
+				try {
+					ut.commit();					
+				} catch (RollbackException e) {
+					log.error(e);
+				} catch (HeuristicMixedException e) {
+					log.error(e);
+				} catch (HeuristicRollbackException e) {
+					log.error(e);
+				} catch (SystemException e) {
+					log.error(e);
+				}
 			}
 
 			if(run){
 				if(serviceData != null){
-
 					try{
 						if(serviceData.isActive() && worker.getNextInterval() != IInterval.DONT_EXECUTE){				
 							worker.work();			  							
@@ -333,8 +335,13 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
     private IWorker getWorker(ServiceConfiguration serviceConfiguration, String serviceName) {
 		IWorker worker = null;
     	try {
-			worker = (IWorker) this.getClass().getClassLoader().loadClass(serviceConfiguration.getWorkerClassPath()).newInstance();
-			worker.init(intAdmin, serviceConfiguration, serviceName);
+    		String clazz = serviceConfiguration.getWorkerClassPath();
+    		if (StringUtils.isNotEmpty(clazz)) {
+    			worker = (IWorker) this.getClass().getClassLoader().loadClass(clazz).newInstance();
+    			worker.init(intAdmin, serviceConfiguration, serviceName);    			
+    		} else {
+    			log.info("Worker has empty classpath for service "+serviceName);
+    		}
 		} catch (Exception e) {						
 			log.error("Worker is missconfigured, check the classpath",e);
 		}    	
