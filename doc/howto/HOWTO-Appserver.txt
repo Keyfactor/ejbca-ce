@@ -6,7 +6,7 @@ Note: EJBCA should work fine with Weblogic 8.x/9.x.
 Running on weblogic has some limited functionality compared to JBoss though:
  - The createCRLService, which runs as a JBoss mBean and does not work
  - The CMP tcp listener, which runs as a JBoss MBean and does not work
- - The Approvals admin-GUI, which uses JSF and does not work yet (configuration issues)
+ - The Approvals and Services functions in Admin-GUI, which uses JSF and does not work yet (configuration issues)
  - Web service interface (includes xkms), which uses JaxWS and does not work
 
 Note: After installing Weblogic, don't forget to install the "Unlimited Strenth Crypto" jce files
