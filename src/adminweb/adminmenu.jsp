@@ -90,7 +90,6 @@
 <%  // If authorized to use the main page then display related links.
    try{
      if(ejbcawebbean.isAuthorizedNoLog(MAIN_RESOURCE)){ %>
-     <br>
      <A href="<%=MAIN_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("MAINPAGE") %></A>     
      <br>
 
