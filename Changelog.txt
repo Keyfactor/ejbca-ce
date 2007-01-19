@@ -1,3 +1,60 @@
+3.4.0, 2007-01-19
+---
+New Feature
+    * [ECA-97] - Possibility to dynamically configure new OtherNames in subjectAltName.
+    * [ECA-99] - Suport for CMP (rfc 4210)
+    * [ECA-251] - Email for certificate expiration warning
+    * [ECA-296] - New access rule to delete generated
+    * [ECA-297] - Simple approval function for RA
+    * [ECA-332] - Inital EJBCA WebService interface
+    * [ECA-346] - Monitoring Services Framework, mail on certificate expire
+    * [ECA-349] - Support custom OID fields in subject alternative names
+    * [ECA-359] - Allow validity override from requests
+    * [ECA-362] - Support for ECDSA signature keys
+    * [ECA-371] - Support CRLIssuer in crl distribution point
+    * [ECA-381] - Make DN components configurable, support custom OIDs
+    * [ECA-393] - CSV export of log entries from admin-GUI
+    * [ECA-394] - XKMS v2 Service
+    * [ECA-400] - Custom Certificate Extension framework
+
+Improvement
+    * [ECA-30] - Unify DN and AltName handling
+    * [ECA-304] - Mail notification of new passwords without re-setting status
+    * [ECA-330] - Add access rule to access system configuration
+    * [ECA-333] - Improve Batch Tool functionality
+    * [ECA-335] - Printing of new and edited userdata
+    * [ECA-337] - Make reverse dn ordering easy configurable
+    * [ECA-339] - Move ejbca.properties to conf subdirectory to be able to split up different part in different files
+    * [ECA-341] - Approval Email notification
+    * [ECA-342] - Internal log and exception localization
+    * [ECA-343] - Key recovery should be approvable
+    * [ECA-344] - Deploy CRL creation service by setting a simple property
+    * [ECA-345] - Cache CA objects to avoid loading keystores often
+    * [ECA-355] - implement the withlimit flag in useradminsession.query
+    * [ECA-368] - Configurable order of unknown DN oids
+    * [ECA-372] - Allow multiple policy oids in certificates
+    * [ECA-377] - possibility to store certs on the card with Mozilla braowser
+    * [ECA-379] - Add dnQualifier as a DN component
+    * [ECA-382] - possibility to set public exponent when generating RSA keys for nCipher.
+    * [ECA-388] - Possibility to retrieve PKCS7 response in ExtRA API
+    * [ECA-391] - Release zip-file should unpack in directory with version number
+    * [ECA-392] - Improve Weblogic support for Weblogic 9.x.
+    * [ECA-396] - Support multiple email altnames using CLI
+    * [ECA-399] - Calculate certtype automatically in publishCACertificate
+
+Task
+    * [ECA-327] - Make UTF8 encoding default in DNs (for new CAs)
+    * [ECA-351] - Upgrade XDoclet jars
+    * [ECA-401] - Change default java version to 1.5 when building EJBCA
+
+Bug
+    * [ECA-299] - Changing CPS in profile does not save always
+    * [ECA-336] - Using reversed DN makes DN wrong in some places
+    * [ECA-352] - Language files must be placed under /tmp in Weblogic
+    * [ECA-386] - Not possible to revoke external CAs
+    * [ECA-406] - Changing log configuration gives NullpointerException when using other languages
+
+
 3.3.3, 2006-12-22
 ---
 Bug
