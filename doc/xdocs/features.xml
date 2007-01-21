@@ -40,6 +40,7 @@
 <li>OCSP responder can run integrated with EJBCA or stand alone (clustered) for security, high-performance and high-availability.</li>
 <li>Simple OCSP client in pure java.</li>
 <li>Supports a subset of CMP (RFC4210 and RFC4211).</li>
+<li>Supports synchronious XKMS version 2 requests.</li>
 <li>Revocation and Certificate Revocation Lists (CRLs).</li>
 <li>CRL creation and URL-based CRLDistribution Points according to RFC3280. Stores Certificates and CRLs in SQL database, LDAP and/or other custom data source.</li>
 <li>Optional multiple publishers for publishing certificates and CRLs in LDAP. Several flexible standard publishers exist to meet different demands.</li>
