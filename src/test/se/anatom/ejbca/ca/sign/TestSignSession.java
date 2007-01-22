@@ -67,7 +67,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.25 2006-12-04 09:07:19 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.26 2007-01-22 11:39:15 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -498,8 +498,9 @@ public class TestSignSession extends TestCase {
         // Make user that we know...
         boolean userExists = false;
         try {
-            usersession.addUser(admin,"swede","foo123","C=SE, O=ÅÄÖ, CN=åäö",null,"swede@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsacaid);
-            log.debug("created user: swede, foo123, C=SE, O=ÅÄÖ, CN=åäö");
+        	// We use unicode encoding for the three swedish character Ã¥Ã¤Ã¶
+            usersession.addUser(admin,"swede","foo123","C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6",null,"swede@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsacaid);
+            log.debug("created user: swede, foo123, C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6");
         } catch (RemoteException re) {
             if (re.detail instanceof DuplicateKeyException) {
                 userExists = true;
@@ -508,7 +509,7 @@ public class TestSignSession extends TestCase {
             userExists = true;
         }
         if (userExists) {
-            log.debug("user swede already exists.");
+            log.debug("user swede already exists: swede, foo123, C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6");
 
             usersession.setUserStatus(admin,"swede",UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
@@ -519,10 +520,10 @@ public class TestSignSession extends TestCase {
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         assertEquals("Wrong DN med swedechars", CertTools.getSubjectDN(cert),
-                CertTools.stringToBCDNString("C=SE, O=ÅÄÖ, CN=åäö"));
-        //FileOutputStream fos = new FileOutputStream("swedecert.crt");
-        //fos.write(cert.getEncoded());
-        //fos.close();
+                CertTools.stringToBCDNString("C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6"));
+//        FileOutputStream fos = new FileOutputStream("swedecert.crt");
+//        fos.write(cert.getEncoded());
+//        fos.close();
         log.debug("<test08SwedeChars()");
     }
 
