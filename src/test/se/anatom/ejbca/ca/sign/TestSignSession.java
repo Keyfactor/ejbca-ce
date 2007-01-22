@@ -14,6 +14,7 @@
 package se.anatom.ejbca.ca.sign;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -67,7 +68,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.26 2007-01-22 11:39:15 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.27 2007-01-22 12:42:45 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -521,9 +522,9 @@ public class TestSignSession extends TestCase {
         log.debug("Cert=" + cert.toString());
         assertEquals("Wrong DN med swedechars", CertTools.getSubjectDN(cert),
                 CertTools.stringToBCDNString("C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6"));
-//        FileOutputStream fos = new FileOutputStream("swedecert.crt");
-//        fos.write(cert.getEncoded());
-//        fos.close();
+        FileOutputStream fos = new FileOutputStream("/tmp/swedecert.crt");
+        fos.write(cert.getEncoded());
+        fos.close();
         log.debug("<test08SwedeChars()");
     }
 
