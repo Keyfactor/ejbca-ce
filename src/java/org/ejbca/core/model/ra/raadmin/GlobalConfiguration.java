@@ -15,15 +15,13 @@ package org.ejbca.core.model.ra.raadmin;
 
 
 
-import javax.servlet.ServletContext;
-
 import org.ejbca.core.model.UpgradeableDataHashMap;
 
 
 /**
  * This is a  class containing global configuration parameters.
  *
- * @version $Id: GlobalConfiguration.java,v 1.8 2007-01-16 11:43:52 anatom Exp $
+ * @version $Id: GlobalConfiguration.java,v 1.9 2007-01-24 08:45:03 anatom Exp $
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
 
@@ -73,8 +71,6 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     public static final  String MENUFRAME           = "leftFrame"; // Name of menu browser frame
     public static final  String MAINFRAME           = "mainFrame"; // Name of main browser frame
 
-
-    private ServletContext servletContext = null;
 
     /** Creates a new instance of Globaldatauration */
     public GlobalConfiguration()  {
@@ -420,13 +416,5 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     private static final   String INDEXFILENAME       =  "indexfilename";
     private static final   String MENUFILENAME        =  "menufilename";
     private static final   String ERRORPAGE           =  "errorpage";
-
-	public ServletContext getServletContext() {
-		return servletContext;
-	}
-
-	public void setServletContext(ServletContext servletContext) {
-		this.servletContext = servletContext;
-	}
 
 }

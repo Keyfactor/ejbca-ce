@@ -19,6 +19,7 @@ import java.text.DateFormat;
 import java.util.Collection;
 import java.util.Date;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
@@ -53,7 +54,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.8 2006-12-15 15:41:58 anatom Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.9 2007-01-24 08:45:02 anatom Exp $
  */
 public class EjbcaWebBean implements java.io.Serializable {
 
@@ -82,6 +83,7 @@ public class EjbcaWebBean implements java.io.Serializable {
     private AdminPreferenceDataHandler     adminspreferences;
     private AdminPreference                currentadminpreference;
     private GlobalConfiguration            globalconfiguration;
+    private ServletContext                 servletContext = null;
     private GlobalConfigurationDataHandler globaldataconfigurationdatahandler;
     private AuthorizationDataHandler       authorizedatahandler;
     private WebLanguages                   adminsweblanguage;
@@ -161,7 +163,7 @@ public class EjbcaWebBean implements java.io.Serializable {
     		authorizedatahandler.authenticate(certificates[0]);
     		
     		// Set ServletContext for reading language files from resources
-    		globalconfiguration.setServletContext(request.getSession(true).getServletContext());
+    		servletContext = request.getSession(true).getServletContext();
     		
     		// Check if certificate and user is an RA Admin
     		userdn = CertTools.getSubjectDN(certificates[0]);
@@ -188,7 +190,7 @@ public class EjbcaWebBean implements java.io.Serializable {
     		if(currentadminpreference == null){
     			currentadminpreference = adminspreferences.getDefaultAdminPreference();
     		}
-    		adminsweblanguage = new WebLanguages(globalconfiguration, currentadminpreference.getPreferedLanguage()
+    		adminsweblanguage = new WebLanguages(servletContext, globalconfiguration, currentadminpreference.getPreferedLanguage()
     				,currentadminpreference.getSecondaryLanguage());
     		
     		// set User Common Name
@@ -232,12 +234,12 @@ public class EjbcaWebBean implements java.io.Serializable {
         adminspreferences = new AdminPreferenceDataHandler(administrator);
 
 		// Set ServletContext for reading language files from resources
-		globalconfiguration.setServletContext(request.getSession(true).getServletContext());
+        servletContext = request.getSession(true).getServletContext();
 
         if(currentadminpreference == null){
            currentadminpreference = adminspreferences.getDefaultAdminPreference();
         }
-        adminsweblanguage = new WebLanguages(globalconfiguration, currentadminpreference.getPreferedLanguage()
+        adminsweblanguage = new WebLanguages(servletContext, globalconfiguration, currentadminpreference.getPreferedLanguage()
                                              ,currentadminpreference.getSecondaryLanguage());
         errorpage_initialized=true;
       }
@@ -550,7 +552,7 @@ public class EjbcaWebBean implements java.io.Serializable {
     public void addAdminPreference(AdminPreference ap) throws Exception{
       currentadminpreference = ap;
       adminspreferences.addAdminPreference(certificatefingerprint,ap);
-      adminsweblanguage = new WebLanguages(globalconfiguration, currentadminpreference.getPreferedLanguage()
+      adminsweblanguage = new WebLanguages(servletContext, globalconfiguration, currentadminpreference.getPreferedLanguage()
                                           ,currentadminpreference.getSecondaryLanguage());
     }
   
@@ -561,7 +563,7 @@ public class EjbcaWebBean implements java.io.Serializable {
     public void changeAdminPreference(AdminPreference ap) throws Exception{
       currentadminpreference = ap;
       adminspreferences.changeAdminPreference(certificatefingerprint,ap);
-      adminsweblanguage = new WebLanguages(globalconfiguration, currentadminpreference.getPreferedLanguage()
+      adminsweblanguage = new WebLanguages(servletContext, globalconfiguration, currentadminpreference.getPreferedLanguage()
                                           ,currentadminpreference.getSecondaryLanguage());
     }
 
@@ -577,7 +579,7 @@ public class EjbcaWebBean implements java.io.Serializable {
       if(currentadminpreference == null){
          currentadminpreference = adminspreferences.getDefaultAdminPreference();
       }
-      adminsweblanguage = new WebLanguages(globalconfiguration, currentadminpreference.getPreferedLanguage()
+      adminsweblanguage = new WebLanguages(servletContext, globalconfiguration, currentadminpreference.getPreferedLanguage()
                                           ,currentadminpreference.getSecondaryLanguage());
     } // saveDefaultAdminPreference
     

@@ -28,7 +28,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  * the presented text in the users prefered language.
  *
  * @author  Philip Vendil
- * @version $Id: WebLanguages.java,v 1.4 2006-12-15 15:41:58 anatom Exp $
+ * @version $Id: WebLanguages.java,v 1.5 2007-01-24 08:45:02 anatom Exp $
  */
 public class WebLanguages implements java.io.Serializable {
 	
@@ -38,7 +38,7 @@ public class WebLanguages implements java.io.Serializable {
     /** Construtor used to load static content. An instance must be declared with this constructor before
      *  any WebLanguage object can be used. */
     /** Special constructor used by Ejbca web bean */
-    private void init(GlobalConfiguration globalconfiguration) throws IOException {
+    private void init(ServletContext servletContext, GlobalConfiguration globalconfiguration) throws IOException {
         if(languages == null){
             // Get available languages.
             availablelanguages=null;
@@ -57,9 +57,8 @@ public class WebLanguages implements java.io.Serializable {
                 + availablelanguages[i].toLowerCase() +".properties";
                 
                 InputStream is = null;
-                ServletContext ctx = globalconfiguration.getServletContext();
-                if (ctx != null) {
-                	is = ctx.getResourceAsStream(propsfile);
+                if (servletContext != null) {
+                	is = servletContext.getResourceAsStream(propsfile);
                 } else {
                     is = this.getClass().getResourceAsStream(propsfile);                	
                 }
@@ -72,8 +71,8 @@ public class WebLanguages implements java.io.Serializable {
         }
     }
 
-    public WebLanguages(GlobalConfiguration globalconfiguration, int preferedlang, int secondarylang) throws IOException {
-        init(globalconfiguration);
+    public WebLanguages(ServletContext servletContext, GlobalConfiguration globalconfiguration, int preferedlang, int secondarylang) throws IOException {
+        init(servletContext, globalconfiguration);
         this.userspreferedlanguage=preferedlang;
         this.userssecondarylanguage=secondarylang;
     }
