@@ -42,7 +42,7 @@ import org.ejbca.util.CertTools;
  *
  * 
  *
- * @version $Id: StartServicesServlet.java,v 1.11 2007-01-12 07:47:00 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.12 2007-01-25 18:26:44 anatom Exp $
  * 
  * @web.servlet name = "StartServices"
  *              display-name = "StartServicesServlet"
@@ -56,7 +56,7 @@ import org.ejbca.util.CertTools;
  *   type="java.lang.String"
  *   value="${logging.log4j.config}"
  * 
- * @version $Id: StartServicesServlet.java,v 1.11 2007-01-12 07:47:00 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.12 2007-01-25 18:26:44 anatom Exp $
  */
 public class StartServicesServlet extends HttpServlet {
 
@@ -92,7 +92,8 @@ public class StartServicesServlet extends HttpServlet {
             	servicehome = (IServiceTimerSessionLocalHome)ServiceLocator.getInstance().getLocalHome(IServiceTimerSessionLocalHome.COMP_NAME);
             }
           } catch(Exception e){
-             throw new java.io.IOException("Authorization Denied");
+              log.error("Error getting IServiceTimerSessionLocalHome: ", e);
+              throw new java.io.IOException("Authorization Denied");
           }
           return servicehome;
     }
