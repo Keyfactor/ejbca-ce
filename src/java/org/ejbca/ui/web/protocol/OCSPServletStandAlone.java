@@ -99,7 +99,7 @@ import org.ejbca.ui.web.pub.cluster.ExtOCSPHealthCheck;
  *  local="org.ejbca.core.ejb.ca.store.ICertificateStoreOnlyDataSessionLocal"
  *
  * @author Lars Silven PrimeKey
- * @version  $Id: OCSPServletStandAlone.java,v 1.35 2007-01-09 15:53:55 anatom Exp $
+ * @version  $Id: OCSPServletStandAlone.java,v 1.36 2007-01-25 14:15:20 anatom Exp $
  */
 public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChecker {
 
@@ -422,7 +422,7 @@ public class OCSPServletStandAlone extends OCSPServletBase implements IHealtChec
         	try {
 				return mKeyFactory.isOK();
 			} catch (Exception e) {
-				m_log.debug("Exception thrown when accessing the private key", e);
+				m_log.info("Exception thrown when accessing the private key: ", e);
 				return false;
 			}
         }
