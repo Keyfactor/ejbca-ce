@@ -83,7 +83,13 @@ public class OCSPUtil {
             	basicRes.addResponse(item.getCertID(), item.getCertStatus());    			
     		}
     	}
-    	basicRes.setResponseExtensions(serviceReq.getExtensions());
+    	X509Extensions exts = serviceReq.getExtensions();
+    	if (exts != null) {
+    		Enumeration oids = exts.oids();
+    		if (oids.hasMoreElements()) {
+    	    	basicRes.setResponseExtensions(exts);    			
+    		}
+    	}
 
     	returnval = basicRes.generate(sigAlg, signerKey, chain, new Date(), provider );
     	if (m_log.isDebugEnabled()) {
