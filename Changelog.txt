@@ -1,3 +1,9 @@
+3.4.1, 2007-01-27
+---
+Bug
+    * [ECA-417] - Cli throws exception on windows
+    * [ECA-422] - OCSP not working in Mozilla
+
 3.4.0, 2007-01-19
 ---
 New Feature
