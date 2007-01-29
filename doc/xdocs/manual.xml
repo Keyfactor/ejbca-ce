@@ -1344,7 +1344,7 @@ To automatic test the XKMS Service do the following:
 </p><p>
 1. Start with a fresh installation with all the default values. Then activate the XKMS CA service in the Edit CA page for AdminCA1.
 </p><p>
-2. Run 'ant xkms:test' and a report will be generated in tmp/bin/junit/xkms/reports/html/index.html
+2. Run 'ant test:xkms' and a report will be generated in tmp/bin/junit/xkms/reports/html/index.html
 </p>
 </subsection>
 </section>
