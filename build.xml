@@ -367,14 +367,14 @@
             </fileset>
         </copy>
     	<zip destfile="${ocsp-dist.dir}/ocspclient.zip">
-            <fileset dir="${ocsp-dist.dir}">
+    		<zipfileset dir="${ocsp-dist.dir}" prefix="ocspclient" filemode="600" dirmode="700"> 
             	<include name="lib/*.jar"/>
             	<include name="log4j.properties" />
             	<include name="ocspclient.jar" />
-            </fileset>
-            <fileset dir="${mainbin}">
+            </zipfileset>
+            <zipfileset dir="${mainbin}" prefix="ocspclient" filemode="700" dirmode="700">
             	<include name="ocsp.sh"/>
-            </fileset>
+            </zipfileset>
     	</zip>
     </target>
 	
