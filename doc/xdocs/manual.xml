@@ -1695,7 +1695,7 @@ It can have a constant BaseUserDataSource.ANY_CA.
 <p>The second is a set of fields instructing the RA interface GUI which fields that 
 should be modifyable by the RA and which that should be fixed. Important, there 
 is not connection between the user data source, isModifyable data and the end entity profile 
-isModifyalbe data. The userdata source is only an instruction to the RA gui then when the 
+isModifyable data. The userdata source is only an instruction to the RA gui then when the 
 userdata is added will it be matched against the end entity profile, and it's the data 
 in the end entity profile that really counts. 
 </p>
