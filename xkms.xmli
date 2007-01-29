@@ -180,7 +180,7 @@
 	        </jar>    	    	
 	    </target>
 
-	<target name="xkms.client" depends="xkmsconditioncheck,xkmsisjava14check,xkms.build.client" if="xkms.conditionenabled" unless="xkms.isjava14"/>
+	<target name="xkms.client" depends="xkmsconditioncheck,xkmsisjava14check,xkms.build.client" if="xkms.conditionenabled" unless="xkms.isjava14" description="Build the XKMS client"/>
 	
 	<!-- compile XKMS JUnit testcases -->
     <target name="test:compile:xkms" depends="xkms.build, preprocess">

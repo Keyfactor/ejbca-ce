@@ -185,7 +185,7 @@
         </jar>    	    	
     </target>
 
-    <target name="ejbcaws.client" depends="ejbcawsconditioncheck,isjava14check,ws.build.client" if="ejbcawsconditioncheck" unless="ejbcaws.isjava14"/>
+    <target name="ejbcaws.client" depends="ejbcawsconditioncheck,isjava14check,ws.build.client" if="ejbcawsconditioncheck" unless="ejbcaws.isjava14" description="Build the EJBCA WS-API client"/>
 
     <!-- Compile JAXWS JUnit testcases -->
     <target name="test:compilews" depends="ws.build, ws.build.client">
