@@ -354,6 +354,10 @@
                 <attribute name="Main-Class" value="org.ejbca.ui.cli.Ocsp" />
         	  </manifest>
             <fileset dir="${ocsp-client.build}"/>
+        	<fileset dir="${src}/java">
+        	    <include name="dncomponents.properties"/>
+        		<include name="profilemappings.properties"/>
+        	</fileset>	
         </jar>
         <copy todir="${ocsp-dist.dir}">
             <fileset dir="${mainbin}">
@@ -364,6 +368,7 @@
             <fileset dir="${lib}">
             	<include name="bcprov*.jar"/>
             	<include name="log4j*.jar" />
+            	<include name="commons-lang-*.jar" />
             </fileset>
         </copy>
     	<zip destfile="${ocsp-dist.dir}/ocspclient.zip">
