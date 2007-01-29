@@ -182,7 +182,8 @@
 
 	<target name="xkms.client" depends="xkmsconditioncheck,xkmsisjava14check,xkms.build.client" if="xkms.conditionenabled" unless="xkms.isjava14"/>
 	
-    <target name="test:compile:xkms" depends="xkms.build, preprocess" description="compile XKMS JUnit testcases">
+	<!-- compile XKMS JUnit testcases -->
+    <target name="test:compile:xkms" depends="xkms.build, preprocess">
         <mkdir dir="${test.dir}" />
     	
         <javac srcdir="${test.src.dir}" destdir="${test.dir}" debug="on" includeantruntime="no" encoding="iso8859-1">

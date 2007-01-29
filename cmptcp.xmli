@@ -75,8 +75,9 @@
 	
     <!-- =================================================================== -->
     <!--Build EJBCA with Jboss Specific Services inside the ear file.       -->
+    <!--This is the CMP TCP listener.       -->
     <!-- =================================================================== -->
-    <target name="buildwithcmptcpservice" if="cmptcpservices.enabled" depends="cmptcpserviceconditioncheck, jbosscmptcplistener, ca.ear" description="Deploys EJBCA with CMP TCP listener">    	
+    <target name="buildwithcmptcpservice" if="cmptcpservices.enabled" depends="cmptcpserviceconditioncheck, jbosscmptcplistener, ca.ear">    	
     	<echo>Including CMP TCP service</echo>
         <copy todir="${tmp}" overwrite="false">
         	<fileset dir="${eardd.src}">

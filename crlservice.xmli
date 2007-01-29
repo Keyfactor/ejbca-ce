@@ -52,8 +52,9 @@
 	
     <!-- =================================================================== -->
     <!--Deploy EJBCA with Jboss Specific Services inside the ear file.       -->
+    <!--This is the CRL creation service.       -->
     <!-- =================================================================== -->
-    <target name="buildwithcreatecrlservice" if="createcrlservices.enabled" depends="crlserviceconditioncheck, createcrlservice, ca.ear" description="Deploys EJBCA with CRL creation service">    	
+    <target name="buildwithcreatecrlservice" if="createcrlservices.enabled" depends="crlserviceconditioncheck, createcrlservice, ca.ear">    	
     	<echo>Including create CRL service</echo>
         <copy todir="${tmp}" overwrite="false">
         	<fileset dir="${eardd.src}">

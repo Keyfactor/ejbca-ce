@@ -64,9 +64,9 @@
     </target>
 
     <!-- =================================================================== -->
-    <!-- Build apply part                                                    -->
+    <!-- Build apply part  (public web)                                                  -->
     <!-- =================================================================== -->
-    <target name="apply.war" depends="compile" description="build the jar file">
+    <target name="apply.war" depends="compile">
         <war destfile="${applywar}" webxml="${apply.src}/WEB-INF/web.xml">
             <fileset dir="${apply.src}" excludes="WEB-INF/web.xml" />
         </war>
@@ -464,10 +464,10 @@
     <!-- ======================================================================= -->
     <!-- Deploy EJBCA ear to JBoss                                               -->
     <!-- ======================================================================= -->
-    <target name="deploy" depends="build, buildwithcmptcpservice, buildwithcreatecrlservice">
+    <target name="deploy" depends="build, buildwithcmptcpservice, buildwithcreatecrlservice" description="Deploy the main EJBCA application">
         <antcall target="j2ee:deploy" />
     </target>
-    <target name="ocsp-deploy" depends="ocsp-ear">
+    <target name="ocsp-deploy" depends="ocsp-ear" description="Deploy the standalone OCSP reponder" >
         <antcall target="j2ee:deployocsp" />
     </target>
 

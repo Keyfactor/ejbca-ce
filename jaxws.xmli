@@ -187,7 +187,8 @@
 
     <target name="ejbcaws.client" depends="ejbcawsconditioncheck,isjava14check,ws.build.client" if="ejbcawsconditioncheck" unless="ejbcaws.isjava14"/>
 
-    <target name="test:compilews" depends="ws.build, ws.build.client" description="compile JAXWS JUnit testcases">
+    <!-- Compile JAXWS JUnit testcases -->
+    <target name="test:compilews" depends="ws.build, ws.build.client">
         <mkdir dir="${test.dir}" />
         <javac srcdir="${test.src.dir}" destdir="${test.dir}" debug="on" includeantruntime="no" encoding="iso8859-1">
             <classpath refid="jaxws.test.classpath" />

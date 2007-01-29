@@ -28,7 +28,8 @@
 
 
 
-	<target name="j2ee:configure" depends="j2ee:check, j2ee:web-configure" description="Configure the J2EE server with appropriate settings">
+	<!-- Configure the J2EE server with appropriate settings -->
+	<target name="j2ee:configure" depends="j2ee:check, j2ee:web-configure">
 		
 	</target>
 
@@ -57,14 +58,14 @@
 		<echo>You have to deploy manuallt to Glassfish so far</echo>
 	</target>
 
-	<target name="j2ee:deploy" if="ocsp-datasource.jndi-name" description="Deploy the application" depends="j2ee:deployBase">
+	<target name="j2ee:deploy" if="ocsp-datasource.jndi-name" depends="j2ee:deployBase">
 		<!-- deploy base handles ejbca, here we check if we should deploy a datasource to an external ocsp responder -->
 		<!-- 
 		TODO 
 		-->
 	</target>
 
-	<target name="j2ee:deployocsp" description="Deploy the standalone OCSP reponder" depends="j2ee:configure">
+	<target name="j2ee:deployocsp" depends="j2ee:configure">
 		<!-- 
 		TODO 
 		-->

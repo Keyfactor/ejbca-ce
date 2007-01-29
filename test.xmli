@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <project name="ejbcatest" basedir=".">
 
-    <target name="test:compile" depends="compile" description="compile JUnit testcases">
+    <!-- compile JUnit testcases -->
+    <target name="test:compile" depends="compile">
         <mkdir dir="${test.dir}" />
         <javac srcdir="${test.src.dir}" destdir="${test.dir}" debug="on" includeantruntime="no" encoding="iso8859-1">
             <classpath refid="test.compile.classpath" />
