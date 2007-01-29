@@ -1045,7 +1045,7 @@ You can configure this in the certificate profile used to issue certificates.
 New to EJBCA 3.4 is a JAX-WS 2.0 Web Service Interface used to access the basic
 functions remotely over client authentication HTTPS. 
 </p><p>
-The JAX-WS interface depends on java 1.5´and will otherwise not be included in the EJBCA installation.
+The JAX-WS interface depends on java 1.5 or later and will otherwise not be included in the EJBCA installation.
 </p><p>
 The functionality currently available through the Web Service Interface are:
 </p>
