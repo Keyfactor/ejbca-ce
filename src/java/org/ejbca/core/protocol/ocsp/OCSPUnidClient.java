@@ -29,6 +29,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -44,9 +45,11 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.ocsp.BasicOCSPResp;
@@ -70,7 +73,7 @@ import org.ejbca.util.KeyTools;
  * 3.There was no Unid in the certificate (serialNumber DN component)
  *
  * @author Tomas Gustavsson, PrimeKey Solutions AB
- * @version $Id: OCSPUnidClient.java,v 1.9 2006-10-19 21:02:08 primelars Exp $
+ * @version $Id: OCSPUnidClient.java,v 1.10 2007-01-29 11:02:48 anatom Exp $
  *
  */
 public class OCSPUnidClient {
@@ -144,17 +147,23 @@ public class OCSPUnidClient {
 //                + "      Name hash : '" + new String(Hex.encode(certId.getIssuerNameHash())) + "'\n"
 //                + "      Key hash  : '" + new String(Hex.encode(certId.getIssuerKeyHash())) + "'\n");
         gen.addRequest(certId);
+        // Add a nonce to the request
+        Hashtable exts = new Hashtable();
+        byte[] nonce = new byte[16];
+        SecureRandom randomSource = SecureRandom.getInstance("SHA1PRNG");
+        randomSource.nextBytes(nonce);
+        X509Extension nonceext = new X509Extension(false, new DEROctetString(nonce));
+        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, nonceext);
         // Don't bother adding Unid extension if we are not using client authentication
         if (getfnr && (ks != null)) {
-            Hashtable exts = new Hashtable();
             X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("1")));
             exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
-            gen.setRequestExtensions(new X509Extensions(exts));        	
         }
+        gen.setRequestExtensions(new X509Extensions(exts));        	
         OCSPReq req = gen.generate();
 
         // Send the request and receive a BasicResponse
-        OCSPUnidResponse ret = sendOCSPPost(req.getEncoded(), cacert);
+        OCSPUnidResponse ret = sendOCSPPost(req.getEncoded(), cacert, nonce);
         return ret;
 	}
 
@@ -162,7 +171,7 @@ public class OCSPUnidClient {
     // Private helper methods
     //
     
-    private OCSPUnidResponse sendOCSPPost(byte[] ocspPackage, X509Certificate cacert) throws IOException, OCSPException, GeneralSecurityException {
+    private OCSPUnidResponse sendOCSPPost(byte[] ocspPackage, X509Certificate cacert, byte[] nonce) throws IOException, OCSPException, GeneralSecurityException {
         // POST the OCSP request
         URL url = new URL(httpReqPath);
         HttpURLConnection con = (HttpURLConnection)getUrlConnection(url);
@@ -214,6 +223,18 @@ public class OCSPUnidClient {
         }
         OCSPResp response = new OCSPResp(new ByteArrayInputStream(respBytes));
         BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
+        // Compare nonces to see if the server sent the same nonce as we sent
+    	byte[] noncerep = brep.getExtensionValue(OCSPObjectIdentifiers.id_pkix_ocsp_nonce.getId());
+    	if (noncerep != null) {
+        	ASN1InputStream ain = new ASN1InputStream(noncerep);
+        	ASN1OctetString oct = ASN1OctetString.getInstance(ain.readObject());
+        	boolean eq = ArrayUtils.isEquals(nonce, oct.getOctets());    		
+            if (!eq) {
+            	ret.setErrorCode(OCSPUnidResponse.ERROR_INVALID_NONCE);
+            	return ret;
+            }
+    	}
+
         X509Certificate[] chain = brep.getCerts("BC");
         PublicKey signerPub = chain[0].getPublicKey();
 		RespID respId = new RespID(signerPub);

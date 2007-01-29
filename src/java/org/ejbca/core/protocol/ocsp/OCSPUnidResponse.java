@@ -23,7 +23,7 @@ import org.bouncycastle.ocsp.UnknownStatus;
 /** Class holding data returned by the OCSPUnidExtension
  * 
  * @author tomas
- * @version $Id: OCSPUnidResponse.java,v 1.7 2006-07-30 17:04:32 anatom Exp $
+ * @version $Id: OCSPUnidResponse.java,v 1.8 2007-01-29 11:02:48 anatom Exp $
  *
  */
 public class OCSPUnidResponse {
@@ -77,6 +77,10 @@ public class OCSPUnidResponse {
      * You did not specify a URI in the call, and there is not one embedded in the certificate.
      */
     public static final int ERROR_NO_OCSP_URI = 5;
+    /**
+     * The nonce in the response did not match the nonce sent in the request.
+     */
+    public static final int ERROR_INVALID_NONCE = 6;
 
 	/*
 	 * Private vaiables
