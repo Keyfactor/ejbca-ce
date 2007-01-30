@@ -1332,7 +1332,7 @@ in the directory dist/xkmscli and consists of the all the necessary files needed
 </p><p>
 To use the client do the following, copy the directory with all included files to
 the computer you want to remote administrate from. (Optionaly create a JKS keystore from
-one XKMS Service trusted CAs)and configure the file ejbcawsracli.properties. In this file you should specify the hostname of the CA server, the name of the JKS keystore, the alias and the password to unlock it.
+one XKMS Service trusted CAs)and configure the file xkmscli.properties. In this file you should specify the hostname of the CA server, the name of the JKS keystore, the alias and the password to unlock it.
 </p><p>
 Use 'xkmscli.sh/cmd' for a list of each subcommand and 'xkms.sh/cmd "subcommand"'
 for detailed help how to use the cli.
