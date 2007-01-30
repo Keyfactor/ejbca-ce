@@ -138,7 +138,8 @@ This is only starter instruction to help you get started as a developer, EJBCA d
 Currently EJBCA support the MySQL database on Glassfish.
 
 - Set the envorinment variable APPSRV_HOME to the directory where Glassfish is installed. For example APPSRV_HOME=/home/sun/glassfish.
-  The variable must be available when working with EJBCA.
+  The variable must be available when working with EJBCA. 
+  You can also choose to set the property 'appserver.home' in conf/ejbca.properties if you want.
   
 - Create a database and a database user with privileges.
 
@@ -161,6 +162,8 @@ Currently EJBCA support the MySQL database on Glassfish.
     in conf/ejbca.properties you should at least set appserver.type, appserver.home and logging.log4j.config
     in conf/database.properties you should at least set datasource.jndi-name-prefix, and the database settings for your chosen database.
     in conf/web.properties you should set 'web.jsfimpl=nojsf'
+    in conf/web.properties you should set 'ejbcaws.enabled=false', this must be done until we have fixed JaxWS configuration for glassfish.
+    in conf/xkms.properties you should set 'xkms.enabled=false', this must be done until we have fixed JaxWS configuration for glassfish.
     
 - Build ejbca:
     ant
@@ -177,7 +180,7 @@ Creating deployment descriptors for Glassfish:
 ----------------------------------------------
 Whan a new release of EJBCA should be running on glassfish, the deployment descriptors may have to be updated.
 Uncomment the section in compile.xmli to generate sun ejb deployment descriptors. 
-Compare the generated one with src/appserver/sun/deploy/sun-ejb-jar.xml, and merge if needed.
+Compare the generated one with src/deploy/sun/sun-ejb-jar.xml, and merge if needed.
 
 * sun-web.xml files must be updated with any new references that exist in the web.xml files.
 
