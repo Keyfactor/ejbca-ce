@@ -29,7 +29,7 @@ import org.ejbca.core.model.log.Admin;
  * 
  * @author Philip Vendil 2006 dec 17
  *
- * @version $Id: XKMSConfig.java,v 1.2 2007-01-05 05:32:51 herrvendil Exp $
+ * @version $Id: XKMSConfig.java,v 1.3 2007-02-02 09:36:56 anatom Exp $
  */
 
 public class XKMSConfig {
@@ -161,7 +161,7 @@ public class XKMSConfig {
     	if(cAIdUsedForSigning == null){
     		CAInfo info = cAAdminSession.getCAInfo(admin, CAUSEDFORSIGNING);
     		if(info == null){    		
-    			throw new EJBException("Property parameter xkms.response.causedforsigning is missconfigured, should contain a existing CA name.");
+    			throw new EJBException("Property parameter xkms.response.causedforsigning ("+CAUSEDFORSIGNING+") is missconfigured, should contain a existing CA name.");
     		}    	    
     		
     		cAIdUsedForSigning = new Integer(info.getCAId());    		

@@ -33,7 +33,7 @@ import org.ejbca.util.StringTools;
  * statement.
  *
  * @author tomselleck
- * @version $Id: Query.java,v 1.4 2006-08-09 07:29:48 herrvendil Exp $
+ * @version $Id: Query.java,v 1.5 2007-02-02 09:36:28 anatom Exp $
  */
 public class Query implements java.io.Serializable {
 	
@@ -202,7 +202,11 @@ public class Query implements java.io.Serializable {
         Iterator i = matches.iterator();
 
         while (i.hasNext()) {
-            returnval = returnval && ((BasicMatch) i.next()).isLegalQuery();
+        	BasicMatch match = (BasicMatch) i.next();
+            returnval = returnval && match.isLegalQuery();
+            if (!returnval) {
+            	log.error("Query is illegal: "+match.getQueryString());
+            }
         }
 
         returnval = returnval && ((matches.size() - 1) == connectors.size());

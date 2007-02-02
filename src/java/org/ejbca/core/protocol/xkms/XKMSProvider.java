@@ -110,7 +110,7 @@ import org.w3c.dom.NodeList;
  * 
  * @author Philip Vendil 2006 dec 18
  *
- * @version $Id: XKMSProvider.java,v 1.3 2007-01-07 19:44:15 herrvendil Exp $
+ * @version $Id: XKMSProvider.java,v 1.4 2007-02-02 09:36:12 anatom Exp $
  */
 
 @ServiceMode(value=Service.Mode.PAYLOAD)
@@ -400,7 +400,7 @@ public class XKMSProvider implements Provider<Source> {
 
 				retval = resp.getSignedDocument();
 			} catch (Exception e) {
-				log.error(intres.getLocalizedMessage("xkms.errorgenrespsig"));				
+				log.error(intres.getLocalizedMessage("xkms.errorgenrespsig"), e);				
 				retval = null;
 			}
 		}
