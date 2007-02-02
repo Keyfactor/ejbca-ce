@@ -44,10 +44,12 @@ import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
+import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
 import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.protocol.xkms.client.XKMSInvoker;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.util.Base64;
@@ -73,7 +75,7 @@ import org.w3._2002._03.xkms_.ValidateResultType;
  * 
  * @author Philip Vendil 2006 sep 27 
  *
- * @version $Id: TestXKMSKISS.java,v 1.3 2007-01-07 00:32:18 herrvendil Exp $
+ * @version $Id: TestXKMSKISS.java,v 1.4 2007-02-02 09:37:47 anatom Exp $
  */
 
 public class TestXKMSKISS extends TestCase {
@@ -167,8 +169,16 @@ public class TestXKMSKISS extends TestCase {
     	EndUserCertificateProfile profile2 = new EndUserCertificateProfile();
     	profile2.setKeyUsage(CertificateProfile.DATAENCIPHERMENT,true);
     	
-    	certStore.addCertificateProfile(administrator, "XKMSTESTSIGN", profile1);
-    	certStore.addCertificateProfile(administrator, "XKMSTESTEXCHANDENC", profile2);
+    	try {
+    		certStore.addCertificateProfile(administrator, "XKMSTESTSIGN", profile1);
+    	} catch (CertificateProfileExistsException e) {
+    		System.out.println("Certificateprofile XKMSTESTSIGN already exists.");
+    	}
+    	try {
+    		certStore.addCertificateProfile(administrator, "XKMSTESTEXCHANDENC", profile2);
+    	} catch (CertificateProfileExistsException e) {
+    		System.out.println("Certificateprofile XKMSTESTSIGN already exists.");
+    	}
     	
     	int profile1Id = certStore.getCertificateProfileId(administrator, "XKMSTESTSIGN");
     	int profile2Id = certStore.getCertificateProfileId(administrator, "XKMSTESTEXCHANDENC");
@@ -177,7 +187,11 @@ public class TestXKMSKISS extends TestCase {
     	endentityprofile.setValue(EndEntityProfile.AVAILCAS, 0, ""+caid);
     	endentityprofile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, ""+SecConst.CERTPROFILE_FIXED_ENDUSER +";" + profile1Id + ";" + profile2Id );
     	
-    	raAdmin.addEndEntityProfile(administrator, "XKMSTESTPROFILE", endentityprofile);
+    	try {
+    		raAdmin.addEndEntityProfile(administrator, "XKMSTESTPROFILE", endentityprofile);
+    	} catch (EndEntityProfileExistsException e) {
+    		System.out.println("Endentityprofile XKMSTESTPROFILE already exists.");
+    	}
         int endEntityProfileId = raAdmin.getEndEntityProfileId(administrator, "XKMSTESTPROFILE");
         
     	

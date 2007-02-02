@@ -16,6 +16,7 @@ package org.ejbca.core.protocol.xkms.common;
 import gnu.inet.encoding.Stringprep;
 import gnu.inet.encoding.StringprepException;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -62,7 +63,7 @@ import org.w3c.dom.Element;
  * 
  * @author Philip Vendil 2006 dec 30
  *
- * @version $Id: XKMSUtil.java,v 1.1 2007-01-05 05:32:54 herrvendil Exp $
+ * @version $Id: XKMSUtil.java,v 1.2 2007-02-02 09:37:48 anatom Exp $
  */
 
 public class XKMSUtil {
@@ -290,7 +291,7 @@ public class XKMSUtil {
 
         	Mac m = Mac.getInstance("HmacSHA1");
         	m.init(sk);
-        	m.update(sASLPrepedPassword.getBytes());
+        	m.update(sASLPrepedPassword.getBytes("ISO8859-1"));
         	byte[] mac = m.doFinal();
         	for(int i=0;i<mac.length;i++){
                if(keyIndex < keylength){
@@ -318,6 +319,12 @@ public class XKMSUtil {
 			log.error("Error generating secret key", e);
 			throw new XMLEncryptionException(e.getMessage(),e);
 		} catch (InvalidKeyException e) {
+			log.error("Error generating secret key", e);
+			throw new XMLEncryptionException(e.getMessage(),e);
+		} catch (IllegalStateException e) {
+			log.error("Error generating secret key", e);
+			throw new XMLEncryptionException(e.getMessage(),e);
+		} catch (UnsupportedEncodingException e) {
 			log.error("Error generating secret key", e);
 			throw new XMLEncryptionException(e.getMessage(),e);
 		}

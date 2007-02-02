@@ -51,7 +51,7 @@ import org.w3._2002._03.xkms_.UseKeyWithType;
 /**
  * Performes KRSS registre calls to an web service.
  *
- * @version $Id: RegisterCommand.java,v 1.1 2007-01-07 00:31:51 herrvendil Exp $
+ * @version $Id: RegisterCommand.java,v 1.2 2007-02-02 09:37:48 anatom Exp $
  * @author Philip Vendil
  */
 public class RegisterCommand extends XKMSCLIBaseCommand implements IAdminCommand{
@@ -124,7 +124,7 @@ public class RegisterCommand extends XKMSCLIBaseCommand implements IAdminCommand
             
             if(revocationCodeId != null && !revocationCodeId.equalsIgnoreCase("NULL")){
                 byte[] first = XKMSUtil.getSecretKeyFromPassphrase(revocationCodeId, true,20, XKMSUtil.KEY_REVOCATIONCODEIDENTIFIER_PASS1).getEncoded();
-                byte[] second = XKMSUtil.getSecretKeyFromPassphrase(new String(first), false,20, XKMSUtil.KEY_REVOCATIONCODEIDENTIFIER_PASS2).getEncoded();
+                byte[] second = XKMSUtil.getSecretKeyFromPassphrase(new String(first,"ISO8859-1"), false,20, XKMSUtil.KEY_REVOCATIONCODEIDENTIFIER_PASS2).getEncoded();
                 prototypeKeyBinding.setRevocationCodeIdentifier(second);
             }
             

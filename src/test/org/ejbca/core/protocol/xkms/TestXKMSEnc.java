@@ -61,7 +61,7 @@ import org.w3c.dom.Document;
  * 
  * @author Philip Vendil 2006 sep 27 
  *
- * @version $Id: TestXKMSEnc.java,v 1.2 2007-01-07 00:32:18 herrvendil Exp $
+ * @version $Id: TestXKMSEnc.java,v 1.3 2007-02-02 09:37:47 anatom Exp $
  */
 
 public class TestXKMSEnc extends TestCase {
@@ -116,7 +116,7 @@ public class TestXKMSEnc extends TestCase {
         RegisterResultType registerResultType = xKMSObjectFactory.createRegisterResultType();
         JAXBElement<RegisterResultType> registerResult = xKMSObjectFactory.createRegisterResult(registerResultType);
                 
-        PrivateKeyType privateKeyType1 = XKMSUtil.getEncryptedXMLFromPrivateKey( (RSAPrivateCrtKey) keys.getPrivate(), "Det här är en sådan jävla skit");
+        PrivateKeyType privateKeyType1 = XKMSUtil.getEncryptedXMLFromPrivateKey( (RSAPrivateCrtKey) keys.getPrivate(), "This is total crap");
         registerResultType.setPrivateKey(privateKeyType1);
         
         System.out.print("\n\n");
@@ -137,7 +137,7 @@ public class TestXKMSEnc extends TestCase {
         
         PrivateKeyType privateKeyType2 = registerResultType.getPrivateKey();
     
-        RSAPrivateKey privkey2 = XKMSUtil.getPrivateKeyFromEncryptedXML(privateKeyType2, "Det här är en sådan jävla skit");
+        RSAPrivateKey privkey2 = XKMSUtil.getPrivateKeyFromEncryptedXML(privateKeyType2, "This is total crap");
         
         X509Certificate cert = CertTools.genSelfCert("CN=test", 10, null,privkey2, keys.getPublic(), "SHA1WithRSA", true);
         
@@ -199,7 +199,7 @@ public class TestXKMSEnc extends TestCase {
 		System.out.println(resultString);
 		assertTrue(resultString.equalsIgnoreCase("1c0857c95458c26f44327efd0ef055b08cad5c78"));
 		
-	    SecretKey key2 = XKMSUtil.getSecretKeyFromPassphrase(new String(key1.getEncoded()), false,20, XKMSUtil.KEY_REVOCATIONCODEIDENTIFIER_PASS2);
+	    SecretKey key2 = XKMSUtil.getSecretKeyFromPassphrase(new String(key1.getEncoded(),"ISO8859-1"), false,20, XKMSUtil.KEY_REVOCATIONCODEIDENTIFIER_PASS2);
 			
 	    assertTrue(key2.getEncoded().length == 20);
 			

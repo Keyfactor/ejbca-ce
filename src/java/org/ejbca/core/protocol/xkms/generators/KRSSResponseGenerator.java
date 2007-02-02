@@ -15,6 +15,7 @@ package org.ejbca.core.protocol.xkms.generators;
 
 import gnu.inet.encoding.StringprepException;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -80,7 +81,7 @@ import org.w3c.dom.Element;
  * 
  * @author Philip Vendil 
  *
- * @version $Id: KRSSResponseGenerator.java,v 1.3 2007-01-07 19:44:14 herrvendil Exp $
+ * @version $Id: KRSSResponseGenerator.java,v 1.4 2007-02-02 09:37:47 anatom Exp $
  */
 
 public class KRSSResponseGenerator extends
@@ -585,11 +586,13 @@ public class KRSSResponseGenerator extends
     		byte[] unMACedCode= ((RevokeRequestType) req).getRevocationCode();
     		if(unMACedCode != null){
     			try{
-    				retval = new String(Hex.encode(XKMSUtil.getSecretKeyFromPassphrase(new String(unMACedCode), false, 20, XKMSUtil.KEY_REVOCATIONCODEIDENTIFIER_PASS2).getEncoded()));
+    				retval = new String(Hex.encode(XKMSUtil.getSecretKeyFromPassphrase(new String(unMACedCode,"ISO8859-1"), false, 20, XKMSUtil.KEY_REVOCATIONCODEIDENTIFIER_PASS2).getEncoded()));
     			}catch (XMLEncryptionException e) {
     				log.error(e);
     			} catch (StringprepException e) {// is never thrown}
-    			}
+    			} catch (UnsupportedEncodingException e) {
+    				log.error(e);
+				}
     		}
     	}
 		
