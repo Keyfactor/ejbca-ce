@@ -33,7 +33,7 @@ import org.ejbca.core.model.InternalResources;
  * 
  * @author Philip Vendil 2007 jan 5
  *
- * @version $Id: CertificateExtensionFactory.java,v 1.2 2007-01-15 14:49:51 anatom Exp $
+ * @version $Id: CertificateExtensionFactory.java,v 1.3 2007-02-02 18:09:42 anatom Exp $
  */
 
 public class CertificateExtensionFactory {
@@ -112,11 +112,16 @@ public class CertificateExtensionFactory {
 		try{
 			if(props == null){
 				props = new Properties();
-				InputStream is = CertificateExtensionFactory.class.getResourceAsStream("/certextensions.properties");
-				if(is != null){
-				  props.load(is);
-				}else{
-					log.error("Certificate Extension configuration file not found");
+				InputStream is = null;
+				try {
+					is = CertificateExtensionFactory.class.getResourceAsStream("/certextensions.properties");
+					if(is != null){
+						props.load(is);
+					}else{
+						log.error("Certificate Extension configuration file not found");
+					}
+				} finally {
+					if (is != null) is.close();
 				}
 			}			
 			

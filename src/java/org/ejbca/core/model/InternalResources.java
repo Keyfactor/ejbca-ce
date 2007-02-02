@@ -33,7 +33,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  *  
  * @author Philip Vendil 2006 sep 24
  *
- * @version $Id: InternalResources.java,v 1.6 2006-12-13 10:33:42 anatom Exp $
+ * @version $Id: InternalResources.java,v 1.7 2007-02-02 18:09:42 anatom Exp $
  */
 public class InternalResources implements Serializable {
 	
@@ -69,32 +69,41 @@ public class InternalResources implements Serializable {
 		// The test flag is defined when called from test code (junit)		
 	    InputStream primaryStream = null;
 	    InputStream secondaryStream = null;
-	    if (test) {
-			primaryLanguage = "en";
-			secondaryLanguage = "se";
-		    try {
-				primaryStream = new FileInputStream("src/intresources/intresources." + primaryLanguage + ".properties");
-			    secondaryStream = new FileInputStream("src/intresources/intresources." + secondaryLanguage + ".properties");	    	
-			} catch (FileNotFoundException e) {}
-	    } else {
-			primaryStream = InternalResources.class.getResourceAsStream(RESOURCE_LOCATION + primaryLanguage + ".properties");
-			secondaryStream = InternalResources.class.getResourceAsStream(RESOURCE_LOCATION + secondaryLanguage + ".properties");	    	
+	    try {
+	    	if (test) {
+	    		primaryLanguage = "en";
+	    		secondaryLanguage = "se";
+	    		try {
+	    			primaryStream = new FileInputStream("src/intresources/intresources." + primaryLanguage + ".properties");
+	    			secondaryStream = new FileInputStream("src/intresources/intresources." + secondaryLanguage + ".properties");	    	
+	    		} catch (FileNotFoundException e) {}
+	    	} else {
+	    		primaryStream = InternalResources.class.getResourceAsStream(RESOURCE_LOCATION + primaryLanguage + ".properties");
+	    		secondaryStream = InternalResources.class.getResourceAsStream(RESOURCE_LOCATION + secondaryLanguage + ".properties");	    	
+	    	}
+
+	    	try {
+	    		if (primaryStream != null) {
+	    			primaryResource.load(primaryStream);				
+	    		} else {
+	    			log.error("primaryResourse == null");
+	    		}
+	    		if (secondaryStream != null) {
+	    			secondaryResource.load(secondaryStream);				
+	    		} else {
+	    			log.error("secondaryResource == null");
+	    		}
+	    	} catch (IOException e) {			
+	    		throw new EJBException("Error reading internal resourcefile", e);
+	    	}
+	    } finally {
+	    	try {
+	    		if (primaryStream != null) primaryStream.close();
+	    		if (secondaryStream != null) secondaryStream.close();
+	    	} catch (IOException e) {
+	    		log.error("Error closing internal resources language streams: ", e);
+	    	}
 	    }
-		
-		try {
-			if (primaryStream != null) {
-				primaryResource.load(primaryStream);				
-			} else {
-				log.error("primaryResourse == null");
-			}
-			if (secondaryStream != null) {
-				secondaryResource.load(secondaryStream);				
-			} else {
-				log.error("secondaryResource == null");
-			}
-		} catch (IOException e) {			
-			throw new EJBException("Error reading internal resourcefile", e);
-		}
 	}
 	
 	/**
