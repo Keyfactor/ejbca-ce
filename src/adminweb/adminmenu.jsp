@@ -278,7 +278,7 @@
    
    <br>
    <br>
-   <A href="<%= PUBLICWEB_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("PUBLICWEB") %></A>
+   <A href="<%= PUBLICWEB_LINK %>" target="_ejbcapublicweb" id="menu"><%=ejbcawebbean.getText("PUBLICWEB") %></A>
  <%   
     // If authorized to edit user preferences then display related links.
     try{
