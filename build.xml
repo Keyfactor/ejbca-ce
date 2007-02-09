@@ -300,9 +300,11 @@
         <property name="jar.jsfclasspath" value="lib/jstl-1.1.0.jar lib/myfaces-api-1.1.4.jar lib/myfaces-impl-1.1.4.jar" />
 	</target>
 	
-	<target name="jsflibs" depends="jsflibswls">
-		<deltree dir="${jsf.libdir}"/>
+	<target name="jsflibspre">
+        <delete dir="${jsf.libdir}" />
         <mkdir dir="${jsf.libdir}" />
+	</target>
+	<target name="jsflibs" depends="jsflibspre,jsflibswls">
         <property name="jar.jsfclasspath" value="" />
 	</target>
 
