@@ -137,10 +137,11 @@
         </war>
     </target>
 
+	<!-- =================================================================== -->
+    <!-- Build admin web part, adminwebbase and adminwebwls are              -->
+    <!-- called from the main target adminweb.war.                           -->
     <!-- =================================================================== -->
-    <!-- Build admin web part                                                -->
-    <!-- =================================================================== -->
-    <target name="adminweb.war" depends="compile">
+    <target name="adminwebbase">
         <mkdir dir="${adminweb.build}/WEB-INF/lib"/>
         <copy todir="${adminweb.build}">
             <fileset dir="${adminweb.src}" />
@@ -159,7 +160,28 @@
             	<include name="tomahawk-1.1.3.jar"/>
             </fileset>
         </copy>
+    </target>
+	
+	<target name="wlstargetcheck">
+		<condition property="weblogic.enabled">
+			<equals arg1="${appserver.type}" arg2="weblogic"/>
+		</condition>
+	</target>
+	
+    <target name="adminwebwls" depends="wlstargetcheck" if="weblogic.enabled">
+        <copy todir="${adminweb.build}/WEB-INF/lib">
+            <fileset dir="${lib}/myfaces" >
+            	<include name="*.jar"/>
+            </fileset>
+        </copy>
+	    <copy todir="${adminweb.build}/WEB-INF/lib">
+	        <fileset dir="${lib}" >
+	        	<include name="commons-*.jar"/>
+	        </fileset>
+	    </copy>
+    </target>
 
+    <target name="adminweb.war" depends="compile,adminwebbase,adminwebwls">
     	<jsp-compile uriroot="${adminweb.build}" classpathref="compile.classpath"/> 
         <war destfile="${adminwebwar}" webxml="${src.dd}/WEB-INF/web.xml">
             <manifest>
