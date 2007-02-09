@@ -344,8 +344,8 @@
                 <include name="*-ejb.jar" />
                 <include name="*.war" />
             </fileset>
-            <fileset dir="${jsf.libdir}">
-                <include name="*.jar" />
+            <fileset dir="${jsf.dir}">
+                <include name="lib/*.jar" />
             </fileset>
 	</ear>
     </target>
