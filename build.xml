@@ -346,6 +346,9 @@
             </fileset>
             <fileset dir="${jsf.dir}">
                 <include name="lib/*.jar" />
+	            <exclude name="lib/commons-collections.jar"/>
+                <exclude name="lib/commons-fileupload-1.0.jar"/>
+                <exclude name="lib/commons-lang-2.0.jar"/>
             </fileset>
 	</ear>
     </target>
