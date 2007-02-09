@@ -55,6 +55,7 @@
 	<property name="mainsrc" value="src"/>
 	<property name="mainbin" value="bin"/>
     <property name="appserver.src" value="${mainsrc}/appserver" />
+    <property name="jsf.libdir" value="${tmp}/jsflibs" />
 
     <property name="src" value="${preprocessed}" />
     <property name="src.java" value="${src}/java" />

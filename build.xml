@@ -190,7 +190,7 @@
         <jar jarfile="${dist.dir}/ejbca-ejb.jar">
             <manifest>
                 <!-- todo: autogenerate this from a fileset -->
-                <attribute name="Class-Path" value="${jar.extclasspath}" />
+                <attribute name="Class-Path" value="${jar.extclasspath} ${jar.jsfclasspath}" />
             </manifest>
             <fileset dir="${src.dd}">
             	<exclude name="WEB-INF/**"/>
@@ -273,11 +273,43 @@
         	</fileset>	
         </jar>
     </target>
-    
+
+    <!-- =================================================================== -->
+    <!-- We need special handling of JSF jars and classpath because          -->
+    <!-- different appservers and different JSF implementations behaves differently. -->
+	<!-- JBoss does not need anything, because it uses Myfaces by default    -->
+    <!-- =================================================================== -->
+	<target name="wlstargetcheck">
+			<condition property="weblogic.enabled">
+				<equals arg1="${appserver.type}" arg2="weblogic"/>
+			</condition>
+		</target>
+	
+	<!-- We need to include all the myfaces libs in Weblogic 9 -->	
+	<target name="jsflibswls" depends="wlstargetcheck" if="weblogic.enabled">
+        <copy todir="${jsf.libdir}">
+            <fileset dir="${lib}/myfaces" >
+            	<include name="*.jar"/>
+            </fileset>
+        </copy>
+	    <copy todir="${jsf.libdir}">
+	        <fileset dir="${lib}" >
+	        	<include name="commons-*.jar"/>
+	        </fileset>
+	    </copy>
+        <property name="jar.jsfclasspath" value="lib/jstl-1.1.0.jar lib/myfaces-api-1.1.4.jar lib/myfaces-impl-1.1.4.jar" />
+	</target>
+	
+	<target name="jsflibs" depends="jsflibswls">
+		<deltree dir="${jsf.libdir}"/>
+        <mkdir dir="${jsf.libdir}" />
+        <property name="jar.jsfclasspath" value="" />
+	</target>
+
     <!-- =================================================================== -->
     <!-- Build CA-ear                                                        -->
     <!-- =================================================================== -->
-    <target name="ca.ear" depends="apply.war, status.war, cmp.war, healthcheck.war, webdist.war, adminweb.war, publicwebroot.war, ejbca-ejb.jar, ejbca-util.jar, ejbcaws.war, ejbcaws.client, xkms.war, xkms.client">
+	<target name="ca.ear" depends="jsflibs, apply.war, status.war, cmp.war, healthcheck.war, webdist.war, adminweb.war, publicwebroot.war, ejbca-ejb.jar, ejbca-util.jar, ejbcaws.war, ejbcaws.client, xkms.war, xkms.client">
         <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml"> 
             <fileset dir="${eardd.src}">
                 <exclude name="META-INF/application.xml" />
@@ -309,6 +341,9 @@
             <fileset dir="${dist.dir}">
                 <include name="*-ejb.jar" />
                 <include name="*.war" />
+            </fileset>
+            <fileset dir="${jsf.libdir}">
+                <include name="*.jar" />
             </fileset>
 	</ear>
     </target>
