@@ -27,15 +27,15 @@ import org.apache.log4j.Logger;
  * This implementation was done by PrimeKey Solutions AB (www.primekey.se) in 2005 
  * and the development was sponsored by Linagora (www.linagora.com).
  * 
- * @author Lars Silvén
- * @version $Id: NFastCAToken.java,v 1.11 2006-09-07 20:01:26 primelars Exp $
+ * @author Lars Silvï¿½n
+ * @version $Id: NFastCAToken.java,v 1.12 2007-02-10 21:31:13 primelars Exp $
  */
 public class NFastCAToken extends BaseCAToken implements IHardCAToken {
 
     /** Log4j instance */
     private static final Logger log = Logger.getLogger(NFastCAToken.class);
 
-    static final private String SLOT_LABEL_KEY = "keyStore";
+    static final public String SLOT_LABEL_KEY = "keyStore";
     static final private String PROVIDER_NAME = "nCipherKM";
     static final private String PROVIDER_CLASS = "com.ncipher.provider.km.nCipherKM";
 

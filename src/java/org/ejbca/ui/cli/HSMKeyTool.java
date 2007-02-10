@@ -17,10 +17,11 @@ package org.ejbca.ui.cli;
 
 /**
  * @author lars
- * @version $Id: HSMKeyTool.java,v 1.13 2007-02-10 15:32:11 primelars Exp $
+ * @version $Id: HSMKeyTool.java,v 1.14 2007-02-10 21:31:13 primelars Exp $
  *
  */
 public class HSMKeyTool {
+    private static String CREATE_CA_SWITCH = "createca";
     private static String GENERATE_SWITCH = "generate";
     private static String DELETE_SWITCH = "delete";
     private static String TEST_SWITCH = "test";
@@ -32,7 +33,15 @@ public class HSMKeyTool {
      */
     public static void main(String[] args) {
         try {
-            if ( args.length > 1 && args[1].toLowerCase().trim().equals(GENERATE_SWITCH)) {
+            if ( args.length > 1 && args[1].toLowerCase().trim().equals(CREATE_CA_SWITCH)) {
+                try {
+                    new HwCaInitCommand(args).execute();
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());            
+                    //e.printStackTrace();
+                    System.exit(-1);
+                }
+            } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(GENERATE_SWITCH)) {
                 if ( args.length < 5 )
                     System.err.println(args[0] + " " + args[1] + " <key size> [<key entry name>] [<keystore ID>]");
                 else
@@ -58,7 +67,8 @@ public class HSMKeyTool {
                 else
                     KeyStoreContainer.move(args[2], args[3], args[4], args[5]);
             } else
-                System.err.println("Use \"" + args[0]+" "+GENERATE_SWITCH+"\" or \"" +
+                System.err.println("Use \"" + args[0]+" "+CREATE_CA_SWITCH+"\" or \"" +
+                                   args[0]+" "+GENERATE_SWITCH+"\" or \"" +
                                    args[0]+" "+DELETE_SWITCH+"\" or \"" +
                                    args[0]+" "+TEST_SWITCH+"\" or \"" +
                                    args[0]+" "+CREATE_KEYSTORE_SWITCH+"\" or \"" +

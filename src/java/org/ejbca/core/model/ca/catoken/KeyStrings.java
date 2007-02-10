@@ -24,21 +24,20 @@ import org.ejbca.core.model.SecConst;
 
 /**
  * 
- * @version $Id: KeyStrings.java,v 1.2 2006-05-05 14:36:59 herrvendil Exp $
+ * @version $Id: KeyStrings.java,v 1.3 2007-02-10 21:31:13 primelars Exp $
 */
 public class KeyStrings {
     
-    final private String CAKEYPURPOSE_CERTSIGN_STRING = "certSignKey";
-    final private String CAKEYPURPOSE_CRLSIGN_STRING = "crlSignKey";
-    final private String CAKEYPURPOSE_KEYENCRYPT_STRING = "keyEncryptKey";
-    final private String CAKEYPURPOSE_TESTKEY_STRING = "testKey";
-    final private String CAKEYPURPOSE_DEFAULT_STRING = "defaultKey";
+    final static public String CAKEYPURPOSE_CERTSIGN_STRING = "certSignKey";
+    final static public String CAKEYPURPOSE_CRLSIGN_STRING = "crlSignKey";
+    final static public String CAKEYPURPOSE_KEYENCRYPT_STRING = "keyEncryptKey";
+    final static public String CAKEYPURPOSE_TESTKEY_STRING = "testKey";
+    final static public String CAKEYPURPOSE_DEFAULT_STRING = "defaultKey";
     final private Map map;
     final String defaultKeyS;
     public KeyStrings(Properties properties) {
         {
-            String tmpS = properties.getProperty(
-                CAKEYPURPOSE_DEFAULT_STRING);
+            String tmpS = properties.getProperty(CAKEYPURPOSE_DEFAULT_STRING);
             defaultKeyS = tmpS!=null ? tmpS.trim() : null;
         }
         map = new Hashtable();
