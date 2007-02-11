@@ -172,7 +172,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.28 2007-01-16 11:42:55 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.29 2007-02-11 18:48:23 herrvendil Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
@@ -1811,13 +1811,16 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             Collection result = certprofilehome.findAll();
             Iterator i = result.iterator();
             while (i.hasNext() && !exists) {
-                availablecas = ((CertificateProfileDataLocal) i.next()).getCertificateProfile().getAvailableCAs().iterator();
-                while (availablecas.hasNext()) {
-                    if (((Integer) availablecas.next()).intValue() == caid) {
-                        exists = true;
-                        break;
-                    }
-                }
+            	CertificateProfile certProfile = ((CertificateProfileDataLocal) i.next()).getCertificateProfile(); 
+            	if(certProfile.getType() == CertificateProfile.TYPE_ENDENTITY){
+            		availablecas = certProfile.getAvailableCAs().iterator();
+            		while (availablecas.hasNext()) {
+            			if (((Integer) availablecas.next()).intValue() == caid ) {
+            				exists = true;
+            				break;
+            			}
+            		}
+            	}
             }
         } catch (FinderException e) {
         }
