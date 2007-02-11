@@ -89,11 +89,13 @@ import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.protocol.IRequestMessage;
 import org.ejbca.core.protocol.IResponseMessage;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
 import org.ejbca.core.protocol.X509ResponseMessage;
+import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
 
@@ -102,7 +104,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.43 2007-02-02 09:35:35 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.44 2007-02-11 18:45:44 herrvendil Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -1021,6 +1023,12 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				if(cainfo instanceof X509CAInfo){
     					UserDataVO cadata = new UserDataVO("nobody", cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(), ((X509CAInfo) cainfo).getSubjectAltName(), null,
     							0, 0, 0,  cainfo.getCertificateProfileId(), null, null, 0, 0, null);
+    					if(requestmessage instanceof PKCS10RequestMessage){
+    					  ExtendedInformation extInfo = new ExtendedInformation();
+    					  PKCS10CertificationRequest pkcs10 = ((PKCS10RequestMessage) requestmessage).getCertificationRequest();
+    					  extInfo.setCustomData("PKCS10", new String(Base64.encode(pkcs10.getEncoded()))); 
+    					  cadata.setExtendedinformation(extInfo);
+    					}
     					CertificateProfile certprofile = getCertificateStoreSession().getCertificateProfile(admin, cainfo.getCertificateProfileId());
     					cacertificate = signca.generateCertificate(cadata, publickey, -1, cainfo.getValidity(), certprofile);
     					returnval = new X509ResponseMessage();
