@@ -126,7 +126,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.51 2007-02-02 18:05:48 anatom Exp $
+ * @version $Id: X509CA.java,v 1.52 2007-02-11 18:44:51 herrvendil Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -835,64 +835,65 @@ public class X509CA extends CA implements Serializable {
     	boolean retval = false;
     	Collection extendedServiceTypes = getExternalCAServiceTypes();
 
-    	// Create XKMS service if it does not exist
-    	if (!extendedServiceTypes.contains(new Integer(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE))){
+    	if(getCAInfo().getStatus() != SecConst.CA_EXTERNAL){
+    		// Create XKMS service if it does not exist
+    		if (!extendedServiceTypes.contains(new Integer(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE))){
 
-    		String keytype = CATokenConstants.KEYALGORITHM_RSA;
-    		String keyspec = "2048";
+    			String keytype = CATokenConstants.KEYALGORITHM_RSA;
+    			String keyspec = "2048";
 
-    		XKMSCAServiceInfo xKMSCAInfo =  new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
-    				"CN=XKMSCertificate, " + getSubjectDN(),
-    				"",
-    				keyspec,
-    				keytype);
+    			XKMSCAServiceInfo xKMSCAInfo =  new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
+    					"CN=XKMSCertificate, " + getSubjectDN(),
+    					"",
+    					keyspec,
+    					keytype);
 
-    		XKMSCAService xkmsservice = new XKMSCAService(xKMSCAInfo);
-    		try {
-    			xkmsservice.init(this);
-    			retval = true;
-    		} catch (Exception e) {
-    			CAInfo info = this.getCAInfo();
-    			String caname = null;
-    			if (info != null) {
-    				caname = info.getName();
+    			XKMSCAService xkmsservice = new XKMSCAService(xKMSCAInfo);
+    			try {
+    				xkmsservice.init(this);
+    				retval = true;
+    			} catch (Exception e) {
+    				CAInfo info = this.getCAInfo();
+    				String caname = null;
+    				if (info != null) {
+    					caname = info.getName();
+    				}
+    				log.error(intres.getLocalizedMessage("signsession.errorupgradingxkmsservice",caname), e);
     			}
-    			log.error(intres.getLocalizedMessage("signsession.errorupgradingxkmsservice",caname), e);
-    		}
-    		setExtendedCAService(xkmsservice);
-    		extendedServiceTypes.add(new Integer(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE));
-    		data.put(EXTENDEDCASERVICES, extendedServiceTypes);
-    	}		
+    			setExtendedCAService(xkmsservice);
+    			extendedServiceTypes.add(new Integer(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE));
+    			data.put(EXTENDEDCASERVICES, extendedServiceTypes);
+    		}		
 
-    	// Create CMS service if it does not exist
-    	if (!extendedServiceTypes.contains(new Integer(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE))){
+    		// Create CMS service if it does not exist
+    		if (!extendedServiceTypes.contains(new Integer(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE))){
 
-    		String keytype = CATokenConstants.KEYALGORITHM_RSA;
-    		String keyspec = "2048";
+    			String keytype = CATokenConstants.KEYALGORITHM_RSA;
+    			String keyspec = "2048";
 
-    		CmsCAServiceInfo cmsCAInfo =  new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
-    				"CN=CMSCertificate, " + getSubjectDN(),
-    				"",
-    				keyspec,
-    				keytype);
+    			CmsCAServiceInfo cmsCAInfo =  new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
+    					"CN=CMSCertificate, " + getSubjectDN(),
+    					"",
+    					keyspec,
+    					keytype);
 
-    		CmsCAService cmsservice = new CmsCAService(cmsCAInfo);
-    		try {
-    			cmsservice.init(this);
-    			retval = true;
-    		} catch (Exception e) {
-    			CAInfo info = this.getCAInfo();
-    			String caname = null;
-    			if (info != null) {
-    				caname = info.getName();
+    			CmsCAService cmsservice = new CmsCAService(cmsCAInfo);
+    			try {
+    				cmsservice.init(this);
+    				retval = true;
+    			} catch (Exception e) {
+    				CAInfo info = this.getCAInfo();
+    				String caname = null;
+    				if (info != null) {
+    					caname = info.getName();
+    				}
+    				log.error(intres.getLocalizedMessage("signsession.errorupgradingcmsservice",caname), e);
     			}
-    			log.error(intres.getLocalizedMessage("signsession.errorupgradingcmsservice",caname), e);
-    		}
-    		setExtendedCAService(cmsservice);
-    		extendedServiceTypes.add(new Integer(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE));
-    		data.put(EXTENDEDCASERVICES, extendedServiceTypes);
-    	}		
-
+    			setExtendedCAService(cmsservice);
+    			extendedServiceTypes.add(new Integer(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE));
+    			data.put(EXTENDEDCASERVICES, extendedServiceTypes);
+    		}		
+    	}
     	return retval;
     }
 	
