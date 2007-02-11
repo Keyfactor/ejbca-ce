@@ -74,11 +74,13 @@ public class HwCaInitCommand extends BaseCaAdminCommand {
             final String caname = this.args[4];
             final String dn = StringTools.strip(CertTools.stringToBCDNString(this.args[5]));
             final int validity = Integer.parseInt(this.args[6]);
+            HardCATokenInfo catokeninfo = new HardCATokenInfo();
             byte keyStoreID[];{
                 KeyStoreContainer ksc = new KeyStoreContainer(this.args[3],this.args[2], this.args.length>7 ? this.args[7] : null);
                 ksc.generate(2048, DEFAULT_KEY);
                 ksc.generate(2048, SIGN_KEY);
                 keyStoreID = ksc.storeKeyStore();
+                catokeninfo.setAuthenticationCode(new String(ksc.getPassPhraseGetSetEntry()));
             }
             getOutputStream().println("Initializing CA");            
             
@@ -87,9 +89,6 @@ public class HwCaInitCommand extends BaseCaAdminCommand {
             getOutputStream().println("DN: "+dn);
             getOutputStream().println("Validity (days): "+validity);
                             
-            initAuthorizationModule(dn.hashCode());
-
-            HardCATokenInfo catokeninfo = new HardCATokenInfo();
             catokeninfo.setSignatureAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
             catokeninfo.setEncryptionAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
             {
@@ -101,6 +100,7 @@ public class HwCaInitCommand extends BaseCaAdminCommand {
                 pw.close();
                 catokeninfo.setProperties(sw.toString());
             }
+            catokeninfo.setClassPath("org.ejbca.core.model.ca.catoken.NFastCAToken");
             X509CAInfo cainfo = new X509CAInfo(dn, 
                                              caname, SecConst.CA_ACTIVE, new Date(),
                                              "", SecConst.CERTPROFILE_FIXED_ROOTCA,
@@ -148,11 +148,5 @@ public class HwCaInitCommand extends BaseCaAdminCommand {
         }
     } // execute
     
-    private void initAuthorizationModule(int caid) throws Exception{
-      getOutputStream().println("Initalizing Temporary Authorization Module.");  
-      Context context = getInitialContext();
-      IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("AuthorizationSession"), IAuthorizationSessionHome.class);   
-      IAuthorizationSessionRemote authorizationsession = authorizationsessionhome.create();  
-      authorizationsession.initialize(this.administrator, caid);
-    } // initAuthorizationModule
+
 }

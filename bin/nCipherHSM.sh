@@ -24,15 +24,19 @@ fi
 
 NFAST_JARS=$NFAST_HOME/java/classes
 
-CLASSES=$EJBCA_HOME/lib/bcprov-jdk15.jar
-CLASSES=$CLASSES:$EJBCA_HOME/tmp/bin/classes
+CP=$EJBCA_HOME/lib/bcprov-jdk15.jar
+CP=$CP:$EJBCA_HOME/lib/log4j.jar
+CP=$CP:$EJBCA_HOME/lib/commons-lang-2.0.jar
+CP=$CP:$EJBCA_HOME/tmp/bin/classes
+CP=$CP:$JBOSS_HOME/client/jbossall-client.jar
+CP=$CP:$EJBCA_HOME/bin
 # use this instead if you want build from eclipse
-#CLASSES=$CLASSES:$EJBCA_HOME/out/classes
+#CP=$CP:$EJBCA_HOME/out/classes
 
 # Add nfast's JARs to classpath
 for jar in rsaprivenc.jar nfjava.jar kmjava.jar kmcsp.jar jutils.jar
 do
-        CLASSES="$CLASSES:$NFAST_JARS/$jar"
+        CP="$CP:$NFAST_JARS/$jar"
 done
 
 # Prepare arguments
@@ -42,4 +46,4 @@ args="$args com.ncipher.provider.km.nCipherKM nCipher.sworld $@"
 
 # Finally run java
 #set -x
-$JAVA_HOME/bin/java -cp $CLASSES org.ejbca.ui.cli.HSMKeyTool $args
+$JAVA_HOME/bin/java -cp $CP org.ejbca.ui.cli.HSMKeyTool $args

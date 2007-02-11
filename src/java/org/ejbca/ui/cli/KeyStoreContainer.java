@@ -154,6 +154,9 @@ class KeyStoreContainer {
         setKeyEntry(keyEntryName, keyPair.getPrivate(), chain);
         return storeKeyStore();
     }
+    char[] getPassPhraseGetSetEntry() {
+        return passPhraseGetSetEntry;
+    }
     static void move(final String providerClassName,
                      final String keyStoreType,
                      final String fromID,
