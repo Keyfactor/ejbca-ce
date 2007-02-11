@@ -26,7 +26,7 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
  * like a image, in an effort to minimize the need for database alterations
  *
  * @author  Philip Vendil
- * @version $Id: ExtendedInformation.java,v 1.10 2007-01-16 11:43:53 anatom Exp $
+ * @version $Id: ExtendedInformation.java,v 1.11 2007-02-11 18:43:55 herrvendil Exp $
  */
 public class ExtendedInformation extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(ExtendedInformation.class);
@@ -55,6 +55,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     protected static final String SUBJECTDIRATTRIBUTES = "subjectdirattributes";
 
     protected static final String XKMSREVOCATIONCODEIDENTIFIER = "revocationcodeidentifier";
+    protected static final String CUSTOMDATA = "customdata_";
     
     
     // Public constants
@@ -110,6 +111,29 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     	    	
     	data.put(XKMSREVOCATIONCODEIDENTIFIER,value);
 
+    }
+    
+    /**
+     * Special method used to retrieve customly set userdata
+     * 
+     * @returns The data or null if no such data have been set for the user
+     */
+    public String getCustomData(String key){ 
+    	String retval = (String) data.get(CUSTOMDATA + key);
+    	
+
+    	
+    	return retval;     	
+    }
+    
+    
+    /**
+     * 
+     * @param customly defined key to store the data with
+     * @param the string representation of the data
+     */
+    public void setCustomData(String key, String value) {        	    	
+    	data.put(CUSTOMDATA + key,value);
     }
     
     public Object clone() throws CloneNotSupportedException {
