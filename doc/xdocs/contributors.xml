@@ -62,6 +62,7 @@ administrator, who can be found on the sourceforge project page.
 <li>Javier Aparicio Conesa, aparicio_fracon(at)gva.es, User notice and CPS in certificate policy extension. Directoryname in alternative names. CRL Issue period. Option to not remove certificates from publisher when revoked. Patch for unsuspend from CRL.</li>
 <li>Jon Bendtsen, jon.bendtsen(at)laerdal.dk, OpenVPN installer package enrollment.</li>
 <li>Henrik Schack, henrik(at)schack.dk, Documentation about dns alt name for Cisco PIX.</li>
+<li>Alexander Horvath, alex(at)gekom.biz, Patch to make OCSP compatible with Thunderbird/Firefox.</li>
 </ul>
     </section>
   </body>
