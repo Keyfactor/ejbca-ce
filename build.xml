@@ -156,7 +156,7 @@
         </copy>
         <copy todir="${adminweb.build}/WEB-INF/lib">
             <fileset dir="${lib}/myfaces" >
-            	<include name="tomahawk-1.1.3.jar"/>
+            	<include name="${jar.jsftaglibs}"/>
             </fileset>
         </copy>
 
@@ -293,11 +293,12 @@
             </fileset>
         </copy>
 	    <copy todir="${jsf.libdir}">
-	        <fileset dir="${lib}" >
+	        <fileset dir="${lib}/quickserver" >
 	        	<include name="commons-*.jar"/>
 	        </fileset>
 	    </copy>
-        <property name="jar.jsfclasspath" value="lib/jstl-1.1.0.jar lib/myfaces-api-1.1.4.jar lib/myfaces-impl-1.1.4.jar" />
+        <property name="jar.jsfclasspath" value="lib/jstl-1.1.0.jar lib/myfaces-api-1.1.4.jar lib/myfaces-impl-1.1.4.jar lib/commons-logging.jar lib/commons-digester.jar lib/commons-el-1.0.jar lib/commons-beanutils.jar lib/commons-codec-1.3.jar" />
+        <property name="jar.jsftaglibs" value="tomahawk-1.1.3.jar,myfaces-impl-1.1.4.jar,jstl-1.1.0.jar" />
 	</target>
 	
 	<target name="jsflibspre">
@@ -306,6 +307,7 @@
 	</target>
 	<target name="jsflibs" depends="jsflibspre,jsflibswls">
         <property name="jar.jsfclasspath" value="" />
+        <property name="jar.jsftaglibs" value="tomahawk-1.1.3.jar" />
 	</target>
 
     <!-- =================================================================== -->
@@ -321,9 +323,7 @@
                 <include name="${lib}/bcprov-jdk${java.ver}.jar" />
                 <include name="${lib}/log4j.jar" />
                 <include name="${lib}/ldap.jar" />
-                <include name="${lib}/commons-lang-2.0.jar" />
-                <include name="${lib}/commons-collections.jar" />
-                <include name="${lib}/commons-fileupload-1.0.jar" />
+                <include name="${lib}/commons-*.jar" />
                 <include name="${lib}/batik-xml.jar" />
                 <include name="${lib}/batik-dom.jar" />
                 <include name="${lib}/batik-svg-dom.jar" />
@@ -346,9 +346,6 @@
             </fileset>
             <fileset dir="${jsf.dir}">
                 <include name="lib/*.jar" />
-	            <exclude name="lib/commons-collections.jar"/>
-                <exclude name="lib/commons-fileupload-1.0.jar"/>
-                <exclude name="lib/commons-lang-2.0.jar"/>
             </fileset>
 	</ear>
     </target>
