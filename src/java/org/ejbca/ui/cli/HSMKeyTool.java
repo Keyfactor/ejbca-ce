@@ -13,15 +13,20 @@
 
 package org.ejbca.ui.cli;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+
 
 
 /**
  * @author lars
- * @version $Id: HSMKeyTool.java,v 1.14 2007-02-10 21:31:13 primelars Exp $
+ * @version $Id: HSMKeyTool.java,v 1.15 2007-02-13 21:23:15 primelars Exp $
  *
  */
 public class HSMKeyTool {
     private static String CREATE_CA_SWITCH = "createca";
+    private static String ENCRYPT_SWITCH = "encrypt";
+    private static String DECRYPT_SWITCH = "decrypt";
     private static String GENERATE_SWITCH = "generate";
     private static String DELETE_SWITCH = "delete";
     private static String TEST_SWITCH = "test";
@@ -51,6 +56,16 @@ public class HSMKeyTool {
                     System.err.println(args[0] + " " + args[1] + " <keystore ID> [<key entry name>]");
                 else
                     new KeyStoreContainer(args[3], args[2], args[4]).delete(args.length>5 ? args[5] : null);
+            } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(ENCRYPT_SWITCH)) {
+                if ( args.length < 8 )
+                    System.err.println(args[0] + " " + args[1] + " <keystore ID> <input file> <output file> <key alias>");
+                else
+                    new KeyStoreContainer(args[3], args[2], args[4]).encrypt(new FileInputStream(args[5]), new FileOutputStream(args[6]), args[7]);
+            } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(DECRYPT_SWITCH)) {
+                if ( args.length < 8 )
+                    System.err.println(args[0] + " " + args[1] + " <keystore ID> <input file> <output file> <key alias>");
+                else
+                    new KeyStoreContainer(args[3], args[2], args[4]).decrypt(new FileInputStream(args[5]), new FileOutputStream(args[6]), args[7]);
             } else if( args.length > 1 && args[1].toLowerCase().trim().equals(TEST_SWITCH)) {
                 if ( args.length < 5 )
                     System.err.println(args[0] + " " + args[1] + " <keystore ID> [<# of tests>]");
@@ -73,6 +88,8 @@ public class HSMKeyTool {
                                    args[0]+" "+TEST_SWITCH+"\" or \"" +
                                    args[0]+" "+CREATE_KEYSTORE_SWITCH+"\" or \"" +
                                    args[0]+" "+CREATE_KEYSTORE_MODULE_SWITCH+"\" or \"" +
+                                   args[0]+" "+ENCRYPT_SWITCH+
+                                   args[0]+" "+DECRYPT_SWITCH+
                                    args[0]+" "+MOVE_SWITCH+"\".");
         } catch (Throwable e) {
             e.printStackTrace(System.err);

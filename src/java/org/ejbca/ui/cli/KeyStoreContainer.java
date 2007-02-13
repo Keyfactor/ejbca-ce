@@ -7,7 +7,9 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
@@ -30,6 +32,10 @@ import java.util.Enumeration;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.bouncycastle.cms.CMSEnvelopedData;
+import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
+import org.bouncycastle.cms.CMSProcessableByteArray;
+import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 
 public class KeyStoreContainer {
@@ -175,5 +181,37 @@ public class KeyStoreContainer {
         }
         fromKS.storeKeyStore();
         toKS.storeKeyStore();
+    }
+    abstract private class CodeStream {
+        void code(InputStream is, OutputStream os, String alias) throws Exception {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            while( true ) {
+                int nextByte = is.read();
+                if (nextByte<0)
+                    break;
+                baos.write(nextByte);
+            }
+            os.write(doCoding(baos.toByteArray(), alias));
+            os.close();
+        }
+        abstract byte[] doCoding(final byte data[], String alias) throws Exception;
+    }
+    private class EncryptStream extends CodeStream {
+        byte[] doCoding(final byte data[], String alias) throws Exception {    
+            final CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
+            edGen.addKeyTransRecipient( keyStore.getCertificate(alias).getPublicKey(), "hej".getBytes() );
+            return edGen.generate(new CMSProcessableByteArray(data), CMSEnvelopedDataGenerator.AES256_CBC,"BC").getEncoded();
+        }
+    }
+    private class DecryptStream extends CodeStream {
+        byte[] doCoding(byte[] data, String alias) throws Exception  {
+            return ((RecipientInformation)new CMSEnvelopedData(data).getRecipientInfos().getRecipients().iterator().next()).getContent(getKey(alias), KeyStoreContainer.this.providerName);
+        }
+    }
+    public void decrypt(InputStream is, OutputStream os, String alias) throws Exception {
+        new DecryptStream().code(is, os, alias);
+    }
+    public void encrypt(InputStream is, OutputStream os, String alias) throws Exception {
+        new EncryptStream().code(is, os, alias);
     }
 }
