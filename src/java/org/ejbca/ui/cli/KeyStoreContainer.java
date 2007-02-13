@@ -32,7 +32,7 @@ import javax.security.auth.x500.X500Principal;
 
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 
-class KeyStoreContainer {
+public class KeyStoreContainer {
     private void setPassWord(boolean isKeystoreException) throws IOException {
         System.err.println((isKeystoreException ? "Setting key entry in keystore" : "Loading keystore")+". Give password of inserted card in slot:");
         char result[] = new BufferedReader(new InputStreamReader(System.in)).readLine().toCharArray();
@@ -45,9 +45,9 @@ class KeyStoreContainer {
     private final String providerName;
     private char passPhraseLoadSave[] = null;
     private char passPhraseGetSetEntry[] = null;
-    KeyStoreContainer(final String keyStoreType,
-                      final String providerClassName,
-                      final String storeID) throws NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, IOException, IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException {
+    public KeyStoreContainer(final String keyStoreType,
+                             final String providerClassName,
+                             final String storeID) throws NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, IOException, IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException {
         this( keyStoreType, providerClassName, storeID!=null ? storeID.getBytes():null);
     }
     KeyStoreContainer(final String keyStoreType,
@@ -69,7 +69,7 @@ class KeyStoreContainer {
     private void load(byte storeID[]) throws NoSuchAlgorithmException, CertificateException, IOException {
         this.keyStore.load(storeID!=null ? new ByteArrayInputStream(storeID):null, this.passPhraseLoadSave);
     }
-    byte[] storeKeyStore() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+    public byte[] storeKeyStore() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
         System.err.println("Next line will contain the identity identifying the keystore:");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         this.keyStore.store(baos, this.passPhraseLoadSave);
@@ -78,7 +78,7 @@ class KeyStoreContainer {
         System.err.println();
         return baos.toByteArray();
     }
-    KeyStore getKeyStore() {
+    public KeyStore getKeyStore() {
         return this.keyStore;
     }
     void setKeyEntry(String alias, Key key, Certificate chain[]) throws IOException, KeyStoreException {
@@ -93,7 +93,7 @@ class KeyStoreContainer {
         this.keyStore.deleteEntry(alias);
         System.err.println("Deleting certificate with alias "+alias+'.');
     }
-    byte[] delete(final String alias) throws Exception {
+    public byte[] delete(final String alias) throws Exception {
         if ( alias!=null )
             deleteAlias(alias);
         else {
@@ -103,7 +103,7 @@ class KeyStoreContainer {
         }
         return storeKeyStore();
     }
-    Key getKey(String alias) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException, IOException {
+    public Key getKey(String alias) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException, IOException {
         try {
             return this.keyStore.getKey(alias, this.passPhraseGetSetEntry);
         } catch (UnrecoverableKeyException e1) {
@@ -141,8 +141,8 @@ class KeyStoreContainer {
         kpg.initialize(size);
         return kpg.generateKeyPair();
     }
-    byte[] generate( final int keySize,
-                     final String keyEntryName) throws Exception {
+    public byte[] generate( final int keySize,
+                            final String keyEntryName) throws Exception {
         // Generate the RSA Keypair
         final String keyAlgName = "RSA";
         final String sigAlgName = "SHA1withRSA";
@@ -154,7 +154,7 @@ class KeyStoreContainer {
         setKeyEntry(keyEntryName, keyPair.getPrivate(), chain);
         return storeKeyStore();
     }
-    char[] getPassPhraseGetSetEntry() {
+    public char[] getPassPhraseGetSetEntry() {
         return passPhraseGetSetEntry;
     }
     static void move(final String providerClassName,
