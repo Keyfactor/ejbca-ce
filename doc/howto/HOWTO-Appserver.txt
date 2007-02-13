@@ -28,8 +28,6 @@ set 'weblogic-oracle-columntype' - which is specific for Weblogic.
 Edit conf/web.properties:
 set 'httpserver.pubhttp=7001' - default http port of Weblogic is 7001, default of EJBCA on JBoss is 8080.
 set 'httpserver.privhttps=7002' - default SSL port of Weblogic is 7002, default of EJBCA on JBoss is 8443.
-set 'web.jsfimpl=nojsf', this must be done until we have fixed JSF configuration for weblogic.
-  MyFaces JSF should work with Weblogic 9.x, if you have a sample configuration for JSF in weblogic, please let us know.
 set 'ejbcaws.enabled=false', this must be done until we have fixed JaxWS configuration for weblogic.
 
 Edit conf/xkms.properties:
