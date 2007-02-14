@@ -63,6 +63,7 @@ administrator, who can be found on the sourceforge project page.
 <li>Jon Bendtsen, jon.bendtsen(at)laerdal.dk, OpenVPN installer package enrollment.</li>
 <li>Henrik Schack, henrik(at)schack.dk, Documentation about dns alt name for Cisco PIX.</li>
 <li>Alexander Horvath, alex(at)gekom.biz, Patch to make OCSP compatible with Thunderbird/Firefox.</li>
+<li>Henrik Anreasson, han(at)han.pp.se, Debian package, installer and documentation improvements, lots of testing and suggestions.</li>
 </ul>
     </section>
   </body>
