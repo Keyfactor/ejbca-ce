@@ -142,7 +142,8 @@ JAVA_OPTS="-server -Xms128m -Xmx512m"
 Note that the installation must be done with a user with privileges to write to JBOSS_HOME and subdirs. 
 </p><p>
 1) Set the environment variable JBOSS_HOME to where your JBoss is installed,
-example /opt/jboss-4.0.2 or C:\jboss-4.0.3SP1. 
+example /opt/jboss-4.0.2 or C:\jboss-4.0.3SP1.
+<br/>Also make sure the right java tools (javac/keytool) are available in your system PATH, ie. /usr/local/jdk1.5.0_11/bin.
 </p><p>
 2) Copy conf/ejbca.properties.sample to conf/ejbca.properties and customize if needed.
 The default values works fine for a test installaton. 
