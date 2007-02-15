@@ -36,6 +36,7 @@ import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
 import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.RecipientInformation;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 
 public class KeyStoreContainer {
@@ -49,6 +50,7 @@ public class KeyStoreContainer {
     }
     private final KeyStore keyStore;
     private final String providerName;
+    private final String ecryptProviderName;
     private char passPhraseLoadSave[] = null;
     private char passPhraseGetSetEntry[] = null;
     public KeyStoreContainer(final String keyStoreType,
@@ -59,7 +61,9 @@ public class KeyStoreContainer {
     KeyStoreContainer(final String keyStoreType,
                       final String providerClassName,
                       final byte storeID[]) throws NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, IOException, IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException {
+        Security.addProvider( new BouncyCastleProvider() );
         this.providerName = getProviderName(providerClassName);
+        this.ecryptProviderName = getProviderName("com.ncipher.fixup.provider.nCipherRSAPrivateEncrypt");
         System.err.println("Creating KeyStore of type "+keyStoreType+" with provider "+this.providerName+(storeID!=null ? (" with ID "+new String(storeID)) : "")+'.');
         this.keyStore = KeyStore.getInstance(keyStoreType, this.providerName);
          try {
@@ -200,12 +204,12 @@ public class KeyStoreContainer {
         byte[] doCoding(final byte data[], String alias) throws Exception {    
             final CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
             edGen.addKeyTransRecipient( keyStore.getCertificate(alias).getPublicKey(), "hej".getBytes() );
-            return edGen.generate(new CMSProcessableByteArray(data), CMSEnvelopedDataGenerator.AES256_CBC,"BC").getEncoded();
+            return edGen.generate(new CMSProcessableByteArray(data), CMSEnvelopedDataGenerator.DES_EDE3_CBC, "BC").getEncoded();
         }
     }
     private class DecryptStream extends CodeStream {
         byte[] doCoding(byte[] data, String alias) throws Exception  {
-            return ((RecipientInformation)new CMSEnvelopedData(data).getRecipientInfos().getRecipients().iterator().next()).getContent(getKey(alias), KeyStoreContainer.this.providerName);
+            return ((RecipientInformation)new CMSEnvelopedData(data).getRecipientInfos().getRecipients().iterator().next()).getContent(getKey(alias), KeyStoreContainer.this.ecryptProviderName);
         }
     }
     public void decrypt(InputStream is, OutputStream os, String alias) throws Exception {

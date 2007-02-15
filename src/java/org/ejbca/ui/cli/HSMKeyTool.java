@@ -20,7 +20,7 @@ import java.io.FileOutputStream;
 
 /**
  * @author lars
- * @version $Id: HSMKeyTool.java,v 1.15 2007-02-13 21:23:15 primelars Exp $
+ * @version $Id: HSMKeyTool.java,v 1.16 2007-02-15 14:15:46 primelars Exp $
  *
  */
 public class HSMKeyTool {
@@ -82,14 +82,15 @@ public class HSMKeyTool {
                 else
                     KeyStoreContainer.move(args[2], args[3], args[4], args[5]);
             } else
-                System.err.println("Use \"" + args[0]+" "+CREATE_CA_SWITCH+"\" or \"" +
+                System.err.println("Use \"" +
+                                   args[0]+" "+CREATE_CA_SWITCH+"\" or \"" +
                                    args[0]+" "+GENERATE_SWITCH+"\" or \"" +
                                    args[0]+" "+DELETE_SWITCH+"\" or \"" +
                                    args[0]+" "+TEST_SWITCH+"\" or \"" +
                                    args[0]+" "+CREATE_KEYSTORE_SWITCH+"\" or \"" +
                                    args[0]+" "+CREATE_KEYSTORE_MODULE_SWITCH+"\" or \"" +
-                                   args[0]+" "+ENCRYPT_SWITCH+
-                                   args[0]+" "+DECRYPT_SWITCH+
+                                   args[0]+" "+ENCRYPT_SWITCH+"\" or \"" +
+                                   args[0]+" "+DECRYPT_SWITCH+"\" or \"" +
                                    args[0]+" "+MOVE_SWITCH+"\".");
         } catch (Throwable e) {
             e.printStackTrace(System.err);
