@@ -2042,7 +2042,16 @@ Restart from scratch: 'sudo /etc/init.d/nfast restart'.
 </p>
 <strong>2. Create keys that should be used on the NFast card</strong>
 <p>
-Login as the user that is running the application server. This user must be a member of the nfast group. The preload command (see below) must always be called as the same user unless the directory /opt/nfast/kmdata/preload is removed.
+Login as the user that is running the application server. This user must be a member of the nfast group. 
+<br/>
+The following environment variables should be set for this user:
+<ul>
+<li>JAVA_HOME (/usr/local/jdk1.5.0_11 or similar)</li>
+<li>JBOSS_HOME (/home/jboss/jboss-4.0.5.GA or similar)</li>
+<li>EJBCA_HOME (/home/jboss/ejbca or similar)</li>
+<li>NFAST_HOME (/opt/nfast)</li>
+</ul>
+The preload command (see below) must always be called as the same user unless the directory /opt/nfast/kmdata/preload is removed.
 Load the card set so that keys protected by the card set could be generated:
 </p>
 <source>
@@ -2090,7 +2099,7 @@ Next line will contain the identity identifying the keystore:
 jboss@donny:~$
 </source>
 <p>
-Different CAs may share the same keys tore but may also have different key stores. Different key store may be protected by different card sets. Use the '-c' parameter of preload to select card set when you are generating new keys. Only one key set should be loaded at a time when creating keys.
+Different CAs may share the same keystore but may also have different key stores. Different key store may be protected by different card sets. Use the '-c' parameter of preload to select card set when you are generating new keys. Only one key set should be loaded at a time when creating keys.
 </p>
 <p>
 The last key in the example is used to check the status of the HSM by EJBCA.
@@ -2353,7 +2362,7 @@ of the slot in case of a container restart.
 
 <subsection name="Writing support for new HSMs">
 <p>
-EJBCA have a moduler API for HSMs, HardCAToken. For every CA that is created
+EJBCA have a modular API for HSMs, HardCAToken. For every CA that is created
 a HardCAToken object is also created. This object contains among other
 things references to keys (or the keys themselves of a soft token is used).
 
