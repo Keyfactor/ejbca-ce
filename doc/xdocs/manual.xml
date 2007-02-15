@@ -2173,13 +2173,15 @@ at boot time. Use the "-np" switch to the starting script if you don't want prel
 <source>$EJBCA_HOME/bin/nCipherJboss.sh -np start</source>
 <strong>Setting public exponent.</strong>
 <p>
-To shoose the public exponent the "nCipherHSM.sh" script can not be used. nCipher has not implemented the initialising method of "KeyPairGenerator" that is
+To choose the public exponent the "nCipherHSM.sh" script can not be used. nCipher has not implemented the initialization method of "KeyPairGenerator" that is
 used to set the public exponent.
-But it is another way to generate keys whith the public exponent as a parameter. You got to have this before you start:
-<ul>A card that belongs to a 1/n card set in the nCipher reader</ul>
-<ul>A keystore protected by this card set</ul>
+But there is another way to generate keys whith the public exponent as a parameter. You must have this before you start:
+<ul>
+<li>A card that belongs to a 1/n card set in the nCipher reader</li>
+<li>A keystore protected by this card set</li>
+</ul>
 The keystore may be created with "$EJBCA_HOME/bin/nCipherHSM.sh createKeyStore" or "$EJBCA_HOME/bin/nCipherHSM.sh generate ...". Put the ID of the
-keystore(same as is used in the EJBCA web GUI) in a file. This file may not contain any other characters other than the characters of the ID. Check that the
+keystore (same as is used in the EJBCA web GUI) in a file. This file may not contain any other characters other than the characters of the ID. Check that the
 length of the file is 40 byte.
 If the file is called "single.jks" then the key is created like this:
 </p>
