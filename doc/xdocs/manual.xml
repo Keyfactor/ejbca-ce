@@ -2051,7 +2051,14 @@ The following environment variables should be set for this user:
 <li>EJBCA_HOME (/home/jboss/ejbca or similar)</li>
 <li>NFAST_HOME (/opt/nfast)</li>
 </ul>
+</p>
+<note>
 The preload command (see below) must always be called as the same user unless the directory /opt/nfast/kmdata/preload is removed.
+<br/>If you get a "HostDataAccessDenied" error when running preload or starting JBoss, it is beacuse the
+file permissions on the directory /opt/nfast/kmdata/preload is wrong. It's probably because you (sometime) ran 
+preload as another user, such as root or nfast.
+</note>
+<p>
 Load the card set so that keys protected by the card set could be generated:
 </p>
 <source>
