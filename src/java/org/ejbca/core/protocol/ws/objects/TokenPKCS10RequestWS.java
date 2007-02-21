@@ -10,36 +10,49 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+
 package org.ejbca.core.protocol.ws.objects;
 
-import java.security.cert.CertificateEncodingException;
+import org.bouncycastle.jce.PKCS10CertificationRequest;
 
-import org.ejbca.util.Base64;
+/**
+ * Class is a WS representation of a PKCS10 request.
+ * 
+ * 
+ * @author Philip Vendil 2007 feb 8
+ *
+ * @version $Id: TokenPKCS10RequestWS.java,v 1.1 2007-02-21 09:11:13 herrvendil Exp $
+ */
 
-public class Certificate implements ITokenCertificateResponseWS {
+public class TokenPKCS10RequestWS implements ITokenCertificateRequestWS{
+
+	private byte[] pkcs10Data = null;
+
+	public TokenPKCS10RequestWS(){}
 	
-	private byte[] certificateData = null;
-	
-	public Certificate(){
-		
+	/**
+	 * Constructor creating a WS compliant value object from a PKCS10
+	 * @param pkcs10 
+	 */
+	public TokenPKCS10RequestWS(PKCS10CertificationRequest pkcs10){
+		this.pkcs10Data = pkcs10.getEncoded();
 	}
-
-	public Certificate(java.security.cert.Certificate cert) throws CertificateEncodingException{
-		certificateData = Base64.encode(cert.getEncoded());
+	
+	/**
+	 * 
+	 * @return the byte representation of the PKCS10 data
+	 */
+	public byte[] getPkcs10Data() {
+		return pkcs10Data;
 	}
 
 	/**
-	 * @return Returns the certificateData in Base64 encoded format
+	 * 
+	 * @param pkcs10Data the byte representation of the PKCS10 data
 	 */
-	public byte[] getCertificateData() {
-		return certificateData;
+	public void setPkcs10Data(byte[] pkcs10Data) {
+		this.pkcs10Data = pkcs10Data;
 	}
-
-	/**
-	 * @param certificateData The certificateData to set, in Base64 encoded format.
-	 */
-	public void setCertificateData(byte[] certificateData) {
-		this.certificateData = certificateData;
-	}
-
+	
+	
 }

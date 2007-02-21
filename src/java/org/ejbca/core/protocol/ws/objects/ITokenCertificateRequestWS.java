@@ -10,36 +10,19 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+
 package org.ejbca.core.protocol.ws.objects;
 
-import java.security.cert.CertificateEncodingException;
+/**
+ * Interface indicationg this is a ITokenCertificateRequest, either
+ * a PKCS10 or KeyStore
+ * 
+ * 
+ * @author Philip Vendil 2007 feb 8
+ *
+ * @version $Id: ITokenCertificateRequestWS.java,v 1.1 2007-02-21 09:11:12 herrvendil Exp $
+ */
 
-import org.ejbca.util.Base64;
-
-public class Certificate implements ITokenCertificateResponseWS {
-	
-	private byte[] certificateData = null;
-	
-	public Certificate(){
-		
-	}
-
-	public Certificate(java.security.cert.Certificate cert) throws CertificateEncodingException{
-		certificateData = Base64.encode(cert.getEncoded());
-	}
-
-	/**
-	 * @return Returns the certificateData in Base64 encoded format
-	 */
-	public byte[] getCertificateData() {
-		return certificateData;
-	}
-
-	/**
-	 * @param certificateData The certificateData to set, in Base64 encoded format.
-	 */
-	public void setCertificateData(byte[] certificateData) {
-		this.certificateData = certificateData;
-	}
+public interface ITokenCertificateRequestWS {
 
 }
