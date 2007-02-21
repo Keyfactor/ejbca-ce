@@ -27,14 +27,19 @@ import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
  * 
  * @author Philip Vendil
  *
- * $Id: HardTokenDataWS.java,v 1.1 2007-02-21 09:11:12 herrvendil Exp $
+ * $Id: HardTokenDataWS.java,v 1.2 2007-02-21 12:50:31 herrvendil Exp $
  */
 public class HardTokenDataWS {
 
 	public static final int TOKENTYPE_SWEDISHEID = SwedishEIDProfile.TYPE_SWEDISHEID;
 	public static final int TOKENTYPE_ENHANCEDEID = EnhancedEIDProfile.TYPE_ENHANCEDEID;
 	
+	public static final String LABEL_REGULARCARD   = "regularcard";
+	public static final String LABEL_TEMPORARYCARD = "temporarycard";
+	public static final String LABEL_PROJECTCARD   = "projectcard";
+	
 	private int tokenType = 0;
+	private String label = null;
 	private String hardTokenSN = null;
 	private String copyOfSN = null;
 	private List<String> copies = new ArrayList();
@@ -49,6 +54,7 @@ public class HardTokenDataWS {
 	 * constructor should be used on the server side of EJBCA
 	 * 
 	 * @param tokenType one of the TOKENTYPE_ constants
+	 * @param label indicating the use of the token, one of the LABEL_ constants
 	 * @param hardTokenSN the SN of the hard token
 	 * @param copyOfSN of this is a copy of another hard token, specify its SN otherwise use null.
 	 * @param copies if there is copies of this hard token a list of serial number is specified.
@@ -56,9 +62,10 @@ public class HardTokenDataWS {
 	 * @param certificates the certificate stored on the token
 	 * @param encKeyKeyRecoverable if the token have a special encryption key it should be specified if it is recoverable or not.
 	 */
-	public HardTokenDataWS(int tokenType, String hardTokenSN, String copyOfSN, List<String> copies, List<PINDataWS> pinDatas, List<Certificate> certificates, boolean encKeyKeyRecoverable) {
+	public HardTokenDataWS(int tokenType, String label, String hardTokenSN, String copyOfSN, List<String> copies, List<PINDataWS> pinDatas, List<Certificate> certificates, boolean encKeyKeyRecoverable) {
 		super();
 		this.tokenType = tokenType;
+		this.label = label;
 		this.hardTokenSN = hardTokenSN;
 		this.copyOfSN = copyOfSN;
 		this.copies = copies;
@@ -71,14 +78,16 @@ public class HardTokenDataWS {
 	 * Constuctor that should be used with the genTokenCertificates request
 	 * 
 	 * @param tokenType one of the TOKENTYPE_ constants
+	 * @param label indicating the use of the token, one of the LABEL_ constants
 	 * @param hardTokenSN the SN of the hard token
 	 * @param copyOfSN of this is a copy of another hard token, specify its SN otherwise use null.
 	 * @param pinDatas a List of pin datas with PIN and PUK
 	 * @param encKeyKeyRecoverable if the token have a special encryption key it should be specified if it is recoverable or not.
 	 */
-	public HardTokenDataWS(int tokenType, String hardTokenSN, String copyOfSN, List<PINDataWS> pinDatas, boolean encKeyKeyRecoverable) {
+	public HardTokenDataWS(int tokenType, String label, String hardTokenSN, String copyOfSN, List<PINDataWS> pinDatas, boolean encKeyKeyRecoverable) {
 		super();
 		this.tokenType = tokenType;
+		this.label = label;
 		this.hardTokenSN = hardTokenSN;
 		this.copyOfSN = copyOfSN;
 		this.pinDatas = pinDatas;
@@ -197,6 +206,13 @@ public class HardTokenDataWS {
      */
 	public void setTokenType(int tokenType) {
 		this.tokenType = tokenType;
+	}
+
+	/**
+	 * @return the label indicating the use of the token, one of the LABEL_ constants
+	 */
+	public String getLabel() {
+		return label;
 	}
 	
 	
