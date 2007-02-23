@@ -13,6 +13,7 @@
 
 package se.anatom.ejbca.ra;
 
+import java.rmi.ServerException;
 import java.util.Date;
 import java.util.Random;
 
@@ -33,7 +34,7 @@ import org.ejbca.core.model.ra.NotFoundException;
 
 /** Tests the UserData entity bean and some parts of UserAdminSession.
  *
- * @version $Id: TestUserAdminSession.java,v 1.4 2007-01-11 09:35:07 anatom Exp $
+ * @version $Id: TestUserAdminSession.java,v 1.5 2007-02-23 15:43:30 anatom Exp $
  */
 public class TestUserAdminSession extends TestCase {
 
@@ -134,6 +135,9 @@ public class TestUserAdminSession extends TestCase {
         	if (e.getCause() instanceof DuplicateKeyException) {
                 userexists = true;
 			}
+        } catch (ServerException e) {
+        	// glassfish throws serverexception, can you believe this?
+        	userexists = true;
         }
         assertTrue("User already exist does not throw DuplicateKeyException", userexists);
 

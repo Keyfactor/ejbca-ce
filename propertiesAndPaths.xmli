@@ -158,6 +158,7 @@
             <include name="client/jboss-j2ee.jar" />
         	<!-- glassfish -->
             <include name="lib/javaee.jar"/>
+            <include name="lib/appserv-rt.jar"/>
         	<!-- welogic -->
             <include name="server/lib/weblogic.jar"/>
         </fileset>

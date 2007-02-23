@@ -14,7 +14,6 @@
 package se.anatom.ejbca.ca.sign;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -68,7 +67,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.28 2007-02-21 10:13:38 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.29 2007-02-23 15:43:31 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -503,9 +502,7 @@ public class TestSignSession extends TestCase {
             usersession.addUser(admin,"swede","foo123","C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6",null,"swede@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsacaid);
             log.debug("created user: swede, foo123, C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6");
         } catch (RemoteException re) {
-            if (re.detail instanceof DuplicateKeyException) {
-                userExists = true;
-            }
+        	userExists = true;
         } catch (DuplicateKeyException dke) {
             userExists = true;
         }
