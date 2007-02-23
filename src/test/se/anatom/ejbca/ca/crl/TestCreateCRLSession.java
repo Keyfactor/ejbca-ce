@@ -53,7 +53,7 @@ import org.ejbca.util.cert.CrlExtensions;
 /**
  * Tests CRL session (agentrunner and certificatesession).
  *
- * @version $Id: TestCreateCRLSession.java,v 1.8 2006-08-12 09:49:54 herrvendil Exp $
+ * @version $Id: TestCreateCRLSession.java,v 1.9 2007-02-23 15:59:02 anatom Exp $
  */
 public class TestCreateCRLSession extends TestCase {
 
@@ -205,9 +205,7 @@ public class TestCreateCRLSession extends TestCase {
             usersession.addUser(admin,"foo","foo123","C=SE,O=AnaTom,CN=foo",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
             log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
         } catch (RemoteException re) {
-            if (re.detail instanceof DuplicateKeyException) {
-                userExists = true;
-            }
+        	userExists = true;
         } catch (DuplicateKeyException dke) {
             userExists = true;
         }
