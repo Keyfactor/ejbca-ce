@@ -36,7 +36,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * 
  * @author Philip Vendil 2006 sep 20
  *
- * @version $Id: PrinterManager.java,v 1.2 2006-09-22 13:48:16 herrvendil Exp $
+ * @version $Id: PrinterManager.java,v 1.3 2007-02-23 16:45:10 anatom Exp $
  */
 public class PrinterManager {
 	
@@ -53,14 +53,18 @@ public class PrinterManager {
 	 */
 	
 	public static String[] listPrinters(){
-		PrintRequestAttributeSet pras = new HashPrintRequestAttributeSet();
-		DocFlavor flavor = DocFlavor.BYTE_ARRAY.AUTOSENSE;
-		PrintService printService[] =  PrintServiceLookup.lookupPrintServices(flavor, pras);
-		String[] printerNames = new String[printService.length];
-		for(int i=0;i<printService.length;i++){
-			printerNames[i] = printService[i].getName();
-		}						
-		
+		String[] printerNames = new String[0];
+		try {
+			PrintRequestAttributeSet pras = new HashPrintRequestAttributeSet();
+			DocFlavor flavor = DocFlavor.BYTE_ARRAY.AUTOSENSE;
+			PrintService printService[] =  PrintServiceLookup.lookupPrintServices(flavor, pras);
+			printerNames = new String[printService.length];
+			for(int i=0;i<printService.length;i++){
+				printerNames[i] = printService[i].getName();
+			}			
+		} catch (Exception e) {
+			log.error("Error looking up printers: ", e);
+		}		
 		return printerNames;
 	}
 
