@@ -131,12 +131,13 @@ http://wiki.jboss.org/wiki/Wiki.jsp?page=JBossClassLoadingUseCases
 Glassfish
 =========
 
-This is only starter instruction to help you get started as a developer, EJBCA does not work on Glassfish yet.
-
-Currently EJBCA supports the MySQL 5.0 database on Glassfish.
+Currently EJBCA works with the MySQL 5.0 database on Glassfish.
 
 - Set the envorinment variable APPSRV_HOME to the directory where Glassfish is installed. For example APPSRV_HOME=/home/sun/glassfish.
   The variable must be available when working with EJBCA. 
+  
+- Do yourself a favor and configuer this in the JVM settings:
+    -XX:MaxPermSize=128m
   
 - Create a database and a database user with privileges.
 
@@ -148,17 +149,19 @@ Currently EJBCA supports the MySQL 5.0 database on Glassfish.
 - Start the application server: asadmin start-domain
 
 - Create a connection pool for your database.
-- Create a datasource called jdbc/EjbcaDS, in the admin console this is done in Resources->JDBC->JDBC Resources.
-    Use the connection pool you just created.
-
     When adding for example a MySQL Pool use values: Name=MysqlPool, Type=javax.sql.DataSource, Vendor=mysql. 
     It seems almost random which properties are pre-created on the next page...
+    For MySQL you must copy the jar mysql-connector-java-3.1.13-bin.jar to $GLASSFISH_HOME/lib
+
+- Create a datasource called jdbc/EjbcaDS, in the admin console this is done in Resources->JDBC->JDBC Resources.
+    Use the connection pool you just created.
 
 - Configure ejbca: 
     in conf/ejbca.properties you should at least set appserver.type, appserver.home and logging.log4j.config
     in conf/database.properties you should at least set datasource.jndi-name-prefix, and the database settings for your chosen database.
     in conf/web.properties you should set 'web.jsfimpl=nojsf'
     in conf/web.properties you should set 'ejbcaws.enabled=false', this must be done until we have fixed JaxWS configuration for glassfish.
+    in conf/web.properties you should set 'httpsserver.password=changeit', this is the default pwd that glassfish uses.
     in conf/xkms.properties you should set 'xkms.enabled=false', this must be done until we have fixed JaxWS configuration for glassfish.
     
 - Build ejbca:
@@ -170,6 +173,29 @@ Currently EJBCA supports the MySQL 5.0 database on Glassfish.
     
 - Install ejbca:
     ant install
+    
+ - Configure SSL in Glassfish
+    Configuration->HTTP Service->HTTP Listeners->http-listener-2
+       Client Authentication: Enabled
+       Certificate Nickname: s1as (get alias name by running 'keytool -list -v -keystore $GLASSFISH_HOME/domains/domain1/config/keystore.jks')
+       SSL3: Enabled
+       Ciphers Suite: All
+    Add CA certificate to cacerts file:
+       cd $EJBCA_HOME
+       bin/ejbca.sh ca getrootcert AdminCA1 ca.der -der
+       keytool -import -keystore cacerts.jks -file $EJBCA_HOME/ca.der
+    Restart server
+    (you would probably want to intsall your own server certificate from $EJBCA_HOME/p12/tomcat.jks instead of the 
+     default Glassfish cert, but I havent figured out how to do that...)
+    
+ - Access protected EJBCA pages
+    Import $EJBCA_HOME/p12/superadmin.p12 in your browser and go to url:
+      https://127.0.0.1:8181/ejbca/
+    You can now click "Administration" to get to the admin-GUI.
+    
+ 
+    
+    
 
 Creating deployment descriptors for Glassfish:
 ----------------------------------------------
