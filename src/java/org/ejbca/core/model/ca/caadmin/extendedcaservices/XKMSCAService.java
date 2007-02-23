@@ -20,7 +20,6 @@ import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -44,7 +43,7 @@ import org.w3c.dom.Document;
  *  The service have it's own certificate used for signing and encryption 
  * 
  * @author Philip Vendil
- * @version $Id: XKMSCAService.java,v 1.2 2006-12-27 11:13:56 anatom Exp $
+ * @version $Id: XKMSCAService.java,v 1.3 2007-02-23 10:33:15 anatom Exp $
  */
 public class XKMSCAService extends ExtendedCAService implements java.io.Serializable{
 
@@ -104,7 +103,10 @@ public class XKMSCAService extends ExtendedCAService implements java.io.Serializ
         	m_log.debug("Finished loading XKMS keystore");
       
             this.xKMSkey = (PrivateKey) keystore.getKey(PRIVATESIGNKEYALIAS, null);
-            this.xKMScertificatechain =  Arrays.asList(keystore.getCertificateChain(PRIVATESIGNKEYALIAS));      
+            // Due to a bug in Glassfish, we need to make sure all certificates in this 
+            // Array i of SUNs own provider
+            //this.xKMScertificatechain =  Arrays.asList(keystore.getCertificateChain(PRIVATESIGNKEYALIAS));      
+            this.xKMScertificatechain =  CertTools.getCertCollectionFromArray(keystore.getCertificateChain(PRIVATESIGNKEYALIAS), "SUN");
             this.info = new XKMSCAServiceInfo(getStatus(),
                                               getSubjectDN(),
                                               getSubjectAltName(), 

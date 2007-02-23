@@ -45,7 +45,7 @@ import org.ejbca.util.KeyTools;
 
 /** Handles and maintains the CA-part of the OCSP functionality
  * 
- * @version $Id: OCSPCAService.java,v 1.15 2007-01-16 11:43:25 anatom Exp $
+ * @version $Id: OCSPCAService.java,v 1.16 2007-02-23 10:33:15 anatom Exp $
  */
 public class OCSPCAService extends ExtendedCAService implements java.io.Serializable{
 
@@ -107,7 +107,10 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
         	m_log.debug("Finished loading OCSP keystore");
       
             this.ocspsigningkey = (PrivateKey) keystore.getKey(PRIVATESIGNKEYALIAS, null);
-            this.ocspcertificatechain =  Arrays.asList(keystore.getCertificateChain(PRIVATESIGNKEYALIAS));      
+            // Due to a bug in Glassfish, we need to make sure all certificates in this 
+            // Array i of SUNs own provider
+            //this.ocspcertificatechain =  Arrays.asList(keystore.getCertificateChain(PRIVATESIGNKEYALIAS));
+            this.ocspcertificatechain =  CertTools.getCertCollectionFromArray(keystore.getCertificateChain(PRIVATESIGNKEYALIAS), "SUN");
             this.info = new OCSPCAServiceInfo(getStatus(),
                                               getSubjectDN(),
                                               getSubjectAltName(), 

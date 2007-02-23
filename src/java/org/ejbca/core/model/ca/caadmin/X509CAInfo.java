@@ -13,6 +13,10 @@
  
 package org.ejbca.core.model.ca.caadmin;
 
+import java.security.NoSuchProviderException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
@@ -24,7 +28,7 @@ import org.ejbca.util.StringTools;
 /**
  * Holds nonsensitive information about a X509CA.
  *
- * @version $Id: X509CAInfo.java,v 1.9 2007-01-12 09:43:07 anatom Exp $
+ * @version $Id: X509CAInfo.java,v 1.10 2007-02-23 10:33:15 anatom Exp $
  */
 public class X509CAInfo extends CAInfo{
    
@@ -58,7 +62,21 @@ public class X509CAInfo extends CAInfo{
         this.expiretime = expiretime;
         this.catype = catype;
         this.signedby = signedby;
-        this.certificatechain = certificatechain;        
+        // Due to a bug in Glassfish, we need to make sure all certificates in this 
+        // Array i of SUNs own provider
+		try {
+			if (certificatechain != null) {
+		        X509Certificate[] certs = (X509Certificate[])certificatechain.toArray(new X509Certificate[0]);
+		        ArrayList list = CertTools.getCertCollectionFromArray(certs, "SUN");
+		        this.certificatechain = list;        				
+			} else {
+				this.certificatechain = null;
+			}
+		} catch (CertificateException e) {
+			throw new IllegalArgumentException(e);
+		} catch (NoSuchProviderException e) {
+			throw new IllegalArgumentException(e);
+		}
         this.catokeninfo = catokeninfo; 
         this.description = description;
         this.revokationreason = revokationreason;

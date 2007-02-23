@@ -33,6 +33,7 @@ import java.security.SecureRandom;
 import java.security.Security;
 import java.security.SignatureException;
 import java.security.cert.CRLException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -94,7 +95,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.35 2007-01-12 07:47:00 anatom Exp $
+ * @version $Id: CertTools.java,v 1.36 2007-02-23 10:33:16 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -760,6 +761,31 @@ public class CertTools {
         return ret;
     } // getCertsFromPEM
 
+   /** Converts a regular array of certificates into an ArrayList, using the provided provided.
+    * 
+    * @param certs Certificate[] of certificates to convert
+    * @param provider provider for example "SUN" or "BC", use null for the default provider (BC)
+    * @return An ArrayList of certificates in the same order as the passed in array
+    * @throws NoSuchProviderException 
+    * @throws CertificateException 
+    */
+    public static ArrayList getCertCollectionFromArray(Certificate[] certs, String provider) throws CertificateException, NoSuchProviderException {
+    	log.debug(">getCertCollectionFromArray: "+provider);
+    	ArrayList ret = new ArrayList();
+    	String prov = provider;
+    	if (prov == null) {
+    		prov = "BC";
+    	}
+    	for (int i=0; i < certs.length; i++) {
+    		CertificateFactory cf = CertificateFactory.getInstance("X.509", prov);
+    		Certificate cert = certs[i];
+    		X509Certificate x509cert = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(cert.getEncoded()));
+    		ret.add(x509cert);    		
+    	}
+    	log.debug("<getCertCollectionFromArray: "+ret.size());
+    	return ret;
+    }
+    
     /**
      * Returns a certificate in PEM-format.
      *

@@ -27,7 +27,6 @@ import java.security.cert.Certificate;
 import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -53,7 +52,7 @@ import org.ejbca.util.KeyTools;
 /** Handles and maintains the CA-part of the CMS message functionality.
  *  The service have it's own certificate used for signing and encryption 
  * 
- * @version $Id: CmsCAService.java,v 1.2 2006-12-28 13:51:15 anatom Exp $
+ * @version $Id: CmsCAService.java,v 1.3 2007-02-23 10:33:15 anatom Exp $
  */
 public class CmsCAService extends ExtendedCAService implements java.io.Serializable{
 
@@ -116,13 +115,16 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 				throw new IllegalArgumentException("Missing CMSKeyStorePass property.");
 
 			try {
-				m_log.debug("Loading keystore");
+				m_log.debug("Loading CMS keystore");
 				KeyStore keystore=KeyStore.getInstance("PKCS12", "BC");
 				keystore.load(new java.io.ByteArrayInputStream(Base64.decode(((String) data.get(KEYSTORE)).getBytes())),keystorepass.toCharArray());
-				m_log.debug("Finished loading keystore");
+				m_log.debug("Finished loading CMS keystore");
 
 				this.privKey = (PrivateKey) keystore.getKey(PRIVATESIGNKEYALIAS, null);
-				this.certificatechain =  Arrays.asList(keystore.getCertificateChain(PRIVATESIGNKEYALIAS));      
+                // Due to a bug in Glassfish, we need to make sure all certificates in this 
+                // Array i of SUNs own provider
+				//this.certificatechain =  Arrays.asList(keystore.getCertificateChain(PRIVATESIGNKEYALIAS));      
+	            this.certificatechain =  CertTools.getCertCollectionFromArray(keystore.getCertificateChain(PRIVATESIGNKEYALIAS), "SUN");
 				this.info = new CmsCAServiceInfo(getStatus(),
 						getSubjectDN(),
 						getSubjectAltName(), 
