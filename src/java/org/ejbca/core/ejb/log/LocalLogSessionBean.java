@@ -13,6 +13,7 @@
 
 package org.ejbca.core.ejb.log;
 
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.security.cert.X509Certificate;
 import java.sql.Connection;
@@ -146,7 +147,7 @@ import org.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.16 2007-01-16 11:42:54 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.17 2007-02-23 10:27:24 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 
@@ -210,8 +211,15 @@ public class LocalLogSessionBean extends BaseSessionBean {
             Properties[] properties = new Properties[propertyfiles.length];
             for (int i = 0; i < propertyfiles.length; i++) {
                 properties[i] = new Properties();
-                if (!(propertyfiles[i] == null || propertyfiles[i].trim().equals("")))
-                    properties[i].load(this.getClass().getResourceAsStream("/logdeviceproperties/" + propertyfiles[i].trim()));
+                if (!(propertyfiles[i] == null || propertyfiles[i].trim().equals(""))) {
+                	InputStream is = null;
+                	try {
+                		is = this.getClass().getResourceAsStream("/logdeviceproperties/" + propertyfiles[i].trim());
+                		properties[i].load(is);
+                	} finally {
+                		if (is != null) is.close();
+                	}
+                }
             }
 
             String[] factoryclasses = factoryclassesstring.split(";");
