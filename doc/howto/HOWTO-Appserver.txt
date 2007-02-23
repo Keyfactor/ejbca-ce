@@ -161,7 +161,6 @@ Currently EJBCA works with the MySQL 5.0 database on Glassfish.
     in conf/database.properties you should at least set datasource.jndi-name-prefix, and the database settings for your chosen database.
     in conf/web.properties you should set 'web.jsfimpl=nojsf'
     in conf/web.properties you should set 'ejbcaws.enabled=false', this must be done until we have fixed JaxWS configuration for glassfish.
-    in conf/web.properties you should set 'httpsserver.password=changeit', this is the default pwd that glassfish uses.
     in conf/xkms.properties you should set 'xkms.enabled=false', this must be done until we have fixed JaxWS configuration for glassfish.
     
 - Build ejbca:
