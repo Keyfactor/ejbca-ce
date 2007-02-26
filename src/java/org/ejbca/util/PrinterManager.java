@@ -36,7 +36,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * 
  * @author Philip Vendil 2006 sep 20
  *
- * @version $Id: PrinterManager.java,v 1.3 2007-02-23 16:45:10 anatom Exp $
+ * @version $Id: PrinterManager.java,v 1.4 2007-02-26 12:01:37 anatom Exp $
  */
 public class PrinterManager {
 	
@@ -62,7 +62,7 @@ public class PrinterManager {
 			for(int i=0;i<printService.length;i++){
 				printerNames[i] = printService[i].getName();
 			}			
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			log.error("Error looking up printers: ", e);
 		}		
 		return printerNames;
