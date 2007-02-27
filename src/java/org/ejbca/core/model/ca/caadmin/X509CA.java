@@ -126,7 +126,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.52 2007-02-11 18:44:51 herrvendil Exp $
+ * @version $Id: X509CA.java,v 1.53 2007-02-27 15:21:14 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -355,9 +355,10 @@ public class X509CA extends CA implements Serializable {
         X509Certificate cacert = (X509Certificate)getCACertificate();
         // If our desired after date is after the CA expires, we will not allow this
         // The CA will only issue certificates with maximum the same validity time as it-self
-        if (cacert != null) {
+        // We will not limit validity of a self signed cert (RootCA), because it is a renewal.
+        if ( (cacert != null) && !CertTools.isSelfSigned(cacert) ) {
             if (lastDate.after(cacert.getNotAfter())) {
-            	String msg = intres.getLocalizedMessage("signsession.limitingvalidity", lastDate.toString());
+            	String msg = intres.getLocalizedMessage("signsession.limitingvalidity", lastDate.toString(), cacert.getNotAfter());
             	log.info(msg);
                 lastDate = cacert.getNotAfter();
             }            
