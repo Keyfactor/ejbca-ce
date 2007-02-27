@@ -106,6 +106,13 @@
     <property name="adminweb.build" value="${tmp}/adminweb.war" />    
     <property name="adminwebwar" value="${dist.dir}/adminweb.war" />
 
+
+<!--
+    <property name="publicweb.src" value="${src}/publicweb" /> 
+-->
+    <property name="publicweb.src" value="${src}/newPublicWeb" />
+    <property name="publicwebwar" value="${dist.dir}/publicweb.war" />
+
     <property name="root.warsrc" value="${src}/publicweb/root" />
     <property name="rootwar" value="${dist.dir}/publicwebroot.war" />
 
