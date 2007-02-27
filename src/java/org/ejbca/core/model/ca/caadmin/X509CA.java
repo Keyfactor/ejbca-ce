@@ -126,7 +126,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.53 2007-02-27 15:21:14 anatom Exp $
+ * @version $Id: X509CA.java,v 1.54 2007-02-27 16:02:06 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -353,6 +353,14 @@ public class X509CA extends CA implements Serializable {
         	lastDate = firstDate;
         }
         X509Certificate cacert = (X509Certificate)getCACertificate();
+        
+        String dn = subject.getDN();        
+        // Check if this is a root CA we are creating
+        boolean isRootCA = false;
+        if ( (cacert == null) || ((cacert != null) && CertTools.stringToBCDNString(dn).equals(CertTools.getIssuerDN(cacert))) ) {
+        	isRootCA = true;
+        }
+
         // If our desired after date is after the CA expires, we will not allow this
         // The CA will only issue certificates with maximum the same validity time as it-self
         // We will not limit validity of a self signed cert (RootCA), because it is a renewal.
@@ -371,20 +379,17 @@ public class X509CA extends CA implements Serializable {
         certgen.setNotBefore(firstDate);
         certgen.setNotAfter(lastDate);
         certgen.setSignatureAlgorithm(sigAlg);
+
         // Make DNs
-        String dn = subject.getDN(); 
-        
         if(certProfile.getUseSubjectDNSubSet()){
-          dn= certProfile.createSubjectDNSubSet(dn);	
+        	dn= certProfile.createSubjectDNSubSet(dn);	
         }
         
         if(certProfile.getUseCNPostfix()){
           dn = CertTools.insertCNPostfix(dn,certProfile.getCNPostfix());	
         }
-        
-        
+                
         String altName = subject.getSubjectAltName(); 
-      
         if(certProfile.getUseSubjectAltNameSubSet()){
         	altName = certProfile.createSubjectAltNameSubSet(altName);
         }
@@ -398,11 +403,19 @@ public class X509CA extends CA implements Serializable {
         certgen.setSubjectDN(CertTools.stringToBcX509Name(dn, converter));
         // We must take the issuer DN directly from the CA-certificate otherwise we risk re-ordering the DN
         // which many applications do not like.
-        if (cacert == null) {
+        if (isRootCA) {
         	// This will be an initial root CA, since no CA-certificate exists
+        	// Or it is a root CA, since the cert is self signed. If it is a root CA we want to use the same encoding for subject and issuer,
+        	// it might have changed over the years.
+        	if (log.isDebugEnabled()) {
+        		log.debug("Using subject DN also as issuer DN, because it is a root CA");
+        	}
             X509Name caname = CertTools.stringToBcX509Name(getSubjectDN(), converter);
             certgen.setIssuerDN(caname);
         } else {
+        	if (log.isDebugEnabled()) {
+        		log.debug("Using issuer DN directly from the CA certificate");
+        	}
             certgen.setIssuerDN(cacert.getSubjectX500Principal());        	
         }
         certgen.setPublicKey(publicKey);
