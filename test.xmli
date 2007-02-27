@@ -41,6 +41,7 @@
                     <exclude name="**/sign/TestSignLotsOfCerts*" />
                     <include name="**/userdatasource/Test*" />
                     <include name="**/raadmin/Test*" />
+                    <include name="**/caadmin/TestRenewCA*" />
                     <include name="**/auth/Test*" />
                     <include name="**/store/Test*" />
                     <include name="**/sign/Test*" />
