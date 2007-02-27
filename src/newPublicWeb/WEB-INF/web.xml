@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!DOCTYPE web-app PUBLIC
+	"-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+	"http://java.sun.com/dtd/web-app_2_3.dtd">
+
+<web-app>
+  <display-name>New public web root</display-name>
+    <servlet>
+        <servlet-name>CertReqServlet</servlet-name>
+        <display-name>CertReqServlet</display-name>
+        <servlet-class>org.ejbca.ui.web.pub.CertReqServlet</servlet-class>
+        <init-param>
+            <param-name>responseTemplate</param-name>
+            <param-value>certInstT.html</param-value>
+        </init-param>
+        <init-param>
+            <param-name>responseIidTemplate</param-name>
+            <param-value>certInstIidT.html</param-value>
+        </init-param>
+    </servlet>
+    <servlet-mapping>
+      <servlet-name>CertReqServlet</servlet-name>
+      <url-pattern>/certreq</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>CertDist</servlet-name>
+        <display-name>CertDistServlet</display-name>
+        <servlet-class>org.ejbca.ui.web.pub.CertDistServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+	    <servlet-name>CertDist</servlet-name>
+	    <url-pattern>/certdist</url-pattern>
+    </servlet-mapping>
+
+<!-- JSTL is not used yet.
+  <taglib>
+    <taglib-uri>http://java.sun.com/jstl/fmt</taglib-uri>
+    <taglib-location>/WEB-INF/fmt.tld</taglib-location>
+  </taglib>
+  <taglib>
+    <taglib-uri>http://java.sun.com/jstl/core</taglib-uri>
+    <taglib-location>/WEB-INF/c.tld</taglib-location>
+  </taglib>
+  <taglib>
+    <taglib-uri>http://java.sun.com/jstl/sql</taglib-uri>
+    <taglib-location>/WEB-INF/sql.tld</taglib-location>
+  </taglib>
+  <taglib>
+    <taglib-uri>http://java.sun.com/jstl/x</taglib-uri>
+    <taglib-location>/WEB-INF/x.tld</taglib-location>
+  </taglib>
+-->
+
+</web-app>

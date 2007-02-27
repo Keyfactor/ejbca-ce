@@ -1,0 +1,9 @@
+<jboss-web>
+	<context-root>/new</context-root>
+<!--
+	<resource-ref>
+	    <res-ref-name>@datasource.jndi-name-prefix@@datasource.jndi-name@</res-ref-name>
+	    <jndi-name>@datasource.jndi-name-prefix@@datasource.jndi-name@</jndi-name>
+	</resource-ref>
+-->
+</jboss-web>

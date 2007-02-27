@@ -1,0 +1,124 @@
+/* basic elements */
+body, ul, li, p {
+    font-family: Georgia, Palatino, Times, serif;
+}
+
+body { 
+    color: #555753; 
+    background-color: #ffffff;
+    margin: 0px;
+    padding: 0px;
+}
+
+ul {
+    list-style-type:square;
+}
+
+li {
+    line-height: 16px;
+}    
+
+p { 
+    line-height: 120%;
+    margin-top: .5em;
+    margin-bottom: 1em; 
+    text-align: justify;
+}
+
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: "Trebuchet MS", verdana, arial, helvetica, sans-serif;
+    font-weight: bold;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    padding-bottom: 5px;
+}
+
+h1 {
+    font-size: 160%;
+    color: rgb(218, 92, 5);    
+}
+
+h3 { 
+    font-size: 100%;
+    font-style: italic;
+    font-weight: normal;
+    letter-spacing: 1px;
+    margin-top: 2em;
+    margin-right: 0px;
+    margin-bottom: 0.5em;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    border-bottom: 1px dashed black;
+}
+h4 {
+    font-size: 90%;
+    font-style: italic;
+    font-weight: normal;
+    border-bottom: 1px dashed black;
+}
+
+a { text-decoration: underline; }
+
+a:link { color:#0F3660} 
+a:visited { color:#009999} 
+a:hover { color:#000066}
+
+acronym { border-bottom: none; }
+
+/* Left column menu */
+
+.menucontainer {
+    float: left;
+    background-color: #EEEEEE;
+    margin: 0px;
+    width: 250px;
+    height: 100%;
+}
+
+.menu {
+    font-size : 90%;
+    padding: 3px 8px 5px 3px;
+    border-left: 1px solid #ddd;
+}
+
+.menu a { font-weight:normal; font-style: normal; color: #1081b9; text-decoration : none; }
+.menu a:link {   }
+.menu a:visited {  }
+.menu a:hover { text-decoration: underline; }
+.menu ul { margin: 0px 0px 0px 20px; padding: 0px; }
+.menu li  {  list-style-type: none; font-weight : normal ; }
+.menu ul ul li .sel { list-style-type: none; font-style : italic; }
+.menu ul ul li  { list-style-type: disc; font-weight : normal; }
+
+.menuheader {
+    font: italic normal 10pt georgia;
+    letter-spacing: 1px;
+    border-bottom: 1px dashed #688B9A;
+    margin-top: 8px;
+    margin-bottom: 5px;
+    padding: 2px;
+    padding-left: 5px;
+}
+
+/* Other */
+
+.content {
+    margin-left: 280px;
+    margin-right: 5px;
+    padding: 5px 5px 5px 10px;
+}
+
+.logobar {
+    background-color: #005B88;
+    
+    color: white;
+    font-size: 16pt;
+    font-style: italic;
+    padding-right: 10px;
+    margin: 0px;
+    padding-left: 18pt;
+    padding-top: 12pt;
+    padding-bottom: 6pt;
+    border-bottom: 1px solid #ddd;
+}
