@@ -1,4 +1,4 @@
-<%@ include file="header.inc" %>
+<%@ include file="header.jsp" %>
 <p>Please give your username and password, paste the PEM-formated PKCS10 certification request into the field below and
    click OK to fetch your certificate. 
 </p><p>
