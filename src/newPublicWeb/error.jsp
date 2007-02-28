@@ -1,6 +1,6 @@
 <%@ page isErrorPage="true" %>
 
-<%@ include file="header.inc" %>
+<%@ include file="header.jsp" %>
 <h2>@EJBCA@ Certificate Enrollment Error</h2>
 <%
 	String isException = (String)request.getAttribute("Exception");
