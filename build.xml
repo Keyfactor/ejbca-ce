@@ -189,11 +189,13 @@
         <war destfile="${publicwebwar}" webxml="${publicweb.src}/WEB-INF/web.xml">
             <fileset dir="${publicweb.src}" excludes="WEB-INF/web.xml" />
         </war>
+<!-- Temporary stuff to ease development.
         <copy file="${publicwebwar}"
         	todir="/usr/local/jboss-4.0.5.GA/server/default/deploy/ejbca.ear" />
         <copy file="${dist.dir}/ejbca-ejb.jar"
         	todir="/usr/local/jboss-4.0.5.GA/server/default/deploy/ejbca.ear" />
     	<touch file="/usr/local/jboss-4.0.5.GA/server/default/deploy/ejbca.ear/META-INF/application.xml" />
+-->
     </target>   
 
     <!-- =================================================================== -->
@@ -329,7 +331,7 @@
     <!-- =================================================================== -->
     <!-- Build CA-ear                                                        -->
     <!-- =================================================================== -->
-	<target name="ca.ear" depends="jsflibs, apply.war, status.war, cmp.war, healthcheck.war, webdist.war, adminweb.war, publicweb.war, publicwebroot.war, ejbca-ejb.jar, ejbca-util.jar, ejbcaws.war, ejbcaws.client, xkms.war, xkms.client">
+	<target name="ca.ear" depends="jsflibs, apply.war, status.war, cmp.war, healthcheck.war, webdist.war, adminweb.war, publicwebroot.war, ejbca-ejb.jar, ejbca-util.jar, ejbcaws.war, ejbcaws.client, xkms.war, xkms.client">
         <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml"> 
             <fileset dir="${eardd.src}">
                 <exclude name="META-INF/application.xml" />
