@@ -172,7 +172,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.29 2007-02-11 18:48:23 herrvendil Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.30 2007-03-01 16:18:55 anatom Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
@@ -1767,6 +1767,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                     break;
                 case SecConst.CERTPROFILE_FIXED_ROOTCA:
                     returnval = RootCACertificateProfile.CERTIFICATEPROFILENAME;
+                    break;
+                case SecConst.CERTPROFILE_FIXED_OCSPSIGNER:
+                    returnval = OCSPSignerCertificateProfile.CERTIFICATEPROFILENAME;
                     break;
                 case SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH:
                     returnval = HardTokenAuthCertificateProfile.CERTIFICATEPROFILENAME;
