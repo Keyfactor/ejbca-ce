@@ -18,20 +18,17 @@
           CAInfo ca = caadminsession.getCAInfo(admin, caid);
           String urlsubjectdn = URLEncoder.encode(ca.getSubjectDN(), "UTF-8"); 
   %>
-  <hr>
-  <div align="center">CA: <%= ca.getName() %></div>
-  </p>
-  <div align="center">
-  	<a href="../certdist?cmd=crl&issuer=<%= urlsubjectdn %>">DER format</a> | 
-  	<a href="../certdist?cmd=crl&format=PEM&issuer=<%= urlsubjectdn %>">PEM format</a> | 
-  	<a href="../certdist?cmd=crl&issuer=<%= urlsubjectdn %>&moz=y">Import </a>in Mozilla/Netscape
-  </div>
-  <div align="center">
+  <h2>CA: <%= ca.getName() %></h2>
+  <p>The Certificate Revocation List is available in three ways:
+  <ul>
+  	<li><a href="../certdist?cmd=crl&issuer=<%= urlsubjectdn %>">DER format</a></li> 
+  	<li><a href="../certdist?cmd=crl&format=PEM&issuer=<%= urlsubjectdn %>">PEM format</a></li> 
+  	<li><a href="../certdist?cmd=crl&issuer=<%= urlsubjectdn %>&moz=y">Mozilla/Netscape direct import</a></li>
+  </ul>
   <%
       }
   } catch(Exception ex) {
       ex.printStackTrace();
   }                                             
   %>
-  </div>
 <%@ include file="footer.inc" %>

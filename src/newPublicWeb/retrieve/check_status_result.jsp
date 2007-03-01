@@ -15,7 +15,7 @@ try  {
     if (serno != null) serno=serno.trim();
     if ((dn == null) || (serno == null)) {
 %>
-<div align="center">Usage: revoked.jsp?issuer=<DN>&serno=<serial number> 
+		<div align="center">Usage: check_status_result.jsp?issuer=<DN>&serno=<serial number> 
   <%
     } else {
         InitialContext ctx = new InitialContext();

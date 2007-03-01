@@ -1,5 +1,5 @@
 <%@ include file="header.jsp" %>
-  <h1 class="title">l@EJBCA@ certificate/CRL retrieval</h1>
+  <h1 class="title">@EJBCA@ fetch latest certificate</h1>
 <FORM ACTION="../certdist" ENCTYPE=x-www-form-encoded METHOD="GET">
   <p>
   Give subject DN to fetch users latest certificate.<BR>

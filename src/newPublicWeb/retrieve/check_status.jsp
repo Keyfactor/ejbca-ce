@@ -1,18 +1,21 @@
 <%@ include file="header.jsp" %>
-  <h1 class="title">check_status.jsp</h1>
-  <FORM ACTION="check_status_result.jsp" ENCTYPE=x-www-form-encoded METHOD="GET">
-  <div align="center">Enter serialnumber of certificate and click 'Check revocation'
-    to see if the certificate is revoked.
-    <INPUT TYPE="hidden" NAME="cmd" VALUE="revoked">
-    <BR>
-    Issuer DN
-    <INPUT NAME="issuer" TYPE=text SIZE=30 VALUE="c=SE, O=AnaTom, CN=TestCA">
-    <br>
-    Serial number (hex)
-    <INPUT NAME="serno" TYPE=text SIZE=30 VALUE="">
-    <br>
-    <BR>
-    <INPUT type="submit" value="Check revocation">
-  </div>
-</FORM>
+<h1 class="title">Check Certificate Status</h1>
+<p>Enter the serial number of a certificate and click 'Check revocation'
+  to see if the certificate is revoked.
+  <br />
+<form action="check_status_result.jsp" enctype=x-www-form-encoded method="GET">
+  <fieldset>
+    <legend>Certificate data</legend>
+	<input type="hidden" name="cmd" value="revoked">
+	<label for="issuer">Issuer DN</label>
+	<input name="issuer" type=text size=30 value="c=SE, O=AnaTom, CN=TestCA">
+	<br>
+	<label for="serno">Serial number (hex)</label>
+	<input name="serno" type=text size=30 value="">
+	<br>
+	<br>
+	<input type="submit" value="Check revocation">
+  </fieldset>
+</form>
 <%@ include file="footer.inc" %>
+
