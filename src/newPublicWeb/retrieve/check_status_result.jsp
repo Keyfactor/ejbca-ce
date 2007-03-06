@@ -3,11 +3,9 @@
 <%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.math.BigInteger,org.ejbca.core.ejb.ca.store.*,org.ejbca.core.model.ca.crl.RevokedCertInfo,org.bouncycastle.util.encoders.Hex, org.ejbca.core.model.log.Admin,org.ejbca.ui.web.RequestHelper"%>
 <%@ include file="header.jsp" %>
 <%
-  RequestHelper.setDefaultCharacterEncoding(request);
+    RequestHelper.setDefaultCharacterEncoding(request);
 %>
-<h1>Check certificate with issuer '<%=request.getParameter("issuer")%>' 
-  and serial number '<%=request.getParameter("serno")%>'</h1> 
-
+<h1>Certificate Status</h1>
 <%
 try  {
     String dn=request.getParameter("issuer");
@@ -16,28 +14,33 @@ try  {
     if ((dn == null) || (serno == null)) {
 %>
 		<div align="center">Usage: check_status_result.jsp?issuer=<DN>&serno=<serial number> 
-  <%
+<%
     } else {
         InitialContext ctx = new InitialContext();
         ICertificateStoreSessionHome home = (ICertificateStoreSessionHome) PortableRemoteObject.narrow(
         ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class );
         ICertificateStoreSessionRemote store = home.create();
-        RevokedCertInfo revinfo = store.isRevoked(new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr()), dn, new BigInteger(Hex.decode(serno)));
+        RevokedCertInfo revinfo = store.isRevoked(new Admin(Admin.TYPE_PUBLIC_WEB_USER, 
+        								request.getRemoteAddr()), dn, new BigInteger(Hex.decode(serno)));
         if (revinfo != null) {
-            if (revinfo.getReason() != RevokedCertInfo.NOT_REVOKED) {
-
 %>
-  <b>REVOKED</b><br>
-  RevocationDate is '<%=revinfo.getRevocationDate()%>' and reason '<%=revinfo.getReason()%>'. 
+        	<p>Issuer: '<%=request.getParameter("issuer")%>'</p> 
+        	<p>Serial number <%=request.getParameter("serno")%></p>
+<%
+            if (revinfo.getReason() != RevokedCertInfo.NOT_REVOKED) {
+%>
+  <h1>The certificate has been REVOKED!</h1>
+  <p>The revocation date is <%=revinfo.getRevocationDate()%>.<br /> 
+  The reason for revocation was '<%=revinfo.getReason()%>'. 
 <%
             } else {
 %>
-  <b>NOT REVOKED</b> 
+  <p>The certificate has <strong>NOT</strong> been revoked.
 <%
             }
         } else {
 %>
-  <b>Certificate does not exist</b> 
+  <p>The certificate does not exist!</p> 
 <%
         }
     }

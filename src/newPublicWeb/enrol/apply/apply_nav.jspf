@@ -1,0 +1,119 @@
+<script type="text/javascript">
+<!--
+	var plugin;
+	function myDeclare() {
+	   if (navigator.appName.indexOf("Explorer") == -1) {
+	      explorer = false;
+	      plugin = navigator.mimeTypes["application/x-iid"];
+	   } else {
+	      explorer = true;
+	      plugin = ControlExists("IID.iIDCtl");
+	   }
+	   if (plugin) {
+	      if (explorer)
+	         document.writeln("<object name=\"iID\" classid='CLSID:5BF56AD2-E297-416E-BC49-00B327C4426E\" width=\"0\" height=\"0\"></object>");
+	      else
+	         document.writeln("<object name=\"iID\" type=\"application/x-iid\" width=\"0\" height=\"0\"></object>");
+	   }
+	}
+	function selectKey() {
+	   if ( plugin ) {
+	      document.writeln("Plugin installed<br>");
+	      var doTryNext = true;
+	      for ( i=0; doTryNext; i++ ) {
+	         sKey = document.iID.EnumProperty('Key',i);
+	         doTryNext = sKey!="";
+	         if ( doTryNext ) {
+	            aKey = sKey.split(";");
+		    if ( parseInt(aKey[2],16)<0x47 )
+	               document.writeln("<option value=\""+sKey+"\">Slot: "+aKey[0]+". Key label: "+aKey[3]+". Key type: "+aKey[4]+". Key size: "+aKey[6]+".</option>");
+	         }
+	         
+	      }
+	   }
+	}
+	function generate_pkcs10() {
+	   if ( plugin ) {
+	      document.iID.SetProperty('Base64', 'true');
+	      document.iID.SetProperty('URLEncode', 'false');
+	      document.iID.SetProperty('Subject', "2.5.4.5=197205250777");
+	      aKey = document.netIdForm.tokenKey.value.split(";");
+	      document.iID.SetProperty('KeyId', aKey[2]); 
+	      document.iID.SetProperty('ActiveSlot', aKey[0]); 
+	      rv = document.iID.Invoke('CreateRequest');
+	      if (rv == 0) {
+	         document.netIdForm.iidPkcs10.value = document.iID.GetProperty("Request");
+	         document.netIdForm.submit();
+	      } else
+	         alert("Error when fetching certificate request from NetID: "+rv+". Slot: "+aKey[0]+". KeyId: "+aKey[2]+".");
+	   }
+	}
+	myDeclare();
+-->
+</script>
+
+<h1 class="title">@EJBCA@ Mozilla Certificate Enrollment</h1>
+<hr />
+<p>Welcome to certificate enrollment.</p>
+<p>If you want to, you can manually install the CA certificate(s)
+   in your browser, otherwise this will be done automatically when
+   your certificate is retrieved.</p>
+<p>Install CA certificates:</p>
+<%
+	try  {
+	    InitialContext ctx = new InitialContext();
+	    ISignSessionHome home = home = (ISignSessionHome) PortableRemoteObject.narrow(
+	            ctx.lookup("RSASignSession"), ISignSessionHome.class );
+	    ISignSessionRemote ss = home.create();
+	    Collection chain = ss.getCertificateChain(new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr()),caid);
+	    if (chain.size() == 0) {
+	        out.println("<p>No CA certificates exist</p>");
+	    } else {
+	        out.println("<p><a href=\"../certdist?cmd=nscacert&caid="+caid+"\">Certificate chain</a></p>");
+	    }
+	} catch(Exception ex) {
+	    ex.printStackTrace();
+	}                                             
+%>
+<hr />
+
+<script type="text/javascript">
+<!--
+	if (plugin) {
+		document.writeln("<p>Since you have NetID installed you may download a certificate for a ");
+		document.writeln("key on your smart card.</p>");
+		document.writeln("<form name=\"netIdForm\" action=\"../certreq\" enctype=\"x-www-form-encoded\" method=\"post\">");
+		document.writeln("  <fieldset>");
+		document.writeln("	<legend>Key length</legend>");
+		document.writeln("	<input name=\"user\" type=\"hidden\" value=\"<%=username%>\" />");
+		document.writeln("	<input name=\"password\" type=\"hidden\" value=\"<%=password%>\" />");
+		document.writeln("	<input name=\"iidPkcs10\" type=\"hidden\" />");
+		document.writeln("    <label for=\"tokenkey\">Please select key:</label> ");
+		document.writeln("    <select name=\"tokenKey\" accesskey=\"p\">");
+			selectKey();
+		document.writeln("    </select>");
+		document.writeln("    <label for=\"dummy\"></label>");
+		document.writeln("    <input type=\"button\" value=\"Fetch Certificate\" onclick=\"generate_pkcs10()\" />");
+		document.writeln("  </fieldset>");
+		document.writeln("</form>");
+	} else {
+	    document.writeln("<p>NetID not installed.</p>");
+	}
+-->
+</script>
+
+<p>If you don't have NetID installed or don't want to use a smartcard
+you may try another PKCS#11 module. Please choose a key length, then click OK to fetch your
+certificate.</p>
+
+<form action="../certreq" enctype="x-www-form-encoded" method="post">
+  <fieldset>
+	<legend>Key length</legend>
+	<input name="user" type="hidden" value="<%=username%>">
+	<input name="password" type="hidden" value="<%=password%>">
+	<label for="dummy">Key length</label>
+	<keygen type="hidden" name="keygen" value="challenge" accesskey="k"/>
+	<label for="dummy2"></label>
+	<input type="submit" value="OK"></p>
+  </fieldset>
+</form>

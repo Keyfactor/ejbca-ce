@@ -6,19 +6,20 @@ body, ul, li, p {
 }
 
 body { 
-    color: #555753; 
+    color: #454743; 
     background-color: #ffffff;
     margin: 0px;
     padding: 0px;
 }
 
 ul {
-    list-style-type:square;
+    list-style-type: square;
 }
 
 li {
     line-height: 16px;
-}    
+    margin-bottom: .5em;
+}
 
 p { 
     line-height: 120%;
@@ -138,7 +139,7 @@ form fieldset legend {
 form label { 
 	display: block;  /* block float the labels to left column, set a width */
 	float: left; 
-	width: 150px; 
+	width: 100px; 
 	padding: 0; 
 	margin: 5px 0 0; /* set top margin same as form input - textarea etc. elements */
 	text-align: right; 
@@ -167,7 +168,7 @@ textarea { overflow: auto; }
 
 form small {
 	display: block;
-	margin: 0 0 5px 160px; /* instructions/comments left margin set to align w/ right column inputs */
+	margin: 0 0 5px 110px; /* instructions/comments left margin set to align w/ right column inputs */
 	padding: 1px 3px;
 	font-size: 88%;
 }

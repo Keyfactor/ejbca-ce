@@ -1,14 +1,16 @@
 <%@ include file="header.jsp" %>
   <h1 class="title">List Certificates</h1>
-  <div align="center">
+  <p>Enter the subject DN (e.g., &quot<code>c=SE, O=AnaTom, CN=foo</code>&quot;) to list a user's certificates.</p>
   <form action="list_certs_result.jsp" enctype=x-www-form-encoded method="GET">
-    <div align="center">Give subject DN to list users certificates.<br>
+    <fieldset>
+      <legend>Distinguished name</legend>
       <input type="hidden" name="cmd" value="listcerts">
-      Subject DN
-      <input name="subject" type=text size=30 value="c=SE, O=AnaTom, CN=foo">
-      <br>
+      <label for="subject">Subject DN</label>
+      <input name="subject" type=text size=40>
+      <br />
+      <label for="dummy"></label>
       <input type="submit" value="OK" name="submit">
-    </div>
+    </fieldset>
   </form>
 </div>
 <%@ include file="footer.inc" %>

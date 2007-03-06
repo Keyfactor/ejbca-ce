@@ -1,0 +1,52 @@
+<%@ page import="org.ejbca.core.ejb.ca.sign.*,org.ejbca.core.model.log.Admin,java.util.Collection"%>
+<h1 class="title">@EJBCA@ Mozilla Certificate Enrollment</h1>
+<hr />
+<p>Welcome to certificate enrollment.</p>
+<p>If you want to, you can manually install the CA certificate(s)
+   in your browser, otherwise this will be done automatically when
+   your certificate is retrieved.</p>
+<p>Install CA certificates:</p>
+<%
+	try  {
+	    InitialContext ctx = new InitialContext();
+	    ISignSessionHome home = home = (ISignSessionHome) PortableRemoteObject.narrow(
+	            ctx.lookup("RSASignSession"), ISignSessionHome.class );
+	    ISignSessionRemote ss = home.create();
+	    
+	    Collection chain = ss.getCertificateChain(new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr()), caid);
+	    if (chain.size() == 0) {
+	        out.println("<p>No CA certificates exist</p>");
+	    } else {
+	        out.println("<p><a href=\"../certdist?cmd=nscacert&caid="+caid+"\">Certificate chain</a></p>");
+	    }
+	} catch(Exception ex) {
+	    ex.printStackTrace();
+	}                                             
+%>
+<hr />
+<p>Please choose a key length, then click OK to fetch your certificate.</p>
+<p>Tick the &quot;OpenVPN&quot; checkbox if you want to create an OpenVPN installer.
+   This options requires special configuration of the CA.
+</p>
+
+<form action="../certreq" enctype="x-www-form-encoded" method="post">
+  <fieldset>
+	<legend>Key length</legend>
+	<input name="user" type="hidden" value="<%=username%>">
+	<input name="password" type="hidden" value="<%=password%>">
+	<label for="keylength">Key length</label>
+        <select name="keylength" size="1" accesskey="k">
+           <% for(int i=0; i<availablekeylengths.length;i++){ %>
+	           	<option  value="<%= availablekeylengths[i] %>">
+	            	<%=availablekeylengths[i]%> bits
+	            </option>
+           <% } %>
+        </select>
+    <br />
+	<label for="openvpn">OpenVPN</label>
+	<input type="checkbox" name="openvpn" accesskey="o">	
+	<br />
+	<label for="dummy2"></label>
+	<input type="submit" value="OK"></p>
+  </fieldset>
+</form>

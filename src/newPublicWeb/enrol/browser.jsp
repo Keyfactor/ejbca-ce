@@ -1,5 +1,4 @@
 <%@ include file="header.jsp" %>
-  <jsp:useBean id="applybean" scope="session" class="org.ejbca.core.model.ApplyBean" />
-  <h1 class="title">browser.jsp</h1>
-<%  applybean.initialize(request); %>
+<% String THIS_FILENAME = "/new/@ejbca@/enrol/browser.jsp"; %>
+<%@ include file="apply/apply_main.jsp" %>
 <%@ include file="footer.inc" %>

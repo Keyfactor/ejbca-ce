@@ -4,24 +4,23 @@
    click OK to fetch your certificate. 
 </p>
 
-<div class="frame">
-   <div class="label">Note</div>
-   <div class="content">
-  	  <p>A PEM-formatted request is a BASE64 encoded PKCS10 request between the two lines:</p>
-  	  <pre>
-	     -----BEGIN CERTIFICATE REQUEST-----
-	     -----END CERTIFICATE REQUEST-----
-	  </pre>
-   </div>
-</div>
+<p>A PEM-formatted request is a BASE64 encoded PKCS10 request starting with<br />
+  <code>-----BEGIN CERTIFICATE REQUEST-----</code><br />
+  and ending with<br />
+  <code>-----END CERTIFICATE REQUEST-----</code>
+</p>
 
 <form name="EJBCA" action="../certreq" enctype="x-www-form-encoded" method="post">
-  <fieldset name="Enrol">
-	<label for="user">Username</label> <input type="text" size="10" name="user" value="foo" accesskey="u" />
+  <fieldset >
+    <legend>Enrol</legend>
+	<label for="user">Username</label>
+	<input type="text" size="10" name="user" value="foo" accesskey="u" />
 	<br />
-	<label for="password">Password</label> <input type="text" size="10" name="password" value="foo123" accesskey="p" />
+	<label for="password">Password</label>
+	<input type="text" size="10" name="password" value="foo123" accesskey="p" />
 	<br />
 	<br />
+	<label for="dummy"></label>
 	<textarea rows="15" cols="70" name="pkcs10req" wrap="physical"></textarea>
 	<br />
 	<br />
@@ -31,7 +30,7 @@
 		<option value="<%=org.ejbca.ui.web.RequestHelper.ENCODED_PKCS7%>">PKCS7</option>
 	</select>
 	<br />
-	<label for="dummy"> </label>
+	<label for="dummy2"></label>
 	<input type="submit" value="OK">
   </fieldset>
 </form>

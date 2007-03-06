@@ -1,3 +1,4 @@
 <%@ include file="header.jsp" %>
-  <h1 class="title">keystore.jsp</h1>
+<% String THIS_FILENAME = "/new/@ejbca@/enrol/keystore.jsp"; %>
+<%@ include file="apply/apply_main.jsp" %>
 <%@ include file="footer.inc" %>
