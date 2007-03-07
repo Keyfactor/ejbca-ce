@@ -68,7 +68,7 @@ import org.ejbca.util.CertTools;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.7 2006-12-04 15:41:12 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.8 2007-03-07 15:16:20 anatom Exp $
  */
 public class CertDistServlet extends HttpServlet {
 
@@ -202,7 +202,7 @@ public class CertDistServlet extends HttpServlet {
                 String moz = req.getParameter(MOZILLA_PROPERTY);
                 String filename = CertTools.getPartFromDN(dn,"CN")+".crl";
                 if ((moz == null) || !moz.equalsIgnoreCase("y")) {
-                    res.setHeader("Content-disposition", "attachment; filename=" +  filename);                    
+                    res.setHeader("Content-disposition", "attachment; filename=\"" +  filename+"\"");                    
                 }
                 res.setContentType("application/x-x509-crl");
                 if (StringUtils.equals(format, "PEM")) {
@@ -247,7 +247,7 @@ public class CertDistServlet extends HttpServlet {
                         String filename = CertTools.getPartFromDN(dn,"CN")+".cer";
                         // We must remove cache headers for IE
                         ServletUtils.removeCacheHeaders(res);
-                        res.setHeader("Content-disposition", "attachment; filename=" +  filename);
+                        res.setHeader("Content-disposition", "attachment; filename=\"" +  filename+"\"");
                         res.setContentType("application/octet-stream");
                         if (StringUtils.equals(format, "PEM")) {
                             RequestHelper.sendNewB64File(Base64.encode(cert, true), res, filename, RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);
@@ -334,9 +334,9 @@ public class CertDistServlet extends HttpServlet {
                     // We must remove cache headers for IE
                     ServletUtils.removeCacheHeaders(res);
                     if (pkcs7)
-                        res.setHeader("Content-disposition", "attachment; filename="+filename+".p7c");
+                        res.setHeader("Content-disposition", "attachment; filename=\""+filename+".p7c\"");
                     else
-                        res.setHeader("Content-disposition", "attachment; filename="+filename+".crt");
+                        res.setHeader("Content-disposition", "attachment; filename=\""+filename+".crt\"");
                     res.setContentType("application/octet-stream");
                     res.setContentLength(enccert.length);
                     res.getOutputStream().write(enccert);
@@ -355,7 +355,7 @@ public class CertDistServlet extends HttpServlet {
                         out += "\n-----END CERTIFICATE-----\n";
                     // We must remove cache headers for IE
                     ServletUtils.removeCacheHeaders(res);
-                    res.setHeader("Content-disposition", "attachment; filename="+filename+".pem");
+                    res.setHeader("Content-disposition", "attachment; filename=\""+filename+".pem\"");
                     res.setContentType("application/octet-stream");
                     res.setContentLength(out.length());
                     res.getOutputStream().write(out.getBytes());
@@ -407,7 +407,7 @@ public class CertDistServlet extends HttpServlet {
                 } else if (command.equalsIgnoreCase(COMMAND_IEOCSPCERT)) {
                     // We must remove cache headers for IE
                     ServletUtils.removeCacheHeaders(res);
-                    res.setHeader("Content-disposition", "attachment; filename="+filename+".crt");
+                    res.setHeader("Content-disposition", "attachment; filename=\""+filename+".crt\"");
                     res.setContentType("application/octet-stream");
                     res.setContentLength(enccert.length);
                     res.getOutputStream().write(enccert);
@@ -420,7 +420,7 @@ public class CertDistServlet extends HttpServlet {
                     out += "\n-----END CERTIFICATE-----\n";
                     // We must remove cache headers for IE
                     ServletUtils.removeCacheHeaders(res);
-                    res.setHeader("Content-disposition", "attachment; filename="+filename+".pem");
+                    res.setHeader("Content-disposition", "attachment; filename=\""+filename+".pem\"");
                     res.setContentType("application/octet-stream");
                     res.setContentLength(out.length());
                     res.getOutputStream().write(out.getBytes());

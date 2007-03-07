@@ -51,7 +51,7 @@ import org.ejbca.util.FileTools;
 /**
  * Helper class for hadnling certificate request from browsers or general PKCS#10
  * 
- * @version $Id: RequestHelper.java,v 1.5 2006-12-20 08:33:31 anatom Exp $
+ * @version $Id: RequestHelper.java,v 1.6 2007-03-07 15:16:23 anatom Exp $
  */
 public class RequestHelper {
     private static Logger log = Logger.getLogger(RequestHelper.class);
@@ -352,7 +352,7 @@ public class RequestHelper {
 
         // Set content-type to general file
         out.setContentType("application/octet-stream");        
-        out.setHeader("Content-disposition", "filename="+filename);
+        out.setHeader("Content-disposition", "filename=\""+filename+"\"");
 
         out.setContentLength(b64cert.length + beginKey.length() + endKey.length());
 
@@ -413,7 +413,7 @@ public class RequestHelper {
         if (filename != null) {
             // We must remove cache headers for IE
             ServletUtils.removeCacheHeaders(out);
-            out.setHeader("Content-disposition", "filename="+filename);        	
+            out.setHeader("Content-disposition", "filename=\""+filename+"\"");        	
         }
 
         // Set content-type to general file
