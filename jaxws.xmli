@@ -40,6 +40,14 @@
     	<delete dir="src/jaxws/gen-java/client"/>
     </target>
 
+	<taskdef name="apt" classname="com.sun.tools.ws.ant.Apt">
+		<classpath refid="jaxws.classpath"/>
+	</taskdef>
+	
+    <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
+        <classpath refid="jaxws.classpath"/>
+    </taskdef>
+	
 	<target depends="ws.init" name="ws.gen.server">
        <apt fork="true"  destdir="tmp/jaxws/gen-classes/server" sourcedestdir="src/jaxws/gen-java/server" sourcepath="src/java">
 		 <classpath>

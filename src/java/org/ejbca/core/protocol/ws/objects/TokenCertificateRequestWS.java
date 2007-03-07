@@ -14,15 +14,15 @@
 package org.ejbca.core.protocol.ws.objects;
 
 /**
- * Interface indicationg this is a ITokenCertificateRequest, either
+ * Base class this is a ITokenCertificateRequest, either
  * a PKCS10 or KeyStore
  * 
  * 
  * @author Philip Vendil 2007 feb 8
  *
- * @version $Id: ITokenCertificateRequestWS.java,v 1.1 2007-02-21 09:11:12 herrvendil Exp $
+ * @version $Id: TokenCertificateRequestWS.java,v 1.1 2007-03-07 10:08:55 herrvendil Exp $
  */
 
-public interface ITokenCertificateRequestWS {
+public class TokenCertificateRequestWS {
 
 }

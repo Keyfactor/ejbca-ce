@@ -120,4 +120,11 @@
       <local>org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocal</local>
       <ejb-link>UserDataSourceSession</ejb-link>
    </ejb-local-ref>
+   <ejb-local-ref >
+      <ejb-ref-name>ejb/ApprovalSessionLocal</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.ejbca.core.ejb.approval.IApprovalSessionLocalHome</local-home>
+      <local>org.ejbca.core.ejb.approval.IApprovalSessionLocal</local>
+      <ejb-link>ApprovalSession</ejb-link>
+   </ejb-local-ref>   
 </web-app>

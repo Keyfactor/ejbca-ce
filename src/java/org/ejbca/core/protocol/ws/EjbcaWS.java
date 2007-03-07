@@ -36,6 +36,8 @@ import javax.xml.ws.handler.MessageContext;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.approval.IApprovalSessionLocal;
+import org.ejbca.core.ejb.approval.IApprovalSessionLocalHome;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
@@ -52,6 +54,7 @@ import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
@@ -60,12 +63,20 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.IllegalKeyException;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.model.ca.publisher.PublisherException;
+import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
+import org.ejbca.core.model.hardtoken.HardTokenExistsException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.userdatasource.UserDataSourceException;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
+import org.ejbca.core.protocol.ws.common.IEjbcaWS;
 import org.ejbca.core.protocol.ws.objects.Certificate;
+import org.ejbca.core.protocol.ws.objects.HardTokenDataWS;
+import org.ejbca.core.protocol.ws.objects.TokenCertificateRequestWS;
+import org.ejbca.core.protocol.ws.objects.TokenCertificateResponseWS;
 import org.ejbca.core.protocol.ws.objects.KeyStore;
 import org.ejbca.core.protocol.ws.objects.RevokeStatus;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
@@ -77,27 +88,14 @@ import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
 /**
- * Interface the the EJBCA RA WebService. Contains the following methods:
- * 
- * editUser    : Edits/adds  userdata
- * findUser    : Retrieves the userdata for a given user.
- * findCerts   : Retrieves the certificates generated for a user.
- * pkcs10Req   : Generates a certificate using the given userdata and the public key from the PKCS10
- * pkcs12Req   : Generates a PKCS12 keystore (with the private key) using the given userdata
- * revokeCert  : Revokes the given certificate.
- * revokeUser  : Revokes all certificates for a given user, it's also possible to delete the user.
- * revokeToken : Revokes all certificates placed on a given hard token
- * checkRevokationStatus : Checks the revokation status of a certificate.
- * 
- * Observere: All methods have to be called using client authenticated https
- * otherwise will a AuthorizationDenied Exception be thrown.
+ * Implementor of the IEjbcaWS interface.
  * 
  * @author Philip Vendil
- * $Id: EjbcaWS.java,v 1.3 2006-10-31 08:21:28 anatom Exp $
+ * $Id: EjbcaWS.java,v 1.4 2007-03-07 10:08:56 herrvendil Exp $
  */
 
 @WebService
-public class EjbcaWS {
+public class EjbcaWS implements IEjbcaWS {
 	@Resource
 	private WebServiceContext wsContext;	
 	
@@ -106,23 +104,7 @@ public class EjbcaWS {
 	
 	private static final Logger log = Logger.getLogger(EjbcaWS.class);				
 	/**
-	 * Method that should be used to edit/add a user to the EJBCA database,
-	 * if the user doesn't already exists it will be added othervise it will be
-	 * overwritten.
-	 * 
-	 * Observe: if the user doesn't already exists, it's status will always be set to 'New'.
-	 * 
-	 * Authorization requirements: the client certificate must have the following priviledges set
-	 * - Administrator flag set
-	 * - /administrator
-	 * - /ra_functionality/create_end_entity and/or edit_end_entity
-	 * - /ra_functionality/<end entity profile of user>/create_end_entity and/or edit_end_entity
-	 * - /ca/<ca of user>
-	 * 
-	 * @param userdata contains all the information about the user about to be added.
-	 * @param clearPwd indicates it the password should be stored in cleartext, requeried
-	 * when creating server generated keystores.
-	 * @throws EjbcaException 
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#editUser(org.ejbca.core.protocol.ws.objects.UserDataVOWS)
 	 */	
 	public void editUser(UserDataVOWS userdata)
 			throws  AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, ApprovalException, WaitingForApprovalException {
@@ -162,20 +144,7 @@ public class EjbcaWS {
 	
 	
 	/**
-	 * Retreives information about a user in the database.
-	 * 
-	 * Authorization requirements: the client certificate must have the following priviledges set
-	 * - Administrator flag set
-	 * - /administrator
-	 * - /ra_functionality/view_end_entity
-	 * - /ra_functionality/<end entity profile of matching users>/view_end_entity
-	 * - /ca/<ca of matching users>
-	 * 
-	 * @param username, the unique username to search for
-	 * @return a array of UserDataVOWS objects (Max 100) containing the information about the user or null if user doesn't exists.
-	 * @throws AuthorizationDeniedException if client isn't authorized to request
-	 * @throws IllegalQueryException if query isn't valid
-	 * @throws EjbcaException 
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#findUser(org.ejbca.core.protocol.ws.objects.UserMatch)
 	 */
 	
 	public List<UserDataVOWS> findUser(UserMatch usermatch) throws AuthorizationDeniedException, IllegalQueryException, EjbcaException {		
@@ -213,21 +182,7 @@ public class EjbcaWS {
 	}
 
 	/**
-	 * Retreives a collection of certificates generated for a user.
-	 * 
-	 * Authorization requirements: the client certificate must have the following priviledges set
-	 * - Administrator flag set
-	 * - /administrator
-	 * - /ra_functionality/view_end_entity
-	 * - /ra_functionality/<end entity profile of the user>/view_end_entity
-	 * - /ca/<ca of user>
-	 * 
-	 * @param username a unique username 
-	 * @param onlyValid only return valid certs not revoked or expired ones.
-	 * @return a collection of X509Certificates or null if no certificates could be found
-	 * @throws AuthorizationDeniedException if client isn't authorized to request
-	 * @throws NotFoundException if user cannot be found
-	 * @throws EjbcaException 
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#findCerts(java.lang.String, boolean)
 	 */
 	
 	public List<Certificate> findCerts(String username, boolean onlyValid)
@@ -275,28 +230,7 @@ public class EjbcaWS {
 
 
 	/**
-	 * Method to use to generate a certificate for a user. The method must be preceded by
-	 * a editUser call, either to set the userstatus to 'new' or to add nonexisting users.
-	 * 
-	 * Observe, the user must first have added/set the status to new with edituser command
-	 * 
-	 * Authorization requirements: the client certificate must have the following priviledges set
-	 * - Administrator flag set
-	 * - /administrator
-	 * - /ra_functionality/view_end_entity
-	 * - /ra_functionality/<end entity profile of the user>/view_end_entity
-	 * - /ca_functionality/create_certificate
-	 * - /ca/<ca of user>
-	 * 
-	 * @param username the unique username
-	 * @param password the password sent with editUser call
-	 * @param pkcs10 the PKCS10 (only the public key is used.)
-	 * @param hardTokenSN If the certificate should be connected with a hardtoken, it is
-	 * possible to map it by give the hardTokenSN here, this will simplyfy revokation of a tokens
-	 * certificates. Use null if no hardtokenSN should be assiciated with the certificate.
-	 * @return the generated certificate.
-	 * @throws AuthorizationDeniedException if client isn't authorized to request
-	 * @throws NotFoundException if user cannot be found
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#pkcs10Req(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	
 	public Certificate pkcs10Req(String username, String password,
@@ -377,28 +311,7 @@ public class EjbcaWS {
 	}
 
 	/**
-	 * Method to use to generate a server generated keystore. The method must be preceded by
-	 * a editUser call, either to set the userstatus to 'new' or to add nonexisting users and
-	 * the users token should be set to SecConst.TOKEN_SOFT_P12.
-	 * 
-	 * Authorization requirements: the client certificate must have the following priviledges set
-	 * - Administrator flag set
-	 * - /administrator
-	 * - /ra_functionality/view_end_entity
-	 * - /ra_functionality/<end entity profile of the user>/view_end_entity
-	 * - /ca_functionality/create_certificate
-	 * - /ca/<ca of user>
-	 * 
-	 * @param username the unique username
-	 * @param password the password sent with editUser call
-	 * @param hardTokenSN If the certificate should be connected with a hardtoken, it is
-	 * possible to map it by give the hardTokenSN here, this will simplyfy revokation of a tokens
-	 * certificates. Use null if no hardtokenSN should be assiciated with the certificate.
-	 * @param keyspec that the generated key should have, examples are 1024 for RSA or prime192v1 for ECDSA.
-	 * @param keyalg that the generated key should have, RSA, ECDSA. Use one of the constants in CATokenConstants.org.ejbca.core.model.ca.catoken.KEYALGORITHM_XX.
-	 * @return the generated keystore
-	 * @throws AuthorizationDeniedException if client isn't authorized to request
-	 * @throws NotFoundException if user cannot be found
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#pkcs12Req(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	
 	public KeyStore pkcs12Req(String username, String password, String hardTokenSN, String keyspec, String keyalg) throws AuthorizationDeniedException, NotFoundException, EjbcaException {
@@ -500,20 +413,7 @@ public class EjbcaWS {
 	}
 
 	/**
-	 * Method used to revoke a certificate.
-	 * 
-	 * * Authorization requirements: the client certificate must have the following priviledges set
-	 * - Administrator flag set
-	 * - /administrator
-	 * - /ra_functionality/revoke_end_entity
-	 * - /ra_functionality/<end entity profile of the user owning the cert>/revoke_end_entity
-	 * - /ca/<ca of certificate>
-	 * 
-	 * @param issuerDN of the certificate to revoke
-	 * @param certificateSN of the certificate to revoke
-	 * @param reason for revokation, one of RevokedCertInfo.REVOKATION_REASON_ constants
-	 * @throws AuthorizationDeniedException if client isn't authorized.
-	 * @throws NotFoundException if certificate doesn't exist
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#revokeCert(java.lang.String, java.lang.String, int)
 	 */
 	
 	public void revokeCert(String issuerDN, String certificateSN, int reason) throws AuthorizationDeniedException, NotFoundException, EjbcaException {
@@ -546,21 +446,7 @@ public class EjbcaWS {
 	}
 
 	/**
-	 * Method used to revoke all a users certificates. It is also possible to delete
-	 * a user after all certificates have been revoked.
-	 * 
-	 * Authorization requirements: the client certificate must have the following priviledges set
-	 * - Administrator flag set
-	 * - /administrator
-	 * - /ra_functionality/revoke_end_entity
-	 * - /ra_functionality/<end entity profile of the user>/revoke_end_entity
-	 * - /ca/<ca of users certificate>
-	 * 
-	 * @param username unique username i EJBCA
-	 * @param reasonfor revokation, one of RevokedCertInfo.REVOKATION_REASON_ constants
-	 * @param deleteUser deletes the users after all the certificates have been revoked.
-	 * @throws AuthorizationDeniedException if client isn't authorized.
-	 * @throws NotFoundException if user doesn't exist
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#revokeUser(java.lang.String, int, boolean)
 	 */
 	public void revokeUser(String username, int reason, boolean deleteUser)
 			throws AuthorizationDeniedException, NotFoundException, EjbcaException {
@@ -602,19 +488,7 @@ public class EjbcaWS {
 	}
 
 	/**
-	 * Method used to revoke all certificates mapped to one hardtoken.
-	 *
-	 * Authorization requirements: the client certificate must have the following priviledges set
-	 * - Administrator flag set
-	 * - /administrator
-	 * - /ra_functionality/revoke_end_entity
-	 * - /ra_functionality/<end entity profile of the user owning the token>/revoke_end_entity
-	 * - /ca/<ca of certificates on token>
-	 * 
-	 * @param hardTokenSN of the hardTokenSN
-	 * @param reasonfor revokation, one of RevokedCertInfo.REVOKATION_REASON_ constants
-	 * @throws AuthorizationDeniedException if client isn't authorized.
-	 * @throws NotFoundException if token doesn't exist
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#revokeToken(java.lang.String, int)
 	 */
 	
 	public void revokeToken(String hardTokenSN, int reason)
@@ -654,18 +528,7 @@ public class EjbcaWS {
 	}
 
 	/**
-	 * Method returning the revokestatus for given user
-	 * 
-	 * Authorization requirements: the client certificate must have the following priviledges set
-	 * - Administrator flag set
-	 * - /administrator
-	 * - /ca/<ca of certificate>
-	 * 
-	 * @param issuerDN 
-	 * @param certificateSN a hexadecimal string
-	 * @return the revokestatus of null i certificate doesn't exists.
-	 * @throws AuthorizationDeniedException if client isn't authorized.
-	 * @see org.ejbca.core.protocol.ws.RevokeStatus
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#checkRevokationStatus(java.lang.String, java.lang.String)
 	 */
 	
 	public RevokeStatus checkRevokationStatus(String issuerDN, String certificateSN) throws   AuthorizationDeniedException, EjbcaException {
@@ -696,7 +559,123 @@ public class EjbcaWS {
 
 	}	
 
+	/**
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#isAuthorized(java.lang.String)
+	 */
+	public boolean isAuthorized(String resource) throws EjbcaException{
+		boolean retval = false;
+		try{
+		  retval = getAuthorizationSession().isAuthorized(getAdmin(), resource);	
+		}catch(AuthorizationDeniedException ade){
+		} catch (ClassCastException e) {
+			log.error("EJBCA WebService error, isAuthorized : ",e);
+		    throw new EjbcaException(e.getMessage());
+		} catch (CreateException e) {
+			log.error("EJBCA WebService error, isAuthorized : ",e);
+		    throw new EjbcaException(e.getMessage());
+		} catch (NamingException e) {
+			log.error("EJBCA WebService error, isAuthorized : ",e);
+		    throw new EjbcaException(e.getMessage());
+		}
+		
+		return retval;
+	}
 
+	/**
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#fetchUserData(java.util.List, java.lang.String)
+	 */
+	public List<UserDataVOWS> fetchUserData(List<Integer> userDataSourceIds, String searchString) throws UserDataSourceException, EjbcaException{
+		// TODO
+        return new ArrayList<UserDataVOWS>();		
+	}		
+	
+	/**
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#genTokenCertificates(org.ejbca.core.protocol.ws.objects.UserDataVOWS, java.util.List, org.ejbca.core.protocol.ws.objects.HardTokenDataWS)
+	 */
+	
+	public List<TokenCertificateResponseWS> genTokenCertificates(UserDataVOWS userData, List<TokenCertificateRequestWS> tokenRequests, HardTokenDataWS hardTokenData) throws AuthorizationDeniedException, WaitingForApprovalException, HardTokenExistsException, EjbcaException{
+		// TODO
+        return new ArrayList<TokenCertificateResponseWS>(); 	
+	}
+	
+	/**
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#existsHardToken(java.lang.String)
+	 */
+	public boolean existsHardToken(String hardTokenSN) throws EjbcaException{
+		boolean retval = true;
+		
+		try {
+			retval = this.getHardTokenSession().existsHardToken(getAdmin(), hardTokenSN);
+		} catch (ClassCastException e) {
+			log.error("EJBCA WebService error, existsHardToken : ",e);
+		    throw new EjbcaException(e.getMessage());
+		} catch (AuthorizationDeniedException e) {
+			log.error("EJBCA WebService error, existsHardToken : ",e);
+		    throw new EjbcaException(e.getMessage());
+		} catch (CreateException e) {
+			log.error("EJBCA WebService error, existsHardToken : ",e);
+		    throw new EjbcaException(e.getMessage());
+		} catch (NamingException e) {
+			log.error("EJBCA WebService error, existsHardToken : ",e);
+		    throw new EjbcaException(e.getMessage());
+		}
+		
+		return retval;
+	}
+
+	/**
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#getHardTokenData(java.lang.String)
+	 */
+	public HardTokenDataWS getHardTokenData(String hardTokenSN) throws AuthorizationDeniedException, HardTokenDoesntExistsException, EjbcaException{
+		HardTokenDataWS retval = null;
+		
+		// TODO
+		return retval;
+	}
+	
+	/**
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#getHardTokenDatas(java.lang.String)
+	 */
+	public List<HardTokenDataWS> getHardTokenDatas(String username) throws AuthorizationDeniedException, EjbcaException{
+		List<HardTokenDataWS> retval = new  ArrayList<HardTokenDataWS>();
+		
+		// TODO		
+		
+		return retval;
+	}
+	
+	/**
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#republishCertificate(java.lang.String, java.lang.String)
+	 */
+	public void republishCertificate(String serialNumberInHex,String issuerDN) throws AuthorizationDeniedException, PublisherException, EjbcaException{
+		// TODO
+	}
+	
+	/**
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#isApproved(int)
+	 */
+	public int isApproved(int approvalId) throws ApprovalException, EjbcaException, ApprovalRequestExpiredException{
+		int retval = 0;
+		
+		try {
+			retval = this.getApprovalSession().isApproved(getAdmin(), approvalId);
+		} catch (ClassCastException e) {
+			log.error("EJBCA WebService error, isApproved : ",e);
+		    throw new EjbcaException(e.getMessage());
+		} catch (AuthorizationDeniedException e) {
+			log.error("EJBCA WebService error, isApproved : ",e);
+		    throw new EjbcaException(e.getMessage());
+		} catch (CreateException e) {
+			log.error("EJBCA WebService error, isApproved : ",e);
+		    throw new EjbcaException(e.getMessage());
+		} catch (NamingException e) {
+			log.error("EJBCA WebService error, isApproved : ",e);
+		    throw new EjbcaException(e.getMessage());
+		}
+		
+		return retval;
+	}
+	
 	private Admin getAdmin() throws AuthorizationDeniedException, ClassCastException, CreateException, NamingException{
   		  MessageContext msgContext = wsContext.getMessageContext();
 		  HttpServletRequest request = (HttpServletRequest) msgContext.get(MessageContext.SERVLET_REQUEST);
@@ -1014,6 +993,21 @@ public class EjbcaWS {
 			throw new EJBException(e);
 		}
 		return authsession;
+	}
+	
+	private IApprovalSessionLocal approvalsession = null;
+	private IApprovalSessionLocal getApprovalSession() {
+		try{
+			if(approvalsession == null){
+				Context context = new InitialContext();
+				approvalsession = ((IApprovalSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
+				"ApprovalSessionLocal"), IApprovalSessionLocalHome.class)).create();   
+			}
+		}catch(Exception e)	{
+			log.error("Error instancing Approval Session Bean",e);
+			throw new EJBException(e);
+		}
+		return approvalsession;
 	}
 
 

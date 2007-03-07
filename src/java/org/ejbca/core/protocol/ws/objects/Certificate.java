@@ -16,7 +16,7 @@ import java.security.cert.CertificateEncodingException;
 
 import org.ejbca.util.Base64;
 
-public class Certificate implements ITokenCertificateResponseWS {
+public class Certificate extends TokenCertificateResponseWS {
 	
 	private byte[] certificateData = null;
 	

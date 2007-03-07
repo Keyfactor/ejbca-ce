@@ -19,10 +19,10 @@ package org.ejbca.core.protocol.ws.objects;
  * 
  * @author Philip Vendil 2007 feb 8
  *
- * @version $Id: TokenKeyStoreRequestWS.java,v 1.1 2007-02-21 09:11:12 herrvendil Exp $
+ * @version $Id: TokenKeyStoreRequestWS.java,v 1.2 2007-03-07 10:08:55 herrvendil Exp $
  */
 
-public class TokenKeyStoreRequestWS implements ITokenCertificateRequestWS {
+public class TokenKeyStoreRequestWS extends TokenCertificateRequestWS {
     
 	private String tokenType = "PKCS12";
 	private String keyspec = "1024";

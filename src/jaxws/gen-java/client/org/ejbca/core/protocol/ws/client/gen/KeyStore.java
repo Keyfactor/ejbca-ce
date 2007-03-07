@@ -14,11 +14,11 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;complexType name="keyStore">
  *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *     &lt;extension base="{http://ws.protocol.core.ejbca.org/}tokenCertificateResponseWS">
  *       &lt;sequence>
  *         &lt;element name="keystoreData" type="{http://www.w3.org/2001/XMLSchema}base64Binary" minOccurs="0"/>
  *       &lt;/sequence>
- *     &lt;/restriction>
+ *     &lt;/extension>
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
@@ -29,7 +29,9 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "keyStore", propOrder = {
     "keystoreData"
 })
-public class KeyStore {
+public class KeyStore
+    extends TokenCertificateResponseWS
+{
 
     protected byte[] keystoreData;
 
@@ -52,7 +54,7 @@ public class KeyStore {
      *     byte[]
      */
     public void setKeystoreData(byte[] value) {
-        this.keystoreData = value;
+        this.keystoreData = ((byte[]) value);
     }
 
 }

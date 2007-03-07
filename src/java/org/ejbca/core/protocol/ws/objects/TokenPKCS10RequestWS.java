@@ -21,10 +21,10 @@ import org.bouncycastle.jce.PKCS10CertificationRequest;
  * 
  * @author Philip Vendil 2007 feb 8
  *
- * @version $Id: TokenPKCS10RequestWS.java,v 1.1 2007-02-21 09:11:13 herrvendil Exp $
+ * @version $Id: TokenPKCS10RequestWS.java,v 1.2 2007-03-07 10:08:55 herrvendil Exp $
  */
 
-public class TokenPKCS10RequestWS implements ITokenCertificateRequestWS{
+public class TokenPKCS10RequestWS extends TokenCertificateRequestWS{
 
 	private byte[] pkcs10Data = null;
 

@@ -20,7 +20,7 @@ import java.security.cert.CertificateException;
 
 import org.ejbca.util.Base64;
 
-public class KeyStore implements ITokenCertificateResponseWS {
+public class KeyStore extends TokenCertificateResponseWS {
 	
 	private byte[] keystoreData = null;
 	

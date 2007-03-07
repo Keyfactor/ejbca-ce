@@ -14,11 +14,11 @@ import javax.xml.bind.annotation.XmlType;
  * <pre>
  * &lt;complexType name="certificate">
  *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *     &lt;extension base="{http://ws.protocol.core.ejbca.org/}tokenCertificateResponseWS">
  *       &lt;sequence>
  *         &lt;element name="certificateData" type="{http://www.w3.org/2001/XMLSchema}base64Binary" minOccurs="0"/>
  *       &lt;/sequence>
- *     &lt;/restriction>
+ *     &lt;/extension>
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
@@ -29,7 +29,9 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "certificate", propOrder = {
     "certificateData"
 })
-public class Certificate {
+public class Certificate
+    extends TokenCertificateResponseWS
+{
 
     protected byte[] certificateData;
 
@@ -52,7 +54,7 @@ public class Certificate {
      *     byte[]
      */
     public void setCertificateData(byte[] value) {
-        this.certificateData = value;
+        this.certificateData = ((byte[]) value);
     }
 
 }
