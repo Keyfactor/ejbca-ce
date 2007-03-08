@@ -43,14 +43,14 @@ import org.bouncycastle.util.encoders.Hex;
 /**
  * This class implements some utility functions that are useful when handling Strings.
  *
- * @version $Id: StringTools.java,v 1.5 2006-08-04 17:15:34 anatom Exp $
+ * @version $Id: StringTools.java,v 1.6 2007-03-08 09:55:39 anatom Exp $
  */
 public class StringTools {
     private static Logger log = Logger.getLogger(StringTools.class);
 
     // Characters that are not allowed in strings that may be stored in the db
     private static final char[] stripChars = {
-        '\"', '\n', '\r', '\\', ';', '&', '|', '!', '\0', '%', '`', '<', '>', '?',
+        '\"', '\n', '\r', '\\', ';', '&', '!', '\0', '%', '`', '<', '>', '?',
         '$', '~'
     };
     // Characters that are not allowed in strings that may be used in db queries

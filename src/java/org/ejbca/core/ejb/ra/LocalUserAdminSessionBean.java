@@ -94,7 +94,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.39 2007-02-02 09:35:54 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.40 2007-03-08 09:55:39 anatom Exp $
  * 
  * @ejb.bean
  *   display-name="UserAdminSB"
@@ -425,6 +425,13 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
         // String used in SQL so strip it
         String dn = CertTools.stringToBCDNString(userdata.getDN());
         dn = StringTools.strip(dn);
+    	String altName = StringTools.strip(userdata.getSubjectAltName());
+    	String username = StringTools.strip(userdata.getUsername());
+    	String email = StringTools.strip(userdata.getEmail());
+    	userdata.setUsername(username);
+    	userdata.setDN(dn);
+    	userdata.setSubjectAltName(altName);
+    	userdata.setEmail(email);
         int type = userdata.getType();
         String newpassword = userdata.getPassword();
         debug(">addUser(" + userdata.getUsername() + ", password, " + dn + ", "+ userdata.getDN() + ", " + userdata.getSubjectAltName()+", "+userdata.getEmail() + ")");
