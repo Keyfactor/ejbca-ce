@@ -300,10 +300,16 @@
 			<condition property="weblogic.enabled">
 				<equals arg1="${appserver.type}" arg2="weblogic"/>
 			</condition>
-		</target>
+	</target>
+	<target name="glassfishtargetcheck">
+			<condition property="glassfish.enabled">
+				<equals arg1="${appserver.type}" arg2="glassfish"/>
+			</condition>
+	</target>
 	
 	<!-- We need to include all the myfaces libs in Weblogic 9 -->	
 	<target name="jsflibswls" depends="wlstargetcheck" if="weblogic.enabled">
+		<echo>Weblogic JSF target</echo>
         <copy todir="${jsf.libdir}">
             <fileset dir="${lib}/myfaces" >
             	<include name="*.jar"/>
@@ -318,12 +324,23 @@
         <property name="jar.jsftaglibs" value="tomahawk-1.1.3.jar,myfaces-impl-1.1.4.jar,jstl-1.1.0.jar" />
 	</target>
 	
+	<!-- We need to include commons on the classpath for Glassfish -->	
+	<target name="jsflibsglassfish" depends="glassfishtargetcheck" if="glassfish.enabled">
+		<echo>Glassfish JSF target</echo>
+	    <copy todir="${jsf.libdir}">
+	        <fileset dir="${lib}/quickserver" >
+	        	<include name="commons-*.jar"/>
+	        </fileset>
+	    </copy>
+        <property name="jar.jsfclasspath" value="lib/commons-logging.jar lib/commons-digester.jar lib/commons-el-1.0.jar lib/commons-beanutils.jar lib/commons-codec-1.3.jar" />
+	</target>
+	
 	<target name="jsflibspre">
         <delete dir="${jsf.libdir}" />
         <mkdir dir="${jsf.libdir}" />
 	</target>
 	
-	<target name="jsflibs" depends="jsflibspre,jsflibswls">
+	<target name="jsflibs" depends="jsflibspre,jsflibswls,jsflibsglassfish">
         <property name="jar.jsfclasspath" value="" />
         <property name="jar.jsftaglibs" value="tomahawk-1.1.3.jar" />
 	</target>
