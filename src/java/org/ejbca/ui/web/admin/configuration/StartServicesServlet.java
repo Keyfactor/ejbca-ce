@@ -18,7 +18,6 @@ import java.security.SecureRandom;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.ejb.CreateException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -42,7 +41,7 @@ import org.ejbca.util.CertTools;
  *
  * 
  *
- * @version $Id: StartServicesServlet.java,v 1.12 2007-01-25 18:26:44 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.13 2007-03-09 18:00:58 anatom Exp $
  * 
  * @web.servlet name = "StartServices"
  *              display-name = "StartServicesServlet"
@@ -56,7 +55,7 @@ import org.ejbca.util.CertTools;
  *   type="java.lang.String"
  *   value="${logging.log4j.config}"
  * 
- * @version $Id: StartServicesServlet.java,v 1.12 2007-01-25 18:26:44 anatom Exp $
+ * @version $Id: StartServicesServlet.java,v 1.13 2007-03-09 18:00:58 anatom Exp $
  */
 public class StartServicesServlet extends HttpServlet {
 
@@ -75,11 +74,9 @@ public class StartServicesServlet extends HttpServlet {
         log.debug(">destroy calling ServiceSession.unload");
         try {
 			getServiceHome().create().unload();
-		} catch (CreateException e) {
+		} catch (Exception e) {
 			log.error(e);
-		} catch (IOException e) {
-			log.error(e);
-	    }
+		}
 		super.destroy();
 	}
 
@@ -107,11 +104,9 @@ public class StartServicesServlet extends HttpServlet {
         log.debug(">init calling ServiceSession.load");
         try {
 			getServiceHome().create().load();
-		} catch (CreateException e) {
+		} catch (Exception e) {
 			log.error("Error init ServiceSession: ", e);
-		} catch (IOException e) {
-			log.error("Error init ServiceSession: ", e);
-	    }
+		}
 		
         log.debug(">init initializing log4j");
         String configfile = ServiceLocator.getInstance().getString("java:comp/env/LOG4JCONFIG");
@@ -149,7 +144,7 @@ public class StartServicesServlet extends HttpServlet {
         		CAInfo ca = casession.getCAInfo(admin, caid);
         		log.debug("Found CA: "+ca.getName()+", with expire time: "+ca.getExpireTime());
         	}
-        } catch (CreateException e) {
+        } catch (Exception e) {
         	log.error("Error creating CAAdminSession: ", e);
         }
 
