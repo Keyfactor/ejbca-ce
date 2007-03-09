@@ -126,6 +126,14 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
  *   business="org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal"
  *   link="CAAdminSession"
  *
+ * @ejb.ejb-external-ref description="The CRL Create bean"
+ *   view-type="local"
+ *   ref-name="ejb/CreateCRLSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal"
+ *   link="CreateCRLSession"
+ *   
  *  @jonas.bean ejb-name="ServiceTimerSession"
  */
 public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ejb.TimedObject {
