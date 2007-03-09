@@ -113,21 +113,6 @@ To configure the transaction timeout to a larger value in weblogic:
    (about 100s to finish the whole installation).
 
 
-JBOSS
-=====
-
-JBoss commonly have problems with class loading if several applications are run in one instance of JBoss.
-This will typically manifest itself as ClassCast-, IllegalAccess- or VerifyError Exceptions. 
-The reason is usually that mora than one application is using an external jar file, for example commons-fileupload.jar
-or ldap.jar, possibly using different versions as well.
-
-These links describe how to configure jboss-app.xml, etc and also describe how
-JBoss classloading works.
-
-http://wiki.jboss.org/wiki/Wiki.jsp?page=ClassLoadingConfiguration
-http://wiki.jboss.org/wiki/Wiki.jsp?page=JBossClassLoadingUseCases
-
-
 Glassfish
 =========
 
@@ -159,7 +144,7 @@ Currently EJBCA works with the MySQL 5.0 database on Glassfish.
 - Configure ejbca: 
     in conf/ejbca.properties you should at least set appserver.type, appserver.home and logging.log4j.config
     in conf/database.properties you should at least set datasource.jndi-name-prefix, and the database settings for your chosen database.
-    in conf/web.properties you should set 'web.jsfimpl=nojsf'
+    in conf/web.properties you should set 'web.jsfimpl=sunri'
     in conf/web.properties you should set 'ejbcaws.enabled=false', this must be done until we have fixed JaxWS configuration for glassfish.
     in conf/xkms.properties you should set 'xkms.enabled=false', this must be done until we have fixed JaxWS configuration for glassfish.
     
@@ -257,3 +242,18 @@ And put in the end instead:
    <database-type>Oracle</database-type>
 
 Voila. Now you have a new file you can put in src/deploy/weblogic.
+
+JBOSS
+=====
+
+JBoss commonly have problems with class loading if several applications are run in one instance of JBoss.
+This will typically manifest itself as ClassCast-, IllegalAccess- or VerifyError Exceptions. 
+The reason is usually that mora than one application is using an external jar file, for example commons-fileupload.jar
+or ldap.jar, possibly using different versions as well.
+
+These links describe how to configure jboss-app.xml, etc and also describe how
+JBoss classloading works.
+
+http://wiki.jboss.org/wiki/Wiki.jsp?page=ClassLoadingConfiguration
+http://wiki.jboss.org/wiki/Wiki.jsp?page=JBossClassLoadingUseCases
+

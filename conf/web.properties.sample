@@ -68,10 +68,11 @@ httpsserver.dn=CN=localhost,O=EJBCA Sample,C=SE
 #log.maxqueryrowcount=1000
 
 # Specifies the JSF implementation used by the application server EJBCA is deployed on.
-# Possible values are: myfaces
+# Possible values are: myfaces, sunri
 # Using nojsf means that the admin-GUI will be limited with some functions not working. 
 # It can however be useful if there are problems with your application server and JSF/MyFaces.
 # Use nojsf for JBoss < 4.0.3
+# User sunri for Glassfish
 #
 # Default: myfaces
 #web.jsfimpl=myfaces
