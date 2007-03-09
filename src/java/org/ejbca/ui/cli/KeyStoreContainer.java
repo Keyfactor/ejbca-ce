@@ -167,6 +167,9 @@ public class KeyStoreContainer {
     public char[] getPassPhraseGetSetEntry() {
         return passPhraseGetSetEntry;
     }
+    public char[] getPassPhraseLoadSave() {
+        return passPhraseLoadSave;
+    }
     static void move(final String providerClassName,
                      final String keyStoreType,
                      final String fromID,
