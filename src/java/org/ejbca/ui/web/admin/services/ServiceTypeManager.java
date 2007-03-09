@@ -41,11 +41,22 @@ import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
  *
  * @author Philip Vendil 2006 sep 29
  *
- * @version $Id: ServiceTypeManager.java,v 1.3 2006-10-26 11:02:18 herrvendil Exp $
+ * @version $Id: ServiceTypeManager.java,v 1.4 2007-03-09 17:35:46 anatom Exp $
  */
-public class ServiceTypeManager {
+public class ServiceTypeManager implements java.io.Serializable {
 	
-    private static Logger log = Logger.getLogger(ServiceTypeManager.class);
+    /**
+     * Determines if a de-serialized file is compatible with this class.
+     *
+     * Maintainers must change this value if and only if the new version
+     * of this class is not compatible with old versions. See Sun docs
+     * for <a href=http://java.sun.com/products/jdk/1.1/docs/guide
+     * /serialization/spec/version.doc.html> details. </a>
+     *
+     */
+	private static final long serialVersionUID = -7328709803784066077L;
+
+	private static Logger log = Logger.getLogger(ServiceTypeManager.class);
 	
 	// static variables common for the application
 	private static HashMap availableTypesByName = new HashMap();
