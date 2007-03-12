@@ -43,7 +43,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
  * 
  * @author Philip Vendil 2006 sep 30
  *
- * @version $Id: EditServiceManagedBean.java,v 1.4 2006-12-29 08:09:14 anatom Exp $
+ * @version $Id: EditServiceManagedBean.java,v 1.5 2007-03-12 09:27:58 anatom Exp $
  */
 public class EditServiceManagedBean extends BaseManagedBean {
 	private static final Logger log = Logger.getLogger(EditServiceManagedBean.class);
@@ -103,6 +103,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
 			serviceConfigurationView.getServiceConfiguration(errorMessages);
 			if(errorMessages.size() == 0){
 			  EjbcaJSFHelper.getBean().getServiceSession().changeService(getAdmin(), serviceName, serviceConfigurationView.getServiceConfiguration(errorMessages));
+			  EjbcaJSFHelper.getBean().getServiceSession().activateServiceTimer(getAdmin(), serviceName);
 			}else{
 				Iterator iter = errorMessages.iterator();
 				while(iter.hasNext()){

@@ -310,7 +310,7 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
     } // addService
 
     /**
-     * Updates service configuration
+     * Updates service configuration, but does not re-set the timer
      *
      * @throws EJBException if a communication or other error occurs.
      * @ejb.interface-method view-type="both"
@@ -323,15 +323,9 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
         	try {
         		ServiceDataLocal htp = getServiceDataHome().findByName(name);
         		htp.setServiceConfiguration(serviceConfiguration);
-        		IWorker worker = getWorker(serviceConfiguration, name);
-        		if(worker != null){
-                  getServiceTimerSession().cancelTimer(htp.getId());
-				  if(serviceConfiguration.isActive() && worker.getNextInterval() != IInterval.DONT_EXECUTE){
-					  getServiceTimerSession().addTimer(worker.getNextInterval() *1000, htp.getId());
-    			  }
-        		  success = true;
-        		}
+        		success = true;
         	} catch (FinderException e) {
+        		error("Can not find service to change: "+name);
         	}
         	
         	if (success){
@@ -341,8 +335,7 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
         	}
         }else{
         	getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_SERVICES,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,intres.getLocalizedMessage("services.notauthorizedtoedit", name));
-        }
-        
+        }      
         
         debug("<changeService()");
     } // changeService
@@ -573,6 +566,37 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
         return returnval;
     } // getServiceName
     
+    
+    /**
+     * Activates the timer for a named service. The service must alrteady be previously added.
+     *
+     * @param admin The administrator performing the action
+     * @param name the name of the service for which to activate the timer
+     * @throws EJBException if a communication or other error occurs.
+     * @ejb.transaction type="Supports"
+     * @ejb.interface-method view-type="both"
+     */
+    public void activateServiceTimer(Admin admin, String name) {
+    	debug(">activateServiceTimer(name: " + name + ")");
+    	try {
+    		ServiceDataLocal htp = getServiceDataHome().findByName(name);
+    		ServiceConfiguration serviceConfiguration = htp.getServiceConfiguration();
+    		if(isAuthorizedToEditService(admin,serviceConfiguration)){
+    			IWorker worker = getWorker(serviceConfiguration, name);
+    			if(worker != null){
+    				getServiceTimerSession().cancelTimer(htp.getId());
+    				if(serviceConfiguration.isActive() && worker.getNextInterval() != IInterval.DONT_EXECUTE){
+    					getServiceTimerSession().addTimer(worker.getNextInterval() *1000, htp.getId());
+    				}
+    			}
+    		}else{
+    			getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_SERVICES,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,intres.getLocalizedMessage("services.notauthorizedtoedit", name));
+    		}
+    	} catch (FinderException e) {
+    		log.error("Can not find service: "+name);
+    	}
+    	debug("<activateServiceTimer()");
+    } // getServiceName
     
     
     /**

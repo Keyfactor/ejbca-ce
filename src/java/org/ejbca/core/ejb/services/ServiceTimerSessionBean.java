@@ -55,6 +55,8 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
  *   transaction-type="Bean"
  *
  * @weblogic.enable-call-by-reference True
+ * 
+ * @ejb.transaction type="Supports"
  *
  * @ejb.env-entry name="DataSource"
  *   type="java.lang.String"
@@ -184,7 +186,6 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 		Integer timerInfo = (Integer) timer.getInfo();
 		if(timerInfo.equals(SERVICELOADER_ID)){
 			log.debug("Running the internal Service loader.");
-			getSessionContext().getTimerService().createTimer(SERVICELOADER_PERIOD, SERVICELOADER_ID);
 			load();
 		}else{		
 			ServiceConfiguration serviceData = null;
@@ -198,12 +199,13 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 				if(serviceData != null){
 					serviceName = getServiceSession().getServiceName(intAdmin, timerInfo.intValue());
 					worker = getWorker(serviceData,serviceName);
-					getSessionContext().getTimerService().createTimer(worker.getNextInterval()*1000, timerInfo);
+					addTimer(worker.getNextInterval()*1000, timerInfo);
 					Date nextRunDate = serviceData.getNextRunTimestamp();
 					Date currentDate = new Date();
 					if(currentDate.after(nextRunDate)){
 						nextRunDate = new Date(currentDate.getTime() + worker.getNextInterval());
 						serviceData.setNextRunTimestamp(nextRunDate);
+						getServiceSession().changeService(intAdmin, serviceName, serviceData); 
 						run=true;
 					}
 				}
@@ -251,46 +253,44 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
     /**
      * Loads and activates all the services from database that are active
      *
-     * @throws EJBException             if a communication or other error occurs.
+     * @throws EJBException if a communication or other error occurs.
      * @ejb.interface-method view-type="both"
      */
 	public void load(){
-    	// Get all services
+		// Get all services
 
-    		Collection currentTimers = getSessionContext().getTimerService().getTimers();
-    		Iterator iter = currentTimers.iterator();
-    		HashSet existingTimers = new HashSet();
-    		while(iter.hasNext()){
-    			Timer timer = (Timer) iter.next();
-    			existingTimers.add(timer.getInfo());    			
-    		}
-    		
-    		HashMap idToNameMap = getServiceSession().getServiceIdToNameMap(intAdmin);
-			Collection allServices = idToNameMap.keySet();
-			iter = allServices.iterator();
-			while(iter.hasNext()){
-				Integer id = (Integer) iter.next();
-				ServiceConfiguration serviceConfiguration = getServiceSession().getServiceConfiguration(intAdmin, id.intValue());
-				if(!existingTimers.contains(id)){
-					IWorker worker = getWorker(serviceConfiguration, (String) idToNameMap.get(id));
-					if(worker != null && serviceConfiguration.isActive()  && worker.getNextInterval() != IInterval.DONT_EXECUTE){
-					  getSessionContext().getTimerService().createTimer((worker.getNextInterval()) *1000, id);
-					}
+		Collection currentTimers = getSessionContext().getTimerService().getTimers();
+		Iterator iter = currentTimers.iterator();
+		HashSet existingTimers = new HashSet();
+		while(iter.hasNext()){
+			Timer timer = (Timer) iter.next();
+			existingTimers.add(timer.getInfo());    			
+		}
+
+		HashMap idToNameMap = getServiceSession().getServiceIdToNameMap(intAdmin);
+		Collection allServices = idToNameMap.keySet();
+		iter = allServices.iterator();
+		while(iter.hasNext()){
+			Integer id = (Integer) iter.next();
+			ServiceConfiguration serviceConfiguration = getServiceSession().getServiceConfiguration(intAdmin, id.intValue());
+			if(!existingTimers.contains(id)){
+				IWorker worker = getWorker(serviceConfiguration, (String) idToNameMap.get(id));
+				if(worker != null && serviceConfiguration.isActive()  && worker.getNextInterval() != IInterval.DONT_EXECUTE){
+					getSessionContext().getTimerService().createTimer((worker.getNextInterval()) *1000, id);
 				}
 			}
-			
-			if(!existingTimers.contains(SERVICELOADER_ID)){
-				// load the service timer
-				getSessionContext().getTimerService().createTimer(SERVICELOADER_PERIOD, SERVICELOADER_ID);
-			}
-			
+		}
 
+		if(!existingTimers.contains(SERVICELOADER_ID)){
+			// load the service timer
+			getSessionContext().getTimerService().createTimer(SERVICELOADER_PERIOD, SERVICELOADER_ID);
+		}
 	}
 	
     /**
      * Cancels all existing timers a unload
      *
-     * @throws EJBException             if a communication or other error occurs.
+     * @throws EJBException if a communication or other error occurs.
      * @ejb.interface-method view-type="both"
      */
 	public void unload(){
@@ -305,13 +305,16 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 	
 	
     /**
-     * Adds a timer to the bean
+     * Adds a timer to the bean, and cancels all existing timeouts for this id.
      *
-     * @throws EJBException             if a communication or other error occurs.
+     * @param id the id of the timer
+     * @throws EJBException if a communication or other error occurs.
      * @ejb.interface-method view-type="both"
      */
 	public void addTimer(long interval, Integer id){
-		 getSessionContext().getTimerService().createTimer(interval, id);
+		// Cancel old timers before adding new one
+		cancelTimer(id);
+		getSessionContext().getTimerService().createTimer(interval, id);
 	}
 	
     /**
