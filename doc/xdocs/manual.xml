@@ -2685,18 +2685,6 @@ certificates.
 </p>
 </subsubsection>
 
-<subsubsection name="Custom publishers">
-<p>
-If your setup makes it very complex to configure multiple certificate
-profiles and multiple publishers you might consider writing a custom publisher that
-handles things directly according to you demands.
-</p><p>
-Look in the directory src/java/org/ejbca/core/model/ca/publishers for more
-information about writing your own solution. It is an empty custom publisher called
-DummyCustomPublisher.java that can be extended.
-</p>
-</subsubsection>
-
 <subsubsection name="What EJBCA stores/creates/modifies">
 <p>
 Apart from the DN in the entry a number of attributes are also stored, some
@@ -3006,6 +2994,19 @@ include /usr/local/etc/openldap/schema/ejbca.schema
 then restart the server.
 </p>
 </subsubsection>
+
+<subsection name="Custom publishers">
+<p>
+If your setup makes it very complex to configure multiple certificate
+profiles and multiple publishers you might consider writing a custom publisher that
+handles things directly according to you demands.
+</p><p>
+Look in the directory src/java/org/ejbca/core/model/ca/publishers for more
+information about writing your own solution. It is an empty custom publisher called
+DummyCustomPublisher.java that can be extended.
+</p>
+</subsection>
+
 
 </section>
 
