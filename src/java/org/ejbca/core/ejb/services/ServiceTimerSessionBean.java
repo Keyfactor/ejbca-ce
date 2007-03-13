@@ -200,7 +200,7 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 				if(serviceData != null){
 					serviceName = getServiceSession().getServiceName(intAdmin, timerInfo.intValue());
 					worker = getWorker(serviceData,serviceName);
-					addTimer(worker.getNextInterval()*1000, timerInfo);
+					getSessionContext().getTimerService().createTimer(worker.getNextInterval()*1000, timerInfo);
 					Date nextRunDate = serviceData.getNextRunTimestamp();
 					Date currentDate = new Date();
 					if(currentDate.after(nextRunDate)){
