@@ -11,11 +11,9 @@
  *                                                                       *
  *************************************************************************/
 
-package se.anatom.ejbca.ca.publisher;
+package org.ejbca.core.model.ca.publisher;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Properties;
@@ -46,7 +44,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests Publishers.
  *
- * @version $Id: TestPublisher.java,v 1.7 2007-03-13 07:44:25 jeklund Exp $
+ * @version $Id: TestPublisher.java,v 1.1 2007-03-13 11:22:27 anatom Exp $
  */
 public class TestPublisher extends TestCase {
     
