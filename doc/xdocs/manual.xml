@@ -2996,17 +2996,44 @@ then restart the server.
 </subsubsection>
 
 <subsection name="Custom publishers">
+<subsubsection name="Developing a custom publisher">
 <p>
 If your setup makes it very complex to configure multiple certificate
 profiles and multiple publishers you might consider writing a custom publisher that
-handles things directly according to you demands.
+handles things directly according to you needs.
 </p><p>
 Look in the directory src/java/org/ejbca/core/model/ca/publishers for more
-information about writing your own solution. It is an empty custom publisher called
+information about writing your own solution. There is an empty custom publisher called
 DummyCustomPublisher.java that can be extended.
 </p>
+</subsubsection>
+<subsubsection name="Publishing CRLs with an external application">
+<p>
+A lightweight alternative to developing a new custom publisher for exporting CRLs is
+to use the General Purpose Custom Publisher (GPCP). This makes it possible to export
+a PKCS#12 file with a simple script (using scp or similar). The GPCP creates a
+temporary file and executes the script with the full pathname to the temproary file
+as an argument.
+</p><p>
+It's possible to let the publisher ignore an error in the execution of a script by
+altering the publishers properties. By default, the publisher detects both output to
+standard error and a nonzero errorlevel set by the script.
+</p><p>
+To start using the GPCP, select "Edit Publishers" in the Administration GUI. Add a
+publisher "GPCP" and then "Edit" the same. Choose 
+<ul>
+<li>Publisher type: Custom Publisher</li>
+<li>Class Path: org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher</li>
+<li>Properties of Custom Publisher: application /fullpathname/exportscript.sh&lt;newline&gt;
+failOnStandardError &lt;true &#166; false&gt;&lt;newline&gt;
+failOnErrorCode &lt;true &#166; false&gt;</li>
+</ul>
+and click "Save". Select "Edit Certificate Authorities" in the Administration GUI and
+select "GPCP" as your new CRL publisher. Click "Save". Test everything by selecting
+"Basic Functions" in the Administration GUI and click "Create CRL".
+</p>
+</subsubsection>
 </subsection>
-
 
 </section>
 

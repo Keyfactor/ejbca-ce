@@ -13,8 +13,12 @@
 
 package se.anatom.ejbca.ca.publisher;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Properties;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -29,7 +33,9 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
+import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
+import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.Base64;
@@ -40,7 +46,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests Publishers.
  *
- * @version $Id: TestPublisher.java,v 1.6 2006-07-21 15:28:26 anatom Exp $
+ * @version $Id: TestPublisher.java,v 1.7 2007-03-13 07:44:25 jeklund Exp $
  */
 public class TestPublisher extends TestCase {
     
@@ -92,9 +98,12 @@ public class TestPublisher extends TestCase {
     private static Logger log = Logger.getLogger(TestPublisher.class);
     private static Context ctx;
     private static IPublisherSessionRemote pub;
-    
+
     private static final Admin admin = new Admin(Admin.TYPE_INTERNALUSER);
     
+    private final String externalCommand	= "dir";
+    private final String invalidOption		= " --------------:";
+
     /**
      * Creates a new TestPublisher object.
      *
@@ -305,4 +314,140 @@ public class TestPublisher extends TestCase {
         
         log.debug("<test09removePublishers()");
     }
+
+	/**
+	 * Test normal operation of GeneralPurposeCustomPublisher.
+	 *
+	 * @throws Exception error
+	 */
+	public void test10GenPurpCustPubl() throws Exception {
+	    log.debug(">test10GenPurpCustPubl()");
+	    
+	    GeneralPurposeCustomPublisher gpcPublisher = null;
+	    Properties props = new Properties();
+	
+	    //Make sure an external command exists for testing purposes
+	    boolean ret = false;
+		try {
+			Process externalProcess = Runtime.getRuntime().exec( externalCommand );
+			if ( externalProcess.waitFor() == 0 ) {
+				ret = true;
+			}
+		} catch (IOException e) {
+		} catch (InterruptedException e) {
+		}
+	    assertTrue("This test requires \"" + externalCommand + "\" to be available.", ret);
+	    
+	    // Create
+    	gpcPublisher = new GeneralPurposeCustomPublisher();
+	
+	    // Make sure it fails without a given external command
+	    ret = false;
+	    try {
+	        props.setProperty(GeneralPurposeCustomPublisher.externalCommandPropertyName, "");
+	        gpcPublisher.init(props);
+			ret = gpcPublisher.storeCRL(admin, testcrl, null, 1);
+		} catch (PublisherException e) {
+		}
+	    assertFalse("Store CRL with GeneralPurposeCustomPublisher did not failed with invalid properties.", ret);
+	
+	    // Test function by calling a command that is available on most platforms 
+	    ret = false;
+	    try {
+	        props.setProperty(GeneralPurposeCustomPublisher.externalCommandPropertyName, externalCommand);
+	        gpcPublisher.init(props);
+			ret = gpcPublisher.storeCRL(admin, testcrl, null, 1);
+		} catch (PublisherException e) {
+			e.printStackTrace();
+		}
+	    assertTrue("Store CRL with GeneralPurposeCustomPublisher failed.", ret);
+	
+	    log.debug("<test10GenPurpCustPubl()");
+	}
+
+	/**
+	 * Verify that GeneralPurposeCustomPublisher will fail on an error code from
+	 * an external application. 
+	 *
+	 * @throws Exception error
+	 */
+	public void test11GenPurpCustPublErrorCode() throws Exception {
+	    log.debug(">test11GenPurpCustPublErrorCode()");
+	    
+	    GeneralPurposeCustomPublisher gpcPublisher = null;
+	    Properties props = new Properties();
+	
+	    //Make sure an external command exists for testing purposes
+	    boolean ret = false;
+		try {
+			Process externalProcess = Runtime.getRuntime().exec( externalCommand );
+			if ( externalProcess.waitFor() == 0 ) {
+				ret = true;
+			}
+		} catch (IOException e) {
+		} catch (InterruptedException e) {
+		}
+	    assertTrue("This test requires \"" + externalCommand + "\" to be available.", ret);
+	    
+	    // Create
+    	gpcPublisher = new GeneralPurposeCustomPublisher();
+
+	    
+	    // Test function by calling a command that is available on most platforms with invalid option
+	    ret = false;
+	    try {
+	        props.setProperty(GeneralPurposeCustomPublisher.externalCommandPropertyName, externalCommand + invalidOption);
+	        props.setProperty(GeneralPurposeCustomPublisher.failOnErrorCodePropertyName, "true");
+	        props.setProperty(GeneralPurposeCustomPublisher.failOnStdErrPropertyName, "false");
+	        gpcPublisher.init(props);
+			ret = gpcPublisher.storeCRL(admin, testcrl, null, 1);
+		} catch (PublisherException e) {
+		}
+	    assertFalse("Store CRL with GeneralPurposeCustomPublisher did not fail on errorcode.", ret);
+	
+	    log.debug("<test11GenPurpCustPublErrorCode()");
+	}
+	    
+	/**
+	 * Verify that GeneralPurposeCustomPublisher will fail on output to standard
+	 * error from an external application. 
+	 *
+	 * @throws Exception error
+	 */
+	public void test12GenPurpCustPublStandardError() throws Exception {
+	    log.debug(">test12GenPurpCustPublStandardError()");
+	    
+	    GeneralPurposeCustomPublisher gpcPublisher = null;
+	    Properties props = new Properties();
+	
+	    //Make sure an external command exists for testing purposes
+	    boolean ret = false;
+		try {
+			Process externalProcess = Runtime.getRuntime().exec( externalCommand );
+			if ( externalProcess.waitFor() == 0 ) {
+				ret = true;
+			}
+		} catch (IOException e) {
+		} catch (InterruptedException e) {
+		}
+	    assertTrue("This test requires \"" + externalCommand + "\" to be available.", ret);
+	    
+	    // Create
+    	gpcPublisher = new GeneralPurposeCustomPublisher();
+	    
+	    // Test function by calling a command that is available on most platforms with invalid option 
+	    ret = false;
+	    try {
+	        props.setProperty(GeneralPurposeCustomPublisher.externalCommandPropertyName, externalCommand + invalidOption);
+	        props.setProperty(GeneralPurposeCustomPublisher.failOnErrorCodePropertyName, "false");
+	        props.setProperty(GeneralPurposeCustomPublisher.failOnStdErrPropertyName, "true");
+	        gpcPublisher.init(props);
+			ret = gpcPublisher.storeCRL(admin, testcrl, null, 1);
+		} catch (PublisherException e) {
+		}
+	    assertFalse("Store CRL with GeneralPurposeCustomPublisher did not fail on standard error.", ret);
+	
+	    log.debug("<test12GenPurpCustPublStandardError()");
+	}
+
 }
