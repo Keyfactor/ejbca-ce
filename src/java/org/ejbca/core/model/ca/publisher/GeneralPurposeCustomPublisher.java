@@ -34,7 +34,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
  * I supposed to illustrat how to implement a custom publisher to EJBCA 3.
  *  
  *
- * @version $Id: GeneralPurposeCustomPublisher.java,v 1.1 2007-03-12 13:44:07 jeklund Exp $
+ * @version $Id: GeneralPurposeCustomPublisher.java,v 1.2 2007-03-13 10:57:27 jeklund Exp $
  */
 public class GeneralPurposeCustomPublisher implements ICustomPublisher{
     		
@@ -42,9 +42,9 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
 
     private static final InternalResources intres = InternalResources.getInstance();
 
-	private static final String externalCommandPropertyName	= "application";
-	private static final String failOnErrorCodePropertyName	= "failOnErrorCode";
-	private static final String failOnStdErrPropertyName	= "failOnStandardError";
+	public static final String externalCommandPropertyName	= "application";
+	public static final String failOnErrorCodePropertyName	= "failOnErrorCode";
+	public static final String failOnStdErrPropertyName		= "failOnStandardError";
 	
 	private String externalCommandFileName	= null;
 	private boolean failOnErrorCode			= true;
