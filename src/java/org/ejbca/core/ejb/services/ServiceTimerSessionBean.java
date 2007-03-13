@@ -257,7 +257,7 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
      * @throws EJBException if a communication or other error occurs.
      * @ejb.interface-method view-type="both"
      */
-	public synchronized void load(){
+	public void load(){
 		// Get all services
 
 		Collection currentTimers = getSessionContext().getTimerService().getTimers();
@@ -300,7 +300,7 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
      * @throws EJBException if a communication or other error occurs.
      * @ejb.interface-method view-type="both"
      */
-	public synchronized void unload(){
+	public void unload(){
 		// Get all servicess
 		Collection currentTimers = getSessionContext().getTimerService().getTimers();
 		Iterator iter = currentTimers.iterator();
