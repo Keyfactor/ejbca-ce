@@ -561,7 +561,7 @@ HOURLY  =  At XX:00 every hour.
 </subsection>
 <subsection name="Cron job">
 <p>
-Yet another to generate CRLs way is to have a cron job or equivalent call 'bin/ejbca.sh ca createcrl'.
+Yet another way to generate CRLs way is to have a cron job or equivalent call 'bin/ejbca.sh ca createcrl'.
 The 'createcrl' command will then check all active CAs if it is a need to update their CRLs, 
 otherwise nothing is done. 
 </p><p>
