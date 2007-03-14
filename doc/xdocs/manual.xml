@@ -185,7 +185,8 @@ If you don't have root permission now, you can do it manually later after step 9
 </p><p>
 7) type 'ant deploy', this will deploy everything again and configure the servlet
 container with the keystore file (this is why we needed to stop the container).
-If you want to use jboss specific service for automatic creation of the CRL:s you should enable this option in ejbca.properties.
+If you want to use jboss specific service for automatic creation of the CRL:s you should enable this option in ejbca.properties,
+ see the chapter about 'CRL generation'.
 </p><p>
 8) Import the certificate from EJBCA_HOME/p12/superadmin.p12 in your web browser. 
 This is the super administrators certificate used to access the admin GUI. 
@@ -525,9 +526,18 @@ There are three settings in CA configuration dictating the times when CRL genera
 <p>
 There are at least two ways to have EJBCA to periodically create updated CRLs.
 </p>
-<subsection name="JBossservice">
+<subsection name="CRL Update service worker">
 <p>
-The first way to have CRLs generated automatically is to build and deploy the JBOSS CRL Service.
+From EJBCA 3.4 there is a timed service framework in EJBCA. In the Admin-GUI you can go to 
+'Edit Services' and add a new service. Edit the service and select the 'CRL Updater' worker and the interval you want to use.
+Don't forget to set the service to 'Active'.
+<br/>
+Now this service will run with the interval you have configured and generate CRLs according to the settings for each CA.
+</p>
+</subsection>
+<subsection name="JBoss service">
+<p>
+Another way to have CRLs generated automatically is to build and deploy the JBOSS CRL Service.
  This is done by setting the option 'createcrl.service.enabled' to true in ejbca.properties.
 After settin the option you must re-deploy EJBCA and re-start JBoss. 
  </p><p>
@@ -551,7 +561,7 @@ HOURLY  =  At XX:00 every hour.
 </subsection>
 <subsection name="Cron job">
 <p>
-The second way is to have a cron job or equivalent call 'bin/ejbca.sh ca createcrl'.
+Yet another to generate CRLs way is to have a cron job or equivalent call 'bin/ejbca.sh ca createcrl'.
 The 'createcrl' command will then check all active CAs if it is a need to update their CRLs, 
 otherwise nothing is done. 
 </p><p>
