@@ -126,7 +126,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.55 2007-02-27 16:11:39 anatom Exp $
+ * @version $Id: X509CA.java,v 1.56 2007-03-14 09:37:46 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -722,7 +722,9 @@ public class X509CA extends CA implements Serializable {
          while(certExtIter.hasNext()){
         	 Integer id = (Integer) certExtIter.next();
         	 CertificateExtension certExt = fact.getCertificateExtensions(id);
-        	 certgen.addExtension(new DERObjectIdentifier(certExt.getOID()),certExt.isCriticalFlag(),certExt.getValue(subject, this, certProfile));        	 
+        	 if (certExt != null) {
+            	 certgen.addExtension(new DERObjectIdentifier(certExt.getOID()),certExt.isCriticalFlag(),certExt.getValue(subject, this, certProfile));        	         		 
+        	 }
          }
          
          X509Certificate cert;

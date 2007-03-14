@@ -33,7 +33,7 @@ import org.ejbca.core.model.InternalResources;
  * 
  * @author Philip Vendil 2007 jan 5
  *
- * @version $Id: CertificateExtensionFactory.java,v 1.3 2007-02-02 18:09:42 anatom Exp $
+ * @version $Id: CertificateExtensionFactory.java,v 1.4 2007-03-14 09:37:45 anatom Exp $
  */
 
 public class CertificateExtensionFactory {
@@ -96,7 +96,11 @@ public class CertificateExtensionFactory {
 	 * @returns null if the CertificateExtension doesn't exist
 	 */
 	public CertificateExtension getCertificateExtensions(Integer id){
-		return (CertificateExtension) certificateExtensions.get(id);
+		CertificateExtension ret = (CertificateExtension) certificateExtensions.get(id);
+		if (ret == null) {
+			log.error(intres.getLocalizedMessage("certext.noextensionforid", id));			
+		}
+		return ret;
 	}
 
 	/** 
