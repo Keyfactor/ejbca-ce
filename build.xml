@@ -258,8 +258,10 @@
                     <include name="org/ejbca/ui/web/pub/ServletUtils.*"/>   
                     <include name="org/ejbca/ui/web/admin/configuration/LanguageProperties.*"/>
                 </fileset>
-                
-
+            	<fileset dir="${src}/java">
+            	    <include name="dncomponents.properties"/>
+            		<include name="profilemappings.properties"/>
+            	</fileset>
             </jar>
         </target>    	
 	
