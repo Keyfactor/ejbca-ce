@@ -43,4 +43,4 @@ args="$args com.ncipher.provider.km.nCipherKM nCipher.sworld $@"
 
 # Finally run java
 #set -x
-$JAVA_HOME/bin/java -cp $CLASSES org.ejbca.ui.cli.HSMKeyTool $args
+$JAVA_HOME/bin/java -Xmx512m -Xms512m -cp $CLASSES org.ejbca.ui.cli.HSMKeyTool $args
