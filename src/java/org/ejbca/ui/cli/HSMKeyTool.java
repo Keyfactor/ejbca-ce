@@ -13,14 +13,14 @@
 
 package org.ejbca.ui.cli;
 
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 
 
 
 /**
  * @author lars
- * @version $Id: HSMKeyTool.java,v 1.16 2007-02-15 14:15:46 primelars Exp $
+ * @version $Id: HSMKeyTool.java,v 1.17 2007-03-15 13:52:04 anatom Exp $
  *
  */
 public class HSMKeyTool {
@@ -60,12 +60,12 @@ public class HSMKeyTool {
                 if ( args.length < 8 )
                     System.err.println(args[0] + " " + args[1] + " <keystore ID> <input file> <output file> <key alias>");
                 else
-                    new KeyStoreContainer(args[3], args[2], args[4]).encrypt(new FileInputStream(args[5]), new FileOutputStream(args[6]), args[7]);
+                    new KeyStoreContainer(args[3], args[2], args[4]).encrypt(new File(args[5]), new FileOutputStream(args[6]), args[7]);
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(DECRYPT_SWITCH)) {
                 if ( args.length < 8 )
                     System.err.println(args[0] + " " + args[1] + " <keystore ID> <input file> <output file> <key alias>");
                 else
-                    new KeyStoreContainer(args[3], args[2], args[4]).decrypt(new FileInputStream(args[5]), new FileOutputStream(args[6]), args[7]);
+                    new KeyStoreContainer(args[3], args[2], args[4]).decrypt(new File(args[5]), new FileOutputStream(args[6]), args[7]);
             } else if( args.length > 1 && args[1].toLowerCase().trim().equals(TEST_SWITCH)) {
                 if ( args.length < 5 )
                     System.err.println(args[0] + " " + args[1] + " <keystore ID> [<# of tests>]");
