@@ -6,8 +6,6 @@ package org.ejbca.ui.cli;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -29,16 +27,19 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.Iterator;
 
 import javax.security.auth.x500.X500Principal;
 
-import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
-import org.bouncycastle.cms.CMSProcessableByteArray;
-import org.bouncycastle.cms.CMSProcessableFile;
+import org.bouncycastle.cms.CMSEnvelopedDataParser;
+import org.bouncycastle.cms.CMSEnvelopedDataStreamGenerator;
+import org.bouncycastle.cms.CMSTypedStream;
 import org.bouncycastle.cms.RecipientInformation;
+import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 
@@ -194,53 +195,55 @@ public class KeyStoreContainer {
     }
     abstract private class CodeStream {
         void code(InputStream is, OutputStream os, String alias) throws Exception {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            while( true ) {
-                int nextByte = is.read();
-                if (nextByte<0)
-                    break;
-                baos.write(nextByte);
-            }
-            os.write(doCoding(baos.toByteArray(), alias));
-            os.close();
+        	doCoding(is, os, alias);
+        	os.flush();
         }
-        void code(File is, OutputStream os, String alias) throws Exception {
-            os.write(doCoding(is, alias));
-            os.close();
-        }
-        abstract byte[] doCoding(final byte data[], String alias) throws Exception;
-        abstract byte[] doCoding(final File file, String alias) throws Exception;
+        abstract void doCoding(final InputStream is, OutputStream os, String alias) throws Exception;
     }
     private class EncryptStream extends CodeStream {
-        byte[] doCoding(final byte data[], String alias) throws Exception {    
-            final CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
-            edGen.addKeyTransRecipient( keyStore.getCertificate(alias).getPublicKey(), "hej".getBytes() );
-            return edGen.generate(new CMSProcessableByteArray(data), CMSEnvelopedDataGenerator.DES_EDE3_CBC, "BC").getEncoded();
-        }
-        byte[] doCoding(final File file, String alias) throws Exception {    
-            final CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
-            edGen.addKeyTransRecipient( keyStore.getCertificate(alias).getPublicKey(), "hej".getBytes() );
-            return edGen.generate(new CMSProcessableFile(file), CMSEnvelopedDataGenerator.DES_EDE3_CBC, "BC").getEncoded();
+        void doCoding(final InputStream is, OutputStream os, String alias) throws Exception {    
+            final CMSEnvelopedDataStreamGenerator edGen = new CMSEnvelopedDataStreamGenerator();
+            edGen.addKeyTransRecipient(keyStore.getCertificate(alias).getPublicKey(), "hej".getBytes() );
+            OutputStream out = edGen.open(os, CMSEnvelopedDataGenerator.AES128_CBC, "BC");
+            byte[] buf = new byte[32*1024];
+            while (true) {
+            	int len = is.read(buf);
+            	if (len != -1) {
+            		out.write(buf,0, len);
+            	} else {
+            		break;
+            	}
+            }            
+            out.close();
         }
     }
     private class DecryptStream extends CodeStream {
-        byte[] doCoding(byte[] data, String alias) throws Exception  {
-            return ((RecipientInformation)new CMSEnvelopedData(data).getRecipientInfos().getRecipients().iterator().next()).getContent(getKey(alias), KeyStoreContainer.this.ecryptProviderName);
-        }
-        byte[] doCoding(File file, String alias) throws Exception  {
-            return ((RecipientInformation)new CMSEnvelopedData(new FileInputStream(file)).getRecipientInfos().getRecipients().iterator().next()).getContent(getKey(alias), KeyStoreContainer.this.ecryptProviderName);
+        void doCoding(final InputStream is, OutputStream os, String alias) throws Exception  {
+            CMSEnvelopedDataParser     ep = new CMSEnvelopedDataParser(is);
+            RecipientInformationStore  recipients = ep.getRecipientInfos();        
+            Collection  c = recipients.getRecipients();
+            Iterator    it = c.iterator();
+            if (it.hasNext())
+            {
+                RecipientInformation   recipient = (RecipientInformation)it.next();        
+                CMSTypedStream recData = recipient.getContentStream(getKey(alias), KeyStoreContainer.this.ecryptProviderName);
+                InputStream ris = recData.getContentStream();
+                byte[] buf = new byte[32*1024];
+                while (true) {
+                	int len = ris.read(buf);
+                	if (len != -1) {
+                		os.write(buf,0, len);
+                	} else {
+                		break;
+                	}
+                }            
+            }
         }
     }
     public void decrypt(InputStream is, OutputStream os, String alias) throws Exception {
         new DecryptStream().code(is, os, alias);
     }
-    public void decrypt(File is, OutputStream os, String alias) throws Exception {
-        new DecryptStream().code(is, os, alias);
-    }
     public void encrypt(InputStream is, OutputStream os, String alias) throws Exception {
-        new EncryptStream().code(is, os, alias);
-    }
-    public void encrypt(File is, OutputStream os, String alias) throws Exception {
         new EncryptStream().code(is, os, alias);
     }
 }
