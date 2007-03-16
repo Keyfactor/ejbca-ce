@@ -27,7 +27,7 @@ import org.ejbca.core.model.ca.catoken.IHardCAToken;
 /**
  * Activates the specified HSM CA.
  *
- * @version $Id: CaActivateCACommand.java,v 1.3 2006-03-11 17:58:34 anatom Exp $
+ * @version $Id: CaActivateCACommand.java,v 1.4 2007-03-16 19:56:39 herrvendil Exp $
  */
 public class CaActivateCACommand extends BaseCaAdminCommand {
     /**
@@ -48,7 +48,7 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {
             if (args.length < 3) {
-                getOutputStream().println("Usage: CA acivateca <CA name> <authorization code>");
+                getOutputStream().println("Usage: CA activateca <CA name> <authorization code>");
                 return;
             }
 
