@@ -13,8 +13,6 @@
 
 package org.ejbca.ui.cli;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
@@ -22,7 +20,7 @@ import java.io.FileOutputStream;
 
 /**
  * @author lars
- * @version $Id: HSMKeyTool.java,v 1.18 2007-03-16 12:08:06 anatom Exp $
+ * @version $Id: HSMKeyTool.java,v 1.19 2007-03-18 12:56:07 primelars Exp $
  *
  */
 public class HSMKeyTool {
@@ -49,40 +47,40 @@ public class HSMKeyTool {
                     System.exit(-1);
                 }
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(GENERATE_SWITCH)) {
-                if ( args.length < 5 )
+                if ( args.length < 6 )
                     System.err.println(args[0] + " " + args[1] + " <key size> [<key entry name>] [<keystore ID>]");
                 else
-                    new KeyStoreContainer(args[3],args[2], args.length>6 ? args[6] : null).generate(Integer.parseInt(args[4].trim()), args.length>5 ? args[5] :"myKey");
+                    new KeyStoreContainer(args[4], args[2], args[3], args.length>7 ? args[7] : null).generate(Integer.parseInt(args[5].trim()), args.length>6 ? args[6] :"myKey");
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(DELETE_SWITCH)) {
-                if ( args.length < 5 )
+                if ( args.length < 6 )
                     System.err.println(args[0] + " " + args[1] + " <keystore ID> [<key entry name>]");
                 else
-                    new KeyStoreContainer(args[3], args[2], args[4]).delete(args.length>5 ? args[5] : null);
+                    new KeyStoreContainer(args[4], args[2], args[3], args[5]).delete(args.length>6 ? args[6] : null);
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(ENCRYPT_SWITCH)) {
-                if ( args.length < 8 )
+                if ( args.length < 9 )
                     System.err.println(args[0] + " " + args[1] + " <keystore ID> <input file> <output file> <key alias>");
                 else
-                    new KeyStoreContainer(args[3], args[2], args[4]).encrypt(new BufferedInputStream(new FileInputStream(args[5]), 32*1024), new BufferedOutputStream(new FileOutputStream(args[6]), 32*1024), args[7]);
+                    new KeyStoreContainer(args[4], args[2], args[3], args[5]).encrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(DECRYPT_SWITCH)) {
-                if ( args.length < 8 )
+                if ( args.length < 9 )
                     System.err.println(args[0] + " " + args[1] + " <keystore ID> <input file> <output file> <key alias>");
                 else
-                    new KeyStoreContainer(args[3], args[2], args[4]).decrypt(new BufferedInputStream(new FileInputStream(args[5]), 32*1024), new BufferedOutputStream(new FileOutputStream(args[6]), 32*1024), args[7]);
+                    new KeyStoreContainer(args[4], args[2], args[3], args[5]).decrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
             } else if( args.length > 1 && args[1].toLowerCase().trim().equals(TEST_SWITCH)) {
-                if ( args.length < 5 )
+                if ( args.length < 6 )
                     System.err.println(args[0] + " " + args[1] + " <keystore ID> [<# of tests>]");
                 else
-                    KeyStoreContainerTest.test(args[2], args[3], args[4], args.length>5 ? Integer.parseInt(args[5].trim()) : 1);
+                    KeyStoreContainerTest.test(args[2], args[3], args[4], args[5], args.length>6 ? Integer.parseInt(args[6].trim()) : 1);
             } else if( args.length > 1 && args[1].toLowerCase().trim().equals(CREATE_KEYSTORE_SWITCH)) {
-                new KeyStoreContainer(args[3], args[2], (byte[])null).storeKeyStore();
+                new KeyStoreContainer(args[4], args[2], args[3], (byte[])null).storeKeyStore();
             } else if( args.length > 1 && args[1].toLowerCase().trim().equals(CREATE_KEYSTORE_MODULE_SWITCH)) {
                 System.setProperty("protect", "module");
-                new KeyStoreContainer(args[3], args[2], (byte[])null).storeKeyStore();
+                new KeyStoreContainer(args[4], args[2], args[3], (byte[])null).storeKeyStore();
             } else if( args.length > 1 && args[1].toLowerCase().trim().equals(MOVE_SWITCH)) {
-                if ( args.length < 6 )
+                if ( args.length < 7 )
                     System.err.println(args[0] + " " + args[1] + " <from keystore ID> <to keystore ID>");
                 else
-                    KeyStoreContainer.move(args[2], args[3], args[4], args[5]);
+                    KeyStoreContainer.move(args[2], args[3], args[4], args[5], args[6]);
             } else
                 System.err.println("Use \"" +
                                    args[0]+" "+CREATE_CA_SWITCH+"\" or \"" +

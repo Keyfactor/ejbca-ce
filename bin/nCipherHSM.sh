@@ -39,7 +39,7 @@ done
 # Prepare arguments
 args="`basename $0` $1"
 shift
-args="$args com.ncipher.provider.km.nCipherKM nCipher.sworld $@"
+args="$args com.ncipher.provider.km.nCipherKM com.ncipher.fixup.provider.nCipherRSAPrivateEncrypt nCipher.sworld $@"
 
 # Finally run java
 #set -x

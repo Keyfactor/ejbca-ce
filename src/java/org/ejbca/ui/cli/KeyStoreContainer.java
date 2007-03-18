@@ -3,6 +3,8 @@
  */
 package org.ejbca.ui.cli;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -59,15 +61,18 @@ public class KeyStoreContainer {
     private char passPhraseGetSetEntry[] = null;
     public KeyStoreContainer(final String keyStoreType,
                              final String providerClassName,
+                             final String encryptProviderClassName,
                              final String storeID) throws NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, IOException, IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException {
-        this( keyStoreType, providerClassName, storeID!=null ? storeID.getBytes():null);
+        this( keyStoreType, providerClassName,
+              encryptProviderClassName, storeID!=null ? storeID.getBytes():null);
     }
     KeyStoreContainer(final String keyStoreType,
                       final String providerClassName,
+                      final String encryptProviderClassName,
                       final byte storeID[]) throws NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, IOException, IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException {
         Security.addProvider( new BouncyCastleProvider() );
         this.providerName = getProviderName(providerClassName);
-        this.ecryptProviderName = getProviderName("com.ncipher.fixup.provider.nCipherRSAPrivateEncrypt");
+        this.ecryptProviderName = getProviderName(encryptProviderClassName);
         System.err.println("Creating KeyStore of type "+keyStoreType+" with provider "+this.providerName+(storeID!=null ? (" with ID "+new String(storeID)) : "")+'.');
         this.keyStore = KeyStore.getInstance(keyStoreType, this.providerName);
          try {
@@ -175,11 +180,12 @@ public class KeyStoreContainer {
         return passPhraseLoadSave;
     }
     static void move(final String providerClassName,
+                     final String encryptProviderClassName,
                      final String keyStoreType,
                      final String fromID,
                      final String toID) throws IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException, NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, IOException, UnrecoverableKeyException {
-        KeyStoreContainer fromKS = new KeyStoreContainer(keyStoreType, providerClassName, fromID);
-        KeyStoreContainer toKS = new KeyStoreContainer(keyStoreType, providerClassName, toID);
+        KeyStoreContainer fromKS = new KeyStoreContainer(keyStoreType, providerClassName, encryptProviderClassName, fromID);
+        KeyStoreContainer toKS = new KeyStoreContainer(keyStoreType, providerClassName, encryptProviderClassName, toID);
         Enumeration<String> e = fromKS.getKeyStore().aliases();
         while( e.hasMoreElements() ) {
             String alias = e.nextElement();
@@ -201,41 +207,42 @@ public class KeyStoreContainer {
         abstract void doCoding(final InputStream is, OutputStream os, String alias) throws Exception;
     }
     private class EncryptStream extends CodeStream {
-        void doCoding(final InputStream is, OutputStream os, String alias) throws Exception {    
+        void doCoding(final InputStream is, OutputStream os, String alias) throws Exception {
+            final int bufferSize = 32*1024;
+            final InputStream bis = new BufferedInputStream(is, bufferSize);
+            final OutputStream bos = new BufferedOutputStream(os, bufferSize);
             final CMSEnvelopedDataStreamGenerator edGen = new CMSEnvelopedDataStreamGenerator();
             edGen.addKeyTransRecipient(keyStore.getCertificate(alias).getPublicKey(), "hej".getBytes() );
-            OutputStream out = edGen.open(os, CMSEnvelopedDataGenerator.AES128_CBC, "BC");
-            byte[] buf = new byte[32*1024];
+            OutputStream out = edGen.open(bos, CMSEnvelopedDataGenerator.AES128_CBC, "BC");
+            byte[] buf = new byte[bufferSize];
             while (true) {
-            	int len = is.read(buf);
-            	if (len != -1) {
-            		out.write(buf,0, len);
-            	} else {
-            		break;
-            	}
+            	int len = bis.read(buf);
+                if ( len<0 )
+                    break;
+                out.write(buf,0, len);
             }            
             out.close();
         }
     }
     private class DecryptStream extends CodeStream {
         void doCoding(final InputStream is, OutputStream os, String alias) throws Exception  {
-            CMSEnvelopedDataParser     ep = new CMSEnvelopedDataParser(is);
+            final int bufferSize = 32*1024;
+            final InputStream bis = new BufferedInputStream(is, bufferSize);
+            final OutputStream bos = new BufferedOutputStream(os, bufferSize);
+            CMSEnvelopedDataParser     ep = new CMSEnvelopedDataParser(bis);
             RecipientInformationStore  recipients = ep.getRecipientInfos();        
             Collection  c = recipients.getRecipients();
             Iterator    it = c.iterator();
-            if (it.hasNext())
-            {
+            if (it.hasNext()) {
                 RecipientInformation   recipient = (RecipientInformation)it.next();        
                 CMSTypedStream recData = recipient.getContentStream(getKey(alias), KeyStoreContainer.this.ecryptProviderName);
                 InputStream ris = recData.getContentStream();
-                byte[] buf = new byte[32*1024];
+                byte[] buf = new byte[bufferSize];
                 while (true) {
                 	int len = ris.read(buf);
-                	if (len != -1) {
-                		os.write(buf,0, len);
-                	} else {
-                		break;
-                	}
+                	if ( len<0 )
+                        break;
+                    bos.write(buf,0, len);
                 }            
             }
         }

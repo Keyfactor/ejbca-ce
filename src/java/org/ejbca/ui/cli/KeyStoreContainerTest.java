@@ -82,12 +82,14 @@ class KeyStoreContainerTest {
         System.runFinalization();
     }
     private static KeyStoreContainer getKeyStoreTest(final String providerName,
+                                                     final String encryptProviderClassName,
                                                      final String keyStoreType,
                                                      final String storeID) throws Exception {
         KeyStoreContainer keyStore = null;
         while( keyStore==null ) {
             try {
-                keyStore = new KeyStoreContainer(keyStoreType, providerName, storeID);
+                keyStore = new KeyStoreContainer(keyStoreType, providerName,
+                                                 encryptProviderClassName, storeID);
             } catch( Throwable t ) {
                 t.printStackTrace(System.err);
                 System.err.println("Card set not preloaded. Hit return when error fixed");
@@ -111,12 +113,14 @@ class KeyStoreContainerTest {
         return testSet.toArray(new KeyStoreContainerTest[0]);
     }
     static void test(final String providerClassName,
+                     final String encryptProviderClassName,
                      final String keyStoreType,
                      final String storeID,
                      final int nrOfTests) throws Exception {
         System.out.println("Test of keystore with ID "+storeID+'.');
         KeyStoreContainerTest tests[] = null;
-        final KeyStoreContainer keyStore = getKeyStoreTest(providerClassName, keyStoreType, storeID);
+        final KeyStoreContainer keyStore = getKeyStoreTest(providerClassName, encryptProviderClassName,
+                                                           keyStoreType, storeID);
         for (int i = 0; i<nrOfTests || nrOfTests<1; i++) {
             try {
                 if ( tests==null || nrOfTests==-5 )

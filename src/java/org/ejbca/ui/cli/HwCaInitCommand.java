@@ -19,10 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
-import javax.naming.Context;
-
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionHome;
-import org.ejbca.core.ejb.authorization.IAuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -71,12 +67,12 @@ public class HwCaInitCommand extends BaseCaAdminCommand {
         }
 
         try {             	
-            final String caname = this.args[4];
-            final String dn = StringTools.strip(CertTools.stringToBCDNString(this.args[5]));
-            final int validity = Integer.parseInt(this.args[6]);
+            final String caname = this.args[5];
+            final String dn = StringTools.strip(CertTools.stringToBCDNString(this.args[6]));
+            final int validity = Integer.parseInt(this.args[7]);
             HardCATokenInfo catokeninfo = new HardCATokenInfo();
             byte keyStoreID[];{
-                KeyStoreContainer ksc = new KeyStoreContainer(this.args[3],this.args[2], this.args.length>7 ? this.args[7] : null);
+                KeyStoreContainer ksc = new KeyStoreContainer(this.args[4],this.args[2], this.args[3], this.args.length>8 ? this.args[8] : null);
                 ksc.generate(2048, DEFAULT_KEY);
                 ksc.generate(2048, SIGN_KEY);
                 keyStoreID = ksc.storeKeyStore();
