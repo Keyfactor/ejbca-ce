@@ -1,6 +1,6 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@ page contentType="text/html; charset=@page.encoding@" %>
-<%@ page language="Java" import="javax.naming.*,javax.rmi.*,java.util.*,java.security.cert.*,org.ejbca.ui.web.RequestHelper,
+<%@ page language="java" import="javax.naming.*,javax.rmi.*,java.util.*,java.security.cert.*,org.ejbca.ui.web.RequestHelper,
                                  org.ejbca.core.model.log.Admin, org.ejbca.core.model.ApplyBean, org.ejbca.core.model.SecConst"%>
 
 <jsp:useBean id="applybean" scope="session" class="org.ejbca.core.model.ApplyBean" />
