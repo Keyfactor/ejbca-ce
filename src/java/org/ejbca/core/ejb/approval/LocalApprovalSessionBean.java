@@ -832,7 +832,19 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
                 		rs.next();
                 	}
                 } else {
-                    rs.relative(index);                	
+                    // Oracles JDBC driver in Weblogic 9.x does not support ResultSet.relative, 
+                    // that is why we have to move around manually.
+                    boolean forward = true;
+                    if (index < 0) {
+                        forward = false;
+                    }
+                    for (int i = 0; i < index; i++) {
+                        if (forward) {
+                            rs.next();                            
+                        } else {
+                            rs.previous();
+                        }
+                    }
                 }
                 // Assemble result.
                 while (rs.next() && returnData.size() < numberofrows) {
