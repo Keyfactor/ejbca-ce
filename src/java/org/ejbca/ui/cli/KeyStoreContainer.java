@@ -220,8 +220,10 @@ public class KeyStoreContainer {
                 if ( len<0 )
                     break;
                 out.write(buf,0, len);
-            }            
+            }
             out.close();
+            bos.close();
+            os.close();
         }
     }
     private class DecryptStream extends CodeStream {
@@ -245,6 +247,8 @@ public class KeyStoreContainer {
                     bos.write(buf,0, len);
                 }            
             }
+            bos.close();
+            os.close();
         }
     }
     public void decrypt(InputStream is, OutputStream os, String alias) throws Exception {
