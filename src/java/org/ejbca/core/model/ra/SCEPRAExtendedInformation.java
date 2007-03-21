@@ -7,7 +7,7 @@ package org.ejbca.core.model.ra;
  * Should be used standalone and not extend any other type of ExtendedInformation.
  * 
  * @author Philip Vendil
- * $id$
+ * @version $Id: SCEPRAExtendedInformation.java,v 1.4 2007-03-21 13:40:12 anatom Exp $
  */
 public class SCEPRAExtendedInformation extends ExtendedInformation {
 		
