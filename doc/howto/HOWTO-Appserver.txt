@@ -121,9 +121,6 @@ Currently EJBCA works with the MySQL 5.0 database on Glassfish.
 - Set the envorinment variable APPSRV_HOME to the directory where Glassfish is installed. For example APPSRV_HOME=/home/sun/glassfish.
   The variable must be available when working with EJBCA. 
   
-- Do yourself a favor and configuer this in the JVM settings:
-    -XX:MaxPermSize=128m
-  
 - Create a database and a database user with privileges.
 
 - Create the database tables using one of the scripts in doc/howto/create-tables-xxx. Choose the correct file for your database.
@@ -133,10 +130,14 @@ Currently EJBCA works with the MySQL 5.0 database on Glassfish.
   
 - Start the application server: asadmin start-domain
 
-- Create a connection pool for your database.
+- Do yourself a favor and configure this in the JVM settings of Glassfish:
+    -XX:MaxPermSize=128m
+    Restart Glassfish
+  
+- Create a connection pool for your database. In the admin console this is done in Resources->JDBC->Connection Pools.
     When adding for example a MySQL Pool use values: Name=MysqlPool, Type=javax.sql.DataSource, Vendor=mysql. 
     It seems almost random which properties are pre-created on the next page...
-    For MySQL you must copy the jar mysql-connector-java-3.1.13-bin.jar to $GLASSFISH_HOME/lib
+    For MySQL you must copy the jar mysql-connector-java-5.0.4-bin.jar to $APPSRV_HOME/lib (use your known-to-be-good version of the jar)
 
 - Create a datasource called jdbc/EjbcaDS, in the admin console this is done in Resources->JDBC->JDBC Resources.
     Use the connection pool you just created.
@@ -161,15 +162,16 @@ Currently EJBCA works with the MySQL 5.0 database on Glassfish.
  - Configure SSL in Glassfish
     Configuration->HTTP Service->HTTP Listeners->http-listener-2
        Client Authentication: Enabled
-       Certificate Nickname: s1as (get alias name by running 'keytool -list -v -keystore $GLASSFISH_HOME/domains/domain1/config/keystore.jks')
+       Certificate Nickname: s1as (get alias name by running 'keytool -list -v -keystore $APPSRV_HOME/domains/domain1/config/keystore.jks')
        SSL3: Enabled
        Ciphers Suite: All
     Add CA certificate to cacerts file:
        cd $EJBCA_HOME
        bin/ejbca.sh ca getrootcert AdminCA1 ca.der -der
-       keytool -import -keystore cacerts.jks -file $EJBCA_HOME/ca.der
+       keytool -import -keystore $APPSRV_HOME/domains/domain1/config/cacerts.jks -file $EJBCA_HOME/ca.der
+       password is 'changeit'
     Restart server
-    (you would probably want to intsall your own server certificate from $EJBCA_HOME/p12/tomcat.jks instead of the 
+    (you would probably want to install your own server certificate from $EJBCA_HOME/p12/tomcat.jks instead of the 
      default Glassfish cert, but I havent figured out how to do that...)
     
  - Access protected EJBCA pages
