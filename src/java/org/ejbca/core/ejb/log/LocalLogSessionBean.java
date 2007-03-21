@@ -26,7 +26,6 @@ import java.util.Iterator;
 import java.util.Properties;
 
 import javax.ejb.CreateException;
-import javax.ejb.DuplicateKeyException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 
@@ -147,7 +146,7 @@ import org.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.17 2007-02-23 10:27:24 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.18 2007-03-21 15:48:56 anatom Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 
@@ -335,16 +334,11 @@ public class LocalLogSessionBean extends BaseSessionBean {
             	TableProtectSessionLocal protect = protecthome.create();
             	protect.protect(admin, le);
             }
-        } catch (DuplicateKeyException e) {
+        } catch (Throwable e) {
             // FIXME we are losing a db audit entry in this case, what do we do ?
             String msg = intres.getLocalizedMessage("log.errormissingentry");            	
             log.error(msg, e);
-            getAndIncrementRowCount();
-        } catch (CreateException e) {
-            // FIXME we are losing a db audit entry in this case, what do we do ?
-            String msg = intres.getLocalizedMessage("log.errormissingentry");            	
-            log.error(msg, e);
-            getAndIncrementRowCount();
+            getAndIncrementRowCount();        	
         }
     }
 
