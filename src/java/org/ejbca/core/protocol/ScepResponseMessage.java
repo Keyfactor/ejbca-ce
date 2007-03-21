@@ -56,7 +56,7 @@ import org.ejbca.util.CertTools;
 /**
  * A response message for scep (pkcs7).
  *
- * @version $Id: ScepResponseMessage.java,v 1.7 2006-10-22 09:05:05 anatom Exp $
+ * @version $Id: ScepResponseMessage.java,v 1.8 2007-03-21 13:40:46 anatom Exp $
  */
 public class ScepResponseMessage implements IResponseMessage {
     /**
@@ -366,8 +366,8 @@ public class ScepResponseMessage implements IResponseMessage {
             }
 
             // Add our signer info and sign the message
-            gen1.addSigner(signKey, signCert, digestAlg,
-                    new AttributeTable(attributes), null);
+            log.debug("Signing SCEP message with cert: "+signCert.getSubjectDN().getName());
+            gen1.addSigner(signKey, signCert, digestAlg, new AttributeTable(attributes), null);
             signedData = gen1.generate(msg, true, provider);
             responseMessage = signedData.getEncoded();
             if (responseMessage != null) {
