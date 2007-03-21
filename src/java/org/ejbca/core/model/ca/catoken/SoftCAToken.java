@@ -18,12 +18,16 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
+import java.util.Enumeration;
 import java.util.HashMap;
 
 import javax.naming.InitialContext;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.jce.interfaces.ECPrivateKey;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
@@ -35,7 +39,7 @@ import org.ejbca.util.KeyTools;
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: SoftCAToken.java,v 1.7 2007-01-16 11:43:26 anatom Exp $
+ * @version $Id: SoftCAToken.java,v 1.8 2007-03-21 13:59:56 jeklund Exp $
  */
 public class SoftCAToken extends CAToken implements java.io.Serializable{
 
@@ -151,9 +155,10 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
    
    /**
     * Method that import CA token keys from old P12 file. Should only be used when upgrading from 
-    * old EJBCA versions.
+    * old EJBCA versions. Only supports SHA1 and SHA256 with RSA or ECDSA.
     */
-   public void importKeysFromP12(PrivateKey p12privatekey, PublicKey p12publickey) throws Exception{  
+   public void importKeysFromP12(PrivateKey p12privatekey, PublicKey p12publickey, PrivateKey p12PrivateEncryptionKey,
+		   							PublicKey p12PublicEncryptionKey, Certificate[] caSignatureCertChain) throws Exception{
       // lookup keystore passwords      
       InitialContext ictx = new InitialContext();
       String keystorepass = (String) ictx.lookup("java:comp/env/keyStorePass");      
@@ -163,34 +168,72 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
        // Currently only RSA keys are supported
        KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
        keystore.load(null,null);
-     
-       String sigAlg = CATokenInfo.SIGALG_SHA1_WITH_RSA; 
-       String keyAlg  = SoftCATokenInfo.KEYALGORITHM_RSA;
-       if ( !(p12publickey instanceof RSAPublicKey) ) {
-    	   sigAlg = CATokenInfo.SIGALG_SHA256_WITH_ECDSA;
+
+       // Assume that the same hash algorithm is used for signing that was used to sign this CA cert
+	   String certSignatureAlgorithm = ((X509Certificate) caSignatureCertChain[0]).getSigAlgName();
+       String signatureAlgorithm = null;
+       String keyAlg = null;
+       if ( p12publickey instanceof RSAPublicKey ) {
+    	   keyAlg  = CATokenInfo.KEYALGORITHM_RSA;
+    	   if (certSignatureAlgorithm.indexOf("256") == -1) {
+    		   signatureAlgorithm = CATokenInfo.SIGALG_SHA1_WITH_RSA;
+    	   } else {
+    		   signatureAlgorithm = CATokenInfo.SIGALG_SHA256_WITH_RSA;
+    	   }
+       } else {
     	   keyAlg = CATokenInfo.KEYALGORITHM_ECDSA;
+    	   if (certSignatureAlgorithm.indexOf("256") == -1) {
+    		   signatureAlgorithm = CATokenInfo.SIGALG_SHA1_WITH_ECDSA;
+    	   } else {
+    		   signatureAlgorithm = CATokenInfo.SIGALG_SHA256_WITH_ECDSA;
+    	   }
        }
+       
        // import sign keys.
-       String keyspec = Integer.toString( ((RSAPublicKey) p12publickey).getModulus().bitLength() );
-       log.debug("KeySize="+keyspec);
-       // generate dummy certificate
-       Certificate[] certchain = new Certificate[1];
-       certchain[0] = CertTools.genSelfCert("CN=dummy", 36500, null, p12privatekey, p12publickey, sigAlg, true);
-       keystore.setKeyEntry(PRIVATESIGNKEYALIAS, p12privatekey,null,certchain);       
+       String keyspec = null;
+       if ( p12publickey instanceof RSAPublicKey ) {
+	       keyspec = Integer.toString( ((RSAPublicKey) p12publickey).getModulus().bitLength() );
+	       log.debug("KeySize="+keyspec);
+       } else {
+	       	Enumeration en = ECNamedCurveTable.getNames();
+	    	while ( en.hasMoreElements() ) {
+	    		String currentCurveName = (String) en.nextElement();
+	    		if ( (ECNamedCurveTable.getParameterSpec(currentCurveName)).getCurve().equals( ((ECPrivateKey) p12privatekey).getParameters().getCurve() ) ) {
+	    			keyspec = currentCurveName;
+	    			break;
+	    		}
+	    	}
+
+    	   if ( keyspec==null ) {
+        	   keyspec = "unknown";
+    	   }
+    	   log.debug("ECName="+keyspec);
+       }
+       keystore.setKeyEntry(PRIVATESIGNKEYALIAS, p12privatekey,null, caSignatureCertChain);       
        data.put(SIGNKEYSPEC, keyspec);
        data.put(SIGNKEYALGORITHM, keyAlg);
-       data.put(SIGNATUREALGORITHM, sigAlg);
+       data.put(SIGNATUREALGORITHM, signatureAlgorithm);
 
        // generate enc keys.  
        // Encryption keys must be RSA still
-       if (sigAlg.equals(CATokenInfo.SIGALG_SHA256_WITH_ECDSA)) {
-           sigAlg = CATokenInfo.SIGALG_SHA1_WITH_RSA;
-           keyAlg = CATokenInfo.KEYALGORITHM_RSA;
-           keyspec = "2048";
+       String encryptionSignatureAlgorithm = signatureAlgorithm;
+       keyAlg = CATokenInfo.KEYALGORITHM_RSA;
+       keyspec = "2048";
+       if ( signatureAlgorithm.equals(CATokenInfo.SIGALG_SHA256_WITH_ECDSA) ) {
+    	   encryptionSignatureAlgorithm = CATokenInfo.SIGALG_SHA256_WITH_RSA;
+       } else if ( signatureAlgorithm.equals(CATokenInfo.SIGALG_SHA1_WITH_ECDSA) ) {
+    	   encryptionSignatureAlgorithm = CATokenInfo.SIGALG_SHA1_WITH_RSA;
        }
-       KeyPair enckeys = KeyTools.genKeys(keyspec, keyAlg);
+       KeyPair enckeys = null;
+       if ( p12PublicEncryptionKey == null ||  p12PrivateEncryptionKey == null ) {
+           enckeys = KeyTools.genKeys(keyspec, keyAlg);
+       }
+       else {
+    	   enckeys = new KeyPair(p12PublicEncryptionKey, p12PrivateEncryptionKey);
+       }
        // generate dummy certificate
-       certchain[0] = CertTools.genSelfCert("CN=dummy2", 36500, null, enckeys.getPrivate(), enckeys.getPublic(), sigAlg, true);
+       Certificate[] certchain = new Certificate[1];
+       certchain[0] = CertTools.genSelfCert("CN=dummy2", 36500, null, enckeys.getPrivate(), enckeys.getPublic(), encryptionSignatureAlgorithm, true);
        this.encCert = certchain[0]; 
        keystore.setKeyEntry(PRIVATEDECKEYALIAS,enckeys.getPrivate(),null,certchain);              
      
@@ -199,7 +242,7 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
        data.put(KEYSTORE, new String(Base64.encode(baos.toByteArray())));
        data.put(ENCKEYSPEC, keyspec);
        data.put(ENCKEYALGORITHM, keyAlg);
-       data.put(ENCRYPTIONALGORITHM, sigAlg);
+       data.put(ENCRYPTIONALGORITHM, encryptionSignatureAlgorithm);
        
        // initalize CAToken
        this.publicSignKey  = p12publickey;
@@ -207,7 +250,7 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
        
        this.publicEncKey  = enckeys.getPublic();
        this.privateDecKey = enckeys.getPrivate();
-   }   
+   }
    
    public CATokenInfo getCATokenInfo(){
      SoftCATokenInfo info = new SoftCATokenInfo();

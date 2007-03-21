@@ -13,18 +13,18 @@
  
 package org.ejbca.ui.cli;
 
+import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.security.KeyStore;
 import java.util.Enumeration;
 
 import org.ejbca.util.FileTools;
 
-
-
 /**
  * Imports a PKCS12 file and created a new CA from it.
  *
- * @version $Id: CaImportCACommand.java,v 1.2 2006-02-12 10:37:39 anatom Exp $
+ * @version $Id: CaImportCACommand.java,v 1.3 2007-03-21 13:59:57 jeklund Exp $
  */
 public class CaImportCACommand extends BaseCaAdminCommand {
     /**
@@ -43,18 +43,26 @@ public class CaImportCACommand extends BaseCaAdminCommand {
      * @throws ErrorAdminCommandException Error running command
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
-        if (args.length < 4) {
-           String msg = "Usage: CA importca <CA name> <pkcs12 file> <pwd> [<alias>]\nLeave out <alias> to use sole alias or get a list of available aliases if there are more than one."; 
+        if (args.length < 3) {
+           String msg = "Usage: CA importca <CA name> <pkcs12 file> [<signature alias>] [<encryption alias>]\n" +
+           				"Leave out both <alias> to use the only available alias or get a list of available aliases" +
+           				"if there are more than one.\n" +
+           				"If no encryption alias is given, the encryption keys will be generated."; 
            throw new IllegalAdminCommandException(msg);
         }
         try {
         	String caName = args[1];
             String p12file = args[2];
-            String kspwd = args[3];
             String alias = null;
-            if (args.length == 5) {
-            	alias = args[4];
+            String encryptionAlias = null;
+            if (args.length > 3) {
+            	alias = args[3];
             }
+            if (args.length > 4) {
+            	encryptionAlias = args[4];
+            }
+            System.out.print("Enter keystore password: ");
+            String kspwd = new BufferedReader(new InputStreamReader(System.in)).readLine();
             // Read old keystore file in the beginning so we know it's good
             byte[] keystorebytes = null;
             keystorebytes = FileTools.readFiletoBuffer(p12file);
@@ -79,7 +87,7 @@ public class CaImportCACommand extends BaseCaAdminCommand {
                 } 
                 // else alias already contains the only alias, so we can use that
             }
-            getCAAdminSessionRemote().importCAFromKeyStore(administrator, caName, keystorebytes, kspwd.toCharArray(), kspwd.toCharArray(), alias);
+            getCAAdminSessionRemote().importCAFromKeyStore(administrator, caName, keystorebytes, kspwd.toCharArray(), kspwd.toCharArray(), alias, encryptionAlias);
           
         } catch (ErrorAdminCommandException e) {
         	throw e;
@@ -87,4 +95,4 @@ public class CaImportCACommand extends BaseCaAdminCommand {
             throw new ErrorAdminCommandException(e);
         }
     } // execute
-}
+} // CaImportCACommand

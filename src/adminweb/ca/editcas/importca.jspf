@@ -1,0 +1,69 @@
+<%
+	row = 0;
+%>
+<body > 
+<SCRIPT language="JavaScript">
+<!--  
+function check()
+{
+	if ( document.recievefile.<%= FILE_RECIEVEFILE %>.value == '' ) {   
+		alert("<%= ejbcawebbean.getText("YOUMUSTSELECT", true) %>");
+	   return false;
+	}
+	return true;
+}
+-->
+</SCRIPT>
+<div align="center">   
+	<h2><%= ejbcawebbean.getText("IMPORTCA") %><br></h2>
+</div>
+	<table width="100%" border="0" cellspacing="3" cellpadding="3">
+		<tr id="Row<%=row++%2%>"> 
+			<td width="49%" valign="top"> </td>
+			<td width="51%" valign="top"> 
+        		<div align="right">
+        			<A href="<%=THIS_FILENAME %>"><u><%= ejbcawebbean.getText("BACKTOCAS") %></u></A>
+				</div>
+			</td>
+		</tr>
+		<form name="recievefile" action="<%= THIS_FILENAME %>" method="post" enctype='multipart/form-data' >
+		<tr id="Row<%=row++%2%>"> 
+			<td width="49%" valign="top" align="right"><%= ejbcawebbean.getText("IMPORTCANAMEHELP") %></td>
+			<td width="51%" valign="top">
+					<input type="text" name='<%= TEXTFIELD_IMPORTCA_NAME %>' value=''>
+			</td>
+		</tr>
+		<tr id="Row<%=row++%2%>"> 
+			<td width="49%" valign="top" align="right"><%= ejbcawebbean.getText("IMPORTCAFILEHELP") %></td>
+			<td width="51%" valign="top">
+					<input type="hidden" name='<%= ACTION %>' value='<%=ACTION_IMPORTCA %>'>
+					<input TYPE="FILE" NAME="<%= FILE_RECIEVEFILE %>">
+			</td>
+		</tr>
+		<tr id="Row<%=row++%2%>"> 
+			<td width="49%" valign="top" align="right"><%= ejbcawebbean.getText("IMPORTCAPASSWORDHELP") %></td>
+			<td width="51%" valign="top">
+					<input type="password" name='<%= TEXTFIELD_IMPORTCA_PASSWORD %>' value=''>
+			</td>
+		</tr>
+		<tr id="Row<%=row++%2%>"> 
+			<td width="49%" valign="top" align="right"><%= ejbcawebbean.getText("IMPORTSIGNKEYALIASCAHELP") %></td>
+			<td width="51%" valign="top">
+					<input type="text" name='<%= TEXTFIELD_IMPORTCA_SIGKEYALIAS %>' value='SignatureKeyAlias'>
+			</td>
+		</tr>
+		<tr id="Row<%=row++%2%>"> 
+			<td width="49%" valign="top" align="right"><%= ejbcawebbean.getText("IMPORTCAENCKEYALIASHELP") %></td>
+			<td width="51%" valign="top">
+					<input type="text" name='<%= TEXTFIELD_IMPORTCA_ENCKEYALIAS %>' value='EncryptionKeyAlias'>
+			</td>
+		</tr>
+		<tr id="Row<%=row++%2%>"> 
+			<td width="49%" valign="top" align="right"> </td>
+			<td width="51%" valign="top">
+					<input type="submit" name="<%= BUTTON_RECIEVEFILE %>" onClick='return check()' value="<%= ejbcawebbean.getText("IMPORTCA") %>" >
+					<input type="submit" name="<%= BUTTON_CANCEL %>" value="<%= ejbcawebbean.getText("CANCEL") %>">     
+			</td>
+		</tr>
+		</form>
+	</table>

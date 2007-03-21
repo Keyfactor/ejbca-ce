@@ -54,6 +54,7 @@
                     <include name="**/hardtoken/Test*" />
                     <exclude name="org/ejbca/core/protocol/xkms/Test*" />
                     <exclude name="**/TestRunner*" />
+                    <include name="org/ejbca/core/ejb/ca/caadmin/Test*" />
                 </fileset>
             </batchtest>
             <batchtest fork="yes" todir="${test.dir}/reports">

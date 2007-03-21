@@ -90,48 +90,37 @@
       <servlet-name>GetCRL</servlet-name>
       <display-name>GetCRLServlet</display-name>
       <description><![CDATA[Used to retrive CA certificate request and Processed CA Certificates from AdminWeb GUI]]></description>
-     <servlet-class>org.ejbca.ui.web.admin.cainterface.GetCRLServlet</servlet-class>
-
+	  <servlet-class>org.ejbca.ui.web.admin.cainterface.GetCRLServlet</servlet-class>
       <load-on-startup>99</load-on-startup>
-
    </servlet>
    <servlet>
       <servlet-name>EndEntityCert</servlet-name>
       <display-name>EndEntityCertServlet</display-name>
       <description><![CDATA[Returns the specified end entity certificate]]></description>
-     <servlet-class>org.ejbca.ui.web.admin.cainterface.EndEntityCertServlet</servlet-class>
-
+	  <servlet-class>org.ejbca.ui.web.admin.cainterface.EndEntityCertServlet</servlet-class>
       <load-on-startup>99</load-on-startup>
-
    </servlet>
    <servlet>
       <servlet-name>AdminCertReq</servlet-name>
       <display-name>AdminCertReqServlet</display-name>
       <description><![CDATA[Used to retrive CA certificate request and Processed CA Certificates from AdminWeb GUI]]></description>
-     <servlet-class>org.ejbca.ui.web.admin.cainterface.AdminCertReqServlet</servlet-class>
-
+	  <servlet-class>org.ejbca.ui.web.admin.cainterface.AdminCertReqServlet</servlet-class>
       <load-on-startup>99</load-on-startup>
-
    </servlet>
    <servlet>
       <servlet-name>CACert</servlet-name>
       <display-name>CACertServlet</display-name>
       <description><![CDATA[Returns the specified CA certificate]]></description>
-     <servlet-class>org.ejbca.ui.web.admin.cainterface.CACertServlet</servlet-class>
-
+	  <servlet-class>org.ejbca.ui.web.admin.cainterface.CACertServlet</servlet-class>
       <load-on-startup>99</load-on-startup>
-
    </servlet>
    <servlet>
       <servlet-name>CACertReq</servlet-name>
       <display-name>CACertReqServlet</display-name>
       <description><![CDATA[Used to retrive CA certificate request and Processed CA Certificates from AdminWeb GUI]]></description>
-     <servlet-class>org.ejbca.ui.web.admin.cainterface.CACertReqServlet</servlet-class>
-
+	  <servlet-class>org.ejbca.ui.web.admin.cainterface.CACertReqServlet</servlet-class>
       <load-on-startup>99</load-on-startup>
-
    </servlet>
-
    <servlet>
     <servlet-name>faces</servlet-name>
     <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
@@ -142,7 +131,13 @@
     <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
     <load-on-startup>0</load-on-startup>
   </servlet>
-
+   <servlet>
+	<servlet-name>CAExport</servlet-name>
+	<display-name>CAExportServlet</display-name>
+	<description><![CDATA[Returns the CA as a PKCS#12 file]]></description>
+	<servlet-class>org.ejbca.ui.web.admin.cainterface.CAExportServlet</servlet-class>
+	<load-on-startup>99</load-on-startup>
+   </servlet>
     
 <!-- JSPC servlet mappings start -->
 
@@ -476,6 +471,10 @@
    <servlet-mapping>
       <servlet-name>CACert</servlet-name>
       <url-pattern>/ca/cacert</url-pattern>
+   </servlet-mapping>
+   <servlet-mapping>
+      <servlet-name>CAExport</servlet-name>
+      <url-pattern>/ca/exportca</url-pattern>
    </servlet-mapping>
    <servlet-mapping>
       <servlet-name>CACertReq</servlet-name>

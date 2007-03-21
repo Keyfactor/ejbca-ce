@@ -955,6 +955,20 @@ function checkallfields(){
         <input type="submit" name="<%= BUTTON_PUBLISHCA %>"  value="<%= ejbcawebbean.getText("REPUBLISHCA") %>" >
       </td>
     </tr>
+	</form>
+	<%
+	if ( caname == null ) {
+		caname = cainfo.getName();
+	} %>
+	<form name="exportca" action="<%= globalconfiguration.getCaPath() + "/exportca" %>" method="post">
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="49%" valign="top"  align="right"><%= ejbcawebbean.getText("EXPORTCAHELP") %></td>
+      <td width="51%" valign="top">             
+		<input type="hidden" name='<%= org.ejbca.ui.web.admin.cainterface.CAExportServlet.HIDDEN_CANAME %>' value='<%=caname %>' />
+        <input type="password" name="<%= org.ejbca.ui.web.admin.cainterface.CAExportServlet.TEXTFIELD_EXPORTCA_PASSWORD %>"  value="" />
+        <input type="submit" name="<%= BUTTON_EXPORTCA %>"  value="<%= ejbcawebbean.getText("EXPORTCA")+".." %>" />
+      </td>
+    </tr>
+	</form>
         <% } %>   
-  </form>
   </table>

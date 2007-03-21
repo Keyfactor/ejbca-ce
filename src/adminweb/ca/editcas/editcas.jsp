@@ -24,8 +24,7 @@
   static final String ACTION_PROCESSREQUEST2              = "processrequest2";
   static final String ACTION_RENEWCA_MAKEREQUEST          = "renewcamakeresponse";  
   static final String ACTION_RENEWCA_RECIEVERESPONSE      = "renewcarecieveresponse";  
-
-
+  static final String ACTION_IMPORTCA		              = "importca";
 
   static final String CHECKBOX_VALUE           = "true";
 
@@ -35,6 +34,8 @@
   static final String BUTTON_CREATE_CA                     = "buttoncreateca"; 
   static final String BUTTON_RENAME_CA                     = "buttonrenameca";
   static final String BUTTON_PROCESSREQUEST                = "buttonprocessrequest";
+  static final String BUTTON_IMPORTCA		               = "buttonimportca";
+  static final String BUTTON_EXPORTCA		               = "buttonexportca";
   
 
   static final String SELECT_CAS                           = "selectcas";
@@ -75,6 +76,11 @@
   static final String TEXTFIELD_DEFAULTCRLISSUER      = "textfielddefaultcrlissuer";
   static final String TEXTFIELD_DEFAULTOCSPLOCATOR    = "textfielddefaultocsplocator";
   static final String TEXTFIELD_KEYSPEC               = "textfieldkeyspec";
+  static final String TEXTFIELD_IMPORTCA_PASSWORD	  = "textfieldimportcapassword";
+  static final String TEXTFIELD_IMPORTCA_SIGKEYALIAS  = "textfieldimportcasigkeyalias";
+  static final String TEXTFIELD_IMPORTCA_ENCKEYALIAS  = "textfieldimportcaenckeyalias";
+  static final String TEXTFIELD_IMPORTCA_NAME		  = "textfieldimportcaname";
+
 
   static final String CHECKBOX_AUTHORITYKEYIDENTIFIER             = "checkboxauthoritykeyidentifier";
   static final String CHECKBOX_AUTHORITYKEYIDENTIFIERCRITICAL     = "checkboxauthoritykeyidentifiercritical";
@@ -125,6 +131,10 @@
   int catype = CAInfo.CATYPE_X509;  // default
   int catokentype = CATokenInfo.CATOKENTYPE_P12; // default
   String catokenpath = "NONE";
+  String importcaname = null;
+  String importpassword = null;
+  String importsigalias = null;
+  String importencalias = null;
 
   InputStream file = null;
 
@@ -197,6 +207,14 @@
            caname = item.getString();
          if(item.getFieldName().equals(BUTTON_CANCEL))
            buttoncancel = true; 
+         if(item.getFieldName().equals(TEXTFIELD_IMPORTCA_NAME))
+           importcaname = item.getString();
+         if(item.getFieldName().equals(TEXTFIELD_IMPORTCA_PASSWORD))
+           importpassword = item.getString();
+         if(item.getFieldName().equals(TEXTFIELD_IMPORTCA_SIGKEYALIAS))
+           importsigalias = item.getString();
+         if(item.getFieldName().equals(TEXTFIELD_IMPORTCA_ENCKEYALIAS))
+           importencalias = item.getString();
        }else{         
          file = item.getInputStream(); 
          errorrecievingfile = false;                          
@@ -245,6 +263,10 @@
          }
         }      
         includefile="choosecapage.jspf"; 
+      }
+      if( request.getParameter(BUTTON_IMPORTCA) != null){ 
+         // Import CA from p12-file. Start by prompting for file and keystore password.
+		includefile="importca.jspf";
       }
       if( request.getParameter(BUTTON_CREATE_CA) != null){
          // Add profile and display profilespage.
@@ -925,7 +947,7 @@
             certprofileid != 0 && signedby != 0 && validity !=0 ){
            if(catype == CAInfo.CATYPE_X509){
               // Create a X509 CA
-              String subjectaltname = request.getParameter(TEXTFIELD_SUBJECTALTNAME);             
+              String subjectaltname = request.getParameter(TEXTFIELD_SUBJECTALTNAME);
               if(subjectaltname == null)
                 subjectaltname = ""; 
               else{
@@ -1047,7 +1069,48 @@
         editca = false;
         includefile="editcapage.jspf";              
       }
+      if( action.equals(ACTION_IMPORTCA) ) {
+		if( !buttoncancel ) {
+	        try {
+	        	String caName			= importcaname;
+	            String kspwd			= importpassword;
+	            InputStream p12file		= file;
+	            String alias			= importsigalias;
+	            String encryptionAlias	= importencalias;
 
+				java.security.KeyStore ks = java.security.KeyStore.getInstance("PKCS12","BC");
+				ks.load(file, kspwd.toCharArray());
+				if ( alias.equals("") ) {
+					Enumeration aliases = ks.aliases();
+		            if ( aliases == null || !aliases.hasMoreElements() ) {
+						throw new Exception("This file does not contain any aliases.");
+		            } 
+		            alias = (String)aliases.nextElement();
+		            if ( aliases.hasMoreElements() ) {
+			            while (aliases.hasMoreElements()) {
+							alias += " " + (String)aliases.nextElement();
+						}
+						throw new Exception("You have to specify any of the following aliases: " + alias);
+					}
+		        }
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	            ks.store(baos, kspwd.toCharArray());
+	    		byte[] keystorebytes = baos.toByteArray();
+				javax.naming.Context ctx = org.ejbca.core.ejb.InitialContextBuilder.getInstance().getInitialContext();
+				org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome home = (org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CAAdminSession"), org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome.class );            
+				org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote caadminsession = home.create();          
+	            if ( encryptionAlias.equals("") ) {
+	            	encryptionAlias = null;
+	            }
+				caadminsession.importCAFromKeyStore(ejbcawebbean.getAdminObject(), caName, keystorebytes, kspwd.toCharArray(), kspwd.toCharArray(), alias, encryptionAlias);
+			} catch (Exception e) {
+			%> <div style="color: #FF0000;"> <%
+				out.println( e.getMessage() );
+			%> </div> <%
+		        includefile="importca.jspf";              
+			}
+		}
+      } // ACTION_IMPORTCA
     }
   }catch(CATokenOfflineException ctoe){
     catokenoffline = true;
@@ -1071,6 +1134,9 @@
 <%}
   if( includefile.equals("renewexternal.jspf")){ %>
    <%@ include file="renewexternal.jspf" %> 
+<%}
+  if( includefile.equals("importca.jspf")){ %>
+   <%@ include file="importca.jspf" %> 
 <%}
 
 

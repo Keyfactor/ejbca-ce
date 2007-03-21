@@ -3201,6 +3201,59 @@ Before exporting the profiles, you should set 'Available CAs' to a CA that is al
 This is not ideal, but it is a consequence of how the authorization system works, you are not authorized to see the imported profiles when the caid is unknown. 
 </p></section>
 
+<section name="Export and import CAs">
+<p>
+Under certain circumstances, it can be wise to backup the CA's signature and encryption keys. Remember to protect the backup in the same way
+as the CA itself.
+</p>
+<subsection name="Using command line interface">
+<p>
+To export a CA named "TestCA" to the PKCS#12-file "/path/TestCA.p12" with password "foo123" enter the following
+from the $EJBCA_HOME directory:
+</p>
+<source>
+[user@host ejbca]$ bin/ejbca.sh ca exportca TestCA ./TestCA.p12
+Using JBoss JNDI provider...
+Enter keystore password: foo123
+[user@host ejbca]$ 
+</source>
+<p>
+To import the backup keys for "TestCA" later, enter the following from the $EJBCA_HOME directory:
+</p>
+<source>
+[user@host ejbca]$ bin/ejbca.sh ca importca TestCA /path/TestCA.p12 SignatureKeyAlias EncryptionKeyAlias
+Using JBoss JNDI provider...
+Enter keystore password: foo123
+[user@host ejbca]$ 
+</source>
+</subsection>
+<subsection name="Using admin-GUI">
+<p>To be able to export and import the CA's keys using the admin-GUI, you have to have superadministrator access.
+Make sure that .p12 files are not automatically saved to an unsuitable place by your browser.
+before you do an export.
+</p>
+<p>To export a the CA's keys, do the following:
+<ul>
+<li>Select "Edit Certificate Authorities" from the administrator menu.</li>
+<li>Select the CA you want to export and press the "Edit"-button.</li>
+<li>Go to the line where the help-text say "CA export requires the keystore password".</li>
+<li>Enter the keystore password in the box to the right of the help-text.</li>
+<li>Press the "Export CA.."-button.</li>
+<li>The PKCS#12-file will be downloaded by your browser to the location you select.</li>
+</ul>
+</p>
+<p>To import a CA's keys, do the following:
+<ul>
+<li>Select "Edit Certificate Authorities" from the administrator menu.</li>
+<li>Press the "Import CA.."-button.</li>
+<li>Fill out the form with the CA's name, full pathname to the PKCS#12-file and keystore password.</li>
+<li>Keep the two "Alias.."-fields to the default value, if you used EJBCA to export the CA's keys.</li>
+<li>Press the "Import CA"-button.</li>
+</ul>
+</p>
+</subsection>
+</section>
+
 <section name="Internationalization">
 <p>
 To customize EJBCA admin GUI for your languages special characters you will probably have to 

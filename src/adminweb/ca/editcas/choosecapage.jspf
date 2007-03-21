@@ -134,14 +134,14 @@
         <td width="60%"> 
           <table width="100%" border="0" cellspacing="0" cellpadding="0">
             <tr>
-              <td>
+              <td width="33%">
                 <input type="submit" name="<%= BUTTON_EDIT_CA %>" value="<%= ejbcawebbean.getText("EDIT") %>">
               </td>
-              <td>
-             &nbsp; 
-              </td>
-              <td>
+              <td width="33%">
                 <input class=buttonstyle type="submit" onClick="return confirm('<%= ejbcawebbean.getText("AREYOUSURETODELETECA") %>');" name="<%= BUTTON_DELETE_CA %>" value="<%= ejbcawebbean.getText("DELETECA") %>">
+              </td>
+              <td width="34%">
+		          <input type="submit" name="<%= BUTTON_IMPORTCA%>" value="<%= ejbcawebbean.getText("IMPORTCA")+".." %>">
               </td>
             </tr>
           </table> 

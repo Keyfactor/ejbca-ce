@@ -16,7 +16,7 @@ package org.ejbca.ui.cli;
 /**
  * Factory for CA Admin Commands.
  *
- * @version $Id: CaAdminCommandFactory.java,v 1.2 2006-02-16 05:51:43 herrvendil Exp $
+ * @version $Id: CaAdminCommandFactory.java,v 1.3 2007-03-21 13:59:57 jeklund Exp $
  */
 public class CaAdminCommandFactory {
     /**
@@ -36,7 +36,6 @@ public class CaAdminCommandFactory {
         if (args.length < 1) {
             return null;
         }
-
         if (args[0].equals("getrootcert")) {
             return new CaGetRootCertCommand(args);
         } else if (args[0].equals("listexpired")) {
@@ -55,6 +54,8 @@ public class CaAdminCommandFactory {
             return new CaExportProfilesCommand(args);
         } else if (args[0].equals("importprofiles")) {
             return new CaImportProfilesCommand(args);
+        } else if (args[0].equals("exportca")) {
+            return new CaExportCACommand(args);
         } else if (args[0].equals("importca")) {
             return new CaImportCACommand(args);
         } else if (args[0].equals("importcert")) {
@@ -69,10 +70,5 @@ public class CaAdminCommandFactory {
         else {
             return null;
         }
-    }
-
-    // getCommand
-}
-
-
-// CaAdminCommandFactory
+    } // getCommand
+} // CaAdminCommandFactory

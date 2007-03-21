@@ -95,7 +95,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.36 2007-02-23 10:33:16 anatom Exp $
+ * @version $Id: CertTools.java,v 1.37 2007-03-21 13:59:56 jeklund Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -878,7 +878,7 @@ public class CertTools {
     } // isSelfSigned
 
     /**
-     * DOCUMENT ME!
+     * Generate a selfsigned certiicate.
      *
      * @param dn subject and issuer DN
      * @param validity in days
@@ -897,7 +897,36 @@ public class CertTools {
      * @throws CertificateEncodingException 
      */
     public static X509Certificate genSelfCert(String dn, long validity, String policyId,
-        PrivateKey privKey, PublicKey pubKey, String sigAlg, boolean isCA)
+        PrivateKey privKey, PublicKey pubKey, String sigAlg, boolean isCA) 
+    	throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, CertificateEncodingException, IllegalStateException {
+    	
+        int keyusage = X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
+    	return genSelfCertForPurpose(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, keyusage);
+    	
+    } //genselfCert
+
+    /**
+     * Generate a selfsigned certiicate with possibility to specify key usage.
+     *
+     * @param dn subject and issuer DN
+     * @param validity in days
+     * @param policyId policy string ('2.5.29.32.0') or null
+     * @param privKey private key
+     * @param pubKey public key
+     * @param sigAlg signature algorithm, you can use one of the contants CATokenInfo.SIGALG_XXX
+     * @param isCA boolean true or false
+     * @param keyusage as defined by constants in X509KeyUsage
+     *
+     * @return X509Certificate, self signed
+     *
+     * @throws NoSuchAlgorithmException DOCUMENT ME!
+     * @throws SignatureException DOCUMENT ME!
+     * @throws InvalidKeyException DOCUMENT ME!
+     * @throws IllegalStateException 
+     * @throws CertificateEncodingException 
+     */
+    public static X509Certificate genSelfCertForPurpose(String dn, long validity, String policyId,
+        PrivateKey privKey, PublicKey pubKey, String sigAlg, boolean isCA, int keyusage)
         throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, CertificateEncodingException, IllegalStateException {
         // Create self signed certificate
         Date firstDate = new Date();
@@ -911,7 +940,7 @@ public class CertTools {
         lastDate.setTime(lastDate.getTime() + (validity * (24 * 60 * 60 * 1000)));
 
         X509V3CertificateGenerator certgen = new X509V3CertificateGenerator();
-
+        
         // Serialnumber is random bits, where random generator is initialized with Date.getTime() when this
         // bean is created.
         byte[] serno = new byte[8];
@@ -932,7 +961,6 @@ public class CertTools {
 
         // Put critical KeyUsage in CA-certificates
         if (isCA == true) {
-            int keyusage = X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
             X509KeyUsage ku = new X509KeyUsage(keyusage);
             certgen.addExtension(X509Extensions.KeyUsage.getId(), true, ku);
         }
@@ -964,7 +992,7 @@ public class CertTools {
         X509Certificate selfcert = certgen.generate(privKey);
 
         return selfcert;
-    } //genselfCert
+    } //genselfCertForPurpose
 
     /**
      * Get the authority key identifier from a certificate extensions

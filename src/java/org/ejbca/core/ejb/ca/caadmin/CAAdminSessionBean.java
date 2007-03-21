@@ -13,9 +13,12 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.KeyStore;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.CertPath;
@@ -32,9 +35,11 @@ import java.security.cert.PKIXCertPathValidatorResult;
 import java.security.cert.PKIXParameters;
 import java.security.cert.TrustAnchor;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -42,11 +47,17 @@ import java.util.Iterator;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
+import javax.naming.NamingException;
 
 import org.bouncycastle.asn1.ASN1Set;
+import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.interfaces.ECPrivateKey;
+import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.BaseSessionBean;
+import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
 import org.ejbca.core.ejb.ca.crl.ICreateCRLSessionLocal;
@@ -104,7 +115,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.44 2007-02-11 18:45:44 herrvendil Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.45 2007-03-21 13:59:55 jeklund Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -254,7 +265,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * @ejb.interface-method
      * @jboss.method-attributes transaction-timeout="900"
      */
-    public void createCA(Admin admin, CAInfo cainfo) throws CAExistsException, AuthorizationDeniedException, CATokenOfflineException, CATokenAuthenticationFailedException{
+    public void createCA(Admin admin, CAInfo cainfo) throws CAExistsException, AuthorizationDeniedException, CATokenOfflineException, CATokenAuthenticationFailedException {
     	int castatus = SecConst.CA_OFFLINE;
         // Check that administrat has superadminsitrator rights.
         try{
@@ -1319,53 +1330,90 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
     /**
      * Method that is used to create a new CA from an imported keystore from another type of CA, for example OpenSSL.
-     * Method only works for RSA keystores.
+     * EC is not fully supported. 
      *
      * @param admin Administrator
      * @param caname the CA-name (human readable) the newly created CA will get
      * @param p12file a byte array of old server p12 file.
      * @param keystorepass used to unlock the keystore.
      * @param privkeypass used to unlock the private key.
-     * @param privatekeyalias the alias for the private key in the keystore.
+     * @param privateSignatureKeyAlias the alias for the private key in the keystore.
+     * @param privateEncryptionKeyAlias the alias for the private encryption key in the keystore
      * 
      * @ejb.interface-method
      */
     public void importCAFromKeyStore(Admin admin, String caname, byte[] p12file, char[] keystorepass,
-                                         char[] privkeypass, String privatekeyalias){
+                                         char[] privkeypass, String privateSignatureKeyAlias, String privateEncryptionKeyAlias) throws Exception {
         try{
             // check authorization
-            if(admin.getAdminType() !=  Admin.TYPE_CACOMMANDLINE_USER)
-              getAuthorizationSession().isAuthorizedNoLog(admin,"/super_administrator");
-
+			if(admin.getAdminType() !=  Admin.TYPE_CACOMMANDLINE_USER) {
+				getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
+			}
             // load keystore
             java.security.KeyStore keystore=KeyStore.getInstance("PKCS12", "BC");
             keystore.load(new java.io.ByteArrayInputStream(p12file),keystorepass);
-
-            Certificate[] certchain = KeyTools.getCertChain(keystore, privatekeyalias);
-            if (certchain.length < 1) {
-                log.error("Cannot load certificate chain with alias "+privatekeyalias);
-                throw new Exception("Cannot load certificate chain with alias "+privatekeyalias);
+            // Extract signarture keys
+            if ( privateSignatureKeyAlias == null || !keystore.isKeyEntry(privateSignatureKeyAlias) ) {
+            	throw new Exception("Alias \"" + privateSignatureKeyAlias + "\" not found.");
             }
-
+            Certificate[] signatureCertChain = KeyTools.getCertChain(keystore, privateSignatureKeyAlias);
+            if (signatureCertChain.length < 1) {
+            	String msg = "Cannot load certificate chain with alias " + privateSignatureKeyAlias;
+                log.error(msg);
+                throw new Exception(msg);
+            }
             ArrayList certificatechain = new ArrayList();
-            for(int i=0;i< certchain.length;i++){
-                certificatechain.add(certchain[i]);
+            for(int i=0;i< signatureCertChain.length;i++){
+                certificatechain.add(signatureCertChain[i]);
             }
-
-            X509Certificate cacertificate = (X509Certificate) certchain[0];
-
-            PrivateKey p12privatekey = (PrivateKey) keystore.getKey( privatekeyalias, privkeypass);
-            PublicKey p12publickey = cacertificate.getPublicKey();
-
+            X509Certificate caSignatureCertificate = (X509Certificate) signatureCertChain[0];
+            if ( !caSignatureCertificate.getKeyUsage()[0] || !caSignatureCertificate.getKeyUsage()[5]) {
+            	String msg = "Key asigned to alias \"" + privateSignatureKeyAlias + "\" cannot be used for signatures. Key usage vector is:";
+	            	for (int i=0; i<9; i++) {
+	            		msg += " " + caSignatureCertificate.getKeyUsage()[i];
+	            	}
+                log.error(msg);
+                throw new Exception(msg);
+            }
+            PrivateKey p12PrivateSignatureKey = (PrivateKey) keystore.getKey( privateSignatureKeyAlias, privkeypass);
+            PublicKey p12PublicSignatureKey = caSignatureCertificate.getPublicKey();
+            // Extract encryption keys
+            PrivateKey p12PrivateEncryptionKey = null;
+            PublicKey p12PublicEncryptionKey = null;
+            X509Certificate caEncryptionCertificate = null;
+            if (privateEncryptionKeyAlias != null) {
+                if ( !keystore.isKeyEntry(privateEncryptionKeyAlias) ) {
+                	throw new Exception("Alias \"" + privateEncryptionKeyAlias + "\" not found.");
+                }
+	            Certificate[] encryptionCertChain = KeyTools.getCertChain(keystore, privateEncryptionKeyAlias);
+	            if (encryptionCertChain.length < 1) {
+	            	String msg = "Cannot load certificate chain with alias " + privateEncryptionKeyAlias;
+	                log.error(msg);
+	                throw new Exception(msg);
+	            }
+	            caEncryptionCertificate = (X509Certificate) encryptionCertChain[0];
+	            if ( !caEncryptionCertificate.getKeyUsage()[2] ) {
+	            	String msg = "Key asigned to alias \"" + privateEncryptionKeyAlias + "\" cannot be used for key encipherment. Key usage vector is:";
+	            	for (int i=0; i<caEncryptionCertificate.getKeyUsage().length; i++) {
+	            		msg += " " + caEncryptionCertificate.getKeyUsage()[i];
+	            	}
+	                log.error(msg);
+	                throw new Exception(msg);
+	            }
+	            p12PrivateEncryptionKey = (PrivateKey) keystore.getKey( privateEncryptionKeyAlias, privkeypass);
+	            p12PublicEncryptionKey = caEncryptionCertificate.getPublicKey();
+            }
+            // Transform into token
             CAToken catoken = new SoftCAToken();
-            ((SoftCAToken) catoken).importKeysFromP12(p12privatekey, p12publickey);
-
+            ((SoftCAToken) catoken).importKeysFromP12(p12PrivateSignatureKey, p12PublicSignatureKey, p12PrivateEncryptionKey,
+            			p12PublicEncryptionKey, signatureCertChain);
+            log.debug("CA-Info: "+catoken.getCATokenInfo().getSignatureAlgorithm() + " " + catoken.getCATokenInfo().getEncryptionAlgorithm());
             // Create a X509CA
 			int signedby = CAInfo.SIGNEDBYEXTERNALCA;
             int certprof = SecConst.CERTPROFILE_FIXED_SUBCA;
 			String description = "Imported external signed CA";
-            if(certchain.length == 1) {
-				if (verifyIssuer(cacertificate, cacertificate)) {
+            if(signatureCertChain.length == 1) {
+				if (verifyIssuer(caSignatureCertificate, caSignatureCertificate)) {
 					signedby = CAInfo.SELFSIGNED;
 					certprof = SecConst.CERTPROFILE_FIXED_ROOTCA;
 					description = "Imported root CA";
@@ -1373,15 +1421,15 @@ public class CAAdminSessionBean extends BaseSessionBean {
 					// A less strict strategy can be to assume certificate signed
 					// by an external CA. Useful if admin user forgot to create a full
 					// certificate chain in PKCS#12 package.
-					log.error("Cannot import CA " + cacertificate.getSubjectDN().getName()
-							+ ": certificate " + cacertificate.getSerialNumber()
+					log.error("Cannot import CA " + caSignatureCertificate.getSubjectDN().getName()
+							+ ": certificate " + caSignatureCertificate.getSerialNumber()
 							+ " is not self-signed.");
 					throw new Exception("Cannot import CA "
-							+ cacertificate.getSubjectDN().getName()
+							+ caSignatureCertificate.getSubjectDN().getName()
 							+ ": certificate is not self-signed. Check "
 							+ "certificate chain in PKCS#12");
 				}
-			} else if (certchain.length > 1){
+			} else if (signatureCertChain.length > 1){
 				Collection cas = getAvailableCAs(admin);
 				Iterator iter = cas.iterator();
 				// Assuming certificate chain in forward direction (from target
@@ -1394,7 +1442,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 					Iterator i = superCaInfo.getCertificateChain().iterator();
 					if (i.hasNext()) {
 						X509Certificate superCaCert = (X509Certificate)i.next();
-						if (verifyIssuer(cacertificate, superCaCert)) {
+						if (verifyIssuer(caSignatureCertificate, superCaCert)) {
 							signedby = caid;
 							description = "Imported sub CA";
 							break;
@@ -1402,36 +1450,47 @@ public class CAAdminSessionBean extends BaseSessionBean {
 					}
 				}					
             }
-
             // Create and active OSCP CA Service.
+            String keyAlgorithm = CATokenConstants.KEYALGORITHM_RSA;
+            String keySpecification = "2048";
+            if (!(p12PublicSignatureKey instanceof RSAPublicKey)) {
+            	Enumeration en = ECNamedCurveTable.getNames();
+            	while ( en.hasMoreElements() ) {
+            		String currentCurveName = (String) en.nextElement();
+            		if ( (ECNamedCurveTable.getParameterSpec(currentCurveName)).getCurve().equals( ((ECPrivateKey) p12PrivateSignatureKey).getParameters().getCurve() ) ) {
+            			keySpecification = currentCurveName;
+            			keyAlgorithm = CATokenConstants.KEYALGORITHM_ECDSA;
+            			break;
+            		}
+            	}
+            }
             ArrayList extendedcaservices = new ArrayList();
 			extendedcaservices.add(
-			  new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
-			                        "CN=OCSPSignerCertificate, " + cacertificate.getSubjectDN().toString(),
+					new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
+			                        "CN=OCSPSignerCertificate, " + caSignatureCertificate.getSubjectDN().toString(),
 			                        "",
-			                        "2048",
-			                        CATokenConstants.KEYALGORITHM_RSA));
+			                        keySpecification,
+			                        keyAlgorithm));
             // Create and active XKMS CA Service.
             extendedcaservices.add(
                     new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
-                                          "CN=XKMSCertificate, " + cacertificate.getSubjectDN().toString(),
+                                          "CN=XKMSCertificate, " + caSignatureCertificate.getSubjectDN().toString(),
                                           "",
-                                          "2048",
-                                          CATokenConstants.KEYALGORITHM_RSA));
+                                          keySpecification,
+                                          keyAlgorithm));
             // Create and active CMS CA Service.
             extendedcaservices.add(
                     new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
-                                          "CN=CMSCertificate, " + cacertificate.getSubjectDN().toString(),
+                                          "CN=CMSCertificate, " + caSignatureCertificate.getSubjectDN().toString(),
                                           "",
-                                          "2048",
-                                          CATokenConstants.KEYALGORITHM_RSA));
-
-			int validity = (int)((cacertificate.getNotAfter().getTime() - cacertificate.getNotBefore().getTime()) / (24*3600*1000));
-            X509CAInfo cainfo = new X509CAInfo(cacertificate.getSubjectDN().toString(),
+                                          keySpecification,
+                                          keyAlgorithm));
+			int validity = (int)((caSignatureCertificate.getNotAfter().getTime() - caSignatureCertificate.getNotBefore().getTime()) / (24*3600*1000));
+            X509CAInfo cainfo = new X509CAInfo(caSignatureCertificate.getSubjectDN().toString(),
                                                caname, SecConst.CA_ACTIVE, new Date(), 
                                                "", certprof,
                                                validity,
-                                               cacertificate.getNotAfter(), // Expiretime
+                                               caSignatureCertificate.getNotAfter(), // Expiretime
                                                CAInfo.CATYPE_X509,
                                                signedby,
                                                certificatechain,
@@ -1456,14 +1515,12 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			                                   new ArrayList(), // Approvals Settings
 			                                   1, // Number of Req approvals
 			                                   false); // Use UTF8 subject DN by default 
-
             X509CA ca = new X509CA(cainfo);
             ca.setCAToken(catoken);
             ca.setCertificateChain(certificatechain);
-
+            log.debug("CA-Info: "+catoken.getCATokenInfo().getSignatureAlgorithm() + " " + ca.getCAToken().getCATokenInfo().getEncryptionAlgorithm());
             //  Publish CA certificates.
             getSignSession().publishCACertificate(admin, ca.getCertificateChain(), ca.getCRLPublishers());
-
             // activate External CA Services
             Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
             while(iter.hasNext()){
@@ -1502,17 +1559,88 @@ public class CAAdminSessionBean extends BaseSessionBean {
                     }
                 }
             }
-            
             // Store CA in database.
             cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_ACTIVE, ca);
             this.getCRLCreateSession().run(admin,cainfo.getSubjectDN());
             getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_INFO_CACREATED,"CA imported successfully from old P12 file, status: " + ca.getStatus());
-        }catch(Exception e){
+        } catch(Exception e) {
             getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"An error occured when trying to import CA from old P12 file", e);
             throw new EJBException(e);
         }
-
     } // importCAFromKeyStore
+    
+    /**
+     * Exports a CA to file. The method only works for soft tokens.
+     *
+     * @param admin Administrator
+     * @param caname the CA-name (human readable) the CA
+     * @param keystorepass used to lock the keystore.
+     * @param privkeypass used to lock the private key.
+     * @param privateSignatureKeyAlias the alias for the private signature key in the keystore.
+     * @param privateEncryptionKeyAlias the alias for the private encryption key in teh keystore
+     * 
+     * @return A byte array of the CAs p12.
+     * 
+     * @ejb.interface-method
+     */
+    public byte[] exportCAKeyStore(Admin admin, String caname, char[] keystorepass, char[] privkeypass, String privateSignatureKeyAlias, 
+    		String privateEncryptionKeyAlias) throws Exception {
+        log.debug(">exportCAKeyStore");               
+        try {
+	    	CA thisCa = cadatahome.findByName(caname).getCA();
+			// Make sure we are not trying to export a hard or invalid token
+	    	if ( thisCa.getCAType() != CATokenInfo.CATOKENTYPE_P12 ) {
+	    		throw new Exception("Cannot export anything but a soft token.");
+	    	}
+	    	// Check authorization
+			if(admin.getAdminType() != Admin.TYPE_CACOMMANDLINE_USER) {
+				getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
+			}
+            // Fetch keys
+	    	CAToken thisCAToken = thisCa.getCAToken();
+            KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
+            keystore.load(null, keystorepass);
+            
+	    	PrivateKey p12PrivateEncryptionKey = ((SoftCAToken) thisCAToken).getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT);
+	    	PublicKey p12PublicEncryptionKey = ((SoftCAToken) thisCAToken).getPublicKey(SecConst.CAKEYPURPOSE_KEYENCRYPT);
+            PrivateKey p12PrivateCertSignKey = ((SoftCAToken) thisCAToken).getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN);
+	    	PrivateKey p12PrivateCRLSignKey = ((SoftCAToken) thisCAToken).getPrivateKey(SecConst.CAKEYPURPOSE_CRLSIGN);
+	    	if ( !p12PrivateCertSignKey.equals(p12PrivateCRLSignKey) ) {
+	    		throw new Exception("Assertion of equal signature keys failed.");
+	    	}
+	    	// Load keys into keystore
+	    	X509Certificate[] certificateChainSignature = (X509Certificate[]) thisCa.getCertificateChain().toArray(new X509Certificate[0]);
+	    	X509Certificate[] certificateChainEncryption = new X509Certificate[1];
+	    	//certificateChainSignature[0].getSigAlgName(), 
+            // generate dummy certificate for encryption key.  Replaced CATokenInfo.SIGALG_SHA1_WITH_RSA
+	    	certificateChainEncryption[0] = CertTools.genSelfCertForPurpose("CN=dummy2", 36500, null, p12PrivateEncryptionKey, p12PublicEncryptionKey,
+	    			thisCAToken.getCATokenInfo().getEncryptionAlgorithm(), true, X509KeyUsage.keyEncipherment);
+	    	log.debug("Exporting with sigAlgorithm "+certificateChainSignature[0].getSigAlgName()+"encAlgorithm="+thisCAToken.getCATokenInfo().getEncryptionAlgorithm());
+            if ( keystore.isKeyEntry(privateSignatureKeyAlias) ) {
+	    		throw new Exception("Key \"" + privateSignatureKeyAlias + "\"already exists in keystore.");
+            }
+            if ( keystore.isKeyEntry(privateEncryptionKeyAlias) ) {
+	    		throw new Exception("Key \"" + privateEncryptionKeyAlias + "\"already exists in keystore.");
+            }
+            keystore.setKeyEntry(privateSignatureKeyAlias, p12PrivateCertSignKey, privkeypass, certificateChainSignature);
+            keystore.setKeyEntry(privateEncryptionKeyAlias, p12PrivateEncryptionKey, privkeypass, certificateChainEncryption);
+            // Return keystore as byte array and clean up
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            keystore.store(baos, keystorepass);
+            if ( keystore.isKeyEntry(privateSignatureKeyAlias) ) {
+            	keystore.deleteEntry(privateSignatureKeyAlias);
+            }
+            if ( keystore.isKeyEntry(privateEncryptionKeyAlias) ) {
+            	keystore.deleteEntry(privateEncryptionKeyAlias);
+            }
+	        getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_INFO_CAEXPORTED,"CA exported successfully from to P12 file.");
+    		return baos.toByteArray();
+	    } catch(Exception e){
+	        getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEXPORTED,"An error occured when trying to export CA to P12 file", e);
+	        throw new EJBException(e);
+	    }
+	} // exportCAKeyStore
+
 
     /**
      *  Method returning a Collection of Certificate of all CA certificates known to the system.
@@ -1544,10 +1672,65 @@ public class CAAdminSessionBean extends BaseSessionBean {
       } catch(IllegalKeyStoreException e){
           throw new EJBException(e);
       }
-      
       return returnval;
     } // getAllCACertificates
 
+    /**
+     * Check if password is a the rigth keystore password
+     *
+     * @param admin Administrator
+     * @param capassword used to unlock the keystore.
+     * 
+     * @ejb.interface-method
+     */
+    public boolean isKeyStorePassword(Admin admin, String capassword) {
+        try {
+			if(admin.getAdminType() !=  Admin.TYPE_CACOMMANDLINE_USER) {
+				getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
+			}
+		} catch (AuthorizationDeniedException e) {
+			return false;
+		}
+	    String keyStorePass = ServiceLocator.getInstance().getString("java:comp/env/keyStorePass");
+    	return ( keyStorePass.equals(capassword) );
+    } // isKeyStorePassword
+
+    /**
+     * Retrieve fingerprint for all keys as a String. Used for testing. 
+     *
+     * @param admin Administrator
+     * @param capassword used to unlock the keystore.
+     * @throws Exception 
+     * @ejb.interface-method
+     */
+    public String getKeyFingerPrint(Admin admin, String caname) throws Exception  {
+		try {
+			if(admin.getAdminType() !=  Admin.TYPE_CACOMMANDLINE_USER) {
+				getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
+			}
+			CA thisCa;
+			thisCa = cadatahome.findByName(caname).getCA();
+
+			// Make sure we are not trying to export a hard or invalid token
+			if ( thisCa.getCAType() != CATokenInfo.CATOKENTYPE_P12 ) {
+				throw new Exception("Cannot extract fingerprint from a non-soft token.");
+			}
+			// Fetch keys
+			CAToken thisCAToken = thisCa.getCAToken();
+			PrivateKey p12PrivateEncryptionKey = ((SoftCAToken) thisCAToken).getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT);
+			PrivateKey p12PrivateCertSignKey = ((SoftCAToken) thisCAToken).getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN);
+			PrivateKey p12PrivateCRLSignKey = ((SoftCAToken) thisCAToken).getPrivateKey(SecConst.CAKEYPURPOSE_CRLSIGN);
+			MessageDigest md = MessageDigest.getInstance("SHA1");
+			md.update(p12PrivateEncryptionKey.getEncoded());
+			md.update(p12PrivateCertSignKey.getEncoded());
+			md.update(p12PrivateCRLSignKey.getEncoded());
+			return new String(Hex.encode(md.digest()));
+		} catch (Exception e) {
+			throw new Exception(e);
+		}
+    } // getKeyFingerPrint
+
+    
     /**
      *  Activates an 'Offline' CA Token and sets the CA status to acitve and ready for use again.
      *  The admin must be authorized to "/ca_functionality/basic_functions/activate_ca" inorder to activate/deactivate.
