@@ -5,11 +5,11 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
     <title>@EJBCA@ Certification Authority</title>
-    <link rel="stylesheet" href="../../styles.css" type="text/css">
+    <link rel="stylesheet" href="../styles.css" type="text/css">
   </head>
   <body>
     <div class="logobar">
-      <img src="../../images/logotype.png" alt="EJBCA-pki logotype" />
+      <img src="../images/logotype.png" alt="EJBCA-pki logotype" />
     </div>
     <div class="menucontainer">
       <div class="menu">
@@ -17,36 +17,36 @@
           <li><div class="menuheader">Enrol</div></li>
             <ul>
               <li>
-                <a href="../browser.jsp">Create Browser Certificate</a>
+                <a href="../enrol/browser.jsp">Create Browser Certificate</a>
               </li>
               <li>
-                <a href="../server.jsp">Create Server Certificate</a>
+                <a href="../enrol/server.jsp">Create Server Certificate</a>
               </li>
               <li>
-                <a href="../keystore.jsp">Create Keystore</a>
+                <a href="../enrol/keystore.jsp">Create Keystore</a>
               </li>
             </ul>
           </li>  
           <li><div class="menuheader">Retrieve</div></li>
             <ul>
               <li>
-                <a href="../../retrieve/ca_certs.jsp">Fetch CA & OCSP Certificate</a>
+                <a href="../retrieve/ca_certs.jsp">Fetch CA & OCSP Certificate</a>
               </li>
               <li>
-                <a href="../../retrieve/ca_crls.jsp">Fetch CA CRLs</a>
+                <a href="../retrieve/ca_crls.jsp">Fetch CA CRLs</a>
               </li>
               <li>
-                <a href="../../retrieve/latest_cert.jsp">Fetch User's Latest Certificate</a>
+                <a href="../retrieve/latest_cert.jsp">Fetch User's Latest Certificate</a>
               </li>
             </ul>
           </li>  
           <li><div class="menuheader">Miscellaneous</div></li>
             <ul>
               <li>
-                <a href="../../retrieve/list_certs.jsp">List  User's Certificates</a>
+                <a href="../retrieve/list_certs.jsp">List User's Certificates</a>
               </li>
               <li>
-                <a href="../../retrieve/check_status.jsp">Check Certificate Status</a>
+                <a href="../retrieve/check_status.jsp">Check Certificate Status</a>
               </li>
             </ul>
           </li>  

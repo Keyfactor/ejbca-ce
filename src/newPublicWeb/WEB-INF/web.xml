@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
-<!DOCTYPE web-app PUBLIC
-	"-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
-	"http://java.sun.com/dtd/web-app_2_3.dtd">
+<!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+    "http://java.sun.com/dtd/web-app_2_3.dtd">
 
 <web-app>
   <display-name>New public web root</display-name>
@@ -12,13 +11,18 @@
         <servlet-class>org.ejbca.ui.web.pub.CertReqServlet</servlet-class>
         <init-param>
             <param-name>responseTemplate</param-name>
-            <param-value>certInstT.html</param-value>
+            <param-value>templates/certInstTemplate.jsp</param-value>
         </init-param>
         <init-param>
             <param-name>responseIidTemplate</param-name>
-            <param-value>certInstIidT.html</param-value>
+            <param-value>templates/certInstIidTemplate.jsp</param-value>
         </init-param>
     </servlet>
+
+    <servlet-mapping>
+        <servlet-name>CertReqServlet</servlet-name>
+        <url-pattern>/certreq</url-pattern>
+    </servlet-mapping>
 
     <servlet>
         <servlet-name>CertDist</servlet-name>
@@ -27,15 +31,64 @@
     </servlet>
 
     <servlet-mapping>
-      <servlet-name>CertReqServlet</servlet-name>
-      <url-pattern>/certreq</url-pattern>
+        <servlet-name>CertDist</servlet-name>
+        <url-pattern>/certdist</url-pattern>
     </servlet-mapping>
+
+<!-- 
+This is a servlet that can be used to renew certificates on smart card using NetId CSP.
+It is tailored for SwedishEID hard token profile with two certificates, one for authentication and one for signature.
+The old certificates will be removed when the new ones are added.
+-->
+<!-- 
+    <servlet>
+        <servlet-name>CardCertReqServlet</servlet-name>
+        <display-name>CardCertReqServlet</display-name>
+        <servlet-class>org.ejbca.ui.web.pub.CardCertReqServlet</servlet-class>
+        <init-param>
+            <param-name>responseTemplate</param-name>
+            <param-value>templates/cardCertInstTemplate.html</param-value>
+        </init-param>
+        <init-param>
+            <param-name>authCertProfile</param-name>
+            <param-value>company A auth enc</param-value>
+        </init-param>
+        <init-param>
+            <param-name>signCertProfile</param-name>
+            <param-value>company A sign</param-value>
+        </init-param>
+        <init-param>
+            <param-name>signCA</param-name>
+            <param-value>test</param-value>
+        </init-param>
+        <init-param>
+            <param-name>authCA</param-name>
+            <param-value>Company A from test</param-value>
+        </init-param>
+    </servlet>
 
     <servlet-mapping>
-	    <servlet-name>CertDist</servlet-name>
-	    <url-pattern>/certdist</url-pattern>
+        <servlet-name>CardCertReqServlet</servlet-name>
+        <url-pattern>/cardcertreq</url-pattern>
     </servlet-mapping>
+ 
+    <security-constraint>
+        <web-resource-collection>
+          <web-resource-name>EJBCA</web-resource-name> 
+          <description>EJBCA Admin-GUI</description>
+          <url-pattern>/cardCertApply.jsp</url-pattern> 
+        </web-resource-collection>
+        <user-data-constraint>
+            <description>This web demands SSL</description>
+            <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+        </user-data-constraint>
+    </security-constraint>
 
+    <login-config>
+        <auth-method>CLIENT-CERT</auth-method>
+    </login-config>
+ -->
+ 
 <!-- JSTL is not used yet.
   <taglib>
     <taglib-uri>http://java.sun.com/jstl/fmt</taglib-uri>

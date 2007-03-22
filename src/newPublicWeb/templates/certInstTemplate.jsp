@@ -1,10 +1,5 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-<meta name="generator" content=
-"HTML Tidy for Linux/x86 (vers 1st December 2004), see www.w3.org">
-<meta name="EJBCA" content="EJBCA">
 <%@ include file="header.jsp" %>
+
 <object classid="$CLASSID" id="keystore"></object>
 <!-- New updated enrollment activeX-control 2002-09-02 (Q323172)
 New Xenroll.dll information:
