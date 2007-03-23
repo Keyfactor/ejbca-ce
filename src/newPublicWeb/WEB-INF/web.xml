@@ -61,6 +61,22 @@
       <url-pattern>/scep/noca/pkiclient.exe</url-pattern>
     </servlet-mapping>
 
+<!--
+    <servlet>
+        <servlet-name>DemoCertReqServlet</servlet-name>
+        <display-name>DemoCertReqServlet</display-name>
+        <servlet-class>org.ejbca.ui.web.pub.DemoCertReqServlet</servlet-class>
+        <init-param>
+            <param-name>responseTemplate</param-name>
+            <param-value>certInstT.html</param-value>
+        </init-param>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DemoCertReqServlet</servlet-name>
+        <url-pattern>/democertreq</url-pattern>
+    </servlet-mapping>
+-->
+
 <!-- 
 This is a servlet that can be used to renew certificates on smart card using NetId CSP.
 It is tailored for SwedishEID hard token profile with two certificates, one for authentication and one for signature.
