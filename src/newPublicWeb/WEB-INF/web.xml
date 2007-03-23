@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-
 <!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
     "http://java.sun.com/dtd/web-app_2_3.dtd">
 
 <web-app>
-  <display-name>New public web root</display-name>
+    <display-name>Public web root</display-name>
+
     <servlet>
         <servlet-name>CertReqServlet</servlet-name>
         <display-name>CertReqServlet</display-name>
@@ -18,7 +18,6 @@
             <param-value>templates/certInstIidTemplate.jsp</param-value>
         </init-param>
     </servlet>
-
     <servlet-mapping>
         <servlet-name>CertReqServlet</servlet-name>
         <url-pattern>/certreq</url-pattern>
@@ -29,10 +28,37 @@
         <display-name>CertDistServlet</display-name>
         <servlet-class>org.ejbca.ui.web.pub.CertDistServlet</servlet-class>
     </servlet>
-
     <servlet-mapping>
         <servlet-name>CertDist</servlet-name>
         <url-pattern>/certdist</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ScepServlet</servlet-name>
+        <display-name>ScepServlet</display-name>
+        <servlet-class>org.ejbca.ui.web.protocol.ScepServlet</servlet-class>
+        <init-param>
+            <param-name>includeCACert</param-name>
+            <param-value>1</param-value>
+        </init-param>
+    </servlet>
+    <servlet-mapping>
+      <servlet-name>ScepServlet</servlet-name>
+      <url-pattern>/scep/pkiclient.exe</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ScepServletNoCACert</servlet-name>
+        <display-name>ScepServletNoCACert</display-name>
+        <servlet-class>org.ejbca.ui.web.protocol.ScepServlet</servlet-class>
+        <init-param>
+            <param-name>includeCACert</param-name>
+            <param-value>0</param-value>
+        </init-param>
+    </servlet>
+    <servlet-mapping>
+      <servlet-name>ScepServletNoCACert</servlet-name>
+      <url-pattern>/scep/noca/pkiclient.exe</url-pattern>
     </servlet-mapping>
 
 <!-- 
@@ -66,7 +92,6 @@ The old certificates will be removed when the new ones are added.
             <param-value>Company A from test</param-value>
         </init-param>
     </servlet>
-
     <servlet-mapping>
         <servlet-name>CardCertReqServlet</servlet-name>
         <url-pattern>/cardcertreq</url-pattern>
@@ -87,25 +112,67 @@ The old certificates will be removed when the new ones are added.
     <login-config>
         <auth-method>CLIENT-CERT</auth-method>
     </login-config>
- -->
+-->
  
 <!-- JSTL is not used yet.
-  <taglib>
-    <taglib-uri>http://java.sun.com/jstl/fmt</taglib-uri>
-    <taglib-location>/WEB-INF/fmt.tld</taglib-location>
-  </taglib>
-  <taglib>
-    <taglib-uri>http://java.sun.com/jstl/core</taglib-uri>
-    <taglib-location>/WEB-INF/c.tld</taglib-location>
-  </taglib>
-  <taglib>
-    <taglib-uri>http://java.sun.com/jstl/sql</taglib-uri>
-    <taglib-location>/WEB-INF/sql.tld</taglib-location>
-  </taglib>
-  <taglib>
-    <taglib-uri>http://java.sun.com/jstl/x</taglib-uri>
-    <taglib-location>/WEB-INF/x.tld</taglib-location>
-  </taglib>
+    <taglib>
+	    <taglib-uri>http://java.sun.com/jstl/fmt</taglib-uri>
+	    <taglib-location>/WEB-INF/fmt.tld</taglib-location>
+    </taglib>
+    <taglib>
+	    <taglib-uri>http://java.sun.com/jstl/core</taglib-uri>
+	    <taglib-location>/WEB-INF/c.tld</taglib-location>
+    </taglib>
+    <taglib>
+	    <taglib-uri>http://java.sun.com/jstl/sql</taglib-uri>
+	    <taglib-location>/WEB-INF/sql.tld</taglib-location>
+    </taglib>
+    <taglib>
+	    <taglib-uri>http://java.sun.com/jstl/x</taglib-uri>
+	    <taglib-location>/WEB-INF/x.tld</taglib-location>
+    </taglib>
 -->
+   
+    <env-entry>
+        <description><![CDATA[Default content encoding used to decode form posts]]></description>
+        <env-entry-name>contentEncoding</env-entry-name>
+        <env-entry-value>@page.encoding@</env-entry-value>
+        <env-entry-type>java.lang.String</env-entry-type>
+    </env-entry>
+
+    <resource-ref >
+        <res-ref-name>@datasource.jndi-name-prefix@@datasource.jndi-name@</res-ref-name>
+        <res-type>javax.sql.DataSource</res-type>
+        <res-auth>Container</res-auth>
+    </resource-ref>
+
+    <ejb-local-ref>
+	    <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
+	    <ejb-ref-type>Session</ejb-ref-type>
+	    <local-home>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome</local-home>
+	    <local>org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal</local>
+	    <ejb-link>CAAdminSession</ejb-link>
+    </ejb-local-ref>
+    <ejb-local-ref>
+	    <ejb-ref-name>ejb/RSASignSessionLocal</ejb-ref-name>
+	    <ejb-ref-type>Session</ejb-ref-type>
+	    <local-home>org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome</local-home>
+	    <local>org.ejbca.core.ejb.ca.sign.ISignSessionLocal</local>
+	    <ejb-link>RSASignSession</ejb-link>
+    </ejb-local-ref>
+    <ejb-local-ref>
+	    <ejb-ref-name>ejb/UserAdminSessionLocal</ejb-ref-name>
+	    <ejb-ref-type>Session</ejb-ref-type>
+	    <local-home>org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome</local-home>
+	    <local>org.ejbca.core.ejb.ra.IUserAdminSessionLocal</local>
+	    <ejb-link>UserAdminSession</ejb-link>
+    </ejb-local-ref>
+    <ejb-local-ref>
+	    <ejb-ref-name>ejb/CertificateStoreSessionLocal</ejb-ref-name>
+	    <ejb-ref-type>Session</ejb-ref-type>
+	    <local-home>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome</local-home>
+	    <local>org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal</local>
+	    <ejb-link>CertificateStoreSession</ejb-link>
+    </ejb-local-ref>
 
 </web-app>
