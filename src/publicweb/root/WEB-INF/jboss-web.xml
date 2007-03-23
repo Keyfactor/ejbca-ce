@@ -1,3 +1,3 @@
 <jboss-web>
-	<context-root>/</context-root>
+	<context-root>/old</context-root>
 </jboss-web>

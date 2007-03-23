@@ -171,7 +171,8 @@
     </target>
 
     <!-- =================================================================== -->
-    <!-- Build public root web part                                              -->
+    <!-- Build old public root web part                                      -->
+    <!-- NOTE: This WAR has been replaced by "publicweb.war".                --> 
     <!-- =================================================================== -->
     <target name="publicwebroot.war" depends="compile">
         <war destfile="${rootwar}" webxml="${root.warsrc}/WEB-INF/web.xml">
@@ -182,20 +183,13 @@
     <!-- =================================================================== -->
     <!-- Build public web part                                               -->
     <!-- Note that this target is temporary. When complete, the new public   -->
-    <!-- web will replace the old one. You do now need the publicweb war to  -->
+    <!-- web will replace the old one. You do not need the publicweb war to  -->
     <!-- run EJBCA                                                           -->
     <!-- =================================================================== -->
     <target name="publicweb.war" depends="compile, ejbca-ejb.jar">
         <war destfile="${publicwebwar}" webxml="${publicweb.src}/WEB-INF/web.xml">
             <fileset dir="${publicweb.src}" excludes="WEB-INF/web.xml" />
         </war>
-<!-- Temporary stuff to ease development.
-        <copy file="${publicwebwar}"
-        	todir="/usr/local/jboss-4.0.5.GA/server/default/deploy/ejbca.ear" />
-        <copy file="${dist.dir}/ejbca-ejb.jar"
-        	todir="/usr/local/jboss-4.0.5.GA/server/default/deploy/ejbca.ear" />
-    	<touch file="/usr/local/jboss-4.0.5.GA/server/default/deploy/ejbca.ear/META-INF/application.xml" />
--->
     </target>   
 
     <!-- =================================================================== -->
@@ -350,7 +344,7 @@
     <!-- =================================================================== -->
     <!-- Build CA-ear                                                        -->
     <!-- =================================================================== -->
-	<target name="ca.ear" depends="jsflibs, apply.war, publicweb.war, status.war, cmp.war, healthcheck.war, webdist.war, adminweb.war, publicwebroot.war, ejbca-ejb.jar, ejbca-util.jar, ejbcaws.war, ejbcaws.client, xkms.war, xkms.client">
+	<target name="ca.ear" depends="jsflibs, apply.war, publicweb.war, status.war, cmp.war, healthcheck.war, webdist.war, adminweb.war, ejbca-ejb.jar, ejbca-util.jar, ejbcaws.war, ejbcaws.client, xkms.war, xkms.client">
         <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml"> 
             <fileset dir="${eardd.src}">
                 <exclude name="META-INF/application.xml" />

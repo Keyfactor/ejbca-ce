@@ -14,14 +14,8 @@ applications for enrollment, distribution and administration.
     </module>
     <module>
         <web>
-            <web-uri>publicwebroot.war</web-uri>
-            <context-root>/@ejbca@</context-root>
-        </web>
-    </module>
-    <module>
-        <web>
             <web-uri>publicweb.war</web-uri>
-            <context-root>/new/@ejbca@</context-root>
+            <context-root>/@ejbca@</context-root>
         </web>
     </module>
     <module>
