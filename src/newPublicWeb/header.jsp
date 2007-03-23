@@ -9,7 +9,7 @@
   </head>
   <body>
     <div class="logobar">
-      <img src="images/logotype.png" alt="EJBCA-pki logotype" />
+      <a href="index.jsp"><img src="images/logotype.png" alt="EJBCA-pki logotype" border="0"/></a>
     </div>
     <div class="menucontainer">
       <div class="menu">
