@@ -18,6 +18,7 @@ import java.math.BigInteger;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERBoolean;
 import org.bouncycastle.asn1.DEREncodable;
+import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
@@ -39,7 +40,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * 
  * @author Philip Vendil 2007 jan 5
  *
- * @version $Id: BasicCertificateExtension.java,v 1.1 2007-01-09 16:47:19 herrvendil Exp $
+ * @version $Id: BasicCertificateExtension.java,v 1.2 2007-03-26 12:39:26 anatom Exp $
  */
 
 public class BasicCertificateExtension extends CertificateExtension {
@@ -52,6 +53,7 @@ public class BasicCertificateExtension extends CertificateExtension {
 	private static String ENCODING_DERBOOLEAN         = "DERBOOLEAN";	      
 	private static String ENCODING_DERPRINTABLESTRING = "DERPRINTABLESTRING";	 
 	private static String ENCODING_DERUTF8STRING      = "DERUTF8STRING";	 
+	private static String ENCODING_DERIA5STRING       = "DERIA5STRING";	 
 	private static String ENCODING_DERNULL            = "DERNULL";
 	
 	// Defined Properties
@@ -99,11 +101,14 @@ public class BasicCertificateExtension extends CertificateExtension {
 							  if(encoding.equalsIgnoreCase(ENCODING_DERUTF8STRING)){
 								  dEREncodable = parseDERUTF8String(value);
 							  }else
-								  if(encoding.equalsIgnoreCase(ENCODING_DERNULL)){
-									  dEREncodable = new DERNull();
-								  }else{
-									  throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.incorrectenc",new Integer(getId())));
-								  }
+								  if(encoding.equalsIgnoreCase(ENCODING_DERIA5STRING)){
+									  dEREncodable = parseDERIA5String(value);
+								  }else
+									  if(encoding.equalsIgnoreCase(ENCODING_DERNULL)){
+										  dEREncodable = new DERNull();
+									  }else{
+										  throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.incorrectenc",new Integer(getId())));
+									  }
 		}
 		
 		return dEREncodable;
@@ -175,6 +180,9 @@ public class BasicCertificateExtension extends CertificateExtension {
 	
 	private DEREncodable parseDERUTF8String(String value) {		
 		return new DERUTF8String(value);
+	}
+	private DEREncodable parseDERIA5String(String value) {		
+		return new DERIA5String(value, true);
 	}
 
 
