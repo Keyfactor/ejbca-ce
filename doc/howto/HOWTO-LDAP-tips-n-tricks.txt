@@ -45,3 +45,30 @@ see man slapd.conf for explanation of syncrepl configuration options.
 
 Regards,
 DT.
+
+Using SerialNumber in LDAP DN
+-----------------------------
+
+Modify /etc/ldap/schema/inetorgperson.schema and add serialNumber as a MAY attribute.
+After restarting slapd you can now construct an LDAP DN like:
+ serialNumber=12345,dc=company,dc=com
+This may be useful if you use serialNumber as the unique identifyer in your DNs.
+
+# The inetOrgPerson represents people who are associated with an
+# organization in some way.  It is a structural class and is derived
+# from the organizationalPerson which is defined in X.521 [X521].
+objectclass     ( 2.16.840.1.113730.3.2.2
+    NAME 'inetOrgPerson'
+        DESC 'RFC2798: Internet Organizational Person'
+    SUP organizationalPerson
+    STRUCTURAL
+        MAY (
+                serialNumber $ audio $ businessCategory $ carLicense $ departmentNumber $
+                displayName $ employeeNumber $ employeeType $ givenName $
+                homePhone $ homePostalAddress $ initials $ jpegPhoto $
+                labeledURI $ mail $ manager $ mobile $ o $ pager $
+                photo $ roomNumber $ secretary $ uid $ userCertificate $
+                x500uniqueIdentifier $ preferredLanguage $
+                userSMIMECertificate $ userPKCS12 )
+        )
+        
