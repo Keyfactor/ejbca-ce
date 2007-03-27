@@ -2926,15 +2926,23 @@ A guide for configuring OpenLDAP on Solaris can be found at
 <subsubsection name="Sample Ubuntu installation">
 <source>
 - apt-get install slapd ldap-utils
-- vi slapd.conf
-  change dc=nodomain -> dc=PrimeKey,dc=com (three places)
-  after 'suffix "dc=PrimeKey,dc=com"'
-  add
-  rootdn          "cn=admin,dc=PrimeKey,dc=com"
-  rootpw          foo123
+- dpkg-reconfigure slapd
+  Configure slapd with your domain and admin password.
 - /etc/init.d/slapd restart
 - 'ps -ef|grep slap' 
   should show a slapd running
+- ldapsearch -x -b 'dc=PrimeKey,dc=com' '(objectclass=*)'
+  To look at the results
+- slapcat -l backup.ldif
+  Make backup
+- slapadd -l backup.ldif
+- /etc/init.d/slapd restart
+  Restore backup
+</source>
+<p>
+Command to add new LDAP nodes:  
+</p>
+<source>
 - ldapadd -x -D "cn=admin,dc=PrimeKey,dc=com" -W -f primekey.ldif
   where primekey.ldif is:
 
@@ -2956,14 +2964,6 @@ ou: High
 objectClass: top
 objectClass: organizationalUnit
 description: Parent Object for all High Certificates
-
-- ldapsearch -x -b 'dc=PrimeKey,dc=com' '(objectclass=*)'
-  To look at the results
-- slapcat -l backup.ldif
-  Make backup
-- slapadd -l backup.ldif
-- /etc/init.d/slapd restart
-  Restore backup
 </source>
 </subsubsection>
 
