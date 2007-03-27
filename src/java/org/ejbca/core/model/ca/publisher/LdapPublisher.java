@@ -49,7 +49,7 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.23 2007-01-16 11:43:52 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.24 2007-03-27 11:53:43 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
@@ -1101,6 +1101,10 @@ public class LdapPublisher extends BasePublisher {
                 if (dnField.startsWith("SN")) {
                     // This is SN in Bouncycastle, but it should be serialNumber in LDAP
                     dnField = "serialNumber"+dnField.substring(2);
+                }
+                if (dnField.startsWith("E")) {
+                    // This is E in Bouncycastle, but it should be mail in LDAP
+                    dnField = "mail"+dnField.substring(1);
                 }
     			if(retval.length() == 0) {
     				retval += dnField; // first item, don't start with a comma
