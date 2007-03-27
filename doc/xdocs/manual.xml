@@ -3031,13 +3031,19 @@ standard error and a nonzero errorlevel set by the script.
 </p><p>
 To start using the GPCP, select "Edit Publishers" in the Administration GUI. Add a
 publisher "GPCP" and then "Edit" the same. Choose 
+</p>
 <ul>
 <li>Publisher type: Custom Publisher</li>
 <li>Class Path: org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher</li>
-<li>Properties of Custom Publisher: application /fullpathname/exportscript.sh&lt;newline&gt;
-failOnStandardError &lt;true &#166; false&gt;&lt;newline&gt;
-failOnErrorCode &lt;true &#166; false&gt;</li>
+<li>Properties of Custom Publisher: 
+</li>
 </ul>
+<source>
+application /fullpathname/exportscript.sh
+failOnStandardError &lt;true &#166; false&gt;
+failOnErrorCode &lt;true &#166; false&gt;
+</source>
+<p>
 and click "Save". Select "Edit Certificate Authorities" in the Administration GUI and
 select "GPCP" as your new CRL publisher. Click "Save". Test everything by selecting
 "Basic Functions" in the Administration GUI and click "Create CRL".
