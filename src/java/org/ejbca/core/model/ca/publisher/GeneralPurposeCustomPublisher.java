@@ -20,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -28,27 +29,34 @@ import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
 
-
 /**
- * This is an class used for testing and example purposes.
- * I supposed to illustrat how to implement a custom publisher to EJBCA 3.
- *  
+ * This class is used for publishing to user defined script or command.
  *
- * @version $Id: GeneralPurposeCustomPublisher.java,v 1.3 2007-03-13 11:22:27 anatom Exp $
+ * @version $Id: GeneralPurposeCustomPublisher.java,v 1.4 2007-03-28 13:02:07 jeklund Exp $
  */
 public class GeneralPurposeCustomPublisher implements ICustomPublisher{
-    		
     private static Logger log = Logger.getLogger(GeneralPurposeCustomPublisher.class);
-
     private static final InternalResources intres = InternalResources.getInstance();
 
-	protected static final String externalCommandPropertyName	= "application";
-	protected static final String failOnErrorCodePropertyName	= "failOnErrorCode";
-	protected static final String failOnStdErrPropertyName		= "failOnStandardError";
+    protected static final String crlExternalCommandPropertyName		= "crl.application";
+	protected static final String certExternalCommandPropertyName		= "cert.application";
+	protected static final String revokeExternalCommandPropertyName		= "revoke.application";
+	protected static final String crlFailOnErrorCodePropertyName		= "crl.failOnErrorCode";
+	protected static final String certFailOnErrorCodePropertyName		= "cert.failOnErrorCode";
+	protected static final String revokeFailOnErrorCodePropertyName		= "revoke.failOnErrorCode";
+	protected static final String crlFailOnStandardErrorPropertyName	= "crl.failOnStandardError";
+	protected static final String certFailOnStandardErrorPropertyName	= "cert.failOnStandardError";
+	protected static final String revokeFailOnStandardErrorPropertyName	= "revoke.failOnStandardError";
 	
-	private String externalCommandFileName	= null;
-	private boolean failOnErrorCode			= true;
-	private boolean failOnStdErr			= true;
+	private String crlExternalCommandFileName		= null;
+	private String certExternalCommandFileName		= null;
+	private String revokeExternalCommandFileName	= null;
+	private boolean crlFailOnErrorCode				= true;
+	private boolean certFailOnErrorCode				= true;
+	private boolean revokeFailOnErrorCode			= true;
+	private boolean crlFailOnStandardError			= true;
+	private boolean certFailOnStandardError			= true;
+	private boolean revokeFailOnStandardError		= true;
 
     /**
      * Creates a new instance of DummyCustomPublisher
@@ -56,62 +64,179 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
     public GeneralPurposeCustomPublisher() {}
 
 	/**
+	 * Load used properties.
+	 * @param properties The properties to load.
+	 * 
 	 * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#init(java.util.Properties)
 	 */
 	public void init(Properties properties) {
-		// This method sets up the communication with the publisher	
 		log.debug("Initializing GeneralPurposeCustomPublisher");		
-
 		// Extract system properties
-		if ( properties.getProperty(failOnErrorCodePropertyName) != null )
-			failOnErrorCode = properties.getProperty(failOnErrorCodePropertyName).equalsIgnoreCase("true");
-
-		if ( properties.getProperty(failOnStdErrPropertyName) != null )
-			failOnStdErr = properties.getProperty(failOnStdErrPropertyName).equalsIgnoreCase("true");
-
-		if ( properties.getProperty(externalCommandPropertyName) != null )
-			externalCommandFileName = properties.getProperty(externalCommandPropertyName);
-		
-	}
+		if ( properties.getProperty(crlFailOnErrorCodePropertyName) != null ) {
+			crlFailOnErrorCode = properties.getProperty(crlFailOnErrorCodePropertyName).equalsIgnoreCase("true");
+		}
+		if ( properties.getProperty(crlFailOnStandardErrorPropertyName) != null ) {
+			crlFailOnStandardError = properties.getProperty(crlFailOnStandardErrorPropertyName).equalsIgnoreCase("true");
+		}
+		if ( properties.getProperty(crlExternalCommandPropertyName) != null ) {
+			crlExternalCommandFileName = properties.getProperty(crlExternalCommandPropertyName);
+		}
+		if ( properties.getProperty(certFailOnErrorCodePropertyName) != null ) {
+			certFailOnErrorCode = properties.getProperty(certFailOnErrorCodePropertyName).equalsIgnoreCase("true");
+		}
+		if ( properties.getProperty(certFailOnStandardErrorPropertyName) != null ) {
+			certFailOnStandardError = properties.getProperty(certFailOnStandardErrorPropertyName).equalsIgnoreCase("true");
+		}
+		if ( properties.getProperty(certExternalCommandPropertyName) != null ) {
+			certExternalCommandFileName = properties.getProperty(certExternalCommandPropertyName);
+		}
+		if ( properties.getProperty(revokeFailOnErrorCodePropertyName) != null ) {
+			revokeFailOnErrorCode = properties.getProperty(revokeFailOnErrorCodePropertyName).equalsIgnoreCase("true");
+		}
+		if ( properties.getProperty(revokeFailOnStandardErrorPropertyName) != null ) {
+			revokeFailOnStandardError = properties.getProperty(revokeFailOnStandardErrorPropertyName).equalsIgnoreCase("true");
+		}
+		if ( properties.getProperty(revokeExternalCommandPropertyName) != null ) {
+			revokeExternalCommandFileName = properties.getProperty(revokeExternalCommandPropertyName);
+		}
+	} // init
 
 	/**
+	 * Writes crtificate to temporary file and executes an external command with the full pathname
+	 * of the temporary file as argument. The temporary file is the encoded form of the certificate
+	 * e.g. X.509 certificates would be encoded as ASN.1 DER. All parameters but incert are ignored.
+	 * @param incert The certificate
+	 * 
 	 * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#storeCertificate(org.ejbca.core.model.log.Admin, java.security.cert.Certificate, java.lang.String, java.lang.String, int, int)
 	 */
 	public boolean storeCertificate(Admin admin, Certificate incert, String username, String password, String cafp, int status, int type, long revocationDate, int revocationReason, ExtendedInformation extendedinformation) throws PublisherException {
-        log.debug("DummyCustomPublisher, Storing Certificate for user: " + username);	
+        log.debug(">storeCertificate, Storing Certificate for user: " + username);	
         // Don't publish non-active certificates
         if (status != CertificateDataBean.CERT_ACTIVE) {
         	return true;
         }
+        // Make sure that an external command was specified
+		if ( certExternalCommandFileName == null ) {
+			String msg = intres.getLocalizedMessage("publisher.errormissingproperty", certExternalCommandPropertyName);
+        	log.error(msg);
+			throw new PublisherException(msg);
+		}
+		// Run internal method to create tempfile and run the command
+		try {
+			runWithTempFile(certExternalCommandFileName, incert.getEncoded(), certFailOnErrorCode, certFailOnStandardError);
+		} catch (CertificateEncodingException e) {
+			String msg = intres.getLocalizedMessage("publisher.errorcertconversion");
+        	log.error(msg);
+			throw new PublisherException(msg);
+		}
 		return true;
-	}
+	} // storeCertificate
 
 	/**
-	 * Writes the CRL to a temporary file and executes an external command (found in property "application") with
-	 * the temporary file as argument. By default, a PublisherException is thrown if the external command returns
-	 * with an errorlevel or outputs to stderr. The properties "failOnErrorCode" and "failOnStandardError" can be
-	 * used to control when an exception should be thrown.
+	 * Writes the CRL to a temporary file and executes an external command with the temporary file as argument.
+	 * By default, a PublisherException is thrown if the external command returns with an errorlevel or outputs
+	 * to stderr. 
 	 * 
 	 * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#storeCRL(org.ejbca.core.model.log.Admin, byte[], java.lang.String, int)
 	 */
 	public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number) throws PublisherException {
         log.debug(">storeCRL, Storing CRL");
-
         // Verify initialization 
-		if ( externalCommandFileName == null ) {
-			String msg = intres.getLocalizedMessage("publisher.errormissingproperty", externalCommandPropertyName);
+		if ( crlExternalCommandFileName == null ) {
+			String msg = intres.getLocalizedMessage("publisher.errormissingproperty", crlExternalCommandPropertyName);
         	log.error(msg);
 			throw new PublisherException(msg);
 		}
+		// Run internal method to create tempfile and run the command
+		runWithTempFile(crlExternalCommandFileName, incrl, crlFailOnErrorCode, crlFailOnStandardError);
+		return true;
+	}
 
+	/**
+	 * Writes crtificate to temporary file and executes an external command with the full pathname
+	 * of the temporary file as argument. The temporary file is the encoded form of the certificate
+	 * e.g. X.509 certificates would be encoded as ASN.1 DER. All parameters but cert are ignored.
+	 * @param cert The certificate
+	 * 
+	 * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#revokeCertificate(org.ejbca.core.model.log.Admin, java.security.cert.Certificate, int)
+	 */
+	public void revokeCertificate(Admin admin, Certificate cert, int reason) throws PublisherException {
+        log.debug(">revokeCertificate, Rekoving Certificate");
+        // Verify initialization 
+		if ( revokeExternalCommandFileName == null ) {
+			String msg = intres.getLocalizedMessage("publisher.errormissingproperty", revokeExternalCommandPropertyName);
+        	log.error(msg);
+			throw new PublisherException(msg);
+		}
+		// Run internal method to create tempfile and run the command
+		try {
+			runWithTempFile(revokeExternalCommandFileName, cert.getEncoded(), revokeFailOnErrorCode, revokeFailOnStandardError);
+		} catch (CertificateEncodingException e) {
+			String msg = intres.getLocalizedMessage("publisher.errorcertconversion");
+        	log.error(msg);
+			throw new PublisherException(msg);
+		}
+	} // revokeCertificate
+
+	/**
+	 * Check if the specified external excutable file(s) exist.
+	 * @param admin Ignored 
+	 * 
+	 * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#testConnection(org.ejbca.core.model.log.Admin)
+	 */
+	public void testConnection(Admin admin) throws PublisherConnectionException {
+        log.debug("testConnection, Testing connection");
+        // Test if specified commands exist
+        if ( crlExternalCommandFileName != null ) {
+        	if ( !(new File(crlExternalCommandFileName)).exists() ) {
+    			String msg = intres.getLocalizedMessage("publisher.commandnotfound", crlExternalCommandFileName);
+            	log.error(msg);
+    			throw new PublisherConnectionException(msg);
+        	}
+        }
+        if ( certExternalCommandFileName != null ) {
+        	if ( !(new File(certExternalCommandFileName)).exists() ) {
+    			String msg = intres.getLocalizedMessage("publisher.commandnotfound", certExternalCommandFileName);
+            	log.error(msg);
+    			throw new PublisherConnectionException(msg);
+        	}
+        }
+        if ( revokeExternalCommandFileName != null ) {
+        	if ( !(new File(revokeExternalCommandFileName)).exists() ) {
+    			String msg = intres.getLocalizedMessage("publisher.commandnotfound", revokeExternalCommandFileName);
+            	log.error(msg);
+    			throw new PublisherConnectionException(msg);
+        	}
+        }
+	} // testConnection
+
+	/**
+	 * Does nothing.
+	 */
+	protected void finalize() throws Throwable {
+        log.debug(">finalize, doing nothing");
+		super.finalize(); 
+	} // finalize
+	
+	/**
+	 * Writes a byte-array to a temporary file and executes the given command with the file as argument. The
+	 * function will, depending on its parameters, fail if output to standard error from the command was
+	 * detected or the command returns with an non-zero exit code. 
+	 * 
+	 * @param externalCommand The command to run.
+	 * @param bytes The buffer with content to write to the file.
+	 * @param failOnCode Determines if the method should fail on a non-zero exit code.
+	 * @param failOnOutput Determines if the method should fail on output to standard error.
+	 * @throws PublisherException
+	 */
+	private void runWithTempFile(String externalCommand, byte[] bytes, boolean failOnCode, boolean failOnOutput) throws PublisherException {
 		// Create temporary file
 		File tempFile 			= null;
 		FileOutputStream fos	= null;
-
 		try {
 			tempFile = File.createTempFile("GeneralPurposeCustomPublisher", ".tmp");
 			fos = new FileOutputStream(tempFile);
-			fos.write(incrl);
+			fos.write(bytes);
 			fos.close();
 		} catch (FileNotFoundException e) {
 			String msg = intres.getLocalizedMessage("publisher.errortempfile");
@@ -123,18 +248,15 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
         	log.error(msg, e);
         	throw new PublisherException(msg);
 		}
-		
 		// Exec file from properties with the file as an argument
 		String tempFileName = null;
-
 		try {
 			tempFileName = tempFile.getCanonicalPath();
-			Process externalProcess = Runtime.getRuntime().exec( externalCommandFileName + " " +  tempFileName);
+			Process externalProcess = Runtime.getRuntime().exec( externalCommand + " " +  tempFileName);
 			BufferedReader stdError = new BufferedReader(new InputStreamReader(externalProcess.getErrorStream()));
 			String stdErrorOutput = null;
-			
 			// Check errorcode and the external applications output to stderr 
-			if ( ((externalProcess.waitFor() != 0) && failOnErrorCode) || (stdError.ready() && failOnStdErr )) {
+			if ( ((externalProcess.waitFor() != 0) && failOnCode) || (stdError.ready() && failOnOutput )) {
 				tempFile.delete();
 				String errTemp = null;
 				while ( stdError.ready() && (errTemp = stdError.readLine()) != null ) {
@@ -144,8 +266,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
 						stdErrorOutput += "\n" + errTemp;
 					}
 				}
-								
-				String msg = intres.getLocalizedMessage("publisher.errorexternalapp", externalCommandFileName);
+				String msg = intres.getLocalizedMessage("publisher.errorexternalapp", externalCommand);
 				if ( stdErrorOutput != null ) {
 						msg += " - " + stdErrorOutput;
 				}
@@ -154,48 +275,21 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
 			}
 		} catch (IOException e) {
 			tempFile.delete();
-			String msg = intres.getLocalizedMessage("publisher.errorexternalapp", externalCommandFileName);
+			String msg = intres.getLocalizedMessage("publisher.errorexternalapp", externalCommand);
         	log.error(msg, e);
 			throw new PublisherException(msg);
 		} catch (InterruptedException e) {
 			tempFile.delete();
-			String msg = intres.getLocalizedMessage("publisher.errorexternalapp", externalCommandFileName);
+			String msg = intres.getLocalizedMessage("publisher.errorexternalapp", externalCommand);
         	log.error(msg, e);
 			throw new PublisherException(msg);
 		}
-		
         // Remove temporary file
 		if ( !tempFile.delete() )
 		{
 			String msg = intres.getLocalizedMessage("publisher.errordeletetempfile", tempFileName);
         	log.error(msg);
 			throw new PublisherException(msg);
-		}	
-   
-		return true;
-	}
-
-	/**
-	 * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#revokeCertificate(org.ejbca.core.model.log.Admin, java.security.cert.Certificate, int)
-	 */
-	public void revokeCertificate(Admin admin, Certificate cert, int reason) throws PublisherException {
-        log.debug("revokeCertificate, Rekoving Certificate");
-		
-	}	
-
-	/**
-	 * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#testConnection(org.ejbca.core.model.log.Admin)
-	 */
-	public void testConnection(Admin admin) throws PublisherConnectionException {
-        log.debug("testConnection, Testing connection");			
-	}
-
-	
-	protected void finalize() throws Throwable {
-        log.debug("finalize, closing connection");
-		// This method closes the communication with the publisher.	
-			
-		super.finalize(); 
-	}
-	
-}
+		}
+	} // runWithTempFile
+} // GeneralPurposeCustomPublisher

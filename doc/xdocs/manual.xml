@@ -3017,17 +3017,17 @@ information about writing your own solution. There is an empty custom publisher 
 DummyCustomPublisher.java that can be extended.
 </p>
 </subsubsection>
-<subsubsection name="Publishing CRLs with an external application">
+<subsubsection name="Publishing with an external application">
 <p>
-A lightweight alternative to developing a new custom publisher for exporting CRLs is
-to use the General Purpose Custom Publisher (GPCP). This makes it possible to export
-a PKCS#12 file with a simple script (using scp or similar). The GPCP creates a
-temporary file and executes the script with the full pathname to the temproary file
-as an argument.
+A lightweight alternative to developing a new custom publisher for exporting CRLs,
+certificates and revokations is to use the General Purpose Custom Publisher (GPCP).
+This makes it possible to export DER-encoded CRLs, certificates and/or revokations with
+a simple script (using scp or similar). The GPCP creates a temporary file and
+executes the script with the full pathname to the temporary file as an argument.
 </p><p>
 It's possible to let the publisher ignore an error in the execution of a script by
 altering the publishers properties. By default, the publisher detects both output to
-standard error and a nonzero errorlevel set by the script.
+standard error and a non-zero errorlevel set by the script.
 </p><p>
 To start using the GPCP, select "Edit Publishers" in the Administration GUI. Add a
 publisher "GPCP" and then "Edit" the same. Choose 
@@ -3039,14 +3039,28 @@ publisher "GPCP" and then "Edit" the same. Choose
 </li>
 </ul>
 <source>
-application /fullpathname/exportscript.sh
-failOnStandardError &lt;true &#166; false&gt;
-failOnErrorCode &lt;true &#166; false&gt;
+	crl.application /fullpathname/exportscript.sh
+	crl.failOnStandardError &lt;true &#166; false&gt;
+	crl.failOnErrorCode &lt;true &#166; false&gt;
+	cert.application /fullpathname/exportscript.sh
+	cert.failOnStandardError &lt;true &#166; false&gt;
+	cert.failOnErrorCode &lt;true &#166; false&gt;
+	revoke.application /fullpathname/exportscript.sh
+	revoke.failOnStandardError &lt;true &#166; false&gt;
+	revoke.failOnErrorCode &lt;true &#166; false&gt;
 </source>
 <p>
-and click "Save". Select "Edit Certificate Authorities" in the Administration GUI and
-select "GPCP" as your new CRL publisher. Click "Save". Test everything by selecting
-"Basic Functions" in the Administration GUI and click "Create CRL".
+and click "Save and Test Connection" to save the entered information and validate
+that the specified applications exist. Select "Edit Certificate Authorities" in
+the Administration GUI and select "GPCP" as your new CRL publisher. Click "Save". 
+</p>
+<p>
+<ul>
+<li>Test CRL publishing by selecting "Basic Functions" in the Administration GUI and
+click "Create CRL".</li>
+<li>Test certificate publishing by selecting "Edit Certificate Authorities" in the
+Administration GUI, select a CA, click "Edit" and then "Republish CA Certificates".</li>
+</ul>
 </p>
 </subsubsection>
 </subsection>
