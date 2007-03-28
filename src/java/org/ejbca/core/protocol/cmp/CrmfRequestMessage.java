@@ -25,6 +25,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Date;
@@ -49,6 +50,8 @@ import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.ejbca.core.protocol.IRequestMessage;
+import org.ejbca.core.protocol.IResponseMessage;
+import org.ejbca.core.protocol.RequestMessageUtils;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 
@@ -72,7 +75,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
  * -- Self signature
  * 
  * @author tomas
- * @version $Id: CrmfRequestMessage.java,v 1.14 2007-01-16 11:44:31 anatom Exp $
+ * @version $Id: CrmfRequestMessage.java,v 1.15 2007-03-28 12:23:35 anatom Exp $
  */
 public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessage {
 	
@@ -450,4 +453,9 @@ public class CrmfRequestMessage extends BaseCmpMessage implements IRequestMessag
 		}
 		return msgs;
 	}
+    /** @see org.ejbca.core.protocol.IRequestMessage
+     */
+    public IResponseMessage createResponseMessage(Class responseClass, IRequestMessage req, Certificate cert, PrivateKey signPriv, PrivateKey encPriv, String provider) {
+    	return RequestMessageUtils.createResponseMessage(responseClass, req, cert, signPriv, encPriv, provider);
+    }
 }

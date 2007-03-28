@@ -20,6 +20,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 
@@ -28,7 +29,7 @@ import java.util.Date;
  * Base interface for request messages sent to the CA. Implementors of this interface must also
  * implement Serializable if they are to be sent to any EJB bussiness methods.
  *
- * @version $Id: IRequestMessage.java,v 1.7 2006-11-09 17:55:37 anatom Exp $
+ * @version $Id: IRequestMessage.java,v 1.8 2007-03-28 12:23:34 anatom Exp $
  */
 public interface IRequestMessage extends Serializable {
     /**
@@ -217,5 +218,20 @@ public interface IRequestMessage extends Serializable {
      * @param reqId the id from the request matching to this response
      */
     public int getRequestId();
+    
+    /**
+     * Create a response class with information from the request. Information such as nounces etc are taken 
+     * from the request to match the response. The response can be signed and encrypted if the class so requires.
+     * 
+     * @param responseClass
+     * @param req
+     * @param cert
+     * @param signPriv
+     * @param encPriv
+     * @param provider
+     * @return IResponseMessage
+     */
+    public IResponseMessage createResponseMessage(Class responseClass, IRequestMessage req, Certificate cert, PrivateKey signPriv, PrivateKey encPriv, String provider);
+
 
 }

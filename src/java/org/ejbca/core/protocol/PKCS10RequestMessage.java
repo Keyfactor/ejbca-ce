@@ -21,6 +21,7 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 
@@ -46,7 +47,7 @@ import org.ejbca.util.CertTools;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.11 2006-11-09 17:55:37 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.12 2007-03-28 12:23:34 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage {
     /**
@@ -502,6 +503,10 @@ public class PKCS10RequestMessage implements IRequestMessage {
     public int getRequestId() {
     	return 0;
     }
-}
-
-// PKCS10RequestMessage
+    
+    /** @see org.ejbca.core.protocol.IRequestMessage
+     */
+    public IResponseMessage createResponseMessage(Class responseClass, IRequestMessage req, Certificate cert, PrivateKey signPriv, PrivateKey encPriv, String provider) {
+    	return RequestMessageUtils.createResponseMessage(responseClass, req, cert, signPriv, encPriv, provider);
+    }
+} // PKCS10RequestMessage

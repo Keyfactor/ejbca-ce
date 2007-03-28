@@ -33,7 +33,7 @@ import org.ejbca.core.protocol.ScepRequestMessage;
 /**
  * Helper class to handle SCEP (draft-nourse-scep-06.txt) requests.
  *
- * @version  $Id: ScepPkiOpHelper.java,v 1.3 2006-12-04 15:41:12 anatom Exp $
+ * @version  $Id: ScepPkiOpHelper.java,v 1.4 2007-03-28 12:23:34 anatom Exp $
  */
 public class ScepPkiOpHelper {
     private static Logger log = Logger.getLogger(ScepPkiOpHelper.class);
@@ -78,7 +78,7 @@ public class ScepPkiOpHelper {
             if (reqmsg.getMessageType() == ScepRequestMessage.SCEP_TYPE_PKCSREQ) {
                 // Get the certificate
                 IResponseMessage resp = signsession.createCertificate(admin, reqmsg, -1,
-                        Class.forName("org.ejbca.core.protocol.ScepResponseMessage"));
+                        Class.forName(org.ejbca.core.protocol.ScepResponseMessage.class.getName()));
                 if (resp != null) {
                     ret = resp.getResponseMessage();
                 }
@@ -87,7 +87,7 @@ public class ScepPkiOpHelper {
                 // create the stupid encrypted CRL message, the below can actually only be made 
                 // at the CA, since CAs privvate key is needed to decrypt
                 IResponseMessage resp = signsession.getCRL(admin, reqmsg,
-                        Class.forName("org.ejbca.core.protocol.ScepResponseMessage"));
+                        Class.forName(org.ejbca.core.protocol.ScepResponseMessage.class.getName()));
                 if (resp != null) {
                     ret = resp.getResponseMessage();
                 }
