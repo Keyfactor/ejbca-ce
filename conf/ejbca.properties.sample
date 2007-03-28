@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.18 2007-03-14 14:19:04 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.19 2007-03-28 10:32:07 jbagnert Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -95,7 +95,7 @@ ca.cmskeystorepass=foo123
 
 # ------------ CRL Creation service configuration ---------------------
 # 
-# Enable this (set to true) if you want to deploy the create CRL service MBean.
+# Enable this (set to true) if you want to deploy the create CRL service MBean for JBoss.
 # There are several ways to automatically create CRLs, see the section "CRL generation" in the User's Guide.
 # Default: false
 #createcrl.service.enabled=false
