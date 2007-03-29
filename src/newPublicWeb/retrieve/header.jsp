@@ -48,6 +48,9 @@
               <li>
                 <a href="check_status.jsp">Check Certificate Status</a>
               </li>
+              <li>
+              <a href="../adminweb/index.jsp">Administration</a>
+            </li>
             </ul>
           </li>  
         </ul>

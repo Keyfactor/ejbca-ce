@@ -45,9 +45,12 @@
               <li>
                 <a href="retrieve/list_certs.jsp">List  User's Certificates</a>
               </li>
-              <li>
+                <li>
                 <a href="retrieve/check_status.jsp">Check Certificate Status</a>
               </li>
+              <li>
+              <a href="adminweb/index.jsp">Administration</a>
+            </li>
             </ul>
           </li>  
         </ul>
