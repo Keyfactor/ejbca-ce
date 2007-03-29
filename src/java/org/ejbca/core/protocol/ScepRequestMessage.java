@@ -66,7 +66,7 @@ import org.ejbca.util.CertTools;
  * Class to handle SCEP request messages sent to the CA. 
  * TODO: don't forget extensions, e.g. KeyUsage requested by end entity 
  *
- * @version $Id: ScepRequestMessage.java,v 1.7 2006-10-31 08:21:28 anatom Exp $
+ * @version $Id: ScepRequestMessage.java,v 1.8 2007-03-29 15:02:58 anatom Exp $
  */
 public class ScepRequestMessage extends PKCS10RequestMessage implements IRequestMessage {
     /**
@@ -221,9 +221,9 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements IRequest
                         //Create Certificate used for debugging
                         try {
 							signercert = CertTools.getCertfromByteArray(requestKeyInfo);
-							log.debug("requestKeyInfo is DN=" + signercert.getSubjectDN().toString() +
+							log.debug("requestKeyInfo is SubjectDN: " + signercert.getSubjectDN().toString() +
 									", Serial=" + signercert.getSerialNumber().toString(16) +
-									", IssuerDN="+ signercert.getIssuerDN().toString());
+									"; IssuerDN: "+ signercert.getIssuerDN().toString());
 						} catch (CertificateException e) {
 							log.error("Error parsing requestKeyInfo : ", e);
 						}
