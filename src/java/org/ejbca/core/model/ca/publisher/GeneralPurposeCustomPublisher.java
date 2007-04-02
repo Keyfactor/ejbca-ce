@@ -32,7 +32,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
 /**
  * This class is used for publishing to user defined script or command.
  *
- * @version $Id: GeneralPurposeCustomPublisher.java,v 1.4 2007-03-28 13:02:07 jeklund Exp $
+ * @version $Id: GeneralPurposeCustomPublisher.java,v 1.5 2007-04-02 10:14:17 jeklund Exp $
  */
 public class GeneralPurposeCustomPublisher implements ICustomPublisher{
     private static Logger log = Logger.getLogger(GeneralPurposeCustomPublisher.class);
@@ -106,6 +106,8 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
 	 * of the temporary file as argument. The temporary file is the encoded form of the certificate
 	 * e.g. X.509 certificates would be encoded as ASN.1 DER. All parameters but incert are ignored.
 	 * @param incert The certificate
+	 * @param username The username
+	 * @param type The certificate type
 	 * 
 	 * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#storeCertificate(org.ejbca.core.model.log.Admin, java.security.cert.Certificate, java.lang.String, java.lang.String, int, int)
 	 */
@@ -123,7 +125,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
 		}
 		// Run internal method to create tempfile and run the command
 		try {
-			runWithTempFile(certExternalCommandFileName, incert.getEncoded(), certFailOnErrorCode, certFailOnStandardError);
+			runWithTempFile(certExternalCommandFileName, incert.getEncoded(), certFailOnErrorCode, certFailOnStandardError, String.valueOf(type));
 		} catch (CertificateEncodingException e) {
 			String msg = intres.getLocalizedMessage("publisher.errorcertconversion");
         	log.error(msg);
@@ -148,7 +150,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
 			throw new PublisherException(msg);
 		}
 		// Run internal method to create tempfile and run the command
-		runWithTempFile(crlExternalCommandFileName, incrl, crlFailOnErrorCode, crlFailOnStandardError);
+		runWithTempFile(crlExternalCommandFileName, incrl, crlFailOnErrorCode, crlFailOnStandardError, null);
 		return true;
 	}
 
@@ -170,7 +172,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
 		}
 		// Run internal method to create tempfile and run the command
 		try {
-			runWithTempFile(revokeExternalCommandFileName, cert.getEncoded(), revokeFailOnErrorCode, revokeFailOnStandardError);
+			runWithTempFile(revokeExternalCommandFileName, cert.getEncoded(), revokeFailOnErrorCode, revokeFailOnStandardError, String.valueOf(reason));
 		} catch (CertificateEncodingException e) {
 			String msg = intres.getLocalizedMessage("publisher.errorcertconversion");
         	log.error(msg);
@@ -227,9 +229,10 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
 	 * @param bytes The buffer with content to write to the file.
 	 * @param failOnCode Determines if the method should fail on a non-zero exit code.
 	 * @param failOnOutput Determines if the method should fail on output to standard error.
+	 * @param additionalArguments Added to the command after the tempfiles name
 	 * @throws PublisherException
 	 */
-	private void runWithTempFile(String externalCommand, byte[] bytes, boolean failOnCode, boolean failOnOutput) throws PublisherException {
+	private void runWithTempFile(String externalCommand, byte[] bytes, boolean failOnCode, boolean failOnOutput, String additionalArguments) throws PublisherException {
 		// Create temporary file
 		File tempFile 			= null;
 		FileOutputStream fos	= null;
@@ -248,11 +251,14 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
         	log.error(msg, e);
         	throw new PublisherException(msg);
 		}
+		if ( additionalArguments == null ) {
+			additionalArguments = "";
+		}
 		// Exec file from properties with the file as an argument
 		String tempFileName = null;
 		try {
 			tempFileName = tempFile.getCanonicalPath();
-			Process externalProcess = Runtime.getRuntime().exec( externalCommand + " " +  tempFileName);
+			Process externalProcess = Runtime.getRuntime().exec( externalCommand + " " +  tempFileName + " " + additionalArguments);
 			BufferedReader stdError = new BufferedReader(new InputStreamReader(externalProcess.getErrorStream()));
 			String stdErrorOutput = null;
 			// Check errorcode and the external applications output to stderr 

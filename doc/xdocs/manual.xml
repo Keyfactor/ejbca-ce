@@ -3062,6 +3062,13 @@ click "Create CRL".</li>
 Administration GUI, select a CA, click "Edit" and then "Republish CA Certificates".</li>
 </ul>
 </p>
+<p>
+More advanced scripts or applications have the ability to use the additional argument
+<ul>
+<li>&lt;cert.application&gt; fulltempfilepathname x509type</li>
+<li>&lt;revoke.application&gt; fulltempfilepathname x509reason</li>
+</ul>
+</p>
 </subsubsection>
 </subsection>
 
