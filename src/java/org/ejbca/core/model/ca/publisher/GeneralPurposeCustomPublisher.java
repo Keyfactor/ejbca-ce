@@ -32,21 +32,21 @@ import org.ejbca.core.model.ra.ExtendedInformation;
 /**
  * This class is used for publishing to user defined script or command.
  *
- * @version $Id: GeneralPurposeCustomPublisher.java,v 1.5 2007-04-02 10:14:17 jeklund Exp $
+ * @version $Id: GeneralPurposeCustomPublisher.java,v 1.6 2007-04-02 11:15:09 jeklund Exp $
  */
 public class GeneralPurposeCustomPublisher implements ICustomPublisher{
     private static Logger log = Logger.getLogger(GeneralPurposeCustomPublisher.class);
     private static final InternalResources intres = InternalResources.getInstance();
 
-    protected static final String crlExternalCommandPropertyName		= "crl.application";
-	protected static final String certExternalCommandPropertyName		= "cert.application";
-	protected static final String revokeExternalCommandPropertyName		= "revoke.application";
-	protected static final String crlFailOnErrorCodePropertyName		= "crl.failOnErrorCode";
-	protected static final String certFailOnErrorCodePropertyName		= "cert.failOnErrorCode";
-	protected static final String revokeFailOnErrorCodePropertyName		= "revoke.failOnErrorCode";
-	protected static final String crlFailOnStandardErrorPropertyName	= "crl.failOnStandardError";
-	protected static final String certFailOnStandardErrorPropertyName	= "cert.failOnStandardError";
-	protected static final String revokeFailOnStandardErrorPropertyName	= "revoke.failOnStandardError";
+	public static final String crlExternalCommandPropertyName			= "crl.application";
+	public static final String certExternalCommandPropertyName			= "cert.application";
+	public static final String revokeExternalCommandPropertyName		= "revoke.application";
+	public static final String crlFailOnErrorCodePropertyName			= "crl.failOnErrorCode";
+	public static final String certFailOnErrorCodePropertyName			= "cert.failOnErrorCode";
+	public static final String revokeFailOnErrorCodePropertyName		= "revoke.failOnErrorCode";
+	public static final String crlFailOnStandardErrorPropertyName		= "crl.failOnStandardError";
+	public static final String certFailOnStandardErrorPropertyName		= "cert.failOnStandardError";
+	public static final String revokeFailOnStandardErrorPropertyName	= "revoke.failOnStandardError";
 	
 	private String crlExternalCommandFileName		= null;
 	private String certExternalCommandFileName		= null;
