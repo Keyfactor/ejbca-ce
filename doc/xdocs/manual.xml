@@ -3258,17 +3258,17 @@ before you do an export.
 <li>Select the CA you want to export and press the "Edit"-button.</li>
 <li>Go to the line where the help-text say "CA export requires the keystore password".</li>
 <li>Enter the keystore password in the box to the right of the help-text.</li>
-<li>Press the "Export CA.."-button.</li>
+<li>Press the "Export CA keystore.."-button.</li>
 <li>The PKCS#12-file will be downloaded by your browser to the location you select.</li>
 </ul>
 </p>
 <p>To import a CA's keys, do the following:
 <ul>
 <li>Select "Edit Certificate Authorities" from the administrator menu.</li>
-<li>Press the "Import CA.."-button.</li>
+<li>Press the "Import CA keystore.."-button.</li>
 <li>Fill out the form with the CA's name, full pathname to the PKCS#12-file and keystore password.</li>
 <li>Keep the two "Alias.."-fields to the default value, if you used EJBCA to export the CA's keys.</li>
-<li>Press the "Import CA"-button.</li>
+<li>Press the "Import CA keystore"-button.</li>
 </ul>
 </p>
 </subsection>

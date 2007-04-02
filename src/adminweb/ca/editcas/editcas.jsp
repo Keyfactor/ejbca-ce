@@ -1096,13 +1096,10 @@
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 	            ks.store(baos, kspwd.toCharArray());
 	    		byte[] keystorebytes = baos.toByteArray();
-				javax.naming.Context ctx = org.ejbca.core.ejb.InitialContextBuilder.getInstance().getInitialContext();
-				org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome home = (org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CAAdminSession"), org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome.class );            
-				org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote caadminsession = home.create();          
 	            if ( encryptionAlias.equals("") ) {
 	            	encryptionAlias = null;
 	            }
-				caadminsession.importCAFromKeyStore(ejbcawebbean.getAdminObject(), caName, keystorebytes, kspwd.toCharArray(), kspwd.toCharArray(), alias, encryptionAlias);
+				cadatahandler.importCAFromKeyStore(caName, keystorebytes, kspwd.toCharArray(), kspwd.toCharArray(), alias, encryptionAlias);
 			} catch (Exception e) {
 			%> <div style="color: #FF0000;"> <%
 				out.println( e.getMessage() );

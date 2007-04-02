@@ -108,8 +108,10 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServi
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAService;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
+import org.ejbca.core.model.ca.catoken.CAToken;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
+import org.ejbca.core.model.ca.catoken.NullCAToken;
 import org.ejbca.core.model.ca.certextensions.CertificateExtension;
 import org.ejbca.core.model.ca.certextensions.CertificateExtensionFactory;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
@@ -126,7 +128,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.56 2007-03-14 09:37:46 anatom Exp $
+ * @version $Id: X509CA.java,v 1.57 2007-04-02 08:26:33 jeklund Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -301,9 +303,23 @@ public class X509CA extends CA implements Serializable {
             CMSProcessable msg = new CMSProcessableByteArray("EJBCA".getBytes());
             CertStore certs = CertStore.getInstance("Collection", new CollectionCertStoreParameters(certList), "BC");
             CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
+            if (getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN) == null) {
+            	String msg1 = "createPKCS7: Private key does not exist!";
+            	log.debug(msg1);
+            	throw new SignRequestSignatureException(msg1);
+            }
             gen.addSigner(getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), (X509Certificate)getCACertificate(), CMSSignedGenerator.DIGEST_SHA1);
             gen.addCertificatesAndCRLs(certs);
-            CMSSignedData s = gen.generate(msg, true, getCAToken().getProvider());
+            CMSSignedData s = null;
+            CAToken catoken = getCAToken();
+            if (catoken != null && !(catoken instanceof NullCAToken)) {
+            	log.debug("createPKCS7: Provider="+catoken.getProvider()+" using algorithm "+getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN).getAlgorithm());
+            	s = gen.generate(msg, true, catoken.getProvider());
+            } else {
+            	String msg1 = "CA Token does not exist!";
+            	log.debug(msg);
+            	throw new SignRequestSignatureException(msg1);
+            }
             return s.getEncoded();
         } catch (CATokenOfflineException e) {
         	throw new javax.ejb.EJBException(e);        	

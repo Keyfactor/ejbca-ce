@@ -68,7 +68,7 @@ import org.ejbca.util.CertTools;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CertDistServlet.java,v 1.8 2007-03-07 15:16:20 anatom Exp $
+ * @version $Id: CertDistServlet.java,v 1.9 2007-04-02 08:26:35 jeklund Exp $
  */
 public class CertDistServlet extends HttpServlet {
 
@@ -305,10 +305,12 @@ public class CertDistServlet extends HttpServlet {
             try {
                 ISignSessionLocal ss = getSignSession();
                 Certificate[] chain = null;
-                if(caid != 0)
+                if(caid != 0) {
 				    chain = (Certificate[]) ss.getCertificateChain(administrator, caid).toArray(new Certificate[0]);
-                else
+                }
+                else {
                     chain = (Certificate[]) ss.getCertificateChain(administrator, issuerdn.hashCode()).toArray(new Certificate[0]);
+                }
                 // chain.length-1 is last cert in chain (root CA)
                 if (chain.length < level) {
                     PrintStream ps = new PrintStream(res.getOutputStream());

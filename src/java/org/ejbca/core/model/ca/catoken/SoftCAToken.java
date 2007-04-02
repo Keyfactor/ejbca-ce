@@ -28,6 +28,7 @@ import javax.naming.InitialContext;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.interfaces.ECPrivateKey;
+import org.bouncycastle.jce.interfaces.ECPublicKey;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
@@ -39,7 +40,7 @@ import org.ejbca.util.KeyTools;
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: SoftCAToken.java,v 1.8 2007-03-21 13:59:56 jeklund Exp $
+ * @version $Id: SoftCAToken.java,v 1.9 2007-04-02 08:26:35 jeklund Exp $
  */
 public class SoftCAToken extends CAToken implements java.io.Serializable{
 
@@ -154,7 +155,7 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
    }
    
    /**
-    * Method that import CA token keys from old P12 file. Should only be used when upgrading from 
+    * Method that import CA token keys from a P12 file. Was originally used when upgrading from 
     * old EJBCA versions. Only supports SHA1 and SHA256 with RSA or ECDSA.
     */
    public void importKeysFromP12(PrivateKey p12privatekey, PublicKey p12publickey, PrivateKey p12PrivateEncryptionKey,
@@ -207,9 +208,11 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
     	   if ( keyspec==null ) {
         	   keyspec = "unknown";
     	   }
+    	   p12privatekey = (ECPrivateKey) p12privatekey;
+    	   p12publickey = (ECPublicKey) p12publickey;
     	   log.debug("ECName="+keyspec);
        }
-       keystore.setKeyEntry(PRIVATESIGNKEYALIAS, p12privatekey,null, caSignatureCertChain);       
+       keystore.setKeyEntry(PRIVATESIGNKEYALIAS, p12privatekey, null, caSignatureCertChain);       
        data.put(SIGNKEYSPEC, keyspec);
        data.put(SIGNKEYALGORITHM, keyAlg);
        data.put(SIGNATUREALGORITHM, signatureAlgorithm);
