@@ -24,7 +24,7 @@ import java.util.Properties;
  *  All HardCAToken plug-ins must implement this interface.
  * 
  * 
- * @version $Id: IHardCAToken.java,v 1.1 2006-01-17 20:31:51 anatom Exp $
+ * @version $Id: IHardCAToken.java,v 1.2 2007-04-07 21:13:39 primelars Exp $
  */
 public interface IHardCAToken {
 
@@ -33,16 +33,17 @@ public interface IHardCAToken {
 	
    /** 
     * Method called after creation of instance. Gives the object it's properties.
+ * @throws Exception 
     *
     */	
-	public abstract void init(Properties properties, String signaturealgorithm);
+	void init(Properties properties, String signaturealgorithm) throws Exception;
 	
 	/**
 	 *  Method that returns the current status of the catoken.
 	 * 
 	 *  Should return one of the IHardCAToken.STATUS_.. values 
 	 */
-	public abstract int getCATokenStatus();
+	int getCATokenStatus();
 	
     /**
      * Method used to activate HardCATokens when connected after being offline.
@@ -51,7 +52,7 @@ public interface IHardCAToken {
      * @throws CATokenOfflineException if CAToken is not available or connected.
      * @throws CATokenAuthenticationFailedException with error message if authentication to HardCATokens fail.
      */
-    public abstract void activate(String authenticationcode) throws CATokenAuthenticationFailedException, CATokenOfflineException;    
+    void activate(String authenticationcode) throws CATokenAuthenticationFailedException, CATokenOfflineException;    
 
     /**
      * Method used to deactivate HardCATokens. 
@@ -59,7 +60,7 @@ public interface IHardCAToken {
      * 
      * @return true if deactivation was successful.
      */
-    public abstract boolean deactivate();    
+    boolean deactivate();    
     
     /** Returns the private key (if possible) of token.
     *
@@ -67,7 +68,7 @@ public interface IHardCAToken {
     * @throws CATokenOfflineException if CAToken is not available or connected.
     * @return PrivateKey object
     */
-    public abstract PrivateKey getPrivateKey(int purpose) throws CATokenOfflineException;
+    PrivateKey getPrivateKey(int purpose) throws CATokenOfflineException;
 
     /** Returns the public key (if possible) of token.
     *
@@ -75,14 +76,12 @@ public interface IHardCAToken {
     * @throws CATokenOfflineException if CAToken is not available or connected.
     * @return PublicKey object
     */
-    public abstract PublicKey getPublicKey(int purpose) throws CATokenOfflineException;
+    PublicKey getPublicKey(int purpose) throws CATokenOfflineException;
     
     
     /** Returns the signature Provider that should be used to sign things with
      *  the PrivateKey object returned by this signingdevice implementation.
      * @return String the name of the Provider
      */
-    public abstract String getProvider();
-
-    
+    String getProvider();
 }

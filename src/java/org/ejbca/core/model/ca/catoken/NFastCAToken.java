@@ -19,6 +19,7 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
@@ -28,7 +29,7 @@ import org.apache.log4j.Logger;
  * and the development was sponsored by Linagora (www.linagora.com).
  * 
  * @author Lars Silv�n
- * @version $Id: NFastCAToken.java,v 1.12 2007-02-10 21:31:13 primelars Exp $
+ * @version $Id: NFastCAToken.java,v 1.13 2007-04-07 21:13:39 primelars Exp $
  */
 public class NFastCAToken extends BaseCAToken implements IHardCAToken {
 
@@ -36,7 +37,6 @@ public class NFastCAToken extends BaseCAToken implements IHardCAToken {
     private static final Logger log = Logger.getLogger(NFastCAToken.class);
 
     static final public String SLOT_LABEL_KEY = "keyStore";
-    static final private String PROVIDER_NAME = "nCipherKM";
     static final private String PROVIDER_CLASS = "com.ncipher.provider.km.nCipherKM";
 
     private KeyStore keyStore; // The used keystore has to be saved. Otherwise the used keys of the store are destroyed when the 
@@ -48,7 +48,7 @@ public class NFastCAToken extends BaseCAToken implements IHardCAToken {
      * @throws IllegalAccessException if the nCipher provider is not available
      */
     public NFastCAToken() throws InstantiationException, IllegalAccessException {
-        super(PROVIDER_CLASS, PROVIDER_NAME, SLOT_LABEL_KEY);
+        super(PROVIDER_CLASS);
         log.debug("Creating NFastCAToken");
     }
 
@@ -80,5 +80,13 @@ public class NFastCAToken extends BaseCAToken implements IHardCAToken {
             deactivate();
             throw e;
         }
+    }
+
+    /* (non-Javadoc)
+     * @see org.ejbca.core.model.ca.catoken.IHardCAToken#init(java.util.Properties, java.lang.String)
+     */
+    public void init(Properties properties, String signaturealgorithm) throws Exception {
+        init(SLOT_LABEL_KEY, properties, signaturealgorithm);
+        setProvider(PROVIDER_CLASS);
     }
 }

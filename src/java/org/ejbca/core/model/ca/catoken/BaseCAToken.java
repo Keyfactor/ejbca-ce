@@ -36,7 +36,7 @@ import org.ejbca.core.model.SecConst;
 
 /**
  * @author lars
- * @version $Id: BaseCAToken.java,v 1.11 2006-12-13 10:34:09 anatom Exp $
+ * @version $Id: BaseCAToken.java,v 1.12 2007-04-07 21:13:39 primelars Exp $
  */
 public abstract class BaseCAToken implements IHardCAToken {
 
@@ -45,32 +45,20 @@ public abstract class BaseCAToken implements IHardCAToken {
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    final private String sProviderName;
-    final private String sSlotLabelKey;
-
-    /** The constructor of HardCAToken should throw an InstantiationException if the token can not
-     * be created, if for example depending jar files for the particular HSM is not available.
-     * 
-     * @throws InstantiationException if the nCipher provider is not available
-     */
-    public BaseCAToken(String providerClassName, String pn,
-                       String slk) throws InstantiationException, IllegalAccessException {
-        log.debug("Creating CAToken");
-        sProviderName = pn;
-        sSlotLabelKey = slk;
-        try {
-            Provider prov = (Provider)Class.forName(providerClassName).newInstance();
-            Security.addProvider( prov );            
-        } catch (ClassNotFoundException e) {
-            throw new InstantiationException("Class not found: "+providerClassName);
-        }
-    }
+    private String sProviderName;
 
     private KeyStrings keyStrings;
     protected String sSlotLabel;
     private Map mKeys;
 	private String mAuthCode;
 
+    public BaseCAToken(String providerClass) throws InstantiationException {
+        try {
+            Class.forName(providerClass);
+        } catch (ClassNotFoundException e) {
+            throw new InstantiationException("Class not found: "+providerClass);
+        }
+    }
     private void autoActivate() {
         if ( mKeys==null && mAuthCode!=null )
             try {
@@ -142,16 +130,21 @@ public abstract class BaseCAToken implements IHardCAToken {
         return keyStore.getCertificate(alias).getPublicKey();
     }
 
-    /* (non-Javadoc)
-     * @see org.ejbca.core.model.ca.catoken.IHardCAToken#init(java.util.Properties, java.lang.String)
-     */
-    public void init(Properties properties, String signaturealgorithm) {
+    protected void init(String sSlotLabelKey, Properties properties, String signaturealgorithm) {
         log.debug("Properties: "+(properties!=null ? properties.toString() : "null")+". Signaturealg: "+signaturealgorithm);
         keyStrings = new KeyStrings(properties);
         sSlotLabel = properties.getProperty(sSlotLabelKey);
         sSlotLabel = sSlotLabel!=null ? sSlotLabel.trim() : null;
         mAuthCode = properties.getProperty("pin");
         autoActivate();
+    }
+    protected void setProvider( String providerClassName ) throws Exception {
+        Provider prov = (Provider)Class.forName(providerClassName).newInstance();
+        sProviderName = prov.getName();
+        if ( Security.getProvider(getProvider())==null )
+            Security.addProvider( prov );
+        if ( Security.getProvider(getProvider())==null )
+            throw new Exception("not possible to install provider");
     }
 
     /* (non-Javadoc)

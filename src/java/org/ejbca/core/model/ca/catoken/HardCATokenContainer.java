@@ -30,7 +30,7 @@ import javax.ejb.EJBException;
  * HardCATokenContainer is a class managing the persistent storage of a hardcatoken publisher.
  * 
  *
- * @version $Id: HardCATokenContainer.java,v 1.4 2006-05-28 14:21:11 anatom Exp $
+ * @version $Id: HardCATokenContainer.java,v 1.5 2007-04-07 21:13:39 primelars Exp $
  */
 public class HardCATokenContainer extends CAToken{
 	private IHardCAToken hardcatoken = null; 
@@ -193,17 +193,8 @@ public class HardCATokenContainer extends CAToken{
 				Object obj = implClass.newInstance();
 				this.hardcatoken = (IHardCAToken) obj;
 				this.hardcatoken.init(getProperties(), getSignatureAlgorithm());				
-			}catch(ClassNotFoundException e){
+			}catch(Exception e){
 				throw new EJBException(e);
-			}
-			catch(IllegalAccessException iae){
-				throw new EJBException(iae);
-			}
-			catch(IOException ioe){
-				throw new EJBException(ioe);
-			}
-			catch(InstantiationException ie){
-				throw new EJBException(ie);
 			}
 		}
 		
