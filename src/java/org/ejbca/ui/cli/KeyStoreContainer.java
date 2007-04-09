@@ -8,6 +8,7 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -318,8 +319,11 @@ class KeyStoreContainerP11 extends KeyStoreContainer {
                                    final String libName) throws KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException, LoginException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PrintWriter pw = new PrintWriter(baos);
-        pw.println("name = slot"+slot);
-        pw.println("library = "+libName);
+        final File libFile = new File(libName);
+        if ( !libFile.isFile() || !libFile.canRead() )
+            throw new IOException("The shared library PKCS11 file "+libName+" can't be read.");
+        pw.println("name = "+libFile.getName()+"-slot"+slot);
+        pw.println("library = "+libFile.getCanonicalPath());
         pw.println("slot = "+slot);
         pw.flush();
         pw.close();
