@@ -72,7 +72,7 @@ public class HwCaInitCommand extends BaseCaAdminCommand {
             final int validity = Integer.parseInt(this.args[7]);
             HardCATokenInfo catokeninfo = new HardCATokenInfo();
             byte keyStoreID[];{
-                KeyStoreContainer ksc = new KeyStoreContainer(this.args[4],this.args[2], this.args[3], this.args.length>8 ? this.args[8] : null);
+                KeyStoreContainer ksc = KeyStoreContainer.getIt(this.args[4],this.args[2], this.args[3], this.args.length>8 ? this.args[8] : null);
                 ksc.generate(2048, DEFAULT_KEY);
                 ksc.generate(2048, SIGN_KEY);
                 keyStoreID = ksc.storeKeyStore();

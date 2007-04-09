@@ -88,8 +88,8 @@ class KeyStoreContainerTest {
         KeyStoreContainer keyStore = null;
         while( keyStore==null ) {
             try {
-                keyStore = new KeyStoreContainer(keyStoreType, providerName,
-                                                 encryptProviderClassName, storeID);
+                keyStore = KeyStoreContainer.getIt(keyStoreType, providerName,
+                                                   encryptProviderClassName, storeID);
             } catch( Throwable t ) {
                 t.printStackTrace(System.err);
                 System.err.println("Card set not preloaded. Hit return when error fixed");
