@@ -32,7 +32,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
 /**
  * This class is used for publishing to user defined script or command.
  *
- * @version $Id: GeneralPurposeCustomPublisher.java,v 1.6 2007-04-02 11:15:09 jeklund Exp $
+ * @version $Id: GeneralPurposeCustomPublisher.java,v 1.7 2007-04-10 11:09:05 jeklund Exp $
  */
 public class GeneralPurposeCustomPublisher implements ICustomPublisher{
     private static Logger log = Logger.getLogger(GeneralPurposeCustomPublisher.class);
@@ -240,26 +240,42 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
 			tempFile = File.createTempFile("GeneralPurposeCustomPublisher", ".tmp");
 			fos = new FileOutputStream(tempFile);
 			fos.write(bytes);
-			fos.close();
+			//fos.close();
 		} catch (FileNotFoundException e) {
 			String msg = intres.getLocalizedMessage("publisher.errortempfile");
         	log.error(msg, e);
         	throw new PublisherException(msg);
 		} catch (IOException e) {
+			try {
+				fos.close();
+			} catch (IOException e1) {
+			}
 			tempFile.delete();
 			String msg = intres.getLocalizedMessage("publisher.errortempfile");
         	log.error(msg, e);
         	throw new PublisherException(msg);
 		}
-		if ( additionalArguments == null ) {
-			additionalArguments = "";
-		}
 		// Exec file from properties with the file as an argument
 		String tempFileName = null;
 		try {
 			tempFileName = tempFile.getCanonicalPath();
-			Process externalProcess = Runtime.getRuntime().exec( externalCommand + " " +  tempFileName + " " + additionalArguments);
-			BufferedReader stdError = new BufferedReader(new InputStreamReader(externalProcess.getErrorStream()));
+			String[] cmdcommand = (externalCommand).split("\\s");
+			String[] cmdargs;
+			if ( additionalArguments == null ) {
+				String[] cmdargst = { tempFileName };
+				cmdargs = cmdargst;
+			} else {
+				String[] cmdargst = { tempFileName, additionalArguments };
+				cmdargs = cmdargst;
+			}
+			String[] cmdarray = new String[cmdcommand.length+cmdargs.length];
+			System.arraycopy(cmdcommand, 0, cmdarray, 0, cmdcommand.length);
+			System.arraycopy(cmdargs, 0, cmdarray, cmdcommand.length, cmdargs.length);
+			Process externalProcess = Runtime.getRuntime().exec( cmdarray, null, null);
+			//Process externalProcess = Runtime.getRuntime().exec( externalCommand + " " +  tempFileName + " " + additionalArguments);
+			BufferedReader stdError = new BufferedReader( new InputStreamReader( externalProcess.getErrorStream() ) );
+			BufferedReader stdInput = new BufferedReader( new InputStreamReader( externalProcess.getInputStream() ) );
+			while ( stdInput.readLine() != null ) { }	// Required under win32 to avoid lock
 			String stdErrorOutput = null;
 			// Check errorcode and the external applications output to stderr 
 			if ( ((externalProcess.waitFor() != 0) && failOnCode) || (stdError.ready() && failOnOutput )) {
@@ -274,28 +290,29 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher{
 				}
 				String msg = intres.getLocalizedMessage("publisher.errorexternalapp", externalCommand);
 				if ( stdErrorOutput != null ) {
-						msg += " - " + stdErrorOutput;
+						msg += " - " + stdErrorOutput + " - "+ tempFileName;
 				}
 	        	log.error(msg);
 				throw new PublisherException(msg);
 			}
 		} catch (IOException e) {
-			tempFile.delete();
 			String msg = intres.getLocalizedMessage("publisher.errorexternalapp", externalCommand);
         	log.error(msg, e);
 			throw new PublisherException(msg);
 		} catch (InterruptedException e) {
-			tempFile.delete();
 			String msg = intres.getLocalizedMessage("publisher.errorexternalapp", externalCommand);
         	log.error(msg, e);
 			throw new PublisherException(msg);
-		}
-        // Remove temporary file
-		if ( !tempFile.delete() )
-		{
-			String msg = intres.getLocalizedMessage("publisher.errordeletetempfile", tempFileName);
-        	log.error(msg);
-			throw new PublisherException(msg);
+		} finally {
+			try {
+				fos.close();
+			} catch (IOException e1) {
+			}
+	        // Remove temporary file or schedule for delete if delete fails.
+			if ( !tempFile.delete() ) {
+				tempFile.deleteOnExit();
+	        	log.info( intres.getLocalizedMessage("publisher.errordeletetempfile", tempFileName) );
+			}
 		}
 	} // runWithTempFile
 } // GeneralPurposeCustomPublisher
