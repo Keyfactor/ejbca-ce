@@ -221,19 +221,41 @@ public abstract class KeyStoreContainer {
     }
 }
 class KeyStoreContainerJCE extends KeyStoreContainer {
+    private final PasswordReader passwordReader;
     private char passPhraseLoadSave[] = null;
     private char passPhraseGetSetEntry[] = null;
     private KeyStoreContainerJCE( final KeyStore _keyStore,
                                   final String _providerName,
                                   final String _ecryptProviderName,
-                                  final byte storeID[]) throws NoSuchAlgorithmException, CertificateException, IOException{
+                                  final byte storeID[],
+                                  final PasswordReader _passwordReader) throws NoSuchAlgorithmException, CertificateException, IOException{
         super( _keyStore, _providerName, _ecryptProviderName );
+        this.passwordReader = _passwordReader!=null ? _passwordReader : new DefaultPasswordReader();
         load(storeID);
+    }
+    public interface PasswordReader {
+        char[] readPassword() throws IOException;
+    }
+    private class DefaultPasswordReader implements PasswordReader {
+        public char[] readPassword() throws IOException {
+            return new BufferedReader(new InputStreamReader(System.in)).readLine().toCharArray();
+        }
     }
     static KeyStoreContainer getIt(final String keyStoreType,
                                    final String providerClassName,
                                    final String encryptProviderClassName,
                                    final byte storeID[]) throws NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, IOException, IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException {
+        return getIt( keyStoreType,
+                      providerClassName,
+                      encryptProviderClassName,
+                      storeID,
+                      null );
+    }
+    static KeyStoreContainer getIt(final String keyStoreType,
+                                   final String providerClassName,
+                                   final String encryptProviderClassName,
+                                   final byte storeID[],
+                                   final PasswordReader passwordReader) throws NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, IOException, IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException {
         Security.addProvider( new BouncyCastleProvider() );
         final String providerName = getProviderName(providerClassName);
         final String ecryptProviderName; {
@@ -247,11 +269,15 @@ class KeyStoreContainerJCE extends KeyStoreContainer {
         }
         System.err.println("Creating KeyStore of type "+keyStoreType+" with provider "+providerName+(storeID!=null ? (" with ID "+new String(storeID)) : "")+'.');
         final KeyStore keyStore = KeyStore.getInstance(keyStoreType, providerName);
-        return new KeyStoreContainerJCE( keyStore, providerName, ecryptProviderName, storeID);
+        return new KeyStoreContainerJCE( keyStore,
+                                         providerName,
+                                         ecryptProviderName,
+                                         storeID,
+                                         passwordReader);
     }
     private void setPassWord(boolean isKeystoreException) throws IOException {
         System.err.println((isKeystoreException ? "Setting key entry in keystore" : "Loading keystore")+". Give password of inserted card in slot:");
-        char result[] = new BufferedReader(new InputStreamReader(System.in)).readLine().toCharArray();
+        final char result[] = passwordReader.readPassword();
         if ( isKeystoreException )
             this.passPhraseGetSetEntry = result;
         else
