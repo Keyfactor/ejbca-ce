@@ -6,8 +6,10 @@
     <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
     <title>@EJBCA@ Certification Authority</title>
     <link rel="stylesheet" href="../styles.css" type="text/css">
+    <script language="javascript" src="../scripts/functions.js"></script>
+    <script language="vbscript" src="../scripts/functions.vb"></script>
   </head>
-  <body>
+  <body
     <div class="logobar">
       <a href="../index.jsp"><img src="../images/logotype.png" alt="EJBCA-pki logotype" border="0"/></a>
     </div>

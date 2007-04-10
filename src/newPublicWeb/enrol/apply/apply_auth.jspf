@@ -32,15 +32,6 @@
 
 <script language="JavaScript">
 <!--
-    var browserName = navigator.appName;
-    var browserNum = parseInt(navigator.appVersion);
     browserSelector ();
-    function browserSelector () {
-         if(browserName == "Netscape") {
-                 document.CertReqForm.<%=HIDDEN_BROWSER%>.value = "<%= BROWSER_NETSCAPE %>";
-         } else if ((browserName == "Microsoft Internet Explorer") &&(browserNum>= 4)) {
-                 document.CertReqForm.<%=HIDDEN_BROWSER%>.value = "<%= BROWSER_EXPLORER %>";
-         }
-    }
 // -->
 </script>

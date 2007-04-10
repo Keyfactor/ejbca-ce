@@ -1,72 +1,7 @@
 <%@ include file="header.jsp" %>
 
-	<script language="VBScript" type="text/vbscript">
-		Function ControlExists(objectID)
-			on error resume next
-			ControlExists = IsObject(CreateObject(objectID))
-		End Function
-	</script>
-
 	<script language="JavaScript" type="text/javascript">
-	// <!--
-		function myDeclare()
-		{
-		    if (navigator.appName.indexOf("Explorer") == -1)
-		    {
-		        explorer = false;
-		        plugin = navigator.mimeTypes["application/x-iid"];
-		    }
-		    else
-		    {
-		        explorer = true;
-		        plugin = ControlExists("IID.iIDCtl");
-		    }
-		    if (plugin)
-		    {
-		        if (explorer)
-		            document.writeln("<object name='iID' classid='CLSID:5BF56AD2-E297-416E-BC49-00B327C4426E' width='0' height='0'><\/object>");
-		        else
-		            document.writeln("<object name='iID' type='application/x-iid' width='0' height='0'><\/object>");
-		    }
-		    else
-		    {
-		        document.writeln("The CryptoAPI component is not installed.");
-		    }
-		}
-		
-		function generate_pkcs10()
-		{
-		    document.iID.SetProperty('Base64', 'true');
-		    document.iID.SetProperty('URLEncode', 'false');
-		    document.iID.SetProperty('Password', '');
-		    document.iID.SetProperty('TokenLabel', "Prime EID IP1 (basic PIN)");
-		    document.iID.SetProperty('Subject', "2.5.4.5=197205250777");
-		    document.iID.SetProperty('KeyId', '45');
-		
-		    rv = document.iID.Invoke('CreateRequest');
-		    if (rv == 0)
-		        document.form1.authpkcs10.value = document.iID.GetProperty("Request");
-		    else
-		        document.form1.authpkcs10.value = rv;
-		
-		    document.iID.SetProperty('Base64', 'true');
-		    document.iID.SetProperty('URLEncode', 'false');
-		    document.iID.SetProperty('Password', '');
-		    document.iID.SetProperty('TokenLabel', "Prime EID IP1 (signature PIN)");
-		    document.iID.SetProperty('Subject', "2.5.4.5=197205250777");
-		    document.iID.SetProperty('KeyId', '46');
-		
-		    rv = document.iID.Invoke('CreateRequest');
-		    if (rv == 0)
-		        document.form1.signpkcs10.value = document.iID.GetProperty("Request");
-		    else
-		        document.form1.signpkcs10.value = rv;
-		        
-		
-		                
-		    document.form1.submit();    
-		}
-		
+	    <!--
 		myDeclare();
 		// -->
 	</script>
@@ -155,8 +90,11 @@
 			for the new certificates.</p>
 			
 			<form name="form1" action="cardcertreq" method="post" id="form1">
-				<p><input type="HIDDEN" name="authpkcs10"> <input type="HIDDEN" name="signpkcs10">
-				<input type="BUTTON" value="Fetch Certificate" 
-					style="width: 3.25cm; height: 0.66cm" onclick="generate_pkcs10()"></p>
+				<p>
+				  <input type="HIDDEN" name="authpkcs10">
+				  <input type="HIDDEN" name="signpkcs10">
+				  <input type="BUTTON" value="Fetch Certificate" 
+					style="width: 3.25cm; height: 0.66cm" onclick="generate_card_pkcs10()">
+				</p>
 			</form>
 <%@ include file="footer.inc" %>
