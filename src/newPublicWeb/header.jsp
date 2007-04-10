@@ -6,6 +6,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
     <title>@EJBCA@ Certification Authority</title>
     <link rel="stylesheet" href="styles.css" type="text/css">
+    <script language="javascript" src="scripts/functions.js"></script>
+    <script language="vbscript" src="scripts/functions.vbs"></script>
   </head>
   <body>
     <div class="logobar">
