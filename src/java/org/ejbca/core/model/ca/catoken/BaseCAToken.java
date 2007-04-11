@@ -36,7 +36,7 @@ import org.ejbca.core.model.SecConst;
 
 /**
  * @author lars
- * @version $Id: BaseCAToken.java,v 1.12 2007-04-07 21:13:39 primelars Exp $
+ * @version $Id: BaseCAToken.java,v 1.13 2007-04-11 17:14:53 primelars Exp $
  */
 public abstract class BaseCAToken implements IHardCAToken {
 
@@ -52,6 +52,9 @@ public abstract class BaseCAToken implements IHardCAToken {
     private Map mKeys;
 	private String mAuthCode;
 
+    public BaseCAToken() throws InstantiationException {
+        super();
+    }
     public BaseCAToken(String providerClass) throws InstantiationException {
         try {
             Class.forName(providerClass);
@@ -99,7 +102,7 @@ public abstract class BaseCAToken implements IHardCAToken {
     protected void setKeys(KeyStore keyStore, String authCode) throws Exception {
         mKeys = null;
         final String keyAliases[] = keyStrings.getAllStrings();
-        final Map mTmp = new Hashtable();
+        final Map<String, KeyPair> mTmp = new Hashtable<String, KeyPair>();
         for ( int i=0; i<keyAliases.length; i++ ) {
             PrivateKey privateK =
                 (PrivateKey)keyStore.getKey(keyAliases[i],
@@ -139,7 +142,9 @@ public abstract class BaseCAToken implements IHardCAToken {
         autoActivate();
     }
     protected void setProvider( String providerClassName ) throws Exception {
-        Provider prov = (Provider)Class.forName(providerClassName).newInstance();
+        setProvider( (Provider)Class.forName(providerClassName).newInstance() );
+    }
+    protected void setProvider( Provider prov ) throws Exception {
         sProviderName = prov.getName();
         if ( Security.getProvider(getProvider())==null )
             Security.addProvider( prov );

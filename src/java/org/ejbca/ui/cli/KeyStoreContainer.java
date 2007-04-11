@@ -219,6 +219,21 @@ public abstract class KeyStoreContainer {
     public void encrypt(InputStream is, OutputStream os, String alias) throws Exception {
         new EncryptStream().code(is, os, alias);
     }
+    public static AuthProvider getP11AuthProvider(final int slot,
+                                               final String libName) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintWriter pw = new PrintWriter(baos);
+        final File libFile = new File(libName);
+        if ( !libFile.isFile() || !libFile.canRead() )
+            throw new IOException("The shared library PKCS11 file "+libName+" can't be read.");
+        pw.println("name = "+libFile.getName()+"-slot"+slot);
+        pw.println("library = "+libFile.getCanonicalPath());
+        pw.println("slot = "+slot);
+        pw.flush();
+        pw.close();
+        return new SunPKCS11(new ByteArrayInputStream(baos.toByteArray()));
+        
+    }
 }
 class KeyStoreContainerJCE extends KeyStoreContainer {
     private final PasswordReader passwordReader;
@@ -343,33 +358,18 @@ class KeyStoreContainerP11 extends KeyStoreContainer {
     }
     static KeyStoreContainer getIt(final int slot,
                                    final String libName) throws KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException, LoginException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PrintWriter pw = new PrintWriter(baos);
-        final File libFile = new File(libName);
-        if ( !libFile.isFile() || !libFile.canRead() )
-            throw new IOException("The shared library PKCS11 file "+libName+" can't be read.");
-        pw.println("name = "+libFile.getName()+"-slot"+slot);
-        pw.println("library = "+libFile.getCanonicalPath());
-        pw.println("slot = "+slot);
-        pw.flush();
-        pw.close();
-        AuthProvider provider = new SunPKCS11(new ByteArrayInputStream(baos.toByteArray()));
+        AuthProvider provider = getP11AuthProvider(slot, libName);
         final String providerName = provider.getName();
         Security.addProvider(provider);
         final CallbackHandler cbh = new TextCallbackHandler();
-        provider.login(null, cbh);
         KeyStore.Builder builder = KeyStore.Builder.newInstance("PKCS11", provider,
                                                                 new CallbackHandlerProtection(cbh));
         final KeyStore keyStore = builder.getKeyStore();
         return new KeyStoreContainerP11( keyStore, providerName, providerName );
     }
     @Override public byte[] storeKeyStore() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        this.keyStore.store(baos, null);
-        System.out.print(new String(baos.toByteArray()));
-        System.out.flush();
-        System.err.println();
-        return baos.toByteArray();
+        this.keyStore.store(null, null);
+        return new byte[0];
     }
     @Override void setKeyEntry(String alias, Key key, Certificate chain[]) throws IOException, KeyStoreException {
         this.keyStore.setKeyEntry(alias, key, null, chain);
