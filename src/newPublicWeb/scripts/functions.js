@@ -4,13 +4,10 @@
         var browserName = navigator.appName;
         var browserNum = parseInt(navigator.appVersion);
         if (browserName == "Netscape") {
-        alert("Netscape!");
             document.CertReqForm.hiddenbrowser.value = "netscape";
         } else if ((browserName == "Microsoft Internet Explorer") && (browserNum>= 4)) {
-        alert("Exploder!");
             document.CertReqForm.hiddenbrowser.value = "explorer";
         }
-        alert(document.CertReqForm.hiddenbrowser.value);
     }
 
     var plugin;
