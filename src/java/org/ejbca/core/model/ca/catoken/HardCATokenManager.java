@@ -25,7 +25,7 @@ import org.ejbca.core.model.InternalResources;
  * Each HardCaToken plug-in should register itself by using the method register.
  * The CA keeps a registry of CA tokens created here.
  * 
- * @version $Id: HardCATokenManager.java,v 1.6 2006-12-13 10:34:09 anatom Exp $
+ * @version $Id: HardCATokenManager.java,v 1.7 2007-04-12 14:36:49 primelars Exp $
  * 
  */
 public class HardCATokenManager {
@@ -49,9 +49,10 @@ public class HardCATokenManager {
      * All new plug-ins should add a loadClass call with it's classpath to this method.
      */
     static {
-        HardCATokenManager.instance().addAvailableHardCAToken("org.ejbca.core.model.ca.catoken.NFastCAToken", "NFastCAToken", false, true);
+        HardCATokenManager.instance().addAvailableHardCAToken(NFastCAToken.class.getName(), "NFastCAToken", false, true);
         HardCATokenManager.instance().addAvailableHardCAToken("se.primeKey.caToken.card.PrimeCAToken", "PrimeCAToken", false, true);
-        HardCATokenManager.instance().addAvailableHardCAToken("org.ejbca.core.model.ca.catoken.EracomCAToken", "Eracom", false, true);
+        HardCATokenManager.instance().addAvailableHardCAToken(EracomCAToken.class.getName(), "Eracom", false, true);
+        HardCATokenManager.instance().addAvailableHardCAToken(PKCS11CAToken.class.getName(), "PKCS#11", false, true);
         HardCATokenManager.instance().addAvailableHardCAToken("org.ejbca.core.model.ca.catoken.SafeNetLunaCAToken", "SafeNetLunaCAToken", false, true);
         HardCATokenManager.instance().addAvailableHardCAToken("org.ejbca.core.model.ca.catoken.DummyHardCAToken", "DummyHardCAToken", false, false);
         HardCATokenManager.instance().addAvailableHardCAToken("org.ejbca.core.model.ca.catoken.HardCATokenSample", "HardCATokenSample", false, false);
