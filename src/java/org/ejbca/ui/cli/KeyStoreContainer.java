@@ -63,14 +63,17 @@ public abstract class KeyStoreContainer {
                                    final String providerClassName,
                                    final String encryptProviderClassName,
                                    final String storeID) throws NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, IOException, IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException, LoginException {
-        if (keyStoreType.toLowerCase().indexOf("pkcs11") < 0)
+        if ( isP11(keyStoreType) )
+            return KeyStoreContainerP11.getIt( Integer.parseInt(storeID),
+                                               providerClassName );
+        else
             return KeyStoreContainerJCE.getIt( keyStoreType,
                                                providerClassName,
                                                encryptProviderClassName,
                                                storeID!=null ? storeID.getBytes():null);
-        else
-            return KeyStoreContainerP11.getIt( Integer.parseInt(storeID),
-                                               providerClassName );
+    }
+    static boolean isP11(String keyStoreType) {
+        return keyStoreType.toLowerCase().indexOf("pkcs11") >= 0;
     }
     KeyStoreContainer( KeyStore _keyStore,
                        String _providerName,

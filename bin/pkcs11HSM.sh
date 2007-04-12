@@ -26,7 +26,11 @@ CLASSES=$CLASSES:$EJBCA_HOME/tmp/bin/classes
 #CLASSES=$CLASSES:$EJBCA_HOME/out/classes
 
 # Prepare arguments
-args="`basename $0` $1"
+if [ -z $1 ]; then
+  args="`basename $0` dummy"
+else
+  args="`basename $0` $1"
+fi
 shift
 args="$args $JAVA_PKCS11_LIB null pkcs11 $@"
 

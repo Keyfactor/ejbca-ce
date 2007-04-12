@@ -1901,13 +1901,40 @@ EJBCA 3.2 and later also has an implementation for the Eracom HSM. The configura
 </p><p>
 EJBCA 3.3 and later has an implementation for the SafeNet Luna HSM.
 </p><p>
-PrimeKey Solutions sell a module called PrimeCardHSM that implements a flexible HSM using low cost smart cards. 
+EJBCA 3.5 and later has an implementation for a generic PKCS#11 provider.
+</p><p>
+PrimeKey Solutions is selling a module called PrimeCardHSM that implements a flexible HSM using low cost smart cards. 
 </p>
 <subsection name="HSMs and ECDSA">
 <p>
 Support for ECDSA in HSMs are dependant on the support for ECDSA in the HSM manufacturers JCE provider.
 You have to check if that support is available.
 </p>
+</subsection>
+<subsection name="Generic PKCS#11 provider">
+<p>
+The PKCS#11 wrapper from SUN has been used to implement support for tokens with PKCS#11 libraries.
+</p><p>
+When using a PKCS#11 token you should first create keys with the command: $EJBCA_HOME/bin/pkcs11HSM.sh generate
+</p><p>
+Each CA should have its own slot.
+</p><p>
+Each slot must have been initialised before keys could be generated on the them. This includes setting a user PIN for it. The slot must also require login. Tools for doing this is not provided from EJBCA. The HSM vendor should provide this tool.
+</p><p>
+Besides the keys previously described the property field of the administration GUI should contain the following properties:
+<ul>
+<li>slot                - the slot if the CA.</li>
+<li>sharedLibrary       - the shared PKCS#11 library to be used.</li>
+</ul>
+</p><p>
+This is a example of a property field:
+</p>
+<source>
+slot 4
+defaultKey long
+pin user4
+sharedLibrary /home/lars/work/test/p11/libcs2_pkcs11.so
+</source>
 </subsection>
 <subsection name="nCipher NFast">
 <p>
