@@ -41,7 +41,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * Contains help methods used to parse a edit user data source jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditUserDataSourceJSPHelper.java,v 1.2 2006-12-02 11:17:57 anatom Exp $
+ * @version $Id: EditUserDataSourceJSPHelper.java,v 1.3 2007-04-13 06:22:04 herrvendil Exp $
  */
 public class EditUserDataSourceJSPHelper implements java.io.Serializable {
 
@@ -158,6 +158,7 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
                     if(userdatasource != null){
                         if(!userdatasource.trim().equals("")){
                             userdatasourcedeletefailed = !userdatasourcesession.removeUserDataSource(admin,userdatasource);
+                            ejbcawebbean.getInformationMemory().userDataSourceEdited();
                         }
                     }
                     includefile=PAGE_USERDATASOURCES;
@@ -170,6 +171,7 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
                         if(!newuserdatasourcename.trim().equals("") && !olduserdatasourcename.trim().equals("")){
                             try{
                             	userdatasourcesession.renameUserDataSource(admin,olduserdatasourcename.trim(),newuserdatasourcename.trim());
+                            	ejbcawebbean.getInformationMemory().userDataSourceEdited();
                             }catch( UserDataSourceExistsException e){
                                 userdatasourceexists=true;
                             }
@@ -183,6 +185,7 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
                         if(!userdatasource.trim().equals("")){
                             try{
                             	userdatasourcesession.addUserDataSource(admin,userdatasource.trim(), new CustomUserDataSourceContainer());
+                            	ejbcawebbean.getInformationMemory().userDataSourceEdited();
                             }catch( UserDataSourceExistsException e){
                                 userdatasourceexists=true;
                             }
@@ -197,6 +200,7 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
                     	if(!newuserdatasourcename.trim().equals("") && !olduserdatasourcename.trim().equals("")){
                     		try{
                     			userdatasourcesession.cloneUserDataSource(admin,olduserdatasourcename.trim(),newuserdatasourcename.trim());
+                    			ejbcawebbean.getInformationMemory().userDataSourceEdited();
                     		}catch( UserDataSourceExistsException e){
                     			userdatasourceexists=true;
                     		}
@@ -277,6 +281,7 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
 
                             if(request.getParameter(BUTTON_SAVE) != null){
                                 userdatasourcesession.changeUserDataSource(admin,userdatasource,userdatasourcedata);
+                                ejbcawebbean.getInformationMemory().userDataSourceEdited();
                                 includefile=PAGE_USERDATASOURCES;
                             }
                             if(request.getParameter(BUTTON_TESTCONNECTION)!= null){

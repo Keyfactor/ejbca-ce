@@ -52,6 +52,7 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
 import org.ejbca.util.CertTools;
@@ -64,7 +65,7 @@ import org.ejbca.util.query.Query;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.14 2006-09-27 09:28:27 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.15 2007-04-13 06:22:04 herrvendil Exp $
  */
 public class RAInterfaceBean implements java.io.Serializable {
     
@@ -497,7 +498,15 @@ public class RAInterfaceBean implements java.io.Serializable {
     public int getEndEntityProfileId(String profilename){
       return profiles.getEndEntityProfileId(profilename);
     }
+    
+    
+    public String getUserDataSourceName(int sourceid) throws RemoteException{
+      return this.userdatasourcesession.getUserDataSourceName(administrator, sourceid);
+    }
 
+    public int getUserDataSourceId(String sourcename){
+      return this.userdatasourcesession.getUserDataSourceId(administrator, sourcename);
+    }
 
     public EndEntityProfile getEndEntityProfile(String name)  throws Exception{
       return profiles.getEndEntityProfile(name);
@@ -684,14 +693,22 @@ public class RAInterfaceBean implements java.io.Serializable {
       return endEntityAuthorization(administrator, profileid, AvailableAccessRules.HISTORY_RIGHTS, false);
     }
 
-    public boolean authorizedToViewHardToken(String username) throws Exception{
+    public boolean authorizedToViewHardToken(String username) throws Exception{      
       int profileid = adminsession.findUser(administrator, username).getEndEntityProfileId();
-      return endEntityAuthorization(administrator, profileid, AvailableAccessRules.HARDTOKEN_RIGHTS, false);
+      if(!endEntityAuthorization(administrator, profileid, AvailableAccessRules.HARDTOKEN_RIGHTS, false)){
+    	  throw new AuthorizationDeniedException();
+      }
+      
+      if(!GlobalConfiguration.HARDTOKEN_DIPLAYSENSITIVEINFO){
+    	  return false;
+      }
+      
+      return endEntityAuthorization(administrator, profileid, AvailableAccessRules.HARDTOKEN_PUKDATA_RIGHTS, false);
     }
 
     public boolean authorizedToViewHardToken(int profileid) throws Exception{
       return endEntityAuthorization(administrator, profileid, AvailableAccessRules.HARDTOKEN_RIGHTS, false);
-    }
+    }    
 
     public boolean authorizedToRevokeCert(String username) throws FinderException, RemoteException, AuthorizationDeniedException{
       boolean returnval=false;
