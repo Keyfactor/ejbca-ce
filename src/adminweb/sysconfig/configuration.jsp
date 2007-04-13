@@ -40,6 +40,7 @@
   static final String LIST_ENTIESPERPAGE                     = "listentriesperpage";
 
   static final String LIST_VIEWPUKREQUIREDAPPROVALS          = "viewpukrequiredapprovals";  
+  static final String LIST_HARDTOKENENCRYPTCA                = "hardtokenencryptca";  
   
 
   static final String CHECKBOX_VALUE             = "true";
@@ -146,6 +147,12 @@
     	   gc.setNumberOfApprovalsToViewPUK(Integer.parseInt(request.getParameter(LIST_VIEWPUKREQUIREDAPPROVALS)));    	   
        }else{
     	   gc.setNumberOfApprovalsToViewPUK(0);
+       }
+       
+       if(request.getParameter(LIST_HARDTOKENENCRYPTCA) != null ){
+    	   gc.setHardTokenEncryptCA(Integer.parseInt(request.getParameter(LIST_HARDTOKENENCRYPTCA)));    	   
+       }else{
+    	   gc.setHardTokenEncryptCA(0);
        }
        
 

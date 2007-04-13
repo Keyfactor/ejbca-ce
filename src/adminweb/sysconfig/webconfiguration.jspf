@@ -1,6 +1,6 @@
 <% GlobalConfiguration gc = ejbcawebbean.getGlobalConfiguration(); 
    // This page is not translated because documant root isn't known yet.
-
+   java.util.HashMap caidToNameMap = ejbcawebbean.getInformationMemory().getCAIdToNameMap();
 %>
 <html>
 <head>
@@ -119,7 +119,7 @@ function checkuseapprovalnotifications(){
                                                                                                 out.write(" CHECKED "); %>> 
       </td>
     </tr>
-    <tr id="Row1"> 
+    <!--  <tr id="Row1"> 
       <td width="49%" valign="top"> 
         <h3><%= ejbcawebbean.getText("REQUIREAPPROVALTOVIEWPUK") %></h3>
         <h5><%= ejbcawebbean.getText("THENUMBEROFAPPROVALSREQ") %></h5>
@@ -133,7 +133,26 @@ function checkuseapprovalnotifications(){
           <% } %>
         </select>
       </td>
+    </tr> -->
+    <tr id="Row1"> 
+      <td width="49%" valign="top"> 
+        <h3><%= ejbcawebbean.getText("HARDTOKENENCRYPTCA") %></h3>
+        <h5><%= ejbcawebbean.getText("THECAUSEDTOENCRYPTHTDATA") %></h5>
+      </td>
+      <td width="51%" valign="top"> 
+        <select name="<%= LIST_HARDTOKENENCRYPTCA %>">
+          <% currentval = gc.getHardTokenEncryptCA(); %>
+          <option <% if(currentval == 0){ %> selected <% } %> value='<%= 0%>'><%= ejbcawebbean.getText("NOENCRYPTION")%></option>
+          <% java.util.Iterator iter = ejbcawebbean.getCAIdsWithCMSServiceActive().iterator();
+             while(iter.hasNext()){
+            	Integer caid = (Integer) iter.next(); 
+          %>   <option <% if(currentval == caid.intValue()){ %> selected <% } %>
+                  value='<%= caid%>'><%= caidToNameMap.get(caid) %></option>
+          <% } %>
+        </select>
+      </td>
     </tr>
+    
     <tr id="Row0"> 
       <td width="49%" valign="top"> 
         <h3><%= ejbcawebbean.getText("USEAPPROVALNOTIFICATIONS") %></h3>
