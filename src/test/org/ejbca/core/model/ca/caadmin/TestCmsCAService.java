@@ -15,6 +15,7 @@ package org.ejbca.core.model.ca.caadmin;
 
 import java.security.cert.CertStore;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -47,7 +48,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the CertTools class.
  *
- * @version $Id: TestCmsCAService.java,v 1.1 2006-12-28 13:51:15 anatom Exp $
+ * @version $Id: TestCmsCAService.java,v 1.2 2007-04-13 06:23:08 herrvendil Exp $
  */
 public class TestCmsCAService extends TestCase {
 	private static Logger log = Logger.getLogger(TestCmsCAService.class);
@@ -107,7 +108,7 @@ public class TestCmsCAService extends TestCase {
 	/**
 	 */
 	public void test01CmsCAServiceNotActive() throws Exception {
-		CmsCAServiceRequest request = new CmsCAServiceRequest(doc, true);
+		CmsCAServiceRequest request = new CmsCAServiceRequest(doc, CmsCAServiceRequest.MODE_SIGN);
 		
 		// First try a request when the service is not active
 		boolean active = true;
@@ -135,7 +136,7 @@ public class TestCmsCAService extends TestCase {
 	/**
 	 */
 	public void test03CmsCAServiceActive() throws Exception {
-		CmsCAServiceRequest request = new CmsCAServiceRequest(doc, true);
+		CmsCAServiceRequest request = new CmsCAServiceRequest(doc, CmsCAServiceRequest.MODE_SIGN);
 		CmsCAServiceResponse resp = null;
 		// Try the request again
 		boolean active = true;
@@ -176,6 +177,46 @@ public class TestCmsCAService extends TestCase {
         Object o = cp.getContent();
         byte[] ob = (byte[])o;
         assertEquals(new String(doc), new String(ob));
+	}
+	
+	/**
+	 */
+	public void test03CmsCAEncryptDecrypt() throws Exception {
+		CmsCAServiceRequest request = new CmsCAServiceRequest(doc, CmsCAServiceRequest.MODE_ENCRYPT);
+		CmsCAServiceResponse resp = null;
+		// Try the request again
+		boolean active = true;
+		try {
+			resp = (CmsCAServiceResponse)remote.extendedService(admin, rsacaid, request);
+		} catch (ExtendedCAServiceNotActiveException e) {
+			active = false;
+		}
+		// By default the CA service is not active
+		assertTrue(active);
+		
+		assertNotNull(resp);
+		byte[] respdoc = resp.getCmsDocument();
+		assertNotNull(respdoc);
+		
+		assertFalse(Arrays.equals(respdoc, doc));
+
+		request = new CmsCAServiceRequest(respdoc, CmsCAServiceRequest.MODE_DECRYPT);
+		
+		// Try the request again
+		active = true;
+		try {
+			resp = (CmsCAServiceResponse)remote.extendedService(admin, rsacaid, request);
+		} catch (ExtendedCAServiceNotActiveException e) {
+			active = false;
+		}
+		// By default the CA service is not active
+		assertTrue(active);
+		
+		assertNotNull(resp);
+		respdoc = resp.getCmsDocument();
+		assertNotNull(respdoc);
+
+		assertTrue(Arrays.equals(respdoc, doc));
 	}
 
 	/**
