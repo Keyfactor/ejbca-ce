@@ -35,13 +35,18 @@ import javax.ejb.FinderException;
 
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
+import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
+import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
+import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.ejb.ca.store.CertificateDataBean;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -163,6 +168,23 @@ import org.ejbca.util.JDBCUtil;
  *   home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
  *   business="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  *   link="CertificateStoreSession"
+ *   
+ * @ejb.ejb-external-ref description="The Sign Session Bean"
+ *   view-type="local"
+ *   ref-name="ejb/RSASignSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
+ *   link="RSASignSession"
+ *   
+ * @ejb.ejb-external-ref
+ *   description="The RA Session Bean"
+ *   view-type="local"
+ *   ref-name="ejb/RaAdminSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal"
+ *   link="RaAdminSession"
  *
  * @ejb.ejb-external-ref
  *   description="The log session bean"
@@ -204,6 +226,14 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
 
     /** The local interface of certificate store session bean */
     private ICertificateStoreSessionLocal certificatestoresession = null;
+    
+    /**
+     * The local interface of  raadmin session bean
+     */
+    private IRaAdminSessionLocal raadminsession = null;
+    
+    /** The home interface of SignSession session bean */
+    private ISignSessionLocal signsession;
 
     /** The remote interface of  log session bean */
     private ILogSessionLocal logsession = null;
@@ -260,6 +290,40 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         return certificatestoresession;
     } //getCertificateStoreSession
 
+    /** Gets connection to sign session bean
+     * @return Connection
+     */
+    private ISignSessionLocal getSignSession() {
+        if(signsession == null){
+          try{
+        	  ISignSessionLocalHome signsessionhome = (ISignSessionLocalHome) getLocator().getLocalHome(ISignSessionLocalHome.COMP_NAME);
+              signsession = signsessionhome.create();
+          }catch(Exception e){
+             throw new EJBException(e);
+          }
+        }
+        return signsession;
+    } //getSignSession
+    
+    /**
+     * Gets connection to ra admin session bean
+     *
+     * @return Connection
+     */
+    private IRaAdminSessionLocal getRaAdminSession() {
+        if (raadminsession == null) {
+            try {
+                IRaAdminSessionLocalHome home = (IRaAdminSessionLocalHome) ServiceLocator.getInstance()
+                        .getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
+                raadminsession = home.create();
+            } catch (Exception e) {
+                throw new EJBException(e);
+            }
+        }
+        return raadminsession;
+    } //getRaAdminSession
+
+    
     /** Gets connection to authorization session bean
      * @return IAuthorizationSessionLocal
      */
@@ -1021,7 +1085,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
     	}
     	if (!exists) {
     		try {
-    			hardtokendatahome.create(tokensn, username,new java.util.Date(), new java.util.Date(), tokentype, bcdn, hardtokendata);
+    			hardtokendatahome.create(admin,getSignSession(),getRaAdminSession().loadGlobalConfiguration(admin).getHardTokenEncryptCA() ,tokensn, username,new java.util.Date(), new java.util.Date(), tokentype, bcdn, hardtokendata);
     			if(certificates != null){
     				Iterator i = certificates.iterator();
     				while(i.hasNext()){
@@ -1065,7 +1129,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
         try {
             HardTokenDataLocal htd = hardtokendatahome.findByPrimaryKey(tokensn);
             htd.setTokenType(tokentype);
-            htd.setHardToken(hardtokendata);
+            htd.setHardToken(admin,getSignSession(),getRaAdminSession().loadGlobalConfiguration(admin).getHardTokenEncryptCA(),hardtokendata);
             htd.setModifyTime(new java.util.Date());
             caid = htd.getSignificantIssuerDN().hashCode();
         	String msg = intres.getLocalizedMessage("hardtoken.changedtoken", tokensn);            	
@@ -1158,11 +1222,8 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        * @throws EJBException if a communication or other error occurs.
        * @ejb.interface-method view-type="both"
        */
-    public HardTokenData getHardToken(Admin admin, String tokensn){
+    public HardTokenData getHardToken(Admin admin, String tokensn, boolean includePUK) throws AuthorizationDeniedException{
        debug("<getHardToken(tokensn :" + tokensn +")");
-       
-       
-       // Check Approvals       
        
        HardTokenData returnval = null;
        HardTokenDataLocal htd = null;
@@ -1191,9 +1252,13 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
          }
 
          if(htd != null){
-           returnval = new HardTokenData(htd.getTokenSN(),htd.getUsername(), htd.getCreateTime(),htd.getModifyTime(),htd.getTokenType(),htd.getHardToken(), copyof, copies);
+           returnval = new HardTokenData(htd.getTokenSN(),htd.getUsername(), htd.getCreateTime(),htd.getModifyTime(),htd.getTokenType(),htd.getHardToken(admin,getSignSession(),getRaAdminSession().loadGlobalConfiguration(admin).getHardTokenEncryptCA(),includePUK), copyof, copies);
            String msg = intres.getLocalizedMessage("hardtoken.viewedtoken", tokensn);            	
            getLogSession().log(admin, htd.getSignificantIssuerDN().hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),htd.getUsername(), null, LogEntry.EVENT_INFO_HARDTOKENVIEWED,msg);
+           if(includePUK){
+               msg = intres.getLocalizedMessage("hardtoken.viewedpuk", tokensn);            	
+               getLogSession().log(admin, htd.getSignificantIssuerDN().hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),htd.getUsername(), null, LogEntry.EVENT_INFO_PUKVIEWED,msg);        	   
+           }
          }
        }catch(FinderException e){}
 
@@ -1211,7 +1276,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
        * @throws EJBException if a communication or other error occurs.
        * @ejb.interface-method view-type="both"
        */
-    public Collection getHardTokens(Admin admin, String username){
+    public Collection getHardTokens(Admin admin, String username, boolean includePUK){
        debug("<getHardToken(username :" + username +")");
        ArrayList returnval = new ArrayList();
        HardTokenDataLocal htd = null;
@@ -1242,9 +1307,13 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
            	 }catch(FinderException fe){}
            }
 
-           returnval.add(new HardTokenData(htd.getTokenSN(),htd.getUsername(), htd.getCreateTime(),htd.getModifyTime(),htd.getTokenType(),htd.getHardToken(),copyof, copies));
+           returnval.add(new HardTokenData(htd.getTokenSN(),htd.getUsername(), htd.getCreateTime(),htd.getModifyTime(),htd.getTokenType(),htd.getHardToken(admin,getSignSession(),getRaAdminSession().loadGlobalConfiguration(admin).getHardTokenEncryptCA(), includePUK),copyof, copies));
            String msg = intres.getLocalizedMessage("hardtoken.viewedtoken", htd.getTokenSN());            	
            getLogSession().log(admin, htd.getSignificantIssuerDN().hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),htd.getUsername(), null, LogEntry.EVENT_INFO_HARDTOKENVIEWED,msg);
+           if(includePUK){
+               msg = intres.getLocalizedMessage("hardtoken.viewedpuk", htd.getTokenSN());            	
+               getLogSession().log(admin, htd.getSignificantIssuerDN().hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),htd.getUsername(), null, LogEntry.EVENT_INFO_PUKVIEWED,msg);        	   
+           }
          }
        }catch(FinderException e){}
 
