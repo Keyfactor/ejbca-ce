@@ -16,8 +16,10 @@ package org.ejbca.ui.web.admin.configuration;
 import java.net.URLDecoder;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -54,7 +56,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.9 2007-01-24 08:45:02 anatom Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.10 2007-04-13 06:18:19 herrvendil Exp $
  */
 public class EjbcaWebBean implements java.io.Serializable {
 
@@ -96,6 +98,8 @@ public class EjbcaWebBean implements java.io.Serializable {
     private Boolean[]                      raauthorized;
     private Admin                          administrator;
     private String                         requestServerName;
+	private ICAAdminSessionLocal           caadminsession;
+    
 
     
 
@@ -116,7 +120,7 @@ public class EjbcaWebBean implements java.io.Serializable {
     	logsession = logsessionhome.create();
 
     	ICAAdminSessionLocalHome caadminsessionhome = (ICAAdminSessionLocalHome) locator.getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-    	ICAAdminSessionLocal caadminsession = caadminsessionhome.create();
+    	caadminsession = caadminsessionhome.create();
 
     	ICertificateStoreSessionLocalHome certificatestoresessionhome = (ICertificateStoreSessionLocalHome) locator.getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
     	ICertificateStoreSessionLocal certificatestoresession = certificatestoresessionhome.create();
@@ -589,5 +593,19 @@ public class EjbcaWebBean implements java.io.Serializable {
     
     public Admin getAdminObject(){
     	return this.administrator;    
+    }
+    
+    /**
+     * Method returning all CA ids with CMS service enabled
+     */
+    public Collection getCAIdsWithCMSServiceActive(){
+    	ArrayList retval = new ArrayList();
+    	Collection caids = caadminsession.getAvailableCAs(administrator);
+    	Iterator iter = caids.iterator();
+    	while(iter.hasNext()){
+    		Integer caid = (Integer) iter.next();
+    		retval.add(caid);
+    	}
+    	return retval;
     }
 }

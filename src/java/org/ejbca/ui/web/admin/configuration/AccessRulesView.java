@@ -39,6 +39,7 @@ public class AccessRulesView implements java.io.Serializable {
       this.regularaccessrules = new ArrayList();
       this.endentityprofileaccessrules = new ArrayList();
       this.caaccessrules = new ArrayList();
+      this.userdatasourceaccessrules = new ArrayList();
         
         
       Iterator iter = accessrules.iterator();
@@ -73,7 +74,13 @@ public class AccessRulesView implements java.io.Serializable {
         if(accessrulestring.startsWith(AvailableAccessRules.CAPREFIX) || accessrulestring.equals(AvailableAccessRules.CABASE)){
           this.caaccessrules.add(accessrule);
           regular=false;
-        }        
+        }
+        
+        // Check if rule is end entity profile access rule
+        if(accessrulestring.startsWith(AvailableAccessRules.USERDATASOURCEBASE)){
+          this.userdatasourceaccessrules.add(accessrule);
+          regular=false;
+        }
         
         // Otherwise it's a regular accessrule.
         if(regular)
@@ -85,6 +92,7 @@ public class AccessRulesView implements java.io.Serializable {
       Collections.sort(this.regularaccessrules);
       Collections.sort(this.endentityprofileaccessrules);
       Collections.sort(this.caaccessrules);
+      Collections.sort(this.userdatasourceaccessrules);
       
     }
     
@@ -116,6 +124,13 @@ public class AccessRulesView implements java.io.Serializable {
     public Collection getCAAccessRules(){
       return this.caaccessrules;   
     }    
+
+    /**
+     *  Method that returns all User Data Source access rules, sorted.
+     */
+    public Collection getUserDataSourceAccessRules(){
+      return this.userdatasourceaccessrules;   
+    }
     
     // Private constants.  
     
@@ -123,5 +138,6 @@ public class AccessRulesView implements java.io.Serializable {
     private ArrayList rolebasedaccessrules;
     private ArrayList regularaccessrules;
     private ArrayList endentityprofileaccessrules;
+    private ArrayList userdatasourceaccessrules;
     private ArrayList caaccessrules;
 }
