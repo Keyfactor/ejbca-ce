@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.KeyStore;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.CertPath;
@@ -47,7 +46,6 @@ import java.util.Iterator;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
-import javax.naming.NamingException;
 
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.jce.ECNamedCurveTable;
@@ -115,7 +113,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.46 2007-04-02 08:26:34 jeklund Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.47 2007-04-13 06:01:46 herrvendil Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
