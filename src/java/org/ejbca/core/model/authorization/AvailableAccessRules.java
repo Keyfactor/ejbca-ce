@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
+import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
@@ -26,7 +27,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 /**
  * 
  *
- * @version $Id: AvailableAccessRules.java,v 1.6 2006-10-26 11:04:12 herrvendil Exp $
+ * @version $Id: AvailableAccessRules.java,v 1.7 2007-04-13 06:06:27 herrvendil Exp $
  */
 public class AvailableAccessRules {
         
@@ -39,17 +40,29 @@ public class AvailableAccessRules {
     public static final String HISTORY_RIGHTS = "/view_end_entity_history";
     public static final String APPROVAL_RIGHTS = "/approve_end_entity";
 
-    public static final String  HARDTOKEN_RIGHTS               = "/view_hardtoken";
+    public static final String  HARDTOKEN_RIGHTS                       = "/view_hardtoken";
+    public static final String  HARDTOKEN_PUKDATA_RIGHTS               = "/view_hardtoken/puk_data";
 
     public static final String  KEYRECOVERY_RIGHTS             = "/keyrecovery";    
     
-        // Endings used in profile authorizxation.
+        // Endings used in profile authorization.
     public static final String[]  ENDENTITYPROFILE_ENDINGS = {VIEW_RIGHTS,EDIT_RIGHTS,CREATE_RIGHTS,DELETE_RIGHTS,REVOKE_RIGHTS,HISTORY_RIGHTS,APPROVAL_RIGHTS};
     
         // Name of end entity profile prefix directory in authorization module.
     public static final String    ENDENTITYPROFILEBASE            = "/endentityprofilesrules";
     public static final String    ENDENTITYPROFILEPREFIX          = "/endentityprofilesrules/";
 
+    // Name of end entity profile prefix directory in authorization module.
+    public static final String    USERDATASOURCEBASE            = "/userdatasourcesrules";
+    public static final String    USERDATASOURCEPREFIX          = "/userdatasourcesrules/";
+    
+    public static final String UDS_FETCH_RIGHTS = "/fetch_userdata";
+    public static final String UDS_REMOVE_RIGHTS = "/remove_userdata";
+    
+    // Endings used in profile authorization.
+    public static final String[]  USERDATASOURCE_ENDINGS = {UDS_FETCH_RIGHTS,UDS_REMOVE_RIGHTS};
+
+    
 
         // Name of ca prefix directory in access rules.
     public static final String    CABASE            = "/ca";
@@ -81,12 +94,14 @@ public class AvailableAccessRules {
     public static final String REGULAR_APPROVEENDENTITY                           = "/ra_functionality/approve_end_entity";
     public static final String REGULAR_LOGFUNCTIONALITY                           = "/log_functionality"; 
     public static final String REGULAR_VIEWLOG                                    = "/log_functionality/view_log"; 
-    public static final String REGULAR_LOGCONFIGURATION                           = "/log_functionality/edit_log_configuration"; 
+    public static final String REGULAR_LOGCONFIGURATION                           = "/log_functionality/edit_log_configuration";
+    public static final String REGULAR_LOG_CUSTOM_EVENTS                          = "/log_functionality/log_custom_events"; 
     public static final String REGULAR_SYSTEMFUNCTIONALITY                        = "/system_functionality";
     public static final String REGULAR_EDITADMINISTRATORPRIVILEDGES               = "/system_functionality/edit_administrator_privileges";
     public static final String REGULAR_EDITSYSTEMCONFIGURATION                    = "/system_functionality/edit_systemconfiguration";
-    
-    public static final String REGULAR_VIEWHARDTOKENS                             = "/ra_functionality" + HARDTOKEN_RIGHTS;    
+
+    public static final String REGULAR_VIEWHARDTOKENS                             = "/ra_functionality" + HARDTOKEN_RIGHTS;
+    public static final String REGULAR_VIEWPUKS                                   = "/ra_functionality" + HARDTOKEN_PUKDATA_RIGHTS;
     public static final String REGULAR_KEYRECOVERY                                = "/ra_functionality" + KEYRECOVERY_RIGHTS;
     	
     public static final String HARDTOKEN_HARDTOKENFUNCTIONALITY                   = "/hardtoken_functionality";
@@ -116,6 +131,7 @@ public class AvailableAccessRules {
                                                            REGULAR_VIEWENDENTITYHISTORY,
                                                            REGULAR_APPROVEENDENTITY,
                                                            REGULAR_LOGFUNCTIONALITY,
+                                                           REGULAR_LOG_CUSTOM_EVENTS,  
                                                            REGULAR_VIEWLOG,
                                                            REGULAR_LOGCONFIGURATION,
                                                            REGULAR_SYSTEMFUNCTIONALITY,
@@ -140,6 +156,7 @@ public class AvailableAccessRules {
                                                           "/log_functionality/view_log/authorization_entries",
                                                           "/log_functionality/view_log/approval_entries",
                                                           "/log_functionality/view_log/services_entries",
+                                                          "/log_functionality/view_log/custom_entries",
                                                           };
                                                         
         // Hard Token specific accessrules used in authorization module.
@@ -154,10 +171,11 @@ public class AvailableAccessRules {
                                                         
                                                         
     /** Creates a new instance of AvailableAccessRules */
-    public AvailableAccessRules(Admin admin, Authorizer authorizer, IRaAdminSessionLocal raadminsession, String[] customaccessrules) {   
+    public AvailableAccessRules(Admin admin, Authorizer authorizer, IRaAdminSessionLocal raadminsession, IUserDataSourceSessionLocal userDataSourceSession, String[] customaccessrules) {   
       // Initialize
       this.raadminsession = raadminsession;  
       this.authorizer = authorizer;
+      this.userDataSourceSession = userDataSourceSession;
       
       // Get Global Configuration
       GlobalConfiguration globalconfiguration = raadminsession.loadGlobalConfiguration(admin);
@@ -192,9 +210,13 @@ public class AvailableAccessRules {
       if(enableendentityprofilelimitations) 
         insertAvailableEndEntityProfileAccessRules(admin, accessrules);
 
+      insertUserDataSourceAccessRules(admin, accessrules);
+      
       insertAvailableCAAccessRules(accessrules);
       
       insertCustomAccessRules(admin, accessrules);
+      
+      
       
       
       return accessrules;
@@ -233,7 +255,8 @@ public class AvailableAccessRules {
         for(int i=0; i < HARDTOKENACCESSRULES.length;i++){
            accessrules.add(HARDTOKENACCESSRULES[i]);           
         }
-        addAuthorizedAccessRule(admin, REGULAR_VIEWHARDTOKENS, accessrules);        
+        addAuthorizedAccessRule(admin, REGULAR_VIEWHARDTOKENS, accessrules);
+        addAuthorizedAccessRule(admin, REGULAR_VIEWPUKS, accessrules);
       }
         
       if(usekeyrecovery)
@@ -284,10 +307,13 @@ public class AvailableAccessRules {
       for(int j=0;j < ENDENTITYPROFILE_ENDINGS.length; j++){     
         accessrules.add(ENDENTITYPROFILEPREFIX + profileid +ENDENTITYPROFILE_ENDINGS[j]);  
       }         
-      if(usehardtokenissuing) 
-        accessrules.add(ENDENTITYPROFILEPREFIX + profileid + HARDTOKEN_RIGHTS);     
-      if(usekeyrecovery) 
-        accessrules.add(ENDENTITYPROFILEPREFIX + profileid + KEYRECOVERY_RIGHTS);           
+      if(usehardtokenissuing){ 
+        accessrules.add(ENDENTITYPROFILEPREFIX + profileid + HARDTOKEN_RIGHTS);
+        accessrules.add(ENDENTITYPROFILEPREFIX + profileid + HARDTOKEN_PUKDATA_RIGHTS);
+      }
+      if(usekeyrecovery){ 
+        accessrules.add(ENDENTITYPROFILEPREFIX + profileid + KEYRECOVERY_RIGHTS);
+      }
     }
       
     /**
@@ -314,10 +340,24 @@ public class AvailableAccessRules {
     }
     
     /**
+     * Method that adds the user data source access rules
+     */
+    private void insertUserDataSourceAccessRules(Admin admin, ArrayList accessrules){
+       addAuthorizedAccessRule(admin, USERDATASOURCEBASE, accessrules);
+       
+       Iterator iter = userDataSourceSession.getAuthorizedUserDataSourceIds(admin, true).iterator();
+       while(iter.hasNext()){
+    	   int id = ((Integer) iter.next()).intValue();
+    	   addAuthorizedAccessRule(admin,USERDATASOURCEPREFIX + id + UDS_FETCH_RIGHTS,accessrules);
+    	   addAuthorizedAccessRule(admin,USERDATASOURCEPREFIX + id + UDS_REMOVE_RIGHTS,accessrules);    	   
+       }       
+    }
+    
+    /**
      * Method that checks if administrator himself is authorized to access rule, and if so adds it to list.
      */    
     private void addAuthorizedAccessRule(Admin admin, String accessrule, ArrayList accessrules){
-      try{
+      try{    	
         authorizer.isAuthorizedNoLog(admin, accessrule);
         accessrules.add(accessrule);
       }catch(AuthorizationDeniedException e){
@@ -328,6 +368,7 @@ public class AvailableAccessRules {
     // Private fields
     private Authorizer authorizer;
     private IRaAdminSessionLocal raadminsession;
+    private IUserDataSourceSessionLocal userDataSourceSession;
     private boolean issuperadministrator;
     private boolean enableendentityprofilelimitations;
     private boolean usehardtokenissuing;
