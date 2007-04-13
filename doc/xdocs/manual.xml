@@ -1930,10 +1930,20 @@ Besides the keys previously described the property field of the administration G
 This is a example of a property field:
 </p>
 <source>
-slot 4
-defaultKey long
-pin user4
+slot 1
+defaultKey defaultKey
+pin user1
 sharedLibrary /home/lars/work/test/p11/libcs2_pkcs11.so
+</source>
+<p>
+The PKCS#11 of CryptoServer from Utimaco has been successfully tested. Here follows an example on how to initialise a slot and generate keys to be used by EJBCA. The password is user1:
+</p>
+<source>
+./p11tool lib=./libcs2_pkcs11.so slot=1 InitToken=officer1
+./p11tool lib=./libcs2_pkcs11.so slot=1 loginSO=officer1 initpin=user1
+$EJBCA/bin/pkcs11HSM.sh generate ./libcs2_pkcs11.so 4096 defaultKey 1
+PKCS11 Token [SunPKCS11-libcs2_pkcs11.so-slot1] Password:
+Creating certificate with entry defaultKey.
 </source>
 </subsection>
 <subsection name="nCipher NFast">
