@@ -23,8 +23,8 @@ public class PublisherException_Exception
 
     /**
      * 
-     * @param faultInfo
      * @param message
+     * @param faultInfo
      */
     public PublisherException_Exception(String message, PublisherException faultInfo) {
         super(message);
@@ -33,8 +33,8 @@ public class PublisherException_Exception
 
     /**
      * 
-     * @param faultInfo
      * @param message
+     * @param faultInfo
      * @param cause
      */
     public PublisherException_Exception(String message, PublisherException faultInfo, Throwable cause) {

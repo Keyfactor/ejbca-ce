@@ -23,8 +23,8 @@ public class ApprovalRequestExpiredException_Exception
 
     /**
      * 
-     * @param faultInfo
      * @param message
+     * @param faultInfo
      */
     public ApprovalRequestExpiredException_Exception(String message, ApprovalRequestExpiredException faultInfo) {
         super(message);
@@ -33,8 +33,8 @@ public class ApprovalRequestExpiredException_Exception
 
     /**
      * 
-     * @param faultInfo
      * @param message
+     * @param faultInfo
      * @param cause
      */
     public ApprovalRequestExpiredException_Exception(String message, ApprovalRequestExpiredException faultInfo, Throwable cause) {

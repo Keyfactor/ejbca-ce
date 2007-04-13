@@ -23,8 +23,8 @@ public class WaitingForApprovalException_Exception
 
     /**
      * 
-     * @param faultInfo
      * @param message
+     * @param faultInfo
      */
     public WaitingForApprovalException_Exception(String message, WaitingForApprovalException faultInfo) {
         super(message);
@@ -33,8 +33,8 @@ public class WaitingForApprovalException_Exception
 
     /**
      * 
-     * @param faultInfo
      * @param message
+     * @param faultInfo
      * @param cause
      */
     public WaitingForApprovalException_Exception(String message, WaitingForApprovalException faultInfo, Throwable cause) {

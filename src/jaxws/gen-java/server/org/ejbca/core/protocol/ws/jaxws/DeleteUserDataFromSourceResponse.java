@@ -1,28 +1,26 @@
 
 package org.ejbca.core.protocol.ws.jaxws;
 
-import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-import org.ejbca.core.protocol.ws.objects.TokenCertificateResponseWS;
 
-@XmlRootElement(name = "genTokenCertificatesResponse", namespace = "http://ws.protocol.core.ejbca.org/")
+@XmlRootElement(name = "deleteUserDataFromSourceResponse", namespace = "http://ws.protocol.core.ejbca.org/")
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "genTokenCertificatesResponse", namespace = "http://ws.protocol.core.ejbca.org/")
-public class GenTokenCertificatesResponse {
+@XmlType(name = "deleteUserDataFromSourceResponse", namespace = "http://ws.protocol.core.ejbca.org/")
+public class DeleteUserDataFromSourceResponse {
 
     @XmlElement(name = "return", namespace = "")
-    private List<TokenCertificateResponseWS> _return;
+    private boolean _return;
 
     /**
      * 
      * @return
-     *     returns List<TokenCertificateResponseWS>
+     *     returns boolean
      */
-    public List<TokenCertificateResponseWS> get_return() {
+    public boolean get_return() {
         return this._return;
     }
 
@@ -31,7 +29,7 @@ public class GenTokenCertificatesResponse {
      * @param _return
      *     the value for the _return property
      */
-    public void set_return(List<TokenCertificateResponseWS> _return) {
+    public void set_return(boolean _return) {
         this._return = _return;
     }
 

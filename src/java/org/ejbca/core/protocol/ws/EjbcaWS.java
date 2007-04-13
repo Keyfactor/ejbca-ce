@@ -17,6 +17,7 @@ import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -42,16 +43,22 @@ import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
+import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal;
+import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal;
 import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocalHome;
+import org.ejbca.core.ejb.log.ILogSessionLocal;
+import org.ejbca.core.ejb.log.ILogSessionLocalHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
+import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocal;
+import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocalHome;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
@@ -62,23 +69,39 @@ import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.IllegalKeyException;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
+import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ca.publisher.PublisherException;
+import org.ejbca.core.model.ca.store.CertReqHistory;
+import org.ejbca.core.model.ca.store.CertificateInfo;
+import org.ejbca.core.model.hardtoken.HardTokenData;
 import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
 import org.ejbca.core.model.hardtoken.HardTokenExistsException;
+import org.ejbca.core.model.hardtoken.types.EnhancedEIDHardToken;
+import org.ejbca.core.model.hardtoken.types.HardToken;
+import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.userdatasource.MultipleMatchException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceException;
+import org.ejbca.core.model.ra.userdatasource.UserDataSourceVO;
 import org.ejbca.core.protocol.PKCS10RequestMessage;
+import org.ejbca.core.protocol.ws.common.CertificateHelper;
+import org.ejbca.core.protocol.ws.common.HardTokenConstants;
 import org.ejbca.core.protocol.ws.common.IEjbcaWS;
 import org.ejbca.core.protocol.ws.objects.Certificate;
 import org.ejbca.core.protocol.ws.objects.HardTokenDataWS;
+import org.ejbca.core.protocol.ws.objects.KeyStore;
+import org.ejbca.core.protocol.ws.objects.PINDataWS;
+import org.ejbca.core.protocol.ws.objects.RevokeStatus;
 import org.ejbca.core.protocol.ws.objects.TokenCertificateRequestWS;
 import org.ejbca.core.protocol.ws.objects.TokenCertificateResponseWS;
-import org.ejbca.core.protocol.ws.objects.KeyStore;
-import org.ejbca.core.protocol.ws.objects.RevokeStatus;
+import org.ejbca.core.protocol.ws.objects.UserDataSourceVOWS;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
 import org.ejbca.ui.web.RequestHelper;
@@ -91,7 +114,7 @@ import org.ejbca.util.query.Query;
  * Implementor of the IEjbcaWS interface.
  * 
  * @author Philip Vendil
- * $Id: EjbcaWS.java,v 1.4 2007-03-07 10:08:56 herrvendil Exp $
+ * $Id: EjbcaWS.java,v 1.5 2007-04-13 06:22:34 herrvendil Exp $
  */
 
 @WebService
@@ -471,13 +494,7 @@ public class EjbcaWS implements IEjbcaWS {
 		} catch (ClassCastException e) {
 			log.error("EJBCA WebService error, revokeUser : ",e);
 			throw new EjbcaException(e.getMessage());
-		} catch (CreateException e) {
-			log.error("EJBCA WebService error, revokeUser : ",e);
-			throw new EjbcaException(e.getMessage());
-		} catch (NamingException e) {
-			log.error("EJBCA WebService error, revokeUser : ",e);
-			throw new EjbcaException(e.getMessage());
-		} catch (FinderException e) {
+		}  catch (FinderException e) {
 			throw new NotFoundException(e.getMessage());
 		} catch (NotFoundException e) {
 			throw e;
@@ -570,13 +587,7 @@ public class EjbcaWS implements IEjbcaWS {
 		} catch (ClassCastException e) {
 			log.error("EJBCA WebService error, isAuthorized : ",e);
 		    throw new EjbcaException(e.getMessage());
-		} catch (CreateException e) {
-			log.error("EJBCA WebService error, isAuthorized : ",e);
-		    throw new EjbcaException(e.getMessage());
-		} catch (NamingException e) {
-			log.error("EJBCA WebService error, isAuthorized : ",e);
-		    throw new EjbcaException(e.getMessage());
-		}
+		} 
 		
 		return retval;
 	}
@@ -584,20 +595,288 @@ public class EjbcaWS implements IEjbcaWS {
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#fetchUserData(java.util.List, java.lang.String)
 	 */
-	public List<UserDataVOWS> fetchUserData(List<Integer> userDataSourceIds, String searchString) throws UserDataSourceException, EjbcaException{
-		// TODO
-        return new ArrayList<UserDataVOWS>();		
+	public List<UserDataSourceVOWS> fetchUserData(List<Integer> userDataSourceIds, String searchString) throws UserDataSourceException, EjbcaException{
+	    	// No authorization needed for this call
+		ArrayList<UserDataSourceVOWS> retval = null;
+		try {
+			Iterator iter = getUserDataSourceSession().fetch(getAdmin(), userDataSourceIds, searchString).iterator();
+			while(iter.hasNext()){
+				UserDataSourceVO next = (UserDataSourceVO) iter.next();
+				retval.add(new UserDataSourceVOWS(convertUserDataVO(getAdmin(), next.getUserDataVO()),next.getIsFieldModifyableSet()));
+			}
+		} catch (ClassCastException e) {
+			log.error("EJBCA WebService error, fetchUserData : ",e);
+		    throw new EjbcaException(e.getMessage());
+		} catch (AuthorizationDeniedException e) {
+			log.error("EJBCA WebService error, fetchUserData : ",e);
+		    throw new EjbcaException(e.getMessage());
+		} catch (CreateException e) {
+			log.error("EJBCA WebService error, fetchUserData : ",e);
+		    throw new EjbcaException(e.getMessage());
+		} catch (NamingException e) {
+			log.error("EJBCA WebService error, fetchUserData : ",e);
+		    throw new EjbcaException(e.getMessage());
+		}
+		
+		
+        return retval;		
 	}		
 	
 	/**
+	 * @throws NamingException 
+	 * @throws CreateException 
+	 * @throws ApprovalException 
+	 * @throws UserDoesntFullfillEndEntityProfile 
+	 * @throws ClassCastException 
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#genTokenCertificates(org.ejbca.core.protocol.ws.objects.UserDataVOWS, java.util.List, org.ejbca.core.protocol.ws.objects.HardTokenDataWS)
 	 */
 	
-	public List<TokenCertificateResponseWS> genTokenCertificates(UserDataVOWS userData, List<TokenCertificateRequestWS> tokenRequests, HardTokenDataWS hardTokenData) throws AuthorizationDeniedException, WaitingForApprovalException, HardTokenExistsException, EjbcaException{
-		// TODO
-        return new ArrayList<TokenCertificateResponseWS>(); 	
+	public List<TokenCertificateResponseWS> genTokenCertificates(UserDataVOWS userDataWS, List<TokenCertificateRequestWS> tokenRequests, HardTokenDataWS hardTokenDataWS, boolean overwriteExistingSN) throws AuthorizationDeniedException, WaitingForApprovalException, HardTokenExistsException,UserDoesntFullfillEndEntityProfile, ApprovalException, EjbcaException {
+		ArrayList<TokenCertificateResponseWS> retval = new ArrayList<TokenCertificateResponseWS>();
+
+		Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
+		boolean userExists = getUserAdminSession().existsUser(intAdmin, userDataWS.getUsername());	    
+		Admin admin = null;
+		int endEntityProfileId = 0;
+
+		// Get Significant user Id
+		CAInfo significantcAInfo = null;
+		try {
+			significantcAInfo = getCAAdminSession().getCAInfo(intAdmin, userDataWS.getCaName());
+		} catch (Exception e) {
+			log.error("EJBCA WebService error, genTokenCertificates : ",e);
+			throw new EjbcaException(e.getMessage());
+		}
+		if(significantcAInfo == null){
+			throw new EjbcaException("Error the given CA : " + userDataWS.getCaName() + " couldn't be found.");
+		}
+
+		try{
+			if(isAdmin()){			
+				admin = getAdmin();
+				getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_CREATECERTIFICATE);
+				getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.HARDTOKEN_ISSUEHARDTOKENS);
+				getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + significantcAInfo.getCAId());
+				if(userExists){
+					getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_EDITENDENTITY);
+					UserDataVO userDataVO = getUserAdminSession().findUser(admin, userDataWS.getUsername());
+					endEntityProfileId = userDataVO.getEndEntityProfileId();
+					getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + endEntityProfileId + AvailableAccessRules.EDIT_RIGHTS);
+					if(overwriteExistingSN){
+						getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_REVOKEENDENTITY);
+						getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + endEntityProfileId + AvailableAccessRules.REVOKE_RIGHTS);
+					}
+				}else{
+					getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_CREATEENDENTITY);
+					endEntityProfileId = getRAAdminSession().getEndEntityProfileId(admin, userDataWS.getEndEntityProfileName());	    	  
+					if(endEntityProfileId == 0){
+						throw new EjbcaException("Error given end entity profile : " + userDataWS.getEndEntityProfileName() +" couldn't be found");
+					}
+					getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + endEntityProfileId + AvailableAccessRules.CREATE_RIGHTS);
+					if(overwriteExistingSN){
+						getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_REVOKEENDENTITY);
+						getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + endEntityProfileId + AvailableAccessRules.REVOKE_RIGHTS);				       
+					}
+				}
+
+			}else{
+				// add approval
+			}
+		} catch(NamingException e){
+			log.error("EJBCA WebService error, genTokenCertificates : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (FinderException e) {
+			log.error("EJBCA WebService error, genTokenCertificates : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (ClassCastException e) {
+			log.error("EJBCA WebService error, genTokenCertificates : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (CreateException e) {
+			log.error("EJBCA WebService error, genTokenCertificates : ",e);
+			throw new EjbcaException(e.getMessage());
+		}        
+
+		ArrayList genCertificates = new ArrayList();
+		if(getHardTokenSession().existsHardToken(admin, hardTokenDataWS.getHardTokenSN())){
+			if(overwriteExistingSN){
+				// fetch all old certificates and revoke them.
+				Collection currentCertificates = getHardTokenSession().findCertificatesInHardToken(admin, hardTokenDataWS.getHardTokenSN());
+				HardTokenData currentHardToken = getHardTokenSession().getHardToken(admin, hardTokenDataWS.getHardTokenSN(), false);
+				Iterator iter = currentCertificates.iterator();
+				while(iter.hasNext()){
+					java.security.cert.X509Certificate nextCert = (java.security.cert.X509Certificate) iter.next();
+					try {
+						getUserAdminSession().revokeCert(admin, nextCert.getSerialNumber(), nextCert.getIssuerDN().toString(), currentHardToken.getUsername(), RevokedCertInfo.REVOKATION_REASON_SUPERSEDED);
+					} catch (FinderException e) {
+						throw new EjbcaException("Error revoking old certificate, the user : " + currentHardToken.getUsername() + " of the old certificate couldn't be found in database.");
+					}
+				}
+				try {
+					getHardTokenSession().removeHardToken(admin, hardTokenDataWS.getHardTokenSN());
+				} catch (HardTokenDoesntExistsException e) {
+					log.error("EJBCA WebService error, genTokenCertificates : ",e);
+					throw new EjbcaException(e.getMessage());
+				}
+			}else{
+				throw new HardTokenExistsException("Error hard token with sn " + hardTokenDataWS.getHardTokenSN() + " already exists.");
+			}
+
+		}
+		try{
+			// Check if the userdata exist and edit/add it depending on which
+			UserDataVO userData = convertUserDataVOWS(admin, userDataWS);
+			if(userExists){
+				getUserAdminSession().changeUser(admin, userData, userDataWS.getClearPwd());
+			}else{
+				getUserAdminSession().addUser(admin, userData, userDataWS.getClearPwd());
+			}
+
+			Iterator<TokenCertificateRequestWS> iter = tokenRequests.iterator();
+			while(iter.hasNext()){
+				TokenCertificateRequestWS next = iter.next();
+
+				int certificateProfileId = getCertStoreSession().getCertificateProfileId(admin, next.getCertificateProfileName());
+				if(certificateProfileId == 0){
+					throw new EjbcaException("Error the given Certificate Profile : " + next.getCertificateProfileName() + " couldn't be found.");
+				}
+				CAInfo cAInfo = getCAAdminSession().getCAInfo(admin, next.getCAName());
+				if(cAInfo == null){
+					throw new EjbcaException("Error the given CA : " + next.getCAName() + " couldn't be found.");
+				}
+
+				getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + cAInfo.getCAId());
+				if(next.getType() == HardTokenConstants.REQUESTTYPE_PKCS10_REQUEST){						
+					userData.setCertificateProfileId(certificateProfileId);
+					userData.setCAId(cAInfo.getCAId());
+					userData.setPassword(userData.getPassword());
+					userData.setStatus(UserDataConstants.STATUS_NEW);
+					getUserAdminSession().changeUser(admin, userData, false);
+					PKCS10RequestMessage pkcs10req = new PKCS10RequestMessage(next.getPkcs10Data());				      
+					java.security.cert.Certificate cert =  getSignSession().createCertificate(admin,userData.getUsername(),userData.getPassword(), pkcs10req.getRequestPublicKey());
+					genCertificates.add(cert);
+					retval.add(new TokenCertificateResponseWS(new Certificate(cert)));
+				}else
+					if(next.getType() == HardTokenConstants.REQUESTTYPE_KEYSTORE_REQUEST){
+
+						if(!next.getTokenType().equals(HardTokenConstants.TOKENTYPE_PKCS12)){
+							throw new EjbcaException("Unsupported Key Store Type : " + next.getTokenType() + " only " + HardTokenConstants.TOKENTYPE_PKCS12 + " is supported");
+						}
+						KeyPair keys = KeyTools.genKeys(next.getKeyspec(), next.getKeyalg());							  
+						userData.setCertificateProfileId(certificateProfileId);
+						userData.setCAId(cAInfo.getCAId());
+						userData.setPassword(userData.getPassword());
+						userData.setStatus(UserDataConstants.STATUS_NEW);
+						getUserAdminSession().changeUser(admin, userData, true);
+						X509Certificate cert = (X509Certificate) getSignSession().createCertificate(admin,userData.getUsername(),"foo123", keys.getPublic());
+						genCertificates.add(cert);      
+						// Generate Keystore
+						// Fetch CA Cert Chain.	        
+						Collection chain =  getCAAdminSession().getCAInfo(admin, cAInfo.getCAId()).getCertificateChain();
+						String alias = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
+						if (alias == null){
+							alias = userData.getUsername();
+						}	      	      
+						java.security.KeyStore pkcs12 = KeyTools.createP12(alias, keys.getPrivate(), cert, chain);
+
+						retval.add(new TokenCertificateResponseWS(new KeyStore(pkcs12, userData.getPassword())));
+					}else{
+						throw new EjbcaException("Error in request, only REQUESTTYPE_PKCS10_REQUEST and REQUESTTYPE_KEYSTORE_REQUEST are supported token requests.");
+					}
+			}
+
+		}catch(CreateException e){
+			log.error("EJBCA WebService error, genTokenCertificates : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (ClassCastException e) {
+			log.error("EJBCA WebService error, genTokenCertificates : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (NamingException e) {
+			log.error("EJBCA WebService error, genTokenCertificates : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (CertificateEncodingException e) {
+			log.error("EJBCA WebService error, genTokenCertificates : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (InvalidKeyException e) {
+			log.error("EJBCA WebService error, genTokenCertificates : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (ObjectNotFoundException e) {
+			log.error("EJBCA WebService error, genTokenCertificates : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (NoSuchAlgorithmException e) {
+			log.error("EJBCA WebService error, genTokenCertificates : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (NoSuchProviderException e) {
+			log.error("EJBCA WebService error, genTokenCertificates : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (KeyStoreException e) {
+			log.error("EJBCA WebService error, genTokenCertificates : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (CertificateException e) {
+			log.error("EJBCA WebService error, genTokenCertificates : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (InvalidKeySpecException e) {
+			log.error("EJBCA WebService error, genTokenCertificates : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (IOException e) {
+			log.error("EJBCA WebService error, genTokenCertificates : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (InvalidAlgorithmParameterException e) {
+			log.error("EJBCA WebService error, genTokenCertificates : ",e);
+			throw new EjbcaException(e.getMessage());
+		}finally{
+			try {
+				getUserAdminSession().setUserStatus(admin, userDataWS.getUsername(), UserDataConstants.STATUS_GENERATED);
+			} catch (FinderException e) {
+				log.error("EJBCA WebService error, genTokenCertificates : ",e);
+				throw new EjbcaException(e.getMessage());
+			}
+		}
+
+		// Add hard token data
+		HardToken hardToken;
+		String signatureInitialPIN = "";
+		String signaturePUK = "";
+		String basicInitialPIN = "";
+		String basicPUK = "";
+		Iterator<PINDataWS> iter = hardTokenDataWS.getPinDatas().iterator();
+		while(iter.hasNext()){
+			PINDataWS pinData = iter.next();
+			switch(pinData.getType()){
+			case HardTokenConstants.PINTYPE_BASIC :
+				basicInitialPIN = pinData.getInitialPIN();
+				basicPUK = pinData.getPUK(); 
+				break;
+			case HardTokenConstants.PINTYPE_SIGNATURE :
+				signatureInitialPIN = pinData.getInitialPIN();
+				signaturePUK = pinData.getPUK();
+				break;
+			default :
+				throw new EjbcaException("Unsupported PIN Type " + pinData.getType());
+			}
+		}
+		int tokenType = SwedishEIDHardToken.THIS_TOKENTYPE;
+		switch (hardTokenDataWS.getTokenType()){
+		case HardTokenConstants.TOKENTYPE_SWEDISHEID :
+			hardToken = new SwedishEIDHardToken(basicInitialPIN,basicPUK,signatureInitialPIN,signaturePUK,0);	
+			break;
+		case HardTokenConstants.TOKENTYPE_ENHANCEDEID :
+			hardToken = new EnhancedEIDHardToken(signatureInitialPIN,signaturePUK,basicInitialPIN,basicPUK,false,0);
+			tokenType = EnhancedEIDHardToken.THIS_TOKENTYPE;
+			break;
+		default:
+			throw new EjbcaException("Unsupported Token Type : " + hardTokenDataWS.getTokenType());
+
+		}
+
+		hardToken.setLabel(hardTokenDataWS.getLabel());			
+		getHardTokenSession().addHardToken(admin, hardTokenDataWS.getHardTokenSN(), userDataWS.getUsername(), significantcAInfo.getSubjectDN(), tokenType, hardToken, genCertificates, hardTokenDataWS.getCopyOfSN());
+
+		return retval; 	
 	}
 	
+
+
+
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#existsHardToken(java.lang.String)
 	 */
@@ -612,12 +891,6 @@ public class EjbcaWS implements IEjbcaWS {
 		} catch (AuthorizationDeniedException e) {
 			log.error("EJBCA WebService error, existsHardToken : ",e);
 		    throw new EjbcaException(e.getMessage());
-		} catch (CreateException e) {
-			log.error("EJBCA WebService error, existsHardToken : ",e);
-		    throw new EjbcaException(e.getMessage());
-		} catch (NamingException e) {
-			log.error("EJBCA WebService error, existsHardToken : ",e);
-		    throw new EjbcaException(e.getMessage());
 		}
 		
 		return retval;
@@ -626,29 +899,185 @@ public class EjbcaWS implements IEjbcaWS {
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#getHardTokenData(java.lang.String)
 	 */
-	public HardTokenDataWS getHardTokenData(String hardTokenSN) throws AuthorizationDeniedException, HardTokenDoesntExistsException, EjbcaException{
+	public HardTokenDataWS getHardTokenData(String hardTokenSN, boolean viewPUKData, boolean onlyValidCertificates) throws AuthorizationDeniedException, HardTokenDoesntExistsException, EjbcaException{
 		HardTokenDataWS retval = null;
+		Admin admin = getAdmin();
+		HardTokenData hardTokenData = getHardTokenSession().getHardToken(admin, hardTokenSN, viewPUKData);
+		if(hardTokenData == null){
+			throw new HardTokenDoesntExistsException("Error, hard token with SN " + hardTokenSN + " doesn't exist.");
+		}
+		isAuthorizedToHardTokenData(admin, hardTokenData.getUsername(), viewPUKData);
+		Collection certs = getHardTokenSession().findCertificatesInHardToken(admin, hardTokenSN);
 		
-		// TODO
+		if(onlyValidCertificates){
+			try {
+				certs = returnOnlyValidCertificates(admin, certs);
+			} catch (ClassCastException e) {
+				log.error("EJBCA WebService error, getHardTokenData : ",e);
+			    throw new EjbcaException(e.getMessage());
+			} catch (CreateException e) {
+				log.error("EJBCA WebService error, getHardTokenData : ",e);
+			    throw new EjbcaException(e.getMessage());
+			} catch (NamingException e) {
+				log.error("EJBCA WebService error, getHardTokenData : ",e);
+			    throw new EjbcaException(e.getMessage());
+			}
+		}
+		
+		retval = convertHardTokenToWS(hardTokenData,certs,viewPUKData);			
 		return retval;
 	}
 	
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#getHardTokenDatas(java.lang.String)
 	 */
-	public List<HardTokenDataWS> getHardTokenDatas(String username) throws AuthorizationDeniedException, EjbcaException{
+	public List<HardTokenDataWS> getHardTokenDatas(String username, boolean viewPUKData, boolean onlyValidCertificates) throws AuthorizationDeniedException, EjbcaException{
 		List<HardTokenDataWS> retval = new  ArrayList<HardTokenDataWS>();
-		
-		// TODO		
+		Admin admin = getAdmin();		
+		isAuthorizedToHardTokenData(admin, username, viewPUKData);
+
+		Collection<?> hardtokens = getHardTokenSession().getHardTokens(admin, username, viewPUKData);
+		Iterator iter = hardtokens.iterator();
+		while(iter.hasNext()){
+			HardTokenData next = (HardTokenData) iter.next();
+			Collection certs = getHardTokenSession().findCertificatesInHardToken(admin, next.getTokenSN());
+			if(onlyValidCertificates){
+				try {
+					certs = returnOnlyValidCertificates(admin, certs);
+				} catch (ClassCastException e) {
+					log.error("EJBCA WebService error, getHardTokenData : ",e);
+				    throw new EjbcaException(e.getMessage());
+				} catch (CreateException e) {
+					log.error("EJBCA WebService error, getHardTokenData : ",e);
+				    throw new EjbcaException(e.getMessage());
+				} catch (NamingException e) {
+					log.error("EJBCA WebService error, getHardTokenData : ",e);
+				    throw new EjbcaException(e.getMessage());
+				}
+			}
+			retval.add(convertHardTokenToWS(next,certs, viewPUKData));
+		}
 		
 		return retval;
 	}
-	
+
+
+
+
+
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#republishCertificate(java.lang.String, java.lang.String)
 	 */
 	public void republishCertificate(String serialNumberInHex,String issuerDN) throws AuthorizationDeniedException, PublisherException, EjbcaException{
-		// TODO
+		Admin admin = getAdmin();
+		try{
+			String bcIssuerDN = CertTools.stringToBCDNString(issuerDN);
+			CertReqHistory certreqhist = getCertStoreSession().getCertReqHistory(admin,new BigInteger(serialNumberInHex,16), bcIssuerDN);
+			if(certreqhist == null){
+				throw new PublisherException("Error: the  certificate with  serialnumber : " + serialNumberInHex +" and issuerdn " + issuerDN + " couldn't be found in database.");
+			}
+
+			isAuthorizedToRepublish(admin, certreqhist.getUsername(),bcIssuerDN.hashCode());
+
+			if(certreqhist != null){
+				CertificateProfile certprofile = getCertStoreSession().getCertificateProfile(admin,certreqhist.getUserDataVO().getCertificateProfileId());
+				java.security.cert.Certificate cert = getCertStoreSession().findCertificateByFingerprint(admin, certreqhist.getFingerprint());
+				if(certprofile != null){
+					CertificateInfo certinfo = getCertStoreSession().getCertificateInfo(admin, certreqhist.getFingerprint());
+					if(certprofile.getPublisherList().size() > 0){
+						if(getPublisherSession().storeCertificate(admin, certprofile.getPublisherList(), cert, certreqhist.getUserDataVO().getUsername(), certreqhist.getUserDataVO().getPassword(),
+								certinfo.getCAFingerprint(), certinfo.getStatus() , certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certreqhist.getUserDataVO().getExtendedinformation())){
+						}else{
+							throw new PublisherException("Error: publication failed to at least one of the defined publishers.");
+						}
+					}else{
+						throw new PublisherException("Error no publisher defined for the given certificate.");
+					}
+
+				}else{
+					throw new PublisherException("Error : Certificate profile couldn't be found for the given certificate.");
+				}	  
+			}
+		} catch(NamingException e){
+			log.error("EJBCA WebService error, republishCertificate : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (ClassCastException e) {
+			log.error("EJBCA WebService error, republishCertificate : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (CreateException e) {
+			log.error("EJBCA WebService error, republishCertificate : ",e);
+			throw new EjbcaException(e.getMessage());
+		}
+	}
+
+	/**
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#customLog(int, String, String)
+	 */
+	public void customLog(int level, String type, String cAName, String username, Certificate certificate, String msg) throws AuthorizationDeniedException, EjbcaException {
+		Admin admin = getAdmin();
+		
+		try{
+			int event = LogEntry.EVENT_ERROR_CUSTOMLOG;
+			switch (level) {
+			case IEjbcaWS.CUSTOMLOG_LEVEL_ERROR:
+				break;
+			case IEjbcaWS.CUSTOMLOG_LEVEL_INFO:
+				event = LogEntry.EVENT_INFO_CUSTOMLOG;
+				break;
+			default:
+				throw new EjbcaException("Illegal level "+ level + " sent to custonLog call.");			
+			}
+
+			java.security.cert.Certificate logCert = null;
+			if(certificate != null){
+				logCert = CertificateHelper.getCertificate(certificate.getCertificateData());
+			}
+
+			int caId = admin.getCaId();
+			if(cAName  != null){
+				CAInfo cAInfo = getCAAdminSession().getCAInfo(admin, cAName);
+				if(cAInfo == null){
+					throw new EjbcaException("Error given CA Name : " + cAName + " doesn't exists.");
+				}
+				caId = cAInfo.getCAId();
+			}
+
+			String comment = type + " : " + msg;
+			getLogSession().log(admin, caId, LogEntry.MODULE_CUSTOM, new Date(), username, (X509Certificate) logCert, event, comment);
+		} catch (CertificateException e) {
+			log.error("EJBCA WebService error, customLog : ",e);
+		    throw new EjbcaException(e.getMessage());
+		} catch (ClassCastException e) {
+			log.error("EJBCA WebService error, customLog : ",e);
+		    throw new EjbcaException(e.getMessage());
+		} catch (CreateException e) {
+			log.error("EJBCA WebService error, customLog : ",e);
+		    throw new EjbcaException(e.getMessage());
+		} catch (NamingException e) {
+			log.error("EJBCA WebService error, customLog : ",e);
+		    throw new EjbcaException(e.getMessage());
+		}
+		
+	}
+
+	/**
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#deleteUserDataFromSource(List, String, boolean)
+	 */
+	public boolean deleteUserDataFromSource(List<String> userDataSourceNames, String searchString, boolean removeMultipleMatch) throws AuthorizationDeniedException, MultipleMatchException, UserDataSourceException, EjbcaException {
+		
+		Admin admin = getAdmin();
+		ArrayList<Integer> userDataSourceIds = new ArrayList<Integer>();
+		Iterator<String> iter = userDataSourceNames.iterator();
+		while(iter.hasNext()){
+			String nextName = iter.next();
+			int id = getUserDataSourceSession().getUserDataSourceId(admin, nextName);
+			if(id == 0){
+				throw new UserDataSourceException("Error: User Data Source with name : " + nextName + " couldn't be found, aborting operation.");
+			}
+			userDataSourceIds.add(new Integer(id));
+		}
+				
+		return getUserDataSourceSession().removeUserData(admin, userDataSourceIds, searchString, removeMultipleMatch);
 	}
 	
 	/**
@@ -658,47 +1087,155 @@ public class EjbcaWS implements IEjbcaWS {
 		int retval = 0;
 		
 		try {
-			retval = this.getApprovalSession().isApproved(getAdmin(), approvalId);
+			retval = this.getApprovalSession().isApproved(getAdmin(true), approvalId);
 		} catch (ClassCastException e) {
 			log.error("EJBCA WebService error, isApproved : ",e);
 		    throw new EjbcaException(e.getMessage());
 		} catch (AuthorizationDeniedException e) {
 			log.error("EJBCA WebService error, isApproved : ",e);
 		    throw new EjbcaException(e.getMessage());
+		} 
+		
+		return retval;
+	}
+
+	/**
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#getCertificate(String, String)
+	 */
+	public Certificate getCertificate(String certSNinHex, String issuerDN) throws AuthorizationDeniedException, EjbcaException {
+		Certificate retval = null;
+		Admin admin = getAdmin(true);
+		String bcString = CertTools.stringToBCDNString(issuerDN);
+		getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_VIEWCERTIFICATE);
+		getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + bcString.hashCode());
+		
+		try {
+			java.security.cert.Certificate cert = getCertStoreSession().findCertificateByIssuerAndSerno(admin, issuerDN, new BigInteger(certSNinHex,16));
+			if(cert != null){
+				retval = new Certificate(cert);
+			}
+		} catch (ClassCastException e) {
+			log.error("EJBCA WebService error, getCertificate : ",e);
+		    throw new EjbcaException(e.getMessage());
 		} catch (CreateException e) {
-			log.error("EJBCA WebService error, isApproved : ",e);
+			log.error("EJBCA WebService error, getCertificate : ",e);
 		    throw new EjbcaException(e.getMessage());
 		} catch (NamingException e) {
-			log.error("EJBCA WebService error, isApproved : ",e);
+			log.error("EJBCA WebService error, getCertificate : ",e);
+		    throw new EjbcaException(e.getMessage());
+		} catch (CertificateEncodingException e) {
+			log.error("EJBCA WebService error, getCertificate : ",e);
 		    throw new EjbcaException(e.getMessage());
 		}
 		
 		return retval;
 	}
 	
-	private Admin getAdmin() throws AuthorizationDeniedException, ClassCastException, CreateException, NamingException{
-  		  MessageContext msgContext = wsContext.getMessageContext();
-		  HttpServletRequest request = (HttpServletRequest) msgContext.get(MessageContext.SERVLET_REQUEST);
-		  X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
-		  
-		  if(certificates == null){
-			  throw new AuthorizationDeniedException("Error no client certificate recieved used for authentication.");
-		  }
-		  
-		  Admin admin = new Admin(certificates[0]);
+	private Admin getAdmin() throws AuthorizationDeniedException, EjbcaException{		  
+		  return getAdmin(false);
+	}
+	
+	private Admin getAdmin(boolean allowNonAdmins) throws AuthorizationDeniedException, EjbcaException{
+		Admin admin = null;
+		try{
+			MessageContext msgContext = wsContext.getMessageContext();
+			HttpServletRequest request = (HttpServletRequest) msgContext.get(MessageContext.SERVLET_REQUEST);
+			X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+
+			if(certificates == null){
+				throw new AuthorizationDeniedException("Error no client certificate recieved used for authentication.");
+			}
+
+			admin = new Admin(certificates[0]);
 			// Check that user have the administrator flag set.
-		  getUserAdminSession().checkIfCertificateBelongToAdmin(admin, certificates[0].getSerialNumber(), certificates[0].getIssuerDN().toString());
-		  getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_ADMINISTRATOR);
-		  
-			
-		  RevokedCertInfo revokeResult =  getCertStoreSession().isRevoked(new Admin(Admin.TYPE_INTERNALUSER),CertTools.stringToBCDNString(certificates[0].getIssuerDN().toString()), certificates[0].getSerialNumber());
-		  if(revokeResult == null || revokeResult.getReason() != RevokedCertInfo.NOT_REVOKED){
-			  throw new AuthorizationDeniedException("Error Signer certificate doesn't exist or is revoked.");
-		  }
-		  
-		  return admin;
+			if(!allowNonAdmins){
+				getUserAdminSession().checkIfCertificateBelongToAdmin(admin, certificates[0].getSerialNumber(), certificates[0].getIssuerDN().toString());
+				getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_ADMINISTRATOR);
+			}
+
+			RevokedCertInfo revokeResult =  getCertStoreSession().isRevoked(new Admin(Admin.TYPE_INTERNALUSER),CertTools.stringToBCDNString(certificates[0].getIssuerDN().toString()), certificates[0].getSerialNumber());
+			if(revokeResult == null || revokeResult.getReason() != RevokedCertInfo.NOT_REVOKED){
+				throw new AuthorizationDeniedException("Error administrator certificate doesn't exist or is revoked.");
+			}
+
+		} catch (ClassCastException e) {
+			log.error("EJBCA WebService error, isAuthorized : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (CreateException e) {
+			log.error("EJBCA WebService error, isAuthorized : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (NamingException e) {
+			log.error("EJBCA WebService error, isAuthorized : ",e);
+			throw new EjbcaException(e.getMessage());
+		}
+
+		return admin;
+	}
+	
+	/**
+	 * Method used to check if the admin is an administrator
+	 * i.e have administrator flag set and access to resource
+	 * /administrator
+	 * @return
+	 * @throws AuthorizationDeniedException 
+	 */
+	private boolean isAdmin() throws EjbcaException {
+		boolean retval = false;
+		MessageContext msgContext = wsContext.getMessageContext();
+		HttpServletRequest request = (HttpServletRequest) msgContext.get(MessageContext.SERVLET_REQUEST);
+		X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+
+		if(certificates == null){
+			throw new EjbcaException("Error no client certificate recieved used for authentication.");
+		}
+
+		Admin admin = new Admin(certificates[0]);
+		try{
+			getUserAdminSession().checkIfCertificateBelongToAdmin(admin, certificates[0].getSerialNumber(), certificates[0].getIssuerDN().toString());
+			getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_ADMINISTRATOR);
+			retval = true;
+		}catch(AuthorizationDeniedException e){}
+		
+		
+		return retval;
 	}
 
+	private void isAuthorizedToRepublish(Admin admin, String username, int caid) throws AuthorizationDeniedException, EjbcaException{
+		getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_VIEWCERTIFICATE);
+		UserDataVO userdata = null;
+		try {
+			userdata = getUserAdminSession().findUser(admin, username);
+		} catch (FinderException e) {
+			throw new EjbcaException("Error the certificates user doesn't seem to exist.");
+		}
+		if(userdata == null){
+			throw new EjbcaException("Error the certificates user doesn't seem to exist.");
+		}
+		getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AvailableAccessRules.VIEW_RIGHTS);
+		getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + caid );		
+        		
+	}
+	
+	private void isAuthorizedToHardTokenData(Admin admin, String username, boolean viewPUKData) throws AuthorizationDeniedException, EjbcaException {
+		getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_VIEWHARDTOKENS);
+		UserDataVO userdata = null;
+		try {
+			userdata = getUserAdminSession().findUser(admin, username);
+		} catch (FinderException e) {
+			throw new EjbcaException("Error the certificates user doesn't seem to exist.");
+		}
+		if(userdata == null){
+			throw new EjbcaException("Error the certificates user doesn't seem to exist.");
+		}
+		getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AvailableAccessRules.HARDTOKEN_RIGHTS);
+		if(viewPUKData){
+			getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AvailableAccessRules.HARDTOKEN_PUKDATA_RIGHTS);			
+		}
+		
+		
+		
+	}
+	
 	private UserDataVO convertUserDataVOWS(Admin admin, UserDataVOWS userdata) throws EjbcaException, ClassCastException, CreateException, NamingException{
 		   
 		int caid = getCAAdminSession().getCAInfo(admin,userdata.getCaName()).getCAId();
@@ -749,6 +1286,8 @@ public class EjbcaWS implements IEjbcaWS {
 		return userdatavo;
 	}
 	
+	
+	
 	private UserDataVOWS convertUserDataVO(Admin admin, UserDataVO userdata) throws EjbcaException, ClassCastException, CreateException, NamingException{
 		
 		String caname = getCAAdminSession().getCAInfo(admin,userdata.getCAId()).getName();
@@ -779,6 +1318,64 @@ public class EjbcaWS implements IEjbcaWS {
 			throw new EjbcaException("Error Token Type id " + userdata.getTokenType() + " doesn't exists.");
 		}										
 		return new UserDataVOWS(userdata.getUsername(),null,false,userdata.getDN(),caname,userdata.getSubjectAltName(),userdata.getEmail(),userdata.getStatus(),tokenname,endentityprofilename,certificateprofilename,hardtokenissuername);
+	}
+	
+	/**
+	 * Method used to convert a HardToken data to a WS version
+	 * @param data
+	 * @throws EjbcaException 
+	 */
+	private HardTokenDataWS convertHardTokenToWS(HardTokenData data, Collection certificates, boolean includePUK) throws EjbcaException {
+		HardTokenDataWS retval = new HardTokenDataWS();
+		retval.setHardTokenSN(data.getTokenSN());
+		retval.setLabel(data.getHardToken().getLabel());
+		retval.setCopyOfSN(data.getCopyOf());
+		ArrayList<String> copies = new ArrayList<String>();
+		if(data.getCopies() != null){
+			Iterator iter = data.getCopies().iterator();
+			while(iter.hasNext()){
+				copies.add((String) iter.next());
+
+			}
+		}
+		retval.setCopies(copies);
+		retval.setModifyTime(data.getModifyTime());
+		retval.setCreateTime(data.getCreateTime());
+		retval.setEncKeyKeyRecoverable(false);
+
+		try{
+			Iterator iter = certificates.iterator();
+			while(iter.hasNext()){
+				retval.getCertificates().add(new Certificate((java.security.cert.Certificate) iter.next()));
+			}
+		}catch(CertificateEncodingException e){
+			log.error("EJBCA WebService error, getHardToken: ",e);
+			throw new EjbcaException(e.getMessage());
+		}
+
+
+		if(data.getHardToken() instanceof SwedishEIDHardToken){
+			SwedishEIDHardToken ht = (SwedishEIDHardToken) data.getHardToken();
+			if(includePUK){
+			  retval.getPinDatas().add(new PINDataWS(HardTokenConstants.PINTYPE_SIGNATURE,ht.getInitialSignaturePIN(),ht.getSignaturePUK()));
+			  retval.getPinDatas().add(new PINDataWS(HardTokenConstants.PINTYPE_BASIC,ht.getInitialAuthEncPIN(),ht.getAuthEncPUK()));
+			}
+			retval.setTokenType(HardTokenConstants.TOKENTYPE_SWEDISHEID);
+		}else
+			if(data.getHardToken() instanceof EnhancedEIDHardToken){
+				EnhancedEIDHardToken ht = (EnhancedEIDHardToken) data.getHardToken();
+				retval.setEncKeyKeyRecoverable(ht.getEncKeyRecoverable());
+				if(includePUK){
+				  retval.getPinDatas().add(new PINDataWS(HardTokenConstants.PINTYPE_SIGNATURE,ht.getInitialSignaturePIN(),ht.getSignaturePUK()));
+				  retval.getPinDatas().add(new PINDataWS(HardTokenConstants.PINTYPE_BASIC,ht.getInitialAuthPIN(),ht.getAuthPUK()));
+				}
+				retval.setTokenType(HardTokenConstants.TOKENTYPE_ENHANCEDEID);
+			}else{
+				throw new EjbcaException("Error: only SwedishEIDHardToken, EnhancedEIDHardToken supported.");
+			}
+
+
+		return retval;
 	}
 	
 	/**
@@ -1009,6 +1606,55 @@ public class EjbcaWS implements IEjbcaWS {
 		}
 		return approvalsession;
 	}
+
+	
+	private IUserDataSourceSessionLocal userdatasourcesession = null;
+	private IUserDataSourceSessionLocal getUserDataSourceSession() {
+		try{
+			if(userdatasourcesession == null){
+				Context context = new InitialContext();
+				userdatasourcesession = ((IUserDataSourceSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
+				"UserDataSourceSessionLocal"), IUserDataSourceSessionLocalHome.class)).create();   
+			}
+		}catch(Exception e)	{
+			log.error("Error instancing User Data Source Session Bean",e);
+			throw new EJBException(e);
+		}
+		return userdatasourcesession;
+	}
+
+	
+	private ILogSessionLocal logsession = null;
+	private ILogSessionLocal getLogSession() {
+		try{
+			if(logsession == null){
+				Context context = new InitialContext();
+				logsession = ((ILogSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
+				"LogSessionLocal"), ILogSessionLocalHome.class)).create();   
+			}
+		}catch(Exception e)	{
+			log.error("Error instancing Log Session Bean",e);
+			throw new EJBException(e);
+		}
+		return logsession;
+	}
+	
+	private IPublisherSessionLocal publishersession = null;
+	private IPublisherSessionLocal getPublisherSession() {
+		try{
+			if(publishersession == null){
+				Context context = new InitialContext();
+				publishersession = ((IPublisherSessionLocalHome) javax.rmi.PortableRemoteObject.narrow(context.lookup(
+				"PublisherSessionLocal"), IPublisherSessionLocalHome.class)).create();   
+			}
+		}catch(Exception e)	{
+			log.error("Error instancing Publisher Session Bean",e);
+			throw new EJBException(e);
+		}
+		return publishersession;
+	}
+
+
 
 
 }

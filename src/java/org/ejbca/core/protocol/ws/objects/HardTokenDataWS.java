@@ -13,10 +13,8 @@
 package org.ejbca.core.protocol.ws.objects;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-
-import org.ejbca.core.model.hardtoken.profiles.EnhancedEIDProfile;
-import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
 
 /**
  * Value object containing WS representation
@@ -27,24 +25,21 @@ import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
  * 
  * @author Philip Vendil
  *
- * $Id: HardTokenDataWS.java,v 1.2 2007-02-21 12:50:31 herrvendil Exp $
+ * $Id: HardTokenDataWS.java,v 1.3 2007-04-13 06:22:37 herrvendil Exp $
  */
 public class HardTokenDataWS {
 
-	public static final int TOKENTYPE_SWEDISHEID = SwedishEIDProfile.TYPE_SWEDISHEID;
-	public static final int TOKENTYPE_ENHANCEDEID = EnhancedEIDProfile.TYPE_ENHANCEDEID;
-	
-	public static final String LABEL_REGULARCARD   = "regularcard";
-	public static final String LABEL_TEMPORARYCARD = "temporarycard";
-	public static final String LABEL_PROJECTCARD   = "projectcard";
-	
+
 	private int tokenType = 0;
 	private String label = null;
 	private String hardTokenSN = null;
 	private String copyOfSN = null;
 	private List<String> copies = new ArrayList();
-	private List<PINDataWS> pinDatas = null;
+	private List<PINDataWS> pinDatas = new ArrayList();
 	private List<Certificate> certificates = new ArrayList();
+	private Date createTime = null;
+	private Date modifyTime = null;
+	
 	private boolean encKeyKeyRecoverable = false;
 	
 	public HardTokenDataWS(){}
@@ -213,6 +208,37 @@ public class HardTokenDataWS {
 	 */
 	public String getLabel() {
 		return label;
+	}
+	
+
+	/**
+	 * @param the label indicating the use of the token, one of the LABEL_ constants
+	 */
+	public void setLabel(String label) {
+		this.label = label;
+	}
+
+	/**
+	 * 
+	 * @return Returns the time this token was created
+	 */
+	public Date getCreateTime() {
+		return createTime;
+	}
+
+	public void setCreateTime(Date createTime) {
+		this.createTime = createTime;
+	}
+
+	/**
+	 * @return Returns the time this last was modified.
+	 */
+	public Date getModifyTime() {
+		return modifyTime;
+	}
+
+	public void setModifyTime(Date modifyTime) {
+		this.modifyTime = modifyTime;
 	}
 	
 	

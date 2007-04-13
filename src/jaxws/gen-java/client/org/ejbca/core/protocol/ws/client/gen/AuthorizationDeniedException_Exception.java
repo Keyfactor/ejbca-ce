@@ -23,8 +23,8 @@ public class AuthorizationDeniedException_Exception
 
     /**
      * 
-     * @param faultInfo
      * @param message
+     * @param faultInfo
      */
     public AuthorizationDeniedException_Exception(String message, AuthorizationDeniedException faultInfo) {
         super(message);
@@ -33,8 +33,8 @@ public class AuthorizationDeniedException_Exception
 
     /**
      * 
-     * @param faultInfo
      * @param message
+     * @param faultInfo
      * @param cause
      */
     public AuthorizationDeniedException_Exception(String message, AuthorizationDeniedException faultInfo, Throwable cause) {

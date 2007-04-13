@@ -13,6 +13,8 @@
 
 package org.ejbca.core.protocol.ws.objects;
 
+import org.ejbca.core.protocol.ws.common.HardTokenConstants;
+
 /**
  * base class that this is a certificate response
  * of either a Certificate or KeyStore
@@ -20,9 +22,56 @@ package org.ejbca.core.protocol.ws.objects;
  * 
  * @author Philip Vendil 2007 feb 8
  *
- * @version $Id: TokenCertificateResponseWS.java,v 1.1 2007-03-07 10:08:55 herrvendil Exp $
+ * @version $Id: TokenCertificateResponseWS.java,v 1.2 2007-04-13 06:22:37 herrvendil Exp $
  */
 
 public class TokenCertificateResponseWS {
+	
 
+
+	private int type = 0;
+	private Certificate certificate;
+	private KeyStore keyStore;
+	
+	public TokenCertificateResponseWS(Certificate certificate) {
+		super();
+		this.type = HardTokenConstants.RESPONSETYPE_CERTIFICATE_RESPONSE;
+		this.certificate = certificate;
+	}
+
+	public TokenCertificateResponseWS(KeyStore keyStore) {
+		super();
+		this.type = HardTokenConstants.RESPONSETYPE_KEYSTORE_RESPONSE;
+		this.keyStore = keyStore;
+	}
+
+	public TokenCertificateResponseWS() {
+		super();
+	}
+
+	public Certificate getCertificate() {
+		return certificate;
+	}
+
+	public void setCertificate(Certificate certificate) {
+		this.certificate = certificate;
+	}
+
+	public KeyStore getKeyStore() {
+		return keyStore;
+	}
+
+	public void setKeyStore(KeyStore keyStore) {
+		this.keyStore = keyStore;
+	}
+
+	public int getType() {
+		return type;
+	}
+
+	public void setType(int type) {
+		this.type = type;
+	}
+	
+	
 }

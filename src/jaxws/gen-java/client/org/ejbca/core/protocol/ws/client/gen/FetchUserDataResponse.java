@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="return" type="{http://ws.protocol.core.ejbca.org/}userDataVOWS" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="return" type="{http://ws.protocol.core.ejbca.org/}userDataSourceVOWS" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -35,7 +35,7 @@ import javax.xml.bind.annotation.XmlType;
 public class FetchUserDataResponse {
 
     @XmlElement(name = "return", required = true)
-    protected List<UserDataVOWS> _return;
+    protected List<UserDataSourceVOWS> _return;
 
     /**
      * Gets the value of the return property.
@@ -55,13 +55,13 @@ public class FetchUserDataResponse {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link UserDataVOWS }
+     * {@link UserDataSourceVOWS }
      * 
      * 
      */
-    public List<UserDataVOWS> getReturn() {
+    public List<UserDataSourceVOWS> getReturn() {
         if (_return == null) {
-            _return = new ArrayList<UserDataVOWS>();
+            _return = new ArrayList<UserDataSourceVOWS>();
         }
         return this._return;
     }

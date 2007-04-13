@@ -10,8 +10,8 @@ import javax.xml.ws.WebFault;
  * Generated source version: 2.0
  * 
  */
-@WebFault(name = "IllegalQueryException", targetNamespace = "http://ws.protocol.core.ejbca.org/")
-public class IllegalQueryException_Exception
+@WebFault(name = "MultipleMatchException", targetNamespace = "http://ws.protocol.core.ejbca.org/")
+public class MultipleMatchException_Exception
     extends Exception
 {
 
@@ -19,14 +19,14 @@ public class IllegalQueryException_Exception
      * Java type that goes as soapenv:Fault detail element.
      * 
      */
-    private IllegalQueryException faultInfo;
+    private MultipleMatchException faultInfo;
 
     /**
      * 
      * @param message
      * @param faultInfo
      */
-    public IllegalQueryException_Exception(String message, IllegalQueryException faultInfo) {
+    public MultipleMatchException_Exception(String message, MultipleMatchException faultInfo) {
         super(message);
         this.faultInfo = faultInfo;
     }
@@ -37,7 +37,7 @@ public class IllegalQueryException_Exception
      * @param faultInfo
      * @param cause
      */
-    public IllegalQueryException_Exception(String message, IllegalQueryException faultInfo, Throwable cause) {
+    public MultipleMatchException_Exception(String message, MultipleMatchException faultInfo, Throwable cause) {
         super(message, cause);
         this.faultInfo = faultInfo;
     }
@@ -45,9 +45,9 @@ public class IllegalQueryException_Exception
     /**
      * 
      * @return
-     *     returns fault bean: org.ejbca.core.protocol.ws.client.gen.IllegalQueryException
+     *     returns fault bean: org.ejbca.core.protocol.ws.client.gen.MultipleMatchException
      */
-    public IllegalQueryException getFaultInfo() {
+    public MultipleMatchException getFaultInfo() {
         return faultInfo;
     }
 

@@ -23,8 +23,8 @@ public class NotFoundException_Exception
 
     /**
      * 
-     * @param faultInfo
      * @param message
+     * @param faultInfo
      */
     public NotFoundException_Exception(String message, NotFoundException faultInfo) {
         super(message);
@@ -33,8 +33,8 @@ public class NotFoundException_Exception
 
     /**
      * 
-     * @param faultInfo
      * @param message
+     * @param faultInfo
      * @param cause
      */
     public NotFoundException_Exception(String message, NotFoundException faultInfo, Throwable cause) {

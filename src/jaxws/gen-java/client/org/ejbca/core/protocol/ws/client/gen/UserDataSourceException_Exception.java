@@ -23,8 +23,8 @@ public class UserDataSourceException_Exception
 
     /**
      * 
-     * @param faultInfo
      * @param message
+     * @param faultInfo
      */
     public UserDataSourceException_Exception(String message, UserDataSourceException faultInfo) {
         super(message);
@@ -33,8 +33,8 @@ public class UserDataSourceException_Exception
 
     /**
      * 
-     * @param faultInfo
      * @param message
+     * @param faultInfo
      * @param cause
      */
     public UserDataSourceException_Exception(String message, UserDataSourceException faultInfo, Throwable cause) {

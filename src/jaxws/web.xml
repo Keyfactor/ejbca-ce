@@ -126,5 +126,26 @@
       <local-home>org.ejbca.core.ejb.approval.IApprovalSessionLocalHome</local-home>
       <local>org.ejbca.core.ejb.approval.IApprovalSessionLocal</local>
       <ejb-link>ApprovalSession</ejb-link>
-   </ejb-local-ref>   
+   </ejb-local-ref> 
+   <ejb-local-ref >
+      <ejb-ref-name>ejb/UserDataSourceSessionLocal</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocalHome</local-home>
+      <local>org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocal</local>
+      <ejb-link>UserDataSourceSession</ejb-link>
+   </ejb-local-ref>  
+   <ejb-local-ref >
+      <ejb-ref-name>ejb/LogSessionLocal</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.ejbca.core.ejb.log.ILogSessionLocalHome</local-home>
+      <local>org.ejbca.core.ejb.log.ILogSessionLocal</local>
+      <ejb-link>LogSession</ejb-link>
+   </ejb-local-ref> 
+   <ejb-local-ref >
+      <ejb-ref-name>ejb/PublisherSessionLocal</ejb-ref-name>
+      <ejb-ref-type>Session</ejb-ref-type>
+      <local-home>org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome</local-home>
+      <local>org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocal</local>
+      <ejb-link>PublisherSession</ejb-link>
+   </ejb-local-ref>  
 </web-app>

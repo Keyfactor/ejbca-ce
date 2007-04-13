@@ -13,6 +13,7 @@ import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
 import org.ejbca.core.model.hardtoken.HardTokenExistsException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.core.model.ra.userdatasource.MultipleMatchException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceException;
 import org.ejbca.core.protocol.ws.objects.Certificate;
 import org.ejbca.core.protocol.ws.objects.HardTokenDataWS;
@@ -20,6 +21,7 @@ import org.ejbca.core.protocol.ws.objects.TokenCertificateRequestWS;
 import org.ejbca.core.protocol.ws.objects.TokenCertificateResponseWS;
 import org.ejbca.core.protocol.ws.objects.KeyStore;
 import org.ejbca.core.protocol.ws.objects.RevokeStatus;
+import org.ejbca.core.protocol.ws.objects.UserDataSourceVOWS;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
 import org.ejbca.util.query.IllegalQueryException;
@@ -44,14 +46,20 @@ import org.ejbca.util.query.IllegalQueryException;
  * getHardTokenDatas: Method fetching all hard token informations for a given user.
  * republishCertificate : Method performing a republication of a selected certificate
  * isApproved : Looks up if a requested action have been approved by an authorized administrator or not
+ * customLog  : Logs a CUSTOM_LOG event to the logging system
+ * deleteUserDataFromSource : Method used to remove user data from a user data source
+ * getCertificate : Returns a certificate given its issuer and serial number
  * 
  * Observere: All methods have to be called using client authenticated https
  * otherwise will a AuthorizationDenied Exception be thrown.
  * 
  * @author Philip Vendil
- * $Id: IEjbcaWS.java,v 1.1 2007-03-07 10:08:55 herrvendil Exp $
+ * $Id: IEjbcaWS.java,v 1.2 2007-04-13 06:22:35 herrvendil Exp $
  */
 public interface IEjbcaWS {
+	
+	public static final int CUSTOMLOG_LEVEL_INFO  = 1;
+	public static final int CUSTOMLOG_LEVEL_ERROR = 2;
 
 	/**
 	 * Method that should be used to edit/add a user to the EJBCA database,
@@ -64,7 +72,7 @@ public interface IEjbcaWS {
 	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/create_end_entity and/or edit_end_entity
-	 * - /ra_functionality/<end entity profile of user>/create_end_entity and/or edit_end_entity
+	 * - /endentityprofilesrules/<end entity profile of user>/create_end_entity and/or edit_end_entity
 	 * - /ca/<ca of user>
 	 * 
 	 * @param userdata contains all the information about the user about to be added.
@@ -84,7 +92,7 @@ public interface IEjbcaWS {
 	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/view_end_entity
-	 * - /ra_functionality/<end entity profile of matching users>/view_end_entity
+	 * - /endentityprofilesrules/<end entity profile of matching users>/view_end_entity
 	 * - /ca/<ca of matching users>
 	 * 
 	 * @param username, the unique username to search for
@@ -105,7 +113,7 @@ public interface IEjbcaWS {
 	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/view_end_entity
-	 * - /ra_functionality/<end entity profile of the user>/view_end_entity
+	 * - /endentityprofilesrules/<end entity profile of the user>/view_end_entity
 	 * - /ca/<ca of user>
 	 * 
 	 * @param username a unique username 
@@ -130,7 +138,7 @@ public interface IEjbcaWS {
 	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/view_end_entity
-	 * - /ra_functionality/<end entity profile of the user>/view_end_entity
+	 * - /endentityprofilesrules/<end entity profile of the user>/view_end_entity
 	 * - /ca_functionality/create_certificate
 	 * - /ca/<ca of user>
 	 * 
@@ -159,7 +167,7 @@ public interface IEjbcaWS {
 	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/view_end_entity
-	 * - /ra_functionality/<end entity profile of the user>/view_end_entity
+	 * - /endentityprofilesrules/<end entity profile of the user>/view_end_entity
 	 * - /ca_functionality/create_certificate
 	 * - /ca/<ca of user>
 	 * 
@@ -187,7 +195,7 @@ public interface IEjbcaWS {
 	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/revoke_end_entity
-	 * - /ra_functionality/<end entity profile of the user owning the cert>/revoke_end_entity
+	 * - /endentityprofilesrules/<end entity profile of the user owning the cert>/revoke_end_entity
 	 * - /ca/<ca of certificate>
 	 * 
 	 * @param issuerDN of the certificate to revoke
@@ -209,7 +217,7 @@ public interface IEjbcaWS {
 	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/revoke_end_entity
-	 * - /ra_functionality/<end entity profile of the user>/revoke_end_entity
+	 * - /endentityprofilesrules/<end entity profile of the user>/revoke_end_entity
 	 * - /ca/<ca of users certificate>
 	 * 
 	 * @param username unique username i EJBCA
@@ -229,7 +237,7 @@ public interface IEjbcaWS {
 	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/revoke_end_entity
-	 * - /ra_functionality/<end entity profile of the user owning the token>/revoke_end_entity
+	 * - /endentityprofilesrules/<end entity profile of the user owning the token>/revoke_end_entity
 	 * - /ca/<ca of certificates on token>
 	 * 
 	 * @param hardTokenSN of the hardTokenSN
@@ -281,11 +289,11 @@ public interface IEjbcaWS {
 	 * 
 	 * @param userDataSourceIds a List of User Data Source Ids
 	 * @param searchString to identify the userdata.
-	 * @return a List of UserDataVOWS of the data in the specified UserDataSources, if no user data is found will an empty list be returned. 
+	 * @return a List of UserDataSourceVOWS of the data in the specified UserDataSources, if no user data is found will an empty list be returned. 
 	 * @throws UserDataSourceException if an error occured connecting to one of 
 	 * UserDataSources.
 	 */
-	public abstract List<UserDataVOWS> fetchUserData(
+	public abstract List<UserDataSourceVOWS> fetchUserData(
 			List<Integer> userDataSourceIds, String searchString)
 			throws UserDataSourceException, EjbcaException;
 
@@ -297,11 +305,12 @@ public interface IEjbcaWS {
 	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/create_end_entity and/or edit_end_entity
-	 * - /ra_functionality/<end entity profile of user>/create_end_entity and/or edit_end_entity
-	 * - /ra_functionality/view_end_entity
-	 * - /ra_functionality/<end entity profile of the user>/view_end_entity
+	 * - /endentityprofilesrules/<end entity profile of user>/create_end_entity and/or edit_end_entity
+     * - /ra_functionality/revoke_end_entity (if overwrite flag is set)
+     * - /endentityprofilesrules/<end entity profile of user>/revoke_end_entity (if overwrite flag is set)
 	 * - /ca_functionality/create_certificate
-	 * - /ca/<ca of user>
+	 * - /ca/<ca of all requested certificates>
+	 * - /hardtoken_functionality/issue_hardtokens
 	 * 
 	 * If the user isn't an administrator will it be added to the queue for approval.
 	 * 
@@ -309,6 +318,8 @@ public interface IEjbcaWS {
 	 * @param tokenRequests a list of certificate requests
 	 * @param hardTokenData data containin PIN/PUK info
 	 * @param hardTokenSN Serial number of the generated hard token.
+	 * @param overwriteExistingSN if the the current hardtoken should be overwritten instead of throwing HardTokenExists exception.
+	 * If a card is overwritten, all previous certificates on the card is revoked.
 	 * @return a List of the generated certificates. 
 	 * @throws AuthorizationDeniedException if the administrator isn't authorized.
 	 * @throws WaitingForApprovalException if the caller is a non-admin a must be approved before it is executed.
@@ -318,8 +329,10 @@ public interface IEjbcaWS {
 	public abstract List<TokenCertificateResponseWS> genTokenCertificates(
 			UserDataVOWS userData,
 			List<TokenCertificateRequestWS> tokenRequests,
-			HardTokenDataWS hardTokenData) throws AuthorizationDeniedException,
+			HardTokenDataWS hardTokenData,
+			boolean overwriteExistingSN) throws AuthorizationDeniedException,
 			WaitingForApprovalException, HardTokenExistsException,
+			UserDoesntFullfillEndEntityProfile, ApprovalException,
 			EjbcaException;
 
 	/**
@@ -341,17 +354,20 @@ public interface IEjbcaWS {
 	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/view_hardtoken
-	 * - /ra_functionality/<end entity profile of user>/view_hardtoken
+	 * - /endentityprofilesrules/<end entity profile of user>/view_hardtoken
+	 * - /endentityprofilesrules/<end entity profile of user>/view_hardtoken/puk_data (if viewPUKData = true)
 	 * - /ca/<ca of user>
 	 * 
 	 * If the user isn't an administrator will it be added to the queue for approval.
 	 * 
 	 * @param hardTokenSN of the token to look for.
+	 * @param viewPUKData if PUK data of the hard token should be returned.
+	 * @param boolean onlyValidCertificates of all revoked and expired certificates should be filtered.
 	 * @return the HardTokenData
 	 * @throws HardTokenDoesntExistsException if the hardtokensn don't exist in database.
 	 * @throws EjbcaException if an exception occured on server side.
 	 */
-	public abstract HardTokenDataWS getHardTokenData(String hardTokenSN)
+	public abstract HardTokenDataWS getHardTokenData(String hardTokenSN, boolean viewPUKData, boolean onlyValidCertificates)
 			throws AuthorizationDeniedException,
 			HardTokenDoesntExistsException, EjbcaException;
 
@@ -362,15 +378,17 @@ public interface IEjbcaWS {
 	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/view_hardtoken
-	 * - /ra_functionality/<end entity profile of user>/view_hardtoken
-	 * - /ca/<ca of user>
+	 * - /endentityprofilesrules/<end entity profile of user>/view_hardtoken
+	 * - /endentityprofilesrules/<end entity profile of user>/view_hardtoken/puk_data (if viewPUKData = true)
 	 * 
 	 * 
 	 * @param username to look for.
+	 * @param viewPUKData if PUK data of the hard token should be returned.
+	 * @param boolean onlyValidCertificates of all revoked and expired certificates should be filtered.
 	 * @return a list of the HardTokenData generated for the user never null.
 	 * @throws EjbcaException if an exception occured on server side.
 	 */
-	public abstract List<HardTokenDataWS> getHardTokenDatas(String username)
+	public abstract List<HardTokenDataWS> getHardTokenDatas(String username, boolean viewPUKData, boolean onlyValidCertificates)
 			throws AuthorizationDeniedException, EjbcaException;
 
 	/**
@@ -380,7 +398,7 @@ public interface IEjbcaWS {
 	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/view_end_entity
-	 * - /ra_functionality/<end entity profile of the user>/view_end_entity
+	 * - /endentityprofilesrules/<end entity profile of the user>/view_end_entity
 	 * - /ca/<ca of user>
 	 * 
 	 * @param serialNumberInHex of the certificate to republish
@@ -406,5 +424,66 @@ public interface IEjbcaWS {
 	 */
 	public abstract int isApproved(int approvalId) throws ApprovalException,
 			EjbcaException, ApprovalRequestExpiredException;
+	
+	/**
+	 * Generates a Custom Log event in the database.
+	 * 
+	 * Authorization requirements: 
+	 * - Administrator flag set
+	 * - /administrator
+	 * - /log_functionality/log_custom_events
+	 * 
+	 * @param level of the event, one of IEjbcaWS.CUSTOMLOG_LEVEL_ constants
+	 * @param type userdefined string used as a prefix in the log comment
+	 * @param caname of the ca related to the event, use null if no specific CA is related.
+	 * Then will the ca of the administrator be used.
+	 * @param username of the related user, use null if no related user exists.
+	 * @param certificate that relates to the log event, use null if no certificate is related
+	 * @param msg message data used in the log comment. The log comment will have
+	 * a syntax of '<type> : <msg'
+	 * @throws AuthorizationDeniedException if the administrators isn't authorized to log.
+	 * @throws EjbcaException if error occured server side
+	 */		
+	public abstract void customLog(int level, String type, String cAName, String username, Certificate certificate, String msg) throws AuthorizationDeniedException, EjbcaException;
 
+	/**
+	 * Special method used to remove existing used data from a user data source.
+	 * 
+	 * Important removal functionality of a user data source is optional to
+	 * implement so it isn't certain that this method works with the given
+	 * user data source.
+	 * 
+	 * Authorization requirements
+	 * - Administrator flag set
+	 * - /administrator
+	 * - /userdatasourcesrules/<user data source>/remove_userdata (for all the given user data sources)
+	 * - /ca/<all cas defined in all the user data sources>
+	 * 
+	 * 
+	 * @param userDataSourceName the names of the userdata source to remove from
+	 * @param searchString the search string to search for
+	 * @param removeMultipleMatch if multiple matches of a search string should be removed othervise is none removed.
+	 * @return true if the user was remove successfully from at least one of the user data sources.
+	 * @throws AuthorizationDeniedException if the user isn't authorized to remove userdata from any of the specified user data sources
+	 * @throws MultipleMatchException if the searchstring resulted in a multiple match and the removeMultipleMatch was set to false.
+	 * @throws UserDataSourceException if an error occured during the communication with the user data source. 
+	 * @throws EjbcaException if error occured server side
+	 */
+	public abstract boolean deleteUserDataFromSource(List<String> userDataSourceNames, String searchString, boolean removeMultipleMatch) throws AuthorizationDeniedException, MultipleMatchException, UserDataSourceException, EjbcaException;  
+	
+	/**
+	 * Method to fetch a issued certificate. 
+	 *
+	 * Authorization requirements
+	 * - A valid certificate
+	 * - /ca_functionality/view_certificate
+	 * - /ca/<of the issing CA>
+	 * 
+	 * @param certSNinHex the certificate serial number in hexadecimal representation
+	 * @param issuerDN the issuer of the certificate
+	 * @return the certificate (in WS representation) or null if certificate couldn't be found.
+	 * @throws AuthorizationDeniedException if the calling administrator isn't authorized to view the certificate
+	 * @throws EjbcaException if error occured server side
+	 */
+	public abstract Certificate getCertificate(String certSNinHex, String issuerDN)   throws AuthorizationDeniedException, EjbcaException;
 }

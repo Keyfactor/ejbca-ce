@@ -1,34 +1,35 @@
 
 package org.ejbca.core.protocol.ws.jaxws;
 
+import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlRootElement(name = "getHardTokenDatas", namespace = "http://ws.protocol.core.ejbca.org/")
+@XmlRootElement(name = "deleteUserDataFromSource", namespace = "http://ws.protocol.core.ejbca.org/")
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "getHardTokenDatas", namespace = "http://ws.protocol.core.ejbca.org/", propOrder = {
+@XmlType(name = "deleteUserDataFromSource", namespace = "http://ws.protocol.core.ejbca.org/", propOrder = {
     "arg0",
     "arg1",
     "arg2"
 })
-public class GetHardTokenDatas {
+public class DeleteUserDataFromSource {
 
     @XmlElement(name = "arg0", namespace = "")
-    private String arg0;
+    private List<String> arg0;
     @XmlElement(name = "arg1", namespace = "")
-    private boolean arg1;
+    private String arg1;
     @XmlElement(name = "arg2", namespace = "")
     private boolean arg2;
 
     /**
      * 
      * @return
-     *     returns String
+     *     returns List<String>
      */
-    public String getArg0() {
+    public List<String> getArg0() {
         return this.arg0;
     }
 
@@ -37,16 +38,16 @@ public class GetHardTokenDatas {
      * @param arg0
      *     the value for the arg0 property
      */
-    public void setArg0(String arg0) {
+    public void setArg0(List<String> arg0) {
         this.arg0 = arg0;
     }
 
     /**
      * 
      * @return
-     *     returns boolean
+     *     returns String
      */
-    public boolean getArg1() {
+    public String getArg1() {
         return this.arg1;
     }
 
@@ -55,7 +56,7 @@ public class GetHardTokenDatas {
      * @param arg1
      *     the value for the arg1 property
      */
-    public void setArg1(boolean arg1) {
+    public void setArg1(String arg1) {
         this.arg1 = arg1;
     }
 

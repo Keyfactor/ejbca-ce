@@ -8,6 +8,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import org.ejbca.core.protocol.ws.objects.HardTokenDataWS;
+import org.ejbca.core.protocol.ws.objects.TokenCertificateRequestWS;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 
 @XmlRootElement(name = "genTokenCertificates", namespace = "http://ws.protocol.core.ejbca.org/")
@@ -15,16 +16,19 @@ import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 @XmlType(name = "genTokenCertificates", namespace = "http://ws.protocol.core.ejbca.org/", propOrder = {
     "arg0",
     "arg1",
-    "arg2"
+    "arg2",
+    "arg3"
 })
 public class GenTokenCertificates {
 
     @XmlElement(name = "arg0", namespace = "")
     private UserDataVOWS arg0;
     @XmlElement(name = "arg1", namespace = "")
-    private List<org.ejbca.core.protocol.ws.objects.TokenCertificateRequestWS> arg1;
+    private List<TokenCertificateRequestWS> arg1;
     @XmlElement(name = "arg2", namespace = "")
     private HardTokenDataWS arg2;
+    @XmlElement(name = "arg3", namespace = "")
+    private boolean arg3;
 
     /**
      * 
@@ -49,7 +53,7 @@ public class GenTokenCertificates {
      * @return
      *     returns List<TokenCertificateRequestWS>
      */
-    public List<org.ejbca.core.protocol.ws.objects.TokenCertificateRequestWS> getArg1() {
+    public List<TokenCertificateRequestWS> getArg1() {
         return this.arg1;
     }
 
@@ -58,7 +62,7 @@ public class GenTokenCertificates {
      * @param arg1
      *     the value for the arg1 property
      */
-    public void setArg1(List<org.ejbca.core.protocol.ws.objects.TokenCertificateRequestWS> arg1) {
+    public void setArg1(List<TokenCertificateRequestWS> arg1) {
         this.arg1 = arg1;
     }
 
@@ -78,6 +82,24 @@ public class GenTokenCertificates {
      */
     public void setArg2(HardTokenDataWS arg2) {
         this.arg2 = arg2;
+    }
+
+    /**
+     * 
+     * @return
+     *     returns boolean
+     */
+    public boolean getArg3() {
+        return this.arg3;
+    }
+
+    /**
+     * 
+     * @param arg3
+     *     the value for the arg3 property
+     */
+    public void setArg3(boolean arg3) {
+        this.arg3 = arg3;
     }
 
 }

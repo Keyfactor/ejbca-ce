@@ -23,8 +23,8 @@ public class ApprovalException_Exception
 
     /**
      * 
-     * @param faultInfo
      * @param message
+     * @param faultInfo
      */
     public ApprovalException_Exception(String message, ApprovalException faultInfo) {
         super(message);
@@ -33,8 +33,8 @@ public class ApprovalException_Exception
 
     /**
      * 
-     * @param faultInfo
      * @param message
+     * @param faultInfo
      * @param cause
      */
     public ApprovalException_Exception(String message, ApprovalException faultInfo, Throwable cause) {

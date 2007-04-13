@@ -23,8 +23,8 @@ public class HardTokenExistsException_Exception
 
     /**
      * 
-     * @param faultInfo
      * @param message
+     * @param faultInfo
      */
     public HardTokenExistsException_Exception(String message, HardTokenExistsException faultInfo) {
         super(message);
@@ -33,8 +33,8 @@ public class HardTokenExistsException_Exception
 
     /**
      * 
-     * @param faultInfo
      * @param message
+     * @param faultInfo
      * @param cause
      */
     public HardTokenExistsException_Exception(String message, HardTokenExistsException faultInfo, Throwable cause) {

@@ -23,8 +23,8 @@ public class UserDoesntFullfillEndEntityProfile_Exception
 
     /**
      * 
-     * @param faultInfo
      * @param message
+     * @param faultInfo
      */
     public UserDoesntFullfillEndEntityProfile_Exception(String message, UserDoesntFullfillEndEntityProfile faultInfo) {
         super(message);
@@ -33,8 +33,8 @@ public class UserDoesntFullfillEndEntityProfile_Exception
 
     /**
      * 
-     * @param faultInfo
      * @param message
+     * @param faultInfo
      * @param cause
      */
     public UserDoesntFullfillEndEntityProfile_Exception(String message, UserDoesntFullfillEndEntityProfile faultInfo, Throwable cause) {

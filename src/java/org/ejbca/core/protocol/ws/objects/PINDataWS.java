@@ -20,13 +20,11 @@ package org.ejbca.core.protocol.ws.objects;
  * 
  * @author Philip Vendil 2007 feb 8
  *
- * @version $Id: PINDataWS.java,v 1.1 2007-02-21 09:11:12 herrvendil Exp $
+ * @version $Id: PINDataWS.java,v 1.2 2007-04-13 06:22:37 herrvendil Exp $
  */
 
 public class PINDataWS {
 	
-	public static final int PINTYPE_BASIC = 1;
-	public static final int PINTYPE_SIGNATURE = 2;
 	
 	private int type = 0;
 	private String initialPIN = null;

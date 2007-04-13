@@ -3,38 +3,72 @@ package org.ejbca.core.protocol.ws;
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.List;
 
+import javax.naming.Context;
+import javax.naming.NamingException;
 import javax.xml.namespace.QName;
 
 import junit.framework.TestCase;
 
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.ejbca.core.ejb.hardtoken.IHardTokenSessionHome;
+import org.ejbca.core.ejb.hardtoken.IHardTokenSessionRemote;
+import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.ws.client.gen.Certificate;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
+import org.ejbca.core.protocol.ws.client.gen.HardTokenDataWS;
+import org.ejbca.core.protocol.ws.client.gen.HardTokenDoesntExistsException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.HardTokenExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.KeyStore;
+import org.ejbca.core.protocol.ws.client.gen.PinDataWS;
 import org.ejbca.core.protocol.ws.client.gen.RevokeStatus;
+import org.ejbca.core.protocol.ws.client.gen.TokenCertificateRequestWS;
+import org.ejbca.core.protocol.ws.client.gen.TokenCertificateResponseWS;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 import org.ejbca.core.protocol.ws.client.gen.UserMatch;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
+import org.ejbca.core.protocol.ws.common.HardTokenConstants;
+import org.ejbca.core.protocol.ws.common.IEjbcaWS;
 import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
 
+import com.sun.xml.internal.fastinfoset.algorithm.IEEE754FloatingPointEncodingAlgorithm;
+
 public class TestEjbcaWS extends TestCase {
 	
 	private static EjbcaWS ejbcaraws;
 
+	private IHardTokenSessionRemote hardTokenAdmin;
+    private static IHardTokenSessionHome hardTokenHome;
+    
+    private static Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
 
 	protected void setUp() throws Exception {
 		super.setUp();
 		CertTools.installBCProvider();
+		
+        if (hardTokenAdmin == null) {
+            if (hardTokenHome == null) {
+                Context jndiContext = getInitialContext();
+                Object obj1 = jndiContext.lookup(IHardTokenSessionHome.JNDI_NAME);
+                hardTokenHome = (IHardTokenSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IHardTokenSessionHome.class);
+
+            }
+
+            hardTokenAdmin = hardTokenHome.create();
+        }
 		
 		String urlstr = "https://localhost:8443/ejbca/ejbcaws/ejbcaws?wsdl";
 
@@ -52,6 +86,11 @@ public class TestEjbcaWS extends TestCase {
 		EjbcaWSService service = new EjbcaWSService(new URL(urlstr),qname);
 		ejbcaraws = service.getEjbcaWSPort();
 	}
+	
+    private Context getInitialContext() throws NamingException {
+        Context ctx = new javax.naming.InitialContext();
+        return ctx;
+    }
 	
 	public void test01EditUser() throws Exception{
 		
@@ -454,7 +493,7 @@ public class TestEjbcaWS extends TestCase {
         assertNotNull(revokestatus.getRevocationDate());
 	}
 	
-	public void test01UTF8() throws Exception{
+	public void test09UTF8() throws Exception{
 		
 		// Test to add a user.
 		UserDataVOWS user1 = new UserDataVOWS();
@@ -501,6 +540,194 @@ public class TestEjbcaWS extends TestCase {
 		assertTrue(userdatas.size() == 0);
 
 	}
+	
+    public void test11IsAuthorized() throws Exception{		
+		// This is a superadmin keystore, improve in the future
+		assertTrue(ejbcaraws.isAuthorized(AvailableAccessRules.ROLE_SUPERADMINISTRATOR));
+	}
 
+    public void test12IsAuthorized() throws Exception{		
+		// This is a superadmin keystore, improve in the future
+		assertTrue(ejbcaraws.isAuthorized(AvailableAccessRules.ROLE_SUPERADMINISTRATOR));
+	}    
+    
+    public void test13genTokenCertificates() throws Exception{
+
+    	// first a simple test
+		UserDataVOWS tokenUser1 = new UserDataVOWS();
+		tokenUser1.setUsername("WSTESTTOKENUSER1");
+		tokenUser1.setPassword("foo123");
+		tokenUser1.setClearPwd(true);
+		tokenUser1.setSubjectDN("CN=WSTESTTOKENUSER1");
+		tokenUser1.setCaName("AdminCA1");
+		tokenUser1.setEmail(null);
+		tokenUser1.setSubjectAltName(null);
+		tokenUser1.setStatus(10);
+		tokenUser1.setTokenType("USERGENERATED");
+		tokenUser1.setEndEntityProfileName("EMPTY");
+		tokenUser1.setCertificateProfileName("ENDUSER"); 
+		
+		KeyPair basickeys = KeyTools.genKeys("1024", CATokenConstants.KEYALGORITHM_RSA);		
+		PKCS10CertificationRequest  basicpkcs10 = new PKCS10CertificationRequest("SHA1WithRSA",
+                CertTools.stringToBcX509Name("CN=NOUSED"), basickeys.getPublic(), null, basickeys.getPrivate());
+
+		ArrayList<TokenCertificateRequestWS> requests = new ArrayList<TokenCertificateRequestWS>();
+		TokenCertificateRequestWS tokenCertReqWS = new TokenCertificateRequestWS();
+		tokenCertReqWS.setCAName("AdminCA1");
+		tokenCertReqWS.setCertificateProfileName("ENDUSER");
+		tokenCertReqWS.setPkcs10Data(basicpkcs10.getDEREncoded());
+		tokenCertReqWS.setType(HardTokenConstants.REQUESTTYPE_PKCS10_REQUEST);
+		requests.add(tokenCertReqWS);
+		tokenCertReqWS = new TokenCertificateRequestWS();
+		tokenCertReqWS.setCAName("AdminCA1");
+		tokenCertReqWS.setCertificateProfileName("ENDUSER");
+		tokenCertReqWS.setKeyalg("RSA");
+		tokenCertReqWS.setKeyspec("1024");
+		tokenCertReqWS.setType(HardTokenConstants.REQUESTTYPE_KEYSTORE_REQUEST);
+		requests.add(tokenCertReqWS);
+		
+		HardTokenDataWS hardTokenDataWS = new HardTokenDataWS();
+		hardTokenDataWS.setLabel(HardTokenConstants.LABEL_PROJECTCARD);
+		hardTokenDataWS.setTokenType(HardTokenConstants.TOKENTYPE_SWEDISHEID);
+		hardTokenDataWS.setHardTokenSN("12345678");		
+		PinDataWS basicPinDataWS = new PinDataWS();
+		basicPinDataWS.setType(HardTokenConstants.PINTYPE_BASIC);
+		basicPinDataWS.setInitialPIN("1234");
+		basicPinDataWS.setPUK("12345678");
+		PinDataWS signaturePinDataWS = new PinDataWS();
+		signaturePinDataWS.setType(HardTokenConstants.PINTYPE_SIGNATURE);
+		signaturePinDataWS.setInitialPIN("5678");
+		signaturePinDataWS.setPUK("23456789");
+		
+		hardTokenDataWS.getPinDatas().add(basicPinDataWS);
+		hardTokenDataWS.getPinDatas().add(signaturePinDataWS);
+				
+		List<TokenCertificateResponseWS> responses = ejbcaraws.genTokenCertificates(tokenUser1, requests, hardTokenDataWS, true);
+		assertTrue(responses.size() == 2);
+		
+		Iterator<TokenCertificateResponseWS> iter= responses.iterator();		
+		TokenCertificateResponseWS next = iter.next();
+		assertTrue(next.getType() == HardTokenConstants.RESPONSETYPE_CERTIFICATE_RESPONSE);
+		Certificate cert = next.getCertificate();
+		X509Certificate realcert = (X509Certificate) CertificateHelper.getCertificate(cert.getCertificateData());
+		assertNotNull(realcert);
+		next = iter.next();
+		assertTrue(next.getType() == HardTokenConstants.RESPONSETYPE_KEYSTORE_RESPONSE);
+		KeyStore keyStore = next.getKeyStore();
+		java.security.KeyStore realKeyStore = KeyStoreHelper.getKeyStore(keyStore.getKeystoreData(), HardTokenConstants.TOKENTYPE_PKCS12, "foo123");
+		assertTrue(realKeyStore.containsAlias("WSTESTTOKENUSER1"));
+		
+		
+		try{
+		  responses = ejbcaraws.genTokenCertificates(tokenUser1, requests, hardTokenDataWS, false);
+		  assertTrue(false);
+		}catch(HardTokenExistsException_Exception e){
+			
+		}
+		//hardTokenAdmin.removeHardToken(intAdmin, "12345678");
+		
+		
+		
+	} 
+    
+    public void test14genExistsHardToken() throws Exception{
+    	assertTrue(ejbcaraws.existsHardToken("12345678"));
+    	assertFalse(ejbcaraws.existsHardToken("23456789"));    
+    }
+
+    
+    public void test15getHardTokenData() throws Exception{
+    	
+    	HardTokenDataWS hardTokenDataWS = ejbcaraws.getHardTokenData("12345678", true, true);
+    	assertNotNull(hardTokenDataWS);
+    	assertTrue(""+hardTokenDataWS.getTokenType(), hardTokenDataWS.getTokenType() == HardTokenConstants.TOKENTYPE_SWEDISHEID);
+    	assertTrue(hardTokenDataWS.getHardTokenSN().equals("12345678"));
+    	assertTrue(hardTokenDataWS.getCopyOfSN(), hardTokenDataWS.getCopyOfSN() == null);
+    	assertTrue(hardTokenDataWS.getCopies().size()==0);
+    	assertTrue(hardTokenDataWS.getCertificates().size() == 2);
+    	assertTrue(hardTokenDataWS.getPinDatas().size() == 2);
+    	
+    	Iterator<PinDataWS> iter = hardTokenDataWS.getPinDatas().iterator();
+    	while(iter.hasNext()){
+    		PinDataWS next = iter.next();
+    		if(next.getType() == HardTokenConstants.PINTYPE_BASIC){
+    			assertTrue(next.getPUK().equals("12345678"));
+    			assertTrue(next.getInitialPIN().equals("1234"));
+    		}
+    		if(next.getType() == HardTokenConstants.PINTYPE_SIGNATURE){
+    			assertTrue(next.getPUK(),next.getPUK().equals("23456789"));
+    			assertTrue(next.getInitialPIN().equals("5678"));    			
+    		}
+    	}
+
+    	hardTokenDataWS = ejbcaraws.getHardTokenData("12345678", false, false);
+    	assertNotNull(hardTokenDataWS);
+    	assertTrue(""+ hardTokenDataWS.getCertificates(), hardTokenDataWS.getCertificates().size() == 2);
+    	assertTrue(""+ hardTokenDataWS.getPinDatas().size(), hardTokenDataWS.getPinDatas().size() == 0);
+    	
+    	try{
+    		ejbcaraws.getHardTokenData("12345679", false, false);
+    		assertTrue(false);
+    	}catch(HardTokenDoesntExistsException_Exception e){
+    		
+    	}
+
+            
+    }
+    
+    public void test16getHardTokenDatas() throws Exception{    
+    	Collection<HardTokenDataWS> hardTokenDatas = ejbcaraws.getHardTokenDatas("WSTESTTOKENUSER1", true, true);
+    	assertTrue(hardTokenDatas.size() == 1);
+    	HardTokenDataWS hardTokenDataWS = hardTokenDatas.iterator().next();
+    	assertNotNull(hardTokenDataWS);
+    	assertTrue(""+hardTokenDataWS.getTokenType(), hardTokenDataWS.getTokenType() == HardTokenConstants.TOKENTYPE_SWEDISHEID);
+    	assertTrue(hardTokenDataWS.getHardTokenSN().equals("12345678"));
+    	assertTrue(hardTokenDataWS.getCopyOfSN(), hardTokenDataWS.getCopyOfSN() == null);
+    	assertTrue(hardTokenDataWS.getCopies().size()==0);
+    	assertTrue(hardTokenDataWS.getCertificates().size() == 2);
+    	assertTrue(hardTokenDataWS.getPinDatas().size() == 2);
+    	
+    	Iterator<PinDataWS> iter = hardTokenDataWS.getPinDatas().iterator();
+    	while(iter.hasNext()){
+    		PinDataWS next = iter.next();
+    		if(next.getType() == HardTokenConstants.PINTYPE_BASIC){
+    			assertTrue(next.getPUK().equals("12345678"));
+    			assertTrue(next.getInitialPIN().equals("1234"));
+    		}
+    		if(next.getType() == HardTokenConstants.PINTYPE_SIGNATURE){
+    			assertTrue(next.getPUK(),next.getPUK().equals("23456789"));
+    			assertTrue(next.getInitialPIN().equals("5678"));    			
+    		}
+    	}
+
+    	try{
+    	  hardTokenDatas = ejbcaraws.getHardTokenDatas("WSTESTTOKENUSER2", true, true);    	
+    	  assertTrue(false);
+    	}catch(EjbcaException_Exception e){
+    		
+    	}
+    }
+
+    
+    public void test17CustomLog() throws Exception{
+        // The logging have to be checked manually	     
+        ejbcaraws.customLog(IEjbcaWS.CUSTOMLOG_LEVEL_INFO, "Test", "AdminCA1", "WSTESTTOKENUSER1", null, "Message 1 generated from WS test Script");
+        ejbcaraws.customLog(IEjbcaWS.CUSTOMLOG_LEVEL_ERROR, "Test", "AdminCA1", "WSTESTTOKENUSER1", null, "Message 1 generated from WS test Script");
+    }
+    
+    public void test18GetCertificate() throws Exception{
+    	List<Certificate> certs = ejbcaraws.findCerts("WSTESTTOKENUSER1", true);
+    	Certificate cert = certs.get(0);
+    	X509Certificate realcert = (X509Certificate) CertificateHelper.getCertificate(cert.getCertificateData());
+    	
+    	cert = ejbcaraws.getCertificate(realcert.getSerialNumber().toString(16), CertTools.getIssuerDN(realcert));
+    	assertNotNull(cert);
+    	X509Certificate realcert2 = (X509Certificate) CertificateHelper.getCertificate(cert.getCertificateData());
+    	
+    	assertTrue(realcert.getSerialNumber().equals(realcert2.getSerialNumber()));
+    	
+    	cert = ejbcaraws.getCertificate("1234567", CertTools.getIssuerDN(realcert));
+    	assertNull(cert);
+    }
 }
 

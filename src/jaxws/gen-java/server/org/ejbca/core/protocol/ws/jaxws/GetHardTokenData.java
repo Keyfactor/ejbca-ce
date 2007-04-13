@@ -9,11 +9,19 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlRootElement(name = "getHardTokenData", namespace = "http://ws.protocol.core.ejbca.org/")
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "getHardTokenData", namespace = "http://ws.protocol.core.ejbca.org/")
+@XmlType(name = "getHardTokenData", namespace = "http://ws.protocol.core.ejbca.org/", propOrder = {
+    "arg0",
+    "arg1",
+    "arg2"
+})
 public class GetHardTokenData {
 
     @XmlElement(name = "arg0", namespace = "")
     private String arg0;
+    @XmlElement(name = "arg1", namespace = "")
+    private boolean arg1;
+    @XmlElement(name = "arg2", namespace = "")
+    private boolean arg2;
 
     /**
      * 
@@ -31,6 +39,42 @@ public class GetHardTokenData {
      */
     public void setArg0(String arg0) {
         this.arg0 = arg0;
+    }
+
+    /**
+     * 
+     * @return
+     *     returns boolean
+     */
+    public boolean getArg1() {
+        return this.arg1;
+    }
+
+    /**
+     * 
+     * @param arg1
+     *     the value for the arg1 property
+     */
+    public void setArg1(boolean arg1) {
+        this.arg1 = arg1;
+    }
+
+    /**
+     * 
+     * @return
+     *     returns boolean
+     */
+    public boolean getArg2() {
+        return this.arg2;
+    }
+
+    /**
+     * 
+     * @param arg2
+     *     the value for the arg2 property
+     */
+    public void setArg2(boolean arg2) {
+        this.arg2 = arg2;
     }
 
 }

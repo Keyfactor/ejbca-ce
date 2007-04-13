@@ -7,21 +7,18 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlRootElement(name = "getHardTokenDatas", namespace = "http://ws.protocol.core.ejbca.org/")
+@XmlRootElement(name = "getCertificate", namespace = "http://ws.protocol.core.ejbca.org/")
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "getHardTokenDatas", namespace = "http://ws.protocol.core.ejbca.org/", propOrder = {
+@XmlType(name = "getCertificate", namespace = "http://ws.protocol.core.ejbca.org/", propOrder = {
     "arg0",
-    "arg1",
-    "arg2"
+    "arg1"
 })
-public class GetHardTokenDatas {
+public class GetCertificate {
 
     @XmlElement(name = "arg0", namespace = "")
     private String arg0;
     @XmlElement(name = "arg1", namespace = "")
-    private boolean arg1;
-    @XmlElement(name = "arg2", namespace = "")
-    private boolean arg2;
+    private String arg1;
 
     /**
      * 
@@ -44,9 +41,9 @@ public class GetHardTokenDatas {
     /**
      * 
      * @return
-     *     returns boolean
+     *     returns String
      */
-    public boolean getArg1() {
+    public String getArg1() {
         return this.arg1;
     }
 
@@ -55,26 +52,8 @@ public class GetHardTokenDatas {
      * @param arg1
      *     the value for the arg1 property
      */
-    public void setArg1(boolean arg1) {
+    public void setArg1(String arg1) {
         this.arg1 = arg1;
-    }
-
-    /**
-     * 
-     * @return
-     *     returns boolean
-     */
-    public boolean getArg2() {
-        return this.arg2;
-    }
-
-    /**
-     * 
-     * @param arg2
-     *     the value for the arg2 property
-     */
-    public void setArg2(boolean arg2) {
-        this.arg2 = arg2;
     }
 
 }

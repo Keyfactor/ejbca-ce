@@ -7,6 +7,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 
 /**
@@ -22,8 +23,11 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="certificates" type="{http://ws.protocol.core.ejbca.org/}certificate" maxOccurs="unbounded" minOccurs="0"/>
  *         &lt;element name="copies" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded" minOccurs="0"/>
  *         &lt;element name="copyOfSN" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="createTime" type="{http://www.w3.org/2001/XMLSchema}dateTime" minOccurs="0"/>
  *         &lt;element name="encKeyKeyRecoverable" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
  *         &lt;element name="hardTokenSN" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="label" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="modifyTime" type="{http://www.w3.org/2001/XMLSchema}dateTime" minOccurs="0"/>
  *         &lt;element name="pinDatas" type="{http://ws.protocol.core.ejbca.org/}pinDataWS" maxOccurs="unbounded" minOccurs="0"/>
  *         &lt;element name="tokenType" type="{http://www.w3.org/2001/XMLSchema}int"/>
  *       &lt;/sequence>
@@ -39,8 +43,11 @@ import javax.xml.bind.annotation.XmlType;
     "certificates",
     "copies",
     "copyOfSN",
+    "createTime",
     "encKeyKeyRecoverable",
     "hardTokenSN",
+    "label",
+    "modifyTime",
     "pinDatas",
     "tokenType"
 })
@@ -51,8 +58,11 @@ public class HardTokenDataWS {
     @XmlElement(required = true, nillable = true)
     protected List<String> copies;
     protected String copyOfSN;
+    protected XMLGregorianCalendar createTime;
     protected boolean encKeyKeyRecoverable;
     protected String hardTokenSN;
+    protected String label;
+    protected XMLGregorianCalendar modifyTime;
     @XmlElement(required = true, nillable = true)
     protected List<PinDataWS> pinDatas;
     protected int tokenType;
@@ -140,6 +150,30 @@ public class HardTokenDataWS {
     }
 
     /**
+     * Gets the value of the createTime property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link XMLGregorianCalendar }
+     *     
+     */
+    public XMLGregorianCalendar getCreateTime() {
+        return createTime;
+    }
+
+    /**
+     * Sets the value of the createTime property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link XMLGregorianCalendar }
+     *     
+     */
+    public void setCreateTime(XMLGregorianCalendar value) {
+        this.createTime = value;
+    }
+
+    /**
      * Gets the value of the encKeyKeyRecoverable property.
      * 
      */
@@ -177,6 +211,54 @@ public class HardTokenDataWS {
      */
     public void setHardTokenSN(String value) {
         this.hardTokenSN = value;
+    }
+
+    /**
+     * Gets the value of the label property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getLabel() {
+        return label;
+    }
+
+    /**
+     * Sets the value of the label property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setLabel(String value) {
+        this.label = value;
+    }
+
+    /**
+     * Gets the value of the modifyTime property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link XMLGregorianCalendar }
+     *     
+     */
+    public XMLGregorianCalendar getModifyTime() {
+        return modifyTime;
+    }
+
+    /**
+     * Sets the value of the modifyTime property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link XMLGregorianCalendar }
+     *     
+     */
+    public void setModifyTime(XMLGregorianCalendar value) {
+        this.modifyTime = value;
     }
 
     /**
