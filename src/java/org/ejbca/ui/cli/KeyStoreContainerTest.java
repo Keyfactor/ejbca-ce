@@ -92,7 +92,7 @@ class KeyStoreContainerTest {
                                                    encryptProviderClassName, storeID);
             } catch( Throwable t ) {
                 t.printStackTrace(System.err);
-                System.err.println("Card set not preloaded. Hit return when error fixed");
+                System.err.println("Not possible to load keys. Maybe a smart card should be inserted or maybe you just typed the wrong PIN. Press enter when the problem is fixed.");
                 new BufferedReader(new InputStreamReader(System.in)).readLine();
             }
         }

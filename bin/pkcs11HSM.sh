@@ -14,11 +14,6 @@ if [ -z $JAVA_HOME ]; then
 	echo "Fatal error: JAVA_HOME is not set"
 fi
 
-if [ -z $JAVA_PKCS11_LIB ]; then
-	echo "Fatal error: JAVA_PKCS11_LIB is not set"
-	exit 1
-fi
-
 CLASSES=$EJBCA_HOME/lib/bcprov-jdk15.jar
 CLASSES=$CLASSES:$EJBCA_HOME/lib/bcmail-jdk15.jar
 CLASSES=$CLASSES:$EJBCA_HOME/tmp/bin/classes
@@ -29,10 +24,18 @@ CLASSES=$CLASSES:$EJBCA_HOME/tmp/bin/classes
 if [ -z $1 ]; then
   args="`basename $0` dummy"
 else
+  #command name
   args="`basename $0` $1"
+  shift
+  if [ -z $1 ]; then
+  	args="$args dummy"
+  else
+    #shared library name
+    args="$args $1"
+    shift
+  fi
 fi
-shift
-args="$args $JAVA_PKCS11_LIB null pkcs11 $@"
+args="$args null pkcs11 $@"
 
 # Finally run java
 #set -x

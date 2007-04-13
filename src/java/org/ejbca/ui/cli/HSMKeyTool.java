@@ -21,7 +21,7 @@ import java.io.PrintWriter;
 
 /**
  * @author lars
- * @version $Id: HSMKeyTool.java,v 1.21 2007-04-12 17:45:27 primelars Exp $
+ * @version $Id: HSMKeyTool.java,v 1.22 2007-04-13 08:02:30 primelars Exp $
  *
  */
 public class HSMKeyTool {
@@ -39,8 +39,9 @@ public class HSMKeyTool {
      */
     public static void main(String[] args) {
         try {
-            final boolean isP11 = args.length>4 &&KeyStoreContainer.isP11(args[4]);
+            final boolean isP11 = args.length>4 && KeyStoreContainer.isP11(args[4]);
             final String sKeyStore =  isP11 ? "<slot number>" : "<keystore ID>";
+            final String commandString = args[0] + " " + args[1] + (isP11 ? " <shared library name> " : " ");
             /*if ( args.length > 1 && args[1].toLowerCase().trim().equals(CREATE_CA_SWITCH)) {
                 try {
                     new HwCaInitCommand(args).execute();
@@ -53,39 +54,39 @@ public class HSMKeyTool {
             } else */
             if ( args.length > 1 && args[1].toLowerCase().trim().equals(GENERATE_SWITCH)) {
                 if ( args.length < 6 )
-                    System.err.println(args[0] + " " + args[1] + " <key size> <key entry name> " +
+                    System.err.println(commandString + "<key size> <key entry name> " +
                                        (isP11 ? "<slot number>" : "[<keystore ID>]"));
                 else
                     KeyStoreContainer.getIt(args[4], args[2], args[3], args.length>7 ? args[7] : null).generate(Integer.parseInt(args[5].trim()), args.length>6 ? args[6] :"myKey");
                 return;
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(DELETE_SWITCH)) {
                 if ( args.length < 6 )
-                    System.err.println(args[0] + " " + args[1] + " " + sKeyStore + " [<key entry name>]");
+                    System.err.println(commandString + sKeyStore + " [<key entry name>]");
                 else
                     KeyStoreContainer.getIt(args[4], args[2], args[3], args[5]).delete(args.length>6 ? args[6] : null);
                 return;
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(ENCRYPT_SWITCH)) {
                 if ( args.length < 9 )
-                    System.err.println(args[0] + " " + args[1] + " " + sKeyStore + " <input file> <output file> <key alias>");
+                    System.err.println(commandString + sKeyStore + " <input file> <output file> <key alias>");
                 else
                     KeyStoreContainer.getIt(args[4], args[2], args[3], args[5]).encrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
                 return;
             } else if ( args.length > 1 && args[1].toLowerCase().trim().equals(DECRYPT_SWITCH)) {
                 if ( args.length < 9 )
-                    System.err.println(args[0] + " " + args[1] + " " + sKeyStore + " <input file> <output file> <key alias>");
+                    System.err.println(commandString + sKeyStore + " <input file> <output file> <key alias>");
                 else
                     KeyStoreContainer.getIt(args[4], args[2], args[3], args[5]).decrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
                 return;
             } else if( args.length > 1 && args[1].toLowerCase().trim().equals(TEST_SWITCH)) {
                 if ( args.length < 6 )
-                    System.err.println(args[0] + " " + args[1] + " " + sKeyStore + " [<# of tests>]");
+                    System.err.println(commandString + sKeyStore + " [<# of tests>]");
                 else
                     KeyStoreContainerTest.test(args[2], args[3], args[4], args[5], args.length>6 ? Integer.parseInt(args[6].trim()) : 1);
                 return;
             } else if( args.length > 1 && args[1].toLowerCase().trim().equals(MOVE_SWITCH)) {
                 if ( args.length < 7 )
-                    System.err.println(args[0] + " " + args[1] +
-                                       (isP11 ? " <from slot number> <to slot number>" : " <from keystore ID> <to keystore ID>"));
+                    System.err.println(commandString +
+                                       (isP11 ? "<from slot number> <to slot number>" : "<from keystore ID> <to keystore ID>"));
                 else
                     KeyStoreContainer.move(args[2], args[3], args[4], args[5], args[6]);
                 return;
