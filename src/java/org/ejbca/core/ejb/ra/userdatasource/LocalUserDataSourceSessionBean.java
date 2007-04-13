@@ -36,6 +36,7 @@ import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
+import org.ejbca.core.model.ra.userdatasource.MultipleMatchException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceConnectionException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
@@ -174,20 +175,22 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
      * Main method used to fetch userdata from the given user data sources
      * See BaseUserDataSource class for further documentation about function
      *
+     * Checks that the administrator is authorized to fetch userdata.
+     * 
      * @param userdatasourceids a Collection (Integer) of userdatasource Ids.
      * @return Collection of UserDataSourceVO, empty if no userdata could be found.
      * @ejb.interface-method view-type="both"
      * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource
      */
-    public Collection fetch(Admin admin, Collection userdatasourceids, String searchstring) throws UserDataSourceException{
+    public Collection fetch(Admin admin, Collection userdatasourceids, String searchstring) throws AuthorizationDeniedException, UserDataSourceException{
         Iterator iter = userdatasourceids.iterator();
         ArrayList result = new ArrayList();
         while (iter.hasNext()) {
-            Integer id = (Integer) iter.next();
-            try {
+            Integer id = (Integer) iter.next();            
+            try {            	
                 UserDataSourceDataLocal pdl = userdatasourcehome.findByPrimaryKey(id);
                 BaseUserDataSource userdatasource = pdl.getUserDataSource();
-                if(isAuthorizedToUserDataSource(admin,userdatasource)){
+                if(isAuthorizedToUserDataSource(admin,id.intValue(),userdatasource,false)){
                   try {
                     result.addAll(pdl.getUserDataSource().fetchUserDataSourceVOs(admin,searchstring));
                     String msg = intres.getLocalizedMessage("userdatasource.fetcheduserdatasource", pdl.getName());            	
@@ -201,7 +204,8 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
 
                   }
                 }else{
-                	getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,"Error, not authorized to user data source :" + pdl.getName());
+                	String msg = intres.getLocalizedMessage("userdatasource.errornotauth", pdl.getName());
+                	getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg);
                 }
             } catch (FinderException fe) {
                 String msg = intres.getLocalizedMessage("userdatasource.erroruserdatasourceexist", id);            	
@@ -216,6 +220,57 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
     }
 
 
+    /**
+     * method used to remove userdata from the given user data sources.
+     * This functionality is optianal of a user data implementation and
+     * is not certain it is implemented
+     * See BaseUserDataSource class for further documentation about function
+     *
+     * Checks that the administrator is authorized to remove userdata.
+     * 
+     * @param userdatasourceids a Collection (Integer) of userdatasource Ids.
+     * @return true if the user was remove successfully from at least one of the user data sources.
+     * @ejb.interface-method view-type="both"
+     * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource
+     */
+    public boolean removeUserData(Admin admin, Collection userdatasourceids, String searchstring, boolean removeMultipleMatch) throws AuthorizationDeniedException, MultipleMatchException, UserDataSourceException{
+    	boolean retval = false;
+        Iterator iter = userdatasourceids.iterator();
+        while (iter.hasNext()) {
+            Integer id = (Integer) iter.next();
+            
+            try {            	
+                UserDataSourceDataLocal pdl = userdatasourcehome.findByPrimaryKey(id);
+                BaseUserDataSource userdatasource = pdl.getUserDataSource();
+                if(isAuthorizedToUserDataSource(admin,id.intValue(),userdatasource,true)){
+                  try {
+                    retval = retval || pdl.getUserDataSource().removeUserData(admin, searchstring, removeMultipleMatch);
+                    String msg = intres.getLocalizedMessage("userdatasource.removeduserdata", pdl.getName());            	
+                    getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null,
+                           null, LogEntry.EVENT_INFO_USERDATAREMOVED,msg);
+                  } catch (UserDataSourceException pe) {
+                      String msg = intres.getLocalizedMessage("userdatasource.errorremovinguserdatasource", pdl.getName());            	
+                      getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null,
+                              null, LogEntry.EVENT_ERROR_USERDATAREMOVED,msg);
+                    throw pe;
+
+                  }
+                }else{
+                	String msg = intres.getLocalizedMessage("userdatasource.errornotauth", pdl.getName());
+                	getLogSession().log(admin, admin.getCaId(),LogEntry.MODULE_RA,new Date(),null,null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg);
+                }
+            } catch (FinderException fe) {
+                String msg = intres.getLocalizedMessage("userdatasource.erroruserdatasourceexist", id);            	
+                getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(), null, null,
+                        LogEntry.EVENT_ERROR_USERDATAREMOVED, msg);
+                throw new UserDataSourceException(msg);
+            }
+        }
+        
+        return retval;
+    }
+    
+    
 
 	/**
      * Test the connection to a user data source
@@ -641,16 +696,20 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
      * 2. If the admin is authorized to all cas applicable to userdata source.
      *    or
      *    If the userdatasource have "ANYCA" set.
+     * @param if the call is aremove call, othervise fetch authorization is used.
      * @return true if the administrator is authorized
      */
-    private boolean isAuthorizedToUserDataSource(Admin admin, BaseUserDataSource userdatasource) {
+    private boolean isAuthorizedToUserDataSource(Admin admin, int id,  BaseUserDataSource userdatasource,boolean remove) {
     	try {
     		if(getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_SUPERADMINISTRATOR)){
     			return true;
     		}
     		
-    	} catch (AuthorizationDeniedException e) {}
-    	try {
+    		if(remove){
+    			getAuthorizationSession().isAuthorized(admin,AvailableAccessRules.USERDATASOURCEPREFIX + id + AvailableAccessRules.UDS_REMOVE_RIGHTS);
+    		}else{
+    			getAuthorizationSession().isAuthorized(admin,AvailableAccessRules.USERDATASOURCEPREFIX + id + AvailableAccessRules.UDS_FETCH_RIGHTS);    			
+    		}
     		if(getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_ADMINISTRATOR)){
     			if(userdatasource.getApplicableCAs().contains(new Integer(BaseUserDataSource.ANYCA))){
     				return true;
