@@ -40,7 +40,7 @@ import org.ejbca.util.KeyTools;
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: SoftCAToken.java,v 1.9 2007-04-02 08:26:35 jeklund Exp $
+ * @version $Id: SoftCAToken.java,v 1.10 2007-04-13 06:14:23 herrvendil Exp $
  */
 public class SoftCAToken extends CAToken implements java.io.Serializable{
 
@@ -282,7 +282,7 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
     * @return PrivateKey object
     */
     public PrivateKey getPrivateKey(int purpose){       
-      if(purpose == SecConst.CAKEYPURPOSE_KEYENCRYPT)
+      if(purpose == SecConst.CAKEYPURPOSE_KEYENCRYPT || purpose == SecConst.CAKEYPURPOSE_HARDTOKENENCRYPT)
       	return this.privateDecKey;
       	
       return privateSignKey;        
@@ -294,7 +294,7 @@ public class SoftCAToken extends CAToken implements java.io.Serializable{
     * @return PublicKey object
     */
     public PublicKey getPublicKey(int purpose){
-     if(purpose == SecConst.CAKEYPURPOSE_KEYENCRYPT)
+     if(purpose == SecConst.CAKEYPURPOSE_KEYENCRYPT || purpose == SecConst.CAKEYPURPOSE_HARDTOKENENCRYPT)
        return this.publicEncKey;
      
       return publicSignKey;        

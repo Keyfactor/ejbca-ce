@@ -21,7 +21,7 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
 /**
  * This is a  class containing global configuration parameters.
  *
- * @version $Id: GlobalConfiguration.java,v 1.9 2007-01-24 08:45:03 anatom Exp $
+ * @version $Id: GlobalConfiguration.java,v 1.10 2007-04-13 06:16:13 herrvendil Exp $
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
 
@@ -298,6 +298,25 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     }
     
     /**
+     * @return the caid of the CA that should encrypt hardtoken data in the database. if CAid is 0 is the data stored unencrypted.
+     */
+     public   int getHardTokenEncryptCA(){
+     	Object num = data.get(HARDTOKENENCRYPTCA);
+         if(num == null){
+         	return 0;
+         }
+     	
+     	return ((Integer) num).intValue();
+     }
+     
+     /**
+      * @param hardTokenEncryptCA the caid of the CA that should encrypt hardtoken data in the database. if CAid is 0 is the data stored unencrypted.
+      */
+     public void setHardTokenEncryptCA(int hardTokenEncryptCA){ 
+     	data.put(HARDTOKENENCRYPTCA, new Integer(hardTokenEncryptCA));
+     }
+    
+    /**
      * @return true of email notification of requested approvals should be sent (default false)
      */
      public boolean getUseApprovalNotifications(){
@@ -392,6 +411,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     private static final   String ISSUEHARDWARETOKENS          = "issuehardwaretokens";
     
     private static final   String NUMBEROFAPPROVALSTOVIEWPUK   = "numberofapprovalstoviewpuk";
+    private static final   String HARDTOKENENCRYPTCA           = "hardtokenencryptca";
     private static final   String USEAPPROVALNOTIFICATIONS     = "useapprovalnotifications";
     private static final   String APPROVALADMINEMAILADDRESS    = "approvaladminemailaddress";
     private static final   String APPROVALNOTIFICATIONFROMADDR = "approvalnotificationfromaddr";
