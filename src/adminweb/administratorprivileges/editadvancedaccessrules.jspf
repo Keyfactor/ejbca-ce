@@ -12,14 +12,16 @@
      Collection[] accessrules = {admingroupaccessrules.getRoleBasedAccessRules(),
                                  admingroupaccessrules.getRegularAccessRules(),
                                  admingroupaccessrules.getEndEntityProfileAccessRules(),
-                                 admingroupaccessrules.getCAAccessRules()};
+                                 admingroupaccessrules.getCAAccessRules(),
+                                 admingroupaccessrules.getUserDataSourceAccessRules()};
      Collection[] availableaccessrules = 
                                 {nonusedavailableaccessrule.getRoleBasedAccessRules(),
                                  nonusedavailableaccessrule.getRegularAccessRules(),
                                  nonusedavailableaccessrule.getEndEntityProfileAccessRules(),
-                                 nonusedavailableaccessrule.getCAAccessRules()};
+                                 nonusedavailableaccessrule.getCAAccessRules(),
+                                 nonusedavailableaccessrule.getUserDataSourceAccessRules()};
      String[] accessruletexts = {"ROLEBASEDACCESSRULES", "REGULARACCESSRULES",
-                                 "ENDENTITYPROFILEACCESSR", "CAACCESSRULES"};
+                                 "ENDENTITYPROFILEACCESSR", "CAACCESSRULES","USERDATASOURCEACCESSRULES"};
 
      int numdeletecheckboxes=0;
 %>
@@ -79,14 +81,16 @@
            if(j==2){
            // Check if it is a profile rule, then replace profile id with profile name.
              if(accessrulesstring.startsWith(AvailableAccessRules.ENDENTITYPROFILEPREFIX)){
-               if(accessrulesstring.lastIndexOf('/') < AvailableAccessRules.ENDENTITYPROFILEPREFIX.length())
+               if(accessrulesstring.lastIndexOf('/') < AvailableAccessRules.ENDENTITYPROFILEPREFIX.length()){
                  accessrulesstring = AvailableAccessRules.ENDENTITYPROFILEPREFIX  
                                    + rabean.getEndEntityProfileName(Integer.parseInt(accessrulesstring.substring(AvailableAccessRules.ENDENTITYPROFILEPREFIX.length())));
               
-               else
+               }else{
+            	 String tmpString = accessrulesstring.substring(AvailableAccessRules.ENDENTITYPROFILEPREFIX.length());
                  accessrulesstring =AvailableAccessRules.ENDENTITYPROFILEPREFIX  
-                                    + rabean.getEndEntityProfileName(Integer.parseInt(accessrulesstring.substring(AvailableAccessRules.ENDENTITYPROFILEPREFIX.length(), accessrulesstring.lastIndexOf('/'))))
-                                    + accessrulesstring.substring(accessrulesstring.lastIndexOf('/'));
+                                    + rabean.getEndEntityProfileName(Integer.parseInt(tmpString.substring(0, tmpString.indexOf('/'))))
+                                    + accessrulesstring.substring(tmpString.indexOf('/'));
+               }
              }
            }
            if(j==3){
@@ -204,14 +208,16 @@
            if(j==2){
            // Check if it is a profile rule, then replace profile id with profile name.
              if(accessrulesstring.startsWith(AvailableAccessRules.ENDENTITYPROFILEPREFIX)){
-               if(accessrulesstring.lastIndexOf('/') < AvailableAccessRules.ENDENTITYPROFILEPREFIX.length())
+               if(accessrulesstring.lastIndexOf('/') < AvailableAccessRules.ENDENTITYPROFILEPREFIX.length()){
                  accessrulesstring = AvailableAccessRules.ENDENTITYPROFILEPREFIX  
                                    + rabean.getEndEntityProfileName(Integer.parseInt(accessrulesstring.substring(AvailableAccessRules.ENDENTITYPROFILEPREFIX.length())));
               
-               else
+               }else{
+            	 String tmpAccessRule = accessrulesstring.substring(AvailableAccessRules.ENDENTITYPROFILEPREFIX.length());  
                  accessrulesstring =AvailableAccessRules.ENDENTITYPROFILEPREFIX  
-                                    + rabean.getEndEntityProfileName(Integer.parseInt(accessrulesstring.substring(AvailableAccessRules.ENDENTITYPROFILEPREFIX.length(), accessrulesstring.lastIndexOf('/'))))
-                                    + accessrulesstring.substring(accessrulesstring.lastIndexOf('/'));
+                                    + rabean.getEndEntityProfileName(Integer.parseInt(tmpAccessRule.substring(0,tmpAccessRule.indexOf('/'))))
+                                    + tmpAccessRule.substring(tmpAccessRule.indexOf('/'));
+               }
              }
            }
            if(j==3){
@@ -227,6 +233,19 @@
                                     + accessrulesstring.substring(accessrulesstring.lastIndexOf('/'));
              }
            }
+           if(j==4){
+               // Check if it is a User Data Source rule, then replace User Data Source id with User Data Source name.
+                 if(accessrulesstring.startsWith(AvailableAccessRules.USERDATASOURCEPREFIX)){ 
+                   if(accessrulesstring.lastIndexOf('/') < AvailableAccessRules.USERDATASOURCEPREFIX.length())
+                     accessrulesstring = AvailableAccessRules.USERDATASOURCEPREFIX  
+                                       + rabean.getUserDataSourceName(Integer.parseInt(accessrulesstring.substring(AvailableAccessRules.USERDATASOURCEPREFIX.length())));
+                  
+                   else
+                     accessrulesstring =AvailableAccessRules.USERDATASOURCEPREFIX  
+                                        + rabean.getUserDataSourceName(Integer.parseInt(accessrulesstring.substring(AvailableAccessRules.USERDATASOURCEPREFIX.length(), accessrulesstring.lastIndexOf('/'))))
+                                        + accessrulesstring.substring(accessrulesstring.lastIndexOf('/'));
+                 }
+               }
            out.write(accessrulesstring); %>
     
           </td>
