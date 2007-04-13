@@ -32,11 +32,15 @@ import javax.ejb.FinderException;
 import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.JNDINames;
+import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
+import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocalHome;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocal;
 import org.ejbca.core.ejb.protect.TableProtectSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.authorization.AuthorizationDeniedException;
+import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.caadmin.CADoesntExistsException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
@@ -131,6 +135,15 @@ import org.ejbca.util.query.Query;
  *   business="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
  *   link="RSASignSession"
  *   
+ * @ejb.ejb-external-ref
+ *   description="The Authorization session bean"
+ *   view-type="local"
+ *   ref-name="ejb/AuthorizationSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome"
+ *   business="org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal"
+ *   link="AuthorizationSession"
+ *   
  * @ejb.home
  *   extends="javax.ejb.EJBHome"
  *   local-extends="javax.ejb.EJBLocalHome"
@@ -146,7 +159,7 @@ import org.ejbca.util.query.Query;
  * @jonas.bean
  *   ejb-name="LogSession"
  *
- * @version $Id: LocalLogSessionBean.java,v 1.18 2007-03-21 15:48:56 anatom Exp $
+ * @version $Id: LocalLogSessionBean.java,v 1.19 2007-04-13 06:04:41 herrvendil Exp $
  */
 public class LocalLogSessionBean extends BaseSessionBean {
 
@@ -167,6 +180,9 @@ public class LocalLogSessionBean extends BaseSessionBean {
 
     /** The remote interface of the LogConfigurationData entity bean */
     private LogConfigurationDataLocal logconfigurationdata;
+    
+    /** The local interface of  authorization session bean */
+	private IAuthorizationSessionLocal authorizationsession;
 
     private static final String LOGDEVICE_FACTORIES = "java:comp/env/logDeviceFactories";
     private static final String LOGDEVICE_PROPERTIES = "java:comp/env/logDevicePropertyFiles";
@@ -290,11 +306,28 @@ public class LocalLogSessionBean extends BaseSessionBean {
         log(admin, CertTools.getIssuerDN(caid).hashCode(), module, time, username, certificate, event, comment, exception);
     } // log
 
-
     /**
      * Internal implementation for logging
      */
-    private synchronized void doLog(Admin admin, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception ex) {
+    private void doLog(Admin admin, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception ex) {
+        boolean authorized = true;
+        if(event == LogEntry.EVENT_INFO_CUSTOMLOG || event == LogEntry.EVENT_ERROR_CUSTOMLOG){
+           try{
+        	getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_LOG_CUSTOM_EVENTS);
+           }catch(AuthorizationDeniedException e){
+        	   String msg = intres.getLocalizedMessage("log.notauthtocustomlog");
+        	   doSyncronizedLog(admin,caid,LogEntry.MODULE_LOG,new Date(),username, null,LogEntry.EVENT_ERROR_NOTAUTHORIZEDTORESOURCE,msg,null);
+        	   authorized = false;
+           }
+        }
+        if (authorized) {
+            doSyncronizedLog(admin, caid, module, time, username, certificate, event, comment, ex);
+        }
+    }
+    /**
+     * Internal implementation for logging
+     */
+    private synchronized void doSyncronizedLog(Admin admin, int caid, int module, Date time, String username, X509Certificate certificate, int event, String comment, Exception ex) {
         final LogConfiguration config = loadLogConfiguration(caid);
         if (config.logEvent(event)) {
             try {
@@ -377,7 +410,7 @@ public class LocalLogSessionBean extends BaseSessionBean {
             	try {
             		int caid = Integer.parseInt(ca);
             		ISignSessionLocal sign = signsessionhome.create();
-            		CmsCAServiceRequest request = new CmsCAServiceRequest(ret, true);
+            		CmsCAServiceRequest request = new CmsCAServiceRequest(ret, CmsCAServiceRequest.MODE_SIGN);
             		CmsCAServiceResponse resp = (CmsCAServiceResponse)sign.extendedService(admin, caid, request);
             		ret = resp.getCmsDocument();
             	} catch (CreateException e) {
@@ -527,5 +560,22 @@ public class LocalLogSessionBean extends BaseSessionBean {
 
         return this.logconfigurationdata.getAndIncrementRowCount();
     }
+    
+    /**
+     * Gets connection to authorization session bean
+     *
+     * @return IAuthorizationSessionLocal
+     */
+    private IAuthorizationSessionLocal getAuthorizationSession() {
+        if (authorizationsession == null) {
+            try {
+                IAuthorizationSessionLocalHome authorizationsessionhome = (IAuthorizationSessionLocalHome) getLocator().getLocalHome(IAuthorizationSessionLocalHome.COMP_NAME);
+                authorizationsession = authorizationsessionhome.create();
+            } catch (CreateException e) {
+                throw new EJBException(e);
+            }
+        }
+        return authorizationsession;
+    } //getAuthorizationSession
 
 } // LocalLogSessionBean
