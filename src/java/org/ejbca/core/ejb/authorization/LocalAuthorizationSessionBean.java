@@ -39,6 +39,8 @@ import org.ejbca.core.ejb.log.ILogSessionLocal;
 import org.ejbca.core.ejb.log.ILogSessionLocalHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
+import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocal;
+import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.authorization.AccessRule;
 import org.ejbca.core.model.authorization.AdminEntity;
@@ -58,7 +60,7 @@ import org.ejbca.util.JDBCUtil;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalAuthorizationSessionBean.java,v 1.10 2007-01-03 14:34:11 anatom Exp $
+ * @version $Id: LocalAuthorizationSessionBean.java,v 1.11 2007-04-13 06:00:48 herrvendil Exp $
  *
  * @ejb.bean
  *   description="Session bean handling interface with ra authorization"
@@ -120,6 +122,15 @@ import org.ejbca.util.JDBCUtil;
  *   home="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome"
  *   business="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  *   link="CertificateStoreSession"
+ *   
+ * @ejb.ejb-external-ref
+ *   description="The User Data Source Session bean"
+ *   view-type="local"
+ *   ref-name="ejb/UserDataSourceSessionLocal"
+ *   type="Session"
+ *   home="org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocalHome"
+ *   business="org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocal"
+ *   link="UserDataSourceSession"
  *
  * @ejb.ejb-external-ref
  *   description="Authorization Tree Update Bean"
@@ -204,6 +215,11 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
      */
     private ICertificateStoreSessionLocal certificatestoresession = null;
 
+    /**
+     * The local interface of user data source session bean
+     */
+    private IUserDataSourceSessionLocal userdatasourcesession = null;
+    
     private Authorizer authorizer = null;
 
     private String[] customaccessrules = null;
@@ -257,7 +273,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
 
 
     /**
-     * Gets connection to certificate store session bean
+     * Gets connection to ra admin session bean
      *
      * @return Connection
      */
@@ -291,6 +307,24 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
         }
         return certificatestoresession;
     } //getCertificateStoreSession
+    
+    /**
+     * Gets connection to user data source session bean
+     *
+     * @return IUserDataSourceSessionLocal
+     */
+    private IUserDataSourceSessionLocal getUserDataSourceSession() {
+        if (userdatasourcesession == null) {
+            try {
+                IUserDataSourceSessionLocalHome home = (IUserDataSourceSessionLocalHome) ServiceLocator.getInstance()
+                        .getLocalHome(IUserDataSourceSessionLocalHome.COMP_NAME);
+                userdatasourcesession = home.create();
+            } catch (Exception e) {
+                throw new EJBException(e);
+            }
+        }
+        return userdatasourcesession;
+    } //getUserDataSourceSession
 
 
     /**
@@ -855,7 +889,7 @@ public class LocalAuthorizationSessionBean extends BaseSessionBean {
     public Collection getAuthorizedAvailableAccessRules(Admin admin) {
         AvailableAccessRules aar = null;
         try {
-            aar = new AvailableAccessRules(admin, authorizer, getRaAdminSession(), customaccessrules);
+            aar = new AvailableAccessRules(admin, authorizer, getRaAdminSession(),getUserDataSourceSession(), customaccessrules);
         } catch (Exception e) {
             throw new EJBException(e);
         }
