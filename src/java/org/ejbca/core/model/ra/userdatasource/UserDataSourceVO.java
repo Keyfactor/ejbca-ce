@@ -28,7 +28,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * 
  *  
  * @author Philip Vendil
- * @version $Id: UserDataSourceVO.java,v 1.2 2006-12-02 11:17:57 anatom Exp $
+ * @version $Id: UserDataSourceVO.java,v 1.3 2007-04-13 06:16:51 herrvendil Exp $
  */
 
 public class UserDataSourceVO implements Serializable {    
@@ -96,6 +96,17 @@ public class UserDataSourceVO implements Serializable {
 	 */
 	public boolean isFieldModifyable(int field){
 		return isModifyableSet.contains(new Integer(field));
+	}	
+	
+	/**
+	 * Method returning the complete isModifyable Set, it is recommended
+	 * that the isFieldModifyable(int field) method is used instead.
+	 * 
+	 * @return the complete isFieldModifyable Set
+	 */
+	public Set getIsFieldModifyableSet(){
+		return isModifyableSet;
 	}		
+
 
 }

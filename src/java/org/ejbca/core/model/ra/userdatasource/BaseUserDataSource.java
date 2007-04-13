@@ -32,7 +32,7 @@ import org.ejbca.core.model.log.Admin;
  * Contains data like description, applicable CAs and modifyable fields.
  *  
  *
- * @version $Id: BaseUserDataSource.java,v 1.1 2006-07-20 17:47:26 herrvendil Exp $
+ * @version $Id: BaseUserDataSource.java,v 1.2 2007-04-13 06:16:51 herrvendil Exp $
  */
 public abstract class BaseUserDataSource extends UpgradeableDataHashMap implements Serializable, Cloneable {
     // Default Values
@@ -156,7 +156,22 @@ public abstract class BaseUserDataSource extends UpgradeableDataHashMap implemen
      */    
     protected abstract Collection fetch(Admin admin, String searchstring) throws UserDataSourceException;
 	
-
+    /**
+     * Optional method used to remove user data from a user data source.
+     * It's up to the implementation if it should be supported or not.
+     * 
+     * Removes user data that matches the given search string.
+     *
+     * @param searchstring the string the user data source that should be removed
+     * @param removeMultipleMatch use to indicate if all entries should be removed it the search string
+     * @return true if the user was remove successfully from at least one of the user data sources.
+     * matches more than one, if false will a UserDataSourceException be thrown if more than one User data
+     * matches the search string.  
+     *
+     *
+     * @throws UserDataSourceException if a communication or other error occurs.
+     */   
+    public abstract boolean removeUserData(Admin admin, String searchstring, boolean removeMultipleMatch) throws MultipleMatchException, UserDataSourceException;
     
     /**
      * Method used to test the connection to a user data source.

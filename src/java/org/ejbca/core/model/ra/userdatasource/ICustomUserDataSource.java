@@ -26,7 +26,7 @@ import org.ejbca.core.model.log.Admin;
  * Interface contating methods that need to be implementet in order 
  * to have a custom user data source. All Custom user data sources must implement this interface.
  * 
- * @version $Id: ICustomUserDataSource.java,v 1.1 2006-07-20 17:47:26 herrvendil Exp $
+ * @version $Id: ICustomUserDataSource.java,v 1.2 2007-04-13 06:16:51 herrvendil Exp $
  */
 
 public interface ICustomUserDataSource {
@@ -38,9 +38,15 @@ public interface ICustomUserDataSource {
 	public abstract void init(Properties properties);
 	
 	/**
-	 * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource
+	 * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource#fetch(Admin, String)
 	 */   
 	public Collection fetch(Admin admin, String searchstring) throws UserDataSourceException;
+	
+	/**
+	 * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource#removeUserData(Admin, String, boolean)
+	 */   
+	public boolean removeUserData(Admin admin, String searchstring, boolean removeMultipleMatch) throws MultipleMatchException, UserDataSourceException;
+	
 	
 	/**
 	 * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource

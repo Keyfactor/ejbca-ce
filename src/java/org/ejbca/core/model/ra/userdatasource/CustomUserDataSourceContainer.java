@@ -31,7 +31,7 @@ import org.ejbca.core.model.log.Admin;
  * to store and retrieve custom user data source configuration to database.
  * 
  *
- * @version $Id: CustomUserDataSourceContainer.java,v 1.1 2006-07-20 17:47:26 herrvendil Exp $
+ * @version $Id: CustomUserDataSourceContainer.java,v 1.2 2007-04-13 06:16:51 herrvendil Exp $
  */
 public class CustomUserDataSourceContainer extends BaseUserDataSource{
 	private ICustomUserDataSource customuserdatasource = null; 
@@ -140,10 +140,19 @@ public class CustomUserDataSourceContainer extends BaseUserDataSource{
 	}
 
 	/** 
-	 * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource
+	 * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource#fetch(Admin, String)
 	 */
 	public Collection fetch(Admin admin, String searchstring) throws UserDataSourceException {		
 		return getCustomUserDataSource().fetch(admin,searchstring);
+	}
+	
+	/** 
+	 * @throws MultipleMatchException 
+	 * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource#removeUserData(Admin, String, boolean)
+	 */
+	
+	public boolean removeUserData(Admin admin, String searchstring, boolean removeMultipleMatch) throws UserDataSourceException, MultipleMatchException {
+		return getCustomUserDataSource().removeUserData(admin, searchstring, removeMultipleMatch);		
 	}
 	
 	/** 
@@ -161,6 +170,8 @@ public class CustomUserDataSourceContainer extends BaseUserDataSource{
 		this.customuserdatasource = null;
 		return super.saveData();
 	}
+
+
 
 
 

@@ -28,7 +28,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * I supposed to illustrat how to implement a custom userdata soruce to EJBCA.
  *  
  *
- * @version $Id: DummyCustomUserDataSource.java,v 1.1 2006-07-20 17:47:26 herrvendil Exp $
+ * @version $Id: DummyCustomUserDataSource.java,v 1.2 2007-04-13 06:16:51 herrvendil Exp $
  */
 public class DummyCustomUserDataSource implements ICustomUserDataSource{
     		
@@ -78,6 +78,11 @@ public class DummyCustomUserDataSource implements ICustomUserDataSource{
 		// This method closes the communication with the publisher.	
 			
 		super.finalize(); 
+	}
+
+	public boolean removeUserData(Admin admin, String searchstring, boolean removeMultipleMatch) throws UserDataSourceException {
+		log.debug("DummyCustomUserDataSource, remove User Data  called with searchstring : " + searchstring);
+		return true;
 	}
 
 
