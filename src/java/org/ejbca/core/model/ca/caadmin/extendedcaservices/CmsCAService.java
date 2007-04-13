@@ -28,15 +28,21 @@ import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.cms.CMSEnvelopedData;
+import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSProcessable;
 import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSSignedGenerator;
+import org.bouncycastle.cms.RecipientId;
+import org.bouncycastle.cms.RecipientInformation;
+import org.bouncycastle.cms.RecipientInformationStore;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.ca.caadmin.CA;
@@ -52,7 +58,7 @@ import org.ejbca.util.KeyTools;
 /** Handles and maintains the CA-part of the CMS message functionality.
  *  The service have it's own certificate used for signing and encryption 
  * 
- * @version $Id: CmsCAService.java,v 1.3 2007-02-23 10:33:15 anatom Exp $
+ * @version $Id: CmsCAService.java,v 1.4 2007-04-13 06:12:10 herrvendil Exp $
  */
 public class CmsCAService extends ExtendedCAService implements java.io.Serializable{
 
@@ -176,7 +182,7 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 		certificatechain = new ArrayList();
 		certificatechain.add(certificate);
 		certificatechain.addAll(ca.getCertificateChain());
-		this.privKey = cmskeys.getPrivate(); 	  	 	  
+		this.privKey = cmskeys.getPrivate(); 
 
 		keystore.setKeyEntry(PRIVATESIGNKEYALIAS,cmskeys.getPrivate(),null,(Certificate[]) certificatechain.toArray(new Certificate[certificatechain.size()]));              
 		java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
@@ -236,15 +242,35 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
         // Create the signed data
         CMSSignedDataGenerator gen1 = new CMSSignedDataGenerator();
         try {
-            // Add our signer info and sign the message        
-            CertStore certs;
-        	certs = CertStore.getInstance("Collection",
-        			new CollectionCertStoreParameters(certificatechain), "BC");
-        	gen1.addCertificatesAndCRLs(certs);
-        	gen1.addSigner(privKey, signerCert, CMSSignedGenerator.DIGEST_SHA1);
-        	CMSProcessable msg = new CMSProcessableByteArray(serviceReq.getDoc());
-        	CMSSignedData s = gen1.generate(msg, true, "BC");
-        	byte[] resp = s.getEncoded();
+        	byte[] resp = serviceReq.getDoc();
+            // Add our signer info and sign the message
+        	if((serviceReq.getMode() & CmsCAServiceRequest.MODE_SIGN) != 0){
+        		CertStore certs;
+        		certs = CertStore.getInstance("Collection",
+        				new CollectionCertStoreParameters(certificatechain), "BC");
+        		gen1.addCertificatesAndCRLs(certs);
+        		gen1.addSigner(privKey, signerCert, CMSSignedGenerator.DIGEST_SHA1);
+        		CMSProcessable msg = new CMSProcessableByteArray(resp);
+        		CMSSignedData s = gen1.generate(msg, true, "BC");
+        		resp = s.getEncoded();
+        	}
+        	if((serviceReq.getMode() & CmsCAServiceRequest.MODE_ENCRYPT) != 0){
+    	        CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
+    	        edGen.addKeyTransRecipient(getCMSCertificate());	
+    	        CMSEnvelopedData ed = edGen.generate(new CMSProcessableByteArray(resp),CMSEnvelopedDataGenerator.DES_EDE3_CBC,"BC");
+    	        resp = ed.getEncoded();
+        	}
+        	if((serviceReq.getMode() & CmsCAServiceRequest.MODE_DECRYPT) != 0){
+	            CMSEnvelopedData ed = new CMSEnvelopedData(resp);   	    	
+	            RecipientInformationStore  recipients = ed.getRecipientInfos(); 
+	            RecipientId id = new RecipientId();
+	            id.setIssuer(getCMSCertificate().getIssuerX500Principal());
+	            id.setSerialNumber(getCMSCertificate().getSerialNumber());
+	            RecipientInformation recipient = recipients.get(id); 
+	            if(recipient != null){
+	                resp = recipient.getContent(this.privKey, "BC");
+	            }
+        	}
         	returnval = new CmsCAServiceResponse(resp);
         } catch (InvalidAlgorithmParameterException e) {
         	m_log.error("Error in CmsCAService", e);
@@ -270,6 +296,20 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 		return returnval;
 	}
 
+    private X509Certificate cmsCertificate = null;
+	private X509Certificate getCMSCertificate() {
+		if(cmsCertificate == null){
+			Iterator iter = certificatechain.iterator();
+			while(iter.hasNext()){
+				X509Certificate cert = (X509Certificate) iter.next();
+				if(cert.getBasicConstraints() == -1){
+					cmsCertificate = cert;
+					break;
+				}
+			}
+		}
+		return cmsCertificate;
+	}
 
 	public float getLatestVersion() {		
 		return LATEST_VERSION;

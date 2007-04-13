@@ -20,11 +20,15 @@ import org.apache.log4j.Logger;
 /**
  * Class used when requesting CMS related services from a CA.  
  *
- * @version $Id: CmsCAServiceRequest.java,v 1.2 2006-12-28 13:51:15 anatom Exp $
+ * @version $Id: CmsCAServiceRequest.java,v 1.3 2007-04-13 06:12:10 herrvendil Exp $
  */
 public class CmsCAServiceRequest extends ExtendedCAServiceRequest implements Serializable {    
     
 	public static final Logger m_log = Logger.getLogger(CmsCAServiceRequest.class);
+	
+	public static final int MODE_SIGN    = 1;
+	public static final int MODE_ENCRYPT = 2;
+	public static final int MODE_DECRYPT = 4;
 	
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -38,18 +42,23 @@ public class CmsCAServiceRequest extends ExtendedCAServiceRequest implements Ser
     private static final long serialVersionUID = -762331405718560161L;
 	
     private byte[] doc = null;
-    private boolean sign = false;
+    private int mode = 0;
     
     /** Constructor
+     * 
+     * @param doc the data to process
+     * @param mode, one of the MODE_ constants
      */                   
-    public CmsCAServiceRequest(byte[] doc, boolean sign) {
+    public CmsCAServiceRequest(byte[] doc, int mode) {
         this.doc = doc;
-        this.sign = sign;
+        this.mode = mode;
     }
     public byte[] getDoc() {
         return doc;
     }  
-    public boolean isSign() {
-    	return sign;
+    public int getMode() {
+    	return mode;
     }
+    
+    
 }
