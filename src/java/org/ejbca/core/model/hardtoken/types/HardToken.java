@@ -24,20 +24,23 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
  * define the data the token is supposed contain.
  *
  * @author TomSelleck
- * @version $Id: HardToken.java,v 1.1 2006-01-17 20:31:52 anatom Exp $
+ * @version $Id: HardToken.java,v 1.2 2007-04-13 06:15:20 herrvendil Exp $
  */
 public abstract class HardToken extends UpgradeableDataHashMap implements Serializable, Cloneable {
     // Default Values
     public static final float LATEST_VERSION = 0;
     public static final String TOKENTYPE = "TOKENTYPE";
+    
+	public static final String LABEL_REGULARCARD   = "LABEL_REGULARCARD";
+	public static final String LABEL_TEMPORARYCARD = "LABEL_TEMPORARYCARD";
+	public static final String LABEL_PROJECTCARD   = "LABEL_PROJECTCARD";
 
     
     public static final String TOKENPROFILE = "TOKENPROFILE";
-    // Protexted Constants, must be overloaded by all deriving classes.
-    public String[] FIELDS;
-    public int[] DATATYPES;
-    public String[] FIELDTEXTS;
+    public static final String LABEL        = "LABEL";
 
+    protected boolean includePUK = true;
+    
     // Public Constants.
 
     /* Constants used to define how the stored data should be represented in the web-gui.*/
@@ -49,21 +52,36 @@ public abstract class HardToken extends UpgradeableDataHashMap implements Serial
     public static final int EMPTYROW = 5;
     public static final String EMPTYROW_FIELD = "EMTPYROW";
 
-
-
+    public HardToken(boolean includePUK){
+    	this.includePUK = includePUK;
+    }
     
     // Public Methods
     public Object getField(String field) {
         return data.get(field);
     }
     	
-	public abstract int getNumberOfFields() ;
+    public abstract String[] getFields(boolean includePUK);
+    public abstract int[] getDataTypes(boolean includePUK);
+    public abstract String[] getFieldTexts(boolean includePUK);
+    
+    public int getNumberOfFields() {
+    	return getFields(includePUK).length;
+    }
 
-	public abstract String getFieldText(int index); 
+    public String getFieldText(int index) {
+    	return getFieldTexts(includePUK)[index];
+    }
 
-	public abstract String getFieldPointer(int index);
+    public String getFieldPointer(int index) {
+    	return getFields(includePUK)[index];
+    }
 
-	public abstract int getFieldDataType(int index);
+
+    public int getFieldDataType(int index) {
+    	return getDataTypes(includePUK)[index];
+    }
+		
 
     public void setField(String field, Object value) {
         data.put(field, value);
@@ -80,7 +98,22 @@ public abstract class HardToken extends UpgradeableDataHashMap implements Serial
 	public void setTokenProfileId(int hardtokenprofileid) {
 	  data.put(HardToken.TOKENPROFILE, new Integer(hardtokenprofileid));
 	}
+	
+	/**
+	 * 
+	 * @return one of the LABEL_ constants or null of no label is set.
+	 */
+    public String getLabel() {    	
+        return (String) data.get(HardToken.LABEL);
+    }
 
+    /**
+     * 
+     * @param hardTokenLabel should be one of the LABEL_ constants
+     */
+	public void setLabel(String hardTokenLabel) {
+		  data.put(HardToken.LABEL, hardTokenLabel);
+	}
 
     /**
      * Implemtation of UpgradableDataHashMap function getLatestVersion
@@ -95,4 +128,6 @@ public abstract class HardToken extends UpgradeableDataHashMap implements Serial
      */
     public void upgrade() {
     }
+    
+
 }

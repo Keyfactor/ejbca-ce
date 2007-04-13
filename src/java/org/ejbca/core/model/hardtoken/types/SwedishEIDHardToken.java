@@ -14,14 +14,13 @@
 package org.ejbca.core.model.hardtoken.types;
 
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
 
 
 /**
  * SwedishEIDHardToken is a class defining data stored in database for a Swedish EID token.
  *
- * @version $Id: SwedishEIDHardToken.java,v 1.3 2006-11-03 17:30:27 anatom Exp $
+ * @version $Id: SwedishEIDHardToken.java,v 1.4 2007-04-13 06:15:20 herrvendil Exp $
  */
 public class SwedishEIDHardToken extends HardToken {
     /**
@@ -42,22 +41,15 @@ public class SwedishEIDHardToken extends HardToken {
     public static final String AUTHENCPUK          = "AUTHENCPUK";
     public static final String INITIALSIGNATUREPIN = "INITIALSIGNATUREPIN";
     public static final String SIGNATUREPUK        = "SIGNATUREPUK";   
+          
     
-    public static String[] FIELDS = null;
-    public static int[] DATATYPES = null;
-    public static String[] FIELDTEXTS = null;
+    public static final String[] FIELDSWITHPUK = new String[] {INITIALAUTHENCPIN, AUTHENCPUK, EMPTYROW_FIELD, INITIALSIGNATUREPIN, SIGNATUREPUK};
+    public static final int[] DATATYPESWITHPUK = new int[] { STRING, STRING, EMPTYROW, STRING, STRING };
+    public static final String[] FIELDTEXTSWITHPUK = new String[] { INITIALAUTHENCPIN, AUTHENCPUK, EMPTYROW_FIELD, INITIALSIGNATUREPIN, SIGNATUREPUK};   
     
-    static {
-    	if(GlobalConfiguration.HARDTOKEN_DIPLAYSENSITIVEINFO){
-    		FIELDS = new String[] {INITIALAUTHENCPIN, AUTHENCPUK, EMPTYROW_FIELD, INITIALSIGNATUREPIN, SIGNATUREPUK};
-    		DATATYPES = new int[] { STRING, STRING, EMPTYROW, STRING, STRING };
-    		FIELDTEXTS = new String[] { INITIALAUTHENCPIN, AUTHENCPUK, EMPTYROW_FIELD, INITIALSIGNATUREPIN, SIGNATUREPUK};   
-    	}else{
-    		FIELDS = new String[] {};
-    		DATATYPES = new int[] {};
-    	    FIELDTEXTS = new String[] {};    	 
-    	}
-    }
+    public static final String[] FIELDSWITHOUTPUK = new String[] {};
+    public static final int[] DATATYPESWITHOUTPUK = new int[] {};
+    public static final String[] FIELDTEXTSWITHOUTPUK = new String[] {};    	 
 
 
     // Public Methods
@@ -67,6 +59,7 @@ public class SwedishEIDHardToken extends HardToken {
                                String initialsignaturepin,
                                String signaturepuk,
                                int hardtokenprofileid) {
+    	super(true);
         setInitialAuthEncPIN(initialauthencpin);
         setAuthEncPUK(authencpuk);
         setInitialSignaturePIN(initialsignaturepin);
@@ -77,27 +70,17 @@ public class SwedishEIDHardToken extends HardToken {
     } 
     
     /** Constructor only to be used internally. */
-    public SwedishEIDHardToken() {    	
+    public SwedishEIDHardToken(boolean includePUK) {
+    	super(includePUK);
     	data.put(TOKENTYPE, new Integer(THIS_TOKENTYPE));
+    	if(!includePUK){
+    	  setInitialAuthEncPIN("");
+    	  setAuthEncPUK("");
+    	  setInitialSignaturePIN("");
+    	  setSignaturePUK("");
+    	}
     }
 
-
-    public int getNumberOfFields() {
-    	return SwedishEIDHardToken.FIELDS.length;
-    }
-
-    public String getFieldText(int index) {
-    	return SwedishEIDHardToken.FIELDTEXTS[index];
-    }
-
-    public String getFieldPointer(int index) {
-    	return SwedishEIDHardToken.FIELDS[index];
-    }
-
-
-    public int getFieldDataType(int index) {
-    	return SwedishEIDHardToken.DATATYPES[index];
-    }
     
     // Public Methods.
     public String getInitialAuthEncPIN() {
@@ -135,6 +118,29 @@ public class SwedishEIDHardToken extends HardToken {
     public void setSignaturePUK(String signaturepuk) {
         data.put(SIGNATUREPUK, signaturepuk);
     }
+
+
+	
+	public int[] getDataTypes(boolean includePUK) {
+		if(includePUK){
+			return DATATYPESWITHPUK;	
+		}
+		return DATATYPESWITHOUTPUK;
+	}
+
+	public String[] getFieldTexts(boolean includePUK) {
+		if(includePUK){
+			return FIELDTEXTSWITHPUK;	
+		}
+		return FIELDTEXTSWITHOUTPUK;
+	}
+
+	public String[] getFields(boolean includePUK) {
+		if(includePUK){
+			return FIELDSWITHPUK;	
+		}
+		return FIELDSWITHOUTPUK;
+	}
 
     // Private fields.
 }

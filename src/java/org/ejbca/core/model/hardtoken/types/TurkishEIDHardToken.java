@@ -20,7 +20,7 @@ import org.ejbca.core.model.SecConst;
 /**
  * TurkishEIDHardToken is a class defining data stored in database for a Turkish EID token.
  *
- * @version $Id: TurkishEIDHardToken.java,v 1.2 2006-11-11 12:46:04 herrvendil Exp $
+ * @version $Id: TurkishEIDHardToken.java,v 1.3 2007-04-13 06:15:20 herrvendil Exp $
  */
 public class TurkishEIDHardToken extends HardToken {
     // Public Constants
@@ -30,19 +30,23 @@ public class TurkishEIDHardToken extends HardToken {
     public static final String PUK           = "PUK";
        
     
-    public static final String[] FIELDS = {
+    public static final String[] FIELDSWITHPUK = {
     	INITIALPIN, PUK, EMPTYROW_FIELD
     };
-    public static final int[] DATATYPES = { STRING, STRING, EMPTYROW};
-    public static final String[] FIELDTEXTS = {
+    public static final int[] DATATYPESWITHPUK = { STRING, STRING, EMPTYROW};
+    public static final String[] FIELDTEXTSWITHPUK = {
         INITIALPIN, PUK, EMPTYROW_FIELD
     };
+    public static final String[] FIELDSWITHOUTPUK =new String[] {};
+    public static final int[] DATATYPESWITHOUTPUK = new int[] {};
+    public static final String[] FIELDTEXTSWITHOUTPUK = new String[] {};
 
     // Public Methods
     /** Constructor to use. */
     public TurkishEIDHardToken(String initialpin,
                                String puk,
                                int hardtokenprofileid) {
+    	super(true);
         setInitialPIN(initialpin);
         setPUK(puk);
 
@@ -52,27 +56,17 @@ public class TurkishEIDHardToken extends HardToken {
     } 
     
     /** Constructor only to be used internally. */
-    public TurkishEIDHardToken() {    	
+    public TurkishEIDHardToken(boolean includePUK) {
+    	super(includePUK);
+    	if(!includePUK){
+      	  setInitialPIN("");
+      	  setPUK("");
+      	}
     	data.put(TOKENTYPE, new Integer(THIS_TOKENTYPE));
     }
 
 
-    public int getNumberOfFields() {
-    	return TurkishEIDHardToken.FIELDS.length;
-    }
 
-    public String getFieldText(int index) {
-    	return TurkishEIDHardToken.FIELDTEXTS[index];
-    }
-
-    public String getFieldPointer(int index) {
-    	return TurkishEIDHardToken.FIELDS[index];
-    }
-
-
-    public int getFieldDataType(int index) {
-    	return TurkishEIDHardToken.DATATYPES[index];
-    }
     
     // Public Methods.
     public String getInitialPIN() {
@@ -91,6 +85,29 @@ public class TurkishEIDHardToken extends HardToken {
     public void setPUK(String puk) {
         data.put(PUK, puk);
     }
+
+
+
+	public int[] getDataTypes(boolean includePUK) {
+		if(includePUK){
+			return DATATYPESWITHPUK;	
+		}
+		return DATATYPESWITHOUTPUK;
+	}
+
+	public String[] getFieldTexts(boolean includePUK) {
+		if(includePUK){
+			return FIELDTEXTSWITHPUK;	
+		}
+		return FIELDTEXTSWITHOUTPUK;
+	}
+
+	public String[] getFields(boolean includePUK) {
+		if(includePUK){
+			return FIELDSWITHPUK;	
+		}
+		return FIELDSWITHOUTPUK;
+	}
     
 
  
