@@ -39,12 +39,12 @@
 
   boolean noparameter              = true;
   boolean authorized               = true;
+  boolean includePUK               = false;
   boolean alluserstokens           = false;
   boolean usekeyrecovery           = false;
 
   int numberoftokens = 0;
   int index = -1;
-  HardTokenView tokendata = null;
   HardTokenView token = null;
 
   String   username = null;
@@ -82,7 +82,7 @@
      else
        index=0;
      if(username != null && reasonstring != null){
-       token = tokenbean.getHardTokenViewWithIndex(username, index);
+       token = tokenbean.getHardTokenViewWithIndex(username, index, includePUK);
         if(rabean.authorizedToRevokeCert(username) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) 
           && !rabean.isAllTokenCertificatesRevoked(token.getTokenSN(), username))
           rabean.revokeTokenCertificates(token.getTokenSN(), username, Integer.parseInt(reasonstring));  
@@ -104,7 +104,7 @@
         index = Integer.parseInt(indexstring); 
        else
          index=0;
-       token = tokenbean.getHardTokenViewWithIndex(username, index);
+       token = tokenbean.getHardTokenViewWithIndex(username, index, includePUK);
        recoverytokensn = token.getTokenSN();
        markforrecovery = true;
      }         
@@ -125,9 +125,14 @@
     tokensn  = request.getParameter(TOKENSN_PARAMETER);
     if(username != null && tokensn != null){
       noparameter=false;
-      if(globalconfiguration.getEnableEndEntityProfileLimitations())
-        authorized = rabean.authorizedToViewHardToken(username);
-      token = tokenbean.getHardTokenView(tokensn);
+      if(globalconfiguration.getEnableEndEntityProfileLimitations()){
+    	  try{
+    	    includePUK = rabean.authorizedToViewHardToken(username);
+    	  }catch(org.ejbca.core.model.authorization.AuthorizationDeniedException e){
+    		  authorized = false;
+    	  }
+      }
+      token = tokenbean.getHardTokenView(tokensn, includePUK);
 
       if(token == null)
         numberoftokens = 0;
@@ -142,18 +147,22 @@
       if(username!=null){
        alluserstokens=true;
        noparameter=false; 
-       if(globalconfiguration.getEnableEndEntityProfileLimitations())
-         authorized = rabean.authorizedToViewHardToken(username);
-       if(authorized){
+       if(globalconfiguration.getEnableEndEntityProfileLimitations()){
+    	   try{
+             includePUK = rabean.authorizedToViewHardToken(username);
+ 	       }catch(org.ejbca.core.model.authorization.AuthorizationDeniedException e){
+		     authorized = false;
+	       }
+       }
          if(index==-1){
-           token = tokenbean.getHardTokenViewWithUsername(username);
+           token = tokenbean.getHardTokenViewWithUsername(username,includePUK);
            index=0;
          }
          else
-           token = tokenbean.getHardTokenViewWithIndex(username, index);
+           token = tokenbean.getHardTokenViewWithIndex(username, index,includePUK);
 
          numberoftokens = tokenbean.getHardTokensInCache();
-       }
+       
      }  
    }
   }
@@ -259,6 +268,13 @@ function viewcopies(link){
                   out.write(ejbcawebbean.getText("NONE"));%>
         </td>
       </tr>
+      <% if(token.getLabel() != null){ %>
+      <tr id="Row<%=(row++)%2%>">
+	<td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("LABEL") %></td>        
+	<td><% out.write(ejbcawebbean.getText(token.getLabel()));%>
+        </td>
+      </tr>
+      <% } %>
       <tr id="Row<%=(row++)%2%>">
 	<td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("HARDTOKENSN") %></td>
 	<td><%= token.getTokenSN()%>
