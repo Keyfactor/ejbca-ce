@@ -13,6 +13,10 @@
  
 package org.ejbca.core.model.ca.caadmin;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -29,6 +33,7 @@ import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSException;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.UpgradeableDataHashMap;
 import org.ejbca.core.model.ca.SignRequestSignatureException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAService;
@@ -40,6 +45,8 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceNotAc
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceResponse;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceRequest;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceResponse;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceResponse;
@@ -66,7 +73,7 @@ import org.ejbca.util.CertTools;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.17 2007-01-16 11:43:26 anatom Exp $
+ * @version $Id: CA.java,v 1.18 2007-04-13 06:07:58 herrvendil Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -458,9 +465,33 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     public abstract byte[] createPKCS7(Certificate cert, boolean includeChain) throws SignRequestSignatureException;            
   
         
-    public abstract byte[] encryptKeys(KeyPair keypair) throws Exception;
+    public byte[] encryptKeys(KeyPair keypair) throws Exception{
+    	ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    	ObjectOutputStream os = new ObjectOutputStream(baos);
+    	os.writeObject(keypair); 
+    	return encryptData(baos.toByteArray(), SecConst.CAKEYPURPOSE_KEYENCRYPT);
+    }
     
-    public abstract KeyPair decryptKeys(byte[] data) throws Exception;
+    public KeyPair decryptKeys(byte[] data) throws Exception{
+    	byte[] recdata = decryptData(data,SecConst.CAKEYPURPOSE_KEYENCRYPT);
+    	ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(recdata));    	
+    	return (KeyPair) ois.readObject();  
+    }
+    /**
+     * General encryption method used to encrypt using a CA
+     * @param data the data to encrypt
+     * @param keyPurpose should be one of the SecConst.CAKEYPURPOSE_ constants
+     * @return encrypted data
+     */
+    public abstract byte[] encryptData(byte[] data, int keyPurpose) throws Exception;
+    
+    /**
+     * General encryption method used to decrypt using a CA
+     * @param data the data to decrypt
+     * @param keyPurpose should be one of the SecConst.CAKEYPURPOSE_ constants
+     * @return decrypted data
+     */
+    public abstract byte[] decryptData(byte[] data, int cAKeyPurpose) throws Exception;
 
     
     // Methods used with extended services	
@@ -534,6 +565,34 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
           		}
           	}          	
           }
+          if(request instanceof HardTokenEncryptCAServiceRequest){
+        	  HardTokenEncryptCAServiceRequest hardencrequest =  (HardTokenEncryptCAServiceRequest) request;
+            	if(hardencrequest.getCommand() == HardTokenEncryptCAServiceRequest.COMMAND_ENCRYPTDATA){
+            		try{	
+            			returnval = new HardTokenEncryptCAServiceResponse(HardTokenEncryptCAServiceResponse.TYPE_ENCRYPTRESPONSE, 
+            					encryptData(hardencrequest.getData(), SecConst.CAKEYPURPOSE_HARDTOKENENCRYPT));	
+            		}catch(CMSException e){
+            			log.error("encrypt:", e.getUnderlyingException());
+            			throw new IllegalExtendedCAServiceRequestException(e);
+            		}catch(Exception e){
+            			throw new IllegalExtendedCAServiceRequestException(e);
+            		}
+            	}else{
+            		if(hardencrequest.getCommand() == HardTokenEncryptCAServiceRequest.COMMAND_DECRYPTDATA){
+                    try{
+                    	returnval = new HardTokenEncryptCAServiceResponse(HardTokenEncryptCAServiceResponse.TYPE_DECRYPTRESPONSE, 
+            					this.decryptData(hardencrequest.getData(), SecConst.CAKEYPURPOSE_HARDTOKENENCRYPT));
+            		  }catch(CMSException e){
+            			 log.error("decrypt:", e.getUnderlyingException());
+          		  	 throw new IllegalExtendedCAServiceRequestException(e);
+           		  }catch(Exception e){
+            		  	 throw new IllegalExtendedCAServiceRequestException(e);
+            		  }
+            		}else{
+            		  throw new IllegalExtendedCAServiceRequestException("Illegal Command"); 
+            		}
+            	}          	
+            }
           
           return returnval;
 	}

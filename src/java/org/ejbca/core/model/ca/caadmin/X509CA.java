@@ -128,7 +128,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.57 2007-04-02 08:26:33 jeklund Exp $
+ * @version $Id: X509CA.java,v 1.58 2007-04-13 06:07:58 herrvendil Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -1002,7 +1002,32 @@ public class X509CA extends CA implements Serializable {
     	    	    	
     	return (KeyPair) ois.readObject();  
     }
-    
+
+	public byte[] decryptData(byte[] data, int cAKeyPurpose) throws Exception {
+    	CMSEnvelopedData ed = new CMSEnvelopedData(data);
+		RecipientInformationStore  recipients = ed.getRecipientInfos();           	
+    	Iterator    it =  recipients.getRecipients().iterator();
+    	RecipientInformation   recipient = (RecipientInformation) it.next();
+    	byte[] recdata = recipient.getContent(getCAToken().getPrivateKey(cAKeyPurpose),getCAToken().getProvider());    	
+    	    	    	
+    	return recdata;  
+	}
+
+	public byte[] encryptData(byte[] data, int keyPurpose) throws Exception {
+    	CertTools.installBCProvider();
+        CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();    	    	    	    	             
+    	CMSEnvelopedData ed;
+		try {
+			edGen.addKeyTransRecipient( this.getCAToken().getPublicKey(keyPurpose), this.keyId);
+			ed = edGen.generate(
+					new CMSProcessableByteArray(data), CMSEnvelopedDataGenerator.AES256_CBC,"BC");
+		} catch (Exception e) {
+            log.error("-encryptKeys: ", e);
+            throw new IOException(e.getMessage());        
+		}				
+		
+		return ed.getEncoded(); 
+	}
     
     /**
      * Obtains the Policy Notice
@@ -1039,5 +1064,6 @@ public class X509CA extends CA implements Serializable {
         }
         
         return policyInformation;
-    }   
+    }
+   
 }
