@@ -23,7 +23,7 @@ import java.util.Iterator;
  * A class used as a help class for displaying and configuring basic access rules
  *
  * @author  herrvendil 
- * @version $Id: BasicAccessRuleSetEncoder.java,v 1.3 2006-08-09 07:29:49 herrvendil Exp $
+ * @version $Id: BasicAccessRuleSetEncoder.java,v 1.4 2007-04-13 06:06:49 herrvendil Exp $
  */
 public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 
@@ -369,6 +369,7 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 		availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_DELETE));
 		availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_REVOKE));
 		availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_APPROVE));
+		availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_VIEWPUK));
 		if(usekeyrecovery)
 		  availableendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_KEYRECOVER));
 		
@@ -385,10 +386,12 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 		    	this.availableendentityprofiles.add(new Integer(BasicAccessRuleSet.ENDENTITYPROFILE_ALL));	
 		    }else
 		    if(nextrule.startsWith(AvailableAccessRules.ENDENTITYPROFILEPREFIX)){			    	
-		    	if(nextrule.lastIndexOf('/') <= AvailableAccessRules.ENDENTITYPROFILEPREFIX.length())
+		    	if(nextrule.lastIndexOf('/') <= AvailableAccessRules.ENDENTITYPROFILEPREFIX.length()){
 		    	  this.availableendentityprofiles.add(new Integer(nextrule.substring(AvailableAccessRules.ENDENTITYPROFILEPREFIX.length())));
-		    	else	
-		    	  this.availableendentityprofiles.add(new Integer(nextrule.substring(AvailableAccessRules.ENDENTITYPROFILEPREFIX.length(), nextrule.lastIndexOf('/'))));		
+		    	}else{	
+		    	  String tmpString = nextrule.substring(AvailableAccessRules.ENDENTITYPROFILEPREFIX.length());
+		    	  this.availableendentityprofiles.add(new Integer(tmpString.substring(0, tmpString.indexOf('/'))));
+		    	}
 		    }		    		    		    						
 		}
 		
@@ -446,11 +449,15 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 				    if(ar.getAccessRule().equals(AvailableAccessRules.REGULAR_KEYRECOVERY)){				    	
 				    	currentendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_KEYRECOVER));							
 				    	endentityrules.put(general,  new Integer(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_KEYRECOVER));				    	
-				    }
+				    }else
 				    if(ar.getAccessRule().equals(AvailableAccessRules.REGULAR_APPROVEENDENTITY)){				    	
 				    	currentendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_APPROVE));							
 				    	endentityrules.put(general,  new Integer(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_APPROVE));				    	
-				    }
+				    }else
+					if(ar.getAccessRule().equals(AvailableAccessRules.REGULAR_VIEWPUKS)){				    	
+						currentendentityrules.add(new Integer(BasicAccessRuleSet.ENDENTITY_VIEWPUK));							
+						endentityrules.put(general,  new Integer(((Integer) endentityrules.get(general)).intValue() + BasicAccessRuleSet.ENDENTITY_VIEWPUK));				    	
+					}
 				}else{
 				   this.forceadvanced = true;
 				   break;
@@ -468,7 +475,8 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 				  if(ar.getRule() == AccessRule.RULE_ACCEPT && !ar.isRecursive()){
                     Integer profileid = null; 
 				  	if(ar.getAccessRule().lastIndexOf('/') > AvailableAccessRules.ENDENTITYPROFILEPREFIX.length()){
-					  profileid = new Integer(ar.getAccessRule().substring(AvailableAccessRules.ENDENTITYPROFILEPREFIX.length(), ar.getAccessRule().lastIndexOf('/')));
+				  		String tmpString = ar.getAccessRule().substring(AvailableAccessRules.ENDENTITYPROFILEPREFIX.length());
+					  profileid = new Integer(tmpString.substring(0, tmpString.indexOf('/')));
 				  	}else{
 				  		this.forceadvanced = true;
 				  		break;
@@ -503,6 +511,9 @@ public class BasicAccessRuleSetEncoder implements java.io.Serializable {
 					}
 					if(ar.getAccessRule().endsWith(AvailableAccessRules.APPROVAL_RIGHTS)){
 						currentval += BasicAccessRuleSet.ENDENTITY_APPROVE;
+					}
+					if(ar.getAccessRule().endsWith(AvailableAccessRules.HARDTOKEN_PUKDATA_RIGHTS)){
+						currentval += BasicAccessRuleSet.ENDENTITY_VIEWPUK;
 					}
 					endentityrules.put(profileid, new Integer(currentval));					
 				  }else{

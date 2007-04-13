@@ -17,7 +17,7 @@ package org.ejbca.core.model.authorization;
  * A class containing constats used when configuring Basic Access Rule Set 
  *
  * @author  herrvendil 
- * @version $Id: BasicAccessRuleSet.java,v 1.2 2006-07-29 11:26:36 herrvendil Exp $
+ * @version $Id: BasicAccessRuleSet.java,v 1.3 2007-04-13 06:06:49 herrvendil Exp $
  */
 public class BasicAccessRuleSet implements java.io.Serializable {
 
@@ -37,6 +37,7 @@ public class BasicAccessRuleSet implements java.io.Serializable {
     public static final int ENDENTITY_REVOKE           = 128;
     public static final int ENDENTITY_KEYRECOVER       = 256;
     public static final int ENDENTITY_APPROVE          = 512;
+    public static final int ENDENTITY_VIEWPUK          = 1024;
     
     public static final int ENDENTITYPROFILE_ALL  = 0;
     
@@ -49,7 +50,7 @@ public class BasicAccessRuleSet implements java.io.Serializable {
     		                                                         "RAADMINISTRATOR", "SUPERVISOR",
                                                                      "HARDTOKENISSUER"};
     
-    public static final String[]  ENDENTITYRULETEXTS =  {"VIEWENDENTITYRULE","VIEWHISTORYRULE","VIEWHARDTOKENRULE",
+    public static final String[]  ENDENTITYRULETEXTS =  {"VIEWENDENTITYRULE","VIEWHISTORYRULE","VIEWHARDTOKENRULE","VIEWPUKENDENTITYRULE",
     	                                                                                  "CREATEENDENTITYRULE","EDITENDENTITYRULE","DELETEENDENTITYRULE",
 																						  "REVOKEENDENTITYRULE", "KEYRECOVERENDENTITYRULE",
 																						  "APPROVEENDENTITYRULE"};
@@ -74,23 +75,26 @@ public class BasicAccessRuleSet implements java.io.Serializable {
     	   case BasicAccessRuleSet.ENDENTITY_VIEWHARDTOKENS:
     	      returnval = ENDENTITYRULETEXTS[2];
     	      break;
+    	   case BasicAccessRuleSet.ENDENTITY_VIEWPUK:
+     	      returnval = ENDENTITYRULETEXTS[3];
+     	      break;
     	   case BasicAccessRuleSet.ENDENTITY_CREATE:
-    	   	  returnval = ENDENTITYRULETEXTS[3];
-    	   	  break;
-    	   case BasicAccessRuleSet.ENDENTITY_EDIT:
     	   	  returnval = ENDENTITYRULETEXTS[4];
     	   	  break;
+    	   case BasicAccessRuleSet.ENDENTITY_EDIT:
+    	   	  returnval = ENDENTITYRULETEXTS[5];
+    	   	  break;
     	   case BasicAccessRuleSet.ENDENTITY_DELETE:
-    	   	returnval = ENDENTITYRULETEXTS[5];
+    	   	returnval = ENDENTITYRULETEXTS[6];
     	   	break;
     	   case BasicAccessRuleSet.ENDENTITY_REVOKE:
-    	   	  returnval = ENDENTITYRULETEXTS[6];
+    	   	  returnval = ENDENTITYRULETEXTS[7];
     	   	  break;
     	   case BasicAccessRuleSet.ENDENTITY_KEYRECOVER:
-    	   	returnval = ENDENTITYRULETEXTS[7];
+    	   	returnval = ENDENTITYRULETEXTS[8];
     	   	break;
     	   case BasicAccessRuleSet.ENDENTITY_APPROVE:
-       	   	returnval = ENDENTITYRULETEXTS[8];
+       	   	returnval = ENDENTITYRULETEXTS[9];
        	   	break;
     	}
     	return returnval;
