@@ -33,6 +33,7 @@ import org.ejbca.core.ejb.keyrecovery.IKeyRecoverySessionLocalHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome;
 import org.ejbca.core.model.authorization.AdminGroup;
+import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.hardtoken.HardTokenData;
 import org.ejbca.core.model.hardtoken.HardTokenIssuer;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
@@ -47,7 +48,7 @@ import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
  * A java bean handling the interface between EJBCA hard token module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: HardTokenInterfaceBean.java,v 1.1 2006-01-17 20:26:30 anatom Exp $
+ * @version $Id: HardTokenInterfaceBean.java,v 1.2 2007-04-13 06:21:32 herrvendil Exp $
  */
 public class HardTokenInterfaceBean implements java.io.Serializable {
 
@@ -94,10 +95,10 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
     }
     
     /* Returns the first found hard token for the given username. */
-    public HardTokenView getHardTokenViewWithUsername(String username) {
+    public HardTokenView getHardTokenViewWithUsername(String username, boolean includePUK) {
       this.result=null;
 
-      Collection res = hardtokensession.getHardTokens(admin, username);
+      Collection res = hardtokensession.getHardTokens(admin, username, includePUK);
       Iterator iter = res.iterator();
       if(res.size() > 0) {
         this.result = new HardTokenView[res.size()];
@@ -113,11 +114,11 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
       return null;        
     }
     
-    public HardTokenView getHardTokenViewWithIndex(String username, int index) {
+    public HardTokenView getHardTokenViewWithIndex(String username, int index, boolean includePUK) {
         HardTokenView returnval=null;
         
         if(result == null)
-            getHardTokenViewWithUsername(username);
+            getHardTokenViewWithUsername(username, includePUK);
         
         if(result!=null)
             if(index < result.length)
@@ -134,10 +135,10 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
         return returnval;
     }
     
-    public HardTokenView getHardTokenView(String tokensn) {
+    public HardTokenView getHardTokenView(String tokensn, boolean includePUK) throws AuthorizationDeniedException {
         HardTokenView  returnval = null;
         this.result=null;
-        HardTokenData token =  hardtokensession.getHardToken(admin, tokensn);
+        HardTokenData token =  hardtokensession.getHardToken(admin, tokensn, includePUK);
         if(token != null)
             returnval = new  HardTokenView(token);
         

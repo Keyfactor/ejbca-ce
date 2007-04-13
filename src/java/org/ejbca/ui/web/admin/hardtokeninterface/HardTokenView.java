@@ -25,7 +25,7 @@ import org.ejbca.util.StringTools;
 /**
  * A class representing a web interface view of a hard token in the ra database.
  *
- * @version $Id: HardTokenView.java,v 1.1 2006-01-17 20:26:30 anatom Exp $
+ * @version $Id: HardTokenView.java,v 1.2 2007-04-13 06:21:32 herrvendil Exp $
  */
 public class HardTokenView implements java.io.Serializable, Cloneable {
     // Public constants.
@@ -69,6 +69,10 @@ public class HardTokenView implements java.io.Serializable, Cloneable {
 
     public Date getModifyTime() {
         return tokendata.getModifyTime();
+    }
+    
+    public String getLabel(){
+    	return tokendata.getHardToken().getLabel();
     }
 
     public int getNumberOfFields() {
