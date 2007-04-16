@@ -1,8 +1,3 @@
-<script type="text/javascript">
-<!--
-	myDeclare();
--->
-</script>
 
 <h1 class="title">@EJBCA@ Mozilla Certificate Enrollment</h1>
 <hr />
@@ -31,7 +26,8 @@
 
 <script type="text/javascript">
 <!--
-	show_NetID_form();
+	myDeclare();
+	show_NetID_form("<%=username %>", "<%=password %>");
 -->
 </script>
 

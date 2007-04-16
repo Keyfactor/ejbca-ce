@@ -95,7 +95,7 @@ import org.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.15 2006-12-13 10:36:04 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.16 2007-04-16 12:28:46 jeklund Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(CertReqServlet.class);
@@ -267,12 +267,12 @@ public class CertReqServlet extends HttpServlet {
                       byte[] certs = helper.nsCertRequest(signsession, reqBytes, username, password);
                       RequestHelper.sendNewCertToNSClient(certs, response);
                   }
-              } else if ( request.getParameter("iidPkcs10") != null ) {
+              } else if ( request.getParameter("iidPkcs10") != null && !request.getParameter("iidPkcs10").equals("")) {
                   // NetID iid?
                   byte[] reqBytes=request.getParameter("iidPkcs10").getBytes();
                   if (reqBytes != null) {
                       byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password, RequestHelper.ENCODED_CERTIFICATE, false);
-                      RequestHelper.sendNewCertToIidClient(b64cert, response.getOutputStream(), getServletContext(), getInitParameter("responseIidTemplate"));
+                      RequestHelper.sendNewCertToIidClient(b64cert, response.getOutputStream(), getServletContext(), getInitParameter("responseIidTemplate"),classid);
                   }
               } else if ( (request.getParameter("pkcs10") != null) || (request.getParameter("PKCS10") != null) ) {
                   // if not netscape, check if it's IE

@@ -1,6 +1,6 @@
 <%@ include file="header.jsp" %>
 
-<object classid="$CLASSID" id="keystore"></object>
+<object classid="$CLASSID" id="g_objClassFactory"></object>
 <!-- New updated enrollment activeX-control 2002-09-02 (Q323172)
 New Xenroll.dll information:
 Class ID: {127698e4-e730-4e5c-a2b1-21490a70c8a1}
@@ -22,33 +22,43 @@ Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45}
 	        on error resume next
 	        ControlExists = IsObject(CreateObject(objectID))
         End Function
+        
+		Function IsCSPInstalled(sCSPName)
+			'on error resume next
+			Dim objCSPInformations
+			Set objCSPInformations	= g_objClassFactory.CreateObject("X509Enrollment.CCspInformations")                 
+			If Err.Number=0 Then
+				objCSPInformations.AddAvailableCsps  
+			End If
+			IsCSPInstalled = IsObject(objCSPInformations.ItemByName(sCSPName))
+		End Function
+	
     </script>
     <script language="JavaScript" type="text/javascript">
         // <!--
-        function myDeclare()
-        {
-            if (navigator.appName.indexOf("Explorer") == -1)
-            {
-                explorer = false;
-                plugin = navigator.mimeTypes["application/x-iid"];
-            }
-            else
-            {
-                explorer = true;
-                plugin = ControlExists("IID.iIDCtl");
-            }
-            if (plugin)
-            {
-                if (explorer)
-		            document.writeln("<object name='iID' classid='CLSID:5BF56AD2-E297-416E-BC49-00B327C4426E' width='0' height='0'><\/object>");
-		        else
-	                document.writeln("<object name='iID' type='application/x-iid' width='0' height='0'><\/object>");
-            }
-            else
-            {
-                document.writeln("<h2>The CryptoAPI component is not installed.<\/h2");
-            }
+      var plugin;
+    function myDeclare() {
+        if (navigator.appName.indexOf("Explorer") == -1) {
+           explorer = false;
+           plugin = navigator.mimeTypes["application/x-iid"];
+        } else {
+           explorer = true;
+           if ( navigator.userAgent.indexOf("Windows NT 6") == -1 ) {
+	       	plugin = ControlExists("IID.iIDCtl");
+	       } else {
+	       	plugin = IsCSPInstalled("Net iD - CSP");
+	       }
         }
+        if (plugin) {
+            if (explorer) {
+                document.writeln("<object name=\"iID\" classid=\"CLSID:5BF56AD2-E297-416E-BC49-00B327C4426E\" width=\"0\" height=\"0\"></object>");
+            }
+            else
+                document.writeln("<object name=\"iID\" type=\"application/x-iid\" width=\"0\" height=\"0\"></object>");
+        } else {
+            document.writeln("The CryptoAPI component is not installed.");
+        }
+    }
         
         function downloadCert()
         {
@@ -76,8 +86,7 @@ Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45}
         }
         
         myDeclare();
-
-        downloadCert();
+	    downloadCert();
 
         // -->
     </script>

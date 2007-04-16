@@ -51,7 +51,7 @@ import org.ejbca.util.FileTools;
 /**
  * Helper class for hadnling certificate request from browsers or general PKCS#10
  * 
- * @version $Id: RequestHelper.java,v 1.6 2007-03-07 15:16:23 anatom Exp $
+ * @version $Id: RequestHelper.java,v 1.7 2007-04-16 12:28:46 jeklund Exp $
  */
 public class RequestHelper {
     private static Logger log = Logger.getLogger(RequestHelper.class);
@@ -236,7 +236,7 @@ public class RequestHelper {
      * @throws Exception
      */
     public static void sendNewCertToIidClient(byte[] certificate, OutputStream out, ServletContext sc,
-                                                String responseTemplate) throws Exception {
+                                                String responseTemplate, String classid) throws Exception {
         if (certificate.length <= 0) {
             log.error("0 length certificate can not be sent to  client!");
             return;
@@ -250,6 +250,7 @@ public class RequestHelper {
                 if (line == null)
                     break;
                 line = line.replaceAll("TAG_cert",new String(certificate));
+                line = CLASSID.matcher(line).replaceFirst(classid);
                 pw.println(line);
             }
             pw.close();
