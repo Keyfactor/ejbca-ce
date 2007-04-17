@@ -376,16 +376,13 @@ If a ',' is needed in the DN the comma must be escaped using '\,'.
 
 <subsection name="Create User certificates">
 <p>
-To enroll for certificates using browsers, open
- http://127.0.0.1:8080/ejbca/publicweb/apply/index.html
- (assuming the servlet container
- listens to port 8080) and use the links for your browser.
+To enroll for a certificate using a browser, go to http://your_server_name:servlet_container_port/ejbca/
+(e.g. http://127.0.0.1:8080/ejbca/) and select &quot;Create Browser Certificate&quot;.
+Enter username and password, click the &quot;OK&quot;-button and follow the instructions.
 </p><p>
-To enroll for certificates using manual methods (for server
-certificates for
- example) open
-http://127.0.0.1:8080/ejbca/publicweb/apply/apply_man.jsp and
-fill in the form.
+To enroll for certificates manually (e.g. for server certificates), go to
+http://your_server_name:servlet_container_port/ejbca/, select
+&quot;Create Server Certificate&quot; and fill out the form.
 </p><p>
 Note that application for certificates only work when the status of a user is
 NEW, FAILED or INPROCESS (one time password thing). The
