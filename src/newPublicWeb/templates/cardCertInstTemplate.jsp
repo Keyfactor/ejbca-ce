@@ -35,9 +35,11 @@ Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45}
 	
     </script>
     <script language="JavaScript" type="text/javascript">
-        // <!--
-      var plugin;
+	// <!--
+	var success;
+	var plugin;
     function myDeclare() {
+    	success = false;
         if (navigator.appName.indexOf("Explorer") == -1) {
            explorer = false;
            plugin = navigator.mimeTypes["application/x-iid"];
@@ -62,6 +64,7 @@ Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45}
         
         function downloadCert()
         {
+	        success = true;
             document.iID.SetProperty('Certificate', 'TAG_certToRemove1');
             rv = document.iID.Invoke('DeleteCertificate');
     
@@ -76,13 +79,15 @@ Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45}
     
             document.iID.SetProperty('Certificate', 'TAG_authb64cert');
             rv = document.iID.Invoke('WriteCertificate');
-            if (rv != 0)
-                alert("Error during certificate import");
+            if (rv != 0) {
+                success = false;
+			}
             
             document.iID.SetProperty('Certificate', 'TAG_signb64cert');
             rv = document.iID.Invoke('WriteCertificate');
-            if (rv != 0)
-                alert("Error during certificate import");
+            if (rv != 0) {
+                success = false;
+			}
         }
         
         myDeclare();
@@ -104,7 +109,11 @@ Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45}
 	</noscript>
 
     <script language="JavaScript" type="text/javascript">
-    	document.writeln("<h2>The certificate was successfully downloaded to your card.<\/h2>");
+    	if (plugin && success) {
+	    	document.writeln("<h2>The certificate was successfully downloaded to your card.<\/h2>");
+	    } else {
+	    	document.writeln("<h2>An error has occurred during the certificate import.<\/h2>");
+	    }
     </script>
 
 	<p><a href="javascript:history.back()">Go back</a></p>

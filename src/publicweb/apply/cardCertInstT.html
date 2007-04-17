@@ -2,7 +2,7 @@
 <HEAD>
   <META NAME="EJBCA" CONTENT="EJBCA">
   <TITLE>Internet Explorer Certificate enrollment.</TITLE>
-  <object classid="$CLASSID" id="keystore"></object>
+  <object classid="$CLASSID" id="g_objClassFactory"></object>
 <!-- New updated enrollment activeX-control 2002-09-02 (Q323172)
 New Xenroll.dll information:
 Class ID: {127698e4-e730-4e5c-a2b1-21490a70c8a1}
@@ -21,79 +21,82 @@ Class ID: {80CB7887-20DE-11D2-8D5C-00C04FC29D45}
 </HEAD>
 <BODY bgcolor="#ffffff" link="black" vlink="black" alink="black" onload="downloadCert()">
 
-<SCRIPT language=VBScript>
-Function ControlExists(objectID)
-on error resume next
-ControlExists = IsObject(CreateObject(objectID))
-End Function
-</SCRIPT>
+	<SCRIPT language=VBScript>
+		Function ControlExists(objectID)
+			on error resume next
+			ControlExists = IsObject(CreateObject(objectID))
+		End Function
 
-<SCRIPT language=JavaScript>
+		Function IsCSPInstalled(sCSPName)
+			On Error Resume Next
+			Dim objCSPInformations
+			Set objCSPInformations	= g_objClassFactory.CreateObject("X509Enrollment.CCspInformations")                 
+			If Err.Number=0 Then
+				objCSPInformations.AddAvailableCsps  
+			End If
+			IsCSPInstalled = IsObject(objCSPInformations.ItemByName(sCSPName))
+		End Function	'IsCSPInstalled
+	</SCRIPT>
 
+	<SCRIPT LANGUAGE="JavaScript">
+	    var plugin;
+		function myDeclare() {
+			if (navigator.appName.indexOf("Explorer") == -1) {
+				explorer = false;
+				plugin = navigator.mimeTypes["application/x-iid"];
+			} else {
+				explorer = true;
+				if ( navigator.userAgent.indexOf("Windows NT 6") == -1 ) {
+					plugin = ControlExists("IID.iIDCtl");
+				} else {
+					plugin = IsCSPInstalled("Net iD - CSP");
+				}
+			}
+			if (plugin) {
+				if (explorer) {
+					document.writeln("<object name=\"iID\" classid=\"CLSID:5BF56AD2-E297-416E-BC49-00B327C4426E\" width=\"0\" height=\"0\"></object>");
+				} else {
+					document.writeln("<object name=\"iID\" type=\"application/x-iid\" width=\"0\" height=\"0\"></object>");
+				}
+			} else {
+				document.writeln("The CryptoAPI component is not installed.");
+			}
+		} // myDeclare
 
+        function downloadCert()
+        {
+			if (plugin) {
+	            document.iID.SetProperty('Certificate', 'TAG_certToRemove1');
+	            rv = document.iID.Invoke('DeleteCertificate');
+	    
+	            document.iID.SetProperty('Certificate', 'TAG_certToRemove2');
+	            rv = document.iID.Invoke('DeleteCertificate');
+	    
+	            document.iID.SetProperty('Certificate', 'TAG_certToRemove3');
+	            rv = document.iID.Invoke('DeleteCertificate');
+	    
+	            document.iID.SetProperty('Certificate', 'TAG_certToRemove4');
+	            rv = document.iID.Invoke('DeleteCertificate');
+	    
+	            document.iID.SetProperty('Certificate', 'TAG_authb64cert');
+	            rv = document.iID.Invoke('WriteCertificate');
+	            if (rv != 0)
+	                alert("Error during certificate import");
+	            
+	            document.iID.SetProperty('Certificate', 'TAG_signb64cert');
+	            rv = document.iID.Invoke('WriteCertificate');
+	            if (rv != 0)
+	                alert("Error during certificate import");
+			}
+		} // downloadCert
 
-function myDeclare()
-{
-	if (navigator.appName.indexOf("Explorer") == -1)
-	{
-		explorer = false;
-		plugin = navigator.mimeTypes["application/x-iid"];
-	}
-	else
-	{
-		explorer = true;
-		plugin = ControlExists("IID.iIDCtl");
-	}
-	if (plugin)
-	{
-		if (explorer)
-			document.writeln("<OBJECT NAME='iID' CLASSID='CLSID:5BF56AD2-E297-416E-BC49-00B327C4426E' WIDTH=0 HEIGHT=0></OBJECT>");
- 		else
- 	 		document.writeln("<OBJECT NAME='iID' TYPE='application/x-iid' WIDTH=0 HEIGHT=0></OBJECT>");
-	}
-	else
-	{
-		document.writeln("Komponenten är inte installerad");
-	}
-}
-
-function downloadCert()
-{
-	document.iID.SetProperty('Certificate', 'TAG_certToRemove1');
-	rv = document.iID.Invoke('DeleteCertificate');
-
-	document.iID.SetProperty('Certificate', 'TAG_certToRemove2');
-	rv = document.iID.Invoke('DeleteCertificate');
-
-	document.iID.SetProperty('Certificate', 'TAG_certToRemove3');
-	rv = document.iID.Invoke('DeleteCertificate');
-
-	document.iID.SetProperty('Certificate', 'TAG_certToRemove4');
-	rv = document.iID.Invoke('DeleteCertificate');
-
-	document.iID.SetProperty('Certificate', 'TAG_authb64cert');
-	rv = document.iID.Invoke('WriteCertificate');
-	if (rv != 0)
-		alert("Fel vid Certifikats import");
-	
-	document.iID.SetProperty('Certificate', 'TAG_signb64cert');
-	rv = document.iID.Invoke('WriteCertificate');
-	if (rv != 0)
-		alert("Fel vid Certifikats import");
-
-
-}
-
-
-
-myDeclare();
-
-</SCRIPT>
+		myDeclare();
+	</SCRIPT>
 
 <table align="center" cellspacing="4" cellpadding="4" border="0" width="60%">
 <tr>
 <td  valign="top">
-<font size="3" face="Arial"><strong>Lyckad nerladdning av certifikat p&aring; ditt kort</strong></font></td>
+<font size="3" face="Arial"><strong>The certificate was successfully downloaded to your card.</strong></font></td>
 </tr>
 <tr>
 <td  valign="top">
