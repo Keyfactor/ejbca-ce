@@ -21,7 +21,6 @@ import org.ejbca.core.ejb.hardtoken.IHardTokenSessionRemote;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
-import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.protocol.ws.client.gen.Certificate;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
@@ -44,8 +43,6 @@ import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
 
-import com.sun.xml.internal.fastinfoset.algorithm.IEEE754FloatingPointEncodingAlgorithm;
-
 public class TestEjbcaWS extends TestCase {
 	
 	private static EjbcaWS ejbcaraws;
@@ -53,8 +50,6 @@ public class TestEjbcaWS extends TestCase {
 	private IHardTokenSessionRemote hardTokenAdmin;
     private static IHardTokenSessionHome hardTokenHome;
     
-    private static Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
-
 	protected void setUp() throws Exception {
 		super.setUp();
 		CertTools.installBCProvider();
@@ -500,7 +495,7 @@ public class TestEjbcaWS extends TestCase {
 		user1.setUsername("WSTESTUSER1");
 		user1.setPassword("foo123");
 		user1.setClearPwd(true);
-		user1.setSubjectDN("CN=WSÅÄÖåäö");
+		user1.setSubjectDN("CN=WSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½");
 		user1.setCaName("AdminCA1");
 		user1.setEmail(null);
 		user1.setSubjectAltName(null);
@@ -521,7 +516,7 @@ public class TestEjbcaWS extends TestCase {
 		assertTrue(userdatas.size() == 1);
 		UserDataVOWS userdata = userdatas.get(0);
 		assertTrue(userdata.getUsername().equals("WSTESTUSER1"));
-        assertTrue(userdata.getSubjectDN().equals("CN=WSÅÄÖåäö"));
+        assertTrue(userdata.getSubjectDN().equals("CN=WSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"));
 		
 	}
 	
