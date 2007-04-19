@@ -644,8 +644,8 @@ The most common errors should be wrong username/password or wrong status (not NE
 </subsubsection>
 <subsubsection name="RA mode (ExtRA API 3.4.2)">
 <p>
-EJBCA supports the SCEP 'polling' RA model usign the External RA API, from ExtRA version 3.4.2.
-Using this a SCEP client can send a request the the External RA, and the wait polling the RA for updates. 
+EJBCA supports the SCEP 'polling' RA model using the External RA API, from ExtRA version 3.4.2.
+Using this a SCEP client can send a request to the External RA, and then wait, polling the RA for updates. 
 When the request is processed by the CA, which fetches the pkcs10 request from the External RA, the certificate is sent back to the External RA. 
 When the certificate is complete on the External RA, the RA sends back the SCEP certificate response the next time the SCEP client
 polls the RA.
