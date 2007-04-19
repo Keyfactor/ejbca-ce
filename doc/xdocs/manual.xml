@@ -618,15 +618,21 @@ EJBCA implements features from (at least) draft 11 of the SCEP spec. This means 
 <li>GetCACertChain</li>
 <li>GetCACaps</li>
 </ul>
-And the following CA capabilities:
+Using the External RA API the following SCEP message is also supported for polling mode:
+<ul>
+<li>GetCertInitial</li>
+</ul>
+The following CA capabilities are supported:
 <ul>
 <li>POSTPKIOperation</li>
 <li>SHA-1</li>
 </ul>
-</p><p>
+</p>
+<subsubsection name="CA mode">
+<p>
 EJBCA does succesfully receive SCEP 'PKCSReq' requests and send back the certifificate/CRL immediately in a proper SCEP reply message.
-EJBCA does not support the 'polling' model, EJBCA uses the direct method, where a request is granted or denied immediately.
-EJBCA will not send back proper SCEP error messages in all cases of failure. The error messages are not completely implemented.
+EJBCA (standard) does not support the 'polling' model, EJBCA uses the direct CA method, where a request is granted or denied immediately.
+The SCEP client will send messages directly to the CA, encrypted with the CAs certificate.
 </p><p>
 The CN part of the DN in the PKCS#10 request, which is part of the Scep request, will be used as the 'username' when 
 authenticating the request in EJBCA. Create the Scep request with a CN mathing the username registered in EJBCA.
@@ -634,6 +640,21 @@ The challengePassword in the PKCS#10 request, which is part of the Scep request,
 authenticating the request in EJBCA. Create the Scep request with a challengePassword mathing the password registered in EJBCA.
 </p><p>
 The most common errors should be wrong username/password or wrong status (not NEW) on the user in EJBCA.
+</p>
+</subsubsection>
+<subsubsection name="RA mode (ExtRA API 3.4.2)">
+<p>
+EJBCA supports the SCEP 'polling' RA model usign the External RA API, from ExtRA version 3.4.2.
+Using this a SCEP client can send a request the the External RA, and the wait polling the RA for updates. 
+When the request is processed by the CA, which fetches the pkcs10 request from the External RA, the certificate is sent back to the External RA. 
+When the certificate is complete on the External RA, the RA sends back the SCEP certificate response the next time the SCEP client
+polls the RA.
+<br/>This feature is very useful to securely insulate the CA from the SCEP clients throughout the network.
+<br/>See the documentation in the ExtRA API for more information how to set up and configure this RA.
+</p>
+</subsubsection>
+<p>
+EJBCA will not send back proper SCEP error messages in all cases of failure. The error messages are not completely implemented, although most of them are implemented.
 </p>
 </subsection>
 <subsection name="Tested devices">
