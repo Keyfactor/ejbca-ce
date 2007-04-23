@@ -696,6 +696,34 @@ You should only use CN in the users DN (same as for PIX below).
 <subsubsection name="Juniper Networks NetScreen-25/NetScreen-50">
 <p>
 Works nice using the URL not including the CA certificate.
+</p>
+<p>
+To enroll using the Juniper box go to the Web GUI at https://&lt;juniper-ip&gt;/, then click your way to Objects->Certificates.
+To create a new certificate request:
+<ol>
+<li>New - enter the DN that your box will receive:
+  <ul>
+  <li>Name=netscreen.foo.se</li>
+  <li>Organization=PrimeKey</li>
+  <li>Country=SE</li>
+  <li>IP Adress=192.168.1.1</li>
+  <li>FQSN=netscreen.foo.se</li>
+  </ul>
+Click generate.
+</li>
+<li>Automatically enroll to -> New CA Server settings:
+  <ul>
+  <li>RA CGI (if using polling RA mode and the External RA): http://&lt;ra-ip&gt;:8080/scepraserver/scep/noca/pkiclient.exe.</li>
+  <li>CA CGI (if using direct CA mode): http://&lt;ca-ip&gt;:8080/ejbca/publicweb/apply/scep/noca/pkiclient.exe.</li>
+  <li>CA IDENT: The CA Name in EJBCA, for example ScepCA.</li>
+  <li>Challenge: A password for a pre-registered user in CA mode, or a random password used for polling RA mode.</li>
+  </ul>
+Click OK.
+</li>
+<li>You can now see the request in Objects->Certificates. If you are using polling RA mode, you can click 'Retrieve' after the request
+has been approved in the CA and the certificate has been generated.
+</li> 
+</ol>
 </p></subsubsection>
 <subsubsection name="Cryptlib">
 <p>
