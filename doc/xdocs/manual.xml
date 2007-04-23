@@ -711,10 +711,10 @@ To create a new certificate request:
   </ul>
 Click generate.
 </li>
-<li>Automatically enroll to -> New CA Server settings:
+<li>Automatically enroll to -> New CA Server settings. The CGI URL depens if you are using the direct CA mode or the RA polling mode:
   <ul>
-  <li>RA CGI (if using polling RA mode and the External RA): http://&lt;ra-ip&gt;:8080/scepraserver/scep/noca/pkiclient.exe.</li>
-  <li>CA CGI (if using direct CA mode): http://&lt;ca-ip&gt;:8080/ejbca/publicweb/apply/scep/noca/pkiclient.exe.</li>
+  <li>RA CGI: http://&lt;ra-ip&gt;:8080/scepraserver/scep/noca/pkiclient.exe or http://&lt;ca-ip&gt;:8080/ejbca/publicweb/apply/scep/noca/pkiclient.exe.</li>
+  <li>CA CGI: http://&lt;ra-ip&gt;:8080/scepraserver/scep/noca/pkiclient.exe or http://&lt;ca-ip&gt;:8080/ejbca/publicweb/apply/scep/noca/pkiclient.exe.</li>
   <li>CA IDENT: The CA Name in EJBCA, for example ScepCA.</li>
   <li>Challenge: A password for a pre-registered user in CA mode, or a random password used for polling RA mode.</li>
   </ul>
