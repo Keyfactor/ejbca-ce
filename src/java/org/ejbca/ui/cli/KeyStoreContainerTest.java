@@ -99,10 +99,10 @@ class KeyStoreContainerTest {
         return keyStore;
     }
     private static KeyStoreContainerTest[] getTests(final KeyStoreContainer keyStore) throws Exception {
-        Enumeration<String> e = keyStore.getKeyStore().aliases();
-        Set<KeyStoreContainerTest> testSet = new HashSet<KeyStoreContainerTest>();
+        Enumeration e = keyStore.getKeyStore().aliases();
+        Set testSet = new HashSet();
         while( e.hasMoreElements() ) {
-            String alias = e.nextElement();
+            String alias = (String) e.nextElement();
             if ( keyStore.getKeyStore().isKeyEntry(alias) ) {
                 PrivateKey privateKey = (PrivateKey)keyStore.getKey(alias);
                 testSet.add(new KeyStoreContainerTest(alias,
@@ -110,7 +110,7 @@ class KeyStoreContainerTest {
                                                       keyStore.getProviderName()));
             }
         }
-        return testSet.toArray(new KeyStoreContainerTest[0]);
+        return (KeyStoreContainerTest[]) testSet.toArray(new KeyStoreContainerTest[0]);
     }
     static void test(final String providerClassName,
                      final String encryptProviderClassName,

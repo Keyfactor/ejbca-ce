@@ -100,9 +100,9 @@ public abstract class KeyStoreContainer {
         if ( alias!=null )
             deleteAlias(alias);
         else {
-            Enumeration<String> e = this.keyStore.aliases();
+            Enumeration e = this.keyStore.aliases();
             while( e.hasMoreElements() )
-                deleteAlias( e.nextElement() );
+                deleteAlias( (String) e.nextElement() );
         }
         return storeKeyStore();
     }
@@ -151,9 +151,9 @@ public abstract class KeyStoreContainer {
                      final String toID) throws IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException, ClassNotFoundException, NoSuchAlgorithmException, CertificateException, KeyStoreException, NoSuchProviderException, IOException, UnrecoverableKeyException, LoginException {
         KeyStoreContainer fromKS = getIt(keyStoreType, providerClassName, encryptProviderClassName, fromID);
         KeyStoreContainer toKS = getIt(keyStoreType, providerClassName, encryptProviderClassName, toID);
-        Enumeration<String> e = fromKS.getKeyStore().aliases();
+        Enumeration e = fromKS.getKeyStore().aliases();
         while( e.hasMoreElements() ) {
-            String alias = e.nextElement();
+            String alias = (String) e.nextElement();
             if (fromKS.getKeyStore().isKeyEntry(alias)) {
                 Key key=fromKS.getKey(alias);
                 Certificate chain[] = fromKS.getKeyStore().getCertificateChain(alias);
@@ -317,13 +317,13 @@ class KeyStoreContainerJCE extends KeyStoreContainer {
         Security.addProvider(provider);
         return provider.getName();
     }
-    @Override public char[] getPassPhraseGetSetEntry() {
+    public char[] getPassPhraseGetSetEntry() {
         return passPhraseGetSetEntry;
     }
     public char[] getPassPhraseLoadSave() {
         return passPhraseLoadSave;
     }
-    @Override public byte[] storeKeyStore() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+    public byte[] storeKeyStore() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
         System.err.println("Next line will contain the identity identifying the keystore:");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         this.keyStore.store(baos, this.passPhraseLoadSave);
@@ -332,7 +332,7 @@ class KeyStoreContainerJCE extends KeyStoreContainer {
         System.err.println();
         return baos.toByteArray();
     }
-    @Override void setKeyEntry(String alias, Key key, Certificate chain[]) throws IOException, KeyStoreException {
+    void setKeyEntry(String alias, Key key, Certificate chain[]) throws IOException, KeyStoreException {
         try {
             this.keyStore.setKeyEntry(alias, key, this.passPhraseGetSetEntry, chain);
         } catch (KeyStoreException e) {
@@ -340,7 +340,7 @@ class KeyStoreContainerJCE extends KeyStoreContainer {
             this.keyStore.setKeyEntry(alias, key, this.passPhraseGetSetEntry, chain);
         }
     }
-    @Override public Key getKey(String alias) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException, IOException {
+    public Key getKey(String alias) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException, IOException {
         try {
             return this.keyStore.getKey(alias, this.passPhraseGetSetEntry);
         } catch (UnrecoverableKeyException e1) {
@@ -370,17 +370,17 @@ class KeyStoreContainerP11 extends KeyStoreContainer {
         final KeyStore keyStore = builder.getKeyStore();
         return new KeyStoreContainerP11( keyStore, providerName, providerName );
     }
-    @Override public byte[] storeKeyStore() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+    public byte[] storeKeyStore() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
         this.keyStore.store(null, null);
         return new byte[0];
     }
-    @Override void setKeyEntry(String alias, Key key, Certificate chain[]) throws IOException, KeyStoreException {
+    void setKeyEntry(String alias, Key key, Certificate chain[]) throws IOException, KeyStoreException {
         this.keyStore.setKeyEntry(alias, key, null, chain);
     }
-    @Override public Key getKey(String alias) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException, IOException {
+    public Key getKey(String alias) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException, IOException {
         return this.keyStore.getKey(alias, null);
     }
-    @Override public char[] getPassPhraseGetSetEntry() {
+    public char[] getPassPhraseGetSetEntry() {
         return null;
     }
 }
