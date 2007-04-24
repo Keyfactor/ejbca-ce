@@ -27,6 +27,8 @@ elif [ "$1" = "ra" ] ; then
 	class_name=org.ejbca.ui.cli.ra
 elif [ "$1" = "setup" ] ; then
 	class_name=org.ejbca.ui.cli.setup
+elif [ "$1" = "hardtoken" ] ; then
+	class_name=org.ejbca.ui.cli.hardtoken.hardtoken	
 elif [ "$1" = "template" ] ; then
         CP=:${EJBCA_HOME}/lib/ext/xerces_2_3_0.jar
 	class_name=org.ejbca.ui.cli.SVGTemplatePrinter
@@ -37,7 +39,7 @@ elif [ "$1" = "asn1dump" ] ; then
 elif [ "$1" = "encryptpwd" ] ; then
 	class_name=org.ejbca.ui.cli.EncryptPwd
 else
-	echo "Usage: $0 [batch|ca|ra|setup|template|ocsp|asn1dump] options"
+	echo "Usage: $0 [batch|ca|ra|setup|hardtoken|template|ocsp|asn1dump] options"
 	echo "For options information, specify a command directive"
 	exit 1
 fi

@@ -12,12 +12,13 @@ if "%1" == "batch" set class_name=org.ejbca.ui.cli.batch.BatchMakeP12
 if "%1" == "ca" set class_name=org.ejbca.ui.cli.ca
 if "%1" == "ra" set class_name=org.ejbca.ui.cli.ra
 if "%1" == "setup" set class_name=org.ejbca.ui.cli.setup
+if "%1" == "hardtoken" set class_name=org.ejbca.ui.cli.hardtoken.hardtoken
 if "%1" == "template" set class_name=org.ejbca.ui.cli.SVGTemplatePrinter
 if "%1" == "ocsp" set class_name=org.ejbca.ui.cli.Ocsp
 if "%1" == "asn1dump" set class_name=org.ejbca.ui.cli.Asn1Dump
 if "%1" == "encryptpwd" set class_name=org.ejbca.ui.cli.EncryptPwd
 if %class_name% == "" (
-    echo "Usage: %0 [batch|ca|ra|setup|template|ocsp|asn1dump] options"
+    echo "Usage: %0 [batch|ca|ra|setup|hardtoken|template|ocsp|asn1dump] options"
 	echo For options information, specify a command directive
     goto end
 )
