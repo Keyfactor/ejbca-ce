@@ -13,27 +13,15 @@
 
 package org.ejbca.core.ejb.hardtoken;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.Date;
 import java.util.HashMap;
 
 import javax.ejb.CreateException;
-import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.BaseEntityBean;
 import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
-import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceRequest;
-import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceResponse;
-import org.ejbca.core.model.hardtoken.types.EIDHardToken;
-import org.ejbca.core.model.hardtoken.types.EnhancedEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.HardToken;
-import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
-import org.ejbca.core.model.hardtoken.types.TurkishEIDHardToken;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.StringTools;
 
@@ -95,7 +83,7 @@ import org.ejbca.util.StringTools;
  */
 public abstract class HardTokenDataBean extends BaseEntityBean {
 
-    private static final String ENCRYPTEDDATA = "ENCRYPTEDDATA";
+
  
     private static final Logger log = Logger.getLogger(HardTokenIssuerDataBean.class);
 
@@ -165,11 +153,13 @@ public abstract class HardTokenDataBean extends BaseEntityBean {
 
     /**
      * @ejb.persistence column-name="data"
+     * @ejb.interface-method view-type="local"
      * @weblogic.ora.columntyp@
      */
     public abstract HashMap getData();
 
     /**
+     * @ejb.interface-method view-type="local"
      */
     public abstract void setData(HashMap data);
 
@@ -193,75 +183,7 @@ public abstract class HardTokenDataBean extends BaseEntityBean {
      */
     public void setModifyTime(Date modifytime){ setMtime(modifytime.getTime()); }
 
-    /**
-     * Method that returns the hard token issuer data and updates it if nessesary.
-     * @ejb.interface-method view-type="local"
-     */
-    public HardToken getHardToken(Admin admin, ISignSessionLocal signsession, int encryptcaid, boolean includePUK){
-      HardToken returnval = null;
-      HashMap data = getData();
-      
-      if(data.get(ENCRYPTEDDATA) != null){
-    	  // Data in encrypted, decrypt
-    	  byte[] encdata = (byte[]) data.get(ENCRYPTEDDATA);
-    	  
-    	  HardTokenEncryptCAServiceRequest request = new HardTokenEncryptCAServiceRequest(HardTokenEncryptCAServiceRequest.COMMAND_DECRYPTDATA,encdata);
-    	  try {
-    		HardTokenEncryptCAServiceResponse response = (HardTokenEncryptCAServiceResponse) signsession.extendedService(admin, encryptcaid, request);
-			ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(response.getData()));
-			data = (HashMap) ois.readObject();
-		} catch (Exception e) {
-			throw new EJBException(e);
-		}
-      }      
-      
-      int tokentype = ((Integer) data.get(HardToken.TOKENTYPE)).intValue();
-
-      switch(tokentype){
-          case SecConst.TOKEN_SWEDISHEID :
-      	     returnval = new SwedishEIDHardToken(includePUK);
-      	     break;
-          case SecConst.TOKEN_ENHANCEDEID :
-      	     returnval = new EnhancedEIDHardToken(includePUK);
-      	     break;
-          case SecConst.TOKEN_TURKISHEID :
-       	     returnval = new TurkishEIDHardToken(includePUK);
-       	     break;
-          case SecConst.TOKEN_EID :    // Left for backward compability
-             returnval = new EIDHardToken(includePUK);
-             break;
-          default:
-             returnval = new EIDHardToken(includePUK);
-             break;
-      }
-
-      returnval.loadData(data);
-      return returnval;
-    }
-
-    /**
-     * Method that saves the hard token issuer data to database.
-     * @ejb.interface-method view-type="local"
-     */
-    public void setHardToken(Admin admin, ISignSessionLocal signsession, int encryptcaid, HardToken tokendata){
-    	if(encryptcaid != 0){
-    		try {
-    			ByteArrayOutputStream baos = new ByteArrayOutputStream();    	   
-    			ObjectOutputStream ois = new ObjectOutputStream(baos);
-    			ois.writeObject(tokendata.saveData());
-    			HardTokenEncryptCAServiceRequest request = new HardTokenEncryptCAServiceRequest(HardTokenEncryptCAServiceRequest.COMMAND_ENCRYPTDATA,baos.toByteArray());
-    			HardTokenEncryptCAServiceResponse response = (HardTokenEncryptCAServiceResponse) signsession.extendedService(admin, encryptcaid, request);
-    			HashMap data = new HashMap();
-    			data.put(ENCRYPTEDDATA, response.getData());
-    			setData(data);
-    		} catch (Exception e) {
-    			new EJBException(e);
-    		}
-    	}else{
-    		// Don't encrypt data
-    		setData((HashMap) tokendata.saveData());
-    	}
-    }
+ 
 
 
     //
@@ -275,14 +197,14 @@ public abstract class HardTokenDataBean extends BaseEntityBean {
      * @return null
      * @ejb.create-method view-type="local"
 	 */
-    public String ejbCreate(Admin admin, ISignSessionLocal signsession, int encryptcaid,String tokensn, String username, Date createtime, Date modifytime, int tokentype, String significantissuerdn, HardToken tokendata) throws CreateException {
+    public String ejbCreate(Admin admin, String tokensn, String username, Date createtime, Date modifytime, int tokentype, String significantissuerdn, HashMap data) throws CreateException {
         setTokenSN(tokensn);
         setUsername(StringTools.strip(username));
         setCtime(createtime.getTime());
         setMtime(modifytime.getTime());
         setTokenType(tokentype);
         setSignificantIssuerDN(significantissuerdn);
-        setHardToken(admin,signsession,encryptcaid,tokendata);
+        setData(data);
 
         log.debug("Created Hard Token "+ tokensn );
         return tokensn;
