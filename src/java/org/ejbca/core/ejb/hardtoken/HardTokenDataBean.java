@@ -210,7 +210,7 @@ public abstract class HardTokenDataBean extends BaseEntityBean {
         return tokensn;
     }
 
-    public void ejbPostCreate(Admin admin, ISignSessionLocal signsession, int encryptcaid,String tokensn, String username, Date createtime, Date modifytime, int tokentype, String significantissuerdn, HardToken tokendata) {
+    public void ejbPostCreate(Admin admin, String tokensn, String username, Date createtime, Date modifytime, int tokentype, String significantissuerdn, HashMap data) {
         // Do nothing. Required.
     }
 }
