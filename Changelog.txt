@@ -1,3 +1,50 @@
+3.4.2, 2007-04-26
+---
+New Feature
+    * [ECA-41] - Export soft CA token to pkcs12 file
+    * [ECA-338] - EJBCA deploys and runs on Glassfish
+    * [ECA-425] - Support for MD5withRSA as signature algorithm for CAs
+    * [ECA-434] - CLI to automatically add HW token CA.
+    * [ECA-435] - simple CLI to be able to use nCipher HSM to encrypt and decrypt
+    * [ECA-444] - JSF admin pages work on Glassfish
+    * [ECA-452] - Publish CRL with user defined script
+    * [ECA-464] - Scep RA functionality in ExtRA API
+
+Improvement
+    * [ECA-429] - Public web link from admin-GUI should open in new window/tab
+    * [ECA-431] - Better support for customized extention when processing external CAs
+    * [ECA-432] - Possiblity to store customized data in ExtendedInformation
+    * [ECA-457] - New logo for admin-GUI
+    * [ECA-458] - Basic custom extension support for asn.1 IA5String
+    * [ECA-463] - Publish cert and revokation with user defined script
+    * [ECA-481] - Remove track-statements config in JBoss to enhance performance
+
+Task
+    * [ECA-410] - Oracle JDBC does not support ResultSet.relative
+    * [ECA-411] - Support for JSF in Weblogic
+    * [ECA-450] - Update german language file
+    * [ECA-454] - Include dncomponents.properties and profilemappings.properties in ejbca-util jar
+
+Bug
+    * [ECA-374] - ServiceTimer Startup throws exception on startup on Glassfish
+    * [ECA-421] - Certificate Enrollment Internet Explorer 7 Windows VISTA
+    * [ECA-424] - Ocspclient stopped working
+    * [ECA-427] - Bug showing fixed OCSPSIGNER certificate profile when adding end entities
+    * [ECA-428] - XKMS key recovery issue on platforms not using ISO8859-1 language encoding
+    * [ECA-430] - Upgrade XKMS external service for External CAs give NPE
+    * [ECA-433] - Impossoble to remove CAs with customly defied profiles
+    * [ECA-437] - Missing property YOUCANTADDFIXEDCERT in language files
+    * [ECA-438] - When X is enabled on server, Edit end entity profiles gives sun.print.CUPSPrinter exception
+    * [ECA-439] - Renew Root CA does not give new validity period
+    * [ECA-440] - Renew Root CA might give different encoding for subject and issuer
+    * [ECA-446] - Not possible to use | in DirectoryName, altname and email not stripped
+    * [ECA-447] - Downloading certs on public web gives no file extension when filename contains space
+    * [ECA-449] - CRLUpdateWorker not working, missing reference to CRLSession bean
+    * [ECA-451] - Service timer runs amok on Weblogic
+    * [ECA-453] - nCipherHSM.sh runs out of memory for large backups.
+    * [ECA-455] - Public web pages not working in Weblogic
+    * [ECA-459] - Be able to use email in LDAP dn
+
 3.4.1, 2007-01-27
 ---
 Bug

@@ -1,3 +1,19 @@
+EJBCA 3.4.2
+-----------
+This is a patch release with several fixes and minor new features. There are more issues fixed then normal in a 
+patch release, but they are mostly minor features and supposedly safe fixes.  
+Notable new features are:
+- many enhancements for running EJBCA smoothly on both Weblogic and Glassfish
+- fixes for enrollment in windows vista
+- possibility to export a soft CA keystore
+- a new publisher for publishing certificates and CRL with custom made scripts
+- support for SCEP RA polling mode using the external RA module
+- lots of small bug fixes
+
+Read the changelog for details.
+
+This is a plug-in upgrade from 3.4.x. See UPGRADE for the simple instructions.
+
 EJBCA 3.4.1
 -----------
 This is a minor release with only two bug fixes.
