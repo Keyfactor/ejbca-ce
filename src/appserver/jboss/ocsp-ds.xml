@@ -7,7 +7,7 @@ You need to drop your jdbc driver in ${appserver.home}/server/default/lib
 
 Customize at will as this is mainly for development.
 
-$Id: ocsp-ds.xml,v 1.2 2006-11-14 13:07:51 anatom Exp $
+$Id: ocsp-ds.xml,v 1.3 2007-04-26 07:00:01 anatom Exp $
 
  -->
 
@@ -57,8 +57,9 @@ $Id: ocsp-ds.xml,v 1.2 2006-11-14 13:07:51 anatom Exp $
       -->
 
       <!-- Whether to check all statements are closed when the connection is returned to the pool,
-           this is a debugging feature that should be turned off in production -->
+           this is a debugging feature that should be turned off in production
       <track-statements/>
+      -->
 
    </local-tx-datasource>
 
