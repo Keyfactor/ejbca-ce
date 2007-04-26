@@ -46,7 +46,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * 
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.17 2007-01-16 11:43:52 anatom Exp $
+ * @version $Id: EndEntityProfile.java,v 1.18 2007-04-26 15:32:43 anatom Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -951,7 +951,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
       }
       
       if(!found)
-          throw new UserDoesntFullfillEndEntityProfile("Couldn't find CA among End Entity Profiles Available CAs.");      
+          throw new UserDoesntFullfillEndEntityProfile("Couldn't find CA ("+caid+") among End Entity Profiles Available CAs.");      
     }
     
     public void doesPasswordFulfillEndEntityProfile(String password, boolean clearpwd)
