@@ -12,15 +12,15 @@
     <a href="http://download.primekey.se/ejbca/conference20070131/">here</a>.
     </note>
     <note>
-    EJBCA 3.4.1 is now available for <a
+    EJBCA 3.4.2 is now available for <a
     href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=108797">download</a>.
     <br/>
-    SHA1 checksum: a877340f35815c7e7505e223c74054831494bff5
+    SHA1 checksum: 132a740fab81ce7dede4a23445d1e85482e351b2
     <br/><br/>
-    External RA API 3.4.0 is now available for <a
+    External RA API 3.4.2 is now available for <a
     href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=203939">download</a>.
     <br/>
-    SHA1 checksum: 6c59e1dec4af8a164250deaddcdb9dda3202dc1b
+    SHA1 checksum: f8679d3c9f52f46d7164659084e52bf488b36d95
     </note>
     <p>
     EJBCA 3.1 and later contains support for nCipher HSM. The development of this functionality was sponsored by 
