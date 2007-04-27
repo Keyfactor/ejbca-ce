@@ -18,20 +18,12 @@
             <param-value>templates/certInstIidTemplate.jsp</param-value>
         </init-param>
     </servlet>
-    <servlet-mapping>
-        <servlet-name>CertReqServlet</servlet-name>
-        <url-pattern>/certreq</url-pattern>
-    </servlet-mapping>
-
+    
     <servlet>
         <servlet-name>CertDist</servlet-name>
         <display-name>CertDistServlet</display-name>
         <servlet-class>org.ejbca.ui.web.pub.CertDistServlet</servlet-class>
     </servlet>
-    <servlet-mapping>
-        <servlet-name>CertDist</servlet-name>
-        <url-pattern>/certdist</url-pattern>
-    </servlet-mapping>
 
     <servlet>
         <servlet-name>ScepServlet</servlet-name>
@@ -42,10 +34,6 @@
             <param-value>1</param-value>
         </init-param>
     </servlet>
-    <servlet-mapping>
-      <servlet-name>ScepServlet</servlet-name>
-      <url-pattern>/scep/pkiclient.exe</url-pattern>
-    </servlet-mapping>
 
     <servlet>
         <servlet-name>ScepServletNoCACert</servlet-name>
@@ -56,6 +44,22 @@
             <param-value>0</param-value>
         </init-param>
     </servlet>
+
+    <servlet-mapping>
+        <servlet-name>CertReqServlet</servlet-name>
+        <url-pattern>/certreq</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>CertDist</servlet-name>
+        <url-pattern>/certdist</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+      <servlet-name>ScepServlet</servlet-name>
+      <url-pattern>/scep/pkiclient.exe</url-pattern>
+    </servlet-mapping>
+
     <servlet-mapping>
       <servlet-name>ScepServletNoCACert</servlet-name>
       <url-pattern>/scep/noca/pkiclient.exe</url-pattern>
@@ -108,6 +112,7 @@ The old certificates will be removed when the new ones are added.
             <param-value>Company A from test</param-value>
         </init-param>
     </servlet>
+
     <servlet-mapping>
         <servlet-name>CardCertReqServlet</servlet-name>
         <url-pattern>/cardcertreq</url-pattern>
@@ -149,18 +154,18 @@ The old certificates will be removed when the new ones are added.
     </taglib>
 -->
    
+    <resource-ref >
+        <res-ref-name>@datasource.jndi-name-prefix@@datasource.jndi-name@</res-ref-name>
+        <res-type>javax.sql.DataSource</res-type>
+        <res-auth>Container</res-auth>
+    </resource-ref>
+
     <env-entry>
         <description><![CDATA[Default content encoding used to decode form posts]]></description>
         <env-entry-name>contentEncoding</env-entry-name>
         <env-entry-value>@page.encoding@</env-entry-value>
         <env-entry-type>java.lang.String</env-entry-type>
     </env-entry>
-
-    <resource-ref >
-        <res-ref-name>@datasource.jndi-name-prefix@@datasource.jndi-name@</res-ref-name>
-        <res-type>javax.sql.DataSource</res-type>
-        <res-auth>Container</res-auth>
-    </resource-ref>
 
     <ejb-local-ref>
 	    <ejb-ref-name>ejb/CAAdminSessionLocal</ejb-ref-name>
