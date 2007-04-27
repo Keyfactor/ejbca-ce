@@ -130,8 +130,8 @@ Currently EJBCA works with the MySQL 5.0 database on Glassfish.
   
 - Start the application server: asadmin start-domain
 
-- Do yourself a favor and configure this in the JVM settings of Glassfish:
-    -XX:MaxPermSize=128m
+- Do yourself a favor and configure this in the JVM settings of Glassfish v1 (default in v2):
+    -XX:MaxPermSize=192m
     Restart Glassfish
   
 - Create a connection pool for your database. In the admin console this is done in Resources->JDBC->Connection Pools.
