@@ -122,7 +122,7 @@ CREATE TABLE CertificateProfileData (
     PRIMARY KEY (id)
 );
 
---DROP TABLE GlobalConfigurationData;
+--DROP TABLE EndEntityProfileData;
 CREATE TABLE EndEntityProfileData (
     id int(11) NOT NULL DEFAULT '0',
     profileName varchar(250) binary NULL DEFAULT NULL,
