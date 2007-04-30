@@ -43,7 +43,7 @@ import org.w3c.dom.Document;
  *  The service have it's own certificate used for signing and encryption 
  * 
  * @author Philip Vendil
- * @version $Id: XKMSCAService.java,v 1.3 2007-02-23 10:33:15 anatom Exp $
+ * @version $Id: XKMSCAService.java,v 1.4 2007-04-30 10:14:11 anatom Exp $
  */
 public class XKMSCAService extends ExtendedCAService implements java.io.Serializable{
 
@@ -93,8 +93,9 @@ public class XKMSCAService extends ExtendedCAService implements java.io.Serializ
       if(data.get(XKMSKEYSTORE) != null){    
          // lookup keystore passwords      
          String keystorepass = ServiceLocator.getInstance().getString("java:comp/env/XKMSKeyStorePass");      
-         if (keystorepass == null)
+         if (keystorepass == null) {
         	 throw new IllegalArgumentException("Missing XKMSKeyStorePass property.");
+         }
                
         try {
         	m_log.debug("Loading XKMS keystore");
@@ -103,7 +104,7 @@ public class XKMSCAService extends ExtendedCAService implements java.io.Serializ
         	m_log.debug("Finished loading XKMS keystore");
       
             this.xKMSkey = (PrivateKey) keystore.getKey(PRIVATESIGNKEYALIAS, null);
-            // Due to a bug in Glassfish, we need to make sure all certificates in this 
+            // Due to a bug in Glassfish v1 (fixed in v2), we need to make sure all certificates in this 
             // Array i of SUNs own provider
             //this.xKMScertificatechain =  Arrays.asList(keystore.getCertificateChain(PRIVATESIGNKEYALIAS));      
             this.xKMScertificatechain =  CertTools.getCertCollectionFromArray(keystore.getCertificateChain(PRIVATESIGNKEYALIAS), "SUN");

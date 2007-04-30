@@ -45,7 +45,7 @@ import org.ejbca.util.KeyTools;
 
 /** Handles and maintains the CA-part of the OCSP functionality
  * 
- * @version $Id: OCSPCAService.java,v 1.16 2007-02-23 10:33:15 anatom Exp $
+ * @version $Id: OCSPCAService.java,v 1.17 2007-04-30 10:14:11 anatom Exp $
  */
 public class OCSPCAService extends ExtendedCAService implements java.io.Serializable{
 
@@ -97,8 +97,9 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
       if(data.get(OCSPKEYSTORE) != null){    
          // lookup keystore passwords      
          String keystorepass = ServiceLocator.getInstance().getString("java:comp/env/OCSPKeyStorePass");      
-         if (keystorepass == null)
+         if (keystorepass == null) {
         	 throw new IllegalArgumentException("Missing OCSPKeyStorePass property.");
+         }
                
         try {
         	m_log.debug("Loading OCSP keystore");
@@ -107,7 +108,7 @@ public class OCSPCAService extends ExtendedCAService implements java.io.Serializ
         	m_log.debug("Finished loading OCSP keystore");
       
             this.ocspsigningkey = (PrivateKey) keystore.getKey(PRIVATESIGNKEYALIAS, null);
-            // Due to a bug in Glassfish, we need to make sure all certificates in this 
+            // Due to a bug in Glassfish v1 (fixed in v2), we need to make sure all certificates in this 
             // Array i of SUNs own provider
             //this.ocspcertificatechain =  Arrays.asList(keystore.getCertificateChain(PRIVATESIGNKEYALIAS));
             this.ocspcertificatechain =  CertTools.getCertCollectionFromArray(keystore.getCertificateChain(PRIVATESIGNKEYALIAS), "SUN");
