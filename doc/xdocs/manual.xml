@@ -54,19 +54,19 @@ Further information on this can be found in the Sun documentation on the JCE.
 </p><p>
 Needed to build and run are:
 <ul>
-<li>JDK 1.4.x or 1.5.x</li>
+<li>JDK 1.4.x, 1.5.x or 1.6.x (support for 1.4.x will be dropped as of EJBCA 3.5).</li>
 <li><i>Unlimited Strength Jurisdiction Policy Files</i> for your JDK</li>
-<li>JBOSS >=4.0.3 (latest tested verison is JBoss 4.0.4)</li>
+<li>JBOSS >=4.0.3 (latest tested verison is JBoss 4.0.5)</li>
 <li>Ant >= 1.6.5 to build (http://jakarta.apache.org/ant/)</li>
 <li>Apache Myfaces 1.1 JSF libraries (included in JBoss >=4.0.3), without this you can still run EJBCA but with limited functionality in the adminGUI.</li>
 </ul>
-<p>EJBCA can also run on other application servers, see doc/howto/HOWTO-Appserver.txt for details.</p>
+<p>EJBCA can also run on other application servers, see doc/howto/HOWTO-Appserver.txt for details how to run on Weblogic and Glassfish.</p>
 </p><p>
-Set the environment variable JBOSS_HOME to the directory where
+Set the environment variable APPSRV_HOME (or JBOSS_HOME) to the directory where
 JBoss's root is
  (/jboss-version). This is done so the deploy script will
  know where files are to be copied, they are copied to the
- directory $JBOSS_HOME/server/default/deploy.
+ directory $APPSRV_HOME/server/default/deploy.
  </p><p>
  Windows/Unix: 
  When we describe command line commands below we use
@@ -74,6 +74,11 @@ JBoss's root is
  The same command files are available for windows as cmd-files,
  e.g. 'ejbca.cmd.'
 </p>
+        <p>
+        Java 1.6.0<br/>
+        Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files 6.0
+        <br/><a href="http://java.sun.com/javase/downloads/index.jsp">http://java.sun.com/javase/downloads/index.jsp</a>
+        </p>
         <p>
         Java 1.5.0<br/>
         Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files 5.0
@@ -120,19 +125,17 @@ in the distribution.
 <subsubsection name="Memory configuration">
 <p>
 The memory parameters for Java is by default configured very low, for JBoss it is set by default to allow
-a maximum memory usage of 128mb, which is way too low. We recomend that you configure your java memory arguments to
+a maximum memory usage of 512mb, which is sufficient for most configurations. We still recomend that you check your 
+configuration of java memory arguments to set them to
 at least '-Xms128m -Xmx512m'. 
 For JBoss this is done in JBOSS_HOME/bin/run.conf where the line:
 </p>
 <source>
-JAVA_OPTS="-server -Xms128m -Xmx128m"
-</source>
-<p>
-should be changed to:
-</p>
-<source>
 JAVA_OPTS="-server -Xms128m -Xmx512m"
 </source>
+<p>
+can be changed.
+</p>
 </subsubsection>
 
 </subsection>
