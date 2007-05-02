@@ -72,6 +72,7 @@ public class ProtocolOcspHttpPerfTest extends TestCase {
     private static int sernosize;
     
     // For signing requests
+    private static Boolean dosigning = true;
     private static String signerp12 = "/home/tomas/dev/ocsp-perftest/tomas_test.p12";
     private static String signingAlg = "SHA1WithRSA";
     private static X509Certificate[] certChain;
@@ -207,8 +208,13 @@ public class ProtocolOcspHttpPerfTest extends TestCase {
         OCSPReqGenerator gen = new OCSPReqGenerator();
         final X509Certificate ocspTestCert = getTestCert();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        gen.setRequestorName(certChain[0].getSubjectX500Principal());
-        OCSPReq req = gen.generate(signingAlg, privKey, certChain, "BC");
+        OCSPReq req = null;
+        if (dosigning) {
+            gen.setRequestorName(certChain[0].getSubjectX500Principal());
+            req = gen.generate(signingAlg, privKey, certChain, "BC");        	
+        } else {
+        	req = gen.generate();
+        }
 
         // Send the request and receive a singleResponse
         SingleResp singleResp = sendOCSPPost(req.getEncoded(), null);
@@ -224,27 +230,27 @@ public class ProtocolOcspHttpPerfTest extends TestCase {
     public void test03MakeLotsOfReqs() throws Exception {
 		long before = System.currentTimeMillis();
         Thread no1 = new Thread(new OcspTester(),"no1");
-        Thread no2 = new Thread(new OcspTester(),"no2");
-        Thread no3 = new Thread(new OcspTester(),"no3");
-        Thread no4 = new Thread(new OcspTester(),"no4");
-        Thread no5 = new Thread(new OcspTester(),"no5");
-        Thread no6 = new Thread(new OcspTester(),"no6");
+//        Thread no2 = new Thread(new OcspTester(),"no2");
+//        Thread no3 = new Thread(new OcspTester(),"no3");
+//        Thread no4 = new Thread(new OcspTester(),"no4");
+//        Thread no5 = new Thread(new OcspTester(),"no5");
+//        Thread no6 = new Thread(new OcspTester(),"no6");
 //        Thread no7 = new Thread(new OcspTester(),"no7");
 //        Thread no8 = new Thread(new OcspTester(),"no8");
 //        Thread no9 = new Thread(new OcspTester(),"no9");
 //        Thread no10 = new Thread(new OcspTester(),"no10");
         no1.start();
         System.out.println("Started no1");
-        no2.start();
-        System.out.println("Started no2");
-        no3.start();
-        System.out.println("Started no3");
-        no4.start();
-        System.out.println("Started no4");
-        no5.start();
-        System.out.println("Started no5");
-        no6.start();
-        System.out.println("Started no6");
+//        no2.start();
+//        System.out.println("Started no2");
+//        no3.start();
+//        System.out.println("Started no3");
+//        no4.start();
+//        System.out.println("Started no4");
+//        no5.start();
+//        System.out.println("Started no5");
+//        no6.start();
+//        System.out.println("Started no6");
 //        no7.start();
 //        System.out.println("Started no7");
 //        no8.start();
@@ -254,11 +260,11 @@ public class ProtocolOcspHttpPerfTest extends TestCase {
 //        no10.start();
 //        System.out.println("Started no10");
         no1.join();
-        no2.join();
-        no3.join();
-        no4.join();
-        no5.join();
-        no6.join();
+//        no2.join();
+//        no3.join();
+//        no4.join();
+//        no5.join();
+//        no6.join();
 //        no7.join();
 //        no8.join();
 //        no9.join();
@@ -276,14 +282,19 @@ public class ProtocolOcspHttpPerfTest extends TestCase {
     	public void run() {
             try {
 				long before = System.currentTimeMillis();
-				for (int i = 0; i<1000;i++) {
+				for (int i = 0; i<10000;i++) {
 			        // And an OCSP request
 			        OCSPReqGenerator gen = new OCSPReqGenerator();
 			        //final X509Certificate ocspTestCert = getTestCert();
 			        BigInteger serno = getSerno();
 			        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, serno));
-			        gen.setRequestorName(certChain[0].getSubjectX500Principal());
-			        OCSPReq req = gen.generate(signingAlg, privKey, certChain, "BC");
+			        OCSPReq req = null;
+			        if (dosigning) {
+			            gen.setRequestorName(certChain[0].getSubjectX500Principal());
+			            req = gen.generate(signingAlg, privKey, certChain, "BC");        	
+			        } else {
+			        	req = gen.generate();
+			        }
 
 			        // Send the request and receive a singleResponse
 			        SingleResp singleResp = sendOCSPPost(req.getEncoded(), null);
