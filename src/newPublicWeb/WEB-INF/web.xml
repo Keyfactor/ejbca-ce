@@ -135,24 +135,22 @@ The old certificates will be removed when the new ones are added.
     </login-config>
 -->
  
-<!-- JSTL is not used yet.
     <taglib>
-	    <taglib-uri>http://java.sun.com/jstl/fmt</taglib-uri>
+	    <taglib-uri>http://java.sun.com/jsp/jstl/fmt</taglib-uri>
 	    <taglib-location>/WEB-INF/fmt.tld</taglib-location>
     </taglib>
     <taglib>
-	    <taglib-uri>http://java.sun.com/jstl/core</taglib-uri>
+	    <taglib-uri>http://java.sun.com/jsp/jstl/core</taglib-uri>
 	    <taglib-location>/WEB-INF/c.tld</taglib-location>
     </taglib>
     <taglib>
-	    <taglib-uri>http://java.sun.com/jstl/sql</taglib-uri>
+	    <taglib-uri>http://java.sun.com/jsp/jstl/sql</taglib-uri>
 	    <taglib-location>/WEB-INF/sql.tld</taglib-location>
     </taglib>
     <taglib>
-	    <taglib-uri>http://java.sun.com/jstl/x</taglib-uri>
+	    <taglib-uri>http://java.sun.com/jsp/jstl/x</taglib-uri>
 	    <taglib-location>/WEB-INF/x.tld</taglib-location>
     </taglib>
--->
    
     <resource-ref >
         <res-ref-name>@datasource.jndi-name-prefix@@datasource.jndi-name@</res-ref-name>
