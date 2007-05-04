@@ -188,20 +188,7 @@
     </target>
 
     <!-- =================================================================== -->
-    <!-- Build old public root web part                                      -->
-    <!-- NOTE: This WAR has been replaced by "publicweb.war".                --> 
-    <!-- =================================================================== -->
-    <target name="publicwebroot.war" depends="compile">
-        <war destfile="${rootwar}" webxml="${root.warsrc}/WEB-INF/web.xml">
-            <fileset dir="${root.warsrc}" excludes="WEB-INF/**" />
-        </war>
-    </target>   
-
-    <!-- =================================================================== -->
     <!-- Build public web part                                               -->
-    <!-- Note that this target is temporary. When complete, the new public   -->
-    <!-- web will replace the old one. You do not need the publicweb war to  -->
-    <!-- run EJBCA                                                           -->
     <!-- =================================================================== -->
     <target name="publicweb.war" depends="compile, ejbca-ejb.jar">
         <war destfile="${publicwebwar}" webxml="${publicweb.src}/WEB-INF/web.xml">
