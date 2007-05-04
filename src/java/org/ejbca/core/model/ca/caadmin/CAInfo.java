@@ -22,11 +22,13 @@ import org.ejbca.core.model.ca.catoken.CATokenInfo;
 /**
  * Holds nonsensitive information about a CA.
  *
- * @version $Id: CAInfo.java,v 1.7 2007-01-12 09:43:07 anatom Exp $
+ * @version $Id: CAInfo.java,v 1.8 2007-05-04 13:32:15 rolf_s Exp $
  */
-public abstract class CAInfo implements Serializable {
+public class CAInfo implements Serializable {
 
-    public static final int CATYPE_X509 = 1;  
+	private static final long serialVersionUID = 1L;
+
+	public static final int CATYPE_X509 = 1;  
     
     /** 
      * Constants indicating that the CA is selfsigned.
