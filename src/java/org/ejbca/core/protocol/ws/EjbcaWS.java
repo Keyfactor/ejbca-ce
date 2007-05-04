@@ -114,7 +114,7 @@ import org.ejbca.util.query.Query;
  * Implementor of the IEjbcaWS interface.
  * 
  * @author Philip Vendil
- * $Id: EjbcaWS.java,v 1.5 2007-04-13 06:22:34 herrvendil Exp $
+ * $Id: EjbcaWS.java,v 1.6 2007-05-04 08:07:22 borpe Exp $
  */
 
 @WebService
@@ -906,7 +906,7 @@ public class EjbcaWS implements IEjbcaWS {
 		if(hardTokenData == null){
 			throw new HardTokenDoesntExistsException("Error, hard token with SN " + hardTokenSN + " doesn't exist.");
 		}
-		isAuthorizedToHardTokenData(admin, hardTokenData.getUsername(), viewPUKData);
+		//sisAuthorizedToHardTokenData(admin, hardTokenData.getUsername(), viewPUKData);
 		Collection certs = getHardTokenSession().findCertificatesInHardToken(admin, hardTokenSN);
 		
 		if(onlyValidCertificates){
@@ -1206,10 +1206,10 @@ public class EjbcaWS implements IEjbcaWS {
 		try {
 			userdata = getUserAdminSession().findUser(admin, username);
 		} catch (FinderException e) {
-			throw new EjbcaException("Error the certificates user doesn't seem to exist.");
+			throw new EjbcaException("Error the  user doesn't seem to exist.");
 		}
 		if(userdata == null){
-			throw new EjbcaException("Error the certificates user doesn't seem to exist.");
+			throw new EjbcaException("Error the  user doesn't seem to exist.");
 		}
 		getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AvailableAccessRules.VIEW_RIGHTS);
 		getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + caid );		
