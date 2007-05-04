@@ -23,7 +23,7 @@ package org.ejbca.util.query;
  * function is getQueryString which returns a fragment of SQL statment.
  *
  * @author TomSelleck
- * @version $Id: UserMatch.java,v 1.4 2006-12-22 09:24:28 herrvendil Exp $
+ * @version $Id: UserMatch.java,v 1.5 2007-05-04 09:06:39 anatom Exp $
  *
  * @see org.ejbca.util.query.BasicMatch
  * @see org.ejbca.util.query.TimeMatch
@@ -142,7 +142,13 @@ public class UserMatch extends BasicMatch {
 
         		}else{
         			if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
-        				returnval = MATCH_WITH_SQLNAMES[matchwith] + " = '" + matchvalue + "'";
+        				// Because some databases (read JavaDB/Derby) does not allow matching of integer with a string expression
+        				// like "where status='10'" instead of "where status=10", we have to hav e some special handling here.
+        				String stringChar = "'";
+        		        if ((matchwith == MATCH_WITH_STATUS) || (matchwith == MATCH_WITH_CA) || (matchwith == MATCH_WITH_CERTIFICATEPROFILE) || (matchwith == MATCH_WITH_ENDENTITYPROFILE) || (matchwith == MATCH_WITH_TOKEN)) {
+            				stringChar = "";
+        		        }
+        				returnval = MATCH_WITH_SQLNAMES[matchwith] + " = "+stringChar + matchvalue + stringChar;
         			}
 
         			if (matchtype == BasicMatch.MATCH_TYPE_BEGINSWITH) {

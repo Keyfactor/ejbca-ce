@@ -23,7 +23,7 @@ package org.ejbca.util.query;
  * function is getQueryString which returns a fragment of SQL statment.
  *
  * @author TomSelleck
- * @version $Id: ApprovalMatch.java,v 1.2 2006-08-09 07:29:48 herrvendil Exp $
+ * @version $Id: ApprovalMatch.java,v 1.3 2007-05-04 09:06:39 anatom Exp $
  *
  * @see org.ejbca.util.query.BasicMatch
  * @see org.ejbca.util.query.TimeMatch
@@ -85,7 +85,13 @@ public class ApprovalMatch extends BasicMatch {
         String returnval = "";
 
         if (matchtype == BasicMatch.MATCH_TYPE_EQUALS) {
-            returnval = MATCH_WITH_SQLNAMES[matchwith] + " = '" + matchvalue + "'";
+			// Because some databases (read JavaDB/Derby) does not allow matching of integer with a string expression
+			// like "where status='10'" instead of "where status=10", we have to hav e some special handling here.
+			String stringChar = "'";
+	        if ((matchwith >= MATCH_WITH_UNIQUEID && matchwith <= MATCH_WITH_CAID) || (matchwith == MATCH_WITH_STATUS) || (matchwith == MATCH_WITH_REMAININGAPPROVALS)) {
+				stringChar = "";
+	        }
+			returnval = MATCH_WITH_SQLNAMES[matchwith] + " = "+stringChar + matchvalue + stringChar;
         }
 
         if (matchtype == BasicMatch.MATCH_TYPE_BEGINSWITH) {
