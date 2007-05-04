@@ -28,6 +28,7 @@
 #database.name=sapdb
 #database.name=sybase
 #database.name=informix
+#database.name=derby
 
 # The datasource mapping selected for deployment.
 # The J2EE server needs to be configured with the appropriate datasource mapping. 
@@ -44,6 +45,7 @@
 #datasource.mapping=Sybase
 #datasource.mapping=Informix92
 #datasource.mapping=InformixDB
+#datasource.mapping=Derby
 
 # Database connection url.
 # This is the URL used to connect to the database, used to configure a new datasource in JBoss.
@@ -55,6 +57,7 @@
 #database.url=jdbc:oracle:thin:@127.0.0.1:1521:ejbca
 #database.url=jdbc:datadirect:oracle://127.0.0.1:1521;SID=ejbca
 #database.url=jdbc:informix-sqli://127.0.0.1:1525/ejbca:informixserver=mydbservername;DBDATE=DMY4/;
+#database.url=jdbc:derby://127.0.0.1/ejbca;create=true
 
 # JDBC driver classname.
 # The J2EE server needs to be configured with the appropriate JDBC driver for the selected database
@@ -65,6 +68,7 @@
 #database.driver=oracle.jdbc.driver.OracleDriver
 #database.driver=com.ddtek.jdbc.oracle.OracleDriver
 #database.driver=com.informix.jdbc.IfxDriver
+#database.driver=org.apache.derby.jdbc.ClientDriver
 
 # Database username.
 # Default: sa (works with hsqldb)
