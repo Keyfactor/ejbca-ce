@@ -40,7 +40,7 @@ import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
  * 
  * @author Philip Vendil 2007 apr 23
  *
- * @version $Id: StandardFileHardTokenImporter.java,v 1.1 2007-04-24 13:03:21 herrvendil Exp $
+ * @version $Id: StandardFileHardTokenImporter.java,v 1.2 2007-05-04 08:07:57 borpe Exp $
  */
 
 public class StandardFileHardTokenImporter extends FileReadHardTokenImporter {
@@ -136,6 +136,7 @@ public class StandardFileHardTokenImporter extends FileReadHardTokenImporter {
 			
 			String[] lineColumns = line.split(columnSeparator);
 			for(int i=0;i < lineColumns.length;i++){
+				lineColumns[i] = lineColumns[i].trim();
 				switch(columns[i]){
 				case COLUMN_TOKENSN :
 					tokenSN = lineColumns[i];
