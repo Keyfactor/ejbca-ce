@@ -191,8 +191,18 @@
     <!-- Build public web part                                               -->
     <!-- =================================================================== -->
     <target name="publicweb.war" depends="compile, ejbca-ejb.jar">
-        <war destfile="${publicwebwar}" webxml="${publicweb.src}/WEB-INF/web.xml">
-            <fileset dir="${publicweb.src}" excludes="WEB-INF/web.xml" />
+	    <mkdir dir="${publicweb.build}/WEB-INF/lib"/>
+	    <copy todir="${publicweb.build}">
+	        <fileset dir="${publicweb.src}" />
+	    </copy>
+        <copy todir="${publicweb.build}/WEB-INF/lib">
+            <fileset dir="${lib}/myfaces" >
+				<include name="jstl*.jar"/>
+				<include name="standard*.jar"/>
+            </fileset>
+        </copy>
+        <war destfile="${publicwebwar}" webxml="${publicweb.build}/WEB-INF/web.xml">
+            <fileset dir="${publicweb.build}" excludes="WEB-INF/web.xml" />
         </war>
     </target>   
 
