@@ -6,3 +6,4 @@ jstl-1.1.0.jar
 myfaces-api-1.1.4.jar
 myfaces-impl-1.1.4.jar
 tomahawk-1.1.3.jar
+standard.jar
