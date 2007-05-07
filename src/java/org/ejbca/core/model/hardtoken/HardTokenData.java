@@ -25,12 +25,13 @@ import org.ejbca.util.StringTools;
  *  server and clients.
  *
  * @author  TomSelleck
- * @version $Id: HardTokenData.java,v 1.1 2006-01-17 20:31:52 anatom Exp $
+ * @version $Id: HardTokenData.java,v 1.2 2007-05-07 11:56:50 herrvendil Exp $
  */
 
 public class HardTokenData implements java.io.Serializable {
 
-    // Public Constructors
+    
+	// Public Constructors
 	/** 
 	 * Construtor of a hard token data.
 	 * 
@@ -39,19 +40,21 @@ public class HardTokenData implements java.io.Serializable {
 	 * @param createtime time the token was created
 	 * @param modifytime time whem token was modified or a copy was made.
 	 * @param tokentype the hardtokenprofile used to create the token
+	 * @param significantIssuerDN of the CA that the card belongs to
 	 * @param hardtoken the actual hardtoken data
 	 * @param copyof tokenSN of original or null of this is an original
 	 * @param copies Collention of tokensn of tokens copied from this token, null if no copies have been made.
 	 * 
 	 */
     public HardTokenData(String tokensn, String username, Date createtime,  Date modifytime, 
-                         int tokentype, HardToken hardtoken, String copyof,
+                         int tokentype, String significantIssuerDN, HardToken hardtoken, String copyof,
                          Collection copies){
       this.tokensn=tokensn;
       this.username=StringTools.strip(username);
       this.createtime=createtime;
       this.modifytime=modifytime;
       this.tokentype=tokentype;
+      this.significantIssuerDN = significantIssuerDN;
       this.hardtoken=hardtoken;
       this.copyof=copyof;
       this.copies=copies;
@@ -87,6 +90,10 @@ public class HardTokenData implements java.io.Serializable {
     public String getCopyOf(){
       return copyof;	
     }
+
+	public String getSignificantIssuerDN() {
+		return significantIssuerDN;
+	}
     
     /** 
      * Returns a collection of (Strings) containing the tokenSN of all copies made
@@ -105,7 +112,9 @@ public class HardTokenData implements java.io.Serializable {
     private    Date            createtime;
     private    Date            modifytime;
     private    int             tokentype;
+    private    String          significantIssuerDN;
     private    HardToken       hardtoken;
     private    String          copyof;
     private    Collection      copies;
+
 }

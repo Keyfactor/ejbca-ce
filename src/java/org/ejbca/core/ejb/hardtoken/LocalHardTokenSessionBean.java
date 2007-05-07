@@ -1262,7 +1262,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
          }
 
          if(htd != null){
-           returnval = new HardTokenData(htd.getTokenSN(),htd.getUsername(), htd.getCreateTime(),htd.getModifyTime(),htd.getTokenType(),getHardToken(admin,getSignSession(),getRaAdminSession().loadGlobalConfiguration(admin).getHardTokenEncryptCA(),includePUK,htd.getData()), copyof, copies);
+           returnval = new HardTokenData(htd.getTokenSN(),htd.getUsername(), htd.getCreateTime(),htd.getModifyTime(),htd.getTokenType(),htd.getSignificantIssuerDN(),getHardToken(admin,getSignSession(),getRaAdminSession().loadGlobalConfiguration(admin).getHardTokenEncryptCA(),includePUK,htd.getData()), copyof, copies);
            String msg = intres.getLocalizedMessage("hardtoken.viewedtoken", tokensn);            	
            getLogSession().log(admin, htd.getSignificantIssuerDN().hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),htd.getUsername(), null, LogEntry.EVENT_INFO_HARDTOKENVIEWED,msg);
            if(includePUK){
@@ -1317,7 +1317,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
            	 }catch(FinderException fe){}
            }
 
-           returnval.add(new HardTokenData(htd.getTokenSN(),htd.getUsername(), htd.getCreateTime(),htd.getModifyTime(),htd.getTokenType(),getHardToken(admin,getSignSession(),getRaAdminSession().loadGlobalConfiguration(admin).getHardTokenEncryptCA(), includePUK, htd.getData()),copyof, copies));
+           returnval.add(new HardTokenData(htd.getTokenSN(),htd.getUsername(), htd.getCreateTime(),htd.getModifyTime(),htd.getTokenType(),htd.getSignificantIssuerDN(),getHardToken(admin,getSignSession(),getRaAdminSession().loadGlobalConfiguration(admin).getHardTokenEncryptCA(), includePUK, htd.getData()),copyof, copies));
            String msg = intres.getLocalizedMessage("hardtoken.viewedtoken", htd.getTokenSN());            	
            getLogSession().log(admin, htd.getSignificantIssuerDN().hashCode(), LogEntry.MODULE_HARDTOKEN, new java.util.Date(),htd.getUsername(), null, LogEntry.EVENT_INFO_HARDTOKENVIEWED,msg);
            if(includePUK){
@@ -1671,7 +1671,7 @@ public class LocalHardTokenSessionBean extends BaseSessionBean  {
      /**
      * Method that returns the hard token data from a hashmap and updates it if nessesary.
      */
-    public HardToken getHardToken(Admin admin, ISignSessionLocal signsession, int encryptcaid, boolean includePUK, HashMap data){
+    private HardToken getHardToken(Admin admin, ISignSessionLocal signsession, int encryptcaid, boolean includePUK, HashMap data){
       HardToken returnval = null;      
       
       if(data.get(ENCRYPTEDDATA) != null){

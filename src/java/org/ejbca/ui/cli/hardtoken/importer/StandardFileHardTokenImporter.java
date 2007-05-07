@@ -40,7 +40,7 @@ import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
  * 
  * @author Philip Vendil 2007 apr 23
  *
- * @version $Id: StandardFileHardTokenImporter.java,v 1.2 2007-05-04 08:07:57 borpe Exp $
+ * @version $Id: StandardFileHardTokenImporter.java,v 1.3 2007-05-07 11:58:55 herrvendil Exp $
  */
 
 public class StandardFileHardTokenImporter extends FileReadHardTokenImporter {
@@ -170,7 +170,7 @@ public class StandardFileHardTokenImporter extends FileReadHardTokenImporter {
 				tokenType = SecConst.TOKEN_ENHANCEDEID;				
 			}
 			HardToken ht = getHardTokenType(basicPIN, basicPUK, signaturePIN, signaturePUK);
-			retval = new HardTokenData(tokenSN,null,new Date(),new Date(), tokenType,ht,null,null);
+			retval = new HardTokenData(tokenSN,null,new Date(),new Date(), tokenType,null, ht,null,null);
 		}
 		
 		
