@@ -114,7 +114,7 @@ import org.ejbca.util.query.Query;
  * Implementor of the IEjbcaWS interface.
  * 
  * @author Philip Vendil
- * $Id: EjbcaWS.java,v 1.8 2007-05-07 13:58:55 herrvendil Exp $
+ * $Id: EjbcaWS.java,v 1.9 2007-05-07 14:20:02 herrvendil Exp $
  */
 
 @WebService
@@ -773,7 +773,7 @@ public class EjbcaWS implements IEjbcaWS {
 				if(next.getValidityIdDays() != null ){
 					try{
 						int validity = Integer.parseInt(next.getValidityIdDays());
-						eDate = new Date(System.currentTimeMillis() + validity  * 3600 *24 * 1000);
+						eDate = new Date(System.currentTimeMillis() + (validity  * 3600 *24 * 1000));
 					}catch (NumberFormatException e){
 						throw new EjbcaException("Error : Validity in Days must be a number");
 					}
