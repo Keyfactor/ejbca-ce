@@ -114,7 +114,7 @@ import org.ejbca.util.query.Query;
  * Implementor of the IEjbcaWS interface.
  * 
  * @author Philip Vendil
- * $Id: EjbcaWS.java,v 1.6 2007-05-04 08:07:22 borpe Exp $
+ * $Id: EjbcaWS.java,v 1.7 2007-05-07 11:57:37 herrvendil Exp $
  */
 
 @WebService
@@ -445,27 +445,42 @@ public class EjbcaWS implements IEjbcaWS {
 			Admin admin = getAdmin();
 			BigInteger serno = new BigInteger(certificateSN,16);
 			String username = getCertStoreSession().findUsernameByCertSerno(admin,serno,issuerDN);
-			
+
 			// check that admin is autorized to CA
 			int caid = CertTools.stringToBCDNString(issuerDN).hashCode();		
 			getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);			  
-			
-			getUserAdminSession().revokeCert(admin,serno, issuerDN, username,  reason);
-			
-			}catch(AuthorizationDeniedException e){
-				throw e;
-			} catch (ClassCastException e) {
-				log.error("EJBCA WebService error, revokeCert : ",e);
-			    throw new EjbcaException(e.getMessage());
-			} catch (CreateException e) {
-				log.error("EJBCA WebService error, revokeCert : ",e);
-			    throw new EjbcaException(e.getMessage());
-			} catch (NamingException e) {
-				log.error("EJBCA WebService error, revokeCert : ",e);
-			    throw new EjbcaException(e.getMessage());
-			} catch (FinderException e) {
-				throw new NotFoundException(e.getMessage());
-			}									
+
+			if(reason == RevokedCertInfo.NOT_REVOKED){
+				java.security.cert.Certificate cert = getCertStoreSession().findCertificateByIssuerAndSerno(admin, issuerDN, serno);
+				if(cert == null){
+					throw new NotFoundException("Error: certificate with issuerdn " + issuerDN + " and serial number " + serno + " couldn't be found in database.");
+				}
+				CertificateInfo certInfo = getCertStoreSession().getCertificateInfo(admin, CertTools.getCertFingerprintAsString(cert.getEncoded()));
+				if(certInfo.getRevocationReason()== RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD){
+					getUserAdminSession().unRevokeCert(admin, serno, issuerDN, username);
+				}else{
+					throw new EjbcaException("Error: Status is NOT 'certificate hold' for certificate with serial number " + serno + " and issuer DN " + issuerDN);
+				}
+			}else{			
+				getUserAdminSession().revokeCert(admin,serno, issuerDN, username,  reason);
+			}
+		}catch(AuthorizationDeniedException e){
+			throw e;
+		} catch (ClassCastException e) {
+			log.error("EJBCA WebService error, revokeCert : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (CreateException e) {
+			log.error("EJBCA WebService error, revokeCert : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (NamingException e) {
+			log.error("EJBCA WebService error, revokeCert : ",e);
+			throw new EjbcaException(e.getMessage());
+		} catch (FinderException e) {
+			throw new NotFoundException(e.getMessage());
+		} catch (CertificateEncodingException e) {
+			log.error("EJBCA WebService error, revokeCert : ",e);
+			throw new EjbcaException(e.getMessage());
+		}									
 	}
 
 	/**
@@ -595,10 +610,21 @@ public class EjbcaWS implements IEjbcaWS {
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#fetchUserData(java.util.List, java.lang.String)
 	 */
-	public List<UserDataSourceVOWS> fetchUserData(List<Integer> userDataSourceIds, String searchString) throws UserDataSourceException, EjbcaException{
+	public List<UserDataSourceVOWS> fetchUserData(List<String> userDataSourceNames, String searchString) throws UserDataSourceException, EjbcaException{
 	    	// No authorization needed for this call
 		ArrayList<UserDataSourceVOWS> retval = null;
-		try {
+		
+		try {	
+			ArrayList userDataSourceIds = new ArrayList();
+			for (String name : userDataSourceNames) {
+				int id = getUserDataSourceSession().getUserDataSourceId(getAdmin(), name);
+				if(id != 0){
+					userDataSourceIds.add(new Integer(id));
+				}else{
+					log.error("Error User Data Source with name : " + name + " doesn't exist.");
+				}
+			}
+
 			Iterator iter = getUserDataSourceSession().fetch(getAdmin(), userDataSourceIds, searchString).iterator();
 			while(iter.hasNext()){
 				UserDataSourceVO next = (UserDataSourceVO) iter.next();
@@ -606,16 +632,16 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 		} catch (ClassCastException e) {
 			log.error("EJBCA WebService error, fetchUserData : ",e);
-		    throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(e.getMessage());
 		} catch (AuthorizationDeniedException e) {
 			log.error("EJBCA WebService error, fetchUserData : ",e);
-		    throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(e.getMessage());
 		} catch (CreateException e) {
 			log.error("EJBCA WebService error, fetchUserData : ",e);
-		    throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(e.getMessage());
 		} catch (NamingException e) {
 			log.error("EJBCA WebService error, fetchUserData : ",e);
-		    throw new EjbcaException(e.getMessage());
+			throw new EjbcaException(e.getMessage());
 		}
 		
 		
@@ -731,6 +757,8 @@ public class EjbcaWS implements IEjbcaWS {
 				getUserAdminSession().addUser(admin, userData, userDataWS.getClearPwd());
 			}
 
+			Date bDate = new Date(System.currentTimeMillis() -  - 10 * 60 * 1000);
+			
 			Iterator<TokenCertificateRequestWS> iter = tokenRequests.iterator();
 			while(iter.hasNext()){
 				TokenCertificateRequestWS next = iter.next();
@@ -739,6 +767,18 @@ public class EjbcaWS implements IEjbcaWS {
 				if(certificateProfileId == 0){
 					throw new EjbcaException("Error the given Certificate Profile : " + next.getCertificateProfileName() + " couldn't be found.");
 				}
+				
+				Date eDate = null;
+				
+				if(next.getValidityIdDays() != null ){
+					try{
+						int validity = Integer.parseInt(next.getValidityIdDays());
+						eDate = new Date(System.currentTimeMillis() + validity  * 3600 * 1000);
+					}catch (NumberFormatException e){
+						throw new EjbcaException("Error : Validity in Days must be a number");
+					}
+				}
+				
 				CAInfo cAInfo = getCAAdminSession().getCAInfo(admin, next.getCAName());
 				if(cAInfo == null){
 					throw new EjbcaException("Error the given CA : " + next.getCAName() + " couldn't be found.");
@@ -751,8 +791,14 @@ public class EjbcaWS implements IEjbcaWS {
 					userData.setPassword(userData.getPassword());
 					userData.setStatus(UserDataConstants.STATUS_NEW);
 					getUserAdminSession().changeUser(admin, userData, false);
-					PKCS10RequestMessage pkcs10req = new PKCS10RequestMessage(next.getPkcs10Data());				      
-					java.security.cert.Certificate cert =  getSignSession().createCertificate(admin,userData.getUsername(),userData.getPassword(), pkcs10req.getRequestPublicKey());
+					PKCS10RequestMessage pkcs10req = new PKCS10RequestMessage(next.getPkcs10Data());
+					java.security.cert.Certificate cert;
+					if(eDate == null){
+					    cert =  getSignSession().createCertificate(admin,userData.getUsername(),userData.getPassword(), pkcs10req.getRequestPublicKey());
+					}else{
+						cert =  getSignSession().createCertificate(admin,userData.getUsername(),userData.getPassword(), pkcs10req.getRequestPublicKey(), -1, bDate, eDate);
+					}
+					
 					genCertificates.add(cert);
 					retval.add(new TokenCertificateResponseWS(new Certificate(cert)));
 				}else
@@ -767,7 +813,13 @@ public class EjbcaWS implements IEjbcaWS {
 						userData.setPassword(userData.getPassword());
 						userData.setStatus(UserDataConstants.STATUS_NEW);
 						getUserAdminSession().changeUser(admin, userData, true);
-						X509Certificate cert = (X509Certificate) getSignSession().createCertificate(admin,userData.getUsername(),"foo123", keys.getPublic());
+						X509Certificate cert;
+						if(eDate == null){
+						    cert =  (X509Certificate) getSignSession().createCertificate(admin,userData.getUsername(),userData.getPassword(), keys.getPublic());
+						}else{
+							cert =  (X509Certificate) getSignSession().createCertificate(admin,userData.getUsername(),userData.getPassword(), keys.getPublic(), -1, bDate, eDate);
+						}
+						
 						genCertificates.add(cert);      
 						// Generate Keystore
 						// Fetch CA Cert Chain.	        
@@ -906,7 +958,7 @@ public class EjbcaWS implements IEjbcaWS {
 		if(hardTokenData == null){
 			throw new HardTokenDoesntExistsException("Error, hard token with SN " + hardTokenSN + " doesn't exist.");
 		}
-		//sisAuthorizedToHardTokenData(admin, hardTokenData.getUsername(), viewPUKData);
+		isAuthorizedToHardTokenData(admin, hardTokenData.getUsername(), viewPUKData);
 		Collection certs = getHardTokenSession().findCertificatesInHardToken(admin, hardTokenSN);
 		
 		if(onlyValidCertificates){
@@ -940,6 +992,7 @@ public class EjbcaWS implements IEjbcaWS {
 		Iterator iter = hardtokens.iterator();
 		while(iter.hasNext()){
 			HardTokenData next = (HardTokenData) iter.next();
+			getAuthorizationSession().isAuthorizedNoLog(getAdmin(), AvailableAccessRules.CAPREFIX + next.getSignificantIssuerDN().hashCode());
 			Collection certs = getHardTokenSession().findCertificatesInHardToken(admin, next.getTokenSN());
 			if(onlyValidCertificates){
 				try {
@@ -1216,20 +1269,30 @@ public class EjbcaWS implements IEjbcaWS {
         		
 	}
 	
+	
 	private void isAuthorizedToHardTokenData(Admin admin, String username, boolean viewPUKData) throws AuthorizationDeniedException, EjbcaException {
 		getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_VIEWHARDTOKENS);
 		UserDataVO userdata = null;
+		boolean userExists = false;
 		try {
 			userdata = getUserAdminSession().findUser(admin, username);
-		} catch (FinderException e) {
-			throw new EjbcaException("Error the certificates user doesn't seem to exist.");
-		}
-		if(userdata == null){
-			throw new EjbcaException("Error the certificates user doesn't seem to exist.");
-		}
-		getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AvailableAccessRules.HARDTOKEN_RIGHTS);
+			if(userdata != null){
+				userExists = true;
+			}
+		} catch (FinderException e) {}
+		
+		getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_VIEWHARDTOKENS);
 		if(viewPUKData){
+			getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_VIEWPUKS);
+		}
+		
+		
+		
+		if(userExists){		
+		  getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AvailableAccessRules.HARDTOKEN_RIGHTS);
+		  if(viewPUKData){
 			getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ENDENTITYPROFILEPREFIX + userdata.getEndEntityProfileId() + AvailableAccessRules.HARDTOKEN_PUKDATA_RIGHTS);			
+		  }
 		}
 		
 		
