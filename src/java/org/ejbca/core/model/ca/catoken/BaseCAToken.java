@@ -36,7 +36,7 @@ import org.ejbca.core.model.SecConst;
 
 /**
  * @author lars
- * @version $Id: BaseCAToken.java,v 1.13 2007-04-11 17:14:53 primelars Exp $
+ * @version $Id: BaseCAToken.java,v 1.14 2007-05-07 11:56:34 herrvendil Exp $
  */
 public abstract class BaseCAToken implements IHardCAToken {
 
@@ -112,7 +112,7 @@ public abstract class BaseCAToken implements IHardCAToken {
             mTmp.put(keyAliases[i], keyPair);
         }
         for ( int i=0; i<keyAliases.length; i++ ) {
-            KeyPair pair = (KeyPair)mTmp.get(keyAliases[i]);
+            KeyPair pair = mTmp.get(keyAliases[i]);
             testKey(pair);
             log.debug("Key with alias "+keyAliases[i]+" tested. toString for private part: "+pair.getPrivate());
         }
