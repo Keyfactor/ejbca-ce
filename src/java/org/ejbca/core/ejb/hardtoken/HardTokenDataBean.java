@@ -20,8 +20,6 @@ import javax.ejb.CreateException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.BaseEntityBean;
-import org.ejbca.core.ejb.ca.sign.ISignSessionLocal;
-import org.ejbca.core.model.hardtoken.types.HardToken;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.StringTools;
 
