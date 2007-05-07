@@ -25,6 +25,7 @@
 	
     <path id="jaxws.test.classpath">
     	<path refid="jaxws.client.classpath" />
+    	<path refid="j2ee.classpath" />
     </path>
 	
 	

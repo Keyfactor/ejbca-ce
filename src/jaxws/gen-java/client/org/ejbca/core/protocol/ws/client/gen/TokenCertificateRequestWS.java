@@ -24,6 +24,7 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="pkcs10Data" type="{http://www.w3.org/2001/XMLSchema}base64Binary" minOccurs="0"/>
  *         &lt;element name="tokenType" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="type" type="{http://www.w3.org/2001/XMLSchema}int"/>
+ *         &lt;element name="validityIdDays" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -40,7 +41,8 @@ import javax.xml.bind.annotation.XmlType;
     "keyspec",
     "pkcs10Data",
     "tokenType",
-    "type"
+    "type",
+    "validityIdDays"
 })
 public class TokenCertificateRequestWS {
 
@@ -52,6 +54,7 @@ public class TokenCertificateRequestWS {
     protected byte[] pkcs10Data;
     protected String tokenType;
     protected int type;
+    protected String validityIdDays;
 
     /**
      * Gets the value of the caName property.
@@ -209,6 +212,30 @@ public class TokenCertificateRequestWS {
      */
     public void setType(int value) {
         this.type = value;
+    }
+
+    /**
+     * Gets the value of the validityIdDays property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getValidityIdDays() {
+        return validityIdDays;
+    }
+
+    /**
+     * Sets the value of the validityIdDays property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setValidityIdDays(String value) {
+        this.validityIdDays = value;
     }
 
 }

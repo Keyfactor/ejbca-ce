@@ -23,7 +23,7 @@ import org.ejbca.core.protocol.ws.common.HardTokenConstants;
  * 
  * @author Philip Vendil 2007 feb 8
  *
- * @version $Id: TokenCertificateRequestWS.java,v 1.2 2007-04-13 06:22:37 herrvendil Exp $
+ * @version $Id: TokenCertificateRequestWS.java,v 1.3 2007-05-07 11:58:34 herrvendil Exp $
  */
 
 public class TokenCertificateRequestWS {
@@ -32,23 +32,26 @@ public class TokenCertificateRequestWS {
     	
 	private String cAName = null;
 	private String certificateProfileName = null;
+	private String validityIdDays = null;
 	private int type = 0;
 	private byte[] pkcs10Data = null;
 	private String tokenType = HardTokenConstants.TOKENTYPE_PKCS12;
 	private String keyspec = "1024";
 	private String keyalg = "RSA";
 	
-	public TokenCertificateRequestWS(String name, String certificateProfileName, PKCS10CertificationRequest pkcs10) {
+	public TokenCertificateRequestWS(String name, String certificateProfileName, String validityIdDays, PKCS10CertificationRequest pkcs10) {
 		super();
 		type = HardTokenConstants.REQUESTTYPE_PKCS10_REQUEST;
 		cAName = name;
+		this.validityIdDays = validityIdDays;
 		this.certificateProfileName = certificateProfileName;
 		this.pkcs10Data = pkcs10.getEncoded();
 	}
-	public TokenCertificateRequestWS(String name, String certificateProfileName, String tokenType, String keyspec, String keyalg) {
+	public TokenCertificateRequestWS(String name, String certificateProfileName, String validityIdDays,String tokenType, String keyspec, String keyalg) {
 		super();
 		type = HardTokenConstants.REQUESTTYPE_KEYSTORE_REQUEST;
 		cAName = name;
+		this.validityIdDays = validityIdDays;
 		this.certificateProfileName = certificateProfileName;
 		this.tokenType = tokenType;
 		this.keyspec = keyspec;
@@ -104,8 +107,11 @@ public class TokenCertificateRequestWS {
 	public void setType(int type) {
 		this.type = type;
 	}
-	
-	
-	
+	public String getValidityIdDays() {
+		return validityIdDays;
+	}
+	public void setValidityIdDays(String validityIdDays) {
+		this.validityIdDays = validityIdDays;
+	}
 
 }

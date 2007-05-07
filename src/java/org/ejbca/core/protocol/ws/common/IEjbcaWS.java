@@ -54,7 +54,7 @@ import org.ejbca.util.query.IllegalQueryException;
  * otherwise will a AuthorizationDenied Exception be thrown.
  * 
  * @author Philip Vendil
- * $Id: IEjbcaWS.java,v 1.2 2007-04-13 06:22:35 herrvendil Exp $
+ * $Id: IEjbcaWS.java,v 1.3 2007-05-07 11:58:12 herrvendil Exp $
  */
 public interface IEjbcaWS {
 	
@@ -200,7 +200,8 @@ public interface IEjbcaWS {
 	 * 
 	 * @param issuerDN of the certificate to revoke
 	 * @param certificateSN of the certificate to revoke
-	 * @param reason for revokation, one of RevokedCertInfo.REVOKATION_REASON_ constants
+	 * @param reason for revokation, one of RevokedCertInfo.REVOKATION_REASON_ constants, 
+	 * or use RevokedCertInfo.NOT_REVOKED to unrevoke a certificate on hold.
 	 * @throws AuthorizationDeniedException if client isn't authorized.
 	 * @throws NotFoundException if certificate doesn't exist
 	 */
@@ -287,14 +288,14 @@ public interface IEjbcaWS {
 	 * Authorization requirements: A valid certificate
 	 * 
 	 * 
-	 * @param userDataSourceIds a List of User Data Source Ids
+	 * @param userDataSourceNames a List of User Data Source Names
 	 * @param searchString to identify the userdata.
 	 * @return a List of UserDataSourceVOWS of the data in the specified UserDataSources, if no user data is found will an empty list be returned. 
 	 * @throws UserDataSourceException if an error occured connecting to one of 
 	 * UserDataSources.
 	 */
 	public abstract List<UserDataSourceVOWS> fetchUserData(
-			List<Integer> userDataSourceIds, String searchString)
+			List<String> userDataSourceNames, String searchString)
 			throws UserDataSourceException, EjbcaException;
 
 	/**

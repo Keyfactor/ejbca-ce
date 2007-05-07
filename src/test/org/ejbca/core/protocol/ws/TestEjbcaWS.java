@@ -1,14 +1,17 @@
 package org.ejbca.core.protocol.ws; 
 
 import java.net.URL;
+import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.ejb.CreateException;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.xml.namespace.QName;
@@ -16,11 +19,19 @@ import javax.xml.namespace.QName;
 import junit.framework.TestCase;
 
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.ejb.hardtoken.IHardTokenSessionHome;
 import org.ejbca.core.ejb.hardtoken.IHardTokenSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
+import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
+import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
+import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.protocol.ws.client.gen.Certificate;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
@@ -49,6 +60,12 @@ public class TestEjbcaWS extends TestCase {
 
 	private IHardTokenSessionRemote hardTokenAdmin;
     private static IHardTokenSessionHome hardTokenHome;
+	private ICertificateStoreSessionRemote certStoreSession;
+    private static ICertificateStoreSessionHome certStoreSessionHome;
+	private IRaAdminSessionRemote raAdminSession;
+    private static IRaAdminSessionHome raAdminSessionHome;
+    
+    private static Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
     
 	protected void setUp() throws Exception {
 		super.setUp();
@@ -64,6 +81,9 @@ public class TestEjbcaWS extends TestCase {
 
             hardTokenAdmin = hardTokenHome.create();
         }
+        
+        
+        
 		
 		String urlstr = "https://localhost:8443/ejbca/ejbcaws/ejbcaws?wsdl";
 
@@ -82,10 +102,50 @@ public class TestEjbcaWS extends TestCase {
 		ejbcaraws = service.getEjbcaWSPort();
 	}
 	
-    private Context getInitialContext() throws NamingException {
+	
+
+
+
+
+	protected void tearDown() throws Exception {
+		super.tearDown();
+		
+		
+	}
+
+
+	private Context getInitialContext() throws NamingException {
         Context ctx = new javax.naming.InitialContext();
         return ctx;
     }
+
+	private ICertificateStoreSessionRemote getCertStore() throws RemoteException, CreateException, NamingException{
+        if (certStoreSession == null) {
+            if (certStoreSessionHome == null) {
+                Context jndiContext = getInitialContext();
+                Object obj1 = jndiContext.lookup(ICertificateStoreSessionHome.JNDI_NAME);
+                certStoreSessionHome = (ICertificateStoreSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, ICertificateStoreSessionHome.class);
+
+            }
+
+            certStoreSession = certStoreSessionHome.create();            
+        }
+        return certStoreSession;
+	}
+	
+	private IRaAdminSessionRemote getRAAdmin() throws RemoteException, CreateException, NamingException{
+        if (raAdminSession == null) {
+            if (raAdminSessionHome == null) {
+                Context jndiContext = getInitialContext();
+                Object obj1 = jndiContext.lookup(IRaAdminSessionHome.JNDI_NAME);
+                raAdminSessionHome = (IRaAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IRaAdminSessionHome.class);
+
+            }
+
+            raAdminSession = raAdminSessionHome.create();            
+        }
+        return raAdminSession;
+	}
 	
 	public void test01EditUser() throws Exception{
 		
@@ -376,16 +436,33 @@ public class TestEjbcaWS extends TestCase {
         String issuerdn = cert.getIssuerDN().toString();
         String serno = cert.getSerialNumber().toString(16);
         
-        ejbcaraws.revokeCert(issuerdn,serno, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+        ejbcaraws.revokeCert(issuerdn,serno, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
         
         RevokeStatus revokestatus = ejbcaraws.checkRevokationStatus(issuerdn,serno);
         assertNotNull(revokestatus);
-        assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+        assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
         
         assertTrue(revokestatus.getCertificateSN().equals(serno));
         assertTrue(revokestatus.getIssuerDN().equals(issuerdn));
         assertNotNull(revokestatus.getRevocationDate());
-        	
+        
+        ejbcaraws.revokeCert(issuerdn,serno, RevokedCertInfo.NOT_REVOKED);
+        
+        revokestatus = ejbcaraws.checkRevokationStatus(issuerdn,serno);
+        assertNotNull(revokestatus);
+        assertTrue(revokestatus.getReason() == RevokedCertInfo.NOT_REVOKED);
+        
+        ejbcaraws.revokeCert(issuerdn,serno, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+        
+        revokestatus = ejbcaraws.checkRevokationStatus(issuerdn,serno);
+        assertNotNull(revokestatus);
+        assertTrue(revokestatus.getReason() == RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE);
+        
+        try{
+          ejbcaraws.revokeCert(issuerdn,serno, RevokedCertInfo.NOT_REVOKED);
+          assertTrue(false);
+        }catch(EjbcaException_Exception e){}
+        
 	}
 	
 	public void test07revokeToken() throws Exception{
@@ -547,7 +624,19 @@ public class TestEjbcaWS extends TestCase {
 	}    
     
     public void test13genTokenCertificates() throws Exception{
-
+        
+    	GlobalConfiguration gc = getRAAdmin().loadGlobalConfiguration(intAdmin);
+    	boolean originalProfileSetting = gc.getEnableEndEntityProfileLimitations();
+    	gc.setEnableEndEntityProfileLimitations(false);
+    	getRAAdmin().saveGlobalConfiguration(intAdmin, gc);
+    	if(getCertStore().getCertificateProfileId(intAdmin, "WSTESTPROFILE") != 0){
+        	getCertStore().removeCertificateProfile(intAdmin, "WSTESTPROFILE");
+        }
+        
+        CertificateProfile profile = new EndUserCertificateProfile();
+        profile.setAllowValidityOverride(true);
+        getCertStore().addCertificateProfile(intAdmin, "WSTESTPROFILE", profile);
+    	
     	// first a simple test
 		UserDataVOWS tokenUser1 = new UserDataVOWS();
 		tokenUser1.setUsername("WSTESTTOKENUSER1");
@@ -569,7 +658,8 @@ public class TestEjbcaWS extends TestCase {
 		ArrayList<TokenCertificateRequestWS> requests = new ArrayList<TokenCertificateRequestWS>();
 		TokenCertificateRequestWS tokenCertReqWS = new TokenCertificateRequestWS();
 		tokenCertReqWS.setCAName("AdminCA1");
-		tokenCertReqWS.setCertificateProfileName("ENDUSER");
+		tokenCertReqWS.setCertificateProfileName("WSTESTPROFILE");
+		tokenCertReqWS.setValidityIdDays("1");
 		tokenCertReqWS.setPkcs10Data(basicpkcs10.getDEREncoded());
 		tokenCertReqWS.setType(HardTokenConstants.REQUESTTYPE_PKCS10_REQUEST);
 		requests.add(tokenCertReqWS);
@@ -606,12 +696,13 @@ public class TestEjbcaWS extends TestCase {
 		Certificate cert = next.getCertificate();
 		X509Certificate realcert = (X509Certificate) CertificateHelper.getCertificate(cert.getCertificateData());
 		assertNotNull(realcert);
+		assertTrue(realcert.getNotAfter().toLocaleString(),realcert.getNotAfter().before(new Date(System.currentTimeMillis() + 2 * 3600 *1000)));
 		next = iter.next();
 		assertTrue(next.getType() == HardTokenConstants.RESPONSETYPE_KEYSTORE_RESPONSE);
 		KeyStore keyStore = next.getKeyStore();
 		java.security.KeyStore realKeyStore = KeyStoreHelper.getKeyStore(keyStore.getKeystoreData(), HardTokenConstants.TOKENTYPE_PKCS12, "foo123");
 		assertTrue(realKeyStore.containsAlias("WSTESTTOKENUSER1"));
-		
+		assertTrue(((X509Certificate) realKeyStore.getCertificate("WSTESTTOKENUSER1")).getNotAfter().after(new Date(System.currentTimeMillis() + 48 * 24 * 3600 *1000)));
 		
 		try{
 		  responses = ejbcaraws.genTokenCertificates(tokenUser1, requests, hardTokenDataWS, false);
@@ -619,6 +710,10 @@ public class TestEjbcaWS extends TestCase {
 		}catch(HardTokenExistsException_Exception e){
 			
 		}
+		
+		getCertStore().removeCertificateProfile(intAdmin, "WSTESTPROFILE");
+		gc.setEnableEndEntityProfileLimitations(originalProfileSetting);
+    	getRAAdmin().saveGlobalConfiguration(intAdmin, gc);
 		//hardTokenAdmin.removeHardToken(intAdmin, "12345678");
 		
 		
@@ -657,7 +752,7 @@ public class TestEjbcaWS extends TestCase {
 
     	hardTokenDataWS = ejbcaraws.getHardTokenData("12345678", false, false);
     	assertNotNull(hardTokenDataWS);
-    	assertTrue(""+ hardTokenDataWS.getCertificates(), hardTokenDataWS.getCertificates().size() == 2);
+    	assertTrue(""+ hardTokenDataWS.getCertificates().size(), hardTokenDataWS.getCertificates().size() == 2);
     	assertTrue(""+ hardTokenDataWS.getPinDatas().size(), hardTokenDataWS.getPinDatas().size() == 0);
     	
     	try{
@@ -697,7 +792,7 @@ public class TestEjbcaWS extends TestCase {
 
     	try{
     	  hardTokenDatas = ejbcaraws.getHardTokenDatas("WSTESTTOKENUSER2", true, true);    	
-    	  assertTrue(false);
+    	  assertTrue(hardTokenDatas.size() == 0);
     	}catch(EjbcaException_Exception e){
     		
     	}
