@@ -1,34 +1,40 @@
-<%@ page pageEncoding="ISO-8859-1"%>
-<%@ page contentType="text/html; charset=@page.encoding@" %>
-<%@ page language="java" import="javax.naming.*,javax.rmi.*,java.util.*,java.net.*,org.ejbca.core.ejb.ca.sign.*,org.ejbca.core.ejb.ca.caadmin.*,org.ejbca.core.model.ca.caadmin.*,org.ejbca.core.model.log.Admin"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ include file="header.jsp" %>
-  <h1>@EJBCA@ Fetch CA CRL</h1>
-  <%
-  try  {
-      Admin admin = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
-      InitialContext ctx = new InitialContext();
-      ISignSessionHome home = home = (ISignSessionHome) PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class );
-      ISignSessionRemote ss = home.create();
-      ICAAdminSessionHome cahome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CAAdminSession"), ICAAdminSessionHome.class );            
-      ICAAdminSessionRemote caadminsession = cahome.create();          
-      Collection caids = caadminsession.getAvailableCAs(admin);
-      Iterator iter = caids.iterator();
-      while (iter.hasNext()) {
-          int caid = ((Integer)iter.next()).intValue();
-          CAInfo ca = caadminsession.getCAInfo(admin, caid);
-          String urlsubjectdn = URLEncoder.encode(ca.getSubjectDN(), "UTF-8"); 
-  %>
-  <h2>CA: <%= ca.getName() %></h2>
-  <p>The Certificate Revocation List is available in three ways:
-  <ul>
-  	<li><a href="../certdist?cmd=crl&issuer=<%= urlsubjectdn %>">DER format</a></li> 
-  	<li><a href="../certdist?cmd=crl&format=PEM&issuer=<%= urlsubjectdn %>">PEM format</a></li> 
-  	<li><a href="../certdist?cmd=crl&issuer=<%= urlsubjectdn %>&moz=y">Mozilla/Netscape direct import</a></li>
-  </ul>
-  <%
-      }
-  } catch(Exception ex) {
-      ex.printStackTrace();
-  }                                             
-  %>
+
+	<h1>@EJBCA@ Fetch CA CRL</h1>
+
+	<jsp:useBean id="finder" class="org.ejbca.ui.web.pub.retrieve.CertificateFinderBean" scope="page" />
+	<% finder.initialize(request.getRemoteAddr()); %>
+
+	<c:forEach var="ca_id" items="${finder.availableCAs}">
+		<jsp:useBean id="ca_id" type="java.lang.Integer" />
+		<% finder.setCurrentCA(ca_id); %>
+
+		<jsp:useBean id="ca" class="org.ejbca.core.model.ca.caadmin.CAInfo" scope="page" />
+		<c:set var="ca" value="${finder.CAInfo}" />
+
+		<c:url var="der" value="../certdist" >
+			<c:param name="cmd" value="crl" />
+			<c:param name="issuer" value="${ca.subjectDN}" />
+		</c:url>
+		<c:url var="pem" value="../certdist" >
+			<c:param name="cmd" value="crl" />
+			<c:param name="format" value="PEM" />
+			<c:param name="issuer" value="${ca.subjectDN}" />
+		</c:url>
+		<c:url var="moz" value="../certdist" >
+			<c:param name="cmd" value="crl" />
+			<c:param name="issuer" value="${ca.subjectDN}" />
+			<c:param name="moz" value="y" />
+		</c:url>
+
+		<hr>
+		<h2>CA: ${ca.name}</h2>
+		<p>The Certificate Revocation List is available in three ways:
+		<ul>
+		  	<li><a href="${der}">DER format</a></li> 
+		  	<li><a href="${pem}">PEM format</a></li> 
+		  	<li><a href="${moz}">Mozilla/Netscape direct import</a></li>
+		</ul>
+	</c:forEach>
 <%@ include file="footer.inc" %>
