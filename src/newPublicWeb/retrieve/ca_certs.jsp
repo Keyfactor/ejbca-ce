@@ -1,7 +1,8 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ include file="header.jsp" %>
 
-<h1 class="title">@EJBCA@ Fetch CA Certificate</h1>
+	<h1 class="title">@EJBCA@ Fetch CA Certificate</h1>
+
 	<jsp:useBean id="finder" class="org.ejbca.ui.web.pub.retrieve.CertificateFinderBean" scope="page" />
 	<% finder.initialize(request.getRemoteAddr()); %>
 
@@ -13,7 +14,7 @@
 		<c:set var="ca" value="${finder.CAInfo}" />
 
 		<hr>
-		<h2>CA: <c:out value="${ca.name}" /></h2>
+		<h2>CA: ${ca.name}</h2>
 
 		<c:set var="issuerdn" value="none" />
 		<c:forEach var="issuercert" items="${finder.CACertificateChain}" begin="0" end="0">
@@ -35,13 +36,13 @@
 					<c:param name="issuer" value="${issuerdn}" />
 					<c:param name="level" value="${status.count - 1}" />
 				</c:url>
-				<p><a href="<c:out value="${pem}" />"><c:out value="${pemcert.subjectDN.name}" /></a>,
+				<p><a href="${pem}">${pemcert.subjectDN.name}</a>,
 
 				<c:url var="pem_ocsp" value="../certdist" >
 					<c:param name="cmd" value="ocspcert" />
 					<c:param name="issuer" value="${pemcert.subjectDN.name}" />
 				</c:url>
-				<a href="<c:out value="${pem_ocsp}" />">OCSPResponder certificate</a>
+				<a href="${pem_ocsp}">OCSPResponder certificate</a>
 				</p>
 			</c:forEach>
 
@@ -54,13 +55,13 @@
 					<c:param name="issuer" value="${issuerdn}" />
 					<c:param name="level" value="${status.count - 1}" />
 				</c:url>
-				<p><a href="<c:out value="${ns}" />"><c:out value="${nscert.subjectDN.name}" /></a>,
+				<p><a href="${ns}">${nscert.subjectDN.name}</a>,
 
 				<c:url var="ns_ocsp" value="../certdist" >
 					<c:param name="cmd" value="nsocspcert" />
 					<c:param name="issuer" value="${nscert.subjectDN.name}" />
 				</c:url>
-				<a href="<c:out value="${ns_ocsp}" />">OCSPResponder certificate</a>
+				<a href="${ns_ocsp}">OCSPResponder certificate</a>
 				</p>
 			</c:forEach>
 
@@ -73,13 +74,13 @@
 					<c:param name="issuer" value="${issuerdn}" />
 					<c:param name="level" value="${status.count - 1}" />
 				</c:url>
-				<p><a href="<c:out value="${ie}" />"><c:out value="${iecert.subjectDN.name}" /></a>,
+				<p><a href="${ie}">${iecert.subjectDN.name}</a>,
 
 				<c:url var="ie_ocsp" value="../certdist" >
 					<c:param name="cmd" value="ieocspcert" />
 					<c:param name="issuer" value="${iecert.subjectDN.name}" />
 				</c:url>
-				<a href="<c:out value="${ie_ocsp}" />">OCSPResponder certificate</a>
+				<a href="${ie_ocsp}">OCSPResponder certificate</a>
 				</p>
 			</c:forEach>
 		</c:if>
