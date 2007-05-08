@@ -20,7 +20,7 @@ import org.ejbca.core.model.log.Admin;
  * This bean performs a number of certificate searches for the public web.
  * 
  * @author Rolf Staflin
- * @version $Id: CertificateFinderBean.java,v 1.1 2007-05-04 13:44:16 rolf_s Exp $
+ * @version $Id: CertificateFinderBean.java,v 1.2 2007-05-08 07:40:50 rolf_s Exp $
  */
 public class CertificateFinderBean {
 	
@@ -45,7 +45,7 @@ public class CertificateFinderBean {
 		InitialContext ctx = new InitialContext();
 	    final ISignSessionHome home = (ISignSessionHome) PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class );
 	    mSignSession = home.create();
-		ICAAdminSessionHome cahome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ctx.lookup("CAAdminSession"), ICAAdminSessionHome.class );            
+		ICAAdminSessionHome cahome = (ICAAdminSessionHome) PortableRemoteObject.narrow(ctx.lookup("CAAdminSession"), ICAAdminSessionHome.class );            
 	    mCaAdminSession = cahome.create();
 	    mInitialized = true;
 	}
