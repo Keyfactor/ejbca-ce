@@ -50,7 +50,9 @@
     </taskdef>
 	
 	<target depends="ws.init" name="ws.gen.server">
-       <apt fork="true"  destdir="tmp/jaxws/gen-classes/server" sourcedestdir="src/jaxws/gen-java/server" sourcepath="src/java">
+       <apt fork="true"  destdir="tmp/jaxws/gen-classes/server" 
+            sourcedestdir="src/jaxws/gen-java/server" sourcepath="src/java"
+            debug="true">
 		 <classpath>
 		  <path refid="jaxws.classpath" /> 
 		  <pathelement location="src" /> 

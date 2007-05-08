@@ -107,6 +107,7 @@ import org.ejbca.core.protocol.ws.objects.UserMatch;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
+import org.ejbca.util.passgen.PasswordGeneratorFactory;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
@@ -114,7 +115,7 @@ import org.ejbca.util.query.Query;
  * Implementor of the IEjbcaWS interface.
  * 
  * @author Philip Vendil
- * $Id: EjbcaWS.java,v 1.10 2007-05-08 08:20:20 borpe Exp $
+ * $Id: EjbcaWS.java,v 1.11 2007-05-08 13:25:12 borpe Exp $
  */
 
 @WebService
@@ -612,11 +613,14 @@ public class EjbcaWS implements IEjbcaWS {
 	 */
 	public List<UserDataSourceVOWS> fetchUserData(List<String> userDataSourceNames, String searchString) throws UserDataSourceException, EjbcaException{
 	    	// No authorization needed for this call
-		ArrayList<UserDataSourceVOWS> retval = null;
+		ArrayList<UserDataSourceVOWS> retval = new ArrayList<UserDataSourceVOWS>();
 		
 		try {	
-			ArrayList userDataSourceIds = new ArrayList();
-			for (String name : userDataSourceNames) {
+			ArrayList<Integer> userDataSourceIds = new ArrayList<Integer>();
+
+			Iterator iter = userDataSourceNames.iterator();
+			while(iter.hasNext()){
+				String name = (String) iter.next();
 				int id = getUserDataSourceSession().getUserDataSourceId(getAdmin(), name);
 				if(id != 0){
 					userDataSourceIds.add(new Integer(id));
@@ -625,7 +629,7 @@ public class EjbcaWS implements IEjbcaWS {
 				}
 			}
 
-			Iterator iter = getUserDataSourceSession().fetch(getAdmin(), userDataSourceIds, searchString).iterator();
+			iter = getUserDataSourceSession().fetch(getAdmin(), userDataSourceIds, searchString).iterator();
 			while(iter.hasNext()){
 				UserDataSourceVO next = (UserDataSourceVO) iter.next();
 				retval.add(new UserDataSourceVOWS(convertUserDataVO(getAdmin(), next.getUserDataVO()),next.getIsFieldModifyableSet()));
@@ -722,7 +726,7 @@ public class EjbcaWS implements IEjbcaWS {
 			throw new EjbcaException(e.getMessage());
 		}        
 
-		ArrayList genCertificates = new ArrayList();
+		ArrayList<java.security.cert.Certificate> genCertificates = new ArrayList<java.security.cert.Certificate>();
 		if(getHardTokenSession().existsHardToken(admin, hardTokenDataWS.getHardTokenSN())){
 			if(overwriteExistingSN){
 				// fetch all old certificates and revoke them.
@@ -737,12 +741,7 @@ public class EjbcaWS implements IEjbcaWS {
 						throw new EjbcaException("Error revoking old certificate, the user : " + currentHardToken.getUsername() + " of the old certificate couldn't be found in database.");
 					}
 				}
-				try {
-					getHardTokenSession().removeHardToken(admin, hardTokenDataWS.getHardTokenSN());
-				} catch (HardTokenDoesntExistsException e) {
-					log.error("EJBCA WebService error, genTokenCertificates : ",e);
-					throw new EjbcaException(e.getMessage());
-				}
+
 			}else{
 				throw new HardTokenExistsException("Error hard token with sn " + hardTokenDataWS.getHardTokenSN() + " already exists.");
 			}
@@ -750,11 +749,13 @@ public class EjbcaWS implements IEjbcaWS {
 		}
 		try{
 			// Check if the userdata exist and edit/add it depending on which
+			String password = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_ALLPRINTABLE).getNewPassword(8, 8);
 			UserDataVO userData = convertUserDataVOWS(admin, userDataWS);
+			userData.setPassword(password);
 			if(userExists){
-				getUserAdminSession().changeUser(admin, userData, userDataWS.getClearPwd());
+				getUserAdminSession().changeUser(admin, userData, true);
 			}else{
-				getUserAdminSession().addUser(admin, userData, userDataWS.getClearPwd());
+				getUserAdminSession().addUser(admin, userData, true);
 			}
 
 			Date bDate = new Date(System.currentTimeMillis() - (10 * 60 * 1000));
@@ -788,15 +789,15 @@ public class EjbcaWS implements IEjbcaWS {
 				if(next.getType() == HardTokenConstants.REQUESTTYPE_PKCS10_REQUEST){						
 					userData.setCertificateProfileId(certificateProfileId);
 					userData.setCAId(cAInfo.getCAId());
-					userData.setPassword(userData.getPassword());
+					userData.setPassword(password);
 					userData.setStatus(UserDataConstants.STATUS_NEW);
 					getUserAdminSession().changeUser(admin, userData, false);
 					PKCS10RequestMessage pkcs10req = new PKCS10RequestMessage(next.getPkcs10Data());
 					java.security.cert.Certificate cert;
 					if(eDate == null){
-					    cert =  getSignSession().createCertificate(admin,userData.getUsername(),userData.getPassword(), pkcs10req.getRequestPublicKey());
+					    cert =  getSignSession().createCertificate(admin,userData.getUsername(),password, pkcs10req.getRequestPublicKey());
 					}else{
-						cert =  getSignSession().createCertificate(admin,userData.getUsername(),userData.getPassword(), pkcs10req.getRequestPublicKey(), -1, bDate, eDate);
+						cert =  getSignSession().createCertificate(admin,userData.getUsername(),password, pkcs10req.getRequestPublicKey(), -1, bDate, eDate);
 					}
 					
 					genCertificates.add(cert);
@@ -810,14 +811,14 @@ public class EjbcaWS implements IEjbcaWS {
 						KeyPair keys = KeyTools.genKeys(next.getKeyspec(), next.getKeyalg());							  
 						userData.setCertificateProfileId(certificateProfileId);
 						userData.setCAId(cAInfo.getCAId());
-						userData.setPassword(userData.getPassword());
+						userData.setPassword(password);
 						userData.setStatus(UserDataConstants.STATUS_NEW);
 						getUserAdminSession().changeUser(admin, userData, true);
 						X509Certificate cert;
 						if(eDate == null){
-						    cert =  (X509Certificate) getSignSession().createCertificate(admin,userData.getUsername(),userData.getPassword(), keys.getPublic());
+						    cert =  (X509Certificate) getSignSession().createCertificate(admin,userData.getUsername(),password, keys.getPublic());
 						}else{
-							cert =  (X509Certificate) getSignSession().createCertificate(admin,userData.getUsername(),userData.getPassword(), keys.getPublic(), -1, bDate, eDate);
+							cert =  (X509Certificate) getSignSession().createCertificate(admin,userData.getUsername(),password, keys.getPublic(), -1, bDate, eDate);
 						}
 						
 						genCertificates.add(cert);      
@@ -830,7 +831,7 @@ public class EjbcaWS implements IEjbcaWS {
 						}	      	      
 						java.security.KeyStore pkcs12 = KeyTools.createP12(alias, keys.getPrivate(), cert, chain);
 
-						retval.add(new TokenCertificateResponseWS(new KeyStore(pkcs12, userData.getPassword())));
+						retval.add(new TokenCertificateResponseWS(new KeyStore(pkcs12, password)));
 					}else{
 						throw new EjbcaException("Error in request, only REQUESTTYPE_PKCS10_REQUEST and REQUESTTYPE_KEYSTORE_REQUEST are supported token requests.");
 					}
@@ -920,7 +921,15 @@ public class EjbcaWS implements IEjbcaWS {
 
 		}
 
-		hardToken.setLabel(hardTokenDataWS.getLabel());			
+		hardToken.setLabel(hardTokenDataWS.getLabel());	
+		if(overwriteExistingSN){
+			try {
+				getHardTokenSession().removeHardToken(admin, hardTokenDataWS.getHardTokenSN());
+			} catch (HardTokenDoesntExistsException e) {
+				log.error("EJBCA WebService error, genTokenCertificates : ",e);
+				throw new EjbcaException(e.getMessage());
+			}
+		}
 		getHardTokenSession().addHardToken(admin, hardTokenDataWS.getHardTokenSN(), userDataWS.getUsername(), significantcAInfo.getSubjectDN(), tokenType, hardToken, genCertificates, hardTokenDataWS.getCopyOfSN());
 
 		return retval; 	
