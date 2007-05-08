@@ -17,16 +17,16 @@ import javax.xml.bind.annotation.XmlType;
 public class FetchUserData {
 
     @XmlElement(name = "arg0", namespace = "")
-    private List<Integer> arg0;
+    private List<String> arg0;
     @XmlElement(name = "arg1", namespace = "")
     private String arg1;
 
     /**
      * 
      * @return
-     *     returns List<Integer>
+     *     returns List<String>
      */
-    public List<Integer> getArg0() {
+    public List<String> getArg0() {
         return this.arg0;
     }
 
@@ -35,7 +35,7 @@ public class FetchUserData {
      * @param arg0
      *     the value for the arg0 property
      */
-    public void setArg0(List<Integer> arg0) {
+    public void setArg0(List<String> arg0) {
         this.arg0 = arg0;
     }
 

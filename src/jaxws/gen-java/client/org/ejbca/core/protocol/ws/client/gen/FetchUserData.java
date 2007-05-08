@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="arg0" type="{http://www.w3.org/2001/XMLSchema}int" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="arg0" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded" minOccurs="0"/>
  *         &lt;element name="arg1" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
@@ -36,8 +36,8 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class FetchUserData {
 
-    @XmlElement(type = Integer.class)
-    protected List<Integer> arg0;
+    @XmlElement(required = true)
+    protected List<String> arg0;
     protected String arg1;
 
     /**
@@ -58,13 +58,13 @@ public class FetchUserData {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Integer }
+     * {@link String }
      * 
      * 
      */
-    public List<Integer> getArg0() {
+    public List<String> getArg0() {
         if (arg0 == null) {
-            arg0 = new ArrayList<Integer>();
+            arg0 = new ArrayList<String>();
         }
         return this.arg0;
     }
