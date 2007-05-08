@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -34,7 +35,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Helper class for the View End Entity Page, parses the request and performs apporiate actions.
  * 
  * @author Philip Vendil
- * @version $Id: ViewEndEntityHelper.java,v 1.5 2006-12-02 11:17:57 anatom Exp $
+ * @version $Id: ViewEndEntityHelper.java,v 1.6 2007-05-08 14:10:00 jeklund Exp $
  */
 
 public class ViewEndEntityHelper implements java.io.Serializable{
@@ -143,8 +144,12 @@ public class ViewEndEntityHelper implements java.io.Serializable{
     		  username = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER),"UTF-8");
     		  Date timestamp = new Date(Long.parseLong(request.getParameter(TIMESTAMP_PARAMETER)));
     		      		      		  
-    	      notauthorized = !getUserDatas(username);    			    	      
+    	      notauthorized = !getUserDatas(username);
     	      currentuserindex = this.getTimeStampIndex(timestamp);
+    	      if ( userdatas == null || userdatas.length < 1 ) {
+    			  throw new ServletException("Could not find any history for this user.");
+    	      }
+			  userdata = userdatas[currentuserindex];
     	      
     		  nouserparameter = false;
     		  if(userdata!=null)
