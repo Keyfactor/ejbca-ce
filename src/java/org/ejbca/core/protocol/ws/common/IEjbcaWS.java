@@ -54,7 +54,7 @@ import org.ejbca.util.query.IllegalQueryException;
  * otherwise will a AuthorizationDenied Exception be thrown.
  * 
  * @author Philip Vendil
- * $Id: IEjbcaWS.java,v 1.3 2007-05-07 11:58:12 herrvendil Exp $
+ * $Id: IEjbcaWS.java,v 1.4 2007-05-09 09:29:12 herrvendil Exp $
  */
 public interface IEjbcaWS {
 	
@@ -223,6 +223,7 @@ public interface IEjbcaWS {
 	 * 
 	 * @param username unique username i EJBCA
 	 * @param reasonfor revokation, one of RevokedCertInfo.REVOKATION_REASON_ constants
+	 * or use RevokedCertInfo.NOT_REVOKED to unrevoke a certificate on hold.
 	 * @param deleteUser deletes the users after all the certificates have been revoked.
 	 * @throws AuthorizationDeniedException if client isn't authorized.
 	 * @throws NotFoundException if user doesn't exist

@@ -115,7 +115,7 @@ import org.ejbca.util.query.Query;
  * Implementor of the IEjbcaWS interface.
  * 
  * @author Philip Vendil
- * $Id: EjbcaWS.java,v 1.11 2007-05-08 13:25:12 borpe Exp $
+ * $Id: EjbcaWS.java,v 1.12 2007-05-09 09:29:11 herrvendil Exp $
  */
 
 @WebService
@@ -541,8 +541,19 @@ public class EjbcaWS implements IEjbcaWS {
 				// check that admin is autorized to CA
 				int caid = CertTools.stringToBCDNString(next.getIssuerDN().toString()).hashCode();		
 				getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);
-				
-				getUserAdminSession().revokeCert(admin,next.getSerialNumber(),next.getIssuerDN().toString(),username,reason);
+				if(reason == RevokedCertInfo.NOT_REVOKED){
+					String issuerDN = CertTools.getIssuerDN(next);
+					BigInteger serno = next.getSerialNumber();
+
+					CertificateInfo certInfo = getCertStoreSession().getCertificateInfo(admin, CertTools.getCertFingerprintAsString(next.getEncoded()));
+					if(certInfo.getRevocationReason()== RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD){
+						getUserAdminSession().unRevokeCert(admin, serno, issuerDN, username);
+					}else{
+						throw new EjbcaException("Error: Status is NOT 'certificate hold' for certificate with serial number " + serno + " and issuer DN " + issuerDN);
+					}
+				}else{
+				  getUserAdminSession().revokeCert(admin,next.getSerialNumber(),next.getIssuerDN().toString(),username,reason);
+				}
 			}
 		}catch(AuthorizationDeniedException e){
 			throw e;
@@ -557,6 +568,9 @@ public class EjbcaWS implements IEjbcaWS {
 			throw new EjbcaException(e.getMessage());
 		} catch (FinderException e) {
 			throw new NotFoundException(e.getMessage());
+		} catch (CertificateEncodingException e) {
+			log.error("EJBCA WebService error, revokeToken : ",e);
+			throw new EjbcaException(e.getMessage());
 		}  
 	}
 
