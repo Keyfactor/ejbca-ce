@@ -95,7 +95,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.37 2007-03-21 13:59:56 jeklund Exp $
+ * @version $Id: CertTools.java,v 1.38 2007-05-09 07:53:21 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -770,7 +770,9 @@ public class CertTools {
     * @throws CertificateException 
     */
     public static ArrayList getCertCollectionFromArray(Certificate[] certs, String provider) throws CertificateException, NoSuchProviderException {
-    	log.debug(">getCertCollectionFromArray: "+provider);
+    	if (log.isDebugEnabled()) {
+    		log.debug(">getCertCollectionFromArray: "+provider);
+    	}
     	ArrayList ret = new ArrayList();
     	String prov = provider;
     	if (prov == null) {
@@ -782,7 +784,9 @@ public class CertTools {
     		X509Certificate x509cert = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(cert.getEncoded()));
     		ret.add(x509cert);    		
     	}
-    	log.debug("<getCertCollectionFromArray: "+ret.size());
+    	if (log.isDebugEnabled()) {
+    		log.debug("<getCertCollectionFromArray: "+ret.size());
+    	}
     	return ret;
     }
     
