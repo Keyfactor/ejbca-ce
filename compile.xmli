@@ -407,9 +407,10 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
 		<echo>Ignore warnings about 'Couldn't find file' during preprocessing</echo>
 		<copy todir="${src.dd}/META-INF" overwrite="true" failonerror="false" flatten="true">
 		    <fileset dir="${deploy.src}/sun/">
-		        <include name="sun-*.xml"/>
+		        <include name="sun-ejb*.xml"/>
 		    </fileset> 
 		</copy>
+        <copy file="${deploy.src}/sun/sun-cmp-mappings-${database.name}.xml" tofile="${src.dd}/META-INF/sun-cmp-mappings.xml" overwrite="true" failonerror="false" />
         <copy file="${deploy.src}/sun/schema/${database.name}/ejbca-ejb.dbschema" tofile="${src.dd}/ejbca-ejb.dbschema" overwrite="true" failonerror="false" />
         <copy file="${deploy.src}/sun/adminweb/sun-web.xml" tofile="${src.dd}/WEB-INF/sun-web.xml" overwrite="true" failonerror="false" >
 			<filterchain>

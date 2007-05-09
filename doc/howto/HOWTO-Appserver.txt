@@ -121,13 +121,24 @@ Currently EJBCA works with the MySQL 5.0 database on Glassfish.
 - Set the envorinment variable APPSRV_HOME to the directory where Glassfish is installed. For example APPSRV_HOME=/home/sun/glassfish.
   The variable must be available when working with EJBCA. 
   
+MySQL:
 - Create a database and a database user with privileges.
 
 - Create the database tables using one of the scripts in doc/howto/create-tables-xxx. Choose the correct file for your database.
     Example for MySQL:
     mysql -u ejbca -p ejbca
     \. create-tables-ejbca3-mysql.sql
-  
+
+Derby:
+- Start the database: asadmin start-database
+- Create a database and a database user with privileges.
+  > export DERBY_INSTALL=/home/sun/glassfish/javadb
+  > cd /home/sun/glassfish/bin
+  > ../javadb/frameworks/NetworkServer/bin/ij.ksh
+
+  ij> connect 'jdbc:derby://localhost:1527/ejbca;create=true';
+  ij> run '/home/sun/ejbca/doc/howto/create-tables-ejbca3-derby.sql';
+
 - Start the application server: asadmin start-domain
 
 - Do yourself a favor and configure this in the JVM settings of Glassfish v1 (default in v2):
@@ -135,9 +146,13 @@ Currently EJBCA works with the MySQL 5.0 database on Glassfish.
     Restart Glassfish
   
 - Create a connection pool for your database. In the admin console this is done in Resources->JDBC->Connection Pools.
-    When adding for example a MySQL Pool use values: Name=MysqlPool, Type=javax.sql.DataSource, Vendor=mysql. 
-    It seems almost random which properties are pre-created on the next page...
+
+    When adding a MySQL Pool use values: Name=MysqlPool, Type=javax.sql.DataSource, Vendor=mysql.
+    Properties: DatabaseName=ejbca, ServerName=127.0.0.1, User=ejbca, Password=ejbca
     For MySQL you must copy the jar mysql-connector-java-5.0.4-bin.jar to $APPSRV_HOME/lib (use your known-to-be-good version of the jar)
+    
+    When adding a Derby Pool use values: Name=EjbcaPool, Type=javax.sql.DataSource, Vendor=JavaDB.
+    Properties: user=APP, password=APP, DatabaseName=ejbca 
 
 - Create a datasource called jdbc/EjbcaDS, in the admin console this is done in Resources->JDBC->JDBC Resources.
     Use the connection pool you just created.
@@ -211,9 +226,13 @@ sun-web.xml
 * sun-cmp-mapping.xml must be updated with database changes.
 
 * database schema must be updated.
-Example for postgres:
+Example for MySQL:
 CLASSPATH=../lib/mysql-connector-java-5.0.4-bin.jar:$CLASSPATH 
 ./capture-schema -username ejbca -password ejbca -dburl jdbc:mysql://127.0.0.1/ejbca -driver com.mysql.jdbc.Driver -out ejbca-ejb
+
+Example for Derby:
+CLASSPATH=../lib/derbyclient.jar:$CLASSPATH 
+./capture-schema -username ejbca -password ejbca -dburl jdbc:derby://127.0.0.1/ejbca -driver org.apache.derby.jdbc.ClientDriver -out ejbca-ejb
 
 Copy the generated ejbca-ejb.dbcschema file to src/deploy/sun/schema/<database>
 
