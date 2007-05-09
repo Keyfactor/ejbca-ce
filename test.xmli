@@ -55,6 +55,7 @@
                     <exclude name="org/ejbca/core/protocol/xkms/Test*" />
                     <exclude name="**/TestRunner*" />
                     <include name="org/ejbca/core/ejb/ca/caadmin/Test*" />
+                    <include name="**/authorization/TestAuthorization*" />
                 </fileset>
             </batchtest>
             <batchtest fork="yes" todir="${test.dir}/reports">
