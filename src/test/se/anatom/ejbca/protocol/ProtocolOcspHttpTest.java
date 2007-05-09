@@ -247,9 +247,7 @@ public class ProtocolOcspHttpTest extends TestCase {
             usersession.addUser(admin,"ocsptest","foo123","C=SE,O=AnaTom,CN=OCSPTest",null,"ocsptest@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
             log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
         } catch (RemoteException re) {
-            if (re.detail instanceof DuplicateKeyException) {
-                userExists = true;
-            }
+        	userExists = true;
         } catch (DuplicateKeyException dke) {
             userExists = true;
         }
@@ -392,9 +390,7 @@ public class ProtocolOcspHttpTest extends TestCase {
             usersession.addUser(admin,"ocsptest","foo123","C=SE,O=AnaTom,CN=OCSPTest",null,"ocsptest@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,ecdsacaid);
             log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
         } catch (RemoteException re) {
-            if (re.detail instanceof DuplicateKeyException) {
-                userExists = true;
-            }
+        	userExists = true;
         } catch (DuplicateKeyException dke) {
             userExists = true;
         }
@@ -449,9 +445,7 @@ public class ProtocolOcspHttpTest extends TestCase {
             usersession.addUser(admin,"ocsptest","foo123","C=SE,O=AnaTom,CN=OCSPTest",null,"ocsptest@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,ecdsacaid);
             log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
         } catch (RemoteException re) {
-            if (re.detail instanceof DuplicateKeyException) {
-                userExists = true;
-            }
+        	userExists = true;
         } catch (DuplicateKeyException dke) {
             userExists = true;
         }
