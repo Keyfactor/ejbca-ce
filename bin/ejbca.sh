@@ -55,10 +55,10 @@ if [ ! -n "$APPSRV_HOME" ]; then
 fi
 if [ -n "$APPSRV_HOME" ]; then
     J2EE_DIR="${APPSRV_HOME}"/client
-    if [ -x "$APPSRV_HOME"/server/lib/weblogic.jar ]; then
+    if [ -r "$APPSRV_HOME"/server/lib/weblogic.jar ]; then
         echo "Using Weblogic JNDI provider..."
         J2EE_DIR="${APPSRV_HOME}"/server/lib
-    elif [ -x "$APPSRV_HOME"/lib/appserv-rt.jar ]; then
+    elif [ -r "$APPSRV_HOME"/lib/appserv-rt.jar ]; then
         echo Using Glassfish JNDI provider...
         J2EE_DIR="${APPSRV_HOME}"/lib
     else 
