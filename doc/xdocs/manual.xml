@@ -1960,7 +1960,7 @@ Support for ECDSA in HSMs are dependant on the support for ECDSA in the HSM manu
 You have to check if that support is available.
 </p>
 </subsection>
-<subsection name="Generic PKCS#11 provider">
+<subsection name="Generic PKCS#11 provider (EJBCA 3.5)">
 <p>
 The PKCS#11 wrapper from SUN has been used to implement support for tokens with PKCS#11 libraries.
 </p><p>
