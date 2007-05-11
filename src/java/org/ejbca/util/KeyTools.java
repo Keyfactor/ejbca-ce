@@ -14,7 +14,12 @@
 package org.ejbca.util;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.lang.reflect.Constructor;
+import java.security.AuthProvider;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -54,11 +59,14 @@ import org.ejbca.core.model.ca.catoken.CATokenConstants;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.4 2006-10-31 08:24:12 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.5 2007-05-11 08:40:29 anatom Exp $
  */
 public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);
 
+    /** The name of Suns pkcs11 implementation */
+    public static final String SUNPKCS11CLASS = "sun.security.pkcs11.SunPKCS11";
+        
     /**
      * Prevent from creating new KeyTools object
      */
@@ -189,7 +197,7 @@ public class KeyTools {
      * @return KeyStore containing PKCS12-keystore
      * @exception Exception if input parameters are not OK or certificate generation fails
      */
-    public static KeyStore createP12(String alias, PrivateKey privKey, X509Certificate cert, Collection cacerts)
+    public static KeyStore createP12(String alias, PrivateKey privKey, X509Certificate cert, Collection<Certificate> cacerts)
     throws IOException, KeyStoreException, CertificateException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
         Certificate[] chain;
         if (cacerts == null)
@@ -387,7 +395,7 @@ public class KeyTools {
         }
 
         // If we came here, we have a cert which is not root cert in 'cert'
-        ArrayList array = new ArrayList();
+        ArrayList<Certificate> array = new ArrayList<Certificate>();
 
         for (int i = 0; i < certchain.length; i++) {
             array.add(certchain[i]);
@@ -454,4 +462,44 @@ public class KeyTools {
         }
     } // createSubjectKeyId
     
+    /** Creates the SUN PKCS#11 provider using the passed in pkcs11 library.
+     * 
+     * @param slot pkcs11 slot number
+     * @param libName the manufacturers provided pkcs11 library (.dll or .so) 
+     * @return AuthProvider of type "sun.security.pkcs11.SunPKCS11"
+     * @throws IOException if the pkcs11 library can not be found, or the SunPKCS11 can not be created.
+     */ 
+    public static AuthProvider getP11AuthProvider(final int slot, final String libName) throws IOException {
+    	ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    	PrintWriter pw = new PrintWriter(baos);
+    	final File libFile = new File(libName);
+    	if ( !libFile.isFile() || !libFile.canRead() )
+    		throw new IOException("The shared library PKCS11 file "+libName+" can't be read.");
+    	pw.println("name = "+libFile.getName()+"-slot"+slot);
+    	pw.println("library = "+libFile.getCanonicalPath());
+    	pw.println("slot = "+slot);
+    	pw.flush();
+    	pw.close();
+
+        // We will construct the PKCS11 provider (sun.security...) using reflextion, because 
+        // the sun class does not exist on all platforms in jdk5, and we want to be able to compile everything.
+        // The below code replaces the single line:
+        //   return new SunPKCS11(new ByteArrayInputStream(baos.toByteArray()));
+    	Object o = null;
+    	try {
+    		Class implClass = Class.forName(SUNPKCS11CLASS);
+    		Constructor construct = implClass.getConstructor(ByteArrayInputStream.class);
+    		Object[] params = new Object[1];
+    		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+    		params[0] = bais;
+    		o = construct.newInstance(params);
+    	} catch (Exception e) {
+    		log.error("Error constructing pkcs11 provider: ", e);
+    		IOException ioe = new IOException("Error constructing pkcs11 provider: "+e.getMessage());
+    		ioe.initCause(e);
+    		throw ioe;
+    	} 
+    	return (AuthProvider)o;
+    }
+
 } // KeyTools

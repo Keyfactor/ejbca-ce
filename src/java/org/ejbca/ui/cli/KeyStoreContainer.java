@@ -17,12 +17,10 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.AuthProvider;
@@ -59,17 +57,15 @@ import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
-
-import sun.security.pkcs11.SunPKCS11;
+import org.ejbca.util.KeyTools;
 
 import com.sun.security.auth.callback.TextCallbackHandler;
 
 /**
- * 
- * @version $Id: KeyStoreContainer.java,v 1.17 2007-05-11 07:49:55 anatom Exp $
- *
+ * @version $Id: KeyStoreContainer.java,v 1.18 2007-05-11 08:40:30 anatom Exp $
  */
 public abstract class KeyStoreContainer {
+    
     protected final KeyStore keyStore;
     private final String providerName;
     private final String ecryptProviderName;
@@ -236,21 +232,6 @@ public abstract class KeyStoreContainer {
     public void encrypt(InputStream is, OutputStream os, String alias) throws Exception {
         new EncryptStream().code(is, os, alias);
     }
-    public static AuthProvider getP11AuthProvider(final int slot,
-                                               final String libName) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PrintWriter pw = new PrintWriter(baos);
-        final File libFile = new File(libName);
-        if ( !libFile.isFile() || !libFile.canRead() )
-            throw new IOException("The shared library PKCS11 file "+libName+" can't be read.");
-        pw.println("name = "+libFile.getName()+"-slot"+slot);
-        pw.println("library = "+libFile.getCanonicalPath());
-        pw.println("slot = "+slot);
-        pw.flush();
-        pw.close();
-        return new SunPKCS11(new ByteArrayInputStream(baos.toByteArray()));
-        
-    }
 }
 class KeyStoreContainerJCE extends KeyStoreContainer {
     private final PasswordReader passwordReader;
@@ -375,7 +356,7 @@ class KeyStoreContainerP11 extends KeyStoreContainer {
     }
     static KeyStoreContainer getIt(final int slot,
                                    final String libName) throws KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, IOException, LoginException {
-        AuthProvider provider = getP11AuthProvider(slot, libName);
+        AuthProvider provider = KeyTools.getP11AuthProvider(slot, libName);
         final String providerName = provider.getName();
         Security.addProvider(provider);
         final CallbackHandler cbh = new TextCallbackHandler();

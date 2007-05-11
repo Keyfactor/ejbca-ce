@@ -18,11 +18,11 @@ import java.security.KeyStore.PasswordProtection;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.ejbca.ui.cli.KeyStoreContainer;
+import org.ejbca.util.KeyTools;
 
 /**
  * @author lars
- * @version $Id: PKCS11CAToken.java,v 1.2 2007-05-11 07:50:51 anatom Exp $
+ * @version $Id: PKCS11CAToken.java,v 1.3 2007-05-11 08:40:28 anatom Exp $
  */
 public class PKCS11CAToken extends BaseCAToken {
 
@@ -36,7 +36,7 @@ public class PKCS11CAToken extends BaseCAToken {
     public PKCS11CAToken() throws InstantiationException {
         super();
         try {
-        	PKCS11CAToken.class.getClassLoader().loadClass("sun.security.pkcs11.SunPKCS11");
+        	PKCS11CAToken.class.getClassLoader().loadClass(KeyTools.SUNPKCS11CLASS);
         } catch (Throwable t) {
             throw new InstantiationException("SUN pkcs11 wrapper class \"SunPKCS11\" not found.");
         }
@@ -69,7 +69,7 @@ public class PKCS11CAToken extends BaseCAToken {
      */
     public void init(Properties properties, String signaturealgorithm) throws Exception {
         init("slot", properties, signaturealgorithm);
-        setProvider( KeyStoreContainer.getP11AuthProvider(Integer.parseInt(sSlotLabel),
+        setProvider( KeyTools.getP11AuthProvider(Integer.parseInt(sSlotLabel),
                                                           properties.getProperty("sharedLibrary")) );
     }
 }
