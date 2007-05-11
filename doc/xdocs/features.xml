@@ -20,7 +20,7 @@
 <li>Administration GUI available in several languages - english, french, italian, spanish, swedish and chinese.</li>
 <li>Internal log messages are localizable for different languages.</li>
 <li>Command line administration for scripts etc.</li>
-<li>Modular API for HSMs. Built in support for nCipher, PrimeCardHSM, Eracom (now SafeNet) and SafeNet Luna.</li>
+<li>Modular API for HSMs. Built in support for nCipher, PrimeCardHSM, Eracom (now SafeNet), SafeNet Luna and Utimaco CryptoServer.</li>
 <li>Supports different architectures; all-in-one, clustered, external RA, external OCSP, etc.</li>
 <li>Individual enrollment or batch production of certificates.</li>
 <li>Server and client certificates can be exported as PKCS12, JKS or PEM.</li>
@@ -54,7 +54,7 @@
 <li>Deploys easily in a clustered high availability environment.</li>
 <li>Health check service to support efficient clustering and monitoring.</li>
 <li>Supports multiple application servers: JBoss, Weblogic, Glassfish</li>
-<li>Supports multiple databases: Hypersoniq, MySQL, PostgreSQL, Orcale, MS-SQL2000, Informix.</li>
+<li>Supports multiple databases: Hypersoniq, MySQL, PostgreSQL, Orcale, MS-SQL2000, Derby, Informix.</li>
 </ul>    
 
   </section>
