@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.19 2007-03-28 10:32:07 jbagnert Exp $
+# $Id: ejbca.properties.sample,v 1.20 2007-05-11 09:27:22 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -22,7 +22,8 @@
 # default: javac
 #build.compiler=jikes
 
-# which java version to use 14 for jdk 1.4, 15 for jdk 1.5 and jdk 6 (note use 15 for jdk6 as well)
+# which java version to use 15 for jdk 1.5 and jdk 6 (note use 15 for jdk6 as well)
+# In EJBCA >= 3.5 only jdk >= 5 is supported, so leave this value as it is.
 # default: 15
 #java.ver=15
 
