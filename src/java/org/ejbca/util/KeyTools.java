@@ -17,6 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
 import java.security.AuthProvider;
@@ -59,7 +60,7 @@ import org.ejbca.core.model.ca.catoken.CATokenConstants;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.5 2007-05-11 08:40:29 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.6 2007-05-11 13:57:35 primelars Exp $
  */
 public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);
@@ -204,7 +205,7 @@ public class KeyTools {
             chain = null;
         else {
             chain = new Certificate[cacerts.size()];
-            chain = (Certificate[])cacerts.toArray(chain);
+            chain = cacerts.toArray(chain);
         }
         return createP12(alias, privKey, cert, chain);
     } // createP12
@@ -485,21 +486,17 @@ public class KeyTools {
         // the sun class does not exist on all platforms in jdk5, and we want to be able to compile everything.
         // The below code replaces the single line:
         //   return new SunPKCS11(new ByteArrayInputStream(baos.toByteArray()));
-    	Object o = null;
     	try {
-    		Class implClass = Class.forName(SUNPKCS11CLASS);
-    		Constructor construct = implClass.getConstructor(ByteArrayInputStream.class);
-    		Object[] params = new Object[1];
-    		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-    		params[0] = bais;
-    		o = construct.newInstance(params);
+    		final Class<?> implClass = Class.forName(SUNPKCS11CLASS);
+    		final Constructor construct = implClass.getConstructor(InputStream.class);
+    		final ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+    		return (AuthProvider)construct.newInstance(new Object[] {bais});
     	} catch (Exception e) {
     		log.error("Error constructing pkcs11 provider: ", e);
     		IOException ioe = new IOException("Error constructing pkcs11 provider: "+e.getMessage());
     		ioe.initCause(e);
     		throw ioe;
     	} 
-    	return (AuthProvider)o;
     }
 
 } // KeyTools
