@@ -1,6 +1,15 @@
-/**
- * 
- */
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.core.model.ca.catoken;
 
 import java.security.KeyStore;
@@ -11,11 +20,9 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.ejbca.ui.cli.KeyStoreContainer;
 
-import sun.security.pkcs11.SunPKCS11;
-
 /**
  * @author lars
- *
+ * @version $Id: PKCS11CAToken.java,v 1.2 2007-05-11 07:50:51 anatom Exp $
  */
 public class PKCS11CAToken extends BaseCAToken {
 
@@ -29,7 +36,7 @@ public class PKCS11CAToken extends BaseCAToken {
     public PKCS11CAToken() throws InstantiationException {
         super();
         try {
-            SunPKCS11.class.getClass();
+        	PKCS11CAToken.class.getClassLoader().loadClass("sun.security.pkcs11.SunPKCS11");
         } catch (Throwable t) {
             throw new InstantiationException("SUN pkcs11 wrapper class \"SunPKCS11\" not found.");
         }
