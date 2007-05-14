@@ -630,7 +630,7 @@
 	<target name="cpd">
 	    <taskdef name="cpd" classname="net.sourceforge.pmd.cpd.CPDTask" />
 	    <cpd minimumTokenCount="100" outputFile="${src}/cpd.txt">
-	        <fileset dir="${src.java}/se/anatom">
+	        <fileset dir="${src.java}/org.ejbca">
 	            <include name="**/*.java"/>
 	        </fileset>
 	    </cpd>
