@@ -45,7 +45,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  * Stores data used by web server clients.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalRaAdminSessionBean.java,v 1.10 2007-01-11 09:35:07 anatom Exp $
+ * @version $Id: LocalRaAdminSessionBean.java,v 1.11 2007-05-14 11:54:20 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="RaAdminSB"
@@ -119,22 +119,22 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     private static final InternalResources intres = InternalResources.getInstance();
 
     /** The home interface of  AdminPreferences entity bean */
-    private AdminPreferencesDataLocalHome adminpreferenceshome=null;
+    private transient AdminPreferencesDataLocalHome adminpreferenceshome=null;
 
     /** The home interface of  EndEntityProfileData entity bean */
-    private EndEntityProfileDataLocalHome profiledatahome=null;
+    private transient EndEntityProfileDataLocalHome profiledatahome=null;
 
     /** The home interface of  GlobalConfiguration entity bean */
-    private GlobalConfigurationDataLocalHome globalconfigurationhome = null;
+    private transient GlobalConfigurationDataLocalHome globalconfigurationhome = null;
 
     /** Var containing the global configuration. */
-    private GlobalConfiguration globalconfiguration;
+    private transient GlobalConfiguration globalconfiguration = null;
 
     /** The local interface of  log session bean */
-    private ILogSessionLocal logsession = null;
+    private transient ILogSessionLocal logsession = null;
 
     /** the local inteface of authorization session */
-    private IAuthorizationSessionLocal authorizationsession = null;
+    private transient IAuthorizationSessionLocal authorizationsession = null;
 
 
     public static final String EMPTY_ENDENTITYPROFILENAME   = "EMPTY";
@@ -406,22 +406,30 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
     	   getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE,msg);
     	   throw new EndEntityProfileExistsException();
        }
+       boolean err = false;
        try{
-         EndEntityProfileDataLocal pdl = profiledatahome.findByProfileName(originalprofilename);
-         profile = (EndEntityProfile) pdl.getProfile().clone();
-         try{
-           profiledatahome.findByProfileName(newprofilename);
+    	   EndEntityProfileDataLocal pdl = profiledatahome.findByProfileName(originalprofilename);
+    	   profile = (EndEntityProfile) pdl.getProfile().clone();
+    	   try{
+    		   profiledatahome.findByProfileName(newprofilename);
+    		   String msg = intres.getLocalizedMessage("ra.errorcloneprofile", newprofilename, originalprofilename);            	
+    		   getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE,msg);
+    		   throw new EndEntityProfileExistsException();
+    	   }catch(FinderException e){
+    		   profiledatahome.create(Integer.valueOf(findFreeEndEntityProfileId()),newprofilename,profile);
+    		   String msg = intres.getLocalizedMessage("ra.clonedprofile", newprofilename, originalprofilename);            	
+    		   getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ENDENTITYPROFILE,msg);
+    	   }
+       } catch (CreateException e1) {
+    	   err = true;
+       } catch (CloneNotSupportedException e) {
+    	   err = true;
+       } catch (FinderException e) {
+    	   err = true;
+       }
+       if (err) {
     	   String msg = intres.getLocalizedMessage("ra.errorcloneprofile", newprofilename, originalprofilename);            	
-           getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE,msg);
-           throw new EndEntityProfileExistsException();
-         }catch(FinderException e){
-            profiledatahome.create(new Integer(findFreeEndEntityProfileId()),newprofilename,profile);
-			String msg = intres.getLocalizedMessage("ra.clonedprofile", newprofilename, originalprofilename);            	
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA, new java.util.Date(),null, null, LogEntry.EVENT_INFO_ENDENTITYPROFILE,msg);
-         }
-       }catch(Exception e){
-    	   String msg = intres.getLocalizedMessage("ra.errorcloneprofile", newprofilename, originalprofilename);            	
-    	   getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE,msg);
+    	   getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_RA,  new java.util.Date(),null, null, LogEntry.EVENT_ERROR_ENDENTITYPROFILE,msg);    	   
        }
 
     } // cloneEndEntityProfile
@@ -578,7 +586,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
                 returnval = new EndEntityProfile(true);
             }
             if(id!=0 && id != SecConst.EMPTY_ENDENTITYPROFILE) {
-                returnval = (profiledatahome.findByPrimaryKey(new Integer(id))).getProfile();
+                returnval = (profiledatahome.findByPrimaryKey(Integer.valueOf(id))).getProfile();
             }
         }catch(FinderException e){
             // Ignore so we'll return null
@@ -648,7 +656,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
       if(id == SecConst.EMPTY_ENDENTITYPROFILE)
         return EMPTY_ENDENTITYPROFILENAME;
       try{
-        returnval = (profiledatahome.findByPrimaryKey(new Integer(id))).getProfileName();
+        returnval = (profiledatahome.findByPrimaryKey(Integer.valueOf(id))).getProfileName();
       }catch(FinderException e){}
 
       return returnval;
@@ -787,14 +795,23 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 
     // Private methods
 
+    private static Random random = null;
+    /** Helper to re-use a Random object */
+    private int getRandomInt() {
+    	if (random == null) {
+    		random = new Random(new Date().getTime());
+    	}
+    	return random.nextInt();
+    }
+    
     private int findFreeEndEntityProfileId(){
-      int id = (new Random((new Date()).getTime())).nextInt();
+      int id = getRandomInt();
       boolean foundfree = false;
 
       while(!foundfree){
         try{
           if(id > 1)
-            profiledatahome.findByPrimaryKey(new Integer(id));
+            profiledatahome.findByPrimaryKey(Integer.valueOf(id));
           id++;
         }catch(FinderException e){
            foundfree = true;
@@ -807,7 +824,7 @@ public class LocalRaAdminSessionBean extends BaseSessionBean  {
 			boolean foundfree = false;
 			try {
 				if (id > 1) {
-					profiledatahome.findByPrimaryKey(new Integer(id));
+					profiledatahome.findByPrimaryKey(Integer.valueOf(id));
 				}
 			} catch (FinderException e) {
 				foundfree = true;
