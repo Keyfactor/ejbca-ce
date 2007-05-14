@@ -60,7 +60,7 @@ import org.ejbca.core.model.ca.catoken.CATokenConstants;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.6 2007-05-11 13:57:35 primelars Exp $
+ * @version $Id: KeyTools.java,v 1.7 2007-05-14 14:27:54 anatom Exp $
  */
 public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);
@@ -198,14 +198,14 @@ public class KeyTools {
      * @return KeyStore containing PKCS12-keystore
      * @exception Exception if input parameters are not OK or certificate generation fails
      */
-    public static KeyStore createP12(String alias, PrivateKey privKey, X509Certificate cert, Collection<Certificate> cacerts)
+    public static KeyStore createP12(String alias, PrivateKey privKey, X509Certificate cert, Collection cacerts)
     throws IOException, KeyStoreException, CertificateException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
         Certificate[] chain;
         if (cacerts == null)
             chain = null;
         else {
             chain = new Certificate[cacerts.size()];
-            chain = cacerts.toArray(chain);
+            chain = (Certificate[])cacerts.toArray(chain);
         }
         return createP12(alias, privKey, cert, chain);
     } // createP12
