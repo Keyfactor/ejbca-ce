@@ -286,3 +286,16 @@ create index certificatedata_idx1 on CertificateData (issuerDN,serialNumber);
 On external OCSP responders you should create the following two indexes:
 create index protect_idx1 on TableProtectData (dbKey,dbType);
 create index certificatedata_idx1 on CertificateData (issuerDN,serialNumber);
+
+Indexes for extra security
+==========================
+
+In a PKI every issuerDN, serialNumber pair must be unique. That means that a CA can not issue two certificates
+with the same serialNumber. The default installation has a very, very, very small chance that that can occur.
+SerialNumber are 64 bit random numbers, so the chance of a collision should be virtually nil, unless you issue
+billions of certificates. In any case, the following index assures that even this slim chance will never occur.
+
+Note that this is the same index as for performance, except that it is also unique, so this index can be used 
+instead of the above.
+
+create unique index cert_issuer_serno on CertificateData (issuerDN, serialNumber);
