@@ -13,7 +13,7 @@
 <li>Multiple CAs and levels of CAs, build a complete infrastructure (or several) within one instance of EJBCA.</li>
 <li>Supports RSA key algorithm up to 4096 bits.</li>
 <li>Supports ECDSA key algorithm with named curves or implicitlyCA.</li>
-<li>Support multiple hash algorithms for signatures, SHA-1, SHA-256.</li>
+<li>Support multiple hash algorithms for signatures, MD5, SHA-1, SHA-256.</li>
 <li>Standalone or integrated in any J2EE application.</li>
 <li>Simple installation and configuration.</li>
 <li>Powerful Web based administration GUI using strong authentication.</li>
