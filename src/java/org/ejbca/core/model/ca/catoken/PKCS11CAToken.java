@@ -22,12 +22,12 @@ import org.ejbca.util.KeyTools;
 
 /**
  * @author lars
- * @version $Id: PKCS11CAToken.java,v 1.3 2007-05-11 08:40:28 anatom Exp $
+ * @version $Id: PKCS11CAToken.java,v 1.4 2007-05-14 08:07:30 primelars Exp $
  */
 public class PKCS11CAToken extends BaseCAToken {
 
     /** Log4j instance */
-    private static final Logger log = Logger.getLogger(EracomCAToken.class);
+    private static final Logger log = Logger.getLogger(PKCS11CAToken.class);
 
     /**
      * @param providerClass
@@ -59,8 +59,8 @@ public class PKCS11CAToken extends BaseCAToken {
             setKeys(keyStore, null);
             pwp.destroy();
         } catch (Throwable t) {
-            log.error("Failed to initialize Eracom provider slot '"+sSlotLabel+"'.", t);
-            throw new CATokenAuthenticationFailedException("Failed to initialize Eracom provider keystore '"+sSlotLabel+"'.");
+            log.error("Failed to initialize PKCS11 provider slot '"+sSlotLabel+"'.", t);
+            throw new CATokenAuthenticationFailedException("Failed to initialize PKCS11 provider keystore '"+sSlotLabel+"'.");
         }
     }
 
@@ -68,8 +68,9 @@ public class PKCS11CAToken extends BaseCAToken {
      * @see org.ejbca.core.model.ca.catoken.IHardCAToken#init(java.util.Properties, java.lang.String)
      */
     public void init(Properties properties, String signaturealgorithm) throws Exception {
-        init("slot", properties, signaturealgorithm);
+        init("slot", properties, signaturealgorithm, false);
         setProvider( KeyTools.getP11AuthProvider(Integer.parseInt(sSlotLabel),
-                                                          properties.getProperty("sharedLibrary")) );
+                                                 properties.getProperty("sharedLibrary")) );
+        autoActivate();
     }
 }

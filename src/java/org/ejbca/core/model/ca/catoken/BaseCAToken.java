@@ -36,7 +36,7 @@ import org.ejbca.core.model.SecConst;
 
 /**
  * @author lars
- * @version $Id: BaseCAToken.java,v 1.14 2007-05-07 11:56:34 herrvendil Exp $
+ * @version $Id: BaseCAToken.java,v 1.15 2007-05-14 08:07:30 primelars Exp $
  */
 public abstract class BaseCAToken implements IHardCAToken {
 
@@ -62,7 +62,7 @@ public abstract class BaseCAToken implements IHardCAToken {
             throw new InstantiationException("Class not found: "+providerClass);
         }
     }
-    private void autoActivate() {
+    protected void autoActivate() {
         if ( mKeys==null && mAuthCode!=null )
             try {
                 activate(mAuthCode);
@@ -134,12 +134,16 @@ public abstract class BaseCAToken implements IHardCAToken {
     }
 
     protected void init(String sSlotLabelKey, Properties properties, String signaturealgorithm) {
+        init(sSlotLabelKey, properties, signaturealgorithm, true);
+    }
+    protected void init(String sSlotLabelKey, Properties properties, String signaturealgorithm, boolean doAutoAcivate) {
         log.debug("Properties: "+(properties!=null ? properties.toString() : "null")+". Signaturealg: "+signaturealgorithm);
         keyStrings = new KeyStrings(properties);
         sSlotLabel = properties.getProperty(sSlotLabelKey);
         sSlotLabel = sSlotLabel!=null ? sSlotLabel.trim() : null;
         mAuthCode = properties.getProperty("pin");
-        autoActivate();
+        if ( doAutoAcivate )
+            autoActivate();
     }
     protected void setProvider( String providerClassName ) throws Exception {
         setProvider( (Provider)Class.forName(providerClassName).newInstance() );
