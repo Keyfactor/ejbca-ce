@@ -68,7 +68,7 @@ import org.ejbca.util.P12toPEM;
  * This class generates keys and request certificates for all users with status NEW. The result is
  * generated PKCS12-files.
  *
- * @version $Id: BatchMakeP12.java,v 1.11 2007-01-16 11:44:29 anatom Exp $
+ * @version $Id: BatchMakeP12.java,v 1.12 2007-05-15 21:00:16 jeklund Exp $
  */
 public class BatchMakeP12 {
     /**
@@ -568,6 +568,20 @@ public class BatchMakeP12 {
     } // doit
 
     /**
+     * Return enviroment variable EJBCA_HOME or an empty string if the variable isn't set.
+     * @return Enviroment variable EJBCA_HOME
+     */
+	private static String getHomeDir() {
+		String ejbcaHomeDir = System.getenv("EJBCA_HOME");
+		if ( ejbcaHomeDir == null ) {
+			ejbcaHomeDir = "";
+		} else if ( !ejbcaHomeDir.endsWith("/") && !ejbcaHomeDir.endsWith("\\") ) {
+			ejbcaHomeDir += File.separatorChar;
+		}
+		return ejbcaHomeDir;
+	} // getHomeDir()
+
+    /**
      * Main
      *
      * @param args command line arguments
@@ -576,7 +590,7 @@ public class BatchMakeP12 {
         try {
             BatchMakeP12 makep12 = new BatchMakeP12();
             String username = null;
-            String directory = "p12";
+            String directory = getHomeDir() + "p12";
             for (int i = 0; i < args.length; i++) {
                 if ("-?".equalsIgnoreCase(args[i]) || "--help".equalsIgnoreCase(args[i])){
                     System.out.println("Usage: batch [username] [-dir directory]");
@@ -615,5 +629,4 @@ public class BatchMakeP12 {
             System.exit(1);
         }
     } // main
-
 } // BatchMakeP12
