@@ -621,7 +621,14 @@
         <checksum file="../ejbca_${ejbca.zipversion}.zip" algorithm="SHA1" property="ejbcaSHA1"/>      
         <echo message="SHA1 checksum: ${ejbcaSHA1}" />     
 	</target>
-		
+
+    <!-- ======================================================================= -->
+    <!-- Display application version string                                      -->
+    <!-- ======================================================================= -->
+	<target name="ejbcaversion" description="Output application version string.">
+		<echo>${app.version}</echo>
+	</target>
+
 	<!--
         Target that finds duplicated code. 
         You must install jar files from pmd.sourceforge.net in ANT_HOME/lib so the taskdef finds the class

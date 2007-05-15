@@ -89,6 +89,7 @@ JBoss's root is
         Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files 1.4.2
         <br/><a href="http://java.sun.com/j2se/1.4.2/download.html">http://java.sun.com/j2se/1.4.2/download.html</a>
         </p>
+<p>NOTE: If you are unsure what version of EJBCA you are running, type 'ant ejbcaversion' in the EJBCA_HOME directory. (EJBCA 3.5 and newer.)</p>
 </subsection>
 
 <subsection name="Configure">
