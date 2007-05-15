@@ -29,6 +29,7 @@
 #database.name=sybase
 #database.name=informix
 #database.name=derby
+#database.name=db2
 
 # The datasource mapping selected for deployment.
 # The J2EE server needs to be configured with the appropriate datasource mapping. 
@@ -46,6 +47,7 @@
 #datasource.mapping=Informix92
 #datasource.mapping=InformixDB
 #datasource.mapping=Derby
+#datasource.mapping=DB2
 
 # Database connection url.
 # This is the URL used to connect to the database, used to configure a new datasource in JBoss.
