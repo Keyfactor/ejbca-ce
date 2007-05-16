@@ -20,11 +20,16 @@ import java.util.Date;
  * Holds information about a revoked certificate. The information kept here is the
  * information that goes into a CRLEntry.
  *
- * @version $Id: RevokedCertInfo.java,v 1.1 2006-01-17 20:28:08 anatom Exp $
+ * @version $Id: RevokedCertInfo.java,v 1.2 2007-05-16 06:38:17 rolf_s Exp $
  **/
 public class RevokedCertInfo extends java.lang.Object implements java.io.Serializable {
     
-    /** Constants defining different revokation reasons. */
+
+	/** Version number for serialization */
+	private static final long serialVersionUID = 1L;
+
+	
+	/** Constants defining different revokation reasons. */
     public static final int NOT_REVOKED                            = -1;
     public static final int REVOKATION_REASON_UNSPECIFIED          = 0;
     public static final int REVOKATION_REASON_KEYCOMPROMISE        = 1;
@@ -41,6 +46,16 @@ public class RevokedCertInfo extends java.lang.Object implements java.io.Seriali
     private BigInteger  userCertificate;
     private Date        revocationDate;
     private int         reason;
+
+    /**
+     * A default constructor is needed to instantiate
+     * RevokedCertInfo objects using &lt;jsp:useBean&gt; by Tomcat 5. 
+     */
+    public RevokedCertInfo() {
+    	userCertificate = null;
+    	revocationDate = null;
+    	reason = REVOKATION_REASON_UNSPECIFIED;
+    }
 
     /**
      * Constuctor filling in the whole object.
@@ -112,5 +127,48 @@ public class RevokedCertInfo extends java.lang.Object implements java.io.Seriali
 
     public String toString() {
         return this.userCertificate == null ? "null" : this.userCertificate.toString();
+    }
+    
+    /**
+     * A quick way to tell if the certificate has been revoked. 
+     * @return true if the certificate has been revoked, otherwise false.
+     */
+    public boolean isRevoked() {
+    	return this.reason != NOT_REVOKED;
+    }
+    
+    /**
+     * This method returns the revocation reason as a text string that is understandable.
+     * TODO: The strings in this method should be easier for users to change
+     * 
+     * @return A string describing the reason for revocation.
+     */
+    public String getHumanReadableReason() {
+    	switch (reason) {
+    	case NOT_REVOKED:
+    		return "the certificate is not revoked";
+    	case REVOKATION_REASON_UNSPECIFIED:
+    		return "unspecified";
+    	case REVOKATION_REASON_KEYCOMPROMISE:
+    		return "key compromise";
+    	case REVOKATION_REASON_CACOMPROMISE:
+    		return "CA compromise";
+    	case REVOKATION_REASON_AFFILIATIONCHANGED:
+    		return "affiliation changed";
+    	case REVOKATION_REASON_SUPERSEDED:
+    		return "superseded";
+    	case REVOKATION_REASON_CESSATIONOFOPERATION:
+    		return "cessation of operation";
+    	case REVOKATION_REASON_CERTIFICATEHOLD:
+    		return "certificate hold";
+    	case REVOKATION_REASON_REMOVEFROMCRL:
+    		return "remove from CRL";
+    	case REVOKATION_REASON_PRIVILEGESWITHDRAWN:
+    		return "privileges withdrawn";
+    	case REVOKATION_REASON_AACOMPROMISE:
+    		return "AA compromise";
+    	default:
+    		return "unknown";
+         	}
     }
 }
