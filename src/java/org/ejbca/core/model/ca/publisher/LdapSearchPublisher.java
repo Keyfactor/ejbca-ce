@@ -45,7 +45,6 @@ public class LdapSearchPublisher extends LdapPublisher {
         int searchScope;
         String searchbasedn;
         boolean attributeOnly;
-        String attrs[] = { LDAPConnection.NO_ATTRS };
 
         // PARTE 1: Search for an existing entry in the LDAP directory
 		//  If it exists, s�lo se a�adir� al DN la parte del certificado (PARTE 2)
@@ -81,32 +80,33 @@ public class LdapSearchPublisher extends LdapPublisher {
 				Pattern C = Pattern.compile("\\$C", Pattern.CASE_INSENSITIVE);
 				searchFilter = C.matcher(searchFilter).replaceAll(CertTools.getPartFromDN(dn, "C"));
 			}
-			log.debug("Resulting search filter " + searchFilter);
+			log.debug("Resulting search filter '" + searchFilter+"'.");
 			searchScope = LDAPConnection.SCOPE_SUB;
 			attributeOnly = true;
-			log.debug("Making SRCH with BaseDN " + getSearchBaseDN() + " and filter " + searchFilter);
+			log.debug("Making SRCH with BaseDN '" + getSearchBaseDN() + "' and filter '" + searchFilter+"'.");
 			searchbasedn = getSearchBaseDN();
+	        String attrs[] = { LDAPConnection.NO_ATTRS };
 			LDAPSearchResults searchResults = lc.search(searchbasedn, // container to search
 					searchScope, // search scope
 					searchFilter, // search filter
 					attrs, // "1.1" returns entry name only
 					attributeOnly); // no attributes are returned
 			// try to read the old object
-			if (searchResults.getCount() == 1) {
+			int searchCount = searchResults.getCount();
+			if (log.isDebugEnabled()) {
+				log.debug("searchResults contains "+searchCount+ " entries");
+			}
+			if (searchCount > 0) {
 				oldEntry = searchResults.next();
-				log.debug("Found one match with filter: "+searchFilter+", match with DN: " + oldEntry.getDN());
 				dn = oldEntry.getDN();
-			} else {
-				if (searchResults.getCount() > 1) {
-					log.debug("Found " +searchResults.getCount() +" matches with filter" + searchFilter +
-							". Using SubjectDN from certificate as DN for LDAP entry: " +dn);
-					// Si queremos abortar la operaci�n ante varias coincidencias
-					//new PublisherException("LdapSearchPublisher: Se han encontrado " +
-					//                       searchResults.getCount() +
-					//    " entradas usando el filtro " + searchFilter + ". Se aborta la operacion");
+				if (searchCount > 1) {
+					log.debug("Found " +searchCount +" matches with filter '" + searchFilter +
+							"'. Using the first match with LDAP entry with DN: " +oldEntry.getDN());
 				} else {
-					log.debug("No matches found using filter: " +searchFilter + ". Using DN: " + dn);
+					log.debug("Found one match with filter: '"+searchFilter+"', match with DN: " + oldEntry.getDN());
 				}
+			} else {
+				log.debug("No matches found using filter: '" +searchFilter + "'. Using DN: " + dn);
 			}
 			// try to read the old object
 			try {

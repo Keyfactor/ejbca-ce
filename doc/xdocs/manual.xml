@@ -2749,6 +2749,9 @@ The certificate generated for ldap will be published in the object returned by t
 This is very useful if you want to publish certificates to an LDAP directory where your users already exists, such as an email directory.
 The DN in the LDAP does not have to match the DN in the certificates at all.
 </p>
+<p>
+If more than one entry matches the search, the first returned search result will be used.
+</p>
 </subsubsection>
 
 <subsubsection name="Publishing to Active Directory">

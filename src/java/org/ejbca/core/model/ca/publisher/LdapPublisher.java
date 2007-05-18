@@ -49,7 +49,7 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.24 2007-03-27 11:53:43 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.25 2007-05-18 16:29:29 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
@@ -263,13 +263,16 @@ public class LdapPublisher extends BasePublisher {
             if (oldEntry != null && getModifyExistingUsers()) {
                 LDAPModification[] mods = new LDAPModification[modSet.size()]; 
                 mods = (LDAPModification[])modSet.toArray(mods);
-                lc.modify(dn, mods);
-    			String msg = intres.getLocalizedMessage("publisher.ldapmodify", "CERT", dn);
+                String oldDn = oldEntry.getDN();
+                log.debug("Writing modification to DN: "+oldDn);
+                lc.modify(oldDn, mods);
+    			String msg = intres.getLocalizedMessage("publisher.ldapmodify", "CERT", oldDn);
                 log.info(msg);  
             } else {
                 if(this.getCreateNonExisingUsers()){     
                   if (oldEntry == null) {                  	
                     newEntry = new LDAPEntry(dn, attributeSet);
+                    log.debug("Adding DN: "+dn);
                     lc.add(newEntry);
         			String msg = intres.getLocalizedMessage("publisher.ldapadd", "CERT", dn);
                     log.info(msg);
@@ -985,19 +988,26 @@ public class LdapPublisher extends BasePublisher {
     	log.debug(">getModificationSet()");
         ArrayList modSet = new ArrayList();
 
+        // We get this, because we can not modify attributes that are present in the original DN
+        // i.e. if the ldap entry have a DN, we are not allowed to modify that
+        String oldDn = oldEntry.getDN();
+        
         if (extra) {
         	String cn = CertTools.getPartFromDN(dn, "CN");
-        	if (cn != null) {
+        	String oldcn = CertTools.getPartFromDN(oldDn, "CN");
+        	if ( (cn != null) && (oldcn == null) ) {
                 LDAPAttribute attr = new LDAPAttribute("cn", cn);
         		modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
         	}
             String l = CertTools.getPartFromDN(dn, "L");
-            if (l != null) {
+        	String oldl = CertTools.getPartFromDN(oldDn, "L");
+            if ( (l != null) && (oldl == null) ) {
                 LDAPAttribute attr = new LDAPAttribute("l", l);
                 modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
             }
             String ou = CertTools.getPartFromDN(dn, "OU");
-            if (ou != null) {
+        	String oldou = CertTools.getPartFromDN(oldDn, "OU");
+            if ( (ou != null) && (oldou == null) ) {
                 LDAPAttribute attr = new LDAPAttribute("ou", ou);
                 modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
             }
@@ -1044,17 +1054,20 @@ public class LdapPublisher extends BasePublisher {
                     modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
         		}
         		String st = CertTools.getPartFromDN(dn, "ST");
-        		if (st != null) {
+            	String oldst = CertTools.getPartFromDN(oldDn, "ST");
+        		if ( (st != null) && (oldst == null) ){
                     LDAPAttribute attr = new LDAPAttribute("st", st);
                     modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
         		}
         		String o = CertTools.getPartFromDN(dn, "O");
-        		if (o != null) {
+            	String oldo = CertTools.getPartFromDN(oldDn, "O");
+        		if ( (o != null) && (oldo == null) ) {
                     LDAPAttribute attr = new LDAPAttribute("o", o);
                     modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
         		}
         		String uid = CertTools.getPartFromDN(dn, "uid");
-        		if (uid != null) {
+            	String olduid = CertTools.getPartFromDN(oldDn, "uid");
+        		if ( (uid != null) && (olduid == null) ) {
                     LDAPAttribute attr = new LDAPAttribute("uid", uid);
                     modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
         		}
@@ -1073,7 +1086,8 @@ public class LdapPublisher extends BasePublisher {
             	Collection usefields = getUseFieldInLdapDN();
             	if (usefields.contains(new Integer(DNFieldExtractor.SN))) {
             		String serno = CertTools.getPartFromDN(dn, "SN");
-            		if (serno != null) {
+                	String oldserno = CertTools.getPartFromDN(oldDn, "SN");
+            		if ( (serno != null) && (oldserno == null) ) {
                         LDAPAttribute attr = new LDAPAttribute("serialNumber", serno);
                         modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
             		}            		
