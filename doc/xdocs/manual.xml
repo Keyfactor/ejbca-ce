@@ -3816,11 +3816,11 @@ You can change any part of EJBCA to better suit your specific needs.
 </p>
 <subsection name="Handling changes in a separate tree">
 <p>
-You can keep your personal modifications of EJBCA in a separate tree. Set the
-environment variable CUSTOM_EJBCA_HOME to the location of your personal
-modifications and use 'ant' as usual. Your modifications will overwrite any existing
-file(s) found in the EJBCA_HOME-directory or its subdirectories before executing the
-'ant'-command.
+You can keep your personal modifications of EJBCA in a separate tree. Set the location
+of your personal modifications in conf/custom.properties or use the default location
+'$EJBCA_HOME/../ejbca-custom'. Your modifications will automatically overwrite any
+existing file(s) found in the EJBCA_HOME-directory or its subdirectories before
+executing an 'ant'-command. A sample, conf/custom.properties.sample, is provided. 
 </p>
 <p>
 Please note that
@@ -3829,13 +3829,13 @@ Please note that
 files if needed.</li>
 <li>ant will not be able to detect if your changes are incompatible with newer
 versions of EJBCA. Always use 'diff' on the different versions to see if any file
-you modified is affected.</li>
+you override is affected.</li>
 <li>committing new features or improvements, that many would benefit from, is greatly
 appreciated by the community and makes your maintenance easier</li>
 </ul>
 </p>
 </subsection>
-<subsection name="Adding your own public pages">
+<subsection name="Adding your own public web-pages">
 <p>
 The public web-pages are written in JSP and can be found under src/newPublicWeb.
 Modify the pages (directly or by using a separate tree), rebuild and redeploy. The
