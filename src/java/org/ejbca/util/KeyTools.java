@@ -60,7 +60,7 @@ import org.ejbca.core.model.ca.catoken.CATokenConstants;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.7 2007-05-14 14:27:54 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.8 2007-05-18 16:24:58 anatom Exp $
  */
 public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);
@@ -396,7 +396,7 @@ public class KeyTools {
         }
 
         // If we came here, we have a cert which is not root cert in 'cert'
-        ArrayList<Certificate> array = new ArrayList<Certificate>();
+        ArrayList array = new ArrayList();
 
         for (int i = 0; i < certchain.length; i++) {
             array.add(certchain[i]);
@@ -487,7 +487,7 @@ public class KeyTools {
         // The below code replaces the single line:
         //   return new SunPKCS11(new ByteArrayInputStream(baos.toByteArray()));
     	try {
-    		final Class<?> implClass = Class.forName(SUNPKCS11CLASS);
+    		final Class implClass = Class.forName(SUNPKCS11CLASS);
     		final Constructor construct = implClass.getConstructor(InputStream.class);
     		final ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
     		return (AuthProvider)construct.newInstance(new Object[] {bais});
