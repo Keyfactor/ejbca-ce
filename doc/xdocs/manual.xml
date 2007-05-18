@@ -3807,12 +3807,39 @@ certificates from the specified CertificateProfile.
 </p></subsection>
 </section>
 
-<section name="Adding your own public pages">
+<section name="Customizing EJBCA">
 <p>
-Put your files (static html is easy) under publicweb/root, do a full build and re-deploy. 
-The indexfile under publicweb/root is the one shown on http://<i>ejbcahost</i>:8080/ejbca, 
-so you can add a subdir under there.
-</p></section>
+You can change any part of EJBCA to better suit your specific needs.
+</p>
+<subsection name="Handling changes in a separate tree">
+<p>
+You can keep your personal modifications of EJBCA in a separate tree. Set the
+environment variable CUSTOM_EJBCA_HOME to the location of your personal
+modifications and use 'ant' as usual. Your modifications will overwrite any existing
+file(s) found in the EJBCA_HOME-directory or its subdirectories before executing the
+'ant'-command.
+</p>
+<p>
+Please note that
+<ul>
+<li>there is no way to recover overwritten files, so you have to manually restore
+files if needed.</li>
+<li>ant will not be able to detect if your changes are incompatible with newer
+versions of EJBCA. Always use 'diff' on the different versions to see if any file
+you modified is affected.</li>
+<li>committing new features or improvements, that many would benefit from, is greatly
+appreciated by the community and makes your maintenance easier</li>
+</ul>
+</p>
+</subsection>
+<subsection name="Adding your own public pages">
+<p>
+The public web-pages are written in JSP and can be found under src/newPublicWeb.
+Modify the pages (directly or by using a separate tree), rebuild and redeploy. The
+changes should show on http://<i>ejbcahost</i>:8080/ejbca.
+</p>
+</subsection>
+</section>
 
 <section name="Using the demo servlet">
 <p>

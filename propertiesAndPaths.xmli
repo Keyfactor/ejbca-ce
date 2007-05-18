@@ -8,6 +8,18 @@
     <property name="ejbca.home" location="." />
     <property environment="env" />
 
+	<!--
+		Merge custom modifications from location in environment variable
+		CUSTOM_EJBCA_HOME to ejbca.home before reading configuration files.
+	-->
+    <condition property="customejbca.home" value="${env.CUSTOM_EJBCA_HOME}" else="not available">
+		<isset property="env.CUSTOM_EJBCA_HOME" />
+    </condition>
+	<echo message="Merging available external modifications. (${customejbca.home})" />
+	<copy todir="${ejbca.home}" overwrite="true" failonerror="false">
+		<fileset dir="${customejbca.home}" excludes="" />
+	</copy>
+
     <!-- 
        Give user a chance to override without editing this file
        (and without typing -D each time it compiles it).
