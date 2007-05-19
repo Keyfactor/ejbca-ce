@@ -1,54 +1,46 @@
-<%@ page pageEncoding="ISO-8859-1"%>
-<%@ page contentType="text/html; charset=@page.encoding@" %>
-<%@ page language="java" import="javax.naming.*,javax.rmi.*,java.util.*,java.net.*,java.security.cert.*,java.math.BigInteger,org.ejbca.core.ejb.ca.store.*,org.bouncycastle.util.encoders.Hex, org.ejbca.core.model.log.Admin,org.ejbca.ui.web.RequestHelper"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ include file="header.jsp" %>
-<%
-  RequestHelper.setDefaultCharacterEncoding(request);
-%>
-<h1>Certificates for <%=request.getParameter("subject")%></h1> 
-  <%
-try  {
-    String dn=request.getParameter("subject");
-    if (dn == null) {
-%>
-  <p>Usage: listcerts.jsp?subject=<DN> 
-  <%
-    } else {
-        InitialContext ctx = new InitialContext();
-        ICertificateStoreSessionHome home = (ICertificateStoreSessionHome) PortableRemoteObject.narrow(
-        ctx.lookup("CertificateStoreSession"), ICertificateStoreSessionHome.class );
-        ICertificateStoreSessionRemote store = home.create();
-        Collection certs = store.findCertificatesBySubject(new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr()), dn);
-        Iterator i = certs.iterator();
-        while (i.hasNext()) {
-            X509Certificate x509cert = (X509Certificate)i.next();
-            Date notBefore = x509cert.getNotBefore();
-            Date notAfter = x509cert.getNotAfter();
-            String subject = x509cert.getSubjectDN().toString();
-            String issuer = x509cert.getIssuerDN().toString();
-            BigInteger serno = x509cert.getSerialNumber();
-            String hexSerno = new String(Hex.encode(serno.toByteArray()));
-            String urlEncIssuer = URLEncoder.encode(issuer);
-%>
-  <pre>Subject: <%=subject%>
-Issuer: <%=issuer%>
-NotBefore: <%=notBefore.toString()%>
-NotAfter: <%=notAfter.toString()%>
-Serial number: <%=hexSerno%>
+    <c:set var="subject" value="<%=request.getParameter("subject")%>" />
+    <c:choose> 
+        <c:when test="${subject == null}"> 
+            <h1 class="title">No subject</h1> 
+            <p>Please enter a valid subject in the <a href="list_certs.jsp">search form</a>!</p>
+        </c:when>
+        <c:otherwise> 
+            <jsp:useBean id="subject" type="java.lang.String" scope="page" />
+            <jsp:useBean id="finder" class="org.ejbca.ui.web.pub.retrieve.CertificateFinderBean" scope="page" />
+            <jsp:useBean id="certificates" class="java.util.ArrayList" scope="page" />
+        
+            <%
+                finder.initialize(request.getRemoteAddr());
+                finder.lookupCertificatesBySubject(subject, certificates);
+            %>
+    
+            <h1 class="title">Certificates for ${subject}</h1> 
+    
+            <c:choose> 
+                <c:when test="${certificates == null}"> 
+                    <h1 class="title">No certificates exists for '${subject}'.</h1> 
+                </c:when>
+                <c:otherwise> 
+                    <c:forEach var="certificate" items="${certificates}">
+                        <jsp:useBean id="certificate" type="java.security.cert.X509Certificate" />
+<pre>
+Subject:       ${certificate.subjectDN}
+Issuer:        ${certificate.issuerDN}
+NotBefore:     ${certificate.notBefore}
+NotAfter:      ${certificate.notAfter}
+Serial number: ${certificate.serialNumber}
 </pre>
-  <a href="check_status_result.jsp?issuer=<%=urlEncIssuer%>&serno=<%=hexSerno%>">Check if 
-  certificate is revoked</a> 
-  <%
-        }
-        if (certs.isEmpty()) {
-%>
-  <p>No certificates exists for '<%=dn%>'. 
-  <%
-        }
-    }
-} catch(Exception ex) {
-    ex.printStackTrace();
-}                                             
-%>
-</div>
+            
+                        <c:url var="check_status" value="check_status_result.jsp" >
+                            <c:param name="issuer" value="${certificate.issuerDN}" />
+                            <c:param name="serno" value="${certificate.serialNumber}" />
+                        </c:url>
+                        <a href="${check_status}">Check if certificate is revoked</a>
+                    </c:forEach>
+                </c:otherwise> 
+            </c:choose> 
+        </c:otherwise> 
+    </c:choose> 
 <%@ include file="footer.inc" %>

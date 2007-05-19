@@ -2,7 +2,9 @@ package org.ejbca.ui.web.pub.retrieve;
 
 import java.math.BigInteger;
 import java.rmi.RemoteException;
+import java.security.cert.X509Certificate;
 import java.util.Collection;
+import java.util.Iterator;
 
 import javax.ejb.CreateException;
 import javax.naming.InitialContext;
@@ -29,7 +31,7 @@ import org.ejbca.core.model.log.Admin;
  * The arguments are supplied as member variables instead. <br>
  * 
  * @author Rolf Staflin
- * @version $Id: CertificateFinderBean.java,v 1.3 2007-05-16 06:43:21 rolf_s Exp $
+ * @version $Id: CertificateFinderBean.java,v 1.4 2007-05-19 16:56:29 rolf_s Exp $
  */
 public class CertificateFinderBean {
 	
@@ -117,7 +119,10 @@ public class CertificateFinderBean {
 	 * @throws RemoteException If a communication error occurs while looking up the info.
 	 */
 	public void lookupRevokedInfo(String issuerDN, String serialNumber, RevokedCertInfo result) throws RemoteException {
-		if (result == null) {
+		if (log.isDebugEnabled()) {
+			log.debug(">lookupRevokedInfo(" + issuerDN + ", " + serialNumber + ", " + result + ")");
+		}
+		if (result == null || mInitialized == false) {
 			return; // There's nothing we can do here.
 		}
 		BigInteger serialBignum = new BigInteger(Hex.decode(StringUtils.trimToEmpty(serialNumber)));
@@ -130,6 +135,36 @@ public class CertificateFinderBean {
 			result.setReason(info.getReason());
 			result.setRevocationDate(info.getRevocationDate());
 			result.setUserCertificate(info.getUserCertificate());
+		}
+	}
+
+	
+	/**
+	 * Uses the store session to look up all certificates for a subject.
+	 * The parameter <code>result</code> is updated so that it contains
+	 * the certificates.
+	 * @param subject The DN of the subject
+	 * @param result 
+	 * @throws RemoteException
+	 */
+	@SuppressWarnings("unchecked")
+	public void lookupCertificatesBySubject(String subject, Collection result) throws RemoteException {
+		if (log.isDebugEnabled()) {
+			log.debug(">lookupCertificatesBySubject(" + subject + ", " + result + ")");
+		}
+		if (result == null) {
+			return; // There's nothing we can do here.
+		}
+		result.clear();
+		if (subject == null || mInitialized == false) {
+			return; // We can't lookup any certificates, so return with an empty result.
+		}
+		Collection certificates = mStoreSession.findCertificatesBySubject(mAdmin, subject);
+		if (certificates != null) {
+			Iterator i = certificates.iterator();
+			while (i.hasNext()) {
+				result.add(i.next());
+			}
 		}
 	}
 }
