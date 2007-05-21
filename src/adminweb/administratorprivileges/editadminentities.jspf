@@ -189,7 +189,20 @@
         </td>
         <td width="53%">
           <input type="hidden" name='<%= HIDDEN_MATCHVALUE + i %>' value='<%= adminentity.getMatchValue() %>'>
-           <%= adminentity.getMatchValue() %>
+        	<%	// Link certificate serial numbers to the "List End Entity"-page
+        		if ( adminentity.getMatchWith() == AdminEntity.WITH_SERIALNUMBER ) {
+        			// As defined in listendetities.jsp:
+        			final String ACTION_LISTUSERS="listusers";
+        			final String BUTTON_ISREVOKED="buttonisrevoked";
+        			final String TEXTFIELD_SERIALNUMBER="textfieldserialnumber";
+	        		String viewLink = ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath() + "/listendentities.jsp?" +
+	        			ACTION + "=" + ACTION_LISTUSERS + "&" + BUTTON_ISREVOKED + "=value&" +
+	        			TEXTFIELD_SERIALNUMBER + "="+adminentity.getMatchValue().trim();
+        	%>
+					<a href="<%= viewLink %>"><%= adminentity.getMatchValue() %></a>
+        	<%	} else { %>
+					<%= adminentity.getMatchValue() %>
+        	<%	} %>
         </td>
         <td width="2%">&nbsp;</td>
       </tr>
