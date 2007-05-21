@@ -1,6 +1,6 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ include file="header.jsp" %>
-    <c:set var="subject" value="<%=request.getParameter("subject")%>" />
+    <c:set var="subject" value="${param.subject}" />
     <c:choose> 
         <c:when test="${subject == null}"> 
             <h1 class="title">No subject</h1> 

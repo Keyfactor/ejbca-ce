@@ -3,10 +3,10 @@
 
 	<h1 class="title">Certificate Status</h1>
 	
-    <c:set var="issuer" value="<%=request.getParameter("issuer")%>" />
+    <c:set var="issuer" value="${param.issuer}" />
     <jsp:useBean id="issuer" type="java.lang.String" scope="page" />
 
-    <c:set var="serno" value="<%=request.getParameter("serno")%>" />
+    <c:set var="serno" value="${param.serno}" />
     <jsp:useBean id="serno" type="java.lang.String" scope="page" />
 
     <jsp:useBean id="finder" class="org.ejbca.ui.web.pub.retrieve.CertificateFinderBean" scope="page" />
