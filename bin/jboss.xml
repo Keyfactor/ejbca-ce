@@ -54,10 +54,14 @@
         <available file="${jboss.deploy.dir}/jbossweb-tomcat41.sar" type="dir" property="jboss.web" value="tomcat41"/>
         <available file="${jboss.deploy.dir}/jbossweb-tomcat50.sar" type="dir" property="jboss.web" value="tomcat50"/>
         <available file="${jboss.deploy.dir}/jbossweb-tomcat55.sar" type="dir" property="jboss.web" value="tomcat55"/>
+        <available file="${jboss.deploy.dir}/jboss-web.deployer" type="dir" property="jboss.web" value="tomcat60"/>
         <fail message="Could not detect JBoss Servlet container version" unless="jboss.web"/>
 		
 		<!-- configure the tomcat bundle -->
-		<property name="tomcat.dir" location="${jboss.deploy.dir}/jbossweb-${jboss.web}.sar"/>
+		<!-- For JBoss 4.0.x tomcat is bundled in jbossweb-tomcat55.sar dir -->
+        <available file="${jboss.deploy.dir}/jbossweb-${jboss.web}.sar" type="dir" property="tomcat.dir" value="${jboss.deploy.dir}/jbossweb-${jboss.web}.sar"/>
+		<!-- For JBoss 4.2.x tomcat is bundled in jboss-web.deployer dir, i.e. new naming scheme -->
+        <available file="${jboss.deploy.dir}/jboss-web.deployer" type="dir" property="tomcat.dir" value="${jboss.deploy.dir}/jboss-web.deployer"/>
         <copy todir="${tomcat.dir}" overwrite="true">
 			<fileset dir="src/appserver/jboss/${jboss.web}"/>
 			<filterchain>
