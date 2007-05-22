@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
-import javax.xml.rpc.ServiceException;
-
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.util.CertTools;
@@ -43,7 +41,7 @@ import org.w3._2002._03.xkms_.UseKeyWithType;
  * Checks the property file and creates a webservice connection.
  *  
  * @author Philip Vendil
- * $Id: XKMSCLIBaseCommand.java,v 1.2 2007-01-07 00:31:51 herrvendil Exp $
+ * $Id: XKMSCLIBaseCommand.java,v 1.3 2007-05-22 12:42:54 anatom Exp $
  */
 
 public abstract class XKMSCLIBaseCommand {
@@ -113,7 +111,6 @@ public abstract class XKMSCLIBaseCommand {
 	/**
 	 * Method creating a connection to the webservice
 	 * using the information stored in the property files.
-	 * @throws ServiceException 
 	 * @throws IOException 
 	 * @throws FileNotFoundException 
 	 */
