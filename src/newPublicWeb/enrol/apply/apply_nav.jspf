@@ -16,7 +16,7 @@
 	    if (chain.size() == 0) {
 	        out.println("<p>No CA certificates exist</p>");
 	    } else {
-	        out.println("<p><a href=\"../certdist?cmd=nscacert&caid="+caid+"\">Certificate chain</a></p>");
+	        out.println("<p><a href=\"../certdist?cmd=nscacert&level=0&caid="+caid+"\">Certificate chain</a></p>");
 	    }
 	} catch(Exception ex) {
 	    ex.printStackTrace();
