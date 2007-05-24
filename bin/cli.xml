@@ -146,7 +146,15 @@ appserver.home      : ${appserver.home}
     <macrodef name="keytool" uri="ejbca">
         <attribute name="arg"/>
         <sequential>
-        <exec executable="keytool">
+        <condition property="temp.keytoolhome" value="${env.JAVA_HOME}/bin/" else="">
+        	<and>
+            	<isset property="env.JAVA_HOME" />
+	        	<not>
+	        		<equals arg1="${env.JAVA_HOME}" arg2="" />
+	        	</not>
+        	</and>
+        </condition>
+        <exec executable="${temp.keytoolhome}keytool">
             <arg line="@{arg}"/>
         </exec>
         </sequential>
