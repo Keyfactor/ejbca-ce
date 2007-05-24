@@ -2,7 +2,7 @@
 -- These definitions should work for EJBCA 3.4.x, Derby 10.1 or 10.2.
 --
 
---DROP TABLE AccessRulesData;
+DROP TABLE AccessRulesData;
 CREATE TABLE AccessRulesData (
     pK integer NOT NULL,
     accessRule varchar(256),
@@ -12,7 +12,7 @@ CREATE TABLE AccessRulesData (
     PRIMARY KEY (pK)
 );
 
---DROP TABLE AdminEntityData;
+DROP TABLE AdminEntityData;
 CREATE TABLE AdminEntityData (
     pK integer NOT NULL,
     matchWith integer NOT NULL,
@@ -22,7 +22,7 @@ CREATE TABLE AdminEntityData (
     PRIMARY KEY (pK)
 );
 
---DROP TABLE AdminGroupData;
+DROP TABLE AdminGroupData;
 CREATE TABLE AdminGroupData (
     pK integer NOT NULL,
     adminGroupName varchar(256),
@@ -30,14 +30,14 @@ CREATE TABLE AdminGroupData (
     PRIMARY KEY (pK)
 );
 
---DROP TABLE AdminPreferencesData;
+DROP TABLE AdminPreferencesData;
 CREATE TABLE AdminPreferencesData (
     id varchar(256) NOT NULL DEFAULT '',
     data blob,
     PRIMARY KEY (id)
 );
 
---DROP TABLE ApprovalData;
+DROP TABLE ApprovalData;
 CREATE TABLE ApprovalData (
     id integer NOT NULL,
     approvalid integer NOT NULL,
@@ -55,14 +55,14 @@ CREATE TABLE ApprovalData (
     PRIMARY KEY (id)
 );
 
---DROP TABLE AuthorizationTreeUpdateData;
+DROP TABLE AuthorizationTreeUpdateData;
 CREATE TABLE AuthorizationTreeUpdateData (
     pK integer NOT NULL,
     authorizationTreeUpdateNumber integer NOT NULL,
     PRIMARY KEY (pK)
 );
 
---DROP TABLE CAData;
+DROP TABLE CAData;
 CREATE TABLE CAData (
     cAId integer NOT NULL,
     name varchar(256),
@@ -74,7 +74,7 @@ CREATE TABLE CAData (
     PRIMARY KEY (cAId)
 );
 
---DROP TABLE CRLData;
+DROP TABLE CRLData;
 CREATE TABLE CRLData (
     fingerprint varchar(256)NOT NULL,
     cRLNumber integer NOT NULL,
@@ -86,7 +86,7 @@ CREATE TABLE CRLData (
     PRIMARY KEY (fingerprint)
 );
 
---DROP TABLE CertReqHistoryData;
+DROP TABLE CertReqHistoryData;
 CREATE TABLE CertReqHistoryData (
     fingerprint varchar(256)NOT NULL,
     issuerDN varchar(256),
@@ -97,7 +97,7 @@ CREATE TABLE CertReqHistoryData (
     PRIMARY KEY (fingerprint)
 );
 
---DROP TABLE CertificateData;
+DROP TABLE CertificateData;
 CREATE TABLE CertificateData (
     fingerprint varchar(256)NOT NULL,
     issuerDN varchar(256),
@@ -114,7 +114,7 @@ CREATE TABLE CertificateData (
     PRIMARY KEY (fingerprint)
 );
 
---DROP TABLE CertificateProfileData;
+DROP TABLE CertificateProfileData;
 CREATE TABLE CertificateProfileData (
     id integer NOT NULL,
     certificateProfileName varchar(256),
@@ -122,7 +122,7 @@ CREATE TABLE CertificateProfileData (
     PRIMARY KEY (id)
 );
 
---DROP TABLE EndEntityProfileData;
+DROP TABLE EndEntityProfileData;
 CREATE TABLE EndEntityProfileData (
     id integer NOT NULL,
     profileName varchar(256),
@@ -130,21 +130,21 @@ CREATE TABLE EndEntityProfileData (
     PRIMARY KEY (id)
 );
 
---DROP TABLE GlobalConfigurationData;
+DROP TABLE GlobalConfigurationData;
 CREATE TABLE GlobalConfigurationData (
     configurationId varchar(256) NOT NULL,
     data blob,
     PRIMARY KEY (configurationId)
 );
 
---DROP TABLE HardTokenCertificateMap;
+DROP TABLE HardTokenCertificateMap;
 CREATE TABLE HardTokenCertificateMap (
     certificateFingerprint varchar(256) NOT NULL,
     tokenSN varchar(256),
     PRIMARY KEY (certificateFingerprint)
 );
 
---DROP TABLE HardTokenData;
+DROP TABLE HardTokenData;
 CREATE TABLE HardTokenData (
     tokenSN varchar(256) NOT NULL,
     username varchar(256),
@@ -156,7 +156,7 @@ CREATE TABLE HardTokenData (
     PRIMARY KEY (tokenSN)
 );
 
---DROP TABLE HardTokenIssuerData;
+DROP TABLE HardTokenIssuerData;
 CREATE TABLE HardTokenIssuerData (
     id integer NOT NULL,
     alias varchar(256),
@@ -165,7 +165,7 @@ CREATE TABLE HardTokenIssuerData (
     PRIMARY KEY (id)
 );
 
---DROP TABLE HardTokenProfileData;
+DROP TABLE HardTokenProfileData;
 CREATE TABLE HardTokenProfileData (
     id integer NOT NULL,
     name varchar(256),
@@ -174,7 +174,7 @@ CREATE TABLE HardTokenProfileData (
     PRIMARY KEY (id)
 );
 
---DROP TABLE HardTokenPropertyData;
+DROP TABLE HardTokenPropertyData;
 CREATE TABLE HardTokenPropertyData (
     id varchar(256) NOT NULL,
     property varchar(256) NOT NULL,
@@ -182,7 +182,7 @@ CREATE TABLE HardTokenPropertyData (
     PRIMARY KEY (id, property)
 );
 
---DROP TABLE KeyRecoveryData;
+DROP TABLE KeyRecoveryData;
 CREATE TABLE KeyRecoveryData (
     certSN varchar(256) NOT NULL,
     issuerDN varchar(256) NOT NULL,
@@ -192,7 +192,7 @@ CREATE TABLE KeyRecoveryData (
     PRIMARY KEY (certSN, issuerDN)
 );
 
---DROP TABLE LogConfigurationData;
+DROP TABLE LogConfigurationData;
 CREATE TABLE LogConfigurationData (
     id integer NOT NULL,
     logConfiguration blob,
@@ -200,7 +200,7 @@ CREATE TABLE LogConfigurationData (
     PRIMARY KEY (id)
 );
 
---DROP TABLE LogEntryData;
+DROP TABLE LogEntryData;
 CREATE TABLE LogEntryData (
     id integer NOT NULL,
     adminType integer NOT NULL,
@@ -215,7 +215,7 @@ CREATE TABLE LogEntryData (
     PRIMARY KEY (id)
 );
 
---DROP TABLE PublisherData;
+DROP TABLE PublisherData;
 CREATE TABLE PublisherData (
     id integer NOT NULL,
     name varchar(256),
@@ -224,7 +224,7 @@ CREATE TABLE PublisherData (
     PRIMARY KEY (id)
 );
 
---DROP TABLE ServiceData;
+DROP TABLE ServiceData;
 CREATE TABLE ServiceData (
     id integer NOT NULL,
     name varchar(256),
@@ -232,7 +232,7 @@ CREATE TABLE ServiceData (
     PRIMARY KEY (id)
 );
 
---DROP TABLE TableProtectData;
+DROP TABLE TableProtectData;
 CREATE TABLE TableProtectData (
     id varchar(256) NOT NULL,
     version integer NOT NULL,
@@ -248,7 +248,7 @@ CREATE TABLE TableProtectData (
     PRIMARY KEY (id)
 );
 
---DROP TABLE UserData;
+DROP TABLE UserData;
 CREATE TABLE UserData (
     username varchar(256) NOT NULL,
     subjectDN varchar(256),
@@ -270,7 +270,7 @@ CREATE TABLE UserData (
     PRIMARY KEY (username)
 );
 
---DROP TABLE UserDataSourceData;
+DROP TABLE UserDataSourceData;
 CREATE TABLE UserDataSourceData (
     id integer NOT NULL,
     name varchar(256),

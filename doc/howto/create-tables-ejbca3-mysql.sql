@@ -2,7 +2,7 @@
 -- These definitions should work for EJBCA 3.4.x, MySQL 4.x or 5.x.
 --
 
---DROP TABLE AccessRulesData;
+DROP TABLE AccessRulesData;
 CREATE TABLE AccessRulesData (
     pK int(11) NOT NULL DEFAULT '0',
     accessRule varchar(250) binary NULL DEFAULT NULL,
@@ -12,7 +12,7 @@ CREATE TABLE AccessRulesData (
     PRIMARY KEY (pK)
 );
 
---DROP TABLE AdminEntityData;
+DROP TABLE AdminEntityData;
 CREATE TABLE AdminEntityData (
     pK int(11) NOT NULL DEFAULT '0',
     matchWith int(11) NOT NULL DEFAULT '0',
@@ -22,7 +22,7 @@ CREATE TABLE AdminEntityData (
     PRIMARY KEY (pK)
 );
 
---DROP TABLE AdminGroupData;
+DROP TABLE AdminGroupData;
 CREATE TABLE AdminGroupData (
     pK int(11) NOT NULL DEFAULT '0',
     adminGroupName varchar(250) binary NULL DEFAULT NULL,
@@ -30,14 +30,14 @@ CREATE TABLE AdminGroupData (
     PRIMARY KEY (pK)
 );
 
---DROP TABLE AdminPreferencesData;
+DROP TABLE AdminPreferencesData;
 CREATE TABLE AdminPreferencesData (
     id varchar(250) binary NOT NULL DEFAULT '',
     data longblob NULL DEFAULT NULL,
     PRIMARY KEY (id)
 );
 
---DROP TABLE ApprovalData;
+DROP TABLE ApprovalData;
 CREATE TABLE ApprovalData (
     id int(11) NOT NULL DEFAULT '0',
     approvalid int(11) NOT NULL DEFAULT '0',
@@ -55,14 +55,14 @@ CREATE TABLE ApprovalData (
     PRIMARY KEY (id)
 );
 
---DROP TABLE AuthorizationTreeUpdateData;
+DROP TABLE AuthorizationTreeUpdateData;
 CREATE TABLE AuthorizationTreeUpdateData (
     pK int(11) NOT NULL DEFAULT '0',
     authorizationTreeUpdateNumber int(11) NOT NULL DEFAULT '0',
     PRIMARY KEY (pK)
 );
 
---DROP TABLE CAData;
+DROP TABLE CAData;
 CREATE TABLE CAData (
     cAId int(11) NOT NULL DEFAULT '0',
     name varchar(250) binary NULL DEFAULT NULL,
@@ -74,7 +74,7 @@ CREATE TABLE CAData (
     PRIMARY KEY (cAId)
 );
 
---DROP TABLE CRLData;
+DROP TABLE CRLData;
 CREATE TABLE CRLData (
     fingerprint varchar(250) binary NOT NULL DEFAULT '',
     cRLNumber int(11) NOT NULL DEFAULT '0',
@@ -86,7 +86,7 @@ CREATE TABLE CRLData (
     PRIMARY KEY (fingerprint)
 );
 
---DROP TABLE CertReqHistoryData;
+DROP TABLE CertReqHistoryData;
 CREATE TABLE CertReqHistoryData (
     fingerprint varchar(250) binary NOT NULL DEFAULT '',
     issuerDN varchar(250) binary NULL DEFAULT NULL,
@@ -97,7 +97,7 @@ CREATE TABLE CertReqHistoryData (
     PRIMARY KEY (fingerprint)
 );
 
---DROP TABLE CertificateData;
+DROP TABLE CertificateData;
 CREATE TABLE CertificateData (
     fingerprint varchar(250) binary NOT NULL DEFAULT '',
     issuerDN varchar(250) binary NULL DEFAULT NULL,
@@ -114,7 +114,7 @@ CREATE TABLE CertificateData (
     PRIMARY KEY (fingerprint)
 );
 
---DROP TABLE CertificateProfileData;
+DROP TABLE CertificateProfileData;
 CREATE TABLE CertificateProfileData (
     id int(11) NOT NULL DEFAULT '0',
     certificateProfileName varchar(250) binary NULL DEFAULT NULL,
@@ -122,7 +122,7 @@ CREATE TABLE CertificateProfileData (
     PRIMARY KEY (id)
 );
 
---DROP TABLE EndEntityProfileData;
+DROP TABLE EndEntityProfileData;
 CREATE TABLE EndEntityProfileData (
     id int(11) NOT NULL DEFAULT '0',
     profileName varchar(250) binary NULL DEFAULT NULL,
@@ -130,21 +130,21 @@ CREATE TABLE EndEntityProfileData (
     PRIMARY KEY (id)
 );
 
---DROP TABLE GlobalConfigurationData;
+DROP TABLE GlobalConfigurationData;
 CREATE TABLE GlobalConfigurationData (
     configurationId varchar(250) binary NOT NULL DEFAULT '',
     data longblob NULL DEFAULT NULL,
     PRIMARY KEY (configurationId)
 );
 
---DROP TABLE HardTokenCertificateMap;
+DROP TABLE HardTokenCertificateMap;
 CREATE TABLE HardTokenCertificateMap (
     certificateFingerprint varchar(250) binary NOT NULL DEFAULT '',
     tokenSN varchar(250) binary NULL DEFAULT NULL,
     PRIMARY KEY (certificateFingerprint)
 );
 
---DROP TABLE HardTokenData;
+DROP TABLE HardTokenData;
 CREATE TABLE HardTokenData (
     tokenSN varchar(250) binary NOT NULL DEFAULT '',
     username varchar(250) binary NULL DEFAULT NULL,
@@ -156,7 +156,7 @@ CREATE TABLE HardTokenData (
     PRIMARY KEY (tokenSN)
 );
 
---DROP TABLE HardTokenIssuerData;
+DROP TABLE HardTokenIssuerData;
 CREATE TABLE HardTokenIssuerData (
     id int(11) NOT NULL DEFAULT '0',
     alias varchar(250) binary NULL DEFAULT NULL,
@@ -165,7 +165,7 @@ CREATE TABLE HardTokenIssuerData (
     PRIMARY KEY (id)
 );
 
---DROP TABLE HardTokenProfileData;
+DROP TABLE HardTokenProfileData;
 CREATE TABLE HardTokenProfileData (
     id int(11) NOT NULL DEFAULT '0',
     name varchar(250) binary NULL DEFAULT NULL,
@@ -174,7 +174,7 @@ CREATE TABLE HardTokenProfileData (
     PRIMARY KEY (id)
 );
 
---DROP TABLE HardTokenPropertyData;
+DROP TABLE HardTokenPropertyData;
 CREATE TABLE HardTokenPropertyData (
     id varchar(250) binary NOT NULL DEFAULT '',
     property varchar(250) binary NOT NULL DEFAULT '',
@@ -182,7 +182,7 @@ CREATE TABLE HardTokenPropertyData (
     PRIMARY KEY (id, property)
 );
 
---DROP TABLE KeyRecoveryData;
+DROP TABLE KeyRecoveryData;
 CREATE TABLE KeyRecoveryData (
     certSN varchar(250) binary NOT NULL DEFAULT '',
     issuerDN varchar(250) binary NOT NULL DEFAULT '',
@@ -192,7 +192,7 @@ CREATE TABLE KeyRecoveryData (
     PRIMARY KEY (certSN, issuerDN)
 );
 
---DROP TABLE LogConfigurationData;
+DROP TABLE LogConfigurationData;
 CREATE TABLE LogConfigurationData (
     id int(11) NOT NULL DEFAULT '0',
     logConfiguration longblob NULL DEFAULT NULL,
@@ -200,7 +200,7 @@ CREATE TABLE LogConfigurationData (
     PRIMARY KEY (id)
 );
 
---DROP TABLE LogEntryData;
+DROP TABLE LogEntryData;
 CREATE TABLE LogEntryData (
     id int(11) NOT NULL DEFAULT '0',
     adminType int(11) NOT NULL DEFAULT '0',
@@ -215,7 +215,7 @@ CREATE TABLE LogEntryData (
     PRIMARY KEY (id)
 );
 
---DROP TABLE PublisherData;
+DROP TABLE PublisherData;
 CREATE TABLE PublisherData (
     id int(11) NOT NULL DEFAULT '0',
     name varchar(250) binary NULL DEFAULT NULL,
@@ -224,7 +224,7 @@ CREATE TABLE PublisherData (
     PRIMARY KEY (id)
 );
 
---DROP TABLE ServiceData;
+DROP TABLE ServiceData;
 CREATE TABLE ServiceData (
     id int(11) NOT NULL DEFAULT '0',
     name varchar(250) binary NULL DEFAULT NULL,
@@ -232,7 +232,7 @@ CREATE TABLE ServiceData (
     PRIMARY KEY (id)
 );
 
---DROP TABLE TableProtectData;
+DROP TABLE TableProtectData;
 CREATE TABLE TableProtectData (
     id varchar(250) binary NOT NULL DEFAULT '',
     version int(11) NOT NULL DEFAULT '0',
@@ -248,7 +248,7 @@ CREATE TABLE TableProtectData (
     PRIMARY KEY (id)
 );
 
---DROP TABLE UserData;
+DROP TABLE UserData;
 CREATE TABLE UserData (
     username varchar(250) binary NOT NULL DEFAULT '',
     subjectDN varchar(250) binary NULL DEFAULT NULL,
@@ -270,7 +270,7 @@ CREATE TABLE UserData (
     PRIMARY KEY (username)
 );
 
---DROP TABLE UserDataSourceData;
+DROP TABLE UserDataSourceData;
 CREATE TABLE UserDataSourceData (
     id int(11) NOT NULL DEFAULT '0',
     name varchar(250) binary NULL DEFAULT NULL,
