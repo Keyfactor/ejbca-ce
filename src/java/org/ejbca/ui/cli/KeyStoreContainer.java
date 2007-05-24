@@ -62,7 +62,7 @@ import org.ejbca.util.KeyTools;
 import com.sun.security.auth.callback.TextCallbackHandler;
 
 /**
- * @version $Id: KeyStoreContainer.java,v 1.19 2007-05-24 07:42:58 primelars Exp $
+ * @version $Id: KeyStoreContainer.java,v 1.20 2007-05-24 11:46:17 primelars Exp $
  */
 public abstract class KeyStoreContainer {
     
@@ -189,7 +189,7 @@ public abstract class KeyStoreContainer {
             final CMSEnvelopedDataStreamGenerator edGen = new CMSEnvelopedDataStreamGenerator();
             final Certificate cert = keyStore.getCertificate(alias);
             if ( cert==null )
-                throw new IllegalAdminCommandException("Certificate alias "+alias+" not found in keystore.");
+                throw new ErrorAdminCommandException("Certificate alias "+alias+" not found in keystore.");
             edGen.addKeyTransRecipient(cert.getPublicKey(), "hej".getBytes() );
             OutputStream out = edGen.open(bos, CMSEnvelopedDataGenerator.AES128_CBC, "BC");
             byte[] buf = new byte[bufferSize];
@@ -217,7 +217,7 @@ public abstract class KeyStoreContainer {
                 RecipientInformation   recipient = (RecipientInformation)it.next();
                 final Key key = getKey(alias);
                 if ( key==null )
-                    throw new IllegalAdminCommandException("Key alias "+alias+" not found in keystore.");
+                    throw new ErrorAdminCommandException("Key alias "+alias+" not found in keystore.");
                 CMSTypedStream recData = recipient.getContentStream(key, KeyStoreContainer.this.ecryptProviderName);
                 InputStream ris = recData.getContentStream();
                 byte[] buf = new byte[bufferSize];
