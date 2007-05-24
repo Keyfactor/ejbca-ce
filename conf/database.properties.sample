@@ -15,7 +15,7 @@
 # If, and only if, you are using Weblogic and Oracle, uncomment the row below.
 # Use OracleBlob in Weblogic 8.x and Blob in Weblogic 9.x
 # default: 
-#weblogic-oracle-columntype=@weblogic.dbms-column-type OracleBlob
+#weblogic-oracle-columntype=@weblogic.dbms-column-type Blob
 
 # The database name selected for deployment, used to copy XDoclet merge files.
 # All supported databases are defined below, others can easily be added

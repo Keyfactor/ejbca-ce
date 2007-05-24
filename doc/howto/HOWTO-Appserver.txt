@@ -4,9 +4,8 @@ CONFIGURING Weblogic
 
 Note: EJBCA should work fine with Weblogic 8.x/9.x.
 Running on weblogic has some limited functionality compared to JBoss though:
- - The createCRLService, which runs as a JBoss mBean and does not work
+ - The createCRLService, which runs as a JBoss mBean and does not work (there is now an internal service that works even better though)
  - The CMP tcp listener, which runs as a JBoss MBean and does not work
- - The Approvals and Services functions in Admin-GUI, which uses JSF and does not work yet (configuration issues)
  - Web service interface (includes xkms), which uses JaxWS and does not work
 
 Note: After installing Weblogic, don't forget to install the "Unlimited Strenth Crypto" jce files
@@ -17,21 +16,27 @@ in Weblogics jre and jrockit. It's the same way as for a regular installation, s
 
 2. Edit conf/*.properties, it's important to at least set up the database parameters.
 
-Edit conf/ejbca.properties:
-set 'appserver.type=weblogic'
-set 'logging.log4j.config=basic'
+Edit conf/ejbca.properties and change/set some values:
+appserver.type=weblogic
+logging.log4j.config=basic
 
-Edit conf/database.properties
-set 'datasource.jndi-name-prefix' - which is specific for Weblogic.
-set 'weblogic-oracle-columntype' - which is specific for Weblogic.
+Edit conf/database.properties and edit/set some values that are specific for Weblogic:
+datasource.jndi-name-prefix= 
+weblogic-oracle-columntype=@weblogic.dbms-column-type Blob
 
-Edit conf/web.properties:
-set 'httpserver.pubhttp=7001' - default http port of Weblogic is 7001, default of EJBCA on JBoss is 8080.
-set 'httpserver.privhttps=7002' - default SSL port of Weblogic is 7002, default of EJBCA on JBoss is 8443.
-set 'ejbcaws.enabled=false', this must be done until we have fixed JaxWS configuration for weblogic.
+Edit conf/web.properties and change/set some values:
+httpserver.pubhttp=7001
+httpserver.privhttps=7002
+ejbcaws.enabled=false
 
-Edit conf/xkms.properties:
-set 'xkms.enabled=false', this must be done until we have fixed JaxWS configuration for weblogic.
+Default http port of Weblogic is 7001, default of EJBCA on JBoss is 8080.
+Default SSL port of Weblogic is 7002, default of EJBCA on JBoss is 8443.
+Disabling ejbcaws must be done until we have fixed JaxWS configuration for weblogic.
+
+Edit conf/xkms.properties and change/set some values:
+xkms.enabled=false
+
+Disabling xkms must be done until we have fixed JaxWS configuration for weblogic.
 
 If you had issued an 'ant' command before, it is now important to do 'ant clean' before building again.
 
@@ -72,6 +77,8 @@ See the file create-tables-ejbca3-oracle.sql for table definitions, or just run 
 
 8. Run 'ant install' to do the installation. Everything should work here with no errors. 
    If you get errors these must be resolved before we can move on.
+   The command 'ant install' is only run once, when the CA is first installed. It creates lots of things in the database, and can not be run again 
+   (it will give an error if you try).
 
 9. Configure SSL in Weblogic:
 a) Copy %JAVA_HOME%/jre/lib/security/cacerts to %BEA_HOME%/jre/lib/security, so that Weblogic can trust the initial CA installed 
@@ -80,13 +87,16 @@ You can create cacerts file with 'sudo rm $JAVA_HOME/jre/lib/security/cacerts' a
 You can get the CA certificate with 'bin/ejbca.sh ca getrootcert cert.pem'.
 b) Configure weblogic server for SSL.
    Server->configuration->keystore&ssl, click "Change", select "Custom Identity and Java Standard Trust"
+   (in weblogic 9 it is under 'Servers->Myserver->Configuration->Keystores)
      Custom Identity Keystore: path to tomcat.jks generated while "ant install (ejbca/p12/tomcat.jks)",
      Private Key Alias: localhost (httpsserver.hostname in conf/web.properties).
-     Passphrase: serverpwd (httpsserver.password in conf/web.properties).
-   
-   (in weblogic 9 it is under 'Servers->Mysqerver->Configuration->Keystores / SSL)
-   
+     Passphrase: serverpwd (httpsserver.password in conf/web.properties).   
+   (in weblogic 9 it is under 'Servers->Myserver->Configuration->SSL)
+     In weblogic 9 you must configure private key for identity here. The alias is what you configures as httpsserver.hostname in conf/web.properties
+     and password is what you configures as httpsserver.password in conf/web.properties.
+     
    server->configuration->keystore&ssl->advanced options->Server Attributes->Two Way Client Cert Behavior:
+   (in weblogic 9 under 'Servers->Myserver->Configuration->SSL->Advanced)
      Client Certs Requested And Enforced
 
    server->configuration->general, check "SSL Listen Port Enabled", note that the port should be same as httpserver.privhttps in ejbca.properties.
