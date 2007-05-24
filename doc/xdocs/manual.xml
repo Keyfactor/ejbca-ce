@@ -176,6 +176,8 @@ picking up everything and deploying the ear without errors.
 </p><p>
 5) Type 'ant install' it will generate all certificates, keys, etc needed to run with an initial CA.
 You will find admin keys in ${ejbca.home}/p12. (do not delete those files!)
+<br/>The command 'ant install' is only run once, when the CA is first installed. It creates lots of things in the database, 
+and can not be run again (it will give an error if you try).
 <ul>
 <li>tomcat.jks is for the servlet container (don't bother with it)</li>
 <li>superadmin.p12 should be imported in your browser, that's your administration certificate.</li>
