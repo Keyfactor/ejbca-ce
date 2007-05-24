@@ -1,9 +1,27 @@
 	<!-- This XML file is for inclusion in build.xml, and not for usage in itself -->
 
+    <target name="jboss42jsfimpl" depends="jboss42targetcheck" if="jboss42.enabled">
+	   <property name="web.jsfimpl" value="sunri"/>
+	   <echo>JBoss 4.2.x uses SunRI JSF implementation</echo>
+    </target>
+    <target name="jboss40jsfimpl" depends="jboss40targetcheck" if="jboss40.enabled">
+	   <property name="web.jsfimpl" value="myfaces"/>
+	   <echo>JBoss 4.0.x uses Apache Myfaces JSF implementation</echo>
+    </target>
+    <target name="glassfishjsfimpl" depends="glassfishtargetcheck" if="glassfish.enabled">
+	   <property name="web.jsfimpl" value="sunri"/>
+	   <echo>Glassfish uses SunRI JSF implementation</echo>
+    </target>
+    <target name="weblogicjsfimpl" depends="wlstargetcheck" if="weblogic.enabled">
+	   <property name="web.jsfimpl" value="myfaces"/>
+	   <echo>Weblogic uses Apache Myfaces JSF implementation</echo>
+    </target>
+	<target name="set.jsfimpl" depends="jboss42jsfimpl,jboss40jsfimpl,glassfishjsfimpl,weblogicjsfimpl">
+	</target>
     <!-- =================================================================== -->
     <!-- Create the time stamp and build directory -->
     <!-- =================================================================== -->
-    <target name="init" depends="j2ee:check">
+    <target name="init" depends="set.jsfimpl, j2ee:check">
         <echo>
 ---------- ${app.version} CONFIGURATION PROPERTIES ----------
 appserver.type         = ${appserver.type}

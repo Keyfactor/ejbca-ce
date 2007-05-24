@@ -318,6 +318,24 @@
 				<equals arg1="${appserver.type}" arg2="glassfish"/>
 			</condition>
 	</target>
+	<target name="jboss42targetcheck">
+			<condition property="jboss42.enabled">
+                <and>
+				  <equals arg1="${appserver.type}" arg2="jboss"/>
+                  <available file="${jboss.deploy.dir}/jboss-web.deployer" type="dir"/>
+                </and>
+			</condition>
+	</target>
+	<target name="jboss40targetcheck">
+			<condition property="jboss40.enabled">
+                <and>
+				  <equals arg1="${appserver.type}" arg2="jboss"/>
+	              <not>
+                  <available file="${jboss.deploy.dir}/jboss-web.deployer" type="dir"/>
+                  </not>
+                </and>
+			</condition>
+	</target>
 	
 	<!-- We need to include all the myfaces libs in Weblogic 9 -->	
 	<target name="jsflibswls" depends="wlstargetcheck" if="weblogic.enabled">
