@@ -25,7 +25,7 @@ package org.ejbca.core.model;
  * types. Constants for Token Types Token type is constructed of integer constants since only one
  * token type can be generated.
  *
- * @version $Id: SecConst.java,v 1.6 2007-04-13 06:05:36 herrvendil Exp $
+ * @version $Id: SecConst.java,v 1.7 2007-05-25 07:06:25 rolf_s Exp $
  */
 public class SecConst extends Object {
     // User types
@@ -134,6 +134,13 @@ public class SecConst extends Object {
     public static final int CAKEYPURPOSE_KEYENCRYPT          = 3;
     public static final int CAKEYPURPOSE_KEYTEST             = 4;
     public static final int CAKEYPURPOSE_HARDTOKENENCRYPT    = 5;
+
+    /**
+     * Default key lengths. Users are allowed to choose from these key lengths when
+     * lookup of available bit lengths fails. 
+     * @see org.ejbca.core.model.ApplyBean
+     */
+    public static final int[] DEFAULT_KEY_LENGTHS = new int[] {512, 1024, 2048};
 
     /**
      * Prevents creation of new SecConst
