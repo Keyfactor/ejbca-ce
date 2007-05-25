@@ -95,7 +95,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.38 2007-05-09 07:53:21 anatom Exp $
+ * @version $Id: CertTools.java,v 1.39 2007-05-25 13:08:44 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -656,6 +656,12 @@ public class CertTools {
                 log.error("Can not get ConfigurableProvider, implicitlyCA EC parameters NOT set!");
             }                
         }
+        
+        // 2007-05-25
+        // Finally we must configure SERIALNUMBER behaviour in BC >=1.36 to be the same
+        // as the behaviour in BC 1.35, it changed from SN to SERIALNUMBER in BC 1.36
+        // We must be backwards compatible
+        X509Name.DefaultSymbols.put(X509Name.SN, "SN");
     }
 
     /** Check if parameters have been set correctly during pre-process, otherwise log an error and
