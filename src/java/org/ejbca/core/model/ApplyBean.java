@@ -25,6 +25,7 @@ import javax.ejb.FinderException;
 import javax.naming.InitialContext;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
@@ -40,10 +41,20 @@ import org.ejbca.core.model.ra.UserDataVO;
  * A class used as an interface between Apply jsp pages and ejbca functions.
  *
  * @author Philip Vendil
- * @version $Id: ApplyBean.java,v 1.6 2007-05-14 14:41:34 anatom Exp $
+ * @version $Id: ApplyBean.java,v 1.7 2007-05-25 07:07:38 rolf_s Exp $
  */
 public class ApplyBean implements java.io.Serializable {
     /**
+	 * Version number for serialization
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * Logging tool
+	 */
+	private static final Logger log = Logger.getLogger(ApplyBean.class);
+	
+	/**
      * Creates a new instance of CaInterfaceBean
      */
     public ApplyBean() {
@@ -97,6 +108,8 @@ public class ApplyBean implements java.io.Serializable {
         }
 		this.username = username;
 		
+		System.out.println("<getTokenType(" + username + ") --> " + returnval);
+		log.info("<getTokenType(" + username + ") --> " + returnval);
         return returnval;
     }
 
@@ -126,6 +139,8 @@ public class ApplyBean implements java.io.Serializable {
 		}
 		this.username = username;
 		
+		System.out.println("<getCAId(" + username + ") --> " + returnval);
+		log.info("<getCAId(" + username + ") --> " + returnval);
 		return returnval;
 	}
 
@@ -160,6 +175,8 @@ public class ApplyBean implements java.io.Serializable {
         }
         this.username = username;
 
+		log.info("<availableBitLengths(" + username + ") --> " + returnval);
+		System.out.println("<availableBitLengths(" + username + ") --> " + returnval);
         return returnval;
     }
 
@@ -171,4 +188,69 @@ public class ApplyBean implements java.io.Serializable {
     private Admin administrator;
     private String username = "";
     private UserDataVO useradmindata = null;
+    
+    //--------------------------------------------------------------
+    // Convenience methods used from JSTL.
+    // In JSTL, there is no practical way of calling regular functions,
+    // but accessing "properties" of objects (get-methods without arguments)
+    // is easy. Since most methods in ApplyBean take a "username" argument,
+    // we give the JSP page a way to set the username beforehand and then
+    // access the other methods like properties.
+    
+    private String defaultUsername = "";
+    
+    /**
+     * Sets the default user name. Some methods in this class come in two versions,
+     * one that takes a String username and one without arguments. The version without
+     * argument uses the default user name set by this method. 
+     * 
+     * @param newUsername The new default user name
+     */
+    public void setDefaultUsername(String newUsername) {
+    	defaultUsername = newUsername;
+    }
+
+    /**
+     * Returns the token type for the default user.
+     * @see #setDefaultUsername(String) 
+     * @see #getTokenType(String)
+     * @return the token type for the default user.
+     * @throws Exception if an error occurs
+     */
+    public int getTokenType() throws Exception {
+    	return getTokenType(defaultUsername);
+    }
+
+    /**
+     * Returns the CA identity for the default user.
+     * @see #setDefaultUsername(String) 
+     * @see #getCAId(String)
+     * @return the CA Id for the default user.
+     * @throws Exception if an error occurs
+     */
+	public int getCAId() throws Exception {
+    	return getCAId(defaultUsername);
+    }
+
+    /**
+     * Returns the encryption key lengths available to the default user.
+     * @see #setDefaultUsername(String) 
+     * @see #availableBitLengths(String)
+     * @return the bit lengths available to the default user.
+     * @throws Exception if an error occurs
+     */
+	public int[] getAvailableBitLengths() throws Exception {
+		return availableBitLengths(defaultUsername);
+	}
+	
+
+    /**
+     * Returns the default encryption key lengths.
+     * @see #availableBitLengths(String)
+     * @return the default bit lengths available.
+     * @throws Exception if an error occurs
+     */
+	public int[] getDefaultBitLengths() throws Exception {
+		return SecConst.DEFAULT_KEY_LENGTHS;
+	}
 }
