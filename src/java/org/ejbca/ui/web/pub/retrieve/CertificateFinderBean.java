@@ -2,7 +2,6 @@ package org.ejbca.ui.web.pub.retrieve;
 
 import java.math.BigInteger;
 import java.rmi.RemoteException;
-import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -31,7 +30,7 @@ import org.ejbca.core.model.log.Admin;
  * The arguments are supplied as member variables instead. <br>
  * 
  * @author Rolf Staflin
- * @version $Id: CertificateFinderBean.java,v 1.4 2007-05-19 16:56:29 rolf_s Exp $
+ * @version $Id: CertificateFinderBean.java,v 1.5 2007-05-25 12:14:09 anatom Exp $
  */
 public class CertificateFinderBean {
 	
