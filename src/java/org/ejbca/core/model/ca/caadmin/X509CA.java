@@ -128,7 +128,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.58 2007-04-13 06:07:58 herrvendil Exp $
+ * @version $Id: X509CA.java,v 1.59 2007-05-25 13:14:04 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -341,26 +341,39 @@ public class X509CA extends CA implements Serializable {
         Date firstDate = new Date();
         // Set back startdate ten minutes to avoid some problems with wrongly set clocks.
         firstDate.setTime(firstDate.getTime() - 10 * 60 * 1000);
-        Date lastDate = new Date();
+        Date now = new Date();
+        Date lastDate = now;
         if ( (notBefore != null) && (certProfile.getAllowValidityOverride()) ) {
-        	// If we allow the client (or ra) to specify the startdate
-        	firstDate = notBefore;
-        	if (log.isDebugEnabled()) {
-            	log.debug("Using notBefore validity from request: "+firstDate);        		
+        	if (notBefore.before(now)) {
+        		// We do not allow a certificate to be valid before the current date, i.e. not backdated start dates
+        		log.error("notBefore from request ("+notBefore+") for user '"+subject.getUsername()+"' pre-dates current time, not allowed, using current time instead.");        		
+        	} else {
+        		// If we allow the client (or ra) to specify the startdate
+        		firstDate = notBefore;
+        		if (log.isDebugEnabled()) {
+        			log.debug("Using notBefore validity from request: "+firstDate);        		
+        		}
         	}
         }
+        long val = certProfile.getValidity();        
+        Date certProfileLastDate = new Date(lastDate.getTime() + ( val * 24 * 60 * 60 * 1000));
         if ( (notAfter == null) || (!certProfile.getAllowValidityOverride()) ) {
             // validity in days = validity*24*60*60*1000 milliseconds
-            long val = certProfile.getValidity();        
         	if (log.isDebugEnabled()) {
         		log.debug("Using validity from profile: "+val);
         	}
-            lastDate.setTime(lastDate.getTime() + ( val * 24 * 60 * 60 * 1000));        	
+            lastDate = certProfileLastDate;        	
         } else {
-        	// only if not null and we allow validity override
-        	lastDate = notAfter;
-        	if (log.isDebugEnabled()) {
-            	log.debug("Using notAfter validity from request: "+lastDate);        		
+        	// Only if not null and we allow validity override
+        	// Check that notAfter from request is not longer than the validity time from the certificate profile, we don not allow that
+        	if (notAfter.after(certProfileLastDate)) {
+        		log.error("notAfter from request ("+notAfter+") for user '"+subject.getUsername()+"' is longer than maximum specified in certificate profile ("+certProfileLastDate+"), not allowed, using notAfter from certificate profile.");
+        		lastDate = certProfileLastDate;
+        	} else {
+        		lastDate = notAfter;
+        		if (log.isDebugEnabled()) {
+        			log.debug("Using notAfter validity from request: "+lastDate);        		
+        		}
         	}
         }
         // Do not allow last date to be before first date

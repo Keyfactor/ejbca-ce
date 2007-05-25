@@ -67,7 +67,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.30 2007-02-23 15:59:03 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.31 2007-05-25 13:14:10 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -758,8 +758,35 @@ public class TestSignSession extends TestCase {
         assertTrue(notAfter.compareTo(cal.getTime()) > 0);
         cal.add(Calendar.DAY_OF_MONTH, 2);
         assertTrue(notAfter.compareTo(cal.getTime()) < 0);
-        
-        
+
+        // Verify that we can not get a certificate that has notBefore befor the current time
+        // and that we can not get a certificate valid longer than the certificate profile allows.
+        prof = storesession.getCertificateProfile(admin,cprofile);
+        prof.setValidity(50);
+        storesession.changeCertificateProfile(admin, "TESTVALOVERRIDE", prof);
+        notBefore = Calendar.getInstance();
+        notBefore.add(Calendar.DAY_OF_MONTH, -2);
+        cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_MONTH, 200);
+        usersession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
+        cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), -1, notBefore.getTime(), cal.getTime());
+        assertNotNull("Failed to create certificate", cert);
+        assertEquals(CertTools.stringToBCDNString("cn=validityoverride,c=SE"), CertTools.stringToBCDNString(dn));
+        Date certNotBefore = cert.getNotBefore();
+        // Override was enabled, but we can not get a certificate valid before current time
+        cal = Calendar.getInstance();
+        // the certificate should be valid like 10 minutes before current date though...
+        assertTrue(certNotBefore.compareTo(cal.getTime()) < 0);
+        cal.add(Calendar.MINUTE, -20);
+        assertTrue(certNotBefore.compareTo(cal.getTime()) > 0);
+        cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_MONTH, 49);
+        notAfter = cert.getNotAfter();
+        // Override was enabled, the cert should have notBefore more than 49 days in the future since we requested 200
+        assertTrue(notAfter.compareTo(cal.getTime()) > 0);
+        cal.add(Calendar.DAY_OF_MONTH, 2);
+        // Since we are not allowed to request validity longer than the certificate profile allows, validity is less than 51 days, even though we requested 200
+        assertTrue(notAfter.compareTo(cal.getTime()) < 0);
 
         // Clean up
         rasession.removeEndEntityProfile(admin, "TESTVALOVERRIDE");
