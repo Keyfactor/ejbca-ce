@@ -2800,6 +2800,9 @@ the certificate, the email attribute in ldap is replaced with the email adress f
 </p><p>
 Note that attributes are only replaced/updated if the flag "Modify Existing Users" in the Publisher is active. 
 The certificate attribute is always updated though.
+<br/>
+Attributes that are part of the DN, i.e. that reflects the location of the entry in LDAP is not modified, since this 
+is usually not allowed.
 </p><p>
 The attributes that EJBCA creates or replaces are:
 </p>
@@ -2814,6 +2817,7 @@ The attributes that EJBCA creates or replaces are:
 <li>uid (user id)</li>
 <li>initials</li>
 <li>title</li>
+<li>serialnumber - If we have selected to use the SN (serialNUmber DN field) in 'Ldap Location fields', we will also add it as an attribute.</li>
 </ul>
 </subsubsection>
 
