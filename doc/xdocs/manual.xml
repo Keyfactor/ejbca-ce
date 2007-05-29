@@ -2788,14 +2788,14 @@ certificates.
 To publish a CRL to Active Directory use a Base DN similar to
 </p>
 <source>
-CN=somename,CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,DC=machine,DC=internal,DC=primekey,DC=se
+CN=somename,CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,DC=somemachine,DC=primekey,DC=se
 </source>
 <p>
 and the "CRL Distribution Point" in the certificate should point to
 </p>
 <source>
-ldap://milton.int.primekey.se:389/CN=Test MS SC Logon CA v1,CN=user,CN=CDP,CN=Public Key Services,CN=Services,
-CN=Configuration?certificateRevocationList?base?objectClass=cRLDistributionPoint
+ldap:///CN=Test%20MS%20SC%20Logon%20CA%20v1,CN=somename,CN=CDP,CN=Public%20Key%20Services,CN=Services,
+CN=Configuration,DC=somemachine,DC=primekey,DC=se?certificateRevocationList?base?objectClass=cRLDistributionPoint
 </source>
 </subsubsection>
 
