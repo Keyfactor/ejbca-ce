@@ -2782,9 +2782,21 @@ to the domain controller. According to
 MS Article ID 321051</a>
 </p><p>
 The same certificate is used for both the AD and global catalogue (GC).
-Remember to add the CA certificate to the machine stores trusted root
+Remember to add the CA certificate to the machine that stores trusted root
 certificates.
+</p><p>
+To publish a CRL to Active Directory use a Base DN similar to
 </p>
+<source>
+CN=somename,CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,DC=machine,DC=internal,DC=primekey,DC=se
+</source>
+<p>
+and the "CRL Distribution Point" in the certificate should point to
+</p>
+<source>
+ldap://milton.int.primekey.se:389/CN=Test MS SC Logon CA v1,CN=user,CN=CDP,CN=Public Key Services,CN=Services,
+CN=Configuration?certificateRevocationList?base?objectClass=cRLDistributionPoint
+</source>
 </subsubsection>
 
 <subsubsection name="What EJBCA stores/creates/modifies">

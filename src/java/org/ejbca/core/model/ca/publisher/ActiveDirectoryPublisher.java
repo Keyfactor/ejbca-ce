@@ -35,7 +35,7 @@ import com.novell.ldap.LDAPEntry;
 /**
  * ActiveDirectoryPublisher is a class handling a publishing to Active Directory catalouges.  
  *
- * @version $Id: ActiveDirectoryPublisher.java,v 1.3 2006-12-02 11:17:33 anatom Exp $
+ * @version $Id: ActiveDirectoryPublisher.java,v 1.4 2007-05-29 11:27:53 jeklund Exp $
  */
 public class ActiveDirectoryPublisher extends LdapPublisher{
 	
@@ -60,7 +60,7 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
     protected static final String USERDESCRIPTION            = "userdescription";
 
 	public static final String DEFAULT_USEROBJECTCLASS       = "top;person;organizationalPerson;user";
-	public static final String DEFAULT_CAOBJECTCLASS         = "top;certificationAuthority";
+	public static final String DEFAULT_CAOBJECTCLASS         = "top;cRLDistributionPoint";
     
 
     
