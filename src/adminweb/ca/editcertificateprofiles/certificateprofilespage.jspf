@@ -103,7 +103,7 @@
     <table width="100%" border="0" cellspacing="0" cellpadding="0">
       <tr> 
         <td width="5%"></td>
-        <td width="95%"><H3><%= ejbcawebbean.getText("ADD") %></H3></td>
+        <td width="95%"><H3><%= ejbcawebbean.getText("ADDPROFILE") %></H3></td>
       </tr>
       <tr> 
         <td width="5%"></td>
