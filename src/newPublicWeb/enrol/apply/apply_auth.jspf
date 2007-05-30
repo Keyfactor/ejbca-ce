@@ -3,30 +3,25 @@
 <p>Welcome to certificate enrollment.</p>
 <p>Please enter your username and password. Then click OK to generate your token.</p>
 
-<form name="CertReqForm" action="<%=THIS_FILENAME%>"  method="POST">
+<form name="CertReqForm" action="${THIS_FILENAME}"  method="POST">
   <fieldset>
     <legend>Authentication</legend>
-	<%
-		RequestHelper.setDefaultCharacterEncoding(request);
-		//  Give the possibility to force a specific browser type
-		String forcedBrowser = request.getParameter(FORCE_BROWSER);
-		if (forcedBrowser != null) {
-	%>
-		    <input type="hidden" name="<%=FORCE_BROWSER%>" value="<%= forcedBrowser %>">
-	<%
-		}
-	%>
-	<input type="hidden" name="<%= ACTION %>" value="<%=ACTION_GENERATETOKEN %>" />
-    <input type="hidden" name="<%=HIDDEN_BROWSER%>" value="<%= BROWSER_UNKNOWN %>" />
 
-	<label for="<%=TEXTFIELD_USERNAME %>">Username:</label>
-	<input type=text size=20 name="<%=TEXTFIELD_USERNAME %>" accesskey="u" />
+	<c:if test="${forcedBrowser != null}">
+        <input type="hidden" name="${FORCE_BROWSER}" value="${forcedBrowser}" />
+	</c:if>
+
+	<input type="hidden" name="${ACTION}" value="${ACTION_GENERATETOKEN}" />
+    <input type="hidden" name="${HIDDEN_BROWSER}" value="${BROWSER_UNKNOWN}" />
+
+	<label for="${TEXTFIELD_USERNAME}">Username:</label>
+	<input type="text" size="20" name="${TEXTFIELD_USERNAME}" accesskey="u" />
 	<br />
-    <label for="<%=TEXTFIELD_PASSWORD %>">Password:</label>
-    <input type=password size=20 name="<%=TEXTFIELD_PASSWORD %>" accesskey="p" />
+    <label for="${TEXTFIELD_PASSWORD}">Password:</label>
+    <input type="password" size="20" name="${TEXTFIELD_PASSWORD}" accesskey="p" />
     <br />
     <label for="dummy"></label>
-    <input type="submit" value="OK" name="<%=BUTTON_SUBMIT_USERNAME%>">
+    <input type="submit" value="OK" name="${BUTTON_SUBMIT_USERNAME}" />
   </fieldset>
 </form>
 

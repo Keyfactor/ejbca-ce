@@ -234,46 +234,51 @@
 
 <h1 class="title">@EJBCA@ IE Certificate Enrolment</h1>
 
-Welcome to certificate enrollment. <BR>
-<p>
+<p>Welcome to certificate enrollment!</p>
+
 	<script type="text/javascript">
 	<!--
 	    if ( navigator.userAgent.indexOf("Windows NT 6") == -1 ) {
-			document.writeln(	"If you want to, you can manually install the CA certificate(s) in your browser. "+
-								"Otherwise, this will be done automatically when your certificate is retrieved.");
+			document.writeln(	"<p>If you want to, you can manually install the CA certificate(s) in your browser. "+
+								"Otherwise, this will be done automatically when your certificate is retrieved.</p>");
 		}
 	-->
 	</script>
-</p>
-<p>Install CA certificates:
 
-<%
-	try  {
-	    InitialContext ctx = new InitialContext();
-	    ISignSessionHome home = home = (ISignSessionHome) PortableRemoteObject.narrow(
-	            ctx.lookup("RSASignSession"), ISignSessionHome.class );
-	    ISignSessionRemote ss = home.create();
-	    Collection chain = ss.getCertificateChain(new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr()), caid);
-	    if (chain.size() == 0) {
-	        out.println("<p>No CA certificates exist</p>");
-	    } else {
-	    	out.println("<ul>");
-	        out.println("<li><a href=\"../certdist?cmd=iecacert&level="+(chain.size()-1)+"&caid="+caid+"\">Root CA</a></li>");
-	        if (chain.size() > 1) {
-	            for (int i=chain.size()-2;i>=0;i--) {
-	                out.println("<li><a href=\"../certdist?cmd=iecacert&level="+i+"&caid="+caid+"\">CA</a></li>");
-	            }
-	        }
-	        out.println("</ul>");
-	    }
-	} catch(Exception ex) {
-	    ex.printStackTrace();
-	}                                             
-%>
+<p>Install CA certificates:</p>
+
+	<c:set var="chain" value="${finder.CACertificateChain}" />
+
+	<c:choose>
+		<c:when test="${fn:length(chain) == 0}">
+			<p>No CA certificates exist</p>
+		</c:when>
+		<c:otherwise>
+			<ul>
+				<c:url var="root_url" value="../certdist" >
+					<c:param name="cmd" value="iecacert" />
+					<c:param name="level" value="${fn:length(chain) - 1}" />
+					<c:param name="caid" value="${caid}" />
+				</c:url>
+				<li><a href="${root_url}">Root CA</a></li>
+				<c:if test="${fn:length(chain) > 1}">
+					<c:forEach var="i" begin="2" end="${fn:length(chain)}" varStatus="status">
+						<c:url var="chain_url" value="../certdist" >
+							<c:param name="cmd" value="iecacert" />
+							<c:param name="level" value="${fn:length(chain) - status.index}" />
+							<c:param name="caid" value="${caid}" />
+						</c:url>
+						<li><a href="${chain_url}">CA</a></li>
+					</c:forEach>
+				</c:if>
+			</ul>
+		</c:otherwise>
+	</c:choose>
+
 <hr />
 <script type="text/javascript">
 <!--
-	show_NetID_form("<%=username %>", "<%=password %>");
+	show_NetID_form("${username}", "${password}");
 -->
 </script>
 <hr />
@@ -308,8 +313,8 @@ Welcome to certificate enrollment. <BR>
   <fieldset>
     <legend>Cryptographic Service Provider</legend>
 
-	<input name="user" type="hidden" value="<%=username%>" />
-	<input name="password" type="hidden" value="<%=password%>" />
+	<input name="user" type="hidden" value="${username}" />
+	<input name="password" type="hidden" value="${password}" />
 	<input name="classid" type="hidden" value="" />
     <input name="pkcs10" type="hidden" value="" />
     <input name="containername" type="hidden" value="" />

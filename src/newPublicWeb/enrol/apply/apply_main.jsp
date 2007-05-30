@@ -1,89 +1,98 @@
-<%@ page pageEncoding="ISO-8859-1"%>
-<%@ page contentType="text/html; charset=@page.encoding@" %>
-<%@ page language="java" import="javax.naming.*,javax.rmi.*,java.util.*,java.security.cert.*,org.ejbca.ui.web.RequestHelper,
-                                 org.ejbca.core.model.log.Admin, org.ejbca.core.model.ApplyBean, org.ejbca.core.model.SecConst"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
-<jsp:useBean id="applybean" scope="session" class="org.ejbca.core.model.ApplyBean" />
-<%!
-  static final String ACTION                              = "action";
-  static final String ACTION_GENERATETOKEN                = "generatetoken";
+<c:set var="ACTION" value="action" />
+<c:set var="ACTION_GENERATETOKEN" value="generatetoken" />
 
-  static final String BUTTON_SUBMIT_USERNAME               = "buttonsubmitusername"; 
-  static final String TEXTFIELD_USERNAME                   = "textfieldusername";
-  static final String TEXTFIELD_PASSWORD                   = "textfieldpassword";
+<c:set var="TOKEN_SOFT_BROWSERGEN" value="1" />
 
-  static final String HIDDEN_BROWSER                       = "hiddenbrowser";
-  static final String FORCE_BROWSER                        = "forcebrowser";
+<c:set var="BUTTON_SUBMIT_USERNAME" value="buttonsubmitusername" /> 
+<c:set var="TEXTFIELD_USERNAME" value="textfieldusername" />
+<c:set var="TEXTFIELD_PASSWORD" value="textfieldpassword" />
 
-  static final String BROWSER_NETSCAPE                     = "netscape";
-  static final String BROWSER_EXPLORER                     = "explorer";
-  static final String BROWSER_UNKNOWN                      = "browserunknown";
-%>
+<c:set var="HIDDEN_BROWSER" value="hiddenbrowser" />
+<c:set var="FORCE_BROWSER" value="forcebrowser" />
 
+<c:set var="BROWSER_NETSCAPE" value="netscape" />
+<c:set var="BROWSER_EXPLORER" value="explorer" />
+<c:set var="BROWSER_UNKNOWN" value="browserunknown" />
+
+<c:set var="username" value="${param[TEXTFIELD_USERNAME]}" />
+<c:set var="password" value="${param[TEXTFIELD_PASSWORD]}" />
+<c:set var="browser" value="${param[HIDDEN_BROWSER]}" />
+<c:set var="forcedBrowser" value="${param[FORCE_BROWSER]}" />
+<c:set var="action" value="${param[ACTION]}" />
+
+<jsp:useBean id="applybean" class="org.ejbca.core.model.ApplyBean" scope="session" />
+<jsp:useBean id="username" class="java.lang.String" />
+<jsp:useBean id="finder" class="org.ejbca.ui.web.pub.retrieve.CertificateFinderBean" scope="page" />
 <%
   applybean.initialize(request);
-
-  int[] defaultkeylengths        = {512,1024,2048};
-  String includefile = "apply_auth.jspf";
-  String username = "";
-  String password = "";
-  String browser  = null;
-  int[] availablekeylengths = null;
-  int caid =0;
-
-  RequestHelper.setDefaultCharacterEncoding(request);
-try  {
-   if( request.getParameter(ACTION) != null){
-     if( request.getParameter(ACTION).equals(ACTION_GENERATETOKEN)){
-       username = request.getParameter(TEXTFIELD_USERNAME);
-       password = request.getParameter(TEXTFIELD_PASSWORD);
-       browser  = request.getParameter(HIDDEN_BROWSER);
-       String forcedBrowser = request.getParameter(FORCE_BROWSER);
-       if (forcedBrowser != null) {
-           browser = forcedBrowser;
-       }
-
-       if(username != null && password != null && browser != null){
-         int tokentype = applybean.getTokenType(username);
-         availablekeylengths = applybean.availableBitLengths(username);
-         caid = applybean.getCAId(username);
-         if(tokentype == 0){
-            request.setAttribute("ErrorMessage","User does not exist : " + username);
-            request.getRequestDispatcher("error.jsp").forward(request, response);
-            return;
-         }
-         if(tokentype != SecConst.TOKEN_SOFT_BROWSERGEN)
-           includefile = "apply_token.jspf";   
-         else{
-           if(browser.equals(BROWSER_NETSCAPE))
-             includefile = "apply_nav.jspf"; 
-           if(browser.equals(BROWSER_EXPLORER))
-             includefile = "apply_exp.jspf";
-           if(browser.equals(BROWSER_UNKNOWN))
-             includefile = "apply_unknown.html"; 
-         }
-       }
-     }
-   }
-
-  if(availablekeylengths == null)
-   availablekeylengths = defaultkeylengths;
-} catch(Exception ex) {
-    ex.printStackTrace();
-}                                             
-
-  // Include page
-  if( includefile.equals("apply_auth.jspf")){ 
+  applybean.setDefaultUsername(username);
+  finder.initialize(request.getRemoteAddr());
 %>
-   <%@ include file="apply_auth.jspf" %>
-<%}  if( includefile.equals("apply_token.jspf")){ %>
-   <%@ include file="apply_token.jspf" %> 
-<%} if( includefile.equals("apply_unknown.html")){ %>
-   <%@ include file="apply_unknown.html" %> 
-<%}
-  if( includefile.equals("apply_nav.jspf")){ %>
-   <%@ include file="apply_nav.jspf" %> 
-<%}
-  if( includefile.equals("apply_exp.jspf")){ %>
-   <%@ include file="apply_exp.jspf" %> 
-<%} %>
+
+<c:set var="includefile" value="apply_auth.jspf" />
+<c:if test="${action != null && action == ACTION_GENERATETOKEN}">
+	<c:if test="${forcedBrowser != null}">
+		<c:set var="browser" value="${forcedBrowser}" />
+	</c:if>
+	<c:if test="${username != null && password != null && browser != null}">
+		<c:set var="tokentype" value="${applybean.tokenType}" />
+		<c:set var="availablekeylengths" value="${applybean.availableBitLengths}" />
+		<c:set var="caid" value="${applybean.CAId}" />
+		<jsp:useBean id="caid" type="java.lang.Integer" />
+		<% finder.setCurrentCA(caid); %>
+
+		<c:choose>
+	        <c:when test="${tokentype == 0}">
+				<%
+					// The user doesn't exist. Redirect to error page.
+		            request.setAttribute("ErrorMessage","User does not exist: " + username);
+		            request.getRequestDispatcher("error.jsp").forward(request, response);
+		        %>
+	        </c:when> 
+	        <c:when test="${tokentype == TOKEN_SOFT_BROWSERGEN}">
+				<c:choose>
+			        <c:when test="${browser == BROWSER_NETSCAPE}">
+			        	<c:set var="includefile" value="apply_nav.jspf" />
+			        </c:when> 
+			        <c:when test="${browser == BROWSER_EXPLORER}">
+			        	<c:set var="includefile" value="apply_exp.jspf" />
+			        </c:when> 
+			        <c:otherwise> 
+			        	<c:set var="includefile" value="apply_unknown.html" />
+					</c:otherwise>
+				</c:choose>
+	        </c:when> 
+	        <c:otherwise> 
+	        	<c:set var="includefile" value="apply_token.jspf" />
+			</c:otherwise>
+		</c:choose>
+	</c:if>
+</c:if>
+
+<c:if test="${availablekeylengths == null}">
+	<c:set var="browser" value="${applyBean.defaultBitLengths}" />
+</c:if>
+
+<c:choose>
+    <c:when test="${includefile == 'apply_auth.jspf'}">
+		<%@ include file="apply_auth.jspf" %>
+    </c:when> 
+    <c:when test="${includefile == 'apply_token.jspf'}">
+		<%@ include file="apply_token.jspf" %>
+    </c:when> 
+    <c:when test="${includefile == 'apply_nav.jspf'}">
+		<%@ include file="apply_nav.jspf" %>
+    </c:when> 
+    <c:when test="${includefile == 'apply_exp.jspf'}">
+		<%@ include file="apply_exp.jspf" %>
+    </c:when> 
+    <c:when test="${includefile == 'apply_unknown.html'}">
+		<%@ include file="apply_unknown.html" %>
+    </c:when> 
+    <c:otherwise> 
+	    <h1>NO MATCH! Error in apply_main.jsp. includefile == &quot;${includefile}&quot;</h1>
+	</c:otherwise>
+</c:choose>

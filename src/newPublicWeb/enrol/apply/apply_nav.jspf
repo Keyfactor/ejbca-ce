@@ -6,28 +6,27 @@
    in your browser, otherwise this will be done automatically when
    your certificate is retrieved.</p>
 <p>Install CA certificates:</p>
-<%
-	try  {
-	    InitialContext ctx = new InitialContext();
-	    ISignSessionHome home = home = (ISignSessionHome) PortableRemoteObject.narrow(
-	            ctx.lookup("RSASignSession"), ISignSessionHome.class );
-	    ISignSessionRemote ss = home.create();
-	    Collection chain = ss.getCertificateChain(new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr()),caid);
-	    if (chain.size() == 0) {
-	        out.println("<p>No CA certificates exist</p>");
-	    } else {
-	        out.println("<p><a href=\"../certdist?cmd=nscacert&level=0&caid="+caid+"\">Certificate chain</a></p>");
-	    }
-	} catch(Exception ex) {
-	    ex.printStackTrace();
-	}                                             
-%>
+
+	<c:forEach var="issuercert" items="${finder.CACertificateChain}" begin="0" end="0">
+		<c:set var="certExists" value="true" />
+		<c:url var="chain_url" value="../certdist" >
+			<c:param name="cmd" value="nscacert" />
+			<c:param name="level" value="0" />
+			<c:param name="caid" value="${caid}" />
+		</c:url>
+		<p><a href="${chain_url}">Certificate chain</a></p>
+	</c:forEach>
+
+	<c:if test="${certExists == null}">
+		<p>No CA certificates exist</p>
+	</c:if>
+
 <hr />
 
 <script type="text/javascript">
 <!--
 	myDeclare();
-	show_NetID_form("<%=username %>", "<%=password %>");
+	show_NetID_form("${username}", "${password}");
 -->
 </script>
 
@@ -38,11 +37,11 @@ certificate.</p>
 <form action="../certreq" enctype="x-www-form-encoded" method="post">
   <fieldset>
 	<legend>Key length</legend>
-	<input name="user" type="hidden" value="<%=username%>">
-	<input name="password" type="hidden" value="<%=password%>">
+	<input name="user" type="hidden" value="${username}" />
+	<input name="password" type="hidden" value="${password}" />
 	<label for="dummy">Key length</label>
 	<keygen type="hidden" name="keygen" value="challenge" accesskey="k"/>
 	<label for="dummy2"></label>
-	<input type="submit" value="OK"></p>
+	<input type="submit" value="OK" />
   </fieldset>
 </form>
