@@ -1,5 +1,5 @@
 #
-# $Id: cmp.properties.sample,v 1.8 2006-10-22 09:04:49 anatom Exp $
+# $Id: cmp.properties.sample,v 1.9 2007-05-30 09:52:56 anatom Exp $
 #
 # This is a sample file to override properties used
 # during deployment of EJBCA
@@ -11,7 +11,9 @@
 
 #------------------- CMP (RFC4210) settings -------------
 # 
-# Enforce a particual CA instead of taking it from the request. 
+# Enforce a particual CA instead of taking it from the request.
+# This should be the DN of the CA, i.e.:
+# CN=AdminCA1,O=EJBCA Sample,C=SE 
 #
 # Default: empty
 #cmp.defaultca=
