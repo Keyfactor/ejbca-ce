@@ -30,7 +30,7 @@ import org.ejbca.core.model.log.Admin;
  * The arguments are supplied as member variables instead. <br>
  * 
  * @author Rolf Staflin
- * @version $Id: CertificateFinderBean.java,v 1.5 2007-05-25 12:14:09 anatom Exp $
+ * @version $Id: CertificateFinderBean.java,v 1.6 2007-05-30 06:52:34 rolf_s Exp $
  */
 public class CertificateFinderBean {
 	
@@ -67,7 +67,7 @@ public class CertificateFinderBean {
 	 * @throws CreateException If session bean creation fails.
 	 */
 	public void initialize(String remoteAddress) throws NamingException, RemoteException, CreateException {
-		log.info(">initialize()");
+		log.debug(">initialize()");
 	    mAdmin = new Admin(Admin.TYPE_PUBLIC_WEB_USER, remoteAddress);
 		InitialContext ctx = new InitialContext();
 	    final ISignSessionHome home = (ISignSessionHome) PortableRemoteObject.narrow(ctx.lookup("RSASignSession"), ISignSessionHome.class );
@@ -82,7 +82,7 @@ public class CertificateFinderBean {
 	}
 
 	public Collection getAvailableCAs() throws RemoteException {
-		log.info(">getAvailableCAs()");
+		log.debug(">getAvailableCAs()");
 		return mInitialized ? mCaAdminSession.getAvailableCAs(mAdmin) : null;
 	}
 
@@ -91,16 +91,23 @@ public class CertificateFinderBean {
 	}
 
 	public void setCurrentCA(Integer currentCA) {
+		if (log.isDebugEnabled()) {
+			log.debug(">setCurrentCA(" + currentCA + ")");
+		}
 		mCurrentCA = currentCA;
 	}
 
 	public CAInfo getCAInfo() throws RemoteException {
-		log.info(">getCAInfo() currentCA = " + mCurrentCA + ", initialized == " + mInitialized);
+		if (log.isDebugEnabled()) {
+			log.debug(">getCAInfo() currentCA = " + mCurrentCA + ", initialized == " + mInitialized);
+		}
 		return mInitialized ? mCaAdminSession.getCAInfo(mAdmin, mCurrentCA) : null;
 	}
 
 	public Collection getCACertificateChain() throws RemoteException {
-		log.info(">getCACertificateChain() currentCA = " + mCurrentCA + ", initialized == " + mInitialized);
+		if (log.isDebugEnabled()) {
+			log.debug(">getCACertificateChain() currentCA = " + mCurrentCA + ", initialized == " + mInitialized);
+		}
 		return mInitialized ? mSignSession.getCertificateChain(mAdmin, mCurrentCA) : null;
 	}
 	
