@@ -11,17 +11,19 @@
 		<c:set var="browser" value="${forcedBrowser}" />
 	</c:if>
 
-	<c:forEach var="issuercert" items="${finder.CACertificateChain}" begin="0" end="0">
-		<c:set var="certExists" value="true" />
-		<c:url var="chain_url" value="../certdist" >
-			<c:param name="cmd" value="nscacert" />
-			<c:param name="caid" value="${caid}" />
-		</c:url>
-		<p><a href="${chain_url}">Certificate chain</a></p>
-	</c:forEach>
-	<c:if test="${certExists == null}">
-		<p>No CA certificates exist</p>
-	</c:if>
+	<c:choose>
+		<c:when test="${fn:length(finder.CACertificateChain) == 0}">
+			<p>No CA certificates exist</p>
+		</c:when>
+		<c:otherwise>
+			<c:url var="chain_url" value="../certdist" >
+				<c:param name="cmd" value="nscacert" />
+				<c:param name="level" value="0" />
+				<c:param name="caid" value="${caid}" />
+			</c:url>
+			<p><a href="${chain_url}">Certificate chain</a></p>
+		</c:otherwise>
+	</c:choose>
 
 <hr />
 <p>Please choose a key length, then click OK to fetch your certificate.</p>

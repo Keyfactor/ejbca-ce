@@ -72,7 +72,7 @@
 	</c:if>
 </c:if>
 
-<c:if test="${availablekeylengths == null}">
+<c:if test="${availablekeylengths == null || fn:length(availablekeylengths) == 0}">
 	<c:set var="browser" value="${applyBean.defaultBitLengths}" />
 </c:if>
 
