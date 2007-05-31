@@ -16,7 +16,7 @@
 <body>
 <H5><DIV align=right><i><%= ejbcawebbean.getText("VERSION") + " " + GlobalConfiguration.EJBCA_VERSION%></i>
 <%	if ( ejbcawebbean.isUsingExportableCryptography() ) { %>
-	<div style="color: #FF0000; font-size: 0.7em;">Using exportable cryptography</div>
+	<div style="color: #FF0000; font-size: 0.7em;"><%= ejbcawebbean.getText("EXPORTABLE") %></div>
 <%	} %>
 </div></H5> 
 

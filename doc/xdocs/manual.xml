@@ -49,8 +49,10 @@ earlier version of EJBCA.
 <p>
 Note: EJBCA makes use of strong crypto and keystore passwords longer than 7 characters.
 For this to work you must install the 'Unlimited Strength Jurisdiction Policy Files' for JDK.
-The policy files can be found at the same place as the JDK download at java.sun.com. 
-Further information on this can be found in the Sun documentation on the JCE.
+The policy files can be found at the same place as the JDK download at java.sun.com. The text
+"Using exportable cryptography" is shown on the first page in the Admin GUI if you fail to
+install this package. Further information on this can be found in the Sun documentation on
+the JCE.
 </p><p>
 Needed to build and run are:
 <ul>
