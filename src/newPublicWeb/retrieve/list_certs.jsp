@@ -4,12 +4,12 @@
   <form action="list_certs_result.jsp" enctype="x-www-form-encoded" method="GET">
     <fieldset>
       <legend>Distinguished name</legend>
-      <input type="hidden" name="cmd" value="listcerts">
+      <input type="hidden" name="cmd" value="listcerts" />
       <label for="subject">Subject DN</label>
-      <input name="subject" type=text size=40>
+      <input name="subject" type="text" size="40" accesskey="s" />
       <br />
       <label for="dummy"></label>
-      <input type="submit" value="OK" name="submit">
+      <input type="submit" value="OK" name="submit" />
     </fieldset>
   </form>
 </div>

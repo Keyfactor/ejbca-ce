@@ -10,7 +10,6 @@
 		<jsp:useBean id="ca_id" type="java.lang.Integer" />
 		<% finder.setCurrentCA(ca_id); %>
 
-		<jsp:useBean id="ca" class="org.ejbca.core.model.ca.caadmin.CAInfo" scope="page" />
 		<c:set var="ca" value="${finder.CAInfo}" />
 
 		<c:url var="der" value="../certdist" >

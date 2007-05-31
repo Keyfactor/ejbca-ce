@@ -2,7 +2,7 @@
 <%@ include file="header.jsp" %>
     <c:set var="subject" value="${param.subject}" />
     <c:choose> 
-        <c:when test="${subject == null}"> 
+        <c:when test="${subject == null || subject == ''}"> 
             <h1 class="title">No subject</h1> 
             <p>Please enter a valid subject in the <a href="list_certs.jsp">search form</a>!</p>
         </c:when>
@@ -24,7 +24,6 @@
                 </c:when>
                 <c:otherwise> 
                     <c:forEach var="certificate" items="${certificates}">
-                        <jsp:useBean id="certificate" type="java.security.cert.X509Certificate" />
 <pre>
 Subject:       ${certificate.subjectDN}
 Issuer:        ${certificate.issuerDN}
@@ -32,7 +31,6 @@ NotBefore:     ${certificate.notBefore}
 NotAfter:      ${certificate.notAfter}
 Serial number: ${certificate.serialNumber}
 </pre>
-            
                         <c:url var="check_status" value="check_status_result.jsp" >
                             <c:param name="issuer" value="${certificate.issuerDN}" />
                             <c:param name="serno" value="${certificate.serialNumber}" />
