@@ -24,7 +24,7 @@ import org.ejbca.core.model.SecConst;
 
 /**
  * 
- * @version $Id: KeyStrings.java,v 1.3 2007-02-10 21:31:13 primelars Exp $
+ * @version $Id: KeyStrings.java,v 1.4 2007-05-31 10:02:32 primelars Exp $
 */
 public class KeyStrings {
     
@@ -33,6 +33,7 @@ public class KeyStrings {
     final static public String CAKEYPURPOSE_KEYENCRYPT_STRING = "keyEncryptKey";
     final static public String CAKEYPURPOSE_TESTKEY_STRING = "testKey";
     final static public String CAKEYPURPOSE_DEFAULT_STRING = "defaultKey";
+    final static public String CAKEYPURPOSE_HARDTOKENENCRYPT_STRING = "hardTokenEncrypt";
     final private Map map;
     final String defaultKeyS;
     public KeyStrings(Properties properties) {
@@ -51,8 +52,11 @@ public class KeyStrings {
                SecConst.CAKEYPURPOSE_KEYENCRYPT,
                properties);
         addKey(CAKEYPURPOSE_TESTKEY_STRING,
-                SecConst.CAKEYPURPOSE_KEYTEST,
-                properties);
+               SecConst.CAKEYPURPOSE_KEYTEST,
+               properties);
+        addKey(CAKEYPURPOSE_HARDTOKENENCRYPT_STRING,
+               SecConst.CAKEYPURPOSE_HARDTOKENENCRYPT,
+               properties);
     }
     private void addKey(String keyS, int keyI,
                         Properties properties) {

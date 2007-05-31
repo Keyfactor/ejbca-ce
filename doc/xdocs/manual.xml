@@ -1933,11 +1933,12 @@ to the HSM and independant of EJBCA. You should make sure you are familiar with 
 <p>
 When configuring a CA to use a HSM in the administration GUI it is a property field where properties unique to this very HSM is specified. All implemented HSM modules are using the same property keywords to define the identity and the purpose of the keys to be used. These keywords are:
 <ul>
-<li>certSignKey   - the key to be used when signing certificates, can be RSA or ECDSA.</li>
-<li>crlSignKey    - the key to be used when signing CLSs, can be RSA or ECDSA.</li>
-<li>keyEncryptKey - the key to be used for key encryption and decryption, this must be an RSA key.</li>
-<li>testKey       - the key to be used by HSM status checks, can be RSA or ECDSA.</li>
-<li>defaultKey    - the key to be used when no other key is defined for a purpose. If this is the only definition then this key will be used for all purposes.</li>
+<li>certSignKey      - the key to be used when signing certificates, can be RSA or ECDSA.</li>
+<li>crlSignKey       - the key to be used when signing CLSs, can be RSA or ECDSA.</li>
+<li>keyEncryptKey    - the key to be used for key encryption and decryption, this must be an RSA key.</li>
+<li>testKey          - the key to be used by HSM status checks, can be RSA or ECDSA.</li>
+<li>hardTokenEncrypt - the key to be used for hardtoken encryption and decryption. PUK will be decrypted by this key.</li>
+<li>defaultKey       - the key to be used when no other key is defined for a purpose. If this is the only definition then this key will be used for all purposes.</li>
 </ul>
 </p><p>
 You may omit defaultKey if you want to be sure that the right key is used, but then all the other keys must be specified. It's recommended that the certificate and CRL signing keys are linked to the same key since different keys are rarely supported by verifying applications.
