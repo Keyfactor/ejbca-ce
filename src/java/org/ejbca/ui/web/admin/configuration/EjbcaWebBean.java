@@ -14,6 +14,7 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import java.net.URLDecoder;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
+import javax.crypto.Cipher;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
@@ -56,7 +58,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.10 2007-04-13 06:18:19 herrvendil Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.11 2007-05-31 09:08:22 jeklund Exp $
  */
 public class EjbcaWebBean implements java.io.Serializable {
 
@@ -607,5 +609,22 @@ public class EjbcaWebBean implements java.io.Serializable {
     		retval.add(caid);
     	}
     	return retval;
+    }
+
+    /**
+     * Detect if "Unlimited Strength" Policy files hase bean properly installed.
+     * 
+     * @return true if key strength is limited
+     */
+    public boolean isUsingExportableCryptography()
+    {
+    	boolean returnValue = true;
+    	try {
+			if ( Cipher.getMaxAllowedKeyLength("DES") == Integer.MAX_VALUE ) {
+				returnValue = false;
+			}
+		} catch (NoSuchAlgorithmException e) {
+		}
+		return returnValue;
     }
 }

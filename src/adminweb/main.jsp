@@ -14,7 +14,11 @@
   <meta http-equiv="Content-Type" content="text/html; charset=<%= RequestHelper.getDefaultContentEncoding() %>">
 </head>
 <body>
-<H5><DIV align=right><i><%= ejbcawebbean.getText("VERSION") + " " + GlobalConfiguration.EJBCA_VERSION%></i></div></H5> 
+<H5><DIV align=right><i><%= ejbcawebbean.getText("VERSION") + " " + GlobalConfiguration.EJBCA_VERSION%></i>
+<%	if ( ejbcawebbean.isUsingExportableCryptography() ) { %>
+	<div style="color: #FF0000; font-size: 0.7em;">Using exportable cryptography</div>
+<%	} %>
+</div></H5> 
 
 <H3><%= ejbcawebbean.getText("WELCOME") + " " + ejbcawebbean.getUsersCommonName() + " " + ejbcawebbean.getText("TOEJBCA")%> </H3> 
 
