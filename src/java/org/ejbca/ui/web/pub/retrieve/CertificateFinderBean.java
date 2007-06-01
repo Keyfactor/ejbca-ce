@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+ 
 package org.ejbca.ui.web.pub.retrieve;
 
 import java.math.BigInteger;
@@ -30,7 +43,7 @@ import org.ejbca.core.model.log.Admin;
  * The arguments are supplied as member variables instead. <br>
  * 
  * @author Rolf Staflin
- * @version $Id: CertificateFinderBean.java,v 1.6 2007-05-30 06:52:34 rolf_s Exp $
+ * @version $Id: CertificateFinderBean.java,v 1.7 2007-06-01 07:39:40 rolf_s Exp $
  */
 public class CertificateFinderBean {
 	
