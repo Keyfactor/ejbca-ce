@@ -82,25 +82,24 @@ public class LdapSearchPublisher extends LdapPublisher {
 			}
 			log.debug("Resulting search filter '" + searchFilter+"'.");
 			searchScope = LDAPConnection.SCOPE_SUB;
-			attributeOnly = true;
 			log.debug("Making SRCH with BaseDN '" + getSearchBaseDN() + "' and filter '" + searchFilter+"'.");
 			searchbasedn = getSearchBaseDN();
 	        String attrs[] = { LDAPConnection.NO_ATTRS };
+			attributeOnly = true;
 			LDAPSearchResults searchResults = lc.search(searchbasedn, // container to search
 					searchScope, // search scope
 					searchFilter, // search filter
 					attrs, // "1.1" returns entry name only
 					attributeOnly); // no attributes are returned
 			// try to read the old object
-			int searchCount = searchResults.getCount();
 			if (log.isDebugEnabled()) {
-				log.debug("searchResults contains "+searchCount+ " entries");
+				log.debug("serachResults contains entries: "+searchResults.hasMore());
 			}
-			if (searchCount > 0) {
+			if (searchResults.hasMore()) {
 				oldEntry = searchResults.next();
 				dn = oldEntry.getDN();
-				if (searchCount > 1) {
-					log.debug("Found " +searchCount +" matches with filter '" + searchFilter +
+				if (searchResults.hasMore()) {
+					log.debug("Found more than one matches with filter '" + searchFilter +
 							"'. Using the first match with LDAP entry with DN: " +oldEntry.getDN());
 				} else {
 					log.debug("Found one match with filter: '"+searchFilter+"', match with DN: " + oldEntry.getDN());
