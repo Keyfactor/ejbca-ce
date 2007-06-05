@@ -304,7 +304,7 @@ public class ProtocolScepHttpTest extends TestCase {
 
     public void test07ScepGetCACert() throws Exception {
         log.debug(">test07ScepGetCACert()");
-        String reqUrl = httpReqPath + '/' + resourceScep+"?operation=GetCACert&message="+caname;
+        String reqUrl = httpReqPath + '/' + resourceScep+"?operation=GetCACert&message="+URLEncoder.encode(caname, "UTF-8");
         URL url = new URL(reqUrl);
         HttpURLConnection con = (HttpURLConnection)url.openConnection();
         con.setRequestMethod("GET");
@@ -342,7 +342,7 @@ public class ProtocolScepHttpTest extends TestCase {
     }
     public void test09ScepGetCACaps() throws Exception {
         log.debug(">test09ScepGetCACaps()");
-        String reqUrl = httpReqPath + '/' + resourceScep+"?operation=GetCACaps&message="+caname;
+        String reqUrl = httpReqPath + '/' + resourceScep+"?operation=GetCACaps&message="+URLEncoder.encode(caname, "UTF-8");
         URL url = new URL(reqUrl);
         HttpURLConnection con = (HttpURLConnection)url.openConnection();
         con.setRequestMethod("GET");

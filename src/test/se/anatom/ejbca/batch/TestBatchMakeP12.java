@@ -14,9 +14,7 @@
 package se.anatom.ejbca.batch;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Random;
 
 import javax.naming.Context;
@@ -30,12 +28,13 @@ import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 
 /** Tests the batch making of soft cards.
  *
- * @version $Id: TestBatchMakeP12.java,v 1.3 2006-01-17 20:33:42 anatom Exp $
+ * @version $Id: TestBatchMakeP12.java,v 1.4 2007-06-05 13:32:57 anatom Exp $
  */
 
 public class TestBatchMakeP12 extends TestCase {
@@ -64,13 +63,9 @@ public class TestBatchMakeP12 extends TestCase {
         obj = ctx.lookup("CAAdminSession");
         ICAAdminSessionHome cahome = (ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ICAAdminSessionHome.class);
         ICAAdminSessionRemote casession = cahome.create();
-        Collection caids = casession.getAvailableCAs(admin);
-        Iterator iter = caids.iterator();
-        if (iter.hasNext()) {
-            caid = ((Integer) iter.next()).intValue();
-        } else {
-            assertTrue("No active CA! Must have at least one active CA to run tests!", false);
-        }
+        CAInfo info = casession.getCAInfo(admin, "TEST");
+        caid = info.getCAId();
+
         log.debug("<setUp()");
     }
 

@@ -18,6 +18,7 @@ import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -67,7 +68,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.31 2007-05-25 13:14:10 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.32 2007-06-05 13:32:57 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -150,9 +151,11 @@ public class TestSignSession extends TestCase {
     private static int rsacaid = 0;
     private static int ecdsacaid = 0;
     private static int ecdsaimplicitlycacaid = 0;
+    private static int rsamgf1cacaid = 0;
     X509Certificate rsacacert = null;
     X509Certificate ecdsacacert = null;
     X509Certificate ecdsaimplicitlycacacert = null;
+    X509Certificate rsamgf1cacacert = null;
     private Admin admin;
 
     /**
@@ -196,6 +199,11 @@ public class TestSignSession extends TestCase {
         if (ecdsaimplicitlycacaid == 0){
             assertTrue("No active ECDSA ImplicitlyCA CA! Must have at least one active CA to run tests!", false);
         }
+        CAInfo inforsamgf1ca = casession.getCAInfo(admin, "TESTSha256WithMGF1");
+        rsamgf1cacaid = inforsamgf1ca.getCAId();
+        if (rsamgf1cacaid == 0){
+            assertTrue("No active RSA MGF1 CA! Must have at least one active CA to run tests!", false);
+        }
         Collection coll = inforsa.getCertificateChain();
         Object[] objs = coll.toArray();
         rsacacert = (X509Certificate)objs[0]; 
@@ -205,6 +213,9 @@ public class TestSignSession extends TestCase {
         coll = infoecdsaimplicitlyca.getCertificateChain();
         objs = coll.toArray();
         ecdsaimplicitlycacacert = (X509Certificate)objs[0]; 
+        coll = inforsamgf1ca.getCertificateChain();
+        objs = coll.toArray();
+        rsamgf1cacacert = (X509Certificate)objs[0]; 
         
         obj = ctx.lookup("RSASignSession");
         home = (ISignSessionHome) javax.rmi.PortableRemoteObject.narrow(obj, ISignSessionHome.class);
@@ -293,6 +304,20 @@ public class TestSignSession extends TestCase {
         if (userExists) {
             log.info("User fooecdsaimpca already exists, resetting status.");
             usersession.setUserStatus(admin,"fooecdsaimpca",UserDataConstants.STATUS_NEW);
+            log.debug("Reset status to NEW");
+        }
+        userExists = false;
+        try {
+            usersession.addUser(admin,"foorsamgf1ca","foo123","C=SE,O=AnaTom,CN=foorsamgf1ca",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsamgf1cacaid);
+            log.debug("created user: foorsamgf1ca, foo123, C=SE, O=AnaTom, CN=foorsamgf1ca");
+        } catch (RemoteException re) {
+        	userExists = true;
+        } catch (DuplicateKeyException dke) {
+            userExists = true;
+        }
+        if (userExists) {
+            log.info("User foorsamgf1ca already exists, resetting status.");
+            usersession.setUserStatus(admin,"foorsamgf1ca",UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
 
@@ -1058,6 +1083,114 @@ public class TestSignSession extends TestCase {
         log.debug("<test17TestBCPKCS10ECDSAWithECDSAImplicitlyCACA()");
     }
 
+    /**
+     * creates cert
+     *
+     * @throws Exception if en error occurs...
+     */
+    public void test18SignSessionRSAMGF1WithRSASha256WithMGF1CA() throws Exception {
+        log.debug(">test18SignSessionRSAWithRSASha256WithMGF1CA()");
+
+        usersession.setUserStatus(admin,"foorsamgf1ca",UserDataConstants.STATUS_NEW);
+        log.debug("Reset status of 'foorsamgf1ca' to NEW");
+        // user that we know exists...
+    	X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, rsakeys.getPrivate(), rsakeys.getPublic(), CATokenConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, false);
+    	try {
+    	selfcert.verify(selfcert.getPublicKey());
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    		assertTrue(false);
+    	}
+        X509Certificate retcert = (X509Certificate) remote.createCertificate(admin, "foorsamgf1ca", "foo123", selfcert);
+        // RSA with MGF1 is not supported by sun, so we must transfer this (serialized) cert to a BC cert
+        X509Certificate cert = CertTools.getCertfromByteArray(retcert.getEncoded());
+        assertNotNull("Failed to create certificate", cert);
+        log.debug("Cert=" + cert.toString());
+//        FileOutputStream fos = new FileOutputStream("/tmp/testcert.crt");
+//        fos.write(cert.getEncoded());
+//        fos.close();
+        PublicKey pk = cert.getPublicKey();
+        if (pk instanceof RSAPublicKey) {
+        	RSAPublicKey rsapk = (RSAPublicKey) pk;
+			assertEquals(rsapk.getAlgorithm(), "RSA");
+		} else {
+			assertTrue("Public key is not RSA", false);
+		}
+        try {
+            cert.verify(rsamgf1cacacert.getPublicKey());        	
+        } catch (Exception e) {
+        	//e.printStackTrace();
+        	assertTrue("Verify failed: "+e.getMessage(), false);
+        }
+        // 1.2.840.113549.1.1.10 is SHA256WithRSAAndMGF1
+        assertEquals("1.2.840.113549.1.1.10", cert.getSigAlgOID());
+        assertEquals("1.2.840.113549.1.1.10", cert.getSigAlgName());
+        assertEquals("1.2.840.113549.1.1.10", rsamgf1cacacert.getSigAlgOID());
+        assertEquals("1.2.840.113549.1.1.10", rsamgf1cacacert.getSigAlgName());
+        
+        log.debug("<test18SignSessionRSAWithRSASha256WithMGF1CA()");
+    }
+
+    /**
+     * tests bouncy PKCS10
+     *
+     * @throws Exception if en error occurs...
+     */
+    public void test19TestBCPKCS10RSAWithRSASha256WithMGF1CA() throws Exception {
+        log.debug(">test19TestBCPKCS10RSAWithRSASha256WithMGF1CA()");
+        usersession.setUserStatus(admin,"foorsamgf1ca",UserDataConstants.STATUS_NEW);
+        log.debug("Reset status of 'foorsamgf1ca' to NEW");
+        // Create certificate request
+        PKCS10CertificationRequest req = new PKCS10CertificationRequest(CATokenConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1,
+                CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foorsamgf1ca"), rsakeys.getPublic(), null,
+                rsakeys.getPrivate());
+        ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+        DEROutputStream dOut = new DEROutputStream(bOut);
+        dOut.writeObject(req);
+        dOut.close();
+
+        PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
+        boolean verify = req2.verify();
+        log.debug("Verify returned " + verify);
+        if (verify == false) {
+            log.debug("Aborting!");
+            return;
+        }
+        log.debug("CertificationRequest generated successfully.");
+        byte[] bcp10 = bOut.toByteArray();
+        PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
+        p10.setUsername("foorsamgf1ca");
+        p10.setPassword("foo123");
+        IResponseMessage resp = remote.createCertificate(admin,
+                p10, Class.forName("org.ejbca.core.protocol.X509ResponseMessage"));
+        X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
+        //X509Certificate cert = CertTools.getCertfromByteArray(retcert.getEncoded());
+        assertNotNull("Failed to create certificate", cert);
+        log.debug("Cert=" + cert.toString());
+//        FileOutputStream fos = new FileOutputStream("/tmp/testcert1.crt");
+//        fos.write(cert.getEncoded());
+//        fos.close();
+        PublicKey pk = cert.getPublicKey();
+        if (pk instanceof RSAPublicKey) {
+        	RSAPublicKey rsapk = (RSAPublicKey) pk;
+			assertEquals(rsapk.getAlgorithm(), "RSA");
+		} else {
+			assertTrue("Public key is not RSA", false);
+		}
+        try {
+            cert.verify(rsamgf1cacacert.getPublicKey());        	
+        } catch (Exception e) {
+        	assertTrue("Verify failed: "+e.getMessage(), false);
+        }
+        // 1.2.840.113549.1.1.10 is SHA256WithRSAAndMGF1
+        assertEquals("1.2.840.113549.1.1.10", cert.getSigAlgOID());
+        assertEquals("1.2.840.113549.1.1.10", cert.getSigAlgName());
+        assertEquals("1.2.840.113549.1.1.10", rsamgf1cacacert.getSigAlgOID());
+        assertEquals("1.2.840.113549.1.1.10", rsamgf1cacacert.getSigAlgName());
+
+        log.debug("<test19TestBCPKCS10RSAWithRSASha256WithMGF1CA()");
+    }
+    
     /**
      * creates new user
      *

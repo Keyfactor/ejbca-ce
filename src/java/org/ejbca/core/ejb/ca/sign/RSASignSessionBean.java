@@ -157,7 +157,7 @@ import org.ejbca.util.KeyTools;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
  *   
- *   @version $Id: RSASignSessionBean.java,v 1.38 2007-03-28 12:23:35 anatom Exp $
+ *   @version $Id: RSASignSessionBean.java,v 1.39 2007-06-05 13:32:23 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -542,8 +542,11 @@ public class RSASignSessionBean extends BaseSessionBean {
         debug(">createCertificate(cert)");
         X509Certificate cert = (X509Certificate) incert;
         try {
-            cert.verify(cert.getPublicKey());
+            // Convert the certificate to a BC certificate. SUN does not handle verifying RSASha256WithMGF1 for example 
+            X509Certificate bccert = CertTools.getCertfromByteArray(incert.getEncoded());
+            bccert.verify(cert.getPublicKey());
         } catch (Exception e) {
+        	log.debug("Exception verify POPO: ", e);
         	String msg = intres.getLocalizedMessage("signsession.popverificationfailed");
             throw new SignRequestSignatureException(msg);
         }

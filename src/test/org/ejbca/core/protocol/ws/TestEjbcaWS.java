@@ -54,6 +54,11 @@ import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
 
+/**
+ * Running this test requires that you first create a JKS keystore wstest.jks with password
+ * foo123. This user must be a superadmin in EJBCA.
+ * 
+ */
 public class TestEjbcaWS extends TestCase {
 	
 	private static EjbcaWS ejbcaraws;

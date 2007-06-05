@@ -26,7 +26,7 @@ import org.ejbca.core.model.log.Admin;
 /**
  * Tests and removes the ca data entity bean.
  *
- * @version $Id: TestRemoveCA.java,v 1.5 2007-02-27 15:21:13 anatom Exp $
+ * @version $Id: TestRemoveCA.java,v 1.6 2007-06-05 13:32:57 anatom Exp $
  */
 public class TestRemoveCA extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -115,6 +115,24 @@ public class TestRemoveCA extends TestCase {
         assertTrue("Removing ECDSA ImplicitlyCA CA failed", ret);
 
         log.debug("<test03removeECDSACA()");
+    }
+
+    /**
+     * removes RSA CA
+     *
+     * @throws Exception error
+     */
+    public void test04removeRSASha256WithMGF1CA() throws Exception {
+        log.debug(">test04removeRSASha256WithMGF1CA()");
+        boolean ret = false;
+        try {
+            cacheAdmin.removeCA(admin, "CN=TESTSha256WithMGF1".hashCode());
+            ret = true;
+        } catch (Exception pee) {
+        }
+        assertTrue("Removing RSA SHA256WithMGF1 CA failed", ret);
+
+        log.debug("<test04removeRSASha256WithMGF1CA()");
     }
 
 }

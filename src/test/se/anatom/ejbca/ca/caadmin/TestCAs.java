@@ -47,7 +47,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the ca data entity bean.
  *
- * @version $Id: TestCAs.java,v 1.20 2007-01-12 09:42:53 anatom Exp $
+ * @version $Id: TestCAs.java,v 1.21 2007-06-05 13:32:57 anatom Exp $
  */
 public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -424,6 +424,100 @@ public class TestCAs extends TestCase {
 
         assertTrue("Creating ECDSA ImplicitlyCA CA failed", ret);
         log.debug("<test05AddECDSAImplicitlyCACA()");
+    }
+
+    /**
+     * adds a CA using RSA keys to the database.
+     *
+     * It also checks that the CA is stored correctly.
+     *
+     * @throws Exception error
+     */
+    public void test06AddRSASha256WithMGF1CA() throws Exception {
+        log.debug(">test06AddRSASha256WithMGF1CA()");
+        boolean ret = false;
+        try {
+        	String cadn = "CN=TESTSha256WithMGF1";
+            Context context = getInitialContext();
+            IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("AuthorizationSession"), IAuthorizationSessionHome.class);
+            IAuthorizationSessionRemote authorizationsession = authorizationsessionhome.create();
+            authorizationsession.initialize(admin, cadn.hashCode());
+
+            SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
+            catokeninfo.setSignKeySpec("1024");
+            catokeninfo.setEncKeySpec("1024");
+            catokeninfo.setSignKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
+            catokeninfo.setEncKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
+            catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA256_WITH_RSA_AND_MGF1);
+            catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA256_WITH_RSA_AND_MGF1);
+            // Create and active OSCP CA Service.
+            ArrayList extendedcaservices = new ArrayList();
+            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
+                    "CN=OCSPSignerCertificate, " + cadn,
+                    "",
+                    "1024",
+                    CATokenConstants.KEYALGORITHM_RSA));
+            extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
+                    "CN=XKMSCertificate, " + cadn,
+                    "",
+                    "1024",
+                    CATokenConstants.KEYALGORITHM_RSA));
+
+
+            X509CAInfo cainfo = new X509CAInfo(cadn,
+                    "TESTSha256WithMGF1", SecConst.CA_ACTIVE, new Date(),
+                    "", SecConst.CERTPROFILE_FIXED_ROOTCA,
+                    365,
+                    null, // Expiretime
+                    CAInfo.CATYPE_X509,
+                    CAInfo.SELFSIGNED,
+                    (Collection) null,
+                    catokeninfo,
+                    "JUnit RSA CA",
+                    -1, null,
+                    null, // PolicyId
+                    24, // CRLPeriod
+                    0, // CRLIssueInterval
+                    10, // CRLOverlapTime
+                    new ArrayList(),
+                    true, // Authority Key Identifier
+                    false, // Authority Key Identifier Critical
+                    true, // CRL Number
+                    false, // CRL Number Critical
+                    null, // defaultcrldistpoint 
+                    null, // defaultcrlissuer 
+                    null, // defaultocsplocator
+                    true, // Finish User
+                    extendedcaservices,
+                    false, // use default utf8 settings
+                    new ArrayList(), // Approvals Settings
+                    1, // Number of Req approvals
+                    false); // Use UTF8 subject DN by default
+
+
+            cacheAdmin.createCA(admin, cainfo);
+
+
+            CAInfo info = cacheAdmin.getCAInfo(admin, "TESTSha256WithMGF1");
+
+            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals(cadn));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals(cadn));
+            PublicKey pk = cert.getPublicKey();
+            if (pk instanceof RSAPublicKey) {
+            	RSAPublicKey rsapk = (RSAPublicKey) pk;
+				assertEquals(rsapk.getAlgorithm(), "RSA");
+			} else {
+				assertTrue("Public key is not RSA", false);
+			}
+
+            ret = true;
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+        }
+
+        assertTrue("Creating RSA CA failed", ret);
+        log.debug("<test06AddRSASha256WithMGF1CA()");
     }
 
 }
