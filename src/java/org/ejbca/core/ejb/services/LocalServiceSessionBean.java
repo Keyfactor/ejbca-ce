@@ -183,7 +183,8 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
     			worker = (IWorker) this.getClass().getClassLoader().loadClass(cp).newInstance();
     			worker.init(intAdmin, serviceConfiguration, serviceName);    			
     		} else {
-    			log.error("No worker classpath defined for service: "+serviceName);
+    			String msg = intres.getLocalizedMessage("services.errorworkerconfig", "null", serviceName);
+    			log.error(msg);
     		}
 		} catch (Exception e) {						
 			String msg = intres.getLocalizedMessage("services.errorworkerconfig", serviceConfiguration.getWorkerClassPath(), serviceName);
