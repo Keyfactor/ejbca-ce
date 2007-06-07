@@ -56,6 +56,7 @@ import org.bouncycastle.asn1.x509.X509Name;
 public class CertTemplate implements DEREncodable
 {
     // name is not a choice type --> tag it implicit...no but it should be explicit?
+	// Change to explicit by PrimeKey Solutions AB, Tomas Gustavsson
     public static final boolean bNameIsExplicit = true;
 
     private DERInteger            version = null;
