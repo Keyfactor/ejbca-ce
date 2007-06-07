@@ -24,6 +24,7 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 
+import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.ejb.BaseSessionBean;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocalHome;
@@ -177,8 +178,13 @@ public class LocalServiceSessionBean extends BaseSessionBean  {
     private IWorker getWorker(ServiceConfiguration serviceConfiguration, String serviceName) {
 		IWorker worker = null;
     	try {
-			worker = (IWorker) this.getClass().getClassLoader().loadClass(serviceConfiguration.getWorkerClassPath()).newInstance();
-			worker.init(intAdmin, serviceConfiguration, serviceName);
+    		String cp = serviceConfiguration.getWorkerClassPath();
+    		if (StringUtils.isNotEmpty(cp)) {
+    			worker = (IWorker) this.getClass().getClassLoader().loadClass(cp).newInstance();
+    			worker.init(intAdmin, serviceConfiguration, serviceName);    			
+    		} else {
+    			log.error("No worker classpath defined for service: "+serviceName);
+    		}
 		} catch (Exception e) {						
 			String msg = intres.getLocalizedMessage("services.errorworkerconfig", serviceConfiguration.getWorkerClassPath(), serviceName);
 			log.error(msg,e);
