@@ -4,6 +4,7 @@ import java.net.URL;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -701,7 +702,8 @@ public class TestEjbcaWS extends TestCase {
 		Certificate cert = next.getCertificate();
 		X509Certificate realcert = (X509Certificate) CertificateHelper.getCertificate(cert.getCertificateData());
 		assertNotNull(realcert);
-		assertTrue(realcert.getNotAfter().toLocaleString(),realcert.getNotAfter().before(new Date(System.currentTimeMillis() + 2 * 3600 *1000)));
+		DateFormat df = DateFormat.getDateInstance();
+		assertTrue(df.format(realcert.getNotAfter()),realcert.getNotAfter().before(new Date(System.currentTimeMillis() + 2 * 3600 *1000)));
 		next = iter.next();
 		assertTrue(next.getType() == HardTokenConstants.RESPONSETYPE_KEYSTORE_RESPONSE);
 		KeyStore keyStore = next.getKeyStore();
