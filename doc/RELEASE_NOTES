@@ -3,6 +3,11 @@ EJBCA 3.4.3
 This is a patch release with some fixes and minor new features.
 Notable new features are:
 - Support for JBoss 4.2.x
+- Support RSASHA256WithRSAAndMGF1 again, this algorithm was temporarily removed for a few versions due to code cleanups.
+  Used mostly for electronic passports in EU.
+- Support for JavaDB/Derby
+
+The release contains binary file changes (new BC JCE provider) so no patch file is provided.
 
 If you upgrade to JBoss 4.2.0 and have a customized conf/web.properties, 
 remove web.jsfimpl from your conf/web.properties.
@@ -10,6 +15,9 @@ remove web.jsfimpl from your conf/web.properties.
 Read the changelog for details.
 
 This is a plug-in upgrade from 3.4.x. See UPGRADE for the simple instructions.
+
+Since there is a new version of the BC provider, you should run tests for yourself before upgrading
+in production. We have run alot of tests, but can not guard against everying related to your environment.
 
 EJBCA 3.4.2
 -----------

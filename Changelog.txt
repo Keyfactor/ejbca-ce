@@ -1,3 +1,28 @@
+3.4.3, 2007-06-08
+---
+New Feature
+    * [ECA-484] - Support for JavaDb/Derby
+
+Task
+    * [ECA-500] - Support for JBoss 4.2.0
+    * [ECA-522] - XKMS/WS does not work on JBoss 4.2.0
+
+Improvement
+    * [ECA-474] - Support RSASHA256WithRSAAndMGF1 again
+    * [ECA-504] - possible to specify keystore name to ant javatruststore
+    * [ECA-511] - Spelling errors
+
+Bug
+    * [ECA-360] - End entity details fails to display in log
+    * [ECA-479] - invalid error message when i create an external ac
+    * [ECA-483] - cli: ./bin/ejbca.sh ra unrevoke dont set a correct userstatus
+    * [ECA-487] - Exception on glassfish when removing and adding a CA with same DN
+    * [ECA-488] - ejbca.sh may fail to find weblogic/glassfish if jars are not executable
+    * [ECA-497] - LdapSearchPublisher not working
+    * [ECA-498] - LdapSearchPublisher does not publish to old entry if search returns more than one entry
+    * [ECA-499] - ./bin/ejbca.sh ca importca gives exception
+    * [ECA-503] - No good error message when using non existing alias for keystore in the encryption decryption CLI
+
 3.4.2, 2007-04-26
 ---
 New Feature
