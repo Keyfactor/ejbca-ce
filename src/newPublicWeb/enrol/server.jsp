@@ -14,24 +14,24 @@
   <fieldset >
     <legend>Enrol</legend>
 	<label for="user">Username</label>
-	<input type="text" size="10" name="user" value="foo" accesskey="u" />
+	<input type="text" size="10" name="user" id="user" value="foo" accesskey="u" />
 	<br />
 	<label for="password">Password</label>
-	<input type="text" size="10" name="password" value="foo123" accesskey="p" />
+	<input type="text" size="10" name="password" id="password" value="foo123" accesskey="p" />
 	<br />
 	<br />
-	<label for="dummy"></label>
-	<textarea rows="15" cols="70" name="pkcs10req" wrap="physical"></textarea>
+	<label for="pkcs10req"></label>
+	<textarea rows="15" cols="70" name="pkcs10req" id="pkcs10req"></textarea>
 	<br />
 	<br />
 	<label for="resulttype">Result type</label>
-	<select name="resulttype" accesskey="r">
+	<select name="resulttype" id="resulttype">
 		<option value="<%=org.ejbca.ui.web.RequestHelper.ENCODED_CERTIFICATE%>">PEM Certificate</option> 
 		<option value="<%=org.ejbca.ui.web.RequestHelper.ENCODED_PKCS7%>">PKCS7</option>
 	</select>
 	<br />
-	<label for="dummy2"></label>
-	<input type="submit" value="OK">
+	<label for="ok"></label>
+	<input type="submit" id="ok" value="OK" />
   </fieldset>
 </form>
 

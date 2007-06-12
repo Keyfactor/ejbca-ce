@@ -6,10 +6,10 @@
       <legend>Distinguished name</legend>
       <input type="hidden" name="cmd" value="listcerts" />
       <label for="subject">Subject DN</label>
-      <input name="subject" type="text" size="40" accesskey="s" />
+      <input name="subject" id="subject" type="text" size="40" accesskey="s" />
       <br />
-      <label for="dummy"></label>
-      <input type="submit" value="OK" name="submit" />
+      <label for="ok"></label>
+      <input type="submit" id="ok" value="OK" name="submit" />
     </fieldset>
   </form>
 </div>

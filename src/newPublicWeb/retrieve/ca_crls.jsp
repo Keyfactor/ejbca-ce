@@ -27,9 +27,9 @@
 			<c:param name="moz" value="y" />
 		</c:url>
 
-		<hr>
+		<hr />
 		<h2>CA: ${ca.name}</h2>
-		<p>The Certificate Revocation List is available in three ways:
+		<p>The Certificate Revocation List is available in three ways:</p>
 		<ul>
 		  	<li><a href="${der}">DER format</a></li> 
 		  	<li><a href="${pem}">PEM format</a></li> 

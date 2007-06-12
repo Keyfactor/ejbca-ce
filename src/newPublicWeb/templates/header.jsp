@@ -1,4 +1,5 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 
@@ -8,9 +9,11 @@
 
 <html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
     <title>@EJBCA@ Certification Authority</title>
-    <link rel="stylesheet" href="../styles.css" type="text/css">
+    <link rel="stylesheet" href="../styles.css" type="text/css" />
+    <script type="text/javascript" src="scripts/functions.js"></script>
+    <script type="text/vbscript" src="scripts/functions.vbs"></script>
   </head>
   <body>
     <div class="logobar">
@@ -19,7 +22,7 @@
     <div class="menucontainer">
       <div class="menu">
         <ul>
-          <li><div class="menuheader">Enrol</div></li>
+          <li><div class="menuheader">Enrol</div>
             <ul>
               <li>
                 <a href="../enrol/browser.jsp">Create Browser Certificate</a>
@@ -32,10 +35,10 @@
               </li>
             </ul>
           </li>  
-          <li><div class="menuheader">Retrieve</div></li>
+          <li><div class="menuheader">Retrieve</div>
             <ul>
               <li>
-                <a href="../retrieve/ca_certs.jsp">Fetch CA & OCSP Certificates</a>
+                <a href="../retrieve/ca_certs.jsp">Fetch CA &amp; OCSP Certificates</a>
               </li>
               <li>
                 <a href="../retrieve/ca_crls.jsp">Fetch CA CRLs</a>
@@ -45,7 +48,7 @@
               </li>
             </ul>
           </li>  
-          <li><div class="menuheader">Miscellaneous</div></li>
+          <li><div class="menuheader">Miscellaneous</div>
             <ul>
               <li>
                 <a href="../retrieve/list_certs.jsp">List User's Certificates</a>

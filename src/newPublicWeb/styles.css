@@ -118,7 +118,7 @@ form {
   font:100% "Trebuchet MS", verdana, arial, helvetica, sans-serif;
   margin: 0;
   padding: 0;
-  min-width: 500px;
+  min-width: 400px;
   max-width: 600px;
   width: 560px; 
 }
@@ -142,7 +142,7 @@ form fieldset legend {
 form label { 
 	display: block;
 	float: left; 
-	width: 100px; 
+	width: 150px; 
 	padding: 0; 
 	margin: 5px 0 0;
 	text-align: right; 
@@ -175,7 +175,7 @@ textarea { overflow: auto; }
 /* instructions/comments left margin set to align w/ right column inputs */
 form small {
 	display: block;
-	margin: 0 0 5px 110px;
+	margin: 0 0 5px 160px;
 	padding: 1px 3px;
 	font-size: 88%;
 }

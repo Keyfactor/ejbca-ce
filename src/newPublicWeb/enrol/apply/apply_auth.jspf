@@ -3,7 +3,7 @@
 <p>Welcome to certificate enrollment.</p>
 <p>Please enter your username and password. Then click OK to generate your token.</p>
 
-<form name="CertReqForm" action="${THIS_FILENAME}"  method="POST">
+<form name="CertReqForm" action="${THIS_FILENAME}"  method="post">
   <fieldset>
     <legend>Authentication</legend>
 
@@ -15,17 +15,17 @@
     <input type="hidden" name="${HIDDEN_BROWSER}" value="${BROWSER_UNKNOWN}" />
 
 	<label for="${TEXTFIELD_USERNAME}">Username:</label>
-	<input type="text" size="20" name="${TEXTFIELD_USERNAME}" accesskey="u" />
+	<input type="text" size="20" name="${TEXTFIELD_USERNAME}" id="${TEXTFIELD_USERNAME}" accesskey="u" />
 	<br />
     <label for="${TEXTFIELD_PASSWORD}">Password:</label>
-    <input type="password" size="20" name="${TEXTFIELD_PASSWORD}" accesskey="p" />
+    <input type="password" size="20" name="${TEXTFIELD_PASSWORD}" id="${TEXTFIELD_PASSWORD}" accesskey="p" />
     <br />
-    <label for="dummy"></label>
-    <input type="submit" value="OK" name="${BUTTON_SUBMIT_USERNAME}" />
+    <label for="${BUTTON_SUBMIT_USERNAME}"></label>
+    <input type="submit" value="OK" name="${BUTTON_SUBMIT_USERNAME}" id="${BUTTON_SUBMIT_USERNAME}" />
   </fieldset>
 </form>
 
-<script language="JavaScript">
+<script type="text/javascript">
 <!--
     browserSelector ();
 // -->

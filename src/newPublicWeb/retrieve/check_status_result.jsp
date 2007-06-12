@@ -37,10 +37,10 @@
 		                <c:when test="${certInfo.revoked}"> 
 		                    <h1>The certificate has been REVOKED!</h1>
 		                    <p>The revocation date is ${certInfo.revocationDate}.<br /> 
-		                    The reason for revocation was &quot;${certInfo.humanReadableReason}&quot; (${certInfo.reason}). 
+		                    The reason for revocation was &quot;${certInfo.humanReadableReason}&quot; (${certInfo.reason}).</p>
 		                </c:when> 
 		                <c:otherwise>
-		                    <p>The certificate has <strong>NOT</strong> been revoked.
+		                    <p>The certificate has <strong>NOT</strong> been revoked.</p>
 		                </c:otherwise> 
 		            </c:choose> 
 		

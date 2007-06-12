@@ -10,15 +10,15 @@
     For example, <tt>cn=foo</tt> is considered equal to <tt>CN=foo</tt> but different from <tt>cn=FOO</tt>.
 </p>
 
-<form action="../certdist" enctype="x-www-form-encoded" method="GET">
+<form action="../certdist" enctype="x-www-form-encoded" method="get">
   <fieldset>
     <legend>Name</legend>
-    <input type="hidden" name="cmd" value="lastcert">
+    <input type="hidden" name="cmd" value="lastcert" />
     <label for="subject">Subject DN</label>
-    <input name="subject" type="text" size="40">
-    <br>
-    <label for="dummy"></label>
-    <input type="submit" value="OK">
+    <input name="subject" id="subject" type="text" size="40" accesskey="s" />
+    <br />
+    <label for="ok"></label>
+    <input type="submit" id="ok" value="OK" />
   </fieldset>
 </form>
 
@@ -28,7 +28,7 @@
     <p>If you receive a <i>404-Not found</i> response, it means that
        the subject does not have a certificate in the database. Check your entry to make sure 
        you have specified all the DN components.
-    <p>
+    </p>
   </div>
 </div>
 

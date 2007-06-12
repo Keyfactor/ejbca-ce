@@ -1,4 +1,6 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+
 <%@ include file="header.jsp" %>
     <c:set var="subject" value="${param.subject}" />
     <c:choose> 
@@ -19,8 +21,8 @@
             <h1 class="title">Certificates for ${subject}</h1> 
     
             <c:choose> 
-                <c:when test="${certificates == null}"> 
-                    <h1 class="title">No certificates exists for '${subject}'.</h1> 
+                <c:when test="${certificates == null || fn:length(certificates) == 0}"> 
+                    <h2>No certificates exist for '${subject}'.</h2>
                 </c:when>
                 <c:otherwise> 
                     <c:forEach var="certificate" items="${certificates}">
@@ -35,7 +37,7 @@ Serial number: ${certificate.serialNumber}
                             <c:param name="issuer" value="${certificate.issuerDN}" />
                             <c:param name="serno" value="${certificate.serialNumber}" />
                         </c:url>
-                        <a href="${check_status}">Check if certificate is revoked</a>
+                        <p><a href="${check_status}">Check if certificate is revoked</a></p>
                     </c:forEach>
                 </c:otherwise> 
             </c:choose> 
