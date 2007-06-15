@@ -22,7 +22,7 @@ import org.ejbca.util.KeyTools;
 
 /**
  * @author lars
- * @version $Id: PKCS11CAToken.java,v 1.4 2007-05-14 08:07:30 primelars Exp $
+ * @version $Id: PKCS11CAToken.java,v 1.5 2007-06-15 09:31:29 jeklund Exp $
  */
 public class PKCS11CAToken extends BaseCAToken {
 
@@ -49,7 +49,7 @@ public class PKCS11CAToken extends BaseCAToken {
     public void activate(String authCode) throws CATokenOfflineException,
                                          CATokenAuthenticationFailedException {
         try {
-            final PasswordProtection pwp =new PasswordProtection(authCode.toCharArray());
+            final PasswordProtection pwp =new PasswordProtection( (authCode!=null && authCode.length()>0)? authCode.toCharArray():null );
             final KeyStore.Builder builder = KeyStore.Builder.newInstance("PKCS11",
                                                                           Security.getProvider(getProvider()),
                                                                           pwp);

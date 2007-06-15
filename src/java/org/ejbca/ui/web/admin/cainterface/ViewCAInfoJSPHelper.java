@@ -32,7 +32,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Contains help methods used to parse a viewcainfo jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: ViewCAInfoJSPHelper.java,v 1.3 2006-02-09 10:05:38 anatom Exp $
+ * @version $Id: ViewCAInfoJSPHelper.java,v 1.4 2007-06-15 09:31:29 jeklund Exp $
  */
 public class ViewCAInfoJSPHelper implements java.io.Serializable {
 		 
@@ -110,20 +110,16 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
 				   ((HardCATokenInfo) cainfo.getCAInfo().getCATokenInfo()).getCATokenStatus() == IHardCAToken.STATUS_OFFLINE))){
     	         
     	         String authorizationcode = request.getParameter(PASSWORD_AUTHENTICATIONCODE);
-    	         if(authorizationcode != null && !authorizationcode.trim().equals("")){
-    	         	try{
-    	         	  cabean.getCADataHandler().activateCAToken(caid,authorizationcode);
-    	         	  activationmessage = "CAACTIVATIONSUCCESSFUL";
-    	         	}catch(CATokenAuthenticationFailedException catafe){
-    	         		activationerrormessage = "AUTHENTICATIONERROR";
-						activationerrorreason = catafe.getMessage();
-    	         	}catch(CATokenOfflineException catoe){
-    	         		activationerrormessage = "ERROR";
-						activationerrorreason = catoe.getMessage();
-    	         	}
-    	         }else{
-    	         	activationerrormessage = "MUSTENTERAUTHCODE";
-    	         }
+    	         try {
+    	        	 cabean.getCADataHandler().activateCAToken(caid,authorizationcode);
+    	        	 activationmessage = "CAACTIVATIONSUCCESSFUL";
+	         	 } catch (CATokenAuthenticationFailedException catafe) {
+	         		 activationerrormessage = "AUTHENTICATIONERROR";
+	         		 activationerrorreason = catafe.getMessage();
+	         	 } catch (CATokenOfflineException catoe) {
+	         		 activationerrormessage = "ERROR";
+	         		 activationerrorreason = catoe.getMessage();
+	         	 }
     	      }
     	      // If Activate button is pressed, the admin is authorized and the current status is offline then activate.
     	      if(request.getParameter(BUTTON_MAKEOFFLINE) != null &&
