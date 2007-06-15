@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Locale;
 
 import javax.crypto.Cipher;
 import javax.servlet.ServletContext;
@@ -58,7 +59,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.11 2007-05-31 09:08:22 jeklund Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.12 2007-06-15 13:24:26 jeklund Exp $
  */
 public class EjbcaWebBean implements java.io.Serializable {
 
@@ -626,5 +627,33 @@ public class EjbcaWebBean implements java.io.Serializable {
 		} catch (NoSuchAlgorithmException e) {
 		}
 		return returnValue;
+    }
+
+    /**
+     * Uses the language in the Administration GUI to determine which locale is preferred. 
+     * @return the locale of the Admin GUI
+     */
+    public Locale getLocale() {
+    	Locale[] locales = DateFormat.getAvailableLocales();
+    	Locale returnValue = null;
+        String prefered = adminsweblanguage.getAvailableLanguages()[currentadminpreference.getPreferedLanguage()].toLowerCase();
+        String secondary = adminsweblanguage.getAvailableLanguages()[currentadminpreference.getSecondaryLanguage()].toLowerCase();
+        if (prefered.equalsIgnoreCase("se")) {
+        	prefered = "SV";
+        }
+        if (secondary.equalsIgnoreCase("se")) {
+        	secondary = "SV";
+        }
+        for (int i=0; i<locales.length; i++) {
+        	if ( locales[i].getLanguage().equalsIgnoreCase(prefered) ) {
+            	returnValue = locales[i];
+        	} else if ( returnValue == null && locales[i].getLanguage().equalsIgnoreCase(secondary) ) {
+        		returnValue = locales[i];
+        	}
+        }
+        if ( returnValue == null) {
+        	returnValue = Locale.US;
+        }
+        return returnValue;
     }
 }

@@ -13,20 +13,32 @@
  
 package org.ejbca.core.model.ra.raadmin;
 
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import javax.ejb.CreateException;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
+import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.UpgradeableDataHashMap;
+import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
+import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.util.Base64;
 import org.ejbca.util.StringTools;
 import org.ejbca.util.dn.DNFieldExtractor;
@@ -46,7 +58,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * 
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.18 2007-04-26 15:32:43 anatom Exp $
+ * @version $Id: EndEntityProfile.java,v 1.19 2007-06-15 13:24:26 jeklund Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -54,7 +66,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    public static final float LATEST_VERSION = 6;
+    public static final float LATEST_VERSION = 7;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -136,6 +148,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     	
     	// Load all DN, altName and directoryAttributes from DnComponents.
     	dataConstants.putAll(DnComponents.getProfilenameIdMap());
+    	
+    	dataConstants.put("STARTTIME", new Integer(98));
+    	dataConstants.put("ENDTIME", new Integer(99));
     }
     // Type of data constants.
     private static final int VALUE      = 0;
@@ -160,8 +175,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     public static final String SENDNOTIFICATION   = "SENDNOTIFICATION";
     public static final String DEFAULTCA          = "DEFAULTCA";
     public static final String AVAILCAS           = "AVAILCAS";
-    
-    
+    public static final String STARTTIME          = "STARTTIME";
+    public static final String ENDTIME            = "ENDTIME";
 
     public static final String SPLITCHAR       = ";";
 
@@ -216,9 +231,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
                 setUse(key,0,true);
                 setModifyable(key,0,true);        		
         	}
-        	
         }
-
         setRequired(USERNAME,0,true);
         setRequired(PASSWORD,0,true);
         setRequired(DnComponents.COMMONNAME,0,true);
@@ -228,6 +241,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         setRequired(AVAILKEYSTORE,0,true);
         setRequired(DEFAULTCA,0,true);
         setRequired(AVAILCAS,0,true);
+        setRequired(STARTTIME,0,false);
+        setRequired(ENDTIME,0,false);
         setValue(DEFAULTCERTPROFILE,0,"1");
         setValue(AVAILCERTPROFILES,0,"1");
         setValue(DEFKEYSTORE,0, "" + SecConst.TOKEN_SOFT_BROWSERGEN);
@@ -235,7 +250,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         setValue(AVAILCAS,0, Integer.toString(SecConst.ALLCAS));
         // Do not use hard token issuers by default.
         setUse(AVAILTOKENISSUER, 0, false);
-
+        setUse(STARTTIME,0,false);
+        setUse(ENDTIME,0,false);
       }else{
          // initialize profile data
          ArrayList numberoffields = new ArrayList(dataConstants.size());
@@ -260,6 +276,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
          addField(AVAILTOKENISSUER);
          addField(AVAILCAS);
          addField(DEFAULTCA);         
+         addField(STARTTIME);         
+         addField(ENDTIME);         
          
          setRequired(USERNAME,0,true);
          setRequired(PASSWORD,0,true);
@@ -270,6 +288,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
          setRequired(AVAILKEYSTORE,0,true);
          setRequired(DEFAULTCA,0,true);
          setRequired(AVAILCAS,0,true);
+         setRequired(STARTTIME,0,false);
+         setRequired(ENDTIME,0,false);
          
          setValue(DEFAULTCERTPROFILE,0,"1");
          setValue(AVAILCERTPROFILES,0,"1;2;3");
@@ -278,7 +298,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 
          // Do not use hard token issuers by default.
          setUse(AVAILTOKENISSUER, 0, false);
-
+         setUse(STARTTIME,0,false);
+         setUse(ENDTIME,0,false);
       }
     }
 
@@ -711,7 +732,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     
     public void doesUserFullfillEndEntityProfile(String username, String password, String dn, String subjectaltname, String subjectdirattr, String email,  int certificateprofileid,
                                                  boolean clearpwd, boolean administrator, boolean keyrecoverable, boolean sendnotification,
-                                                 int tokentype, int hardwaretokenissuerid, int caid)
+                                                 int tokentype, int hardwaretokenissuerid, int caid, ExtendedInformation ei)
        throws UserDoesntFullfillEndEntityProfile{
 
      if(useAutoGeneratedPasswd()){
@@ -739,13 +760,15 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
            throw new UserDoesntFullfillEndEntityProfile("Clearpassword (used in batch proccessing) cannot be true.");
       }
 
-      doesUserFullfillEndEntityProfileWithoutPassword(username, dn, subjectaltname, subjectdirattr, email,  certificateprofileid, administrator, keyrecoverable, sendnotification, tokentype, hardwaretokenissuerid, caid);
+      doesUserFullfillEndEntityProfileWithoutPassword(username, dn, subjectaltname, subjectdirattr, email,
+    		  certificateprofileid, administrator, keyrecoverable, sendnotification, tokentype, hardwaretokenissuerid, caid, ei);
 
     }
 
-    public void doesUserFullfillEndEntityProfileWithoutPassword(String username,  String dn, String subjectaltname, String subjectdirattr, String email,  int certificateprofileid,
-                                                                boolean administrator, boolean keyrecoverable, boolean sendnotification,
-                                                                int tokentype, int hardwaretokenissuerid, int caid) throws UserDoesntFullfillEndEntityProfile{
+    public void doesUserFullfillEndEntityProfileWithoutPassword(String username,  String dn, String subjectaltname, String subjectdirattr,
+    		String email,  int certificateprofileid, boolean administrator, boolean keyrecoverable, boolean sendnotification,
+    		int tokentype, int hardwaretokenissuerid, int caid, ExtendedInformation ei)
+			throws UserDoesntFullfillEndEntityProfile {
       DNFieldExtractor subjectdnfields = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
       if (subjectdnfields.isIllegal()) {
           throw new UserDoesntFullfillEndEntityProfile("Subject DN is illegal.");
@@ -951,8 +974,63 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
       }
       
       if(!found)
-          throw new UserDoesntFullfillEndEntityProfile("Couldn't find CA ("+caid+") among End Entity Profiles Available CAs.");      
-    }
+          throw new UserDoesntFullfillEndEntityProfile("Couldn't find CA ("+caid+") among End Entity Profiles Available CAs.");
+      
+      // Check if time constraints are valid
+      String startTime = null;
+      String endTime = null;
+      if ( ei != null ) {
+    	  startTime = ei.getCustomData(EndEntityProfile.STARTTIME);
+    	  endTime = ei.getCustomData(EndEntityProfile.ENDTIME);
+      }
+	  Date now = new Date();
+	  Date startTimeDate = null;
+      if( getUse(STARTTIME, 0) && startTime != null && !startTime.equals("") ) {
+    	  if ( startTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
+    		  String[] startTimeArray = startTime.split(":");
+    		  if ( Long.parseLong(startTimeArray[0]) < 0 || Long.parseLong(startTimeArray[1]) < 0 || Long.parseLong(startTimeArray[2]) < 0 ) {
+    			  throw new UserDoesntFullfillEndEntityProfile("Cannot use negtive relative time.");
+    		  }
+    		  
+    		  long relative = (Long.parseLong(startTimeArray[0])*24*60 + Long.parseLong(startTimeArray[1])*60 +
+    				  Long.parseLong(startTimeArray[2])) * 60 * 1000;
+    		  startTimeDate = new Date(now.getTime() + relative);
+    	  } else {
+    		  try {
+    			  startTimeDate = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).parse(startTime);
+    		  } catch (ParseException e) {
+    		  }
+    	  }
+      }
+	  if ( getUse(STARTTIME, 0) && startTimeDate == null ) {
+    	  throw new UserDoesntFullfillEndEntityProfile("Invalid start time format.");
+	  }
+	  Date endTimeDate = null;
+      if( getUse(ENDTIME, 0) && endTime != null && !endTime.equals("") ) {
+    	  if ( endTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
+    		  String[] endTimeArray = endTime.split(":");
+    		  if ( Long.parseLong(endTimeArray[0]) < 0 || Long.parseLong(endTimeArray[1]) < 0 || Long.parseLong(endTimeArray[2]) < 0 ) {
+    			  throw new UserDoesntFullfillEndEntityProfile("Cannot use negtive relative time.");
+    		  }
+    		  long relative = (Long.parseLong(endTimeArray[0])*24*60 + Long.parseLong(endTimeArray[1])*60 +
+    				  Long.parseLong(endTimeArray[2])) * 60 * 1000;
+    		  endTimeDate = new Date(startTimeDate.getTime() + relative);
+    	  } else {
+    		  try {
+    			  endTimeDate = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).parse(endTime);
+    		  } catch (ParseException e) {
+    		  }
+    	  }
+      }
+	  if ( getUse(ENDTIME, 0) && endTimeDate == null ) {
+    	  throw new UserDoesntFullfillEndEntityProfile("Invalid end time format.");
+	  }
+	  if ( getUse(STARTTIME, 0) && getUse(ENDTIME, 0) && !startTimeDate.before(endTimeDate) ) {
+		  throw new UserDoesntFullfillEndEntityProfile("Dates must be in right order. "+startTime+" "+endTime+" "+
+				  DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(startTimeDate) + " "+
+				  DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(endTimeDate));
+	  }
+    } // doesUserFullfillEndEntityProfile
     
     public void doesPasswordFulfillEndEntityProfile(String password, boolean clearpwd)
       throws UserDoesntFullfillEndEntityProfile{
@@ -1064,7 +1142,24 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
                 	setUse(getParameter(i),0,false);
                 	setModifyable(getParameter(i),0,true);
                 }  
-
+            }
+            // Support for Start Time and End Time field in profile version 7
+            if (getVersion() < 7) {
+                ArrayList numberoffields = (ArrayList) data.get(NUMBERARRAY);                
+                for(int i =numberoffields.size(); i < dataConstants.size(); i++){
+                	numberoffields.add(new Integer(0));
+                }               
+                data.put(NUMBERARRAY,numberoffields);
+                addField(STARTTIME);
+                setValue(STARTTIME, 0, "");
+                setRequired(STARTTIME, 0, false);
+                setUse(STARTTIME, 0, false);
+                setModifyable(STARTTIME, 0, true);            	
+                addField(ENDTIME);
+                setValue(ENDTIME, 0, "");
+                setRequired(ENDTIME, 0, false);
+                setUse(ENDTIME, 0, false);
+                setModifyable(ENDTIME, 0, true);            	
             }
             data.put(VERSION, new Float(LATEST_VERSION));
         }
@@ -1101,12 +1196,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 		return ret;
 	}
 
-
     //
     // Private Methods
     //
 
-    
     /**
      * Used for both email and upn fields
      * 

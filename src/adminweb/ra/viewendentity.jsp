@@ -2,7 +2,8 @@
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.core.model.ra.raadmin.GlobalConfiguration, 
                  org.ejbca.core.model.SecConst, org.ejbca.core.model.ra.raadmin.EndEntityProfile,
-                 org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper, org.ejbca.util.dn.DnComponents" %>
+                 org.ejbca.ui.web.admin.rainterface.ViewEndEntityHelper, org.ejbca.util.dn.DnComponents,
+                 org.ejbca.core.model.ra.ExtendedInformation, java.text.DateFormat, java.util.Locale" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -251,11 +252,47 @@
       </td>
     </tr>
       <% } %>
+	<%
+		String startTime = null;
+		String endTime = null;
+		if ( viewendentityhelper.profile.getUse(EndEntityProfile.STARTTIME, 0) || viewendentityhelper.profile.getUse(EndEntityProfile.ENDTIME, 0) ) {
+			ExtendedInformation ei = viewendentityhelper.userdata.getExtendedInformation();
+			if ( ei != null ) {
+				startTime = ei.getCustomData(EndEntityProfile.STARTTIME);
+				endTime = ei.getCustomData(EndEntityProfile.ENDTIME);
+			} 
+		} if ( startTime != null || endTime != null ) { %>
+			<tr id="Row<%=(viewendentityhelper.row++)%2%>"><td>&nbsp;</td><td>&nbsp;</td></tr>
+	<%	} if ( startTime != null ) { %>
+    <tr id="Row<%=(viewendentityhelper.row++)%2%>">
+		<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("TIMEOFSTART") %></td>
+		<td>
+		<%	if ( !startTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) { %>
+				<%= ejbcawebbean.printDateTime(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US
+				).parse(startTime)) %>
+		<%	} else { %>
+				<%= startTime %>
+		<%	} %>
+		</td>
+    </tr> 
+	<%	} if ( endTime != null ) { %>
+    <tr id="Row<%=(viewendentityhelper.row++)%2%>">
+		<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("TIMEOFSTART") %></td>
+		<td>
+		<%	if ( !endTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) { %>
+				<%= ejbcawebbean.printDateTime(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US
+				).parse(endTime)) %>
+		<%	} else { %>
+				<%= endTime %>
+		<%	} %>
+		</td>
+    </tr> 
+	<%	} %>
     <tr id="Row<%=(viewendentityhelper.row++)%2%>">
       <td>&nbsp;</td>
       <td>&nbsp;</td>
     </tr> 
-    <tr id="Row0">
+    <tr id="Row<%=(viewendentityhelper.row++)%2%>">
       <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CREATED") %></td>
       <td>
          <%= ejbcawebbean.printDateTime(viewendentityhelper.userdata.getTimeCreated()) %>

@@ -144,9 +144,8 @@ function checkallfields(){
       document.editprofile.<%=CHECKBOX_REUSECERTIFICATE%>.disabled = false;
       <% } %>
       document.editprofile.<%= CHECKBOX_REQUIRED_SENDNOTIFICATION %>.disabled = false;
-      document.editprofile.<%= CHECKBOX_SENDNOTIFICATION %>.disabled = false;      
+      document.editprofile.<%= CHECKBOX_SENDNOTIFICATION %>.disabled = false;
     }
-
 
      return illegalfields == 0;  
 } 
@@ -623,7 +622,82 @@ function checkuseemailfield(){
       </td> 
     </tr>
     
-    
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="5%" valign="top">
+         &nbsp;
+      </td>
+      <td width="25%"  align="right"> 
+		<%= ejbcawebbean.getText("TIMEOFSTART") %> <br />
+		(<%= ejbcawebbean.getText("EXAMPLE").toLowerCase() %> <%= DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT,
+		ejbcawebbean.getLocale()).format(new Date()) %> <%= ejbcawebbean.getText("OR").toLowerCase() %> <%= ejbcawebbean.getText("DAYS").toLowerCase()
+		%>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)
+      </td>
+      <td width="70%"> 
+        <%	used = profiledata.getUse(EndEntityProfile.STARTTIME, 0); %>
+		<input type="text" name="<%=TEXTFIELD_STARTTIME %>" size="40" maxlength="40" 
+		value="<%= profiledata.getValue(EndEntityProfile.STARTTIME, 0) %>"
+		<%	if ( !used ) {
+			out.write(" disabled ");
+			} %>
+		/><br />
+		<%= ejbcawebbean.getText("USE") %>
+		<input type="checkbox" name="<%=CHECKBOX_USE_STARTTIME %>" value="<%=CHECKBOX_VALUE %>"
+			onClick="checkusetextfield('<%=CHECKBOX_USE_STARTTIME %>', '<%=TEXTFIELD_STARTTIME %>',
+			'<%=CHECKBOX_MODIFYABLE_STARTTIME %>', '<%= CHECKBOX_REQUIRED_STARTTIME %>')"
+			<%	if ( used ) {
+					out.write(" CHECKED ");
+				} %>
+			/>
+		&nbsp;&nbsp;
+        <%= ejbcawebbean.getText("MODIFYABLE") %>
+        <input type="checkbox" name="<%= CHECKBOX_MODIFYABLE_STARTTIME  %>" value="<%=CHECKBOX_VALUE %>"
+		<%	if ( profiledata.isModifyable(EndEntityProfile.STARTTIME, 0) ) {
+				out.write(" CHECKED ");
+			} %>
+		<%	if ( !used ) {
+			out.write(" disabled ");
+			} %>
+        />
+      </td> 
+    </tr>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="5%" valign="top">
+         &nbsp;
+      </td>
+      <td width="25%"  align="right"> 
+		<%= ejbcawebbean.getText("TIMEOFEND") %> <br />
+		(<%= ejbcawebbean.getText("EXAMPLE").toLowerCase() %> <%= DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT,
+		ejbcawebbean.getLocale()).format(new Date()) %> <%= ejbcawebbean.getText("OR").toLowerCase() %> <%= ejbcawebbean.getText("DAYS").toLowerCase()
+		%>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)
+      </td>
+      <td width="70%"> 
+        <%	used = profiledata.getUse(EndEntityProfile.ENDTIME, 0); %>
+		<input type="text" name="<%=TEXTFIELD_ENDTIME%>" size="40" maxlength="40"
+		value="<%= profiledata.getValue(EndEntityProfile.ENDTIME, 0) %>"
+		<%	if ( !used ) {
+			out.write(" disabled ");
+			} %>
+		/><br />
+		<%= ejbcawebbean.getText("USE") %>
+		<input type="checkbox" name="<%=CHECKBOX_USE_ENDTIME %>" value="<%=CHECKBOX_VALUE %>" 
+			onClick="checkusetextfield('<%=CHECKBOX_USE_ENDTIME %>', '<%=TEXTFIELD_ENDTIME %>',
+			'<%=CHECKBOX_MODIFYABLE_ENDTIME %>', '<%= CHECKBOX_REQUIRED_ENDTIME %>')"
+			<%	if ( used ) {
+				out.write(" CHECKED ");
+				} %>
+			/>
+		&nbsp;&nbsp;
+        <%= ejbcawebbean.getText("MODIFYABLE") %>
+        <input type="checkbox" name="<%=CHECKBOX_MODIFYABLE_ENDTIME  %>" value="<%=CHECKBOX_VALUE %>"
+		<%	if ( profiledata.isModifyable(EndEntityProfile.ENDTIME, 0) ) {
+				out.write(" CHECKED ");
+			} %>
+		<%	if ( !used ) {
+			out.write(" disabled ");
+			} %>
+        />
+      </td> 
+    </tr>
     
     <tr  id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">

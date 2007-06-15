@@ -4,7 +4,7 @@
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.UserDataConstants,
                  javax.ejb.CreateException, java.rmi.RemoteException, org.ejbca.core.model.authorization.AuthorizationDeniedException, org.ejbca.util.dn.DNFieldExtractor, org.ejbca.core.model.ra.UserDataVO,
                  org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer, org.ejbca.core.model.hardtoken.HardTokenIssuerData, 
-                 org.ejbca.core.model.SecConst, org.ejbca.util.StringTools, org.ejbca.util.dn.DnComponents" %>
+                 org.ejbca.core.model.SecConst, org.ejbca.util.StringTools, org.ejbca.util.dn.DnComponents, java.text.DateFormat, org.ejbca.core.model.ra.ExtendedInformation" %>
 <html> 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -28,6 +28,8 @@
   static final String TEXTFIELD_EMAIL             = "textfieldemail";
   static final String TEXTFIELD_EMAILDOMAIN       = "textfieldemaildomain";
   static final String TEXTFIELD_UPNNAME           = "textfieldupnnamne";
+  static final String TEXTFIELD_STARTTIME         = "textfieldstarttime";
+  static final String TEXTFIELD_ENDTIME           = "textfieldendtime";
 
   static final String SELECT_ENDENTITYPROFILE     = "selectendentityprofile";
   static final String SELECT_CERTIFICATEPROFILE   = "selectcertificateprofile";
@@ -63,6 +65,8 @@
   static final String CHECKBOX_REQUIRED_EMAIL             = "checkboxrequiredemail";
   static final String CHECKBOX_REQUIRED_ADMINISTRATOR     = "checkboxrequiredadministrator";
   static final String CHECKBOX_REQUIRED_KEYRECOVERABLE    = "checkboxrequiredkeyrecoverable";
+  static final String CHECKBOX_REQUIRED_STARTTIME         = "checkboxrequiredstarttime";
+  static final String CHECKBOX_REQUIRED_ENDTIME           = "checkboxrequiredendtime";
 
   static final String CHECKBOX_VALUE             = "true";
 
@@ -350,6 +354,43 @@
                  hardtokenissuer = Integer.parseInt(value);  
                }
                newuser.setHardTokenIssuerId(hardtokenissuer);   
+               
+			value = request.getParameter(TEXTFIELD_STARTTIME);
+			if ( value != null ) {
+				String storeValue = value;
+				value = value.trim();
+				if ( value.equals("") ) {
+					value = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale()).format(new Date());
+					storeValue = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(new Date());
+				} else if ( !value.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
+					storeValue = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(
+						DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale()).parse(value));
+        		}
+				ExtendedInformation ei = newuser.getExtendedInformation();
+				if ( ei == null ) {
+					ei = new ExtendedInformation();
+				}
+				ei.setCustomData(EndEntityProfile.STARTTIME, storeValue);
+				newuser.setExtendedInformation(ei);
+			}
+			value = request.getParameter(TEXTFIELD_ENDTIME);
+			if ( value != null ) {
+				String storeValue = value;
+				value = value.trim();
+				if ( value.equals("") ) {
+					value = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale()).format(new Date(Long.MAX_VALUE));
+					storeValue = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(new Date(Long.MAX_VALUE));
+				} else if ( !value.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
+					storeValue = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(
+						DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale()).parse(value));
+        		}
+				ExtendedInformation ei = newuser.getExtendedInformation();
+				if ( ei == null ) {
+					ei = new ExtendedInformation();
+				}
+				ei.setCustomData(EndEntityProfile.ENDTIME, storeValue);
+				newuser.setExtendedInformation(ei);
+			}
   
               if(request.getParameter(SELECT_CHANGE_STATUS)!=null){
                 int newstatus = Integer.parseInt(request.getParameter(SELECT_CHANGE_STATUS));
@@ -1115,9 +1156,83 @@ function checkUseInBatch(){
         </td>
 	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_SUBJECTDIRATTR + i %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])) out.write(" CHECKED "); %>></td>
       </tr>
-     <%  } 
-       } %> 
-        
+     <%  } %>
+	<%	} if( profile.getUse(EndEntityProfile.STARTTIME, 0) || profile.getUse(EndEntityProfile.ENDTIME, 0) ) { %>
+		<tr id="Row<%=(row++)%2%>"><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+	<%	} if( profile.getUse(EndEntityProfile.STARTTIME, 0) ) { %>
+		<tr  id="Row<%=(row++)%2%>"> 
+			<td align="right"> 
+				<%= ejbcawebbean.getText("TIMEOFSTART") %> <br />
+				(<%= ejbcawebbean.getText("EXAMPLE").toLowerCase() %> <%= DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT,
+				ejbcawebbean.getLocale()).format(new Date()) %> <%= ejbcawebbean.getText("OR").toLowerCase() %> <%= ejbcawebbean.getText("DAYS").toLowerCase()
+				%>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)
+			</td><td> 
+				<input type="text" name="<%= TEXTFIELD_STARTTIME %>" size="40" maxlength="40" tabindex="<%=tabindex++%>"
+					<%	ExtendedInformation ei = userdata.getExtendedInformation();
+						String startTime = null;
+						if ( ei != null ) {
+							startTime = ei.getCustomData(EndEntityProfile.STARTTIME);
+							if ( !startTime.trim().equals("") && !startTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
+								startTime = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale()
+									).format(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US
+									).parse(startTime));
+							}
+						}
+					if ( startTime == null || startTime.equals("") ) {
+						startTime = DateFormat.getDateTimeInstance(java.text.DateFormat.SHORT, java.text.DateFormat.SHORT, ejbcawebbean.getLocale()
+							).format(new Date());
+					} %>
+					value="<%= startTime %>"
+					<%	if ( !profile.isModifyable(EndEntityProfile.STARTTIME, 0) ) { %>
+					readonly="true"
+					<%	} %>
+					/>
+			</td>
+			<td>
+				<input type="checkbox" name="<%= CHECKBOX_REQUIRED_STARTTIME %>" value="<%= CHECKBOX_VALUE %>"  disabled="true"
+				<%	if ( profile.isRequired(EndEntityProfile.STARTTIME, 0) ) {
+						out.write(" CHECKED ");
+					} %>
+				/>
+			</td>
+		</tr>
+	<%	} if( profile.getUse(EndEntityProfile.ENDTIME, 0) ) { %>
+		<tr  id="Row<%=(row++)%2%>"> 
+			<td align="right"> 
+				<%= ejbcawebbean.getText("TIMEOFEND") %> <br />
+				(<%= ejbcawebbean.getText("EXAMPLE").toLowerCase() %> <%= DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT,
+				ejbcawebbean.getLocale()).format(new Date()) %> <%= ejbcawebbean.getText("OR").toLowerCase() %> <%= ejbcawebbean.getText("DAYS").toLowerCase()
+				%>:<%= ejbcawebbean.getText("HOURS").toLowerCase() %>:<%= ejbcawebbean.getText("MINUTES").toLowerCase() %>)
+			</td><td> 
+				<input type="text" name="<%= TEXTFIELD_ENDTIME %>" size="40" maxlength="40" tabindex="<%=tabindex++%>"
+					<%	ExtendedInformation ei = userdata.getExtendedInformation();
+						String endTime = null;
+						if ( ei != null ) {
+							endTime = ei.getCustomData(EndEntityProfile.ENDTIME);
+						}
+						if ( endTime == null ) {
+							endTime = "";
+						} 
+						if ( !endTime.trim().equals("") && !endTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
+							endTime = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, ejbcawebbean.getLocale()).format(
+								DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).parse(endTime));
+		        		}
+						%>
+					value="<%= endTime %>"
+					<%	if ( !profile.isModifyable(EndEntityProfile.ENDTIME, 0) ) { %>
+					readonly="true"
+					<%	} %>
+					/>
+			</td>
+			<td>
+				<input type="checkbox" name="<%= CHECKBOX_REQUIRED_ENDTIME %>" value="<%= CHECKBOX_VALUE %>"  disabled="true"
+				<%	if ( profile.isRequired(EndEntityProfile.ENDTIME, 0) ) {
+						out.write(" CHECKED ");
+					} %>
+				/>
+			</td>
+		</tr>
+	<% } %> 
      <tr id="Row<%=(row++)%2%>">
 	 <td>&nbsp;</td>
 	 <td>&nbsp;</td>

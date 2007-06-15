@@ -364,12 +364,12 @@ function confirmrepublish(){
        </tr>
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("VALIDFROM") %></td>
-	 <td><%= ejbcawebbean.printDate(certificatedata.getValidFrom())  %> 
+	 <td><%= ejbcawebbean.printDateTime(certificatedata.getValidFrom())  %> 
          </td>
        </tr>
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("VALIDTO") %></td>
-	 <td><%= ejbcawebbean.printDate(certificatedata.getValidTo()) %>
+	 <td><%= ejbcawebbean.printDateTime(certificatedata.getValidTo()) %>
          </td>
        </tr>
        <tr id="Row<%=(row++)%2%>">

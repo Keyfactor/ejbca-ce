@@ -13,12 +13,16 @@
  
 package org.ejbca.core.model.ra;
 
+import java.io.IOException;
+import java.io.ObjectStreamException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.UpgradeableDataHashMap;
+import org.ejbca.util.StringTools;
 
 
 /**
@@ -26,7 +30,7 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
  * like a image, in an effort to minimize the need for database alterations
  *
  * @author  Philip Vendil
- * @version $Id: ExtendedInformation.java,v 1.11 2007-02-11 18:43:55 herrvendil Exp $
+ * @version $Id: ExtendedInformation.java,v 1.12 2007-06-15 13:24:25 jeklund Exp $
  */
 public class ExtendedInformation extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(ExtendedInformation.class);
@@ -150,6 +154,11 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
       return clone;
     }
 
+    /** Function required by XMLEncoder to do a proper serialization. */
+    public void setData( Object hmData ) { loadData(hmData); }
+    /** Function required by XMLEncoder to do a proper serialization. */
+    public Object getData() {return saveData();}
+    
     /** Implemtation of UpgradableDataHashMap function getLatestVersion */
     public float getLatestVersion(){
        return LATEST_VERSION;

@@ -5,7 +5,8 @@
                 org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer,
                 org.ejbca.core.model.hardtoken.HardTokenIssuerData, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.util.dn.DnComponents,
                 java.io.InputStream, java.io.InputStreamReader,
-                java.io.IOException, java.io.BufferedReader, org.apache.commons.fileupload.FileUploadException, org.apache.commons.fileupload.FileItem, org.apache.commons.fileupload.FileUploadBase, org.apache.commons.fileupload.DiskFileUpload"%>
+                java.io.IOException, java.io.BufferedReader, org.apache.commons.fileupload.FileUploadException, org.apache.commons.fileupload.FileItem, org.apache.commons.fileupload.FileUploadBase, org.apache.commons.fileupload.DiskFileUpload,
+                java.text.DateFormat"%>
 
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -46,6 +47,8 @@
   static final String TEXTFIELD_EMAIL                = "textfieldemail";
   static final String TEXTFIELD_NOTIFICATIONSENDER   = "textfieldnotificationsender";
   static final String TEXTFIELD_NOTIFICATIONSUBJECT  = "textfieldnotificationsubject";
+  static final String TEXTFIELD_STARTTIME            = "textfieldstarttime";
+  static final String TEXTFIELD_ENDTIME              = "textfieldendtime";
 
   static final String TEXTAREA_NOTIFICATIONMESSAGE  = "textareanotificationmessage";
 
@@ -56,6 +59,13 @@
   static final String CHECKBOX_REVERSEFIELDCHECKS         = "checkboxreversefieldchecks";
   static final String CHECKBOX_SENDNOTIFICATION           = "checkboxsendnotification";
   static final String CHECKBOX_PRINTING                   = "checkboxprinting";
+  static final String CHECKBOX_USE_STARTTIME              = "checkboxsusetarttime";
+  static final String CHECKBOX_REQUIRED_STARTTIME         = "checkboxrelativestarttime";
+  static final String CHECKBOX_MODIFYABLE_STARTTIME       = "checkboxmodifyablestarttime";
+  static final String CHECKBOX_USE_ENDTIME                = "checkboxuseendtime";
+  static final String CHECKBOX_REQUIRED_ENDTIME           = "checkboxrelativeendtime";
+  static final String CHECKBOX_MODIFYABLE_ENDTIME         = "checkboxmodifyableendtime";
+  
   
   static final String CHECKBOX_REQUIRED_USERNAME          = "checkboxrequiredusername";
   static final String CHECKBOX_REQUIRED_PASSWORD          = "checkboxrequiredpassword";
@@ -513,7 +523,46 @@
             	 profiledata.setPrinterSVGFileName("");            	
              }
              
-
+				value = request.getParameter(CHECKBOX_USE_STARTTIME);
+				if( value != null && value.equalsIgnoreCase(CHECKBOX_VALUE) ) {
+					value = request.getParameter(TEXTFIELD_STARTTIME);
+					if( value != null ) {
+						profiledata.setValue(EndEntityProfile.STARTTIME, 0, value);
+					} else {
+						profiledata.setValue(EndEntityProfile.STARTTIME, 0, "");
+					}
+					profiledata.setUse(EndEntityProfile.STARTTIME, 0, true);
+					//profiledata.setRequired(EndEntityProfile.STARTTIME, 0, true);
+					value = request.getParameter(CHECKBOX_MODIFYABLE_STARTTIME);
+					if ( value != null && value.equalsIgnoreCase(CHECKBOX_VALUE) ) {
+						profiledata.setModifyable(EndEntityProfile.STARTTIME, 0, true);
+					} else {
+						profiledata.setModifyable(EndEntityProfile.STARTTIME, 0, false);
+					}
+				} else {
+					profiledata.setValue(EndEntityProfile.STARTTIME, 0, "");
+					profiledata.setUse(EndEntityProfile.STARTTIME, 0, false);
+				}
+				value = request.getParameter(CHECKBOX_USE_ENDTIME);
+				if( value != null && value.equalsIgnoreCase(CHECKBOX_VALUE) ) {
+					value = request.getParameter(TEXTFIELD_ENDTIME);
+					if( value != null ) {
+						profiledata.setValue(EndEntityProfile.ENDTIME, 0, value);
+					} else {
+						profiledata.setValue(EndEntityProfile.ENDTIME, 0, "");
+					}
+					profiledata.setUse(EndEntityProfile.ENDTIME, 0, true);
+					//profiledata.setRequired(EndEntityProfile.ENDTIME, 0, true);
+					value = request.getParameter(CHECKBOX_MODIFYABLE_ENDTIME);
+					if ( value != null && value.equalsIgnoreCase(CHECKBOX_VALUE) ) {
+						profiledata.setModifyable(EndEntityProfile.ENDTIME, 0, true);
+					} else {
+						profiledata.setModifyable(EndEntityProfile.ENDTIME, 0, false);
+					}
+				} else {
+					profiledata.setValue(EndEntityProfile.ENDTIME, 0, "");
+					profiledata.setUse(EndEntityProfile.ENDTIME, 0, false);
+				}
           
              if(request.getParameter(BUTTON_DELETESUBJECTDN) != null){  
                numberofsubjectdnfields = profiledata.getSubjectDNFieldOrderLength();

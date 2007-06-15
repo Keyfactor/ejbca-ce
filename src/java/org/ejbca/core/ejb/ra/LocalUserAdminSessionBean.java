@@ -94,7 +94,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.40 2007-03-08 09:55:39 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.41 2007-06-15 13:24:25 jeklund Exp $
  * 
  * @ejb.bean
  *   display-name="UserAdminSB"
@@ -450,7 +450,7 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
             try {
                 profile.doesUserFullfillEndEntityProfile(userdata.getUsername(), userdata.getPassword(), dn, userdata.getSubjectAltName(), userdata.getExtendedinformation().getSubjectDirectoryAttributes(), userdata.getEmail(), userdata.getCertificateProfileId(), clearpwd,
                         (type & SecConst.USER_ADMINISTRATOR) != 0, (type & SecConst.USER_KEYRECOVERABLE) != 0, (type & SecConst.USER_SENDNOTIFICATION) != 0,
-                        userdata.getTokenType(), userdata.getHardTokenIssuerId(), userdata.getCAId());
+                        userdata.getTokenType(), userdata.getHardTokenIssuerId(), userdata.getCAId(), userdata.getExtendedinformation());
             } catch (UserDoesntFullfillEndEntityProfile udfp) {
                 String msg = intres.getLocalizedMessage("ra.errorfullfillprofile", profileName, dn, udfp.getMessage());            	
                 logsession.log(admin, userdata.getCAId(), LogEntry.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogEntry.EVENT_ERROR_ADDEDENDENTITY, msg);
@@ -620,7 +620,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             try {
                 profile.doesUserFullfillEndEntityProfileWithoutPassword(userdata.getUsername(), dn, userdata.getSubjectAltName(), userdata.getExtendedinformation().getSubjectDirectoryAttributes(), userdata.getEmail(), userdata.getCertificateProfileId(),
                         (type & SecConst.USER_ADMINISTRATOR) != 0, (type & SecConst.USER_KEYRECOVERABLE) != 0, (type & SecConst.USER_SENDNOTIFICATION) != 0,
-                        userdata.getTokenType(), userdata.getHardTokenIssuerId(), userdata.getCAId());
+                        userdata.getTokenType(), userdata.getHardTokenIssuerId(), userdata.getCAId(), userdata.getExtendedinformation());
             } catch (UserDoesntFullfillEndEntityProfile udfp) {
                 String msg = intres.getLocalizedMessage("ra.errorfullfillprofile", new Integer(userdata.getEndEntityProfileId()), dn, udfp.getMessage());            	
                 logsession.log(admin, userdata.getCAId(), LogEntry.MODULE_RA, new java.util.Date(), userdata.getUsername(), null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY, msg);

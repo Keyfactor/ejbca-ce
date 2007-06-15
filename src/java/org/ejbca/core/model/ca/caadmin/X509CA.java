@@ -33,6 +33,8 @@ import java.security.cert.Certificate;
 import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -40,6 +42,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -116,7 +119,10 @@ import org.ejbca.core.model.ca.certextensions.CertificateExtension;
 import org.ejbca.core.model.ca.certextensions.CertificateExtensionFactory;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.UserDataVO;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.cert.PrintableStringEntryConverter;
 import org.ejbca.util.cert.SubjectDirAttrExtension;
@@ -128,7 +134,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.59 2007-05-25 13:14:04 anatom Exp $
+ * @version $Id: X509CA.java,v 1.60 2007-06-15 13:24:24 jeklund Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -339,10 +345,51 @@ public class X509CA extends CA implements Serializable {
     	    	
         final String sigAlg = getCAToken().getCATokenInfo().getSignatureAlgorithm();
         Date firstDate = new Date();
-        // Set back startdate ten minutes to avoid some problems with wrongly set clocks.
+        // Set back startdate ten minutes to avoid some problems with unsynchronized clocks.
         firstDate.setTime(firstDate.getTime() - 10 * 60 * 1000);
         Date now = new Date();
-        Date lastDate = now;
+        Date lastDate = null;
+        ExtendedInformation ei = subject.getExtendedinformation();
+        if ( ei != null ) {
+            String eiStartTime = ei.getCustomData(EndEntityProfile.STARTTIME);
+	        String eiEndTime = ei.getCustomData(EndEntityProfile.ENDTIME);
+        	if ( eiStartTime != null ) {
+    			Date startTimeDate = null; 
+        		if ( eiStartTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
+        			String[] startTimeArray = eiStartTime.split(":");
+        			long relative = (Long.parseLong(startTimeArray[0])*24*60 + Long.parseLong(startTimeArray[1])*60 +
+        					Long.parseLong(startTimeArray[2])) * 60 * 1000;
+        			startTimeDate = new Date(now.getTime() + relative);
+        		} else {
+        			try {
+        				startTimeDate = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).parse(eiStartTime);
+        			} catch (ParseException e) {
+                		log.error("Ignoring invalid start time format ("+eiStartTime+").");
+        			}
+        		}
+    			if ( startTimeDate != null && !startTimeDate.before(now)) {
+                	firstDate = startTimeDate;
+    			}
+	        }
+	        if ( eiEndTime != null ) {
+    			Date endTimeDate = null; 
+        		if ( eiEndTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
+        			String[] endTimeArray = eiEndTime.split(":");
+        			long relative = (Long.parseLong(endTimeArray[0])*24*60 + Long.parseLong(endTimeArray[1])*60 +
+        					Long.parseLong(endTimeArray[2])) * 60 * 1000;
+        			endTimeDate = new Date(firstDate.getTime() + relative);
+        		} else {
+        			try {
+        				endTimeDate = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).parse(eiEndTime);
+        			} catch (ParseException e) {
+                		log.error("Ignoring invalid start time format ("+eiEndTime+").");
+        			}
+        		}
+    			if ( endTimeDate != null ) {
+                	lastDate = endTimeDate;
+    			}
+	        }
+        }
         if ( (notBefore != null) && (certProfile.getAllowValidityOverride()) ) {
         	if (notBefore.before(now)) {
         		// We do not allow a certificate to be valid before the current date, i.e. not backdated start dates
@@ -356,13 +403,15 @@ public class X509CA extends CA implements Serializable {
         	}
         }
         long val = certProfile.getValidity();        
-        Date certProfileLastDate = new Date(lastDate.getTime() + ( val * 24 * 60 * 60 * 1000));
+        Date certProfileLastDate = new Date(firstDate.getTime() + ( val * 24 * 60 * 60 * 1000));
         if ( (notAfter == null) || (!certProfile.getAllowValidityOverride()) ) {
             // validity in days = validity*24*60*60*1000 milliseconds
         	if (log.isDebugEnabled()) {
         		log.debug("Using validity from profile: "+val);
         	}
-            lastDate = certProfileLastDate;        	
+        	if ( lastDate == null || lastDate.after(certProfileLastDate)) {
+                lastDate = certProfileLastDate;
+        	}
         } else {
         	// Only if not null and we allow validity override
         	// Check that notAfter from request is not longer than the validity time from the certificate profile, we don not allow that
