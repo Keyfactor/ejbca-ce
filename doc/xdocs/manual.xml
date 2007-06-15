@@ -2137,7 +2137,7 @@ nfast@donny:/home/lars/work$
 This will generate 3 cards of the card set named 'ejbca'. Any 2 of these cards will be needed when generating keys and starting ejbca. Different card sets could be used for different CAs.
 </p>
 <p>
-Open the file '/opt/nfast/kmdata/config/config' and set 'nonpriv_port=9000' and 'priv_port=9001'.
+Open the file '/opt/nfast/kmdata/config/config' and set 'nonpriv_port=9000' and 'priv_port=9001'. Optional: In the same config file you can set 'impath_port=0' to disable remote connections to the machine.
 </p>
 <p>
 Restart from scratch: 'sudo /etc/init.d/nfast restart'.
@@ -2274,6 +2274,73 @@ keyEncryptKey encryptRoot
 defaultKey defaultRoot
 testKey testRoot
 </source>
+<strong>Importing an existing CA or sub-CA to EJBCA.</strong>
+<p>
+Importing existing keys is not as safe as generating them in the HSM, since the original key or a copy of the key
+might still be around. The security world has to be initialized in the default FIPS 140-2 Level 2 for this to work.
+First backup and edit $JAVA_HOME/jre/lib/security/java.security and change
+</p><source>
+security.provider.1=sun.security.provider.Sun
+...
+</source><p>
+to
+</p><source>
+security.provider.1=com.ncipher.provider.km.nCipherKM
+security.provider.2=sun.security.provider.Sun
+...
+</source><p>
+Then create an empty a keystore with
+</p>
+<source>jboss@host$ $EJBCA_HOME/bin/nCipherHSM.sh createkeystore
+ ...
+ Next line will contain the indentity of the keystore:
+ f7e825134fe23f58b1575d8efb487babe7ebd1ed
+</source>
+<p>
+This hash should be written to a file that has to be exactly 40 bytes long:
+</p>
+<ul>
+<li>Linux: 'cat > temp.jks' and copypaste the string, press Ctrl-D and Ctrl-C.</li>
+<li>Windows: 'copy con: temp.jks' and copypaste the string, press Ctrl-Z and Enter.</li>
+</ul>
+<p>
+Import a RSA key protected by 1/X operator cardset 'OperatorCardset' without passphrase from file 'rsaprivatekey.pem' as 'importedKey':
+</p>
+<source>
+jboss@host$ $NFAST_HOME/bin/nfkminfo -k
+ AppName jcecsp Ident f7e825134fe23f58b1575d8efb487babe7ebd1ed
+ 
+jboss@host$ export CLASSPATH=$CLASSPATH:$JAVA_HOME/jre/lib/jce.jar:$NFAST_HOME/java/classes/nfjava.jar:$NFAST_HOME/java/classes/kmjava.jar:$NFAST_HOME/java/classes/kmcsp.jar
+jboss@host$ $NFAST_HOME/bin/generatekey --import -m 1 -c OperatorCardset jcecsp alias=importedKey pemreadfile=rsaprivatekey.pem type=RSA keystore=temp.jks
+ ...
+ ERROR: Could not write to temp.jks...
+jboss@host$ $NFAST_HOME/bin/nfkminfo -k
+ AppName jcecsp Ident f7e825134fe23f58b1575d8efb487babe7ebd1ed
+ AppName jcecsp Ident f7e825134fe23f58b1575d8efb487babe7ebd1ed-key-832c8a89fe813dc99ae61e094fe5d195ca3e405d
+</source>
+<p>
+Despite the error message the key is still imported.
+</p><p>
+Important: Restore $JAVA_HOME/jre/lib/security/java.security now or EJBCA will stop working!
+</p><p>
+Start JBoss with $EJBCA_HOME/bin/nCipherJboss.sh as described earlier. Create a new CA 'ImportedCA' in
+the Administration GUI. Choose CA Token Type 'NFastCAToken', enter the imported key's properties
+</p>
+<source>
+keyStore f7e825134fe23f58b1575d8efb487babe7ebd1ed
+defaultKey importedKey
+</source>
+<p>
+Also enter the algorithm, the DN and the CRL Expire Period.
+</p><p>
+If you are replicating an existing root CA choose Signed By 'Self Signed' and make sure everything is the
+same as in the original. Press 'Create' and activate the CA-token from Basic Functions
+to start using the CA.
+</p><p>
+When importing a sub-CA, choose Signed by 'External CA'. Edit other properties if you like and press 'Make certificate
+request'. Ignore the request and edit the same 'ImportedCA'. Press 'Receive Certificate Response' and upload the old
+sub-CA's certificate. Activate the CA-token from Basic Functions when needed.
+</p>
 <strong>Not using preload.</strong>
 <p>
 If a 1/N card set is used then preload don't have to be used (but it can be used). If preload is not used then jboss could be made to start automatically
