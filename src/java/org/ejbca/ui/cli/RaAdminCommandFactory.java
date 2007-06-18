@@ -16,7 +16,7 @@ package org.ejbca.ui.cli;
 /**
  * Factory for RA Admin Commands.
  *
- * @version $Id: RaAdminCommandFactory.java,v 1.3 2006-07-12 16:10:22 anatom Exp $
+ * @version $Id: RaAdminCommandFactory.java,v 1.4 2007-06-18 12:16:22 jbagnert Exp $
  */
 public class RaAdminCommandFactory {
     /**
@@ -49,6 +49,8 @@ public class RaAdminCommandFactory {
             return new RaSetUserStatusCommand(args);
         } else if (args[0].equals("finduser")) {
             return new RaFindUserCommand(args);
+        } else if (args[0].equals("getusercert")) {
+            return new RaGetUserCertCommand(args);
         } else if (args[0].equals("listnewusers")) {
             return new RaListNewUsersCommand(args);
         } else if (args[0].equals("listusers")) {
