@@ -259,7 +259,7 @@
           systemheaderprinted=true;
           }
         } %>
-     &nbsp;&nbsp;<A href="<%= REPORTS_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("VIEWREPORTS") %></A>
+     &nbsp;&nbsp;<A href="<%= REPORTS_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("REPORTS") %></A>
      <br>
 <% }catch(AuthorizationDeniedException e){}
     // If authorized to configure Ejbca then display related links.
