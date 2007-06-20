@@ -34,7 +34,7 @@ import org.ejbca.ui.web.RequestHelper;
  * Contains methods for such things as language, themes ext
  * 
  * @author Philip Vendil
- * $Id: EjbcaJSFHelper.java,v 1.4 2006-10-26 11:02:45 herrvendil Exp $
+ * $Id: EjbcaJSFHelper.java,v 1.5 2007-06-20 11:22:12 anatom Exp $
  */
 
 public class EjbcaJSFHelper  {
@@ -135,6 +135,9 @@ public class EjbcaJSFHelper  {
      public void authorizedToServicesPages() throws AuthorizationDeniedException{
 		getEjbcaWebBean().isAuthorizedNoLog(AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
      }
+     public void authorizedToReportPages() throws AuthorizationDeniedException{
+ 		getEjbcaWebBean().isAuthorizedNoLog(AvailableAccessRules.REGULAR_VIEWCERTIFICATE);
+      }
      
     public int getEntriesPerPage(){
         return getEjbcaWebBean().getEntriesPerPage();

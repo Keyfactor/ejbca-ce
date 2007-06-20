@@ -59,7 +59,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * The main bean for the web interface, it contains all basic functions.
  *
  * @author  Philip Vendil
- * @version $Id: EjbcaWebBean.java,v 1.12 2007-06-15 13:24:26 jeklund Exp $
+ * @version $Id: EjbcaWebBean.java,v 1.13 2007-06-20 11:22:12 anatom Exp $
  */
 public class EjbcaWebBean implements java.io.Serializable {
 
@@ -371,6 +371,7 @@ public class EjbcaWebBean implements java.io.Serializable {
     }
 
     public String getBaseUrl(){return globalconfiguration.getBaseUrl(requestServerName);}
+    public String getReportsPath(){return globalconfiguration.getReportsPath();}
 
     /* Returns the current admins preference */
     public AdminPreference getAdminPreference() throws Exception{
@@ -621,7 +622,9 @@ public class EjbcaWebBean implements java.io.Serializable {
     {
     	boolean returnValue = true;
     	try {
-			if ( Cipher.getMaxAllowedKeyLength("DES") == Integer.MAX_VALUE ) {
+    		int keylen = Cipher.getMaxAllowedKeyLength("DES");
+    		log.debug("MaxAllowedKeyLength for DES is: "+keylen);
+			if (  keylen == Integer.MAX_VALUE ) {
 				returnValue = false;
 			}
 		} catch (NoSuchAlgorithmException e) {

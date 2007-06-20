@@ -21,12 +21,12 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
 /**
  * This is a  class containing global configuration parameters.
  *
- * @version $Id: GlobalConfiguration.java,v 1.10 2007-04-13 06:16:13 herrvendil Exp $
+ * @version $Id: GlobalConfiguration.java,v 1.11 2007-06-20 11:22:12 anatom Exp $
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
 
     // Default Values
-    public static final float LATEST_VERSION = 1;
+    public static final float LATEST_VERSION = 2;
     
     public static final String EJBCA_VERSION = "@ejbca.version@";
 
@@ -118,6 +118,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
        data.put(IMAGES_PATH,"images");
        data.put(LANGUAGE_PATH,"languages");
        data.put(LOG_PATH,tempadminpath+"log");
+       data.put(REPORTS_PATH,tempadminpath+"reports");
        data.put(RA_PATH,tempadminpath+"ra");
        data.put(THEME_PATH,"themes");
        data.put(HARDTOKEN_PATH,tempadminpath+"hardtoken");
@@ -253,6 +254,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     public   String getImagesPath() {return (String) data.get(IMAGES_PATH);}
     public   String getLanguagePath() {return (String) data.get(LANGUAGE_PATH);}
     public   String getLogPath() {return (String) data.get(LOG_PATH);}
+    public   String getReportsPath() {return (String) data.get(REPORTS_PATH);}
     public   String getRaPath() {return (String) data.get(RA_PATH);}
     public   String getThemePath() {return (String) data.get(THEME_PATH);}
     public   String getHardTokenPath() {return (String) data.get(HARDTOKEN_PATH);}
@@ -379,6 +381,9 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     		if(data.get(HARDTOKEN_PATH) == null){
     			data.put(HARDTOKEN_PATH, ((String) data.get(ADMINPATH) + "hardtoken"));
     		}
+    		if(data.get(REPORTS_PATH) == null){
+    			data.put(REPORTS_PATH, ((String) data.get(ADMINPATH) + "reports"));
+    		}
     		
     		data.put(VERSION, new Float(LATEST_VERSION));    		
     	}
@@ -427,6 +432,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements java.
     private static final   String IMAGES_PATH         = "images_path";
     private static final   String LANGUAGE_PATH       = "language_path";
     private static final   String LOG_PATH            = "log_path";
+    private static final   String REPORTS_PATH        = "reports_path";
     private static final   String RA_PATH             = "ra_path";
     private static final   String THEME_PATH          = "theme_path";
     private static final   String HARDTOKEN_PATH      = "hardtoken_path";
