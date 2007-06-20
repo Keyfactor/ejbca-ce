@@ -237,48 +237,11 @@
 			</band>
 		</pageFooter>
 		<lastPageFooter>
-			<band height="267"  isSplitAllowed="true" >
-				<pie3DChart>
-					<chart evaluationTime="Report"  hyperlinkTarget="Self" >
-					<reportElement
-						x="190"
-						y="5"
-						width="402"
-						height="231"
-						key="element-1"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-						<chartLegend textColor="#000000" backgroundColor="#FFFFFF" >
-					</chartLegend>
-					</chart>
-					<pieDataset>
-						<dataset >
-						</dataset>
-						<keyExpression><![CDATA[($F{revocationDate}.intValue() != -1) ? $P{revoked} : $P{ok}]]></keyExpression>
-						<valueExpression><![CDATA[(($F{revocationDate}.intValue() != -1) ? $V{revoked_numberDN} : $V{not_revoked_numberDN})]]></valueExpression>
-				<sectionHyperlink >
-				</sectionHyperlink>
-					</pieDataset>
-					<pie3DPlot >
-						<plot />
-					</pie3DPlot>
-				</pie3DChart>
-				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
-					<reportElement
-						x="8"
-						y="39"
-						width="182"
-						height="64"
-						key="textField-15"/>
-					<box topBorder="None" topBorderColor="#000000" leftBorder="None" leftBorderColor="#000000" rightBorder="None" rightBorderColor="#000000" bottomBorder="None" bottomBorderColor="#000000"/>
-					<textElement>
-						<font/>
-					</textElement>
-				<textFieldExpression   class="java.lang.String"><![CDATA[$P{description}]]></textFieldExpression>
-				</textField>
+			<band height="24"  isSplitAllowed="true" >
 				<rectangle>
 					<reportElement
 						x="8"
-						y="245"
+						y="3"
 						width="584"
 						height="15"
 						backcolor="#00FFFF"
@@ -289,7 +252,7 @@
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="101"
-						y="245"
+						y="3"
 						width="78"
 						height="12"
 						key="textField-5"/>
@@ -302,7 +265,7 @@
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="275"
-						y="245"
+						y="3"
 						width="120"
 						height="12"
 						key="textField-6"/>
@@ -315,7 +278,7 @@
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="443"
-						y="245"
+						y="3"
 						width="148"
 						height="12"
 						key="textField-7"/>
@@ -328,7 +291,7 @@
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="18"
-						y="245"
+						y="3"
 						width="83"
 						height="12"
 						key="textField-9"/>
@@ -341,7 +304,7 @@
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="190"
-						y="245"
+						y="3"
 						width="78"
 						height="12"
 						key="textField-10"/>
@@ -354,7 +317,7 @@
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="405"
-						y="245"
+						y="3"
 						width="31"
 						height="14"
 						key="textField-11"/>

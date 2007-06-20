@@ -34,7 +34,7 @@ import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 /** Managed bean to be called from reports JSF pages
  * 
  * @author Original issuedCertificatesList method by MUNTEANU Olimpiu Andrei of Linagora
- * @version $Id: ReportsManagedBean.java,v 1.2 2007-06-20 11:54:02 anatom Exp $
+ * @version $Id: ReportsManagedBean.java,v 1.3 2007-06-20 12:33:12 anatom Exp $
  */
 public class ReportsManagedBean extends BaseManagedBean {
 	private static final Logger log = Logger.getLogger(ReportsManagedBean.class);
@@ -43,6 +43,10 @@ public class ReportsManagedBean extends BaseManagedBean {
 	}
 	
 	public String issuedCertificatesList() throws Exception {
+		return doReport("certificatelist.jrxml");
+	}
+	
+	public String doReport(String reportfile) throws Exception {
 	    // setting up some basic stuff
 		// This is not so pretty, I would much rather like not to pull web beans into here, 
 		// but you know...
@@ -84,7 +88,7 @@ public class ReportsManagedBean extends BaseManagedBean {
 		try {
 			String jrxmlPath = servletContext.getRealPath("/WEB-INF/reports/");
 		    // directories where the report files are 
-			String jrxmlfile = jrxmlPath+"/reports.jrxml";
+			String jrxmlfile = jrxmlPath+"/"+reportfile;
 			log.debug("Reading reports definition file: "+jrxmlfile);
 			//InputStream is = this.getClass().getClassLoader().getResourceAsStream("/WEB-INF/reports/"+jrxmlfile);
 			JasperReport jasperReport = JasperCompileManager.compileReport(jrxmlfile);
@@ -119,6 +123,6 @@ public class ReportsManagedBean extends BaseManagedBean {
 	}
 	
 	public String revokedCertificatesPie() throws Exception {
-		return issuedCertificatesList();
+		return doReport("revokedcertschart.jrxml");
 	}
 }
