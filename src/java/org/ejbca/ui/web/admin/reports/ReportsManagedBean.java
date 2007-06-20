@@ -1,6 +1,15 @@
-/**
- * 
- */
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.ui.web.admin.reports;
 
 import java.util.HashMap;
@@ -22,9 +31,10 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 
-/**
- * @author tomas
- * @version $Id: ReportsManagedBean.java,v 1.1 2007-06-20 11:22:11 anatom Exp $
+/** Managed bean to be called from reports JSF pages
+ * 
+ * @author Original issuedCertificatesList method by MUNTEANU Olimpiu Andrei of Linagora
+ * @version $Id: ReportsManagedBean.java,v 1.2 2007-06-20 11:54:02 anatom Exp $
  */
 public class ReportsManagedBean extends BaseManagedBean {
 	private static final Logger log = Logger.getLogger(ReportsManagedBean.class);

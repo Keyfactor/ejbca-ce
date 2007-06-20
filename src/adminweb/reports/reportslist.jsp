@@ -24,7 +24,7 @@
 <f:view>
 <body>
 
-<h1 align="center"><h:outputText value="#{web.text.VIEWREPORTS}"/></h1>
+<h1 align="center"><h:outputText value="#{web.text.REPORTS}"/></h1>
   <h4 align="center"><h:messages layout="table" errorClass="alert"/></h4>
   
   <h:form >
@@ -39,21 +39,21 @@
 			                rowClasses="jsfrow1,jsfrow2"
 			                >                     
 			  <f:facet name="header">
-			    <h:outputText value="Available reports"/>
+			    <h:outputText value="#{web.text.REPORTSAVAILABLE}"/>
 			    </f:facet>
-			  <h:outputText style="font-weight:bold" value="Report"/>
-			  <h:outputText style="font-weight:bold" value="Description"/>
-			  <h:outputText style="font-weight:bold" value="Database load"/>
+			  <h:outputText style="font-weight:bold" value="#{web.text.REPORT}"/>
+			  <h:outputText style="font-weight:bold" value="#{web.text.DESCRIPTION}"/>
+			  <h:outputText style="font-weight:bold" value="#{web.text.DATABASELOAD}"/>
 			  <h:commandLink id="revokedCertificatesPie"
-			    action="#{reportsManagedBean.revokedCertificatesPie}" value="Revoked certificates chart">
+			    action="#{reportsManagedBean.revokedCertificatesPie}" value="#{web.text.REVOKEDCERTCHART}">
 			  </h:commandLink>
-			  <h:outputText value="Creates a pie chart of how many certificates are revoked" />
-			  <h:outputText value="Medium"/>
+			  <h:outputText value="#{web.text.REVOKEDCERTCHARTDESC}" />
+			  <h:outputText value="#{web.text.MEDIUM}"/>
 			  <h:commandLink id="issuedCertificatesListButton"
-			    action="#{reportsManagedBean.issuedCertificatesList}" value="Issued certificates">
+			    action="#{reportsManagedBean.issuedCertificatesList}" value="#{web.text.ISSUEDCERTS}">
 			  </h:commandLink>
-			  <h:outputText value="Creates a list of all issued certificates" />
-			  <h:outputText value="High" />
+			  <h:outputText value="#{web.text.ISSUEDCERTSDESC}" />
+			  <h:outputText value="#{web.text.HIGH}" />
 			</h:panelGrid>
 	 </h:panelGroup>         
      </p>

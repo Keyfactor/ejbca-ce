@@ -9,11 +9,6 @@
  *                                                                       *
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
- * MUNTEANU Olimpiu Andrei - moa3333@gmail.com                           *
- * LINAGORA                                                              *
- * 27 rue de Berri                                                       *
- * 75008 PARIS - France                                                  *
- *                                                                       *
  *************************************************************************/
 
 package org.ejbca.ui.web.admin.reports;
@@ -38,7 +33,8 @@ import org.ejbca.ui.web.admin.rainterface.UserView;
  * this class is required only when jasperreports is not alowed 
  * to read the MySQL database directly (it shouldn't do that)
  * 
- * @version $Id: ReportsDataSource.java,v 1.1 2007-06-20 11:22:11 anatom Exp $
+ * @author  Original author is MUNTEANU Olimpiu Andrei of Linagora
+ * @version $Id: ReportsDataSource.java,v 1.2 2007-06-20 11:54:02 anatom Exp $
  */
 public class ReportsDataSource implements JRDataSource {
 
