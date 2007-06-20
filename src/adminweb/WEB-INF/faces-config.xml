@@ -25,17 +25,22 @@
     <managed-bean-class>org.ejbca.ui.web.admin.approval.ApproveActionRequestBean</managed-bean-class>
     <managed-bean-scope>request</managed-bean-scope>
   </managed-bean>
-
-    <managed-bean>
+  <managed-bean>
     	<managed-bean-name>listServicesManagedBean</managed-bean-name>
     	<managed-bean-class>org.ejbca.ui.web.admin.services.ListServicesManagedBean</managed-bean-class>
     	<managed-bean-scope>session</managed-bean-scope>
-    </managed-bean>
-    <managed-bean>
+  </managed-bean>
+  <managed-bean>
     	<managed-bean-name>editService</managed-bean-name>
     	<managed-bean-class>org.ejbca.ui.web.admin.services.EditServiceManagedBean</managed-bean-class>
     	<managed-bean-scope>session</managed-bean-scope>
-    </managed-bean>
+  </managed-bean>
+  <managed-bean>
+    	<managed-bean-name>reportsManagedBean</managed-bean-name>
+    	<managed-bean-class>org.ejbca.ui.web.admin.reports.ReportsManagedBean</managed-bean-class>
+    	<managed-bean-scope>request</managed-bean-scope>
+  </managed-bean>
+  
   <navigation-rule>
     <from-view-id>approval/approveactionlist.jsp</from-view-id>
     <navigation-case>
