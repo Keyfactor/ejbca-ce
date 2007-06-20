@@ -48,7 +48,7 @@
 			    action="#{reportsManagedBean.revokedCertificatesPie}" value="#{web.text.REVOKEDCERTCHART}">
 			  </h:commandLink>
 			  <h:outputText value="#{web.text.REVOKEDCERTCHARTDESC}" />
-			  <h:outputText value="#{web.text.MEDIUM}"/>
+			  <h:outputText value="#{web.text.HIGH}"/>
 			  <h:commandLink id="issuedCertificatesListButton"
 			    action="#{reportsManagedBean.issuedCertificatesList}" value="#{web.text.ISSUEDCERTS}">
 			  </h:commandLink>
