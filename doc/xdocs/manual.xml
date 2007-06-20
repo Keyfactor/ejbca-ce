@@ -3798,6 +3798,7 @@ password for a user, needed to generate  certificates batch-wise.</li>
 <li>setuserstatus - sets status of a user, users can only apply
 for certificates when their status is NEW.</li> 
 <li>finduser - find a user in the database and lists details.</li>
+<li>getusercert - get all certificates for a specific user on stdout.</li>
 <li>listnewusers - lists all users with status NEW.</li>
 <li>listusers - lists users with specified status (give command to
 see list of status codes).</li>
