@@ -36,6 +36,8 @@
                                                   + "/edithardtokenprofiles/edithardtokenprofiles.jsp";
   final String LOG_LINK                 =  ejbcawebbean.getBaseUrl() + globalconfiguration.getLogPath() 
                                                   + "/viewlog.jsp";
+  final String REPORTS_LINK             =  ejbcawebbean.getBaseUrl() + globalconfiguration.getReportsPath() 
+                                                  + "/reportslist.jsf";
   final String LOG_CONFIGURATION_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getLogPath() 
                                                   + "/logconfiguration/logconfiguration.jsp";
   final String CONFIGURATION_LINK       =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() 
@@ -56,6 +58,9 @@
   final String MAIN_RESOURCE                          = "/administrator";
   final String CABASICFUNCTIONS_RESOURCE              = "/ca_functionality/basic_functions";
   final String EDITCAS_RESOURCE                       = "/super_administrator";
+  final String REPORTS_RESOURCE                       = "/log_functionality/view_log";
+  final String REPORTS_RESOURCE1                      = "/log_functionality/view_log/ca_entries";
+  final String REPORTS_RESOURCE2                      = "/log_functionality/view_log/ra_entries";
   final String EDITPUBLISHERS_RESOURCE                = "/super_administrator";
   final String EDITCERTIFICATEPROFILES_RESOURCE       = "/ca_functionality/edit_certificate_profiles";
   final String RAEDITUSERDATASOURCES_RESOURCE         = AvailableAccessRules.REGULAR_EDITUSERDATASOURCES;
@@ -74,6 +79,7 @@
 %>
 <%  
   boolean caheaderprinted     =false;
+  boolean reportsheaderprinted =false;
   boolean raheaderprinted     =false;
   boolean htheaderprinted     =false;
   boolean logheaderprinted    =false;
@@ -245,6 +251,17 @@
      <br>
 <%   }
    }catch(AuthorizationDeniedException e){}
+   // If authorized to view charts.
+   try{
+     if((ejbcawebbean.isAuthorizedNoLog(REPORTS_RESOURCE)) && (ejbcawebbean.isAuthorizedNoLog(REPORTS_RESOURCE1)) && (ejbcawebbean.isAuthorizedNoLog(REPORTS_RESOURCE2))){ 
+        if(!logheaderprinted){
+          out.write("<br>" + ejbcawebbean.getText("SUPERVISIONFUNCTIONS")+"<br>"); 
+          systemheaderprinted=true;
+          }
+        } %>
+     &nbsp;&nbsp;<A href="<%= REPORTS_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("VIEWREPORTS") %></A>
+     <br>
+<% }catch(AuthorizationDeniedException e){}
     // If authorized to configure Ejbca then display related links.
     try{
       if(ejbcawebbean.isAuthorizedNoLog(SYSTEMCONFIGURATION_RESOURCE)){ 

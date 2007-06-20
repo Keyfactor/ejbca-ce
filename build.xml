@@ -175,6 +175,10 @@
         <copy todir="${adminweb.build}/WEB-INF/lib">
             <fileset dir="${lib}/myfaces" includes="${jar.jsftaglibs}" />
         </copy>
+        <copy todir="${adminweb.build}/WEB-INF/lib">
+            <fileset dir="${lib}/reports" 
+            	includes="lib/reports/jasperreports-1.3.3.jar lib/reports/jfreechart-1.0.0.jar lib/reports/jcommon-1.0.8.jar" />
+        </copy>
 
     	<jsp-compile uriroot="${adminweb.build}" classpathref="compile.classpath"/> 
         <war destfile="${adminwebwar}" webxml="${src.dd}/WEB-INF/web.xml">

@@ -55,6 +55,9 @@
         <copy todir="${cmptcpservice.build}/lib/quickserver">
             <fileset dir="./lib">
                 <include name="commons-collections.jar" />
+                <include name="commons-digester.jar" />
+                <include name="commons-beanutils.jar" />
+                <include name="commons-logging.jar" />
             </fileset>
         </copy>
         <jar basedir="${cmptcpservice.build}" jarfile="${cmptcpservicejar}">
