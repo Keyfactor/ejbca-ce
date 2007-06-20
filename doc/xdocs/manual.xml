@@ -28,13 +28,13 @@ performed on Linux and Windows platforms.
 Security is discussed below in the chapter about configuration
 and in <a href="security.html">Security</a>.
 </p><p>
-Please take a minute to thorougly consider the security
+Please take a minute to thoroughly consider the security
 implications and make sure you know what you are doing when you are setting
 up a CA.
 </p><p>
 If running on Linux, you should consider using the sample
 firewall script provided in 'ejbcafirewall.sh'. If running on Windows, a
-similar aproach should be taken with firewall software/hardware.
+similar approach should be taken with firewall software/hardware.
 </p></section>
 
 <section name="Upgrade">
@@ -115,7 +115,7 @@ In a production environment you should use something else than the default Hyper
 with JBoss for the reasons:
 <ol>
 <li>Hypersonic database is in-memory, which means that over time it will consume more memory. If a large
-numer of certificates is issued, it will become an issue after a while.</li>
+number of certificates is issued, it will become an issue after a while.</li>
 <li>Hypersonic does not support full SQL, in particular ALTER statements. When a new version of EJBCA is 
 released we can not create scripts that updates the database if some tables changed. This will make 
 upgrades much much harder.</li>
@@ -128,7 +128,7 @@ in the distribution.
 <subsubsection name="Memory configuration">
 <p>
 The memory parameters for Java is by default configured very low, for JBoss it is set by default to allow
-a maximum memory usage of 512mb, which is sufficient for most configurations. We still recomend that you check your 
+a maximum memory usage of 512mb, which is sufficient for most configurations. We still recommend that you check your 
 configuration of java memory arguments to set them to
 at least '-Xms128m -Xmx512m'. 
 For JBoss this is done in JBOSS_HOME/bin/run.conf where the line:
@@ -152,7 +152,7 @@ example /opt/jboss-4.0.2 or C:\jboss-4.0.3SP1.
 <br/>Also make sure the right java tools (javac/keytool) are available in your system PATH, ie. /usr/local/jdk1.5.0_11/bin.
 </p><p>
 2) Copy conf/ejbca.properties.sample to conf/ejbca.properties and customize if needed.
-The default values works fine for a test installaton. 
+The default values works fine for a test installation. 
 <br/>
 If you are using JBoss &lt; 4.0.3 you must configure the property web.jsfimpl in conf/web.properties.
 </p><p>
@@ -161,7 +161,7 @@ If you are using JBoss &lt; 4.0.3 you must configure the property web.jsfimpl in
 For production use you need to do this, don't forget to edit
 passwords to be secure and secret. Keep conf/ejbca.properties as secret as possible.
 DO NOT forget the passwords, if you need to re-install the software sometime.</li>
-<li>To use a hard ca token from start change ca.tokentype, ca.tokenpassword and ca.tokenproperties. You also need to add the appropriate values to the ca.tokenproperties file for the hsm. Read the hsm documentation for the right values.</li>
+<li>To use a hard ca token from start change ca.tokentype, ca.tokenpassword and ca.tokenproperties. You also need to add the appropriate values to the ca.tokenproperties file for the HSM. Read the HSM documentation for the right values.</li>
 <li>Customize the database if needed but easiest thing is to keep the default as it is,
 it will use the JBoss embedded HSQLDB and everything will be easier for you.
 For production use you should use a real database instead of the embedded one.</li>
@@ -235,7 +235,7 @@ You can use this command to install the certificate of any CA in the java trusts
 
 <subsection name="Additional howtos">
 <p>
-In the directory doc/howto in the distribution there are additional howtos for some specific plattforms and configurations.
+In the directory doc/howto in the distribution there are additional howtos for some specific platforms and configurations.
 </p>
 </subsection>
 
@@ -282,7 +282,7 @@ etc etc
 The SSL certificate used for SSL in JBoss (SSL is used for the admin-GUI) is stored in JBOSS_HOME/server/default/conf/keystore.jks.
 The default validity time for the SSL certificate is two years. When this expire, you must generate a new one. 
 </p><p>
-You can do this throught the admin-GUI by:
+You can do this through the admin-GUI by:
 <ol>
 <li>Go to 'List/Edit End Entities' and search for user 'tomcat'.</li>
 <li>'Edit_End_Entity' and set the 'Password' to the same as httpsserver.password in your conf/ejbca.properties and 'Status' to 'New'.</li>
@@ -602,7 +602,7 @@ Since SCEP uses encryption, you must install the 'Unlimited Strength Jurisdictio
 The policy files can be found at the same place as the JDK download. Further information on this can be found in 
 the Sun documentation on the JCE.
 </p><p>
-There are some compatibility issues with SCEP, one beeing if the CA certificate should be returned in a SCEP enrollment
+There are some compatibility issues with SCEP, one being if the CA certificate should be returned in a SCEP enrollment
 response or not. The CA certificate is optional but some, Cisco VPN client, seems to require it while others, Juniper, 
 seems to dislike it. Therefore EJBCA has two SCEP URLs.
 </p><p>
@@ -639,7 +639,7 @@ The following CA capabilities are supported:
 </p>
 <subsubsection name="CA mode">
 <p>
-EJBCA does succesfully receive SCEP 'PKCSReq' requests and send back the certifificate/CRL immediately in a proper SCEP reply message.
+EJBCA does successfully receive SCEP 'PKCSReq' requests and send back the certifificate/CRL immediately in a proper SCEP reply message.
 EJBCA (standard) does not support the 'polling' model, EJBCA uses the direct CA method, where a request is granted or denied immediately.
 The SCEP client will send messages directly to the CA, encrypted with the CAs certificate.
 </p><p>
@@ -670,7 +670,7 @@ EJBCA will not send back proper SCEP error messages in all cases of failure. The
 <subsubsection name="OpenScep">
 <p>
 OpenScep has does not work with modern OpenSSL implementation (only works with OpenSSL 0.9.6) and also has a bug
-that causes it to crash when receiving SCEP responses. There are <a href="http://www.primekey.se/~tomas/download.html">patches</a> that adress these issues though so it can be used.
+that causes it to crash when receiving SCEP responses. There are <a href="http://www.primekey.se/~tomas/download.html">patches</a> that address these issues though so it can be used.
 </p><p>
 To use the <a href="http://openscep.othello.ch/">OpenScep</a> client to request a certificate from this servlet, use the command:
 </p>
@@ -715,12 +715,12 @@ To create a new certificate request:
   <li>Name=netscreen.foo.se</li>
   <li>Organization=PrimeKey</li>
   <li>Country=SE</li>
-  <li>IP Adress=192.168.1.1</li>
+  <li>IP Address=192.168.1.1</li>
   <li>FQSN=netscreen.foo.se</li>
   </ul>
 Click generate.
 </li>
-<li>Automatically enroll to -> New CA Server settings. The CGI URL depens if you are using the direct CA mode or the RA polling mode:
+<li>Automatically enroll to -> New CA Server settings. The CGI URL differs if you are using the direct CA mode or the RA polling mode:
   <ul>
   <li>RA CGI: http://&lt;ra-ip&gt;:8080/scepraserver/scep/noca/pkiclient.exe or http://&lt;ca-ip&gt;:8080/ejbca/publicweb/apply/scep/noca/pkiclient.exe.</li>
   <li>CA CGI: http://&lt;ra-ip&gt;:8080/scepraserver/scep/noca/pkiclient.exe or http://&lt;ca-ip&gt;:8080/ejbca/publicweb/apply/scep/noca/pkiclient.exe.</li>
@@ -774,8 +774,8 @@ should be the CA-name as defined when creating the CA in EJBCA. For example 'vpn
 <li>The username in EJBCA must be the name the PIX identifies itself with <i>name</i>.<i>domain</i>, example pix.primekey.se.</li>
 <li>The end-entity DN must include the DN components CN and unstructuredName, ex "CN=pix.primekey.se, unstructuredName=pix.primekey.se". 
 You can also include O, C etc in the certificate. A normal DN for a PIX is "CN=pix.primekey.se,unstructuredName=pix.primekey.se,O=PrimeKey,C=SE".</li>
-<li>Certificates used for PIX MUST include the DN component unstructuredName (fqdn) and could also include unstructuredAddress (ip) beeing the IP-address of the PIX.</li>
-<li>The certificate used on the Cisco PIX MUST have a SubjectAltName field dNSName, matching the DN component unstructuredName. This is needed in order for Cisco VPN clients to connect to the PIX. The DNS Name field is not nessasary for the PIX to enroll perfectly with EJBCA, only for the client to be able to connect.</li>
+<li>Certificates used for PIX MUST include the DN component unstructuredName (fqdn) and could also include unstructuredAddress (ip) being the IP-address of the PIX.</li>
+<li>The certificate used on the Cisco PIX MUST have a SubjectAltName field dNSName, matching the DN component unstructuredName. This is needed in order for Cisco VPN clients to connect to the PIX. The DNS Name field is not necessary for the PIX to enroll perfectly with EJBCA, only for the client to be able to connect.</li>
 <li>Certificates used for PIX may also use the SubjectAltName iPAddress matching the DN component unstructuredAddress, but it's not necessary.</li>
 <li>Cisco does not support use of the 'Domain Component', DC, attribute in DNs, don't use it.</li>
 <li>KeyUsage should include <i>Digital Signature</i> and <i>Key Encipherment</i>, the EJBCA defaults work fine.</li>
@@ -913,7 +913,7 @@ The following POPs in the CRMF are supported by EJBCA:
 <li>raVerify - if configured so in conf/ejbca.properties EJBCA will support the raVerify POP and in that case not do any verification of POP. By default this is false, because the standard does not recommend this option.</li>
 <li>signature - where the PublicKey is in the CertTemplate and the signature is calculated over the CertReqMsg.certReq (the standard procedure when the CertTemplate contains the subject and publicKey values).</li>
 </ul>
-Currently these are the only POPs supported by EJBCA, so if you don't use raVerify or signature your request will fail becuase POP is not verified.
+Currently these are the only POPs supported by EJBCA, so if you don't use raVerify or signature your request will fail because POP is not verified.
 </p>
 </subsection>
 
@@ -996,12 +996,12 @@ options as for jCert.
 
 <section name="Ocsp">
 <p>
-Note! Some OCSP clients does not handle external OCSP responders very well unforturnately. You should be aware of this.
+Note! Some OCSP clients does not handle external OCSP responders very well unfortunately. You should be aware of this.
 </p>
 <p>
 OCSP is used by PKI-clients to verify the validity of certificates in real-time. 
 This is done by sending a request for the status of a specific certificate to an OCSP responder. 
-The responer may or may not be the same as the CA. The OCSP responder sends a signed reply, 
+The responder may or may not be the same as the CA. The OCSP responder sends a signed reply, 
 containing the requested status information back to the client. 
 The client uses this status information to determine whether the certificate is valid for use or revoked.
 </p>
@@ -1019,7 +1019,7 @@ The default certificate profiles for CAs includes the key usage 'Digital Signatu
 </p><p>
 There are a two parameters affecting the OCSP service that can be configured in conf/ejbca.properties:
 <ul>
-<li>'useCASigningCert' - If set to true (default) the OCSP reponses will be signed directly by the CAs certificate instead 
+<li>'useCASigningCert' - If set to true (default) the OCSP responses will be signed directly by the CAs certificate instead 
 of the CAs OCSP responder. If set to false, the CAs special OCSP responder certificate is used to sign the
 OCSP responses. The OCSP responder certificate is signed directly by the CA.</li>
 <li>'defaultResponderID' - Specifies the subject of a CA which will 
@@ -1065,7 +1065,7 @@ You can set up separated OCSP responders in EJBCA. Using this you can isolate th
 able to answer OCSP request. You can set up firewalls so that only outgoing traffic is allowed from the CA, and
 nothing to the CA.
 </p><p>
-Separated OCSP responders is also good when you don't require high-preformance clustering for the CA, but you do need
+Separated OCSP responders is also good when you don't require high-performance clustering for the CA, but you do need
 high-performance for the OCSP responders. This should be a usual setup, if the CA only issues certificates once every year
 for one million users, this does not put much pressure on the CA, but the OCSP responders can be put under high load continuously.
 </p>
@@ -1100,7 +1100,7 @@ After adding the new contact, you have to click 'Edit trust' and check at least 
 This works the same using both internal and external OCSP responders.
 </p>
 <p>
-Certificates that have an 'OCSP service locator' will be verified agains the OCSP responder. 
+Certificates that have an 'OCSP service locator' will be verified against the OCSP responder. 
 You can configure this in the certificate profile used to issue certificates.
 </p>
 </subsection>
@@ -1309,7 +1309,7 @@ The following settings exists:
 <li>xkms.response.causedforsigning: Specify which CA that should be used with the signed responses. Only one can be specified. (default 'AdminCA1')</li>
 <li>xkms.keyusage.signatureisnonrep: Setting specifying the keyusage in a X509 certificate that is mapped to XKMS KeyUsage Signature, Default is non-repudiation but if set to false will XKMS KeyUsage Signature be mapped against digital signature X509 key usage.</li>
 <li>xkms.serviceport=This is a development setting that is set in the WSDL to instruct the client use a non default port. This is only needed if a WS tap listener is used to review the messages. (default: 8080)</li>
-<li>xkms.krss.poprequired=Defines if proof of possesion of the private key is required (default: true)</li>
+<li>xkms.krss.poprequired=Defines if proof of possession of the private key is required (default: true)</li>
 <li>xkms.krss.servergenkeylength=Defines the key length of server generated keys (default: 1024)</li>
 <li>xkms.krss.allowrevokation=Defines it should be possible for users to revoke their certificate with a revocation code (default: true)</li>
 <li>xkms.krss.allowautomaticreissue=Setting to allow the user to renew automatically as long as the current key isn't revoked  (default: false)</li>
@@ -1322,9 +1322,9 @@ Important, if signing of responses is needed, must the XKMS CA service for the c
 <subsection name="Implementation Specific Notes">
 <subsubsection name="What is implemented">
 <p>
-Currently are the methods locate, validate, register, reissue, revoke and rekover). The Compond request isn't implemented.
+Currently are the methods locate, validate, register, reissue, revoke and recover). The Compond request isn't implemented.
 </p><p>
-The XKMS Service only supports syncronized calls, not asyncronised or two-phase requests.
+The XKMS Service only supports synchronized calls, not asynchronized or two-phase requests.
 </p><p>
 The TimeInstant attribute of QueryKeyBinding is not supported
 </p>
@@ -1341,7 +1341,7 @@ for the enrollment. RespondWith RSAPublicKey, X509Certificate, X509CertificateCh
 </p>
 <p>
 The reissue listener expects one X509Certificate KeyInfo in the request and the subjectDN and public is extracted
-and used for the new certificate. Revoked certificates cannot be renewed. enerated key be inserted in a PrivateKey in the response. It is the same password to encrypt the key as 
+and used for the new certificate. Revoked certificates cannot be renewed. The generated key will be inserted in a PrivateKey in the response. It is the same password to encrypt the key as 
 for the enrollment. RespondWith RSAPublicKey, X509Certificate and X509CertificateChain.
 </p>
 <p>
@@ -1362,20 +1362,20 @@ The RespondWith tag supports X509Certificate, X509CertificateChain, X509CRL, Key
 <i>The QueryKeyBinding</i> 
 The query of a QueryKeyBinding is performed in the following way:
 If KeyInfo is included, the certificate is extracted and the is used for checking the key usage and validity of the certificate
-If UseKeyWith is included (and no KeyInfo) is the user database queried using the UseKeyWith mappings (if several UseKeyWith are the queried with an 'AND' operator. Then are all certificates that fullfills all the KeyUsage mappings returned.
+If UseKeyWith is included (and no KeyInfo) is the user database queried using the UseKeyWith mappings (if several UseKeyWith are the queried with an 'AND' operator. Then are all certificates that fulfills all the KeyUsage mappings returned.
 </p><p>
 In KeyInfo is only X509Certificate and X509CertificateChain supported 
 </p><p>
 KeyUsage Mappings, 
 The key usage constants is mapped against the following X509 key usages 
 <ul>
-<li>SIGNATURE : either non-repudation or digital signature depending on configuration</li>
+<li>SIGNATURE : either non-repudiation or digital signature depending on configuration</li>
 <li>ENCRYPTION: data encipherment</li>
 <li>EXHANGE: digital signature and key encipherment</li>
 </ul>
 </p><p>
 UseKeyWith Mappings,
-All queries find their data using beginwith (except PKIX) of the idenfier.
+All queries find their data using beginwith (except PKIX) of the identifier.
 <ul>
 <li>XKMS: Subject Altname, UNIFORMRESOURCEIDENTIFIER</li>
 <li>XKMS/profile: Subject Altname, UNIFORMRESOURCEIDENTIFIER</li>
@@ -1397,7 +1397,7 @@ When building EJBCA, a XKMS CLI tool is also generated. The tool is placed
 in the directory dist/xkmscli and consists of the all the necessary files needed to run the cli.
 </p><p>
 To use the client do the following, copy the directory with all included files to
-the computer you want to remote administrate from. (Optionaly create a JKS keystore from
+the computer you want to remote administrate from. (Optionally create a JKS keystore from
 one XKMS Service trusted CAs)and configure the file xkmscli.properties. In this file you should specify the hostname of the CA server, the name of the JKS keystore, the alias and the password to unlock it.
 </p><p>
 Use 'xkmscli.sh/cmd' for a list of each subcommand and 'xkms.sh/cmd "subcommand"'
@@ -1480,7 +1480,7 @@ specified in conf/ejbca.properties (or default).
 <br></br>
 It is configured in 
 $JBOSS_HOME/server/default/deploy/ejbca-mail-service.xml.
-For other containers you must create a mail service with the same JNDI name as specificed in 
+For other containers you must create a mail service with the same JNDI name as specified in 
 conf/ejbca.properties.
 </p><p>
 To configure email notifications in EJBCA:
@@ -1821,7 +1821,7 @@ sends an email notification to the end user and/or the administrator.</li>
 It is also possible to write plug-ins for customized services.
 </p><p>
 A service consists of the components, a worker doing the actual work, an interval 
-determing the time to the next time the service should run and an action (optional) 
+determining the time to the next time the service should run and an action (optional) 
 of what should be done if a certain condition occurs.
 </p>
 <subsection name="Currently Available Services">
@@ -1929,7 +1929,7 @@ See org.ejbca.core.model.services.workers.DummyWorker for an example implementat
 A Custom Interval must implement the org.ejbca.core.model.services.IInterval 
 interface. But a simpler way is to inherit the BaseInterval class. You then have to 
 implement one method 'public long getTimeToExecution();' which should return the 
-time in seconds until the next time the service is runned. Or it should return 
+time in seconds until the next time the service is run. Or it should return 
 DONT_EXECUTE it the service should stop running.
 </p><p>
 See org.ejbca.core.model.services.intervals.DummyInterval for an example implementation.
@@ -1951,7 +1951,7 @@ See org.ejbca.core.model.services.actions.DummyAction for an example implementat
 <section name="Hardware Security Modules (HSM)">
 <p>
 EJBCA have support for several HSMs. Each HSM has it's own interface for key generation and maintenance, specific
-to the HSM and independant of EJBCA. You should make sure you are familiar with how your HSM works.
+to the HSM and independent of EJBCA. You should make sure you are familiar with how your HSM works.
 </p>
 <p>
 When configuring a CA to use a HSM in the administration GUI it is a property field where properties unique to this very HSM is specified. All implemented HSM modules are using the same property keywords to define the identity and the purpose of the keys to be used. These keywords are:
@@ -2115,7 +2115,7 @@ nfast@donny:/home/lars/work$
 </source>
 <p>
 The '-Q K/N' option tells how many administration cards that are created N. K of these cards will be needed to restore a module with a backup of the security world.
-'1/1' is a bad choice in production but will do in this example. Choose K>=3 and N>K in produktion.
+'1/1' is a bad choice in production but will do in this example. Choose K>=3 and N>K in production.
 </p>
 <p>
 Change mode on the switch on the device to mode 'O'.
@@ -2177,7 +2177,7 @@ The following environment variables should be set for this user:
 </p>
 <note>
 The preload command (see below) must always be called as the same user unless the directory /opt/nfast/kmdata/preload is removed.
-<br/>If you get a "HostDataAccessDenied" error when running preload or starting JBoss, it is beacuse the
+<br/>If you get a "HostDataAccessDenied" error when running preload or starting JBoss, it is because the
 file permissions on the directory /opt/nfast/kmdata/preload is wrong. It's probably because you (sometime) ran 
 preload as another user, such as root or nfast.
 </note>
@@ -2314,7 +2314,7 @@ Then create an empty a keystore with
 </p>
 <source>jboss@host$ $EJBCA_HOME/bin/nCipherHSM.sh createkeystore
  ...
- Next line will contain the indentity of the keystore:
+ Next line will contain the identity of the keystore:
  f7e825134fe23f58b1575d8efb487babe7ebd1ed
 </source>
 <p>
@@ -2372,7 +2372,7 @@ at boot time. Use the "-np" switch to the starting script if you don't want prel
 <p>
 To choose the public exponent the "nCipherHSM.sh" script can not be used. nCipher has not implemented the initialization method of "KeyPairGenerator" that is
 used to set the public exponent.
-But there is another way to generate keys whith the public exponent as a parameter. You must have this before you start:
+But there is another way to generate keys with the public exponent as a parameter. You must have this before you start:
 <ul>
 <li>A card that belongs to a 1/n card set in the nCipher reader</li>
 <li>A keystore protected by this card set</li>
@@ -2529,7 +2529,7 @@ For Windows this is done by adding the location where DLLs are located to the sy
 This is normally done by the installer programs.
 </p>
 <p>
-<strong>5. If you use an external HSM, set its hostname/IP-Adress as unix environment variable</strong>
+<strong>5. If you use an external HSM, set its hostname/IP-Address as unix environment variable</strong>
 </p>
 <source>
 CT_SERVER=eracom
@@ -2649,7 +2649,7 @@ the names must be made unique, and one way is to introduce numbers, initials
 etc in the CN. Another way that we recommend is to use uid in the LDAP DN
 instead. LDAP DNs will then looks like "uid=tomas,dc=bigcorp,dc=com". Uid is
 the users username, normally used for login etc, and you probably already
-have some proceedure to create unique usernames already.
+have some procedure to create unique usernames already.
 </p>
 </subsection>
 
@@ -2701,7 +2701,7 @@ To configure the publisher for LDAP:
 <ol>
 <li>Choose 'Edit Publishers' in the admin-GUI.</li>
 <li>Add a new publisher with a name you define yourself. Edit the publisher and
-fill in all the neccesary fields.</li>
+fill in all the necessary fields.</li>
 </ol>
 <p>
 Generic parameters to LDAP Publisher:
@@ -2711,7 +2711,7 @@ Generic parameters to LDAP Publisher:
 <li>'Port' is the port on which the LDAP server listens, default non-SSL is
 389.</li>
 <li>'Login DN' is the DN of a user on the LDAP server with permissions to add
-and update enties.</li>
+and update entities.</li>
 <li>'Login Password' is the password for the user above.</li>
 <li>'Create Nonexisting Users' defines if an LDAP object should be created by EJBCA if it is no existing object 
 when EJBCA publishes the certificate.</li>
@@ -2898,8 +2898,8 @@ OU (organizational unit) in the certificate EJBCA uses that to populate the OU a
 entry.
 </p><p>
 When updating an entry that already exists EJBCA uses replace on the
-existing attributes, so if an email attributes already exists and EJBCA finds an email adress in
-the certificate, the email attribute in ldap is replaced with the email adress from the certificate.
+existing attributes, so if an email attributes already exists and EJBCA finds an email address in
+the certificate, the email attribute in ldap is replaced with the email address from the certificate.
 </p><p>
 Note that attributes are only replaced/updated if the flag "Modify Existing Users" in the Publisher is active. 
 The certificate attribute is always updated though.
@@ -2932,7 +2932,7 @@ In Mozilla you can for example enter a URL like:
 <br></br>
 ldap://ip-address-of-ldap-server:389/cn=Tomas Gustavsson,dc=se,dc=bigcorp,dc=com
 <br></br>
-and it will fetch an adress book entry with the information about the user,
+and it will fetch an address book entry with the information about the user,
 including the certificate.
 </p><p>
 The LDAP url format is described in <a
@@ -3074,9 +3074,9 @@ Restart slapd:
 ./slapd -h "ldap:/// ldaps:///"
 </source>
 <p>
-and check thats it is running with 'ps -ef|grep slapd'.
+and check that it is running with 'ps -ef|grep slapd'.
 </p><p>
-On SuSE, if using the builting OpenLDAP you have to enable ldaps in
+On SuSE, if using the builtin OpenLDAP you have to enable ldaps in
 /etc/sysconfig/openldap:
 </p>
 <source>
@@ -3096,12 +3096,12 @@ rcldap start
 </source>
 <p>
 Configure your LDAP publisher in EJBCA to use SSL by checking the checkbox
-'Use SSL', the port shold change to port 636.
+'Use SSL', the port should change to port 636.
 </p><p>
 Note! The CA certificate of the (root)CA used to sign the ldap server
 certificate must be present in the java trust cert store 
 ($JAVA_HOME/jre/lib/security/cacerts). If you use
-the defualt CA created when ejbca was installed this is alread included. 
+the default CA created when ejbca was installed this is already included.
 Otherwise you will have to add it using something like:
 First get the CA cert:
 </p>
@@ -3170,7 +3170,7 @@ description: Parent Object for all High Certificates
 <p>
 To store certificates for devices (e.g. routers, toasters etc) in LDAP it
 is no really suitable standard object class. inetOrgPerson requires surnames
-etc, and the device objectclass does not include a certifictae attribute.
+etc, and the device objectclass does not include a certificate attribute.
 </p><p>
 Mike Jackson has kindly contributed additional objects that extend the
 standard device class with a certificate attribute. 
@@ -3301,7 +3301,7 @@ Note that the keyEncryptKey can not be ECDSA, but should be an RSA key. Your HSM
 <subsection name="Named curves">
 <p>
 EJBCA supports the curves that BouncyCastle supports, they include named curves from Nist, SEC and X9.62.
-New curves may be supported without this list beeing updates, give it a try!
+New curves may be supported without this list being updated, give it a try!
 See <a href="http://www.bouncycastle.org/wiki/">Bouncycastle wiki</a> for more information about ECDSA curves.
 </p>
 <p>
@@ -3346,7 +3346,7 @@ Nist curves:
 X9.62 provides 3 alternatives for the parameters that can be found in an EC public key.
 One of these is named implicitlyCA and indicates that the parameters are defined else where, implicit in the name of the 
 certification authority (CA) that issued the key. 
-In this stiuation the actual parameters appear in the ASN.1 encoding of the key as a DER encoded NULL.
+In this situation the actual parameters appear in the ASN.1 encoding of the key as a DER encoded NULL.
 <br/>
 As the definition says, when the key is used, the parameters will have to come from elsewhere. 
 In EJBCA the parameters are configured in <i>conf/ejbca.properties</i>.
@@ -3416,11 +3416,11 @@ When importing profiles the profile name and id will be read from the filename. 
 directory will be imported.
 </p><p>
 Fixed profiles will not be imported, they will simply be skipped during import.
-If a profiles with the same name as the one beeing imported already exist, the profiles will not be imported.
+If a profiles with the same name as the one being imported already exist, the profiles will not be imported.
 </p><p>
 Import of profiles try to keep the same profile id. If it already exist a profile with the same id in the database, 
 you might have to edit the filename to choose another id. This can only be done if it is a new profile. 
-The reason the id is kept is that there are references to the profile id from users beloinging to the profile.
+The reason the id is kept is that there are references to the profile id from users belonging to the profile.
 </p><p>
 One issue to notice regarding import/export of profiles is that if you export an entity profile with 'Available CAs' put to a CA that does not exist where you import the profile, you will not see it.
 Before exporting the profiles, you should set 'Available CAs' to a CA that is also present (with the same DN=caid) on the other CA.   
@@ -3512,7 +3512,7 @@ And change all methods 'checkfield*()' to always return true directly.
 If you can't get you national characters to work with the admin GUI, you can try using the cli instead
 (bin/ejbca.sh ra adduser ...). That usually works.
 </p><p>
-EJBCA have for exmaple been tested on Windows/JBoss 4.0.2/MySQL and Linux/JBoss4.0.1sp1/HSQL with 
+EJBCA have for example been tested on Windows/JBoss 4.0.2/MySQL and Linux/JBoss4.0.1sp1/HSQL with 
 the default configuration using Swedish national characters, 
 and it works nicely both with the cli and admin-GUI.
 </p>
@@ -3643,13 +3643,13 @@ The OtherName consists of:
 <p>
 From EJBCA 3.4 it is possible to add customized certificate extensions to certificates.
 Simple extensions only containing a static value can be added by simply editing a property file, these are called
-"basic certificate extension". It is also possible to generate advanced certificate extenstion by
+"basic certificate extension". It is also possible to generate advanced certificate extension by
 implementing a simple java interface.
 </p>
 <subsection name="Configuring Custom Certificate Extensions">
 <p>
 Certificate extensions is configured in the file 'src/java/certextensions.properties'
-All extentions should have a id ranging from 1 up to 255, the number order is important.
+All extensions should have a id ranging from 1 up to 255, the number order is important.
 </p>
 The following properties must be set for each extension (all beginning with idN.)
 <ul>
@@ -3709,7 +3709,7 @@ to generate dynamic extensions.
 </p><p>
 Here is an example of a simple advanced extension. To add this extension to EJBCA
 add it to to the classpath in certextensions.properties, make sure the class is 
-accessable in the classpath and redeploy.
+accessible in the classpath and redeploy.
 </p>
 <source>
 public class SomeAdvancedCertificateExtension extends CertificateExtension {
@@ -3780,7 +3780,7 @@ may apply for a
 certificate. If email address is set to 'null', no email is put
 in certificates.
 Quote the DN (") so it is treated as one argument.
-Altnames is a string simlar to the DN string but using
+Altnames is a string similar to the DN string but using
 alternative names from
 RFC3280, i.e. "rfc822Name=<i>email</i>, dNSName=<i>hostname</i>, 
 uri=http://<i>whatever</i>, iPAddress=10.56.32.245"
@@ -3862,7 +3862,7 @@ with clear text passwords. To set a clear text password for a user use
 bin/ejbca.sh ra setclearpwd username password
 </source>
 <p>
-The same is accomplished in the ADmin-GUI bu checking the checkox 'Batch generation' when adding the user.
+The same is accomplished in the ADmin-GUI by checking the checkbox 'Batch generation' when adding the user.
 </p>
 <p>
 To generate keystore files for all users with status NEW or FAILED, run 
@@ -4020,7 +4020,7 @@ in the file 'log4j.properties' with:
 
 <section name="Extra info about the admin-GUI">
 <p>
-If you had problems using the install script this small part describes brefly 
+If you had problems using the install script this small part describes briefly 
 what the setup of the adminweb does. It's explained using out-of-the-head commands so don't expect it to work
 by copying and pasting these commands, it just something to look at.
 </p><p>
