@@ -95,32 +95,12 @@
 			</band>
 		</title>
 		<pageHeader>
-			<band height="5"  isSplitAllowed="true" >
-			</band>
-		</pageHeader>
-		<columnHeader>
-			<band height="6"  isSplitAllowed="true" >
-			</band>
-		</columnHeader>
-		<detail>
-			<band height="0"  isSplitAllowed="true" >
-			</band>
-		</detail>
-		<columnFooter>
-			<band height="0"  isSplitAllowed="false" >
-			</band>
-		</columnFooter>
-		<pageFooter>
-			<band height="0"  isSplitAllowed="true" >
-			</band>
-		</pageFooter>
-		<lastPageFooter>
 			<band height="267"  isSplitAllowed="true" >
 				<pie3DChart>
 					<chart evaluationTime="Report"  hyperlinkTarget="Self" >
 					<reportElement
 						x="190"
-						y="5"
+						y="7"
 						width="402"
 						height="231"
 						key="element-1"/>
@@ -142,8 +122,8 @@
 				</pie3DChart>
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
-						x="8"
-						y="39"
+						x="6"
+						y="7"
 						width="182"
 						height="64"
 						key="textField-15"/>
@@ -156,7 +136,7 @@
 				<rectangle>
 					<reportElement
 						x="8"
-						y="245"
+						y="248"
 						width="584"
 						height="15"
 						backcolor="#00FFFF"
@@ -167,7 +147,7 @@
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="101"
-						y="245"
+						y="248"
 						width="78"
 						height="12"
 						key="textField-5"/>
@@ -180,7 +160,7 @@
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="275"
-						y="245"
+						y="248"
 						width="120"
 						height="12"
 						key="textField-6"/>
@@ -193,7 +173,7 @@
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="443"
-						y="245"
+						y="248"
 						width="148"
 						height="12"
 						key="textField-7"/>
@@ -206,7 +186,7 @@
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="18"
-						y="245"
+						y="248"
 						width="83"
 						height="12"
 						key="textField-9"/>
@@ -219,7 +199,7 @@
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="190"
-						y="245"
+						y="248"
 						width="78"
 						height="12"
 						key="textField-10"/>
@@ -232,7 +212,7 @@
 				<textField isStretchWithOverflow="false" isBlankWhenNull="false" evaluationTime="Now" hyperlinkType="None"  hyperlinkTarget="Self" >
 					<reportElement
 						x="405"
-						y="245"
+						y="248"
 						width="31"
 						height="14"
 						key="textField-11"/>
@@ -242,6 +222,26 @@
 					</textElement>
 				<textFieldExpression   class="java.lang.String"><![CDATA[$P{ok}]]></textFieldExpression>
 				</textField>
+			</band>
+		</pageHeader>
+		<columnHeader>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</columnHeader>
+		<detail>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</detail>
+		<columnFooter>
+			<band height="0"  isSplitAllowed="false" >
+			</band>
+		</columnFooter>
+		<pageFooter>
+			<band height="0"  isSplitAllowed="true" >
+			</band>
+		</pageFooter>
+		<lastPageFooter>
+			<band height="19"  isSplitAllowed="true" >
 			</band>
 		</lastPageFooter>
 		<summary>
