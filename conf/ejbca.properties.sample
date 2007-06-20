@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.20 2007-05-11 09:27:22 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.21 2007-06-20 12:22:22 jbagnert Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -43,11 +43,35 @@ ca.name=AdminCA1
 # This is used in the CA certificate to distinguish the CA.
 ca.dn=CN=AdminCA1,O=EJBCA Sample,C=SE
 
+# The token type the CA will use.
+# Use soft for software generated keys or enter a class path for the HSM class.
+# Possible values are:
+# soft
+# se.primeKey.caToken.card.PrimeCAToken
+# org.ejbca.core.model.ca.catoken.SafeNetLunaCAToken
+# org.ejbca.core.model.ca.catoken.NFastCAToken
+# org.ejbca.core.model.ca.catoken.EracomCAToken
+# org.ejbca.core.model.ca.catoken.PKCS11CAToken
+ca.tokentype=soft
+
+# Password for the CA token.
+# With soft token, use password null.
+ca.tokenpassword=null
+
+# Configuration file were you define key name, password and key alias for the HSM. Same as the Hard CA Token Properties in Admin gui.
+# Remove everything in the file and add your own configuration.
+ca.tokenproperties=conf/catoken.properties
+
 # The keysize in bits of the CA, only digits.
 ca.keysize=2048
 
 # The keytype, can be RSA or ECDSA
 ca.keytype=RSA
+
+# Default signing algorithm.
+# Available algorithms are:
+# SHA1WithRSA, SHA1WithECDSA, SHA256WithRSA, SHA256WithECDSA.
+ca.signaturealgorithm=SHA1WithRSA
 
 # The validity in days for the CA, only digits.
 ca.validity=3650

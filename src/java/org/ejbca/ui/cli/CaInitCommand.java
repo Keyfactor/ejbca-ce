@@ -30,15 +30,19 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
+import org.ejbca.core.model.ca.catoken.CATokenInfo;
+import org.ejbca.core.model.ca.catoken.HardCATokenInfo;
+import org.ejbca.core.model.ca.catoken.IHardCAToken;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.util.CertTools;
+import org.ejbca.util.FileTools;
 import org.ejbca.util.StringTools;
 
 
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.13 2007-01-12 09:42:54 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.14 2007-06-20 12:22:26 jbagnert Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
@@ -61,12 +65,15 @@ public class CaInitCommand extends BaseCaAdminCommand {
         // Create new CA.
         if (args.length < 7) {
            String msg = "Used to create a Root CA using RSA keys.";
-           msg += "\nUsage: CA init <caname> <dn> <keyspec> <keytype> <validity-days> <policyID> [<signalgorithm>]";
+           msg += "\nUsage: CA init <caname> <dn> <catokentype> <catokenpassword> <keyspec> <keytype> <validity-days> <policyID> <signalgorithm> [<catokenproperties>]";
+           msg += "\ncatokentype defines if the CA should be created with soft keys or on a HSM. Use soft for software keys and org.ejbca.core.model.ca.catoken.NFastCAToken for nCipher.";
+           msg += "\ncatokenpassword is the password for the CA token.";
            msg += "\nkeytype is RSA or ECDSA.";
            msg += "\nkeyspec for RSA keys is size of RSA keys (1024, 2048, 4096).";
            msg += "\nkeyspec for ECDSA keys is name of curve or 'implicitlyCA', see docs.";
            msg += "\npolicyId can be 'null' if no Certificate Policy extension should be present, or\nobjectID as '2.5.29.32.0'.";
-           msg += "\ndefault sign algorithm is SHA1WithRSA or SHA1WithECDSA.";
+           msg += "\nsignalgorithm is SHA1WithRSA or SHA1WithECDSA.";
+           msg += "\ncatokenproperties is a file were you define key name, password and key alias for the HSM. Same as the Hard CA Token Properties in Admin gui";
            throw new IllegalAdminCommandException(msg);
         }
             
@@ -74,18 +81,18 @@ public class CaInitCommand extends BaseCaAdminCommand {
             String caname = args[1];
             String dn = CertTools.stringToBCDNString(args[2]);
             dn = StringTools.strip(dn);
-            String keyspec = args[3];
-            String keytype = args[4];
-            int validity = Integer.parseInt(args[5]);
-            String policyId = args[6];
+            String catokentype = args[3];
+            String catokenpassword = args[4];
+            String keyspec = args[5];
+            String keytype = args[6];
+            int validity = Integer.parseInt(args[7]);
+            String policyId = args[8];
             if (policyId.equals("null"))
               policyId = null;
-            String signAlg = CATokenConstants.SIGALG_SHA1_WITH_RSA;
-            if (StringUtils.equals(keytype, CATokenConstants.KEYALGORITHM_ECDSA)) {
-            	signAlg = CATokenConstants.SIGALG_SHA1_WITH_ECDSA;
-            }
-            if (args.length > 7) {
-                signAlg = args[7];            	
+            String signAlg = args[9];
+            String catokenproperties = null;
+            if (args.length > 10) {
+                catokenproperties = new String(FileTools.readFiletoBuffer(args[10]));
             }
               
             getOutputStream().println("Initializing CA");            
@@ -93,21 +100,38 @@ public class CaInitCommand extends BaseCaAdminCommand {
             getOutputStream().println("Generating rootCA keystore:");
             getOutputStream().println("CA name: "+caname);
             getOutputStream().println("DN: "+dn);
+            getOutputStream().println("CA token type: "+catokentype);
+            getOutputStream().println("CA token password: "+catokenpassword);
             getOutputStream().println("Keyspec: "+keyspec);
             getOutputStream().println("Keytype: "+keytype);
             getOutputStream().println("Validity (days): "+validity);
             getOutputStream().println("Policy ID: "+policyId);
             getOutputStream().println("Signature alg: "+signAlg);
+            getOutputStream().println("CA token properties: "+catokenproperties);
                             
             initAuthorizationModule(dn.hashCode());
-
-            SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
-            catokeninfo.setSignKeySpec(keyspec);
-            catokeninfo.setSignKeyAlgorithm(keytype);
-            catokeninfo.setSignatureAlgorithm(signAlg);
-            catokeninfo.setEncKeySpec("2048");
-            catokeninfo.setEncKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
-            catokeninfo.setEncryptionAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
+            // Define CAToken type (soft token or hsm).
+            CATokenInfo catokeninfo = null;
+            if ( catokentype == "soft") {
+	            SoftCATokenInfo softcatokeninfo = new SoftCATokenInfo();
+	            softcatokeninfo.setSignKeySpec(keyspec);
+	            softcatokeninfo.setSignKeyAlgorithm(keytype);
+	            softcatokeninfo.setSignatureAlgorithm(signAlg);
+	            softcatokeninfo.setEncKeySpec("2048");
+	            softcatokeninfo.setEncKeyAlgorithm(CATokenConstants.KEYALGORITHM_RSA);
+	            softcatokeninfo.setEncryptionAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
+	            catokeninfo = softcatokeninfo;
+            } else {
+            	HardCATokenInfo hardcatokeninfo = new HardCATokenInfo();
+            	hardcatokeninfo.setAuthenticationCode(catokenpassword);
+            	hardcatokeninfo.setCATokenStatus(IHardCAToken.STATUS_ACTIVE);
+            	hardcatokeninfo.setClassPath(catokentype);
+            	hardcatokeninfo.setEncryptionAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
+            	hardcatokeninfo.setProperties(catokenproperties);
+            	hardcatokeninfo.setSignatureAlgorithm(signAlg);
+            	catokeninfo = hardcatokeninfo;
+            }
+            
             // Create and active OSCP CA Service.
             ArrayList extendedcaservices = new ArrayList();
             String keySpec = keyspec;

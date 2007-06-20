@@ -59,6 +59,7 @@
         <input message="Please enter the CA dn (default: CN=AdminCA1,O=${app.name.cap} Sample,C=SE) ?" addproperty="ca.dn" defaultvalue="CN=AdminCA1,O=${app.name.cap} Sample,C=SE"/>
         <input message="Please enter the CA key size (default: 2048) ?" addproperty="ca.keysize" defaultvalue="2048" />
         <input message="Please enter the CA key type (default: RSA) ?" addproperty="ca.keytype" defaultvalue="RSA" />
+        <input message="Please enter the CA signature algorithm (default: SHA1WithRSA) ?" addproperty="ca.signaturealgorithm" defaultvalue="SHA1WithRSA" />
         <input message="Please enter the CA validity in days (default: 3650) ?" addproperty="ca.validity" defaultvalue="3650"/>
         <input message="Please enter the CA policy id (default, no policy) ?" addproperty="ca.policy" defaultvalue="null"/>
         <input message="Please enter the server httpsserver.hostname (default 'localhost') ?" addproperty="httpsserver.hostname" defaultvalue="localhost"/>
@@ -70,18 +71,22 @@
     <target name="ejbca:init" depends="ejbca:noprompt,ejbca:prompt">
         <echo>
 ------------------- CA Properties ----------------
-ca.name             : ${ca.name}
-ca.dn               : ${ca.dn}
-ca.keysize          : ${ca.keysize}
-ca.keytype          : ${ca.keytype}
-ca.validity         : ${ca.validity}
-ca.policy           : ${ca.policy}
-httpsserver.hostname: ${httpsserver.hostname}
-httpsserver.dn      : ${httpsserver.dn}
-httpsserver.password: ${httpsserver.password}
-superadmin.password : ${superadmin.password}
-java.trustpassword  : ${java.trustpassword}
-appserver.home      : ${appserver.home}
+ca.name                : ${ca.name}
+ca.dn                  : ${ca.dn}
+ca.tokentype           : ${ca.tokentype}
+ca.tokenpassword       : ${ca.tokenpassword}
+ca.keysize             : ${ca.keysize}
+ca.keytype             : ${ca.keytype}
+ca.signaturealgorithm  : ${ca.signaturealgorithm}
+ca.validity            : ${ca.validity}
+ca.policy              : ${ca.policy}
+ca.tokenproperties     : ${ca.tokenproperties}
+httpsserver.hostname   : ${httpsserver.hostname}
+httpsserver.dn         : ${httpsserver.dn}
+httpsserver.password   : ${httpsserver.password}
+superadmin.password    : ${superadmin.password}
+java.trustpassword     : ${java.trustpassword}
+appserver.home         : ${appserver.home}
         </echo>
     </target>
 
@@ -98,8 +103,8 @@ appserver.home      : ${appserver.home}
 	</target>
 
     <target name="ejbca:install" depends="check:bootstrapdone, ejbca:init" description="Install">
-        <echo message="Initializing CA with ${ca.name} '${ca.dn}' ${ca.keysize} ${ca.keytype} ${ca.validity} ${ca.policy} ..."/>
-        <ejbca:cli name="ca" arg='init ${ca.name} "${ca.dn}" ${ca.keysize} ${ca.keytype} ${ca.validity} ${ca.policy}'/>
+        <echo message="Initializing CA with ${ca.name} '${ca.dn}' ${ca.tokentype} ${ca.tokenpassword} ${ca.keysize} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties}..."/>
+        <ejbca:cli name="ca" arg='init ${ca.name} "${ca.dn}" ${ca.tokentype} ${ca.tokenpassword} ${ca.keysize} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties}'/>
         <antcall target="ejbca:adminweb"/>
     	<antcall target="ejbca:javatruststore"/>
     </target>

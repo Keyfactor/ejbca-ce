@@ -161,6 +161,7 @@ If you are using JBoss &lt; 4.0.3 you must configure the property web.jsfimpl in
 For production use you need to do this, don't forget to edit
 passwords to be secure and secret. Keep conf/ejbca.properties as secret as possible.
 DO NOT forget the passwords, if you need to re-install the software sometime.</li>
+<li>To use a hard ca token from start change ca.tokentype, ca.tokenpassword and ca.tokenproperties. You also need to add the appropriate values to the ca.tokenproperties file for the hsm. Read the hsm documentation for the right values.</li>
 <li>Customize the database if needed but easiest thing is to keep the default as it is,
 it will use the JBoss embedded HSQLDB and everything will be easier for you.
 For production use you should use a real database instead of the embedded one.</li>
