@@ -476,6 +476,9 @@ function checkuseemailfield(){
       </td>
       <td width="25%" align="right"> 
         <%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %> <br>&nbsp;
+        <%	if ( EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.UPN) ) { %>
+        		<%= ejbcawebbean.getText("USEONLYUPNDOMAIN") %>
+        <%	} %>
       </td>
       <td width="70%"> 
         <% if(!EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME) ){ %>
