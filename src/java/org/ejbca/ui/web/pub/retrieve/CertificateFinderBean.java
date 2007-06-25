@@ -15,6 +15,7 @@ package org.ejbca.ui.web.pub.retrieve;
 
 import java.math.BigInteger;
 import java.rmi.RemoteException;
+import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -35,6 +36,7 @@ import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.ui.web.admin.rainterface.CertificateView;
 
 /**
  * This bean performs a number of certificate searches for the public web.
@@ -43,7 +45,7 @@ import org.ejbca.core.model.log.Admin;
  * The arguments are supplied as member variables instead. <br>
  * 
  * @author Rolf Staflin
- * @version $Id: CertificateFinderBean.java,v 1.7 2007-06-01 07:39:40 rolf_s Exp $
+ * @version $Id: CertificateFinderBean.java,v 1.8 2007-06-25 15:14:33 anatom Exp $
  */
 public class CertificateFinderBean {
 	
@@ -161,9 +163,9 @@ public class CertificateFinderBean {
 	/**
 	 * Uses the store session to look up all certificates for a subject.
 	 * The parameter <code>result</code> is updated so that it contains
-	 * the certificates.
+	 * the certificates as CertificateView objects.
 	 * @param subject The DN of the subject
-	 * @param result 
+	 * @param result a Collection (not null) that will be filled by CertificateView objects
 	 * @throws RemoteException
 	 */
 	@SuppressWarnings("unchecked")
@@ -182,7 +184,10 @@ public class CertificateFinderBean {
 		if (certificates != null) {
 			Iterator i = certificates.iterator();
 			while (i.hasNext()) {
-				result.add(i.next());
+				X509Certificate cert = (X509Certificate)i.next();
+				// TODO: CertificateView is located in web.admin package, but this is web.pub package...
+				CertificateView view = new CertificateView(cert,null,null);
+				result.add(view);
 			}
 		}
 	}

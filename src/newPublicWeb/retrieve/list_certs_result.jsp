@@ -29,8 +29,8 @@
 <pre>
 Subject:       ${certificate.subjectDN}
 Issuer:        ${certificate.issuerDN}
-NotBefore:     ${certificate.notBefore}
-NotAfter:      ${certificate.notAfter}
+NotBefore:     ${certificate.validFrom}
+NotAfter:      ${certificate.validTo}
 Serial number: ${certificate.serialNumber}
 </pre>
                         <c:url var="check_status" value="check_status_result.jsp" >
