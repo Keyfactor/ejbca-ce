@@ -1,2 +1,19 @@
+# Configuration file were you define key name, password and key alias for the HSM.
+# This file is used when adding a CA using an HSM during 'ant install' or with the CLI (command line interface). 
+# Same as the Hard CA Token Properties in Admin-GUI.
+# Remove everything in the file and add your own configuration.
+#
+# See the User's Guide locally or at ejbca.org for details and the latest news.
+#
+# Possible values differ depending on which HSM you are using. 
+# Common for all HSM are:
+#   * certSignKey - the key to be used when signing certificates, can be RSA or ECDSA.
+#   * crlSignKey - the key to be used when signing CLSs, can be RSA or ECDSA.
+#   * keyEncryptKey - the key to be used for key encryption and decryption, this must be an RSA key.
+#   * testKey - the key to be used by HSM status checks, can be RSA or ECDSA.
+#   * hardTokenEncrypt - the key to be used for hardtoken encryption and decryption. PUK will be decrypted by this key.
+#   * defaultKey - the key to be used when no other key is defined for a purpose. If this is the only definition then this key will be used for all purposes.
+#
+# Example for nCipher HSM using the JCE interface:
 keyStore 2349823489289asd2387234
 defaultKey defaultRoot
