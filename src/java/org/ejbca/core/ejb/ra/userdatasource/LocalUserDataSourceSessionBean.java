@@ -696,6 +696,7 @@ public class LocalUserDataSourceSessionBean extends BaseSessionBean {
      * 2. If the admin is authorized to all cas applicable to userdata source.
      *    or
      *    If the userdatasource have "ANYCA" set.
+     * 3. The admin is authorized to the fetch or remove rule depending on the remove parameter
      * @param if the call is aremove call, othervise fetch authorization is used.
      * @return true if the administrator is authorized
      */

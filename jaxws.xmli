@@ -66,13 +66,13 @@
 
     <target depends="ws.init" name="ws.build" unless="ejbcaws.isjava14">
         <echo message="${ant.project.name}: ${ant.file}"/>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="${build}" >
-            <src path="src/java"/>
+        <javac debug="on"  destdir="${build}" >
+            <src path="${src.java}"/>
             <classpath refid="jaxws.classpath"/>
         	<exclude name="org/ejbca/core/protocol/ws/client/*.java"/>
         	<include name="org/ejbca/core/protocol/ws/**"/>
         </javac>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="tmp/jaxws/gen-classes/server" >
+        <javac debug="on" destdir="tmp/jaxws/gen-classes/server" >
             <src path="src/jaxws/gen-java/server"/>
             <classpath refid="jaxws.classpath"/>        	
         </javac>
@@ -208,9 +208,7 @@
     </target>
 	
     <target name="test:runws" depends="test:compilews,j2ee:assert-run" description="run JAXWS JUnit testcases">
-    	<echo>Important: In order to run the tests you have to create a JKS 
-named wstest.jks with Superadmin rights and password 'foo123' 
-in the p12 subdirectory.
+    	<echo>Important: In order to run the tests you have performed a regular ant install at some point and not changed the default administrator group.
     	</echo>
         <delete dir="${test.dir}/ws/reports" />
         <mkdir dir="${test.dir}/ws/reports/html" />
@@ -224,7 +222,12 @@ in the p12 subdirectory.
         	<!-- we must use fork=yes or the BC JCE won't be authenticated due to some problem with ant classloading -->
             <batchtest fork="yes" todir="${test.dir}/ws/reports">
                 <fileset dir="${test.dir}">
-                    <include name="**/protocol/ws/Test*" />
+                    <include name="**/protocol/ws/TestEjbcaWS.class" />
+                </fileset>
+            </batchtest>
+            <batchtest fork="yes" todir="${test.dir}/ws/reports">
+                <fileset dir="${test.dir}">
+                    <include name="**/protocol/ws/TestEjbcaWSNonAdmin.class" />
                 </fileset>
             </batchtest>
         </junit>

@@ -412,6 +412,72 @@ public class TestApprovalSession extends TestCase {
 		ApprovalDataVO next = (ApprovalDataVO) result.iterator().next();
 		
 		pub.removeApprovalRequest(admin1, next.getId());
+		
+		
+	}
+	
+	public void testIsApprovedWithSteps() throws Exception {
+		DummyApprovalRequest nonExecutableRequest = new DummyApprovalRequest(reqadmin,null,caid,SecConst.EMPTY_ENDENTITYPROFILE,3,false);
+		pub.addApprovalRequest(reqadmin, nonExecutableRequest);		
+		
+		int status = pub.isApproved(reqadmin, nonExecutableRequest.generateApprovalId(),0);
+		assertTrue(status == 2);
+				
+		int approvalId = nonExecutableRequest.generateApprovalId();
+		Approval approval1 = new Approval("ap1test");
+		pub.approve(admin1, approvalId, approval1);
+		
+
+		status = pub.isApproved(reqadmin, nonExecutableRequest.generateApprovalId(),0);
+		assertTrue(status == 1);
+		
+		Approval approval2 = new Approval("ap2test");
+		pub.approve(admin2, approvalId, approval2);
+		
+
+		status = pub.isApproved(reqadmin, approvalId,0);
+		assertTrue(status == ApprovalDataVO.STATUS_APPROVED);
+		
+		status = pub.isApproved(reqadmin, approvalId,1);
+		assertTrue(status == ApprovalDataVO.STATUS_APPROVED);
+		
+		status = pub.isApproved(reqadmin, approvalId,2);
+		assertTrue(status == ApprovalDataVO.STATUS_APPROVED);
+		
+		pub.markAsStepDone(reqadmin, approvalId, 0);
+		
+
+		status = pub.isApproved(reqadmin, approvalId,0);
+		assertTrue(status == ApprovalDataVO.STATUS_EXPIRED);
+
+		
+		status = pub.isApproved(reqadmin, approvalId,1);
+		assertTrue(status == ApprovalDataVO.STATUS_APPROVED);
+		
+		pub.markAsStepDone(reqadmin, approvalId, 1);
+		
+		status = pub.isApproved(reqadmin, approvalId,0);
+		assertTrue(status == ApprovalDataVO.STATUS_EXPIRED);
+		
+		status = pub.isApproved(reqadmin, approvalId,1);
+		assertTrue(status == ApprovalDataVO.STATUS_EXPIRED);
+		
+		status = pub.isApproved(reqadmin, approvalId,2);
+		assertTrue(status == ApprovalDataVO.STATUS_APPROVED);
+		
+		pub.markAsStepDone(reqadmin, approvalId, 2);
+		
+		status = pub.isApproved(reqadmin, approvalId,2);
+		assertTrue(status == ApprovalDataVO.STATUS_EXPIRED);	  
+		
+						
+		
+		Collection result = pub.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());			
+		ApprovalDataVO next = (ApprovalDataVO) result.iterator().next();
+		
+		pub.removeApprovalRequest(admin1, next.getId());
+		
+		
 	}
 
 	public void testFindNonExpiredApprovalRequest() throws Exception {

@@ -32,7 +32,7 @@ import org.ejbca.util.CertTools;
  * Data contained in the class is preferbly
  *
  * @author TomSelleck
- * @version $Id: Admin.java,v 1.4 2007-01-07 20:08:57 anatom Exp $
+ * @version $Id: Admin.java,v 1.5 2007-06-25 14:45:32 herrvendil Exp $
  */
 public class Admin implements Serializable {
 
@@ -70,9 +70,9 @@ public class Admin implements Serializable {
                                                          AdminEntity.SPECIALADMIN_CACOMMANDLINEADMIN, AdminEntity.SPECIALADMIN_BATCHCOMMANDLINEADMIN,
                                                          AdminEntity.SPECIALADMIN_INTERNALUSER};
 
-    private int type = -1;
-    private String data;
-    private X509Certificate certificate;
+    protected int type = -1;
+    protected String data;
+    protected X509Certificate certificate;
 
     // Public Constructors
     public Admin(X509Certificate certificate) {
@@ -84,6 +84,7 @@ public class Admin implements Serializable {
         this.type = type;
         this.data = ip;
     }
+    
 
     public Admin(int type) {
         this(type, null);

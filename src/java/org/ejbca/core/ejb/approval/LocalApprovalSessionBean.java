@@ -626,20 +626,22 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
      * exists any approved action.
      * 
      * If goes through all approvalrequests with the given Id and checks
-     * their status, if any have status approved it returns true.
+     * their status, if any have status approved it returns STATUS_APPROVED.
      * 
      * This method should be used by action requiring the requesting administrator
-     * to poll to see if it have been approved.
+     * to poll to see if it have been approved and only have one step, othervise
+     * use the method with the step parameter.
      * 
      * @param admin
      * @param approvalId
      * @return the number of approvals left, 0 if approved othervis is the ApprovalDataVO.STATUS constants returned indicating the statys.
      * @throws ApprovalException if approvalId doesn't exists
-     * @throws ApprovalRequestExpiredException Throws this exception one time if one of the approvals have expired, once notified it wount throw it anymore.
+     * @throws ApprovalRequestExpiredException Throws this exception one time if one of the approvals have expired, once notified it wont throw it anymore. But 
+     * If the request is multiple steps and user have already performed that step, the Exception will always be thrown. 
      * 
      * @ejb.interface-method view-type="both"
      */
-    public int isApproved(Admin admin, int approvalId) throws ApprovalException, ApprovalRequestExpiredException{
+    public int isApproved(Admin admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException{
     	log.debug(">isApproved, approvalId" + approvalId);
     	int retval = ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED;
     	
@@ -648,7 +650,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
 			Iterator iter = result.iterator();
 			while(iter.hasNext()){
 				ApprovalDataLocal adl = (ApprovalDataLocal) iter.next();
-				retval = adl.isApproved();
+				retval = adl.isApproved(step);
 				if(adl.getStatus() == ApprovalDataVO.STATUS_WAITINGFORAPPROVAL ||
 				   adl.getStatus() == ApprovalDataVO.STATUS_APPROVED ||
 				   adl.getStatus() == ApprovalDataVO.STATUS_REJECTED ){
@@ -665,6 +667,61 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
     }
     
     /**
+     * Method that goes through exists approvals in database to see if there
+     * exists any approved. This is the default method for simple single step
+     * approvals.
+     * 
+     * If goes through all approvalrequests with the given Id and checks
+     * their status, if any have status approved it returns STATUS_APPROVED.
+     * 
+     * This method should be used by action requiring the requesting administrator
+     * to poll to see if it have been approved and only have one step, othervise
+     * use the method with the step parameter.
+     * 
+     * @param admin
+     * @param approvalId
+     * @return the number of approvals left, 0 if approved othervis is the ApprovalDataVO.STATUS constants returned indicating the status.
+     * @throws ApprovalException if approvalId doesn't exists
+     * @throws ApprovalRequestExpiredException Throws this exception one time if one of the approvals have expired, once notified it wont throw it anymore. But 
+     * If the request is multiple steps and user have already performed that step, the Exception will always be thrown.
+     * 
+     * @ejb.interface-method view-type="both"
+     */
+    public int isApproved(Admin admin, int approvalId) throws ApprovalException, ApprovalRequestExpiredException{
+       return isApproved(admin, approvalId, 0);
+    }
+    
+    
+    /**
+     * Method that marks a certain step of a a non-executable approval 
+     * as done. When the last step is performed the approvel is marked as EXPRIED.
+     *  
+     * @param admin
+     * @param approvalId
+     * @param step in approval to mark
+     * @throws ApprovalException if approvalId doesn't exists,
+     * 
+     * @ejb.interface-method view-type="both"
+     */
+    public void markAsStepDone(Admin admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException{
+    	log.debug(">markAsStepDone, approvalId" + approvalId + ", step " + step);
+    	    	
+    	try {
+			Collection result = approvalHome.findByApprovalId(approvalId);
+			Iterator iter = result.iterator();
+			while(iter.hasNext()){
+				ApprovalDataLocal adl = (ApprovalDataLocal) iter.next();				
+                adl.markStepAsDone(step);
+			}
+			
+		} catch (FinderException e) {
+            throw new ApprovalException("Approval request with id : " + approvalId + " doesn't exists");
+		}
+    	
+		log.debug("<markAsStepDone.");
+    }
+    
+    /**
      * Method returning  an approval requests with status 'waiting', 'Approved' or 'Reject'
      * returns null if no non expirted have exists
      * @ejb.transaction type="Supports"
@@ -678,6 +735,8 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
     		retval = data.getApprovalDataVO(); 
     	}
 		
+    	
+    	
     	return retval;    	
     }
     
@@ -801,7 +860,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
           sqlquery = sqlquery + caauthstring;
         }
 
-        if(endentityauth != null){
+        if(endentityauth != null && !endentityauth.equals("")){
           if (caauthstring.trim().equals("") && query == null){
         	sqlquery = sqlquery + endentityauth;
           }else{

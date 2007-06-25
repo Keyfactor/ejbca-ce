@@ -1125,10 +1125,33 @@ The functionality currently available through the Web Service Interface are:
 <li>revokeUser  : Revokes all certificates for a given user, it's also possible to delete the user</li>
 <li>revokeToken : Revokes all certificates placed on a given hard token</li>
 <li>checkRevokationStatus : Checks the revokation status of a certificate</li>
+<li>isAuthorized : Checks if an admin is authorized to an resource</li>
+<li>fetchUserData : Method used to fetch userdata from an existing UserDataSource</li>
+<li>genTokenCertificates : Method used to add information about a generated hardtoken</li>
+<li>existsHardToken : Looks up if a serial number already have been generated</li>
+<li>getHardTokenData : Method fetching information about a hard token given it's hard token serial number.</li>
+<li>getHardTokenDatas: Method fetching all hard token informations for a given user.</li>
+<li>republishCertificate : Method performing a republication of a selected certificate</li>
+<li>isApproved : Looks up if a requested action have been approved by an authorized administrator or not</li>
+<li>customLog  : Logs a CUSTOM_LOG event to the logging system</li>
+<li>deleteUserDataFromSource : Method used to remove user data from a user data source</li>
+<li>getCertificate : Returns a certificate given its issuer and serial number</li>
 </ul>
 <p>
-There is also a cli tool that can be used for remote scripting. See next section for more information.
+There is also a cli tool that can be used for remote scripting. See following section for more information.
+Note: All these call isn't available through the CLI.
 </p>
+<subsection name="Configuring Web Services CLI">
+<p>
+There exists one propertyfile in conf/jaxws.properties.sample that is used to
+configure the behaviour of the WS service. To configure it copy it and name
+it jaxws.properties.
+</p>
+<p>
+See the sample file for details of how to configure the Web Service interface.
+</p>
+</subsection>
+
 <subsection name="Using the Web Services CLI">
 <p>
 When building EJBCA, a Web Service CLI tool is also generated. The tool is placed
@@ -1228,7 +1251,7 @@ Example checking the revocation status of a certificate:
   }	  
 </source>
 <p>
-See the file src/java/org/ejbca/core/protocol/ws/EjbcaWS
+See the file src/java/org/ejbca/core/protocol/ws/common/IEjbcaWS
 for more detailed instructions of the API. And test/java/org/ejbca/core/protocol/ws/TestEjbcaWS
 for more examples on using the API.
 </p>
@@ -1239,7 +1262,7 @@ All the calls requires HTTPS client authentication. The keystore used
 must be set up as a regular administrator with the administrator flag set
 and access rules according to the following:
 </p><p>
-Common for all calls:
+Common for all calls (except isAuthorized, existsHardToken, isApproved that only needs a valid trusted certificate):
 </p>
 <ul>
 <li>Administrator flag set</li>
@@ -1283,6 +1306,75 @@ revokeUser:
 <li>/ra_functionality/'end entity profile of the user'/revoke_end_entity</li>
 <li>/ra_functionality/delete_end_entity  (only if users should be deleted)</li>
 <li>/ra_functionality/'end entity profile of the user'/delete_end_entity  (only if users should be deleted)</li>
+</ul>
+<p>
+fetchUserData:
+It is possible to turn of authorization of this call in the jaxws.properties
+</p>
+<ul>
+<li>/userdatasourcesrules/'user data source'/fetch_userdata</li>
+</ul>
+<p>
+genTokenCertificate:
+Important this call also supports approvals, and the default behaviour is when
+someone without the '/administrator' access is creating a call then will a GenerateTokenApprovalRequest
+be created. This behaviour can be turned off in the jaxws.properties file.
+</p>
+<ul>
+<li>/ra_functionality/create_end_entity and/or edit_end_entity</li>
+<li>/endentityprofilesrules/'end entity profile of user'/create_end_entity and/or edit_end_entity</li>
+<li>/ra_functionality/revoke_end_entity (if overwrite flag is set)</li>
+<li>/endentityprofilesrules/'end entity profile of user'/revoke_end_entity (if overwrite flag is set)</li>
+<li>/ca_functionality/create_certificate</li>
+<li>/ca/'ca of all requested certificates'</li>
+<li>hardtoken_functionality/issue_hardtokens</li>
+</ul>
+<p>
+getHardTokenData:
+Important this call also supports approvals, and the default behaviour is when
+someone without the '/administrator' access is creating a call then will a ViewHardTokenApprovalRequest
+be created. This behaviour can be turned off in the jaxws.properties file.
+</p>
+<ul>
+<li>/ra_functionality/view_hardtoken</li>
+<li>/endentityprofilesrules/'end entity profile of user'/view_hardtoken</li>
+<li>/endentityprofilesrules/'end entity profile of user'/view_hardtoken/puk_data (if viewPUKData = true)</li>
+</ul>
+<p>
+getHardTokenDatas:
+</p>
+<ul>
+<li>/ra_functionality/view_hardtoken</li>
+<li>/endentityprofilesrules/'end entity profile of user'/view_hardtoken</li>
+<li>/endentityprofilesrules/'end entity profile of user'/view_hardtoken/puk_data (if viewPUKData = true)</li>
+</ul>
+<p>
+republishCertificate:
+</p>
+<ul>
+<li>/ra_functionality/view_end_entity</li>
+<li>/endentityprofilesrules/'end entity profile of the user'/view_end_entity</li>
+<li>/endentityprofilesrules/'end entity profile of user'/view_hardtoken/puk_data (if viewPUKData = true)</li>
+</ul>
+<p>
+customLog:
+No CA access rule is required.
+</p>
+<ul>
+<li>/log_functionality/log_custom_events</li>
+</ul>
+<p>
+deleteUserDataFromSource:
+</p>
+<ul>
+<li>/userdatasourcesrules/'user data source'/remove_userdata (for all the given user data sources)</li>
+</ul>
+<p>
+getCertificate:
+no requirement of the '/administrator' flag
+</p>
+<ul>
+<li>/ca_functionality/view_certificate</li>
 </ul>
 </subsection>
 </section>

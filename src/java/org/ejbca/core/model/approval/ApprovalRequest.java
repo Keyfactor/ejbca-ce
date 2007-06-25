@@ -56,7 +56,7 @@ import org.ejbca.util.CertTools;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalRequest.java,v 1.8 2006-08-13 10:13:58 anatom Exp $
+ * @version $Id: ApprovalRequest.java,v 1.9 2007-06-25 14:45:34 herrvendil Exp $
  */
 
 public abstract class ApprovalRequest implements  Externalizable { 
@@ -65,7 +65,7 @@ public abstract class ApprovalRequest implements  Externalizable {
 	
 	private static final Logger log = Logger.getLogger(ApprovalRequest.class);
 	
-	private static final int LATEST_VERSION = 2;
+	private static final int LATEST_BASE_VERSION = 3;
 		
 	/**
 	 * Simple request type means that the approver will only see new data about the
@@ -105,9 +105,11 @@ public abstract class ApprovalRequest implements  Externalizable {
     private int cAId = 0;
     
     private int endEntityProfileId = 0;
+    
+    private boolean[] approvalSteps = {false};
    
     /**
-     * Main constructor of an approval request
+     * Main constructor of an approval request for standard one step approval request.
      * @param requestAdminCert the certificate of the requesting admin
      * @param requestSignature signature of the requestor (OPTIONAL, for future use)
      * @param approvalRequestType one of TYPE_ constants
@@ -125,6 +127,32 @@ public abstract class ApprovalRequest implements  Externalizable {
 		this.numOfRequiredApprovals = numOfRequiredApprovals;
 		this.cAId = cAId;
 		this.endEntityProfileId = endEntityProfileId;
+	}
+	
+    /**
+     * Main constructor of an approval request.
+     * @param requestAdminCert the certificate of the requesting admin
+     * @param requestSignature signature of the requestor (OPTIONAL, for future use)
+     * @param approvalRequestType one of TYPE_ constants
+     * @param numOfRequiredApprovals 
+     * @param cAId the related cAId of the request that the approver must be authorized to or ApprovalDataVO.ANY_CA in applicable to any ca
+     * @param endEntityProfileId the related profile id that the approver must be authorized to or ApprovalDataVO.ANY_ENDENTITYPROFILE if applicable to any end entity profile
+     * @param numberOfSteps that this type approval request supports.
+     */
+	protected ApprovalRequest(Admin requestAdmin, String requestSignature, 
+			                  int approvalRequestType, int numOfRequiredApprovals, int cAId, int endEntityProfileId, int numberOfSteps) {
+		super();
+		
+   	    setRequestAdmin(requestAdmin);
+		this.requestSignature = requestSignature;
+		this.approvalRequestType = approvalRequestType;
+		this.numOfRequiredApprovals = numOfRequiredApprovals;
+		this.cAId = cAId;
+		this.endEntityProfileId = endEntityProfileId;
+		this.approvalSteps = new boolean[numberOfSteps];
+		for(int i=0;i<numberOfSteps;i++){
+			this.approvalSteps[i] = false;
+		}
 	}
 	
 	/**
@@ -284,15 +312,43 @@ public abstract class ApprovalRequest implements  Externalizable {
 		return requestAdmin;
 	}
 	
+	/**
+	 * Returns true if this step have been executed before.
+	 * @param step to query
+	 */
+	public boolean isStepDone(int step){
+		return approvalSteps[step];
+	}
+
+	/**
+	 * Marks the given step as done.
+	 * @param step to query
+	 */
+	public void markStepAsDone(int step){
+		approvalSteps[step] = true;
+	}
+
+	/**
+	 * Returns the number of steps that this approval request
+	 * supports.
+	 */
+	public int getNumberOfApprovalSteps(){
+		return approvalSteps.length;
+	}
+	
 
 	public void writeExternal(ObjectOutput out) throws IOException {
-		out.writeInt(LATEST_VERSION);
+		out.writeInt(LATEST_BASE_VERSION);
 		out.writeObject(this.requestAdmin);
 		out.writeObject(this.requestSignature);
 		out.writeInt(this.approvalRequestType);
 		out.writeInt(this.numOfRequiredApprovals);
 		out.writeInt(this.cAId);
 		out.writeInt(this.endEntityProfileId);
+		out.writeInt(this.approvalSteps.length);
+		for(int i=0;i<approvalSteps.length;i++){
+			out.writeBoolean(approvalSteps[i]);
+		}
 	}
 
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
@@ -315,6 +371,7 @@ public abstract class ApprovalRequest implements  Externalizable {
 			this.numOfRequiredApprovals =  in.readInt();
 			this.cAId = in.readInt();
 			this.endEntityProfileId = in.readInt();
+			this.approvalSteps = new boolean[1];
 		}
 		if(version == 2){
 			this.requestAdmin = (Admin) in.readObject();
@@ -323,6 +380,20 @@ public abstract class ApprovalRequest implements  Externalizable {
 			this.numOfRequiredApprovals =  in.readInt();
 			this.cAId = in.readInt();
 			this.endEntityProfileId = in.readInt();
+			this.approvalSteps = new boolean[1];
+		}
+		if(version == 3){
+			this.requestAdmin = (Admin) in.readObject();
+			this.requestSignature = (String) in.readObject();
+			this.approvalRequestType = in.readInt();
+			this.numOfRequiredApprovals =  in.readInt();
+			this.cAId = in.readInt();
+			this.endEntityProfileId = in.readInt();
+			int stepSize = in.readInt();
+			this.approvalSteps = new boolean[stepSize];
+			for(int i=0;i<approvalSteps.length;i++){
+				approvalSteps[i] = in.readBoolean();
+			}
 		}
 		
 	}

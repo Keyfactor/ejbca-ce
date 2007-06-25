@@ -32,7 +32,7 @@ import org.ejbca.util.CertTools;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: DummyApprovalRequest.java,v 1.3 2006-08-11 02:57:49 herrvendil Exp $
+ * @version $Id: DummyApprovalRequest.java,v 1.4 2007-06-25 14:45:31 herrvendil Exp $
  */
 
 public class DummyApprovalRequest extends ApprovalRequest { 
@@ -65,6 +65,17 @@ public class DummyApprovalRequest extends ApprovalRequest {
 		this.executable = executable;
 		
 	}  
+	
+    /**
+     * Main constructor of an approval request with step functionality
+     */
+
+	public DummyApprovalRequest(Admin requestAdmin, String requestSignature, int cAId, int endEntityProfileId, int steps, boolean executable) {
+		super(requestAdmin, requestSignature, ApprovalRequest.REQUESTTYPE_SIMPLE,
+				NUM_OF_REQUIRED_APPROVALS, cAId, endEntityProfileId, steps);	
+		this.executable = executable;
+		
+	} 
 	
 	/**
 	 * Constuctor used in externaliziation only

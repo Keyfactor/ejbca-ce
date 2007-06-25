@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
@@ -54,7 +55,7 @@ import org.ejbca.util.query.IllegalQueryException;
  * otherwise will a AuthorizationDenied Exception be thrown.
  * 
  * @author Philip Vendil
- * $Id: IEjbcaWS.java,v 1.4 2007-05-09 09:29:12 herrvendil Exp $
+ * $Id: IEjbcaWS.java,v 1.5 2007-06-25 14:45:33 herrvendil Exp $
  */
 public interface IEjbcaWS {
 	
@@ -286,7 +287,13 @@ public interface IEjbcaWS {
 	/**
 	 * Method used to fetch userdata from an existing UserDataSource.
 	 * 
-	 * Authorization requirements: A valid certificate
+	 * Authorization requirements:
+	 * - Administrator flag set
+	 * - /administrator
+	 * - /userdatasourcesrules/<user data source>/fetch_userdata (for all the given user data sources)
+	 * - /ca/<all cas defined in all the user data sources>
+	 * 
+	 * If not turned of in jaxws.properties then only a valid certificate required
 	 * 
 	 * 
 	 * @param userDataSourceNames a List of User Data Source Names
@@ -297,7 +304,7 @@ public interface IEjbcaWS {
 	 */
 	public abstract List<UserDataSourceVOWS> fetchUserData(
 			List<String> userDataSourceNames, String searchString)
-			throws UserDataSourceException, EjbcaException;
+			throws UserDataSourceException, EjbcaException, AuthorizationDeniedException;
 
 	/**
 	 * Method used to add information about a generated hardtoken
@@ -326,6 +333,10 @@ public interface IEjbcaWS {
 	 * @throws AuthorizationDeniedException if the administrator isn't authorized.
 	 * @throws WaitingForApprovalException if the caller is a non-admin a must be approved before it is executed.
 	 * @throws HardTokenExistsException if the given hardtokensn already exists.
+	 * @throws ApprovalRequestExpiredException if the request for approval have expired.
+	 * @throws ApprovalException  if error happended with the approval mechanisms
+	 * @throws WaitingForApprovalException if the request haven't been processed yet. 
+	 * @throws ApprovalRequestExecutionException if the approval request was rejected 
 	 */
 
 	public abstract List<TokenCertificateResponseWS> genTokenCertificates(
@@ -335,7 +346,7 @@ public interface IEjbcaWS {
 			boolean overwriteExistingSN) throws AuthorizationDeniedException,
 			WaitingForApprovalException, HardTokenExistsException,
 			UserDoesntFullfillEndEntityProfile, ApprovalException,
-			EjbcaException;
+			EjbcaException, ApprovalRequestExpiredException, ApprovalRequestExecutionException;
 
 	/**
 	 * Looks up if a serial number already have been generated
@@ -368,10 +379,14 @@ public interface IEjbcaWS {
 	 * @return the HardTokenData
 	 * @throws HardTokenDoesntExistsException if the hardtokensn don't exist in database.
 	 * @throws EjbcaException if an exception occured on server side.
+	 * @throws ApprovalRequestExpiredException if the request for approval have expired.
+	 * @throws ApprovalException  if error happended with the approval mechanisms
+	 * @throws WaitingForApprovalException if the request haven't been processed yet. 
+	 * @throws ApprovalRequestExecutionException if the approval request was rejected 
 	 */
 	public abstract HardTokenDataWS getHardTokenData(String hardTokenSN, boolean viewPUKData, boolean onlyValidCertificates)
 			throws AuthorizationDeniedException,
-			HardTokenDoesntExistsException, EjbcaException;
+			HardTokenDoesntExistsException, EjbcaException, ApprovalException, ApprovalRequestExpiredException, WaitingForApprovalException, ApprovalRequestExecutionException;
 
 	/**
 	 * Method fetching all hard token informations for a given user.

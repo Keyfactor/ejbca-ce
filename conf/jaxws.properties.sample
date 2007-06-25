@@ -1,0 +1,40 @@
+#
+# $Id: jaxws.properties.sample,v 1.1 2007-06-25 14:54:29 herrvendil Exp $
+#
+# This is a sample file to override properties used
+# during deployment of EJBCA
+# 
+# You should copy and rename this file to jaxws.properties
+# and customize at will.
+#
+
+# ------------ Web service (jaxws) configuration ---------------------
+# 
+# Disable this (set to false) if you do not want to deploy the WS-API in EJBCA
+# Default: true
+#ejbcaws.enabled=true
+
+#------------------- JAXWS settings -------------
+# Settings indicating if a call to gethardtokendata for non-authorized users
+# should result in an approval request instead of an authorized denied exception.
+#
+# Default: true
+#jaxws.approval.gethardtoken=true
+
+# Settings indicating if a call to gentokencertificates for non-authorized users
+# should result in an approval request instead of an authorized denied exception.
+#
+# Default: true
+#jaxws.approval.gentokencerts=true
+
+# Setting indicating the number of approvals required to allow an action for
+# a non-authorized administrator.
+# Default : 1
+# jaxws.numberofrequiredapprovals=1
+
+# Disable authorization control on the fetchUserData call, making it possible
+# for all with a valid certificate to retrieve userData
+# Default : false
+# jaxws.noauthonfetchuserdata=false
+
+

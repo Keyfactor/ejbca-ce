@@ -112,7 +112,7 @@ import org.ejbca.util.CertTools;
  *   jndi-name="${datasource.jndi-name}"
  *   
  * @author Philip Vendil
- * @version $Id: ApprovalDataBean.java,v 1.7 2006-10-07 14:10:31 anatom Exp $   
+ * @version $Id: ApprovalDataBean.java,v 1.8 2007-06-25 14:45:32 herrvendil Exp $   
  */
 public abstract class ApprovalDataBean extends BaseEntityBean {
 
@@ -399,6 +399,8 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
     	
     }
     
+    
+    
     /**
      * Method that returns the approval data.
      *
@@ -511,7 +513,11 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
      *
      * @ejb.interface-method view-type="local"
      */
-    public int isApproved() throws ApprovalRequestExpiredException {    	
+    public int isApproved(int step) throws ApprovalRequestExpiredException {    	
+    	if(getApprovalRequest().isStepDone(step)){
+    		return ApprovalDataVO.STATUS_EXPIRED;
+    	}
+    	
     	if(haveRequestOrApprovalExpired()){
     		if(getStatus() != ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED &&
     		   getStatus() != ApprovalDataVO.STATUS_EXECUTED &&
@@ -531,6 +537,31 @@ public abstract class ApprovalDataBean extends BaseEntityBean {
     	return getStatus();
     	        		                                           
     } 
+    
+    /**
+     * Method used to mark an non-executable approval as done
+     * if the last step is performed will the status be set as
+     * expired.
+     *
+     * @throws ApprovalRequestExpiredException if the step have already been executed
+     * @ejb.interface-method view-type="local"
+     */
+    public void markStepAsDone(int step) throws ApprovalRequestExpiredException {
+    	ApprovalRequest ar = getApprovalRequest();
+        if(!ar.isExecutable() && getStatus() == ApprovalDataVO.STATUS_APPROVED){
+        	if(!ar.isStepDone(step)){
+        		ar.markStepAsDone(step);
+        		setApprovalRequest(ar);
+        		if(step == ar.getNumberOfApprovalSteps()-1){
+        			setStatus(ApprovalDataVO.STATUS_EXPIRED);
+        		}
+        	}else{
+        		throw new ApprovalRequestExpiredException("Error step " + step + " of approval with id " + getApprovalid() + " have alread been performed");
+        	}
+        	
+        }
+        		                                           
+    }
 
 
     //

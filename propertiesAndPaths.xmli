@@ -35,6 +35,7 @@
     <property file="conf/ocsp.properties" />
     <property file="conf/web.properties" />
     <property file="conf/cmp.properties" />
+    <property file="conf/jaxws.properties" />
     <property file="conf/xkms.properties" />
 
     <!--
@@ -300,6 +301,12 @@
 	<property name="cmp.tcp.portno" value="829" />
 	<property name="cmp.tcp.logdir" value="./log" />
 	<property name="cmp.tcp.conffile" value="" />
+	
+	<!-- JAXWS settings -->
+	<property name="jaxws.approval.gethardtoken" value="true" />				
+	<property name="jaxws.approval.gentokencerts" value="true" />
+	<property name="jaxws.numberofrequiredapprovals" value="1" />
+	<property name="jaxws.noauthonfetchuserdata" value="false" />
 	
 	<!-- XKMS settings -->
 	<property name="xkms.enabled" value="true" />				
