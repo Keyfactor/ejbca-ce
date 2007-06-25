@@ -5,13 +5,15 @@ import java.util.HashMap;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.ejbca.util.Base64GetHashMap;
 import org.ejbca.util.Base64PutHashMap;
 
 /** Tests Base64 HashMap XML encoding and decoding
  * 
  * @author tomasg
- * @version $Id: TestHashMap.java,v 1.5 2006-07-12 19:17:18 anatom Exp $
+ * @version $Id: TestHashMap.java,v 1.6 2007-06-25 14:33:50 anatom Exp $
  */
 public class TestHashMap extends TestCase {
     //private static final Logger log = Logger.getLogger(TestHashMap.class);
@@ -78,7 +80,17 @@ public class TestHashMap extends TestCase {
         } catch (ArrayIndexOutOfBoundsException e) {
             return;
         }
-        assertTrue(false);
+        String javaver = System.getProperty("java.version");
+        //log.error(javaver);
+        if (StringUtils.contains(javaver, "1.6")) {
+        	// In java 1.6 the above does work because it encodes the special characters
+        	//   <string><char code="#0"/>1<char code="#0"/>2fooString</string> 
+            assertTrue(true);        	
+        } else {
+        	// In java 1.5 the above does not work, because it will insert bad xml-characters 
+        	// so the test will fail if we got here.
+            assertTrue(false);        	        	
+        }
     }
     public void test01HashMapStrangeCharsSafe() throws Exception {
         HashMap h = new HashMap();
