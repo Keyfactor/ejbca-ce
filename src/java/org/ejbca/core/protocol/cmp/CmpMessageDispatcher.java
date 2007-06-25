@@ -50,7 +50,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * - Certificate Confirmation - accept or reject by client - will return a PKIConfirm
  * 
  * @author tomas
- * @version $Id: CmpMessageDispatcher.java,v 1.11 2007-05-30 09:52:39 anatom Exp $
+ * @version $Id: CmpMessageDispatcher.java,v 1.12 2007-06-25 15:13:49 anatom Exp $
  */
 public class CmpMessageDispatcher {
 	private static final Logger log = Logger.getLogger(CmpMessageDispatcher.class);
@@ -103,6 +103,7 @@ public class CmpMessageDispatcher {
 			try {
 				req = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(message)).readObject());				
 			} catch (Exception e) {
+				log.error("Error parsing CMP message: ", e);
 				// If we could not read the message, we should return an error BAD_REQUEST
 				ret = CmpMessageHelper.createUnprotectedErrorMessage(null, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, "Can not parse request message");
 				return ret;
