@@ -27,11 +27,13 @@
                 <c:otherwise> 
                     <c:forEach var="certificate" items="${certificates}">
 <pre>
-Subject:       ${certificate.subjectDN}
-Issuer:        ${certificate.issuerDN}
-NotBefore:     ${certificate.validFrom}
-NotAfter:      ${certificate.validTo}
-Serial number: ${certificate.serialNumber}
+Subject:          ${certificate.subjectDN}
+Issuer:           ${certificate.issuerDN}
+NotBefore:        ${certificate.validFrom}
+NotAfter:         ${certificate.validTo}
+Serial number:    ${certificate.serialNumber}
+SHA1 fingerprint: ${certificate.SHA1Fingerprint}
+MD5 fingerprint:  ${certificate.MD5Fingerprint}
 </pre>
                         <c:url var="check_status" value="check_status_result.jsp" >
                             <c:param name="issuer" value="${certificate.issuerDN}" />
