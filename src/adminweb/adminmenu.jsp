@@ -292,22 +292,20 @@
      &nbsp;&nbsp;<A href="<%= ADMINISTRATORPRIV_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("EDITADMINISTRATORPRIV") %></A><br>
 <%   }
    }catch(AuthorizationDeniedException e){} %>
-   
-   <br>
-   <br>
-   <A href="<%= PUBLICWEB_LINK %>" target="_ejbcapublicweb" id="menu"><%=ejbcawebbean.getText("PUBLICWEB") %></A>
  <%   
     // If authorized to edit user preferences then display related links.
     try{
       if(ejbcawebbean.isAuthorizedNoLog(MAIN_RESOURCE)){ %>
-     <br>
-     <br>
-     <A href="<%= MYPREFERENCES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("MYPREFERENCES") %></A>
-     <br>
+     &nbsp;&nbsp;<A href="<%= MYPREFERENCES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>" id="menu"><%=ejbcawebbean.getText("MYPREFERENCES") %></A>
 <%   }
    }catch(AuthorizationDeniedException e){
  //     throw new AuthorizationDeniedException();
  } 
+%>
+   <br>
+   <br>
+   <A href="<%= PUBLICWEB_LINK %>" target="_ejbcapublicweb" id="menu"><%=ejbcawebbean.getText("PUBLICWEB") %></A>
+<%
     // If authorized to view help pages then display related links.
  /*  try{
      if(ejbcawebbean.isAuthorizedNoLog(MAIN_RESOURCE)){ */%>
