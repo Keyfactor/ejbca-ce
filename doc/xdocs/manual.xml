@@ -131,7 +131,7 @@ The memory parameters for Java is by default configured very low, for JBoss it i
 a maximum memory usage of 512mb, which is sufficient for most configurations. We still recommend that you check your 
 configuration of java memory arguments to set them to
 at least '-Xms128m -Xmx512m'. 
-For JBoss this is done in JBOSS_HOME/bin/run.conf where the line:
+For JBoss this is done in APPSRV_HOME/bin/run.conf where the line:
 </p>
 <source>
 JAVA_OPTS="-server -Xms128m -Xmx512m"
@@ -145,9 +145,9 @@ can be changed.
 
 <subsection name="Install">
 <p>
-Note that the installation must be done with a user with privileges to write to JBOSS_HOME and subdirs. 
+Note that the installation must be done with a user with privileges to write to APPSRV_HOME and subdirs. 
 </p><p>
-1) Set the environment variable JBOSS_HOME to where your JBoss is installed,
+1) Set the environment variable APPSRV_HOME to where your JBoss is installed,
 example /opt/jboss-4.0.2 or C:\jboss-4.0.3SP1.
 <br/>Also make sure the right java tools (javac/keytool) are available in your system PATH, ie. /usr/local/jdk1.5.0_11/bin.
 </p><p>
@@ -174,7 +174,7 @@ it will compile, jar, war, ear everything and deploy it to JBoss.
 </p><p>
 4) Open a console (terminal) and start JBoss.
 You can start JBoss with 'ant j2ee:run' from EJBCA_HOME
-or the normal command 'run.sh/cmd' from JBOSS_HOME/bin. You should see JBoss
+or the normal command 'run.sh/cmd' from APPSRV_HOME/bin. You should see JBoss
 picking up everything and deploying the ear without errors.
 </p><p>
 5) Type 'ant install' it will generate all certificates, keys, etc needed to run with an initial CA.
@@ -279,7 +279,7 @@ etc etc
 </subsection>
 <subsection name="SSL certificate expire">
 <p>
-The SSL certificate used for SSL in JBoss (SSL is used for the admin-GUI) is stored in JBOSS_HOME/server/default/conf/keystore.jks.
+The SSL certificate used for SSL in JBoss (SSL is used for the admin-GUI) is stored in APPSRV_HOME/server/default/conf/keystore.jks.
 The default validity time for the SSL certificate is two years. When this expire, you must generate a new one. 
 </p><p>
 You can do this through the admin-GUI by:
@@ -287,7 +287,7 @@ You can do this through the admin-GUI by:
 <li>Go to 'List/Edit End Entities' and search for user 'tomcat'.</li>
 <li>'Edit_End_Entity' and set the 'Password' to the same as httpsserver.password in your conf/ejbca.properties and 'Status' to 'New'.</li>
 <li>Open up a command line in EJBCA_HOME and run 'bin/ejbca.sh batch'.</li>
-<li>Copy EJBCA_HOME/p12/tomcat.jks to JBOSS_HOME/server/default/conf/keystore.jks, or run 'ant deploy'. Ant deploy will do some other things as well, so if you are not sure, just copy the file.</li>
+<li>Copy EJBCA_HOME/p12/tomcat.jks to APPSRV_HOME/server/default/conf/keystore.jks, or run 'ant deploy'. Ant deploy will do some other things as well, so if you are not sure, just copy the file.</li>
 <li>Restart JBoss.</li>
 </ol>
 </p>
@@ -297,7 +297,7 @@ You can also do everything using the CLI:
 <li>bin/ejbca.sh ra setuserstatus tomcat 10</li>
 <li>bin/ejbca.sh ra setclearpwd tomcat &lt;password from httpsserver.password&gt;</li>
 <li>bin/ejbca.sh batch</li>
-<li>cp p12/tomcat.jks $JBOSS_HOME/server/default/conf/keystore.jks</li>
+<li>cp p12/tomcat.jks $APPSRV_HOME/server/default/conf/keystore.jks</li>
 <li>Restart JBoss.</li>
 </ol>
 </p>
@@ -589,7 +589,7 @@ Sample crontab to be installed with 'crontab -e':
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 CLASSPATH=$CLASSPATH:/root/ejbca:/root/ejbca/admin.jar
-JBOSS_HOME=/usr/local/jboss
+APPSRV_HOME=/usr/local/jboss
 # m h dom mon dow command
 00 0    * * *   cd /root/ejbca;./ca.sh createcrl
 </source>
@@ -763,7 +763,7 @@ Cisco PIX is working as of EJBCA 3.1.3.
 <br></br>Also Cisco 3000 is reported working well. The description below is for PIX, 3000 probably have less constraints than the PIX.
 <ul>
 <li>You must configure JBoss to use port 80 to enroll with PIX, this is done in 
-JBOSS_HOME/server/default/deploy/jbossweb-tomcat50.sar/service.xml (or similar depending on version). You must run as root to use port 80.</li>
+APPSRV_HOME/server/default/deploy/jbossweb-tomcat50.sar/service.xml (or similar depending on version). You must run as root to use port 80.</li>
 <li>EJBCA supports the 'ca' mode of enrollment for pix, not 'ra'.</li>
 <li>The certificate profile used by the SCEP CA must include the key usages KeyEncipherment and DataEncipherment, otherwise PIX will 
 not be able to verify/decrypt encrypted SCEP messages. This is not in the default certificate profile for CAs. Create a new certificate profile before 
@@ -1571,7 +1571,7 @@ Mail settings in JBoss is created when running the 'ant deploy' using the values
 specified in conf/ejbca.properties (or default).
 <br></br>
 It is configured in 
-$JBOSS_HOME/server/default/deploy/ejbca-mail-service.xml.
+$APPSRV_HOME/server/default/deploy/ejbca-mail-service.xml.
 For other containers you must create a mail service with the same JNDI name as specified in 
 conf/ejbca.properties.
 </p><p>
@@ -2262,7 +2262,7 @@ Login as the user that is running the application server. This user must be a me
 The following environment variables should be set for this user:
 <ul>
 <li>JAVA_HOME (/usr/local/jdk1.5.0_11 or similar)</li>
-<li>JBOSS_HOME (/home/jboss/jboss-4.0.5.GA or similar)</li>
+<li>APPSRV_HOME (/home/jboss/jboss-4.0.5.GA or similar)</li>
 <li>EJBCA_HOME (/home/jboss/ejbca or similar)</li>
 <li>NFAST_HOME (/opt/nfast)</li>
 </ul>
@@ -2493,7 +2493,7 @@ Do the setup according the documentation from SafeNet. After "Assign a Client to
 <p>
 Do the following:
 <ul>
-<li>1. Put LunaJCASP.jar from SafeNet in $EJBCA_HOME/lib and in $JBOSS_HOME/server/default/lib</li>
+<li>1. Put LunaJCASP.jar from SafeNet in $EJBCA_HOME/lib and in $APPSRV_HOME/server/default/lib</li>
 <li>2. Define the property 'hsm.luna' in conf/ejbca.properties (see uncommented line in conf/ejbca.properties.sample).</li>
 <li>3. ant deploy</li>
 </ul>
@@ -3584,7 +3584,7 @@ operating system, all working together.
 If you change to UFT-8 to handle your char set, you must probably also specify that the database 
 connection should use UTF-8.
 For MySQL this can be done in the <i>connection-url</i> in your datasource description 
-(JBOSS_HOME/server/default/deploy/ejbca-ds.xml):
+(APPSRV_HOME/server/default/deploy/ejbca-ds.xml):
 jdbc:mysql://yourhost/ejbca?characterEncoding=UTF-8
 </p><p>
 You will also want to configure the database, for example in my.cnf, to use UTF-8.
@@ -3610,7 +3610,7 @@ and it works nicely both with the cli and admin-GUI.
 </p>
 <p>
 To make everything work perfect you MAY have to also configure JBoss to encode URIs according to your settings,
-this is done with the 'URIEncoding' directory in JBOSS_HOME/server/default/deploy/jbossweb-tomcat55.sar/server.xml:
+this is done with the 'URIEncoding' directory in APPSRV_HOME/server/default/deploy/jbossweb-tomcat55.sar/server.xml:
 </p>
 <source>
 &lt;Connector port="8443" address="${jboss.bind.address}"
@@ -4126,7 +4126,7 @@ Run 'ant deploy' to install the changes.
 </p><p>
 
 1. Tomcat: Copy src/appserver/jboss/tomcat55/server.xml (if using JBoss 4.0.2 or greater) 
-to <br></br>$JBOSS_HOME/server/default/deploy/jbossweb-tomcat41.sar/META-INF/jboss-service.xml.
+to <br></br>$APPSRV_HOME/server/default/deploy/jbossweb-tomcat41.sar/META-INF/jboss-service.xml.
 </p><p>
 Edit the file so 'keyStorePass' is the
 same as the password you specify below for 'tomcat'.
@@ -4157,7 +4157,7 @@ bin/ejbca.sh batch tomcat
 </source>
 <p>
 4. Name the generated keystore 'tomcat.jks' and put in
-$JBOSS_HOME/server/default/conf/keystore.
+$APPSRV_HOME/server/default/conf/keystore.
 </p><p>
 5. Download the CA certificate in PEM-format from
 http://localhost:8080/ejbca/publicweb/webdist/cacert.jsp (call
