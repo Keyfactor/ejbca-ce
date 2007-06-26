@@ -19,7 +19,6 @@ import java.util.Date;
 
 import javax.naming.Context;
 
-import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionHome;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
@@ -42,7 +41,7 @@ import org.ejbca.util.StringTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.14 2007-06-20 12:22:26 jbagnert Exp $
+ * @version $Id: CaInitCommand.java,v 1.15 2007-06-26 11:26:38 herrvendil Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
@@ -112,7 +111,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             initAuthorizationModule(dn.hashCode());
             // Define CAToken type (soft token or hsm).
             CATokenInfo catokeninfo = null;
-            if ( catokentype == "soft") {
+            if ( catokentype.equals("soft")) {
 	            SoftCATokenInfo softcatokeninfo = new SoftCATokenInfo();
 	            softcatokeninfo.setSignKeySpec(keyspec);
 	            softcatokeninfo.setSignKeyAlgorithm(keytype);
