@@ -113,7 +113,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.48 2007-05-21 07:31:27 jeklund Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.49 2007-06-27 14:08:52 jeklund Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -1363,19 +1363,6 @@ public class CAAdminSessionBean extends BaseSessionBean {
             for(int i=0;i< signatureCertChain.length;i++){
                 certificatechain.add(signatureCertChain[i]);
             }
-            X509Certificate caSignatureCertificate = (X509Certificate) signatureCertChain[0];
-            if ( caSignatureCertificate.getKeyUsage() != null ) {
-                if (!caSignatureCertificate.getKeyUsage()[0] || !caSignatureCertificate.getKeyUsage()[5]) {
-                	String msg = "Key assigned to alias \"" + privateSignatureKeyAlias + "\" cannot be used for signatures. Key usage vector is:";
-    	            	for (int i=0; i<9; i++) {
-    	            		msg += " " + caSignatureCertificate.getKeyUsage()[i];
-    	            	}
-                    log.error(msg);
-                    throw new Exception(msg);
-                }
-            } else {
-            	log.warn("No key usage vector found for \"" + privateSignatureKeyAlias + "\". Assuming it is valid for signatures." );
-            }
             PublicKey p12PublicSignatureKey = caSignatureCertificate.getPublicKey();
             PrivateKey p12PrivateSignatureKey = null;
             if ( p12PublicSignatureKey instanceof RSAPublicKey ) {
@@ -1399,18 +1386,6 @@ public class CAAdminSessionBean extends BaseSessionBean {
 	                throw new Exception(msg);
 	            }
 	            caEncryptionCertificate = (X509Certificate) encryptionCertChain[0];
-	            if ( caEncryptionCertificate.getKeyUsage() != null ) {
-		            if ( !caEncryptionCertificate.getKeyUsage()[2] ) {
-		            	String msg = "Key asigned to alias \"" + privateEncryptionKeyAlias + "\" cannot be used for key encipherment. Key usage vector is:";
-		            	for (int i=0; i<caEncryptionCertificate.getKeyUsage().length; i++) {
-		            		msg += " " + caEncryptionCertificate.getKeyUsage()[i];
-		            	}
-		                log.error(msg);
-		                throw new Exception(msg);
-		            }
-	            } else {
-	            	log.warn("No key usage vector found for \"" + privateEncryptionKeyAlias + "\". Assuming it is valid for signatures." );
-	            }
 	            p12PrivateEncryptionKey = (PrivateKey) keystore.getKey( privateEncryptionKeyAlias, privkeypass);
 	            p12PublicEncryptionKey = caEncryptionCertificate.getPublicKey();
             }
