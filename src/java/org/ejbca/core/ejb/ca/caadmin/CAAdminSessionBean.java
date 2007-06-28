@@ -113,7 +113,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.49 2007-06-27 14:08:52 jeklund Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.50 2007-06-28 07:48:24 jeklund Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -1363,6 +1363,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
             for(int i=0;i< signatureCertChain.length;i++){
                 certificatechain.add(signatureCertChain[i]);
             }
+            X509Certificate caSignatureCertificate = (X509Certificate) signatureCertChain[0];
             PublicKey p12PublicSignatureKey = caSignatureCertificate.getPublicKey();
             PrivateKey p12PrivateSignatureKey = null;
             if ( p12PublicSignatureKey instanceof RSAPublicKey ) {
