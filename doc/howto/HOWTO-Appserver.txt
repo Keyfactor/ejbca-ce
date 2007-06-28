@@ -84,6 +84,7 @@ See the file create-tables-ejbca3-oracle.sql for table definitions, or just run 
 a) Copy %JAVA_HOME%/jre/lib/security/cacerts to %BEA_HOME%/jre/lib/security, so that Weblogic can trust the initial CA installed 
 when doing 'ant install'.
 You can create cacerts file with 'sudo rm $JAVA_HOME/jre/lib/security/cacerts' and then 'sudo ant javatruststore'.
+Type 'ant -p' to get a description how you can run 'ant javatruststore' with arguments to point to a specific keystore etc.
 You can get the CA certificate with 'bin/ejbca.sh ca getrootcert cert.pem'.
 b) Configure weblogic server for SSL.
    Server->configuration->keystore&ssl, click "Change", select "Custom Identity and Java Standard Trust"
