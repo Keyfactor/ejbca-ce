@@ -58,7 +58,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * 
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.19 2007-06-15 13:24:26 jeklund Exp $
+ * @version $Id: EndEntityProfile.java,v 1.20 2007-06-28 12:01:59 jeklund Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -359,11 +359,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         }
 
         String param = getParameter(parameter);
-        // Remove from order list.
+        // Remove last element from Subject DN order list.
         ArrayList dns = DnComponents.getDnProfileFields();
         if(dns.contains(param)){
           ArrayList fieldorder = (ArrayList) data.get(SUBJECTDNFIELDORDER);
-          int value = (NUMBERBOUNDRARY*parameter) + number;
+          int value = (NUMBERBOUNDRARY*parameter) + size -1;
           for(int i=0; i < fieldorder.size(); i++){
              if( value ==  ((Integer) fieldorder.get(i)).intValue()){
                 fieldorder.remove(i);
@@ -371,11 +371,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
              }
           }
         }
-
+        // Remove last element from Subject AltName order list.
         ArrayList altNames = DnComponents.getAltNameFields();
         if(altNames.contains(param)) {
           ArrayList fieldorder = (ArrayList) data.get(SUBJECTALTNAMEFIELDORDER);
-          int value = (NUMBERBOUNDRARY*parameter) + number;
+          int value = (NUMBERBOUNDRARY*parameter) + size -1;	//number;
           for(int i=0; i < fieldorder.size(); i++){
              if( value ==  ((Integer) fieldorder.get(i)).intValue()){
                 fieldorder.remove(i);
@@ -383,11 +383,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
              }
           }
         }
-
+        // Remove last element from Subject DirAttr order list.
         ArrayList dirAttrs = DnComponents.getDirAttrFields();
         if(dirAttrs.contains(param)){
             ArrayList fieldorder = (ArrayList) data.get(SUBJECTDIRATTRFIELDORDER);
-            int value = (NUMBERBOUNDRARY*parameter) + number;
+            int value = (NUMBERBOUNDRARY*parameter) + size -1;	//number;
             for(int i=0; i < fieldorder.size(); i++){
                if( value ==  ((Integer) fieldorder.get(i)).intValue()){
                   fieldorder.remove(i);
@@ -395,11 +395,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
                }
             }
           }
-
-        data.remove(new Integer((VALUE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter));
-        data.remove(new Integer((USE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter));
-        data.remove(new Integer((ISREQUIRED*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter));
-        data.remove(new Integer((MODIFYABLE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*number) + parameter));
+        // Remove last element of the type from hashmap
+        data.remove(new Integer((VALUE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*(size-1)) + parameter));
+        data.remove(new Integer((USE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*(size-1)) + parameter));
+        data.remove(new Integer((ISREQUIRED*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*(size-1)) + parameter));
+        data.remove(new Integer((MODIFYABLE*FIELDBOUNDRARY) + (NUMBERBOUNDRARY*(size-1)) + parameter));
 
         decrementFieldnumber(parameter);
       }

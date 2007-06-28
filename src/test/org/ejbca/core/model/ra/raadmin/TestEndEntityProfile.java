@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package se.anatom.ejbca.ra.raadmin;
+package org.ejbca.core.model.ra.raadmin;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -29,7 +29,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tests the end entity profile entity bean.
  *
- * @version $Id: TestEndEntityProfile.java,v 1.3 2006-12-02 11:18:30 anatom Exp $
+ * @version $Id: TestEndEntityProfile.java,v 1.1 2007-06-28 12:01:59 jeklund Exp $
  */
 public class TestEndEntityProfile extends TestCase {
     private static Logger log = Logger.getLogger(TestEndEntityProfile.class);
@@ -186,5 +186,42 @@ public class TestEndEntityProfile extends TestCase {
         log.debug("<test05removeEndEntityProfiles()");
     }
 
-
+    /**
+     * Test if dynamic fields behave as expected
+     * @throws Exception error
+     */
+    public void test06testEndEntityProfilesDynamicFields() throws Exception {
+        log.debug(">test06testEndEntityProfilesDynamicFields()");
+        String testProfileName = "TESTDYNAMICFIELDS";
+        String testString1 = "testString1";
+        String testString2 = "testString2";
+        boolean returnValue = true;
+    	// Create testprofile
+        EndEntityProfile profile = new EndEntityProfile();
+        cacheAdmin.addEndEntityProfile(admin, testProfileName, profile);
+        // Add two dynamic fields
+        profile = cacheAdmin.getEndEntityProfile(admin, testProfileName);
+        profile.addField(DnComponents.ORGANIZATIONUNIT);
+        profile.addField(DnComponents.ORGANIZATIONUNIT);
+        profile.setValue(DnComponents.ORGANIZATIONUNIT, 0, testString1);
+        profile.setValue(DnComponents.ORGANIZATIONUNIT, 1, testString2);
+        profile.addField(DnComponents.DNSNAME);
+        profile.addField(DnComponents.DNSNAME);
+        profile.setValue(DnComponents.DNSNAME, 0, testString1);
+        profile.setValue(DnComponents.DNSNAME, 1, testString2);
+        cacheAdmin.changeEndEntityProfile(admin, testProfileName, profile);
+        // Remove first field
+        profile = cacheAdmin.getEndEntityProfile(admin, testProfileName);
+        profile.removeField(DnComponents.ORGANIZATIONUNIT, 0);
+        profile.removeField(DnComponents.DNSNAME, 0);
+        cacheAdmin.changeEndEntityProfile(admin, testProfileName, profile);
+        // Test if changes are what we expected
+        profile = cacheAdmin.getEndEntityProfile(admin, testProfileName);
+        returnValue &= testString2.equals(profile.getValue(DnComponents.ORGANIZATIONUNIT, 0));
+        returnValue &= testString2.equals(profile.getValue(DnComponents.DNSNAME, 0));
+        // Remove profile
+        cacheAdmin.removeEndEntityProfile(admin, testProfileName);
+        assertTrue("Adding and removing dynamic fields to profile does not work properly.", returnValue);
+        log.debug("<test06testEndEntityProfilesDynamicFields()");
+    } // test06testEndEntityProfilesDynamicFields
 }
