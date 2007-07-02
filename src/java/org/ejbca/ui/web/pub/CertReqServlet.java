@@ -95,7 +95,7 @@ import org.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.16 2007-04-16 12:28:46 jeklund Exp $
+ * @version $Id: CertReqServlet.java,v 1.17 2007-07-02 15:32:43 jeklund Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(CertReqServlet.class);
@@ -246,8 +246,9 @@ public class CertReqServlet extends HttpServlet {
               KeyStore ks = generateToken(administrator, username, password, data.getCAId(), keylength, keyalg, false, loadkeys, savekeys, data.getEndEntityProfileId());
               if (StringUtils.equals(openvpn, "on")) {            	  
                   sendOpenVPNToken(ks, username, password, response);
+              } else {
+            	  sendP12Token(ks, username, password, response);
               }
-              sendP12Token(ks, username, password, response);
             }
             if(tokentype == SecConst.TOKEN_SOFT_JKS){
               KeyStore ks = generateToken(administrator, username, password, data.getCAId(), keylength, keyalg, true, loadkeys, savekeys, data.getEndEntityProfileId());
@@ -454,17 +455,14 @@ public class CertReqServlet extends HttpServlet {
     	
     	out.setContentType("application/x-msdos-program");
     	out.setHeader("Content-disposition", "filename=" + filename);
-    	int filesize=0;
-    	byte[] buf = new byte[4096];    	
-    	for(;;) {
-    		int count = vpnfile.read(buf);
-    		if (count == -1) {
-    			break;
-    		}
-    		filesize = count + filesize;
-    		// is this too late to set the filesize?
-    		out.setContentLength(filesize);
-    		out.getOutputStream().write(buf);
+		out.setContentLength( new Long(fin.length()).intValue() );
+		OutputStream os = out.getOutputStream(); 
+    	byte[] buf = new byte[4096];
+    	int offset = 0;
+    	int bytes = 0;
+    	while ( (bytes=vpnfile.read(buf)) != -1 ) {
+    		os.write(buf,0,bytes);
+    		offset += bytes;
     	}
     	vpnfile.close();
     	// delete OpenVPN windows installer, the script will delete cert.
