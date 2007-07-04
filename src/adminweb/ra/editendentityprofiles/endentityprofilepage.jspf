@@ -270,6 +270,20 @@ function checkuseemailfield(){
   if(document.editprofile.<%= CHECKBOX_USE_SENDNOTIFICATION %>.checked)
     document.editprofile.<%= CHECKBOX_USE_EMAIL %>.checked = true;    
 }
+
+function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
+	var valuefield = eval("document.editprofile." + field);
+	var checkBoxTarget = eval("document.editprofile." + boxTarget);
+	var checkBoxSource = eval("document.editprofile." + boxSource);
+	valuefield.disabled = checkBoxSource.checked;
+	checkBoxTarget.disabled = checkBoxSource.checked;
+	if ( valuefield.disabled ) {
+		valuefield.value = "";
+	}
+	if ( checkBoxTarget.disabled ) {
+		checkBoxTarget.checked = false;
+	}
+}
 -->
 
 </SCRIPT>
@@ -481,30 +495,38 @@ function checkuseemailfield(){
         <%	} %>
       </td>
       <td width="70%"> 
-        <% if(!EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME) ){ %>
+        <%	if ( EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME) ) { %>
+				Use entity e-mail field
+				<input type="checkbox" name="<%=CHECKBOX_USE_SUBJECTALTNAME + i %>" value="<%=CHECKBOX_VALUE %>" 
+		           <%	if ( profiledata.getUse(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) ) {
+		                	out.write(" CHECKED ");
+		                	emailfieldexists = true;
+						} %> onClick="fieldSetDisableAsCheckbox('<%= TEXTFIELD_SUBJECTALTNAME + i %>','<%= CHECKBOX_MODIFYABLE_SUBJECTALTNAME + i %>','<%=CHECKBOX_USE_SUBJECTALTNAME + i %>')" /> <br />
+		<%	} %>
         <input type="text" name="<%=TEXTFIELD_SUBJECTALTNAME + i%>" size="40" maxlength="1024" 
-           value="<% if(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) != null) out.write(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER])); %>"><br>
-
+           value="<%
+				if ( profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) != null ) {
+					out.write(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]));
+				} %>"
+           <%	if ( EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME) &&
+           				profiledata.getUse(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) ) {
+           			out.write(" DISABLED ");
+           		} %> /><br>
         <%= ejbcawebbean.getText("REQUIRED") %>
         <input type="checkbox" name="<%=CHECKBOX_REQUIRED_SUBJECTALTNAME + i %>" value="<%=CHECKBOX_VALUE %>"
-           <% if(profiledata.isRequired(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]))
-                 out.write("CHECKED");
-           %>> 
+	        <%	if ( EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME) ) {
+					out.write(" onclick='checkemailfield(" + CHECKBOX_REQUIRED_SUBJECTALTNAME + i + ")' ");
+	        	}
+	        	if(profiledata.isRequired(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER])) {
+					out.write(" CHECKED ");
+				} %>> 
         &nbsp;&nbsp;<%= ejbcawebbean.getText("MODIFYABLE") %> 
         <input type="checkbox" name="<%=CHECKBOX_MODIFYABLE_SUBJECTALTNAME + i %>" value="<%=CHECKBOX_VALUE %>" 
-           <% if(profiledata.isModifyable(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]))
-                 out.write("CHECKED");
-           %>> 
-        <% }
-           else{ 
-             emailfieldexists=true; 
-              %>
-             <%= ejbcawebbean.getText("REQUIRED") %>
-        <input type="checkbox" name="<%=CHECKBOX_REQUIRED_SUBJECTALTNAME + i %>" value="<%=CHECKBOX_VALUE %>" onclick='checkemailfield("<%=CHECKBOX_REQUIRED_SUBJECTALTNAME + i %>")'
-           <% if(profiledata.isRequired(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]))
-                 out.write("CHECKED");
-           %>>&nbsp;<%=ejbcawebbean.getText("SEEEMAILCONFIGURATION") %>
-        <% }%>
+           <%	if(profiledata.getUse(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER])) {
+					out.write("DISABLED");
+				} else if(profiledata.isModifyable(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER])) {
+					out.write("CHECKED");
+				} %>> 
       </td>
     </tr>
    <%   }

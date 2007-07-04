@@ -58,7 +58,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * 
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.20 2007-06-28 12:01:59 jeklund Exp $
+ * @version $Id: EndEntityProfile.java,v 1.21 2007-07-04 19:27:50 jeklund Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -794,6 +794,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 
       checkIfAllRequiredFieldsExists(subjectdnfields, subjectaltnames, subjectdirattrs, username, email);
 
+      // Make sure that there are enough fields to cover all required in profile
       checkIfForIllegalNumberOfFields(subjectdnfields, subjectaltnames, subjectdirattrs);
 
       // Check contents of username.
@@ -804,47 +805,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
        email = "";
      checkIfDomainFullfillProfile(EMAIL,0,email,"Email");
 
-      // Check contents of Subject DN fields.
-      HashMap subjectdnfieldnumbers = subjectdnfields.getNumberOfFields();
-      Integer[] dnids = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTDN);
-      for(int i = 0; i < dnids.length; i++){
-    	  Integer dnid = dnids[i];
-		  int nof = ((Integer)subjectdnfieldnumbers.get(dnid)).intValue();
-    	  if(getReverseFieldChecks()){
-    		  for(int j=getNumberOfField(DnComponents.dnIdToProfileName(dnid.intValue())) -1; j >= 0; j--){    			 
-    			  checkIfDataFullfillProfile(DnComponents.dnIdToProfileName(dnid.intValue()),j,subjectdnfields.getField(dnid.intValue(),--nof), DnComponents.getErrTextFromDnId(dnid.intValue()), email);
-    		  }   		
-    	  }else{
-    		  for(int j=0; j < nof; j++){
-    			  checkIfDataFullfillProfile(DnComponents.dnIdToProfileName(dnid.intValue()),j,subjectdnfields.getField(dnid.intValue(),j), DnComponents.getErrTextFromDnId(dnid.intValue()), email);
-    		  }
-    	  }
-      }
-       // Check contents of Subject Alternative Name fields.
-      HashMap subjectaltnamesnumbers = subjectaltnames.getNumberOfFields();
-      Integer[] altnameids = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTALTNAME);
-      for(int i = 0; i < altnameids.length; i++){
-    	  Integer altnameid = altnameids[i];
-		  int nof = ((Integer)subjectaltnamesnumbers.get(altnameid)).intValue();
-    	  if(getReverseFieldChecks()){
-    		  for(int j=getNumberOfField(DnComponents.dnIdToProfileName(altnameid.intValue())) -1; j >= 0; j--){
-    			  if(i == DNFieldExtractor.UPN){
-    				  checkIfDomainFullfillProfile(DnComponents.UPN,j,subjectaltnames.getField(altnameid.intValue(),--nof),"UPN");
-    			  }else{
-    				  checkIfDataFullfillProfile(DnComponents.dnIdToProfileName(altnameid.intValue()),j,subjectaltnames.getField(altnameid.intValue(),--nof), DnComponents.getErrTextFromDnId(altnameid.intValue()), email);
-    			  }   
-    		  }    		      		  
-    	  }else{
-    		  for(int j=0; j < nof; j++){
-    			  if(altnameid.intValue() == DNFieldExtractor.UPN){
-    				  checkIfDomainFullfillProfile(DnComponents.UPN,j,subjectaltnames.getField(altnameid.intValue(),j),"UPN");
-    			  }else{
-    				  checkIfDataFullfillProfile(DnComponents.dnIdToProfileName(altnameid.intValue()),j,subjectaltnames.getField(altnameid.intValue(),j), DnComponents.getErrTextFromDnId(altnameid.intValue()), email);
-    			  }   
-    		  }
-    	  }
-      }
-
+     // Make sure that every value has a corresponding field in the entity profile
+     checkIfFieldsMatch(subjectdnfields, DNFieldExtractor.TYPE_SUBJECTDN, email); 
+     checkIfFieldsMatch(subjectaltnames, DNFieldExtractor.TYPE_SUBJECTALTNAME, email);
+     
       // Check contents of Subject Directory Attributes fields.
       HashMap subjectdirattrnumbers = subjectdirattrs.getNumberOfFields();
       Integer[] dirattrids = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTDIRATTR);
@@ -1032,7 +996,116 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
 	  }
     } // doesUserFullfillEndEntityProfile
     
-    public void doesPasswordFulfillEndEntityProfile(String password, boolean clearpwd)
+    /**
+     * This function tries to match each field in the profile to a corresponding field in the DN/AN/AD-fields.
+     * Can not be used for DNFieldExtractor.TYPE_SUBJECTDIRATTR yet.
+     *   
+     * @param fields
+     * @param type One of DNFieldExtractor.TYPE_SUBJECTDN, DNFieldExtractor.TYPE_SUBJECTALTNAME
+     * @param email The end entity's email address
+     * @throws UserDoesntFullfillEndEntityProfile
+     */
+    private void checkIfFieldsMatch(DNFieldExtractor fields, int type, String email) throws UserDoesntFullfillEndEntityProfile {
+    	final int REQUIRED_FIELD		= 2;
+    	final int NONMODIFYABLE_FIELD	= 1;
+    	final int MATCHED_FIELD			= -1;
+    	Integer[] dnids = DNFieldExtractor.getUseFields(type);
+    	// For each type of field
+    	for ( int i=0; i<dnids.length; i++ ) {
+    		int dnid = dnids[i].intValue();
+    		int profileID = DnComponents.dnIdToProfileId(dnid);
+    		int dnFieldExtractorID = DnComponents.profileIdToDnId(profileID);
+    		int nof = fields.getNumberOfFields(dnFieldExtractorID);
+    		int numberOfProfileFields = getNumberOfField(profileID);
+    		if ( nof == 0 && numberOfProfileFields == 0 ) {
+    			continue;	// Nothing to see here..
+    		}
+    		// Create array with all entries of that type
+    		String[] subjectsToProcess = new String[nof];
+    		for ( int j=0; j<nof; j++ ) {
+    			String fieldValue = fields.getField(dnFieldExtractorID, j);
+    			// Only keep domain for comparison of RFC822NAME, DNEMAIL and UPN fields
+    			if ( DnComponents.RFC822NAME.equals(DnComponents.dnIdToProfileName(dnid)) || DnComponents.DNEMAIL.equals(DnComponents.dnIdToProfileName(dnid)) || DnComponents.UPN.equals(DnComponents.dnIdToProfileName(dnid)) ) {
+        			if ( fieldValue.indexOf('@') == -1 ) {
+        				throw new UserDoesntFullfillEndEntityProfile(DnComponents.dnIdToProfileName(dnid) + " does not seem to be in something@somthingelse format.");
+        			}
+        			fieldValue = fieldValue.split("@")[1];
+    			}
+    			subjectsToProcess[j] = fieldValue;
+    		}
+    		//	Create array with profile values 3 = required and non-mod, 2 = required, 1 = non-modifiable, 0 = neither
+    		int[] profileCrossOffList = new int[numberOfProfileFields];
+    		for ( int j=0; j< getNumberOfField(profileID); j++ ) {
+    			profileCrossOffList[j] += ( isModifyable(profileID, j) ? 0 : NONMODIFYABLE_FIELD ) + ( isRequired(profileID, j) ? REQUIRED_FIELD : 0 ); 
+    		}
+    		// Start by matching email strings
+			if ( DnComponents.RFC822NAME.equals(DnComponents.dnIdToProfileName(dnid)) || DnComponents.DNEMAIL.equals(DnComponents.dnIdToProfileName(dnid)) ) {
+	    		for ( int k=3; k>=0; k--) {
+	    			//	For every value in profile
+	    			for ( int l=0; l<profileCrossOffList.length; l++ ) {
+	    				if ( profileCrossOffList[l] == k ) {
+	    					//	Match with every value in field-array
+	    					for ( int m=0; m<subjectsToProcess.length; m++ ) {
+	    						if ( subjectsToProcess[m] != null && profileCrossOffList[l] != MATCHED_FIELD ) {
+	    							if ( !(!getUse(profileID, l) && DnComponents.RFC822NAME.equals(DnComponents.dnIdToProfileName(dnid))) ) {
+	    								if ( fields.getField(dnFieldExtractorID, m).equals(email) ){
+	    									subjectsToProcess[m] = null;
+	    									profileCrossOffList[l] = MATCHED_FIELD;
+	    								}
+	    							}
+	    						}
+	    					}
+	    				}
+	    			}
+	    		}
+			}
+    		// For every field of this type in profile (start with required and non-modifiable, 2 + 1)
+    		for ( int k=3; k>=0; k--) {
+    			// For every value in profile
+    			for ( int l=0; l<profileCrossOffList.length; l++ ) {
+    				if ( profileCrossOffList[l] == k ) {
+    					// Match with every value in field-array
+    					for ( int m=0; m<subjectsToProcess.length; m++ ) {
+    						if ( subjectsToProcess[m] != null && profileCrossOffList[l] != MATCHED_FIELD ) {
+        						// Match actual value if required + non-modifiable or non-modifiable
+        						if ( (k == (REQUIRED_FIELD + NONMODIFYABLE_FIELD) || k == (NONMODIFYABLE_FIELD)) ) {
+        							// Try to match with all possible values
+        							String[] fixedValues = getValue(profileID, l).split(SPLITCHAR);
+        							for ( int n=0; n<fixedValues.length; n++) {
+        								if ( subjectsToProcess[m] != null && subjectsToProcess[m].equals(fixedValues[n]) ) {
+        	    							// Remove matched pair
+        	    							subjectsToProcess[m] = null;
+        	    							profileCrossOffList[l] = MATCHED_FIELD;
+        								}
+        							}
+           						// Otherwise just match present fields
+        						} else {
+        							// Remove matched pair
+        							subjectsToProcess[m] = null;
+        							profileCrossOffList[l] = MATCHED_FIELD;
+        						}
+    						}
+    					}
+    				}
+    			}
+    		}
+    		// If not all fields in profile were found
+    		for ( int j=0; j< nof; j++ ) {
+    			if ( subjectsToProcess[j] != null ) {
+    				throw new UserDoesntFullfillEndEntityProfile("End entity profile does not contain matching field for " +
+    						DnComponents.dnIdToProfileName(dnid) + " with value \"" + subjectsToProcess[j] + "\".");
+    			}
+    		}
+    		// If not all required fields in profile were found in subject 
+    		for ( int j=0; j< getNumberOfField(profileID); j++ ) {
+    			if ( profileCrossOffList[j] >= REQUIRED_FIELD ) {
+    				throw new UserDoesntFullfillEndEntityProfile("Data does not contain required " + DnComponents.dnIdToProfileName(dnid) + " field.");
+    			}
+    		}
+    	}
+    } // checkIfFieldsMatch
+
+	public void doesPasswordFulfillEndEntityProfile(String password, boolean clearpwd)
       throws UserDoesntFullfillEndEntityProfile{
     	
 		boolean fullfillsprofile = true;
@@ -1201,18 +1274,21 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     //
 
     /**
-     * Used for both email and upn fields
+     * Verify that the field contains an address and that data of non-modifyable domain-fields is available in profile 
+     * Used for email, upn and rfc822 fields
      * 
      */
     private void checkIfDomainFullfillProfile(String field, int number, String nameAndDomain, String text) throws UserDoesntFullfillEndEntityProfile {
     	    	
     	if(!nameAndDomain.trim().equals("") && nameAndDomain.indexOf('@') == -1)
-    		throw new UserDoesntFullfillEndEntityProfile("Invalid " + text + ". There must have '@' in the field.");
+    		throw new UserDoesntFullfillEndEntityProfile("Invalid " + text + "(" + nameAndDomain + "). There must be a '@' character in the field.");
     	
-    	String domain = nameAndDomain.substring(nameAndDomain.indexOf('@') + 1);    	    	
-    	
-        if(!getUse(field,number) && !nameAndDomain.trim().equals(""))
-          throw new UserDoesntFullfillEndEntityProfile(text + " cannot be used in end entity profile.");
+    	String domain = nameAndDomain.substring(nameAndDomain.indexOf('@') + 1);
+
+    	// All fields except RFC822NAME has to be empty if not used flag is set.
+        if ( !DnComponents.RFC822NAME.equals(field) && !getUse(field,number) && !nameAndDomain.trim().equals("") ) {
+            throw new UserDoesntFullfillEndEntityProfile(text + " cannot be used in end entity profile.");
+        }
       
         if(!isModifyable(field,number) && !nameAndDomain.equals("")){
           String[] values;
@@ -1325,6 +1401,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         }
     }
     
+    /**
+     * Verifies that non-modifyable data is available in profile.
+     * @throws UserDoesntFullfillEndEntityProfile
+     */
     private void checkIfDataFullfillProfile(String field, int number, String data, String text, String email) throws UserDoesntFullfillEndEntityProfile {
 
     	if(data == null && !field.equals(EMAIL))
@@ -1334,10 +1414,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     		if(!getUse(field,number) && !data.trim().equals(""))
     			throw new UserDoesntFullfillEndEntityProfile(text + " cannot be used in end entity profile.");
 
-    	if(field.equals(DnComponents.DNEMAIL) || field.equals(DnComponents.RFC822NAME)){
+    	if(field.equals(DnComponents.DNEMAIL)){
     		if(isRequired(field,number)){
     			if(!data.trim().equals(email.trim()))
     				throw new UserDoesntFullfillEndEntityProfile("Field " + text + " data didn't match Email field.");
+    		}
+    	} else if( field.equals(DnComponents.RFC822NAME) && isRequired(field,number) && getUse(field,number) ) {
+    		if(!data.trim().equals(email.trim())) {
+    			throw new UserDoesntFullfillEndEntityProfile("Field " + text + " data didn't match Email field.");
     		}
     	}
     	else{
@@ -1408,7 +1492,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
         			throw new UserDoesntFullfillEndEntityProfile("Subject Alternative Name field '" + altnamefields[i] + "' must exist.");
         		}
         	}else{
-        		size = getNumberOfField(altnamefields[i]);
+        		// Only verify fields that are actually used
+        		// size = getNumberOfField(altnamefields[i]);
+        		size = subjectaltnames.getNumberOfFields(altNameFieldExtractorIds[i].intValue());
         		for(int j = 0; j < size; j++){
         			if(isRequired(altnamefields[i],j))
         				if(subjectaltnames.getField(altNameFieldExtractorIds[i].intValue(),j).trim().equals(""))

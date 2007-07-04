@@ -27,7 +27,8 @@
   static final String TEXTFIELD_SUBJECTDIRATTR    = "textfieldsubjectdirattr";
   static final String TEXTFIELD_EMAIL             = "textfieldemail";
   static final String TEXTFIELD_EMAILDOMAIN       = "textfieldemaildomain";
-  static final String TEXTFIELD_UPNNAME           = "textfieldupnnamne";
+  static final String TEXTFIELD_UPNNAME           = "textfieldupnname";
+  static final String TEXTFIELD_RFC822NAME        = "textfieldrfc822name";
   static final String TEXTFIELD_STARTTIME         = "textfieldstarttime";
   static final String TEXTFIELD_ENDTIME           = "textfieldendtime";
 
@@ -263,8 +264,9 @@
              if (!EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAIL))
                value = request.getParameter(TEXTFIELD_SUBJECTDN+i);
              else{
-               if(request.getParameter(CHECKBOX_SUBJECTDN+i)!=null)
-                 if(request.getParameter(CHECKBOX_SUBJECTDN+i).equals(CHECKBOX_VALUE))
+               if ( oldprofile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) ||
+               		(request.getParameter(CHECKBOX_SUBJECTDN+i)!=null &&
+               		request.getParameter(CHECKBOX_SUBJECTDN+i).equals(CHECKBOX_VALUE)) )
                    value = newuser.getEmail();
              }
              if(value !=null){
@@ -300,11 +302,20 @@
            for(int i=0; i < numberofsubjectaltnamefields; i++){
              fielddata = oldprofile.getSubjectAltNameFieldsInOrder(i); 
              value=null;               
-             if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME)){
-                if(request.getParameter(CHECKBOX_SUBJECTALTNAME+i)!=null)
-                  if(request.getParameter(CHECKBOX_SUBJECTALTNAME+i).equals(CHECKBOX_VALUE))
-                    value = newuser.getEmail();             	             	             	
-             }else{             	
+             if ( EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME) ) {
+             	if ( oldprofile.getUse(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) ) {
+					if ( oldprofile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) ||
+						(request.getParameter(CHECKBOX_SUBJECTALTNAME+i) != null &&
+						request.getParameter(CHECKBOX_SUBJECTALTNAME+i).equals(CHECKBOX_VALUE)) ) {
+						value = newuser.getEmail();
+					}
+             	} else {
+					if ( request.getParameter(TEXTFIELD_SUBJECTALTNAME+i) != null && !request.getParameter(TEXTFIELD_SUBJECTALTNAME+i).equals("") &&
+							request.getParameter(TEXTFIELD_RFC822NAME+i) != null && !request.getParameter(TEXTFIELD_RFC822NAME+i).equals("") ) {
+						value = request.getParameter(TEXTFIELD_RFC822NAME+i) + "@" + request.getParameter(TEXTFIELD_SUBJECTALTNAME+i);
+					}
+             	}
+             } else {
                if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.UPN)){
                   if(request.getParameter(TEXTFIELD_SUBJECTALTNAME+i) != null && !request.getParameter(TEXTFIELD_SUBJECTALTNAME+i).equals("") 
 		             && request.getParameter(TEXTFIELD_UPNNAME+i) != null && !request.getParameter(TEXTFIELD_UPNNAME+i).equals("")){
@@ -331,17 +342,28 @@
              if(value !=null){
                if(!value.equals("")){
                  lastselectedsubjectaltnames[i] = value;
+	             if ( EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME) ) {
+	             	if ( !oldprofile.getUse(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) ) {
+						if ( request.getParameter(SELECT_SUBJECTALTNAME+i) != null && !request.getParameter(SELECT_SUBJECTALTNAME+i).equals("") &&
+								request.getParameter(TEXTFIELD_RFC822NAME+i) != null && !request.getParameter(TEXTFIELD_RFC822NAME+i).equals("") ) {
+							value = request.getParameter(TEXTFIELD_RFC822NAME+i) + "@" + value;
+						} else {
+							value = null;
+						}
+	             	}
+	             }
                  if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.UPN)){
                    if(request.getParameter(TEXTFIELD_UPNNAME+i) != null){
                      value = request.getParameter(TEXTFIELD_UPNNAME+i)+ "@" + value;
                    } 
                  }
-                 value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTALTNAME) +value);
-                 if(subjectaltname.equals(""))
-                   subjectaltname = value;
-                 else
-                   subjectaltname += ", " + value;
-                 
+                 if ( value != null ) {
+	                 value = org.ietf.ldap.LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fielddata[EndEntityProfile.FIELDTYPE]), DNFieldExtractor.TYPE_SUBJECTALTNAME) +value);
+	                 if(subjectaltname.equals(""))
+    	               subjectaltname = value;
+        	         else
+            	       subjectaltname += ", " + value;
+                 }
               }
              }
            }
@@ -1174,40 +1196,75 @@ function checkallfields(){
 	 <td></td>
 	 <td align="right"><%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE])) %></td>
 	 <td>      
-          <%
-             if( !EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME )) {
-               if(!profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])){ 
-                 String[] options = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]).split(EndEntityProfile.SPLITCHAR);
-               
-               if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.UPN)){ %>
-                   <input type="text" name="<%= TEXTFIELD_UPNNAME+i %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" >@
-                <% } %>
-           <select name="<%= SELECT_SUBJECTALTNAME + i %>" size="1" tabindex="<%=tabindex++%>">
-               <% if( options != null){
-                    for(int j=0;j < options.length;j++){ %>
-             <option value="<%=options[j].trim()%>" <% if( lastselectedsubjectaltnames != null &&  lastselectedsubjectaltnames[i] != null) 
-                                                         if(lastselectedsubjectaltnames[i].equals(options[j])) out.write(" selected "); %>> 
-                <%=options[j].trim()%>
-             </option>                
-               <%   }
-                  }
-                %>
-           </select>
-           <% }else{ 
-                if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.UPN)) { %>
-                   <input type="text" name="<%= TEXTFIELD_UPNNAME+i %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" >@
-                <% } %> 
-             <input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value="<%= profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) %>">
-           <% }
-            }
-            else{ %>
-              <%= ejbcawebbean.getText("USESEMAILFIELDDATA") + " :"%>&nbsp;
-        <input type="checkbox" name="<%=CHECKBOX_SUBJECTALTNAME + i%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" <% if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]))
-                                                                                                                 out.write(" CHECKED "); 
-                                                                                                               if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]))
-                                                                                                                 out.write(" disabled='true' "); 
-                                                                                                             %>>
-         <% } %>   
+		<%	if( EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME ) ) {
+				// Handle RFC822NAME separately
+            	if ( profile.getUse(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) ) { %>
+					<%= ejbcawebbean.getText("USESEMAILFIELDDATA") + " :"%>&nbsp;
+					<input type="checkbox" name="<%=CHECKBOX_SUBJECTALTNAME + i%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>"
+					<%	if ( profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) ) { %>
+							CHECKED disabled="true"
+					<%	} %> >
+            <%	} else {
+            		String rfc822NameString = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]);
+            		String[] rfc822NameArray = new String[2];
+            		if ( rfc822NameString.indexOf("@") != -1 ) {
+            			rfc822NameArray = rfc822NameString.split("@");
+            		} else {
+	            		rfc822NameArray[0] = "";
+            			rfc822NameArray[1] = rfc822NameString;
+            		} %>
+					<input type="text" name="<%= TEXTFIELD_RFC822NAME+i %>" size="20" maxlength="255" tabindex="<%=tabindex++%>"
+						value="<%= rfc822NameArray[0] %>" />@
+				<%	if ( profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) ) { %>
+					<input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>"
+						value="<%= rfc822NameArray[1] %>" />
+				<%	} else {
+						String[] options = rfc822NameString.split(EndEntityProfile.SPLITCHAR);
+						if( options != null && options.length > 0 ) { %>
+							<select name="<%= SELECT_SUBJECTALTNAME + i %>" size="1" tabindex="<%=tabindex++%>">
+							<%	for ( int j=0; j < options.length; j++ ) { %>
+									<option value="<%= options[j].trim() %>"
+									<%	if ( lastselectedsubjectaltnames != null && lastselectedsubjectaltnames[i] != null &&
+												lastselectedsubjectaltnames[i].equals(options[j]) ) { %>
+												SELECTED
+									<%	} %> > 
+										<%=	options[j].trim() %>
+									</option>
+							<%	} %>
+							</select>
+					<%	}
+					} %>
+			<%	}
+		} else {
+				// Handle all non-RFC822NAME-fields
+				if ( !profile.isModifyable(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) ) {
+					// Display fixed subject altname fields
+					String[] options = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]).split(EndEntityProfile.SPLITCHAR);
+					if ( EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.UPN) ) { %>
+						<input type="text" name="<%= TEXTFIELD_UPNNAME+i %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" />@
+				<%	} %>
+				<%	if( options != null && options.length > 0 ) { %>
+						<select name="<%= SELECT_SUBJECTALTNAME + i %>" size="1" tabindex="<%=tabindex++%>">
+						<%	for ( int j=0; j < options.length; j++ ) { %>
+								<option value="<%=options[j].trim()%>"
+								<%	if ( lastselectedsubjectaltnames != null &&  lastselectedsubjectaltnames[i] != null) {
+										if ( lastselectedsubjectaltnames[i].equals(options[j])) {
+											out.write(" selected ");
+										}
+									} %> > 
+									<%=	options[j].trim() %>
+								</option>                
+						<%	} %>
+						</select>
+				<%	} %>
+			<%	} else {
+					// Display modifyable subject altname fields
+	               	if(EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.UPN)) { %>
+						<input type="text" name="<%= TEXTFIELD_UPNNAME+i %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" >@
+				<%	} %>
+					<input type="text" name="<%= TEXTFIELD_SUBJECTALTNAME + i %>" size="40" maxlength="255" tabindex="<%=tabindex++%>" value="<%= profile.getValue(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]) %>">
+			<%	} %>
+		<%	} %>
         </td>
 	<td><input type="checkbox" name="<%= CHECKBOX_REQUIRED_SUBJECTALTNAME + i %>" value="<%= CHECKBOX_VALUE %>"  disabled="true" <% if(profile.isRequired(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER])) out.write(" CHECKED "); %>></td>
       </tr>
