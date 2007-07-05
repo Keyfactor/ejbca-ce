@@ -1252,7 +1252,7 @@ Example checking the revocation status of a certificate:
 </source>
 <p>
 See the file src/java/org/ejbca/core/protocol/ws/common/IEjbcaWS
-for more detailed instructions of the API. And test/java/org/ejbca/core/protocol/ws/TestEjbcaWS
+for more detailed instructions of the API. And src/test/java/org/ejbca/core/protocol/ws/TestEjbcaWS
 for more examples on using the API.
 </p>
 </subsection>
