@@ -16,10 +16,11 @@ package org.ejbca.core.model.approval;
  * Excception thrown from actions that stop to wait for approvals
  * 
  * @author Philip Vendil
- * @version $Id: WaitingForApprovalException.java,v 1.1 2006-08-09 07:29:48 herrvendil Exp $
+ * @version $Id: WaitingForApprovalException.java,v 1.2 2007-07-05 05:55:08 herrvendil Exp $
  */
 public class WaitingForApprovalException extends Exception {
 
+	public int approvalId = 0;
 
 	public WaitingForApprovalException(String message, Throwable cause) {
 		super(message, cause);
@@ -27,6 +28,19 @@ public class WaitingForApprovalException extends Exception {
 
 	public WaitingForApprovalException(String message) {
 		super(message);
+	}
+	
+	public WaitingForApprovalException(String message, int approvalId) {
+		super(message);
+		this.approvalId = approvalId;
+	}
+	
+	public int getApprovalId(){
+		return approvalId;
+	}
+	
+	public void setApprovalId(int approvalId){
+		this.approvalId = approvalId;
 	}
 
 }

@@ -16,6 +16,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
+ *         &lt;element name="approvalId" type="{http://www.w3.org/2001/XMLSchema}int"/>
  *         &lt;element name="message" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
@@ -27,11 +28,29 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "WaitingForApprovalException", propOrder = {
+    "approvalId",
     "message"
 })
 public class WaitingForApprovalException {
 
+    protected int approvalId;
     protected String message;
+
+    /**
+     * Gets the value of the approvalId property.
+     * 
+     */
+    public int getApprovalId() {
+        return approvalId;
+    }
+
+    /**
+     * Sets the value of the approvalId property.
+     * 
+     */
+    public void setApprovalId(int value) {
+        this.approvalId = value;
+    }
 
     /**
      * Gets the value of the message property.

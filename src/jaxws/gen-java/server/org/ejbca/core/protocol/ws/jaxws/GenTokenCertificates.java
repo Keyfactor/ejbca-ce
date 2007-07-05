@@ -17,7 +17,8 @@ import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
     "arg0",
     "arg1",
     "arg2",
-    "arg3"
+    "arg3",
+    "arg4"
 })
 public class GenTokenCertificates {
 
@@ -29,6 +30,8 @@ public class GenTokenCertificates {
     private HardTokenDataWS arg2;
     @XmlElement(name = "arg3", namespace = "")
     private boolean arg3;
+    @XmlElement(name = "arg4", namespace = "")
+    private boolean arg4;
 
     /**
      * 
@@ -100,6 +103,24 @@ public class GenTokenCertificates {
      */
     public void setArg3(boolean arg3) {
         this.arg3 = arg3;
+    }
+
+    /**
+     * 
+     * @return
+     *     returns boolean
+     */
+    public boolean getArg4() {
+        return this.arg4;
+    }
+
+    /**
+     * 
+     * @param arg4
+     *     the value for the arg4 property
+     */
+    public void setArg4(boolean arg4) {
+        this.arg4 = arg4;
     }
 
 }

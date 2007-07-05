@@ -889,7 +889,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		hardTokenDataWS.getPinDatas().add(basicPinDataWS);
 		hardTokenDataWS.getPinDatas().add(signaturePinDataWS);
 				
-		List<TokenCertificateResponseWS> responses = ejbcaraws.genTokenCertificates(tokenUser1, requests, hardTokenDataWS, true);
+		List<TokenCertificateResponseWS> responses = ejbcaraws.genTokenCertificates(tokenUser1, requests, hardTokenDataWS, true, false);
 		assertTrue(responses.size() == 2);
 		
 		Iterator<TokenCertificateResponseWS> iter= responses.iterator();		
@@ -898,7 +898,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		Certificate cert = next.getCertificate();
 		X509Certificate realcert = (X509Certificate) CertificateHelper.getCertificate(cert.getCertificateData());
 		assertNotNull(realcert);
-		assertTrue(realcert.getNotAfter().toLocaleString(),realcert.getNotAfter().before(new Date(System.currentTimeMillis() + 2 *24* 3600 *1000)));
+		assertTrue(realcert.getNotAfter().toString(),realcert.getNotAfter().before(new Date(System.currentTimeMillis() + 2 *24* 3600 *1000)));
 		next = iter.next();
 		assertTrue(next.getType() == HardTokenConstants.RESPONSETYPE_KEYSTORE_RESPONSE);
 		KeyStore keyStore = next.getKeyStore();
@@ -908,7 +908,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		
 		if(!onlyOnce){
 			try{
-				responses = ejbcaraws.genTokenCertificates(tokenUser1, requests, hardTokenDataWS, false);
+				responses = ejbcaraws.genTokenCertificates(tokenUser1, requests, hardTokenDataWS, false, false);
 				assertTrue(false);
 			}catch(HardTokenExistsException_Exception e){
 

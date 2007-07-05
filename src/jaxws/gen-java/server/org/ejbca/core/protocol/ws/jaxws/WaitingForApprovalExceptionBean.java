@@ -15,10 +15,32 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlRootElement(name = "WaitingForApprovalException", namespace = "http://ws.protocol.core.ejbca.org/")
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "WaitingForApprovalException", namespace = "http://ws.protocol.core.ejbca.org/")
+@XmlType(name = "WaitingForApprovalException", namespace = "http://ws.protocol.core.ejbca.org/", propOrder = {
+    "approvalId",
+    "message"
+})
 public class WaitingForApprovalExceptionBean {
 
+    private int approvalId;
     private String message;
+
+    /**
+     * 
+     * @return
+     *     returns int
+     */
+    public int getApprovalId() {
+        return this.approvalId;
+    }
+
+    /**
+     * 
+     * @param approvalId
+     *     the value for the approvalId property
+     */
+    public void setApprovalId(int approvalId) {
+        this.approvalId = approvalId;
+    }
 
     /**
      * 

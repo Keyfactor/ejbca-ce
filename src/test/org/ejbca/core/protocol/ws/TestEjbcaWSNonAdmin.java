@@ -267,7 +267,7 @@ public class TestEjbcaWSNonAdmin extends CommonEjbcaWSTest {
     	
       	Approval approval1 = new Approval("ap1test");
       	
-      	ApprovalRequest ar = new GenerateTokenApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", "12345678", HardToken.LABEL_PROJECTCARD,reqadmin,null,1,0,0);      	
+      	ApprovalRequest ar = new GenerateTokenApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1",  HardToken.LABEL_PROJECTCARD,reqadmin,null,1,0,0);      	
       	pub.approve(admin1, ar.generateApprovalId(), approval1);
       	
       	
@@ -295,7 +295,7 @@ public class TestEjbcaWSNonAdmin extends CommonEjbcaWSTest {
     
     public void test05CleanGenTokenCertificatesWithApprovals() throws Exception{
     	setupApprovals();
-    	ApprovalRequest ar = new GenerateTokenApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", "12345678", HardToken.LABEL_PROJECTCARD,reqadmin,null,1,0,0);      	
+    	ApprovalRequest ar = new GenerateTokenApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1",  HardToken.LABEL_PROJECTCARD,reqadmin,null,1,0,0);      	
  
       	Collection result = pub.findApprovalDataVO(intAdmin, ar.generateApprovalId());
       	Iterator iter = result.iterator();

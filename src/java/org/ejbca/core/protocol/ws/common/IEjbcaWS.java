@@ -55,7 +55,7 @@ import org.ejbca.util.query.IllegalQueryException;
  * otherwise will a AuthorizationDenied Exception be thrown.
  * 
  * @author Philip Vendil
- * $Id: IEjbcaWS.java,v 1.5 2007-06-25 14:45:33 herrvendil Exp $
+ * $Id: IEjbcaWS.java,v 1.6 2007-07-05 05:55:08 herrvendil Exp $
  */
 public interface IEjbcaWS {
 	
@@ -329,6 +329,8 @@ public interface IEjbcaWS {
 	 * @param hardTokenSN Serial number of the generated hard token.
 	 * @param overwriteExistingSN if the the current hardtoken should be overwritten instead of throwing HardTokenExists exception.
 	 * If a card is overwritten, all previous certificates on the card is revoked.
+	 * @param revocePreviousCards tells the service to revoke old cards issued to this user. If the present card have the label TEMPORARY_CARD
+	 * old cards is set to CERTIFICATE_ONHOLD otherwice UNSPECIFIED.
 	 * @return a List of the generated certificates. 
 	 * @throws AuthorizationDeniedException if the administrator isn't authorized.
 	 * @throws WaitingForApprovalException if the caller is a non-admin a must be approved before it is executed.
@@ -343,7 +345,8 @@ public interface IEjbcaWS {
 			UserDataVOWS userData,
 			List<TokenCertificateRequestWS> tokenRequests,
 			HardTokenDataWS hardTokenData,
-			boolean overwriteExistingSN) throws AuthorizationDeniedException,
+			boolean overwriteExistingSN,
+			boolean revocePreviousCards) throws AuthorizationDeniedException,
 			WaitingForApprovalException, HardTokenExistsException,
 			UserDoesntFullfillEndEntityProfile, ApprovalException,
 			EjbcaException, ApprovalRequestExpiredException, ApprovalRequestExecutionException;

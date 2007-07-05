@@ -47,8 +47,8 @@ public interface EjbcaWS {
      * @return
      *     returns int
      * @throws ApprovalRequestExpiredException_Exception
-     * @throws ApprovalException_Exception
      * @throws EjbcaException_Exception
+     * @throws ApprovalException_Exception
      */
     @WebMethod
     @WebResult(targetNamespace = "")
@@ -118,8 +118,8 @@ public interface EjbcaWS {
      * @param arg2
      * @param arg1
      * @param arg0
-     * @throws NotFoundException_Exception
      * @throws AuthorizationDeniedException_Exception
+     * @throws NotFoundException_Exception
      * @throws EjbcaException_Exception
      */
     @WebMethod
@@ -140,8 +140,8 @@ public interface EjbcaWS {
      * @param arg2
      * @param arg1
      * @param arg0
-     * @throws NotFoundException_Exception
      * @throws AuthorizationDeniedException_Exception
+     * @throws NotFoundException_Exception
      * @throws EjbcaException_Exception
      */
     @WebMethod
@@ -160,11 +160,11 @@ public interface EjbcaWS {
     /**
      * 
      * @param arg0
-     * @throws WaitingForApprovalException_Exception
      * @throws UserDoesntFullfillEndEntityProfile_Exception
-     * @throws ApprovalException_Exception
+     * @throws WaitingForApprovalException_Exception
      * @throws AuthorizationDeniedException_Exception
      * @throws EjbcaException_Exception
+     * @throws ApprovalException_Exception
      */
     @WebMethod
     @RequestWrapper(localName = "editUser", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.EditUser")
@@ -181,8 +181,8 @@ public interface EjbcaWS {
      * @param arg0
      * @return
      *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.Certificate>
-     * @throws NotFoundException_Exception
      * @throws AuthorizationDeniedException_Exception
+     * @throws NotFoundException_Exception
      * @throws EjbcaException_Exception
      */
     @WebMethod
@@ -205,8 +205,8 @@ public interface EjbcaWS {
      * @param arg0
      * @return
      *     returns org.ejbca.core.protocol.ws.client.gen.Certificate
-     * @throws NotFoundException_Exception
      * @throws AuthorizationDeniedException_Exception
+     * @throws NotFoundException_Exception
      * @throws EjbcaException_Exception
      */
     @WebMethod
@@ -234,8 +234,8 @@ public interface EjbcaWS {
      * @param arg0
      * @return
      *     returns org.ejbca.core.protocol.ws.client.gen.KeyStore
-     * @throws NotFoundException_Exception
      * @throws AuthorizationDeniedException_Exception
+     * @throws NotFoundException_Exception
      * @throws EjbcaException_Exception
      */
     @WebMethod
@@ -260,8 +260,8 @@ public interface EjbcaWS {
      * 
      * @param arg1
      * @param arg0
-     * @throws NotFoundException_Exception
      * @throws AuthorizationDeniedException_Exception
+     * @throws NotFoundException_Exception
      * @throws EjbcaException_Exception
      */
     @WebMethod
@@ -320,20 +320,21 @@ public interface EjbcaWS {
 
     /**
      * 
+     * @param arg4
      * @param arg3
      * @param arg2
      * @param arg1
      * @param arg0
      * @return
      *     returns java.util.List<org.ejbca.core.protocol.ws.client.gen.TokenCertificateResponseWS>
+     * @throws UserDoesntFullfillEndEntityProfile_Exception
      * @throws WaitingForApprovalException_Exception
      * @throws ApprovalRequestExpiredException_Exception
-     * @throws UserDoesntFullfillEndEntityProfile_Exception
-     * @throws ApprovalException_Exception
-     * @throws AuthorizationDeniedException_Exception
-     * @throws EjbcaException_Exception
-     * @throws HardTokenExistsException_Exception
      * @throws ApprovalRequestExecutionException_Exception
+     * @throws AuthorizationDeniedException_Exception
+     * @throws HardTokenExistsException_Exception
+     * @throws EjbcaException_Exception
+     * @throws ApprovalException_Exception
      */
     @WebMethod
     @WebResult(targetNamespace = "")
@@ -347,7 +348,9 @@ public interface EjbcaWS {
         @WebParam(name = "arg2", targetNamespace = "")
         HardTokenDataWS arg2,
         @WebParam(name = "arg3", targetNamespace = "")
-        boolean arg3)
+        boolean arg3,
+        @WebParam(name = "arg4", targetNamespace = "")
+        boolean arg4)
         throws ApprovalException_Exception, ApprovalRequestExecutionException_Exception, ApprovalRequestExpiredException_Exception, AuthorizationDeniedException_Exception, EjbcaException_Exception, HardTokenExistsException_Exception, UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception
     ;
 
@@ -360,10 +363,10 @@ public interface EjbcaWS {
      *     returns org.ejbca.core.protocol.ws.client.gen.HardTokenDataWS
      * @throws WaitingForApprovalException_Exception
      * @throws ApprovalRequestExpiredException_Exception
+     * @throws ApprovalRequestExecutionException_Exception
      * @throws HardTokenDoesntExistsException_Exception
      * @throws AuthorizationDeniedException_Exception
      * @throws EjbcaException_Exception
-     * @throws ApprovalRequestExecutionException_Exception
      */
     @WebMethod
     @WebResult(targetNamespace = "")
@@ -459,8 +462,8 @@ public interface EjbcaWS {
      * @param arg0
      * @return
      *     returns boolean
-     * @throws UserDataSourceException_Exception
      * @throws MultipleMatchException_Exception
+     * @throws UserDataSourceException_Exception
      * @throws AuthorizationDeniedException_Exception
      * @throws EjbcaException_Exception
      */

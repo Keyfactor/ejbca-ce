@@ -122,7 +122,7 @@ import org.ejbca.util.query.Query;
  * Implementor of the IEjbcaWS interface.
  * 
  * @author Philip Vendil
- * $Id: EjbcaWS.java,v 1.13 2007-06-25 14:45:34 herrvendil Exp $
+ * $Id: EjbcaWS.java,v 1.14 2007-07-05 05:55:08 herrvendil Exp $
  */
 
 @WebService
@@ -530,12 +530,17 @@ public class EjbcaWS implements IEjbcaWS {
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#revokeToken(java.lang.String, int)
 	 */
-	
 	public void revokeToken(String hardTokenSN, int reason)
-			throws RemoteException, AuthorizationDeniedException, NotFoundException, EjbcaException {
+	throws RemoteException, AuthorizationDeniedException, NotFoundException, EjbcaException {
+		revokeToken(getAdmin(), hardTokenSN, reason);
+		
+	}
+	
+	
+	private void revokeToken(Admin admin, String hardTokenSN, int reason)
+			throws  AuthorizationDeniedException, NotFoundException, EjbcaException {
 
 		try{
-			Admin admin = getAdmin();
 			Collection certs = getHardTokenSession().findCertificatesInHardToken(admin,hardTokenSN);
 			Iterator iter = certs.iterator();
 			String username = null;
@@ -634,9 +639,12 @@ public class EjbcaWS implements IEjbcaWS {
 	 */
 	public List<UserDataSourceVOWS> fetchUserData(List<String> userDataSourceNames, String searchString) throws UserDataSourceException, EjbcaException, AuthorizationDeniedException{
 	    
-		Admin admin = getAdmin();
+		Admin admin = null;
 		if(WSConfig.isNoAuthOnFetchUserData()){
+			admin = getAdmin(true);
 			admin = new ApprovedActionAdmin(admin.getAdminInformation().getX509Certificate());
+		}else{
+			admin = getAdmin();
 		}
 		
 		ArrayList<UserDataSourceVOWS> retval = new ArrayList<UserDataSourceVOWS>();
@@ -658,7 +666,7 @@ public class EjbcaWS implements IEjbcaWS {
 			iter = getUserDataSourceSession().fetch(admin, userDataSourceIds, searchString).iterator();
 			while(iter.hasNext()){
 				UserDataSourceVO next = (UserDataSourceVO) iter.next();
-				retval.add(new UserDataSourceVOWS(convertUserDataVO(getAdmin(), next.getUserDataVO()),next.getIsFieldModifyableSet()));
+				retval.add(new UserDataSourceVOWS(convertUserDataVO(admin, next.getUserDataVO()),next.getIsFieldModifyableSet()));
 			}
 		} catch (ClassCastException e) {
 			log.error("EJBCA WebService error, fetchUserData : ",e);
@@ -685,7 +693,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#genTokenCertificates(org.ejbca.core.protocol.ws.objects.UserDataVOWS, java.util.List, org.ejbca.core.protocol.ws.objects.HardTokenDataWS)
 	 */
 	
-	public List<TokenCertificateResponseWS> genTokenCertificates(UserDataVOWS userDataWS, List<TokenCertificateRequestWS> tokenRequests, HardTokenDataWS hardTokenDataWS, boolean overwriteExistingSN) throws AuthorizationDeniedException, WaitingForApprovalException, HardTokenExistsException,UserDoesntFullfillEndEntityProfile, ApprovalException, EjbcaException, ApprovalRequestExpiredException, ApprovalRequestExecutionException {
+	public List<TokenCertificateResponseWS> genTokenCertificates(UserDataVOWS userDataWS, List<TokenCertificateRequestWS> tokenRequests, HardTokenDataWS hardTokenDataWS, boolean overwriteExistingSN, boolean revocePreviousCards) throws AuthorizationDeniedException, WaitingForApprovalException, HardTokenExistsException,UserDoesntFullfillEndEntityProfile, ApprovalException, EjbcaException, ApprovalRequestExpiredException, ApprovalRequestExecutionException {
 		ArrayList<TokenCertificateResponseWS> retval = new ArrayList<TokenCertificateResponseWS>();
 
 		Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
@@ -716,7 +724,7 @@ public class EjbcaWS implements IEjbcaWS {
 				userDataVO = getUserAdminSession().findUser(intAdmin, userDataWS.getUsername());
 				endEntityProfileId = userDataVO.getEndEntityProfileId();
 			}else{
-				endEntityProfileId = getRAAdminSession().getEndEntityProfileId(admin, userDataWS.getEndEntityProfileName());	    	  
+				endEntityProfileId = getRAAdminSession().getEndEntityProfileId(intAdmin, userDataWS.getEndEntityProfileName());	    	  
 				if(endEntityProfileId == 0){
 					throw new EjbcaException("Error given end entity profile : " + userDataWS.getEndEntityProfileName() +" couldn't be found");
 				}
@@ -746,7 +754,7 @@ public class EjbcaWS implements IEjbcaWS {
 
 			}else{
 				if(WSConfig.isApprovalGenTokenCertificates()){
-					ar = new GenerateTokenApprovalRequest(userDataWS.getUsername(), userDataWS.getSubjectDN(), hardTokenDataWS.getHardTokenSN(), hardTokenDataWS.getLabel(),admin,null,WSConfig.getNumberOfWSApprovals(),significantcAInfo.getCAId(),endEntityProfileId);
+					ar = new GenerateTokenApprovalRequest(userDataWS.getUsername(), userDataWS.getSubjectDN(),  hardTokenDataWS.getLabel(),admin,null,WSConfig.getNumberOfWSApprovals(),significantcAInfo.getCAId(),endEntityProfileId);
 					int status = ApprovalDataVO.STATUS_REJECTED; 					
 					try{
 					  status = getApprovalSession().isApproved(admin, ar.generateApprovalId(), 1);
@@ -758,7 +766,7 @@ public class EjbcaWS implements IEjbcaWS {
 					  }
 					}catch(ApprovalException e){
 						getApprovalSession().addApprovalRequest(admin, ar);
-						throw new WaitingForApprovalException("Approval request with id " + ar.generateApprovalId() + " have been added for approval.");
+						throw new WaitingForApprovalException("Approval request with id " + ar.generateApprovalId() + " have been added for approval.",ar.generateApprovalId());
 					}
 				}else{
 					throw new AuthorizationDeniedException();
@@ -783,7 +791,7 @@ public class EjbcaWS implements IEjbcaWS {
 		}
 		
 		if(ar != null && !approvalSuccessfullStep1){
-			throw new WaitingForApprovalException("The approval for id " + ar.generateApprovalId() + " have not yet been approved");
+			throw new WaitingForApprovalException("The approval for id " + ar.generateApprovalId() + " have not yet been approved", ar.generateApprovalId());
 		}
 		
 		if(ar != null){
@@ -812,6 +820,20 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 
 		}
+		if(revocePreviousCards){
+			List<HardTokenDataWS> htd = getHardTokenDatas(admin,userDataWS.getUsername(), false, true);
+			Iterator htdIter = htd.iterator();
+			
+			while(htdIter.hasNext()) {
+				HardTokenDataWS toRevoke = (HardTokenDataWS)htdIter.next();
+				if(hardTokenDataWS.getLabel().equals(HardTokenConstants.LABEL_TEMPORARYCARD)){
+				   revokeToken(admin, toRevoke.getHardTokenSN(), RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+				}else{
+				   revokeToken(admin, toRevoke.getHardTokenSN(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+				}
+			}
+		}
+		
 		try{
 			// Check if the userdata exist and edit/add it depending on which
 			String password = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_ALLPRINTABLE).getNewPassword(8, 8);
@@ -902,46 +924,10 @@ public class EjbcaWS implements IEjbcaWS {
 					}
 			}
 
-		}catch(CreateException e){
+		}catch(Exception e){
 			log.error("EJBCA WebService error, genTokenCertificates : ",e);
 			throw new EjbcaException(e.getMessage());
-		} catch (ClassCastException e) {
-			log.error("EJBCA WebService error, genTokenCertificates : ",e);
-			throw new EjbcaException(e.getMessage());
-		} catch (NamingException e) {
-			log.error("EJBCA WebService error, genTokenCertificates : ",e);
-			throw new EjbcaException(e.getMessage());
-		} catch (CertificateEncodingException e) {
-			log.error("EJBCA WebService error, genTokenCertificates : ",e);
-			throw new EjbcaException(e.getMessage());
-		} catch (InvalidKeyException e) {
-			log.error("EJBCA WebService error, genTokenCertificates : ",e);
-			throw new EjbcaException(e.getMessage());
-		} catch (ObjectNotFoundException e) {
-			log.error("EJBCA WebService error, genTokenCertificates : ",e);
-			throw new EjbcaException(e.getMessage());
-		} catch (NoSuchAlgorithmException e) {
-			log.error("EJBCA WebService error, genTokenCertificates : ",e);
-			throw new EjbcaException(e.getMessage());
-		} catch (NoSuchProviderException e) {
-			log.error("EJBCA WebService error, genTokenCertificates : ",e);
-			throw new EjbcaException(e.getMessage());
-		} catch (KeyStoreException e) {
-			log.error("EJBCA WebService error, genTokenCertificates : ",e);
-			throw new EjbcaException(e.getMessage());
-		} catch (CertificateException e) {
-			log.error("EJBCA WebService error, genTokenCertificates : ",e);
-			throw new EjbcaException(e.getMessage());
-		} catch (InvalidKeySpecException e) {
-			log.error("EJBCA WebService error, genTokenCertificates : ",e);
-			throw new EjbcaException(e.getMessage());
-		} catch (IOException e) {
-			log.error("EJBCA WebService error, genTokenCertificates : ",e);
-			throw new EjbcaException(e.getMessage());
-		} catch (InvalidAlgorithmParameterException e) {
-			log.error("EJBCA WebService error, genTokenCertificates : ",e);
-			throw new EjbcaException(e.getMessage());
-		}finally{
+		} finally{
 			try {
 				getUserAdminSession().setUserStatus(admin, userDataWS.getUsername(), UserDataConstants.STATUS_GENERATED);
 			} catch (FinderException e) {
@@ -1056,7 +1042,7 @@ public class EjbcaWS implements IEjbcaWS {
 				try {
 					Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
 					UserDataVO userData = getUserAdminSession().findUser(intAdmin, hardTokenData.getUsername());
-					ar = new GenerateTokenApprovalRequest(userData.getUsername(), userData.getDN(), hardTokenSN, hardTokenData.getHardToken().getLabel(),admin,null,WSConfig.getNumberOfWSApprovals(),userData.getCAId(),userData.getEndEntityProfileId());
+					ar = new GenerateTokenApprovalRequest(userData.getUsername(), userData.getDN(), hardTokenData.getHardToken().getLabel(),admin,null,WSConfig.getNumberOfWSApprovals(),userData.getCAId(),userData.getEndEntityProfileId());
 					int status = ApprovalDataVO.STATUS_REJECTED; 					
 					try{
 					  if(!WSConfig.isApprovalGenTokenCertificates()){
@@ -1093,7 +1079,7 @@ public class EjbcaWS implements IEjbcaWS {
                             //	Add approval Request
 							try{
 							  getApprovalSession().addApprovalRequest(admin, ar);
-							  throw new WaitingForApprovalException("Adding approval to view hard token data with id " + ar.generateApprovalId());
+							  throw new WaitingForApprovalException("Adding approval to view hard token data with id " + ar.generateApprovalId(), ar.generateApprovalId());
 							}catch(ApprovalException e4){
 								throw new EjbcaException(e4);
 							}
@@ -1112,7 +1098,7 @@ public class EjbcaWS implements IEjbcaWS {
 		}
 		
 		if(ar != null && ! isApprovedStep0){
-			throw new WaitingForApprovalException("The approval for id " + ar.generateApprovalId() + " have not yet been approved");
+			throw new WaitingForApprovalException("The approval for id " + ar.generateApprovalId() + " have not yet been approved", ar.generateApprovalId());
 		}
 		
 		Collection certs = getHardTokenSession().findCertificatesInHardToken(admin, hardTokenSN);
@@ -1149,15 +1135,18 @@ public class EjbcaWS implements IEjbcaWS {
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#getHardTokenDatas(java.lang.String)
 	 */
 	public List<HardTokenDataWS> getHardTokenDatas(String username, boolean viewPUKData, boolean onlyValidCertificates) throws AuthorizationDeniedException, EjbcaException{
-		List<HardTokenDataWS> retval = new  ArrayList<HardTokenDataWS>();
-		Admin admin = getAdmin();		
+		return getHardTokenDatas(getAdmin(),username, viewPUKData, onlyValidCertificates);
+	}
+	
+	private List<HardTokenDataWS> getHardTokenDatas(Admin admin, String username, boolean viewPUKData, boolean onlyValidCertificates) throws AuthorizationDeniedException, EjbcaException{
+		List<HardTokenDataWS> retval = new  ArrayList<HardTokenDataWS>();		
 		isAuthorizedToHardTokenData(admin, username, viewPUKData);
 
 		Collection<?> hardtokens = getHardTokenSession().getHardTokens(admin, username, viewPUKData);
 		Iterator iter = hardtokens.iterator();
 		while(iter.hasNext()){
 			HardTokenData next = (HardTokenData) iter.next();
-			getAuthorizationSession().isAuthorizedNoLog(getAdmin(), AvailableAccessRules.CAPREFIX + next.getSignificantIssuerDN().hashCode());
+			getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.CAPREFIX + next.getSignificantIssuerDN().hashCode());
 			Collection certs = getHardTokenSession().findCertificatesInHardToken(admin, next.getTokenSN());
 			if(onlyValidCertificates){
 				try {

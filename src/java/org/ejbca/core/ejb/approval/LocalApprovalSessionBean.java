@@ -60,6 +60,7 @@ import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.log.ApprovedActionAdmin;
 import org.ejbca.core.model.log.LogEntry;
 import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -948,6 +949,11 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
     private void sendApprovalNotification(Admin admin, GlobalConfiguration gc, String notificationSubject, String notificationMsg, Integer id, int numberOfApprovalsLeft, Date requestDate, ApprovalRequest approvalRequest, Approval approval) {
         debug(">sendNotification approval notification: id="+id);
         try {
+        	Admin sendAdmin = admin;
+        	if(admin.getAdminType() == Admin.TYPE_CLIENTCERT_USER){
+        		sendAdmin = new ApprovedActionAdmin(admin.getAdminInformation().getX509Certificate());
+        	}
+        	
         	String requestAdminEmail = null;
         	String approvalAdminsEmail = null;
             String fromAddress = null;
@@ -957,10 +963,10 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
         	String requestAdminUsername = null;
         	if(requestAdminCert != null){
         	  requestAdminDN = CertTools.getSubjectDN(requestAdminCert);
-        	  requestAdminUsername = getCertificateStoreSession().findUsernameByCertSerno(admin,requestAdminCert.getSerialNumber(),CertTools.getIssuerDN(requestAdminCert));
-              UserDataVO requestAdminData = getUserAdminSession().findUser(admin, requestAdminUsername);        	
+        	  requestAdminUsername = getCertificateStoreSession().findUsernameByCertSerno(sendAdmin,requestAdminCert.getSerialNumber(),CertTools.getIssuerDN(requestAdminCert));
+              UserDataVO requestAdminData = getUserAdminSession().findUser(sendAdmin, requestAdminUsername);        	
               if (requestAdminData == null || requestAdminData.getEmail() == null || requestAdminData.getEmail().equals("")) {
-               	getLogSession().log(admin, approvalRequest.getCAId(), LogEntry.MODULE_APPROVAL, new java.util.Date(),requestAdminUsername, null, LogEntry.EVENT_ERROR_NOTIFICATION, "Error sending notification to administrator requesting approval. Set a correct email to the administrator");
+               	getLogSession().log(sendAdmin, approvalRequest.getCAId(), LogEntry.MODULE_APPROVAL, new java.util.Date(),requestAdminUsername, null, LogEntry.EVENT_ERROR_NOTIFICATION, "Error sending notification to administrator requesting approval. Set a correct email to the administrator");
               }else{
                	requestAdminEmail = requestAdminData.getEmail();
               }
@@ -976,7 +982,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
             fromAddress = gc.getApprovalNotificationFromAddress();                        
             
             if(approvalAdminsEmail.equals("") || fromAddress.equals("")){
-            	getLogSession().log(admin, approvalRequest.getCAId(), LogEntry.MODULE_APPROVAL, new java.util.Date(),requestAdminUsername, null, LogEntry.EVENT_ERROR_NOTIFICATION, "Error sending approval notification. The email-addresses, either to approval administrators or from-address isn't configured properly");
+            	getLogSession().log(sendAdmin, approvalRequest.getCAId(), LogEntry.MODULE_APPROVAL, new java.util.Date(),requestAdminUsername, null, LogEntry.EVENT_ERROR_NOTIFICATION, "Error sending approval notification. The email-addresses, either to approval administrators or from-address isn't configured properly");
             }else{
               String approvalURL =  gc.getBaseUrl() + "adminweb/approval/approveaction.jsf?uniqueId=" + id;
               String approvalTypeText = intres.getLocalizedMessage(ApprovalDataVO.APPROVALTYPENAMES[approvalRequest.getApprovalType()]);
@@ -986,7 +992,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
               String approveComment = null;
               if(approval != null){
             	  approvalAdminUsername = approval.getUsername();
-            	  X509Certificate approvalCert =  (X509Certificate) getCertificateStoreSession().findCertificateByIssuerAndSerno(admin, approval.getAdminCertIssuerDN(), approval.getAdminCertSerialNumber());
+            	  X509Certificate approvalCert =  (X509Certificate) getCertificateStoreSession().findCertificateByIssuerAndSerno(sendAdmin, approval.getAdminCertIssuerDN(), approval.getAdminCertSerialNumber());
             	  approvalAdminDN = CertTools.getSubjectDN(approvalCert);
             	  approveComment = approval.getComment();
               }
@@ -1010,7 +1016,7 @@ public class LocalApprovalSessionBean extends BaseSessionBean {
               msg.setSentDate(new Date());
               Transport.send(msg);
 
-              getLogSession().log(admin, approvalRequest.getCAId(), LogEntry.MODULE_APPROVAL, new java.util.Date(), requestAdminUsername, null, LogEntry.EVENT_INFO_NOTIFICATION, "Approval notification with id " + id + " was sent successfully.");
+              getLogSession().log(sendAdmin, approvalRequest.getCAId(), LogEntry.MODULE_APPROVAL, new java.util.Date(), requestAdminUsername, null, LogEntry.EVENT_INFO_NOTIFICATION, "Approval notification with id " + id + " was sent successfully.");
             }
         } catch (Exception e) {
             error("Error when sending notification approving notification", e);

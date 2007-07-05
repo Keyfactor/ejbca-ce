@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="arg1" type="{http://ws.protocol.core.ejbca.org/}tokenCertificateRequestWS" maxOccurs="unbounded" minOccurs="0"/>
  *         &lt;element name="arg2" type="{http://ws.protocol.core.ejbca.org/}hardTokenDataWS" minOccurs="0"/>
  *         &lt;element name="arg3" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
+ *         &lt;element name="arg4" type="{http://www.w3.org/2001/XMLSchema}boolean"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -36,7 +37,8 @@ import javax.xml.bind.annotation.XmlType;
     "arg0",
     "arg1",
     "arg2",
-    "arg3"
+    "arg3",
+    "arg4"
 })
 public class GenTokenCertificates {
 
@@ -45,6 +47,7 @@ public class GenTokenCertificates {
     protected List<TokenCertificateRequestWS> arg1;
     protected HardTokenDataWS arg2;
     protected boolean arg3;
+    protected boolean arg4;
 
     /**
      * Gets the value of the arg0 property.
@@ -137,6 +140,22 @@ public class GenTokenCertificates {
      */
     public void setArg3(boolean value) {
         this.arg3 = value;
+    }
+
+    /**
+     * Gets the value of the arg4 property.
+     * 
+     */
+    public boolean isArg4() {
+        return arg4;
+    }
+
+    /**
+     * Sets the value of the arg4 property.
+     * 
+     */
+    public void setArg4(boolean value) {
+        this.arg4 = value;
     }
 
 }

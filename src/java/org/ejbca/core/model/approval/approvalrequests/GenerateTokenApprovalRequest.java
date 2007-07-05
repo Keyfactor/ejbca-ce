@@ -34,7 +34,7 @@ import org.ejbca.util.CertTools;
  * hard token generation
  * 
  * @author Philip Vendil
- * @version $Id: GenerateTokenApprovalRequest.java,v 1.1 2007-06-25 14:45:31 herrvendil Exp $
+ * @version $Id: GenerateTokenApprovalRequest.java,v 1.2 2007-07-05 05:55:07 herrvendil Exp $
  */
 public class GenerateTokenApprovalRequest extends ApprovalRequest {
 
@@ -49,7 +49,6 @@ public class GenerateTokenApprovalRequest extends ApprovalRequest {
 		
 	private String dn;
 	private String username;
-	private String tokensn;
 	private String tokenTypeLabel;
 	
 
@@ -59,12 +58,11 @@ public class GenerateTokenApprovalRequest extends ApprovalRequest {
 	public GenerateTokenApprovalRequest() {}
 
 
-	public GenerateTokenApprovalRequest(String username, String userDN, String tokensn, String tokenTypeLabel, Admin requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId) {
+	public GenerateTokenApprovalRequest(String username, String userDN, String tokenTypeLabel, Admin requestAdmin, String requestSignature, int numOfReqApprovals, int cAId, int endEntityProfileId) {
 		super(requestAdmin, requestSignature, REQUESTTYPE_SIMPLE,
 				numOfReqApprovals, cAId, endEntityProfileId,2);
 		this.username = username;
 		this.dn = userDN;
-		this.tokensn = tokensn;
 		this.tokenTypeLabel = tokenTypeLabel;
 	}
 
@@ -77,7 +75,7 @@ public class GenerateTokenApprovalRequest extends ApprovalRequest {
     /**
      * Approval Id is genereated of This approval type (i.e AddEndEntityApprovalRequest) and UserName
      */
-	public int generateApprovalId() {		
+	public int generateApprovalId() {					
 		return new String(getApprovalType() + ";" + username + ";" + CertTools.getSubjectDN(getRequestAdminCert())+ ";" + CertTools.getIssuerDN(getRequestAdminCert())).hashCode();
 	}
 
@@ -91,7 +89,6 @@ public class GenerateTokenApprovalRequest extends ApprovalRequest {
 		ArrayList retval = new ArrayList();
 		retval.add(new ApprovalDataText("USERNAME",username,true,false));		
 		retval.add(new ApprovalDataText("SUBJECTDN",dn,true,false));
-		retval.add(new ApprovalDataText("HARDTOKENSN",tokensn,true,false));
 		retval.add(new ApprovalDataText("LABEL",tokenTypeLabel,true,true));
 		
 		return retval;
@@ -111,9 +108,7 @@ public class GenerateTokenApprovalRequest extends ApprovalRequest {
 		out.writeInt(LATEST_VERSION);
 		out.writeObject(username);
 		out.writeObject(dn);
-		out.writeObject(tokensn);
 		out.writeObject(tokenTypeLabel);
-
 	}
 
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {        
@@ -122,8 +117,7 @@ public class GenerateTokenApprovalRequest extends ApprovalRequest {
         if(version == 1){
     		username = (String) in.readObject();
             dn = (String) in.readObject();
-            tokensn = (String) in.readObject();
-            tokenTypeLabel = (String) in.readObject();
+            tokenTypeLabel = (String) in.readObject();            
         }
 	}
 
