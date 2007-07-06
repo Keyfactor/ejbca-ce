@@ -9,6 +9,10 @@ java.trustpassword=changeit
 # Choose a good password here.
 superadmin.password=ejbca
 
+# Set this to false if you want to fetch the certificate from the EJBCA public web pages, instead of
+# importing the P12-keystore. This can be used to put the initial superadmin-certificate on a smart card.
+superadmin.batch=true
+
 # The password used to protect the web servers SSL keystore.
 # Choose a good password here.
 # If upgrading from EJBCA 3.1, enter here the password found in 

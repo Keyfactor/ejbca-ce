@@ -51,6 +51,7 @@
         <property name="httpsserver.hostname" value="localhost"/>
         <property name="httpsserver.dn" value="CN=localhost,O=${app.name.cap} Sample,C=SE"/>
 		<property name="superadmin.password" value="ejbca"/>
+		<property name="superadmin.batch" value="true"/>
         <property name="java.trustpassword" value="changeit"/>
     </target>
 
@@ -65,6 +66,7 @@
         <input message="Please enter the server httpsserver.hostname (default 'localhost') ?" addproperty="httpsserver.hostname" defaultvalue="localhost"/>
         <input message="Please enter the server dn (default: CN=localhost,O=${app.name.cap} Sample,C=SE) ?" addproperty="httpsserver.dn" defaultvalue="CN=localhost,O=${app.name.cap} Sample,C=SE"/>
         <input message="Please enter the superadmin password (default: ${app.name}) ?" addproperty="superadmin.password" defaultvalue="${app.name}"/>
+        <input message="Please enter the if superadmin keystore should be batched (default: true) ?" addproperty="superadmin.batch" defaultvalue="true"/>
         <input message="Please enter the CA certificate password (default: changeit) ?" addproperty="java.trustpassword" defaultvalue="changeit"/>
     </target>
 
@@ -85,6 +87,7 @@ httpsserver.hostname   : ${httpsserver.hostname}
 httpsserver.dn         : ${httpsserver.dn}
 httpsserver.password   : ${httpsserver.password}
 superadmin.password    : ${superadmin.password}
+superadmin.batch       : ${superadmin.batch}
 java.trustpassword     : ${java.trustpassword}
 appserver.home         : ${appserver.home}
         </echo>
@@ -114,9 +117,11 @@ appserver.home         : ${appserver.home}
 		
 		<ejbca:cli name="ra" arg='adduser tomcat ${httpsserver.password} "${httpsserver.dn}" null ${ca.name} null 1 JKS'/>
 		<ejbca:cli name="ra" arg="setclearpwd tomcat ${httpsserver.password}"/>
-		
-		<ejbca:cli name="ra" arg='adduser superadmin ${superadmin.password} "CN=SuperAdmin" null ${ca.name} null 65 P12'/>
-		<ejbca:cli name="ra" arg="setclearpwd superadmin ${superadmin.password}"/>
+        <condition property="superadmin.keystoretype" value="P12" else="USERGENERATED">
+           	<istrue value="${superadmin.batch}" />
+        </condition>
+		<ejbca:cli name="ra" arg='adduser superadmin ${superadmin.password} "CN=SuperAdmin" null ${ca.name} null 65 ${superadmin.keystoretype}'/>
+		<ejbca:cli name="ra" arg="setclearpwd superadmin ${superadmin.password}" />
 		
 		<!--
 		this does not work for some reason, if I'm not forking the VM, I'm wondering
