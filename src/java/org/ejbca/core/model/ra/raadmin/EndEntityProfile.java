@@ -58,7 +58,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * 
  *
  * @author  Philip Vendil
- * @version $Id: EndEntityProfile.java,v 1.21 2007-07-04 19:27:50 jeklund Exp $
+ * @version $Id: EndEntityProfile.java,v 1.22 2007-07-16 13:19:52 anatom Exp $
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
 
@@ -417,7 +417,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements java.io.
     	// This is an automatic upgrade function, if we have dynamically added new fields
     	if (parameter >= arr.size()) {
 			String msg = intres.getLocalizedMessage("ra.eeprofileaddfield", new Integer(parameter));
-    		log.info(msg);
+    		log.debug(msg);
     		for (int i = arr.size(); i <= parameter; i++) {
                 arr.add(new Integer(0));
     		}
