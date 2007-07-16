@@ -13,6 +13,7 @@
  
 package org.ejbca.ui.cli;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -41,7 +42,7 @@ import org.ejbca.util.StringTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.15 2007-06-26 11:26:38 herrvendil Exp $
+ * @version $Id: CaInitCommand.java,v 1.16 2007-07-16 13:47:01 jbagnert Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
@@ -90,7 +91,10 @@ public class CaInitCommand extends BaseCaAdminCommand {
               policyId = null;
             String signAlg = args[9];
             String catokenproperties = null;
-            if (args.length > 10) {
+            if (args.length > 10 && !"soft".equals(catokentype)) {
+            	if (!(new File(args[10] )).exists()) {
+            		throw new IllegalAdminCommandException("File " + args[10] + " does not exist");
+            	}
                 catokenproperties = new String(FileTools.readFiletoBuffer(args[10]));
             }
               
