@@ -25,6 +25,7 @@ import javax.ejb.FinderException;
 import javax.naming.InitialContext;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
@@ -41,7 +42,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * A class used as an interface between Apply jsp pages and ejbca functions.
  *
  * @author Philip Vendil
- * @version $Id: ApplyBean.java,v 1.8 2007-07-16 12:47:00 anatom Exp $
+ * @version $Id: ApplyBean.java,v 1.9 2007-07-16 13:23:19 anatom Exp $
  */
 public class ApplyBean implements java.io.Serializable {
     /**
@@ -108,7 +109,7 @@ public class ApplyBean implements java.io.Serializable {
         }
 		this.username = username;
 		
-		log.info("<getTokenType(" + username + ") --> " + returnval);
+		log.debug("<getTokenType(" + username + ") --> " + returnval);
         return returnval;
     }
 
@@ -138,7 +139,7 @@ public class ApplyBean implements java.io.Serializable {
 		}
 		this.username = username;
 		
-		log.info("<getCAId(" + username + ") --> " + returnval);
+		log.debug("<getCAId(" + username + ") --> " + returnval);
 		return returnval;
 	}
 
@@ -173,7 +174,18 @@ public class ApplyBean implements java.io.Serializable {
         }
         this.username = username;
 
-		log.info("<availableBitLengths(" + username + ") --> " + returnval);
+        if (log.isDebugEnabled()) {
+        	String retdebug = "";
+        	if (returnval != null) {
+        		for (int i=0;i<returnval.length;i++) {
+        			if (StringUtils.isNotEmpty(retdebug)) {
+        				retdebug += ",";
+        			}
+            		retdebug += returnval[i];        			
+        		}
+        	}
+        	log.debug("<availableBitLengths(" + username + ") --> " + retdebug);
+        }
         return returnval;
     }
 
