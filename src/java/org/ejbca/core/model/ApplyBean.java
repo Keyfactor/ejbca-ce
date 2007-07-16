@@ -41,7 +41,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * A class used as an interface between Apply jsp pages and ejbca functions.
  *
  * @author Philip Vendil
- * @version $Id: ApplyBean.java,v 1.7 2007-05-25 07:07:38 rolf_s Exp $
+ * @version $Id: ApplyBean.java,v 1.8 2007-07-16 12:47:00 anatom Exp $
  */
 public class ApplyBean implements java.io.Serializable {
     /**
@@ -108,7 +108,6 @@ public class ApplyBean implements java.io.Serializable {
         }
 		this.username = username;
 		
-		System.out.println("<getTokenType(" + username + ") --> " + returnval);
 		log.info("<getTokenType(" + username + ") --> " + returnval);
         return returnval;
     }
@@ -139,7 +138,6 @@ public class ApplyBean implements java.io.Serializable {
 		}
 		this.username = username;
 		
-		System.out.println("<getCAId(" + username + ") --> " + returnval);
 		log.info("<getCAId(" + username + ") --> " + returnval);
 		return returnval;
 	}
@@ -176,7 +174,6 @@ public class ApplyBean implements java.io.Serializable {
         this.username = username;
 
 		log.info("<availableBitLengths(" + username + ") --> " + returnval);
-		System.out.println("<availableBitLengths(" + username + ") --> " + returnval);
         return returnval;
     }
 
