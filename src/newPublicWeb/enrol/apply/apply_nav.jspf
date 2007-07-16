@@ -30,7 +30,7 @@
 -->
 </script>
 
-<p>If you don't have NetID installed or don't want to use a smartcard
+<p>If you don't have NetID installed or don't want to use a smart card
 you may try another PKCS#11 module. Please choose a key length, then click OK to fetch your
 certificate.</p>
 
