@@ -188,7 +188,7 @@ Derby:
  - Configure SSL in Glassfish
     Configuration->HTTP Service->HTTP Listeners->http-listener-2
        Client Authentication: Enabled
-       Certificate Nickname: s1as (get alias name by running 'keytool -list -v -keystore $APPSRV_HOME/domains/domain1/config/keystore.jks')
+       Certificate Nickname: s1as (get alias name by running 'keytool -list -v -keystore $APPSRV_HOME/domains/domain1/config/keystore.jks', password changeit)
        SSL3: Enabled
        Ciphers Suite: All
     Add CA certificate to cacerts file:
