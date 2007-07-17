@@ -2119,6 +2119,15 @@ $EJBCA/bin/pkcs11HSM.sh generate ./libcs2_pkcs11.so 4096 defaultKey 1
 PKCS11 Token [SunPKCS11-libcs2_pkcs11.so-slot1] Password:
 Creating certificate with entry defaultKey.
 </source>
+<p>
+For nCipher the slot id is very special:
+</p>
+<source>
+slot 492971158
+defaultKey defaultKey
+pin user1
+sharedLibrary /opt/nfast/toolkits/pkcs11/cknfast.so
+</source>
 </subsection>
 <subsection name="nCipher NFast">
 <p>
