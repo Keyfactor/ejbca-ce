@@ -60,7 +60,7 @@ import org.ejbca.core.model.ca.catoken.CATokenConstants;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.8 2007-05-18 16:24:58 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.9 2007-07-17 11:52:38 anatom Exp $
  */
 public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);
@@ -471,16 +471,20 @@ public class KeyTools {
      * @throws IOException if the pkcs11 library can not be found, or the SunPKCS11 can not be created.
      */ 
     public static AuthProvider getP11AuthProvider(final int slot, final String libName) throws IOException {
+    	final File libFile = new File(libName);
+    	if ( !libFile.isFile() || !libFile.canRead() ) {
+    		throw new IOException("The shared library PKCS11 file "+libName+" can't be read.");
+    	}
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();
     	PrintWriter pw = new PrintWriter(baos);
-    	final File libFile = new File(libName);
-    	if ( !libFile.isFile() || !libFile.canRead() )
-    		throw new IOException("The shared library PKCS11 file "+libName+" can't be read.");
     	pw.println("name = "+libFile.getName()+"-slot"+slot);
     	pw.println("library = "+libFile.getCanonicalPath());
     	pw.println("slot = "+slot);
     	pw.flush();
     	pw.close();
+    	if (log.isDebugEnabled()) {
+    		log.debug(baos.toString());
+    	}
 
         // We will construct the PKCS11 provider (sun.security...) using reflextion, because 
         // the sun class does not exist on all platforms in jdk5, and we want to be able to compile everything.
