@@ -22,7 +22,7 @@ import org.ejbca.util.KeyTools;
 
 /**
  * @author lars
- * @version $Id: PKCS11CAToken.java,v 1.6 2007-07-17 11:52:07 anatom Exp $
+ * @version $Id: PKCS11CAToken.java,v 1.7 2007-07-17 12:10:28 anatom Exp $
  */
 public class PKCS11CAToken extends BaseCAToken {
 
@@ -54,7 +54,7 @@ public class PKCS11CAToken extends BaseCAToken {
                                                                           Security.getProvider(getProvider()),
                                                                           pwp);
             final KeyStore keyStore = builder.getKeyStore();
-            log.debug("Loading key from slot"+sSlotLabel+" using pin.");
+            log.debug("Loading key from slot '"+sSlotLabel+"' using pin.");
             keyStore.load(null, null);
             setKeys(keyStore, null);
             pwp.destroy();
