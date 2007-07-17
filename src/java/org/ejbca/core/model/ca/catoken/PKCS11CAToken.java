@@ -22,7 +22,7 @@ import org.ejbca.util.KeyTools;
 
 /**
  * @author lars
- * @version $Id: PKCS11CAToken.java,v 1.5 2007-06-15 09:31:29 jeklund Exp $
+ * @version $Id: PKCS11CAToken.java,v 1.6 2007-07-17 11:52:07 anatom Exp $
  */
 public class PKCS11CAToken extends BaseCAToken {
 
@@ -60,7 +60,7 @@ public class PKCS11CAToken extends BaseCAToken {
             pwp.destroy();
         } catch (Throwable t) {
             log.error("Failed to initialize PKCS11 provider slot '"+sSlotLabel+"'.", t);
-            throw new CATokenAuthenticationFailedException("Failed to initialize PKCS11 provider keystore '"+sSlotLabel+"'.");
+            throw new CATokenAuthenticationFailedException("Failed to initialize PKCS11 provider slot '"+sSlotLabel+"'.");
         }
     }
 
