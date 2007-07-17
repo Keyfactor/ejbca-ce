@@ -60,7 +60,7 @@ import org.ejbca.core.model.ca.catoken.CATokenConstants;
 /**
  * Tools to handle common key and keystore operations.
  *
- * @version $Id: KeyTools.java,v 1.9 2007-07-17 11:52:38 anatom Exp $
+ * @version $Id: KeyTools.java,v 1.10 2007-07-17 13:41:11 anatom Exp $
  */
 public class KeyTools {
     private static Logger log = Logger.getLogger(KeyTools.class);
@@ -470,7 +470,7 @@ public class KeyTools {
      * @return AuthProvider of type "sun.security.pkcs11.SunPKCS11"
      * @throws IOException if the pkcs11 library can not be found, or the SunPKCS11 can not be created.
      */ 
-    public static AuthProvider getP11AuthProvider(final int slot, final String libName) throws IOException {
+    public static AuthProvider getP11AuthProvider(final String slot, final String libName) throws IOException {
     	final File libFile = new File(libName);
     	if ( !libFile.isFile() || !libFile.canRead() ) {
     		throw new IOException("The shared library PKCS11 file "+libName+" can't be read.");
@@ -479,7 +479,9 @@ public class KeyTools {
     	PrintWriter pw = new PrintWriter(baos);
     	pw.println("name = "+libFile.getName()+"-slot"+slot);
     	pw.println("library = "+libFile.getCanonicalPath());
-    	pw.println("slot = "+slot);
+    	if ( (slot != null) && (slot.length() > 0) ) {
+        	pw.println("slot = "+slot);    		
+    	}
     	pw.flush();
     	pw.close();
     	if (log.isDebugEnabled()) {

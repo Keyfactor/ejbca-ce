@@ -22,7 +22,7 @@ import org.ejbca.util.KeyTools;
 
 /**
  * @author lars
- * @version $Id: PKCS11CAToken.java,v 1.7 2007-07-17 12:10:28 anatom Exp $
+ * @version $Id: PKCS11CAToken.java,v 1.8 2007-07-17 13:41:10 anatom Exp $
  */
 public class PKCS11CAToken extends BaseCAToken {
 
@@ -69,7 +69,7 @@ public class PKCS11CAToken extends BaseCAToken {
      */
     public void init(Properties properties, String signaturealgorithm) throws Exception {
         init("slot", properties, signaturealgorithm, false);
-        setProvider( KeyTools.getP11AuthProvider(Integer.parseInt(sSlotLabel),
+        setProvider( KeyTools.getP11AuthProvider(sSlotLabel,
                                                  properties.getProperty("sharedLibrary")) );
         autoActivate();
     }
