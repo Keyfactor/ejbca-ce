@@ -2097,7 +2097,7 @@ Each slot must have been initialised before keys could be generated on the them.
 </p><p>
 Besides the keys previously described the property field of the administration GUI should contain the following properties:
 <ul>
-<li>slot                - the slot if the CA.</li>
+<li>slot                - the slot of the CA.</li>
 <li>sharedLibrary       - the shared PKCS#11 library to be used.</li>
 </ul>
 </p><p>
