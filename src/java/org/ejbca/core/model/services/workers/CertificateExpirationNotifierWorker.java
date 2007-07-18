@@ -204,7 +204,7 @@ public class CertificateExpirationNotifierWorker extends BaseWorker {
 
 
 			} catch (Exception fe) {
-				fe.printStackTrace();
+				log.error("Error running service work: ", fe);
 				throw new ServiceExecutionFailedException(fe);
 			} finally {
 				if(updateStatus != null){
@@ -237,7 +237,7 @@ public class CertificateExpirationNotifierWorker extends BaseWorker {
 				updateStatus = con.prepareStatement("UPDATE CertificateData SET status=" + CertificateDataBean.CERT_NOTIFIEDABOUTEXPIRATION +" WHERE fingerprint='" + next.getFingerPrint() + "'"); 												
 				updateStatus.execute();
 			} catch (Exception fe) {
-				fe.printStackTrace();
+				log.error("Error sending emails: ", fe);
 				throw new ServiceExecutionFailedException(fe);
 			} finally {
 				if(updateStatus != null){
