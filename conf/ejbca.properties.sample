@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.21 2007-06-20 12:22:22 jbagnert Exp $
+# $Id: ejbca.properties.sample,v 1.22 2007-07-18 08:51:34 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -145,7 +145,7 @@ ca.cmskeystorepass=foo123
 #jboss.farm.name=farm
 
 #------------------- HW token ------------------------------
-# The directory of the HW token classes. If this is an emty directory no HW token will be used.
+# The directory of the HW token classes. If this is an empty directory no HW token will be used.
 # If the directory is not existing an empty directory will be created.
 # Default: ./hwtoken
 #hwtoken_classes=../primeCard/caTokenClasses-1.5

@@ -457,7 +457,7 @@ files can be used with Tomcat etc, and are protected (both private key password
 and keystore password) by the users password.
 </p>
 <p>
-If the server generates the keys and a certificate request (CST) for you, select token type "User generated".
+If the server generates the keys and a certificate request (CSR) for you, select token type "User generated".
 You can use the public enrollment web pages (http://127.0.0.1:8080/ejbca/) to paste the request and receive the certificate.
 This function is under "Certificate Enrollment->manually for a server".
 </p>
