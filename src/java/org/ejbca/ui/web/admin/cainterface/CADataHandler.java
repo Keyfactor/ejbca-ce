@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionLocal;
@@ -56,9 +57,10 @@ import org.ejbca.util.CertTools;
  * A class help administrating CAs. 
  *
  * @author  TomSelleck
- * @version $Id: CADataHandler.java,v 1.8 2007-04-02 08:26:34 jeklund Exp $
+ * @version $Id: CADataHandler.java,v 1.9 2007-07-19 15:22:34 anatom Exp $
  */
 public class CADataHandler implements Serializable {
+    private static final Logger log = Logger.getLogger(CADataHandler.class);
 
     
     /** Creates a new instance of CertificateProfileDataHandler */
@@ -178,14 +180,19 @@ public class CADataHandler implements Serializable {
    *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */  
   public void receiveResponse(int caid, InputStream is) throws Exception{
-  	 Collection certs = CertTools.getCertsFromPEM(is);
-  	 Iterator iter = certs.iterator();
-  	 Certificate cert = (Certificate) iter.next();
-  	 X509ResponseMessage resmes = new X509ResponseMessage();
-  	 resmes.setCertificate(cert);
-  
-     caadminsession.receiveResponse(administrator, caid, resmes);
-     info.cAsEdited(); 
+	  try {
+		  Collection certs = CertTools.getCertsFromPEM(is);
+		  Iterator iter = certs.iterator();
+		  Certificate cert = (Certificate) iter.next();
+		  X509ResponseMessage resmes = new X509ResponseMessage();
+		  resmes.setCertificate(cert);
+		  caadminsession.receiveResponse(administrator, caid, resmes);
+		  info.cAsEdited(); 		  
+	  } catch (Exception e) {
+	      // log the error here, since otherwise it may be hidden by web pages...
+		  log.error("Error receiving response: ", e);
+		  throw e;
+	  }
   }
 
   /**
