@@ -23,12 +23,6 @@ import java.util.Iterator;
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.Timer;
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
-import javax.transaction.NotSupportedException;
-import javax.transaction.RollbackException;
-import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
 
 import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.ejb.BaseSessionBean;
@@ -138,6 +132,8 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
  *   link="CreateCRLSession"
  *   
  *  @jonas.bean ejb-name="ServiceTimerSession"
+ *  
+ *  @version $Id: ServiceTimerSessionBean.java,v 1.16 2007-07-19 12:50:19 anatom Exp $
  */
 public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ejb.TimedObject {
 
@@ -173,7 +169,7 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
      * Used in a clustered environment to perodically load available
      * services
      */
-    private static final Integer SERVICELOADER_ID = new Integer(0);
+    private static final Integer SERVICELOADER_ID = Integer.valueOf(0);
     
     private static final long SERVICELOADER_PERIOD = 5 * 60 * 1000;
 
@@ -184,6 +180,7 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
      * @param timer
      */
 	public void ejbTimeout(Timer timer) {
+		debug(">ejbTimeout");    		
 		Integer timerInfo = (Integer) timer.getInfo();
 		if(timerInfo.equals(SERVICELOADER_ID)){
 			log.debug("Running the internal Service loader.");
@@ -193,45 +190,17 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 			IWorker worker = null;
 			String serviceName = null;
 			boolean run = false;
-			UserTransaction ut = getSessionContext().getUserTransaction();
 			try{
-				ut.begin();
 				serviceData = getServiceSession().getServiceConfiguration(intAdmin, timerInfo.intValue());
 				if(serviceData != null){
 					serviceName = getServiceSession().getServiceName(intAdmin, timerInfo.intValue());
 					worker = getWorker(serviceData,serviceName);
-					getSessionContext().getTimerService().createTimer(worker.getNextInterval()*1000, timerInfo);
-					Date nextRunDate = serviceData.getNextRunTimestamp();
-					Date currentDate = new Date();
-					if(currentDate.after(nextRunDate)){
-						nextRunDate = new Date(currentDate.getTime() + worker.getNextInterval());
-						serviceData.setNextRunTimestamp(nextRunDate);
-						getServiceSession().changeService(intAdmin, serviceName, serviceData); 
-						run=true;
-					}
+					run = checkAndUpdateServiceTimeout(worker.getNextInterval(), timerInfo, serviceData, serviceName);
 				}
-			}catch(NotSupportedException e){
+			} catch (Exception e) {
+			    // We need to catch wide here in order to continue even if there is some error
 				log.error(e);
-			} catch (SystemException e) {
-				log.error(e);
-			} catch (SecurityException e) {
-				log.error(e);
-			} catch (IllegalStateException e) {
-				log.error(e);
-			} finally {
-				try {
-					ut.commit();					
-				} catch (RollbackException e) {
-					log.error(e);
-				} catch (HeuristicMixedException e) {
-					log.error(e);
-				} catch (HeuristicRollbackException e) {
-					log.error(e);
-				} catch (SystemException e) {
-					log.error(e);
-				}
 			}
-
 			if(run){
 				if(serviceData != null){
 					try{
@@ -249,7 +218,29 @@ public class ServiceTimerSessionBean extends BaseSessionBean implements javax.ej
 				getLogSession().log(intAdmin, intAdmin.getCaId(), LogEntry.MODULE_SERVICES, new java.util.Date(), null, null, LogEntry.EVENT_INFO_SERVICEEXECUTED, intres.getLocalizedMessage("services.servicerunonothernode", timerInfo));
 			}
 		}
+		debug("<ejbTimeout");		
 	}    
+    /**
+     * Internal method should not be called from external classes, method is public to get automatic transaction handling.
+     * 
+     * This method need "RequiresNew" transaction handling, because we want to make sure that the timer
+     * runs the next time even if the execution fails.
+     * 
+     * @ejb.transaction type="RequiresNew"
+     */
+	public boolean checkAndUpdateServiceTimeout(long nextInterval, int timerInfo, ServiceConfiguration serviceData, String serviceName) {
+		boolean ret = false;
+		getSessionContext().getTimerService().createTimer(nextInterval*1000, timerInfo);
+		Date nextRunDate = serviceData.getNextRunTimestamp();
+		Date currentDate = new Date();
+		if(currentDate.after(nextRunDate)){
+			nextRunDate = new Date(currentDate.getTime() + nextInterval);
+			serviceData.setNextRunTimestamp(nextRunDate);
+			getServiceSession().changeService(intAdmin, serviceName, serviceData); 
+			ret=true;
+		}		
+		return ret;
+	}
 
     /**
      * Loads and activates all the services from database that are active
