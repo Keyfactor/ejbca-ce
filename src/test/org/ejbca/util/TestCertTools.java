@@ -37,7 +37,7 @@ import com.novell.ldap.LDAPDN;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.5 2007-01-04 14:29:05 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.6 2007-07-19 15:32:41 anatom Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);
@@ -811,4 +811,21 @@ public class TestCertTools extends TestCase {
       assertEquals("countryOfResidence=SE, countryOfCitizenship=SE, gender=M, placeOfBirth=Stockholm, dateOfBirth=19710425", ret);
       log.debug("<test17SubjectDirectoryAttributes()");	  
   }
+  
+  public void test18DNSpaceTrimming() throws Exception {
+      log.debug(">test18DNSpaceTrimming()");
+      String dn1 = "CN=CommonName, O= Org,C=SE";
+      String bcdn1 = CertTools.stringToBCDNString(dn1);
+      log.debug("dn1: " + dn1);
+      log.debug("bcdn1: " + bcdn1);
+      assertEquals("CN=CommonName,O= Org,C=SE", bcdn1);
+
+      dn1 = "CN=CommonName, O =Org,C=SE";
+      bcdn1 = CertTools.stringToBCDNString(dn1);
+      log.debug("dn1: " + dn1);
+      log.debug("bcdn1: " + bcdn1);
+      assertEquals("CN=CommonName,O=Org,C=SE", bcdn1);
+      log.debug("<test18DNSpaceTrimming()");	  
+  }
+
 }

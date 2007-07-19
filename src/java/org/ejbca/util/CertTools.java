@@ -95,7 +95,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.39 2007-05-25 13:08:44 anatom Exp $
+ * @version $Id: CertTools.java,v 1.40 2007-07-19 15:32:41 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -231,7 +231,7 @@ public class CertTools {
         int ix = pair.indexOf("=");
 
         if (ix != -1) {
-          String key = pair.substring(0, ix).toLowerCase();
+          String key = pair.substring(0, ix).toLowerCase().trim();
           String val = pair.substring(ix + 1);
 
           // -- First search the OID by name in declared OID's
