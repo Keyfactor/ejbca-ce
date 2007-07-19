@@ -2428,8 +2428,8 @@ Then create an empty a keystore with
 This hash should be written to a file that has to be exactly 40 bytes long:
 </p>
 <ul>
-<li>Linux: 'cat > temp.jks' and copypaste the string, press Ctrl-D and Ctrl-C.</li>
-<li>Windows: 'copy con: temp.jks' and copypaste the string, press Ctrl-Z and Enter.</li>
+<li>Linux: 'cat > temp.keystore' and copypaste the string, press Ctrl-D and Ctrl-C.</li>
+<li>Windows: 'copy con: temp.keystore' and copypaste the string, press Ctrl-Z and Enter.</li>
 </ul>
 <p>
 Import a RSA key protected by 1/X operator cardset 'OperatorCardset' without passphrase from file 'rsaprivatekey.pem' as 'importedKey':
@@ -2439,9 +2439,10 @@ jboss@host$ $NFAST_HOME/bin/nfkminfo -k
  AppName jcecsp Ident f7e825134fe23f58b1575d8efb487babe7ebd1ed
  
 jboss@host$ export CLASSPATH=$CLASSPATH:$JAVA_HOME/jre/lib/jce.jar:$NFAST_HOME/java/classes/nfjava.jar:$NFAST_HOME/java/classes/kmjava.jar:$NFAST_HOME/java/classes/kmcsp.jar
-jboss@host$ $NFAST_HOME/bin/generatekey --import -m 1 -c OperatorCardset jcecsp alias=importedKey pemreadfile=rsaprivatekey.pem type=RSA keystore=temp.jks
+jboss@host$ $NFAST_HOME/bin/generatekey --import -m 1 -c OperatorCardset jcecsp alias=importedKey pemreadfile=rsaprivatekey.pem type=RSA keystore=temp.keystore
  ...
- ERROR: Could not write to temp.jks...
+ ERROR: Could not write to temp.keystore
+ ...
 jboss@host$ $NFAST_HOME/bin/nfkminfo -k
  AppName jcecsp Ident f7e825134fe23f58b1575d8efb487babe7ebd1ed
  AppName jcecsp Ident f7e825134fe23f58b1575d8efb487babe7ebd1ed-key-832c8a89fe813dc99ae61e094fe5d195ca3e405d
@@ -2468,6 +2469,60 @@ to start using the CA.
 When importing a sub-CA, choose Signed by 'External CA'. Edit other properties if you like and press 'Make certificate
 request'. Ignore the request and edit the same 'ImportedCA'. Press 'Receive Certificate Response' and upload the old
 sub-CA's certificate. Activate the CA-token from Basic Functions when needed.
+</p>
+<strong>Using module protected keys</strong>
+<p>
+The security world has to be initialized in the default FIPS 140-2 Level 2 for this to work.
+First backup and edit %JAVA_HOME%\jre\lib\security\java.security and insert com.ncipher.provider.km.nCipherKM as the first provider
+</p><source>
+security.provider.1=com.ncipher.provider.km.nCipherKM
+security.provider.2=sun.security.provider.Sun
+...
+</source><p>
+Then create an empty a keystore with
+</p>
+<source>host&gt; %EJBCA_HOME%\bin\nCipherHSM.cmd createkeystoremodule
+ ...
+ Next line will contain the identity identifying the keystore:
+ 0acea7eb80528b15851e6a3e7969d4a21eb2d57c
+</source>
+<p>
+This hash should be written to a file that has to be exactly 40 bytes long:
+</p>
+<ul>
+<li>Linux: 'cat &gt; temp.keystore' and copypaste the string, press Ctrl-D and Ctrl-C.</li>
+<li>Windows: 'copy con: temp.keystore' and copypaste the string, press Ctrl-Z and Enter.</li>
+</ul>
+<p>
+Generate module protected key "defaultRoot" in this keystore
+</p>
+<source>
+host&gt; %NFAST_HOME%\bin\nfkminfo.exe -k
+ AppName jcecsp Ident 0acea7eb80528b15851e6a3e7969d4a21eb2d57c
+ 
+host&gt; %NFAST_HOME%\bin\generatekey.exe --batch --generate jcecsp type=rsa size=4096 protect=module alias=defaultRoot keystore=temp.keystore
+ ...
+ ERROR: Could not write to temp.keystore
+ ...
+host&gt; %NFAST_HOME%\bin\nfkminfo.exe -k
+ AppName jcecsp Ident 0acea7eb80528b15851e6a3e7969d4a21eb2d57c
+ AppName jcecsp Ident 0acea7eb80528b15851e6a3e7969d4a21eb2d57c-key-a68f3efde60a519b7c9d4e4df22fd2b53ded37f3
+</source>
+<p>
+Despite the error message the key is still created.
+</p><p>
+Important: Restore %JAVA_HOME%\jre\lib\security\java.security now or EJBCA will stop working!
+</p><p>
+Start JBoss as for any soft token and create a new CA 'ModuleProtectedCA' in the Admin GUI.
+Choose CA Token Type 'NFastCAToken' and enter the generated key's properties.
+</p>
+<source>
+keyStore 0acea7eb80528b15851e6a3e7969d4a21eb2d57c
+defaultKey defaultRoot
+</source>
+<p>
+Complete the form and press "Create". Go to Admin GUI -> Basic Functions -> View Information for 'ModuleProtectedCA' -> Activate.
+Create a CRL to verify functionality by Admin GUI -> Basic Functions -> Create CRL for 'ModuleProtectedCA'.
 </p>
 <strong>Not using preload.</strong>
 <p>
