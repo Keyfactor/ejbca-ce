@@ -100,7 +100,7 @@ import org.ejbca.util.StringTools;
  *   local-class="org.ejbca.core.ejb.protect.TableProtectSessionLocal"
  *   remote-class="org.ejbca.core.ejb.protect.TableProtectSessionRemote"
  *
- * @version $Id: TableProtectSessionBean.java,v 1.6 2006-12-13 10:33:09 anatom Exp $
+ * @version $Id: TableProtectSessionBean.java,v 1.7 2007-07-19 11:39:16 anatom Exp $
  */
 public class TableProtectSessionBean extends BaseSessionBean {
 
@@ -214,6 +214,9 @@ public class TableProtectSessionBean extends BaseSessionBean {
      */
     public void protect(Admin admin, Protectable entry) {
     	if (!enabled) {
+        	if (log.isDebugEnabled()) {
+            	debug("protect: not enabled");    		
+        	}
     		return;
     	}
     	int hashVersion = entry.getHashVersion();
