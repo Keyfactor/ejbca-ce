@@ -4007,11 +4007,6 @@ Ex: bin/ejbca.sh asn1dump adminca1.pem
 </source>
 </subsection>
 
-<subsection name="Configuring Publishers (LDAP)">
-<p>
-LDAP setup is explained in HOWTO-LDAP.txt
-</p></subsection>
-
 <subsection name="Batch creation of certificates">
 <p>
 Certificates can be created batch-wise with EJBCA. The class
@@ -4086,7 +4081,7 @@ certificates from the specified CertificateProfile.
 <p>
 You can change any part of EJBCA to better suit your specific needs.
 </p>
-<subsection name="Handling changes in a separate tree">
+<subsection name="Handling changes in a separate tree (EJBCA >= 3.5)">
 <p>
 You can keep your personal modifications of EJBCA in a separate tree. Set the location
 of your personal modifications in conf/custom.properties or use the default location
