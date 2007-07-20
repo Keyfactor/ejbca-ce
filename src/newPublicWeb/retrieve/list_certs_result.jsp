@@ -22,7 +22,7 @@
     
             <c:choose> 
                 <c:when test="${certificates == null || fn:length(certificates) == 0}"> 
-                    <h2>No certificates exist for '${subject}'.</h2>
+                    <h2><c:out value="No certificates exist for '${subject}'." /></h2>
                 </c:when>
                 <c:otherwise> 
                     <c:forEach var="certificate" items="${certificates}">
