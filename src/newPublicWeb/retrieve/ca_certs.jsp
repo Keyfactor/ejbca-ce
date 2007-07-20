@@ -14,7 +14,7 @@
 		<c:set var="ca" value="${finder.CAInfo}" />
 
 		<hr />
-		<h2>CA: ${ca.name}</h2>
+		<h2><c:out value="CA: ${ca.name}" /></h2>
 
 		<c:set var="chain" value="${finder.CACertificateChain}" />
 	

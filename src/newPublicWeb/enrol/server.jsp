@@ -1,5 +1,5 @@
 <%@ include file="header.jsp" %>
-<h1 class="title">Enrol For Server Certificate</h1>
+<h1 class="title">Enroll For Server Certificate</h1>
 <p>Please give your username and password, paste the PEM-formated PKCS10 certification request into the field below and
    click OK to fetch your certificate. 
 </p>
@@ -12,7 +12,7 @@
 
 <form name="EJBCA" action="../certreq" enctype="x-www-form-encoded" method="post">
   <fieldset >
-    <legend>Enrol</legend>
+    <legend>Enroll</legend>
 	<label for="user">Username</label>
 	<input type="text" size="10" name="user" id="user" value="foo" accesskey="u" />
 	<br />

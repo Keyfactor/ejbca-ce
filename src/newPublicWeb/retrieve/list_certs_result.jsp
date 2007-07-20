@@ -18,7 +18,7 @@
                 finder.lookupCertificatesBySubject(subject, certificates);
             %>
     
-            <h1 class="title">Certificates for ${subject}</h1> 
+            <h1 class="title"><c:out value="Certificates for ${subject}" /></h1> 
     
             <c:choose> 
                 <c:when test="${certificates == null || fn:length(certificates) == 0}"> 

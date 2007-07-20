@@ -22,7 +22,7 @@
     <div class="menucontainer">
       <div class="menu">
         <ul>
-          <li><div class="menuheader">Enrol</div>
+          <li><div class="menuheader">Enroll</div>
             <ul>
               <li>
                 <a href="enrol/browser.jsp">Create Browser Certificate</a>

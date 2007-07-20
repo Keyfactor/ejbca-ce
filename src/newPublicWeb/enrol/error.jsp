@@ -16,7 +16,7 @@
             <h2>Unknown error, or you came to this page directly without beeing redirected.</h2> 
         </c:when>
         <c:otherwise> 
-            <p>${errMsg}</p>
+            <p><c:out value="${errMsg}" /></p>
         </c:otherwise> 
     </c:choose> 
     
