@@ -68,6 +68,9 @@ Configure the newly created certificate profile to use the Ocsp publisher define
 Note: the responders certificate AND the CA certificate need to be published from the CA to the 
 OCSP responder. For the CA you do this by setting the CRL publisher to the OCSP publisher.
 
+You also need to create a new End Entity Profile to use the new Certificate Profile. You should set 'Batch' and TokenType=P12
+if you will be issuing soft keys ot the OCSP responder.
+
 You should then create a user for each CA using this certificate profile.
 Use the token type "p12" or "jks" for soft keys and "user generated" for card keys.
 
