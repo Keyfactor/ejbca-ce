@@ -1,3 +1,11 @@
+EJBCA 3.4.4
+-----------
+This is a patch release with only minor fixes.
+
+Read the changelog for details.
+
+This is a plug-in upgrade from 3.4.x. See UPGRADE for the simple instructions.
+
 EJBCA 3.4.3
 -----------
 This is a patch release with some fixes and minor new features.

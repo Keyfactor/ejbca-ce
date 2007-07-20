@@ -1,3 +1,13 @@
+3.4.4, 2007-07-20
+---
+Bug
+    * [ECA-486] - Can't activate a (nethsm) hard CA where cardset is not protected
+    * [ECA-544] - Servlet is not able to return Open VPN Installer executable.
+    * [ECA-553] - CRLUpdate worker not working with TableProtection enabled on JBoss 4.2.0
+
+Task
+    * [ECA-555] - Add instructions for using module protected keys with EJBCA and nCipher to User Guide.
+
 3.4.3, 2007-06-08
 ---
 New Feature
