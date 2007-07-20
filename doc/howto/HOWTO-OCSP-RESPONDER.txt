@@ -43,7 +43,8 @@ and datasource.* and database.* are relevant to the responder but you may keep c
 from the EJBCA setup since definitions of other properties does no harm. 
 Note that the External OCSP responder itself uses the configuration options database.* and not the ocsp-database.* options.
 The ocsp.keys.* preferences (that has no meaning for EJBCA) has also to be configured, 
-please read description of these properties in conf/web.properties.sample, ocsp.properties.sample and databse.properties.sample.
+please read description of these properties in ocsp.properties.sample, database.properties.sample and perhaps 
+conf/web.properties.sample (if ssl or different ports should be configured).
 ocsp.usecasigningcert should be set to false. If card keys (see below) should be used then the property
 'ocspHardTokenClasses' must be set to the corresponding directory of PrimeCard.
 
