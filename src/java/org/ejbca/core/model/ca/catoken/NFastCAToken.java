@@ -29,7 +29,7 @@ import org.apache.log4j.Logger;
  * and the development was sponsored by Linagora (www.linagora.com).
  * 
  * @author Lars Silv�n
- * @version $Id: NFastCAToken.java,v 1.14 2007-06-15 09:31:29 jeklund Exp $
+ * @version $Id: NFastCAToken.java,v 1.15 2007-07-21 09:02:17 anatom Exp $
  */
 public class NFastCAToken extends BaseCAToken implements IHardCAToken {
 
@@ -74,7 +74,7 @@ public class NFastCAToken extends BaseCAToken implements IHardCAToken {
             setKeys(keyStore, authCode);
             log.debug("Keys from "+sSlotLabel+ " activated.");
         } catch( Throwable t ) {
-            log.debug("Authentication failed for keystore "+sSlotLabel+':', t );
+            log.info("Authentication failed for keystore "+sSlotLabel+':', t );
             CATokenAuthenticationFailedException e = new CATokenAuthenticationFailedException(t.toString());
             e.initCause(t);
             deactivate();
