@@ -171,6 +171,11 @@ CA Certificate
   <p>
   <a href="http://asyd.net/home/geeklog/2006/08/24/openssh_x509">OpenSSH and X509 authentication</a>.
   </p>
+  <p>
+  Another interesting link is this one:
+  <br/>
+  <a href="http://alon.barlev.googlepages.com/openssh-pkcs11">PKCS#11 support in OpenSSH</a>.
+  </p>
   </section>
   
 </body>
