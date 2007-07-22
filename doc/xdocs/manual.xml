@@ -872,7 +872,10 @@ The following CMP messages are supported:
 Certificate requests use the CRMF (RFC4211).
 </p>
 <p>
-CMP support in RA mode (see below) is currently limited to one keyId, making RA requests for one CA.
+From EJBCA 3.5, CMP support in RA mode (see below) can support several CAs and profiles based on the keyId of the
+password used to protect the CMP messages (PBE protection).
+<br/>
+In EJBCA 3.4 CMP support in RA mode is currently limited to one keyId, making RA requests for one CA.
 </p>
 <subsection name="Configuration">
 <p>
@@ -939,17 +942,21 @@ This is the default mode of operation.
 <p>
 RA mode is used when the CMP client will act as an RA to EJBCA. When the RA sends a certificate request to EJBCA, no user is pre-registered in EJBCA. 
 When EJBCA receives the request, the message will be authenticated using PasswordBasedMAc, as defined in the CMP spec, using a pre-shared password.
-When the message has been authenticated, a user is created in EJBCA.
+When the message has been authenticated, a user is created in EJBCA and a certificate is issued.
 <ul>
 <li>The users DN is taken from the CertTemplate in the request message send from the RA (i.e. the DN requested by the RA).</li>
 <li>The username in EJBCA is generated according to the options set in conf/cmp.properties.</li>
 <li>The password for the user in EJBCA is random.</li>
+<li>If the Certificate Profile allows it, keyUsage and validity is also taken from the CertTemplate in the request message.</li>
 </ul>
 After the user has been created in EJBCA, a certificate is generated as usual and sent back to the RA, who will distribute it to the end-user.
 </p>
 <p>
 If the same username is constructed (for example UID) as an already existing user, 
 the existing user will be modified with new values for profile etc, and a new certificate will be issued for that user.
+</p>
+<p>
+To allow requests with different KeyId to be mapped to different CAs and profiles in EJBCA, so the documentation for the options in conf/cmp.properties.sample.
 </p>
 </subsubsection>
 <subsubsection name="Sample config">
@@ -979,6 +986,13 @@ cmp.ra.caname=AdminCA1
 <p>Normally the validity period of issued certificates are controlled by the certificate profile. 
 If you enable 'Allow validity override' in the certificate profile, and the CMP initialization- or certificattion request contains a 
 validity time in the CRMF request template, this validity period will be used.
+</p>
+</subsection>
+
+<subsection name="Certificate Key Usage">
+<p>Normally the key usage extension of issued certificates are controlled by the certificate profile. 
+If you enable 'Allow Key Usage Override' in the certificate profile, and the CMP initialization- or certificattion request contains a 
+key usage in the CRMF request template, this key usage will be used.
 </p>
 </subsection>
 
@@ -2120,14 +2134,14 @@ PKCS11 Token [SunPKCS11-libcs2_pkcs11.so-slot1] Password:
 Creating certificate with entry defaultKey.
 </source>
 <p>
-For nCipher the slot id is very special:
+For nCipher the shared library is:
 </p>
 <source>
-slot 492971158
-defaultKey defaultKey
-pin user1
 sharedLibrary /opt/nfast/toolkits/pkcs11/cknfast.so
 </source>
+<p>
+The PKCS#11 module has not been tested succesfully with nCipher yet.
+</p>
 </subsection>
 <subsection name="nCipher NFast">
 <p>
