@@ -11,6 +11,34 @@ To build a succesfull PKI you can benefit from a lot of tools available. Here ar
 can be used together with PKI to even further improve your PKI experience.
 </p>
 
+<subsection name="Signserver">
+    <p>
+    <a href="http://www.signserver.org/">Signserver</a>
+    </p>
+    <p>
+    The SignServer is an application for automatic signatures called by other systems not able to connect 
+    to crytographic hardware. 
+    It is a framework that can be customized to specific needs using simple plug-in modules. 
+    The SignServer have a ready to use TimeStamp Authority (RFC 3161 compliant) and a MRTD Signer. 
+    Another usage is to provide a simplified method to provide signatures in different application 
+    managed from one location in the company.
+    <br/>
+    The SignServer have been designed for high-availability and can be clustered for maximum reliability.
+    </p>
+</subsection>
+
+<subsection name="Hard Token Management Framework">
+    <p>
+    <a href="http://sourceforge.net/projects/hardtokenmgmt/">Hard Token Management Framework</a>
+    </p>
+	<p>
+	The hard token management framework is a framework for creating applications to manage to complete life cycle of
+	issuing hard tokens (smart cards, USB PKI dongles, etc) to end users.
+	<br/>
+	The framework is an API that you build a GUI on top of.
+	</p>
+</subsection>
+
 <subsection name="CSRTool">
     <p>
     <a href="http://www.strongauth.com/index.php?option=com_content&amp;task=view&amp;id=32&amp;Itemid=32">CSRTool website</a>
