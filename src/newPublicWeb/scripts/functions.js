@@ -22,7 +22,6 @@
 		}
 	}
 
-    var plugin;
     // Used by apply_nav.jspf, and cardCertApply.jsp
 	function myDeclare() {
 		if (navigator.appName.indexOf("Explorer") == -1) {

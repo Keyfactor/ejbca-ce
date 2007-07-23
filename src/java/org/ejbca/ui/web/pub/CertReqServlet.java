@@ -95,7 +95,7 @@ import org.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.17 2007-07-02 15:32:43 jeklund Exp $
+ * @version $Id: CertReqServlet.java,v 1.18 2007-07-23 07:32:23 jeklund Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(CertReqServlet.class);
@@ -273,7 +273,8 @@ public class CertReqServlet extends HttpServlet {
                   byte[] reqBytes=request.getParameter("iidPkcs10").getBytes();
                   if (reqBytes != null) {
                       byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password, RequestHelper.ENCODED_CERTIFICATE, false);
-                      RequestHelper.sendNewCertToIidClient(b64cert, response.getOutputStream(), getServletContext(), getInitParameter("responseIidTemplate"),classid);
+                      response.setContentType("text/html");
+                      RequestHelper.sendNewCertToIidClient(b64cert, request, response.getOutputStream(), getServletContext(), getInitParameter("responseIidTemplate"),classid);
                   }
               } else if ( (request.getParameter("pkcs10") != null) || (request.getParameter("PKCS10") != null) ) {
                   // if not netscape, check if it's IE

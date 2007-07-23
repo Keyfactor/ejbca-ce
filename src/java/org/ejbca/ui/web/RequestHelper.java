@@ -22,6 +22,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.regex.Pattern;
 
@@ -51,7 +52,7 @@ import org.ejbca.util.FileTools;
 /**
  * Helper class for hadnling certificate request from browsers or general PKCS#10
  * 
- * @version $Id: RequestHelper.java,v 1.7 2007-04-16 12:28:46 jeklund Exp $
+ * @version $Id: RequestHelper.java,v 1.8 2007-07-23 07:32:22 jeklund Exp $
  */
 public class RequestHelper {
     private static Logger log = Logger.getLogger(RequestHelper.class);
@@ -235,20 +236,25 @@ public class RequestHelper {
      * @param responseTemplate path to template page for response
      * @throws Exception
      */
-    public static void sendNewCertToIidClient(byte[] certificate, OutputStream out, ServletContext sc,
+    public static void sendNewCertToIidClient(byte[] certificate, HttpServletRequest request, OutputStream out, ServletContext sc,
                                                 String responseTemplate, String classid) throws Exception {
-        if (certificate.length <= 0) {
+        if ( certificate.length <= 0 ) {
             log.error("0 length certificate can not be sent to  client!");
             return;
         }
+        String baseURL = request.getRequestURL().toString().substring(0, request.getRequestURL().toString().lastIndexOf(
+        		request.getRequestURI().toString()) ) + request.getContextPath() + "/";
+        String responseURL = baseURL + responseTemplate;
         StringWriter sw = new StringWriter();
         {
-            BufferedReader br = new BufferedReader(new InputStreamReader(sc.getResourceAsStream(responseTemplate)));
+            BufferedReader br = new BufferedReader(new InputStreamReader( (new URL(responseURL)).openStream() ));
             PrintWriter pw = new PrintWriter(sw);
             while (true) {
                 String line = br.readLine();
-                if (line == null)
+                if (line == null) {
                     break;
+                }
+                line = line.replaceAll("\\x2E\\x2E/", baseURL);		// This line sould be removed when headers are properly configured with absolute paths
                 line = line.replaceAll("TAG_cert",new String(certificate));
                 line = CLASSID.matcher(line).replaceFirst(classid);
                 pw.println(line);
@@ -256,13 +262,11 @@ public class RequestHelper {
             pw.close();
             sw.flush();
         }
-        {
-            PrintWriter pw = new PrintWriter(out);
-            log.debug(sw);
-            pw.print(sw);
-            pw.close();
-            out.flush();
-        }
+        PrintWriter pw = new PrintWriter(out);
+        log.debug(sw);
+        pw.print(sw);
+        pw.close();
+        out.flush();
     } // sendCertificates
     /**
      * Reads template and inserts cert to send back to IE for installation of cert
