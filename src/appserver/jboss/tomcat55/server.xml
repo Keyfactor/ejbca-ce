@@ -9,7 +9,7 @@
       className="org.jboss.web.tomcat.tc5.StandardService">
 
       <!-- A HTTP/1.1 Connector on port 8080 -->
-      <Connector port="@httpserver.pubhttp@" address="${jboss.bind.address}"
+      <Connector port="@httpserver.pubhttp@" address="@httpsserver.bindaddress.pubhttp@"
          maxThreads="250" strategy="ms" maxHttpHeaderSize="8192"
          emptySessionPath="true"
          enableLookups="false" redirectPort="@httpserver.privhttps@" acceptCount="100"
@@ -21,7 +21,7 @@
          protocol="AJP/1.3"/>
 
     <!-- A HTTPS Connector without client cert on port 8442 -->
-    <Connector port="@httpserver.pubhttps@" address="${jboss.bind.address}"
+    <Connector port="@httpserver.pubhttps@" address="@httpsserver.bindaddress.pubhttps@"
          maxThreads="100" strategy="ms" maxHttpHeaderSize="8192"
          emptySessionPath="true"
          scheme="https" secure="true" clientAuth="false"
@@ -30,7 +30,7 @@
          URIEncoding="@web.contentencoding@" />
     
     <!-- HTTPS Connector requiring client cert on port 8443 -->
-    <Connector port="@httpserver.privhttps@" address="${jboss.bind.address}"
+    <Connector port="@httpserver.privhttps@" address="@httpsserver.bindaddress.privhttps@"
          maxThreads="100" strategy="ms" maxHttpHeaderSize="8192"
          emptySessionPath="true"
          scheme="https" secure="true" clientAuth="true"

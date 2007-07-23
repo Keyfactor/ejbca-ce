@@ -72,6 +72,9 @@
 		    	<replacestring from="@httpserver.pubhttps@" to="${httpserver.pubhttps}"/>
 		    	<replacestring from="@httpserver.privhttps@" to="${httpserver.privhttps}"/>
 		    	<replacestring from="@web.contentencoding@" to="${web.contentencoding}"/>
+		    	<replacestring from="@httpsserver.bindaddress.pubhttp@" to="${httpsserver.bindaddress.pubhttp}"/>
+		    	<replacestring from="@httpsserver.bindaddress.pubhttps@" to="${httpsserver.bindaddress.pubhttps}"/>
+		    	<replacestring from="@httpsserver.bindaddress.privhttps@" to="${httpsserver.bindaddress.privhttps}"/>
 			</tokenfilter>
 			</filterchain>
         </copy>
