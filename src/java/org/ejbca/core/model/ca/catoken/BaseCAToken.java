@@ -24,6 +24,8 @@ import java.security.PublicKey;
 import java.security.Security;
 import java.security.Signature;
 import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Properties;
@@ -36,7 +38,7 @@ import org.ejbca.core.model.SecConst;
 
 /**
  * @author lars
- * @version $Id: BaseCAToken.java,v 1.16 2007-06-15 09:31:29 jeklund Exp $
+ * @version $Id: BaseCAToken.java,v 1.17 2007-07-23 13:17:17 anatom Exp $
  */
 public abstract class BaseCAToken implements IHardCAToken {
 
@@ -124,13 +126,26 @@ public abstract class BaseCAToken implements IHardCAToken {
     /**
      * @param keyStore
      * @param alias
-     * @return
+     * @return Public key
      * @throws KeyStoreException
      * @throws NoSuchAlgorithmException
      * @throws UnrecoverableKeyException
      */
     protected PublicKey readPublicKey(KeyStore keyStore, String alias) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException {
-        return keyStore.getCertificate(alias).getPublicKey();
+    	Certificate cert = keyStore.getCertificate(alias);
+    	PublicKey pubk = null;
+    	if (cert != null) {
+    		pubk = cert.getPublicKey();
+    	} else {
+    		log.error("Can not read public key certificate  with alias '"+alias+"' from keystore, got null.");
+    		if (log.isDebugEnabled()) {
+    			Enumeration en = keyStore.aliases();
+    			while (en.hasMoreElements()) {
+    				log.debug("Existing alias: "+(String)en.nextElement());
+    			}
+    		}
+    	}
+    	return pubk;
     }
 
     protected void init(String sSlotLabelKey, Properties properties, String signaturealgorithm) {
