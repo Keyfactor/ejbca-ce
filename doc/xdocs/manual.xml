@@ -2123,6 +2123,7 @@ defaultKey defaultKey
 pin user1
 sharedLibrary /home/lars/work/test/p11/libcs2_pkcs11.so
 </source>
+<strong>Utimaco PKCS#11</strong>
 <p>
 The PKCS#11 of CryptoServer from Utimaco has been successfully tested. Here follows an example on how to initialise a slot and generate keys to be used by EJBCA. The password is user1:
 </p>
@@ -2133,14 +2134,53 @@ $EJBCA/bin/pkcs11HSM.sh generate ./libcs2_pkcs11.so 4096 defaultKey 1
 PKCS11 Token [SunPKCS11-libcs2_pkcs11.so-slot1] Password:
 Creating certificate with entry defaultKey.
 </source>
+<strong>nCipher PKCS#11</strong>
 <p>
-For nCipher the shared library is:
+For nCipher the slot name is some vritual slot that we don't know the number of. 
+Luckily we can simply use the default slot by leaving out the slot number.
+<br/>
+When using nCipher PKCS#11 you first set some options. Create the file /opt/nfast/cknfastrc with the following contents:
 </p>
 <source>
+CKNFAST_LOADSHARING=1
+CKNFAST_NO_ACCELERATOR_SLOTS=1
+CKNFAST_NO_UNWRAP=1
+CKNFAST_OVERRIDE_SECURITY_ASSURANCES=import
+</source>
+<p>
+Now you can generate keys with for example keytool. You can use keytool if you edit $JAVA_HOME/jre/lib/security/java.security and add a new provider
+for the SUN PKCS#11 wrapper:
+</p>
+<source>
+# configuration for security providers 1-6 omitted
+security.provider.7=sun.security.pkcs11.SunPKCS11 /opt/nfast/nfast-sunpkcs11.cfg
+</source>
+<p>
+The file /opt/nfast/nfast-sunpkcs11.cfg should contain:
+</p>
+<source>
+name=NFastJava
+library=/opt/nfast/toolkits/pkcs11/cknfast.so
+</source>
+<p>
+You can generate keys with keytool with the command:
+</p>
+<source>
+keytool -generate -keystore NONE -storetype PKCS11-NFastJava -storepass foo123 -alias defaultKey -keyalg RSA -keysize 2048
+</source>
+<p>AFTER you have generated the keys, you can now start JBoss. If you start JBoss before generating the keys JBoss will not find them, 
+it seems the PKCS#11 session is cached so new stuff don't appear for already present PKCS#11 sessions.
+</p>
+<p>
+Now it is possible to access the nCipher PKCS#11 default slot, protected by operator cards.
+</p>
+<source>
+defaultKey defaultKey
+pin user1
 sharedLibrary /opt/nfast/toolkits/pkcs11/cknfast.so
 </source>
 <p>
-The PKCS#11 module has not been tested succesfully with nCipher yet.
+If you have generated keys with the nCipher tools, you must also associate a certificate (can be dummy) with the key.
 </p>
 </subsection>
 <subsection name="nCipher NFast">
