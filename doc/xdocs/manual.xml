@@ -520,6 +520,12 @@ A CRLDistributionPoint for a CA in EJBCA could look like:
 http://host:port/ejbca/publicweb/webdist/certdist?cmd=crl&amp;issuer=url-encoded-issuerDN
 </source>
 <p>
+It should also be possible to use an LDAP distribution point, if you have configued a publisher to publish CRLs to LDAP.
+</p>
+<source>
+ldap://yourLdapServer:port_number/cn=CA-test,ou=CRLPUB,dc=mycompany,dc=com?certificateRevocationList
+</source>
+<p>
 (such as the link from the webdist pages)
 </p>
 <p>
@@ -2166,7 +2172,9 @@ library=/opt/nfast/toolkits/pkcs11/cknfast.so
 You can generate keys with keytool with the command:
 </p>
 <source>
-keytool -generate -keystore NONE -storetype PKCS11-NFastJava -storepass foo123 -alias defaultKey -keyalg RSA -keysize 2048
+keytool -generate -keystore NONE -storetype PKCS11-NFastJava -storepass foo123 -alias fooSign -keyalg RSA -keysize 4096
+keytool -generate -keystore NONE -storetype PKCS11-NFastJava -storepass foo123 -alias fooDefault -keyalg RSA -keysize 2048
+keytool -generate -keystore NONE -storetype PKCS11-NFastJava -storepass foo123 -alias fooTest -keyalg RSA -keysize 512
 </source>
 <p>AFTER you have generated the keys, you can now start JBoss. If you start JBoss before generating the keys JBoss will not find them, 
 it seems the PKCS#11 session is cached so new stuff don't appear for already present PKCS#11 sessions.
@@ -2175,7 +2183,10 @@ it seems the PKCS#11 session is cached so new stuff don't appear for already pre
 Now it is possible to access the nCipher PKCS#11 default slot, protected by operator cards.
 </p>
 <source>
-defaultKey defaultKey
+defaultKey fooDefault
+certSignKey fooSign
+crlSignKey fooSign
+testKey fooTest
 pin user1
 sharedLibrary /opt/nfast/toolkits/pkcs11/cknfast.so
 </source>
