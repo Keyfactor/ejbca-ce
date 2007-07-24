@@ -7,3 +7,5 @@ velocity.log
 hwtoken
 ocsp-dist
 .metadata
+.settings
+ocspHardTokenClasses
