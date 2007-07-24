@@ -56,6 +56,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.UsernameGenerator;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.core.protocol.IResponseMessage;
@@ -69,7 +70,7 @@ import com.novosec.pkix.asn1.cmp.PKIHeader;
 /**
  * Message handler for certificate request messages in the CRMF format
  * @author tomas
- * @version $Id: CrmfMessageHandler.java,v 1.20 2006-12-13 11:23:51 anatom Exp $
+ * @version $Id: CrmfMessageHandler.java,v 1.21 2007-07-24 10:51:39 anatom Exp $
  */
 public class CrmfMessageHandler implements ICmpMessageHandler {
 	
@@ -156,19 +157,37 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 			}			
 			str = prop.getProperty("endEntityProfile");
 			if (StringUtils.isNotEmpty(str)) {
+				if (StringUtils.equals(str, "KeyId")) {
+					log.info("Using End Entity Profile with same name as KeyId in request.");
+					eeProfileId = -1;
+				} else {
+					eeProfileId = rasession.getEndEntityProfileId(admin, str);
+				}
 				log.debug("endEntityProfile="+str);
-				eeProfileId = rasession.getEndEntityProfileId(admin, str);
 			}			
 			str = prop.getProperty("certificateProfile");
 			if (StringUtils.isNotEmpty(str)) {
+				if (StringUtils.equals(str, "KeyId")) {
+					log.info("Using Certificate Profile with same name as KeyId in request.");
+					certProfileId = -1;
+				} else {
+					certProfileId = storesession.getCertificateProfileId(admin, str);					
+				}
 				log.debug("certificateProfile="+str);
-				certProfileId = storesession.getCertificateProfileId(admin, str);
 			}			
 			str = prop.getProperty("caName");
 			if (StringUtils.isNotEmpty(str)) {
 				log.debug("caName="+str);
-				CAInfo info = casession.getCAInfo(admin, str);
-				caId = info.getCAId();
+				if (StringUtils.equals(str, "ProfileDefault")) {
+					log.info("Using default CA from End Entity Profile CA when adding users in RA mode.");
+					caId = -1;
+				} else if (StringUtils.equals(str, "KeyId")) {
+					log.info("Using keyId as CA name when adding users in RA mode.");
+					caId = -2;										
+				} else {
+					CAInfo info = casession.getCAInfo(admin, str);
+					caId = info.getCAId();					
+				}
 			}			
 		}
 		str = prop.getProperty("responseProtection");
@@ -188,6 +207,7 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 				int requestId = crmfreq.getRequestId();
 				int requestType = crmfreq.getRequestType();
 				// If we have usernameGeneratorParams we want to generate usernames automagically for requests
+				// If we are not in RA mode, usernameGeneratorParams will be null
 				if (usernameGeneratorParams != null) {
 					// Try to find a HMAC/SHA1 protection key
 					PKIHeader head = crmfreq.getHeader();
@@ -195,6 +215,9 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 					if (os != null) {
 						String keyId = new String(os.getOctets());
 						log.debug("Found a sender keyId: "+keyId);
+						if (keyId == null) {
+							log.error("No KeyId contained in CMP request.");
+						}
 						try {
 							CmpPbeVerifyer verifyer = new CmpPbeVerifyer(raAuthenticationSecret, msg.getMessage());
 							boolean ret = verifyer.verify();
@@ -215,6 +238,41 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 								String failText = null;
 								FailInfo failInfo = null;
 								try {
+									if (eeProfileId == -1) {
+										log.debug("Using end entity profile with name: "+keyId);
+										eeProfileId = rasession.getEndEntityProfileId(admin, keyId);
+										if (eeProfileId == 0) {
+											log.error("No end entity profile found matching keyId: "+keyId);
+											throw new NotFoundException("End entity profile with name '"+keyId+"' not found.");
+										}
+									}
+									if (certProfileId == -1) {
+										log.debug("Using certificate profile with name: "+keyId);
+										certProfileId = storesession.getCertificateProfileId(admin, keyId);
+										if (certProfileId == 0) {
+											log.error("No certificate profile found matching keyId: "+keyId);
+											throw new NotFoundException("Certificate profile with name '"+keyId+"' not found.");
+										}
+									}
+									if (caId == -1) {
+										// get default CA id from end entity profile
+										EndEntityProfile eeProfile = rasession.getEndEntityProfile(admin, eeProfileId);
+										String name = rasession.getEndEntityProfileName(admin, eeProfileId);
+										caId = eeProfile.getDefaultCA();
+										if (caId == -1) {
+											log.error("No default CA id for end entity profile: "+name);
+										} else {
+											CAInfo info = casession.getCAInfo(admin, caId);													
+											log.debug("Using CA: "+info.getName());
+										}
+									} else if (caId == -2) {
+										// Use keyId as CA name
+										CAInfo info = casession.getCAInfo(admin, keyId);
+										log.debug("Using CA: "+info.getName());
+										caId = info.getCAId();																	
+									}
+									
+									// See if the user already exists so we should change it or create it
 									UserDataVO user = null;
 									try {
 										user = usersession.findUser(admin, username);
@@ -223,8 +281,10 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 									}
 									if (user == null) {
 										try {
-											log.debug("Creating new user.");
-											usersession.addUser(admin, username, pwd, dn, altNames, null, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, caId);																					
+											if (log.isDebugEnabled()) {
+												log.debug("Creating new user with eeProfileId '"+eeProfileId+"', certProfileId '"+certProfileId+"', caId '"+caId+"'");												
+											}
+											usersession.addUser(admin, username, pwd, dn, altNames, null, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, caId);												
 										} catch (DuplicateKeyException e) {
 											// This was veery strange, we didn't find it before, but now it exists?
 											String errMsg = intres.getLocalizedMessage("cmp.erroradduserupdate", username);
@@ -235,6 +295,9 @@ public class CrmfMessageHandler implements ICmpMessageHandler {
 									} else {
 										// If the user already exists, we will change him instead and go for that
 										log.debug("User already exists, so we will update instead.");
+										if (log.isDebugEnabled()) {
+											log.debug("Changing user to eeProfileId '"+eeProfileId+"', certProfileId '"+certProfileId+"', caId '"+caId+"'");												
+										}
 										usersession.changeUser(admin, username, pwd, dn, altNames, null, false, eeProfileId, certProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, UserDataConstants.STATUS_NEW, caId);										
 									}
 									addedUser = true;

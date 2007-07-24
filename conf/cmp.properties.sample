@@ -1,5 +1,5 @@
 #
-# $Id: cmp.properties.sample,v 1.9 2007-05-30 09:52:56 anatom Exp $
+# $Id: cmp.properties.sample,v 1.10 2007-07-24 10:51:42 anatom Exp $
 #
 # This is a sample file to override properties used
 # during deployment of EJBCA
@@ -81,16 +81,26 @@
 #cmp.ra.namegenerationpostfix=
 
 # The endEntityProfile to be used when adding users in RA mode. 
+# Possible values are:
+# The name of a End Entity Profile
+# KeyId - use a End Entity Profile with the same name as the KeyId sent in the CMP request
 #
 # Default: EMPTY
 #cmp.ra.endentityprofile=EMPTY
 
 # The certificateProfile to be used when adding users in RA mode. 
+# Possible values are:
+# The name of a Certificate Profile
+# KeyId - use a Certificate Profile with the same name as the KeyId sent in the CMP request
 #
 # Default: ENDUSER
 #cmp.ra.certificateprofile=ENDUSER
 
 # The CA to be used when adding users in RA mode. 
+# Possible values are:
+# The name of a CA
+# ProfileDefault - use the default CA of the end entity profile used
+# KeyId - use a CA with the same name as the KeyId sent in the CMP request
 #
 # Default: AdminCA1
 #cmp.ra.caname=AdminCA1

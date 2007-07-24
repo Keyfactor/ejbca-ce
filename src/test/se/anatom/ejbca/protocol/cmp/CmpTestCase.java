@@ -96,7 +96,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
 /**
  * Helper class for CMP Junit tests
  * @author tomas
- * @version $Id: CmpTestCase.java,v 1.2 2006-11-02 18:05:20 anatom Exp $
+ * @version $Id: CmpTestCase.java,v 1.3 2007-07-24 10:51:41 anatom Exp $
  *
  */
 public class CmpTestCase extends TestCase {
@@ -196,6 +196,7 @@ public class CmpTestCase extends TestCase {
 		CertReqMessages myCertReqMessages = new CertReqMessages(myCertReqMsg);
 		//myCertReqMessages.addCertReqMsg(myCertReqMsg);
 				
+		//System.out.println("CAcert subject name: "+cacert.getSubjectDN().getName());
 		PKIHeader myPKIHeader =
 			new PKIHeader(
 					new DERInteger(2),
@@ -264,9 +265,13 @@ public class CmpTestCase extends TestCase {
 	}
 
 	protected PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
+		return protectPKIMessage(msg, badObjectId, password, "primekey");
+	}
+	
+	protected PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password, String keyId) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
 		// Create the PasswordBased protection of the message
 		PKIHeader head = msg.getHeader();
-		head.setSenderKID(new DEROctetString("primekey".getBytes()));
+		head.setSenderKID(new DEROctetString(keyId.getBytes()));
 		// SHA1
 		AlgorithmIdentifier owfAlg = new AlgorithmIdentifier("1.3.14.3.2.26");
 		// 567 iterations
@@ -610,7 +615,7 @@ public class CmpTestCase extends TestCase {
      * 
      * @param retMsg
      * @param failMsg
-     * @param tag 1 is answer to initicalization resp, 3 certification resp etc, 
+     * @param tag 1 is answer to initicalization resp, 3 certification resp etc, 23 is error 
      * @param err a number from FailInfo
      * @throws IOException
      */
