@@ -57,7 +57,7 @@ import org.ejbca.util.CertTools;
  * A class help administrating CAs. 
  *
  * @author  TomSelleck
- * @version $Id: CADataHandler.java,v 1.9 2007-07-19 15:22:34 anatom Exp $
+ * @version $Id: CADataHandler.java,v 1.10 2007-07-25 15:12:33 anatom Exp $
  */
 public class CADataHandler implements Serializable {
     private static final Logger log = Logger.getLogger(CADataHandler.class);
@@ -95,7 +95,7 @@ public class CADataHandler implements Serializable {
   /**
    *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */
-  public void importCAFromKeyStore(String caname, byte[] p12file, char[] keystorepass, char[] privkeypass, String privateSignatureKeyAlias,
+  public void importCAFromKeyStore(String caname, byte[] p12file, String keystorepass, String privkeypass, String privateSignatureKeyAlias,
 		  String privateEncryptionKeyAlias) throws Exception {
     caadminsession.importCAFromKeyStore(administrator, caname, p12file, keystorepass, privkeypass, privateSignatureKeyAlias, privateEncryptionKeyAlias);  
     info.cAsEdited();

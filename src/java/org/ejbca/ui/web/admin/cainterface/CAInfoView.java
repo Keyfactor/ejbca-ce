@@ -32,7 +32,7 @@ import org.ejbca.ui.web.admin.rainterface.RevokedInfoView;
 /**
  * A class representing a view of a CA Information view..
  *
- * @version $Id: CAInfoView.java,v 1.4 2006-05-26 17:23:28 anatom Exp $
+ * @version $Id: CAInfoView.java,v 1.5 2007-07-25 15:12:33 anatom Exp $
  */
 public class CAInfoView implements java.io.Serializable, Cloneable {
     // Public constants.
@@ -116,18 +116,18 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
               cainfodata[STATUS]     = ejbcawebbean.getText("WAITINGFORCERTRESPONSE");
               break;              
         } 
-        
+
+        String tokentext = ejbcawebbean.getText("SOFT");
         if(cainfo.getCATokenInfo() instanceof HardCATokenInfo){
-        	switch(((HardCATokenInfo) cainfo.getCATokenInfo()).getCATokenStatus()){
-              case IHardCAToken.STATUS_ACTIVE :
-            	cainfodata[CATOKEN_STATUS]     = ejbcawebbean.getText("HARDTOKEN") + ", " + ejbcawebbean.getText("ACTIVE");     
-            	break;
-              case IHardCAToken.STATUS_OFFLINE :
-            	cainfodata[CATOKEN_STATUS]     = ejbcawebbean.getText("HARDTOKEN") +", " + ejbcawebbean.getText("OFFLINE");
-            	break;
-        	}
-        }else{
-        	cainfodata[CATOKEN_STATUS]     = ejbcawebbean.getText("SOFT") + ", " + ejbcawebbean.getText("ACTIVE");
+        	tokentext = ejbcawebbean.getText("HARDTOKEN");
+        }
+        switch(cainfo.getCATokenInfo().getCATokenStatus()) {
+        case IHardCAToken.STATUS_ACTIVE :
+        	cainfodata[CATOKEN_STATUS]     =  tokentext + ", " + ejbcawebbean.getText("ACTIVE");     
+        	break;
+        case IHardCAToken.STATUS_OFFLINE :
+        	cainfodata[CATOKEN_STATUS]     = tokentext +", " + ejbcawebbean.getText("OFFLINE");
+        	break;
         }
 
         

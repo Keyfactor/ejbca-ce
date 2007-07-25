@@ -77,7 +77,7 @@ function viewocspcert(){
       </tr>    
       <% } %>
      
-     <% if(viewcainfohelper.can_activate && viewcainfohelper.ishardcatoken && (viewcainfohelper.status == SecConst.CA_OFFLINE || viewcainfohelper.hardtokenoffline)){ %> 
+     <% if(viewcainfohelper.can_activate && (viewcainfohelper.status == SecConst.CA_OFFLINE || viewcainfohelper.tokenoffline)){ %> 
      <tr id="Row<%=(row++)%2%>">
   	    <td width="<%=columnwidth%>"></td>
 	    <td>
@@ -87,7 +87,7 @@ function viewocspcert(){
         </td>
       </tr> 
      <% }
-        if(viewcainfohelper.can_activate && viewcainfohelper.ishardcatoken && viewcainfohelper.status == SecConst.CA_ACTIVE){ %>     
+        if(viewcainfohelper.can_activate && viewcainfohelper.status == SecConst.CA_ACTIVE){ %>     
      <tr id="Row<%=(row++)%2%>">
 	 <td width="<%=columnwidth%>"></td>
 	 <td>

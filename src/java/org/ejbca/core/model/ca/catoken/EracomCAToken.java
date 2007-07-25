@@ -22,18 +22,22 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.InternalResources;
 
 /** This class implements support for the Eracom HSM for storing CA keys. 
  * The implementation was done by AdNovum Informatik AG and contributed by Philipp Faerber, philipp.faerber(at)adnovum.ch
  * The Eracom HSM is special in such way as the provider is ERACOM.<slot id>.
  * 
  * @author AdNovum Informatik AG
- * @version $Id: EracomCAToken.java,v 1.6 2007-07-25 08:56:46 anatom Exp $
+ * @version $Id: EracomCAToken.java,v 1.7 2007-07-25 15:13:03 anatom Exp $
  */
 public class EracomCAToken extends BaseCAToken {
 
     /** Log4j instance */
     private static final Logger log = Logger.getLogger(EracomCAToken.class);
+    /** Internal localization of logs and errors */
+    private static final InternalResources intres = InternalResources.getInstance();
+
     private static final String PROVIDER_NAME_PREFIX = "au.com.eracom.crypto.provider.slot";
     private static final String PROVIDER_NAME_SUFIX = ".ERACOMProvider";
 
@@ -61,8 +65,10 @@ public class EracomCAToken extends BaseCAToken {
             log.error("Failed to initialize Eracom provider slot '"+sSlotLabel+"'.", t);
             throw new CATokenAuthenticationFailedException("Failed to initialize Eracom provider keystore '"+sSlotLabel+"'.");
         }
-
+		String msg = intres.getLocalizedMessage("catoken.activated", "Eracom");
+        log.info(msg);
     }
+    
     /* (non-Javadoc)
      * @see org.ejbca.core.model.ca.catoken.BaseCAToken#readPublicKey(java.security.KeyStore, java.lang.String)
      */
@@ -74,7 +80,7 @@ public class EracomCAToken extends BaseCAToken {
      */
     public void init(Properties properties, HashMap data, String signaturealgorithm) throws Exception {
         setProvider(PROVIDER_NAME_PREFIX+sSlotLabel+PROVIDER_NAME_SUFIX);
-        init("slot", properties, signaturealgorithm);
+        init("slot", properties, signaturealgorithm, true);
     }
 
 }

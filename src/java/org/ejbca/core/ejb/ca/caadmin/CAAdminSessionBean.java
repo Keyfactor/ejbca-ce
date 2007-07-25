@@ -47,6 +47,7 @@ import javax.ejb.CreateException;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 
+import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
@@ -91,9 +92,7 @@ import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.catoken.HardCATokenInfo;
 import org.ejbca.core.model.ca.catoken.HardCATokenManager;
 import org.ejbca.core.model.ca.catoken.IHardCAToken;
-import org.ejbca.core.model.ca.catoken.NullCAToken;
 import org.ejbca.core.model.ca.catoken.NullCATokenInfo;
-import org.ejbca.core.model.ca.catoken.SoftCAToken;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
@@ -114,7 +113,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.51 2007-07-25 08:56:28 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.52 2007-07-25 15:13:23 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -299,6 +298,22 @@ public class CAAdminSessionBean extends BaseSessionBean {
         CATokenContainer catoken = null;
         CATokenInfo catokeninfo = cainfo.getCATokenInfo();
         catoken = new CATokenContainerImpl(catokeninfo);
+        if(catokeninfo instanceof SoftCATokenInfo){
+        	try{
+        		// There are two ways to get the authentication code:
+        		// 1. The user provided one when creating the CA on the create CA page
+        		// 2. We use the system default password
+        		String authCode = catokeninfo.getAuthenticationCode();
+        		if (StringUtils.isEmpty(authCode)) {
+            	    authCode = ServiceLocator.getInstance().getString("java:comp/env/keyStorePass");        			
+        		}
+        		catoken.generateKeys(authCode);
+        	}catch(Exception e){
+        		String msg = intres.getLocalizedMessage("caadmin.errorcreatetoken");
+        		getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED, msg, e);
+        		throw new EJBException(e);
+        	}
+        }
         try{
         	catoken.activate(catokeninfo.getAuthenticationCode());
         }catch(CATokenAuthenticationFailedException ctaf){
@@ -309,15 +324,6 @@ public class CAAdminSessionBean extends BaseSessionBean {
         	String msg = intres.getLocalizedMessage("error.catokenoffline", cainfo.getName());            	
         	getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED, msg, ctoe);
         	throw ctoe;
-        }
-        if(catokeninfo instanceof SoftCATokenInfo){
-        	try{
-        		catoken.generateKeys();
-        	}catch(Exception e){
-        		String msg = intres.getLocalizedMessage("caadmin.errorcreatetoken");
-        		getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED, msg, e);
-        		throw new EJBException(e);
-        	}
         }
 
         // Create CA
@@ -1123,7 +1129,16 @@ public class CAAdminSessionBean extends BaseSessionBean {
     		
     		CATokenContainer caToken = ca.getCAToken();
     		if (regenerateKeys) {
-    			caToken.generateKeys();
+    			CATokenInfo catokeninfo = caToken.getCATokenInfo();
+    			// TODO: this will not work!!!!!
+        		// There are two ways to get the authentication code:
+        		// 1. The user provided one when creating the CA on the create CA page
+        		// 2. We use the system default password
+        		String authCode = catokeninfo.getAuthenticationCode();
+        		if (StringUtils.isEmpty(authCode)) {
+            	    authCode = ServiceLocator.getInstance().getString("java:comp/env/keyStorePass");        			
+        		}
+        		caToken.generateKeys(authCode);
     			ca.setCAToken(caToken);
     		}
     		
@@ -1338,8 +1353,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * 
      * @ejb.interface-method
      */
-    public void importCAFromKeyStore(Admin admin, String caname, byte[] p12file, char[] keystorepass,
-                                         char[] privkeypass, String privateSignatureKeyAlias, String privateEncryptionKeyAlias) throws Exception {
+    public void importCAFromKeyStore(Admin admin, String caname, byte[] p12file, String keystorepass,
+                                         String privkeypass, String privateSignatureKeyAlias, String privateEncryptionKeyAlias) throws Exception {
         try{
             // check authorization
 			if(admin.getAdminType() !=  Admin.TYPE_CACOMMANDLINE_USER) {
@@ -1347,7 +1362,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			}
             // load keystore
             java.security.KeyStore keystore=KeyStore.getInstance("PKCS12", "BC");
-            keystore.load(new java.io.ByteArrayInputStream(p12file),keystorepass);
+            keystore.load(new java.io.ByteArrayInputStream(p12file),keystorepass.toCharArray());
             // Extract signarture keys
             if ( privateSignatureKeyAlias == null || !keystore.isKeyEntry(privateSignatureKeyAlias) ) {
             	throw new Exception("Alias \"" + privateSignatureKeyAlias + "\" not found.");
@@ -1366,10 +1381,10 @@ public class CAAdminSessionBean extends BaseSessionBean {
             PublicKey p12PublicSignatureKey = caSignatureCertificate.getPublicKey();
             PrivateKey p12PrivateSignatureKey = null;
             if ( p12PublicSignatureKey instanceof RSAPublicKey ) {
-                p12PrivateSignatureKey = (PrivateKey) keystore.getKey( privateSignatureKeyAlias, privkeypass);
+                p12PrivateSignatureKey = (PrivateKey) keystore.getKey( privateSignatureKeyAlias, privkeypass.toCharArray());
             } else {
-            	p12PrivateSignatureKey = (ECPrivateKey) keystore.getKey( privateSignatureKeyAlias, privkeypass);
-                log.debug("ImportSignatureKeyAlgorithm (expecting ECDSA)="+((ECPrivateKey) keystore.getKey( privateSignatureKeyAlias, privkeypass)).getAlgorithm());
+            	p12PrivateSignatureKey = (ECPrivateKey) keystore.getKey( privateSignatureKeyAlias, privkeypass.toCharArray());
+                log.debug("ImportSignatureKeyAlgorithm (expecting ECDSA)="+((ECPrivateKey) keystore.getKey( privateSignatureKeyAlias, privkeypass.toCharArray())).getAlgorithm());
             }
             // Extract encryption keys
             PrivateKey p12PrivateEncryptionKey = null;
@@ -1386,13 +1401,13 @@ public class CAAdminSessionBean extends BaseSessionBean {
 	                throw new Exception(msg);
 	            }
 	            caEncryptionCertificate = (X509Certificate) encryptionCertChain[0];
-	            p12PrivateEncryptionKey = (PrivateKey) keystore.getKey( privateEncryptionKeyAlias, privkeypass);
+	            p12PrivateEncryptionKey = (PrivateKey) keystore.getKey( privateEncryptionKeyAlias, privkeypass.toCharArray());
 	            p12PublicEncryptionKey = caEncryptionCertificate.getPublicKey();
             }
             // Transform into token
             SoftCATokenInfo sinfo = new SoftCATokenInfo();
             CATokenContainer catoken = new CATokenContainerImpl(sinfo);
-            catoken.importKeys(p12PrivateSignatureKey, p12PublicSignatureKey, p12PrivateEncryptionKey,
+            catoken.importKeys(keystorepass, p12PrivateSignatureKey, p12PublicSignatureKey, p12PrivateEncryptionKey,
             			p12PublicEncryptionKey, signatureCertChain);
             log.debug("CA-Info: "+catoken.getCATokenInfo().getSignatureAlgorithm() + " " + catoken.getCATokenInfo().getEncryptionAlgorithm());
             // Create a X509CA
@@ -1503,6 +1518,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			                                   1, // Number of Req approvals
 			                                   false); // Use UTF8 subject DN by default 
             X509CA ca = new X509CA(cainfo);
+            // We must activate the token, in case it does not have the default password
+            catoken.activate(keystorepass);
             ca.setCAToken(catoken);
             ca.setCertificateChain(certificatechain);
             log.debug("CA-Info: "+catoken.getCATokenInfo().getSignatureAlgorithm() + " " + ca.getCAToken().getCATokenInfo().getEncryptionAlgorithm());
@@ -1549,9 +1566,11 @@ public class CAAdminSessionBean extends BaseSessionBean {
             // Store CA in database.
             cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_ACTIVE, ca);
             this.getCRLCreateSession().run(admin,cainfo.getSubjectDN());
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_INFO_CACREATED,"CA imported successfully from old P12 file, status: " + ca.getStatus());
+        	String msg = intres.getLocalizedMessage("caadmin.importedca", caname, "PKCS12", ca.getStatus());
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_INFO_CACREATED, msg);
         } catch(Exception e) {
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"An error occured when trying to import CA from old P12 file", e);
+        	String msg = intres.getLocalizedMessage("caadmin.errorimportca", caname, "PKCS12", e.getMessage());
+            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED, msg, e);
             throw new EJBException(e);
         }
     } // importCAFromKeyStore
@@ -1570,7 +1589,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * 
      * @ejb.interface-method
      */
-    public byte[] exportCAKeyStore(Admin admin, String caname, char[] keystorepass, char[] privkeypass, String privateSignatureKeyAlias, 
+    public byte[] exportCAKeyStore(Admin admin, String caname, String keystorepass, String privkeypass, String privateSignatureKeyAlias, 
     		String privateEncryptionKeyAlias) throws Exception {
         log.debug(">exportCAKeyStore");               
         try {
@@ -1585,8 +1604,12 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			}
             // Fetch keys
 	    	CATokenContainer thisCAToken = thisCa.getCAToken();
+	    	// This is a way of verifying the passowrd. If activate fails, we will get an exception and the export will not proceed
+	    	thisCAToken.activate(keystorepass);
+	    	
+	    	// Proceed with the export
             KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
-            keystore.load(null, keystorepass);
+            keystore.load(null, keystorepass.toCharArray());
             
             PrivateKey p12PrivateEncryptionKey = thisCAToken.getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT);
 	    	PublicKey p12PublicEncryptionKey = thisCAToken.getPublicKey(SecConst.CAKEYPURPOSE_KEYENCRYPT);
@@ -1610,21 +1633,23 @@ public class CAAdminSessionBean extends BaseSessionBean {
 	    		throw new Exception("Key \"" + privateEncryptionKeyAlias + "\"already exists in keystore.");
             }
 
-            keystore.setKeyEntry(privateSignatureKeyAlias, p12PrivateCertSignKey, privkeypass, certificateChainSignature);
-            keystore.setKeyEntry(privateEncryptionKeyAlias, p12PrivateEncryptionKey, privkeypass, certificateChainEncryption);
+            keystore.setKeyEntry(privateSignatureKeyAlias, p12PrivateCertSignKey, privkeypass.toCharArray(), certificateChainSignature);
+            keystore.setKeyEntry(privateEncryptionKeyAlias, p12PrivateEncryptionKey, privkeypass.toCharArray(), certificateChainEncryption);
             // Return keystore as byte array and clean up
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            keystore.store(baos, keystorepass);
+            keystore.store(baos, keystorepass.toCharArray());
             if ( keystore.isKeyEntry(privateSignatureKeyAlias) ) {
             	keystore.deleteEntry(privateSignatureKeyAlias);
             }
             if ( keystore.isKeyEntry(privateEncryptionKeyAlias) ) {
             	keystore.deleteEntry(privateEncryptionKeyAlias);
             }
-	        getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_INFO_CAEXPORTED,"CA exported successfully from to P12 file.");
+        	String msg = intres.getLocalizedMessage("caadmin.exportedca", caname, "PKCS12");
+	        getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_INFO_CAEXPORTED, msg);
     		return baos.toByteArray();
 	    } catch(Exception e){
-	        getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEXPORTED,"An error occured when trying to export CA to P12 file", e);
+        	String msg = intres.getLocalizedMessage("caadmin.errorexportca", caname, "PKCS12", e.getMessage());
+	        getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEXPORTED, msg, e);
 	        throw new EJBException(e);
 	    }
 	} // exportCAKeyStore
@@ -1662,26 +1687,6 @@ public class CAAdminSessionBean extends BaseSessionBean {
       }
       return returnval;
     } // getAllCACertificates
-
-    /**
-     * Check if password is a the rigth keystore password
-     *
-     * @param admin Administrator
-     * @param capassword used to unlock the keystore.
-     * 
-     * @ejb.interface-method
-     */
-    public boolean isKeyStorePassword(Admin admin, String capassword) {
-        try {
-			if(admin.getAdminType() !=  Admin.TYPE_CACOMMANDLINE_USER) {
-				getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
-			}
-		} catch (AuthorizationDeniedException e) {
-			return false;
-		}
-	    String keyStorePass = ServiceLocator.getInstance().getString("java:comp/env/keyStorePass");
-    	return ( keyStorePass.equals(capassword) );
-    } // isKeyStorePassword
 
     /**
      * Retrieve fingerprint for all keys as a String. Used for testing. 
@@ -1751,13 +1756,11 @@ public class CAAdminSessionBean extends BaseSessionBean {
     		}
     		CADataLocal cadata = cadatahome.findByPrimaryKey(new Integer(caid));
     		boolean cATokenDisconnected = false;
-    		try{
-    		  if(cadata.getCA().getCAToken().getCATokenInfo() instanceof HardCATokenInfo){
-    			if(((HardCATokenInfo) cadata.getCA().getCAToken().getCATokenInfo()).getCATokenStatus() == IHardCAToken.STATUS_OFFLINE){
+    		try {
+    			if((cadata.getCA().getCAToken().getCATokenInfo()).getCATokenStatus() == IHardCAToken.STATUS_OFFLINE) {
     				cATokenDisconnected = true;
     			}
-    		  }
-    		}catch (IllegalKeyStoreException e) {
+    		} catch (IllegalKeyStoreException e) {
     			String msg = intres.getLocalizedMessage("caadmin.errorreadingtoken", new Integer(caid));            	    			
     			log.error(msg,e);
 			} catch (UnsupportedEncodingException e) {

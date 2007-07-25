@@ -233,7 +233,7 @@ public class TestCAImportExport extends TestCase  {
 		assertEquals("Could not get key fingerprint for \"" + caname + "\".", ret, defaultRetValue);
 		ret = false;
 		try {
-			keystorebytes = caadminsession.exportCAKeyStore(admin, caname, capassword.toCharArray(), capassword.toCharArray(), "SignatureKeyAlias", "EncryptionKeyAlias");
+			keystorebytes = caadminsession.exportCAKeyStore(admin, caname, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
 			ret = true;
 		} catch (Exception e) { }
 		assertEquals("Could not export CA.", ret, defaultRetValue);
@@ -245,7 +245,7 @@ public class TestCAImportExport extends TestCase  {
 		assertEquals("Could not remove CA.", ret, defaultRetValue);
 		ret = false;
 		try {
-			caadminsession.importCAFromKeyStore(admin, caname, keystorebytes, capassword.toCharArray(), capassword.toCharArray(), "SignatureKeyAlias", "EncryptionKeyAlias");
+			caadminsession.importCAFromKeyStore(admin, caname, keystorebytes, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
 			ret = true;
 		} catch (Exception e) { }
 		assertEquals("Could not import CA.", ret, defaultRetValue);
@@ -300,13 +300,13 @@ public class TestCAImportExport extends TestCase  {
 		assertTrue("Could not get key fingerprint for \"" + caname + "\".", ret);
 		ret = false;
 		try {
-			keystorebytes = caadminsession.exportCAKeyStore(admin, caname, capassword.toCharArray(), capassword.toCharArray(), "SignatureKeyAlias", "EncryptionKeyAlias");
+			keystorebytes = caadminsession.exportCAKeyStore(admin, caname, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
 			ret = true;
 		} catch (Exception e) { }
 		assertFalse("Could export CA.", ret);
 		ret = false;
 		try {
-			keystorebytes = caadminsession.exportCAKeyStore(internalAdmin, caname, capassword.toCharArray(), capassword.toCharArray(), "SignatureKeyAlias", "EncryptionKeyAlias");
+			keystorebytes = caadminsession.exportCAKeyStore(internalAdmin, caname, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
 			ret = true;
 		} catch (Exception e) { }
 		assertTrue("Could not export CA.", ret);
@@ -318,13 +318,13 @@ public class TestCAImportExport extends TestCase  {
 		assertTrue("Could not remove CA.", ret);
 		ret = false;
 		try {
-			caadminsession.importCAFromKeyStore(admin, caname, keystorebytes, capassword.toCharArray(), capassword.toCharArray(), "SignatureKeyAlias", "EncryptionKeyAlias");
+			caadminsession.importCAFromKeyStore(admin, caname, keystorebytes, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
 			ret = true;
 		} catch (Exception e) { }
 		assertFalse("Could import CA.", ret);
 		ret = false;
 		try {
-			caadminsession.importCAFromKeyStore(internalAdmin, caname, keystorebytes, capassword.toCharArray(), capassword.toCharArray(), "SignatureKeyAlias", "EncryptionKeyAlias");
+			caadminsession.importCAFromKeyStore(internalAdmin, caname, keystorebytes, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
 			ret = true;
 		} catch (Exception e) { }
 		assertTrue("Could not import CA.", ret);

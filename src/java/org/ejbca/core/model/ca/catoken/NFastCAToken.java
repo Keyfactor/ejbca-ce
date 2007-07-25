@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.InternalResources;
 
 
 /** This class implements support for the nCipher nFast HSM for storing CA keys.
@@ -30,12 +31,14 @@ import org.apache.log4j.Logger;
  * and the development was sponsored by Linagora (www.linagora.com).
  * 
  * @author Lars Silven
- * @version $Id: NFastCAToken.java,v 1.16 2007-07-25 08:56:45 anatom Exp $
+ * @version $Id: NFastCAToken.java,v 1.17 2007-07-25 15:13:01 anatom Exp $
  */
 public class NFastCAToken extends BaseCAToken {
 
     /** Log4j instance */
     private static final Logger log = Logger.getLogger(NFastCAToken.class);
+    /** Internal localization of logs and errors */
+    private static final InternalResources intres = InternalResources.getInstance();
 
     static final public String SLOT_LABEL_KEY = "keyStore";
     static final private String PROVIDER_CLASS = "com.ncipher.provider.km.nCipherKM";
@@ -81,6 +84,8 @@ public class NFastCAToken extends BaseCAToken {
             deactivate();
             throw e;
         }
+		String msg = intres.getLocalizedMessage("catoken.activated", "nFast");
+        log.info(msg);
     }
 
     /* (non-Javadoc)
@@ -88,6 +93,6 @@ public class NFastCAToken extends BaseCAToken {
      */
     public void init(Properties properties, HashMap data, String signaturealgorithm) throws Exception {
         setProvider(PROVIDER_CLASS);
-        init(SLOT_LABEL_KEY, properties, signaturealgorithm);
+        init(SLOT_LABEL_KEY, properties, signaturealgorithm, true);
     }
 }

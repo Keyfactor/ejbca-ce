@@ -23,7 +23,7 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
 
 /** Handles maintenance of the device producing signatures and handling the private key.
  * 
- * @version $Id: CATokenContainer.java,v 1.1 2007-07-25 08:56:46 anatom Exp $
+ * @version $Id: CATokenContainer.java,v 1.2 2007-07-25 15:13:02 anatom Exp $
  */
 public abstract class CATokenContainer extends UpgradeableDataHashMap implements java.io.Serializable{
 
@@ -99,14 +99,16 @@ public abstract class CATokenContainer extends UpgradeableDataHashMap implements
 	/**
 	 * Method that generates the keys that will be used by the CAToken.
 	 * Only available for Soft CA Tokens so far.
+	 * 
+	 * @param authenticationCode the password used to encrypt the keystore, laterneeded to activate CA Token
 	 */
-	public abstract void generateKeys() throws Exception;  
+	public abstract void generateKeys(String authenticationCode) throws Exception;  
 
 	/**
 	 * Method that import CA token keys from a P12 file. Was originally used when upgrading from 
 	 * old EJBCA versions. Only supports SHA1 and SHA256 with RSA or ECDSA.
 	 */
-	public abstract void importKeys(PrivateKey privatekey, PublicKey publickey, PrivateKey privateEncryptionKey,
+	public abstract void importKeys(String authenticationCode, PrivateKey privatekey, PublicKey publickey, PrivateKey privateEncryptionKey,
 			PublicKey publicEncryptionKey, Certificate[] caSignatureCertChain) throws Exception;
 
 }

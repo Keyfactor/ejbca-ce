@@ -9,6 +9,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.ejb.ServiceLocator;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
@@ -64,7 +67,7 @@ public class CAExportServlet extends HttpServlet {
 	    EjbcaWebBean ejbcawebbean= (org.ejbca.ui.web.admin.configuration.EjbcaWebBean) req.getSession().getAttribute("ejbcawebbean");
 	    if ( ejbcawebbean == null ) {
 	      try {
-	    	  ejbcawebbean = (org.ejbca.ui.web.admin.configuration.EjbcaWebBean) java.beans.Beans.instantiate(this.getClass().getClassLoader(), "org.ejbca.ui.web.admin.configuration.EjbcaWebBean");
+	    	  ejbcawebbean = (org.ejbca.ui.web.admin.configuration.EjbcaWebBean) java.beans.Beans.instantiate(this.getClass().getClassLoader(), EjbcaWebBean.class.getName());
 	      } catch (ClassNotFoundException e) {
 	    	  throw new ServletException(e.getMessage());
 	      } catch (Exception e) {
@@ -80,19 +83,12 @@ public class CAExportServlet extends HttpServlet {
 	    RequestHelper.setDefaultCharacterEncoding(req);
 	    String caname = req.getParameter(HIDDEN_CANAME);
 	    String capassword = req.getParameter(TEXTFIELD_EXPORTCA_PASSWORD);
-	    javax.naming.Context ictx = null;
-	    log.debug("Got request from "+req.getRemoteAddr()+" to export "+caname);
+	    log.info("Got request from "+req.getRemoteAddr()+" to export "+caname);
   		try{
     		byte[] keystorebytes = null;
-    		if (ictx == null) {
-    			ictx = org.ejbca.core.ejb.InitialContextBuilder.getInstance().getInitialContext();
-    		}
-			org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome home = (org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome) javax.rmi.PortableRemoteObject.narrow(ictx.lookup("CAAdminSession"), org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome.class );            
-			org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote caadminsession = home.create();
-		    if ( !caadminsession.isKeyStorePassword(ejbcawebbean.getAdminObject(), capassword) ) {
-		    	throw new IllegalArgumentException("Keystore password does not match user-supplied password.");
-		    }
-			keystorebytes = caadminsession.exportCAKeyStore(ejbcawebbean.getAdminObject(), caname, capassword.toCharArray(), capassword.toCharArray(), "SignatureKeyAlias", "EncryptionKeyAlias");
+        	ICAAdminSessionLocalHome home = (ICAAdminSessionLocalHome)ServiceLocator.getInstance().getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
+        	ICAAdminSessionLocal caadminsession = home.create();
+			keystorebytes = caadminsession.exportCAKeyStore(ejbcawebbean.getAdminObject(), caname, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
             ServletUtils.removeCacheHeaders(res);	// We must remove cache headers for IE
         	res.setContentType("application/octet-stream");
         	res.setHeader("Cache-Control", "no-cache");

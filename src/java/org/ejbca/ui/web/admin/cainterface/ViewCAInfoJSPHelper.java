@@ -22,7 +22,6 @@ import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
-import org.ejbca.core.model.ca.catoken.HardCATokenInfo;
 import org.ejbca.core.model.ca.catoken.IHardCAToken;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
@@ -32,7 +31,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Contains help methods used to parse a viewcainfo jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: ViewCAInfoJSPHelper.java,v 1.4 2007-06-15 09:31:29 jeklund Exp $
+ * @version $Id: ViewCAInfoJSPHelper.java,v 1.5 2007-07-25 15:12:33 anatom Exp $
  */
 public class ViewCAInfoJSPHelper implements java.io.Serializable {
 		 
@@ -80,7 +79,6 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
     	  generalerrormessage = null;
     	  activationerrormessage = null;   
     	  activationmessage = null;
-    	  ishardcatoken = false;
     	 
           RequestHelper.setDefaultCharacterEncoding(request);
 
@@ -93,9 +91,6 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
     	      try{
     	      	cainfo = cabean.getCAInfo(caid);
     	      	status = cainfo.getCAInfo().getStatus();
-    	      	if( cainfo.getCAInfo().getCATokenInfo() instanceof HardCATokenInfo ){
-    	      		ishardcatoken = true;
-    	      	}
     	      } catch(AuthorizationDeniedException e){
     	      	generalerrormessage = "NOTAUTHORIZEDTOVIEWCA";
     	      	return;
@@ -104,10 +99,9 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
     	      // If Activate button is pressed, the admin is authorized and the current status is offline then activate.
     	      if(request.getParameter(BUTTON_ACTIVATE) != null &&
     	      	 can_activate &&
-    	      	 ishardcatoken &&
 				 ((status == SecConst.CA_OFFLINE) ||
 				   (status == SecConst.CA_ACTIVE && 
-				   ((HardCATokenInfo) cainfo.getCAInfo().getCATokenInfo()).getCATokenStatus() == IHardCAToken.STATUS_OFFLINE))){
+				   (cainfo.getCAInfo().getCATokenInfo()).getCATokenStatus() == IHardCAToken.STATUS_OFFLINE))){
     	         
     	         String authorizationcode = request.getParameter(PASSWORD_AUTHENTICATIONCODE);
     	         try {
@@ -124,7 +118,6 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
     	      // If Activate button is pressed, the admin is authorized and the current status is offline then activate.
     	      if(request.getParameter(BUTTON_MAKEOFFLINE) != null &&
     	      	 can_activate &&
-    	      	 ishardcatoken &&
 				 status == SecConst.CA_ACTIVE){
     	         
     	      	 try{
@@ -140,10 +133,7 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
     	    try{
     	      cainfo = cabean.getCAInfo(caid);
     	      status = cainfo.getCAInfo().getStatus();
-  	       	  if( cainfo.getCAInfo().getCATokenInfo() instanceof HardCATokenInfo ){
-	      		ishardcatoken = true;
-	      		hardtokenoffline = ((HardCATokenInfo) cainfo.getCAInfo().getCATokenInfo()).getCATokenStatus() == IHardCAToken.STATUS_OFFLINE;
-	      	  }
+    	      tokenoffline = cainfo.getCAInfo().getCATokenInfo().getCATokenStatus() == IHardCAToken.STATUS_OFFLINE;
     	      ocspcert = cainfo.getOCSPSignerCertificate();
     	    } catch(AuthorizationDeniedException e){
     	    	generalerrormessage = "NOTAUTHORIZEDTOVIEWCA";
@@ -169,10 +159,9 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
 	public String   activationmessage = null;
     public boolean  can_activate = false;    
     public boolean  authorized = false; 
-    public boolean  ishardcatoken = false;
     public CAInfoView cainfo = null;
     public  int status = 0; 
-    public boolean hardtokenoffline = false;
+    public boolean tokenoffline = false;
     public  int caid = 0; 
     public  X509Certificate ocspcert = null;
     

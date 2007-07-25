@@ -19,16 +19,19 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.InternalResources;
 import org.ejbca.util.KeyTools;
 
 /**
  * @author lars
- * @version $Id: PKCS11CAToken.java,v 1.9 2007-07-25 08:56:47 anatom Exp $
+ * @version $Id: PKCS11CAToken.java,v 1.10 2007-07-25 15:13:02 anatom Exp $
  */
 public class PKCS11CAToken extends BaseCAToken {
 
     /** Log4j instance */
     private static final Logger log = Logger.getLogger(PKCS11CAToken.class);
+    /** Internal localization of logs and errors */
+    private static final InternalResources intres = InternalResources.getInstance();
 
     /**
      * @param providerClass
@@ -63,6 +66,8 @@ public class PKCS11CAToken extends BaseCAToken {
             log.error("Failed to initialize PKCS11 provider slot '"+sSlotLabel+"'.", t);
             throw new CATokenAuthenticationFailedException("Failed to initialize PKCS11 provider slot '"+sSlotLabel+"'.");
         }
+		String msg = intres.getLocalizedMessage("catoken.activated", "PKCS11");
+        log.info(msg);
     }
 
     /* (non-Javadoc)

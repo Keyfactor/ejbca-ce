@@ -25,7 +25,7 @@ import org.ejbca.core.model.InternalResources;
  * Each HardCaToken plug-in should register itself by using the method register.
  * The CA keeps a registry of CA tokens created here.
  * 
- * @version $Id: HardCATokenManager.java,v 1.8 2007-07-25 08:56:45 anatom Exp $
+ * @version $Id: HardCATokenManager.java,v 1.9 2007-07-25 15:13:01 anatom Exp $
  * 
  */
 public class HardCATokenManager {
@@ -54,7 +54,7 @@ public class HardCATokenManager {
         HardCATokenManager.instance().addAvailableHardCAToken(EracomCAToken.class.getName(), "Eracom", false, true);
         HardCATokenManager.instance().addAvailableHardCAToken(PKCS11CAToken.class.getName(), "PKCS#11", false, true);
         HardCATokenManager.instance().addAvailableHardCAToken("org.ejbca.core.model.ca.catoken.SafeNetLunaCAToken", "SafeNetLunaCAToken", false, true);
-        HardCATokenManager.instance().addAvailableHardCAToken(SoftCAToken.class.getName(), "Soft", false, false);
+        HardCATokenManager.instance().addAvailableHardCAToken(SoftCAToken.class.getName(), "Soft", false, true);
         HardCATokenManager.instance().addAvailableHardCAToken("org.ejbca.core.model.ca.catoken.DummyHardCAToken", "DummyHardCAToken", false, false);
         HardCATokenManager.instance().addAvailableHardCAToken("org.ejbca.core.model.ca.catoken.HardCATokenSample", "HardCATokenSample", false, false);
     }

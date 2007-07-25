@@ -38,7 +38,7 @@ import org.ejbca.core.model.SecConst;
 
 /**
  * @author lars
- * @version $Id: BaseCAToken.java,v 1.18 2007-07-25 08:56:46 anatom Exp $
+ * @version $Id: BaseCAToken.java,v 1.19 2007-07-25 15:13:01 anatom Exp $
  */
 public abstract class BaseCAToken implements IHardCAToken {
 
@@ -116,7 +116,9 @@ public abstract class BaseCAToken implements IHardCAToken {
         for ( int i=0; i<keyAliases.length; i++ ) {
             KeyPair pair = mTmp.get(keyAliases[i]);
             testKey(pair);
-            log.debug("Key with alias "+keyAliases[i]+" tested. toString for private part: "+pair.getPrivate());
+            if (log.isDebugEnabled()) {
+                log.debug("Key with alias "+keyAliases[i]+" tested. toString for private part: "+pair.getPrivate());            	
+            }
         }
         mKeys = mTmp;
         if ( getCATokenStatus()!=IHardCAToken.STATUS_ACTIVE )
@@ -148,20 +150,28 @@ public abstract class BaseCAToken implements IHardCAToken {
     	return pubk;
     }
 
-    protected void init(String sSlotLabelKey, Properties properties, String signaturealgorithm) {
-        init(sSlotLabelKey, properties, signaturealgorithm, true);
-    }
-    protected void init(String sSlotLabelKey, Properties properties, String signaturealgorithm, boolean doAutoAcivate) {
-        log.debug("Properties: "+(properties!=null ? properties.toString() : "null")+". Signaturealg: "+signaturealgorithm);
+    protected void init(String sSlotLabelKey, Properties properties, String signaturealgorithm, boolean doAutoActivate) {
+    	if (log.isDebugEnabled()) {
+    		// We must make sure that we don't put out activation passwords in the log file
+    		String pin = properties.getProperty(IHardCAToken.AUTOACTIVATE_PIN_PROPERTY);
+    		if (pin != null) {
+    			properties.setProperty(IHardCAToken.AUTOACTIVATE_PIN_PROPERTY, "xxxxxx");
+    		}
+            log.debug("Properties: "+(properties!=null ? properties.toString() : "null")+". Signaturealg: "+signaturealgorithm);
+    		if (pin != null) {
+    			properties.setProperty(IHardCAToken.AUTOACTIVATE_PIN_PROPERTY, pin);
+    		}
+    	}
         keyStrings = new KeyStrings(properties);
         if (sSlotLabelKey != null) {
             sSlotLabel = properties.getProperty(sSlotLabelKey);        	
         }
         sSlotLabel = sSlotLabel!=null ? sSlotLabel.trim() : null;
-        mAuthCode = properties.getProperty("pin");
-        if ( doAutoAcivate )
+        mAuthCode = properties.getProperty(AUTOACTIVATE_PIN_PROPERTY);
+        if ( doAutoActivate )
             autoActivate();
     }
+    
     protected void setProvider( String providerClassName ) throws Exception {
         setProvider( (Provider)Class.forName(providerClassName).newInstance() );
     }
@@ -227,39 +237,41 @@ public abstract class BaseCAToken implements IHardCAToken {
 	 * @see org.ejbca.core.model.ca.caadmin.IHardCAToken#getCATokenStatus()
 	 */
     public int getCATokenStatus() {
+    	log.debug(">getCATokenStatus");
     	autoActivate();
-        {
-        	if (keyStrings == null) {
-                return IHardCAToken.STATUS_OFFLINE;        		
+    	int ret = IHardCAToken.STATUS_OFFLINE;
+    	// If we have no keystrings, no point in continuing...
+    	if (keyStrings != null) {
+        	String strings[] = keyStrings.getAllStrings();
+        	int i=0;
+        	while( strings!=null && i<strings.length && mKeys!=null && mKeys.get(strings[i])!=null ) {
+        		i++;                    		
         	}
-            String strings[] = keyStrings.getAllStrings();
-            int i=0;
-            while( strings!=null && i<strings.length && mKeys!=null && mKeys.get(strings[i])!=null )
-                i++;            
-            if ( strings==null || i<strings.length)
-                return IHardCAToken.STATUS_OFFLINE;
-        } 
-        {
-            PrivateKey privateKey;
-            PublicKey publicKey;
-            try {
-                privateKey = getPrivateKey(SecConst.CAKEYPURPOSE_KEYTEST);
-                publicKey = getPublicKey(SecConst.CAKEYPURPOSE_KEYTEST);
-            } catch (CATokenOfflineException e) {
-                privateKey = null;
-                publicKey = null;
-                log.debug("no test key defined");
-            }
-            if ( privateKey!=null && publicKey!=null ) {
-                //Check that that the testkey is usable by doing a test signature.
-                try{
-                    testKey(new KeyPair(publicKey, privateKey));
-                } catch( Throwable th ){
-                    log.error("Error testing activation", th);
-                    return IHardCAToken.STATUS_OFFLINE;     
-                }
-            }
-        }
-        return IHardCAToken.STATUS_ACTIVE;
+        	// If we don't have any keys for the strings, or we don't have enough keys for the strings, no point in continuing...
+        	if ( strings!=null && i>=strings.length) {
+            	PrivateKey privateKey;
+            	PublicKey publicKey;
+            	try {
+            		privateKey = getPrivateKey(SecConst.CAKEYPURPOSE_KEYTEST);
+            		publicKey = getPublicKey(SecConst.CAKEYPURPOSE_KEYTEST);
+            	} catch (CATokenOfflineException e) {
+            		privateKey = null;
+            		publicKey = null;
+            		log.debug("no test key defined");
+            	}
+            	if ( privateKey!=null && publicKey!=null ) {
+            		//Check that that the testkey is usable by doing a test signature.
+            		try{
+            			testKey(new KeyPair(publicKey, privateKey));
+            			// If we can test the testkey, we are finally active!
+            	    	ret = IHardCAToken.STATUS_ACTIVE;
+            		} catch( Throwable th ){
+            			log.error("Error testing activation", th);
+            		}
+            	}
+        	}
+    	}
+    	log.debug("<getCATokenStatus: "+ret);
+    	return ret;
     }
 }

@@ -24,7 +24,7 @@ import org.ejbca.util.FileTools;
 /**
  * Imports a PKCS12 file and created a new CA from it.
  *
- * @version $Id: CaImportCACommand.java,v 1.3 2007-03-21 13:59:57 jeklund Exp $
+ * @version $Id: CaImportCACommand.java,v 1.4 2007-07-25 15:12:45 anatom Exp $
  */
 public class CaImportCACommand extends BaseCaAdminCommand {
     /**
@@ -87,7 +87,7 @@ public class CaImportCACommand extends BaseCaAdminCommand {
                 } 
                 // else alias already contains the only alias, so we can use that
             }
-            getCAAdminSessionRemote().importCAFromKeyStore(administrator, caName, keystorebytes, kspwd.toCharArray(), kspwd.toCharArray(), alias, encryptionAlias);
+            getCAAdminSessionRemote().importCAFromKeyStore(administrator, caName, keystorebytes, kspwd, kspwd, alias, encryptionAlias);
           
         } catch (ErrorAdminCommandException e) {
         	throw e;

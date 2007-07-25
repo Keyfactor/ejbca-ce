@@ -2,6 +2,28 @@
   SoftCATokenInfo softcatokeninfo = (SoftCATokenInfo) catokeninfo; 
   int[] AVAILABLEKEYSIZES = {1024,2048,4096};
 %>
+    <tr  id="Row<%=row++%2%>">       
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("AUTHENTICATIONCODE") %>
+        <br/>
+    <% if(!editca){ %>
+        <%= ejbcawebbean.getText("AUTHENTICATIONCODEEMPTYFORDEFAULT") %>
+    <% } else { %>
+        <%= ejbcawebbean.getText("AUTHENTICATIONCODEONLYACTIVATION") %>
+    <% } %>
+      </td>
+      <td width="50%"> 
+        <input type="password" name="<%=TEXTFIELD_AUTHENTICATIONCODE%>" size="40" maxlength="255">
+      </td>
+    </tr>
+    <tr id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("AUTHENTICATIONCODEAUTOACTIVATE") %>
+      </td>
+      <td width="50%"> 
+        <input type="checkbox" name="<%=CHECKBOX_AUTHENTICATIONCODEAUTOACTIVATE %>" value="<%=CHECKBOX_VALUE %>" CHECKED >
+      </td>
+    </tr>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("SIGNALGORITHM") %>

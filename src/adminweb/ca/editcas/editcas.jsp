@@ -1,11 +1,11 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <%@ page contentType="text/html; charset=@page.encoding@" %>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, java.io.*, org.apache.commons.fileupload.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.SecConst, org.ejbca.util.FileTools, org.ejbca.util.CertTools, org.ejbca.core.model.authorization.AuthorizationDeniedException,
-    org.ejbca.ui.web.RequestHelper, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.caadmin.CAInfo, org.ejbca.core.model.ca.caadmin.X509CAInfo, org.ejbca.core.model.ca.catoken.CATokenInfo, org.ejbca.core.model.ca.catoken.SoftCATokenInfo, org.ejbca.ui.web.admin.cainterface.CADataHandler,
+    org.ejbca.ui.web.RequestHelper, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.caadmin.CAInfo, org.ejbca.core.model.ca.caadmin.X509CAInfo, org.ejbca.core.model.ca.catoken.CATokenInfo, org.ejbca.core.model.ca.catoken.SoftCAToken, org.ejbca.core.model.ca.catoken.SoftCATokenInfo, org.ejbca.ui.web.admin.cainterface.CADataHandler,
                org.ejbca.ui.web.admin.rainterface.RevokedInfoView, org.ejbca.ui.web.admin.configuration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.bouncycastle.jce.PKCS10CertificationRequest, org.ejbca.core.EjbcaException,
                org.ejbca.core.protocol.PKCS10RequestMessage, org.ejbca.core.model.ca.caadmin.CAExistsException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.model.ca.catoken.CATokenOfflineException, org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException,
                org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo,org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, org.ejbca.core.model.ca.catoken.HardCATokenManager, org.ejbca.core.model.ca.catoken.AvailableHardCAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo, org.ejbca.core.model.ca.catoken.CATokenConstants,
-               org.ejbca.util.dn.DNFieldExtractor" %>
+               org.ejbca.util.dn.DNFieldExtractor,org.ejbca.core.model.ca.catoken.IHardCAToken " %>
 
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -94,6 +94,7 @@
   static final String CHECKBOX_ACTIVATEXKMSSERVICE                = "checkboxactivatexkmsservice";
   static final String CHECKBOX_ACTIVATECMSSERVICE                 = "checkboxactivatecmsservice";
   static final String CHECKBOX_RENEWKEYS                          = "checkboxrenewkeys";  
+  static final String CHECKBOX_AUTHENTICATIONCODEAUTOACTIVATE     = "checkboxauthcodeautoactivate";
   
   static final String HIDDEN_CATOKEN                              = "hiddencatoken";  
   
@@ -305,6 +306,8 @@
            String signalg = request.getParameter(SELECT_SIGNATUREALGORITHM);
            String encalg = request.getParameter(SELECT_SIGNATUREALGORITHM);
            signkeyspec = request.getParameter(SELECT_KEYSIZE);
+           String authenticationcode = request.getParameter(TEXTFIELD_AUTHENTICATIONCODE);
+           String autoactivate = request.getParameter(CHECKBOX_AUTHENTICATIONCODEAUTOACTIVATE);
            signkeytype = CATokenConstants.KEYALGORITHM_RSA;
            String enckeyspec = request.getParameter(SELECT_KEYSIZE);
            String enckeytype = CATokenConstants.KEYALGORITHM_RSA;
@@ -321,7 +324,12 @@
            ((SoftCATokenInfo) catoken).setSignKeySpec(signkeyspec);              
            catoken.setEncryptionAlgorithm(encalg);
            ((SoftCATokenInfo) catoken).setEncKeyAlgorithm(enckeytype);
-           ((SoftCATokenInfo) catoken).setEncKeySpec(enckeyspec);              
+           ((SoftCATokenInfo) catoken).setEncKeySpec(enckeyspec); 
+           catoken.setAuthenticationCode(authenticationcode);
+           if ( (autoactivate != null) && (autoactivate.equals("true")) ) {
+               String properties = IHardCAToken.AUTOACTIVATE_PIN_PROPERTY + " " + authenticationcode;
+               catoken.setProperties(properties);
+           }          
          } 
          if(catokentype == CATokenInfo.CATOKENTYPE_HSM){
             catokenpath = request.getParameter(HIDDEN_CATOKENPATH);
@@ -331,10 +339,10 @@
             if(catokenpath == null || catokenpath == null || signalg == null)
               throw new Exception("Error in CATokenData");  
             catoken = new HardCATokenInfo();           
-            ((HardCATokenInfo) catoken).setClassPath(catokenpath);
-            ((HardCATokenInfo) catoken).setProperties(properties);
-            ((HardCATokenInfo) catoken).setSignatureAlgorithm(signalg);
-            ((HardCATokenInfo) catoken).setAuthenticationCode(authenticationcode);
+            catoken.setClassPath(catokenpath);
+            catoken.setProperties(properties);
+            catoken.setSignatureAlgorithm(signalg);
+            catoken.setAuthenticationCode(authenticationcode);
          }
 
          catype  = Integer.parseInt(request.getParameter(HIDDEN_CATYPE));
@@ -608,14 +616,24 @@
          CATokenInfo catoken = null;
          catokentype = Integer.parseInt(request.getParameter(HIDDEN_CATOKENTYPE));
          if(catokentype == CATokenInfo.CATOKENTYPE_P12){
+           String authenticationcode = request.getParameter(TEXTFIELD_AUTHENTICATIONCODE);
+           String autoactivate = request.getParameter(CHECKBOX_AUTHENTICATIONCODEAUTOACTIVATE);
            catoken = new SoftCATokenInfo();          
+           catoken.setAuthenticationCode(authenticationcode);
+           if ( (autoactivate != null) && (autoactivate.equals("true")) ) {
+               String properties = IHardCAToken.AUTOACTIVATE_PIN_PROPERTY + " " + authenticationcode;
+               catoken.setProperties(properties);
+           } else {
+               catoken.setProperties("");
+           }
+           
          } 
          if(catokentype == CATokenInfo.CATOKENTYPE_HSM){
             String properties = request.getParameter(TEXTFIELD_HARDCATOKENPROPERTIES);
             if(catokenpath == null)
               throw new Exception("Error in CATokenData");  
             catoken = new HardCATokenInfo();                       
-            ((HardCATokenInfo) catoken).setProperties(properties);
+            catoken.setProperties(properties);
          }
 
           
@@ -1061,7 +1079,7 @@
         
         catokenpath = request.getParameter(SELECT_CATOKEN);   
         caname = request.getParameter(HIDDEN_CANAME);   
-        if(catokenpath.equals("NONE")){
+        if(catokenpath.equals(SoftCAToken.class.getName())){
           catokentype = CATokenInfo.CATOKENTYPE_P12;
         }else{
           catokentype = CATokenInfo.CATOKENTYPE_HSM;
@@ -1099,7 +1117,7 @@
 	            if ( encryptionAlias.equals("") ) {
 	            	encryptionAlias = null;
 	            }
-				cadatahandler.importCAFromKeyStore(caName, keystorebytes, kspwd.toCharArray(), kspwd.toCharArray(), alias, encryptionAlias);
+				cadatahandler.importCAFromKeyStore(caName, keystorebytes, kspwd, kspwd, alias, encryptionAlias);
 			} catch (Exception e) {
 			%> <div style="color: #FF0000;"> <%
 				out.println( e.getMessage() );

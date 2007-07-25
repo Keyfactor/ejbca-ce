@@ -17,7 +17,6 @@ import java.rmi.UnmarshalException;
 
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.catoken.HardCATokenInfo;
 import org.ejbca.core.model.ca.catoken.IHardCAToken;
 
 
@@ -27,7 +26,7 @@ import org.ejbca.core.model.ca.catoken.IHardCAToken;
 /**
  * Activates the specified HSM CA.
  *
- * @version $Id: CaActivateCACommand.java,v 1.4 2007-03-16 19:56:39 herrvendil Exp $
+ * @version $Id: CaActivateCACommand.java,v 1.5 2007-07-25 15:12:45 anatom Exp $
  */
 public class CaActivateCACommand extends BaseCaAdminCommand {
     /**
@@ -62,16 +61,9 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
             	return;            	
             }
                                     
-            // Check that ca is and hardtoken ca
-            
-            if(!(cainfo.getCATokenInfo() instanceof HardCATokenInfo)){
-            	getOutputStream().println("Error: CA have a Soft CAToken and cannot be activated");	
-            	return;
-            }
-            
             // Check that CA has correct status.
-            if(cainfo.getStatus() == SecConst.CA_OFFLINE || 
-            		(cainfo.getStatus() == SecConst.CA_ACTIVE && ((HardCATokenInfo)cainfo.getCATokenInfo()).getCATokenStatus() == IHardCAToken.STATUS_OFFLINE)) {
+            if ( (cainfo.getStatus() == SecConst.CA_OFFLINE) || 
+            		(cainfo.getStatus() == SecConst.CA_ACTIVE) && (cainfo.getCATokenInfo().getCATokenStatus() == IHardCAToken.STATUS_OFFLINE) ) {
             	try {
                 	getCAAdminSessionRemote().activateCAToken(administrator, cainfo.getCAId(), authorizationcode);            		
             	} catch (UnmarshalException e) {

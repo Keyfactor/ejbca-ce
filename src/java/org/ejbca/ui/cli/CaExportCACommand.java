@@ -20,7 +20,7 @@ import java.io.InputStreamReader;
 /**
  * Imports a PKCS12 file and created a new CA from it.
  *
- * @version $Id: CaExportCACommand.java,v 1.1 2007-03-21 13:59:57 jeklund Exp $
+ * @version $Id: CaExportCACommand.java,v 1.2 2007-07-25 15:12:45 anatom Exp $
  */
 public class CaExportCACommand extends BaseCaAdminCommand {
     /**
@@ -59,10 +59,7 @@ public class CaExportCACommand extends BaseCaAdminCommand {
             System.out.print("Enter keystore password: ");
             String kspwd = new BufferedReader(new InputStreamReader(System.in)).readLine();
             
-		    if ( !getCAAdminSessionRemote().isKeyStorePassword(administrator, kspwd) ) {
-		    	throw new IllegalArgumentException("Keystore password does not match user-supplied password.");
-		    }
-            byte[] keyStoreBytes = getCAAdminSessionRemote().exportCAKeyStore(administrator, caName, kspwd.toCharArray(), kspwd.toCharArray(), signatureKeyAlias, encryptionKeyAlias);
+            byte[] keyStoreBytes = getCAAdminSessionRemote().exportCAKeyStore(administrator, caName, kspwd, kspwd, signatureKeyAlias, encryptionKeyAlias);
             FileOutputStream fos = new FileOutputStream(p12file);
             fos.write(keyStoreBytes);
             fos.close();

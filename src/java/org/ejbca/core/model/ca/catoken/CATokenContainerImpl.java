@@ -27,14 +27,12 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import javax.ejb.EJBException;
-import javax.naming.InitialContext;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.interfaces.ECPrivateKey;
 import org.bouncycastle.jce.interfaces.ECPublicKey;
-import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
@@ -47,7 +45,7 @@ import org.ejbca.util.KeyTools;
  * HardCATokenContainer is a class managing the persistent storage of a CA token.
  * 
  *
- * @version $Id: CATokenContainerImpl.java,v 1.1 2007-07-25 08:56:45 anatom Exp $
+ * @version $Id: CATokenContainerImpl.java,v 1.2 2007-07-25 15:13:01 anatom Exp $
  */
 public class CATokenContainerImpl extends CATokenContainer {
 
@@ -113,11 +111,13 @@ public class CATokenContainerImpl extends CATokenContainer {
 		info.setProperties(getPropertyData());
 		info.setSignatureAlgorithm(getSignatureAlgorithm());
 
+		// Set status of the CA token
+		int status = IHardCAToken.STATUS_OFFLINE;
 		if ( catoken != null ){
-			info.setCATokenStatus(catoken.getCATokenStatus());
-		}else{
-			info.setCATokenStatus(IHardCAToken.STATUS_OFFLINE);
+			status = catoken.getCATokenStatus();
 		}
+		log.debug("Setting CATokenInfo.status to: "+status);
+		info.setCATokenStatus(status);
 
 		return info;
 	}
@@ -137,6 +137,13 @@ public class CATokenContainerImpl extends CATokenContainer {
 			this.setSignatureAlgorithm(catokeninfo.getSignatureAlgorithm());			
 		}
 
+		String props = this.getPropertyData();
+		String newprops = catokeninfo.getProperties();
+		if ( (newprops != null) && !StringUtils.equals(props, newprops)) {
+			this.setPropertyData(newprops);				
+			changed = true;
+		}			
+
 		if (catokeninfo instanceof NullCATokenInfo) {
 			if (data.get(CATOKENTYPE) == null) {
 		    	data.put(CATOKENTYPE, new Integer(CATokenInfo.CATOKENTYPE_NULL));
@@ -149,11 +156,6 @@ public class CATokenContainerImpl extends CATokenContainer {
 				data.put(CATOKENTYPE, new Integer(CATokenInfo.CATOKENTYPE_HSM));
 				changed = true;
 			}
-			HardCATokenInfo hinfo = (HardCATokenInfo) catokeninfo;
-			if (!this.getPropertyData().equals(hinfo.getProperties())) {
-				this.setPropertyData(((HardCATokenInfo)catokeninfo).getProperties());				
-				changed = true;
-			}			
 		}
 
 		if (catokeninfo instanceof SoftCATokenInfo) {
@@ -164,27 +166,27 @@ public class CATokenContainerImpl extends CATokenContainer {
 			SoftCATokenInfo sinfo = (SoftCATokenInfo) catokeninfo;
 			// Below for soft CA tokens
 			String str = sinfo.getSignKeySpec();
-			if (!StringUtils.equals((String)data.get(SIGNKEYSPEC), str)) {
+			if ( (str != null) && !StringUtils.equals((String)data.get(SIGNKEYSPEC), str)) {
 				data.put(SIGNKEYSPEC, str);
 				changed = true;
 			}
 			str = sinfo.getSignKeyAlgorithm();
-			if (!StringUtils.equals((String)data.get(SIGNKEYALGORITHM), str)) {
+			if ( (str != null) && !StringUtils.equals((String)data.get(SIGNKEYALGORITHM), str)) {
 				data.put(SIGNKEYALGORITHM, str);
 				changed = true;
 			}
 			str = sinfo.getEncKeySpec();
-			if (!StringUtils.equals((String)data.get(ENCKEYSPEC), str)) {
+			if ( (str != null) && !StringUtils.equals((String)data.get(ENCKEYSPEC), str)) {
 				data.put(ENCKEYSPEC, str);
 				changed = true;
 			}
 			str = sinfo.getEncKeyAlgorithm();
-			if (!StringUtils.equals((String)data.get(ENCKEYALGORITHM), str)) {
+			if ( (str != null) && !StringUtils.equals((String)data.get(ENCKEYALGORITHM), str)) {
 				data.put(ENCKEYALGORITHM, str);
 				changed = true;
 			}
 			str = sinfo.getEncryptionAlgorithm();
-			if (!StringUtils.equals((String)data.get(ENCRYPTIONALGORITHM), str)) {
+			if ( (str != null) && !StringUtils.equals((String)data.get(ENCRYPTIONALGORITHM), str)) {
 				data.put(ENCRYPTIONALGORITHM, str);
 				changed = true;
 			}
@@ -235,16 +237,17 @@ public class CATokenContainerImpl extends CATokenContainer {
 	/**
 	 * Method that generates the keys that will be used by the CAToken.
 	 * Only available for Soft CA Tokens so far.
+	 * 
+	 * @param authenticationCode the password used to encrypt the keystore, laterneeded to activate CA Token
 	 */
-	public void generateKeys() throws Exception{  
+	public void generateKeys(String authenticationCode) throws Exception{  
 
 		CATokenInfo catokeninfo = getCATokenInfo();
 		if ( !(catokeninfo instanceof SoftCATokenInfo) ) {
 			log.error("generateKeys is only available for Soft CA tokens (PKCS12)");
 			return;
 		}
-		// Get key store password
-		String keystorepass = ServiceLocator.getInstance().getString("java:comp/env/keyStorePass");      
+		
 		// Currently only RSA keys are supported
 		SoftCATokenInfo info = (SoftCATokenInfo) catokeninfo;       
 		String signkeyspec = info.getSignKeySpec();  
@@ -267,7 +270,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 		certchain[0] = CertTools.genSelfCert("CN=dummy2", 36500, null, enckeys.getPrivate(), enckeys.getPublic(), info.getEncryptionAlgorithm(), true);
 		keystore.setKeyEntry(SoftCAToken.PRIVATEDECKEYALIAS,enckeys.getPrivate(),null,certchain);              
 		java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-		keystore.store(baos, keystorepass.toCharArray());
+		keystore.store(baos, authenticationCode.toCharArray());
 		data.put(KEYSTORE, new String(Base64.encode(baos.toByteArray())));
 		data.put(SIGNKEYSPEC, signkeyspec);
 		data.put(SIGNKEYALGORITHM, info.getSignKeyAlgorithm());
@@ -284,13 +287,9 @@ public class CATokenContainerImpl extends CATokenContainer {
 	 * Method that import CA token keys from a P12 file. Was originally used when upgrading from 
 	 * old EJBCA versions. Only supports SHA1 and SHA256 with RSA or ECDSA.
 	 */
-	public void importKeys(PrivateKey privatekey, PublicKey publickey, PrivateKey privateEncryptionKey,
+	public void importKeys(String authenticationCode, PrivateKey privatekey, PublicKey publickey, PrivateKey privateEncryptionKey,
 			PublicKey publicEncryptionKey, Certificate[] caSignatureCertChain) throws Exception{
-		// lookup keystore passwords      
-		InitialContext ictx = new InitialContext();
-		String keystorepass = (String) ictx.lookup("java:comp/env/keyStorePass");      
-		if (keystorepass == null)
-			throw new IllegalArgumentException("Missing keyStorePass property.");
+
 
 		// Currently only RSA keys are supported
 		KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
@@ -366,7 +365,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 		keystore.setKeyEntry(SoftCAToken.PRIVATEDECKEYALIAS,enckeys.getPrivate(),null,certchain);              
 
 		java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-		keystore.store(baos, keystorepass.toCharArray());
+		keystore.store(baos, authenticationCode.toCharArray());
 		data.put(KEYSTORE, new String(Base64.encode(baos.toByteArray())));
 		data.put(ENCKEYSPEC, keyspec);
 		data.put(ENCKEYALGORITHM, keyAlg);

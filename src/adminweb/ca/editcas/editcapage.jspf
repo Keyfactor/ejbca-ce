@@ -8,13 +8,11 @@
   HashMap publisheridtonamemap = ejbcawebbean.getInformationMemory().getPublisherIdToNameMap();
 
   Collection availablecatokens = HardCATokenManager.instance().getAvailableHardCATokens();
-  String[] availablecatokentypes = new String[availablecatokens.size() + 1];
-  String[] availablecatokentypetexts = new String[availablecatokens.size() + 1];  
-  availablecatokentypes[0] = "NONE";
-  availablecatokentypetexts[0] = ejbcawebbean.getText("SOFT");
+  String[] availablecatokentypes = new String[availablecatokens.size()];
+  String[] availablecatokentypetexts = new String[availablecatokens.size()];  
 
   Iterator availablecatokensiter = availablecatokens.iterator();
-  int numberofavailabletokens = 1;
+  int numberofavailabletokens = 0;
   while(availablecatokensiter.hasNext()){
     AvailableHardCAToken nextavailable = (AvailableHardCAToken) availablecatokensiter.next();
     if(nextavailable.isUsed()){
@@ -45,11 +43,12 @@
     catokeninfo = cainfo.getCATokenInfo();
 
     if(catokeninfo instanceof SoftCATokenInfo){
-      catokentext = ejbcawebbean.getText("SOFT"); 
+       catokentype = CATokenInfo.CATOKENTYPE_P12;
     }
     if(catokeninfo instanceof HardCATokenInfo){
        catokentype = CATokenInfo.CATOKENTYPE_HSM;
-       catokenpath = ((HardCATokenInfo  ) catokeninfo).getClassPath();
+    }
+       catokenpath = catokeninfo.getClassPath();
        AvailableHardCAToken availablecatoken = HardCATokenManager.instance().getAvailableHardCAToken(catokenpath); 
        if(availablecatoken==null)
          throw new Exception("CA Token with classpath "+catokenpath+" is not available.");
@@ -60,7 +59,6 @@
       }else{
         catokentext =  availablecatoken.getName();
       }      
-    }
 
     
     revokable = cainfo.getStatus() != SecConst.CA_REVOKED  && cainfo.getStatus() != SecConst.CA_WAITING_CERTIFICATE_RESPONSE && !cadatahandler.isCARevoked(cainfo);

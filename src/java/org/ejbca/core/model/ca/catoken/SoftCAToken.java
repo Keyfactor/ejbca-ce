@@ -13,20 +13,24 @@
  
 package org.ejbca.core.model.ca.catoken;
 
+import java.io.IOException;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.model.InternalResources;
-import org.ejbca.core.model.ca.caadmin.IllegalKeyStoreException;
 import org.ejbca.util.Base64;
 
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: SoftCAToken.java,v 1.11 2007-07-25 08:56:45 anatom Exp $
+ * @version $Id: SoftCAToken.java,v 1.12 2007-07-25 15:13:01 anatom Exp $
  */
 public class SoftCAToken extends BaseCAToken {
 
@@ -45,37 +49,55 @@ public class SoftCAToken extends BaseCAToken {
     protected static final String PRIVATESIGNKEYALIAS = "privatesignkeyalias";
     protected static final String PRIVATEDECKEYALIAS = "privatedeckeyalias";
 
+    /** Cache for holding the keystore data that has been read from the database. Requires a password to activate */
+    private byte[] keyStoreData = null;
+    
     public SoftCAToken() throws InstantiationException {
     	super();
     	log.debug("Creating SoftCAToken");
     }
     
     public void init(Properties properties, HashMap data, String signaturealgorithm) throws Exception {
+
+    	if(data.get(CATokenContainer.KEYSTORE) != null){ 
+    		keyStoreData =  Base64.decode(((String) data.get(CATokenContainer.KEYSTORE)).getBytes());
+    	}
+
     	// A soft CA have two keys in the CA keystore, the corresponding Properties would be
     	//    defaultKey PRIVATEDECKEYALIAS (privatedeckeyalias)
     	//    certSignKey PRIVATESIGNKEYALIAS (privatesignkeyalias)
     	//    crlSignKey PRIVATESIGNKEYALIAS (privatesignkeyalias)
-  	  if (properties == null) {
-		  properties = new Properties();
-	  }
-	  properties.setProperty(KeyStrings.CAKEYPURPOSE_CERTSIGN_STRING, PRIVATESIGNKEYALIAS);
-	  properties.setProperty(KeyStrings.CAKEYPURPOSE_CRLSIGN_STRING, PRIVATESIGNKEYALIAS);
-	  properties.setProperty(KeyStrings.CAKEYPURPOSE_DEFAULT_STRING, PRIVATEDECKEYALIAS);	  
-	  init(null, properties, signaturealgorithm);
-	  
-      if(data.get(CATokenContainer.KEYSTORE) != null){    
-    	  // lookup keystore passwords      
-    	  String keystorepass = ServiceLocator.getInstance().getString("java:comp/env/keyStorePass");      
-    	  if (keystorepass == null)
-    		  throw new IllegalArgumentException("Missing keyStorePass property.");
-    	  try {
-    		  KeyStore keystore=KeyStore.getInstance("PKCS12", "BC");
-    		  keystore.load(new java.io.ByteArrayInputStream(Base64.decode(((String) data.get(CATokenContainer.KEYSTORE)).getBytes())),keystorepass.toCharArray());    		  
-              setKeys(keystore, keystorepass);
-    	  } catch (Exception e) {
-    		  throw new IllegalKeyStoreException(e);
-    	  }
-      } 
+    	if (properties == null) {
+    		properties = new Properties();
+    	}
+    	properties.setProperty(KeyStrings.CAKEYPURPOSE_CERTSIGN_STRING, PRIVATESIGNKEYALIAS);
+    	properties.setProperty(KeyStrings.CAKEYPURPOSE_CRLSIGN_STRING, PRIVATESIGNKEYALIAS);
+    	properties.setProperty(KeyStrings.CAKEYPURPOSE_DEFAULT_STRING, PRIVATEDECKEYALIAS);
+    	// If we don't have an auto activation password set, we try to use the default one if it works to load the keystore with it
+    	if (properties.getProperty(AUTOACTIVATE_PIN_PROPERTY) == null) {
+    		String keystorepass = ServiceLocator.getInstance().getString("java:comp/env/keyStorePass");          		
+    		if (keystorepass == null) {
+    			log.error("Missing keyStorePass property. We can not autoActivate standard soft CA tokens.");
+    			throw new IllegalArgumentException("Missing keyStorePass property.");		    		
+    		}
+    		// Test it first, don't set an incorrect password as autoactivate password
+    		boolean okPwd = true;
+    		try {
+    			loadKeyStore(keyStoreData, keystorepass);
+    			log.debug("Succeded to load keystore with password");
+    		} catch (Exception e) {
+    			// Don't do it
+    			okPwd = false;
+    			log.debug("Failed to load keystore with password");
+    		}
+    		if (okPwd) {
+    			properties.setProperty(AUTOACTIVATE_PIN_PROPERTY, keystorepass);	    		
+    		}
+    	} else {
+    		log.debug("Soft CA Token has autoactivation property set.");
+    	}
+      
+	  init(null, properties, signaturealgorithm, true);
    }
     
    
@@ -92,18 +114,27 @@ public class SoftCAToken extends BaseCAToken {
 	 * 
 	 * @see org.ejbca.core.model.ca.catoken.CATokenContainer#activate(java.lang.String)
 	 */
-	public void activate(String authenticationcode) throws CATokenAuthenticationFailedException, CATokenOfflineException {
-		// Do nothing		
-	}
-
-	/**
-	 * @see org.ejbca.core.model.ca.catoken.CATokenContainer#deactivate()
-	 */
-	public boolean deactivate() {
-		// Do nothing		
-		return true;
-	}
+    public void activate(String authenticationcode) throws CATokenAuthenticationFailedException, CATokenOfflineException {
+    	log.debug(">activate: "+authenticationcode);
+    	try {
+    		KeyStore keystore = loadKeyStore(keyStoreData, authenticationcode);
+    		setKeys(keystore, authenticationcode);
+    	} catch (Exception e) {
+    		String msg = intres.getLocalizedMessage("catoken.erroractivate", e.getMessage());
+            log.info(msg);
+    		log.info(e);
+    		CATokenOfflineException oe = new CATokenOfflineException(e.getMessage());
+    		oe.initCause(e);
+    		throw oe;
+    	}
+		String msg = intres.getLocalizedMessage("catoken.activated", "Soft");
+        log.info(msg);
+    }
     
-    
+    private KeyStore loadKeyStore(byte[] ksdata, String keystorepass) throws NoSuchAlgorithmException, CertificateException, IOException, KeyStoreException, NoSuchProviderException {
+		KeyStore keystore=KeyStore.getInstance("PKCS12", PROVIDER);
+		keystore.load(new java.io.ByteArrayInputStream(ksdata),keystorepass.toCharArray());
+		return keystore;
+    }
 }
 

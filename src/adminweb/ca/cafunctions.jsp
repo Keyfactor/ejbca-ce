@@ -168,8 +168,7 @@ function viewcainfo(caid){
 <br> 
 <input type='hidden' name='<%=HIDDEN_CASUBJECTDN + number %>' value='<%=subjectdn%>'> 
 <%=ejbcawebbean.getText("CREATENEWCRL") + " : " %>
-       <% if(cainfo.getCAInfo().getStatus() == SecConst.CA_ACTIVE && (!(cainfo.getCAInfo().getCATokenInfo() instanceof HardCATokenInfo) ||
-    		 ((HardCATokenInfo)cainfo.getCAInfo().getCATokenInfo()).getCATokenStatus() == IHardCAToken.STATUS_ACTIVE)){ %>
+       <% if ( (cainfo.getCAInfo().getStatus() == SecConst.CA_ACTIVE) && (cainfo.getCAInfo().getCATokenInfo().getCATokenStatus() == IHardCAToken.STATUS_ACTIVE) ) { %>
 <input type='submit' name='<%=BUTTON_CREATECRL + number %>' value='<%=ejbcawebbean.getText("CREATECRL") %>'>
        <% }else{
            out.write(ejbcawebbean.getText("CAISNTACTIVE"));
