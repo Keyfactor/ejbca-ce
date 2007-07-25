@@ -22,9 +22,17 @@ import java.util.Set;
 import org.ejbca.core.model.SecConst;
 
 
-/**
+/** Class wraps keystring properties. The properties passed in to it can contain fields as the constants:
+ *    certSignKey fooalias
+ *    testKey testalias
+ *    defaultKey defaultalias
+ *  When the stirng are added they are mapped to different key purposes, SecConst.CAKEYPURPOSE_CERTSIGN etc. 
+ *  When the method getString is called with SecConst.CAKEYPURPOSE_CERTSIGN it will return fooalias, if getString is called
+ *  with a key purpose that was not specified, for example SecConst.CAKEYPURPOSE_KEYENCRYPT it will return defaultalias.
+ *  
+ *   The returned values are supposed to be used to get keys for different aliases from a keystore.
  * 
- * @version $Id: KeyStrings.java,v 1.4 2007-05-31 10:02:32 primelars Exp $
+ * @version $Id: KeyStrings.java,v 1.5 2007-07-25 08:56:46 anatom Exp $
 */
 public class KeyStrings {
     
@@ -37,27 +45,30 @@ public class KeyStrings {
     final private Map map;
     final String defaultKeyS;
     public KeyStrings(Properties properties) {
-        {
-            String tmpS = properties.getProperty(CAKEYPURPOSE_DEFAULT_STRING);
-            defaultKeyS = tmpS!=null ? tmpS.trim() : null;
-        }
-        map = new Hashtable();
-        addKey(CAKEYPURPOSE_CERTSIGN_STRING,
-               SecConst.CAKEYPURPOSE_CERTSIGN,
-               properties);
-        addKey(CAKEYPURPOSE_CRLSIGN_STRING,
-               SecConst.CAKEYPURPOSE_CRLSIGN,
-               properties);
-        addKey(CAKEYPURPOSE_KEYENCRYPT_STRING,
-               SecConst.CAKEYPURPOSE_KEYENCRYPT,
-               properties);
-        addKey(CAKEYPURPOSE_TESTKEY_STRING,
-               SecConst.CAKEYPURPOSE_KEYTEST,
-               properties);
-        addKey(CAKEYPURPOSE_HARDTOKENENCRYPT_STRING,
-               SecConst.CAKEYPURPOSE_HARDTOKENENCRYPT,
-               properties);
-    }
+    	{
+    		String tmpS = null;
+    		if (properties != null) {
+    			tmpS = properties.getProperty(CAKEYPURPOSE_DEFAULT_STRING);
+    		}
+    		defaultKeyS = tmpS!=null ? tmpS.trim() : null;
+    	}
+    	map = new Hashtable();
+    	addKey(CAKEYPURPOSE_CERTSIGN_STRING,
+    			SecConst.CAKEYPURPOSE_CERTSIGN,
+    			properties);
+    	addKey(CAKEYPURPOSE_CRLSIGN_STRING,
+    			SecConst.CAKEYPURPOSE_CRLSIGN,
+    			properties);
+    	addKey(CAKEYPURPOSE_KEYENCRYPT_STRING,
+    			SecConst.CAKEYPURPOSE_KEYENCRYPT,
+    			properties);
+    	addKey(CAKEYPURPOSE_TESTKEY_STRING,
+    			SecConst.CAKEYPURPOSE_KEYTEST,
+    			properties);
+    	addKey(CAKEYPURPOSE_HARDTOKENENCRYPT_STRING,
+    			SecConst.CAKEYPURPOSE_HARDTOKENENCRYPT,
+    			properties);    		
+    } 
     private void addKey(String keyS, int keyI,
                         Properties properties) {
         String value = properties.getProperty(keyS);

@@ -18,6 +18,7 @@ import java.io.ObjectInputStream;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -32,9 +33,9 @@ import org.ejbca.util.Base64;
  * Observe: Remember to add a line in teh static section of HardCATokenManager adding the token as available token.
  * 
  * @author herrvendil
- * @version $Id: HardCATokenSample.java,v 1.1 2006-01-17 20:31:51 anatom Exp $
+ * @version $Id: HardCATokenSample.java,v 1.2 2007-07-25 08:56:44 anatom Exp $
  */
-public class HardCATokenSample implements IHardCAToken {
+public class HardCATokenSample extends BaseCAToken {
     /** Log4j instance for Base */
     private static final Logger log = Logger.getLogger(HardCATokenSample.class);
 	
@@ -142,7 +143,7 @@ public class HardCATokenSample implements IHardCAToken {
     /** The constructor of HardCAToken should throw an InstantiationException is the token can not
      * be created, if for example depending jar files for the particular HSM is not available.
      */
-	public HardCATokenSample() {
+	public HardCATokenSample() throws InstantiationException {
         log.debug("Creating HardCATokenSample");
         AvailableHardCAToken token = HardCATokenManager.instance().getAvailableHardCAToken("org.ejbca.core.ejb.ca.catoken.HardCATokenSample");
         if (token != null) {
@@ -158,7 +159,7 @@ public class HardCATokenSample implements IHardCAToken {
      *
 	 * 
 	 */
-	public void init(Properties properties, String signaturealgorithm) {
+	public void init(Properties properties, HashMap data, String signaturealgorithm) {
 		log.debug("Init()");
           // Implement this.	  
 		

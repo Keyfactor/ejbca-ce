@@ -19,6 +19,7 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.HashMap;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -28,10 +29,10 @@ import org.apache.log4j.Logger;
  * This implementation was done by PrimeKey Solutions AB (www.primekey.se) in 2005 
  * and the development was sponsored by Linagora (www.linagora.com).
  * 
- * @author Lars Silv�n
- * @version $Id: NFastCAToken.java,v 1.15 2007-07-21 09:02:17 anatom Exp $
+ * @author Lars Silven
+ * @version $Id: NFastCAToken.java,v 1.16 2007-07-25 08:56:45 anatom Exp $
  */
-public class NFastCAToken extends BaseCAToken implements IHardCAToken {
+public class NFastCAToken extends BaseCAToken {
 
     /** Log4j instance */
     private static final Logger log = Logger.getLogger(NFastCAToken.class);
@@ -85,8 +86,8 @@ public class NFastCAToken extends BaseCAToken implements IHardCAToken {
     /* (non-Javadoc)
      * @see org.ejbca.core.model.ca.catoken.IHardCAToken#init(java.util.Properties, java.lang.String)
      */
-    public void init(Properties properties, String signaturealgorithm) throws Exception {
-        init(SLOT_LABEL_KEY, properties, signaturealgorithm);
+    public void init(Properties properties, HashMap data, String signaturealgorithm) throws Exception {
         setProvider(PROVIDER_CLASS);
+        init(SLOT_LABEL_KEY, properties, signaturealgorithm);
     }
 }

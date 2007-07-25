@@ -18,7 +18,7 @@ import java.io.Serializable;
 /**
  * Holds nonsensitive information about a CAToken.
  *
- * @version $Id: SoftCATokenInfo.java,v 1.2 2006-10-31 08:19:41 anatom Exp $
+ * @version $Id: SoftCATokenInfo.java,v 1.3 2007-07-25 08:56:45 anatom Exp $
  */
 public class SoftCATokenInfo extends CATokenInfo implements Serializable {
     
@@ -28,7 +28,9 @@ public class SoftCATokenInfo extends CATokenInfo implements Serializable {
     private String encalgorithm = KEYALGORITHM_RSA;
     
     
-    public SoftCATokenInfo(){}
+    public SoftCATokenInfo(){
+    	setClassPath(SoftCAToken.class.getName());
+    }
     
     /**
      * KeySize data is used when generating CAToken.

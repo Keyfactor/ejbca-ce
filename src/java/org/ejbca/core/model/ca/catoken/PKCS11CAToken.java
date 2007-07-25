@@ -15,6 +15,7 @@ package org.ejbca.core.model.ca.catoken;
 import java.security.KeyStore;
 import java.security.Security;
 import java.security.KeyStore.PasswordProtection;
+import java.util.HashMap;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -22,7 +23,7 @@ import org.ejbca.util.KeyTools;
 
 /**
  * @author lars
- * @version $Id: PKCS11CAToken.java,v 1.8 2007-07-17 13:41:10 anatom Exp $
+ * @version $Id: PKCS11CAToken.java,v 1.9 2007-07-25 08:56:47 anatom Exp $
  */
 public class PKCS11CAToken extends BaseCAToken {
 
@@ -67,10 +68,8 @@ public class PKCS11CAToken extends BaseCAToken {
     /* (non-Javadoc)
      * @see org.ejbca.core.model.ca.catoken.IHardCAToken#init(java.util.Properties, java.lang.String)
      */
-    public void init(Properties properties, String signaturealgorithm) throws Exception {
-        init("slot", properties, signaturealgorithm, false);
-        setProvider( KeyTools.getP11AuthProvider(sSlotLabel,
-                                                 properties.getProperty("sharedLibrary")) );
-        autoActivate();
+    public void init(Properties properties, HashMap data, String signaturealgorithm) throws Exception {
+        setProvider( KeyTools.getP11AuthProvider(sSlotLabel, properties.getProperty("sharedLibrary")) );
+        init("slot", properties, signaturealgorithm, true);
     }
 }

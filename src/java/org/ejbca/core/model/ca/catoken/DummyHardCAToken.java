@@ -15,6 +15,7 @@ package org.ejbca.core.model.ca.catoken;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.HashMap;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -27,17 +28,17 @@ import org.apache.log4j.Logger;
  * Observe: Remember to add a loadClass("thisclass") row to the HardCATokenManager.init() method when adding new plug-ins.
 
  * @author herrvendil
- * @version $Id: DummyHardCAToken.java,v 1.1 2006-01-17 20:31:51 anatom Exp $
+ * @version $Id: DummyHardCAToken.java,v 1.2 2007-07-25 08:56:46 anatom Exp $
  * 
  */
-public class DummyHardCAToken implements IHardCAToken {
+public class DummyHardCAToken extends BaseCAToken {
     /** Log4j instance */
 	private static final Logger log = Logger.getLogger(DummyHardCAToken.class);
 	
     /** The constructor of HardCAToken should throw an InstantiationException is the token can not
      * be created, if for example depending jar files for the particular HSM is not available.
      */
-	public DummyHardCAToken(){
+	public DummyHardCAToken() throws InstantiationException {
         log.debug("Creating DummyHardCAToken");
         AvailableHardCAToken token = HardCATokenManager.instance().getAvailableHardCAToken("org.ejbca.core.ejb.ca.catoken.DummyHardCAToken");
         if (token != null) {
@@ -49,7 +50,7 @@ public class DummyHardCAToken implements IHardCAToken {
 	 * This method should initalize this plug-in with the properties configured in the adminweb-GUI.
 	 * 
 	 */
-	public void init(Properties properties, String signaturealgorithm) {
+	public void init(Properties properties, HashMap data, String signaturealgorithm) {
 		log.debug("Init()");
           // Implement this.	  
 	}

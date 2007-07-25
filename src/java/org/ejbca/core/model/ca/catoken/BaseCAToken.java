@@ -38,7 +38,7 @@ import org.ejbca.core.model.SecConst;
 
 /**
  * @author lars
- * @version $Id: BaseCAToken.java,v 1.17 2007-07-23 13:17:17 anatom Exp $
+ * @version $Id: BaseCAToken.java,v 1.18 2007-07-25 08:56:46 anatom Exp $
  */
 public abstract class BaseCAToken implements IHardCAToken {
 
@@ -50,7 +50,7 @@ public abstract class BaseCAToken implements IHardCAToken {
     private String sProviderName;
 
     private KeyStrings keyStrings;
-    protected String sSlotLabel;
+    protected String sSlotLabel = null;
     private Map mKeys;
 	private String mAuthCode;
 
@@ -154,7 +154,9 @@ public abstract class BaseCAToken implements IHardCAToken {
     protected void init(String sSlotLabelKey, Properties properties, String signaturealgorithm, boolean doAutoAcivate) {
         log.debug("Properties: "+(properties!=null ? properties.toString() : "null")+". Signaturealg: "+signaturealgorithm);
         keyStrings = new KeyStrings(properties);
-        sSlotLabel = properties.getProperty(sSlotLabelKey);
+        if (sSlotLabelKey != null) {
+            sSlotLabel = properties.getProperty(sSlotLabelKey);        	
+        }
         sSlotLabel = sSlotLabel!=null ? sSlotLabel.trim() : null;
         mAuthCode = properties.getProperty("pin");
         if ( doAutoAcivate )
@@ -227,13 +229,17 @@ public abstract class BaseCAToken implements IHardCAToken {
     public int getCATokenStatus() {
     	autoActivate();
         {
+        	if (keyStrings == null) {
+                return IHardCAToken.STATUS_OFFLINE;        		
+        	}
             String strings[] = keyStrings.getAllStrings();
             int i=0;
             while( strings!=null && i<strings.length && mKeys!=null && mKeys.get(strings[i])!=null )
                 i++;            
             if ( strings==null || i<strings.length)
                 return IHardCAToken.STATUS_OFFLINE;
-        } {
+        } 
+        {
             PrivateKey privateKey;
             PublicKey publicKey;
             try {

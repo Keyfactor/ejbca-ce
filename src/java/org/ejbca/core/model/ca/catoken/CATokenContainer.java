@@ -15,6 +15,7 @@ package org.ejbca.core.model.ca.catoken;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.Certificate;
 
 import org.ejbca.core.model.UpgradeableDataHashMap;
 
@@ -22,14 +23,27 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
 
 /** Handles maintenance of the device producing signatures and handling the private key.
  * 
- * @version $Id: CAToken.java,v 1.2 2006-10-31 08:19:41 anatom Exp $
+ * @version $Id: CATokenContainer.java,v 1.1 2007-07-25 08:56:46 anatom Exp $
  */
-public abstract class CAToken extends UpgradeableDataHashMap implements java.io.Serializable{
-    
+public abstract class CATokenContainer extends UpgradeableDataHashMap implements java.io.Serializable{
+
     public static final String CATOKENTYPE = "catokentype";
     
     protected static final String SIGNATUREALGORITHM = "signaturealgorithm";
     protected static final String ENCRYPTIONALGORITHM = "encryptionalgorithm";
+
+    /** constants needed for soft CA keystores */
+    protected static final String SIGNKEYSPEC       = "SIGNKEYSPEC";
+    protected static final String ENCKEYSPEC        = "ENCKEYSPEC";
+    protected static final String SIGNKEYALGORITHM  = "SIGNKEYALGORITHM";
+    protected static final String ENCKEYALGORITHM   = "ENCKEYALGORITHM";
+    protected static final String KEYSTORE          = "KEYSTORE";
+
+    /** Old provided for upgrade purposes from 3.3. -> 3.4 */
+    protected static final String KEYALGORITHM  = "KEYALGORITHM";
+    /** Old provided for upgrade purposes from 3.3. -> 3.4 */
+    protected static final String KEYSIZE       = "KEYSIZE";
+
    /**
     *  Returns information about this CAToken.
     */
@@ -82,5 +96,17 @@ public abstract class CAToken extends UpgradeableDataHashMap implements java.io.
      */
     public abstract String getProvider();
 
-    
+	/**
+	 * Method that generates the keys that will be used by the CAToken.
+	 * Only available for Soft CA Tokens so far.
+	 */
+	public abstract void generateKeys() throws Exception;  
+
+	/**
+	 * Method that import CA token keys from a P12 file. Was originally used when upgrading from 
+	 * old EJBCA versions. Only supports SHA1 and SHA256 with RSA or ECDSA.
+	 */
+	public abstract void importKeys(PrivateKey privatekey, PublicKey publickey, PrivateKey privateEncryptionKey,
+			PublicKey publicEncryptionKey, Certificate[] caSignatureCertChain) throws Exception;
+
 }

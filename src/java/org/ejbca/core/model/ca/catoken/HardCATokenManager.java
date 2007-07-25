@@ -25,7 +25,7 @@ import org.ejbca.core.model.InternalResources;
  * Each HardCaToken plug-in should register itself by using the method register.
  * The CA keeps a registry of CA tokens created here.
  * 
- * @version $Id: HardCATokenManager.java,v 1.7 2007-04-12 14:36:49 primelars Exp $
+ * @version $Id: HardCATokenManager.java,v 1.8 2007-07-25 08:56:45 anatom Exp $
  * 
  */
 public class HardCATokenManager {
@@ -54,6 +54,7 @@ public class HardCATokenManager {
         HardCATokenManager.instance().addAvailableHardCAToken(EracomCAToken.class.getName(), "Eracom", false, true);
         HardCATokenManager.instance().addAvailableHardCAToken(PKCS11CAToken.class.getName(), "PKCS#11", false, true);
         HardCATokenManager.instance().addAvailableHardCAToken("org.ejbca.core.model.ca.catoken.SafeNetLunaCAToken", "SafeNetLunaCAToken", false, true);
+        HardCATokenManager.instance().addAvailableHardCAToken(SoftCAToken.class.getName(), "Soft", false, false);
         HardCATokenManager.instance().addAvailableHardCAToken("org.ejbca.core.model.ca.catoken.DummyHardCAToken", "DummyHardCAToken", false, false);
         HardCATokenManager.instance().addAvailableHardCAToken("org.ejbca.core.model.ca.catoken.HardCATokenSample", "HardCATokenSample", false, false);
     }
@@ -77,8 +78,8 @@ public class HardCATokenManager {
      * @param caid the id of the CA whose CAToken you want to fetch.
      * @return The previously added CAToken or null if the token does not exist in the registry.
      */
-    public CAToken getCAToken(int caid) {
-        return (CAToken)caTokenRegistry.get(new Integer(caid));
+    public CATokenContainer getCAToken(int caid) {
+        return (CATokenContainer)caTokenRegistry.get(new Integer(caid));
     }
     
     /** Adds a CA token to the token registry. If a token already exists for the given CAid, 
@@ -87,7 +88,7 @@ public class HardCATokenManager {
      * @param caid the id of the CA whose CAToken you want to fetch.
      * @param token the token to be added
      */
-    public synchronized void addCAToken(int caid, CAToken token) {
+    public synchronized void addCAToken(int caid, CATokenContainer token) {
         if (caTokenRegistry.containsKey(new Integer(caid))) {
             caTokenRegistry.remove(new Integer(caid));
             log.debug("Removed old CA token for CA: "+caid);

@@ -16,28 +16,31 @@ package org.ejbca.core.model.ca.catoken;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.HashMap;
+import java.util.Properties;
 
 
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: NullCAToken.java,v 1.2 2006-05-28 14:21:11 anatom Exp $
+ * @version $Id: NullCAToken.java,v 1.3 2007-07-25 08:56:46 anatom Exp $
  */
-public class NullCAToken extends CAToken implements java.io.Serializable{
+public class NullCAToken extends BaseCAToken {
 
     public static final float LATEST_VERSION = 1; 
 
     
-    public NullCAToken(){
-      data = new HashMap();   
-      data.put(CATOKENTYPE, new Integer(CATokenInfo.CATOKENTYPE_NULL));
-      data.put(VERSION, new Float(LATEST_VERSION));
+    public NullCAToken() throws InstantiationException {
     }
     
-    public NullCAToken(HashMap data) {
+    public NullCAToken(HashMap data) throws InstantiationException {    
+    }
     
-   }
-    
+    /* (non-Javadoc)
+     * @see org.ejbca.core.model.ca.catoken.IHardCAToken#init(java.util.Properties, java.lang.String)
+     */
+    public void init(Properties properties, HashMap data, String signaturealgorithm) throws Exception {
+    }
+
    /**
     * Method that generates the keys that will be used by the CAToken.
     */
@@ -87,25 +90,15 @@ public class NullCAToken extends CAToken implements java.io.Serializable{
        return LATEST_VERSION;
     }
 
-    /** Implemtation of UpgradableDataHashMap function upgrade. */
-
-    public void upgrade(){
-    	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
-    		// New version of the class, upgrade
-    		
-    		data.put(VERSION, new Float(LATEST_VERSION));
-    	}  
-    }
-
 	/** 
-	 * @see org.ejbca.core.model.ca.catoken.CAToken#activate(java.lang.String)
+	 * @see org.ejbca.core.model.ca.catoken.CATokenContainer#activate(java.lang.String)
 	 */
 	public void activate(String authenticationcode) throws CATokenAuthenticationFailedException, CATokenOfflineException {
 		// Do Nothing		
 	}
 
 	/**
-	 * @see org.ejbca.core.model.ca.catoken.CAToken#deactivate()
+	 * @see org.ejbca.core.model.ca.catoken.CATokenContainer#deactivate()
 	 */
 	public boolean deactivate() {
        // Do Nothing

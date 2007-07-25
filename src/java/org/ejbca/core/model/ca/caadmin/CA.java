@@ -56,12 +56,11 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAService;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceRequest;
-import org.ejbca.core.model.ca.catoken.CAToken;
+import org.ejbca.core.model.ca.catoken.CATokenContainer;
+import org.ejbca.core.model.ca.catoken.CATokenContainerImpl;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
-import org.ejbca.core.model.ca.catoken.HardCATokenContainer;
 import org.ejbca.core.model.ca.catoken.HardCATokenManager;
-import org.ejbca.core.model.ca.catoken.NullCAToken;
-import org.ejbca.core.model.ca.catoken.SoftCAToken;
+import org.ejbca.core.model.ca.catoken.NullCATokenInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.util.Base64;
@@ -73,7 +72,7 @@ import org.ejbca.util.CertTools;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.18 2007-04-13 06:07:58 herrvendil Exp $
+ * @version $Id: CA.java,v 1.19 2007-07-25 08:56:27 anatom Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -230,19 +229,20 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @return The CAs token, be it soft or hard.
      * @throws IllegalKeyStoreException If the token keystore is invalid (crypto error thrown by crypto provider), or the CA token type is undefined.
      */
-    public CAToken getCAToken(int caid) throws IllegalKeyStoreException {
-        CAToken ret = HardCATokenManager.instance().getCAToken(caid);
+    public CATokenContainer getCAToken(int caid) throws IllegalKeyStoreException {
+        CATokenContainer ret = HardCATokenManager.instance().getCAToken(caid);
         if (ret == null) {
-        	Integer tokentype = (Integer) ((HashMap)data.get(CATOKENDATA)).get(CAToken.CATOKENTYPE);
+        	Integer tokentype = (Integer) ((HashMap)data.get(CATOKENDATA)).get(CATokenContainer.CATOKENTYPE);
             switch(tokentype.intValue()) {
             case CATokenInfo.CATOKENTYPE_P12:
-                ret = new SoftCAToken((HashMap)data.get(CATOKENDATA));
+                ret = new CATokenContainerImpl((HashMap)data.get(CATOKENDATA)); 
                 break;
             case CATokenInfo.CATOKENTYPE_HSM:
-                ret = new HardCATokenContainer((HashMap)data.get(CATOKENDATA)); 
+                ret = new CATokenContainerImpl((HashMap)data.get(CATOKENDATA)); 
                 break;
             case CATokenInfo.CATOKENTYPE_NULL:
-                ret = new NullCAToken();
+            	NullCATokenInfo info = new NullCATokenInfo();
+                ret = new CATokenContainerImpl(info);
                 break;
             default:
                 throw new IllegalKeyStoreException("No CA Token type defined: "+tokentype.intValue());
@@ -256,7 +256,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @return The CAs token, be it soft or hard.
      * @throws IllegalKeyStoreException If the token keystore is invalid (crypto error thrown by crypto provider), or the CA token type is undefined.
      */
-    public CAToken getCAToken() throws IllegalKeyStoreException {
+    public CATokenContainer getCAToken() throws IllegalKeyStoreException {
     	return getCAToken(getCAId());
     }    
         
@@ -264,7 +264,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * 
      * @param catoken The CAs token, be it soft or hard.
      */
-    public void setCAToken(CAToken catoken){
+    public void setCAToken(CATokenContainer catoken){
        data.put(CATOKENDATA, catoken.saveData());        
        HardCATokenManager.instance().addCAToken(getCAId(), catoken);
     }
@@ -414,7 +414,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     	data.put(CRLPUBLISHERS, cainfo.getCRLPublishers());
     	data.put(APPROVALSETTINGS,cainfo.getApprovalSettings());
     	data.put(NUMBEROFREQAPPROVALS,new Integer(cainfo.getNumOfReqApprovals()));
-    	CAToken token = getCAToken();
+    	CATokenContainer token = getCAToken();
     	if (token != null) {
     		token.updateCATokenInfo(cainfo.getCATokenInfo());
     		setCAToken(token);

@@ -18,6 +18,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.UnrecoverableKeyException;
+import java.util.HashMap;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -27,9 +28,9 @@ import org.apache.log4j.Logger;
  * The Eracom HSM is special in such way as the provider is ERACOM.<slot id>.
  * 
  * @author AdNovum Informatik AG
- * @version $Id: EracomCAToken.java,v 1.5 2007-04-07 21:13:39 primelars Exp $
+ * @version $Id: EracomCAToken.java,v 1.6 2007-07-25 08:56:46 anatom Exp $
  */
-public class EracomCAToken extends BaseCAToken implements IHardCAToken {
+public class EracomCAToken extends BaseCAToken {
 
     /** Log4j instance */
     private static final Logger log = Logger.getLogger(EracomCAToken.class);
@@ -71,9 +72,9 @@ public class EracomCAToken extends BaseCAToken implements IHardCAToken {
     /* (non-Javadoc)
      * @see org.ejbca.core.model.ca.catoken.IHardCAToken#init(java.util.Properties, java.lang.String)
      */
-    public void init(Properties properties, String signaturealgorithm) throws Exception {
-        init("slot", properties, signaturealgorithm);
+    public void init(Properties properties, HashMap data, String signaturealgorithm) throws Exception {
         setProvider(PROVIDER_NAME_PREFIX+sSlotLabel+PROVIDER_NAME_SUFIX);
+        init("slot", properties, signaturealgorithm);
     }
 
 }

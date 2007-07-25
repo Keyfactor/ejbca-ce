@@ -64,7 +64,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceReque
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceRequestException;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceResponse;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.IllegalExtendedCAServiceRequestException;
-import org.ejbca.core.model.ca.catoken.CAToken;
+import org.ejbca.core.model.ca.catoken.CATokenContainer;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
@@ -157,7 +157,7 @@ import org.ejbca.util.KeyTools;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
  *   
- *   @version $Id: RSASignSessionBean.java,v 1.39 2007-06-05 13:32:23 anatom Exp $
+ *   @version $Id: RSASignSessionBean.java,v 1.40 2007-07-25 08:56:29 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -659,7 +659,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         try {
         	cadata = getCAFromRequest(admin, req);
             CA ca = cadata.getCA();
-            CAToken catoken = ca.getCAToken();
+            CATokenContainer catoken = ca.getCAToken();
             
             // See if we need some key material to decrypt request
             if (req.requireKeyInfo()) {
@@ -799,7 +799,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         try {
         	cadata = getCAFromRequest(admin, req);
             CA ca = cadata.getCA();
-            CAToken catoken = ca.getCAToken();
+            CATokenContainer catoken = ca.getCAToken();
          
             // See if we need some key material to decrypt request
             if (req.requireKeyInfo()) {
@@ -877,7 +877,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         try {
         	cadata = getCAFromRequest(admin, req);
             CA ca = cadata.getCA();
-            CAToken catoken = ca.getCAToken();
+            CATokenContainer catoken = ca.getCAToken();
             
             // See if we need some key material to decrypt request
             if (req.requireKeyInfo()) {
@@ -943,7 +943,7 @@ public class RSASignSessionBean extends BaseSessionBean {
         CADataLocal cadata = getCAFromRequest(admin, req);
         try {
             CA ca = cadata.getCA();
-            CAToken catoken = ca.getCAToken();
+            CATokenContainer catoken = ca.getCAToken();
 
             if (ca.getStatus() != SecConst.CA_ACTIVE) {
             	String msg = intres.getLocalizedMessage("signsession.canotactive", cadata.getSubjectDN());

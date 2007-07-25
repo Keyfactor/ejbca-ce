@@ -82,16 +82,17 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
-import org.ejbca.core.model.ca.catoken.CAToken;
 import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
+import org.ejbca.core.model.ca.catoken.CATokenContainer;
+import org.ejbca.core.model.ca.catoken.CATokenContainerImpl;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
-import org.ejbca.core.model.ca.catoken.HardCATokenContainer;
 import org.ejbca.core.model.ca.catoken.HardCATokenInfo;
 import org.ejbca.core.model.ca.catoken.HardCATokenManager;
 import org.ejbca.core.model.ca.catoken.IHardCAToken;
 import org.ejbca.core.model.ca.catoken.NullCAToken;
+import org.ejbca.core.model.ca.catoken.NullCATokenInfo;
 import org.ejbca.core.model.ca.catoken.SoftCAToken;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
@@ -113,7 +114,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.50 2007-06-28 07:48:24 jeklund Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.51 2007-07-25 08:56:28 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -295,31 +296,28 @@ public class CAAdminSessionBean extends BaseSessionBean {
         }catch(javax.ejb.FinderException fe) {}
 
         // Create CAToken
-        CAToken catoken = null;
+        CATokenContainer catoken = null;
         CATokenInfo catokeninfo = cainfo.getCATokenInfo();
+        catoken = new CATokenContainerImpl(catokeninfo);
+        try{
+        	catoken.activate(catokeninfo.getAuthenticationCode());
+        }catch(CATokenAuthenticationFailedException ctaf){
+        	String msg = intres.getLocalizedMessage("caadmin.errorcreatetokenpin");            	
+        	getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED, msg, ctaf);
+        	throw ctaf;
+        }catch(CATokenOfflineException ctoe){
+        	String msg = intres.getLocalizedMessage("error.catokenoffline", cainfo.getName());            	
+        	getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED, msg, ctoe);
+        	throw ctoe;
+        }
         if(catokeninfo instanceof SoftCATokenInfo){
-            try{
-                catoken = new SoftCAToken();
-                ((SoftCAToken) catoken).generateKeys(catokeninfo);
-            }catch(Exception e){
-            	String msg = intres.getLocalizedMessage("caadmin.errorcreatetoken");
-                getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED, msg, e);
-                throw new EJBException(e);
-            }
-        } else if(catokeninfo instanceof HardCATokenInfo){
-            catoken = new HardCATokenContainer();
-            ((HardCATokenContainer) catoken).updateCATokenInfo(catokeninfo);
-            try{
-                catoken.activate(((HardCATokenInfo) catokeninfo).getAuthenticationCode());
-            }catch(CATokenAuthenticationFailedException ctaf){
-            	String msg = intres.getLocalizedMessage("caadmin.errorcreatetokenpin");            	
-                getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED, msg, ctaf);
-                throw ctaf;
-            }catch(CATokenOfflineException ctoe){
-            	String msg = intres.getLocalizedMessage("error.catokenoffline", cainfo.getName());            	
-                getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED, msg, ctoe);
-                throw ctoe;
-            }
+        	try{
+        		catoken.generateKeys();
+        	}catch(Exception e){
+        		String msg = intres.getLocalizedMessage("caadmin.errorcreatetoken");
+        		getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED, msg, e);
+        		throw new EJBException(e);
+        	}
         }
 
         // Create CA
@@ -1053,7 +1051,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
     					// Create X509CA
     					ca = new X509CA((X509CAInfo) cainfo);
     					ca.setCertificateChain(certchain);
-    					ca.setCAToken(new NullCAToken());
+    					CATokenContainer token = new CATokenContainerImpl(new NullCATokenInfo());
+    					ca.setCAToken(token);
     				}
 
     				// set status to active
@@ -1122,9 +1121,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
     			throw new CATokenOfflineException(msg);
     		}
     		
-    		CAToken caToken = ca.getCAToken();
-    		if(caToken instanceof SoftCAToken && regenerateKeys){
-    			((SoftCAToken) caToken).generateKeys(ca.getCAToken().getCATokenInfo());
+    		CATokenContainer caToken = ca.getCAToken();
+    		if (regenerateKeys) {
+    			caToken.generateKeys();
     			ca.setCAToken(caToken);
     		}
     		
@@ -1296,7 +1295,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
             CADataLocal cadata = cadatahome.findByPrimaryKey(new Integer(caid));
             CA ca = cadata.getCA();
-            CAToken token = ca.getCAToken();
+            CATokenContainer token = ca.getCAToken();
             CATokenInfo tokeninfo = token.getCATokenInfo();
             HardCATokenInfo htokeninfo = null;
             if (tokeninfo instanceof HardCATokenInfo) {
@@ -1391,8 +1390,9 @@ public class CAAdminSessionBean extends BaseSessionBean {
 	            p12PublicEncryptionKey = caEncryptionCertificate.getPublicKey();
             }
             // Transform into token
-            CAToken catoken = new SoftCAToken();
-            ((SoftCAToken) catoken).importKeysFromP12(p12PrivateSignatureKey, p12PublicSignatureKey, p12PrivateEncryptionKey,
+            SoftCATokenInfo sinfo = new SoftCATokenInfo();
+            CATokenContainer catoken = new CATokenContainerImpl(sinfo);
+            catoken.importKeys(p12PrivateSignatureKey, p12PublicSignatureKey, p12PrivateEncryptionKey,
             			p12PublicEncryptionKey, signatureCertChain);
             log.debug("CA-Info: "+catoken.getCATokenInfo().getSignatureAlgorithm() + " " + catoken.getCATokenInfo().getEncryptionAlgorithm());
             // Create a X509CA
@@ -1584,14 +1584,14 @@ public class CAAdminSessionBean extends BaseSessionBean {
 				getAuthorizationSession().isAuthorizedNoLog(admin, AvailableAccessRules.ROLE_SUPERADMINISTRATOR);
 			}
             // Fetch keys
-	    	CAToken thisCAToken = thisCa.getCAToken();
+	    	CATokenContainer thisCAToken = thisCa.getCAToken();
             KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
             keystore.load(null, keystorepass);
             
-            PrivateKey p12PrivateEncryptionKey = ((SoftCAToken) thisCAToken).getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT);
-	    	PublicKey p12PublicEncryptionKey = ((SoftCAToken) thisCAToken).getPublicKey(SecConst.CAKEYPURPOSE_KEYENCRYPT);
-            PrivateKey p12PrivateCertSignKey = ((SoftCAToken) thisCAToken).getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN);
-	    	PrivateKey p12PrivateCRLSignKey = ((SoftCAToken) thisCAToken).getPrivateKey(SecConst.CAKEYPURPOSE_CRLSIGN);
+            PrivateKey p12PrivateEncryptionKey = thisCAToken.getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT);
+	    	PublicKey p12PublicEncryptionKey = thisCAToken.getPublicKey(SecConst.CAKEYPURPOSE_KEYENCRYPT);
+            PrivateKey p12PrivateCertSignKey = thisCAToken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN);
+	    	PrivateKey p12PrivateCRLSignKey = thisCAToken.getPrivateKey(SecConst.CAKEYPURPOSE_CRLSIGN);
 	    	if ( !p12PrivateCertSignKey.equals(p12PrivateCRLSignKey) ) {
 	    		throw new Exception("Assertion of equal signature keys failed.");
 	    	}
@@ -1704,10 +1704,10 @@ public class CAAdminSessionBean extends BaseSessionBean {
 				throw new Exception("Cannot extract fingerprint from a non-soft token.");
 			}
 			// Fetch keys
-			CAToken thisCAToken = thisCa.getCAToken();
-			PrivateKey p12PrivateEncryptionKey = ((SoftCAToken) thisCAToken).getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT);
-			PrivateKey p12PrivateCertSignKey = ((SoftCAToken) thisCAToken).getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN);
-			PrivateKey p12PrivateCRLSignKey = ((SoftCAToken) thisCAToken).getPrivateKey(SecConst.CAKEYPURPOSE_CRLSIGN);
+			CATokenContainer thisCAToken = thisCa.getCAToken();
+			PrivateKey p12PrivateEncryptionKey = thisCAToken.getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT);
+			PrivateKey p12PrivateCertSignKey = thisCAToken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN);
+			PrivateKey p12PrivateCRLSignKey = thisCAToken.getPrivateKey(SecConst.CAKEYPURPOSE_CRLSIGN);
 			MessageDigest md = MessageDigest.getInstance("SHA1");
 			md.update(p12PrivateEncryptionKey.getEncoded());
 			md.update(p12PrivateCertSignKey.getEncoded());

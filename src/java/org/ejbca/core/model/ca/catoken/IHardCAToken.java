@@ -15,6 +15,7 @@ package org.ejbca.core.model.ca.catoken;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.HashMap;
 import java.util.Properties;
 
 
@@ -24,7 +25,7 @@ import java.util.Properties;
  *  All HardCAToken plug-ins must implement this interface.
  * 
  * 
- * @version $Id: IHardCAToken.java,v 1.2 2007-04-07 21:13:39 primelars Exp $
+ * @version $Id: IHardCAToken.java,v 1.3 2007-07-25 08:56:47 anatom Exp $
  */
 public interface IHardCAToken {
 
@@ -33,10 +34,14 @@ public interface IHardCAToken {
 	
    /** 
     * Method called after creation of instance. Gives the object it's properties.
- * @throws Exception 
-    *
+    * 
+    * @param properties CA Token properties, as entered for all HSM tokens, can be null for tokens that don't need it
+    * @param data HashMap data as created internally for Soft tokens, can be null for tokens that don't need it
+    * @param signaturealgorithm the signature algorithm used by the CA
+    * 
+    * @throws Exception 
     */	
-	void init(Properties properties, String signaturealgorithm) throws Exception;
+	void init(Properties properties, HashMap data, String signaturealgorithm) throws Exception;
 	
 	/**
 	 *  Method that returns the current status of the catoken.

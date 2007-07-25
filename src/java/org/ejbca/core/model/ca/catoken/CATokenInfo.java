@@ -18,7 +18,7 @@ import java.io.Serializable;
 /**
  * Holds nonsensitive information about a CAToken.
  *
- * @version $Id: CATokenInfo.java,v 1.3 2006-10-31 08:19:41 anatom Exp $
+ * @version $Id: CATokenInfo.java,v 1.4 2007-07-25 08:56:46 anatom Exp $
  */
 public abstract class CATokenInfo extends CATokenConstants implements Serializable {
 
@@ -37,7 +37,15 @@ public abstract class CATokenInfo extends CATokenConstants implements Serializab
     private String signaturealgoritm = SIGALG_SHA1_WITH_RSA;
 	/** Default algorithm i SHA1WithRSA, can be set to any of the supported constants */
     private String encryptionalgoritm = SIGALG_SHA1_WITH_RSA;
-    
+    /** Authenntication code to activate a CA Token, can be PIN for a smartcard/HSM or password for a PKCS12 */
+	private String authenticationCode;
+	/** indicates if the CA token is available for use, i.e. if the authenticationCode has been entered and the hardware is functioning */
+	private int cATokenStatus;
+	/** Properties for the CA token, for example PIN code */
+	private String properties;
+	/** Classpath of the java class implementing the particular type of CA Token */
+	private String classPath;
+
     public CATokenInfo(){}
     
     /**
@@ -57,4 +65,49 @@ public abstract class CATokenInfo extends CATokenConstants implements Serializab
 	 */
     public void setEncryptionAlgorithm(String encryptionalgoritm){ this.encryptionalgoritm=encryptionalgoritm;}
     
+	/**
+	 * @return Returns the authenticationcode.
+	 */
+	public String getAuthenticationCode() {
+		return authenticationCode;
+	}
+	/**
+	 * @param authenticationcode The authenticationcode to set.
+	 */
+	public void setAuthenticationCode(String authenticationcode) {
+		this.authenticationCode = authenticationcode;
+	}
+	
+	/**
+	 * 
+	 * @param catokenstatus is one of IHardCAToken.STATUS_.. constants
+	 */
+	public void setCATokenStatus(int catokenstatus){
+	  this.cATokenStatus = catokenstatus;	
+	}
+	
+	/**
+	 * 
+	 * @return catokenstatus, one of IHardCAToken.STATUS_.. constants
+	 */
+	public int getCATokenStatus(){
+	  return cATokenStatus;	
+	}
+
+    public String getClassPath(){
+    	return classPath;
+    }
+    
+    public void setClassPath(String classpath){
+    	this.classPath = classpath;
+    }
+    
+    public String getProperties(){
+    	return properties;
+    }
+    
+    public void setProperties(String properties){
+    	this.properties = properties;
+    }
+
 }
