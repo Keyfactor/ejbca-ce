@@ -6,14 +6,13 @@ import java.util.HashMap;
 import junit.framework.TestCase;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.ejbca.util.Base64GetHashMap;
 import org.ejbca.util.Base64PutHashMap;
 
 /** Tests Base64 HashMap XML encoding and decoding
  * 
  * @author tomasg
- * @version $Id: TestHashMap.java,v 1.6 2007-06-25 14:33:50 anatom Exp $
+ * @version $Id: TestHashMap.java,v 1.7 2007-07-26 07:40:35 anatom Exp $
  */
 public class TestHashMap extends TestCase {
     //private static final Logger log = Logger.getLogger(TestHashMap.class);
