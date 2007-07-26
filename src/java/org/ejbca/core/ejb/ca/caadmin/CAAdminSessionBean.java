@@ -113,7 +113,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.52 2007-07-25 15:13:23 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.53 2007-07-26 07:42:01 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -298,15 +298,16 @@ public class CAAdminSessionBean extends BaseSessionBean {
         CATokenContainer catoken = null;
         CATokenInfo catokeninfo = cainfo.getCATokenInfo();
         catoken = new CATokenContainerImpl(catokeninfo);
+		String authCode = catokeninfo.getAuthenticationCode();
+		if (StringUtils.isEmpty(authCode)) {
+			log.debug("Creating CA using system default keystore password");
+    	    authCode = ServiceLocator.getInstance().getString("java:comp/env/keyStorePass");        			
+		}
         if(catokeninfo instanceof SoftCATokenInfo){
         	try{
         		// There are two ways to get the authentication code:
         		// 1. The user provided one when creating the CA on the create CA page
         		// 2. We use the system default password
-        		String authCode = catokeninfo.getAuthenticationCode();
-        		if (StringUtils.isEmpty(authCode)) {
-            	    authCode = ServiceLocator.getInstance().getString("java:comp/env/keyStorePass");        			
-        		}
         		catoken.generateKeys(authCode);
         	}catch(Exception e){
         		String msg = intres.getLocalizedMessage("caadmin.errorcreatetoken");
@@ -315,7 +316,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
         	}
         }
         try{
-        	catoken.activate(catokeninfo.getAuthenticationCode());
+        	catoken.activate(authCode);
         }catch(CATokenAuthenticationFailedException ctaf){
         	String msg = intres.getLocalizedMessage("caadmin.errorcreatetokenpin");            	
         	getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED, msg, ctaf);

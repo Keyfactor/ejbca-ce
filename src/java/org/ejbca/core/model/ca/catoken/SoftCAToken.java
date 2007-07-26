@@ -30,7 +30,7 @@ import org.ejbca.util.Base64;
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: SoftCAToken.java,v 1.13 2007-07-25 15:29:15 anatom Exp $
+ * @version $Id: SoftCAToken.java,v 1.14 2007-07-26 07:42:01 anatom Exp $
  */
 public class SoftCAToken extends BaseCAToken {
 
@@ -74,7 +74,8 @@ public class SoftCAToken extends BaseCAToken {
     	properties.setProperty(KeyStrings.CAKEYPURPOSE_CRLSIGN_STRING, PRIVATESIGNKEYALIAS);
     	properties.setProperty(KeyStrings.CAKEYPURPOSE_DEFAULT_STRING, PRIVATEDECKEYALIAS);
     	// If we don't have an auto activation password set, we try to use the default one if it works to load the keystore with it
-    	if (properties.getProperty(AUTOACTIVATE_PIN_PROPERTY) == null) {
+    	String autoPwd = properties.getProperty(AUTOACTIVATE_PIN_PROPERTY);
+    	if (autoPwd == null) {
     		String keystorepass = ServiceLocator.getInstance().getString("java:comp/env/keyStorePass");          		
     		if (keystorepass == null) {
     			log.error("Missing keyStorePass property. We can not autoActivate standard soft CA tokens.");

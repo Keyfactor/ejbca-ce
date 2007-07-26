@@ -327,8 +327,11 @@
            ((SoftCATokenInfo) catoken).setEncKeySpec(enckeyspec); 
            catoken.setAuthenticationCode(authenticationcode);
            if ( (autoactivate != null) && (autoactivate.equals("true")) ) {
+               // it is not possible to use empty autoactivation passwords for soft tokens
+               if ( (authenticationcode != null) && (authenticationcode.length() > 0) ) {
                String properties = IHardCAToken.AUTOACTIVATE_PIN_PROPERTY + " " + authenticationcode;
                catoken.setProperties(properties);
+               }
            }          
          } 
          if(catokentype == CATokenInfo.CATOKENTYPE_HSM){
