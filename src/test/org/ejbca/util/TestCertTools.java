@@ -37,7 +37,7 @@ import com.novell.ldap.LDAPDN;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.6 2007-07-19 15:32:41 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.7 2007-07-26 12:48:39 anatom Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);
@@ -818,9 +818,15 @@ public class TestCertTools extends TestCase {
       String bcdn1 = CertTools.stringToBCDNString(dn1);
       log.debug("dn1: " + dn1);
       log.debug("bcdn1: " + bcdn1);
-      assertEquals("CN=CommonName,O= Org,C=SE", bcdn1);
+      assertEquals("CN=CommonName,O=Org,C=SE", bcdn1);
 
       dn1 = "CN=CommonName, O =Org,C=SE";
+      bcdn1 = CertTools.stringToBCDNString(dn1);
+      log.debug("dn1: " + dn1);
+      log.debug("bcdn1: " + bcdn1);
+      assertEquals("CN=CommonName,O=Org,C=SE", bcdn1);
+
+      dn1 = "CN=CommonName, O = Org,C=SE";
       bcdn1 = CertTools.stringToBCDNString(dn1);
       log.debug("dn1: " + dn1);
       log.debug("bcdn1: " + bcdn1);
