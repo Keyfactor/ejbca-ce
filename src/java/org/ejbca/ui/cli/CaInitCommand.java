@@ -42,7 +42,7 @@ import org.ejbca.util.StringTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.16 2007-07-16 13:47:01 jbagnert Exp $
+ * @version $Id: CaInitCommand.java,v 1.17 2007-07-26 09:54:00 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
@@ -67,7 +67,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
            String msg = "Used to create a Root CA using RSA keys.";
            msg += "\nUsage: CA init <caname> <dn> <catokentype> <catokenpassword> <keyspec> <keytype> <validity-days> <policyID> <signalgorithm> [<catokenproperties>]";
            msg += "\ncatokentype defines if the CA should be created with soft keys or on a HSM. Use soft for software keys and org.ejbca.core.model.ca.catoken.NFastCAToken for nCipher.";
-           msg += "\ncatokenpassword is the password for the CA token.";
+           msg += "\ncatokenpassword is the password for the CA token. Set to 'null' to use the default system password for Soft token CAs";
            msg += "\nkeytype is RSA or ECDSA.";
            msg += "\nkeyspec for RSA keys is size of RSA keys (1024, 2048, 4096).";
            msg += "\nkeyspec for ECDSA keys is name of curve or 'implicitlyCA', see docs.";
@@ -117,6 +117,9 @@ public class CaInitCommand extends BaseCaAdminCommand {
             CATokenInfo catokeninfo = null;
             if ( catokentype.equals("soft")) {
 	            SoftCATokenInfo softcatokeninfo = new SoftCATokenInfo();
+	            if (!catokenpassword.equalsIgnoreCase("null")) {
+		        	softcatokeninfo.setAuthenticationCode(catokenpassword);	            	
+	            }
 	            softcatokeninfo.setSignKeySpec(keyspec);
 	            softcatokeninfo.setSignKeyAlgorithm(keytype);
 	            softcatokeninfo.setSignatureAlgorithm(signAlg);
