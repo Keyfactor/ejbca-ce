@@ -134,7 +134,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.62 2007-07-26 09:07:54 anatom Exp $
+ * @version $Id: X509CA.java,v 1.63 2007-07-26 10:13:18 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -144,7 +144,7 @@ public class X509CA extends CA implements Serializable {
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Default Values
-    public static final float LATEST_VERSION = 11;
+    public static final float LATEST_VERSION = 12;
 
     private byte[]  keyId = new byte[] { 1, 2, 3, 4, 5 };
     
@@ -899,11 +899,15 @@ public class X509CA extends CA implements Serializable {
             boolean useprintablestring = true;
             if (data.get("alwaysuseutf8subjectdn") == null) {
             	// Default value false
-            	setUseUTF8PolicyText(false);
+                if (data.get(USEUTF8POLICYTEXT) == null) {
+                	setUseUTF8PolicyText(false);
+                }
             } else {
             	// Use the same value as we had before when we had alwaysuseutf8subjectdn
                 boolean useutf8 = ((Boolean)data.get("alwaysuseutf8subjectdn")).booleanValue();
-            	setUseUTF8PolicyText(useutf8);
+                if (data.get(USEUTF8POLICYTEXT) == null) {
+                	setUseUTF8PolicyText(useutf8);                	
+                }
             	// If we had checked to use utf8 on an old CA, we do not want to use PrintableString after upgrading
             	useprintablestring = !useutf8;
             }
