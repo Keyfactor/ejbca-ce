@@ -45,7 +45,6 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
-import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
 
@@ -55,7 +54,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * This test requires:
  * mode=ra, responseProtection=signature, authenticationsecret=password, allowraverifypopo=true.
  * @author tomas
- * @version $Id: CrmfRARequestTest.java,v 1.10 2007-07-20 10:24:47 anatom Exp $
+ * @version $Id: CrmfRARequestTest.java,v 1.11 2007-07-26 09:54:19 anatom Exp $
  */
 public class CrmfRARequestTest extends CmpTestCase {
 	

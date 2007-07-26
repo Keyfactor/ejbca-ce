@@ -41,7 +41,6 @@ import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.KeyTools;
@@ -70,7 +69,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * EE Profile with name KeyId2 must have default CA with name AdminCA2 
  * 
  * @author tomas
- * @version $Id: CrmfRAPbeMultipleKeyIdRequestTest.java,v 1.1 2007-07-24 10:51:41 anatom Exp $
+ * @version $Id: CrmfRAPbeMultipleKeyIdRequestTest.java,v 1.2 2007-07-26 09:54:19 anatom Exp $
  */
 public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 	
