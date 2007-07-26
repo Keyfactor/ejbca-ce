@@ -17,7 +17,6 @@ import java.security.cert.X509Certificate;
 
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminInformation;
-import org.ejbca.util.CertTools;
 
 /**
  * 
@@ -27,7 +26,7 @@ import org.ejbca.util.CertTools;
  * 
  * @author Philip Vendil 2007 jun 24
  *
- * @version $Id: ApprovedActionAdmin.java,v 1.1 2007-06-25 14:45:33 herrvendil Exp $
+ * @version $Id: ApprovedActionAdmin.java,v 1.2 2007-07-26 09:39:23 anatom Exp $
  */
 
 public class ApprovedActionAdmin extends Admin {
