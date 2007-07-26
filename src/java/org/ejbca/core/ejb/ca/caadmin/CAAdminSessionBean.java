@@ -90,8 +90,8 @@ import org.ejbca.core.model.ca.catoken.CATokenContainerImpl;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.catoken.HardCATokenInfo;
-import org.ejbca.core.model.ca.catoken.HardCATokenManager;
-import org.ejbca.core.model.ca.catoken.IHardCAToken;
+import org.ejbca.core.model.ca.catoken.CATokenManager;
+import org.ejbca.core.model.ca.catoken.ICAToken;
 import org.ejbca.core.model.ca.catoken.NullCATokenInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
@@ -113,7 +113,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.54 2007-07-26 09:11:38 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.55 2007-07-26 11:09:37 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -608,7 +608,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 			// Invalidate CA cache to refresh information
 			CACacheManager.instance().removeCA(caid);
             // Remove an eventual CA token from the token registry
-            HardCATokenManager.instance().addCAToken(caid, null);
+            CATokenManager.instance().addCAToken(caid, null);
     		String msg = intres.getLocalizedMessage("caadmin.removedca", new Integer(caid));            	
             getLogSession().log(admin, caid, LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_INFO_CAEDITED, msg);
         }catch(Exception e) {
@@ -1762,7 +1762,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     		CADataLocal cadata = cadatahome.findByPrimaryKey(new Integer(caid));
     		boolean cATokenDisconnected = false;
     		try {
-    			if((cadata.getCA().getCAToken().getCATokenInfo()).getCATokenStatus() == IHardCAToken.STATUS_OFFLINE) {
+    			if((cadata.getCA().getCAToken().getCATokenInfo()).getCATokenStatus() == ICAToken.STATUS_OFFLINE) {
     				cATokenDisconnected = true;
     			}
     		} catch (IllegalKeyStoreException e) {

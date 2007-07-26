@@ -2797,16 +2797,16 @@ class that implementes support for this particular HSM. A hard ca token
 plug-in must:
 </p>
 <ol>
-<li>implement IHardCAToken</li>
-<li>be loaded at the static initialization if HardCATokenManager where it is
-registered with the HardCATokenManager using the method
-addAvailableHardCAToken()</li>
+<li>implement ICAToken</li>
+<li>be loaded at the static initialization if CATokenManager where it is
+registered with the CATokenManager using the method
+addAvailableCAToken()</li>
 <li>Provide a JCE Security Provider that is installed by the module and can be fetched by 
-the EJBCA crypto module (BouncyCastle) through the name returned in IHardCAToken.getProvider().</li>
+the EJBCA crypto module (BouncyCastle) through the name returned in ICAToken.getProvider().</li>
 </ol>
 <p>
 See HardCATokenSample and/or DummyHardCAToken for samples.
-Unlike the sample addAvailableHardCAToken() must be called with use=true, or
+Unlike the sample addAvailableCAToken() must be called with use=true, or
 the token will not be usable in EJBCA (as the flag suggests).
 </p>
 </subsection>

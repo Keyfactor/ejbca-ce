@@ -30,10 +30,10 @@ import org.ejbca.util.Base64;
 /**
  * Class used as test and demonstrationclass when writing HardCAToken plug-ins as HSMs.
  * 
- * Observe: Remember to add a line in teh static section of HardCATokenManager adding the token as available token.
+ * Observe: Remember to add a line in teh static section of CATokenManager adding the token as available token.
  * 
  * @author herrvendil
- * @version $Id: HardCATokenSample.java,v 1.2 2007-07-25 08:56:44 anatom Exp $
+ * @version $Id: HardCATokenSample.java,v 1.3 2007-07-26 11:09:36 anatom Exp $
  */
 public class HardCATokenSample extends BaseCAToken {
     /** Log4j instance for Base */
@@ -145,7 +145,7 @@ public class HardCATokenSample extends BaseCAToken {
      */
 	public HardCATokenSample() throws InstantiationException {
         log.debug("Creating HardCATokenSample");
-        AvailableHardCAToken token = HardCATokenManager.instance().getAvailableHardCAToken("org.ejbca.core.ejb.ca.catoken.HardCATokenSample");
+        AvailableCAToken token = CATokenManager.instance().getAvailableCAToken("org.ejbca.core.ejb.ca.catoken.HardCATokenSample");
         if (token != null) {
             log.debug("Registered HardCATokenSample succesfully.");
         }
@@ -235,7 +235,7 @@ public class HardCATokenSample extends BaseCAToken {
 	/**
      * The correct authentication code is: foo123
      * 
-	 * @see org.ejbca.core.model.ca.catoken.IHardCAToken#activate(java.lang.String)
+	 * @see org.ejbca.core.model.ca.catoken.ICAToken#activate(java.lang.String)
 	 */
 	public void activate(String authenticationcode) throws CATokenAuthenticationFailedException, CATokenOfflineException {
 	    if(offline)
@@ -252,7 +252,7 @@ public class HardCATokenSample extends BaseCAToken {
 	/**
      * 
      * 
-	 * @see org.ejbca.core.model.ca.catoken.IHardCAToken#deactivate()
+	 * @see org.ejbca.core.model.ca.catoken.ICAToken#deactivate()
 	 */
 	public boolean deactivate() {
 	  authenticated = false;
@@ -261,12 +261,12 @@ public class HardCATokenSample extends BaseCAToken {
 	}
 
 	/**
-	 * @see org.ejbca.core.model.ca.catoken.IHardCAToken#getCATokenStatus()
+	 * @see org.ejbca.core.model.ca.catoken.ICAToken#getCATokenStatus()
 	 */
 	public int getCATokenStatus() {
 		if(authenticated)
-		  return IHardCAToken.STATUS_ACTIVE;	
-		return IHardCAToken.STATUS_OFFLINE;
+		  return ICAToken.STATUS_ACTIVE;	
+		return ICAToken.STATUS_OFFLINE;
 	}
 	
 }

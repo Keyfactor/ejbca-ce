@@ -38,9 +38,9 @@ import org.ejbca.core.model.SecConst;
 
 /**
  * @author lars
- * @version $Id: BaseCAToken.java,v 1.19 2007-07-25 15:13:01 anatom Exp $
+ * @version $Id: BaseCAToken.java,v 1.20 2007-07-26 11:09:36 anatom Exp $
  */
-public abstract class BaseCAToken implements IHardCAToken {
+public abstract class BaseCAToken implements ICAToken {
 
     /** Log4j instance */
     private static final Logger log = Logger.getLogger(BaseCAToken.class);
@@ -121,7 +121,7 @@ public abstract class BaseCAToken implements IHardCAToken {
             }
         }
         mKeys = mTmp;
-        if ( getCATokenStatus()!=IHardCAToken.STATUS_ACTIVE )
+        if ( getCATokenStatus()!=ICAToken.STATUS_ACTIVE )
             throw new Exception("Activation test failed");
     }
 
@@ -153,13 +153,13 @@ public abstract class BaseCAToken implements IHardCAToken {
     protected void init(String sSlotLabelKey, Properties properties, String signaturealgorithm, boolean doAutoActivate) {
     	if (log.isDebugEnabled()) {
     		// We must make sure that we don't put out activation passwords in the log file
-    		String pin = properties.getProperty(IHardCAToken.AUTOACTIVATE_PIN_PROPERTY);
+    		String pin = properties.getProperty(ICAToken.AUTOACTIVATE_PIN_PROPERTY);
     		if (pin != null) {
-    			properties.setProperty(IHardCAToken.AUTOACTIVATE_PIN_PROPERTY, "xxxxxx");
+    			properties.setProperty(ICAToken.AUTOACTIVATE_PIN_PROPERTY, "xxxxxx");
     		}
             log.debug("Properties: "+(properties!=null ? properties.toString() : "null")+". Signaturealg: "+signaturealgorithm);
     		if (pin != null) {
-    			properties.setProperty(IHardCAToken.AUTOACTIVATE_PIN_PROPERTY, pin);
+    			properties.setProperty(ICAToken.AUTOACTIVATE_PIN_PROPERTY, pin);
     		}
     	}
         keyStrings = new KeyStrings(properties);
@@ -184,12 +184,12 @@ public abstract class BaseCAToken implements IHardCAToken {
     }
 
     /* (non-Javadoc)
-     * @see org.ejbca.core.model.ca.catoken.IHardCAToken#activate(java.lang.String)
+     * @see org.ejbca.core.model.ca.catoken.ICAToken#activate(java.lang.String)
      */
     public abstract void activate(String authCode) throws CATokenOfflineException, CATokenAuthenticationFailedException;
     
     /* (non-Javadoc)
-     * @see org.ejbca.core.model.ca.catoken.IHardCAToken#deactivate()
+     * @see org.ejbca.core.model.ca.catoken.ICAToken#deactivate()
      */
     public boolean deactivate(){  
 		String msg = intres.getLocalizedMessage("catoken.deactivate");
@@ -199,7 +199,7 @@ public abstract class BaseCAToken implements IHardCAToken {
     }
 
     /* (non-Javadoc)
-     * @see org.ejbca.core.model.ca.catoken.IHardCAToken#getPrivateKey(int)
+     * @see org.ejbca.core.model.ca.catoken.ICAToken#getPrivateKey(int)
      */
     public PrivateKey getPrivateKey(int purpose)
         throws CATokenOfflineException {
@@ -213,7 +213,7 @@ public abstract class BaseCAToken implements IHardCAToken {
     }
 
     /* (non-Javadoc)
-     * @see org.ejbca.core.model.ca.catoken.IHardCAToken#getPublicKey(int)
+     * @see org.ejbca.core.model.ca.catoken.ICAToken#getPublicKey(int)
      */
     public PublicKey getPublicKey(int purpose)
         throws CATokenOfflineException {
@@ -227,19 +227,19 @@ public abstract class BaseCAToken implements IHardCAToken {
     }
 
     /* (non-Javadoc)
-     * @see org.ejbca.core.model.ca.catoken.IHardCAToken#getProvider()
+     * @see org.ejbca.core.model.ca.catoken.ICAToken#getProvider()
      */
     public String getProvider() {
         return sProviderName;
     }
 
 	/* (non-Javadoc)
-	 * @see org.ejbca.core.model.ca.caadmin.IHardCAToken#getCATokenStatus()
+	 * @see org.ejbca.core.model.ca.caadmin.ICAToken#getCATokenStatus()
 	 */
     public int getCATokenStatus() {
     	log.debug(">getCATokenStatus");
     	autoActivate();
-    	int ret = IHardCAToken.STATUS_OFFLINE;
+    	int ret = ICAToken.STATUS_OFFLINE;
     	// If we have no keystrings, no point in continuing...
     	if (keyStrings != null) {
         	String strings[] = keyStrings.getAllStrings();
@@ -264,7 +264,7 @@ public abstract class BaseCAToken implements IHardCAToken {
             		try{
             			testKey(new KeyPair(publicKey, privateKey));
             			// If we can test the testkey, we are finally active!
-            	    	ret = IHardCAToken.STATUS_ACTIVE;
+            	    	ret = ICAToken.STATUS_ACTIVE;
             		} catch( Throwable th ){
             			log.error("Error testing activation", th);
             		}

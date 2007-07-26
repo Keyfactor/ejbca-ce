@@ -18,7 +18,7 @@ import java.io.Serializable;
 /**
  * Holds nonsensitive information about a CAToken.
  *
- * @version $Id: CATokenInfo.java,v 1.5 2007-07-25 15:13:01 anatom Exp $
+ * @version $Id: CATokenInfo.java,v 1.6 2007-07-26 11:09:36 anatom Exp $
  */
 public abstract class CATokenInfo extends CATokenConstants implements Serializable {
 
@@ -40,7 +40,7 @@ public abstract class CATokenInfo extends CATokenConstants implements Serializab
     /** Authenntication code to activate a CA Token, can be PIN for a smartcard/HSM or password for a PKCS12 */
 	private String authenticationCode;
 	/** indicates if the CA token is available for use, i.e. if the authenticationCode has been entered and the hardware is functioning */
-	private int cATokenStatus = IHardCAToken.STATUS_OFFLINE;
+	private int cATokenStatus = ICAToken.STATUS_OFFLINE;
 	/** Properties for the CA token, for example PIN code */
 	private String properties;
 	/** Classpath of the java class implementing the particular type of CA Token */
@@ -80,7 +80,7 @@ public abstract class CATokenInfo extends CATokenConstants implements Serializab
 	
 	/**
 	 * 
-	 * @param catokenstatus is one of IHardCAToken.STATUS_.. constants
+	 * @param catokenstatus is one of ICAToken.STATUS_.. constants
 	 */
 	public void setCATokenStatus(int catokenstatus){
 	  this.cATokenStatus = catokenstatus;	
@@ -88,7 +88,7 @@ public abstract class CATokenInfo extends CATokenConstants implements Serializab
 	
 	/**
 	 * 
-	 * @return catokenstatus, one of IHardCAToken.STATUS_.. constants
+	 * @return catokenstatus, one of ICAToken.STATUS_.. constants
 	 */
 	public int getCATokenStatus(){
 	  return cATokenStatus;	

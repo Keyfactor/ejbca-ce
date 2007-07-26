@@ -4,8 +4,8 @@
     org.ejbca.ui.web.RequestHelper, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.caadmin.CAInfo, org.ejbca.core.model.ca.caadmin.X509CAInfo, org.ejbca.core.model.ca.catoken.CATokenInfo, org.ejbca.core.model.ca.catoken.SoftCAToken, org.ejbca.core.model.ca.catoken.SoftCATokenInfo, org.ejbca.ui.web.admin.cainterface.CADataHandler,
                org.ejbca.ui.web.admin.rainterface.RevokedInfoView, org.ejbca.ui.web.admin.configuration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.bouncycastle.jce.PKCS10CertificationRequest, org.ejbca.core.EjbcaException,
                org.ejbca.core.protocol.PKCS10RequestMessage, org.ejbca.core.model.ca.caadmin.CAExistsException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.model.ca.catoken.CATokenOfflineException, org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException,
-               org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo,org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, org.ejbca.core.model.ca.catoken.HardCATokenManager, org.ejbca.core.model.ca.catoken.AvailableHardCAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo, org.ejbca.core.model.ca.catoken.CATokenConstants,
-               org.ejbca.util.dn.DNFieldExtractor,org.ejbca.core.model.ca.catoken.IHardCAToken " %>
+               org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo,org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, org.ejbca.core.model.ca.catoken.CATokenManager, org.ejbca.core.model.ca.catoken.AvailableCAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo, org.ejbca.core.model.ca.catoken.CATokenConstants,
+               org.ejbca.util.dn.DNFieldExtractor,org.ejbca.core.model.ca.catoken.ICAToken " %>
 
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -330,7 +330,7 @@
            if ( (autoactivate != null) && (autoactivate.equals("true")) ) {
                // it is not possible to use empty autoactivation passwords for soft tokens
                if ( (authenticationcode != null) && (authenticationcode.length() > 0) ) {
-                   String properties = IHardCAToken.AUTOACTIVATE_PIN_PROPERTY + " " + authenticationcode;
+                   String properties = ICAToken.AUTOACTIVATE_PIN_PROPERTY + " " + authenticationcode;
                    catoken.setProperties(properties);
                }
            }          
@@ -627,7 +627,7 @@
            if ( (autoactivate != null) && (autoactivate.equals("true")) ) {
                // it is not possible to use empty autoactivation passwords for soft tokens
                if ( (authenticationcode != null) && (authenticationcode.length() > 0) ) {
-                   String properties = IHardCAToken.AUTOACTIVATE_PIN_PROPERTY + " " + authenticationcode;
+                   String properties = ICAToken.AUTOACTIVATE_PIN_PROPERTY + " " + authenticationcode;
                    catoken.setProperties(properties);
                }
            } else {

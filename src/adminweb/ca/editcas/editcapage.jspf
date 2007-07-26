@@ -7,14 +7,14 @@
   HashMap certprofileidtonamemap = info.getCertificateProfileIdToNameMap();
   HashMap publisheridtonamemap = ejbcawebbean.getInformationMemory().getPublisherIdToNameMap();
 
-  Collection availablecatokens = HardCATokenManager.instance().getAvailableHardCATokens();
+  Collection availablecatokens = CATokenManager.instance().getAvailableCATokens();
   String[] availablecatokentypes = new String[availablecatokens.size()];
   String[] availablecatokentypetexts = new String[availablecatokens.size()];  
 
   Iterator availablecatokensiter = availablecatokens.iterator();
   int numberofavailabletokens = 0;
   while(availablecatokensiter.hasNext()){
-    AvailableHardCAToken nextavailable = (AvailableHardCAToken) availablecatokensiter.next();
+    AvailableCAToken nextavailable = (AvailableCAToken) availablecatokensiter.next();
     if(nextavailable.isUsed()){
       availablecatokentypes[numberofavailabletokens] = nextavailable.getClassPath();
       if(nextavailable.isTranslateable()){
@@ -49,7 +49,7 @@
        catokentype = CATokenInfo.CATOKENTYPE_HSM;
     }
        catokenpath = catokeninfo.getClassPath();
-       AvailableHardCAToken availablecatoken = HardCATokenManager.instance().getAvailableHardCAToken(catokenpath); 
+       AvailableCAToken availablecatoken = CATokenManager.instance().getAvailableCAToken(catokenpath); 
        if(availablecatoken==null)
          throw new Exception("CA Token with classpath "+catokenpath+" is not available.");
        if(!availablecatoken.isUsed())

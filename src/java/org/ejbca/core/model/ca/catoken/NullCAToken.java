@@ -22,7 +22,7 @@ import java.util.Properties;
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: NullCAToken.java,v 1.3 2007-07-25 08:56:46 anatom Exp $
+ * @version $Id: NullCAToken.java,v 1.4 2007-07-26 11:09:37 anatom Exp $
  */
 public class NullCAToken extends BaseCAToken {
 
@@ -36,7 +36,7 @@ public class NullCAToken extends BaseCAToken {
     }
     
     /* (non-Javadoc)
-     * @see org.ejbca.core.model.ca.catoken.IHardCAToken#init(java.util.Properties, java.lang.String)
+     * @see org.ejbca.core.model.ca.catoken.ICAToken#init(java.util.Properties, java.lang.String)
      */
     public void init(Properties properties, HashMap data, String signaturealgorithm) throws Exception {
     }

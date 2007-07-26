@@ -32,7 +32,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.HardCATokenInfo;
-import org.ejbca.core.model.ca.catoken.IHardCAToken;
+import org.ejbca.core.model.ca.catoken.ICAToken;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.FileTools;
@@ -42,7 +42,7 @@ import org.ejbca.util.StringTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.17 2007-07-26 09:54:00 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.18 2007-07-26 11:10:39 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
@@ -130,7 +130,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             } else {
             	HardCATokenInfo hardcatokeninfo = new HardCATokenInfo();
             	hardcatokeninfo.setAuthenticationCode(catokenpassword);
-            	hardcatokeninfo.setCATokenStatus(IHardCAToken.STATUS_ACTIVE);
+            	hardcatokeninfo.setCATokenStatus(ICAToken.STATUS_ACTIVE);
             	hardcatokeninfo.setClassPath(catokentype);
             	hardcatokeninfo.setEncryptionAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
             	hardcatokeninfo.setProperties(catokenproperties);

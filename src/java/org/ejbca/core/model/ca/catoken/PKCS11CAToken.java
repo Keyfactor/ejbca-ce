@@ -24,7 +24,7 @@ import org.ejbca.util.KeyTools;
 
 /**
  * @author lars
- * @version $Id: PKCS11CAToken.java,v 1.10 2007-07-25 15:13:02 anatom Exp $
+ * @version $Id: PKCS11CAToken.java,v 1.11 2007-07-26 11:09:37 anatom Exp $
  */
 public class PKCS11CAToken extends BaseCAToken {
 
@@ -71,7 +71,7 @@ public class PKCS11CAToken extends BaseCAToken {
     }
 
     /* (non-Javadoc)
-     * @see org.ejbca.core.model.ca.catoken.IHardCAToken#init(java.util.Properties, java.lang.String)
+     * @see org.ejbca.core.model.ca.catoken.ICAToken#init(java.util.Properties, java.lang.String)
      */
     public void init(Properties properties, HashMap data, String signaturealgorithm) throws Exception {
         setProvider( KeyTools.getP11AuthProvider(sSlotLabel, properties.getProperty("sharedLibrary")) );

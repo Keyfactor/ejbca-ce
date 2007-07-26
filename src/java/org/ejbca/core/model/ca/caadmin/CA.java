@@ -59,7 +59,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceRequest;
 import org.ejbca.core.model.ca.catoken.CATokenContainer;
 import org.ejbca.core.model.ca.catoken.CATokenContainerImpl;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
-import org.ejbca.core.model.ca.catoken.HardCATokenManager;
+import org.ejbca.core.model.ca.catoken.CATokenManager;
 import org.ejbca.core.model.ca.catoken.NullCATokenInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -72,7 +72,7 @@ import org.ejbca.util.CertTools;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.19 2007-07-25 08:56:27 anatom Exp $
+ * @version $Id: CA.java,v 1.20 2007-07-26 11:09:37 anatom Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -230,7 +230,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @throws IllegalKeyStoreException If the token keystore is invalid (crypto error thrown by crypto provider), or the CA token type is undefined.
      */
     public CATokenContainer getCAToken(int caid) throws IllegalKeyStoreException {
-        CATokenContainer ret = HardCATokenManager.instance().getCAToken(caid);
+        CATokenContainer ret = CATokenManager.instance().getCAToken(caid);
         if (ret == null) {
         	Integer tokentype = (Integer) ((HashMap)data.get(CATOKENDATA)).get(CATokenContainer.CATOKENTYPE);
             switch(tokentype.intValue()) {
@@ -247,7 +247,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
             default:
                 throw new IllegalKeyStoreException("No CA Token type defined: "+tokentype.intValue());
             }
-            HardCATokenManager.instance().addCAToken(caid, ret);
+            CATokenManager.instance().addCAToken(caid, ret);
         }            
       return ret;    	
     }
@@ -266,7 +266,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      */
     public void setCAToken(CATokenContainer catoken){
        data.put(CATOKENDATA, catoken.saveData());        
-       HardCATokenManager.instance().addCAToken(getCAId(), catoken);
+       CATokenManager.instance().addCAToken(getCAId(), catoken);
     }
     
     public Collection getRequestCertificateChain(){

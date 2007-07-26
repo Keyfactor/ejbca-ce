@@ -32,7 +32,7 @@ import org.ejbca.core.ejb.ca.publisher.IPublisherSessionLocalHome;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
-import org.ejbca.core.model.ca.catoken.IHardCAToken;
+import org.ejbca.core.model.ca.catoken.ICAToken;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.JDBCUtil;
@@ -50,7 +50,7 @@ import org.ejbca.util.JDBCUtil;
  * * All Publishers can establish connection
  * 
  * @author Philip Vendil
- * @version $Id: EJBCAHealthCheck.java,v 1.5 2007-07-25 15:13:24 anatom Exp $
+ * @version $Id: EJBCAHealthCheck.java,v 1.6 2007-07-26 11:10:40 anatom Exp $
  */
 
 public class EJBCAHealthCheck implements IHealthCheck {
@@ -124,7 +124,7 @@ public class EJBCAHealthCheck implements IHealthCheck {
 			CAInfo cainfo = getCAAdminSession().getCAInfo(admin,((Integer) iter.next()).intValue());
 			CATokenInfo tokeninfo = cainfo.getCATokenInfo(); 
 			if(cainfo.getStatus() == SecConst.CA_ACTIVE){
-			  if(tokeninfo.getCATokenStatus() == IHardCAToken.STATUS_OFFLINE){
+			  if(tokeninfo.getCATokenStatus() == ICAToken.STATUS_OFFLINE){
 				retval +="\n Error CA Token is disconnected, CA Name : " + cainfo.getName();
 				log.error("Error CA Token is disconnected, CA Name : " + cainfo.getName());
 			  }

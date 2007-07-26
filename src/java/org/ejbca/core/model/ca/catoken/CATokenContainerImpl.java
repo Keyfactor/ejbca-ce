@@ -46,7 +46,7 @@ import org.ejbca.util.KeyTools;
  * HardCATokenContainer is a class managing the persistent storage of a CA token.
  * 
  *
- * @version $Id: CATokenContainerImpl.java,v 1.3 2007-07-26 09:11:36 anatom Exp $
+ * @version $Id: CATokenContainerImpl.java,v 1.4 2007-07-26 11:09:36 anatom Exp $
  */
 public class CATokenContainerImpl extends CATokenContainer {
 
@@ -55,7 +55,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 	/** Internal localization of logs and errors */
 	private static final InternalResources intres = InternalResources.getInstance();
 
-	private IHardCAToken catoken = null; 
+	private ICAToken catoken = null; 
 
 	public static final float LATEST_VERSION = 5;
 
@@ -113,7 +113,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 		info.setSignatureAlgorithm(getSignatureAlgorithm());
 
 		// Set status of the CA token
-		int status = IHardCAToken.STATUS_OFFLINE;
+		int status = ICAToken.STATUS_OFFLINE;
 		if ( catoken != null ){
 			status = catoken.getCATokenStatus();
 		}
@@ -274,7 +274,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 			privEnc = enckeys.getPrivate();
 		} else {
 			// Get the already existing keys
-			IHardCAToken token = getCAToken();
+			ICAToken token = getCAToken();
 			pubEnc = token.getPublicKey(SecConst.CAKEYPURPOSE_KEYENCRYPT);
 			privEnc = token.getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT);
 			
@@ -447,12 +447,12 @@ public class CATokenContainerImpl extends CATokenContainer {
 
 
 
-	private IHardCAToken getCAToken() {
+	private ICAToken getCAToken() {
 		if(catoken == null){
 			try{				
 				Class implClass = Class.forName( getClassPath());
 				Object obj = implClass.newInstance();
-				this.catoken = (IHardCAToken) obj;
+				this.catoken = (ICAToken) obj;
 				this.catoken.init(getProperties(), data, getSignatureAlgorithm());				
 			}catch(Exception e){
 				throw new EJBException(e);

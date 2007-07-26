@@ -25,13 +25,13 @@ import org.ejbca.core.model.InternalResources;
  * Each HardCaToken plug-in should register itself by using the method register.
  * The CA keeps a registry of CA tokens created here.
  * 
- * @version $Id: HardCATokenManager.java,v 1.9 2007-07-25 15:13:01 anatom Exp $
+ * @version $Id: CATokenManager.java,v 1.1 2007-07-26 11:09:36 anatom Exp $
  * 
  */
-public class HardCATokenManager {
+public class CATokenManager {
 	
     /** Log4j instance for Base */
-    private static transient Logger log = Logger.getLogger(HardCATokenManager.class);
+    private static transient Logger log = Logger.getLogger(CATokenManager.class);
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
@@ -42,33 +42,33 @@ public class HardCATokenManager {
     private Hashtable caTokenRegistry = new Hashtable();
 
     /** Implementing the Singleton pattern */
-    private static HardCATokenManager instance = null;
+    private static CATokenManager instance = null;
 
     /**
      * Static intialization block used to register all plug-in classes to the manager.
      * All new plug-ins should add a loadClass call with it's classpath to this method.
      */
     static {
-        HardCATokenManager.instance().addAvailableHardCAToken(NFastCAToken.class.getName(), "NFastCAToken", false, true);
-        HardCATokenManager.instance().addAvailableHardCAToken("se.primeKey.caToken.card.PrimeCAToken", "PrimeCAToken", false, true);
-        HardCATokenManager.instance().addAvailableHardCAToken(EracomCAToken.class.getName(), "Eracom", false, true);
-        HardCATokenManager.instance().addAvailableHardCAToken(PKCS11CAToken.class.getName(), "PKCS#11", false, true);
-        HardCATokenManager.instance().addAvailableHardCAToken("org.ejbca.core.model.ca.catoken.SafeNetLunaCAToken", "SafeNetLunaCAToken", false, true);
-        HardCATokenManager.instance().addAvailableHardCAToken(SoftCAToken.class.getName(), "Soft", false, true);
-        HardCATokenManager.instance().addAvailableHardCAToken("org.ejbca.core.model.ca.catoken.DummyHardCAToken", "DummyHardCAToken", false, false);
-        HardCATokenManager.instance().addAvailableHardCAToken("org.ejbca.core.model.ca.catoken.HardCATokenSample", "HardCATokenSample", false, false);
+        CATokenManager.instance().addAvailableCAToken(NFastCAToken.class.getName(), "NFastCAToken", false, true);
+        CATokenManager.instance().addAvailableCAToken("se.primeKey.caToken.card.PrimeCAToken", "PrimeCAToken", false, true);
+        CATokenManager.instance().addAvailableCAToken(EracomCAToken.class.getName(), "Eracom", false, true);
+        CATokenManager.instance().addAvailableCAToken(PKCS11CAToken.class.getName(), "PKCS#11", false, true);
+        CATokenManager.instance().addAvailableCAToken("org.ejbca.core.model.ca.catoken.SafeNetLunaCAToken", "SafeNetLunaCAToken", false, true);
+        CATokenManager.instance().addAvailableCAToken(SoftCAToken.class.getName(), "Soft", false, true);
+        CATokenManager.instance().addAvailableCAToken("org.ejbca.core.model.ca.catoken.DummyHardCAToken", "DummyHardCAToken", false, false);
+        CATokenManager.instance().addAvailableCAToken("org.ejbca.core.model.ca.catoken.HardCATokenSample", "HardCATokenSample", false, false);
     }
 
     /** Don't allow external creation of this class, implementing the Singleton pattern. 
      */
-    private HardCATokenManager() {}
+    private CATokenManager() {}
     
     /** Get the instance of this singleton
      * 
      */
-    public synchronized static HardCATokenManager instance() {
+    public synchronized static CATokenManager instance() {
         if (instance == null) {
-            instance = new HardCATokenManager();
+            instance = new CATokenManager();
         }
         return instance;
     }
@@ -110,13 +110,13 @@ public class HardCATokenManager {
 	 * 
 	 * @return true if registration went successful, false if the classpath could not be found or the classpath was already registered.
 	 */
-	public synchronized boolean addAvailableHardCAToken(String classpath, String name, boolean translateable, boolean use) {
+	public synchronized boolean addAvailableCAToken(String classpath, String name, boolean translateable, boolean use) {
 	    boolean retval = false;	
 	    if (!availablehardcatokens.containsKey(classpath)) {
-	        log.debug("HardCATokenManager registering " + classpath);                
+	        log.debug("CATokenManager registering " + classpath);                
 	        if (loadClass(classpath)) {
 	            // Add to the available tokens
-	            availablehardcatokens.put(classpath, new AvailableHardCAToken(classpath, name, translateable, use));         
+	            availablehardcatokens.put(classpath, new AvailableCAToken(classpath, name, translateable, use));         
 	            retval = true;
 	            log.debug("Registered " + classpath + " successfully.");                       
 	        } else {
@@ -134,7 +134,7 @@ public class HardCATokenManager {
      */
     private boolean loadClass(String classpath){
         try {           
-            HardCATokenManager.class.getClassLoader().loadClass(classpath).newInstance();       
+            CATokenManager.class.getClassLoader().loadClass(classpath).newInstance();       
         } catch (ClassNotFoundException e) {
 			String msg = intres.getLocalizedMessage("catoken.classnotfound", classpath);
             log.info(msg); 
@@ -153,20 +153,20 @@ public class HardCATokenManager {
 	/**
 	 * Method returning to the system available HardCATokens
 	 * 
-	 * @return a Collection (AvailableHardCAToken) of registrered plug-ins.
+	 * @return a Collection (AvailableCAToken) of registrered plug-ins.
 	 */
-	public Collection getAvailableHardCATokens(){
+	public Collection getAvailableCATokens(){
 	   return availablehardcatokens.values();	
 	}
 
 	/**
 	 * Method returning to the available hardcatoken with given classpath.
 	 * 
-	 * @return the corresponding AvailableHardCAToken or null of classpath couldn't be found
+	 * @return the corresponding AvailableCAToken or null of classpath couldn't be found
 	 */
-	public AvailableHardCAToken getAvailableHardCAToken(String classpath){
+	public AvailableCAToken getAvailableCAToken(String classpath){
         if (classpath == null) { return null; }
-	    return (AvailableHardCAToken)availablehardcatokens.get(classpath);
+	    return (AvailableCAToken)availablehardcatokens.get(classpath);
 	}
 	
 }

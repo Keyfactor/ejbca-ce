@@ -14,19 +14,19 @@
 package org.ejbca.core.model.ca.catoken;
 
 /**
- * Value class containing information about an available hard catoken registered to the HardCATokenManager.
+ * Value class containing information about an available hard catoken registered to the CATokenManager.
  * 
  * @author herrvendil
- * @version $Id: AvailableHardCAToken.java,v 1.1 2006-01-17 20:31:51 anatom Exp $
+ * @version $Id: AvailableCAToken.java,v 1.1 2007-07-26 11:09:36 anatom Exp $
  */
-public class AvailableHardCAToken {
+public class AvailableCAToken {
 	
 	private String classpath;
 	private String name;
 	private boolean translateable;
 	private boolean use;
 	
-	public AvailableHardCAToken(String classpath, String name, boolean translateable, boolean use){
+	public AvailableCAToken(String classpath, String name, boolean translateable, boolean use){
 		this.classpath = classpath;
 		this.name = name;
 		this.translateable = translateable;

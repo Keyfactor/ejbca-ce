@@ -31,7 +31,7 @@ import org.ejbca.core.model.InternalResources;
  * and the development was sponsored by Linagora (www.linagora.com).
  * 
  * @author Lars Silven
- * @version $Id: NFastCAToken.java,v 1.17 2007-07-25 15:13:01 anatom Exp $
+ * @version $Id: NFastCAToken.java,v 1.18 2007-07-26 11:09:36 anatom Exp $
  */
 public class NFastCAToken extends BaseCAToken {
 
@@ -69,7 +69,7 @@ public class NFastCAToken extends BaseCAToken {
         return ks;
     }
     /* (non-Javadoc)
-     * @see org.ejbca.core.model.ca.catoken.IHardCAToken#activate(java.lang.String)
+     * @see org.ejbca.core.model.ca.catoken.ICAToken#activate(java.lang.String)
      */
     public void activate(String authCode) throws CATokenOfflineException, CATokenAuthenticationFailedException {
         try {
@@ -89,7 +89,7 @@ public class NFastCAToken extends BaseCAToken {
     }
 
     /* (non-Javadoc)
-     * @see org.ejbca.core.model.ca.catoken.IHardCAToken#init(java.util.Properties, java.lang.String)
+     * @see org.ejbca.core.model.ca.catoken.ICAToken#init(java.util.Properties, java.lang.String)
      */
     public void init(Properties properties, HashMap data, String signaturealgorithm) throws Exception {
         setProvider(PROVIDER_CLASS);

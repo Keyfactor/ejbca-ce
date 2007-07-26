@@ -25,9 +25,9 @@ import java.util.Properties;
  *  All HardCAToken plug-ins must implement this interface.
  * 
  * 
- * @version $Id: IHardCAToken.java,v 1.4 2007-07-25 15:13:02 anatom Exp $
+ * @version $Id: ICAToken.java,v 1.1 2007-07-26 11:09:37 anatom Exp $
  */
-public interface IHardCAToken {
+public interface ICAToken {
 
 	public static final int STATUS_ACTIVE  = 1;
 	public static final int STATUS_OFFLINE = 2;
@@ -48,7 +48,7 @@ public interface IHardCAToken {
 	/**
 	 *  Method that returns the current status of the catoken.
 	 * 
-	 *  Should return one of the IHardCAToken.STATUS_.. values 
+	 *  Should return one of the ICAToken.STATUS_.. values 
 	 */
 	int getCATokenStatus();
 	

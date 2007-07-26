@@ -22,7 +22,7 @@ import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
-import org.ejbca.core.model.ca.catoken.IHardCAToken;
+import org.ejbca.core.model.ca.catoken.ICAToken;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 
@@ -31,7 +31,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Contains help methods used to parse a viewcainfo jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: ViewCAInfoJSPHelper.java,v 1.5 2007-07-25 15:12:33 anatom Exp $
+ * @version $Id: ViewCAInfoJSPHelper.java,v 1.6 2007-07-26 11:10:39 anatom Exp $
  */
 public class ViewCAInfoJSPHelper implements java.io.Serializable {
 		 
@@ -101,7 +101,7 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
     	      	 can_activate &&
 				 ((status == SecConst.CA_OFFLINE) ||
 				   (status == SecConst.CA_ACTIVE && 
-				   (cainfo.getCAInfo().getCATokenInfo()).getCATokenStatus() == IHardCAToken.STATUS_OFFLINE))){
+				   (cainfo.getCAInfo().getCATokenInfo()).getCATokenStatus() == ICAToken.STATUS_OFFLINE))){
     	         
     	         String authorizationcode = request.getParameter(PASSWORD_AUTHENTICATIONCODE);
     	         try {
@@ -133,7 +133,7 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
     	    try{
     	      cainfo = cabean.getCAInfo(caid);
     	      status = cainfo.getCAInfo().getStatus();
-    	      tokenoffline = cainfo.getCAInfo().getCATokenInfo().getCATokenStatus() == IHardCAToken.STATUS_OFFLINE;
+    	      tokenoffline = cainfo.getCAInfo().getCATokenInfo().getCATokenStatus() == ICAToken.STATUS_OFFLINE;
     	      ocspcert = cainfo.getOCSPSignerCertificate();
     	    } catch(AuthorizationDeniedException e){
     	    	generalerrormessage = "NOTAUTHORIZEDTOVIEWCA";

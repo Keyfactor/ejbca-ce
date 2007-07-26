@@ -25,10 +25,10 @@ import org.apache.log4j.Logger;
  * 
  * Class used as test and demonstrationclass when writing HardCAToken plug-ins as HSMs.
  * 
- * Observe: Remember to add a loadClass("thisclass") row to the HardCATokenManager.init() method when adding new plug-ins.
+ * Observe: Remember to add a loadClass("thisclass") row to the CATokenManager.init() method when adding new plug-ins.
 
  * @author herrvendil
- * @version $Id: DummyHardCAToken.java,v 1.2 2007-07-25 08:56:46 anatom Exp $
+ * @version $Id: DummyHardCAToken.java,v 1.3 2007-07-26 11:09:36 anatom Exp $
  * 
  */
 public class DummyHardCAToken extends BaseCAToken {
@@ -40,7 +40,7 @@ public class DummyHardCAToken extends BaseCAToken {
      */
 	public DummyHardCAToken() throws InstantiationException {
         log.debug("Creating DummyHardCAToken");
-        AvailableHardCAToken token = HardCATokenManager.instance().getAvailableHardCAToken("org.ejbca.core.ejb.ca.catoken.DummyHardCAToken");
+        AvailableCAToken token = CATokenManager.instance().getAvailableCAToken("org.ejbca.core.ejb.ca.catoken.DummyHardCAToken");
         if (token != null) {
             log.debug("Registered DummyHardCAToken succesfully.");
         }
@@ -118,7 +118,7 @@ public class DummyHardCAToken extends BaseCAToken {
 	/**
 	 *  Method that returns the current status of the catoken.
 	 * 
-	 *  Should return one of the IHardCAToken.STATUS_.. values 
+	 *  Should return one of the ICAToken.STATUS_.. values 
 	 */
 	public int getCATokenStatus() {
 		log.debug("getCATokenStatus()");

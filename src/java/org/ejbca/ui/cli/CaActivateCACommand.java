@@ -17,7 +17,7 @@ import java.rmi.UnmarshalException;
 
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
-import org.ejbca.core.model.ca.catoken.IHardCAToken;
+import org.ejbca.core.model.ca.catoken.ICAToken;
 
 
 
@@ -26,7 +26,7 @@ import org.ejbca.core.model.ca.catoken.IHardCAToken;
 /**
  * Activates the specified HSM CA.
  *
- * @version $Id: CaActivateCACommand.java,v 1.5 2007-07-25 15:12:45 anatom Exp $
+ * @version $Id: CaActivateCACommand.java,v 1.6 2007-07-26 11:10:39 anatom Exp $
  */
 public class CaActivateCACommand extends BaseCaAdminCommand {
     /**
@@ -63,7 +63,7 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
                                     
             // Check that CA has correct status.
             if ( (cainfo.getStatus() == SecConst.CA_OFFLINE) || 
-            		(cainfo.getStatus() == SecConst.CA_ACTIVE) && (cainfo.getCATokenInfo().getCATokenStatus() == IHardCAToken.STATUS_OFFLINE) ) {
+            		(cainfo.getStatus() == SecConst.CA_ACTIVE) && (cainfo.getCATokenInfo().getCATokenStatus() == ICAToken.STATUS_OFFLINE) ) {
             	try {
                 	getCAAdminSessionRemote().activateCAToken(administrator, cainfo.getCAId(), authorizationcode);            		
             	} catch (UnmarshalException e) {

@@ -24,7 +24,7 @@ import org.ejbca.core.model.ca.caadmin.X509CAInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.HardCATokenInfo;
-import org.ejbca.core.model.ca.catoken.IHardCAToken;
+import org.ejbca.core.model.ca.catoken.ICAToken;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.rainterface.RevokedInfoView;
 
@@ -32,7 +32,7 @@ import org.ejbca.ui.web.admin.rainterface.RevokedInfoView;
 /**
  * A class representing a view of a CA Information view..
  *
- * @version $Id: CAInfoView.java,v 1.5 2007-07-25 15:12:33 anatom Exp $
+ * @version $Id: CAInfoView.java,v 1.6 2007-07-26 11:10:39 anatom Exp $
  */
 public class CAInfoView implements java.io.Serializable, Cloneable {
     // Public constants.
@@ -122,10 +122,10 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
         	tokentext = ejbcawebbean.getText("HARDTOKEN");
         }
         switch(cainfo.getCATokenInfo().getCATokenStatus()) {
-        case IHardCAToken.STATUS_ACTIVE :
+        case ICAToken.STATUS_ACTIVE :
         	cainfodata[CATOKEN_STATUS]     =  tokentext + ", " + ejbcawebbean.getText("ACTIVE");     
         	break;
-        case IHardCAToken.STATUS_OFFLINE :
+        case ICAToken.STATUS_OFFLINE :
         	cainfodata[CATOKEN_STATUS]     = tokentext +", " + ejbcawebbean.getText("OFFLINE");
         	break;
         }
