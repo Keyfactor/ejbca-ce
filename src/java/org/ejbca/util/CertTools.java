@@ -95,7 +95,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.40 2007-07-19 15:32:41 anatom Exp $
+ * @version $Id: CertTools.java,v 1.41 2007-07-26 12:41:13 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -226,13 +226,18 @@ public class CertTools {
       X509NameTokenizer xt = new X509NameTokenizer(dn);
 
       while (xt.hasMoreTokens()) {
-        // This is a pair (CN=xx)
+        // This is a pair key=val (CN=xx)
         String pair = xt.nextToken();
         int ix = pair.indexOf("=");
 
         if (ix != -1) {
           String key = pair.substring(0, ix).toLowerCase().trim();
           String val = pair.substring(ix + 1);
+          if (val != null) {
+        	  // String whitespace from the beginning of the value, to handle the case
+        	  // where someone type CN = Foo Bar
+        	  val = StringUtils.stripStart(val, null);
+          }
 
           // -- First search the OID by name in declared OID's
           DERObjectIdentifier oid = DnComponents.getOid(key);
