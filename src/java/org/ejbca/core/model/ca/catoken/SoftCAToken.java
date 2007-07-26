@@ -30,7 +30,7 @@ import org.ejbca.util.Base64;
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: SoftCAToken.java,v 1.14 2007-07-26 07:42:01 anatom Exp $
+ * @version $Id: SoftCAToken.java,v 1.15 2007-07-26 09:11:36 anatom Exp $
  */
 public class SoftCAToken extends BaseCAToken {
 
@@ -95,6 +95,7 @@ public class SoftCAToken extends BaseCAToken {
     			properties.setProperty(AUTOACTIVATE_PIN_PROPERTY, keystorepass);	    		
     		}
     	} else {
+    		//log.debug("Soft CA Token has autoactivation property set." + "'"+autoPwd+"'");
     		log.debug("Soft CA Token has autoactivation property set.");
     	}
       
@@ -111,12 +112,11 @@ public class SoftCAToken extends BaseCAToken {
     }
     
 	/**
-	 * Method doing nothing.
+	 * Loads the keystore and retrieves the keys.
 	 * 
 	 * @see org.ejbca.core.model.ca.catoken.CATokenContainer#activate(java.lang.String)
 	 */
     public void activate(String authenticationcode) throws CATokenAuthenticationFailedException, CATokenOfflineException {
-    	//log.debug(">activate: "+authenticationcode);
     	try {
     		KeyStore keystore = loadKeyStore(keyStoreData, authenticationcode);
     		setKeys(keystore, authenticationcode);

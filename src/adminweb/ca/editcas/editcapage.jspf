@@ -938,6 +938,9 @@ function checkallfields(){
         <%     if(catokeninfo instanceof SoftCATokenInfo){ %>
            &nbsp; <%= ejbcawebbean.getText("RENEWKEYS") %><input type="checkbox" name="<%=CHECKBOX_RENEWKEYS %>" value="<%=CHECKBOX_VALUE %>" >
         <%  } %>
+        <br/>
+        <%= ejbcawebbean.getText("AUTHENTICATIONCODERENEW") %>
+        <input type="password" name="<%=TEXTFIELD_AUTHENTICATIONCODERENEW%>" size="20" maxlength="64">
       </td>
     </tr>
         <% } %>   

@@ -57,7 +57,7 @@ import org.ejbca.util.CertTools;
  * A class help administrating CAs. 
  *
  * @author  TomSelleck
- * @version $Id: CADataHandler.java,v 1.10 2007-07-25 15:12:33 anatom Exp $
+ * @version $Id: CADataHandler.java,v 1.11 2007-07-26 09:11:37 anatom Exp $
  */
 public class CADataHandler implements Serializable {
     private static final Logger log = Logger.getLogger(CADataHandler.class);
@@ -212,8 +212,8 @@ public class CADataHandler implements Serializable {
   /**
    *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */  
-  public void renewCA(int caid, IResponseMessage responsemessage, boolean regenerateKeys) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
-      caadminsession.renewCA(administrator, caid, responsemessage,regenerateKeys );
+  public void renewCA(int caid, IResponseMessage responsemessage, String keystorepass, boolean regenerateKeys) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
+      caadminsession.renewCA(administrator, caid, responsemessage, keystorepass, regenerateKeys );
       info.cAsEdited();
   }
 

@@ -30,7 +30,7 @@ import org.ejbca.core.model.log.Admin;
 /**
  * Tests and removes the ca data entity bean.
  *
- * @version $Id: TestRenewCA.java,v 1.2 2007-02-27 15:26:35 anatom Exp $
+ * @version $Id: TestRenewCA.java,v 1.3 2007-07-26 09:12:12 anatom Exp $
  */
 public class TestRenewCA extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -89,7 +89,7 @@ public class TestRenewCA extends TestCase {
         X509CAInfo info = (X509CAInfo) cacheAdmin.getCAInfo(admin, "TEST");
         X509Certificate orgcert = (X509Certificate) info.getCertificateChain().iterator().next();
         
-        cacheAdmin.renewCA(admin,info.getCAId(),null,false);
+        cacheAdmin.renewCA(admin,info.getCAId(),null,null,false);
         X509CAInfo newinfo = (X509CAInfo) cacheAdmin.getCAInfo(admin, "TEST");
         X509Certificate newcertsamekeys = (X509Certificate) newinfo.getCertificateChain().iterator().next();
         assertTrue(!orgcert.getSerialNumber().equals(newcertsamekeys.getSerialNumber()));
@@ -99,7 +99,8 @@ public class TestRenewCA extends TestCase {
         // The new certificate must have a validity greater than the old cert
         assertTrue(newcertsamekeys.getNotAfter().after(orgcert.getNotAfter()));
 
-        cacheAdmin.renewCA(admin,info.getCAId(),null,true);
+        // This assumes that the default system keystore password is not changed from foo123
+        cacheAdmin.renewCA(admin,info.getCAId(),null,"foo123",true);
         X509CAInfo newinfo2 = (X509CAInfo) cacheAdmin.getCAInfo(admin, "TEST");
         X509Certificate newcertnewkeys = (X509Certificate) newinfo2.getCertificateChain().iterator().next();
         assertTrue(!orgcert.getSerialNumber().equals(newcertnewkeys.getSerialNumber()));

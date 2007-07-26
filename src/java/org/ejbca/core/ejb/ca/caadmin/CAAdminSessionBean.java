@@ -113,7 +113,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.53 2007-07-26 07:42:01 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.54 2007-07-26 09:11:38 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -308,7 +308,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
         		// There are two ways to get the authentication code:
         		// 1. The user provided one when creating the CA on the create CA page
         		// 2. We use the system default password
-        		catoken.generateKeys(authCode);
+        		boolean renew = false;
+        		catoken.generateKeys(authCode, renew);
         	}catch(Exception e){
         		String msg = intres.getLocalizedMessage("caadmin.errorcreatetoken");
         		getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED, msg, e);
@@ -1099,11 +1100,12 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * 
      *  @param certificateresponce should be set with new certificatechain if CA is signed by external
      *         RootCA, otherwise use the null value.
+     *  @param keystorepass password used when regenerating keys, can be null if regenerateKeys is false.
      *  @param regenerateKeys, if true and the CA have a softCAToken the keys are regenerated before the certrequest.
      *          
      * @ejb.interface-method
      */
-    public void renewCA(Admin admin, int caid, IResponseMessage responsemessage, boolean regenerateKeys)  throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
+    public void renewCA(Admin admin, int caid, IResponseMessage responsemessage, String keystorepass, boolean regenerateKeys)  throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CATokenOfflineException{
     	debug(">CAAdminSession, renewCA(), caid=" + caid);
     	Collection cachain = null;
     	Certificate cacertificate = null;
@@ -1130,16 +1132,18 @@ public class CAAdminSessionBean extends BaseSessionBean {
     		
     		CATokenContainer caToken = ca.getCAToken();
     		if (regenerateKeys) {
-    			CATokenInfo catokeninfo = caToken.getCATokenInfo();
-    			// TODO: this will not work!!!!!
-        		// There are two ways to get the authentication code:
-        		// 1. The user provided one when creating the CA on the create CA page
-        		// 2. We use the system default password
-        		String authCode = catokeninfo.getAuthenticationCode();
-        		if (StringUtils.isEmpty(authCode)) {
-            	    authCode = ServiceLocator.getInstance().getString("java:comp/env/keyStorePass");        			
+        		boolean renew = true;
+        		// Soft keystores can not have empty passwords, it probably mens to use the default one
+        		if (caToken.getCATokenInfo() instanceof SoftCATokenInfo) {
+            		if (StringUtils.isEmpty(keystorepass)) {
+            			keystorepass = ServiceLocator.getInstance().getString("java:comp/env/keyStorePass");          		
+                		if (keystorepass == null) {
+                			log.error("Missing keyStorePass property. We can not autoActivate standard soft CA tokens.");
+                			throw new IllegalArgumentException("Missing keyStorePass property.");		    		
+                		}
+            		}        			
         		}
-        		caToken.generateKeys(authCode);
+        		caToken.generateKeys(keystorepass, renew);
     			ca.setCAToken(caToken);
     		}
     		

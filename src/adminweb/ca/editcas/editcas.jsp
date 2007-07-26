@@ -72,6 +72,7 @@
   static final String TEXTFIELD_POLICYID              = "textfieldpolicyid";
   static final String TEXTFIELD_HARDCATOKENPROPERTIES = "textfieldhardcatokenproperties";
   static final String TEXTFIELD_AUTHENTICATIONCODE    = "textfieldauthenticationcode";
+  static final String TEXTFIELD_AUTHENTICATIONCODERENEW = "textfieldauthenticationcoderenew";
   static final String TEXTFIELD_DEFAULTCRLDISTPOINT   = "textfielddefaultcrldistpoint";
   static final String TEXTFIELD_DEFAULTCRLISSUER      = "textfielddefaultcrlissuer";
   static final String TEXTFIELD_DEFAULTOCSPLOCATOR    = "textfielddefaultocsplocator";
@@ -329,8 +330,8 @@
            if ( (autoactivate != null) && (autoactivate.equals("true")) ) {
                // it is not possible to use empty autoactivation passwords for soft tokens
                if ( (authenticationcode != null) && (authenticationcode.length() > 0) ) {
-               String properties = IHardCAToken.AUTOACTIVATE_PIN_PROPERTY + " " + authenticationcode;
-               catoken.setProperties(properties);
+                   String properties = IHardCAToken.AUTOACTIVATE_PIN_PROPERTY + " " + authenticationcode;
+                   catoken.setProperties(properties);
                }
            }          
          } 
@@ -624,8 +625,11 @@
            catoken = new SoftCATokenInfo();          
            catoken.setAuthenticationCode(authenticationcode);
            if ( (autoactivate != null) && (autoactivate.equals("true")) ) {
-               String properties = IHardCAToken.AUTOACTIVATE_PIN_PROPERTY + " " + authenticationcode;
-               catoken.setProperties(properties);
+               // it is not possible to use empty autoactivation passwords for soft tokens
+               if ( (authenticationcode != null) && (authenticationcode.length() > 0) ) {
+                   String properties = IHardCAToken.AUTOACTIVATE_PIN_PROPERTY + " " + authenticationcode;
+                   catoken.setProperties(properties);
+               }
            } else {
                catoken.setProperties("");
            }
@@ -822,7 +826,8 @@
                    if(request.getParameter(CHECKBOX_RENEWKEYS) != null && catokentype == CATokenInfo.CATOKENTYPE_P12){
                 	   reGenerateKeys = request.getParameter(CHECKBOX_RENEWKEYS).equals(CHECKBOX_VALUE);                	   
                    }
-                   cadatahandler.renewCA(caid, null, reGenerateKeys);
+                   String authenticationcode = request.getParameter(TEXTFIELD_AUTHENTICATIONCODERENEW);
+                   cadatahandler.renewCA(caid, null, authenticationcode, reGenerateKeys);
                    carenewed = true;
                  }else{                   
                    includefile="renewexternal.jspf"; 
