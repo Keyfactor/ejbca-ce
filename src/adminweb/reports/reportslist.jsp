@@ -26,7 +26,7 @@
 
 <h1 align="center"><h:outputText value="#{web.text.REPORTS}"/></h1>
   <h4 align="center"><h:messages layout="table" errorClass="alert"/></h4>
-  
+  <p><h:outputText style="color: red" value="#{web.text.REPORTSINFO}"/></p>
   <h:form >
     <p align="left">
     <h:panelGroup id="body" >
