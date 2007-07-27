@@ -12,6 +12,10 @@ import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 
+/** To run you must have the file tmp/bin/junit/jndi.properties
+ * 
+ * @version $Id: TestEjbcaWS.java,v 1.9 2007-07-27 09:40:55 anatom Exp $
+ */
 public class TestEjbcaWS extends CommonEjbcaWSTest {
 	
 
