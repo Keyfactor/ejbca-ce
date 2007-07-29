@@ -185,6 +185,31 @@ This driver is not tested by us (yet), but it has received very good reviews as 
 driver, so I suggest you take it for a spin.
 
 
+DB2 specifics
+----------------
+IBMs JDBC driver:
+
+- db2jcc.jar
+- db2jcc_license_c.jar
+
+In DB2 the name of constraints can not exceed 18 characters, when JBoss starts EJBCA a normal create table statement is:
+  CREATE TABLE HARDTOKENISSUERDATA (id INTEGER NOT NULL, alias VARCHAR(254), adminGroupId INTEGER NOT NULL, data BLOB(2000), CONSTRAINT PK_HARDTOKENISSUERDATA PRIMARY KEY (id))
+which does not work, instead we want to use:
+  CREATE TABLE HARDTOKENISSUERDATA (id INTEGER NOT NULL, alias VARCHAR(254), adminGroupId INTEGER NOT NULL, data BLOB(2000), PRIMARY KEY (id))
+
+To do this we edit JBOSS_HOME/server/default/conf/standardjbosscmp-jdbc.xml
+In the <name>DB2</name> section change:
+  <pk-constraint-template>CONSTRAINT ?1 PRIMARY KEY (?2)</pk-constraint-template>
+to
+  <pk-constraint-template>PRIMARY KEY (?2)</pk-constraint-template>
+
+To create the needed tables you will probably also need a larger tablespace than default (at least on DB2 Express):
+  CREATE BUFFERPOOL "BP16K"  SIZE 2500 PAGESIZE 16384 NOT EXTENDED STORAGE;
+  CONNECT RESET;
+  CONNECT TO EJBCA;
+  CREATE REGULAR TABLESPACE EJBCADB_DATA_01 IN DATABASE PARTITION GROUP IBMDEFAULTGROUP PAGESIZE 16384 MANAGED BY DATABASE USING (FILE '/home/db2inst1/db2inst1/EJBCA/ejbcadb_data_01.dbf'512000) EXTENTSIZE 32 PREFETCHSIZE 32 BUFFERPOOL BP16K OVERHEAD 7.500000 TRANSFERRATE 0.060000  FILE SYSTEM CACHING DROPPED TABLE RECOVERY ON;
+  
+  
 Informix specifics
 ------------------
 EJBCA have been tested Informix Dynamic Server 9.21.HC4
