@@ -27,7 +27,7 @@ import org.ejbca.core.model.SecConst;
  * requestdata, requestdate, expiredate, remainingapprovals
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalDataVO.java,v 1.5 2007-06-25 14:45:34 herrvendil Exp $
+ * @version $Id: ApprovalDataVO.java,v 1.6 2007-07-31 13:31:27 jeklund Exp $
  */
 
 public class ApprovalDataVO implements Serializable { 	
@@ -54,10 +54,15 @@ public class ApprovalDataVO implements Serializable {
 	public static final int APPROVALTYPE_CHANGESTATUSENDENTITY       = 4;
 	public static final int APPROVALTYPE_KEYRECOVERY                 = 5;
 	public static final int APPROVALTYPE_GENERATETOKEN               = 6;
+	public static final int APPROVALTYPE_REVOKEENDENTITY             = 7;
+	public static final int APPROVALTYPE_REVOKEANDDELETEENDENTITY    = 8;
+	public static final int APPROVALTYPE_REVOKECERTIFICATE           = 9;
+	
 	
 	//IMPORTANT REMEMBER TO SET THE RESOURCES IN BOTH INTERNAL AND ADMINWEB LANGUAGE FILES
 	public static final String[] APPROVALTYPENAMES = {"DUMMY","APVIEWHARDTOKENDATA","APADDENDENTITY","APEDITENDENTITY",
-		                                              "APCHANGESTATUSENDENTITY", "APKEYRECOVERY", "APGENERATETOKEN"};
+		                                              "APCHANGESTATUSENDENTITY", "APKEYRECOVERY", "APGENERATETOKEN",
+		                                              "APREVOKEENDENTITY", "APREVOKEDELETEENDENTITY", "APREVOKECERTIFICATE"};
 	
 	/**
 	 * Used to indicate that the approcal is applicable to any ca.

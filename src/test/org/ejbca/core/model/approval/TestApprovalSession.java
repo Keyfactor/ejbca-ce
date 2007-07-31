@@ -1,4 +1,4 @@
-package se.anatom.ejbca.approval;
+package org.ejbca.core.model.approval;
 
 import java.io.File;
 import java.security.cert.X509Certificate;

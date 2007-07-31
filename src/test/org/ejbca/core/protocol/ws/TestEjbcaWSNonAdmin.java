@@ -31,6 +31,7 @@ import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.hardtoken.types.HardToken;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -64,7 +65,7 @@ public class TestEjbcaWSNonAdmin extends CommonEjbcaWSTest {
 			user1.setUsername("wstest");
 			user1.setPassword("foo123");			
 			user1.setDN("CN=wstest");			
-			CAInfo cainfo = getCAAdminSession().getCAInfo(intAdmin, "AdminCA1");
+			CAInfo cainfo = getCAAdminSession().getCAInfo(intAdmin, getAdminCAName());
 			user1.setCAId(cainfo.getCAId());
 			user1.setEmail(null);
 			user1.setSubjectAltName(null);
@@ -101,7 +102,7 @@ public class TestEjbcaWSNonAdmin extends CommonEjbcaWSTest {
 			user1.setUsername("wsnonadmintest");
 			user1.setPassword("foo123");			
 			user1.setDN("CN=wsnonadmintest");			
-			CAInfo cainfo = getCAAdminSession().getCAInfo(intAdmin, "AdminCA1");
+			CAInfo cainfo = getCAAdminSession().getCAInfo(intAdmin, getAdminCAName());
 			user1.setCAId(cainfo.getCAId());
 			user1.setEmail(null);
 			user1.setSubjectAltName(null);
@@ -314,6 +315,9 @@ public class TestEjbcaWSNonAdmin extends CommonEjbcaWSTest {
       	}  
       	
       	removeApprovalAdmins();
+      	getHardTokenSession().removeHardToken(intAdmin, "12345678");
+		getUserAdminSession().revokeAndDeleteUser(intAdmin, "WSTESTTOKENUSER1", RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+
     }
     
     private void setupApprovals() throws Exception{
@@ -362,7 +366,6 @@ public class TestEjbcaWSNonAdmin extends CommonEjbcaWSTest {
         BatchMakeP12 makep12 = new BatchMakeP12();
         File tmpfile = File.createTempFile("ejbca", "p12");
 
-        //System.out.println("tempdir="+tmpfile.getParent());
         makep12.setMainStoreDir(tmpfile.getParent());
         makep12.createAllNew();
         

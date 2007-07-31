@@ -14,7 +14,9 @@
 package org.ejbca.core.protocol.ws.client;
 
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
@@ -22,7 +24,7 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 /**
  * Revokes a given tokens certificate
  *
- * @version $Id: RevokeTokenCommand.java,v 1.2 2006-10-08 22:53:26 herrvendil Exp $
+ * @version $Id: RevokeTokenCommand.java,v 1.3 2007-07-31 13:31:49 jeklund Exp $
  */
 public class RevokeTokenCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
@@ -69,6 +71,10 @@ public class RevokeTokenCommand extends EJBCAWSRABaseCommand implements IAdminCo
                 getPrintStream().println("Token revoked sucessfully");
             }catch(AuthorizationDeniedException_Exception e){
             	getPrintStream().println("Error : " + e.getMessage());            
+			} catch (WaitingForApprovalException_Exception e) {
+            	getPrintStream().println("The revocation request has been sent for approval.");            
+			} catch (ApprovalException_Exception e) {
+            	getPrintStream().println("This revocation has already been requested.");            
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
@@ -80,7 +86,7 @@ public class RevokeTokenCommand extends EJBCAWSRABaseCommand implements IAdminCo
 
 	protected void usage() {
 		getPrintStream().println("Command used to revoke a tokens certificate");
-		getPrintStream().println("Usage : revokecert <hardtokensn> <reason>  \n\n");
+		getPrintStream().println("Usage : revoketoken <hardtokensn> <reason>  \n\n");
 		getPrintStream().println("Reason should be one of : ");
 		for(int i=1; i< REASON_TEXTS.length-1;i++){
 			getPrintStream().print(REASON_TEXTS[i] + ", ");

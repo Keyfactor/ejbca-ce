@@ -17,6 +17,8 @@ import java.security.cert.X509Certificate;
 
 import javax.ejb.FinderException;
 
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -34,7 +36,7 @@ import org.w3c.dom.Document;
  * 
  * @author Philip Vendil 
  *
- * @version $Id: RevokeResponseGenerator.java,v 1.3 2007-01-07 19:44:14 herrvendil Exp $
+ * @version $Id: RevokeResponseGenerator.java,v 1.4 2007-07-31 13:31:58 jeklund Exp $
  */
 
 public class RevokeResponseGenerator extends
@@ -129,6 +131,15 @@ public class RevokeResponseGenerator extends
 			try {								
 				getUserAdminSession().revokeCert(raAdmin, cert.getSerialNumber(), CertTools.getIssuerDN(cert), userData.getUsername(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
 				retval = cert;
+			} catch (WaitingForApprovalException e) {
+				// The request has been sent for approval. -> Only part of the information requested could be provided.
+				resultMajor = XKMSConstants.RESULTMAJOR_SUCCESS;
+				resultMinor = XKMSConstants.RESULTMINOR_INCOMPLETE;
+				retval = cert;
+			} catch (ApprovalException e) {
+				// Approval request already exists. -> The receiver is currently refusing certain requests for unspecified reasons.
+				resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
+				resultMinor = XKMSConstants.RESULTMINOR_REFUSED;
 			} catch (AuthorizationDeniedException e) {
 				resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
 				resultMinor = XKMSConstants.RESULTMINOR_FAILURE;

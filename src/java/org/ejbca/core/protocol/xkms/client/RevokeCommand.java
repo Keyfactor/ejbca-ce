@@ -34,7 +34,7 @@ import org.w3._2002._03.xkms_.RevokeResultType;
 /**
  * Performes KRSS revoke calls to an web service.
  *
- * @version $Id: RevokeCommand.java,v 1.1 2007-01-07 00:31:51 herrvendil Exp $
+ * @version $Id: RevokeCommand.java,v 1.2 2007-07-31 13:32:02 jeklund Exp $
  * @author Philip Vendil
  */
 public class RevokeCommand extends XKMSCLIBaseCommand implements IAdminCommand{
@@ -100,15 +100,15 @@ public class RevokeCommand extends XKMSCLIBaseCommand implements IAdminCommand{
             RevokeResultType revokeResultType = getXKMSInvoker().revoke(revokeRequestType, clientCert, privateKey, null,  keyBindingId);
 
             
-            if(revokeResultType.getResultMajor().equals(XKMSConstants.RESULTMAJOR_SUCCESS) && 
-               revokeResultType.getResultMinor() == null){
- 
-               getPrintStream().println("Certificate " + orgCert.getSerialNumber().toString(16) + " issued by " + CertTools.getIssuerDN(orgCert) + " revoked successfully.");
-   
-            }else{
+            if (revokeResultType.getResultMajor().equals(XKMSConstants.RESULTMAJOR_SUCCESS) && revokeResultType.getResultMinor() == null) {
+            	getPrintStream().println("Certificate " + orgCert.getSerialNumber().toString(16) + " issued by " +
+            			CertTools.getIssuerDN(orgCert) + " revoked successfully.");
+            } else if (revokeResultType.getResultMajor().equals(XKMSConstants.RESULTMAJOR_SUCCESS) && revokeResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_INCOMPLETE)) {
+            	getPrintStream().println("Certificate " + orgCert.getSerialNumber().toString(16) + " issued by " +
+            			CertTools.getIssuerDN(orgCert) + " successfully sent for approval.");
+            } else {
             	displayRequestErrors(revokeResultType);
             }
-    
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }
@@ -161,15 +161,16 @@ public class RevokeCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 	private void displayRequestErrors(RevokeResultType revokeResultType) {
 		if(revokeResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_NOMATCH)){
 			getPrintStream().println("Error no user with given certificate could be found");
-		}else
-			if(revokeResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_NOAUTHENTICATION)){
-				getPrintStream().println("Error password couldn't be verified");
-			}else
-				if(revokeResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_REFUSED)){
-					getPrintStream().println("The user doesn't seem to have the wrong status or already been revoked.");
-				}else{
-					getPrintStream().println("Error occured during processing : " + revokeResultType.getResultMinor());
-				}
+		}else if(revokeResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_NOAUTHENTICATION)){
+			getPrintStream().println("Error password couldn't be verified");
+		}else if(revokeResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_REFUSED)){
+			getPrintStream().println("The user doesn't seem to have the right status or has already been revoked.");
+		}else if(revokeResultType.getResultMajor().equals(XKMSConstants.RESULTMAJOR_RECIEVER) && 
+				revokeResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_REFUSED)){
+			getPrintStream().println("The request was refused. This could be caused by requesting an action twice if approvals are used.");
+		}else{
+			getPrintStream().println("Error occured during processing : " + revokeResultType.getResultMinor());
+		}
 	}
 
 	protected void usage() {

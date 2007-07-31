@@ -32,6 +32,7 @@ import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.DummyApprovalRequest;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.ui.web.LinkView;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
@@ -52,6 +53,11 @@ public class ApprovalDataVOView  implements Serializable{
 	
 	private boolean initialized = false;
 	
+	// Table of the translation constants in languagefile.xx.properties
+	private final String CERTSERIALNUMBER  = "CERTSERIALNUMBER";
+	private final String ISSUERDN          = "ISSUERDN";
+	private final String USERNAME          = "USERNAME";
+
 	public ApprovalDataVOView( ApprovalDataVO data){		
 		this.data= data;
 		initialized = true;
@@ -215,6 +221,100 @@ public class ApprovalDataVOView  implements Serializable{
 		
 		return retval;
 	}
+
+	/**
+	 * Detect all certificate and user links from approval data based on the static translations variables.
+	 *  
+	 * @return An array of Link-objects
+	 */
+	public boolean isContainingLink() {		
+	    if ( !initialized ) {
+	    	return false;
+	    }
+		List newTextRows = data.getApprovalRequest().getNewRequestDataAsText(EjbcaJSFHelper.getBean().getAdmin());
+		int size = newTextRows.size();
+		for ( int i=0; i<size; i++) {
+  		  if ( ((ApprovalDataText) newTextRows.get(i)).getHeader().equals(CERTSERIALNUMBER) ||
+				  ((ApprovalDataText) newTextRows.get(i)).getHeader().equals(ISSUERDN) ||
+				  ((ApprovalDataText) newTextRows.get(i)).getHeader().equals(USERNAME)) {
+			  return true;
+		  }
+    	}
+    	return false;
+	}
+
+	/**
+	 * Extract all certificate and user links from approval data based on the static translations variables.
+	 *  
+	 * @return An array of Link-objects
+	 */
+	public List getApprovalDataLinks() {
+		ArrayList certificateLinks = new ArrayList();
+		ArrayList certificateSerialNumbers = new ArrayList();
+		ArrayList certificateIssuerDN = new ArrayList();
+		ArrayList usernames = new ArrayList();
+		List newTextRows = data.getApprovalRequest().getNewRequestDataAsText(EjbcaJSFHelper.getBean().getAdmin());
+		
+		for (int i=0; i<newTextRows.size(); i++) {
+			if ( ((ApprovalDataText) newTextRows.get(i)).getHeader().equals(CERTSERIALNUMBER)) {
+				certificateSerialNumbers.add( ((ApprovalDataText) newTextRows.get(i)).getData() );
+			}
+			if ( ((ApprovalDataText) newTextRows.get(i)).getHeader().equals(ISSUERDN)) {
+				certificateIssuerDN.add( ((ApprovalDataText) newTextRows.get(i)).getData() );
+			}
+			if ( ((ApprovalDataText) newTextRows.get(i)).getHeader().equals(USERNAME)) {
+				usernames.add( ((ApprovalDataText) newTextRows.get(i)).getData() );
+			}
+		}
+		if ( certificateIssuerDN.size() != certificateSerialNumbers.size() ) {
+			// Return an empty array if we have a mismatch
+			return certificateLinks;
+		}
+		String link = null;
+		for (int i=0; i<certificateSerialNumbers.size(); i++) {
+			try {
+				link = EjbcaJSFHelper.getBean().getEjbcaWebBean().getBaseUrl() + EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath()
+				+ "viewcertificate.jsp?certsernoparameter=" + java.net.URLEncoder.encode( certificateSerialNumbers.get(i)+ "," + certificateIssuerDN.get(i),"UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+			certificateLinks.add( new LinkView(link, EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(CERTSERIALNUMBER) + ": ", (String) certificateSerialNumbers.get(i), ""));
+		}
+		for (int i=0; i<usernames.size(); i++) {
+			try {
+				link = EjbcaJSFHelper.getBean().getEjbcaWebBean().getBaseUrl() + EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath()
+				+ "ra/viewendentity.jsp?username=" + java.net.URLEncoder.encode( (String) usernames.get(i),"UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+			certificateLinks.add( new LinkView(link, EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(USERNAME) + ": ", (String) usernames.get(i), "") );
+		}
+		return certificateLinks;
+	}
+
+	public List getTextListExceptLinks(){
+    	ArrayList textComparisonList = new ArrayList();
+	    if(!initialized){
+			  return textComparisonList;
+	    }
+		List newTextRows = data.getApprovalRequest().getNewRequestDataAsText(EjbcaJSFHelper.getBean().getAdmin());
+		int size = newTextRows.size();
+		for ( int i=0; i<size; i++) {
+  		  if ( ((ApprovalDataText) newTextRows.get(i)).getHeader().equals(CERTSERIALNUMBER) ||
+				  ((ApprovalDataText) newTextRows.get(i)).getHeader().equals(ISSUERDN) ||
+				  ((ApprovalDataText) newTextRows.get(i)).getHeader().equals(USERNAME)) {
+			  continue;
+		  }
+  		  String newString ="";
+  		  try {
+  			  newString = translateApprovalDataText((ApprovalDataText) newTextRows.get(i));
+  		  } catch(ArrayIndexOutOfBoundsException e) {
+  			  // Do nothing orgstring should be "";	
+  		  }
+  		  textComparisonList.add(new TextComparisonView(null, newString));
+    	}
+    	return textComparisonList;
+    }
 
 	public List getTextComparisonList(){
     	ArrayList textComparisonList = new ArrayList();

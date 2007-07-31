@@ -179,7 +179,19 @@ function confirmrevokation(){
       <H4 id="alert"><div align="center"><%= ejbcawebbean.getText("INVALIDQUERY") %></div></H4>
   <% } %>
   <% if(notauthorizedrevokeall){ %>
-      <H4 id="alert"><div align="center"><%= ejbcawebbean.getText("ONLYAUTHORIZEDENDENTITIESDEL") %></div></H4>
+      <H4 id="alert"><div align="center"><%= ejbcawebbean.getText("ONLYAUTHORIZEDENDENTITIESREV") %></div></H4>
+  <% } %>
+  <% if(notfoundall){ %>
+      <H4 id="alert"><div align="center"><%= ejbcawebbean.getText("COULDNOTFINDALLOBJECTS") %></div></H4>
+  <% } %>
+  <% if(notapprovedall){ %>
+      <H4 id="alert"><div align="center"><%= ejbcawebbean.getText("ONLYNONREVENDENTITIESREV") %></div></H4>
+  <% } %>
+  <% if(waitingforapproval){ %>
+      <H4 id="alert"><div align="center"><%= ejbcawebbean.getText("REQHAVEBEENADDEDFORAPPR") %></div></H4>
+  <% } %>
+  <% if(alreadyrevoked){ %>
+      <H4 id="alert"><div align="center"><%= ejbcawebbean.getText("SOMEWEREALREADYREVOKED") %></div></H4>
   <% } %>
   <% if(notauthorizeddeleteall){ %>
       <H4 id="alert"><div align="center"><%= ejbcawebbean.getText("ONLYAUTHORIZEDENDENTITIESDEL") %></div></H4>

@@ -22,7 +22,7 @@ import org.ejbca.core.model.ca.catoken.CATokenInfo;
 /**
  * Holds nonsensitive information about a CA.
  *
- * @version $Id: CAInfo.java,v 1.8 2007-05-04 13:32:15 rolf_s Exp $
+ * @version $Id: CAInfo.java,v 1.9 2007-07-31 13:31:56 jeklund Exp $
  */
 public class CAInfo implements Serializable {
 
@@ -55,9 +55,14 @@ public class CAInfo implements Serializable {
      * Constants indicating approvalsettings for key recover this CA
      */
     public static final int REQ_APPROVAL_KEYRECOVER = 2;
+    
+    /**
+     * Constants indicating approvalsettings for revocations this CA
+     */
+    public static final int REQ_APPROVAL_REVOCATION = 3;
         
-    public static final int[] AVAILABLE_APPROVALSETTINGS={REQ_APPROVAL_ADDEDITENDENTITY, REQ_APPROVAL_KEYRECOVER};
-    public static final String[] AVAILABLE_APPROVALSETTINGS_TEXTS={"APPROVEADDEDITENDENTITY","APPROVEKEYRECOVER"};
+    public static final int[] AVAILABLE_APPROVALSETTINGS={REQ_APPROVAL_ADDEDITENDENTITY, REQ_APPROVAL_KEYRECOVER, REQ_APPROVAL_REVOCATION};
+    public static final String[] AVAILABLE_APPROVALSETTINGS_TEXTS={"APPROVEADDEDITENDENTITY","APPROVEKEYRECOVER", "APPROVEREVOCATION"};
     
     protected String subjectdn;
     protected int caid;

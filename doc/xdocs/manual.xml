@@ -1318,14 +1318,14 @@ pkcs10req, pkcs12req:
 <li>/ca_functionality/create_certificate</li>
 </ul>
 <p>
-revokeCert, revokeToken:
+revokeCert, revokeToken: These calls support approvals.
 </p>
 <ul>
 <li>/ra_functionality/revoke_end_entity</li>
 <li>/ra_functionality/'end entity profile of the user owning the cert'/revoke_end_entity</li>
 </ul>
 <p>
-revokeUser:
+revokeUser: This call support approvals.
 </p>
 <ul>
 <li>/ra_functionality/revoke_end_entity</li>
@@ -1516,7 +1516,7 @@ in the directory dist/xkmscli and consists of the all the necessary files needed
 </p><p>
 To use the client do the following, copy the directory with all included files to
 the computer you want to remote administrate from. (Optionally create a JKS keystore from
-one XKMS Service trusted CAs)and configure the file xkmscli.properties. In this file you should specify the hostname of the CA server, the name of the JKS keystore, the alias and the password to unlock it.
+one XKMS Service trusted CAs) and configure the file xkmscli.properties. In this file you should specify the hostname of the CA server, the name of the JKS keystore, the alias and the password to unlock it.
 </p><p>
 Use 'xkmscli.sh/cmd' for a list of each subcommand and 'xkms.sh/cmd "subcommand"'
 for detailed help how to use the cli.
@@ -1768,11 +1768,15 @@ the http session since the list is cached for performance reasons.
 It is possible to have other administrators (1-5) to approve an action in order to make sure the correct data is entered.
 </p>
 <p>
-Currently are the following actions enabled for approvals :
+Currently are the following actions are enabled for approvals :
 <ul>
 <li>Add End Entity</li>
 <li>Edit End Entity</li>
 <li>Change User Status</li>
+<li>Revoke End Entity</li>
+<li>Revoke Token (approval for each certificate)</li>
+<li>Revoke Certificate</li>
+<li>Reactivate Certificate On Hold</li>
 </ul>
 </p><p>
 In the main menu there is a new option 'Approve Actions' that lets the 
@@ -1783,7 +1787,8 @@ gives his approval or reject the action.
 </p><p>
 Approvals are configured for each CA, in the 'edit CA' page.
 Just select the actions that needs approval and the number of approvers required and save. The actions 'Add End Entity', 
-'Change End Entity' and 'Change User Status' are all covered by the setting 'Add/Edit End Entity'.
+'Change End Entity' and 'Change User Status' are all covered by the setting 'Add/Edit End Entity'. 'Revoke End Entity',
+'Revoke Certificate', 'Revoke Token' and 'Reactivate Certificate' are covered by setting 'Revocation'.
 </p><p>
 <i>Authorizing Approving Administrators</i>
 </p><p>

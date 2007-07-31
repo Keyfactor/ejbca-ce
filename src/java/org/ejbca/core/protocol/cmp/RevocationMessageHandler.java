@@ -35,6 +35,8 @@ import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.InternalResources;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.log.Admin;
@@ -55,7 +57,7 @@ import com.novosec.pkix.asn1.crmf.CertTemplate;
 /**
  * Message handler for certificate request messages in the CRMF format
  * @author tomas
- * @version $Id: RevocationMessageHandler.java,v 1.3 2006-12-13 10:35:09 anatom Exp $
+ * @version $Id: RevocationMessageHandler.java,v 1.4 2007-07-31 13:31:43 jeklund Exp $
  */
 public class RevocationMessageHandler implements ICmpMessageHandler {
 	
@@ -140,6 +142,13 @@ public class RevocationMessageHandler implements ICmpMessageHandler {
 						} catch (FinderException e) {
 							failInfo = FailInfo.BAD_CERTIFICATE_ID;
 							String errMsg = intres.getLocalizedMessage("cmp.errorcertnofound", issuer.toString(), serno.getValue().toString(16));
+							failText = errMsg; 
+							log.error(failText);
+						} catch (WaitingForApprovalException e) {
+							status = ResponseStatus.GRANTED_WITH_MODS;
+						} catch (ApprovalException e) {
+							failInfo = FailInfo.BAD_REQUEST;
+							String errMsg = intres.getLocalizedMessage("cmp.erroralreadyrequested");
 							failText = errMsg; 
 							log.error(failText);
 						}

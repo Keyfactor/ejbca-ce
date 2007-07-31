@@ -65,6 +65,9 @@ import org.bouncycastle.asn1.x509.X509CertificateStructure;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
+import org.ejbca.core.protocol.FailInfo;
+import org.ejbca.core.protocol.ResponseStatus;
+import org.ejbca.core.protocol.cmp.CmpPKIBodyConstants;
 import org.ejbca.util.CertTools;
 
 import com.novosec.pkix.asn1.cmp.CMPObjectIdentifiers;
@@ -96,7 +99,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
 /**
  * Helper class for CMP Junit tests
  * @author tomas
- * @version $Id: CmpTestCase.java,v 1.3 2007-07-24 10:51:41 anatom Exp $
+ * @version $Id: CmpTestCase.java,v 1.4 2007-07-31 13:31:37 jeklund Exp $
  *
  */
 public class CmpTestCase extends TestCase {
@@ -629,31 +632,38 @@ public class CmpTestCase extends TestCase {
 		PKIBody body = respObject.getBody();
 		int tag = body.getTagNo();
 		assertEquals(tag, exptag);
-		if (exptag == 23) {
+		if (exptag == CmpPKIBodyConstants.ERRORMESSAGE) {
 			ErrorMsgContent c = body.getError();
 			assertNotNull(c);
 			PKIStatusInfo info = c.getPKIStatus();
 			assertNotNull(info);
-			assertEquals(2, info.getStatus().getValue().intValue());
+			assertEquals(ResponseStatus.FAILURE.getIntValue(), info.getStatus().getValue().intValue());
 			int i = info.getFailInfo().intValue();
-			assertEquals(i,1<<err); // bit nr 7 (INCORRECT_DATA) set is 128
+			assertEquals(i,1<<err);
 			assertEquals(failMsg, info.getStatusString().getString(0).getString());
+		} else if (exptag == CmpPKIBodyConstants.REVOCATIONRESPONSE) {
+			RevRepContent rrc = body.getRp();
+			assertNotNull(rrc);
+			PKIStatusInfo info = rrc.getPKIStatusInfo(0);
+			assertNotNull(info);
+			assertEquals(ResponseStatus.FAILURE.getIntValue(), info.getStatus().getValue().intValue());
+			assertEquals(FailInfo.BAD_REQUEST.getAsBitString(), info.getFailInfo());
+			assertEquals(failMsg, info.getStatusString().getString(0).getString());			
 		} else {
 			CertRepMessage c = null;
-			if (exptag == 1) {
+			if (exptag == CmpPKIBodyConstants.INITIALIZATIONRESPONSE) {
 				c = body.getIp();
-			} else if (exptag == 3) {
+			} else if (exptag == CmpPKIBodyConstants.CERTIFICATIONRESPONSE) {
 				c = body.getCp();
-			} 
+			}
 			assertNotNull(c);
 			CertResponse resp = c.getResponse(0);
 			assertNotNull(resp);
-			assertEquals(resp.getCertReqId().getValue().intValue(), requestId); 
+			assertEquals(resp.getCertReqId().getValue().intValue(), requestId);
 			PKIStatusInfo info = resp.getStatus();
 			assertNotNull(info);
-			assertEquals(2, info.getStatus().getValue().intValue());
-			int i = info.getFailInfo().intValue();
-			assertEquals(i,1<<7); // bit nr 7 (INCORRECT_DATA) set is 128
+			assertEquals(ResponseStatus.FAILURE.getIntValue(), info.getStatus().getValue().intValue());
+			assertEquals(FailInfo.INCORRECT_DATA.getAsBitString(), info.getFailInfo());
 			assertEquals(failMsg, info.getStatusString().getString(0).getString());			
 		}
     }

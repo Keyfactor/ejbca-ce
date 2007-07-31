@@ -53,6 +53,7 @@ import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalExecutorUtil;
 import org.ejbca.core.model.approval.ApprovalOveradableClassName;
@@ -60,6 +61,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -68,6 +70,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
+import org.ejbca.core.model.ra.BadRequestException;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RAAuthorization;
@@ -94,7 +97,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.41 2007-06-15 13:24:25 jeklund Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.42 2007-07-31 13:32:04 jeklund Exp $
  * 
  * @ejb.bean
  *   display-name="UserAdminSB"
@@ -839,7 +842,43 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 
         debug("<setUserStatus(" + username + ", " + status + ")");
     } // setUserStatus
-    
+
+    /**
+     * Get the current status of a user. 
+     * @param admin is the requesting admin
+     * @param username is the user to get the status for
+     * @return one of the UserDataConstants.STATUS_
+     */
+    public int getUserStatus(Admin admin, String username) throws AuthorizationDeniedException, FinderException {
+        debug(">getUserStatus(" + username + ")");
+        // Check if administrator is authorized to edit user.
+        int caid = LogConstants.INTERNALCAID;
+        int status;
+        try {
+            UserDataPK pk = new UserDataPK(username);
+            UserDataLocal data1 = home.findByPrimaryKey(pk);
+            caid = data1.getCaId();
+            if (!authorizedToCA(admin, caid)) {
+                String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
+                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY, msg);
+                throw new AuthorizationDeniedException(msg);
+            }
+            if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
+                if (!authorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AvailableAccessRules.EDIT_RIGHTS)) {
+                    String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data1.getEndEntityProfileId()));            	
+                    logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY, msg);
+                    throw new AuthorizationDeniedException(msg);
+                }
+            }
+             status = data1.getStatus();
+        } catch (FinderException e) {
+            String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
+            logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_ERROR_CHANGEDENDENTITY, msg);
+            throw e;
+        }
+        debug("<getUserStatus(" + username + ", " + status + ")");
+        return status;
+    } // getUserStatus
 
     /**
      * Sets a new password for a user.
@@ -975,21 +1014,77 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         return ret;
     } // verifyPassword
 
+	private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_REVOKEANDDELETEUSER = {
+		new ApprovalOveradableClassName("org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest",null),
+	};
+
     /**
-     * Method that revokes a user.
-     *
-     * @param username the username to revoke.
      * @ejb.interface-method
      */
-    public void revokeUser(Admin admin, String username, int reason) throws AuthorizationDeniedException, FinderException {
-        debug(">revokeUser(" + username + ")");
+    public void revokeAndDeleteUser(Admin admin, String username, int reason) throws AuthorizationDeniedException,
+		ApprovalException, WaitingForApprovalException, RemoveException, NotFoundException {
         UserDataPK pk = new UserDataPK(username);
         UserDataLocal data;
         try {
             data = home.findByPrimaryKey(pk);
-        } catch (ObjectNotFoundException oe) {
-            throw new EJBException(oe);
+		} catch (FinderException e) {
+			throw new NotFoundException ("User " + username + "not found."); 
         }
+    	// Authorized?
+        int caid = data.getCaId();
+        if (!authorizedToCA(admin, caid)) {
+            String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
+            logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_ERROR_REVOKEDENDENTITY, msg);
+            throw new AuthorizationDeniedException(msg);
+        }
+
+        if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
+            if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AvailableAccessRules.REVOKE_RIGHTS)) {
+                String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data.getEndEntityProfileId()));            	
+                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_ERROR_REVOKEDENDENTITY, msg);
+                throw new AuthorizationDeniedException(msg);
+            }
+        }
+    	try {
+	        if ( getUserStatus(admin, username) != UserDataConstants.STATUS_REVOKED ) {
+		        // Check if approvals is required.
+		        int numOfReqApprovals = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_REVOCATION, data.getCaId());
+		        RevocationApprovalRequest ar = new RevocationApprovalRequest(true, username, reason, admin,
+		        		numOfReqApprovals, data.getCaId(), data.getEndEntityProfileId());
+		        if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKEANDDELETEUSER)) {
+		        	getApprovalSession().addApprovalRequest(admin, ar);
+		            String msg = intres.getLocalizedMessage("ra.approvalrevoke");            	
+		        	throw new WaitingForApprovalException(msg);
+		        }
+		    	try {
+		    		revokeUser(admin, username, reason);
+		    	} catch (BadRequestException e) {
+		    		// This just means that the end endtity was revoked before this request could be completed. No harm.
+		    	}
+	        }
+		} catch (FinderException e) {
+			throw new NotFoundException ("User " + username + "not found."); 
+		}
+		deleteUser(admin, username);
+    }
+
+	private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_REVOKEUSER = {
+		new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.LocalUserAdminSessionBean","revokeAndDeleteUser"),
+		new ApprovalOveradableClassName("org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest",null),
+	};
+
+    /**
+     * Method that revokes a user.
+     *
+     * @param username the username to revoke.
+     * @throws BadRequestException 
+     * @ejb.interface-method
+     */
+    public void revokeUser(Admin admin, String username, int reason) throws AuthorizationDeniedException, FinderException,
+    	ApprovalException, WaitingForApprovalException, BadRequestException {
+        debug(">revokeUser(" + username + ")");
+        UserDataPK pk = new UserDataPK(username);
+        UserDataLocal data = home.findByPrimaryKey(pk);
 
         int caid = data.getCaId();
         if (!authorizedToCA(admin, caid)) {
@@ -1005,7 +1100,21 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                 throw new AuthorizationDeniedException(msg);
             }
         }
-
+        if ( getUserStatus(admin, username) == UserDataConstants.STATUS_REVOKED ) {
+            String msg = intres.getLocalizedMessage("ra.errorbadrequest", new Integer(data.getEndEntityProfileId()));            	
+            logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_ERROR_REVOKEDENDENTITY, msg);
+            throw new BadRequestException(msg);
+        }
+        // Check if approvals is required.
+        int numOfReqApprovals = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_REVOCATION, data.getCaId());
+        RevocationApprovalRequest ar = new RevocationApprovalRequest(false, username, reason, admin,
+        		numOfReqApprovals, data.getCaId(), data.getEndEntityProfileId());
+        if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKEUSER)) {
+        	getApprovalSession().addApprovalRequest(admin, ar);
+            String msg = intres.getLocalizedMessage("ra.approvalrevoke");            	
+        	throw new WaitingForApprovalException(msg);
+        }
+        // Perform revokation
         CertificateProfile prof = this.certificatesession.getCertificateProfile(admin, data.getCertificateProfileId());
         Collection publishers;
         if (prof == null) {
@@ -1024,9 +1133,13 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         String msg = intres.getLocalizedMessage("ra.revokedentity", username);            	
         logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_INFO_REVOKEDENDENTITY, msg);
         debug("<revokeUser()");
-    } // revokeUser
+    }
 
-    /**
+	private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_REVOKECERT = {
+		new ApprovalOveradableClassName("org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest",null),
+	};
+
+	/**
      * Method that revokes a certificate.
      *
      * @param admin the adminsitrator performing the action
@@ -1035,9 +1148,10 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @param reason    the reason of revokation, one of the RevokedCertInfo.XX constants.
      * @ejb.interface-method
      */
-    public void revokeCert(Admin admin, BigInteger certserno, String issuerdn, String username, int reason) throws AuthorizationDeniedException, FinderException {
+    public void revokeCert(Admin admin, BigInteger certserno, String issuerdn, String username, int reason) throws AuthorizationDeniedException,
+    		FinderException, ApprovalException, WaitingForApprovalException {
         debug(">revokeCert(" + certserno + ", IssuerDN: " + issuerdn + ", username, " + username + ")");
-        UserDataPK pk = new UserDataPK(username);
+        UserDataPK pk = new UserDataPK(username);	// TODO: Fetch this from certstoresession instead
         UserDataLocal data;
         try {
             data = home.findByPrimaryKey(pk);
@@ -1046,14 +1160,12 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         }
         // Check that the user have revokation rigths.
         authorizationsession.isAuthorizedNoLog(admin, AvailableAccessRules.REGULAR_REVOKEENDENTITY);
-
         int caid = data.getCaId();
         if (!authorizedToCA(admin, caid)) {
             String msg = intres.getLocalizedMessage("ra.errorauthca", new Integer(caid));            	
             logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_ERROR_REVOKEDENDENTITY, msg);
             throw new AuthorizationDeniedException(msg);
         }
-
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
             if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AvailableAccessRules.REVOKE_RIGHTS)) {
                 String msg = intres.getLocalizedMessage("ra.errorauthprofile", new Integer(data.getEndEntityProfileId()));            	
@@ -1061,15 +1173,36 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
                 throw new AuthorizationDeniedException(msg);
             }
         }
+        RevokedCertInfo revinfo = certificatesession.isRevoked(admin, issuerdn, certserno);
+        if ( revinfo == null ) {
+            String msg = intres.getLocalizedMessage("ra.errorfindentitycert", issuerdn, certserno.toString(16));            	
+            logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_ERROR_REVOKEDENDENTITY, msg);
+        	throw new FinderException(msg);
+        }
         // Check that unrevocation is not done on anything that can not be unrevoked
         if (reason == RevokedCertInfo.NOT_REVOKED) {
-            RevokedCertInfo revinfo = certificatesession.isRevoked(admin, issuerdn, certserno);        
-            if ( (revinfo == null) || (revinfo != null && revinfo.getReason() != RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD) ) {
+            if ( revinfo.getReason() != RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD ) {
                 String msg = intres.getLocalizedMessage("ra.errorunrevokenotonhold", issuerdn, certserno.toString(16));            	
                 logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_ERROR_REVOKEDENDENTITY, msg);
                 throw new AuthorizationDeniedException(msg);
             }            
+        } else {
+            if ( revinfo.getReason() != RevokedCertInfo.NOT_REVOKED ) {
+                String msg = intres.getLocalizedMessage("ra.errorrevocationexists");            	
+                logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_ERROR_REVOKEDENDENTITY, msg);
+                throw new AuthorizationDeniedException(msg);
+            }            
         }
+        // Check if approvals is required.
+        int numOfReqApprovals = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_REVOCATION, data.getCaId());
+        RevocationApprovalRequest ar = new RevocationApprovalRequest(certserno, issuerdn, username, reason, admin,
+        		numOfReqApprovals, data.getCaId(), data.getEndEntityProfileId());
+        if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKECERT)) {
+        	getApprovalSession().addApprovalRequest(admin, ar);
+            String msg = intres.getLocalizedMessage("ra.approvalrevoke");            	
+        	throw new WaitingForApprovalException(msg);
+        }
+        // Perform revokation
         CertificateProfile prof = this.certificatesession.getCertificateProfile(admin, data.getCertificateProfileId());
         Collection publishers;
         if (prof == null) {
@@ -1077,15 +1210,13 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         } else {
             publishers = prof.getPublisherList();
         }
-        // revoke certificate in database and all publishers
+        // Revoke certificate in database and all publishers
         certificatesession.setRevokeStatus(admin, issuerdn, certserno, publishers, reason);
-        
         // Reset the revocation code identifier used in XKMS
         ExtendedInformation inf = data.getExtendedInformation();
         if (inf != null) {
             inf.setRevocationCodeIdentifier(null);        	
         }
-        
         if (certificatesession.checkIfAllRevoked(admin, username)) {
             try {
     			setUserStatus(admin, username, UserDataConstants.STATUS_REVOKED);
@@ -1118,14 +1249,16 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @param certserno serial number of certificate to reactivate.
      * @param issuerdn the issuerdn of certificate to reactivate.
      * @param username the username joined to the certificate.
+     * @throws WaitingForApprovalException 
+     * @throws ApprovalException 
      * @ejb.interface-method
      */
-    public void unRevokeCert(Admin admin, BigInteger certserno, String issuerdn, String username) throws AuthorizationDeniedException, FinderException {
+    public void unRevokeCert(Admin admin, BigInteger certserno, String issuerdn, String username) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException {
         log.debug(">unrevokeCert()");
         revokeCert(admin, certserno, issuerdn, username, RevokedCertInfo.NOT_REVOKED);
         log.debug("<unrevokeCert()");
     }
-    
+
     /**
      * Finds a user.
      *

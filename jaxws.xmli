@@ -205,6 +205,8 @@
             <classpath refid="jaxws.test.classpath" />
         	<include name="org/ejbca/core/protocol/ws/Test*" />
         </javac>
+        <!-- jndi.properties needs to be in the classpath, if it exists (not for glassfish) -->
+        <copy file="${src.java}/jndi.properties" todir="${test.dir}" failonerror="false"/>
     </target>
 	
     <target name="test:runws" depends="test:compilews,j2ee:assert-run" description="run JAXWS JUnit testcases">

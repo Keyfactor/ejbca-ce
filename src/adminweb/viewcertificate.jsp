@@ -125,8 +125,15 @@
      int reason = Integer.parseInt(request.getParameter(SELECT_REVOKE_REASON));
      certificatedata = rabean.getCertificate(currentindex);
      if(!cacerts && rabean.authorizedToRevokeCert(certificatedata.getUsername()) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) 
-        && !certificatedata.isRevoked())   
-       rabean.revokeCert(certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDN(), certificatedata.getUsername(),reason);
+        && !certificatedata.isRevoked()) {
+		try {
+	    	rabean.revokeCert(certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDN(), certificatedata.getUsername(),reason);
+		} catch (org.ejbca.core.model.approval.ApprovalException e) {
+			message = "THEREALREADYEXISTSAPPOBJ";
+		} catch (org.ejbca.core.model.approval.WaitingForApprovalException e) {
+			message = "REQHAVEBEENADDEDFORAPPR";
+		}
+	 }
      try {
        if(tokensn !=null) {
          rabean.loadTokenCertificates(tokensn,username);
@@ -154,7 +161,13 @@
 			&& ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) && certificatedata.isRevoked()
 			&& "CERTIFICATEHOLD".equals(certificatedata.getRevokationReasons()[0])){
 				//-- call to unrevoke method
-				rabean.unrevokeCert(certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDN(), certificatedata.getUsername());
+				try {
+					rabean.unrevokeCert(certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDN(), certificatedata.getUsername());
+				} catch (org.ejbca.core.model.approval.ApprovalException e) {
+					message = "THEREALREADYEXISTSAPPOBJ";
+				} catch (org.ejbca.core.model.approval.WaitingForApprovalException e) {
+					message = "REQHAVEBEENADDEDFORAPPR";
+				}
 		}
 		
 		try {

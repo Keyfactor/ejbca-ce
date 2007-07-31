@@ -48,6 +48,8 @@ import org.ejbca.core.ejb.hardtoken.IHardTokenSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionHome;
 import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.IllegalKeyException;
@@ -89,8 +91,8 @@ import org.ejbca.util.CertTools;
  * password is needed. The path could be absolute or relative.<br>
  * </p>
  *
- * @author Original code by Lars Silvén
- * @version $Id: CardCertReqServlet.java,v 1.13 2007-01-03 14:34:11 anatom Exp $
+ * @author Original code by Lars Silvï¿½n
+ * @version $Id: CardCertReqServlet.java,v 1.14 2007-07-31 13:31:50 jeklund Exp $
  */
 public class CardCertReqServlet extends HttpServlet {
 	private final static Logger log = Logger.getLogger(CardCertReqServlet.class);
@@ -221,11 +223,20 @@ public class CardCertReqServlet extends HttpServlet {
                     final byte[] signb64cert=pkcs10CertRequest(administrator, signsession, signReqBytes, username, data.getPassword());
 
 
-                    for (int i=0; i<notRevokedCerts.length; i++)
-                        adminsession.revokeCert(administrator, notRevokedCerts[i].getSerialNumber(),
-                                                notRevokedCerts[i].getIssuerDN().toString(), username,
-                                                RevokedCertInfo.REVOKATION_REASON_SUPERSEDED);
-
+                    for (int i=0; i<notRevokedCerts.length; i++) {
+                    	try {
+                        	adminsession.revokeCert(administrator, notRevokedCerts[i].getSerialNumber(),
+                                    notRevokedCerts[i].getIssuerDN().toString(), username,
+                                    RevokedCertInfo.REVOKATION_REASON_SUPERSEDED);
+                    	} catch (WaitingForApprovalException e) {
+                    		log.info("A request for approval to revoke " + username + "'s old certificate "+
+                    				notRevokedCerts[i].getSerialNumber().toString(16)+" was added.");
+                    	} catch (ApprovalException e) {
+                    		log.info("A request for approval to revoke " + username + "'s old certificate "+
+                    				notRevokedCerts[i].getSerialNumber().toString(16)+" already exists.");
+                    	}
+                    }
+                        
                     sendCertificates(authb64cert, signb64cert, response,  getServletContext(),
                                      getInitParameter("responseTemplate"), notRevokedCerts);
                     } catch( Throwable t ) {

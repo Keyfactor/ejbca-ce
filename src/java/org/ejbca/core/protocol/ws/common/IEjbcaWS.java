@@ -12,6 +12,7 @@ import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
 import org.ejbca.core.model.hardtoken.HardTokenExistsException;
+import org.ejbca.core.model.ra.BadRequestException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.ra.userdatasource.MultipleMatchException;
@@ -55,7 +56,7 @@ import org.ejbca.util.query.IllegalQueryException;
  * otherwise will a AuthorizationDenied Exception be thrown.
  * 
  * @author Philip Vendil
- * $Id: IEjbcaWS.java,v 1.6 2007-07-05 05:55:08 herrvendil Exp $
+ * $Id: IEjbcaWS.java,v 1.7 2007-07-31 13:31:58 jeklund Exp $
  */
 public interface IEjbcaWS {
 	
@@ -205,11 +206,13 @@ public interface IEjbcaWS {
 	 * or use RevokedCertInfo.NOT_REVOKED to unrevoke a certificate on hold.
 	 * @throws AuthorizationDeniedException if client isn't authorized.
 	 * @throws NotFoundException if certificate doesn't exist
+	 * @throws WaitingForApprovalException If request has bean added to list of tasks to be approved
+	 * @throws ApprovalException There already exists an approval request for this task
 	 */
 
 	public abstract void revokeCert(String issuerDN, String certificateSN,
 			int reason) throws AuthorizationDeniedException, NotFoundException,
-			EjbcaException;
+			EjbcaException, ApprovalException, WaitingForApprovalException;
 
 	/**
 	 * Method used to revoke all a users certificates. It is also possible to delete
@@ -228,10 +231,14 @@ public interface IEjbcaWS {
 	 * @param deleteUser deletes the users after all the certificates have been revoked.
 	 * @throws AuthorizationDeniedException if client isn't authorized.
 	 * @throws NotFoundException if user doesn't exist
+	 * @throws WaitingForApprovalException if request has bean added to list of tasks to be approved
+	 * @throws ApprovalException if there already exists an approval request for this task
+	 * @throws BadRequestException if the user already was revoked
 	 */
 	public abstract void revokeUser(String username, int reason,
 			boolean deleteUser) throws AuthorizationDeniedException,
-			NotFoundException, EjbcaException;
+			NotFoundException, EjbcaException, ApprovalException,
+			WaitingForApprovalException;
 
 	/**
 	 * Method used to revoke all certificates mapped to one hardtoken.
@@ -247,11 +254,14 @@ public interface IEjbcaWS {
 	 * @param reasonfor revokation, one of RevokedCertInfo.REVOKATION_REASON_ constants
 	 * @throws AuthorizationDeniedException if client isn't authorized.
 	 * @throws NotFoundException if token doesn't exist
+	 * @throws WaitingForApprovalException If request has bean added to list of tasks to be approved
+	 * @throws ApprovalException There already exists an approval request for this task
 	 */
 
 	public abstract void revokeToken(String hardTokenSN, int reason)
 			throws RemoteException, AuthorizationDeniedException,
-			NotFoundException, EjbcaException;
+			NotFoundException, EjbcaException, ApprovalException,
+			WaitingForApprovalException;
 
 	/**
 	 * Method returning the revokestatus for given user

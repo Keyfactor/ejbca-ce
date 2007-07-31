@@ -173,7 +173,12 @@
   boolean largeresult             = false;
   boolean notauthorizedrevokeall  = false; 
   boolean notauthorizeddeleteall  = false; 
-  boolean notauthorizedchangeall  = false; 
+  boolean notauthorizedchangeall  = false;
+  boolean notfoundall             = false;
+  boolean notapprovedall          = false;
+  boolean waitingforapproval      = false;
+  boolean alreadyrevoked          = false;
+  boolean notremoveall            = false;
 
   int filtermode = ejbcawebbean.getLastFilterMode();
 
@@ -258,8 +263,20 @@
            for(int i = 0; i < indexes.size(); i++){
              index = ((java.lang.Integer) indexes.elementAt(i)).intValue();
              usernames[i] = java.net.URLDecoder.decode(request.getParameter(HIDDEN_USERNAME+index),"UTF-8");
+             try {
+             	rabean.revokeUser(usernames[i], Integer.parseInt(reason));
+             } catch (org.ejbca.core.model.authorization.AuthorizationDeniedException e) {
+             	notauthorizedrevokeall = true;
+             } catch (javax.ejb.FinderException e) {
+             	notfoundall = true;
+             } catch (org.ejbca.core.model.approval.ApprovalException e) {
+             	notapprovedall = true;
+             } catch (org.ejbca.core.model.approval.WaitingForApprovalException e) {
+             	waitingforapproval = true;
+             } catch (org.ejbca.core.model.ra.BadRequestException e) {
+             	alreadyrevoked = true;
+             }
            }
-           notauthorizedrevokeall = !rabean.revokeUsers(usernames, Integer.parseInt(reason));
          }
         }
       }
@@ -286,11 +303,21 @@
            for(int i = 0; i < indexes.size(); i++){
              index = ((java.lang.Integer) indexes.elementAt(i)).intValue();
              usernames[i] = java.net.URLDecoder.decode(request.getParameter(HIDDEN_USERNAME+index),"UTF-8");
+             try {
+             	rabean.revokeAndDeleteUser(usernames[i], Integer.parseInt(reason));
+             } catch (org.ejbca.core.model.authorization.AuthorizationDeniedException e) {
+             	notauthorizedrevokeall = true;
+             	notauthorizeddeleteall = true;
+             } catch (org.ejbca.core.model.ra.NotFoundException e) {
+             	notfoundall = true;
+             } catch (javax.ejb.RemoveException e) {
+             	notremoveall = true;
+             } catch (org.ejbca.core.model.approval.ApprovalException e) {
+             	notapprovedall = true;
+             } catch (org.ejbca.core.model.approval.WaitingForApprovalException e) {
+             	waitingforapproval = true;
+             }
            }           
-           if(rabean.revokeUsers(usernames, Integer.parseInt(reason)))
-             notauthorizeddeleteall = !rabean.deleteUsers(usernames);
-           else
-             notauthorizedrevokeall = true;   
          }
         }
       }

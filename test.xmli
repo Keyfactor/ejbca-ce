@@ -31,6 +31,7 @@
             <batchtest fork="yes" todir="${test.dir}/reports">
                 <fileset dir="${test.dir}">
                 	<include name="org/ejbca/core/model/Test*" />
+                	<include name="org/ejbca/core/model/approval/approvalrequests/Test*" />
                 	<exclude name="org/ejbca/core/protocol/ws/Test*" />
                     <include name="org/ejbca/util/**/Test*" />
                     <include name="org/ejbca/core/model/ca/certextensions/Test*" />

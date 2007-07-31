@@ -1,3 +1,3 @@
 #!/bin/sh
 
-java  -jar ejbcawscli.jar $*
+java -jar ejbcawscli.jar "$@"

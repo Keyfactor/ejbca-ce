@@ -13,8 +13,10 @@
  
 package org.ejbca.ui.cli;
 
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.model.ra.BadRequestException;
 import org.ejbca.core.model.ra.UserDataVO;
 
 
@@ -24,7 +26,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 /**
  * Revokes a user in the database, and also revokes all the users certificates.
  *
- * @version $Id: RaRevokeUserCommand.java,v 1.4 2006-08-12 09:49:30 herrvendil Exp $
+ * @version $Id: RaRevokeUserCommand.java,v 1.5 2007-07-31 13:31:41 jeklund Exp $
  */
 public class RaRevokeUserCommand extends BaseRaAdminCommand {
     /**
@@ -64,15 +66,19 @@ public class RaRevokeUserCommand extends BaseRaAdminCommand {
                 getOutputStream().println("username=" + data.getUsername());
                 getOutputStream().println("dn=\"" + data.getDN() + "\"");
                 getOutputStream().println("Old status=" + data.getStatus());
-                getAdminSession().setUserStatus(administrator, username,
-                        UserDataConstants.STATUS_REVOKED);
-                getOutputStream().println("New status=" + UserDataConstants.STATUS_REVOKED);
-
                 // Revoke users certificates
                 try {
                     getAdminSession().revokeUser(administrator, username, reason);
+                    data = getAdminSession().findUser(administrator, username);
+                    getOutputStream().println("New status=" + data.getStatus());
                 } catch (AuthorizationDeniedException e) {
                     getOutputStream().println("Error : Not authorized to revoke user.");
+                } catch (ApprovalException e) {
+                	getOutputStream().println("Error : Revocation already requested.");
+                } catch (WaitingForApprovalException e) {
+                	getOutputStream().println("Revocation request has been sent for approval.");
+                } catch (BadRequestException e) {
+                	getOutputStream().println("Error: User is already revoked.");
                 }
             }
         } catch (Exception e) {

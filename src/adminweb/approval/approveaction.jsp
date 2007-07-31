@@ -93,7 +93,7 @@ function viewcert(link){
         </h:column>
       </h:dataTable>
      </f:subview>
-     <f:subview id="shownoncmp" rendered="#{!approvalActionSession.approvalRequestComparable}">
+     <f:subview id="shownoncmp" rendered="#{!approvalActionSession.approvalRequestComparable and !approvalActionSession.approveRequestData.containingLink}">
       <p align="center">
       <h:dataTable value="#{approvalActionSession.approveRequestData.textComparisonList}" var="singleTextCompareRow"  width="100%">
         <h:column>
@@ -105,9 +105,30 @@ function viewcert(link){
       </h:dataTable>
       </p>
      </f:subview>
+     <f:subview id="shownoncmpwithlinks" rendered="#{!approvalActionSession.approvalRequestComparable and approvalActionSession.approveRequestData.containingLink}">
+      <p align="center">
+      <h:dataTable value="#{approvalActionSession.approveRequestData.textListExceptLinks}" var="singleTextCompareRow"  width="100%">
+        <h:column>
+          <f:facet name="header">
+            <h:outputText value="#{web.text.REQUESTEDACTIONDATA}"/>
+          </f:facet>
+          <h:outputText value="#{singleTextCompareRow.newvalue}"/>
+        </h:column>
+      </h:dataTable>
+      <h:dataTable value="#{approvalActionSession.approveRequestData.approvalDataLinks}" var="link"  width="100%">
+        <h:column>
+          <h:outputText value="#{link.preDescription}"/>
+          <h:outputLink value="#{link.URI}" target="Viewinfo" onclick="#{approvalView.viewApproverCertLink}">
+            <h:outputText value="#{link.description}"/>
+          </h:outputLink>
+          <h:outputText value="#{link.postDescription}"/>
+        </h:column>
+      </h:dataTable>
+      </p>
+     </f:subview>
   </f:verbatim>
-<br>
-<br>
+<br/>
+<br/>
     <h3 align="center"><h:outputText value="#{web.text.APPROVEDBY}"/></h3>
  
   <h:dataTable id="approvalTable" value="#{approvalActionSession.approvalViews}" var="approvalView" width="100%">

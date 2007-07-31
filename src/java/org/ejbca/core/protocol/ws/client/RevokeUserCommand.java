@@ -14,13 +14,19 @@
 package org.ejbca.core.protocol.ws.client;
 
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.NotFoundException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 import org.ejbca.core.protocol.ws.client.gen.UserMatch;
+import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 //import org.ejbca.core.protocol.ws.wsclient.UserDataVOWS;
 //import org.ejbca.core.protocol.ws.wsclient.UserMatch;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -30,7 +36,7 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 /**
  * Revokes a given users certificate and set's it status to REVOKED
  *
- * @version $Id: RevokeUserCommand.java,v 1.2 2006-10-08 22:53:26 herrvendil Exp $
+ * @version $Id: RevokeUserCommand.java,v 1.3 2007-07-31 13:31:49 jeklund Exp $
  */
 public class RevokeUserCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
@@ -93,9 +99,13 @@ public class RevokeUserCommand extends EJBCAWSRABaseCommand implements IAdminCom
             	
             	getEjbcaRAWS().revokeUser(username,reason,delete);            	         
                 getPrintStream().println("User revoked sucessfully");
-            }catch(AuthorizationDeniedException_Exception e){
+            } catch(AuthorizationDeniedException_Exception e) {
             	getPrintStream().println("Error : " + e.getMessage());            
-            }
+			} catch (WaitingForApprovalException_Exception e) {
+            	getPrintStream().println("The revocation request has been sent for approval.");            
+			} catch (ApprovalException_Exception e) {
+            	getPrintStream().println("This revocation has already been requested.");            
+			}
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }
@@ -117,7 +127,7 @@ public class RevokeUserCommand extends EJBCAWSRABaseCommand implements IAdminCom
 
 	protected void usage() {
 		getPrintStream().println("Command used to revoke a users certificate");
-		getPrintStream().println("Usage : revokecert <hardtokensn> <reason> <delete (true|false)> \n\n");
+		getPrintStream().println("Usage : revokeuser <username> <reason> <delete (true|false)> \n\n");
 		getPrintStream().println("Reason should be one of : ");
 		for(int i=1; i< REASON_TEXTS.length-1;i++){
 			getPrintStream().print(REASON_TEXTS[i] + ", ");

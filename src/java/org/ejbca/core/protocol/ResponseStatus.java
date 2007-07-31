@@ -12,9 +12,9 @@
  *************************************************************************/
  
 /**
- * $Header: /home/tomas/Dev/cvs2svn/ejbca-cvsbackup/ejbca/src/java/org/ejbca/core/protocol/ResponseStatus.java,v 1.1 2006-01-17 20:28:06 anatom Exp $
- * $Revision: 1.1 $
- * $Date: 2006-01-17 20:28:06 $
+ * $Header: /home/tomas/Dev/cvs2svn/ejbca-cvsbackup/ejbca/src/java/org/ejbca/core/protocol/ResponseStatus.java,v 1.2 2007-07-31 13:31:54 jeklund Exp $
+ * $Revision: 1.2 $
+ * $Date: 2007-07-31 13:31:54 $
  *
  */
 package org.ejbca.core.protocol;
@@ -34,6 +34,12 @@ public class ResponseStatus implements Serializable {
      */
     public static final ResponseStatus SUCCESS = new ResponseStatus(0);
 
+    /**
+     * Request granted with mods. Indicates the requester got something like what you asked for.
+     * The requester is responsible for ascertaining the differences.
+     */
+    public static final ResponseStatus GRANTED_WITH_MODS = new ResponseStatus(1);
+    
     /**
      * Request rejected
      */
@@ -61,6 +67,9 @@ public class ResponseStatus implements Serializable {
         return Integer.toString(value);
     }
 
+    public int getIntValue() {
+    	return value;
+    }
 
     public boolean equals(Object o) {
         if (this == o) return true;

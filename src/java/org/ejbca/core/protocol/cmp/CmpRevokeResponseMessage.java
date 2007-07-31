@@ -46,7 +46,7 @@ import com.novosec.pkix.asn1.cmp.RevRepContent;
 /**
  * A very simple confirmation message, no protection and a nullbody
  * @author tomas
- * @version $Id: CmpRevokeResponseMessage.java,v 1.2 2006-11-09 11:03:14 anatom Exp $
+ * @version $Id: CmpRevokeResponseMessage.java,v 1.3 2007-07-31 13:31:43 jeklund Exp $
  */
 public class CmpRevokeResponseMessage extends BaseCmpMessage implements IResponseMessage {
 
@@ -116,7 +116,7 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements IRespons
 		PKIHeader myPKIHeader = CmpMessageHelper.createPKIHeader(sender, recipient, getSenderNonce(), getRecipientNonce(), getTransactionId());
 
 		PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(new DERInteger(0)); // 0 = accepted
-		if (status != ResponseStatus.SUCCESS) {
+		if (status != ResponseStatus.SUCCESS && status != ResponseStatus.GRANTED_WITH_MODS) {
 			log.debug("Creating a rejection message");
 			myPKIStatusInfo = new PKIStatusInfo(new DERInteger(2)); // 2 = rejection			
 			myPKIStatusInfo.setFailInfo(failInfo.getAsBitString());
@@ -126,7 +126,7 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements IRespons
 		}
 		RevRepContent myRevrepMessage = new RevRepContent(myPKIStatusInfo);
 
-		PKIBody myPKIBody = new PKIBody(myRevrepMessage, 12); // 12 = RevRepContent 
+		PKIBody myPKIBody = new PKIBody(myRevrepMessage, CmpPKIBodyConstants.REVOCATIONRESPONSE);
 		PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
 
 		if ((getPbeDigestAlg() != null) && (getPbeMacAlg() != null) && (getPbeKeyId() != null) && (getPbeKey() != null) ) {

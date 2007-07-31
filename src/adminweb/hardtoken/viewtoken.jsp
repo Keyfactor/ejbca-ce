@@ -73,7 +73,13 @@
        tokensn  = request.getParameter(TOKENSN_PARAMETER);  
         if(rabean.authorizedToRevokeCert(username) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) 
           && !rabean.isAllTokenCertificatesRevoked(tokensn, username))   
-          rabean.revokeTokenCertificates(tokensn, username, Integer.parseInt(reasonstring));   
+	    	try{
+	          rabean.revokeTokenCertificates(tokensn, username, Integer.parseInt(reasonstring));   
+	        }catch(org.ejbca.core.model.approval.ApprovalException e){
+	     	   message = ejbcawebbean.getText("THEREALREADYEXISTSAPPOBJ");
+	        }catch(org.ejbca.core.model.approval.WaitingForApprovalException e){
+	     	   message = ejbcawebbean.getText("REQHAVEBEENADDEDFORAPPR");
+	        } 
      }
    }else{
      String indexstring = request.getParameter(INDEX_PARAMETER);  
@@ -85,7 +91,13 @@
        token = tokenbean.getHardTokenViewWithIndex(username, index, includePUK);
         if(rabean.authorizedToRevokeCert(username) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) 
           && !rabean.isAllTokenCertificatesRevoked(token.getTokenSN(), username))
-          rabean.revokeTokenCertificates(token.getTokenSN(), username, Integer.parseInt(reasonstring));  
+	    	try{
+	          rabean.revokeTokenCertificates(token.getTokenSN(), username, Integer.parseInt(reasonstring));  
+	        }catch(org.ejbca.core.model.approval.ApprovalException e){
+	     	   message = ejbcawebbean.getText("THEREALREADYEXISTSAPPOBJ");
+	        }catch(org.ejbca.core.model.approval.WaitingForApprovalException e){
+	     	   message = ejbcawebbean.getText("REQHAVEBEENADDEDFORAPPR");
+	        } 
      }         
    }
   } 

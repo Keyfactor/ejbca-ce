@@ -13,9 +13,13 @@
  
 package org.ejbca.ui.cli;
 
+import java.security.cert.X509Certificate;
+import java.util.Iterator;
+
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 
 
@@ -25,7 +29,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 /**
  * Revokes a user in the database, and also revokes all the users certificates.
  *
- * @version $Id: RaUnRevokeUserCommand.java,v 1.3 2006-08-12 09:49:30 herrvendil Exp $
+ * @version $Id: RaUnRevokeUserCommand.java,v 1.4 2007-07-31 13:31:41 jeklund Exp $
  */
 public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
     /**
@@ -58,15 +62,33 @@ public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
             getOutputStream().println("username=" + data.getUsername());
             getOutputStream().println("dn=\"" + data.getDN() + "\"");
             getOutputStream().println("Old status=" + data.getStatus());
-            getAdminSession().setUserStatus(administrator, username,
-            		UserDataConstants.STATUS_GENERATED);
-            getOutputStream().println("New status=" + UserDataConstants.STATUS_GENERATED);
-
             // Revoke users certificates
             try {
-            	getAdminSession().revokeUser(administrator, username, RevokedCertInfo.NOT_REVOKED);
+            	boolean foundCertificateOnHold = false;
+            	// Find all user certs
+            	Iterator i = getCertificateStoreSession().findCertificatesByUsername(administrator, username).iterator();
+            	while (i.hasNext()) {
+            		X509Certificate cert = (X509Certificate) i.next();
+            		if (getCertificateStoreSession().isRevoked(administrator, cert.getIssuerDN().toString(),
+            				cert.getSerialNumber()).getReason() == RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD) {
+            			foundCertificateOnHold = true;
+            			try {
+                			getAdminSession().unRevokeCert(administrator, cert.getSerialNumber(), cert.getIssuerDN().toString(), username);
+                        } catch (ApprovalException e) {
+                        	getOutputStream().println("Error : Reactivation already requested.");
+                        } catch (WaitingForApprovalException e) {
+                        	getOutputStream().println("Reactivation request has been sent for approval.");
+            			}
+            		}
+            	}
+            	if (!foundCertificateOnHold) {
+                	getOutputStream().println("No certificates with status 'On hold' were found for this user.");
+            	} else {
+	                data = getAdminSession().findUser(administrator, username);
+	                getOutputStream().println("New status=" + data.getStatus());
+            	}
             } catch (AuthorizationDeniedException e) {
-            	getOutputStream().println("Error : Not authorized to un-revoke user.");
+            	getOutputStream().println("Error : Not authorized to reactivate user.");
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);

@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 import javax.ejb.CreateException;
 import javax.naming.Context;
@@ -20,6 +21,8 @@ import javax.xml.namespace.QName;
 import junit.framework.TestCase;
 
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.ejbca.core.ejb.approval.IApprovalSessionHome;
+import org.ejbca.core.ejb.approval.IApprovalSessionRemote;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionHome;
 import org.ejbca.core.ejb.authorization.IAuthorizationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
@@ -33,6 +36,8 @@ import org.ejbca.core.ejb.ra.IUserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionHome;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalDataVO;
+import org.ejbca.core.model.approval.approvalrequests.TestRevocationApproval;
 import org.ejbca.core.model.authorization.AdminEntity;
 import org.ejbca.core.model.authorization.AdminGroup;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
@@ -43,6 +48,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
+import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.Certificate;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
@@ -57,6 +63,7 @@ import org.ejbca.core.protocol.ws.client.gen.TokenCertificateRequestWS;
 import org.ejbca.core.protocol.ws.client.gen.TokenCertificateResponseWS;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 import org.ejbca.core.protocol.ws.client.gen.UserMatch;
+import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.common.HardTokenConstants;
 import org.ejbca.core.protocol.ws.common.IEjbcaWS;
@@ -70,8 +77,8 @@ public class CommonEjbcaWSTest extends TestCase {
 	
 	protected static EjbcaWS ejbcaraws;
 
-	protected IHardTokenSessionRemote hardTokenAdmin;
-    protected static IHardTokenSessionHome hardTokenHome;
+	protected IHardTokenSessionRemote hardTokenSession;
+    protected static IHardTokenSessionHome hardTokenSessionHome;
 	protected ICertificateStoreSessionRemote certStoreSession;
     protected static ICertificateStoreSessionHome certStoreSessionHome;
 	protected IRaAdminSessionRemote raAdminSession;
@@ -82,24 +89,19 @@ public class CommonEjbcaWSTest extends TestCase {
     protected static ICAAdminSessionHome caAdminSessionHome;
     protected IAuthorizationSessionRemote authSession;
     protected static IAuthorizationSessionHome authSessionHome;
+    protected IApprovalSessionRemote approvalSession;
+    protected static IApprovalSessionHome approvalSessionHome;
     
     protected static Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
+    
+    protected String getAdminCAName() {
+    	return "AdminCA1";
+    }
     
 	protected void setUpAdmin() throws Exception {
 		super.setUp();
 		CertTools.installBCProvider();
 		
-        if (hardTokenAdmin == null) {
-            if (hardTokenHome == null) {
-                Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup(IHardTokenSessionHome.JNDI_NAME);
-                hardTokenHome = (IHardTokenSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IHardTokenSessionHome.class);
-
-            }
-
-            hardTokenAdmin = hardTokenHome.create();
-        }
-        
         if(new File("p12/wstest.jks").exists()){
 
         	String urlstr = "https://localhost:8443/ejbca/ejbcaws/ejbcaws?wsdl";
@@ -124,17 +126,6 @@ public class CommonEjbcaWSTest extends TestCase {
 		super.setUp();
 		CertTools.installBCProvider();
 		
-        if (hardTokenAdmin == null) {
-            if (hardTokenHome == null) {
-                Context jndiContext = getInitialContext();
-                Object obj1 = jndiContext.lookup(IHardTokenSessionHome.JNDI_NAME);
-                hardTokenHome = (IHardTokenSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IHardTokenSessionHome.class);
-
-            }
-
-            hardTokenAdmin = hardTokenHome.create();
-        }
-        
         if(new File("p12/wsnonadmintest.jks").exists()){
 
         	String urlstr = "https://localhost:8443/ejbca/ejbcaws/ejbcaws?wsdl";
@@ -170,6 +161,19 @@ public class CommonEjbcaWSTest extends TestCase {
         return ctx;
     }
 
+	protected IHardTokenSessionRemote getHardTokenSession() throws RemoteException, CreateException, NamingException {
+	    if (hardTokenSession == null) {
+	        if (hardTokenSessionHome == null) {
+	            Context jndiContext = getInitialContext();
+	            Object obj1 = jndiContext.lookup(IHardTokenSessionHome.JNDI_NAME);
+	            hardTokenSessionHome = (IHardTokenSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IHardTokenSessionHome.class);
+	        }
+	        hardTokenSession = hardTokenSessionHome.create();
+	    }
+	    return hardTokenSession;
+	}
+
+	
 	protected ICertificateStoreSessionRemote getCertStore() throws RemoteException, CreateException, NamingException{
         if (certStoreSession == null) {
             if (certStoreSessionHome == null) {
@@ -237,6 +241,18 @@ public class CommonEjbcaWSTest extends TestCase {
         return authSession;
 	}
 	
+	protected IApprovalSessionRemote getApprovalSession() throws RemoteException, CreateException, NamingException {
+		if (approvalSession == null) {
+			if (approvalSessionHome == null) {
+                Context jndiContext = getInitialContext();
+                Object obj1 = jndiContext.lookup(IApprovalSessionHome.JNDI_NAME);
+                approvalSessionHome = (IApprovalSessionHome) javax.rmi.PortableRemoteObject.narrow(obj1, IApprovalSessionHome.class);
+			}
+			approvalSession = approvalSessionHome.create();
+		}
+		return approvalSession;
+	}
+	
 	public void test00SetupAccessRights() throws Exception{
 		Admin intAdmin = new Admin(Admin.TYPE_INTERNALUSER);
 		boolean userAdded = false;
@@ -246,7 +262,7 @@ public class CommonEjbcaWSTest extends TestCase {
 			user1.setUsername("wstest");
 			user1.setPassword("foo123");			
 			user1.setDN("CN=wstest");			
-			CAInfo cainfo = getCAAdminSession().getCAInfo(intAdmin, "AdminCA1");
+			CAInfo cainfo = getCAAdminSession().getCAInfo(intAdmin, getAdminCAName());
 			user1.setCAId(cainfo.getCAId());
 			user1.setEmail(null);
 			user1.setSubjectAltName(null);
@@ -283,7 +299,7 @@ public class CommonEjbcaWSTest extends TestCase {
 			user1.setUsername("wsnonadmintest");
 			user1.setPassword("foo123");			
 			user1.setDN("CN=wsnonadmintest");			
-			CAInfo cainfo = getCAAdminSession().getCAInfo(intAdmin, "AdminCA1");
+			CAInfo cainfo = getCAAdminSession().getCAInfo(intAdmin, getAdminCAName());
 			user1.setCAId(cainfo.getCAId());
 			user1.setEmail(null);
 			user1.setSubjectAltName(null);
@@ -318,7 +334,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		user1.setPassword("foo123");
 		user1.setClearPwd(true);
 		user1.setSubjectDN("CN=WSTESTUSER1");
-		user1.setCaName("AdminCA1");
+		user1.setCaName(getAdminCAName());
 		user1.setEmail(null);
 		user1.setSubjectAltName(null);
 		user1.setStatus(10);
@@ -341,7 +357,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		assertTrue(userdata.getPassword() == null);
 		assertTrue(!userdata.isClearPwd());
         assertTrue(userdata.getSubjectDN().equals("CN=WSTESTUSER1"));
-        assertTrue(userdata.getCaName().equals("AdminCA1"));
+        assertTrue(userdata.getCaName().equals(getAdminCAName()));
         assertTrue(userdata.getSubjectAltName() == null);
         assertTrue(userdata.getEmail() == null);
         assertTrue(userdata.getCertificateProfileName().equals("ENDUSER"));
@@ -424,7 +440,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		usermatch = new UserMatch();
         usermatch.setMatchwith(org.ejbca.util.query.UserMatch.MATCH_WITH_CA);
         usermatch.setMatchtype(org.ejbca.util.query.UserMatch.MATCH_TYPE_EQUALS);
-        usermatch.setMatchvalue("AdminCA1");			
+        usermatch.setMatchvalue(getAdminCAName());			
         List<UserDataVOWS> userdatas7 = ejbcaraws.findUser(usermatch);
 		assertTrue(userdatas7 != null);
 		assertTrue(userdatas7.size() > 0);
@@ -777,7 +793,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		user1.setPassword("foo123");
 		user1.setClearPwd(true);
 		user1.setSubjectDN("CN=WS������");
-		user1.setCaName("AdminCA1");
+		user1.setCaName(getAdminCAName());
 		user1.setEmail(null);
 		user1.setSubjectAltName(null);
 		user1.setStatus(10);
@@ -845,7 +861,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		tokenUser1.setPassword("foo123");
 		tokenUser1.setClearPwd(true);
 		tokenUser1.setSubjectDN("CN=WSTESTTOKENUSER1");
-		tokenUser1.setCaName("AdminCA1");
+		tokenUser1.setCaName(getAdminCAName());
 		tokenUser1.setEmail(null);
 		tokenUser1.setSubjectAltName(null);
 		tokenUser1.setStatus(10);
@@ -859,14 +875,14 @@ public class CommonEjbcaWSTest extends TestCase {
 
 		ArrayList<TokenCertificateRequestWS> requests = new ArrayList<TokenCertificateRequestWS>();
 		TokenCertificateRequestWS tokenCertReqWS = new TokenCertificateRequestWS();
-		tokenCertReqWS.setCAName("AdminCA1");
+		tokenCertReqWS.setCAName(getAdminCAName());
 		tokenCertReqWS.setCertificateProfileName("WSTESTPROFILE");
 		tokenCertReqWS.setValidityIdDays("1");
 		tokenCertReqWS.setPkcs10Data(basicpkcs10.getDEREncoded());
 		tokenCertReqWS.setType(HardTokenConstants.REQUESTTYPE_PKCS10_REQUEST);
 		requests.add(tokenCertReqWS);
 		tokenCertReqWS = new TokenCertificateRequestWS();
-		tokenCertReqWS.setCAName("AdminCA1");
+		tokenCertReqWS.setCAName(getAdminCAName());
 		tokenCertReqWS.setCertificateProfileName("ENDUSER");
 		tokenCertReqWS.setKeyalg("RSA");
 		tokenCertReqWS.setKeyspec("1024");
@@ -1022,8 +1038,8 @@ public class CommonEjbcaWSTest extends TestCase {
     		setUpAdmin();
     	}
         // The logging have to be checked manually	     
-        ejbcaraws.customLog(IEjbcaWS.CUSTOMLOG_LEVEL_INFO, "Test", "AdminCA1", "WSTESTTOKENUSER1", null, "Message 1 generated from WS test Script");
-        ejbcaraws.customLog(IEjbcaWS.CUSTOMLOG_LEVEL_ERROR, "Test", "AdminCA1", "WSTESTTOKENUSER1", null, "Message 1 generated from WS test Script");
+        ejbcaraws.customLog(IEjbcaWS.CUSTOMLOG_LEVEL_INFO, "Test", getAdminCAName(), "WSTESTTOKENUSER1", null, "Message 1 generated from WS test Script");
+        ejbcaraws.customLog(IEjbcaWS.CUSTOMLOG_LEVEL_ERROR, "Test", getAdminCAName(), "WSTESTTOKENUSER1", null, "Message 1 generated from WS test Script");
     }
 
    
@@ -1048,5 +1064,193 @@ public class CommonEjbcaWSTest extends TestCase {
     	cert = ejbcaraws.getCertificate("1234567", CertTools.getIssuerDN(realcert));
     	assertNull(cert);
     }
-}
+    
+	public void test18RevocationApprovals(boolean performSetup) throws Exception {
+		final String APPROVINGADMINNAME = "superadmin";
+        final String TOKENSERIALNUMBER = "42424242";
+        final String TOKENUSERNAME = "WSTESTTOKENUSER3";
+		final String ERRORNOTSENTFORAPPROVAL = "The request was never sent for approval."; 
+    	final String ERRORNOTSUPPORTEDSUCCEEDED = "Reactivation of users is not supported, but succeeded anyway.";
+		if(performSetup){
+			  setUpAdmin();
+		}
+	    // Generate random username and CA name
+		String randomPostfix = Integer.toString((new Random(new Date().getTime() + 4711)).nextInt(999999));
+		String caname = "wsRevocationCA" + randomPostfix;
+		String username = "wsRevocationUser" + randomPostfix;
+		int caID = -1;
+	    try {
+	    	caID = TestRevocationApproval.createApprovalCA(intAdmin, caname, CAInfo.REQ_APPROVAL_REVOCATION, getCAAdminSession());
+			X509Certificate adminCert = (X509Certificate) getCertStore().findCertificatesByUsername(intAdmin, APPROVINGADMINNAME).iterator().next();
+	    	Admin approvingAdmin = new Admin(adminCert);
+	    	try {
+	    		X509Certificate cert = createUserAndCert(username,caID);
+		        String issuerdn = cert.getIssuerDN().toString();
+		        String serno = cert.getSerialNumber().toString(16);
+			    // revoke via WS and verify response
+	        	try {
+					ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+					assertTrue(ERRORNOTSENTFORAPPROVAL, false);
+				} catch (WaitingForApprovalException_Exception e1) {
+				}
+	        	try {
+					ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+					assertTrue(ERRORNOTSENTFORAPPROVAL, false);
+				} catch (ApprovalException_Exception e1) {
+				}
+				RevokeStatus revokestatus = ejbcaraws.checkRevokationStatus(issuerdn,serno);
+		        assertNotNull(revokestatus);
+		        assertTrue(revokestatus.getReason() == RevokedCertInfo.NOT_REVOKED);
+				// Approve revocation and verify success
+		        TestRevocationApproval.approveRevocation(intAdmin, approvingAdmin, username, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD,
+		        		ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, getCertStore(), getApprovalSession());
+		        // Try to unrevoke certificate
+		        try {
+		        	ejbcaraws.revokeCert(issuerdn,serno, RevokedCertInfo.NOT_REVOKED);
+		        	assertTrue(ERRORNOTSENTFORAPPROVAL, false);
+				} catch (WaitingForApprovalException_Exception e) {
+				}
+		        try {
+		        	ejbcaraws.revokeCert(issuerdn,serno, RevokedCertInfo.NOT_REVOKED);
+		        	assertTrue(ERRORNOTSENTFORAPPROVAL, false);
+		        } catch (ApprovalException_Exception e) {
+		        }
+				// Approve revocation and verify success
+		        TestRevocationApproval.approveRevocation(intAdmin, approvingAdmin, username, RevokedCertInfo.NOT_REVOKED,
+		        		ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, getCertStore(), getApprovalSession());
+		        // Revoke user
+		        try {
+		        	ejbcaraws.revokeUser(username, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD, false);
+		        	assertTrue(ERRORNOTSENTFORAPPROVAL, false);
+				} catch (WaitingForApprovalException_Exception e) {
+				}
+		        try {
+		        	ejbcaraws.revokeUser(username, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD, false);
+		        	assertTrue(ERRORNOTSENTFORAPPROVAL, false);
+		        } catch (ApprovalException_Exception e) {
+		        }
+				// Approve revocation and verify success
+		        TestRevocationApproval.approveRevocation(intAdmin, approvingAdmin, username, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD,
+		        		ApprovalDataVO.APPROVALTYPE_REVOKEENDENTITY, getCertStore(), getApprovalSession());
+		        // Try to reactivate user
+		        try {
+		        	ejbcaraws.revokeUser(username, RevokedCertInfo.NOT_REVOKED, false);
+		        	assertTrue(ERRORNOTSUPPORTEDSUCCEEDED, false);
+		        } catch (EjbcaException_Exception e) {
+		        }
+	    	} finally {
+		    	getUserAdminSession().deleteUser(intAdmin, username);
+	    	}
+	        try {
+		        // Create a hard token issued by this CA
+		        createHardToken(TOKENUSERNAME, caname, TOKENSERIALNUMBER);
+		    	assertTrue(ejbcaraws.existsHardToken(TOKENSERIALNUMBER));
+		        // Revoke token
+		        try {
+			    	ejbcaraws.revokeToken(TOKENSERIALNUMBER, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+		        	assertTrue(ERRORNOTSENTFORAPPROVAL, false);
+				} catch (WaitingForApprovalException_Exception e) {
+				}
+		        try {
+			    	ejbcaraws.revokeToken(TOKENSERIALNUMBER, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+		        	assertTrue(ERRORNOTSENTFORAPPROVAL, false);
+		        } catch (ApprovalException_Exception e) {
+		        }
+		        // Approve actions and verify success
+		        TestRevocationApproval.approveRevocation(intAdmin, approvingAdmin, TOKENUSERNAME, RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD,
+		        		ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, getCertStore(), getApprovalSession());
+	        } finally {
+		        getHardTokenSession().removeHardToken(intAdmin, TOKENSERIALNUMBER);
+	        }
+	    } finally {
+			// Nuke CA
+	        try {
+	        	getCAAdminSession().revokeCA(intAdmin, caID, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+	        } finally {
+	        	getCAAdminSession().removeCA(intAdmin, caID);
+	        }
+	    }
+	} // testRevocationApprovals
+	
+	/**
+	 * Create a user a generate cert. 
+	 */
+	private X509Certificate createUserAndCert(String username, int caID) throws Exception {
+		UserDataVO userdata = new UserDataVO(username,"CN="+username,caID,null,null,1,SecConst.EMPTY_ENDENTITYPROFILE,
+				SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.TOKEN_SOFT_P12,0,null);
+		userdata.setPassword("foo123");
+		getUserAdminSession().addUser(intAdmin, userdata , true);
+	    BatchMakeP12 makep12 = new BatchMakeP12();
+	    File tmpfile = File.createTempFile("ejbca", "p12");
+	    makep12.setMainStoreDir(tmpfile.getParent());
+	    makep12.createAllNew();
+	    Collection userCerts = getCertStore().findCertificatesByUsername(intAdmin, username);
+	    assertTrue( userCerts.size() == 1 );
+	    return (X509Certificate) userCerts.iterator().next();
+	}
 
+	/**
+	 * Creates a "hardtoken" with certficates. 
+	 */
+	private void createHardToken(String username, String caName, String serialNumber) throws Exception {
+    	GlobalConfiguration gc = getRAAdmin().loadGlobalConfiguration(intAdmin);
+    	boolean originalProfileSetting = gc.getEnableEndEntityProfileLimitations();
+    	gc.setEnableEndEntityProfileLimitations(false);
+    	getRAAdmin().saveGlobalConfiguration(intAdmin, gc);
+    	if(getCertStore().getCertificateProfileId(intAdmin, "WSTESTPROFILE") != 0){
+        	getCertStore().removeCertificateProfile(intAdmin, "WSTESTPROFILE");
+        }
+        CertificateProfile profile = new EndUserCertificateProfile();
+        profile.setAllowValidityOverride(true);
+        getCertStore().addCertificateProfile(intAdmin, "WSTESTPROFILE", profile);
+		UserDataVOWS tokenUser1 = new UserDataVOWS();
+		tokenUser1.setUsername(username);
+		tokenUser1.setPassword("foo123");
+		tokenUser1.setClearPwd(true);
+		tokenUser1.setSubjectDN("CN="+username);
+		tokenUser1.setCaName(caName);
+		tokenUser1.setEmail(null);
+		tokenUser1.setSubjectAltName(null);
+		tokenUser1.setStatus(10);
+		tokenUser1.setTokenType("USERGENERATED");
+		tokenUser1.setEndEntityProfileName("EMPTY");
+		tokenUser1.setCertificateProfileName("ENDUSER"); 
+		KeyPair basickeys = KeyTools.genKeys("1024", CATokenConstants.KEYALGORITHM_RSA);		
+		PKCS10CertificationRequest  basicpkcs10 = new PKCS10CertificationRequest("SHA1WithRSA",
+                CertTools.stringToBcX509Name("CN=NOTUSED"), basickeys.getPublic(), null, basickeys.getPrivate());
+		ArrayList<TokenCertificateRequestWS> requests = new ArrayList<TokenCertificateRequestWS>();
+		TokenCertificateRequestWS tokenCertReqWS = new TokenCertificateRequestWS();
+		tokenCertReqWS.setCAName(caName);
+		tokenCertReqWS.setCertificateProfileName("WSTESTPROFILE");
+		tokenCertReqWS.setValidityIdDays("1");
+		tokenCertReqWS.setPkcs10Data(basicpkcs10.getDEREncoded());
+		tokenCertReqWS.setType(HardTokenConstants.REQUESTTYPE_PKCS10_REQUEST);
+		requests.add(tokenCertReqWS);
+		tokenCertReqWS = new TokenCertificateRequestWS();
+		tokenCertReqWS.setCAName(caName);
+		tokenCertReqWS.setCertificateProfileName("ENDUSER");
+		tokenCertReqWS.setKeyalg("RSA");
+		tokenCertReqWS.setKeyspec("1024");
+		tokenCertReqWS.setType(HardTokenConstants.REQUESTTYPE_KEYSTORE_REQUEST);
+		requests.add(tokenCertReqWS);
+		HardTokenDataWS hardTokenDataWS = new HardTokenDataWS();
+		hardTokenDataWS.setLabel(HardTokenConstants.LABEL_PROJECTCARD);
+		hardTokenDataWS.setTokenType(HardTokenConstants.TOKENTYPE_SWEDISHEID);
+		hardTokenDataWS.setHardTokenSN(serialNumber);		
+		PinDataWS basicPinDataWS = new PinDataWS();
+		basicPinDataWS.setType(HardTokenConstants.PINTYPE_BASIC);
+		basicPinDataWS.setInitialPIN("1234");
+		basicPinDataWS.setPUK("12345678");
+		PinDataWS signaturePinDataWS = new PinDataWS();
+		signaturePinDataWS.setType(HardTokenConstants.PINTYPE_SIGNATURE);
+		signaturePinDataWS.setInitialPIN("5678");
+		signaturePinDataWS.setPUK("23456789");
+		hardTokenDataWS.getPinDatas().add(basicPinDataWS);
+		hardTokenDataWS.getPinDatas().add(signaturePinDataWS);
+		List<TokenCertificateResponseWS> responses = ejbcaraws.genTokenCertificates(tokenUser1, requests, hardTokenDataWS, true, false);
+		assertTrue(responses.size() == 2);
+		getCertStore().removeCertificateProfile(intAdmin, "WSTESTPROFILE");
+		gc.setEnableEndEntityProfileLimitations(originalProfileSetting);
+    	getRAAdmin().saveGlobalConfiguration(intAdmin, gc);
+	} // createHardToken
+}

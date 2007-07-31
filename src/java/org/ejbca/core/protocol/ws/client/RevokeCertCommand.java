@@ -17,8 +17,10 @@ import java.math.BigInteger;
 
 
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.RevokeStatus;
+import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
@@ -27,7 +29,7 @@ import org.ejbca.util.CertTools;
 /**
  * Revokes a given certificate
  *
- * @version $Id: RevokeCertCommand.java,v 1.2 2006-10-08 22:53:26 herrvendil Exp $
+ * @version $Id: RevokeCertCommand.java,v 1.3 2007-07-31 13:31:49 jeklund Exp $
  */
 public class RevokeCertCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
@@ -72,17 +74,19 @@ public class RevokeCertCommand extends EJBCAWSRABaseCommand implements IAdminCom
             }
                         
             try{
-            	
             	RevokeStatus status =  getEjbcaRAWS().checkRevokationStatus(issuerdn,certsn);
             	if(status.getReason() != RevokedCertInfo.NOT_REVOKED){
             		getPrintStream().println("Error : Certificate is already revoked");
             		System.exit(-1);
             	}
-            	
             	getEjbcaRAWS().revokeCert(issuerdn,certsn,reason);            	         
                 getPrintStream().println("Certificate revoked sucessfully");
-            }catch(AuthorizationDeniedException_Exception e){
+            } catch (AuthorizationDeniedException_Exception e) {
             	getPrintStream().println("Error : " + e.getMessage());            
+			} catch (WaitingForApprovalException_Exception e) {
+            	getPrintStream().println("The revocation request has been sent for approval.");            
+			} catch (ApprovalException_Exception e) {
+            	getPrintStream().println("This revocation has already been requested.");            
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);

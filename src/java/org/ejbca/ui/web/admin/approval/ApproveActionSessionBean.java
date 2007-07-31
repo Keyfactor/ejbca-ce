@@ -40,7 +40,7 @@ import org.ejbca.util.query.Query;
  * Seesion scoped bean for displaying information about an approval request.
  * 
  * @author Philip Vendil
- * @version $Id: ApproveActionSessionBean.java,v 1.3 2006-09-05 09:23:27 anatom Exp $
+ * @version $Id: ApproveActionSessionBean.java,v 1.4 2007-07-31 13:31:51 jeklund Exp $
  */
 public class ApproveActionSessionBean extends BaseManagedBean {
 	private static final Logger log = Logger.getLogger(ApproveActionSessionBean.class);
@@ -133,7 +133,7 @@ public List getApprovalViews(){
 	   } catch (ApprovalRequestExpiredException e) {
 		   addErrorMessage("APPROVALREQUESTEXPIRED");
 	   } catch (ApprovalRequestExecutionException e) {
-		   addErrorMessage("ERROREXECUTINGACTION");
+		   addErrorMessage("ERROREXECUTINGREQUEST");
 	   } catch (AuthorizationDeniedException e) {
 		   addErrorMessage("AUTHORIZATIONDENIED");
 	   } catch (ApprovalException e) {

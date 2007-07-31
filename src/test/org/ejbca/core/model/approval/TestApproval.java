@@ -1,4 +1,4 @@
-package se.anatom.ejbca.approval;
+package org.ejbca.core.model.approval;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
@@ -18,7 +18,7 @@ import org.ejbca.util.CertTools;
 /**
  * Test to externalize an approval
  * @author Philip Vendil
- * $Id: TestApproval.java,v 1.1 2006-07-30 18:19:03 herrvendil Exp $
+ * $Id: TestApproval.java,v 1.1 2007-07-31 13:31:45 jeklund Exp $
  */
 
 public class TestApproval extends TestCase {

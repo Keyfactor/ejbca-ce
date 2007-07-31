@@ -1,4 +1,4 @@
-package se.anatom.ejbca.approval;
+package org.ejbca.core.model.approval;
 
 import junit.framework.TestCase;
 
@@ -60,7 +60,7 @@ public class TestApprovalExecutorUtil extends TestCase {
 		ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_SETUSERSTATUS1 = {
 				new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.LocalUserAdminSessionBean","revokeUser"),
 				new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.LocalUserAdminSessionBean","revokeCert"),
-				new ApprovalOveradableClassName("se.anatom.ejbca.approval.TestApprovalExecutorUtil","foo"),
+				new ApprovalOveradableClassName("org.ejbca.core.model.approval.TestApprovalExecutorUtil","foo"),
 				new ApprovalOveradableClassName("org.ejbca.ui.web.admin.rainterface.RAInterfaceBean","markForRecovery"),
 				new ApprovalOveradableClassName("org.ejbca.extra.caservice.ExtRACAProcess","processExtRARevocationRequest"),
 				new ApprovalOveradableClassName("se.primeKey.cardPersonalization.ra.connection.ejbca.EjbcaConnection",null)
@@ -71,7 +71,7 @@ public class TestApprovalExecutorUtil extends TestCase {
 		ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_SETUSERSTATUS2 = {
 				new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.LocalUserAdminSessionBean","revokeUser"),
 				new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.LocalUserAdminSessionBean","revokeCert"),
-				new ApprovalOveradableClassName("se.anatom.ejbca.approval.TestApprovalExecutorUtil",null),
+				new ApprovalOveradableClassName("org.ejbca.core.model.approval.TestApprovalExecutorUtil",null),
 				new ApprovalOveradableClassName("org.ejbca.ui.web.admin.rainterface.RAInterfaceBean","markForRecovery"),
 				new ApprovalOveradableClassName("org.ejbca.extra.caservice.ExtRACAProcess","processExtRARevocationRequest"),
 				new ApprovalOveradableClassName("se.primeKey.cardPersonalization.ra.connection.ejbca.EjbcaConnection",null)
@@ -82,7 +82,7 @@ public class TestApprovalExecutorUtil extends TestCase {
 		ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_SETUSERSTATUS3 = {
 				new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.LocalUserAdminSessionBean","revokeUser"),
 				new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.LocalUserAdminSessionBean","revokeCert"),
-				new ApprovalOveradableClassName("se.anatom.ejbca.approval.TestApprovalExecutorUtil","testOverridableClassNames"),
+				new ApprovalOveradableClassName("org.ejbca.core.model.approval.TestApprovalExecutorUtil","testOverridableClassNames"),
 				new ApprovalOveradableClassName("org.ejbca.ui.web.admin.rainterface.RAInterfaceBean","markForRecovery"),
 				new ApprovalOveradableClassName("org.ejbca.extra.caservice.ExtRACAProcess","processExtRARevocationRequest"),
 				new ApprovalOveradableClassName("se.primeKey.cardPersonalization.ra.connection.ejbca.EjbcaConnection",null)

@@ -121,6 +121,8 @@ public interface EjbcaWS {
      * @throws AuthorizationDeniedException_Exception
      * @throws NotFoundException_Exception
      * @throws EjbcaException_Exception
+     * @throws WaitingForApprovalException_Exception
+     * @throws ApprovalException_Exception
      */
     @WebMethod
     @RequestWrapper(localName = "revokeUser", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.RevokeUser")
@@ -132,7 +134,8 @@ public interface EjbcaWS {
         int arg1,
         @WebParam(name = "arg2", targetNamespace = "")
         boolean arg2)
-        throws AuthorizationDeniedException_Exception, EjbcaException_Exception, NotFoundException_Exception
+        throws AuthorizationDeniedException_Exception, EjbcaException_Exception, NotFoundException_Exception,
+        	WaitingForApprovalException_Exception, ApprovalException_Exception
     ;
 
     /**
@@ -143,6 +146,8 @@ public interface EjbcaWS {
      * @throws AuthorizationDeniedException_Exception
      * @throws NotFoundException_Exception
      * @throws EjbcaException_Exception
+     * @throws WaitingForApprovalException_Exception
+     * @throws ApprovalException_Exception
      */
     @WebMethod
     @RequestWrapper(localName = "revokeCert", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.RevokeCert")
@@ -154,7 +159,8 @@ public interface EjbcaWS {
         String arg1,
         @WebParam(name = "arg2", targetNamespace = "")
         int arg2)
-        throws AuthorizationDeniedException_Exception, EjbcaException_Exception, NotFoundException_Exception
+        throws AuthorizationDeniedException_Exception, EjbcaException_Exception, NotFoundException_Exception,
+    	WaitingForApprovalException_Exception, ApprovalException_Exception
     ;
 
     /**
@@ -263,6 +269,8 @@ public interface EjbcaWS {
      * @throws AuthorizationDeniedException_Exception
      * @throws NotFoundException_Exception
      * @throws EjbcaException_Exception
+     * @throws WaitingForApprovalException_Exception
+     * @throws ApprovalException_Exception
      */
     @WebMethod
     @RequestWrapper(localName = "revokeToken", targetNamespace = "http://ws.protocol.core.ejbca.org/", className = "org.ejbca.core.protocol.ws.client.gen.RevokeToken")
@@ -272,7 +280,8 @@ public interface EjbcaWS {
         String arg0,
         @WebParam(name = "arg1", targetNamespace = "")
         int arg1)
-        throws AuthorizationDeniedException_Exception, EjbcaException_Exception, NotFoundException_Exception
+        throws AuthorizationDeniedException_Exception, EjbcaException_Exception, NotFoundException_Exception,
+    	WaitingForApprovalException_Exception, ApprovalException_Exception
     ;
 
     /**

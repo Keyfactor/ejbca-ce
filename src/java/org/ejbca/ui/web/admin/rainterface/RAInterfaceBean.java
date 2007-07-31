@@ -24,6 +24,7 @@ import java.util.TreeMap;
 
 import javax.ejb.CreateException;
 import javax.ejb.FinderException;
+import javax.ejb.RemoveException;
 import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
 
@@ -44,11 +45,15 @@ import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
 import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.IUserDataSourceSessionLocalHome;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.BadRequestException;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -65,7 +70,7 @@ import org.ejbca.util.query.Query;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.15 2007-04-13 06:22:04 herrvendil Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.16 2007-07-31 13:31:43 jeklund Exp $
  */
 public class RAInterfaceBean implements java.io.Serializable {
     
@@ -187,26 +192,26 @@ public class RAInterfaceBean implements java.io.Serializable {
       return success;
     }
 
-    /** Revokes the given users.
-     *
+    /**
+     * Revokes the given user.
      * @param users an array of usernames to revoke.
      * @param reason reason(s) of revokation.
      * @return false if administrator wasn't authorized to revoke all of the given users.
      */
-    public boolean revokeUsers(String[] usernames, int reason) throws  Exception{
-      log.debug(">revokeUsers()");
-      boolean success = true;
-      for(int i=0; i < usernames.length; i++){
-        try{
-          adminsession.revokeUser(administrator, usernames[i], reason);
-        }catch( AuthorizationDeniedException e){
-          success =false;
-        }
-      }
-      log.debug("<revokeUsers(): " + success);
-      return success;
+    public void revokeUser(String username, int reason) throws AuthorizationDeniedException,
+    		FinderException, ApprovalException, WaitingForApprovalException, BadRequestException {
+        log.debug(">revokeUser()");
+        adminsession.revokeUser(administrator, username, reason);
+        log.debug("<revokeUser()");
     }
 
+    public void revokeAndDeleteUser(String username, int reason) throws AuthorizationDeniedException,
+    		ApprovalException, WaitingForApprovalException, RemoveException, NotFoundException {
+		log.debug(">revokeUser()");
+		adminsession.revokeAndDeleteUser(administrator, username, reason);
+		log.debug("<revokeUser()");
+    }
+    
     /** Revokes the  certificate with certificate serno.
      *
      * @param serno serial number of certificate to revoke.
@@ -214,16 +219,18 @@ public class RAInterfaceBean implements java.io.Serializable {
      * @param reason reason(s) of revokation.
      * @return false if administrator wasn't authorized to revoke the given certificate.
      */
-    public boolean revokeCert(BigInteger serno, String issuerdn, String username, int reason) throws  Exception{
-      log.debug(">revokeCert()");
-      boolean success = true;
-      try{
-        adminsession.revokeCert(administrator, serno, issuerdn, username, reason);
-      }catch( AuthorizationDeniedException e){
-        success =false;
-      }
-      log.debug("<revokeCert(): " + success);
-      return success;
+    public boolean revokeCert(BigInteger serno, String issuerdn, String username, int reason) throws ApprovalException, WaitingForApprovalException {
+    	log.debug(">revokeCert()");
+    	boolean success = true;
+    	try {
+    		adminsession.revokeCert(administrator, serno, issuerdn, username, reason);
+    	} catch( AuthorizationDeniedException e) {
+    		success = false;
+    	} catch (FinderException e) {
+    		success = false;
+    	}
+    	log.debug("<revokeCert(): " + success);
+    	return success;
     }
 
     /** 
@@ -234,40 +241,18 @@ public class RAInterfaceBean implements java.io.Serializable {
      * @param username the username joined to the certificate.
      * @return false if administrator wasn't authorized to unrevoke the given certificate.
      */
-    public boolean unrevokeCert(BigInteger serno, String issuerdn, String username) throws Exception {
-      log.debug(">unrevokeCert()");
-      boolean success = true;
-      try{
-     	 
-     	 RevokedCertInfo revinfo = certificatesession.isRevoked(administrator, issuerdn, serno);
-     	 
-     	 if ( revinfo != null && revinfo.getReason() == RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD ){
-     		 
- 	    	 //-- Find the UserView for the username, we must change his status
- 	    	 UserView userView = findUser(username);
- 	    	 
- 			 CertificateProfile certificateProfile = certificatesession.getCertificateProfile(administrator, userView.getCertificateProfileId());
- 			 Collection publisherList = certificateProfile.getPublisherList();
- 			
- 			 //-- Try to change the certificate status
- 			 certificatesession.setRevokeStatus(administrator, issuerdn, serno, publisherList, RevokedCertInfo.NOT_REVOKED);
- 			
- 	         if ( !certificatesession.checkIfAllRevoked(administrator, userView.getUsername()) ) {
- 	        	 UserDataVO vo = adminsession.findUser(administrator, userView.getUsername());
- 	        	 // Don't change status if it is already the same
- 	        	 if (vo.getStatus() != UserDataConstants.STATUS_GENERATED) {
- 	 	        	 adminsession.setUserStatus(administrator, userView.getUsername(), UserDataConstants.STATUS_GENERATED); 	        		 
- 	        	 }
- 		     }
- 		        
-     	 }
-   
-      }catch( AuthorizationDeniedException e){
-        success = false;
-      }
-
-      log.debug("<unrevokeCert(): " + success);
-      return success;
+    public boolean unrevokeCert(BigInteger serno, String issuerdn, String username) throws ApprovalException, WaitingForApprovalException {
+    	log.debug(">unrevokeCert()");
+	  	boolean success = true;
+		try {
+			adminsession.unRevokeCert(administrator, serno, issuerdn, username);
+		} catch( AuthorizationDeniedException e) {
+			success = false;
+		} catch (FinderException e) {
+			success = false;
+		}
+		log.debug("<unrevokeCert(): " + success);
+		return success;
     }
     
     /* Changes the userdata  */
@@ -598,20 +583,35 @@ public class RAInterfaceBean implements java.io.Serializable {
     	}
     } // loadCertificateView
 
-    public boolean revokeTokenCertificates(String tokensn, String username, int reason) throws RemoteException, NamingException, CreateException, AuthorizationDeniedException, FinderException{
+    public boolean revokeTokenCertificates(String tokensn, String username, int reason) throws RemoteException, NamingException, CreateException,
+    		ApprovalException, WaitingForApprovalException {
        boolean success = true;
-
+       ApprovalException lastAppException = null;
+       WaitingForApprovalException lastWaitException = null;
        Collection certs = hardtokensession.findCertificatesInHardToken(administrator, tokensn);
        Iterator i = certs.iterator();
-       try{
-         while(i.hasNext()){
-           X509Certificate cert = (X509Certificate) i.next();  
-           adminsession.revokeCert(administrator, cert.getSerialNumber(), cert.getIssuerDN().toString(), username, reason);
-         }
-       }catch( AuthorizationDeniedException e){
-         success =false;
+       // Extract and revoke collection
+       while ( i.hasNext() ) {
+    	   X509Certificate cert = (X509Certificate) i.next();
+           try {
+        	   adminsession.revokeCert(administrator, cert.getSerialNumber(), cert.getIssuerDN().toString(), username, reason);
+           } catch (ApprovalException e) {
+        	   lastAppException = e;
+           } catch (WaitingForApprovalException e) {
+        	   lastWaitException = e;
+           } catch (AuthorizationDeniedException e) {
+        	   success = false;
+           } catch (FinderException e) {
+        	   success = false;
+           }
        }
-
+       // Ignore duplicate requests if some were successful 
+       if ( lastWaitException != null ) {
+    	   throw lastWaitException;
+       }
+       if ( lastAppException != null ) {
+    	   throw lastAppException; 
+       }
        return success;
     }
 
