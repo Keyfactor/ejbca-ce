@@ -522,7 +522,8 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
 				} %>> 
         &nbsp;&nbsp;<%= ejbcawebbean.getText("MODIFYABLE") %> 
         <input type="checkbox" name="<%=CHECKBOX_MODIFYABLE_SUBJECTALTNAME + i %>" value="<%=CHECKBOX_VALUE %>" 
-           <%	if(profiledata.getUse(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER])) {
+           <%	if(profiledata.getUse(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) &&
+           			EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME)) {
 					out.write("DISABLED");
 				} else if(profiledata.isModifyable(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER])) {
 					out.write("CHECKED");
