@@ -81,7 +81,7 @@ import org.w3c.dom.Element;
  * 
  * @author Philip Vendil 
  *
- * @version $Id: KRSSResponseGenerator.java,v 1.4 2007-02-02 09:37:47 anatom Exp $
+ * @version $Id: KRSSResponseGenerator.java,v 1.5 2007-08-01 19:58:08 jeklund Exp $
  */
 
 public class KRSSResponseGenerator extends
@@ -203,7 +203,7 @@ public class KRSSResponseGenerator extends
 				}
 				else{
 					// generate new keys.
-					if(!reissue && tokentype == SecConst.TOKEN_SOFT_P12){
+					if(!reissue && (tokentype == SecConst.TOKEN_SOFT_P12 || tokentype == SecConst.TOKEN_SOFT_JKS || tokentype == SecConst.TOKEN_SOFT_PEM)){
 						keyPair = KeyTools.genKeys(Integer.toString(XKMSConfig.getServerKeyLength()), "RSA");
 						certKey = keyPair.getPublic();
 						privKey = keyPair.getPrivate();
