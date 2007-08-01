@@ -51,7 +51,7 @@ import org.w3._2002._03.xkms_.ValidateResultType;
 /**
  * Performes KISS calls to an web service.
  *
- * @version $Id: LocateCommand.java,v 1.2 2007-01-07 00:31:51 herrvendil Exp $
+ * @version $Id: LocateCommand.java,v 1.3 2007-08-01 15:18:53 jeklund Exp $
  * @author Philip Vendil
  */
 public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
@@ -365,7 +365,7 @@ public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 	
 	protected void usage() {
 		getPrintStream().println("Command used to locate and optionaly validate a certificate");
-		getPrintStream().println("Usage : locate <querytype> <queryvalue> <keyusage> <respondwith> <validate|novalidation> <der|pem> <outputpath (optional)> \n\n");
+		getPrintStream().println("Usage : locate <querytype> <queryvalue> <keyusage> <respondwith> <"+VALIDATION_VALIDATE+"|"+VALIDATION_NOVALIDATION+"> <der|pem> <outputpath (optional)> \n\n");
         getPrintStream().println("Querytypes are:");
         getPrintStream().println(" CERT     : Use a existing certificate from file, queryvalue should be path to certificate.\n"
         		                +" SMIME    : Lookup by the RFC882 Name of certificate\n"
@@ -386,7 +386,7 @@ public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
         getPrintStream().println("Use 'validate' if you want the status of the certificate, othervise use 'novalidation'.\n");
         getPrintStream().println("Use 'pem' or 'der' depending on prefered encoding.\n");
         getPrintStream().println("Outputpath specifies to which directory to write certificate and CRLs, current directory is used if omitted\n\n");
-        getPrintStream().println("Example: locate TLSHTTP \"John Doe\" SIGNATURE X509CERT validation pem");
+        getPrintStream().println("Example: locate TLSHTTP \"John Doe\" SIGNATURE X509CERT "+VALIDATION_VALIDATE+" pem");
         getPrintStream().println("Returns the signing certificate belonging to CN=John Doe and specifies if it is valid to the current directory");
         
             	        

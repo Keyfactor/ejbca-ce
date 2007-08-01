@@ -51,7 +51,7 @@ import org.w3._2002._03.xkms_.UseKeyWithType;
 /**
  * Performes KRSS registre calls to an web service.
  *
- * @version $Id: RegisterCommand.java,v 1.2 2007-02-02 09:37:48 anatom Exp $
+ * @version $Id: RegisterCommand.java,v 1.3 2007-08-01 15:18:53 jeklund Exp $
  * @author Philip Vendil
  */
 public class RegisterCommand extends XKMSCLIBaseCommand implements IAdminCommand{
@@ -256,7 +256,7 @@ public class RegisterCommand extends XKMSCLIBaseCommand implements IAdminCommand
 				getPrintStream().println("Error password couldn't be verified");
 			}else
 				if(registerResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_REFUSED)){
-					getPrintStream().println("The user doesn't seem to have the wrong status.");
+					getPrintStream().println("The user doesn't seem to have the right status.");
 				}else{
 					getPrintStream().println("Error occured during processing : " + registerResultType.getResultMinor());
 				}
@@ -317,7 +317,7 @@ public class RegisterCommand extends XKMSCLIBaseCommand implements IAdminCommand
 		getPrintStream().println("keySize of the generated RSA keys, are only used for client generated keys, use 'NOGEN' othervise.\n");
         getPrintStream().println("Use pem, p12 or jks for encoding of the generated keystore.\n");
         getPrintStream().println("Outputpath specifies to which directory to write the keystore to, current directory is used if omitted\n\n");
-        getPrintStream().println("Example: register \"CN=Test Testarson,O=someorg\" \"foo123\" \"My passphrase\"  pem");
+        getPrintStream().println("Example: register \"CN=Test Testarson,O=someorg\" \"foo123\" \"My passphrase\" 2048 pem");
         getPrintStream().println("Issues a certificate to  to \"CN=Test Testarson,O=someorg\" and writes it in PEM encoding in the current directory");
         
             	        
