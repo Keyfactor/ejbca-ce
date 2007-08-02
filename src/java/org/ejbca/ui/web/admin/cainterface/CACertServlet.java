@@ -14,7 +14,9 @@
 package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
+import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
@@ -34,6 +36,8 @@ import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.pub.ServletUtils;
 import org.ejbca.util.Base64;
+import org.ejbca.util.CertTools;
+import org.ejbca.util.StringTools;
 
 /**
  * Servlet used to distribute CA certificates <br>
@@ -45,7 +49,7 @@ import org.ejbca.util.Base64;
  * cacert, nscacert and iecacert also takes optional parameter level=<int 1,2,...>, where the level is
  * which ca certificate in a hierachy should be returned. 0=root (default), 1=sub to root etc.
  *
- * @version $Id: CACertServlet.java,v 1.10 2006-12-04 15:04:59 anatom Exp $
+ * @version $Id: CACertServlet.java,v 1.11 2007-08-02 14:06:02 jeklund Exp $
  *
  * @web.servlet name = "CACert"
  *              display-name = "CACertServlet"
@@ -216,9 +220,11 @@ public class CACertServlet extends HttpServlet {
     private static final String COMMAND_NSCACERT = "nscacert";
     private static final String COMMAND_IECACERT = "iecacert";
     private static final String COMMAND_CACERT = "cacert";
+    private static final String COMMAND_JKSTRUSTSTORE = "jkscert";
 
     private static final String LEVEL_PROPERTY = "level";
     private static final String ISSUER_PROPERTY = "issuer";
+    private static final String JKSPASSWORD_PROPERTY = "password";
 
     private ISignSessionLocal signsession = null;
 
@@ -277,7 +283,8 @@ public class CACertServlet extends HttpServlet {
         command = req.getParameter(COMMAND_PROPERTY_NAME);
         if (command == null)
             command = "";
-        if ((command.equalsIgnoreCase(COMMAND_NSCACERT) || command.equalsIgnoreCase(COMMAND_IECACERT) || command.equalsIgnoreCase(COMMAND_CACERT)) && issuerdn != null ) {
+        if ((command.equalsIgnoreCase(COMMAND_NSCACERT) || command.equalsIgnoreCase(COMMAND_IECACERT) || command.equalsIgnoreCase(COMMAND_JKSTRUSTSTORE)
+        		|| command.equalsIgnoreCase(COMMAND_CACERT)) && issuerdn != null ) {
             String lev = req.getParameter(LEVEL_PROPERTY);
             int level = 0;
             if (lev != null)
@@ -297,6 +304,7 @@ public class CACertServlet extends HttpServlet {
                 }
                 X509Certificate cacert = (X509Certificate)chain[level];
                 byte[] enccert = cacert.getEncoded();
+            	String strippedCACN = CertTools.getPartFromDN(cacert.getSubjectX500Principal().getName(), "CN").replaceAll("\\W", "");
                 // We must remove cache headers for IE
                 ServletUtils.removeCacheHeaders(res);
                 if (command.equalsIgnoreCase(COMMAND_NSCACERT)) {
@@ -305,7 +313,7 @@ public class CACertServlet extends HttpServlet {
                     res.getOutputStream().write(enccert);
                     log.debug("Sent CA cert to NS client, len="+enccert.length+".");
                 } else if (command.equalsIgnoreCase(COMMAND_IECACERT)) {
-                    res.setHeader("Content-disposition", "attachment; filename=ca.crt");
+                    res.setHeader("Content-disposition", "attachment; filename=" + strippedCACN + ".cacert.crt");
                     res.setContentType("application/octet-stream");
                     res.setContentLength(enccert.length);
                     res.getOutputStream().write(enccert);
@@ -315,14 +323,30 @@ public class CACertServlet extends HttpServlet {
                     String out = RequestHelper.BEGIN_CERTIFICATE_WITH_NL;                   
                     out += new String(b64cert);
                     out += RequestHelper.END_CERTIFICATE_WITH_NL;
-                    res.setHeader("Content-disposition", "attachment; filename=ca.pem");
+                    res.setHeader("Content-disposition", "attachment; filename=" + strippedCACN + ".cacert.pem");
                     res.setContentType("application/octet-stream");
                     res.setContentLength(out.length());
                     res.getOutputStream().write(out.getBytes());
                     log.debug("Sent CA cert to client, len="+out.length()+".");
+                } else if (command.equalsIgnoreCase(COMMAND_JKSTRUSTSTORE)) {
+                    String jksPassword = req.getParameter(JKSPASSWORD_PROPERTY).trim();
+                    int passwordRequiredLength = 6;
+                    if ( jksPassword != null && jksPassword.length() >= passwordRequiredLength ) {
+                    	KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+                    	ks.load(null, jksPassword.toCharArray());
+                    	ks.setCertificateEntry(strippedCACN, cacert);
+                        res.setHeader("Content-disposition", "attachment; filename=" + strippedCACN + ".cacert.jks");
+                        res.setContentType("application/octet-stream");
+                    	ks.store(res.getOutputStream(), jksPassword.toCharArray());
+                    } else {
+                        res.setContentType("text/plain");
+                        res.getOutputStream().println(COMMAND_JKSTRUSTSTORE + " requires " + JKSPASSWORD_PROPERTY +
+                        		" with a minimum of " + passwordRequiredLength+ " chars to be set");
+                        return;
+                    }
                 } else {
                     res.setContentType("text/plain");
-                    res.getOutputStream().println("Commands="+COMMAND_NSCACERT+" || "+COMMAND_IECACERT+" || "+COMMAND_CACERT);
+                    res.getOutputStream().println("Commands="+COMMAND_NSCACERT+" || "+COMMAND_IECACERT+" || "+COMMAND_CACERT+" || "+COMMAND_JKSTRUSTSTORE);
                     return;
                 }
             } catch (Exception e) {

@@ -78,10 +78,17 @@ function viewcainfo(caid){
     win_popup = window.open(link, 'view_info','height=450,width=450,scrollbars=yes,toolbar=no,resizable=1');
     win_popup.focus();
 }
+
+function getPasswordAndSubmit(formname) {
+	var form = eval("document." + formname);
+	var paswordInput = prompt("<%= ejbcawebbean.getText("JKSPASSWORD")%>","");
+	if ( paswordInput != null && paswordInput != "") {
+		form.password.value = paswordInput;
+		form.submit();
+	}
+}
 -->
 </SCRIPT>
-<form name='createcrl' method=GET action='<%=THIS_FILENAME %>'>
-<input type='hidden' name='<%=HIDDEN_NUMBEROFCAS %>' value='<%=canames.keySet().size()%>'> 
   <h2 align="center"><%= ejbcawebbean.getText("CAFUNCTIONS") %></h2>
 <!--  <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") %>")'>
     <u><%= ejbcawebbean.getText("HELP") %></u> </A> 
@@ -119,9 +126,16 @@ function viewcainfo(caid){
           <tr id="Row<%=row%2%>">
             <td>&nbsp;</td>
             <td>               
+              <form name="<%= "JKSFORM"+Integer.toHexString((subjectdn+j).hashCode()) %>" method="POST" action="<%=DOWNLOADCERTIFICATE_LINK%>">
+					<input type="hidden" name="cmd" value="jkscert"/>
+					<input type="hidden" name="level" value="<%= j %>"/>
+					<input type="hidden" name="issuer" value="<%= subjectdn %>"/>
+					<input type="hidden" name="password" value=""/>
+              </form>
               <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=iecacert&level=<%= j%>&issuer=<%= subjectdn %>"><%= ejbcawebbean.getText("DOWNLOADIE")%></a>&nbsp;&nbsp;&nbsp;
               <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=nscacert&level=<%= j%>&issuer=<%= subjectdn %>"><%= ejbcawebbean.getText("DOWNLOADNS")%></a>&nbsp;&nbsp;&nbsp;
-              <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=cacert&level=<%= j%>&issuer=<%= subjectdn %>"><%= ejbcawebbean.getText("DOWNLOADPEM")%></a>
+              <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=cacert&level=<%= j%>&issuer=<%= subjectdn %>"><%= ejbcawebbean.getText("DOWNLOADPEM")%></a>&nbsp;&nbsp;&nbsp;
+			  <a href="javascript: getPasswordAndSubmit('<%= "JKSFORM"+Integer.toHexString((subjectdn+j).hashCode()) %>');"><%= ejbcawebbean.getText("DOWNLOADJKS")%></a>
             </td>   
           </tr> 
           <%   }else{ %> 
@@ -137,9 +151,16 @@ function viewcainfo(caid){
           <tr id="Row<%=row%2%>">
             <td>&nbsp;</td>
             <td>               
+              <form name="<%= "JKSFORM"+Integer.toHexString((subjectdn+j).hashCode()) %>" method="POST" action="<%=DOWNLOADCERTIFICATE_LINK%>">
+					<input type="hidden" name="cmd" value="jkscert"/>
+					<input type="hidden" name="level" value="<%= j %>"/>
+					<input type="hidden" name="issuer" value="<%= subjectdn %>"/>
+					<input type="hidden" name="password" value=""/>
+              </form>
               <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=iecacert&level=<%= j%>&issuer=<%= subjectdn %>"><%= ejbcawebbean.getText("DOWNLOADIE")%></a>&nbsp;&nbsp;&nbsp;
               <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=nscacert&level=<%= j%>&issuer=<%= subjectdn %>"><%= ejbcawebbean.getText("DOWNLOADNS")%></a>&nbsp;&nbsp;&nbsp;
-              <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=cacert&level=<%= j%>&issuer=<%= subjectdn %>"><%= ejbcawebbean.getText("DOWNLOADPEM")%></a>
+              <a href="<%=DOWNLOADCERTIFICATE_LINK%>?cmd=cacert&level=<%= j%>&issuer=<%= subjectdn %>"><%= ejbcawebbean.getText("DOWNLOADPEM")%></a>&nbsp;&nbsp;&nbsp;
+			  <a href="javascript: getPasswordAndSubmit('<%= "JKSFORM"+Integer.toHexString((subjectdn+j).hashCode()) %>');"><%= ejbcawebbean.getText("DOWNLOADJKS")%></a>
             </td>   
           </tr>
           <% }
@@ -166,10 +187,13 @@ function viewcainfo(caid){
       }
       if(createcrlrights){ %>
 <br> 
+<form name='createcrl' method=GET action='<%=THIS_FILENAME %>'>
+<input type='hidden' name='<%=HIDDEN_NUMBEROFCAS %>' value='<%=canames.keySet().size()%>'> 
 <input type='hidden' name='<%=HIDDEN_CASUBJECTDN + number %>' value='<%=subjectdn%>'> 
 <%=ejbcawebbean.getText("CREATENEWCRL") + " : " %>
        <% if ( (cainfo.getCAInfo().getStatus() == SecConst.CA_ACTIVE) && (cainfo.getCAInfo().getCATokenInfo().getCATokenStatus() == ICAToken.STATUS_ACTIVE) ) { %>
 <input type='submit' name='<%=BUTTON_CREATECRL + number %>' value='<%=ejbcawebbean.getText("CREATECRL") %>'>
+</form>
        <% }else{
            out.write(ejbcawebbean.getText("CAISNTACTIVE"));
           } %> 
