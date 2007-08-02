@@ -95,7 +95,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.41 2007-07-26 12:41:13 anatom Exp $
+ * @version $Id: CertTools.java,v 1.42 2007-08-02 13:00:05 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -287,6 +287,12 @@ public class CertTools {
         X509Name name = stringToBcX509Name(dn);
         if (name != null) {
             ret = name.toString();
+        }
+        // For some databases (MySQL for instance) the database column holding subjectDN
+        // is only 250 chars long. There have been strange error reported (clipping DN natuarally)
+        // that is hard to debug if DN is more than 250 chars and we don't have a good message
+        if ( (ret != null) && (ret.length() > 250) ) {
+        	log.info("Warning! DN is more than 250 characters long. Some databases have only 250 characters in the database for SubjectDN. Clipping may occur! DN ("+ret.length()+" chars): "+ret);
         }
         //log.debug("<stringToBcDNString: "+ret);
         return ret;
