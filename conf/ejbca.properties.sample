@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.22 2007-07-18 08:51:34 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.23 2007-08-02 13:03:13 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -189,6 +189,8 @@ ca.cmskeystorepass=foo123
 # 
 # Specifies if the DN order should be constructed in forward (standard and default)
 # or reverse order.
+# NOTE: What is called forward or reverse depends if you reference LDAP or X.500, our notion is LDAP and is explained below.
+#
 # Forward is: CN=Tomas Gustavsson, O=PrimeKey, C=SE
 # Reverse is: C=SE, O=PrimeKey, CN=Tomas Gustavsson
 # 
