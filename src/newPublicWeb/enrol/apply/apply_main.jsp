@@ -46,7 +46,7 @@
 
 		<c:choose>
 	        <c:when test="${tokentype == 0}">
-				<%
+				<%	
 					// The user doesn't exist. Redirect to error page.
 		            request.setAttribute("ErrorMessage","User does not exist: " + username);
 		            request.getRequestDispatcher("error.jsp").forward(request, response);
@@ -93,6 +93,6 @@
 		<%@ include file="apply_unknown.html" %>
     </c:when> 
     <c:otherwise> 
-	    <h1>NO MATCH! Error in apply_main.jsp. includefile == &quot;${includefile}&quot;</h1>
+	    <h1><c:out value="NO MATCH! Error in apply_main.jsp. includefile == &quot;${includefile}&quot;" /></h1>
 	</c:otherwise>
 </c:choose>

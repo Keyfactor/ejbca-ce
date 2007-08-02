@@ -1,7 +1,7 @@
 <%@ page isErrorPage="true" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
 <%@ include file="header.jsp" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
     <c:set var="isException" value="${param.Exception}" />
     <c:set var="errMsg" value="${param.ErrorMessage}" />
@@ -16,7 +16,7 @@
             <h2>Unknown error, or you came to this page directly without beeing redirected.</h2> 
         </c:when>
         <c:otherwise> 
-            <p>${errMsg}</p>
+            <p><c:out value="${errMsg}" /></p>
         </c:otherwise> 
     </c:choose> 
 
