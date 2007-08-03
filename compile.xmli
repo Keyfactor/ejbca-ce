@@ -202,7 +202,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
     <!-- =================================================================== -->
     <!-- Autogenerate all ejb interfaces and deployment descriptors          -->
     <!-- =================================================================== -->
-    <target name="run-xdoc" depends="init, preprocess">
+    <target name="run-xdoc" depends="init, preprocess" unless="no-xdoc">
         <taskdef name="ejbdoclet" classname="xdoclet.modules.ejb.EjbDocletTask">
             <classpath refid="xdoclet.classpath" />
         </taskdef>
