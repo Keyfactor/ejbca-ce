@@ -22,21 +22,8 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBException;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ServiceLocator;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocal;
-import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionLocalHome;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal;
-import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocalHome;
-import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocal;
-import org.ejbca.core.ejb.hardtoken.IHardTokenSessionLocalHome;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.Base64;
 import org.ejbca.util.CertTools;
@@ -56,7 +43,7 @@ import org.ejbca.util.CertTools;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: ApprovalRequest.java,v 1.9 2007-06-25 14:45:34 herrvendil Exp $
+ * @version $Id: ApprovalRequest.java,v 1.10 2007-08-03 10:10:01 herrvendil Exp $
  */
 
 public abstract class ApprovalRequest implements  Externalizable { 
@@ -398,94 +385,6 @@ public abstract class ApprovalRequest implements  Externalizable {
 		
 	}
 	
-	// Help Methods for approval requests
-	protected String getCAName(Admin admin,int caid){
-		String caname;
-			    
-		try {
-			ServiceLocator locator = ServiceLocator.getInstance();
-			ICAAdminSessionLocalHome home = (ICAAdminSessionLocalHome) locator.getLocalHome(ICAAdminSessionLocalHome.COMP_NAME);
-			ICAAdminSessionLocal session = home.create();
-			caname = session.getCAInfo(admin, caid).getName();
-			
-		} catch (CreateException e) {
-			throw new EJBException(e);
-		}
-		
-		return caname;
-	}
-	
-	protected String getEndEntityProfileName(Admin admin,int profileid){
-		String name;
-	    
-		try {
-			ServiceLocator locator = ServiceLocator.getInstance();
-			IRaAdminSessionLocalHome home = (IRaAdminSessionLocalHome) locator.getLocalHome(IRaAdminSessionLocalHome.COMP_NAME);
-			IRaAdminSessionLocal session = home.create();
-			name = session.getEndEntityProfileName(admin, profileid);			
-		} catch (CreateException e) {
-			throw new EJBException(e);
-		}
-		
-		return name;
-		
-	}
-	
-	protected String getCertificateProfileName(Admin admin,int profileid){
-		String name;
-	    
-		try {
-			ServiceLocator locator = ServiceLocator.getInstance();
-			ICertificateStoreSessionLocalHome home = (ICertificateStoreSessionLocalHome) locator.getLocalHome(ICertificateStoreSessionLocalHome.COMP_NAME);
-			ICertificateStoreSessionLocal session = home.create();
-			name = session.getCertificateProfileName(admin, profileid);			
-		} catch (CreateException e) {
-			throw new EJBException(e);
-		}
-		
-		return name;		
-	}
-		
-	protected ApprovalDataText getTokenName(Admin admin,int tokenid){
-		ApprovalDataText retval;
-	    
-		try {
-			if(tokenid <= SecConst.TOKEN_SOFT  ){
-				int tokenindex=0;
-				for(int i=0;i<SecConst.TOKENIDS.length;i++){					
-					if(SecConst.TOKENIDS[i] == tokenid){
-                      tokenindex = i;								
-					}
-				}
-				retval = new ApprovalDataText("TOKEN" ,SecConst.TOKENTEXTS[tokenindex],true,true);
-				
-			}else{			
-			  ServiceLocator locator = ServiceLocator.getInstance();
-			  IHardTokenSessionLocalHome home = (IHardTokenSessionLocalHome) locator.getLocalHome(IHardTokenSessionLocalHome.COMP_NAME);
-			  IHardTokenSessionLocal session = home.create();
-			  String name = session.getHardTokenProfileName(admin, tokenid);
-			  retval = new ApprovalDataText("TOKEN" ,name,true,false);
-			}
-		} catch (CreateException e) {
-			throw new EJBException(e);
-		}
-		
-		return retval;		
-	}
 
-	protected String getHardTokenIssuerName(Admin admin,int issuerid){
-		String name;
-	    
-		try {
-			ServiceLocator locator = ServiceLocator.getInstance();
-			IHardTokenSessionLocalHome home = (IHardTokenSessionLocalHome) locator.getLocalHome(IHardTokenSessionLocalHome.COMP_NAME);
-			IHardTokenSessionLocal session = home.create();
-			name = session.getHardTokenIssuerAlias(admin, issuerid);		
-		} catch (CreateException e) {
-			throw new EJBException(e);
-		}
-		
-		return name;		
-	}
 
 }

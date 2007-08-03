@@ -31,6 +31,7 @@ import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
+import org.ejbca.core.model.approval.ApprovalRequestHelper;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.log.Admin;
@@ -45,7 +46,7 @@ import org.ejbca.util.CertTools;
  * 
  * 
  * @author Philip Vendil
- * @version $Id: EditEndEntityApprovalRequest.java,v 1.5 2006-08-20 12:49:21 anatom Exp $
+ * @version $Id: EditEndEntityApprovalRequest.java,v 1.6 2007-08-03 10:10:00 herrvendil Exp $
  */
 public class EditEndEntityApprovalRequest extends ApprovalRequest {
 
@@ -128,11 +129,11 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		retval.add(getTextWithNoValueString("SUBJECTALTNAME",newuserdata.getSubjectAltName()));
 		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",newuserdata.getExtendedinformation().getSubjectDirectoryAttributes()));
 		retval.add(getTextWithNoValueString("EMAIL",newuserdata.getEmail()));
-		retval.add(new ApprovalDataText("CA",getCAName(admin, newuserdata.getCAId()),true,false));
-		retval.add(new ApprovalDataText("ENDENTITYPROFILE",getEndEntityProfileName(admin,newuserdata.getEndEntityProfileId()),true,false));		
-		retval.add(new ApprovalDataText("CERTIFICATEPROFILE",getCertificateProfileName(admin,newuserdata.getCertificateProfileId()),true,false));
-		retval.add(getTokenName(admin,newuserdata.getTokenType()));
-		retval.add(getTextWithNoValueString("HARDTOKENISSUERALIAS",getHardTokenIssuerName(admin,newuserdata.getHardTokenIssuerId())));
+		retval.add(new ApprovalDataText("CA",ApprovalRequestHelper.getCAName(admin, newuserdata.getCAId()),true,false));
+		retval.add(new ApprovalDataText("ENDENTITYPROFILE",ApprovalRequestHelper.getEndEntityProfileName(admin,newuserdata.getEndEntityProfileId()),true,false));		
+		retval.add(new ApprovalDataText("CERTIFICATEPROFILE",ApprovalRequestHelper.getCertificateProfileName(admin,newuserdata.getCertificateProfileId()),true,false));
+		retval.add(ApprovalRequestHelper.getTokenName(admin,newuserdata.getTokenType()));
+		retval.add(getTextWithNoValueString("HARDTOKENISSUERALIAS",ApprovalRequestHelper.getHardTokenIssuerName(admin,newuserdata.getHardTokenIssuerId())));
 		retval.add(new ApprovalDataText("ADMINISTRATOR",newuserdata.getAdministrator() ? "YES" : "NO",true,true));
 		retval.add(new ApprovalDataText("KEYRECOVERABLE",newuserdata.getKeyRecoverable() ? "YES" : "NO",true,true));
 		retval.add(new ApprovalDataText("SENDNOTIFICATION",newuserdata.getSendNotification() ? "YES" : "NO",true,true));
@@ -156,11 +157,11 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		retval.add(getTextWithNoValueString("SUBJECTALTNAME",orguserdata.getSubjectAltName()));
 		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",orguserdata.getExtendedinformation().getSubjectDirectoryAttributes()));
 		retval.add(getTextWithNoValueString("EMAIL",orguserdata.getEmail()));
-		retval.add(new ApprovalDataText("CA",getCAName(admin, orguserdata.getCAId()),true,false));
-		retval.add(new ApprovalDataText("ENDENTITYPROFILE",getEndEntityProfileName(admin,orguserdata.getEndEntityProfileId()),true,false));		
-		retval.add(new ApprovalDataText("CERTIFICATEPROFILE",getCertificateProfileName(admin,orguserdata.getCertificateProfileId()),true,false));
-		retval.add(getTokenName(admin,orguserdata.getTokenType()));
-		retval.add(getTextWithNoValueString("HARDTOKENISSUERALIAS",getHardTokenIssuerName(admin,orguserdata.getHardTokenIssuerId())));
+		retval.add(new ApprovalDataText("CA",ApprovalRequestHelper.getCAName(admin, orguserdata.getCAId()),true,false));
+		retval.add(new ApprovalDataText("ENDENTITYPROFILE",ApprovalRequestHelper.getEndEntityProfileName(admin,orguserdata.getEndEntityProfileId()),true,false));		
+		retval.add(new ApprovalDataText("CERTIFICATEPROFILE",ApprovalRequestHelper.getCertificateProfileName(admin,orguserdata.getCertificateProfileId()),true,false));
+		retval.add(ApprovalRequestHelper.getTokenName(admin,orguserdata.getTokenType()));
+		retval.add(getTextWithNoValueString("HARDTOKENISSUERALIAS",ApprovalRequestHelper.getHardTokenIssuerName(admin,orguserdata.getHardTokenIssuerId())));
 		retval.add(new ApprovalDataText("ADMINISTRATOR",orguserdata.getAdministrator() ? "YES" : "NO",true,true));
 		retval.add(new ApprovalDataText("KEYRECOVERABLE",orguserdata.getKeyRecoverable() ? "YES" : "NO",true,true));
 		retval.add(new ApprovalDataText("SENDNOTIFICATION",orguserdata.getSendNotification() ? "YES" : "NO",true,true));
