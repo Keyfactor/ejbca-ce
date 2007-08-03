@@ -4,7 +4,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
     <c:set var="isException" value="${param.Exception}" />
-    <c:set var="errMsg" value="${param.ErrorMessage}" />
+    <c:set var="errMsg" value="${ErrorMessage}" />
     
     <h1 class="title">@EJBCA@ Certificate Enrollment Error</h1>
     
@@ -16,7 +16,9 @@
             <h2>Unknown error, or you came to this page directly without beeing redirected.</h2> 
         </c:when>
         <c:otherwise> 
-            <p>${errMsg}</p>
+            <p>
+            <pre><c:out value="${errMsg}" /></pre>
+            </p>
         </c:otherwise> 
     </c:choose> 
     

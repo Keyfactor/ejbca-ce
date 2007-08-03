@@ -31,8 +31,8 @@
 		            <p>The certificate does not exist!</p> 
 		        </c:when> 
 		        <c:otherwise> 
-		            <p>Issuer: ${issuer}</p> 
-		            <p>Serial number: ${serno}</p>
+		            <p><c:out value="Issuer: ${issuer}" /></p> 
+		            <p><c:out value="Serial number: ${serno}" /></p>
 		            <c:choose> 
 		                <c:when test="${certInfo.revoked}"> 
 		                    <h1>The certificate has been REVOKED!</h1>
