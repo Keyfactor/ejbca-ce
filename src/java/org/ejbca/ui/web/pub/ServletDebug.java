@@ -24,7 +24,7 @@ import org.ejbca.ui.web.RequestHelper;
 
 /**
  * Prints debug info back to browser client
- * @version $Id: ServletDebug.java,v 1.3 2006-02-09 08:45:22 anatom Exp $
+ * @version $Id: ServletDebug.java,v 1.4 2007-08-03 10:00:32 anatom Exp $
  */
 public class ServletDebug {
     private final ByteArrayOutputStream buffer;
@@ -49,7 +49,7 @@ public class ServletDebug {
     }
 
     public void printMessage(String msg) {
-        print("<p>" + msg);
+        print(msg);
     }
 
     public void printInsertLineBreaks(byte[] bA) throws Exception {
@@ -62,14 +62,14 @@ public class ServletDebug {
                 break;
             }
 
-            print(line.toString() + "<br>");
+            print(line.toString());
         }
     }
 
     public void takeCareOfException(Throwable t) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         t.printStackTrace(new PrintStream(baos));
-        print("<h4>Exception:</h4>");
+        print("Exception:");
 
         try {
             printInsertLineBreaks(baos.toByteArray());

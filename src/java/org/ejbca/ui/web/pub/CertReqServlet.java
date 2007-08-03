@@ -95,7 +95,7 @@ import org.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.18 2007-07-23 07:32:23 jeklund Exp $
+ * @version $Id: CertReqServlet.java,v 1.19 2007-08-03 10:00:32 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(CertReqServlet.class);
@@ -223,7 +223,7 @@ public class CertReqServlet extends HttpServlet {
 
     		String iMsg = intres.getLocalizedMessage("certreq.receivedcertreq", username, request.getRemoteAddr());
             log.info(iMsg);
-            debug.print("<h3>username: " + username + "</h3>");
+            debug.print("Username: " + username);
 
             // Check user
             int tokentype = SecConst.TOKEN_SOFT_BROWSERGEN;
@@ -351,12 +351,12 @@ public class CertReqServlet extends HttpServlet {
             return;
         } catch (Exception e) {
             log.debug(e);
-            debug.print("<h3>parameter name and values: </h3>");
+            debug.print("Parameter name and values:\n");
             Enumeration paramNames = request.getParameterNames();
             while (paramNames.hasMoreElements()) {
                 String name = paramNames.nextElement().toString();
                 String parameter = request.getParameter(name);
-                debug.print("<h4>" + name + ":</h4>" + parameter + "<br>");
+                debug.print(name + ":" + parameter + "\n");
             }
             debug.takeCareOfException(e);
             debug.printDebugInfo();
