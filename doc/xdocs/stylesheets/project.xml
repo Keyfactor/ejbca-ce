@@ -7,7 +7,7 @@
     <body>
        <menusection name="Home" index="0"         href="/index.html">
             <menu name="EJBCA">
-                <item name="Welcome"               href="/index.html"/>
+                <item name="Home"               href="/index.html"/>
                 <item name="Features"              href="/features.html"/>
                 <item name="Screenshots"           href="/screenshots.html"/>
                 <item name="Demo Certificate"	   href="/demo.html"/>
