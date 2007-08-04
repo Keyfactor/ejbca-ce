@@ -127,6 +127,9 @@ To configure the transaction timeout to a larger value in weblogic:
 Glassfish
 =========
 
+Currently EJBCA only works with Glassfish v1 due to a bug in Glassfish v2, see:
+https://glassfish.dev.java.net/issues/show_bug.cgi?id=2992
+
 Currently EJBCA works with the Derby/JavaDB and the MySQL 5.0 database on Glassfish.
 
 - Set the envorinment variable APPSRV_HOME to the directory where Glassfish is installed. For example APPSRV_HOME=/home/sun/glassfish.
