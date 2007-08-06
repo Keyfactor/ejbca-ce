@@ -40,7 +40,7 @@ import org.ejbca.core.model.ra.UserDataVO;
  * 
  * @author Philip Vendil 2007 jan 5
  *
- * @version $Id: BasicCertificateExtension.java,v 1.2 2007-03-26 12:39:26 anatom Exp $
+ * @version $Id: BasicCertificateExtension.java,v 1.3 2007-08-06 09:45:17 jeklund Exp $
  */
 
 public class BasicCertificateExtension extends CertificateExtension {
@@ -121,8 +121,17 @@ public class BasicCertificateExtension extends CertificateExtension {
 			int padBits = 8 - (value.length() % 8);
 			if(padBits == 8){
 				padBits = 0;
-			}			
-			retval = new DERBitString(bigInteger.toByteArray(),padBits);
+			}
+			byte[] byteArray = bigInteger.toByteArray();
+			if ( value.length() % 8 == 0 ) {
+				// Remove empty extra byte
+				byte[] shorterByteArray = new byte[byteArray.length-1];
+				for (int i=0; i<shorterByteArray.length; i++) {
+					shorterByteArray[i] = byteArray[i+1];
+				}
+				byteArray = shorterByteArray; 
+			}
+			retval = new DERBitString(byteArray, padBits);
 		}catch(NumberFormatException e){
 			throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.illegalvalue",value,new Integer(getId())));
 		}
