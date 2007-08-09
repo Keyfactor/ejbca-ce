@@ -50,10 +50,13 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.Attribute;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
@@ -134,7 +137,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.64 2007-07-27 08:23:01 anatom Exp $
+ * @version $Id: X509CA.java,v 1.65 2007-08-09 09:08:54 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -561,16 +564,37 @@ public class X509CA extends CA implements Serializable {
         }
         // Authority key identifier
         if (certProfile.getUseAuthorityKeyIdentifier() == true) {
-            SubjectPublicKeyInfo apki = null;
+        	AuthorityKeyIdentifier aki = null;
+            // Default value is that we calculate it from scratch!
+            // (If this is a root CA we must calculate the AuthorityKeyIdentifier from scratch)
+            // (If the CA signing this cert does not have a SubjectKeyIdentifier we must calculate the AuthorityKeyIdentifier from scratch)
             try{
-              apki =
-                new SubjectPublicKeyInfo(
-                    (ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN).getEncoded())).readObject());
-             }catch(CATokenOfflineException e){
-                 log.debug("X509CA: CA Token Offline Exception: ", e);                
-                 throw e; 
+            	byte[] keybytes = getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN).getEncoded();
+            	SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(keybytes)).readObject());
+                aki = new AuthorityKeyIdentifier(apki);
+            }catch(CATokenOfflineException e){
+            	log.debug("X509CA: CA Token Offline Exception: ", e);                
+            	throw e; 
             }
-            AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
+            
+        	// If we have a CA-certificate (i.e. this is not a Root CA), we must take the authority key identifier from 
+        	// the CA-certificates SubjectKeyIdentifier if it exists. If we don't do that we will get the wrong identifier if the 
+        	// CA does not follow RFC3280 (guess if MS-CA follows RFC3280?)
+            if ( (cacert != null) && (!isRootCA) ) {
+            	byte[] akibytes = CertTools.getSubjectKeyId(cacert);
+            	if (akibytes != null) {
+            		// TODO: The code below is snipped from AuthorityKeyIdentifier.java in BC 1.36, because there is no method there
+            		// to set only a pre-computed key identifier
+            		// This should be replaced when such a method is added to BC
+            		ASN1OctetString keyidentifier = new DEROctetString(akibytes);
+            		ASN1EncodableVector  v = new ASN1EncodableVector();
+            		v.add(new DERTaggedObject(false, 0, keyidentifier));
+            		ASN1Sequence seq = new DERSequence(v);
+
+            		aki = new AuthorityKeyIdentifier(seq);
+            		log.debug("Using AuthorityKeyIdentifier from CA-certificates SubjectKeyIdentifier.");
+            	}
+            }
             certgen.addExtension(
                 X509Extensions.AuthorityKeyIdentifier.getId(),
                 certProfile.getAuthorityKeyIdentifierCritical(), aki);
