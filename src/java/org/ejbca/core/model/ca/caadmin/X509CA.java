@@ -24,6 +24,7 @@ import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.Principal;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.CRL;
@@ -97,6 +98,7 @@ import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.x509.X509V2CRLGenerator;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.ejbca.core.ejb.ca.sign.SernoGenerator;
@@ -137,7 +139,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.65 2007-08-09 09:08:54 anatom Exp $
+ * @version $Id: X509CA.java,v 1.66 2007-08-09 16:11:24 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -368,7 +370,7 @@ public class X509CA extends CA implements Serializable {
         			try {
         				startTimeDate = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).parse(eiStartTime);
         			} catch (ParseException e) {
-                		log.error("Ignoring invalid start time format ("+eiStartTime+").");
+        				log.error(intres.getLocalizedMessage("signsession.errorinvalidstarttime",eiStartTime));
         			}
         		}
     			if ( startTimeDate != null && !startTimeDate.before(now)) {
@@ -386,7 +388,7 @@ public class X509CA extends CA implements Serializable {
         			try {
         				endTimeDate = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).parse(eiEndTime);
         			} catch (ParseException e) {
-                		log.error("Ignoring invalid start time format ("+eiEndTime+").");
+        				log.error(intres.getLocalizedMessage("signsession.errorinvalidstarttime",eiEndTime));
         			}
         		}
     			if ( endTimeDate != null ) {
@@ -397,7 +399,7 @@ public class X509CA extends CA implements Serializable {
         if ( (notBefore != null) && (certProfile.getAllowValidityOverride()) ) {
         	if (notBefore.before(now)) {
         		// We do not allow a certificate to be valid before the current date, i.e. not backdated start dates
-        		log.error("notBefore from request ("+notBefore+") for user '"+subject.getUsername()+"' pre-dates current time, not allowed, using current time instead.");        		
+				log.error(intres.getLocalizedMessage("signsession.errorbeforecurrentdate",notBefore,subject.getUsername()));
         	} else {
         		// If we allow the client (or ra) to specify the startdate
         		firstDate = notBefore;
@@ -420,7 +422,7 @@ public class X509CA extends CA implements Serializable {
         	// Only if not null and we allow validity override
         	// Check that notAfter from request is not longer than the validity time from the certificate profile, we don not allow that
         	if (notAfter.after(certProfileLastDate)) {
-        		log.error("notAfter from request ("+notAfter+") for user '"+subject.getUsername()+"' is longer than maximum specified in certificate profile ("+certProfileLastDate+"), not allowed, using notAfter from certificate profile.");
+				log.error(intres.getLocalizedMessage("signsession.errorbeyondmaxvalidity",notAfter,subject.getUsername(),certProfileLastDate));
         		lastDate = certProfileLastDate;
         	} else {
         		lastDate = notAfter;
@@ -844,6 +846,28 @@ public class X509CA extends CA implements Serializable {
         
         // Verify before returning
         cert.verify(getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN));
+        
+        // If we have a CA-certificate, verify that we have all path verification stuff correct
+        if (cacert != null) {
+        	byte[] aki = CertTools.getAuthorityKeyId(cert);
+        	byte[] ski = CertTools.getSubjectKeyId(cacert);
+        	if ( (aki != null) && (ski != null) ) {
+            	boolean eq = Arrays.equals(aki, ski);
+            	if (!eq) {
+            		String akistr = new String(Hex.encode(aki));
+            		String skistr = new String(Hex.encode(ski));
+    				log.error(intres.getLocalizedMessage("signsession.errorpathverifykeyid",akistr, skistr));
+            	}        		
+        	}
+        	Principal issuerDN = cert.getIssuerX500Principal();
+        	Principal subjectDN = cacert.getSubjectX500Principal();
+        	if ( (issuerDN != null) && (subjectDN != null) ) {
+        		boolean eq = issuerDN.equals(subjectDN);
+            	if (!eq) {
+    				log.error(intres.getLocalizedMessage("signsession.errorpathverifydn",issuerDN.getName(), subjectDN.getName()));
+            	}        		
+        	}
+        }
         log.debug(">X509CA: generate certificate, CA "+ this.getCAId() + " for DN: " + subject.getDN());
       return cert;                                                                                        
     }
