@@ -113,7 +113,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.55 2007-07-26 11:09:37 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.56 2007-08-10 10:27:35 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -1697,8 +1697,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
      * Retrieve fingerprint for all keys as a String. Used for testing. 
      *
      * @param admin Administrator
-     * @param capassword used to unlock the keystore.
-     * @throws Exception 
+     * @param caname the name of the CA whose fingerprint should be retrieved.
+     * @throws Exception if the CA is not a soft token CA
      * @ejb.interface-method
      */
     public String getKeyFingerPrint(Admin admin, String caname) throws Exception  {
@@ -1711,7 +1711,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
 			// Make sure we are not trying to export a hard or invalid token
 			if ( thisCa.getCAType() != CATokenInfo.CATOKENTYPE_P12 ) {
-				throw new Exception("Cannot extract fingerprint from a non-soft token.");
+				throw new Exception("Cannot extract fingerprint from a non-soft token ("+thisCa.getCAType()+").");
 			}
 			// Fetch keys
 			CATokenContainer thisCAToken = thisCa.getCAToken();
