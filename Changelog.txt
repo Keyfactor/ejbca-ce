@@ -1,3 +1,13 @@
+3.4.5, 2007-08-10
+---
+Bug
+    * [ECA-567] - XKMS register operation fails when user's token is JKS or PEM.
+    * [ECA-568] - Parsing of some DERBitStrings in custom certfificate extensions.
+    * [ECA-569] - If KeyIdentifiers from ExternalCAs are not standard format, key identifieres will missmatch
+
+Improvement
+    * [ECA-524] - Configurable which interface tomcat listens on
+
 3.4.4, 2007-07-20
 ---
 Bug

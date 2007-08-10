@@ -1,6 +1,20 @@
+EJBCA 3.4.5
+-----------
+This is a patch release with only minor fixes.
+Notable changes: 
+- Now it is configurable which interface JBoss http service listens to, eases hardening.
+- Fixed a bug where path validation failed when using a MS-CA as External Root CA.
+
+Read the changelog for details.
+
+This is a plug-in upgrade from 3.4.x. See UPGRADE for the simple instructions.
+
 EJBCA 3.4.4
 -----------
 This is a patch release with only minor fixes.
+Notable changes: 
+- You can now use empty password to activate a HSM CA, which means that you can have operator cards without passwords, or that you can use module protected keys on the HSM (nCipher lingo). 
+- The interesting function for generating OpenVPN installers automatically for users have a fix so it works and is tested again. 
 
 Read the changelog for details.
 
