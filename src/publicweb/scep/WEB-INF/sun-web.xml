@@ -15,9 +15,5 @@
         <ejb-ref-name>ejb/RSASignSessionLocal</ejb-ref-name>
         <jndi-name>RSASignSession</jndi-name>
     </ejb-ref>
-    <ejb-ref>
-        <ejb-ref-name>ejb/UserAdminSessionLocal</ejb-ref-name>
-        <jndi-name>UserAdminSession</jndi-name>
-    </ejb-ref>
   
 </sun-web-app>

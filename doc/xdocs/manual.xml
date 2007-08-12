@@ -526,7 +526,7 @@ It should also be possible to use an LDAP distribution point, if you have config
 ldap://yourLdapServer:port_number/cn=CA-test,ou=CRLPUB,dc=mycompany,dc=com?certificateRevocationList
 </source>
 <p>
-(such as the link from the webdist pages)
+(such as the link from the web distribution pages)
 </p>
 <p>
 When defining CRL distribution point and CRL issuer in a certificate profile, you can choose to set the values in either 
@@ -1080,7 +1080,7 @@ An appropriate URL for validation is: http://<i>hostname</i>:8080/ejbca/publicwe
 </p><p>
 If using a dedicated OCSP responder certificate, this certificate must probably not be imported in Mozilla as a Trusted CA certificate.
 But if you want to, you can do this through 'View Certificates' in EJBCA 
-(http://<i>hostname</i>:8080/ejbca/publicweb/webdist/cacert.jsp).
+(http://<i>hostname</i>:8080/ejbca/retrieve/ca_certs.jsp).
 </p><p>
 In doc/samples it is a sample how to check revocation with OCSP using the new APIs in JDK 1.5.
 </p>
@@ -4156,9 +4156,8 @@ user in the database (using 'bin/ejbca.sh ra adduser' or the admin-GUI).
 
 <subsection name="Fetching certificates and CRLs">
 <p>
-Certificates and CRLs can be fetched through the web-interface
-as defined in
- 'webdist/index.html'. They can also be fetched directly from
+Certificates and CRLs can be fetched through the public web-interface. 
+They can also be fetched directly from
  the 'CertificateStoreSession' session bean or using the command 
  'bin/ejbca.sh ca getcrl'
 </p></subsection>
@@ -4212,7 +4211,7 @@ appreciated by the community and makes your maintenance easier</li>
 </subsection>
 <subsection name="Adding your own public web-pages">
 <p>
-The public web-pages are written in JSP and can be found under src/newPublicWeb.
+The public web-pages are written in JSP and can be found under src/publicweb/publicweb.
 Modify the pages (directly or by using a separate tree), rebuild and redeploy. The
 changes should show on http://<i>ejbcahost</i>:8080/ejbca.
 </p>
@@ -4229,14 +4228,14 @@ To set up the demo servlet:
 <ol>
 <li>Find out the CA id of the CA you want to use for signing of the demo certificates. Use the admin-GUI or 'ejbca.sh ca listcas' to find the integer value that is the CA id.</li>
 <li>Configure the CA id in rc/java/org/ejbca/ui/web/pub/DemoCertReqServlet.java, it's the parameter DEFAULT_DEMOCAID.</li>
-<li>Edit src/publicweb/apply/WEB-INF/web.xml and uncomment the two sections for the demo servlet.</li>
+<li>Edit src/publicweb/publicweb/web.xml and uncomment the two sections for the demo servlet.</li>
 <li>If using UTF-8 to display the web-page containing the demo form to the users, change ISO-8859-1 to UTF-8 for the env-entry 'contentEncoding'. Otherwise national characters in names will be encoded/displayed incorrectly in the certificates.</li>
 <li>Deploy with 'ant deploy'.</li>
 <li>Create an end entity profile and a certificate profile that should be used for the demo certificates.</li>
-<li>Create a demo apply page containing something similar to the sample form below for Mozilla/Firefox. There are some demo_xx scripts under src/publicweb/apply.</li>
+<li>Create a demo apply page containing something similar to the sample form below for Mozilla/Firefox. There are some sample scripts under src/publicweb/publicweb.</li>
 </ol>
 <source>
-&lt;form name="demoreq" action="http://127.0.0.1:8080/ejbca/publicweb/apply/democertreq" method="post">
+&lt;form name="demoreq" action="http://127.0.0.1:8080/ejbca/publicweb/democertreq" method="post">
   Please fill out the form and click &lt;b>Enroll&lt;/b> to receive your certificate.
   Read our &lt;a href="http://www.primekey.se/primekey/en/Demo.html">privacy policy&lt;/a>.&lt;br>
   &lt;input name="certificateprofile" value="DemoCertProfile" type="hidden">
@@ -4333,7 +4332,7 @@ bin/ejbca.sh batch tomcat
 $APPSRV_HOME/server/default/conf/keystore.
 </p><p>
 5. Download the CA certificate in PEM-format from
-http://localhost:8080/ejbca/publicweb/webdist/cacert.jsp (call
+http://localhost:8080/ejbca/retrieve/ca_certs.jsp (call
 it ejbca-ca.pem).
 </p><p>
 6. Add the EJBCA CA certificate to the Java trust-keystore in $JAVA_HOME/jre/lib/security/cacerts
@@ -4360,7 +4359,7 @@ bin/ejbca.sh batch
 </source>
 <p>
 8. Fetch the certificate using your browser a
-http://localhost:8080/ejbca/publicweb/apply
+http://localhost:8080/ejbca/
 </p><p>
 Alternative:
 Install the generated PKCS12 (p12/superadmin.p12) file in the

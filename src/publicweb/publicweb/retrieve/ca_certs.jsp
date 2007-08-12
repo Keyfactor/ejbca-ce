@@ -28,14 +28,14 @@
 
 				<h3>In PEM format:</h3>
 				<c:forEach var="pemcert" items="${chain}" varStatus="status">
-					<c:url var="pem" value="../certdist" >
+					<c:url var="pem" value="../publicweb/webdist/certdist" >
 						<c:param name="cmd" value="cacert" />
 						<c:param name="issuer" value="${issuerdn}" />
 						<c:param name="level" value="${status.count - 1}" />
 					</c:url>
 					<p><a href="${pem}">${pemcert.subjectDN.name}</a>,
 	
-					<c:url var="pem_ocsp" value="../certdist" >
+					<c:url var="pem_ocsp" value="../publicweb/webdist/certdist" >
 						<c:param name="cmd" value="ocspcert" />
 						<c:param name="issuer" value="${pemcert.subjectDN.name}" />
 					</c:url>
@@ -44,14 +44,14 @@
 	
 				<h3>For Netscape/Mozilla:</h3>
 				<c:forEach var="nscert" items="${chain}" varStatus="status">
-					<c:url var="ns" value="../certdist" >
+					<c:url var="ns" value="../publicweb/webdist/certdist" >
 						<c:param name="cmd" value="nscacert" />
 						<c:param name="issuer" value="${issuerdn}" />
 						<c:param name="level" value="${status.count - 1}" />
 					</c:url>
 					<p><a href="${ns}">${nscert.subjectDN.name}</a>,
 	
-					<c:url var="ns_ocsp" value="../certdist" >
+					<c:url var="ns_ocsp" value="../publicweb/webdist/certdist" >
 						<c:param name="cmd" value="nsocspcert" />
 						<c:param name="issuer" value="${nscert.subjectDN.name}" />
 					</c:url>
@@ -60,14 +60,14 @@
 	
 				<h3>For Internet Explorer:</h3>
 				<c:forEach var="iecert" items="${chain}" varStatus="status">
-					<c:url var="ie" value="../certdist" >
+					<c:url var="ie" value="../publicweb/webdist/certdist" >
 						<c:param name="cmd" value="iecacert" />
 						<c:param name="issuer" value="${issuerdn}" />
 						<c:param name="level" value="${status.count - 1}" />
 					</c:url>
 					<p><a href="${ie}">${iecert.subjectDN.name}</a>,
 	
-					<c:url var="ie_ocsp" value="../certdist" >
+					<c:url var="ie_ocsp" value="../publicweb/webdist/certdist" >
 						<c:param name="cmd" value="ieocspcert" />
 						<c:param name="issuer" value="${iecert.subjectDN.name}" />
 					</c:url>

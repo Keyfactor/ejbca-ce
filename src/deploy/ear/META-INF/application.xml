@@ -20,7 +20,7 @@ applications for enrollment, distribution and administration.
     </module>
     <module>
         <web>
-            <web-uri>apply.war</web-uri>
+            <web-uri>scep.war</web-uri>
             <context-root>/@ejbca@/publicweb/apply</context-root>
         </web>
     </module>

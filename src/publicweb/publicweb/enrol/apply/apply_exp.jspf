@@ -255,7 +255,7 @@
 		</c:when>
 		<c:otherwise>
 			<ul>
-				<c:url var="root_url" value="../certdist" >
+				<c:url var="root_url" value="../publicweb/webdist/certdist" >
 					<c:param name="cmd" value="iecacert" />
 					<c:param name="level" value="${fn:length(chain) - 1}" />
 					<c:param name="caid" value="${caid}" />
@@ -263,7 +263,7 @@
 				<li><a href="${root_url}">Root CA</a></li>
 				<c:if test="${fn:length(chain) > 1}">
 					<c:forEach var="i" begin="2" end="${fn:length(chain)}" varStatus="status">
-						<c:url var="chain_url" value="../certdist" >
+						<c:url var="chain_url" value="../publicweb/webdist/certdist" >
 							<c:param name="cmd" value="iecacert" />
 							<c:param name="level" value="${fn:length(chain) - status.index}" />
 							<c:param name="caid" value="${caid}" />

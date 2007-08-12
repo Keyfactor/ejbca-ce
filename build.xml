@@ -80,12 +80,13 @@
 			or 'su', make sure that the superuser has the correct path too.
 		</fail>
 	</target>
+	
 	<!-- =================================================================== -->
-    <!-- Build apply part  (public web)                                                  -->
+    <!-- Build SCEP part  (public web)                                                  -->
     <!-- =================================================================== -->
-    <target name="apply.war" depends="compile">
-        <war destfile="${applywar}" webxml="${apply.src}/WEB-INF/web.xml">
-            <fileset dir="${apply.src}" excludes="WEB-INF/web.xml" />
+    <target name="scep.war" depends="compile">
+        <war destfile="${scepwar}" webxml="${scep.src}/WEB-INF/web.xml">
+            <fileset dir="${scep.src}" excludes="WEB-INF/web.xml" />
         </war>
     </target>
 
@@ -144,7 +145,7 @@
             <fileset dir="${sampleauth.src}" excludes="WEB-INF/web.xml" />
         </war>
     </target>
-
+    
     <!-- =================================================================== -->
     <!-- Build webdist part                                                  -->
     <!-- =================================================================== -->
@@ -389,7 +390,7 @@
     <!-- =================================================================== -->
     <!-- Build CA-ear                                                        -->
     <!-- =================================================================== -->
-	<target name="ca.ear" depends="jsflibs, apply.war, publicweb.war, status.war, cmp.war, healthcheck.war, webdist.war, adminweb.war, ejbca-ejb.jar, ejbca-util.jar, ejbcaws.war, ejbcaws.client, xkms.war, xkms.client">
+	<target name="ca.ear" depends="jsflibs, publicweb.war, scep.war, webdist.war, status.war, cmp.war, healthcheck.war, adminweb.war, ejbca-ejb.jar, ejbca-util.jar, ejbcaws.war, ejbcaws.client, xkms.war, xkms.client">
         <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml"> 
             <fileset dir="${eardd.src}">
                 <exclude name="META-INF/application.xml" />

@@ -12,16 +12,16 @@
 
 		<c:set var="ca" value="${finder.CAInfo}" />
 
-		<c:url var="der" value="../certdist" >
+		<c:url var="der" value="../publicweb/webdist/certdist" >
 			<c:param name="cmd" value="crl" />
 			<c:param name="issuer" value="${ca.subjectDN}" />
 		</c:url>
-		<c:url var="pem" value="../certdist" >
+		<c:url var="pem" value="../publicweb/webdist/certdist" >
 			<c:param name="cmd" value="crl" />
 			<c:param name="format" value="PEM" />
 			<c:param name="issuer" value="${ca.subjectDN}" />
 		</c:url>
-		<c:url var="moz" value="../certdist" >
+		<c:url var="moz" value="../publicweb/webdist/certdist" >
 			<c:param name="cmd" value="crl" />
 			<c:param name="issuer" value="${ca.subjectDN}" />
 			<c:param name="moz" value="y" />

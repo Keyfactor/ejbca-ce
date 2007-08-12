@@ -43,12 +43,31 @@ public class WebdistHttpTest extends TestCase {
     public void testJspCompile() throws Exception {
         // We hit the pages and see that they return a 200 value, so we know they at least compile correctly
         String httpReqPath = "http://127.0.0.1:8080/ejbca";
-        String resourceName = "publicweb/webdist";
-        String resourceName1 = "publicweb/webdist/cacert.jsp";
-        String resourceName2 = "publicweb/webdist/cacrl.jsp";
-        String resourceName3 = "publicweb/webdist/revoked.jsp";
-        String resourceName4 = "publicweb/webdist/listcerts.jsp";
-        String resourceName5 = "publicweb/webdist/certdist.jsp";
+        String resourceName = "publicweb/webdist/certdist";
+        String resourceName1 = "publicweb/webdist/certdist?cmd=cacert&issuer=CN%3dAdminCA1%2cO%3dEJBCA+TomasLaptop%2cC%3dSE&level=0";
+
+        // We want to get a 404 response without exceptions
+        HttpUnitOptions.setExceptionsThrownOnErrorStatus(false);
+        WebConversation wc   = new WebConversation();
+        WebRequest request   = new GetMethodWebRequest( httpReqPath + '/' + resourceName );
+        WebResponse response = wc.getResponse( request );
+        assertEquals( "Response code", 400, response.getResponseCode() );
+        request   = new GetMethodWebRequest( httpReqPath + '/' + resourceName1 );
+        response = wc.getResponse( request );
+        assertEquals( "Response code", 200, response.getResponseCode() );
+    }
+
+    public void testPublicWeb() throws Exception {
+        // We hit the pages and see that they return a 200 value, so we know they at least compile correctly
+        String httpReqPath = "http://127.0.0.1:8080/ejbca";
+        String resourceName = "retrieve/ca_crls.jsp";
+        String resourceName1 = "retrieve/ca_certs.jsp";
+        String resourceName2 = "retrieve/latest_cert.jsp";
+        String resourceName3 = "retrieve/list_certs.jsp";
+        String resourceName4 = "retrieve/check_status.jsp";
+        String resourceName5 = "enrol/browser.jsp";
+        String resourceName6 = "enrol/server.jsp";
+        String resourceName7 = "enrol/keystore.jsp";
 
         // We want to get a 404 response without exceptions
         HttpUnitOptions.setExceptionsThrownOnErrorStatus(false);
@@ -70,9 +89,13 @@ public class WebdistHttpTest extends TestCase {
         assertEquals( "Response code", 200, response.getResponseCode() );
         request   = new GetMethodWebRequest( httpReqPath + '/' + resourceName5 );
         response = wc.getResponse( request );
-        // Without params this gives a 404 (not found)
-        assertEquals( "Response code", 404, response.getResponseCode() );
+        assertEquals( "Response code", 200, response.getResponseCode() );
+        request   = new GetMethodWebRequest( httpReqPath + '/' + resourceName6 );
+        response = wc.getResponse( request );
+        assertEquals( "Response code", 200, response.getResponseCode() );
+        request   = new GetMethodWebRequest( httpReqPath + '/' + resourceName7 );
+        response = wc.getResponse( request );
+        assertEquals( "Response code", 200, response.getResponseCode() );
     }
-
 
 }

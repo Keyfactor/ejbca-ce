@@ -18,51 +18,11 @@
         </init-param>
     </servlet>
     
-    <servlet>
-        <servlet-name>CertDist</servlet-name>
-        <display-name>CertDistServlet</display-name>
-        <servlet-class>org.ejbca.ui.web.pub.CertDistServlet</servlet-class>
-    </servlet>
-
-    <servlet>
-        <servlet-name>ScepServlet</servlet-name>
-        <display-name>ScepServlet</display-name>
-        <servlet-class>org.ejbca.ui.web.protocol.ScepServlet</servlet-class>
-        <init-param>
-            <param-name>includeCACert</param-name>
-            <param-value>1</param-value>
-        </init-param>
-    </servlet>
-
-    <servlet>
-        <servlet-name>ScepServletNoCACert</servlet-name>
-        <display-name>ScepServletNoCACert</display-name>
-        <servlet-class>org.ejbca.ui.web.protocol.ScepServlet</servlet-class>
-        <init-param>
-            <param-name>includeCACert</param-name>
-            <param-value>0</param-value>
-        </init-param>
-    </servlet>
-
     <servlet-mapping>
         <servlet-name>CertReqServlet</servlet-name>
         <url-pattern>/certreq</url-pattern>
     </servlet-mapping>
 
-    <servlet-mapping>
-        <servlet-name>CertDist</servlet-name>
-        <url-pattern>/certdist</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-      <servlet-name>ScepServlet</servlet-name>
-      <url-pattern>/scep/pkiclient.exe</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-      <servlet-name>ScepServletNoCACert</servlet-name>
-      <url-pattern>/scep/noca/pkiclient.exe</url-pattern>
-    </servlet-mapping>
 
 <!--
     <servlet>

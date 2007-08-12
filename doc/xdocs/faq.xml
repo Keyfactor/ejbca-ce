@@ -169,9 +169,7 @@ you can get nice logging with only the things you are interested in logged to th
       <question>I want to add my own static pages under http://hostname:8080/ejbca/ ?</question>
       <answer>
         <p>
-        Put your files (static html is easy) under publicweb/root, do a full build and re-deploy.
-        The indexfile under publicweb/root is the one show on http://hostname:8080/ejbca, so
-        you can add a subdir under there.
+        Put your files (static html is easy) under publicweb/publicweb, do a full build and re-deploy.
         </p>
       </answer>
     </faq>
@@ -315,7 +313,7 @@ JBOSS_HOME\server\default\db\hypersonic\default.properties and set the version t
  </faq>
     <faq>
       <question>When enrolling for certificates with IE, the enrollment controll (clsid) is incorrect.</question>
-	  <answer><p>Microsoft changed the enrollment controll due to secrity issues. Look in 'src/publicweb/apply/apply_exp.jsp' for more information.</p></answer>
+	  <answer><p>Microsoft changed the enrollment controll due to secrity issues. Look in 'src/publicweb/publicweb/anrol/apply/apply_exp.jspf' for more information.</p></answer>
 	</faq>
     <faq>
       <question>I get the error "Object Class Violation : (65)" when publishing certificates in LDAP</question>
@@ -381,9 +379,9 @@ keytool -genkey -alias mykey -keystore myks.jks -keyalg RSA -dname c=SE,O=AnaTom
 keytool -certreq -alias mykey -sigalg SHA1WithRSA -file myreq.p10 -keypass foo123 -keystore myks.jks -storepass foo123
 </source>
 <p>
-You now hav the certification request in the file 'myreq.p10'.
+You now have the certification request in the file 'myreq.p10'.
 
-Open up EJBCA request page in your favorite browser, 'http://127.0.0.1:8080/apply/index.html', and select the link for NOT having a browser, 'http://127.0.0.1:8080/apply/apply_man.jsp'
+Open up EJBCA request page in your favorite browser, 'http://127.0.0.1:8080/ejbca', and select the link for NOT having a browser'
 
 Download the Root CA certificate by clicking on the link. Save the certificate as 'ca.pem'.
 
