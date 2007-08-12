@@ -22,7 +22,7 @@ import org.ejbca.util.StringTools;
 /**
  * Implements the password encryption mechanism
  *
- * @version $Id: EncryptPwd.java,v 1.1 2006-08-05 09:59:38 anatom Exp $
+ * @version $Id: EncryptPwd.java,v 1.2 2007-08-12 16:50:03 anatom Exp $
  */
 public class EncryptPwd extends BaseCommand {
     /**
@@ -32,7 +32,7 @@ public class EncryptPwd extends BaseCommand {
      */
     public static void main(String[] args) {
     	try {
-    		System.out.println("Please not that this encryption does not provide absolute security, it uses a build in key for encryption to keep the password from at least accidentaly beeing known.");
+    		System.out.println("Please note that this encryption does not provide absolute security, it uses a build in key for encryption to keep the password from at least accidentaly beeing known.");
     		System.out.println("Enter word to encrypt: ");
     		InputStreamReader isr = new InputStreamReader ( System.in );
     		BufferedReader br = new BufferedReader ( isr );
