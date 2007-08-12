@@ -2085,13 +2085,14 @@ When configuring a CA to use a HSM in the administration GUI it is a property fi
 <li>testKey          - the key to be used by HSM status checks, can be RSA or ECDSA.</li>
 <li>hardTokenEncrypt - the key to be used for hardtoken encryption and decryption. PUK will be decrypted by this key.</li>
 <li>defaultKey       - the key to be used when no other key is defined for a purpose. If this is the only definition then this key will be used for all purposes.</li>
+<li>pin              - optional pin code used for auto-activation of CA token, see below. Not recommended for high security set-ups, but very useful in some cases.</li>
 </ul>
 </p><p>
 You may omit defaultKey if you want to be sure that the right key is used, but then all the other keys must be specified. It's recommended that the certificate and CRL signing keys are linked to the same key since different keys are rarely supported by verifying applications.
 </p><p>
 When implementing support for a new HSM the 'KeyStrings' class could be used to manage the key properties described above. When it is an JCA/JCE API for the HSM it could also be wise to extend the BaseCAToken class.
 </p><p>
-Same activation code must be used for all keys used by a CA. To be able to automatically activate a CA the activation code may be specified in the property field with the keyword 'pin'. If this property is not specified then the CA has to be manually activated after each restart or redeployment of EJBCA. 
+Same activation code must be used for all keys used by a CA. 
 </p><p>
 EJBCA 3.1 and later has build-in support for the nCipher NFast HSM.
 </p><p>
@@ -2100,10 +2101,45 @@ EJBCA 3.2 and later also has an implementation for the Eracom HSM. The configura
 </p><p>
 EJBCA 3.3 and later has an implementation for the SafeNet Luna HSM.
 </p><p>
-EJBCA 3.5 and later has an implementation for a generic PKCS#11 provider.
+EJBCA 3.5 and later has an implementation for a generic PKCS#11 provider, tested with Utimaco and nCipher.
 </p><p>
 PrimeKey Solutions is selling a module called PrimeCardHSM that implements a flexible HSM using low cost smart cards. 
 </p>
+<subsection name="Auto-activation of CA tokens">
+<p>
+The 'pin' property is used to be able to automatically activate a CA token. The activation code may be specified in the property field with the keyword 'pin'. 
+If this property is not specified then the CA has to be manually activated after each restart or re-deployment of EJBCA. 
+<br/>
+Manual activation is done in the admin-GUI under 'Basic Functions->View Information', or using the cli 'bin/ejbca.sh ca activateca'.
+</p><p>
+The 'pin' property can use a clear text password or an encrypted one.
+<br/>(encrypted is only available in EJBCA >= 3.5):
+</p>
+<source>
+pin foo123
+pin 6bc841b2745e2c95e042a68b4777b34c
+</source>
+<p>
+These two properties contains the same password. The encrypted pin value can be obtained with the command 'bin/ejbca.sh encryptpwd':
+</p>
+<source>
+$ bin/ejbca.sh encryptpwd foo123
+Using JBoss JNDI provider...
+Please note that this encryption does not provide absolute security, ....
+Enter word to encrypt:
+foo123
+Encrypting pwd 'foo123'
+6bc841b2745e2c95e042a68b4777b34c
+</source>
+<p>
+NOTE: This encryption is not high security encryption, it is only meant to protect the password for accidental viewing. 
+The encryption uses a build in encryption key in EJBCA.
+With an encrypted pin you can for example bring up the 'Edit CAs' page in the admin-GUI without everyone around immediately seeing your password.
+<br/>
+If an attacker gets hold of the encrypted value it is easy to decrypt using the source code of EJBCA.
+</p>
+</subsection>
+
 <subsection name="HSMs and ECDSA">
 <p>
 Support for ECDSA in HSMs are dependant on the support for ECDSA in the HSM manufacturers JCE provider.
@@ -2379,17 +2415,17 @@ Loading complete; now pausing
 </source>
 <p>
 Start a new window and login as the same user (jboss user).
-Now 2 keys protected by the key set 'ejbca' are created like this:
+Now 3 keys protected by the key set 'ejbca' are created like this:
 </p>
 <source>
-jboss@donny:~$ /opt/nfast/bin/preload $EJBCA_HOME/bin/nCipherHSM.sh generate 4096 defaultRoot
+jboss@donny:~$ /opt/nfast/bin/preload $EJBCA_HOME/bin/nCipherHSM.sh generate 4096 signRoot
 Executing /home/jboss/ejbca/bin/nCipherHSM.sh generate 4096 defaultRoot
 Creating certificate with entry defaultRoot in KeyStore of type nCipher.sworld with provider nCipherKM.
 Give password of inserted card in slot:
 pass2
 Next line will contain the identity identifying the keystore:
 03842f5bffefd9a73ac4f6caea27fb7287e7eff0
-jboss@donny:~$ /opt/nfast/bin/preload $EJBCA_HOME/bin/nCipherHSM.sh generate 2048 encryptRoot 03842f5bffefd9a73ac4f6caea27fb7287e7eff0
+jboss@donny:~$ /opt/nfast/bin/preload $EJBCA_HOME/bin/nCipherHSM.sh generate 2048 defaultRoot 03842f5bffefd9a73ac4f6caea27fb7287e7eff0
 Executing /home/jboss/ejbca/bin/nCipherHSM.sh generate 2048 encryptRoot 03842f5bffefd9a73ac4f6caea27fb7287e7eff0
 Creating certificate with entry encryptRoot in KeyStore of type nCipher.sworld with provider nCipherKM.
 Give password of inserted card in slot:
@@ -2464,12 +2500,13 @@ The keys in the property field are defined by their keystore alias. See general 
 </p><p>
 You must use a unique keystore for each CA.
 </p><p>
-Example with previous generated keys:
+Example with previous generated keys where signRoot is used for CAs signing, and defaultRoot is used for everything else (encryption):
 </p>
 <source>
 keyStore 03842f5bffefd9a73ac4f6caea27fb7287e7eff0
-keyEncryptKey encryptRoot
 defaultKey defaultRoot
+certSignKey signRoot
+crlSignKey signRoot
 testKey testRoot
 </source>
 <strong>Importing an existing CA or sub-CA to EJBCA.</strong>
@@ -2803,6 +2840,7 @@ plug-in must:
 </p>
 <ol>
 <li>implement ICAToken</li>
+<li>it is recommended to extend BaseCAToken, since BaseCAToken implements handling of all properties, autoactivation and such</li>
 <li>be loaded at the static initialization if CATokenManager where it is
 registered with the CATokenManager using the method
 addAvailableCAToken()</li>

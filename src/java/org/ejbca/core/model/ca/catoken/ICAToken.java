@@ -25,14 +25,14 @@ import java.util.Properties;
  *  All HardCAToken plug-ins must implement this interface.
  * 
  * 
- * @version $Id: ICAToken.java,v 1.1 2007-07-26 11:09:37 anatom Exp $
+ * @version $Id: ICAToken.java,v 1.2 2007-08-12 16:54:03 anatom Exp $
  */
 public interface ICAToken {
 
 	public static final int STATUS_ACTIVE  = 1;
 	public static final int STATUS_OFFLINE = 2;
 	
-    public final String AUTOACTIVATE_PIN_PROPERTY = "pin";
+    public static final String AUTOACTIVATE_PIN_PROPERTY = "pin";
     
    /** 
     * Method called after creation of instance. Gives the object it's properties.

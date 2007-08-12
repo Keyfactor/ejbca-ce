@@ -34,11 +34,12 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.util.StringTools;
 
 
 /**
  * @author lars
- * @version $Id: BaseCAToken.java,v 1.20 2007-07-26 11:09:36 anatom Exp $
+ * @version $Id: BaseCAToken.java,v 1.21 2007-08-12 16:54:03 anatom Exp $
  */
 public abstract class BaseCAToken implements ICAToken {
 
@@ -153,13 +154,14 @@ public abstract class BaseCAToken implements ICAToken {
     protected void init(String sSlotLabelKey, Properties properties, String signaturealgorithm, boolean doAutoActivate) {
     	if (log.isDebugEnabled()) {
     		// We must make sure that we don't put out activation passwords in the log file
-    		String pin = properties.getProperty(ICAToken.AUTOACTIVATE_PIN_PROPERTY);
+        	String pin = properties.getProperty(ICAToken.AUTOACTIVATE_PIN_PROPERTY);
     		if (pin != null) {
-    			properties.setProperty(ICAToken.AUTOACTIVATE_PIN_PROPERTY, "xxxxxx");
+    			BaseCAToken.setAutoActivatePin(properties, "xxxxxx", false);
     		}
             log.debug("Properties: "+(properties!=null ? properties.toString() : "null")+". Signaturealg: "+signaturealgorithm);
     		if (pin != null) {
-    			properties.setProperty(ICAToken.AUTOACTIVATE_PIN_PROPERTY, pin);
+    			// No encryption because we read out the raw value, which was possibly already encrypted
+    			BaseCAToken.setAutoActivatePin(properties, pin, false);
     		}
     	}
         keyStrings = new KeyStrings(properties);
@@ -167,9 +169,53 @@ public abstract class BaseCAToken implements ICAToken {
             sSlotLabel = properties.getProperty(sSlotLabelKey);        	
         }
         sSlotLabel = sSlotLabel!=null ? sSlotLabel.trim() : null;
-        mAuthCode = properties.getProperty(AUTOACTIVATE_PIN_PROPERTY);
-        if ( doAutoActivate )
-            autoActivate();
+        mAuthCode = BaseCAToken.getAutoActivatePin(properties);
+        if ( doAutoActivate ) {
+            autoActivate();        	
+        }
+    }
+    
+    protected static String getAutoActivatePin(Properties properties) {
+    	String ret = null;
+    	String pin = properties.getProperty(ICAToken.AUTOACTIVATE_PIN_PROPERTY);
+    	try {
+			ret = StringTools.pbeDecryptStringWithSha256Aes192(pin);
+			log.debug("Using encrypted autoactivation pin");
+		} catch (Exception e) {
+			log.debug("Using cleartext autoactivation pin");
+		}
+		if (ret == null) {
+			ret = pin;
+		}
+    	return ret;
+    }
+    /** Sets auto activation pin in passed in properties. Also returns the string format of the 
+     * autoactivation properties:
+     * pin mypassword
+     * 
+     * @param properties a Properties bag where to set the auto activation pin, can be null if you only want to create the return string, does not set a null or empty password
+     * @param pin the activation password
+     * @param encrypt if the PIN should be encrypted with a simple built in encryption with only purpose of hiding the password from simple viewing. No strong security from this encryption 
+     * @return A string that can be used to "setProperties" of a CAToken or null if pin is null or an empty string, this can safely be ignored if you don't know what to do with it
+     */
+    public static String setAutoActivatePin(Properties properties, String pin, boolean encrypt) {    	
+		String ret = null;
+    	if (StringUtils.isNotEmpty(pin)) {
+    		String authcode = pin;
+    		if (encrypt) {
+    			try {
+					authcode = StringTools.pbeEncryptStringWithSha256Aes192(pin);
+				} catch (Exception e) {
+					log.error("Failed to encrypt auto activation pin, using non-ecnrypted instead: ", e);
+					authcode = pin;
+				}
+    		}
+    		if (properties != null) {    		
+    			properties.setProperty(ICAToken.AUTOACTIVATE_PIN_PROPERTY, authcode);
+    		}
+    		ret = ICAToken.AUTOACTIVATE_PIN_PROPERTY + " " + authcode;    		
+    	}
+    	return ret;
     }
     
     protected void setProvider( String providerClassName ) throws Exception {

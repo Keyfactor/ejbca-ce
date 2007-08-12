@@ -5,7 +5,7 @@
                org.ejbca.ui.web.admin.rainterface.RevokedInfoView, org.ejbca.ui.web.admin.configuration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.bouncycastle.jce.PKCS10CertificationRequest, org.ejbca.core.EjbcaException,
                org.ejbca.core.protocol.PKCS10RequestMessage, org.ejbca.core.model.ca.caadmin.CAExistsException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.model.ca.catoken.CATokenOfflineException, org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException,
                org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo,org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, org.ejbca.core.model.ca.catoken.CATokenManager, org.ejbca.core.model.ca.catoken.AvailableCAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo, org.ejbca.core.model.ca.catoken.CATokenConstants,
-               org.ejbca.util.dn.DNFieldExtractor,org.ejbca.core.model.ca.catoken.ICAToken " %>
+               org.ejbca.util.dn.DNFieldExtractor,org.ejbca.core.model.ca.catoken.ICAToken,org.ejbca.core.model.ca.catoken.BaseCAToken " %>
 
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -330,7 +330,7 @@
            if ( (autoactivate != null) && (autoactivate.equals("true")) ) {
                // it is not possible to use empty autoactivation passwords for soft tokens
                if ( (authenticationcode != null) && (authenticationcode.length() > 0) ) {
-                   String properties = ICAToken.AUTOACTIVATE_PIN_PROPERTY + " " + authenticationcode;
+                   String properties = BaseCAToken.setAutoActivatePin(null, authenticationcode, true);
                    catoken.setProperties(properties);
                }
            }          
@@ -627,7 +627,7 @@
            if ( (autoactivate != null) && (autoactivate.equals("true")) ) {
                // it is not possible to use empty autoactivation passwords for soft tokens
                if ( (authenticationcode != null) && (authenticationcode.length() > 0) ) {
-                   String properties = ICAToken.AUTOACTIVATE_PIN_PROPERTY + " " + authenticationcode;
+                   String properties = BaseCAToken.setAutoActivatePin(null, authenticationcode, true);
                    catoken.setProperties(properties);
                }
            } else {
