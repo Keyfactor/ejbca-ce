@@ -22,11 +22,12 @@ import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionHome;
 import org.ejbca.core.ejb.ca.caadmin.ICAAdminSessionRemote;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.util.CertTools;
 
 /**
  * Tests and removes the ca data entity bean.
  *
- * @version $Id: TestRemoveCA.java,v 1.6 2007-06-05 13:32:57 anatom Exp $
+ * @version $Id: TestRemoveCA.java,v 1.7 2007-08-13 19:14:20 anatom Exp $
  */
 public class TestRemoveCA extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -133,6 +134,21 @@ public class TestRemoveCA extends TestCase {
         assertTrue("Removing RSA SHA256WithMGF1 CA failed", ret);
 
         log.debug("<test04removeRSASha256WithMGF1CA()");
+    }
+
+    public void test05removeRSACA4096() throws Exception {
+        log.debug(">test05removeRSACA4096()");
+        boolean ret = false;
+        try {
+        	String dn = CertTools.stringToBCDNString("CN=TESTRSA4096,OU=FooBaaaaaar veeeeeeeery long ou,OU=Another very long very very long ou,O=FoorBar Very looong O,L=Lets ad a loooooooooooooooooong Locality as well,C=SE");
+            cacheAdmin.removeCA(admin, dn.hashCode());
+            ret = true;
+        } catch (Exception e) {
+        	log.info("Remove failed: ", e);
+        }
+        assertTrue("Removing RSA CA 4096 failed", ret);
+
+        log.debug("<test05removeRSACA4096()");
     }
 
 }

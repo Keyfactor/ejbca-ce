@@ -47,7 +47,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the ca data entity bean.
  *
- * @version $Id: TestCAs.java,v 1.21 2007-06-05 13:32:57 anatom Exp $
+ * @version $Id: TestCAs.java,v 1.22 2007-08-13 19:14:20 anatom Exp $
  */
 public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -518,6 +518,93 @@ public class TestCAs extends TestCase {
 
         assertTrue("Creating RSA CA failed", ret);
         log.debug("<test06AddRSASha256WithMGF1CA()");
+    }
+
+    public void test07AddRSACA4096() throws Exception {
+        log.debug(">test07AddRSACA4096()");
+        boolean ret = false;
+        try {
+        	String dn = CertTools.stringToBCDNString("CN=TESTRSA4096,OU=FooBaaaaaar veeeeeeeery long ou,OU=Another very long very very long ou,O=FoorBar Very looong O,L=Lets ad a loooooooooooooooooong Locality as well,C=SE");
+            Context context = getInitialContext();
+            IAuthorizationSessionHome authorizationsessionhome = (IAuthorizationSessionHome) javax.rmi.PortableRemoteObject.narrow(context.lookup("AuthorizationSession"), IAuthorizationSessionHome.class);
+            IAuthorizationSessionRemote authorizationsession = authorizationsessionhome.create();
+            authorizationsession.initialize(admin, dn.hashCode());
+
+            SoftCATokenInfo catokeninfo = new SoftCATokenInfo();
+            catokeninfo.setSignKeySpec("4096");
+            catokeninfo.setEncKeySpec("2048");
+            catokeninfo.setSignKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
+            catokeninfo.setEncKeyAlgorithm(SoftCATokenInfo.KEYALGORITHM_RSA);
+            catokeninfo.setSignatureAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
+            catokeninfo.setEncryptionAlgorithm(CATokenInfo.SIGALG_SHA1_WITH_RSA);
+            // Create and active OSCP CA Service.
+            ArrayList extendedcaservices = new ArrayList();
+            extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
+                    "CN=OCSPSignerCertificate, " + dn,
+                    "",
+                    "2048",
+                    CATokenConstants.KEYALGORITHM_RSA));
+            extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
+                    "CN=XKMSCertificate, " + dn,
+                    "",
+                    "2048",
+                    CATokenConstants.KEYALGORITHM_RSA));
+
+
+            X509CAInfo cainfo = new X509CAInfo(dn,
+            		"TESTRSA4096", SecConst.CA_ACTIVE, new Date(),
+            		"", SecConst.CERTPROFILE_FIXED_ROOTCA,
+            		365,
+            		null, // Expiretime
+            		CAInfo.CATYPE_X509,
+            		CAInfo.SELFSIGNED,
+            		(Collection) null,
+            		catokeninfo,
+            		"JUnit RSA CA, we ned also a very long CA description for this CA, because we want to create a CA Data string that is more than 36000 characters or something like that. All this is because Oracle can not set very long strings with the JDBC provider and we must test that we can handle long CAs",
+            		-1, null,
+            		null, // PolicyId
+            		24, // CRLPeriod
+            		0, // CRLIssueInterval
+            		10, // CRLOverlapTime
+            		new ArrayList(),
+            		true, // Authority Key Identifier
+            		false, // Authority Key Identifier Critical
+            		true, // CRL Number
+            		false, // CRL Number Critical
+            		null, // defaultcrldistpoint 
+            		null, // defaultcrlissuer 
+            		null, // defaultocsplocator
+            		true, // Finish User
+            		extendedcaservices,
+            		false, // use default utf8 settings
+            		new ArrayList(), // Approvals Settings
+            		1, // Number of Req approvals
+            		false); // Use UTF8 subject DN by default
+
+
+            cacheAdmin.createCA(admin, cainfo);
+
+
+            CAInfo info = cacheAdmin.getCAInfo(admin, "TESTRSA4096");
+
+            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
+            assertTrue("Error in created ca certificate", CertTools.stringToBCDNString(cert.getSubjectDN().toString()).equals(dn));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals(dn));
+            PublicKey pk = cert.getPublicKey();
+            if (pk instanceof RSAPublicKey) {
+            	RSAPublicKey rsapk = (RSAPublicKey) pk;
+				assertEquals(rsapk.getAlgorithm(), "RSA");
+			} else {
+				assertTrue("Public key is not EC", false);
+			}
+
+            ret = true;
+        } catch (CAExistsException pee) {
+            log.info("CA exists.");
+        }
+
+        assertTrue("Creating RSA CA 4096 failed", ret);
+        log.debug("<test07AddRSACA4096()");
     }
 
 }
