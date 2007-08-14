@@ -1,0 +1,37 @@
+Utimaco have an emulator for their Cryptoserver LAN HSM, it works very good for testing and development.
+
+CryptoServer PKCS#11 Emulation installation:
+
+- Install Windows in VmWare, or on your machine if you are running on windows. This will emulate the CryptoServer LAN module.
+- Run CESetup-2.4.exe in the windows machine. After this the CryptoServer emulator will run in a dos window.
+- The CryptoServer LAN can now be reached at <ip-of-emulation-machine>:3000
+- The CryptoServer LAN emulator is already initialized for PKCS#11 usage.
+
+Setup software and initialize pkcs11 slot:
+- cd <p11 directory>
+- cp <Utimaco-CD>/Software/PKCS#11/lib/linux/* .
+- cp <Utimaco-CD>/Software/PKCS#11/p11tool/linux/p11tool .
+- ln -s libcs2_pkcs11-1.1.5.so libcs2_pkcs11.so
+- vi cs2_pkcs11.ini
+  Device = TCP:3001@172.16.175.128
+- sudo cp cs2_pkcs11.ini /etc/utimaco
+  (location can also be set with environment variable CS2_PKCS11_INI)
+- ./p11tool lib=./libcs2_pkcs11.so slot=1 InitToken=officer1
+- ./p11tool lib=./libcs2_pkcs11.so slot=1 loginSO=officer1 initpin=user1
+
+Generate keys (password is user1 as initialized above):
+- $EJBCA_HOME/bin/pkcs11HSM.sh generate ./libcs2_pkcs11.so 2048 defaultKey 1
+- $EJBCA_HOME/bin/pkcs11HSM.sh generate ./libcs2_pkcs11.so 2048 signKey 1
+- $EJBCA_HOME/bin/pkcs11HSM.sh generate ./libcs2_pkcs11.so 512 testKey 1
+
+Create a CA in EJBCA:
+
+- Restart JBoss if it was started. Important, you will get PKCS#11 error unless you restart JBoss after generating the keys.
+- Create a new CA in EJBCA with the following properties:
+slot 1
+defaultKey defaultKey
+certSignKey signKey
+crlSignKey signKey
+testKey testKey
+pin user1
+sharedLibrary <p11 directory>/libcs2_pkcs11.so
