@@ -2148,39 +2148,57 @@ You have to check if that support is available.
 </subsection>
 <subsection name="Generic PKCS#11 provider (EJBCA 3.5)">
 <p>
-The PKCS#11 wrapper from SUN has been used to implement support for tokens with PKCS#11 libraries.
-</p><p>
-When using a PKCS#11 token you should first create keys with the command: $EJBCA_HOME/bin/pkcs11HSM.sh generate
-</p><p>
-Each CA should have its own slot.
-</p><p>
-Each slot must have been initialised before keys could be generated on the them. This includes setting a user PIN for it. The slot must also require login. Tools for doing this is not provided from EJBCA. The HSM vendor should provide this tool.
+The PKCS#11 wrapper from SUN has been used to implement support for tokens with PKCS#11 libraries. The PKCS#11 provider have been 
+tested with Utimaco Cryptoserver, nCipher nFast/netHSM and Eracom.
 </p><p>
 Besides the keys previously described the property field of the administration GUI should contain the following properties:
 <ul>
 <li>slot                - the slot of the CA.</li>
 <li>sharedLibrary       - the shared PKCS#11 library to be used.</li>
 </ul>
-</p><p>
-This is a example of a property field:
 </p>
-<source>
-slot 1
-defaultKey defaultKey
-pin user1
-sharedLibrary /home/lars/work/test/p11/libcs2_pkcs11.so
-</source>
+
 <strong>Utimaco PKCS#11</strong>
 <p>
-The PKCS#11 of CryptoServer from Utimaco has been successfully tested. Here follows an example on how to initialise a slot and generate keys to be used by EJBCA. The password is user1:
+When using a PKCS#11 token you should first create keys with the command: $EJBCA_HOME/bin/pkcs11HSM.sh generate
+</p><p>
+Each CA should have its own slot.
+</p><p>
+Each slot must have been initialised before keys could be generated on the them. This includes setting a user PIN for it. The slot must also require login. Tools for doing this is not provided from EJBCA. The HSM vendor should provide this tool.
+</p><p>
+Here follows an example on how to initialise a slot and generate keys to be used by EJBCA. The password is user1:
 </p>
 <source>
 ./p11tool lib=./libcs2_pkcs11.so slot=1 InitToken=officer1
 ./p11tool lib=./libcs2_pkcs11.so slot=1 loginSO=officer1 initpin=user1
-$EJBCA/bin/pkcs11HSM.sh generate ./libcs2_pkcs11.so 4096 defaultKey 1
+$EJBCA/bin/pkcs11HSM.sh generate ./libcs2_pkcs11.so 4096 signKey 1
+PKCS11 Token [SunPKCS11-libcs2_pkcs11.so-slot1] Password:
+Creating certificate with entry signKey.
+$EJBCA/bin/pkcs11HSM.sh generate ./libcs2_pkcs11.so 2048 defaultKey 1
 PKCS11 Token [SunPKCS11-libcs2_pkcs11.so-slot1] Password:
 Creating certificate with entry defaultKey.
+$EJBCA/bin/pkcs11HSM.sh generate ./libcs2_pkcs11.so 512 testKey 1
+PKCS11 Token [SunPKCS11-libcs2_pkcs11.so-slot1] Password:
+Creating certificate with entry testKey.
 </source>
+<p>
+This is a example of a property field when creating the CA:
+</p>
+<source>
+slot 1
+defaultKey defaultKey
+certSignKey signKey
+crlSignKey signKey
+testKey testKey
+pin user1
+sharedLibrary /home/lars/work/test/p11/libcs2_pkcs11.so
+</source>
+<p>
+Utimaco have an emulator for their CryptoServer LAN HSM that can be used for test and development. 
+If you have the emulation kit there is a howto in doc/howto/cryptoserver-lan-emulator.txt with steps to follow 
+in order to use it with EJBCA.
+</p>
+
 <strong>nCipher PKCS#11</strong>
 <p>
 For nCipher the slot name is some vritual slot that we don't know the number of. 
@@ -2222,6 +2240,9 @@ it seems the PKCS#11 session is cached so new stuff don't appear for already pre
 </p>
 <p>
 Now it is possible to access the nCipher PKCS#11 default slot, protected by operator cards.
+</p>
+<p>
+This is a example of a property field when creating the CA:
 </p>
 <source>
 defaultKey fooDefault
