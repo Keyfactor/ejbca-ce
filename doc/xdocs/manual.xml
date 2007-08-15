@@ -2225,16 +2225,18 @@ The file /opt/nfast/nfast-sunpkcs11.cfg should contain:
 </p>
 <source>
 name=NFastJava
-library=/opt/nfast/toolkits/pkcs11/cknfast.so
+library=/opt/nfast/toolkits/pkcs11/libcknfast.so
 </source>
 <p>
 You can generate keys with keytool with the command:
 </p>
 <source>
-keytool -generate -keystore NONE -storetype PKCS11-NFastJava -storepass foo123 -alias fooSign -keyalg RSA -keysize 4096
-keytool -generate -keystore NONE -storetype PKCS11-NFastJava -storepass foo123 -alias fooDefault -keyalg RSA -keysize 2048
-keytool -generate -keystore NONE -storetype PKCS11-NFastJava -storepass foo123 -alias fooTest -keyalg RSA -keysize 512
+keytool -genkey -keystore NONE -storetype PKCS11-NFastJava -storepass foo123 -alias fooSign -keyalg RSA -keysize 4096
+keytool -genkey -keystore NONE -storetype PKCS11-NFastJava -storepass foo123 -alias fooDefault -keyalg RSA -keysize 2048
+keytool -genkey -keystore NONE -storetype PKCS11-NFastJava -storepass foo123 -alias fooTest -keyalg RSA -keysize 1024
 </source>
+<p>(in Java 6 it's called -genkeypair instead of -genkey)
+</p>
 <p>AFTER you have generated the keys, you can now start JBoss. If you start JBoss before generating the keys JBoss will not find them, 
 it seems the PKCS#11 session is cached so new stuff don't appear for already present PKCS#11 sessions.
 </p>
