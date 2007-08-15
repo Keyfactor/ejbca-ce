@@ -88,9 +88,9 @@ import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.catoken.CATokenContainer;
 import org.ejbca.core.model.ca.catoken.CATokenContainerImpl;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
+import org.ejbca.core.model.ca.catoken.CATokenManager;
 import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.catoken.HardCATokenInfo;
-import org.ejbca.core.model.ca.catoken.CATokenManager;
 import org.ejbca.core.model.ca.catoken.ICAToken;
 import org.ejbca.core.model.ca.catoken.NullCATokenInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
@@ -113,7 +113,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.56 2007-08-10 10:27:35 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.57 2007-08-15 16:04:21 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -295,9 +295,8 @@ public class CAAdminSessionBean extends BaseSessionBean {
         }catch(javax.ejb.FinderException fe) {}
 
         // Create CAToken
-        CATokenContainer catoken = null;
         CATokenInfo catokeninfo = cainfo.getCATokenInfo();
-        catoken = new CATokenContainerImpl(catokeninfo);
+        CATokenContainer catoken = new CATokenContainerImpl(catokeninfo);
 		String authCode = catokeninfo.getAuthenticationCode();
 		if (StringUtils.isEmpty(authCode)) {
 			log.debug("Creating CA using system default keystore password");
@@ -1378,10 +1377,6 @@ public class CAAdminSessionBean extends BaseSessionBean {
                 log.error(msg);
                 throw new Exception(msg);
             }
-            ArrayList certificatechain = new ArrayList();
-            for(int i=0;i< signatureCertChain.length;i++){
-                certificatechain.add(signatureCertChain[i]);
-            }
             X509Certificate caSignatureCertificate = (X509Certificate) signatureCertChain[0];
             PublicKey p12PublicSignatureKey = caSignatureCertificate.getPublicKey();
             PrivateKey p12PrivateSignatureKey = null;
@@ -1415,49 +1410,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
             catoken.importKeys(keystorepass, p12PrivateSignatureKey, p12PublicSignatureKey, p12PrivateEncryptionKey,
             			p12PublicEncryptionKey, signatureCertChain);
             log.debug("CA-Info: "+catoken.getCATokenInfo().getSignatureAlgorithm() + " " + catoken.getCATokenInfo().getEncryptionAlgorithm());
-            // Create a X509CA
-			int signedby = CAInfo.SIGNEDBYEXTERNALCA;
-            int certprof = SecConst.CERTPROFILE_FIXED_SUBCA;
-			String description = "Imported external signed CA";
-            if(signatureCertChain.length == 1) {
-				if (verifyIssuer(caSignatureCertificate, caSignatureCertificate)) {
-					signedby = CAInfo.SELFSIGNED;
-					certprof = SecConst.CERTPROFILE_FIXED_ROOTCA;
-					description = "Imported root CA";
-				} else {
-					// A less strict strategy can be to assume certificate signed
-					// by an external CA. Useful if admin user forgot to create a full
-					// certificate chain in PKCS#12 package.
-					log.error("Cannot import CA " + caSignatureCertificate.getSubjectDN().getName()
-							+ ": certificate " + caSignatureCertificate.getSerialNumber()
-							+ " is not self-signed.");
-					throw new Exception("Cannot import CA "
-							+ caSignatureCertificate.getSubjectDN().getName()
-							+ ": certificate is not self-signed. Check "
-							+ "certificate chain in PKCS#12");
-				}
-			} else if (signatureCertChain.length > 1){
-				Collection cas = getAvailableCAs(admin);
-				Iterator iter = cas.iterator();
-				// Assuming certificate chain in forward direction (from target
-				// to most-trusted CA). Multiple CA chains can contains the
-				// issuer certificate; so only the chain where target certificate
-				// is the issuer will be selected.
-				while (iter.hasNext()) {
-					int caid = ((Integer)iter.next()).intValue();
-					CAInfo superCaInfo = getCAInfo(admin, caid);
-					Iterator i = superCaInfo.getCertificateChain().iterator();
-					if (i.hasNext()) {
-						X509Certificate superCaCert = (X509Certificate)i.next();
-						if (verifyIssuer(caSignatureCertificate, superCaCert)) {
-							signedby = caid;
-							description = "Imported sub CA";
-							break;
-						}
-					}
-				}					
-            }
-            // Create and active OSCP CA Service.
+            // Identify the key algorithms for extended CA services, OCSP, XKMS, CMS
             String keyAlgorithm = CATokenConstants.KEYALGORITHM_RSA;
             String keySpecification = "2048";
             if (!(p12PublicSignatureKey instanceof RSAPublicKey)) {
@@ -1471,114 +1424,220 @@ public class CAAdminSessionBean extends BaseSessionBean {
             		}
             	}
             }
-            ArrayList extendedcaservices = new ArrayList();
-			extendedcaservices.add(
-					new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
-			                        "CN=OCSPSignerCertificate, " + caSignatureCertificate.getSubjectDN().toString(),
-			                        "",
-			                        keySpecification,
-			                        keyAlgorithm));
-            // Create and active XKMS CA Service.
-            extendedcaservices.add(
-                    new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
-                                          "CN=XKMSCertificate, " + caSignatureCertificate.getSubjectDN().toString(),
-                                          "",
-                                          keySpecification,
-                                          keyAlgorithm));
-            // Create and active CMS CA Service.
-            extendedcaservices.add(
-                    new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
-                                          "CN=CMSCertificate, " + caSignatureCertificate.getSubjectDN().toString(),
-                                          "",
-                                          keySpecification,
-                                          keyAlgorithm));
-			int validity = (int)((caSignatureCertificate.getNotAfter().getTime() - caSignatureCertificate.getNotBefore().getTime()) / (24*3600*1000));
-            X509CAInfo cainfo = new X509CAInfo(caSignatureCertificate.getSubjectDN().toString(),
-                                               caname, SecConst.CA_ACTIVE, new Date(), 
-                                               "", certprof,
-                                               validity,
-                                               caSignatureCertificate.getNotAfter(), // Expiretime
-                                               CAInfo.CATYPE_X509,
-                                               signedby,
-                                               certificatechain,
-                                               catoken.getCATokenInfo(),
-                                               description,
-                                               -1, null, // revokationreason, revokationdate
-                                               "", // PolicyId
-                                               24, // CRLPeriod
-                                               0, // CRLIssuePeriod
-                                               10, // CRLOverlapTime
-                                               new ArrayList(),
-                                               true, // Authority Key Identifier
-                                               false, // Authority Key Identifier Critical
-                                               true, // CRL Number
-                                               false, // CRL Number Critical
-                                               "", // Default CRL Dist Point
-                                               "", // Default CRL Issuer
-                                               "", // Default OCSP Service Locator                                               
-                                               true, // Finish User
-			                                   extendedcaservices,
-			                                   false, // use default utf8 settings
-			                                   new ArrayList(), // Approvals Settings
-			                                   1, // Number of Req approvals
-			                                   false); // Use UTF8 subject DN by default 
-            X509CA ca = new X509CA(cainfo);
-            // We must activate the token, in case it does not have the default password
-            catoken.activate(keystorepass);
-            ca.setCAToken(catoken);
-            ca.setCertificateChain(certificatechain);
-            log.debug("CA-Info: "+catoken.getCATokenInfo().getSignatureAlgorithm() + " " + ca.getCAToken().getCATokenInfo().getEncryptionAlgorithm());
-            //  Publish CA certificates.
-            getSignSession().publishCACertificate(admin, ca.getCertificateChain(), ca.getCRLPublishers());
-            // activate External CA Services
-            Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
-            while(iter.hasNext()){
-                ExtendedCAServiceInfo info = (ExtendedCAServiceInfo) iter.next();
-                if(info instanceof OCSPCAServiceInfo){
-                    try{
-                        ca.initExternalService(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE, ca);
-                        ArrayList ocspcertificate = new ArrayList();
-                        ocspcertificate.add(((OCSPCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE)).getOCSPSignerCertificatePath().get(0));
-                        getSignSession().publishCACertificate(admin, ocspcertificate, ca.getCRLPublishers());
-                    }catch(Exception fe){
-                        getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"Couldn't Create ExternalCAService.",fe);
-                        throw new EJBException(fe);
-                    }
-                }
-                if(info instanceof XKMSCAServiceInfo){
-                    try{
-                        ca.initExternalService(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE, ca);
-                        ArrayList xkmscertificate = new ArrayList();
-                        xkmscertificate.add(((XKMSCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE)).getXKMSSignerCertificatePath().get(0));
-                        getSignSession().publishCACertificate(admin, xkmscertificate, ca.getCRLPublishers());
-                    }catch(Exception fe){
-                        getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"Couldn't Create ExternalCAService.",fe);
-                        throw new EJBException(fe);
-                    }
-                }
-                if(info instanceof CmsCAServiceInfo){
-                    try{
-                        ca.initExternalService(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE, ca);
-                        ArrayList cmscertificate = new ArrayList();
-                        cmscertificate.add(((CmsCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE)).getCertificatePath().get(0));
-                        getSignSession().publishCACertificate(admin, cmscertificate, ca.getCRLPublishers());
-                    }catch(Exception fe){
-                        getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"Couldn't Create ExternalCAService.",fe);
-                        throw new EJBException(fe);
-                    }
-                }
-            }
-            // Store CA in database.
-            cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_ACTIVE, ca);
-            this.getCRLCreateSession().run(admin,cainfo.getSubjectDN());
-        	String msg = intres.getLocalizedMessage("caadmin.importedca", caname, "PKCS12", ca.getStatus());
-            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_INFO_CACREATED, msg);
+            // Do the general import
+            CA ca = importCA(admin, caname, keystorepass, signatureCertChain, catoken, keyAlgorithm, keySpecification);
+    		String msg = intres.getLocalizedMessage("caadmin.importedca", caname, "PKCS12", ca.getStatus());
+    		getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_INFO_CACREATED, msg);
         } catch(Exception e) {
         	String msg = intres.getLocalizedMessage("caadmin.errorimportca", caname, "PKCS12", e.getMessage());
             getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED, msg, e);
             throw new EJBException(e);
         }
     } // importCAFromKeyStore
+
+    /**
+     * Method that is used to create a new CA from keys on an HSM and certificates in a file.
+     *
+     * @param admin Administrator
+     * @param caname the CA-name (human readable) the newly created CA will get
+     * @param signatureCertChain chain of certificates, this CAs certificate first.
+     * @param catokenpassword used to unlock the HSM keys.
+     * @param catokenclasspath classpath to one of the HardToken classes, for example org.ejbca.core.model.ca.catoken.PKCS11CAToken.
+     * @param catokenproperties the catoken properties, same as usually entered in the adminGUI for hard token CAs.
+     * 
+     * @ejb.interface-method
+     */
+    public void importCAFromHSM(Admin admin, String caname, Certificate[] signatureCertChain, String catokenpassword, String catokenclasspath, String catokenproperties) throws Exception {
+		String signatureAlgorithm = CertTools.getSignatureAlgorithm((X509Certificate) signatureCertChain[0]);
+    	HardCATokenInfo hardcatokeninfo = new HardCATokenInfo();
+    	hardcatokeninfo.setAuthenticationCode(catokenpassword);
+    	hardcatokeninfo.setCATokenStatus(ICAToken.STATUS_ACTIVE);
+    	hardcatokeninfo.setClassPath(catokenclasspath);
+    	hardcatokeninfo.setEncryptionAlgorithm(CATokenConstants.SIGALG_SHA1_WITH_RSA);
+    	hardcatokeninfo.setProperties(catokenproperties);
+    	hardcatokeninfo.setSignatureAlgorithm(signatureAlgorithm);
+
+        CATokenInfo catokeninfo = hardcatokeninfo;
+        CATokenContainer catoken = new CATokenContainerImpl(catokeninfo);
+        catoken.activate(catokenpassword);
+
+        X509Certificate caSignatureCertificate = (X509Certificate) signatureCertChain[0];
+        
+        String keyAlgorithm = CATokenConstants.KEYALGORITHM_RSA;
+        String keySpecification = "2048";
+        // Do the general import
+        CA ca = importCA(admin, caname, catokenpassword, signatureCertChain, catoken, keyAlgorithm, keySpecification);
+    }
+
+    /**
+     * 
+     * @param admin
+     * @param caname
+     * @param keystorepass
+     * @param signatureCertChain
+     * @param catoken
+     * @param keyAlgorithm keyalgorithm for extended CA services, OCSP, XKMS, CMS. Example CATokenConstants.KEYALGORITHM_RSA
+     * @param keySpecification keyspecification for extended CA services, OCSP, XKMS, CMS. Example 2048
+     * @throws Exception
+     * @throws CATokenAuthenticationFailedException
+     * @throws CATokenOfflineException
+     * @throws IllegalKeyStoreException
+     * @throws CreateException
+     */
+	private CA importCA(Admin admin, String caname, String keystorepass,
+			Certificate[] signatureCertChain, CATokenContainer catoken,
+			String keyAlgorithm, String keySpecification) throws Exception, CATokenAuthenticationFailedException, CATokenOfflineException, IllegalKeyStoreException, CreateException {
+		// Create a X509CA
+		int signedby = CAInfo.SIGNEDBYEXTERNALCA;
+		int certprof = SecConst.CERTPROFILE_FIXED_SUBCA;
+		String description = "Imported external signed CA";
+		X509Certificate caSignatureCertificate = (X509Certificate)signatureCertChain[0];
+        ArrayList certificatechain = new ArrayList();
+        for(int i=0;i< signatureCertChain.length;i++){
+            certificatechain.add(signatureCertChain[i]);
+        }
+		if(signatureCertChain.length == 1) {
+			if (verifyIssuer(caSignatureCertificate, caSignatureCertificate)) {
+				signedby = CAInfo.SELFSIGNED;
+				certprof = SecConst.CERTPROFILE_FIXED_ROOTCA;
+				description = "Imported root CA";
+			} else {
+				// A less strict strategy can be to assume certificate signed
+				// by an external CA. Useful if admin user forgot to create a full
+				// certificate chain in PKCS#12 package.
+				log.error("Cannot import CA " + caSignatureCertificate.getSubjectDN().getName()
+						+ ": certificate " + caSignatureCertificate.getSerialNumber()
+						+ " is not self-signed.");
+				throw new Exception("Cannot import CA "
+						+ caSignatureCertificate.getSubjectDN().getName()
+						+ ": certificate is not self-signed. Check "
+						+ "certificate chain in PKCS#12");
+			}
+		} else if (signatureCertChain.length > 1){
+			Collection cas = getAvailableCAs(admin);
+			Iterator iter = cas.iterator();
+			// Assuming certificate chain in forward direction (from target
+			// to most-trusted CA). Multiple CA chains can contains the
+			// issuer certificate; so only the chain where target certificate
+			// is the issuer will be selected.
+			while (iter.hasNext()) {
+				int caid = ((Integer)iter.next()).intValue();
+				CAInfo superCaInfo = getCAInfo(admin, caid);
+				Iterator i = superCaInfo.getCertificateChain().iterator();
+				if (i.hasNext()) {
+					X509Certificate superCaCert = (X509Certificate)i.next();
+					if (verifyIssuer(caSignatureCertificate, superCaCert)) {
+						signedby = caid;
+						description = "Imported sub CA";
+						break;
+					}
+				}
+			}					
+		}
+		// Create and active extended CA Services (OCSP, XKMS, CMS).
+		ArrayList extendedcaservices = new ArrayList();
+		extendedcaservices.add(
+				new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE,
+		                        "CN=OCSPSignerCertificate, " + caSignatureCertificate.getSubjectDN().toString(),
+		                        "",
+		                        keySpecification,
+		                        keyAlgorithm));
+		// Create and active XKMS CA Service.
+		extendedcaservices.add(
+		        new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
+		                              "CN=XKMSCertificate, " + caSignatureCertificate.getSubjectDN().toString(),
+		                              "",
+		                              keySpecification,
+		                              keyAlgorithm));
+		// Create and active CMS CA Service.
+		extendedcaservices.add(
+		        new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
+		                              "CN=CMSCertificate, " + caSignatureCertificate.getSubjectDN().toString(),
+		                              "",
+		                              keySpecification,
+		                              keyAlgorithm));
+		int validity = (int)((caSignatureCertificate.getNotAfter().getTime() - caSignatureCertificate.getNotBefore().getTime()) / (24*3600*1000));
+		X509CAInfo cainfo = new X509CAInfo(caSignatureCertificate.getSubjectDN().toString(),
+		                                   caname, SecConst.CA_ACTIVE, new Date(), 
+		                                   "", certprof,
+		                                   validity,
+		                                   caSignatureCertificate.getNotAfter(), // Expiretime
+		                                   CAInfo.CATYPE_X509,
+		                                   signedby,
+		                                   certificatechain,
+		                                   catoken.getCATokenInfo(),
+		                                   description,
+		                                   -1, null, // revokationreason, revokationdate
+		                                   "", // PolicyId
+		                                   24, // CRLPeriod
+		                                   0, // CRLIssuePeriod
+		                                   10, // CRLOverlapTime
+		                                   new ArrayList(),
+		                                   true, // Authority Key Identifier
+		                                   false, // Authority Key Identifier Critical
+		                                   true, // CRL Number
+		                                   false, // CRL Number Critical
+		                                   "", // Default CRL Dist Point
+		                                   "", // Default CRL Issuer
+		                                   "", // Default OCSP Service Locator                                               
+		                                   true, // Finish User
+		                                   extendedcaservices,
+		                                   false, // use default utf8 settings
+		                                   new ArrayList(), // Approvals Settings
+		                                   1, // Number of Req approvals
+		                                   false); // Use UTF8 subject DN by default 
+		X509CA ca = new X509CA(cainfo);
+		// We must activate the token, in case it does not have the default password
+		catoken.activate(keystorepass);
+		ca.setCAToken(catoken);
+		ca.setCertificateChain(certificatechain);
+		log.debug("CA-Info: "+catoken.getCATokenInfo().getSignatureAlgorithm() + " " + ca.getCAToken().getCATokenInfo().getEncryptionAlgorithm());
+		//  Publish CA certificates.
+		getSignSession().publishCACertificate(admin, ca.getCertificateChain(), ca.getCRLPublishers());
+		// activate External CA Services
+		Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
+		while(iter.hasNext()){
+		    ExtendedCAServiceInfo info = (ExtendedCAServiceInfo) iter.next();
+		    if(info instanceof OCSPCAServiceInfo){
+		        try{
+		            ca.initExternalService(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE, ca);
+		            ArrayList ocspcertificate = new ArrayList();
+		            ocspcertificate.add(((OCSPCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE)).getOCSPSignerCertificatePath().get(0));
+		            getSignSession().publishCACertificate(admin, ocspcertificate, ca.getCRLPublishers());
+		        }catch(Exception fe){
+		            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"Couldn't Create ExternalCAService.",fe);
+		            throw new EJBException(fe);
+		        }
+		    }
+		    if(info instanceof XKMSCAServiceInfo){
+		        try{
+		            ca.initExternalService(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE, ca);
+		            ArrayList xkmscertificate = new ArrayList();
+		            xkmscertificate.add(((XKMSCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceInfo.TYPE_XKMSEXTENDEDSERVICE)).getXKMSSignerCertificatePath().get(0));
+		            getSignSession().publishCACertificate(admin, xkmscertificate, ca.getCRLPublishers());
+		        }catch(Exception fe){
+		            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"Couldn't Create ExternalCAService.",fe);
+		            throw new EJBException(fe);
+		        }
+		    }
+		    if(info instanceof CmsCAServiceInfo){
+		        try{
+		            ca.initExternalService(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE, ca);
+		            ArrayList cmscertificate = new ArrayList();
+		            cmscertificate.add(((CmsCAServiceInfo) ca.getExtendedCAServiceInfo(ExtendedCAServiceInfo.TYPE_CMSEXTENDEDSERVICE)).getCertificatePath().get(0));
+		            getSignSession().publishCACertificate(admin, cmscertificate, ca.getCRLPublishers());
+		        }catch(Exception fe){
+		            getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CACREATED,"Couldn't Create ExternalCAService.",fe);
+		            throw new EJBException(fe);
+		        }
+		    }
+		}
+		// Store CA in database.
+		cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_ACTIVE, ca);
+		this.getCRLCreateSession().run(admin,cainfo.getSubjectDN());
+		
+		return ca;
+	}
     
     /**
      * Exports a CA to file. The method only works for soft tokens.

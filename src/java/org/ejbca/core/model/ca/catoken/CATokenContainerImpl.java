@@ -46,7 +46,7 @@ import org.ejbca.util.KeyTools;
  * HardCATokenContainer is a class managing the persistent storage of a CA token.
  * 
  *
- * @version $Id: CATokenContainerImpl.java,v 1.4 2007-07-26 11:09:36 anatom Exp $
+ * @version $Id: CATokenContainerImpl.java,v 1.5 2007-08-15 16:04:21 anatom Exp $
  */
 public class CATokenContainerImpl extends CATokenContainer {
 
@@ -311,23 +311,12 @@ public class CATokenContainerImpl extends CATokenContainer {
 		keystore.load(null,null);
 
 		// Assume that the same hash algorithm is used for signing that was used to sign this CA cert
-		String certSignatureAlgorithm = ((X509Certificate) caSignatureCertChain[0]).getSigAlgName();
-		String signatureAlgorithm = null;
+		String signatureAlgorithm = CertTools.getSignatureAlgorithm((X509Certificate) caSignatureCertChain[0]);
 		String keyAlg = null;
 		if ( publickey instanceof RSAPublicKey ) {
 			keyAlg  = CATokenInfo.KEYALGORITHM_RSA;
-			if (certSignatureAlgorithm.indexOf("256") == -1) {
-				signatureAlgorithm = CATokenInfo.SIGALG_SHA1_WITH_RSA;
-			} else {
-				signatureAlgorithm = CATokenInfo.SIGALG_SHA256_WITH_RSA;
-			}
 		} else {
 			keyAlg = CATokenInfo.KEYALGORITHM_ECDSA;
-			if (certSignatureAlgorithm.indexOf("256") == -1) {
-				signatureAlgorithm = CATokenInfo.SIGALG_SHA1_WITH_ECDSA;
-			} else {
-				signatureAlgorithm = CATokenInfo.SIGALG_SHA256_WITH_ECDSA;
-			}
 		}
 
 		// import sign keys.

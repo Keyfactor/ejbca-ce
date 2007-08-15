@@ -40,6 +40,7 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -87,6 +88,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
+import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.util.dn.DNFieldExtractor;
 import org.ejbca.util.dn.DnComponents;
@@ -95,7 +97,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.43 2007-08-09 09:08:55 anatom Exp $
+ * @version $Id: CertTools.java,v 1.44 2007-08-15 16:04:22 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -1757,6 +1759,33 @@ public class CertTools {
       }
  
       return newdn;
+    }
+    
+    /** Simple method that looks at the certificate and determines, from EJBCA's standpoint, which signature algorithm it is
+     * 
+     * @param cert the cert to examine
+     * @return Signature algorithm from CATokenInfo.SIGALG_SHA1_WITH_RSA etc.
+     */
+    public static String getSignatureAlgorithm(X509Certificate cert) {
+		// Assume that the same hash algorithm is used for signing that was used to sign this CA cert
+		String certSignatureAlgorithm = cert.getSigAlgName();
+		String signatureAlgorithm = null;
+		PublicKey publickey = cert.getPublicKey();
+		if ( publickey instanceof RSAPublicKey ) {
+			if (certSignatureAlgorithm.indexOf("256") == -1) {
+				signatureAlgorithm = CATokenInfo.SIGALG_SHA1_WITH_RSA;
+			} else {
+				signatureAlgorithm = CATokenInfo.SIGALG_SHA256_WITH_RSA;
+			}
+		} else {
+			if (certSignatureAlgorithm.indexOf("256") == -1) {
+				signatureAlgorithm = CATokenInfo.SIGALG_SHA1_WITH_ECDSA;
+			} else {
+				signatureAlgorithm = CATokenInfo.SIGALG_SHA256_WITH_ECDSA;
+			}
+		}
+		log.debug("getSignatureAlgorithm: "+signatureAlgorithm);
+		return signatureAlgorithm;
     }
     
     /**
