@@ -3725,6 +3725,11 @@ This is not ideal, but it is a consequence of how the authorization system works
 Under certain circumstances, it can be wise to backup the CA's signature and encryption keys. Remember to protect the backup in the same way
 as the CA itself.
 </p>
+<p>
+Soft token CAs can be exported and backed up. CAs with the keys on a HSM can naturally not be exported through EJBCA. Use the HSMs methods to back up such keys.
+</p><p>
+Soft token CAs can be imported using both the CLI and admin-GUI, while HSM CAs can only be imported using the CLI.  
+</p>
 <subsection name="Using command line interface">
 <p>
 To export a CA named "TestCA" to the PKCS#12-file "/path/TestCA.p12" with password "foo123" enter the following
@@ -3745,6 +3750,15 @@ Using JBoss JNDI provider...
 Enter keystore password: foo123
 [user@host ejbca]$ 
 </source>
+<p>
+Enter the command:
+</p>
+<source>
+[user@host ejbca]$ bin/ejbca.sh ca importca
+</source>
+<p>
+to get usage instructions how to import HSM CAs.
+</p>
 </subsection>
 <subsection name="Using admin-GUI">
 <p>To be able to export and import the CA's keys using the admin-GUI, you have to have superadministrator access.
