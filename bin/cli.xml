@@ -44,7 +44,7 @@
     <target name="ejbca:noprompt" unless="ejbca.prompt">
         <property name="ca.name" value="AdminCA1"/>
         <property name="ca.dn" value="CN=AdminCA1,O=${app.name.cap} Sample,C=SE"/>
-        <property name="ca.keysize" value="2048"/>
+        <property name="ca.keyspec" value="2048"/>
         <property name="ca.keytype" value="RSA"/>
         <property name="ca.validity" value="3650"/>
         <property name="ca.policy" value="null"/>
@@ -58,7 +58,7 @@
     <target name="ejbca:prompt" if="ejbca.prompt">
         <input message="Please enter the CA name (default: AdminCA1) ?" addproperty="ca.name" defaultvalue="AdminCA1"/>
         <input message="Please enter the CA dn (default: CN=AdminCA1,O=${app.name.cap} Sample,C=SE) ?" addproperty="ca.dn" defaultvalue="CN=AdminCA1,O=${app.name.cap} Sample,C=SE"/>
-        <input message="Please enter the CA key size (default: 2048) ?" addproperty="ca.keysize" defaultvalue="2048" />
+        <input message="Please enter the CA key spec (default: 2048) ?" addproperty="ca.keyspec" defaultvalue="2048" />
         <input message="Please enter the CA key type (default: RSA) ?" addproperty="ca.keytype" defaultvalue="RSA" />
         <input message="Please enter the CA signature algorithm (default: SHA1WithRSA) ?" addproperty="ca.signaturealgorithm" defaultvalue="SHA1WithRSA" />
         <input message="Please enter the CA validity in days (default: 3650) ?" addproperty="ca.validity" defaultvalue="3650"/>
@@ -77,7 +77,7 @@ ca.name                : ${ca.name}
 ca.dn                  : ${ca.dn}
 ca.tokentype           : ${ca.tokentype}
 ca.tokenpassword       : ${ca.tokenpassword}
-ca.keysize             : ${ca.keysize}
+ca.keyspec             : ${ca.keyspec}
 ca.keytype             : ${ca.keytype}
 ca.signaturealgorithm  : ${ca.signaturealgorithm}
 ca.validity            : ${ca.validity}
@@ -106,8 +106,8 @@ appserver.home         : ${appserver.home}
 	</target>
 
     <target name="ejbca:install" depends="check:bootstrapdone, ejbca:init" description="Install">
-        <echo message="Initializing CA with ${ca.name} '${ca.dn}' ${ca.tokentype} ${ca.tokenpassword} ${ca.keysize} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties}..."/>
-        <ejbca:cli name="ca" arg='init ${ca.name} "${ca.dn}" ${ca.tokentype} ${ca.tokenpassword} ${ca.keysize} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties}'/>
+        <echo message="Initializing CA with ${ca.name} '${ca.dn}' ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties}..."/>
+        <ejbca:cli name="ca" arg='init ${ca.name} "${ca.dn}" ${ca.tokentype} ${ca.tokenpassword} ${ca.keyspec} ${ca.keytype} ${ca.validity} ${ca.policy} ${ca.signaturealgorithm} ${ca.tokenproperties}'/>
         <antcall target="ejbca:adminweb"/>
     	<antcall target="ejbca:javatruststore"/>
     </target>

@@ -1,5 +1,5 @@
 #
-# $Id: ejbca.properties.sample,v 1.23 2007-08-02 13:03:13 anatom Exp $
+# $Id: ejbca.properties.sample,v 1.24 2007-08-15 07:28:25 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
@@ -62,8 +62,10 @@ ca.tokenpassword=null
 # Remove everything in the file and add your own configuration.
 ca.tokenproperties=conf/catoken.properties
 
-# The keysize in bits of the CA, only digits.
-ca.keysize=2048
+# The keyspec for the CAs key. 
+# Keyspec for RSA keys is size of RSA keys (1024, 2048, 4096).
+# Keyspec for ECDSA keys is name of curve or 'implicitlyCA', see docs.
+ca.keyspec=2048
 
 # The keytype, can be RSA or ECDSA
 ca.keytype=RSA
