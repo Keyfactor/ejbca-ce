@@ -48,6 +48,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
+import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.Certificate;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
@@ -1136,7 +1137,7 @@ public class CommonEjbcaWSTest extends TestCase {
 		        try {
 		        	ejbcaraws.revokeUser(username, RevokedCertInfo.NOT_REVOKED, false);
 		        	assertTrue(ERRORNOTSUPPORTEDSUCCEEDED, false);
-		        } catch (EjbcaException_Exception e) {
+		        } catch (AlreadyRevokedException_Exception e) {
 		        }
 	    	} finally {
 		    	getUserAdminSession().deleteUser(intAdmin, username);

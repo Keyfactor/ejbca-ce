@@ -40,6 +40,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.SignRequestException;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.protocol.FailInfo;
 import org.ejbca.core.protocol.IResponseMessage;
@@ -57,7 +58,7 @@ import com.novosec.pkix.asn1.crmf.CertTemplate;
 /**
  * Message handler for certificate request messages in the CRMF format
  * @author tomas
- * @version $Id: RevocationMessageHandler.java,v 1.4 2007-07-31 13:31:43 jeklund Exp $
+ * @version $Id: RevocationMessageHandler.java,v 1.5 2007-08-17 14:45:46 jeklund Exp $
  */
 public class RevocationMessageHandler implements ICmpMessageHandler {
 	
@@ -149,6 +150,11 @@ public class RevocationMessageHandler implements ICmpMessageHandler {
 						} catch (ApprovalException e) {
 							failInfo = FailInfo.BAD_REQUEST;
 							String errMsg = intres.getLocalizedMessage("cmp.erroralreadyrequested");
+							failText = errMsg; 
+							log.error(failText);
+						} catch (AlreadyRevokedException e) {
+							failInfo = FailInfo.BAD_REQUEST;
+							String errMsg = intres.getLocalizedMessage("cmp.erroralreadyrevoked");
 							failText = errMsg; 
 							log.error(failText);
 						}

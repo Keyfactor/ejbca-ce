@@ -68,7 +68,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * You need a CMP tcp listener configured on port 5547.
  * 
  * @author tomas
- * @version $Id: CrmfRAPbeRequestTest.java,v 1.12 2007-07-31 13:31:37 jeklund Exp $
+ * @version $Id: CrmfRAPbeRequestTest.java,v 1.13 2007-08-17 14:45:47 jeklund Exp $
  */
 public class CrmfRAPbeRequestTest extends CmpTestCase {
 	
@@ -333,6 +333,24 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 					admin, APPROVINGADMINNAME).iterator().next());
 			TestRevocationApproval.approveRevocation(admin, approvingAdmin, username, RevokedCertInfo.REVOKATION_REASON_KEYCOMPROMISE,
 					ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSession);
+			// try to revoke the now revoked cert via CMP and verify error
+			nonce = CmpMessageHelper.createSenderNonce();
+			transid = CmpMessageHelper.createSenderNonce();
+			bao = new ByteArrayOutputStream();
+			out = new DEROutputStream(bao);
+			rev = genRevReq(cainfo.getSubjectDN(), userdata.getDN(), cert.getSerialNumber(), newCACert, nonce, transid);
+	        revReq = protectPKIMessage(rev, false, PBEPASSWORD);
+			assertNotNull(revReq);
+			bao = new ByteArrayOutputStream();
+			out = new DEROutputStream(bao);
+			out.writeObject(revReq);
+			ba = bao.toByteArray();
+			resp = sendCmpHttp(ba);
+			assertNotNull(resp);
+			assertTrue(resp.length > 0);
+			checkCmpResponseGeneral(resp, cainfo.getSubjectDN(), userdata.getDN(), newCACert, nonce, transid, false, true);
+			checkCmpFailMessage(resp, "Already revoked.", CmpPKIBodyConstants.REVOCATIONRESPONSE, 0,
+					ResponseStatus.FAILURE.getIntValue());
 	    } finally {
 			// Delete user
 			userAdminSession.deleteUser(admin, username);

@@ -20,6 +20,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.UserDataVO;
 
 
@@ -29,7 +30,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 /**
  * Revokes a user in the database, and also revokes all the users certificates.
  *
- * @version $Id: RaUnRevokeUserCommand.java,v 1.4 2007-07-31 13:31:41 jeklund Exp $
+ * @version $Id: RaUnRevokeUserCommand.java,v 1.5 2007-08-17 14:45:38 jeklund Exp $
  */
 public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
     /**
@@ -74,6 +75,8 @@ public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
             			foundCertificateOnHold = true;
             			try {
                 			getAdminSession().unRevokeCert(administrator, cert.getSerialNumber(), cert.getIssuerDN().toString(), username);
+                        } catch (AlreadyRevokedException e) {
+                        	getOutputStream().println("Error : The user was already reactivated while the request executed.");
                         } catch (ApprovalException e) {
                         	getOutputStream().println("Error : Reactivation already requested.");
                         } catch (WaitingForApprovalException e) {

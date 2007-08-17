@@ -14,21 +14,16 @@
 package org.ejbca.core.protocol.ws.client;
 
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.List;
 
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.NotFoundException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 import org.ejbca.core.protocol.ws.client.gen.UserMatch;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
-//import org.ejbca.core.protocol.ws.wsclient.UserDataVOWS;
-//import org.ejbca.core.protocol.ws.wsclient.UserMatch;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
@@ -36,7 +31,7 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 /**
  * Revokes a given users certificate and set's it status to REVOKED
  *
- * @version $Id: RevokeUserCommand.java,v 1.3 2007-07-31 13:31:49 jeklund Exp $
+ * @version $Id: RevokeUserCommand.java,v 1.4 2007-08-17 14:45:38 jeklund Exp $
  */
 public class RevokeUserCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
@@ -101,6 +96,8 @@ public class RevokeUserCommand extends EJBCAWSRABaseCommand implements IAdminCom
                 getPrintStream().println("User revoked sucessfully");
             } catch(AuthorizationDeniedException_Exception e) {
             	getPrintStream().println("Error : " + e.getMessage());            
+			} catch (AlreadyRevokedException_Exception e) {
+            	getPrintStream().println("This user has already been revoked.");            
 			} catch (WaitingForApprovalException_Exception e) {
             	getPrintStream().println("The revocation request has been sent for approval.");            
 			} catch (ApprovalException_Exception e) {

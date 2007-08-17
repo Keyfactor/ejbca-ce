@@ -79,6 +79,8 @@
 	     	   message = ejbcawebbean.getText("THEREALREADYEXISTSAPPOBJ");
 	        }catch(org.ejbca.core.model.approval.WaitingForApprovalException e){
 	     	   message = ejbcawebbean.getText("REQHAVEBEENADDEDFORAPPR");
+	        }catch(org.ejbca.core.model.ra.AlreadyRevokedException e){
+	     	   message = ejbcawebbean.getText("ALREADYREVOKED");
 	        } 
      }
    }else{
@@ -97,6 +99,8 @@
 	     	   message = ejbcawebbean.getText("THEREALREADYEXISTSAPPOBJ");
 	        }catch(org.ejbca.core.model.approval.WaitingForApprovalException e){
 	     	   message = ejbcawebbean.getText("REQHAVEBEENADDEDFORAPPR");
+	        }catch(org.ejbca.core.model.ra.AlreadyRevokedException e){
+	     	   message = ejbcawebbean.getText("ALREADYREVOKED");
 	        } 
      }         
    }

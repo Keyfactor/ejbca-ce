@@ -27,7 +27,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.BadRequestException;
+import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.ui.web.admin.rainterface.RevokedInfoView;
 
@@ -132,8 +132,8 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 			throw new EJBException("This should never happen",e);
 		} catch (WaitingForApprovalException e) {
 			throw new EJBException("This should never happen",e);
-		} catch (BadRequestException e) {
-			throw new ApprovalRequestExecutionException("End entity " + username + "was already revoked at execution time.");
+		} catch (AlreadyRevokedException e) {
+			throw new ApprovalRequestExecutionException("End entity " + username + " was already revoked at execution time.");
 		} catch (FinderException e) {
 			throw new ApprovalRequestExecutionException("Could not find object.",e);
 		} catch (NotFoundException e) {

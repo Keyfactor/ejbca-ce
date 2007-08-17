@@ -17,6 +17,7 @@ import java.math.BigInteger;
 
 
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.RevokeStatus;
@@ -29,7 +30,7 @@ import org.ejbca.util.CertTools;
 /**
  * Revokes a given certificate
  *
- * @version $Id: RevokeCertCommand.java,v 1.3 2007-07-31 13:31:49 jeklund Exp $
+ * @version $Id: RevokeCertCommand.java,v 1.4 2007-08-17 14:45:38 jeklund Exp $
  */
 public class RevokeCertCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
@@ -83,6 +84,8 @@ public class RevokeCertCommand extends EJBCAWSRABaseCommand implements IAdminCom
                 getPrintStream().println("Certificate revoked sucessfully");
             } catch (AuthorizationDeniedException_Exception e) {
             	getPrintStream().println("Error : " + e.getMessage());            
+            } catch (AlreadyRevokedException_Exception e) {
+            	getPrintStream().println("The certificate was already revoked.");            
 			} catch (WaitingForApprovalException_Exception e) {
             	getPrintStream().println("The revocation request has been sent for approval.");            
 			} catch (ApprovalException_Exception e) {

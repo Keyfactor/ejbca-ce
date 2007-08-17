@@ -89,7 +89,7 @@ import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.ApprovedActionAdmin;
 import org.ejbca.core.model.log.LogEntry;
-import org.ejbca.core.model.ra.BadRequestException;
+import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -123,7 +123,7 @@ import org.ejbca.util.query.Query;
  * Implementor of the IEjbcaWS interface.
  * 
  * @author Philip Vendil
- * $Id: EjbcaWS.java,v 1.15 2007-07-31 13:31:40 jeklund Exp $
+ * $Id: EjbcaWS.java,v 1.16 2007-08-17 14:45:43 jeklund Exp $
  */
 
 @WebService
@@ -449,7 +449,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 */
 	
 	public void revokeCert(String issuerDN, String certificateSN, int reason) throws AuthorizationDeniedException,
-			NotFoundException, EjbcaException, ApprovalException, WaitingForApprovalException {
+			NotFoundException, EjbcaException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
 		try{
 			Admin admin = getAdmin();
 			BigInteger serno = new BigInteger(certificateSN,16);
@@ -496,7 +496,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#revokeUser(java.lang.String, int, boolean)
 	 */
 	public void revokeUser(String username, int reason, boolean deleteUser)
-			throws AuthorizationDeniedException, NotFoundException, EjbcaException, ApprovalException, WaitingForApprovalException {
+			throws AuthorizationDeniedException, NotFoundException, AlreadyRevokedException, EjbcaException, ApprovalException, WaitingForApprovalException {
 
 		try{
 			Admin admin = getAdmin();
@@ -514,8 +514,6 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 		}catch(AuthorizationDeniedException e){
 			throw e;
-		} catch (BadRequestException e) {
-			throw new EjbcaException(e);
 		} catch (ClassCastException e) {
 			log.error("EJBCA WebService error, revokeUser : ",e);
 			throw new EjbcaException(e.getMessage());
@@ -533,15 +531,16 @@ public class EjbcaWS implements IEjbcaWS {
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#revokeToken(java.lang.String, int)
 	 */
 	public void revokeToken(String hardTokenSN, int reason)
-	throws RemoteException, AuthorizationDeniedException, NotFoundException, EjbcaException, ApprovalException, WaitingForApprovalException {
+	throws RemoteException, AuthorizationDeniedException, NotFoundException, AlreadyRevokedException, EjbcaException, ApprovalException, WaitingForApprovalException {
 		revokeToken(getAdmin(), hardTokenSN, reason);
 	}
 	
 	private void revokeToken(Admin admin, String hardTokenSN, int reason) throws AuthorizationDeniedException,
-			NotFoundException, EjbcaException, ApprovalException, WaitingForApprovalException {
+			NotFoundException, EjbcaException, AlreadyRevokedException, ApprovalException, WaitingForApprovalException {
 		ApprovalException lastApprovalException = null;
 		WaitingForApprovalException lastWaitingForApprovalException = null;
 		AuthorizationDeniedException lastAuthorizationDeniedException = null;
+		AlreadyRevokedException lastAlreadyRevokedException = null;
 		boolean success = false;
 		try{
 			Collection certs = getHardTokenSession().findCertificatesInHardToken(admin,hardTokenSN);
@@ -571,6 +570,8 @@ public class EjbcaWS implements IEjbcaWS {
 							lastApprovalException = e;
 						} catch(AuthorizationDeniedException e) {
 							lastAuthorizationDeniedException = e;
+						} catch (AlreadyRevokedException e) {
+							lastAlreadyRevokedException = e;
 						}
 					}else{
 						throw new EjbcaException("Error: Status is NOT 'certificate hold' for certificate with serial number " + serno + " and issuer DN " + issuerDN);
@@ -585,6 +586,8 @@ public class EjbcaWS implements IEjbcaWS {
 						lastApprovalException = e;
 					} catch(AuthorizationDeniedException e) {
 						lastAuthorizationDeniedException = e;
+					} catch (AlreadyRevokedException e) {
+						lastAlreadyRevokedException = e;
 					}
 				}
 			}
@@ -596,6 +599,9 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 			if (!success && lastAuthorizationDeniedException != null) {
 				throw lastAuthorizationDeniedException;
+			}
+			if (!success && lastAlreadyRevokedException != null) {
+				throw lastAlreadyRevokedException;
 			}
 		}catch(AuthorizationDeniedException e){
 			throw e;
@@ -840,7 +846,7 @@ public class EjbcaWS implements IEjbcaWS {
 					java.security.cert.X509Certificate nextCert = (java.security.cert.X509Certificate) iter.next();
 					try {
 						getUserAdminSession().revokeCert(admin, nextCert.getSerialNumber(), nextCert.getIssuerDN().toString(), currentHardToken.getUsername(), RevokedCertInfo.REVOKATION_REASON_SUPERSEDED);
-					} catch (AuthorizationDeniedException e) {
+					} catch (AlreadyRevokedException e) {
 						// Ignore previously revoked certificates
 					} catch (FinderException e) {
 						throw new EjbcaException("Error revoking old certificate, the user : " + currentHardToken.getUsername() + " of the old certificate couldn't be found in database.");

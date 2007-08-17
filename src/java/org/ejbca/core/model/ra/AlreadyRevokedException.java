@@ -14,15 +14,15 @@
 package org.ejbca.core.model.ra;
 
 /**
- * Exception used when a request contains impossible combination of data.
+ * Exception thrown when a revocation request for an already revoket object is requested.
  */
-public class BadRequestException extends org.ejbca.core.EjbcaException {
+public class AlreadyRevokedException extends org.ejbca.core.EjbcaException {
     /**
-     * Creates a new instance of BadRequestException
+     * Creates a new instance of AlreadyRevokedException
      *
      * @param message error message
      */
-    public BadRequestException(String message) {
+    public AlreadyRevokedException(String message) {
         super(message);
     }
 

@@ -273,7 +273,7 @@
              	notapprovedall = true;
              } catch (org.ejbca.core.model.approval.WaitingForApprovalException e) {
              	waitingforapproval = true;
-             } catch (org.ejbca.core.model.ra.BadRequestException e) {
+             } catch (org.ejbca.core.model.ra.AlreadyRevokedException e) {
              	alreadyrevoked = true;
              }
            }

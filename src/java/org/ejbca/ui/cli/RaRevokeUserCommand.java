@@ -16,7 +16,7 @@ package org.ejbca.ui.cli;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
-import org.ejbca.core.model.ra.BadRequestException;
+import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.UserDataVO;
 
 
@@ -26,7 +26,7 @@ import org.ejbca.core.model.ra.UserDataVO;
 /**
  * Revokes a user in the database, and also revokes all the users certificates.
  *
- * @version $Id: RaRevokeUserCommand.java,v 1.5 2007-07-31 13:31:41 jeklund Exp $
+ * @version $Id: RaRevokeUserCommand.java,v 1.6 2007-08-17 14:45:38 jeklund Exp $
  */
 public class RaRevokeUserCommand extends BaseRaAdminCommand {
     /**
@@ -77,7 +77,7 @@ public class RaRevokeUserCommand extends BaseRaAdminCommand {
                 	getOutputStream().println("Error : Revocation already requested.");
                 } catch (WaitingForApprovalException e) {
                 	getOutputStream().println("Revocation request has been sent for approval.");
-                } catch (BadRequestException e) {
+                } catch (AlreadyRevokedException e) {
                 	getOutputStream().println("Error: User is already revoked.");
                 }
             }

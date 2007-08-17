@@ -53,7 +53,6 @@ import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.IRaAdminSessionLocalHome;
 import org.ejbca.core.model.InternalResources;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalExecutorUtil;
 import org.ejbca.core.model.approval.ApprovalOveradableClassName;
@@ -70,7 +69,7 @@ import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
-import org.ejbca.core.model.ra.BadRequestException;
+import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.ExtendedInformation;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RAAuthorization;
@@ -97,7 +96,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.42 2007-07-31 13:32:04 jeklund Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.43 2007-08-17 14:45:47 jeklund Exp $
  * 
  * @ejb.bean
  *   display-name="UserAdminSB"
@@ -1058,7 +1057,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
 		        }
 		    	try {
 		    		revokeUser(admin, username, reason);
-		    	} catch (BadRequestException e) {
+		    	} catch (AlreadyRevokedException e) {
 		    		// This just means that the end endtity was revoked before this request could be completed. No harm.
 		    	}
 	        }
@@ -1077,11 +1076,11 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * Method that revokes a user.
      *
      * @param username the username to revoke.
-     * @throws BadRequestException 
+     * @throws AlreadyRevokedException 
      * @ejb.interface-method
      */
     public void revokeUser(Admin admin, String username, int reason) throws AuthorizationDeniedException, FinderException,
-    	ApprovalException, WaitingForApprovalException, BadRequestException {
+    	ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
         debug(">revokeUser(" + username + ")");
         UserDataPK pk = new UserDataPK(username);
         UserDataLocal data = home.findByPrimaryKey(pk);
@@ -1103,7 +1102,7 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         if ( getUserStatus(admin, username) == UserDataConstants.STATUS_REVOKED ) {
             String msg = intres.getLocalizedMessage("ra.errorbadrequest", new Integer(data.getEndEntityProfileId()));            	
             logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_ERROR_REVOKEDENDENTITY, msg);
-            throw new BadRequestException(msg);
+            throw new AlreadyRevokedException(msg);
         }
         // Check if approvals is required.
         int numOfReqApprovals = getNumOfApprovalRequired(admin, CAInfo.REQ_APPROVAL_REVOCATION, data.getCaId());
@@ -1146,10 +1145,11 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @param certserno the serno of certificate to revoke.
      * @param username  the username to revoke.
      * @param reason    the reason of revokation, one of the RevokedCertInfo.XX constants.
+	 * @throws AlreadyRevokedException if the certificate was already revoked
      * @ejb.interface-method
      */
     public void revokeCert(Admin admin, BigInteger certserno, String issuerdn, String username, int reason) throws AuthorizationDeniedException,
-    		FinderException, ApprovalException, WaitingForApprovalException {
+    		FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
         debug(">revokeCert(" + certserno + ", IssuerDN: " + issuerdn + ", username, " + username + ")");
         UserDataPK pk = new UserDataPK(username);	// TODO: Fetch this from certstoresession instead
         UserDataLocal data;
@@ -1184,13 +1184,13 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
             if ( revinfo.getReason() != RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD ) {
                 String msg = intres.getLocalizedMessage("ra.errorunrevokenotonhold", issuerdn, certserno.toString(16));            	
                 logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_ERROR_REVOKEDENDENTITY, msg);
-                throw new AuthorizationDeniedException(msg);
+                throw new AlreadyRevokedException(msg);
             }            
         } else {
             if ( revinfo.getReason() != RevokedCertInfo.NOT_REVOKED ) {
                 String msg = intres.getLocalizedMessage("ra.errorrevocationexists");            	
                 logsession.log(admin, caid, LogEntry.MODULE_RA, new java.util.Date(), username, null, LogEntry.EVENT_ERROR_REVOKEDENDENTITY, msg);
-                throw new AuthorizationDeniedException(msg);
+                throw new AlreadyRevokedException(msg);
             }            
         }
         // Check if approvals is required.
@@ -1251,9 +1251,10 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
      * @param username the username joined to the certificate.
      * @throws WaitingForApprovalException 
      * @throws ApprovalException 
+     * @throws AlreadyRevokedException 
      * @ejb.interface-method
      */
-    public void unRevokeCert(Admin admin, BigInteger certserno, String issuerdn, String username) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException {
+    public void unRevokeCert(Admin admin, BigInteger certserno, String issuerdn, String username) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
         log.debug(">unrevokeCert()");
         revokeCert(admin, certserno, issuerdn, username, RevokedCertInfo.NOT_REVOKED);
         log.debug("<unrevokeCert()");

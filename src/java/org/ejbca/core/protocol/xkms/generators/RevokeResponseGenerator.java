@@ -21,6 +21,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.UserDataVO;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.util.CertTools;
@@ -36,7 +37,7 @@ import org.w3c.dom.Document;
  * 
  * @author Philip Vendil 
  *
- * @version $Id: RevokeResponseGenerator.java,v 1.4 2007-07-31 13:31:58 jeklund Exp $
+ * @version $Id: RevokeResponseGenerator.java,v 1.5 2007-08-17 14:45:43 jeklund Exp $
  */
 
 public class RevokeResponseGenerator extends
@@ -141,6 +142,9 @@ public class RevokeResponseGenerator extends
 				resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
 				resultMinor = XKMSConstants.RESULTMINOR_REFUSED;
 			} catch (AuthorizationDeniedException e) {
+				resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
+				resultMinor = XKMSConstants.RESULTMINOR_FAILURE;
+			} catch (AlreadyRevokedException e) {
 				resultMajor = XKMSConstants.RESULTMAJOR_RECIEVER;
 				resultMinor = XKMSConstants.RESULTMINOR_FAILURE;
 			} catch (FinderException e) {

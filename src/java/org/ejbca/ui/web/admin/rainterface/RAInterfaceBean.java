@@ -52,7 +52,7 @@ import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
-import org.ejbca.core.model.ra.BadRequestException;
+import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -70,7 +70,7 @@ import org.ejbca.util.query.Query;
  * A java bean handling the interface between EJBCA ra module and JSP pages.
  *
  * @author  Philip Vendil
- * @version $Id: RAInterfaceBean.java,v 1.16 2007-07-31 13:31:43 jeklund Exp $
+ * @version $Id: RAInterfaceBean.java,v 1.17 2007-08-17 14:45:44 jeklund Exp $
  */
 public class RAInterfaceBean implements java.io.Serializable {
     
@@ -199,7 +199,7 @@ public class RAInterfaceBean implements java.io.Serializable {
      * @return false if administrator wasn't authorized to revoke all of the given users.
      */
     public void revokeUser(String username, int reason) throws AuthorizationDeniedException,
-    		FinderException, ApprovalException, WaitingForApprovalException, BadRequestException {
+    		FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
         log.debug(">revokeUser()");
         adminsession.revokeUser(administrator, username, reason);
         log.debug("<revokeUser()");
@@ -228,7 +228,9 @@ public class RAInterfaceBean implements java.io.Serializable {
     		success = false;
     	} catch (FinderException e) {
     		success = false;
-    	}
+    	} catch (AlreadyRevokedException e) {
+    		success = false;
+		}
     	log.debug("<revokeCert(): " + success);
     	return success;
     }
@@ -249,6 +251,8 @@ public class RAInterfaceBean implements java.io.Serializable {
 		} catch( AuthorizationDeniedException e) {
 			success = false;
 		} catch (FinderException e) {
+			success = false;
+		} catch (AlreadyRevokedException e) {
 			success = false;
 		}
 		log.debug("<unrevokeCert(): " + success);
@@ -584,10 +588,11 @@ public class RAInterfaceBean implements java.io.Serializable {
     } // loadCertificateView
 
     public boolean revokeTokenCertificates(String tokensn, String username, int reason) throws RemoteException, NamingException, CreateException,
-    		ApprovalException, WaitingForApprovalException {
+    		ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
        boolean success = true;
        ApprovalException lastAppException = null;
        WaitingForApprovalException lastWaitException = null;
+       AlreadyRevokedException lastRevokedException = null;
        Collection certs = hardtokensession.findCertificatesInHardToken(administrator, tokensn);
        Iterator i = certs.iterator();
        // Extract and revoke collection
@@ -595,22 +600,27 @@ public class RAInterfaceBean implements java.io.Serializable {
     	   X509Certificate cert = (X509Certificate) i.next();
            try {
         	   adminsession.revokeCert(administrator, cert.getSerialNumber(), cert.getIssuerDN().toString(), username, reason);
+        	// Ignore errors if some were successful 
            } catch (ApprovalException e) {
         	   lastAppException = e;
            } catch (WaitingForApprovalException e) {
         	   lastWaitException = e;
+           } catch (AlreadyRevokedException e) {
+        	   lastRevokedException = e;
            } catch (AuthorizationDeniedException e) {
         	   success = false;
            } catch (FinderException e) {
         	   success = false;
            }
        }
-       // Ignore duplicate requests if some were successful 
        if ( lastWaitException != null ) {
     	   throw lastWaitException;
        }
        if ( lastAppException != null ) {
     	   throw lastAppException; 
+       }
+       if ( lastRevokedException != null ) {
+    	   throw lastRevokedException; 
        }
        return success;
     }
