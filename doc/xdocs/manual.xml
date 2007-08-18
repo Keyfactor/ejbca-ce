@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <document>
   <properties>
-    <title>User guide</title>
+    <title>User Guide</title>
   </properties>
 <body>
 
@@ -46,23 +46,26 @@ earlier version of EJBCA.
 <section name="Quick start guide">
 
 <subsection name="Prerequisites">
-<p>
-Note: EJBCA makes use of strong crypto and keystore passwords longer than 7 characters.
+<note>
+EJBCA makes use of strong crypto and keystore passwords longer than 7 characters.
 For this to work you must install the 'Unlimited Strength Jurisdiction Policy Files' for JDK.
 The policy files can be found at the same place as the JDK download at java.sun.com. The text
 "Using exportable cryptography" is shown on the first page in the Admin GUI if you fail to
 install this package. Further information on this can be found in the Sun documentation on
 the JCE.
-</p><p>
+</note>
+<note>
+The default, and easiest, installation is done on JBoss. EJBCA can however also run on Glassfish and Weblogic. 
+If you want to deploy on these application servers, read the file doc/howto/HOWTO-Appserver.txt.
+</note>
+<p>
 Needed to build and run are:
 <ul>
-<li>JDK 1.4.x, 1.5.x or 1.6.x (support for 1.4.x will be dropped as of EJBCA 3.5).</li>
+<li>JDK 1.5.x or 1.6.x (support for 1.4.x was dropped in EJBCA 3.5).</li>
 <li><i>Unlimited Strength Jurisdiction Policy Files</i> for your JDK</li>
-<li>JBOSS >=4.0.3 (latest tested verison is JBoss 4.0.5)</li>
+<li>JBOSS >=4.0.4 (latest tested verison is JBoss 4.2.0)</li>
 <li>Ant >= 1.6.5 to build (http://jakarta.apache.org/ant/)</li>
-<li>Apache Myfaces 1.1 JSF libraries (included in JBoss >=4.0.3), without this you can still run EJBCA but with limited functionality in the adminGUI.</li>
 </ul>
-<p>EJBCA can also run on other application servers, see doc/howto/HOWTO-Appserver.txt for details how to run on Weblogic and Glassfish.</p>
 </p><p>
 Set the environment variable APPSRV_HOME (or JBOSS_HOME) to the directory where
 JBoss's root is
@@ -86,11 +89,6 @@ JBoss's root is
         Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files 5.0
         <br/><a href="http://java.sun.com/j2se/1.5.0/download.jsp">http://java.sun.com/j2se/1.5.0/download.jsp</a>
         </p>
-        <p>
-        Java 1.4.2<br/>
-        Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files 1.4.2
-        <br/><a href="http://java.sun.com/j2se/1.4.2/download.html">http://java.sun.com/j2se/1.4.2/download.html</a>
-        </p>
 <p>NOTE: If you are unsure what version of EJBCA you are running, type 'ant ejbcaversion' in the EJBCA_HOME directory. (EJBCA 3.5 and newer.)</p>
 </subsection>
 
@@ -105,10 +103,11 @@ configure before starting JBOSS and running everything in a production environme
 In a production environment you should use something like the following structure:
 <ol>
 <li>Go through the install process creating an AdminCA. Use a simple DN. 
-This CA is only used to issue the initial superadmin certificate. Not published in LDAP.</li>
+This CA should only used to issue the administrator certificates. Not published in LDAP. 
+If you want to use an HSM for this CA, see the documentation in the configuration file conf/ejbca.properties.sample.</li>
 <li>Once installed, create all your REAL CAs using the admin-GUI. Now you can use the certificate 
 profiles etc that you like. These certificates can be published in LDAP.
-See HOWTO-multiplecas.txt for a detailed configuration guide.</li>
+See doc/howto/HOWTO-multiplecas.txt for example of a detailed configuration guide.</li>
 </ol>
 </p><p>
 In a production environment you should use something else than the default Hypersonic database that comes 
@@ -148,13 +147,11 @@ can be changed.
 Note that the installation must be done with a user with privileges to write to APPSRV_HOME and subdirs. 
 </p><p>
 1) Set the environment variable APPSRV_HOME to where your JBoss is installed,
-example /opt/jboss-4.0.2 or C:\jboss-4.0.3SP1.
+example /opt/jboss-4.2.0 or C:\jboss-4.2.0.
 <br/>Also make sure the right java tools (javac/keytool) are available in your system PATH, ie. /usr/local/jdk1.5.0_11/bin.
 </p><p>
 2) Copy conf/ejbca.properties.sample to conf/ejbca.properties and customize if needed.
 The default values works fine for a test installation. 
-<br/>
-If you are using JBoss &lt; 4.0.3 you must configure the property web.jsfimpl in conf/web.properties.
 </p><p>
 <ul>
 <li>Customize the CA properties if you need to do so.
@@ -2406,7 +2403,7 @@ Login as the user that is running the application server. This user must be a me
 The following environment variables should be set for this user:
 <ul>
 <li>JAVA_HOME (/usr/local/jdk1.5.0_11 or similar)</li>
-<li>APPSRV_HOME (/home/jboss/jboss-4.0.5.GA or similar)</li>
+<li>APPSRV_HOME (/home/jboss/jboss-4.2.0.GA or similar)</li>
 <li>EJBCA_HOME (/home/jboss/ejbca or similar)</li>
 <li>NFAST_HOME (/opt/nfast)</li>
 </ul>
@@ -3819,7 +3816,7 @@ And change all methods 'checkfield*()' to always return true directly.
 If you can't get you national characters to work with the admin GUI, you can try using the cli instead
 (bin/ejbca.sh ra adduser ...). That usually works.
 </p><p>
-EJBCA have for example been tested on Windows/JBoss 4.0.2/MySQL and Linux/JBoss4.0.1sp1/HSQL with 
+EJBCA have for example been tested on Windows/JBoss 4.2.0/MySQL and Linux/JBoss4.2.0/HSQL with 
 the default configuration using Swedish national characters, 
 and it works nicely both with the cli and admin-GUI.
 </p>
@@ -4334,8 +4331,8 @@ a real hostname or ip-address.
 Run 'ant deploy' to install the changes.
 </p><p>
 
-1. Tomcat: Copy src/appserver/jboss/tomcat55/server.xml (if using JBoss 4.0.2 or greater) 
-to <br></br>$APPSRV_HOME/server/default/deploy/jbossweb-tomcat41.sar/META-INF/jboss-service.xml.
+1. Tomcat: Copy src/appserver/jboss/tomcat55/server.xml (or similar depending on your JBoss version) 
+to <br></br>$APPSRV_HOME/server/default/deploy/jbossweb-tomcat55.sar/server.xml.
 </p><p>
 Edit the file so 'keyStorePass' is the
 same as the password you specify below for 'tomcat'.
@@ -4372,11 +4369,16 @@ $APPSRV_HOME/server/default/conf/keystore.
 http://localhost:8080/ejbca/retrieve/ca_certs.jsp (call
 it ejbca-ca.pem).
 </p><p>
-6. Add the EJBCA CA certificate to the Java trust-keystore in $JAVA_HOME/jre/lib/security/cacerts
+6. Add the EJBCA CA certificate to the EJBCA Java trust-keystore in p12/truststore.jks
 </p>
 <source>
-keytool -import -trustcacerts -file ejbca-ca.pem -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit
+keytool -import -trustcacerts -file ejbca-ca.pem -keystore p12/truststore.jks -storepass changeit
 </source>
+<p>
+Deploy the new truststore with 'ant deploy'.
+<br/>The command 'ant javatruststore' does the above automatically.
+<br/>After this you must restart JBoss.
+</p>
 <p>
 7. Create a user for EJBCA admin with CN=SuperAdmin and the
 RAADMIN bit (temporarily CN=SuperAdmin gives admin rights).
@@ -4419,15 +4421,11 @@ bin/ejbca.sh ca processreq tomcat foo123 tomcat.req tomcat.pem
 bin/ejbca.sh ca getrootcert ca.der -der
 keytool -import -trustcacerts -alias cacert -file ca.der -keystore tomcat.jks -storepass foo123
 keytool -import -alias tomcat -file tomcat.pem -keystore tomcat.jks -storepass foo123
-</source>
-<p>
-run as root:
-</p>
-<source>
-keytool -import -trustcacerts -file ca.der -keystore $JAVA_HOME/jre/lib/security/cacerts -storepass changeit
+
+keytool -import -trustcacerts -file ca.der -keystore p12/truststore.jks -storepass changeit
+ant deploy
 </source>
 </section>
-
 
 
 </body>

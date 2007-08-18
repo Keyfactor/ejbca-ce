@@ -14,10 +14,6 @@
 	-->
     <property file="conf/custom.properties" />
     <property name="customejbca.home" location="${ejbca.home}/../ejbca-custom" />
-	<echo message="Merging available external modifications from ${customejbca.home}." />
-	<copy todir="${ejbca.home}" overwrite="true" failonerror="false">
-		<fileset dir="${customejbca.home}" />
-	</copy>
 
     <!-- 
        Give user a chance to override without editing this file

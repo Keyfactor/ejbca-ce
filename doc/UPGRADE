@@ -1,33 +1,42 @@
-$Id: UPGRADE,v 1.39 2007-08-15 19:36:26 anatom Exp $
+$Id: UPGRADE,v 1.40 2007-08-18 14:40:14 anatom Exp $
 
 UPGRADE
 =======
 
 This document describes proceedures needed to upgrade from one 
 version of EJBCA to a new version.
-Upgrades within a major version, from 3.1.1 to 3.1.2 for example, are 
+Upgrades within a major version, from 3.4.1 to 3.4.2 for example, are 
 usually plug-in upgrades and can be made simply by deploying the new 
 software. See doc/RELEASE_NOTES for info about such upgrades.
 
 If you use the patch file to upgrade use a command like:
 - Have old version of ejbca unzipped to directory ejbca.
 - Go to directory ejbca and apply patch with:
-- patch --strip=0 -u < ../patch-321_322.txt
+- patch --strip=0 -u < ../patch-341_342.txt
 (change name of patch file depending on which version you are upgrading)
 
 After this you must do:
 - ant clean
 - ant deploy
 
-From EJBCA 3.4.x to EJBCA 3.5
------------------------------
+From EJBCA 3.4.x to EJBCA 3.5.x
+-------------------------------
 See release notes for details between certain versions. 
 
-EJBCA 3.5 is a plug-in upgrade from EJBCA 3.4.x.
+EJBCA 3.5 is a plug-in upgrade from EJBCA 3.4.x. A few steps are still needed for upgrade though.
 
 Simply copy conf/*.properties from the earlier installation.
 Merge changes (if there are any) from *.properties.sample into your *.properties.
 Copy the directory 'p12' from the earlier installation and do 'ant deploy' with the new version.
+
+The new root-less install on linux systems makes it much easier to have control of you Java truststore 
+(which CAs that are allowed for administrator certificates) both on linux and windows. 
+You must make these steps during upgrade on both linux and windows:
+- copy $JAVA_HOME/jre/lib/security/cacerts $EJBCA_HOME/p12/truststore.jks
+- ant deploy
+
+In EJBCA 3.5 when you run the command 'ant javatruststore' or 'ant -Dca.name=MyCAName javatruststore' it is now 
+the file $EJBCA_HOME/p12/truststore.jks that will be updated and copied to $JBOSS_HOME/server/default/conf/keystore. 
 
 You should also read about the new external merge directory 'ejbca-custom', where you can collect all your 
 own files. See 'Handling changes in a separate tree' in the User's guide.
@@ -36,7 +45,6 @@ There are some parameter name changes in ejbca.properties and web.properties.
 These parameters are only used when freshly installing EJBCA though. If you plan to do this using
 old configuration files, you should merge changes from ejbca.properties.sample and web.properties.sample.
 No worry if you forget though, since you will be prompted for the values instead.
-
 
 From EJBCA 3.4.x to EJBCA 3.4.x
 -------------------------------
@@ -100,7 +108,6 @@ Otherwise you will not be able to revoke the certificates issued to these servic
 
 You should be ablo to upgrade from EJBCA 3.1.x directly to 3.4.x, by following the same instructions
 as above, but answering yes to the second question (this upgrade is not thoroughly tested though).
-
 
 From EJBCA 3.3.x to EJBCA 3.3.x
 -------------------------------

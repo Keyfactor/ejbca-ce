@@ -96,7 +96,7 @@ appserver.home         : ${appserver.home}
 	<target name="ejbca:javatruststore" description="Java trust store config">
         <echo message="Getting root certificate in DER format..."/>
 		<ejbca:cli name="ca" arg='getrootcert ${ca.name} ${java.io.tmpdir}/rootca.der -der'/>
-		<property name="trust.keystore" value="${java.home}/lib/security/cacerts"/>
+		<property name="trust.keystore" value="${ejbca.home}/p12/truststore.jks"/>
 		<property name="trust.password" value="${java.trustpassword}"/>
 		<echo>Adding to or creating keystore: ${trust.keystore}</echo>
 	    <ejbca:keytool arg="-v -alias EJBCA-CA -delete -keystore '${trust.keystore}' -storepass ${trust.password}"/>

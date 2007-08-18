@@ -9,6 +9,7 @@
 	<property name="jboss.farm.dir" location="${jboss.server.home.dir}/${jboss.farm.name}"/>
 	<property name="jboss.deploy.dir" location="${jboss.server.home.dir}/deploy"/>
 	<property name="keystore.file" value="conf/keystore/keystore.jks"/>
+	<property name="truststore.file" value="conf/keystore/truststore.jks"/>
 	
 	<!--
 	 Do not configure the servlet container, deploys blindly ears
@@ -28,13 +29,23 @@
         <echo message="Using appserver.home : ${appserver.home}"/>
 	</target>
 
-
-
 	<!-- Configure the J2EE server with appropriate settings -->
-	<target name="j2ee:configure" depends="j2ee:check, j2ee:web-configure">
-		
+	<target name="j2ee:configure" depends="j2ee:check, j2ee:web-configure">		
 	</target>
 
+	<target name="j2ee:deploytruststore">
+		<!-- copy the truststore file to the server -->
+		<available file="${ejbca.home}/p12/truststore.jks" property="truststore.file.present"/>
+		<fail message="Missing JKS truststorestore file in '${basedir}/p12/truststore.jks'" unless="truststore.file.present"/>
+		<condition property="javatrust.password.present">
+			<isset property="java.trustpassword"/> 
+		</condition>
+		<fail message="Missing Truststore password '${java.trustpassword}'" unless="javatrust.password.present"/>
+		
+		<copy file="${ejbca.home}/p12/truststore.jks" tofile="${jboss.server.home.dir}/${truststore.file}" overwrite="true"/>
+		<chmod file="${jboss.server.home.dir}/${truststore.file}" perm="600"/>		
+	</target>
+		
 	<target name="j2ee:web-configure" depends="j2ee:check" unless="j2ee.web-noconfigure">
         <echo message="Using JBoss deploy directory ${jboss.farm.dir}"/>
 
@@ -48,8 +59,10 @@
 
 		<copy file="p12/tomcat.jks" tofile="${jboss.server.home.dir}/${keystore.file}" overwrite="true"/>
 		<chmod file="${jboss.server.home.dir}/${keystore.file}" perm="600"/>
-
 		
+		<!-- Also deploy the truststore -->
+        <antcall target="j2ee:deploytruststore" />
+
         <!-- detect jboss web version -->
         <available file="${jboss.deploy.dir}/jbossweb-tomcat41.sar" type="dir" property="jboss.web" value="tomcat41"/>
         <available file="${jboss.deploy.dir}/jbossweb-tomcat50.sar" type="dir" property="jboss.web" value="tomcat50"/>
@@ -67,7 +80,9 @@
 			<filterchain>
 			<tokenfilter>
 		    	<replacestring from="@keystore.file@" to="${keystore.file}"/>
+		    	<replacestring from="@truststore.file@" to="${truststore.file}"/>
 		    	<replacestring from="@httpsserver.password@" to="${httpsserver.password}"/>
+		    	<replacestring from="@java.trustpassword@" to="${java.trustpassword}"/>
 		    	<replacestring from="@httpserver.pubhttp@" to="${httpserver.pubhttp}"/>
 		    	<replacestring from="@httpserver.pubhttps@" to="${httpserver.pubhttps}"/>
 		    	<replacestring from="@httpserver.privhttps@" to="${httpserver.privhttps}"/>
