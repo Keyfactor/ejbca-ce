@@ -141,7 +141,7 @@ function getPasswordAndSubmit(formname) {
           <%   }else{ %> 
           <tr id="Row<%=row%2%>">
            <td>
-              <%= ejbcawebbean.getText("SUBORDINATECA") + " " + (j+1) + " : "%>  
+              <%= ejbcawebbean.getText("SUBORDINATECA") + " " + (chainsize-j-1) + " : "%>  
            </td>  
            <td>
                <% if(certificatechain[j] instanceof X509Certificate)
