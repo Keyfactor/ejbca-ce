@@ -158,11 +158,11 @@
         <li><div class="menuheader">$menu.getAttributeValue("name")</div>
           <ul>
             #foreach ( $item in $menu.getChildren() )
-              #set ($name = $item.getAttributeValue("name"))
+              #set ($name = $item.getAttributeValue("name").trim())
               #set ($current = $root.getChild("properties").getChild("title").getText() )
                 <li>
               #if ( $current.trim().equals( $name ) )
-                <span class="sel">� $name</span>
+                <span class="sel">> $name</span>
               #else
                 #projectanchor($name $item.getAttributeValue("href"))
               #end
