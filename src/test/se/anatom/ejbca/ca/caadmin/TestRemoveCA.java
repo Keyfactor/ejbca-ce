@@ -27,7 +27,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests and removes the ca data entity bean.
  *
- * @version $Id: TestRemoveCA.java,v 1.7 2007-08-13 19:14:20 anatom Exp $
+ * @version $Id: TestRemoveCA.java,v 1.8 2007-08-18 20:01:16 anatom Exp $
  */
 public class TestRemoveCA extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -147,8 +147,22 @@ public class TestRemoveCA extends TestCase {
         	log.info("Remove failed: ", e);
         }
         assertTrue("Removing RSA CA 4096 failed", ret);
-
         log.debug("<test05removeRSACA4096()");
+    }
+    
+    public void test06removeRSACAReverse() throws Exception {
+        log.debug(">test06removeRSACAReverse()");
+        boolean ret = false;
+        try {
+        	String dn = CertTools.stringToBCDNString("CN=TESTRSAReverse,O=FooBar,OU=BarFoo,C=SE");
+            cacheAdmin.removeCA(admin, dn.hashCode());
+            ret = true;
+        } catch (Exception e) {
+        	log.info("Remove failed: ", e);
+        }
+        assertTrue("Removing RSA CA Reverse failed", ret);
+
+        log.debug("<test06removeRSACAReverse()");
     }
 
 }

@@ -97,7 +97,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.44 2007-08-15 16:04:22 anatom Exp $
+ * @version $Id: CertTools.java,v 1.45 2007-08-18 20:00:54 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -188,9 +188,7 @@ public class CertTools {
 
     /** See stringToBcX509Name(String, X509NameEntryConverter), this method uses the default BC converter (X509DefaultEntryConverter)
      * @see #stringToBcX509Name(String, X509NameEntryConverter)
-     * @param dn
-     * @param dn
-     *          String containing DN that will be transformed into X509Name, The
+     * @param dn String containing DN that will be transformed into X509Name, The
      *          DN string has the format "CN=zz,OU=yy,O=foo,C=SE". Unknown OIDs in
      *          the string will be added to the end positions of OID array.
      * 
@@ -198,10 +196,9 @@ public class CertTools {
      */
     public static X509Name stringToBcX509Name(String dn) {
     	X509NameEntryConverter converter = new X509DefaultEntryConverter();
-    	return stringToBcX509Name(dn, converter);
-    	
-    	
+    	return stringToBcX509Name(dn, converter);    	
     }
+
     /**
      * Creates a (Bouncycastle) X509Name object from a string with a DN. Known OID
      * (with order) are:
@@ -218,7 +215,10 @@ public class CertTools {
      * @param converter BC converter for DirectoryStrings, that determines which encoding is chosen
      * @return X509Name or null if input is null
      */
-    public static X509Name stringToBcX509Name(String dn, X509NameEntryConverter converter) {
+    private static X509Name stringToBcX509Name(String dn, X509NameEntryConverter converter) {
+    	return stringToBcX509Name(dn, converter, getDefaultX509FieldOrder());
+    }
+    public static X509Name stringToBcX509Name(String dn, X509NameEntryConverter converter, Vector dnOrder) {
       //log.debug(">stringToBcX509Name: " + dn);
       if (dn == null)
         return null;
@@ -264,7 +264,7 @@ public class CertTools {
       X509Name x509Name = new X509Name(defaultOrdering, values, converter);
 
       //-- Reorder fields
-      X509Name orderedX509Name = getOrderedX509Name(x509Name, getDefaultX509FieldOrder(), converter);
+      X509Name orderedX509Name = getOrderedX509Name(x509Name, dnOrder, converter);
 
       //log.debug("<stringToBcX509Name");
       return orderedX509Name;
@@ -1879,6 +1879,21 @@ public class CertTools {
     private static Vector getDefaultX509FieldOrder(){
       Vector fieldOrder = new Vector();
       String[] dNObjects = DnComponents.getDnObjects();
+      for (int i = 0; i < dNObjects.length; i++) {
+          fieldOrder.add(DnComponents.getOid(dNObjects[i]));
+      }
+      return fieldOrder;
+    }
+    /**
+     * Obtains a Vector with the DERObjectIdentifiers for 
+     * dNObjects names, in the specified order
+     * 
+     * @param ldaporder if true the returned order are as defined in LDAP RFC (CN=foo,O=bar,C=SE), otherwise the order is a defined in X.500 (C=SE,O=bar,CN=foo).
+     * @return Vector with DERObjectIdentifiers defining the known order we require
+     */
+    public static Vector getX509FieldOrder(boolean ldaporder){
+      Vector fieldOrder = new Vector();
+      String[] dNObjects = DnComponents.getDnObjects(ldaporder);
       for (int i = 0; i < dNObjects.length; i++) {
           fieldOrder.add(DnComponents.getOid(dNObjects[i]));
       }

@@ -202,7 +202,7 @@ public class TestRevocationApproval extends TestCase {
 		X509CAInfo cainfo = new X509CAInfo("CN="+nameOfCA, nameOfCA, SecConst.CA_ACTIVE, new Date(), "", SecConst.CERTPROFILE_FIXED_ROOTCA,
         		365, new Date(System.currentTimeMillis()+364*24*3600*1000), CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, null,
         		catokeninfo, "Used for testing approvals", -1, null, "", 24, 0, 10, new ArrayList(), true,
-        		false, true, false, "", "", "", true, new ArrayList(), false, approvalSettings, 1, false);
+        		false, true, false, "", "", "", true, new ArrayList(), false, approvalSettings, 1, false, true);
 		int caID = cainfo.getCAId();
         try {
         	caAdminSession.revokeCA(internalAdmin, caID, RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);

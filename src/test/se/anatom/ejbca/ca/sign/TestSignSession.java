@@ -68,7 +68,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.32 2007-06-05 13:32:57 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.33 2007-08-18 20:01:17 anatom Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -149,10 +149,12 @@ public class TestSignSession extends TestCase {
     private static KeyPair ecdsakeys=null;
     private static KeyPair ecdsaimplicitlyca=null;
     private static int rsacaid = 0;
+    private static int rsareversecaid = 0;
     private static int ecdsacaid = 0;
     private static int ecdsaimplicitlycacaid = 0;
     private static int rsamgf1cacaid = 0;
     X509Certificate rsacacert = null;
+    X509Certificate rsarevcacert = null;
     X509Certificate ecdsacacert = null;
     X509Certificate ecdsaimplicitlycacacert = null;
     X509Certificate rsamgf1cacacert = null;
@@ -189,6 +191,11 @@ public class TestSignSession extends TestCase {
         if (rsacaid == 0){
             assertTrue("No active RSA CA! Must have at least one active CA to run tests!", false);
         }
+        CAInfo inforsareverse = casession.getCAInfo(admin, "TESTRSAREVERSE");
+        rsareversecaid = inforsareverse.getCAId();
+        if (rsareversecaid == 0){
+            assertTrue("No active RSA Reverse CA! Must have at least one active reverse CA to run tests!", false);
+        }
         CAInfo infoecdsa = casession.getCAInfo(admin, "TESTECDSA");
         ecdsacaid = infoecdsa.getCAId();
         if (ecdsacaid == 0){
@@ -207,6 +214,9 @@ public class TestSignSession extends TestCase {
         Collection coll = inforsa.getCertificateChain();
         Object[] objs = coll.toArray();
         rsacacert = (X509Certificate)objs[0]; 
+        coll = inforsareverse.getCertificateChain();
+        objs = coll.toArray();
+        rsarevcacert = (X509Certificate)objs[0]; 
         coll = infoecdsa.getCertificateChain();
         objs = coll.toArray();
         ecdsacacert = (X509Certificate)objs[0]; 
@@ -275,7 +285,20 @@ public class TestSignSession extends TestCase {
         if (userExists) {
             log.info("User foo already exists, resetting status.");
             usersession.changeUser(admin,"foo","foo123","C=SE,O=AnaTom,CN=foo",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW,rsacaid);
-            //usersession.setUserStatus(admin,"foo",UserDataConstants.STATUS_NEW);
+            log.debug("Reset status to NEW");
+        }
+        userExists = false;
+        try {
+            usersession.addUser(admin,"foorev","foo123","C=SE,O=AnaTom,CN=foorev",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,rsareversecaid);
+            log.debug("created user: foorev, foo123, C=SE, O=AnaTom, CN=foorev");
+        } catch (RemoteException re) {
+        	userExists = true;
+        } catch (DuplicateKeyException dke) {
+            userExists = true;
+        }
+        if (userExists) {
+            log.info("User foorev already exists, resetting status.");
+            usersession.changeUser(admin,"foorev","foo123","C=SE,O=AnaTom,CN=foorev",null,"foo@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,UserDataConstants.STATUS_NEW,rsareversecaid);
             log.debug("Reset status to NEW");
         }
         userExists = false;
@@ -336,13 +359,27 @@ public class TestSignSession extends TestCase {
         X509Certificate cert = (X509Certificate) remote.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
-
+        // Normal DN order
+        assertEquals(cert.getSubjectX500Principal().getName(), "C=SE,O=AnaTom,CN=foo");
         try {
             cert.verify(rsacacert.getPublicKey());        	
         } catch (Exception e) {
         	assertTrue("Verify failed: "+e.getMessage(), false);
         }
         //FileOutputStream fos = new FileOutputStream("testcert.crt");
+        //fos.write(cert.getEncoded());
+        //fos.close();
+        cert = (X509Certificate) remote.createCertificate(admin, "foorev", "foo123", rsakeys.getPublic());
+        assertNotNull("Misslyckades skapa cert", cert);
+        log.debug("Cert=" + cert.toString());
+        // Reverse DN order
+        assertEquals(cert.getSubjectX500Principal().getName(), "CN=foorev,O=AnaTom,C=SE");
+        try {
+            cert.verify(rsarevcacert.getPublicKey());        	
+        } catch (Exception e) {
+        	assertTrue("Verify failed: "+e.getMessage(), false);
+        }
+        //FileOutputStream fos = new FileOutputStream("testcertrev.crt");
         //fos.write(cert.getEncoded());
         //fos.close();
         log.debug("<test02SignSession()");

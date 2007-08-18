@@ -37,7 +37,7 @@ import org.bouncycastle.asn1.x509.X509Name;
  * seemingly similar contents. 
  * 
  * @author tomas
- * @version $Id: DnComponents.java,v 1.8 2007-01-16 11:46:13 anatom Exp $
+ * @version $Id: DnComponents.java,v 1.9 2007-08-18 20:00:53 anatom Exp $
  */
 public class DnComponents {
     private static Logger log = Logger.getLogger(DnComponents.class);
@@ -276,10 +276,20 @@ public class DnComponents {
     	return val.intValue();
     }
     /**
-     * Returns the dnObject (forward or reverse) that is in use
+     * Returns the dnObjects (forward or reverse) that is in use
      */
     public static String[]getDnObjects() {
         if (!reverseOrder) {
+            return dNObjectsForward;
+        }
+        return getDnObjectsReverse();
+    }
+    /**
+     * Returns the dnObjects (forward or reverse). 
+     * ldaproder = true is the default order in EJBCA. 
+     */
+    public static String[]getDnObjects(boolean ldaporder) {
+        if (ldaporder) {
             return dNObjectsForward;
         }
         return getDnObjectsReverse();

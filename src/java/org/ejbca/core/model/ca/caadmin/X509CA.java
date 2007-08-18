@@ -139,7 +139,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.66 2007-08-09 16:11:24 anatom Exp $
+ * @version $Id: X509CA.java,v 1.67 2007-08-18 20:00:53 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -149,7 +149,7 @@ public class X509CA extends CA implements Serializable {
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Default Values
-    public static final float LATEST_VERSION = 12;
+    public static final float LATEST_VERSION = 13;
 
     private byte[]  keyId = new byte[] { 1, 2, 3, 4, 5 };
     
@@ -166,9 +166,10 @@ public class X509CA extends CA implements Serializable {
     protected static final String DEFAULTOCSPSERVICELOCATOR      = "defaultocspservicelocator";
     protected static final String USEUTF8POLICYTEXT              = "useutf8policytext";
     protected static final String USEPRINTABLESTRINGSUBJECTDN    = "useprintablestringsubjectdn";
+    protected static final String USELDAPDNORDER                 = "useldapdnorder";
 
     // Public Methods
-    /** Creates a new instance of CA, this constuctor should be used when a new CA is created */
+    /** Creates a new instance of CA, this constructor should be used when a new CA is created */
     public X509CA(X509CAInfo cainfo) {
       super(cainfo);  
       
@@ -184,6 +185,7 @@ public class X509CA extends CA implements Serializable {
       setFinishUser(cainfo.getFinishUser());
       setUseUTF8PolicyText(cainfo.getUseUTF8PolicyText());
       setUsePrintableStringSubjectDN(cainfo.getUsePrintableStringSubjectDN());
+      setUseLdapDNOrder(cainfo.getUseLdapDnOrder());
       
       data.put(CA.CATYPE, new Integer(CAInfo.CATYPE_X509));
       data.put(VERSION, new Float(LATEST_VERSION));   
@@ -206,7 +208,7 @@ public class X509CA extends CA implements Serializable {
         		  getCAToken(caId).getCATokenInfo(), getDescription(), getRevokationReason(), getRevokationDate(), getPolicyId(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(), getCRLPublishers(),
         		  getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(),
         		  getUseCRLNumber(), getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultCRLIssuer(), getDefaultOCSPServiceLocator(), getFinishUser(), externalcaserviceinfos, 
-        		  getUseUTF8PolicyText(), getApprovalSettings(), getNumOfRequiredApprovals(), getUsePrintableStringSubjectDN());
+        		  getUseUTF8PolicyText(), getApprovalSettings(), getNumOfRequiredApprovals(), getUsePrintableStringSubjectDN(), getUseLdapDNOrder());
         super.setCAInfo(info);
     }
 
@@ -269,14 +271,20 @@ public class X509CA extends CA implements Serializable {
         data.put(USEUTF8POLICYTEXT, Boolean.valueOf(useutf8));
       }
 
-
       public boolean  getUsePrintableStringSubjectDN(){
     	  return ((Boolean)data.get(USEPRINTABLESTRINGSUBJECTDN)).booleanValue();
       }
       public void setUsePrintableStringSubjectDN(boolean useprintablestring) {
     	  data.put(USEPRINTABLESTRINGSUBJECTDN, Boolean.valueOf(useprintablestring));
       }
-    
+
+      public boolean  getUseLdapDNOrder(){
+    	  return ((Boolean)data.get(USELDAPDNORDER)).booleanValue();
+      }
+      public void setUseLdapDNOrder(boolean useldapdnorder) {
+    	  data.put(USELDAPDNORDER, Boolean.valueOf(useldapdnorder));
+      }
+
       public void updateCA(CAInfo cainfo) throws Exception{
     	  super.updateCA(cainfo); 
     	  X509CAInfo info = (X509CAInfo) cainfo;
@@ -290,7 +298,7 @@ public class X509CA extends CA implements Serializable {
     	  setDefaultOCSPServiceLocator(info.getDefaultOCSPServiceLocator());
     	  setUseUTF8PolicyText(info.getUseUTF8PolicyText());
           setUsePrintableStringSubjectDN(info.getUsePrintableStringSubjectDN());
-
+          setUseLdapDNOrder(info.getUseLdapDnOrder());
       }
     
 
@@ -484,7 +492,8 @@ public class X509CA extends CA implements Serializable {
         } else {
         	converter = new X509DefaultEntryConverter();
         }
-        certgen.setSubjectDN(CertTools.stringToBcX509Name(dn, converter));
+        Vector dnorder = CertTools.getX509FieldOrder(getUseLdapDNOrder());
+        certgen.setSubjectDN(CertTools.stringToBcX509Name(dn, converter, dnorder));
         // We must take the issuer DN directly from the CA-certificate otherwise we risk re-ordering the DN
         // which many applications do not like.
         if (isRootCA) {
@@ -494,7 +503,7 @@ public class X509CA extends CA implements Serializable {
         	if (log.isDebugEnabled()) {
         		log.debug("Using subject DN also as issuer DN, because it is a root CA");
         	}
-            X509Name caname = CertTools.stringToBcX509Name(getSubjectDN(), converter);
+            X509Name caname = CertTools.stringToBcX509Name(getSubjectDN(), converter, dnorder);
             certgen.setIssuerDN(caname);
         } else {
         	if (log.isDebugEnabled()) {
@@ -504,7 +513,7 @@ public class X509CA extends CA implements Serializable {
         }
         certgen.setPublicKey(publicKey);
 
-        // Basic constranits, all subcerts are NOT CAs
+        // Basic constraints, all subcerts are NOT CAs
         if (certProfile.getUseBasicConstraints() == true) {
         	BasicConstraints bc = new BasicConstraints(false);
             if ((certProfile.getType() == CertificateProfile.TYPE_SUBCA)
@@ -890,7 +899,15 @@ public class X509CA extends CA implements Serializable {
         X509Certificate cacert = (X509Certificate)getCACertificate();
         if (cacert == null) {
         	// This is an initial root CA, since no CA-certificate exists
-            X509Name caname = CertTools.stringToBcX509Name(getSubjectDN());
+        	// (I don't think we can ever get here!!!)
+            X509NameEntryConverter converter = null;
+            if (getUsePrintableStringSubjectDN()) {
+            	converter = new PrintableStringEntryConverter();
+            } else {
+            	converter = new X509DefaultEntryConverter();
+            }
+
+            X509Name caname = CertTools.stringToBcX509Name(getSubjectDN(), converter, CertTools.getX509FieldOrder(getUseLdapDNOrder()));
             crlgen.setIssuerDN(caname);
         } else {
         	crlgen.setIssuerDN(cacert.getSubjectX500Principal());
@@ -969,7 +986,9 @@ public class X509CA extends CA implements Serializable {
             if (data.get(DEFAULTCRLISSUER) == null) {
             	setDefaultCRLIssuer(null);
             }
-            
+            if (data.get(USELDAPDNORDER) == null) {
+            	setUseLdapDNOrder(true);
+            }            
             
             data.put(VERSION, new Float(LATEST_VERSION));
         }  
