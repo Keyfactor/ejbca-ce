@@ -620,7 +620,7 @@ function checkallfields(){
       </td>
       <td width="50%"> 
         <input type="checkbox" name="<%=CHECKBOX_USELDAPDNORDER %>" value="<%=CHECKBOX_VALUE %>" 
-            <% if ( (editca && x509cainfo.getUseLdapDnOrder()) || !editca)
+            <% if ( (editca && x509cainfo.getUseLdapDnOrder()) || (!editca && !DnComponents.isReverseOrder()) )
                  out.write("CHECKED");%>>         
       </td>
     </tr>

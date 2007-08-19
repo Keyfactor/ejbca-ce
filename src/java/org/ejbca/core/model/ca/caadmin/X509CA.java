@@ -131,6 +131,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.cert.PrintableStringEntryConverter;
 import org.ejbca.util.cert.SubjectDirAttrExtension;
+import org.ejbca.util.dn.DnComponents;
 
 
 
@@ -139,7 +140,7 @@ import org.ejbca.util.cert.SubjectDirAttrExtension;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.67 2007-08-18 20:00:53 anatom Exp $
+ * @version $Id: X509CA.java,v 1.68 2007-08-19 13:20:56 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -987,7 +988,11 @@ public class X509CA extends CA implements Serializable {
             	setDefaultCRLIssuer(null);
             }
             if (data.get(USELDAPDNORDER) == null) {
-            	setUseLdapDNOrder(true);
+            	if (DnComponents.isReverseOrder()) {
+            		setUseLdapDNOrder(false);
+            	} else {
+                	setUseLdapDNOrder(true);            		
+            	}
             }            
             
             data.put(VERSION, new Float(LATEST_VERSION));

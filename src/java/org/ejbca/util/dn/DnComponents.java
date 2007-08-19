@@ -37,7 +37,7 @@ import org.bouncycastle.asn1.x509.X509Name;
  * seemingly similar contents. 
  * 
  * @author tomas
- * @version $Id: DnComponents.java,v 1.9 2007-08-18 20:00:53 anatom Exp $
+ * @version $Id: DnComponents.java,v 1.10 2007-08-19 13:20:56 anatom Exp $
  */
 public class DnComponents {
     private static Logger log = Logger.getLogger(DnComponents.class);
@@ -166,6 +166,9 @@ public class DnComponents {
      */
     private static final boolean reverseOrder = BooleanUtils.toBoolean("@certtools.dnorderreverse@");
     
+    public static boolean isReverseOrder() {
+    	return reverseOrder == true;
+    }
     
     public static DERObjectIdentifier getOid(String o) {
         return (DERObjectIdentifier) oids.get(o.toLowerCase());
