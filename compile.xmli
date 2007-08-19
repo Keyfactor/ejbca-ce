@@ -22,16 +22,6 @@
     <!-- Create the time stamp and build directory -->
     <!-- =================================================================== -->
     <target name="init" depends="set.jsfimpl, j2ee:check">
-	
-		<!--
-			Merge custom modifications from customejbca.home to
-			ejbca.home before reading the other configuration files.
-		-->
-		<echo message="Merging available external modifications from ${customejbca.home}." />
-		<copy todir="${ejbca.home}" overwrite="true" failonerror="false">
-			<fileset dir="${customejbca.home}" />
-		</copy>
-	
         <echo>
 ---------- ${app.version} CONFIGURATION PROPERTIES ----------
 appserver.type         = ${appserver.type}
