@@ -2157,13 +2157,34 @@ Besides the keys previously described the property field of the administration G
 
 <strong>Utimaco PKCS#11</strong>
 <p>
+The Utimaco PKCS11 module have a configurable timeout (AppTimeout) that clears all session information if you do not use the keys for some time.
+The default time-out is 30 minutes, which may be way too short if your CA is not very very active.
+We recommend that you set this timeout to a longer value, several days.
+<br/>Put a configuration file in /etc/utimaco/cs2_pkcs11.ini:
+</p>
+<source>
+[Global]
+Timeout = 5000
+Logging = 0
+Logpath = /tmp
+
+[CryptoServer]
+Device     = TCP:3001@172.16.175.128
+Timeout    = 600000
+AppTimeout = 172800
+SlotCount  = 100
+</source>
+<p>
+The timeout in this example of 172800 seconds will allow your CA to idle for a long time.
+</p>
+<p>
 When using a PKCS#11 token you should first create keys with the command: $EJBCA_HOME/bin/pkcs11HSM.sh generate
 </p><p>
 Each CA should have its own slot.
 </p><p>
-Each slot must have been initialised before keys could be generated on the them. This includes setting a user PIN for it. The slot must also require login. Tools for doing this is not provided from EJBCA. The HSM vendor should provide this tool.
+Each slot must have been initialized before keys could be generated on the them. This includes setting a user PIN for it. The slot must also require login. Tools for doing this is not provided from EJBCA. The HSM vendor should provide this tool.
 </p><p>
-Here follows an example on how to initialise a slot and generate keys to be used by EJBCA. The password is user1:
+Here follows an example on how to initialize a slot and generate keys to be used by EJBCA. The password is user1:
 </p>
 <source>
 ./p11tool lib=./libcs2_pkcs11.so slot=1 InitToken=officer1
@@ -2188,7 +2209,7 @@ certSignKey signKey
 crlSignKey signKey
 testKey testKey
 pin user1
-sharedLibrary /home/lars/work/test/p11/libcs2_pkcs11.so
+sharedLibrary /opt/utimaco/p11/libcs2_pkcs11.so
 </source>
 <p>
 Utimaco have an emulator for their CryptoServer LAN HSM that can be used for test and development. 
