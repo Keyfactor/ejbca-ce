@@ -14,6 +14,7 @@ Setup software and initialize pkcs11 slot:
 - ln -s libcs2_pkcs11-1.1.5.so libcs2_pkcs11.so
 - vi cs2_pkcs11.ini
   Device = TCP:3001@172.16.175.128
+  AppTimeout = 172800
 - sudo cp cs2_pkcs11.ini /etc/utimaco
   (location can also be set with environment variable CS2_PKCS11_INI)
 - ./p11tool lib=./libcs2_pkcs11.so slot=1 InitToken=officer1
