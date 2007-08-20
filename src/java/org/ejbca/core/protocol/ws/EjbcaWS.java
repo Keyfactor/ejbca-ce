@@ -123,7 +123,7 @@ import org.ejbca.util.query.Query;
  * Implementor of the IEjbcaWS interface.
  * 
  * @author Philip Vendil
- * $Id: EjbcaWS.java,v 1.16 2007-08-17 14:45:43 jeklund Exp $
+ * $Id: EjbcaWS.java,v 1.17 2007-08-20 21:36:53 herrvendil Exp $
  */
 
 @WebService
@@ -864,10 +864,14 @@ public class EjbcaWS implements IEjbcaWS {
 			
 			while(htdIter.hasNext()) {
 				HardTokenDataWS toRevoke = (HardTokenDataWS)htdIter.next();
-				if(hardTokenDataWS.getLabel().equals(HardTokenConstants.LABEL_TEMPORARYCARD)){
-				   revokeToken(admin, toRevoke.getHardTokenSN(), RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
-				}else{
-				   revokeToken(admin, toRevoke.getHardTokenSN(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+				try{
+				  if(hardTokenDataWS.getLabel().equals(HardTokenConstants.LABEL_TEMPORARYCARD)){
+				     revokeToken(admin, toRevoke.getHardTokenSN(), RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD);
+				  }else{
+				     revokeToken(admin, toRevoke.getHardTokenSN(), RevokedCertInfo.REVOKATION_REASON_UNSPECIFIED);
+				  }
+				}catch(AlreadyRevokedException e){
+					// Do nothing
 				}
 			}
 		}
