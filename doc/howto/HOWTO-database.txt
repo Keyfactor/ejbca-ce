@@ -301,12 +301,21 @@ create index protect_idx1 on TableProtectData (dbKey,dbType);
 Selecting log entries when viewing logs:
 create index logentry_idx1 on LogEntryData (time);
 create index logentry_idx2 on LogEntryData (caid);
+create index logentry_idx3 on LogEntryData (event);
+create index logentry_idx4 on LogEntryData (username);
 
-Indexes on CRLData:
+Indexes on CRLData:	
 create index crldata_idx1 on CRLData (issuerDN,cRLNumber);
 
 Indexes on CertificateData:
 create index certificatedata_idx1 on CertificateData (issuerDN,serialNumber);
+create index certificatedata_idx1 on CertificateData (username);
+
+Indexes on UserData:
+create index userdata_idx1 on UserData (caid,endEntityprofileId);
+
+Indexes on CertReqHistoryData:
+create index historydata_idx1 on CertReqHistoryData (username);
 
 On external OCSP responders you should create the following two indexes:
 create index protect_idx1 on TableProtectData (dbKey,dbType);
