@@ -17,7 +17,7 @@ package org.ejbca.core.model.ca.certificateprofiles;
 /**
  * RootCACertificateProfile is a class defining the fixed characteristics of a root ca certificate profile.
  *
- * @version $Id: RootCACertificateProfile.java,v 1.4 2006-11-01 11:54:01 anatom Exp $
+ * @version $Id: RootCACertificateProfile.java,v 1.5 2007-08-21 08:44:59 jeklund Exp $
  */
 public class RootCACertificateProfile extends CertificateProfile{
 
@@ -40,6 +40,7 @@ public class RootCACertificateProfile extends CertificateProfile{
       setKeyUsage(KEYCERTSIGN,true);
       setKeyUsage(CRLSIGN,true);
       setKeyUsageCritical(true);
+      setValidity(25*365+7);	// Default validity for this profile is 25 years including 6 or 7 leap days
       
     }
 

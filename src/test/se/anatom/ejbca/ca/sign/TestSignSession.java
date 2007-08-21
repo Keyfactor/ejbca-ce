@@ -68,7 +68,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tests signing session.
  *
- * @version $Id: TestSignSession.java,v 1.33 2007-08-18 20:01:17 anatom Exp $
+ * @version $Id: TestSignSession.java,v 1.34 2007-08-21 08:45:10 jeklund Exp $
  */
 public class TestSignSession extends TestCase {
     static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
@@ -789,10 +789,10 @@ public class TestSignSession extends TestCase {
         Date notAfter = cert.getNotAfter();
         cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_MONTH, 297);
-        // Override was not enabled, the cert should have notAfter more than 3064 days in the future (3065 to be exact)
+        // Override was not enabled, the cert should have notAfter more than 297 days in the future (298 to be exact)
         assertTrue(notAfter.compareTo(cal.getTime()) > 0);
         cal.add(Calendar.DAY_OF_MONTH, 2);
-        // Override was not enabled, the cert should have notAfter more than 3064 days in the future (3065 to be exact)
+        // Override was not enabled, the cert should have notAfter less than 299 days in the future (298 to be exact)
         assertTrue(notAfter.compareTo(cal.getTime()) < 0);
         
         // Change so that we allow override of validity time
@@ -844,7 +844,7 @@ public class TestSignSession extends TestCase {
         cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_MONTH, 49);
         notAfter = cert.getNotAfter();
-        // Override was enabled, the cert should have notBefore more than 49 days in the future since we requested 200
+        // Override was enabled, the cert should have notAfter more than 49 days in the future since we requested 200 and validity is 50
         assertTrue(notAfter.compareTo(cal.getTime()) > 0);
         cal.add(Calendar.DAY_OF_MONTH, 2);
         // Since we are not allowed to request validity longer than the certificate profile allows, validity is less than 51 days, even though we requested 200

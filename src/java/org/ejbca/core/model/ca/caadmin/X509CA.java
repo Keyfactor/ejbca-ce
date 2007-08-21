@@ -140,7 +140,7 @@ import org.ejbca.util.dn.DnComponents;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.68 2007-08-19 13:20:56 anatom Exp $
+ * @version $Id: X509CA.java,v 1.69 2007-08-21 08:45:07 jeklund Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -359,17 +359,25 @@ public class X509CA extends CA implements Serializable {
                                                
     	    	
         final String sigAlg = getCAToken().getCATokenInfo().getSignatureAlgorithm();
-        Date firstDate = new Date();
+        X509Certificate cacert = (X509Certificate)getCACertificate();
+        String dn = subject.getDN();        
+        // Check if this is a root CA we are creating
+        boolean isRootCA = false;
+        if (certProfile.getType() == CertificateProfile.TYPE_ROOTCA) {
+        	isRootCA = true;
+        }
         // Set back startdate ten minutes to avoid some problems with unsynchronized clocks.
-        firstDate.setTime(firstDate.getTime() - 10 * 60 * 1000);
-        Date now = new Date();
+        Date now = new Date((new Date()).getTime() - 10 * 60 * 1000);
+        Date firstDate = null;
         Date lastDate = null;
+		Date startTimeDate = null; 
+		Date endTimeDate = null; 
+        // Extract requested start and endtime from end endtity profile / user data
         ExtendedInformation ei = subject.getExtendedinformation();
         if ( ei != null ) {
             String eiStartTime = ei.getCustomData(EndEntityProfile.STARTTIME);
 	        String eiEndTime = ei.getCustomData(EndEntityProfile.ENDTIME);
         	if ( eiStartTime != null ) {
-    			Date startTimeDate = null; 
         		if ( eiStartTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
         			String[] startTimeArray = eiStartTime.split(":");
         			long relative = (Long.parseLong(startTimeArray[0])*24*60 + Long.parseLong(startTimeArray[1])*60 +
@@ -382,17 +390,16 @@ public class X509CA extends CA implements Serializable {
         				log.error(intres.getLocalizedMessage("signsession.errorinvalidstarttime",eiStartTime));
         			}
         		}
-    			if ( startTimeDate != null && !startTimeDate.before(now)) {
-                	firstDate = startTimeDate;
+    			if ( startTimeDate != null && startTimeDate.before(now)) {
+                	startTimeDate = now;
     			}
 	        }
 	        if ( eiEndTime != null ) {
-    			Date endTimeDate = null; 
         		if ( eiEndTime.matches("^\\d+:\\d?\\d:\\d?\\d$") ) {
         			String[] endTimeArray = eiEndTime.split(":");
         			long relative = (Long.parseLong(endTimeArray[0])*24*60 + Long.parseLong(endTimeArray[1])*60 +
         					Long.parseLong(endTimeArray[2])) * 60 * 1000;
-        			endTimeDate = new Date(firstDate.getTime() + relative);
+        			endTimeDate = new Date(now.getTime() + relative);
         		} else {
         			try {
         				endTimeDate = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).parse(eiEndTime);
@@ -400,70 +407,58 @@ public class X509CA extends CA implements Serializable {
         				log.error(intres.getLocalizedMessage("signsession.errorinvalidstarttime",eiEndTime));
         			}
         		}
-    			if ( endTimeDate != null ) {
-                	lastDate = endTimeDate;
-    			}
 	        }
         }
-        if ( (notBefore != null) && (certProfile.getAllowValidityOverride()) ) {
-        	if (notBefore.before(now)) {
-        		// We do not allow a certificate to be valid before the current date, i.e. not backdated start dates
-				log.error(intres.getLocalizedMessage("signsession.errorbeforecurrentdate",notBefore,subject.getUsername()));
-        	} else {
-        		// If we allow the client (or ra) to specify the startdate
-        		firstDate = notBefore;
-        		if (log.isDebugEnabled()) {
-        			log.debug("Using notBefore validity from request: "+firstDate);        		
-        		}
-        	}
+        // Find out what start and end time to actually use..
+        if (certProfile.getAllowValidityOverride()) {
+            // Prio 1 is infomation supplied in Extended information object. This allows RA-users to set the time-span.
+            firstDate = startTimeDate;
+            lastDate = endTimeDate;
+            // Prio 2 is the information supplied in the arguments
+            if (firstDate == null) {
+            	firstDate = notBefore;
+            }
+            if (lastDate == null) {
+            	lastDate = notAfter;
+            }    	
+        }
+        // Prio 3 is default values
+        if (firstDate == null) {
+        	firstDate = now;
         }
         long val = certProfile.getValidity();        
         Date certProfileLastDate = new Date(firstDate.getTime() + ( val * 24 * 60 * 60 * 1000));
-        if ( (notAfter == null) || (!certProfile.getAllowValidityOverride()) ) {
-            // validity in days = validity*24*60*60*1000 milliseconds
-        	if (log.isDebugEnabled()) {
-        		log.debug("Using validity from profile: "+val);
-        	}
-        	if ( lastDate == null || lastDate.after(certProfileLastDate)) {
-                lastDate = certProfileLastDate;
-        	}
-        } else {
-        	// Only if not null and we allow validity override
-        	// Check that notAfter from request is not longer than the validity time from the certificate profile, we don not allow that
-        	if (notAfter.after(certProfileLastDate)) {
-				log.error(intres.getLocalizedMessage("signsession.errorbeyondmaxvalidity",notAfter,subject.getUsername(),certProfileLastDate));
-        		lastDate = certProfileLastDate;
-        	} else {
-        		lastDate = notAfter;
-        		if (log.isDebugEnabled()) {
-        			log.debug("Using notAfter validity from request: "+lastDate);        		
-        		}
-        	}
+        if (lastDate == null) {
+        	lastDate = certProfileLastDate;
         }
-        // Do not allow last date to be before first date
+        // Limit validity: Do not allow last date to be before first date
         if (!lastDate.after(firstDate)) {
-        	// Setting it to the same is silly as well but what the heck
+			log.error(intres.getLocalizedMessage("signsession.errorinvalidcausality",firstDate,lastDate));
+        	Date tmp = lastDate;
         	lastDate = firstDate;
+        	firstDate = tmp;
         }
-        X509Certificate cacert = (X509Certificate)getCACertificate();
-        
-        String dn = subject.getDN();        
-        // Check if this is a root CA we are creating
-        boolean isRootCA = false;
-        if (certProfile.getType() == CertificateProfile.TYPE_ROOTCA) {
-        	isRootCA = true;
-        }
-
-        // If our desired after date is after the CA expires, we will not allow this
-        // The CA will only issue certificates with maximum the same validity time as it-self
-        // We will not limit validity of a self signed cert (RootCA), because it is a renewal.
-        if ( !isRootCA ) {
-            if (lastDate.after(cacert.getNotAfter())) {
-            	String msg = intres.getLocalizedMessage("signsession.limitingvalidity", lastDate.toString(), cacert.getNotAfter());
-            	log.info(msg);
-                lastDate = cacert.getNotAfter();
-            }            
-        }
+		// Limit validity: We do not allow a certificate to be valid before the current date, i.e. not backdated start dates
+    	if (firstDate.before(now)) {
+			log.error(intres.getLocalizedMessage("signsession.errorbeforecurrentdate",firstDate,subject.getUsername()));
+    		firstDate = now;
+    		// Update valid length from the profile since the starting point has changed
+			certProfileLastDate = new Date(firstDate.getTime() + ( val * 24 * 60 * 60 * 1000));
+    		// Update lastDate if we use maximum validity
+    		if (lastDate.equals(certProfileLastDate)) {
+    			lastDate = certProfileLastDate;
+    		}
+    	}
+		// Limit validity: We do not allow a certificate to be valid after the the validity of the certificate profile
+    	if (lastDate.after(certProfileLastDate)) {
+    		log.error(intres.getLocalizedMessage("signsession.errorbeyondmaxvalidity",lastDate,subject.getUsername(),certProfileLastDate));
+    		lastDate = certProfileLastDate;
+    	}
+		// Limit validity: We do not allow a certificate to be valid after the the validity of the CA (unless it's RootCA during renewal)
+        if (cacert != null && lastDate.after(cacert.getNotAfter()) && !isRootCA) {
+        	log.info(intres.getLocalizedMessage("signsession.limitingvalidity", lastDate.toString(), cacert.getNotAfter()));
+            lastDate = cacert.getNotAfter();
+        }            
         X509V3CertificateGenerator certgen = new X509V3CertificateGenerator();
         // Serialnumber is random bits, where random generator is initialized by the
         // serno generator.

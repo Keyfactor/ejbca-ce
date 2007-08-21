@@ -35,7 +35,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.19 2007-01-16 11:43:26 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.20 2007-08-21 08:44:59 jeklund Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
@@ -280,15 +280,24 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 	/**
 	* Returns the version of the certificate, should be one of the VERSION_ constants defined in
 	* CertificateProfile class.
-	*
-	* @return DOCUMENT ME!
 	*/
     public void setCertificateVersion(String version){data.put(CERTVERSION,version);}
 
     public long getValidity(){return ((Long)data.get(VALIDITY)).longValue();}
     public void setValidity(long validity) { data.put(VALIDITY,new Long(validity));}
 
+    /**
+     * If validity override is allowed, a certificate can have a shorter validity than the one specefied in
+     * the certificate profile, but never longer. A certificate created with validity override can hava a
+     * starting point in the future.
+     * @return true if validity override is allowed
+     */
     public boolean getAllowValidityOverride(){ return ((Boolean)data.get(ALLOWVALIDITYOVERRIDE)).booleanValue(); }
+    /**
+     * If validity override is allowed, a certificate can have a shorter validity than the one specefied in
+     * the certificate profile, but never longer. A certificate created with validity override can hava a
+     * starting point in the future.
+     */
     public void setAllowValidityOverride(boolean allowvalidityoverride) {data.put(ALLOWVALIDITYOVERRIDE, Boolean.valueOf(allowvalidityoverride));}
 
     public boolean getUseBasicConstraints(){ return ((Boolean)data.get(USEBASICCONSTRAINTS)).booleanValue(); }

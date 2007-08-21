@@ -47,7 +47,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the ca data entity bean.
  *
- * @version $Id: TestCAs.java,v 1.23 2007-08-18 20:01:16 anatom Exp $
+ * @version $Id: TestCAs.java,v 1.24 2007-08-21 08:45:00 jeklund Exp $
  */
 public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -141,7 +141,7 @@ public class TestCAs extends TestCase {
             X509CAInfo cainfo = new X509CAInfo("CN=TEST",
                     "TEST", SecConst.CA_ACTIVE, new Date(),
                     "", SecConst.CERTPROFILE_FIXED_ROOTCA,
-                    365,
+                    3650,
                     null, // Expiretime
                     CAInfo.CATYPE_X509,
                     CAInfo.SELFSIGNED,
@@ -185,7 +185,7 @@ public class TestCAs extends TestCase {
 			} else {
 				assertTrue("Public key is not EC", false);
 			}
-
+            assertTrue("CA is not valid for the specified duration.",cert.getNotAfter().after(new Date(new Date().getTime()+10*364*24*60*60*1000L)) && cert.getNotAfter().before(new Date(new Date().getTime()+10*366*24*60*60*1000L)));
             ret = true;
         } catch (CAExistsException pee) {
             log.info("CA exists.");
