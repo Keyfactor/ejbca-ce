@@ -34,7 +34,7 @@ import org.ejbca.ui.web.RequestHelper;
  * Contains methods for such things as language, themes ext
  * 
  * @author Philip Vendil
- * $Id: EjbcaJSFHelper.java,v 1.5 2007-06-20 11:22:12 anatom Exp $
+ * $Id: EjbcaJSFHelper.java,v 1.6 2007-08-22 07:20:59 herrvendil Exp $
  */
 
 public class EjbcaJSFHelper  {
@@ -43,6 +43,8 @@ public class EjbcaJSFHelper  {
 	private EjbcaJSFLanguageResource text = null;
 	private EjbcaJSFImageResource image = null;
 	private EjbcaWebBean ejbcawebbean;
+	
+	private boolean initialized = false;
 	
 
 	private IRaAdminSessionLocal raadminsession;
@@ -59,10 +61,13 @@ public class EjbcaJSFHelper  {
 	public EjbcaJSFHelper(){}
 	
     public void setEjbcaWebBean(EjbcaWebBean ejbcawebbean){
-       this.ejbcawebbean = ejbcawebbean;
-       text = new EjbcaJSFLanguageResource(ejbcawebbean);
-       image = new EjbcaJSFImageResource(ejbcawebbean);
-       admin = getAdmin();
+    	if(!initialized){
+    		this.ejbcawebbean = ejbcawebbean;
+    		text = new EjbcaJSFLanguageResource(ejbcawebbean);
+    		image = new EjbcaJSFImageResource(ejbcawebbean);
+    		admin = getAdmin();
+    		initialized = true;
+    	}
     }
     
     /**
@@ -97,6 +102,7 @@ public class EjbcaJSFHelper  {
     * Used for language resources.
     */
     public Map getText(){
+    	setEjbcaWebBean(getEjbcaWebBean());
     	return text;
     }
     
@@ -104,6 +110,7 @@ public class EjbcaJSFHelper  {
      * Used for image resources.
      */
      public Map getImage(){
+        setEjbcaWebBean(getEjbcaWebBean());
      	return image;
      }
     
