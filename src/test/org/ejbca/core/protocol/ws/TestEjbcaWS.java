@@ -16,7 +16,7 @@ import org.ejbca.ui.cli.batch.BatchMakeP12;
 
 /** To run you must have the file tmp/bin/junit/jndi.properties
  * 
- * @version $Id: TestEjbcaWS.java,v 1.10 2007-07-31 13:31:29 jeklund Exp $
+ * @version $Id: TestEjbcaWS.java,v 1.11 2007-08-22 12:07:39 herrvendil Exp $
  */
 public class TestEjbcaWS extends CommonEjbcaWSTest {
 	
@@ -109,6 +109,10 @@ public class TestEjbcaWS extends CommonEjbcaWSTest {
 		test03GeneratePkcs10(true);
 	}
 	
+    public void test03_2GeneratePkcs10Request() throws Exception {
+    	test19GeneratePkcs10Request(true);  
+    }
+	
 
 	public void test04GeneratePkcs12() throws Exception{
 		test04GeneratePkcs12(true);
@@ -178,6 +182,8 @@ public class TestEjbcaWS extends CommonEjbcaWSTest {
     public void test19RevocationApprovals() throws Exception {
     	test18RevocationApprovals(true);  
     }
+    
+
     
     public void test99cleanUp() throws Exception {
 		//getHardTokenSession().removeHardToken(intAdmin, "12345678");

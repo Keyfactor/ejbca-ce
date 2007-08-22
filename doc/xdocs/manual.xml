@@ -1142,7 +1142,8 @@ The functionality currently available through the Web Service Interface are:
 <li>editUser    : Edits/adds  userdata</li>
 <li>findUser    : Retrieves the userdata for a given user</li>
 <li>findCerts   : Retrieves the certificates generated for a user</li>
-<li>pkcs10Req   : Generates a certificate using the given userdata and the public key from the PKCS10</li>
+<li>pkcs10Req   : Deprecated method previously used to generate a certificate using the given userdata and the public key from the PKCS10</li>
+<li>pkcs10Request : Newer method that generates a certificate or PKCS7 using the given userdata and the public key from the PKCS10</li>
 <li>pkcs12Req   : Generates a PKCS12 keystore (with the private key) using the given userdata</li>
 <li>revokeCert  : Revokes the given certificate</li>
 <li>revokeUser  : Revokes all certificates for a given user, it's also possible to delete the user</li>
@@ -1254,9 +1255,9 @@ Example to generate a certificate form a PKCS10 request:
   KeyPair keys = KeyTools.genKeys(1024);
   PKCS10CertificationRequest  pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA",
   CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(), null, keys.getPrivate());
-  Certificate certenv =  ejbcaraws.pkcs10Req("WSTESTUSER1","foo123",new String(Base64.encode(pkcs10.getEncoded())),null);
+  CertificateResponse certenv =  ejbcaraws.pkcs10Request("WSTESTUSER1","foo123",new String(Base64.encode(pkcs10.getEncoded())),null,CertificateHelper.RESPONSETYPE_CERTIFICATE);
 		
-  X509Certificate cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getCertificateData()); 		
+  X509Certificate cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getData()); 		
 </source>
 <p>
 Example checking the revocation status of a certificate:
@@ -1307,7 +1308,7 @@ findUser, findCert:
 <li>/ra_functionality/'end entity profile of the user'/view_end_entity</li>
 </ul>
 <p>
-pkcs10req, pkcs12req:
+pkcs10req, pkcs10Request, pkcs12req:
 </p>
 <ul>
 <li>/ra_functionality/view_end_entity</li>

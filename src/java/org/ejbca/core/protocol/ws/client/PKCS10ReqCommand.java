@@ -20,10 +20,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-//import org.ejbca.core.model.authorization.wsclient.AuthorizationDeniedException;
-//import org.ejbca.core.protocol.ws.wsclient.Certificate;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.Certificate;
+import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
@@ -33,7 +31,7 @@ import org.ejbca.util.CertTools;
 /**
  * Request a certificate given a pkcs10
  *
- * @version $Id: PKCS10ReqCommand.java,v 1.2 2006-10-08 22:53:26 herrvendil Exp $
+ * @version $Id: PKCS10ReqCommand.java,v 1.3 2007-08-22 12:07:40 herrvendil Exp $
  */
 public class PKCS10ReqCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
@@ -81,7 +79,7 @@ public class PKCS10ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
             }
             
             try{
-            	Certificate result = getEjbcaRAWS().pkcs10Req(username,password,pkcs10,hardtokensn);
+            	CertificateResponse result = getEjbcaRAWS().pkcs10Request(username,password,pkcs10,hardtokensn,CertificateHelper.RESPONSETYPE_CERTIFICATE);
             	
             	if(result==null){
             		getPrintStream().println("No certificate could be generated for user, check server logs for error.");
@@ -99,12 +97,12 @@ public class PKCS10ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
             		
             		if(encoding.equals("DER")){
             			FileOutputStream fos = new FileOutputStream(filepath);
-            			fos.write(CertificateHelper.getCertificate(result.getCertificateData()).getEncoded());
+            			fos.write(CertificateHelper.getCertificate(result.getData()).getEncoded());
             			fos.close();
             		}else{
             			FileOutputStream fos = new FileOutputStream(filepath);
             			ArrayList<java.security.cert.Certificate> list = new ArrayList<java.security.cert.Certificate>();
-            			list.add(CertificateHelper.getCertificate(result.getCertificateData()));
+            			list.add(CertificateHelper.getCertificate(result.getData()));
             			fos.write(CertTools.getPEMFromCerts(list));
             			fos.close();            				            				
             		}

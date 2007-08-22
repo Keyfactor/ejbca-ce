@@ -12,38 +12,57 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws.objects;
 
-import java.security.cert.CertificateEncodingException;
-
 import org.ejbca.util.Base64;
 
-public class Certificate extends TokenCertificateResponseWS {
+public class CertificateResponse  {
 	
-	private byte[] certificateData = null;
+	private String responseType;
+	private byte[] data = null;
 	
-	public Certificate(){
+	public CertificateResponse(){
 		
 	}
 
-	public Certificate(java.security.cert.Certificate cert) throws CertificateEncodingException{
-		certificateData = Base64.encode(cert.getEncoded());
+	/**
+	 * Main constructor.
+	 * @param responseType one of the CertificateHelper.RESPONSETYPE_ constants
+	 * @param data non-base64 encoded 
+	 */
+	public CertificateResponse(String responseType, byte[] data) {
+		this.data = Base64.encode(data);
+		this.responseType = responseType;
 	}
 	
-	public Certificate(byte[] certData) {
-		certificateData = Base64.encode(certData);
+	/**
+	 * @return responseType one of CertificateHelper.RESPONSETYPE_ constants
+	 */
+	public String getResponseType() {
+		return responseType;
 	}
 
 	/**
-	 * @return Returns the certificateData in Base64 encoded format
+	 * @param responseType one of CertificateHelper.RESPONSETYPE_ constants
 	 */
-	public byte[] getCertificateData() {
-		return certificateData;
+	public void setResponseType(String responseType) {
+		this.responseType = responseType;
+	}
+	
+    /**
+     * @return the data, Base64 encoded
+     * 
+     */
+	public byte[] getData() {
+		return data;
 	}
 
-	/**
-	 * @param certificateData The certificateData to set, in Base64 encoded format.
-	 */
-	public void setCertificateData(byte[] certificateData) {
-		this.certificateData = certificateData;
+    /**
+     * @param data of the type set in responseType, should be Base64 encoded
+     * 
+     */	
+	public void setData(byte[] data) {
+		this.data = data;
 	}
+
+
 
 }

@@ -103,6 +103,7 @@ import org.ejbca.core.protocol.ws.common.HardTokenConstants;
 import org.ejbca.core.protocol.ws.common.IEjbcaWS;
 import org.ejbca.core.protocol.ws.common.WSConfig;
 import org.ejbca.core.protocol.ws.objects.Certificate;
+import org.ejbca.core.protocol.ws.objects.CertificateResponse;
 import org.ejbca.core.protocol.ws.objects.HardTokenDataWS;
 import org.ejbca.core.protocol.ws.objects.KeyStore;
 import org.ejbca.core.protocol.ws.objects.PINDataWS;
@@ -123,7 +124,7 @@ import org.ejbca.util.query.Query;
  * Implementor of the IEjbcaWS interface.
  * 
  * @author Philip Vendil
- * $Id: EjbcaWS.java,v 1.17 2007-08-20 21:36:53 herrvendil Exp $
+ * $Id: EjbcaWS.java,v 1.18 2007-08-22 12:07:41 herrvendil Exp $
  */
 
 @WebService
@@ -260,15 +261,21 @@ public class EjbcaWS implements IEjbcaWS {
 		return retval;
 	}
 
-
 	/**
-	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#pkcs10Req(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#pkcs10Req(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
-	
-	public Certificate pkcs10Req(String username, String password,
-			String pkcs10, String hardTokenSN) throws AuthorizationDeniedException, NotFoundException, EjbcaException {
+	public CertificateResponse pkcs10Request(String username, String password,
+			String pkcs10, String hardTokenSN, String responseType)
+			throws AuthorizationDeniedException, NotFoundException,
+			EjbcaException {
 		
-		Certificate retval = null;
+		return new CertificateResponse(responseType, processPkcs10Req(username, password,
+			                           pkcs10, hardTokenSN, responseType));
+	}
+	
+	private byte[] processPkcs10Req(String username, String password,
+			String pkcs10, String hardTokenSN, String responseType) throws AuthorizationDeniedException, NotFoundException, EjbcaException{
+		byte[] retval = null;
 		
 		try{
 			  Admin admin = getAdmin();			  
@@ -291,7 +298,16 @@ public class EjbcaWS implements IEjbcaWS {
 			  PKCS10RequestMessage pkcs10req=RequestHelper.genPKCS10RequestMessageFromPEM(pkcs10.getBytes());
 		      
 		      java.security.cert.Certificate cert =  getSignSession().createCertificate(admin,username,password, pkcs10req.getRequestPublicKey());
-			  retval = new Certificate(cert);
+		      if(responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_CERTIFICATE)){
+		    	  retval = cert.getEncoded();
+		      }
+		      if(responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7)){
+		    	  retval = getSignSession().createPKCS7(admin, cert, false);
+		      }
+		      if(responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7WITHCHAIN)){
+		    	  retval = getSignSession().createPKCS7(admin, cert, true);
+		      }
+			  
 			            
 			  if(hardTokenSN != null){ 
 				  getHardTokenSession().addHardTokenCertificateMapping(admin,hardTokenSN,(X509Certificate) cert);				  
@@ -339,7 +355,11 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 
 		return retval;
-	
+	}
+
+	public Certificate pkcs10Req(String username, String password,
+			String pkcs10, String hardTokenSN) throws AuthorizationDeniedException, NotFoundException, EjbcaException {
+		 return new Certificate(processPkcs10Req(username, password, pkcs10, hardTokenSN, CertificateHelper.RESPONSETYPE_CERTIFICATE));
 	}
 
 	/**
@@ -1912,6 +1932,9 @@ public class EjbcaWS implements IEjbcaWS {
 		}
 		return publishersession;
 	}
+
+
+
 
 
 

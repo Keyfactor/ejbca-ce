@@ -18,6 +18,7 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.ra.userdatasource.MultipleMatchException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceException;
 import org.ejbca.core.protocol.ws.objects.Certificate;
+import org.ejbca.core.protocol.ws.objects.CertificateResponse;
 import org.ejbca.core.protocol.ws.objects.HardTokenDataWS;
 import org.ejbca.core.protocol.ws.objects.TokenCertificateRequestWS;
 import org.ejbca.core.protocol.ws.objects.TokenCertificateResponseWS;
@@ -56,7 +57,7 @@ import org.ejbca.util.query.IllegalQueryException;
  * otherwise will a AuthorizationDenied Exception be thrown.
  * 
  * @author Philip Vendil
- * $Id: IEjbcaWS.java,v 1.8 2007-08-17 14:45:42 jeklund Exp $
+ * $Id: IEjbcaWS.java,v 1.9 2007-08-22 12:07:41 herrvendil Exp $
  */
 public interface IEjbcaWS {
 	
@@ -153,10 +154,42 @@ public interface IEjbcaWS {
 	 * @return the generated certificate.
 	 * @throws AuthorizationDeniedException if client isn't authorized to request
 	 * @throws NotFoundException if user cannot be found
+	 * @deprecated 
 	 */
 
 	public abstract Certificate pkcs10Req(String username, String password,
 			String pkcs10, String hardTokenSN)
+			throws AuthorizationDeniedException, NotFoundException,
+			EjbcaException;
+	
+	/**
+	 * Method to use to generate a certificate for a user. The method must be preceded by
+	 * a editUser call, either to set the userstatus to 'new' or to add nonexisting users.
+	 * 
+	 * Observe, the user must first have added/set the status to new with edituser command
+	 * 
+	 * Authorization requirements: the client certificate must have the following priviledges set
+	 * - Administrator flag set
+	 * - /administrator
+	 * - /ra_functionality/view_end_entity
+	 * - /endentityprofilesrules/<end entity profile of the user>/view_end_entity
+	 * - /ca_functionality/create_certificate
+	 * - /ca/<ca of user>
+	 * 
+	 * @param username the unique username
+	 * @param password the password sent with editUser call
+	 * @param pkcs10 the PKCS10 (only the public key is used.)
+	 * @param hardTokenSN If the certificate should be connected with a hardtoken, it is
+	 * possible to map it by give the hardTokenSN here, this will simplyfy revokation of a tokens
+	 * certificates. Use null if no hardtokenSN should be assiciated with the certificate.
+	 * @param responseType indicating which type of answer that should be returned, on of the CertificateHelper.RESPONSETYPE_ parameters.
+	 * @return the generated certificate, in either just X509Certificate or PKCS7 
+	 * @throws AuthorizationDeniedException if client isn't authorized to request
+	 * @throws NotFoundException if user cannot be found
+	 */
+
+	public abstract CertificateResponse pkcs10Request(String username, String password,
+			String pkcs10, String hardTokenSN, String responseType)
 			throws AuthorizationDeniedException, NotFoundException,
 			EjbcaException;
 

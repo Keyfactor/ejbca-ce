@@ -4,6 +4,7 @@ import java.io.File;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.security.KeyPair;
+import java.security.cert.CertStore;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,6 +21,10 @@ import javax.xml.namespace.QName;
 
 import junit.framework.TestCase;
 
+import org.bouncycastle.cms.CMSSignedData;
+import org.bouncycastle.cms.CMSSignedDataParser;
+import org.bouncycastle.cms.SignerInformation;
+import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.ejbca.core.ejb.approval.IApprovalSessionHome;
 import org.ejbca.core.ejb.approval.IApprovalSessionRemote;
@@ -51,6 +56,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.Certificate;
+import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
@@ -1066,7 +1072,7 @@ public class CommonEjbcaWSTest extends TestCase {
     	assertNull(cert);
     }
     
-	public void test18RevocationApprovals(boolean performSetup) throws Exception {
+	protected void test18RevocationApprovals(boolean performSetup) throws Exception {
 		final String APPROVINGADMINNAME = "superadmin";
         final String TOKENSERIALNUMBER = "42424242";
         final String TOKENUSERNAME = "WSTESTTOKENUSER3";
@@ -1172,6 +1178,49 @@ public class CommonEjbcaWSTest extends TestCase {
 	        }
 	    }
 	} // testRevocationApprovals
+	
+	protected void test19GeneratePkcs10Request(boolean performSetup) throws Exception{
+		if(performSetup){
+			setUpAdmin();
+		}
+		
+		// Change token to P12
+        UserMatch usermatch = new UserMatch();
+        usermatch.setMatchwith(org.ejbca.util.query.UserMatch.MATCH_WITH_USERNAME);
+        usermatch.setMatchtype(org.ejbca.util.query.UserMatch.MATCH_TYPE_EQUALS);
+        usermatch.setMatchvalue("WSTESTUSER1");       		
+	 	List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
+		assertTrue(userdatas != null);
+		assertTrue(userdatas.size() == 1);        
+        userdatas.get(0).setTokenType("USERGENERATED");  		   
+        userdatas.get(0).setStatus(10);
+        userdatas.get(0).setPassword("foo123");
+        userdatas.get(0).setClearPwd(true);
+        ejbcaraws.editUser(userdatas.get(0));
+		
+		KeyPair keys = KeyTools.genKeys("1024", CATokenConstants.KEYALGORITHM_RSA);
+		PKCS10CertificationRequest  pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA",
+                CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(), null, keys.getPrivate());
+		
+		CertificateResponse certenv =  ejbcaraws.pkcs10Request("WSTESTUSER1","foo123",new String(Base64.encode(pkcs10.getEncoded())),null,CertificateHelper.RESPONSETYPE_CERTIFICATE);
+		
+		assertNotNull(certenv);		
+		assertTrue(certenv.getResponseType().equals(CertificateHelper.RESPONSETYPE_CERTIFICATE));
+		X509Certificate cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getData()); 
+		
+		assertNotNull(cert);		
+		assertTrue(cert.getSubjectDN().toString().equals("CN=WSTESTUSER1,O=Test"));
+		
+        ejbcaraws.editUser(userdatas.get(0));
+        certenv =  ejbcaraws.pkcs10Request("WSTESTUSER1","foo123",new String(Base64.encode(pkcs10.getEncoded())),null,CertificateHelper.RESPONSETYPE_PKCS7);
+        assertTrue(certenv.getResponseType().equals(CertificateHelper.RESPONSETYPE_PKCS7));
+		CMSSignedData cmsSignedData = new CMSSignedData(CertificateHelper.getPKCS7(certenv.getData()));
+		assertTrue(cmsSignedData != null);
+
+		CertStore certStore = cmsSignedData.getCertificatesAndCRLs("Collection","BC");
+		assertTrue(certStore.getCertificates(null).size() ==1);
+		        
+	}
 	
 	/**
 	 * Create a user a generate cert. 

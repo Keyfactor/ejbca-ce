@@ -25,14 +25,39 @@ import org.ejbca.util.CertTools;
  * 
  * @author Philip Vendil
  *
- * $Id: CertificateHelper.java,v 1.2 2007-03-07 10:08:55 herrvendil Exp $
+ * $Id: CertificateHelper.java,v 1.3 2007-08-22 12:07:41 herrvendil Exp $
  */
 public class CertificateHelper {
 
+	/**
+	 * Indicates that the requester want a BASE64 encoded certificate in the CertificateResponse object.
+	 */
+	public static String RESPONSETYPE_CERTIFICATE    = "CERTIFICATE";
+	/**
+	 * Indicates that the requester want a BASE64 encoded pkcs7 in the CertificateResponse object.
+	 */
+	public static String RESPONSETYPE_PKCS7          = "PKCS7";
+	/**
+	 * Indicates that the requester want a BASE64 encoded pkcs7 with the complete chain in the CertificateResponse object.
+	 */
+	public static String RESPONSETYPE_PKCS7WITHCHAIN = "PKCS7WITHCHAIN";
 	
+	/**
+	 * Method that builds a certificate from the data in the WS response.
+	 */
 	public static java.security.cert.Certificate getCertificate(byte[] certificateData) throws CertificateException{
         CertificateFactory cf = CertTools.getCertificateFactory();
         java.security.cert.Certificate retval =  cf.generateCertificate(new ByteArrayInputStream(Base64.decode(certificateData)));
         return retval; 
 	}
+	
+	/**
+	 * Simple method that just returns raw PKCS7 data instead of the BASE64 encoded contained in
+	 * the WS response
+	 */
+	public static byte[] getPKCS7(byte[] pkcs7Data) {
+		return Base64.decode(pkcs7Data);
+	}
+	
+	
 }
