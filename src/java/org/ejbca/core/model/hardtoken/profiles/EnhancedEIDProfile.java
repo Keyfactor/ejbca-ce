@@ -23,7 +23,7 @@ import org.ejbca.core.model.SecConst;
 /**
  * EnhancedEIDProfile with three certificates and key recovery functionallity
  * 
- * @version $Id: EnhancedEIDProfile.java,v 1.3 2006-07-11 13:03:04 herrvendil Exp $
+ * @version $Id: EnhancedEIDProfile.java,v 1.4 2007-08-24 06:53:57 herrvendil Exp $
  */
 public class EnhancedEIDProfile extends EIDProfile {
 						
@@ -55,7 +55,10 @@ public class EnhancedEIDProfile extends EIDProfile {
     // Default Values
     public EnhancedEIDProfile() {
       super();
-               
+      init(); 
+    }
+
+    private void init(){
 	  data.put(TYPE, new Integer(TYPE_ENHANCEDEID));
       
       ArrayList certprofileids = new ArrayList(NUMBEROFCERTIFICATES);
@@ -111,9 +114,7 @@ public class EnhancedEIDProfile extends EIDProfile {
 	  keytypes.add(KEYTYPE_RSA);
 	  keytypes.add(KEYTYPE_RSA);
 	  data.put(KEYTYPES, keytypes);
-	  	 
     }
-
 
 	
 	public int[] getAvailableMinimumKeyLengths(){
@@ -178,5 +179,14 @@ public class EnhancedEIDProfile extends EIDProfile {
 			
 			data.put(VERSION, new Float(LATEST_VERSION));
 		}   
-	}    
+	}
+
+	@Override
+	public void reInit() {
+		init();
+	}
+
+
+
+   
 }

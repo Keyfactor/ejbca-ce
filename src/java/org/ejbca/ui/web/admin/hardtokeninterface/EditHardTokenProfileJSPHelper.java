@@ -50,7 +50,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Contains help methods used to parse a hard token profile jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditHardTokenProfileJSPHelper.java,v 1.5 2006-11-11 12:46:05 herrvendil Exp $
+ * @version $Id: EditHardTokenProfileJSPHelper.java,v 1.6 2007-08-24 06:53:55 herrvendil Exp $
  */
 public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 	
@@ -579,17 +579,25 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 		  String value = request.getParameter(SELECT_HARDTOKENTYPE);
 		  if(value!=null){        
 			int profiletype = Integer.parseInt(value);
+			EIDProfile newprofile = null;
 			switch(profiletype){          
 			  case SwedishEIDProfile.TYPE_SWEDISHEID :
-				profiledata = new SwedishEIDProfile();
+				  newprofile = new SwedishEIDProfile();
 				break;
 			  case EnhancedEIDProfile.TYPE_ENHANCEDEID:
-				profiledata =  new EnhancedEIDProfile();				      
+				  newprofile =  new EnhancedEIDProfile();				      
 				break;  	
 			  case TurkishEIDProfile.TYPE_TURKISHEID:
-				profiledata =  new TurkishEIDProfile();				      
+				  newprofile =  new TurkishEIDProfile();				      
 				break; 
-			}   
+			}  
+			if(profiledata != null && profiledata instanceof EIDProfile){
+				((EIDProfile) profiledata).clone(newprofile);
+				newprofile.reInit();
+				profiledata = newprofile;
+			}
+			
+			
 		  }
 
 		  includefile=PAGE_HARDTOKENPROFILE;

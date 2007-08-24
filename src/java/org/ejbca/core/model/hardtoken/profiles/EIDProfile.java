@@ -34,7 +34,7 @@ import org.ejbca.core.model.ca.caadmin.CAInfo;
  * of eidprofiles in the system.
  *  
  *
- * @version $Id: EIDProfile.java,v 1.2 2006-07-11 13:03:04 herrvendil Exp $
+ * @version $Id: EIDProfile.java,v 1.3 2007-08-24 06:53:57 herrvendil Exp $
  */
 public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	
@@ -255,7 +255,7 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
      * @param emptyclone
      */
     
-    protected void clone(EIDProfile emptyclone){
+    public void clone(EIDProfile emptyclone){
 		java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
 
 		try{
@@ -271,5 +271,11 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 		}   	    
     }
 
+    /**
+     * Method used to reinit a hardtoken profile to its default values.
+     * Used when changing the profile but want to keep the values that
+     * are in common between the two types.
+     */
+    public abstract void reInit();
 
 }

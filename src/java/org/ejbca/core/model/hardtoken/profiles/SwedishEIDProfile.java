@@ -23,7 +23,7 @@ import org.ejbca.core.model.SecConst;
 /**
  * Hard token profile with a goal to fulfill Swedish EID standard.
  * 
- * @version $Id: SwedishEIDProfile.java,v 1.3 2006-07-11 13:03:04 herrvendil Exp $
+ * @version $Id: SwedishEIDProfile.java,v 1.4 2007-08-24 06:53:57 herrvendil Exp $
  */
 public class SwedishEIDProfile extends EIDProfile {
 		
@@ -55,59 +55,60 @@ public class SwedishEIDProfile extends EIDProfile {
     // Default Values
     public SwedishEIDProfile() {
       super();
-      
-      data.put(TYPE, new Integer(TYPE_SWEDISHEID));
-      
-      ArrayList certprofileids = new ArrayList(NUMBEROFCERTIFICATES);
-	  certprofileids.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN)); 
-	  certprofileids.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC));
-	  data.put(CERTIFICATEPROFILEID, certprofileids);
-	  
-	  ArrayList certWritable = new ArrayList(NUMBEROFCERTIFICATES);
-	  certWritable.add(Boolean.FALSE);
-	  certWritable.add(Boolean.FALSE);
-	  data.put(CERTWRITABLE, certWritable);
-	  
-	  ArrayList caids = new ArrayList(NUMBEROFCERTIFICATES);
-	  caids.add(new Integer(CAID_USEUSERDEFINED)); 
-	  caids.add(new Integer(CAID_USEUSERDEFINED)); 
-	  data.put(CAID, caids);    
-	  
-	  ArrayList pintypes = new ArrayList(NUMBEROFCERTIFICATES);
-	  pintypes.add(new Integer(PINTYPE_ASCII_NUMERIC));
-	  pintypes.add(new Integer(PINTYPE_ASCII_NUMERIC));
-	  data.put(PINTYPE, pintypes);
+      init();
 
-	  ArrayList minpinlength = new ArrayList(NUMBEROFCERTIFICATES);
-	  minpinlength.add(new Integer(4));
-	  minpinlength.add(new Integer(4));
-	  data.put(MINIMUMPINLENGTH, minpinlength);
-	  
-	  ArrayList iskeyrecoverable = new ArrayList(NUMBEROFCERTIFICATES);
-	  iskeyrecoverable.add(new Boolean(false));
-	  iskeyrecoverable.add(new Boolean(false));
-	  data.put(ISKEYRECOVERABLE, iskeyrecoverable);
-	  
-	    
-	  ArrayList reuseoldcertificate = new ArrayList(NUMBEROFCERTIFICATES);
-	  reuseoldcertificate.add(Boolean.FALSE);
-	  reuseoldcertificate.add(Boolean.FALSE);
-	  data.put(REUSEOLDCERTIFICATE, reuseoldcertificate);		    
-
-	  ArrayList minimumkeylength = new ArrayList(NUMBEROFCERTIFICATES);
-	  minimumkeylength.add(new Integer(1024));
-	  minimumkeylength.add(new Integer(1024));
-	  data.put(MINIMUMKEYLENGTH, minimumkeylength);	  
-
-	  ArrayList keytypes = new ArrayList(NUMBEROFCERTIFICATES);
-	  keytypes.add(KEYTYPE_RSA);
-	  keytypes.add(KEYTYPE_RSA);
-	  data.put(KEYTYPES, keytypes);
-	  
-	  // HERE
     }
 
+    private void init(){
+    	data.put(TYPE, new Integer(TYPE_SWEDISHEID));
 
+    	ArrayList certprofileids = new ArrayList(NUMBEROFCERTIFICATES);
+    	certprofileids.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN)); 
+    	certprofileids.add(new Integer(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC));
+    	data.put(CERTIFICATEPROFILEID, certprofileids);
+
+    	ArrayList certWritable = new ArrayList(NUMBEROFCERTIFICATES);
+    	certWritable.add(Boolean.FALSE);
+    	certWritable.add(Boolean.FALSE);
+    	data.put(CERTWRITABLE, certWritable);
+
+    	ArrayList caids = new ArrayList(NUMBEROFCERTIFICATES);
+    	caids.add(new Integer(CAID_USEUSERDEFINED)); 
+    	caids.add(new Integer(CAID_USEUSERDEFINED)); 
+    	data.put(CAID, caids);    
+
+    	ArrayList pintypes = new ArrayList(NUMBEROFCERTIFICATES);
+    	pintypes.add(new Integer(PINTYPE_ASCII_NUMERIC));
+    	pintypes.add(new Integer(PINTYPE_ASCII_NUMERIC));
+    	data.put(PINTYPE, pintypes);
+
+    	ArrayList minpinlength = new ArrayList(NUMBEROFCERTIFICATES);
+    	minpinlength.add(new Integer(4));
+    	minpinlength.add(new Integer(4));
+    	data.put(MINIMUMPINLENGTH, minpinlength);
+
+    	ArrayList iskeyrecoverable = new ArrayList(NUMBEROFCERTIFICATES);
+    	iskeyrecoverable.add(new Boolean(false));
+    	iskeyrecoverable.add(new Boolean(false));
+    	data.put(ISKEYRECOVERABLE, iskeyrecoverable);
+
+
+    	ArrayList reuseoldcertificate = new ArrayList(NUMBEROFCERTIFICATES);
+    	reuseoldcertificate.add(Boolean.FALSE);
+    	reuseoldcertificate.add(Boolean.FALSE);
+    	data.put(REUSEOLDCERTIFICATE, reuseoldcertificate);		    
+
+    	ArrayList minimumkeylength = new ArrayList(NUMBEROFCERTIFICATES);
+    	minimumkeylength.add(new Integer(1024));
+    	minimumkeylength.add(new Integer(1024));
+    	data.put(MINIMUMKEYLENGTH, minimumkeylength);	  
+
+    	ArrayList keytypes = new ArrayList(NUMBEROFCERTIFICATES);
+    	keytypes.add(KEYTYPE_RSA);
+    	keytypes.add(KEYTYPE_RSA);
+    	data.put(KEYTYPES, keytypes);	
+    }
+    
 	
 	public int[] getAvailableMinimumKeyLengths(){
 		return AVAILABLEMINIMUMKEYLENGTHS;
@@ -168,5 +169,10 @@ public class SwedishEIDProfile extends EIDProfile {
 			
 			data.put(VERSION, new Float(LATEST_VERSION));
 		}   
-	}    
+	}  
+	
+	@Override
+	public void reInit() {
+		init();
+	}
 }
