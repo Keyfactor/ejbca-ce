@@ -6,7 +6,6 @@
 
     <servlet>
         <servlet-name>CertReqServlet</servlet-name>
-        <display-name>CertReqServlet</display-name>
         <servlet-class>org.ejbca.ui.web.pub.CertReqServlet</servlet-class>
         <init-param>
             <param-name>responseTemplate</param-name>
@@ -27,7 +26,6 @@
 <!--
     <servlet>
         <servlet-name>DemoCertReqServlet</servlet-name>
-        <display-name>DemoCertReqServlet</display-name>
         <servlet-class>org.ejbca.ui.web.pub.DemoCertReqServlet</servlet-class>
         <init-param>
             <param-name>responseTemplate</param-name>
@@ -48,7 +46,6 @@ The old certificates will be removed when the new ones are added.
 <!-- 
     <servlet>
         <servlet-name>CardCertReqServlet</servlet-name>
-        <display-name>CardCertReqServlet</display-name>
         <servlet-class>org.ejbca.ui.web.pub.CardCertReqServlet</servlet-class>
         <init-param>
             <param-name>responseTemplate</param-name>
@@ -94,23 +91,6 @@ The old certificates will be removed when the new ones are added.
     </login-config>
 -->
  
-    <taglib>
-	    <taglib-uri>http://java.sun.com/jsp/jstl/fmt</taglib-uri>
-	    <taglib-location>/WEB-INF/fmt.tld</taglib-location>
-    </taglib>
-    <taglib>
-	    <taglib-uri>http://java.sun.com/jsp/jstl/core</taglib-uri>
-	    <taglib-location>/WEB-INF/c.tld</taglib-location>
-    </taglib>
-    <taglib>
-	    <taglib-uri>http://java.sun.com/jsp/jstl/sql</taglib-uri>
-	    <taglib-location>/WEB-INF/sql.tld</taglib-location>
-    </taglib>
-    <taglib>
-	    <taglib-uri>http://java.sun.com/jsp/jstl/x</taglib-uri>
-	    <taglib-location>/WEB-INF/x.tld</taglib-location>
-    </taglib>
-   
     <resource-ref >
         <res-ref-name>@datasource.jndi-name-prefix@@datasource.jndi-name@</res-ref-name>
         <res-type>javax.sql.DataSource</res-type>
