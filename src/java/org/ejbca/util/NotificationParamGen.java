@@ -44,6 +44,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * 
  * ${approvalRequest.DATE}            = The time the approval request was created
  * ${approvalRequest.ID}              = The id of the approval request
+ * ${approvalRequest.ABS.ID}          = The id of the approval request with out any '-' sign, used for presentation purposes.
  * ${approvalRequest.TYPE}            = The type of approval request
  * ${approvalRequest.APROVEURL}       = A URL to the review approval page with the current request.
  * ${approvalReqiest.APPROVALSLEFT}   = The number of approvals remaining.
@@ -73,7 +74,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * 
  * @author Philip Vendil 2006 sep 26
  *
- * @version $Id: NotificationParamGen.java,v 1.4 2006-12-02 11:18:30 anatom Exp $
+ * @version $Id: NotificationParamGen.java,v 1.5 2007-08-27 11:26:37 herrvendil Exp $
  */
 
 public class NotificationParamGen {
@@ -152,7 +153,8 @@ public class NotificationParamGen {
 		  params.put("approvalRequest.DATE", "");	
 	  }
 	  		  
-	  paramPut("approvalRequest.ID", approvalRequestID);	      	  
+	  paramPut("approvalRequest.ID", approvalRequestID);
+	  paramPut("approvalRequest.ABS.ID", new Integer(Math.abs(approvalRequestID.intValue())));	
 	  paramPut("approvalRequest.TYPE", approvalRequestType);	      	 	  		  
 	  paramPut("approvalReqiest.APPROVALSLEFT", numberOfApprovalLeft);	      	  	  	  		  
 	  paramPut("approvalRequest.APROVEURL", approvalRequestURL);	      
