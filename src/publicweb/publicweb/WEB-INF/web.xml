@@ -120,8 +120,8 @@ The old certificates will be removed when the new ones are added.
     <env-entry>
         <description><![CDATA[Default content encoding used to decode form posts]]></description>
         <env-entry-name>contentEncoding</env-entry-name>
-        <env-entry-value>@page.encoding@</env-entry-value>
         <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>@page.encoding@</env-entry-value>
     </env-entry>
 
     <ejb-local-ref>
