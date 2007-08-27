@@ -211,8 +211,10 @@
             </fileset>
         </copy>
 
-	    <!-- Test compile the public pages to see it compiles ok 	-->	
+        <!-- Test compile the public pages to see it compiles ok -->
+    	<!-- Pre-compilating the public web does not work on weblogic, so it is disabled
     	<jsp-compile uriroot="${publicweb.build}" />
+    	-->	
 
         <war destfile="${publicwebwar}" webxml="${publicweb.build}/WEB-INF/web.xml">
             <fileset dir="${publicweb.build}" excludes="WEB-INF/web.xml" />
