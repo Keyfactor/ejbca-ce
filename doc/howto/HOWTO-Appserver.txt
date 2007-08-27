@@ -120,8 +120,8 @@ To configure the transaction timeout to a larger value in weblogic:
 1. logon to Weblogic Console with IE, for example, http://localhost:7001/console
 2. click "Services" at the left "Domain Structure" navigation frame to expand the service list.
 3. click "JTA" to display the JTA property setting page at right content frame.
-4. update the first property "Timeout Seconds" to a ratinal value that is enough to execute EJBCA installation
-   (about 100s to finish the whole installation).
+4. update the first property "Timeout Seconds" to a rational value that is enough to execute EJBCA installation
+   (about 100s to finish the whole installation, but I recommend at least 5 minutes, i.e. 300s).
 
 
 Glassfish
