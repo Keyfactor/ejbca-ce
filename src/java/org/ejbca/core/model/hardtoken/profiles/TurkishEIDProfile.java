@@ -23,7 +23,7 @@ import org.ejbca.core.model.SecConst;
 /**
  * Hard token profile with a goal to fulfill Swedish EID standard.
  * 
- * @version $Id: TurkishEIDProfile.java,v 1.3 2007-08-24 06:53:57 herrvendil Exp $
+ * @version $Id: TurkishEIDProfile.java,v 1.4 2007-08-27 11:38:33 anatom Exp $
  */
 public class TurkishEIDProfile extends EIDProfile {
 		
@@ -151,7 +151,9 @@ public class TurkishEIDProfile extends EIDProfile {
 		}   
 	}    
 	
-	@Override
+	/**
+	 * @Override 
+	 */
 	public void reInit() {
 		init();
 	}
