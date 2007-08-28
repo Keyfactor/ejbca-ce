@@ -174,9 +174,10 @@ Derby:
 - Configure ejbca: 
     in conf/ejbca.properties you should at least set appserver.type, appserver.home and logging.log4j.config
     in conf/database.properties you should at least set datasource.jndi-name-prefix, and the database settings for your chosen database.
-    in conf/web.properties you should set 'web.jsfimpl=sunri'
     in conf/web.properties you should set 'ejbcaws.enabled=false', this must be done until we have fixed JaxWS configuration for glassfish.
     in conf/xkms.properties you should set 'xkms.enabled=false', this must be done until we have fixed JaxWS configuration for glassfish.
+
+    (in conf/web.properties you can should set 'web.jsfimpl=sunri', but this is normally sensed automatically)
     
 - Build ejbca:
     ant
