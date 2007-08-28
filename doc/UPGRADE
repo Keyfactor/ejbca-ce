@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.40 2007-08-18 14:40:14 anatom Exp $
+$Id: UPGRADE,v 1.41 2007-08-28 10:47:26 anatom Exp $
 
 UPGRADE
 =======
@@ -33,7 +33,7 @@ The new root-less install on linux systems makes it much easier to have control 
 (which CAs that are allowed for administrator certificates) both on linux and windows. 
 You must make these steps during upgrade on both linux and windows:
 - copy $JAVA_HOME/jre/lib/security/cacerts $EJBCA_HOME/p12/truststore.jks
-- ant deploy
+- ant clean; ant deploy
 
 In EJBCA 3.5 when you run the command 'ant javatruststore' or 'ant -Dca.name=MyCAName javatruststore' it is now 
 the file $EJBCA_HOME/p12/truststore.jks that will be updated and copied to $JBOSS_HOME/server/default/conf/keystore. 
@@ -45,6 +45,9 @@ There are some parameter name changes in ejbca.properties and web.properties.
 These parameters are only used when freshly installing EJBCA though. If you plan to do this using
 old configuration files, you should merge changes from ejbca.properties.sample and web.properties.sample.
 No worry if you forget though, since you will be prompted for the values instead.
+
+You should be ablo to upgrade from EJBCA 3.1.x directly to 3.5.x, by following the same instructions for database 
+upgrade as for EJBCA 3.4.
 
 From EJBCA 3.4.x to EJBCA 3.4.x
 -------------------------------
