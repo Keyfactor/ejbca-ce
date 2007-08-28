@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import javax.ejb.CreateException;
-import javax.ejb.DuplicateKeyException;
 import javax.ejb.FinderException;
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -56,7 +55,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * This test must be run in normal mode (default mode)
  * 
  * @author tomas
- * @version $Id: CrmfRequestTest.java,v 1.14 2006-12-13 10:42:07 anatom Exp $
+ * @version $Id: CrmfRequestTest.java,v 1.15 2007-08-28 10:46:44 anatom Exp $
  *
  */
 public class CrmfRequestTest extends CmpTestCase {
@@ -245,12 +244,8 @@ public class CrmfRequestTest extends CmpTestCase {
         try {
             usersession.addUser(admin,"cmptest","foo123",userDN,null,"cmptest@primekey.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
             log.debug("created user: cmptest, foo123, "+userDN);
-        } catch (RemoteException re) {
-            if (re.detail instanceof DuplicateKeyException) {
-                userExists = true;
-            }
-        } catch (DuplicateKeyException dke) {
-            userExists = true;
+        } catch (Exception e) {
+        	userExists = true;
         }
 
         if (userExists) {

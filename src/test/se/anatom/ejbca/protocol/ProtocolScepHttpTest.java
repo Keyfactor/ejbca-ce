@@ -40,7 +40,6 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.ejb.DuplicateKeyException;
 import javax.ejb.FinderException;
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -381,13 +380,9 @@ public class ProtocolScepHttpTest extends TestCase {
         try {
             usersession.addUser(admin,"sceptest","foo123","C=SE,O=PrimeKey,CN=sceptest",null,"ocsptest@anatom.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
             log.debug("created user: sceptest, foo123, C=SE, O=PrimeKey, CN=sceptest");
-        } catch (RemoteException re) {
-            if (re.detail instanceof DuplicateKeyException) {
-                userExists = true;
-            }
-        } catch (DuplicateKeyException dke) {
-            userExists = true;
-        }
+        } catch (Exception e) {
+        	userExists = true;
+        } 
 
         if (userExists) {
             log.debug("User sceptest already exists.");
