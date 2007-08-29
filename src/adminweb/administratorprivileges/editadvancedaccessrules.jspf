@@ -105,7 +105,22 @@
                                     + caidtonamemap.get(new Integer(accessrulesstring.substring(AvailableAccessRules.CAPREFIX.length(), accessrulesstring.lastIndexOf('/'))))
                                     + accessrulesstring.substring(accessrulesstring.lastIndexOf('/'));
              }
-           }%>
+           }
+             if(j==4){
+                 // Check if it is a User Data Source rule, then replace User Data Source id with User Data Source name.                 
+                 if(accessrulesstring.startsWith(AvailableAccessRules.USERDATASOURCEPREFIX)){ 
+                   if(accessrulesstring.lastIndexOf('/') < AvailableAccessRules.USERDATASOURCEPREFIX.length())
+                     accessrulesstring = AvailableAccessRules.USERDATASOURCEPREFIX  
+                                       + rabean.getUserDataSourceName(Integer.parseInt(accessrulesstring.substring(AvailableAccessRules.USERDATASOURCEPREFIX.length())));
+                  
+                   else
+                     accessrulesstring =AvailableAccessRules.USERDATASOURCEPREFIX  
+                                        + rabean.getUserDataSourceName(Integer.parseInt(accessrulesstring.substring(AvailableAccessRules.USERDATASOURCEPREFIX.length(), accessrulesstring.lastIndexOf('/'))))
+                                        + accessrulesstring.substring(accessrulesstring.lastIndexOf('/'));
+                 }
+             }
+           
+         %>
         <td width="37%"><%= accessrulesstring %></td>
         <td width="12%"><% if(accessrule.getRule() ==  AccessRule.RULE_ACCEPT){
                              out.write(ejbcawebbean.getText("ACCEPT"));
