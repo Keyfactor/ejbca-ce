@@ -96,7 +96,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.43 2007-08-17 14:45:47 jeklund Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.44 2007-08-29 08:42:30 anatom Exp $
  * 
  * @ejb.bean
  *   display-name="UserAdminSB"
@@ -542,6 +542,9 @@ public class LocalUserAdminSessionBean extends BaseSessionBean {
      */
     private int getNumOfApprovalRequired(Admin admin,int action, int caid) {
     	CAInfo cainfo = caadminsession.getCAInfo(admin, caid);
+    	if (cainfo == null) {
+    		log.error("No CA info exists for CA id: "+caid);
+    	}
     	return ApprovalExecutorUtil.getNumOfApprovalRequired(action, cainfo);    	
 	}
 
