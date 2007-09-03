@@ -74,7 +74,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * 
  * @author Philip Vendil 2006 sep 26
  *
- * @version $Id: NotificationParamGen.java,v 1.5 2007-08-27 11:26:37 herrvendil Exp $
+ * @version $Id: NotificationParamGen.java,v 1.6 2007-09-03 11:24:48 herrvendil Exp $
  */
 
 public class NotificationParamGen {
@@ -154,7 +154,9 @@ public class NotificationParamGen {
 	  }
 	  		  
 	  paramPut("approvalRequest.ID", approvalRequestID);
-	  paramPut("approvalRequest.ABS.ID", new Integer(Math.abs(approvalRequestID.intValue())));	
+	  if(approvalRequestID != null){
+	    paramPut("approvalRequest.ABS.ID", new Integer(Math.abs(approvalRequestID.intValue())));
+	  }
 	  paramPut("approvalRequest.TYPE", approvalRequestType);	      	 	  		  
 	  paramPut("approvalReqiest.APPROVALSLEFT", numberOfApprovalLeft);	      	  	  	  		  
 	  paramPut("approvalRequest.APROVEURL", approvalRequestURL);	      
