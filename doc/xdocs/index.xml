@@ -12,15 +12,15 @@
     <a href="http://download.primekey.se/ejbca/conference20070131/">here</a>.
     </note>
     <note>
-    EJBCA 3.4.5 is now available for <a
+    EJBCA 3.5.0 is now available for <a
     href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=108797">download</a>.
     <br/>
-    SHA1 checksum: dc3be1c55716e6d119d28a1169f5c454688faf20
+    SHA1 checksum: xx
     <br/><br/>
-    External RA API 3.4.2 is now available for <a
+    External RA API 3.5.0 is now available for <a
     href="http://sourceforge.net/project/showfiles.php?group_id=39716&amp;package_id=203939">download</a>.
     <br/>
-    SHA1 checksum: f8679d3c9f52f46d7164659084e52bf488b36d95
+    SHA1 checksum: xx
     </note>
     <p>
     EJBCA 3.1 and later contains support for nCipher HSM. The development of this functionality was sponsored by 
@@ -48,6 +48,10 @@
     adoption of  Marlin DRM. EJBCA 3.4.0 supports RSA and ECC implementations of the Marlin PKI infrastructure.
     <br/>
     ECC implementation and other improvements were implemented with the support of the MTMO.
+    </p>
+    <p>
+    EJBCA 3.5 contains generic PKCS#11 interface to HSMs, supporting among others the Utimaco CryptoServer. 
+    This development was sponsored by <a href="http://www.utimaco.com/">Utimaco</a>.
     </p>
   </section>
 
