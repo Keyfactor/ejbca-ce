@@ -1,3 +1,82 @@
+3.5.0, 2007-09-04
+---
+New Feature
+    * [ECA-81] - Editing validity per End Entity
+    * [ECA-115] - Serial Number Check
+    * [ECA-138] - HardToken PIN data should be encrypted in database
+    * [ECA-249] - Possible to configure specific validity dates in certificate profiles
+    * [ECA-398] - Support multiple email altnames in admin-GUI
+    * [ECA-414] - Possibility to choose reverse DN for a CA
+    * [ECA-419] - Improve CA softs security to use individual passwords
+    * [ECA-470] - PKCS11 tokens for new CA and support for Utimaco CryptoServer (using pkcs11)
+    * [ECA-472] - Custom Logging
+    * [ECA-480] - Import Hard Token Data in CLI
+    * [ECA-489] - New ant argument that outputs the version number of the EJBCA installation.
+    * [ECA-505] - Enable download of CA certificate as jks-file from Basic Functions in Admin GUI.
+    * [ECA-516] - Present warning in the Admin GUI when JCE Unlimited Strength Jurisdiction Policy Files isn't used.
+    * [ECA-520] - Experimental reporting functionality using JasperReports
+    * [ECA-526] - Possible to install with initial AdminCA on HSM
+    * [ECA-527] - Possible to retrieve entity certs with CLI
+    * [ECA-545] - Allow initial superadmin enroll on smartcard
+    * [ECA-573] - Root-less install, use custom SSL truststore for JBoss/Tomcat
+
+Improvement
+    * [ECA-35] - make better looking public enroll pages
+    * [ECA-232] - When listing administrators in access rights, make the link clickable
+    * [ECA-291] - Option to specify certificate validity begin time drift
+    * [ECA-331] - Hide HardToken Puk Data in View HardToken page
+    * [ECA-426] - Include nonce in requests from OCSP client
+    * [ECA-461] - Build script does not check for actual version of java that is used.
+    * [ECA-462] - Possible to keep configuration/modifications in an external directory
+    * [ECA-465] - Possible to use different profiles in CMP RA mode
+    * [ECA-468] - Create a PKCS7 with the web service interface to import it in IE
+    * [ECA-471] - New Calls in the EJBCA Web Services interface
+    * [ECA-473] - Interface of UserDataSources improved for support of UserData Deletion
+    * [ECA-475] - Improved functionality in Extended CMS Service
+    * [ECA-482] - Move scep servlet to its own web application
+    * [ECA-494] - Better default datasource for ScepRAServer in External RA
+    * [ECA-495] - ScepRAServer in External RA will process the same message until it is approved
+    * [ECA-502] - build.xml should use $JAVA_HOME/bin/keytool instead of first one in path, if available.
+    * [ECA-507] - Add description on UPN field.
+    * [ECA-508] - When using Validity Override, don't allow validity to start before current time.
+    * [ECA-509] - When using Validity Override, don't allow validity to to extend beyond the validity of the certificate profile
+    * [ECA-510] - AD Publisher should use different container for certificateRevocationList
+    * [ECA-513] - Not consequent text in profiles menu choices
+    * [ECA-514] - Java exception when removing newly added service
+    * [ECA-518] - Support new key purpose CAKEYPURPOSE_HARDTOKENENCRYPT
+    * [ECA-531] - Improve Approvals with multiple steps of non-executable approvals
+    * [ECA-532] - Support Approvals for the getHardTokenData and genTokenCertificates call
+    * [ECA-536] - Import CA function supports HSM CAs
+    * [ECA-537] - Require approvals for revocation
+    * [ECA-572] - Confusing text in conf/ejbca.properties.sample
+    * [ECA-581] - Bad presentation of approvalId, sometimes it is displayed with - sign in notification
+    * [ECA-584] - Not possible to use comma in CA DN when creating CA
+
+Bug
+    * [ECA-412] - Try to create service after re-deploy gives exception
+    * [ECA-413] - When choosing "Hard Token Type", all previously made "Settings" are deleted.
+    * [ECA-443] - If you execute ./ejbca.sh batch in "ejbca/bin" the script creates ejbca/bin/p12 and puts the new p12:s in there instad of ejbca/p12
+    * [ECA-460] - Get certificate chain link in public enroll pages does not work when CA is signed by external Root.
+    * [ECA-467] - Private EC keys report different algorithm after application server restart
+    * [ECA-501] - Weblogic throws TransactionRolledBackLocalException on duplicate log lines
+    * [ECA-512] - Java exception when editing services
+    * [ECA-525] - ExtRATestClient not working according to doc
+    * [ECA-539] - Removing any but last of dynamic fields in an End Entity Profile generates errors when creating an end entity.
+    * [ECA-548] - Automatic token activation fails when using nCipher HSM
+    * [ECA-549] - No space triming in DN of a CA
+    * [ECA-556] - Security: XSS possibility on public web
+    * [ECA-559] - Autoactivate of Hard CA tokens does not show as active in Admin-GUI
+    * [ECA-560] - Renew of keys for soft token CA must not regenerate encryption keys
+    * [ECA-561] - CA levels displayed incorrectly in Basic Functions at depth > 2
+    * [ECA-571] - PKCS#11 times out after some time on Utimaco
+    * [ECA-574] - Wrong validity of created CAs, maximum two years
+    * [ECA-583] - Bug in advances access rules view, UserDataSources displayed id instead of name i rule
+
+Task
+    * [ECA-491] - Remove support for JDK 1.4
+    * [ECA-538] - Remove CA import restrictions depending on keyusage field in CA-cert.
+    * [ECA-576] - Remove support for JBoss < 4.0
+
 3.4.5, 2007-08-10
 ---
 Bug
