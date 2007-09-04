@@ -13,6 +13,7 @@ Notable changes in no specific order:
 - you can now require approvals for revocation.
 - Support multiple email altNames in admin-GUI.
 - Option to choose reverse DN for a CA.
+- Root-less install, using custom SSL truststore for JBoss/Tomcat.
 - Lots of other small fixes and improvements, 69 issues resolved. 
 
 For upgrade instructions, please se UPGRADE.
