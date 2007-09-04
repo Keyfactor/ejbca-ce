@@ -39,7 +39,7 @@ where adminca1.pem is the certificate of the CA that has the CMS Service used to
 Enabling log signing using logrotate and openssl
 ================================================
 
-Save and enable the below logrotate configuration for syslog, is should normaly be stored as the file syslog
+Save and enable the below logrotate configuration for syslog, is should normally be stored as the file syslog
 in the directory /etc/logrotate.d.
 If there is a previous configuration for syslog, you should remove this, perhaps merge some changes if you like.
 Syslog is normally not rotated in most linux distributions.
@@ -397,7 +397,7 @@ See HOWTO-database.txt for some indexes that might speed things up a little bit 
 
 -----
 #
-# $Id: HOWTO-logsigning.txt,v 1.19 2006-12-29 11:33:51 anatom Exp $
+# $Id: HOWTO-logsigning.txt,v 1.20 2007-09-04 11:21:57 anatom Exp $
 #
 # This is a sample file to override properties used
 # during development (or deployment) of EJBCA
