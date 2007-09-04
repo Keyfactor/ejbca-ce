@@ -1,3 +1,25 @@
+EJBCA 3.5.0
+-----------
+This is a major release with many new interesting features and framework improvements.
+Read the changelog for details.
+Notable changes in no specific order: 
+- PKCS#11 interface to HSMs, support for Utimaco CryptoServer, and improved auto-activation of HSMs.
+- Much enhanced Webservice API for administration.
+- Import CA function supports HSM, possible to create initial CA on HSM and initial admin on smart card.
+- Soft CA keystores uses same framework as HSMs, possible to give private password to every soft CA.
+- New options for specifying certificate validity, per end entity, fixed date etc.
+- Possible to keep configuration/modifications in an external directory.
+- Possible to use different profiles in CMP RA mode.
+- you can now require approvals for revocation.
+- Support multiple email altNames in admin-GUI.
+- Option to choose reverse DN for a CA.
+- Lots of other small fixes and improvements, 69 issues resolved. 
+
+For upgrade instructions, please se UPGRADE.
+
+Because there are binary files in EJBCA_HOME/lib and many massive changes there is no patch file for upgrading
+EJBCA 3.4.x to 3.5.0. Use the full package from EJBCA 3.5.0 and follow the upgrade instructions.
+
 EJBCA 3.4.5
 -----------
 This is a patch release with only minor fixes.
