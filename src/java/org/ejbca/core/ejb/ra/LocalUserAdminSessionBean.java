@@ -66,6 +66,7 @@ import org.ejbca.core.model.authorization.AvailableAccessRules;
 import org.ejbca.core.model.ca.caadmin.CAInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
+import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.log.LogEntry;
@@ -96,7 +97,7 @@ import org.ejbca.util.query.UserMatch;
  * Administrates users in the database using UserData Entity Bean.
  * Uses JNDI name for datasource as defined in env 'Datasource' in ejb-jar.xml.
  *
- * @version $Id: LocalUserAdminSessionBean.java,v 1.44 2007-08-29 08:42:30 anatom Exp $
+ * @version $Id: LocalUserAdminSessionBean.java,v 1.45 2007-09-05 08:04:05 herrvendil Exp $
  * 
  * @ejb.bean
  *   display-name="UserAdminSB"
@@ -1206,12 +1207,14 @@ throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, Approva
         	throw new WaitingForApprovalException(msg);
         }
         // Perform revokation
-        CertificateProfile prof = this.certificatesession.getCertificateProfile(admin, data.getCertificateProfileId());
-        Collection publishers;
-        if (prof == null) {
-            publishers = new ArrayList();
-        } else {
-            publishers = prof.getPublisherList();
+        CertReqHistory certReqHistory = this.certificatesession.getCertReqHistory(admin, certserno, issuerdn);
+        Collection publishers =new ArrayList();
+        
+        if(certReqHistory != null){
+        	CertificateProfile prof = this.certificatesession.getCertificateProfile(admin, certReqHistory.getUserDataVO().getCertificateProfileId());
+        	if (prof != null) {
+        		publishers = prof.getPublisherList();
+        	}
         }
         // Revoke certificate in database and all publishers
         certificatesession.setRevokeStatus(admin, issuerdn, certserno, publishers, reason);
