@@ -22,6 +22,66 @@
     <br/>
     SHA1 checksum: xx
     </note>
+  </section>
+
+<section name="EJBCA">
+<p>
+EJBCA is a fully functional Certificate Authority. Based on J2EE technology it constitutes a robust,
+high performance and component based CA. Both flexible and platform independent, EJBCA can be used
+standalone or integrated in any J2EE application.
+</p>
+<p>
+EJBCA is an enterprise class PKI, meaning that you can use EJBCA to build a complete PKI infrastructure for your organisation.
+If you only want to issue a few single certificates for testing, there are probably options that will get you started quicker, 
+but if you want a serious PKI we recommend EJBCA.
+</p>
+<p><strong>EJBCA has everything for your trustcenter. Contact us for more info.</strong>
+</p>
+<p>
+You can use EJBCA to issue certificates for different purposes such as:
+<ul>
+<li>Strong authentication for users accessing your intranet/extranet/internet resources.</li>
+<li>Secure communication with SSL servers and SSL clients.</li>
+<li>Smart card based login to Windows and/or Linux.</li>
+<li>Signing and enrypting email.</li>
+<li>VPN connections by issuing certificates to your VPN routers such as OpenVPN, Cisco, Juniper etc.</li>
+<li>Client VPN access with certificates in users VPN clients.</li>
+<li>Single sign-on by using a single certificate to secure logon to web applications.</li>
+<li>Creating signed documents.</li>
+<li>Issue citizen certificates for access to government resourses, used in passports etc.</li>
+<li>... and many many more ...</li>
+</ul>
+</p>
+<p>Together with sister projects (see <i><a href="complimentary.html">Complimentary software</a></i>) of EJBCA you can also:
+<ul>
+<li>Get central trusted Time Stamps for you electronically signed documents.</li>
+<li>Perform central signing of document.</li>
+<li>Sign electronic passport data (MRTD).</li>
+<li>Issue hard tokens (smart cards) and manage the complete lifecycle of cards and certificates.</li>
+<li>... and many many more ...</li>
+</ul>
+</p>
+</section>
+<section name="Open Source">
+<p>
+This software is OSI Certified Open Source Software.
+OSI Certified is a certification mark of the Open Source Initiative.
+</p>
+<p>
+The source code of EJBCA is hosted on <a href="http://www.sf.net/">Sourceforge.net</a> and all downloads include the complete source code can be downloaded from there.
+<br></br>
+If you want to contribute to EJBCA, please see <i><a href="donations.html">Contribute to EJBCA</a></i>
+</p>
+</section>
+
+<section name="Support and development">
+<p>Commercial support, development and integration for EJBCA is available through <a href="http://www.primekey.se/">PrimeKey Solutions</a>. 
+</p>
+</section>
+
+<section name="Sponsors">
+<p>Here is a list of some of the good organizations that have sponsored development of certain features in EJBCA.
+</p>
     <p>
     EJBCA 3.1 and later contains support for nCipher HSM. The development of this functionality was sponsored by 
     Linagora, <a href="http://www.linagora.com/">www.linagora.com</a>.
@@ -53,53 +113,7 @@
     EJBCA 3.5 contains generic PKCS#11 interface to HSMs, supporting among others the Utimaco CryptoServer. 
     This development was sponsored by <a href="http://www.utimaco.com/">Utimaco</a>.
     </p>
-  </section>
-
-<section name="EJBCA">
-<p>
-EJBCA is a fully functional Certificate Authority. Based on J2EE technology it constitutes a robust,
-high performance and component based CA. Both flexible and platform independent, EJBCA can be used
-standalone or integrated in any J2EE application.
-</p>
-<p>
-EJBCA is an enterprise class PKI, meaning that you can use EJBCA to build a complete PKI infrastructure for your organisation.
-If you only want to issue a few single certificates for testing, there are probably options that will get you started quicker, 
-but if you want a serious PKI we recommend EJBCA.
-</p>
-<p>
-You can use EJBCA to issue certificates for different purposes such as:
-<ul>
-<li>Strong authentication for users accessing your intranet/extranet/internet resources.</li>
-<li>Secure communication with SSL servers and SSL clients.</li>
-<li>Smart card based login to Windows and/or Linux.</li>
-<li>Signing and enrypting email.</li>
-<li>VPN connections by issuing certificates to your VPN routers such as OpenVPN, Cisco, Juniper etc.</li>
-<li>Client VPN access with certificates in users VPN clients.</li>
-<li>Single sign-on by using a single certificate to secure logon to web applications.</li>
-<li>Creating signed documents.</li>
-<li>Issue citizen certificates for access to government resourses, used in passports etc.</li>
-<li>... and many many more ...</li>
-</ul>
-</p>
 </section>
-<section name="Open Source">
-<p>
-This software is OSI Certified Open Source Software.
-OSI Certified is a certification mark of the Open Source Initiative.
-</p>
-<p>
-The source code of EJBCA is hosted on <a href="http://www.sf.net/">Sourceforge.net</a> and all downloads include the complete source code.
-<br></br>
-If you want to contribute to EJBCA, please see <i><a href="donations.html">Contribute to EJBCA</a></i>
-</p>
-</section>
-
-<section name="Support and development">
-<p>Commercial support, development and integration for EJBCA is available through <a href="http://www.primekey.se/">PrimeKey Solutions</a>. 
-</p>
-</section>
-
-
 </body>
 </document>
 
