@@ -15,7 +15,7 @@ Please note that [x] refers to one of the references listed in the end of the fi
 
 4. Define a certificate that fulfils all the requirements of [2] on EJBCA ,
    (Use Microsoft Template Value, CRL Distributions Point, KeyUsage, Enhanced KeyUsage 
-   and GUID as AltName).
+   and GUID and DNSName as AltName).
    A new certificate profile has to be defined. Use the ENDUSER template.
    Create an end entity profile using the new certificate profile.
    Do "certutil -dump domaincert.req" (see [0]). The "Other Name" in the "Subject Alternative Names"
@@ -35,7 +35,7 @@ Please note that [x] refers to one of the references listed in the end of the fi
     * Type. use AD
     * Hostname
     * Base DN. if the name of domain is int.primekey.se then set Base DN to CN=Users,DC=int,DC=primekey,DC=se
-    * Login DN. set CN to the name of a user with privilege to publish users to AD. ex CN=Lars Silvén,CN=Users,DC=int,DC=primekey,DC=se
+    * Login DN. set CN to the name of a user with privilege to publish users to AD. ex CN=Lars Silvï¿½n,CN=Users,DC=int,DC=primekey,DC=se
     * Login Password. the password of the user above.
     * Use Fields in DN. Choose only CN
 
@@ -53,7 +53,7 @@ Please note that [x] refers to one of the references listed in the end of the fi
 
 13. Add a user with the administrator token end entity profile.
 
-14. On the client the root certifikate must be in the keystore of the machine (use the mmc snap-in for the local computer).
+14. On the client the root certificate must be in the keystore of the machine (use the mmc snap-in for the local computer).
     This might be possible to fix with some group policy.
 
 
