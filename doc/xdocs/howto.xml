@@ -66,7 +66,10 @@ is operated by UT-Battelle for the U.S. Department Of Energy.
   </section>
   
   <section name="Migrating an OpenSSL based CA">
-  <p>
+  <p>This article is written for an older version of EJBCA. Now there is a command to import a PKCS#12 file, also in the Admin-GUI under "Edit Certificate Authorities->Import CA keystore".
+  <br/><br/>The cli command to import a PKCS#12 file is now called <i>bin/ejbca.sh ca importca ...</i>.
+  <br/>The cli command to import user certificates is now called <i>bin/ejbca.sh ca importcert ...</i>. 
+  </p><p>
   Read the <a href="http://www.csita.unige.it/software/free/ejbca/">howto</a> at Csita.
   </p>
   </section>
