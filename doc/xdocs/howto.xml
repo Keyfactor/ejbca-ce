@@ -181,6 +181,51 @@ CA Certificate
   </p>
   </section>
   
+  <section name="Configure EJBCA with Sun Access Manager">
+  <p>EJBCA can issue certificates to be used when protecting sites using Sun's Access Manager. 
+  EJBCA will then be configured to publish issued certificates to the AM LDAP server.
+  </p>
+  <p>The configuration is really simple and after installing EJBCA consists of only these steps:
+  <ul>
+  <li>Create a Publisher, AMPublisher with the following properties:
+    <ul>
+      <li>Publisher Type: LDAP V3 Search Publisher</li>
+      <li>Base DN: The Base DN in the AM LDAP, for example dc=company,dc=com</li>
+      <li>Login parameters to the AM LDAP server</li>
+      <li>Create Nonexisting Users: false</li>
+      <li>Modify Existing Users: true</li>
+      <li>Add multiple certificates per user: false</li>
+      <li>Remove certificates when revoked: true</li>
+      <li>Remove ldap user when certificate revoked: false</li>
+      <li>LDAP location fields from cert DN: CN, Common Name (not really used)</li>
+      <li>Suffix base DN of the LDAP Search: same as Base DN, for example dc=company,dc=com</li>
+      <li>LDAP filter of the search: uid=$USERNAME</li>
+    </ul>
+  </li>
+  <li>Create a Certificate Profile, AMUser:
+    <ul>
+      <li>Use ENDUSER as template when creating the profile</li>
+      <li>Extended Key Usage: Client Authentication</li>
+      <li>Publishers: AMPublisher</li>
+    </ul>
+  </li>
+  <li>Create an End Entity Profile, AMUser:
+    <ul>
+      <li>Subject DN Fields: UID, CN, O, C is sufficient</li>
+      <li>Default Certificate Profile: AMUser</li>
+      <li>Available Certificate Profiles: AMUser</li>
+    </ul>
+  </li>
+  </ul>
+  The procedure when adding a new user is now simple:
+  <ul>
+    <li>Create a new user in AM</li>
+    <li>Create a new user in EJBCA with the same username and UID as the username in AM</li>
+    <li>Get the certificate for the user, for example with the user's browser on the public web pages of EJBCA</li>
+  </ul>
+  When the users certificate is created, the certificate is published to the AM LDAP server and certificate authentication can be configured and used in AM.
+  </p>
+  </section>
 </body>
 </document>
 
