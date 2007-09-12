@@ -95,7 +95,7 @@ import org.ejbca.util.KeyTools;
  * </p>
  *
  * @author Original code by Lars Silv?n
- * @version $Id: CertReqServlet.java,v 1.19 2007-08-03 10:00:32 anatom Exp $
+ * @version $Id: CertReqServlet.java,v 1.20 2007-09-12 08:46:20 anatom Exp $
  */
 public class CertReqServlet extends HttpServlet {
     private static final Logger log = Logger.getLogger(CertReqServlet.class);
@@ -263,8 +263,8 @@ public class CertReqServlet extends HttpServlet {
               // first check if it is a netcsape request,
               if (request.getParameter("keygen") != null) {
                   byte[] reqBytes=request.getParameter("keygen").getBytes();
-                  log.debug("Received NS request:"+new String(reqBytes));
                   if (reqBytes != null) {
+                      log.debug("Received NS request: "+new String(reqBytes));
                       byte[] certs = helper.nsCertRequest(signsession, reqBytes, username, password);
                       RequestHelper.sendNewCertToNSClient(certs, response);
                   }
@@ -272,6 +272,7 @@ public class CertReqServlet extends HttpServlet {
                   // NetID iid?
                   byte[] reqBytes=request.getParameter("iidPkcs10").getBytes();
                   if (reqBytes != null) {
+                      log.debug("Received iidPkcs10 request: "+new String(reqBytes));
                       byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password, RequestHelper.ENCODED_CERTIFICATE, false);
                       response.setContentType("text/html");
                       RequestHelper.sendNewCertToIidClient(b64cert, request, response.getOutputStream(), getServletContext(), getInitParameter("responseIidTemplate"),classid);
@@ -281,8 +282,8 @@ public class CertReqServlet extends HttpServlet {
                   byte[] reqBytes=request.getParameter("pkcs10").getBytes();
                   if (reqBytes == null)
                       reqBytes=request.getParameter("PKCS10").getBytes();
-                  log.debug("Received IE request:"+new String(reqBytes));
                   if (reqBytes != null) {
+                      log.debug("Received IE request: "+new String(reqBytes));
                       byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password, RequestHelper.ENCODED_PKCS7);
                       debug.ieCertFix(b64cert);
                       RequestHelper.sendNewCertToIEClient(b64cert, response.getOutputStream(), getServletContext(), getInitParameter("responseTemplate"),classid);
@@ -291,6 +292,7 @@ public class CertReqServlet extends HttpServlet {
                   // if not IE, check if it's manual request
                   byte[] reqBytes=request.getParameter("pkcs10req").getBytes();
                   if (reqBytes != null) {
+                      log.debug("Received PKCS10 request: "+new String(reqBytes));
                       byte[] b64cert=helper.pkcs10CertRequest(signsession, reqBytes, username, password, resulttype);
                       if(resulttype == RequestHelper.ENCODED_PKCS7)  
                         RequestHelper.sendNewB64Cert(b64cert, response, RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);
@@ -350,7 +352,7 @@ public class CertReqServlet extends HttpServlet {
             debug.printDebugInfo();
             return;
         } catch (Exception e) {
-            log.debug(e);
+            log.debug("Unknown error occured: ", e);
             debug.print("Parameter name and values:\n");
             Enumeration paramNames = request.getParameterNames();
             while (paramNames.hasMoreElements()) {

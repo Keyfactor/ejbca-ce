@@ -22,7 +22,6 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.regex.Pattern;
 
@@ -52,7 +51,7 @@ import org.ejbca.util.FileTools;
 /**
  * Helper class for hadnling certificate request from browsers or general PKCS#10
  * 
- * @version $Id: RequestHelper.java,v 1.8 2007-07-23 07:32:22 jeklund Exp $
+ * @version $Id: RequestHelper.java,v 1.9 2007-09-12 08:46:20 anatom Exp $
  */
 public class RequestHelper {
     private static Logger log = Logger.getLogger(RequestHelper.class);
@@ -238,23 +237,29 @@ public class RequestHelper {
      */
     public static void sendNewCertToIidClient(byte[] certificate, HttpServletRequest request, OutputStream out, ServletContext sc,
                                                 String responseTemplate, String classid) throws Exception {
+    	log.debug(">sendNewCertToIidClient");
         if ( certificate.length <= 0 ) {
             log.error("0 length certificate can not be sent to  client!");
             return;
         }
-        String baseURL = request.getRequestURL().toString().substring(0, request.getRequestURL().toString().lastIndexOf(
-        		request.getRequestURI().toString()) ) + request.getContextPath() + "/";
-        String responseURL = baseURL + responseTemplate;
         StringWriter sw = new StringWriter();
         {
+            BufferedReader br = new BufferedReader(new InputStreamReader(sc.getResourceAsStream(responseTemplate)));
+            String baseURL = request.getRequestURL().toString().substring(0, request.getRequestURL().toString().lastIndexOf(
+            		request.getRequestURI().toString()) ) + request.getContextPath() + "/";
+            // If we would like to parse the jsp stuff instead so we could use "include" etc, we could use the below code
+            // unfortunately if we are using https this will not work correctly, because we can not make a https connection here.
+            /*
+            String responseURL = baseURL + responseTemplate;
             BufferedReader br = new BufferedReader(new InputStreamReader( (new URL(responseURL)).openStream() ));
+            */
             PrintWriter pw = new PrintWriter(sw);
             while (true) {
                 String line = br.readLine();
                 if (line == null) {
                     break;
                 }
-                line = line.replaceAll("\\x2E\\x2E/", baseURL);		// This line sould be removed when headers are properly configured with absolute paths
+                line = line.replaceAll("\\x2E\\x2E/", baseURL);		// This line should be removed when headers are properly configured with absolute paths
                 line = line.replaceAll("TAG_cert",new String(certificate));
                 line = CLASSID.matcher(line).replaceFirst(classid);
                 pw.println(line);
@@ -263,10 +268,13 @@ public class RequestHelper {
             sw.flush();
         }
         PrintWriter pw = new PrintWriter(out);
-        log.debug(sw);
+        if (log.isDebugEnabled()) {
+            log.debug(sw);
+        }
         pw.print(sw);
         pw.close();
         out.flush();
+    	log.debug("<sendNewCertToIidClient");
     } // sendCertificates
     /**
      * Reads template and inserts cert to send back to IE for installation of cert
@@ -287,8 +295,7 @@ public class RequestHelper {
         }
 
         PrintStream ps = new PrintStream(out);
-        BufferedReader br = new BufferedReader(new InputStreamReader(sc.getResourceAsStream(
-                        responseTemplate)));
+        BufferedReader br = new BufferedReader(new InputStreamReader(sc.getResourceAsStream(responseTemplate)));
 
         while (true) {
             String line = br.readLine();
@@ -319,6 +326,7 @@ public class RequestHelper {
      */
     public static void sendNewCertToNSClient(byte[] certs, HttpServletResponse out)
         throws Exception {
+    	log.debug(">nsCertRequest");
         if (certs.length == 0) {
             log.error("0 length certificate can not be sent to NS client!");
             return;
@@ -332,6 +340,7 @@ public class RequestHelper {
         out.getOutputStream().write(certs);
         log.debug("Sent reply to NS client");
         log.debug(new String(Base64.encode(certs)));
+    	log.debug("<nsCertRequest");
     } // sendNewCertToNSClient
 
     /**
