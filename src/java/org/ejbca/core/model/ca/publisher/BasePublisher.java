@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.security.cert.Certificate;
 
 import org.ejbca.core.model.UpgradeableDataHashMap;
+import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.ExtendedInformation;
 
@@ -27,7 +28,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
  * of publishers in the system.
  *  
  *
- * @version $Id: BasePublisher.java,v 1.4 2007-01-09 15:42:52 anatom Exp $
+ * @version $Id: BasePublisher.java,v 1.5 2007-09-12 14:22:46 anatom Exp $
  */
 public abstract class BasePublisher extends UpgradeableDataHashMap implements Serializable, Cloneable {
     // Default Values
@@ -105,10 +106,12 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      * anything.
      *
      * @param cert The DER coded Certificate that has been revoked.
+     * @param username the username of the user holding the certificate
+     * @param reason revocation reason, from RevokedCertInfo.XX
      *
      * @throws EJBException if a communication or other error occurs.
      */
-    public abstract void revokeCertificate(Admin admin, Certificate cert, int reason) throws PublisherException;
+    public abstract void revokeCertificate(Admin admin, Certificate cert, String username, int reason) throws PublisherException;
     
     /**
      * Method used to test the connection to a publisher.

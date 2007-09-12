@@ -172,7 +172,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.30 2007-03-01 16:18:55 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.31 2007-09-12 14:22:47 anatom Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
@@ -935,7 +935,8 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         if (certificate != null) {        	
             CertificateDataPK revpk = new CertificateDataPK();
             revpk.fingerprint = CertTools.getFingerprintAsString(certificate);
-            CertificateDataLocal rev = certHome.findByPrimaryKey(revpk);            
+            CertificateDataLocal rev = certHome.findByPrimaryKey(revpk); 
+            String username = rev.getUsername();
             String serialNo = certificate.getSerialNumber().toString(16); // for logging
             if ( (rev.getStatus() != CertificateDataBean.CERT_REVOKED) 
             		&& (reason != RevokedCertInfo.NOT_REVOKED) && (reason != RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL) ) {
@@ -946,7 +947,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             	  getLogSession().log(admin, certificate, LogEntry.MODULE_CA, new java.util.Date(), null, certificate, LogEntry.EVENT_INFO_REVOKEDCERT, msg);
             	  // Revoke in all related publishers
             	  if (publishers != null) {
-            		  getPublisherSession().revokeCertificate(admin, publishers, certificate, reason);
+            		  getPublisherSession().revokeCertificate(admin, publishers, certificate, username, reason);
             	  }            	  
             } else if ( ((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOKATION_REASON_REMOVEFROMCRL)) 
             		&& (rev.getRevocationReason() == RevokedCertInfo.REVOKATION_REASON_CERTIFICATEHOLD) ) {

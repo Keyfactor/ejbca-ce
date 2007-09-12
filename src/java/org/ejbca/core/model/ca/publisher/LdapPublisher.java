@@ -49,7 +49,7 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.25 2007-05-18 16:29:29 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.26 2007-09-12 14:22:47 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
@@ -393,7 +393,7 @@ public class LdapPublisher extends BasePublisher {
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
 	 */    
-	public void revokeCertificate(Admin admin, Certificate cert, int reason) throws PublisherException{
+	public void revokeCertificate(Admin admin, Certificate cert, String username, int reason) throws PublisherException{
         log.debug(">revokeCertificate()");
         // Check first if we should do anything then revoking
         boolean removecert = getRemoveRevokedCertificates();
@@ -421,7 +421,7 @@ public class LdapPublisher extends BasePublisher {
         }
 
         // Check if the entry is already present, we will update it with the new certificate.
-        LDAPEntry oldEntry = searchOldEntity(null, ldapVersion, lc, dn);
+        LDAPEntry oldEntry = searchOldEntity(username, ldapVersion, lc, dn);
         
         ArrayList modSet = new ArrayList();
                                 
@@ -469,10 +469,10 @@ public class LdapPublisher extends BasePublisher {
             	if (removecert) {
                     LDAPModification[] mods = new LDAPModification[modSet.size()]; 
                     mods = (LDAPModification[])modSet.toArray(mods);
-                    lc.modify(dn, mods);            		
+                    lc.modify(oldEntry.getDN(), mods);            		
             	}
             	if (removeuser) {
-                    lc.delete(dn);            		
+                    lc.delete(oldEntry.getDN());            		
             	}
     			String msg = intres.getLocalizedMessage("publisher.ldapremove", dn);
                 log.info(msg);  

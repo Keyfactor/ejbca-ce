@@ -32,7 +32,7 @@ import org.ejbca.core.model.ra.ExtendedInformation;
  * to store and retrieve custom publisher configuration to database.
  * 
  *
- * @version $Id: CustomPublisherContainer.java,v 1.3 2006-07-21 15:28:25 anatom Exp $
+ * @version $Id: CustomPublisherContainer.java,v 1.4 2007-09-12 14:22:46 anatom Exp $
  */
 public class CustomPublisherContainer extends BasePublisher{
 	private ICustomPublisher custompublisher = null; 
@@ -108,7 +108,7 @@ public class CustomPublisherContainer extends BasePublisher{
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
 	 */    
-	public void revokeCertificate(Admin admin, Certificate cert, int reason) throws PublisherException{
+	public void revokeCertificate(Admin admin, Certificate cert, String username, int reason) throws PublisherException{
 		this.getCustomPublisher().revokeCertificate(admin,cert,reason);
 	}
     

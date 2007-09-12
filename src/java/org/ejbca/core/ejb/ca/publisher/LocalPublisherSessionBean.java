@@ -284,14 +284,14 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      * @ejb.interface-method view-type="both"
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
-    public void revokeCertificate(Admin admin, Collection publisherids, Certificate cert, int reason) {
+    public void revokeCertificate(Admin admin, Collection publisherids, Certificate cert, String username, int reason) {
         Iterator iter = publisherids.iterator();
         while (iter.hasNext()) {
             Integer id = (Integer) iter.next();
             try {
                 PublisherDataLocal pdl = publisherhome.findByPrimaryKey(id);
                 try {
-                    pdl.getPublisher().revokeCertificate(admin, cert, reason);
+                    pdl.getPublisher().revokeCertificate(admin, cert, username, reason);
                 	String msg = intres.getLocalizedMessage("publisher.store", ((X509Certificate) cert).getSubjectDN().toString(), pdl.getName());            	
                     getLogSession().log(admin, (X509Certificate) cert, LogEntry.MODULE_CA, new java.util.Date(), null,
                             (X509Certificate) cert, LogEntry.EVENT_INFO_REVOKEDCERT, msg);
