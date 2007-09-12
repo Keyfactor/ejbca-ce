@@ -9,11 +9,11 @@
     <h1 class="title">@EJBCA@ Certificate Enrollment Error</h1>
     
     <c:if test="${isException != null && isException == 'true'}">
-        <h2>An Exception occured!</h2>
+        <h2>An Exception occurred!</h2>
     </c:if>
     <c:choose> 
         <c:when test="${errMsg == null}"> 
-            <h2>Unknown error, or you came to this page directly without beeing redirected.</h2> 
+            <h2>Unknown error, or you came to this page directly without being redirected.</h2> 
         </c:when>
         <c:otherwise> 
             <p>
