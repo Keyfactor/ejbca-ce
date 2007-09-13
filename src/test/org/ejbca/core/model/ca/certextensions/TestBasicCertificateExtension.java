@@ -1,5 +1,6 @@
 package org.ejbca.core.model.ca.certextensions;
 
+import java.math.BigInteger;
 import java.util.Properties;
 
 import junit.framework.TestCase;
@@ -63,19 +64,37 @@ public class TestBasicCertificateExtension extends TestCase {
 	public void test03BitStringBasicExtension() throws Exception{
 		Properties props = new Properties();
 		props.put("id1.property.encoding", "DERBITSTRING");
-		props.put("id1.property.value", "1111");
-		
+		props.put("id1.property.value", "1111"); // this is 15 decimal
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
-		baseExt.init(1, "1.2.3", false, props);
-		
+		baseExt.init(1, "1.2.3", false, props);		
 		byte[] result = {15};
 		DEREncodable value = baseExt.getValue(null, null, null);
 		assertTrue(value.getClass().toString(),value instanceof DERBitString);
-		assertTrue(((DERBitString)value).getBytes()[0]+"",((DERBitString)value).getBytes()[0] == result[0]);
-		assertTrue(((DERBitString)value).getPadBits() == 4);
+		assertEquals(((DERBitString)value).getBytes()[0],result[0]);
+		assertEquals(((DERBitString)value).getPadBits(), 0);
 		assertTrue(baseExt.getOID().equals("1.2.3"));
 		assertTrue(baseExt.getId() == 1);
-		assertFalse(baseExt.isCriticalFlag());		
+		assertFalse(baseExt.isCriticalFlag());	
+		
+		props = new Properties();
+		props.put("id1.property.encoding", "DERBITSTRING");
+		// SSL Client and S/MIME in NetscapeCertType
+		// This will be -96 in decimal, don't ask me why, but it is!
+		props.put("id1.property.value", "10100000"); 
+		
+		baseExt = new BasicCertificateExtension();
+		baseExt.init(1, "1.2.3", false, props);
+		value = baseExt.getValue(null, null, null);
+		assertTrue(value.getClass().toString(),value instanceof DERBitString);
+		BigInteger bi = new BigInteger(((DERBitString)value).getBytes());
+		//System.out.println(bi.toString(2));
+		//System.out.println(bi.toString());
+		//System.out.println(((DERBitString)value).getBytes()[0]);
+		assertEquals(((DERBitString)value).getBytes()[0],-96);
+		assertEquals(((DERBitString)value).getPadBits(), 5);
+		assertTrue(baseExt.getOID().equals("1.2.3"));
+		assertTrue(baseExt.getId() == 1);
+		assertFalse(baseExt.isCriticalFlag());	
 	}	
 	
 	public void test04BooleanBasicExtension() throws Exception{
@@ -156,7 +175,7 @@ public class TestBasicCertificateExtension extends TestCase {
 		
 		props = new Properties();
 		props.put("id1.property.encoding", "DERPRINTABLESTRING");
-		props.put("id1.property.value", "This is a non  printable string åäö");
+		props.put("id1.property.value", "This is a non  printable string ï¿½ï¿½ï¿½");
 		boolean exceptionThrown = false;
 		try{	
 		  baseExt = new BasicCertificateExtension();
@@ -172,21 +191,21 @@ public class TestBasicCertificateExtension extends TestCase {
 	public void test07UTF8StringExtension() throws Exception{
 		Properties props = new Properties();
 		props.put("id1.property.encoding", "DERUTF8STRING");
-		props.put("id1.property.value", "This is a utf8 åäö Êêstring");
+		props.put("id1.property.value", "This is a utf8 ï¿½ï¿½ï¿½ ï¿½ï¿½string");
 		
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
 		
 		DEREncodable value = baseExt.getValue(null, null, null);
 		assertTrue(value.getClass().toString(),value instanceof DERUTF8String);
-		assertTrue(((DERUTF8String)value).getString(),((DERUTF8String)value).getString().equals("This is a utf8 åäö Êêstring"));
+		assertTrue(((DERUTF8String)value).getString(),((DERUTF8String)value).getString().equals("This is a utf8 ï¿½ï¿½ï¿½ ï¿½ï¿½string"));
         
 	}
 	
 	public void test08WrongEncoding() throws Exception{
 		Properties props = new Properties();
 		props.put("id1.property.encoding", "DERUTF8sdfTRING");
-		props.put("id1.property.value", "This is a utf8 åäö Êêstring");
+		props.put("id1.property.value", "This is a utf8 ï¿½ï¿½ï¿½ ï¿½ï¿½string");
 
 		BasicCertificateExtension baseExt = new BasicCertificateExtension();
 		baseExt.init(1, "1.2.3", false, props);
