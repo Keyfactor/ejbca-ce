@@ -124,7 +124,7 @@ import org.ejbca.util.query.Query;
  * Implementor of the IEjbcaWS interface.
  * 
  * @author Philip Vendil
- * $Id: EjbcaWS.java,v 1.18 2007-08-22 12:07:41 herrvendil Exp $
+ * $Id: EjbcaWS.java,v 1.19 2007-09-14 08:38:26 herrvendil Exp $
  */
 
 @WebService
@@ -656,8 +656,10 @@ public class EjbcaWS implements IEjbcaWS {
 		  int caid = CertTools.stringToBCDNString(issuerDN).hashCode();		
 		  getAuthorizationSession().isAuthorizedNoLog(admin,AvailableAccessRules.CAPREFIX +caid);
 		  
-		  RevokedCertInfo certinfo = getCertStoreSession().isRevoked(admin,issuerDN,new BigInteger(certificateSN,16));		  
-		  retval = new RevokeStatus(certinfo,issuerDN);
+		  RevokedCertInfo certinfo = getCertStoreSession().isRevoked(admin,issuerDN,new BigInteger(certificateSN,16));
+		  if(certinfo != null){
+		    retval = new RevokeStatus(certinfo,issuerDN);
+		  }
 		}catch(AuthorizationDeniedException ade){
 			throw ade;
 		} catch (ClassCastException e) {
