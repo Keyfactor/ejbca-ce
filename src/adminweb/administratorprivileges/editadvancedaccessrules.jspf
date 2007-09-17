@@ -89,7 +89,7 @@
             	 String tmpString = accessrulesstring.substring(AvailableAccessRules.ENDENTITYPROFILEPREFIX.length());
                  accessrulesstring =AvailableAccessRules.ENDENTITYPROFILEPREFIX  
                                     + rabean.getEndEntityProfileName(Integer.parseInt(tmpString.substring(0, tmpString.indexOf('/'))))
-                                    + accessrulesstring.substring(tmpString.indexOf('/'));
+                                    + tmpString.substring(tmpString.indexOf('/'));
                }
              }
            }
