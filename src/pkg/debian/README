@@ -71,6 +71,7 @@ get sources from sf release or cvs
 
 unpack and change dir into ejbca-x.y.z
 apt-get install dpkg-dev fakeroot
+cp -r src/pkg/debian .
 dpkg-buildpackage -rfakeroot
 in .. there shall now be a package called ejbca_3.5.0_all.deb 
 just install it with dpkg -i ejbca_3.5.0_all.deb
