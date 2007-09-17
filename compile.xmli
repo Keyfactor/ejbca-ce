@@ -159,7 +159,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
     <!-- =================================================================== -->
     <!-- Compile java sources                                                -->
     <!-- =================================================================== -->
-    <target name="compile" depends="run-xdoc">
+    <target name="compile" depends="run-xdoc" unless="precompiled">
         <javac destdir="${build}" debug="on" includeantruntime="no" encoding="iso8859-1">
             <classpath refid="compile.classpath" />
             <exclude name="**/appserver/**" />
@@ -202,7 +202,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
     <!-- =================================================================== -->
     <!-- Autogenerate all ejb interfaces and deployment descriptors          -->
     <!-- =================================================================== -->
-    <target name="run-xdoc" depends="init, preprocess" unless="no-xdoc">
+    <target name="run-xdoc" depends="init, preprocess" unless="no-xdoc, precompiled">
         <taskdef name="ejbdoclet" classname="xdoclet.modules.ejb.EjbDocletTask">
             <classpath refid="xdoclet.classpath" />
         </taskdef>
@@ -311,7 +311,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
     <!-- =================================================================== -->
     <!-- Autogenerate all ejb interfaces and deployment descriptors          -->
     <!-- =================================================================== -->
-    <target name="ocsp-run-xdoc" depends="init, preprocess">
+    <target name="ocsp-run-xdoc" depends="init, preprocess" unless="precompiled">
         <taskdef name="ejbdoclet" classname="xdoclet.modules.ejb.EjbDocletTask">
             <classpath refid="xdoclet.classpath" />
         </taskdef>
@@ -382,7 +382,7 @@ ecdsa.implicitlyca.n=${ecdsa.implicitlyca.n}
     	<copy file="src/java/org/ejbca/ui/cli/LunaKeyTool.java.luna" tofile="${preprocessed}/java/org/ejbca/ui/cli/LunaKeyTool.java" overwrite="true" failonerror="false"/>
     </target>
 
-	<target name="preprocess" depends="preprocess.luna">
+	<target name="preprocess" depends="preprocess.luna" unless="precompiled">
         <copy todir="${preprocessed}">
             <fileset dir="src">
               <include name="**"/>

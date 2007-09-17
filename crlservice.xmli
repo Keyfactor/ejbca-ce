@@ -4,7 +4,7 @@
 	<!-- =================================================================== -->
     <!-- Build Jboss Specific Services                       -->
     <!-- =================================================================== -->
-    <target name="createcrlservice" if="createcrlservices.enabled" depends="compile">
+    <target name="createcrlservice" if="createcrlservices.enabled" depends="compile" unless="precompiled">
         <javac srcdir="${src.java}" extdirs="${lib}" destdir="${build}" debug="on" encoding="iso8859-1">
             <exclude name="**/CVS/**" />
             <include name="**/appserver/**/CRL*" />

@@ -101,7 +101,7 @@
 
 	
 
-	 <target name="xkms.build.client" depends="xkmsconditioncheck, xkmsisjava14check, xkms.build, ejbca-util.jar" if="xkms.conditionenabled" unless="xkms.isjava14">
+	 <target name="xkms.build.client" depends="xkmsconditioncheck, xkmsisjava14check, xkms.build, ejbca-util.jar" if="xkms.conditionenabled" unless="xkms.isjava14, precompiled">
 
 	        <javac debug="true" debuglevel="${debuglevel}" destdir="${build}" >
 	            <src path="${src.java}"/>
