@@ -554,7 +554,7 @@ function checkallfields(){
                  if(certificateprofiledata.getUseDefaultCRLDistributionPoint())
                  out.write(" CHECKED ");
            %>> <br> 
-           <input type="text" name="<%=TEXTFIELD_CRLDISTURI%>" size="60" maxlength="255" 
+           <input type="text" name="<%=TEXTFIELD_CRLDISTURI%>" size="60" maxlength="4096" 
            <%       if(!certificateprofiledata.getUseCRLDistributionPoint() || certificateprofiledata.getUseDefaultCRLDistributionPoint())
                       out.write(" disabled "); 
                     else 

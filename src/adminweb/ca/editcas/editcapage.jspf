@@ -746,7 +746,7 @@ function checkallfields(){
            <% if(isexternal){
                 out.write("" + x509cainfo.getDefaultCRLDistPoint());
               }else{ %>
-         <input type="text" name="<%=TEXTFIELD_DEFAULTCRLDISTPOINT%>" size="80" maxlength="255"
+         <input type="text" name="<%=TEXTFIELD_DEFAULTCRLDISTPOINT%>" size="80" maxlength="4096"
             <% if(editca) out.write(" value='" + x509cainfo.getDefaultCRLDistPoint()+ "'");%>>
            <% } %> 
            <input type="button" name="<%=BUTTON_GENDEFAULTCRLDISTPOINT%>" onClick="gendefaultcrldistpoint()" value="<%= ejbcawebbean.getText("GENERATE") %>" >
