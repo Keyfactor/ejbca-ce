@@ -1,0 +1,46 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 99-unnamed.dpatch by  <han@blip.hemma.han.pp.se>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+
+--- ejbca-3.5.0/compile.xmli..org	2007-09-08 16:41:36.000000000 +0200
++++ ejbca-3.5.0/compile.xmli	2007-09-08 16:42:46.000000000 +0200
+@@ -159,7 +159,7 @@
+     <!-- =================================================================== -->
+     <!-- Compile java sources                                                -->
+     <!-- =================================================================== -->
+-    <target name="compile" depends="run-xdoc">
++    <target name="compile" depends="run-xdoc" unless="precompiled">
+         <javac destdir="${build}" debug="on" includeantruntime="no" encoding="iso8859-1">
+             <classpath refid="compile.classpath" />
+             <exclude name="**/appserver/**" />
+@@ -202,7 +202,7 @@
+     <!-- =================================================================== -->
+     <!-- Autogenerate all ejb interfaces and deployment descriptors          -->
+     <!-- =================================================================== -->
+-    <target name="run-xdoc" depends="init, preprocess" unless="no-xdoc">
++    <target name="run-xdoc" depends="init, preprocess" unless="no-xdoc, precompiled">
+         <taskdef name="ejbdoclet" classname="xdoclet.modules.ejb.EjbDocletTask">
+             <classpath refid="xdoclet.classpath" />
+         </taskdef>
+@@ -311,7 +311,7 @@
+     <!-- =================================================================== -->
+     <!-- Autogenerate all ejb interfaces and deployment descriptors          -->
+     <!-- =================================================================== -->
+-    <target name="ocsp-run-xdoc" depends="init, preprocess">
++    <target name="ocsp-run-xdoc" depends="init, preprocess" unless="precompiled">
+         <taskdef name="ejbdoclet" classname="xdoclet.modules.ejb.EjbDocletTask">
+             <classpath refid="xdoclet.classpath" />
+         </taskdef>
+@@ -382,7 +382,7 @@
+     	<copy file="src/java/org/ejbca/ui/cli/LunaKeyTool.java.luna" tofile="${preprocessed}/java/org/ejbca/ui/cli/LunaKeyTool.java" overwrite="true" failonerror="false"/>
+     </target>
+ 
+-	<target name="preprocess" depends="preprocess.luna">
++	<target name="preprocess" depends="preprocess.luna" unless="precompiled">
+         <copy todir="${preprocessed}">
+             <fileset dir="src">
+               <include name="**"/>

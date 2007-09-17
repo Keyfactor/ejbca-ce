@@ -1,0 +1,19 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 99-unnamed.dpatch by  <han@blip.hemma.han.pp.se>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+
+--- ejbca-3.4.1/crlservice.xmli..org	2007-02-04 15:26:50.000000000 -0700
++++ ejbca-3.4.1/crlservice.xmli	2007-02-04 15:27:14.000000000 -0700
+@@ -4,7 +4,7 @@
+ 	<!-- =================================================================== -->
+     <!-- Build Jboss Specific Services                       -->
+     <!-- =================================================================== -->
+-    <target name="createcrlservice" if="createcrlservices.enabled" depends="compile">
++    <target name="createcrlservice" if="createcrlservices.enabled" depends="compile" unless="precompiled">
+         <javac srcdir="${src.java}" extdirs="${lib}" destdir="${build}" debug="on" encoding="iso8859-1">
+             <exclude name="**/CVS/**" />
+             <include name="**/appserver/**/CRL*" />

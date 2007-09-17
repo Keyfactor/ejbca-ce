@@ -1,0 +1,19 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 99-unnamed.dpatch by  <han@blip.hemma.han.pp.se>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+
+--- ejbca-3.5.0/xkms.xmli..org	2007-09-16 14:36:40.000000000 +0200
++++ ejbca-3.5.0/xkms.xmli	2007-09-16 14:37:03.000000000 +0200
+@@ -101,7 +101,7 @@
+ 
+ 	
+ 
+-	 <target name="xkms.build.client" depends="xkmsconditioncheck, xkmsisjava14check, xkms.build, ejbca-util.jar" if="xkms.conditionenabled" unless="xkms.isjava14">
++	 <target name="xkms.build.client" depends="xkmsconditioncheck, xkmsisjava14check, xkms.build, ejbca-util.jar" if="xkms.conditionenabled" unless="xkms.isjava14, precompiled">
+ 
+ 	        <javac debug="true" debuglevel="${debuglevel}" destdir="${build}" >
+ 	            <src path="${src.java}"/>

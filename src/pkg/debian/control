@@ -1,0 +1,15 @@
+Source: ejbca
+Section: contrib/web
+Priority: optional
+Maintainer: Henrik Andreasson <debian@security.gazonk.se>
+Build-Depends: debhelper (>> 5.0.0), sun-java5-jdk, java-common, dpatch, ant, ant-optional, jboss4, jboss4-client, jboss4-server-default
+Standards-Version: 3.7.2
+
+Package: ejbca
+Section: contrib/web
+Priority: optional
+Architecture: all
+Depends: sun-java5-jdk, jboss4, jboss4-server-default, jboss4-client, mysql-server, ant, ant-optional, libmysql-java
+Description: J2EE based Certificate Authority server
+	ejbca.org
+
