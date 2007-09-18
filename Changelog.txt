@@ -1,3 +1,21 @@
+3.5.1, 2007-09-18
+---
+Improvement
+    * [ECA-593] - Tool for checking translation files for missing tags
+    * [ECA-602] - Enable use of multiple CRL Distribution points by changing GUI length constraints
+
+Task
+    * [ECA-592] - Update french language file
+
+Bug
+    * [ECA-445] - JBoss deadlock problems
+    * [ECA-542] - Null pointer exception when you run "$EJBCA_HOME/bin/ejbca.sh ca republish -all"
+    * [ECA-591] - Install does not work unless web.properties is defined
+    * [ECA-594] - Certificate enrollment on card does not work using https only http
+    * [ECA-600] - Removing certificates from LDAP does not work using LDAP search publisher and username match
+    * [ECA-601] - checkCertificateStatus for certificates that doesn't exists in database throws a Nullpointer exception
+    * [ECA-604] - Advanced Access Rules visual bug, End entity profiles rule haven't the id to name replaced correctly
+
 3.5.0, 2007-09-04
 ---
 New Feature
