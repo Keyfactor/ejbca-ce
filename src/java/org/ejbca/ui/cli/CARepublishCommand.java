@@ -31,7 +31,7 @@ import org.ejbca.util.CertTools;
 /**
  * Re-publishes the certificates of all users beloinging to a particular CA.
  *
- * @version $Id: CARepublishCommand.java,v 1.4 2006-08-06 13:27:18 anatom Exp $
+ * @version $Id: CARepublishCommand.java,v 1.5 2007-09-18 13:52:25 jbagnert Exp $
  */
 public class CARepublishCommand extends BaseCaAdminCommand {
     /**
@@ -67,6 +67,10 @@ public class CARepublishCommand extends BaseCaAdminCommand {
                         
             // Get the CAs info and id
             CAInfo cainfo = getCAAdminSessionRemote().getCAInfo(administrator, caname);
+            if ( cainfo == null ) {
+            	getOutputStream().println("CA with name '" + caname + "' does not exist.");
+            	return;
+            }
             // Publish the CAns certificate and CRL
             Collection cachain = cainfo.getCertificateChain();
             Iterator caiter = cachain.iterator();
