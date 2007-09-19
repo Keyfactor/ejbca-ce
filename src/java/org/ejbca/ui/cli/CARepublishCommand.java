@@ -31,7 +31,7 @@ import org.ejbca.util.CertTools;
 /**
  * Re-publishes the certificates of all users beloinging to a particular CA.
  *
- * @version $Id: CARepublishCommand.java,v 1.5 2007-09-18 13:52:25 jbagnert Exp $
+ * @version $Id: CARepublishCommand.java,v 1.6 2007-09-19 13:44:58 jbagnert Exp $
  */
 public class CARepublishCommand extends BaseCaAdminCommand {
     /**
@@ -60,7 +60,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
             boolean addAll = false;
             if (args.length == 3) {
                 String all = args[2];
-                if (StringUtils.equalsIgnoreCase(all, "-a")) {
+                if (StringUtils.equalsIgnoreCase(all, "-all")) {
                 	addAll = true;
                 }
             }
