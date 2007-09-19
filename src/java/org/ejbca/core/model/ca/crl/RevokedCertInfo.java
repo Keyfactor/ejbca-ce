@@ -20,7 +20,7 @@ import java.util.Date;
  * Holds information about a revoked certificate. The information kept here is the
  * information that goes into a CRLEntry.
  *
- * @version $Id: RevokedCertInfo.java,v 1.2 2007-05-16 06:38:17 rolf_s Exp $
+ * @version $Id: RevokedCertInfo.java,v 1.3 2007-09-19 12:42:20 anatom Exp $
  **/
 public class RevokedCertInfo extends java.lang.Object implements java.io.Serializable {
     
@@ -45,29 +45,49 @@ public class RevokedCertInfo extends java.lang.Object implements java.io.Seriali
 
     private BigInteger  userCertificate;
     private Date        revocationDate;
+    private Date        expireDate;
     private int         reason;
+    private String 		fingerprint;
 
     /**
      * A default constructor is needed to instantiate
      * RevokedCertInfo objects using &lt;jsp:useBean&gt; by Tomcat 5. 
      */
     public RevokedCertInfo() {
+    	fingerprint = null;
     	userCertificate = null;
     	revocationDate = null;
+    	expireDate = null;
     	reason = REVOKATION_REASON_UNSPECIFIED;
     }
 
     /**
-     * Constuctor filling in the whole object.
+     * Constructor filling in the whole object.
      *
      **/
-    public RevokedCertInfo(BigInteger serno, Date date, int reason)
+    public RevokedCertInfo(String fingerprint, BigInteger serno, Date revdate, int reason, Date expdate)
     {
+    	this.fingerprint = fingerprint;
         this.userCertificate = serno;
-        this.revocationDate = date;
+        this.revocationDate = revdate;
         this.reason = reason;
+        this.expireDate = expdate;
     }
 
+    /**
+     * Certificate fingerprint
+     **/
+    public String getCertificateFingerprint() {
+        return this.fingerprint;
+    }
+
+    /**
+     * Certificate fingerprint
+     **/
+    public void setCertificateFingerprint( String fp) {
+        this.fingerprint = fp;
+    }
+    
     /**
      * Certificate serial number
      **/
@@ -96,6 +116,19 @@ public class RevokedCertInfo extends java.lang.Object implements java.io.Seriali
         this.revocationDate = date;
     }
 
+    /**
+     * Date when the certificate expires.
+     **/
+    public Date getExpireDate() {
+        return this.expireDate;
+    }
+
+    /**
+     * Date when the certificate expires.
+     **/
+    public void setExpireDate( Date date ) {
+        this.expireDate = date;
+    }
 
     /**
      * The reason the certificate was revoked.

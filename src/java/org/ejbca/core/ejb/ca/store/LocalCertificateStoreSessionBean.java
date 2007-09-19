@@ -172,7 +172,7 @@ import org.ejbca.util.StringTools;
  * local-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionLocal"
  * remote-class="org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote"
  * 
- * @version $Id: LocalCertificateStoreSessionBean.java,v 1.31 2007-09-12 14:22:47 anatom Exp $
+ * @version $Id: LocalCertificateStoreSessionBean.java,v 1.32 2007-09-19 12:42:21 anatom Exp $
  * 
  */
 public class LocalCertificateStoreSessionBean extends BaseSessionBean {
@@ -353,22 +353,20 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      * @ejb.transaction type="Required"
      * @ejb.interface-method
      */
-    public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number) {
+    public boolean storeCRL(Admin admin, byte[] incrl, String cafp, int number, String issuerDN, Date thisUpdate, Date nextUpdate) {
         debug(">storeCRL(" + cafp + ", " + number + ")");
-
         try {
-            X509CRL crl = CertTools.getCRLfromByteArray(incrl);
-            CRLDataLocal data1 = crlHome.create(crl, number);
-            data1.setCaFingerprint(cafp);
-        	String msg = intres.getLocalizedMessage("store.storecrl", new Integer(number), CertTools.getFingerprintAsString(crl));            	
-            getLogSession().log(admin, crl.getIssuerDN().toString().hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_STORECRL, msg);
+            //X509CRL crl = CertTools.getCRLfromByteArray(incrl);
+            CRLDataLocal data1 = crlHome.create(incrl, number, issuerDN, thisUpdate, nextUpdate, cafp);
+            //data1.setCaFingerprint(cafp);
+        	String msg = intres.getLocalizedMessage("store.storecrl", new Integer(number), null);            	
+            getLogSession().log(admin, issuerDN.toString().hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_STORECRL, msg);
         } catch (Exception e) {
         	String msg = intres.getLocalizedMessage("store.storecrl");            	
             getLogSession().log(admin, LogConstants.INTERNALCAID, LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_STORECRL, msg);
             throw new EJBException(e);
         }
         debug("<storeCRL()");
-
         return true;
     } // storeCRL
 
@@ -410,7 +408,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
     } // listAllCertificates
 
     /**
-     * Lists fingerprint (primary key) of ALL certificates in the database. 
+     * Lists fingerprint (primary key) of ALL revoked certificates (status = CertificateDataBean.CERT_REVOKED) in the database from a certain issuer. 
      * NOTE: Caution should be taken with this method as execution may be very heavy indeed if many certificates exist in the database (imagine what happens if there are millinos of certificates in the DB!). 
      * Should only be used for testing purposes.
      * @param admin Administrator performing the operation
@@ -429,8 +427,9 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
         dn = StringTools.strip(dn);
         try {
             // TODO:
-            // This should only list a few thousend certificates at a time, in case there
+            // This should only list a few thousand certificates at a time, in case there
             // are really many revoked certificates after some time...
+        	// This code will handle about 100.000 revoked certificates easily on a normal machine
             con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
             ps = con.prepareStatement("select fingerprint from CertificateData where status=? and issuerDN=? ORDER BY expireDate DESC");
             ps.setInt(1, CertificateDataBean.CERT_REVOKED);
@@ -439,6 +438,62 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
             ArrayList vect = new ArrayList();
             while (result.next()) {
                 vect.add(result.getString(1));
+            }
+            debug("<listRevokedCertificates()");
+            return vect;
+        } catch (Exception e) {
+            throw new EJBException(e);
+        } finally {
+            JDBCUtil.close(con, ps, result);
+        }
+    } // listRevokedCertificates
+
+    /**
+     * Lists RevokedCertInfo of ALL revoked certificates (status = CertificateDataBean.CERT_REVOKED) in the database from a certain issuer. 
+     * NOTE: Caution should be taken with this method as execution may be very heavy indeed if many certificates exist in the database (imagine what happens if there are millinos of certificates in the DB!). 
+     * Should only be used for testing purposes.
+     * @param admin Administrator performing the operation
+     * @param issuerdn the dn of the certificates issuer.
+     * @return Collection of RevokedCertInfo, i.e. Strings, reverse ordered by expireDate where last expireDate is first in array.
+     *
+     * @ejb.interface-method
+     */
+    public Collection listRevokedCertInfo(Admin admin, String issuerdn) {
+        debug(">listRevokedCertificates()");
+
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet result = null;
+        String dn = CertTools.stringToBCDNString(issuerdn);
+        dn = StringTools.strip(dn);
+        try {
+            // TODO:
+            // This should only list a few thousand certificates at a time, in case there
+            // are really many revoked certificates after some time...
+            con = JDBCUtil.getDBConnection(JNDINames.DATASOURCE);
+            ps = con.prepareStatement("select fingerprint, issuerDN, serialNumber, expireDate, revocationDate, revocationReason from CertificateData where status=? and issuerDN=?");
+            ps.setInt(1, CertificateDataBean.CERT_REVOKED);
+            ps.setString(2, dn);
+            result = ps.executeQuery();
+        	ArrayList vect = new ArrayList();
+            while (result.next()) {
+            	String fp = result.getString(1);
+            	String issuerDN = result.getString(2);
+            	BigInteger serNo = new BigInteger(result.getString(3));
+            	long exptime = result.getLong(4);
+            	Date expDate = null;
+            	if (exptime > 0) {
+            		expDate = new Date(exptime);
+            	}
+            	long revtime = result.getLong(5);
+            	Date revDate = null;
+            	if (revtime > 0) {
+            		revDate = new Date(revtime);            	
+            	}
+            	int revReason = result.getInt(6);
+            	RevokedCertInfo certinfo = new RevokedCertInfo(fp, serNo, revDate, revReason, expDate);
+            	// Add to the result
+            	vect.add(certinfo);
             }
             debug("<listRevokedCertificates()");
             return vect;
@@ -1147,7 +1202,7 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
      *
      * @param admin Administrator performing the operation
      * @param issuerdn the CRL issuers DN (CAs subject DN)
-     * @return X509CRL or null of no CRLs have been issued.
+     * @return byte[] with DER encoded X509CRL or null of no CRLs have been issued.
      * @ejb.interface-method
      */
     public byte[] getLastCRL(Admin admin, String issuerdn) {
@@ -1163,9 +1218,11 @@ public class LocalCertificateStoreSessionBean extends BaseSessionBean {
                 crl = null;
             }
             debug("<getLastCRL()");
-            if (crl == null)
+            if (crl == null) {
+            	String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn, maxnumber);            	
+                getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_ERROR_GETLASTCRL, msg);
                 return null;
-
+            }
         	String msg = intres.getLocalizedMessage("store.getcrl", issuerdn, new Integer(maxnumber));            	
             getLogSession().log(admin, crl.getIssuerDN().toString().hashCode(), LogEntry.MODULE_CA, new java.util.Date(), null, null, LogEntry.EVENT_INFO_GETLASTCRL, msg);
             return crl.getEncoded();

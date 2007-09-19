@@ -45,7 +45,7 @@ import org.ejbca.util.StringTools;
 /** Common code between CertificateStoreSessionBean and CertificateStoreOnlyDataSessionBean
  * 
  * @author lars
- * @version $Id: CertificateDataUtil.java,v 1.10 2006-12-13 10:32:42 anatom Exp $
+ * @version $Id: CertificateDataUtil.java,v 1.11 2007-09-19 12:42:21 anatom Exp $
  *
  */
 public class CertificateDataUtil {
@@ -217,7 +217,7 @@ public class CertificateDataUtil {
                 			adapter.error(msg, e);
                 		}
                 	}
-                	revinfo = new RevokedCertInfo(serno, new Date(data.getRevocationDate()), data.getRevocationReason());
+                	revinfo = new RevokedCertInfo(data.getFingerprint(), serno, new Date(data.getRevocationDate()), data.getRevocationReason(), new Date(data.getExpireDate()));
                 	// Make sure we have it as NOT revoked if it isn't
                 	if (data.getStatus() != CertificateDataBean.CERT_REVOKED) {
                 		revinfo.setReason(RevokedCertInfo.NOT_REVOKED);

@@ -157,7 +157,7 @@ import org.ejbca.util.KeyTools;
  *   local-extends="javax.ejb.EJBLocalObject"
  *   local-class="org.ejbca.core.ejb.ca.sign.ISignSessionLocal"
  *   
- *   @version $Id: RSASignSessionBean.java,v 1.40 2007-07-25 08:56:29 anatom Exp $
+ *   @version $Id: RSASignSessionBean.java,v 1.41 2007-09-19 12:42:21 anatom Exp $
  */
 public class RSASignSessionBean extends BaseSessionBean {
 
@@ -1097,12 +1097,12 @@ public class RSASignSessionBean extends BaseSessionBean {
      *
      * @param admin Information about the administrator or admin preforming the event.
      * @param caid Id of the CA which CRL should be created.
-     * @param certs vector of RevokedCertInfo object.
+     * @param certs collection of RevokedCertInfo object.
      * @return The newly created CRL in DER encoded byte form or null, use CerlTools.getCRLfromByteArray to convert to X509CRL.
      * @throws CATokenOfflineException 
      * @ejb.interface-method view-type="both"
      */
-    public byte[] createCRL(Admin admin, int caid, Vector certs) throws CATokenOfflineException {
+    public byte[] createCRL(Admin admin, int caid, Collection certs) throws CATokenOfflineException {
         debug(">createCRL()");
         byte[] crlBytes;
         CADataLocal cadata = null;
@@ -1153,8 +1153,10 @@ public class RSASignSessionBean extends BaseSessionBean {
 
             // Store CRL in the database
             String fingerprint = CertTools.getFingerprintAsString(cacert);
-            certificateStore.storeCRL(admin, crl.getEncoded(), fingerprint, number);
+            log.debug("Storing CRL in certificate store.");
+            certificateStore.storeCRL(admin, crl.getEncoded(), fingerprint, number, crl.getIssuerDN().getName(), crl.getThisUpdate(), crl.getNextUpdate());
             // Store crl in ca CRL publishers.
+            log.debug("Storing CRL in publishers");
             IPublisherSessionLocal pub = publishHome.create();
             pub.storeCRL(admin, ca.getCRLPublishers(), crl.getEncoded(), fingerprint, number);
 

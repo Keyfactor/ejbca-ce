@@ -13,12 +13,10 @@
 
 package org.ejbca.core.ejb.ca.crl;
 
-import java.math.BigInteger;
 import java.security.cert.X509CRL;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.Vector;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
@@ -53,7 +51,7 @@ import org.ejbca.util.CertTools;
  * Generates a new CRL by looking in the database for revoked certificates and
  * generating a CRL.
  *
- * @version $Id: CreateCRLSessionBean.java,v 1.15 2007-01-16 11:42:23 anatom Exp $
+ * @version $Id: CreateCRLSessionBean.java,v 1.16 2007-09-19 12:42:22 anatom Exp $
  * @ejb.bean
  *   description="Session bean handling hard token data, both about hard tokens and hard token issuers."
  *   display-name="CreateCRLSB"
@@ -182,44 +180,47 @@ public class CreateCRLSessionBean extends BaseSessionBean {
             }
             int crlperiod = cainfo.getCRLPeriod();
             // Find all revoked certificates
-            Collection revcerts = store.listRevokedCertificates(admin, issuerdn);
+            Collection revcerts = store.listRevokedCertInfo(admin, issuerdn);
             debug("Found "+revcerts.size()+" revoked certificates.");
 
             // Go through them and create a CRL, at the same time archive expired certificates
             Date now = new Date();
             // crlperiod is hours = crlperiod*60*60*1000 milliseconds
             now.setTime(now.getTime() - (crlperiod * 60 * 60 * 1000));
-            Vector certs = new Vector();
             Iterator iter = revcerts.iterator();
             while (iter.hasNext()) {
-                CertificateDataPK pk = new CertificateDataPK((String)iter.next());
-                CertificateDataLocal data = certHome.findByPrimaryKey(pk);
+            	RevokedCertInfo data = (RevokedCertInfo)iter.next();
+            	Date revDate = data.getRevocationDate();
                 // We want to include certificates that was revoked after the last CRL was issued, but before this one
                 // so the revoked certs are included in ONE CRL at least.
-                if ( (data.getStatus() == CertificateDataBean.CERT_REVOKED) &&
-                    (data.getExpireDate() < now.getTime()) )
-                {
-                        data.setStatus(CertificateDataBean.CERT_ARCHIVED);
-                } else
-                {
-                    if (data.getRevocationDate() == -1)
-                        data.setRevocationDate((new Date()).getTime());
-                    RevokedCertInfo certinfo = new RevokedCertInfo(new BigInteger(data.getSerialNumber()),new Date(data.getRevocationDate()), data.getRevocationReason());
-                    certs.add(certinfo);
+                if ( data.getExpireDate().before(now) ) {
+                	// Certificate has expired, set status to archived in the database 
+                	CertificateDataPK pk = new CertificateDataPK(data.getCertificateFingerprint());
+                	CertificateDataLocal certdata = certHome.findByPrimaryKey(pk);
+                	certdata.setStatus(CertificateDataBean.CERT_ARCHIVED);
+                } else {
+                    if (revDate == null) {
+                        data.setRevocationDate(new Date());
+                    	CertificateDataPK pk = new CertificateDataPK(data.getCertificateFingerprint());
+                    	CertificateDataLocal certdata = certHome.findByPrimaryKey(pk);
+                        // Set revocation date in the database
+                        certdata.setRevocationDate(new Date());
+                    }
                 }
             }
             ISignSessionLocal sign = signHome.create();
-            byte[] crlBytes = sign.createCRL(admin, caid, certs);
+            byte[] crlBytes = sign.createCRL(admin, caid, revcerts);
             // This is logged in the database by SignSession 
         	String msg = intres.getLocalizedMessage("createcrl.createdcrl", cainfo.getName(), cainfo.getSubjectDN());            	
             log.info(msg);
-            if (log.isDebugEnabled()) {
-                X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
-                debug("Created CRL with expire date: "+crl.getNextUpdate());
+            // This debug logging is very very heavy if you have large CRLs. Please don't use it :-)
+//            if (log.isDebugEnabled()) {
+//                X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
+//                debug("Created CRL with expire date: "+crl.getNextUpdate());
 //                FileOutputStream fos = new FileOutputStream("c:\\java\\srvtestcrl.der");
 //                fos.write(crl.getEncoded());
 //                fos.close();
-            }
+//            }
 
         } catch (CATokenOfflineException e) {
             throw e;            

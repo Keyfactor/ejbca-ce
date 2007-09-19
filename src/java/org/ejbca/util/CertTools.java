@@ -97,7 +97,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.45 2007-08-18 20:00:54 anatom Exp $
+ * @version $Id: CertTools.java,v 1.46 2007-09-19 12:42:22 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -1616,6 +1616,18 @@ public class CertTools {
     }
 
     /**
+     * Generate SHA1 fingerprint of byte array in string representation.
+     *
+     * @param byte array to fingerprint.
+     *
+     * @return String containing hex format of SHA1 fingerprint.
+     */
+    public static String getFingerprintAsString(byte[] in) {
+    	byte[] res = generateSHA1Fingerprint(in);
+    	return new String(Hex.encode(res));
+    }
+
+    /**
      * Generate a SHA1 fingerprint from a byte array containing a X.509 certificate
      *
      * @param ba Byte array containing DER encoded X509Certificate.
@@ -1623,6 +1635,7 @@ public class CertTools {
      * @return Byte array containing SHA1 hash of DER encoded certificate.
      */
     public static byte[] generateSHA1Fingerprint(byte[] ba) {
+    	log.debug(">generateSHA1Fingerprint");
         try {
             MessageDigest md = MessageDigest.getInstance("SHA1");
 
@@ -1630,7 +1643,7 @@ public class CertTools {
         } catch (NoSuchAlgorithmException nsae) {
             log.error("SHA1 algorithm not supported", nsae);
         }
-
+    	log.debug("<generateSHA1Fingerprint");
         return null;
     } // generateSHA1Fingerprint
 

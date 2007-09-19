@@ -140,7 +140,7 @@ import org.ejbca.util.dn.DnComponents;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.69 2007-08-21 08:45:07 jeklund Exp $
+ * @version $Id: X509CA.java,v 1.70 2007-09-19 12:42:20 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -878,7 +878,7 @@ public class X509CA extends CA implements Serializable {
     }
 
     
-    public CRL generateCRL(Vector certs, int crlnumber) 
+    public CRL generateCRL(Collection certs, int crlnumber) 
     throws CATokenOfflineException, IllegalKeyStoreException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
         final String sigAlg= getCAToken().getCATokenInfo().getSignatureAlgorithm();
 

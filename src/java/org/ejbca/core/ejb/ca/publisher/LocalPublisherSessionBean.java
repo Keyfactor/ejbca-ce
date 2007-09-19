@@ -248,6 +248,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
     public boolean storeCRL(Admin admin, Collection publisherids, byte[] incrl, String cafp, int number) {
+    	log.debug(">storeCRL");
         Iterator iter = publisherids.iterator();
         boolean returnval = true;
         while (iter.hasNext()) {
@@ -272,7 +273,7 @@ public class LocalPublisherSessionBean extends BaseSessionBean {
 
             }
         }
-
+    	log.debug("<storeCRL");
         return returnval;
     }
 
