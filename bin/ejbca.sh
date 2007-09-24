@@ -70,11 +70,11 @@ else
     exit 1
 fi
 
-EJBCA_HOME=..
-if [ ! -x ejbca.sh ]
-then
-EJBCA_HOME=.
+if [ -z "$EJBCA_HOME" ] ; then
+	EJBCA_FILE="$0" 
+	EJBCA_HOME=`echo $(dirname $(dirname $EJBCA_FILE))`
 fi
+
 # Check that classes exist
 if [ ! -d ${EJBCA_HOME}/tmp/bin/classes ]
 then    
