@@ -2147,6 +2147,7 @@ Support for ECDSA in HSMs are dependant on the support for ECDSA in the HSM manu
 You have to check if that support is available.
 </p>
 </subsection>
+
 <subsection name="Generic PKCS#11 provider (EJBCA 3.5)">
 <p>
 The PKCS#11 wrapper from SUN has been used to implement support for tokens with PKCS#11 libraries. The PKCS#11 provider have been 
@@ -2157,9 +2158,12 @@ Besides the keys previously described the property field of the administration G
 <li>slot                - the slot of the CA.</li>
 <li>sharedLibrary       - the shared PKCS#11 library to be used.</li>
 </ul>
+</p><p>
+The tool $EJBCA/bin/pkcs11HSM.sh is used administrate generate keys. Use it without parameters to get all valid options.
 </p>
+</subsection>
 
-<strong>Utimaco PKCS#11</strong>
+<subsection name="Utimaco PKCS#11">
 <p>
 The Utimaco PKCS11 module have a configurable timeout (AppTimeout) that clears all session information if you do not use the keys for some time.
 The default time-out is 30 minutes, which may be way too short if your CA is not very very active.
@@ -2220,8 +2224,9 @@ Utimaco have an emulator for their CryptoServer LAN HSM that can be used for tes
 If you have the emulation kit there is a howto in doc/howto/cryptoserver-lan-emulator.txt with steps to follow 
 in order to use it with EJBCA.
 </p>
+</subsection>
 
-<strong>nCipher PKCS#11</strong>
+<subsection name="nCipher PKCS#11">
 <p>
 For nCipher the slot name is some vritual slot that we don't know the number of. 
 Luckily we can simply use the default slot by leaving out the slot number.
@@ -2280,6 +2285,7 @@ sharedLibrary /opt/nfast/toolkits/pkcs11/cknfast.so
 If you have generated keys with the nCipher tools, you must also associate a certificate (can be dummy) with the key.
 </p>
 </subsection>
+
 <subsection name="nCipher NFast">
 <p>
 Follow these steps to create a CA that is using a nFast card:
@@ -2701,6 +2707,12 @@ If the file is called "single.jks" then the key is created like this:
 
 <subsection name="SafeNet Luna SA HSM">
 <p>
+Hopefully it is possible to use PKCS#11 interface of the HSM instead of using the java provider of the HSM.
+It will better to use PKCS#11 since the Luna java provider is using the PKCS#11
+Using PKCS#11 will change the keygeneration (step 3). The CA creation (step 5) should then be done with the PKCS#11 token.
+</p><p>
+If you have succeeded to create keys without the java provider that could be used with a PKCS#11 token please update this documentation.
+</p><p>
 Follow these steps to create a CA that is using a Luna SA HSM:
 </p>
 <strong>1. Install the Luna SA HSM</strong>
@@ -2744,7 +2756,7 @@ Do the following:
 <p>
 Choose SafeNetLunaCAToken as "CA Token Type".
 </p><p>
-Define which keys in the that should be used and the purpose of these keys. If more than one partition is assigned to the client the label of this partition has to be defined too.
+Define which keys on the slot that should be used and the purpose of these keys. If more than one partition is assigned to the client the label of this partition has to be defined too.
 </p><p>
 Use one row for each definition. Begin the row with a key word. It is one row for the 'partition label' (may be omitted if only one partition) and one for each key definition. Key word and value is separated by one or more spaces.
 </p><p>
@@ -2760,6 +2772,17 @@ slotLabel p1
 certSignKey rootCertSign
 defaultKey rootCRLSign
 </source>
+<p>
+It ought to be better to create a PKCS#11 token instead. But this has not been verified. It configuration should look like this:
+</p>
+<source>
+slot 1
+certSignKey rootCertSign
+defaultKey rootCRLSign
+</source>
+<p>
+Using PKCS#11 may work even if the keys has been created with "lunaHSM generate".
+</p>
 <strong>Note.</strong>
 <p>
 When activating Luna CAs in EJBCA the given password is only validated for the first one that is activated. When this first CA is activated a login is performed to the used partition. Logout from the partition is performed when all Luna CAs in EJBCA for a partition has been deactivated.
@@ -2768,8 +2791,66 @@ Different partitions may be used for different CAs. But only CAs from one partit
 </p>
 </subsection>
 
-<subsection name="Eracom HSM">
+<subsection name="Eracom HSM with PKCS#11">
 <p>
+Follow these steps to create a CA that is using a Eracom HSM (tested with a SW emulator):
+</p>
+<strong>1. Install the Eracom software</strong>
+<p>
+You need an access library (ex ETnethsm) and the Toolkit C runtime.
+</p>
+<strong>2. Create the required slots</strong>
+<p>
+Create the required slots (one PIN per slot) and keys (with keylabels) using the Eracom tools or your own java classes.
+</p>
+<p>
+Sample Slot Initialization:
+<ol>
+	ctconf	
+<br></br>
+	ctconf -c10
+<br></br>
+	ctconf -fc
+<br></br>
+	ctkmu t -s5 -lroot
+</ol>
+</p>
+<p>
+  Key generation
+<br></br>
+$EJBCA_HOME/bin/pkcs11HSM.sh generate 4096 defaultKey 5
+</p>
+<strong>3. If you use an external HSM, set its hostname/IP-Address as unix environment variable</strong>
+<source>
+CT_SERVER=eracom
+export CT_SERVER
+</source>
+<p>
+<strong>4. Start the J2EE container</strong>
+</p><p>
+<strong>5. Create a new CA</strong>
+</p><p>
+The keys in the property field are defined by their key alias and slot by the number. See general text above about key definition and PKCS#11.
+</p><p>
+Create a CA with "CA Token Type" = PKCS#11
+</p><p>
+The keys in the property field are defined by their key alias. See general text above about key definition.
+</p><p>
+Fill in the hard token properties. Example:
+</p>
+<source>
+slot 5
+defaultKey defaultKey
+sharedLibrary /opt/ETcpsdk/lib/linux-i386/libcryptoki.so
+pin user5
+</source>
+</subsection>
+
+<subsection name="Eracom HSM using Eracom provider">
+<p>
+This tooken type is depreciated. Please follow "Eracom HSM with PKCS#11" instead. But this description was written with experience from a real HSM.
+When writing the PKCS#11 description an emulator was used.
+</p><p>
 Follow these steps to create a CA that is using a Eracom HSM (tested with Eracom ProtectServer Orange (csa8000) external):
 </p>
 <strong>1. Install the Eracom software</strong>
@@ -2826,16 +2907,20 @@ Sample Slot Initialization:
 </p>
 <strong>3. Make sure the required Eracom Java Security Provider (jprov) is on the classpath</strong>
 <p>
+Only need if you want to use the Eracom provider. If PKCS#11 is used (recomended) continue with step 5.
+</p><p>
 For example, for WEBLOGIC, add:
 <br></br>
 WEBLOGIC_CLASSPATH=${WEBLOGIC_CLASSPATH}:...:/opt/Eracom/lib/jprov.jar
 </p>
 <strong>4. Add the native library dir for HSM communication to your path</strong>
 <p>
+Only need if you want to use the Eracom provider. If PKCS#11 is used (recomended) continue with step 5.
+</p><p>
 The native library dir is where libjcprov.so and libcryptoki.so are located.
 </p>
 <source>
-LD_LIBRARY_PATH=/opt/Eracom/lib
+LD_LIBRARY_PATH=/opt/Eracom/lib/linux-i386
 export LD_LIBRARY_PATH
 </source>
 <p>
@@ -2851,8 +2936,7 @@ export CT_SERVER
 </source>
 <p>
 <strong>6. Start the J2EE container</strong>
-</p>
-<p>
+</p><p>
 <strong>7. Create a new CA</strong>
 </p><p>
 Create a CA with "CA Token Type" = Eracom, the type should appear automatically in the list when the Eracom 
@@ -2867,10 +2951,6 @@ slot 1
 defaultKey cakey1
 pin secret
 </source>
-<p>
-Note: The pin is optional. If set, the CAToken will try to use it for automatic activation
-of the slot in case of a container restart.
-</p>
 </subsection>
 
 <subsection name="Writing support for new HSMs">

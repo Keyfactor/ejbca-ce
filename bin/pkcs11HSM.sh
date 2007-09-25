@@ -23,7 +23,7 @@ CLASSES=$CLASSES:$EJBCA_HOME/tmp/bin/classes
 
 # Prepare arguments
 if [ -z $1 ]; then
-  args="`basename $0` dummy"
+  args="`basename $0` dummy dummy"
 else
   #command name
   args="`basename $0` $1"

@@ -14,6 +14,8 @@
 package org.ejbca.core.model.ca.catoken;
 
 import java.security.KeyStore;
+import java.util.HashMap;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
@@ -21,10 +23,10 @@ import com.chrysalisits.crypto.LunaTokenManager;
 
 /**
  * @author lars
- * @version $Id: SafeNetLunaCAToken.java.luna,v 1.6 2006-09-28 06:39:38 primelars Exp $
+ * @version $Id: SafeNetLunaCAToken.java.luna,v 1.7 2007-09-25 12:22:49 primelars Exp $
  *
  */
-public class SafeNetLunaCAToken extends BaseCAToken implements IHardCAToken {
+public class SafeNetLunaCAToken extends BaseCAToken implements ICAToken {
 
     /** Log4j instance */
     private static final Logger log = Logger.getLogger(SafeNetLunaCAToken.class);
@@ -41,7 +43,7 @@ public class SafeNetLunaCAToken extends BaseCAToken implements IHardCAToken {
      * @throws IllegalAccessException
      */
     public SafeNetLunaCAToken() throws InstantiationException, IllegalAccessException {
-        super(PROVIDER_CLASS, PROVIDER_NAME, SLOT_LABEL_KEY);
+        super(PROVIDER_CLASS);
         isActivated = false;
     }
 
@@ -94,14 +96,19 @@ public class SafeNetLunaCAToken extends BaseCAToken implements IHardCAToken {
     }
     public int getCATokenStatus() {
         if ( !isActivated )
-            return IHardCAToken.STATUS_OFFLINE;
+            return ICAToken.STATUS_OFFLINE;
         final LunaTokenManager tokenManager = LunaTokenManager.getInstance();
         if ( tokenManager.isLoggedIn() )
-            return IHardCAToken.STATUS_ACTIVE;
+            return ICAToken.STATUS_ACTIVE;
         else {
             isActivated = false;
             super.deactivate();
-            return IHardCAToken.STATUS_OFFLINE;
+            return ICAToken.STATUS_OFFLINE;
         }
+    }
+
+    public void init(Properties properties, HashMap data, String signaturealgorithm) throws Exception {
+        setProvider(PROVIDER_CLASS);
+        init(SLOT_LABEL_KEY, properties, signaturealgorithm, true);
     }
 }
