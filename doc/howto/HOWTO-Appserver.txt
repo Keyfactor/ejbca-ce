@@ -127,8 +127,7 @@ To configure the transaction timeout to a larger value in weblogic:
 Glassfish
 =========
 
-Currently EJBCA only works with Glassfish v1 due to a bug in Glassfish v2, see:
-https://glassfish.dev.java.net/issues/show_bug.cgi?id=2992
+Currently EJBCA works both with Glassfish v1 and v2.
 
 Currently EJBCA works with the Derby/JavaDB and the MySQL 5.0 database on Glassfish.
 
@@ -152,6 +151,7 @@ Derby:
 
   ij> connect 'jdbc:derby://localhost:1527/ejbca;create=true';
   ij> run '/home/sun/ejbca/doc/howto/create-tables-ejbca3-derby.sql';
+  ij> quit;
 
 - Start the application server: asadmin start-domain
 
@@ -177,7 +177,7 @@ Derby:
     in conf/web.properties you should set 'ejbcaws.enabled=false', this must be done until we have fixed JaxWS configuration for glassfish.
     in conf/xkms.properties you should set 'xkms.enabled=false', this must be done until we have fixed JaxWS configuration for glassfish.
 
-    (in conf/web.properties you can should set 'web.jsfimpl=sunri', but this is normally sensed automatically)
+    (in conf/web.properties you can also set 'web.jsfimpl=sunri', but this is normally sensed automatically)
     
 - Build ejbca:
     ant
