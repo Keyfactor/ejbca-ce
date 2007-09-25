@@ -136,6 +136,7 @@
 	              <include name="bcprov-jdk15.jar"/>
 	              <include name="log4j.jar"/>      
 	              <include name="commons-lang-2.0.jar"/>            	
+                  <include name="commons-logging.jar" />
 	            </fileset>	
 	            <fileset dir="${ejbca.home}/dist">
 	              <include name="ejbca-util.jar"/>         
@@ -162,9 +163,6 @@
 		        <fileset dir="${lib}/xmlsign">
 					<include name="xmlsec-1.3.0.jar" />
 				</fileset>
-		        <fileset dir="${lib}/jasper">
-					<include name="commons-logging-api.jar" />
-				</fileset>
 		    </copy>    	
 		    <copy todir="dist/xkmscli/">
 	            <fileset dir="${src}/xkms/cli">
@@ -174,7 +172,7 @@
 	    	              
 	        <jar destfile="dist/xkmscli/xkmscli.jar" basedir="tmp/xkmscli.jar">
 	          <manifest>
-	          	<attribute name="Class-Path" value="lib/bcprov-jdk15.jar lib/ejbca-util.jar lib/log4j.jar lib/activation.jar lib/FastInfoset.jar lib/http.jar lib/jaxb-api.jar lib/jaxb-impl.jar lib/jaxb-xjc.jar lib/jaxws-api.jar lib/jaxws-rt.jar lib/jsr173_api.jar lib/jsr181-api.jar lib/jsr250-api.jar lib/resolver.jar lib/saaj-api.jar lib/saaj-impl.jar lib/sjsxp.jar lib/commons-lang-2.0.jar lib/xmlsec-1.3.0.jar lib/commons-logging-api.jar lib/libidn.jar lib/xalan.jar"/>
+	          	<attribute name="Class-Path" value="lib/bcprov-jdk15.jar lib/ejbca-util.jar lib/log4j.jar lib/activation.jar lib/FastInfoset.jar lib/http.jar lib/jaxb-api.jar lib/jaxb-impl.jar lib/jaxb-xjc.jar lib/jaxws-api.jar lib/jaxws-rt.jar lib/jsr173_api.jar lib/jsr181-api.jar lib/jsr250-api.jar lib/resolver.jar lib/saaj-api.jar lib/saaj-impl.jar lib/sjsxp.jar lib/commons-lang-2.0.jar lib/xmlsec-1.3.0.jar lib/commons-logging.jar lib/libidn.jar lib/xalan.jar"/>
 	            <attribute name="Main-Class" value="org.ejbca.core.protocol.xkms.client.xkmscli"/>
 	          </manifest>
 	        </jar>    	    	
