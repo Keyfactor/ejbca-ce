@@ -4374,7 +4374,7 @@ To set up the demo servlet:
 <li>Create a demo apply page containing something similar to the sample form below for Mozilla/Firefox. There are some sample scripts under src/publicweb/publicweb.</li>
 </ol>
 <source>
-&lt;form name="demoreq" action="http://127.0.0.1:8080/ejbca/publicweb/democertreq" method="post">
+&lt;form name="demoreq" action="http://127.0.0.1:8080/ejbca/democertreq" method="post">
   Please fill out the form and click &lt;b>Enroll&lt;/b> to receive your certificate.
   Read our &lt;a href="http://www.primekey.se/primekey/en/Demo.html">privacy policy&lt;/a>.&lt;br>
   &lt;input name="certificateprofile" value="DemoCertProfile" type="hidden">
