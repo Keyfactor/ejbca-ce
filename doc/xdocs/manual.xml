@@ -2224,6 +2224,12 @@ Utimaco have an emulator for their CryptoServer LAN HSM that can be used for tes
 If you have the emulation kit there is a howto in doc/howto/cryptoserver-lan-emulator.txt with steps to follow 
 in order to use it with EJBCA.
 </p>
+<p>
+You can check the status of a CryptoServer LAN device, for example the emulator with:
+</p>
+<source>
+./csadm Device=TCP:3001@172.16.175.128 GetState
+</source>
 </subsection>
 
 <subsection name="nCipher PKCS#11">
