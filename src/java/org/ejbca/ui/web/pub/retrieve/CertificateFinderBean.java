@@ -45,7 +45,7 @@ import org.ejbca.ui.web.admin.rainterface.CertificateView;
  * The arguments are supplied as member variables instead. <br>
  * 
  * @author Rolf Staflin
- * @version $Id: CertificateFinderBean.java,v 1.8 2007-06-25 15:14:33 anatom Exp $
+ * @version $Id: CertificateFinderBean.java,v 1.9 2007-10-02 11:48:24 anatom Exp $
  */
 public class CertificateFinderBean {
 	
@@ -146,17 +146,20 @@ public class CertificateFinderBean {
 		if (result == null || mInitialized == false) {
 			return; // There's nothing we can do here.
 		}
-		BigInteger serialBignum = new BigInteger(Hex.decode(StringUtils.trimToEmpty(serialNumber)));
-		RevokedCertInfo info = mStoreSession.isRevoked(mAdmin, StringUtils.trimToEmpty(issuerDN), serialBignum);
-		
-		if (info == null) {
-			result.setRevocationDate(null);
-			result.setUserCertificate(null);
-		} else {
-			result.setReason(info.getReason());
-			result.setRevocationDate(info.getRevocationDate());
-			result.setUserCertificate(info.getUserCertificate());
-		}
+		try {
+			BigInteger serialBignum = new BigInteger(Hex.decode(StringUtils.trimToEmpty(serialNumber)));			
+			RevokedCertInfo info = mStoreSession.isRevoked(mAdmin, StringUtils.trimToEmpty(issuerDN), serialBignum);
+			if (info == null) {
+				result.setRevocationDate(null);
+				result.setUserCertificate(null);
+			} else {
+				result.setReason(info.getReason());
+				result.setRevocationDate(info.getRevocationDate());
+				result.setUserCertificate(info.getUserCertificate());
+			}
+		} catch (StringIndexOutOfBoundsException e) {
+			log.error("Invalid serial number entered: "+serialNumber);
+		}		
 	}
 
 	
