@@ -42,7 +42,7 @@
         Start setting default values and classpaths etc here
     -->
 
-    <!-- A littel special something to handle backward compatiblity with 
+    <!-- A little special something to handle backward compatibility with 
          people using JBOSS_HOME. They can switch to APPSRV_HOME now, and both will work. 
     -->        
     <condition property="jboss.home" value="${env.JBOSS_HOME}" >
