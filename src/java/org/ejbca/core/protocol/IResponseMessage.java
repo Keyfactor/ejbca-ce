@@ -43,7 +43,7 @@ import org.ejbca.core.model.ra.NotFoundException;
  * byte[] responseMessage = resp.getResponseMessage(); 
  * </code>
  *
- * @version $Id: IResponseMessage.java,v 1.4 2006-10-22 09:05:05 anatom Exp $
+ * @version $Id: IResponseMessage.java,v 1.5 2007-10-03 13:52:52 anatom Exp $
  */
 public interface IResponseMessage extends Serializable {
 
@@ -68,6 +68,14 @@ public interface IResponseMessage extends Serializable {
      * @param includeCACert true or false
      */
     public void setIncludeCACert(boolean incCACert);
+
+    /** 
+     * Explicitly sets the CA certificate if it is not the same as the signer certificate. Used if
+     * IncludeCACert is set to true and the CA certificate is not the same as the signer certificate.
+     * 
+     * @param caCert an X509Certificate
+     */
+    public void setCACert(X509Certificate caCert);
 
     /**
      * Gets the response message in the default encoding format.

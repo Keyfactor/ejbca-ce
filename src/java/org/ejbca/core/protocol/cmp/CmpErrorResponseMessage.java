@@ -44,7 +44,7 @@ import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
 /**
  * A very simple error message, no protection
  * @author tomas
- * @version $Id: CmpErrorResponseMessage.java,v 1.3 2006-11-09 11:03:14 anatom Exp $
+ * @version $Id: CmpErrorResponseMessage.java,v 1.4 2007-10-03 13:52:52 anatom Exp $
  */
 public class CmpErrorResponseMessage extends BaseCmpMessage implements IResponseMessage {
 
@@ -75,6 +75,8 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements IResponse
 	}
 
 	public void setIncludeCACert(boolean incCACert) {
+	}
+	public void setCACert(X509Certificate cACert) {
 	}
 
 	public byte[] getResponseMessage() throws IOException,

@@ -51,7 +51,7 @@ import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
 /**
  * CMP certificate response message
  * @author tomas
- * @version $Id: CmpResponseMessage.java,v 1.7 2006-11-09 11:03:14 anatom Exp $
+ * @version $Id: CmpResponseMessage.java,v 1.8 2007-10-03 13:52:52 anatom Exp $
  */
 public class CmpResponseMessage implements IResponseMessage {
 	
@@ -122,6 +122,8 @@ public class CmpResponseMessage implements IResponseMessage {
 	}
 	
 	public void setIncludeCACert(boolean incCACert) {
+	}
+	public void setCACert(X509Certificate cACert) {
 	}
 	
 	public byte[] getResponseMessage() throws IOException, CertificateEncodingException {

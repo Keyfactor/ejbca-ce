@@ -39,7 +39,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
 /**
  * A very simple confirmation message, no protection and a nullbody
  * @author tomas
- * @version $Id: CmpConfirmResponseMessage.java,v 1.5 2006-11-09 18:26:43 anatom Exp $
+ * @version $Id: CmpConfirmResponseMessage.java,v 1.6 2007-10-03 13:52:52 anatom Exp $
  */
 public class CmpConfirmResponseMessage extends BaseCmpMessage implements IResponseMessage {
 
@@ -64,6 +64,8 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements IRespon
 	}
 
 	public void setIncludeCACert(boolean incCACert) {
+	}
+	public void setCACert(X509Certificate cACert) {
 	}
 
 	public byte[] getResponseMessage() throws IOException,

@@ -46,7 +46,7 @@ import com.novosec.pkix.asn1.cmp.RevRepContent;
 /**
  * A very simple confirmation message, no protection and a nullbody
  * @author tomas
- * @version $Id: CmpRevokeResponseMessage.java,v 1.3 2007-07-31 13:31:43 jeklund Exp $
+ * @version $Id: CmpRevokeResponseMessage.java,v 1.4 2007-10-03 13:52:52 anatom Exp $
  */
 public class CmpRevokeResponseMessage extends BaseCmpMessage implements IResponseMessage {
 
@@ -76,6 +76,8 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements IRespons
 	}
 
 	public void setIncludeCACert(boolean incCACert) {
+	}
+	public void setCACert(X509Certificate cACert) {
 	}
 
 	public byte[] getResponseMessage() throws IOException,

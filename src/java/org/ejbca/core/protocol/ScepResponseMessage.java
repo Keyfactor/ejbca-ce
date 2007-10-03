@@ -56,7 +56,7 @@ import org.ejbca.util.CertTools;
 /**
  * A response message for scep (pkcs7).
  *
- * @version $Id: ScepResponseMessage.java,v 1.8 2007-03-21 13:40:46 anatom Exp $
+ * @version $Id: ScepResponseMessage.java,v 1.9 2007-10-03 13:52:52 anatom Exp $
  */
 public class ScepResponseMessage implements IResponseMessage {
     /**
@@ -105,8 +105,10 @@ public class ScepResponseMessage implements IResponseMessage {
     /** Certificate to be in response message, not serialized */
     private transient Certificate cert = null;
     private transient CRL crl = null;
-    /** Certificate for the signer of the response message (CA) */
+    /** Certificate for the signer of the response message (CA or RA) */
     private transient X509Certificate signCert = null;
+    /** Certificate for the CA of the response certificate in successful responses, is the same as signCert if not using RA mode */
+    private transient X509Certificate caCert = null;
     /** Private key used to sign the response message */
     private transient PrivateKey signKey = null;
     /** The default provider is BC, if nothing else is specified when setting SignKeyInfo */
@@ -139,6 +141,10 @@ public class ScepResponseMessage implements IResponseMessage {
      */
     public void setIncludeCACert(boolean incCACert) {
     	this.includeCACert = incCACert;
+    }
+
+    public void setCACert(X509Certificate caCert) {
+    	this.caCert = caCert;
     }
 
     /**
@@ -252,7 +258,16 @@ public class ScepResponseMessage implements IResponseMessage {
                     certList.add(cert);
                     // Add the CA cert, it's optional but Cisco VPN client complains if it isn't there
                     if (includeCACert) {
-                        certList.add(signCert);                    	
+                    	if (caCert != null) {
+                    		// If we have an explicit CAcertificate
+                    		log.debug("Including explicitly set CA certificate in SCEP response.");
+                    		certList.add(caCert);
+                    	} else {
+                    		// If we don't have an explicit caCert, we think that the signCert is the CA cert
+                    		// If we have an explicit caCert, the signCert is probably the RA certificate, and we don't include that one
+                    		log.debug("Including message signer certificate in SCEP response.");
+                    		certList.add(signCert);
+                    	}
                     }
                 }
                 CertStore certs = CertStore.getInstance("Collection",

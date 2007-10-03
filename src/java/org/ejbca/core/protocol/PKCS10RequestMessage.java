@@ -47,7 +47,7 @@ import org.ejbca.util.CertTools;
 /**
  * Class to handle PKCS10 request messages sent to the CA.
  *
- * @version $Id: PKCS10RequestMessage.java,v 1.12 2007-03-28 12:23:34 anatom Exp $
+ * @version $Id: PKCS10RequestMessage.java,v 1.13 2007-10-03 13:52:52 anatom Exp $
  */
 public class PKCS10RequestMessage implements IRequestMessage {
     /**
@@ -72,7 +72,7 @@ public class PKCS10RequestMessage implements IRequestMessage {
     /** manually set username */
     protected String username = null;
     
-    /** If the CA certificate should be included in the reponse or not, default to true = yes */
+    /** If the CA certificate should be included in the response or not, default to true = yes */
     protected boolean includeCACert = true;
 
     /** preferred digest algorithm to use in replies, if applicable */
