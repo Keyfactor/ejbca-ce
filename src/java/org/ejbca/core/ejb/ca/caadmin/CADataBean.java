@@ -47,7 +47,7 @@ import org.ejbca.util.Base64PutHashMap;
  *  data (non searchable data, HashMap stored as XML-String)
  * </pre>
  *
- * @version $Id: CADataBean.java,v 1.15 2007-08-13 19:02:36 anatom Exp $
+ * @version $Id: CADataBean.java,v 1.16 2007-10-03 13:52:19 anatom Exp $
  *
  * @ejb.bean
  *   description="This enterprise bean entity represents a publisher"
@@ -149,7 +149,7 @@ public abstract class CADataBean extends BaseEntityBean {
      */
     public abstract void setSubjectDN(String subjectdn);
     
-    /**
+    /** from SecConst.CA_XX
      * @ejb.persistence column-name="status"
      * @ejb.interface-method
      */
@@ -280,7 +280,7 @@ public abstract class CADataBean extends BaseEntityBean {
      * Entity Bean holding data of a CA.
      * @param subjectdn
      * @param name of CA
-     * @param status initial status
+     * @param status initial status from SecConst.CA_XX;
      * @param ca CA to store
      * @return caid
      * @ejb.create-method
