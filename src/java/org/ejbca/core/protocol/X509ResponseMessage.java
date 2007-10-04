@@ -34,7 +34,7 @@ import org.ejbca.util.CertTools;
 /**
  * A response message consisting of a single X509 Certificate.
  *
- * @version $Id: X509ResponseMessage.java,v 1.6 2007-10-03 13:52:52 anatom Exp $
+ * @version $Id: X509ResponseMessage.java,v 1.7 2007-10-04 08:08:16 anatom Exp $
  */
 public class X509ResponseMessage implements IResponseMessage {
     /**
@@ -46,7 +46,7 @@ public class X509ResponseMessage implements IResponseMessage {
      * /serialization/spec/version.doc.html> details. </a>
      *
      */
-    static final long serialVersionUID = -2157072605987735912L;
+    static final long serialVersionUID = -2157072605987735913L;
 
     private static Logger log = Logger.getLogger(X509ResponseMessage.class);
 

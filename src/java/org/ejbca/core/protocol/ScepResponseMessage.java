@@ -56,7 +56,7 @@ import org.ejbca.util.CertTools;
 /**
  * A response message for scep (pkcs7).
  *
- * @version $Id: ScepResponseMessage.java,v 1.9 2007-10-03 13:52:52 anatom Exp $
+ * @version $Id: ScepResponseMessage.java,v 1.10 2007-10-04 08:08:16 anatom Exp $
  */
 public class ScepResponseMessage implements IResponseMessage {
     /**
@@ -68,7 +68,7 @@ public class ScepResponseMessage implements IResponseMessage {
      * /serialization/spec/version.doc.html> details. </a>
      *
      */
-    static final long serialVersionUID = 2016710353393853878L;
+    static final long serialVersionUID = 2016710353393853879L;
 
     private static Logger log = Logger.getLogger(ScepResponseMessage.class);
 

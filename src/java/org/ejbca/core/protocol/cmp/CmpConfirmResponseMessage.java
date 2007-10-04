@@ -39,7 +39,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
 /**
  * A very simple confirmation message, no protection and a nullbody
  * @author tomas
- * @version $Id: CmpConfirmResponseMessage.java,v 1.6 2007-10-03 13:52:52 anatom Exp $
+ * @version $Id: CmpConfirmResponseMessage.java,v 1.7 2007-10-04 08:08:12 anatom Exp $
  */
 public class CmpConfirmResponseMessage extends BaseCmpMessage implements IResponseMessage {
 
@@ -52,7 +52,7 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements IRespon
 	 * /serialization/spec/version.doc.html> details. </a>
 	 *
 	 */
-	static final long serialVersionUID = 10002L;
+	static final long serialVersionUID = 10003L;
 
 	/** The encoded response message */
     private byte[] responseMessage = null;

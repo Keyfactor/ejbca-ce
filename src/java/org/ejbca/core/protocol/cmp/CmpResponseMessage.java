@@ -51,7 +51,7 @@ import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
 /**
  * CMP certificate response message
  * @author tomas
- * @version $Id: CmpResponseMessage.java,v 1.8 2007-10-03 13:52:52 anatom Exp $
+ * @version $Id: CmpResponseMessage.java,v 1.9 2007-10-04 08:08:12 anatom Exp $
  */
 public class CmpResponseMessage implements IResponseMessage {
 	
@@ -64,7 +64,7 @@ public class CmpResponseMessage implements IResponseMessage {
 	 * /serialization/spec/version.doc.html> details. </a>
 	 *
 	 */
-	static final long serialVersionUID = 10002L;
+	static final long serialVersionUID = 10003L;
 	
 	private static final Logger log = Logger.getLogger(CmpResponseMessage.class);
 	

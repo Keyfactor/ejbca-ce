@@ -46,7 +46,7 @@ import com.novosec.pkix.asn1.cmp.RevRepContent;
 /**
  * A very simple confirmation message, no protection and a nullbody
  * @author tomas
- * @version $Id: CmpRevokeResponseMessage.java,v 1.4 2007-10-03 13:52:52 anatom Exp $
+ * @version $Id: CmpRevokeResponseMessage.java,v 1.5 2007-10-04 08:08:12 anatom Exp $
  */
 public class CmpRevokeResponseMessage extends BaseCmpMessage implements IResponseMessage {
 
@@ -59,7 +59,7 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements IRespons
 	 * /serialization/spec/version.doc.html> details. </a>
 	 *
 	 */
-	static final long serialVersionUID = 10002L;
+	static final long serialVersionUID = 10003L;
 
 	private static final Logger log = Logger.getLogger(CmpRevokeResponseMessage .class);
 
