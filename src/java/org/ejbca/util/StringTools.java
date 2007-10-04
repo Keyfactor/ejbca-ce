@@ -43,7 +43,7 @@ import org.bouncycastle.util.encoders.Hex;
 /**
  * This class implements some utility functions that are useful when handling Strings.
  *
- * @version $Id: StringTools.java,v 1.6 2007-03-08 09:55:39 anatom Exp $
+ * @version $Id: StringTools.java,v 1.7 2007-10-04 13:23:54 anatom Exp $
  */
 public class StringTools {
     private static Logger log = Logger.getLogger(StringTools.class);
@@ -156,6 +156,40 @@ public class StringTools {
             return null;
         }
         return WS.matcher(str).replaceAll("");
+    }
+    
+    /** Converts ip-adress octets, according to ipStringToOctets
+     * to human readable string in form 10.1.1.1 for ipv4 adresses.
+     * 
+     * @param octets
+     * @return ip address string, null if input is invalid
+     * @see #ipStringToOctets(String)
+     */
+    public static String ipOctetsToString(byte[] octets) {
+    	String ret = null;
+    	if (octets.length == 4){
+    		String ip = "";
+    		// IPv4 address
+    		for (int i = 0; i < 4; i++) {
+    			// What is going on there is that we are promoting a (signed) byte to int, 
+    			// and then doing a bitwise AND operation on it to wipe out everything but 
+    			// the first 8 bits. Because Java treats the byte as signed, if its unsigned 
+    			// value is above > 127, the sign bit will be set, and it will appear to java 
+    			// to be negative. When it gets promoted to int, bits 0 through 7 will be the 
+    			// same as the byte, and bits 8 through 31 will be set to 1. So the bitwise 
+    			// AND with 0x000000FF clears out all of those bits. 
+    			// Note that this could have been written more compactly as; 0xFF & buf[index]
+    			int intByte = (0x000000FF & ((int)octets[i]));
+    			short t = (short)intByte;
+        		if (StringUtils.isNotEmpty(ip)) {
+        			ip += ".";
+        		}
+        		ip += t;
+    		}
+    		ret = ip;
+    	}
+    	// TODO: IPv6
+    	return ret;
     }
     
     /** Converts an IP-address string to octets of binary ints. 

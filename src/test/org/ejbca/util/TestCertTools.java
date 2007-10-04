@@ -16,17 +16,27 @@ package org.ejbca.util;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 
 import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERIA5String;
+import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.X509Extension;
+import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
+import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.util.cert.QCStatementExtension;
 import org.ejbca.util.cert.SubjectDirAttrExtension;
@@ -37,7 +47,7 @@ import com.novell.ldap.LDAPDN;
 /**
  * Tests the CertTools class .
  *
- * @version $Id: TestCertTools.java,v 1.7 2007-07-26 12:48:39 anatom Exp $
+ * @version $Id: TestCertTools.java,v 1.8 2007-10-04 13:23:54 anatom Exp $
  */
 public class TestCertTools extends TestCase {
     private static Logger log = Logger.getLogger(TestCertTools.class);
@@ -223,6 +233,33 @@ public class TestCertTools extends TestCase {
 +"NAwxPGnfunGBQ+Los6vjDApy/szMT32NFJDe4WTmkDxqYJQqQjhdrHTxpFEr0VQB"
 +"s7KRRCYjga/Z52XytwwDBLFM9CPZJfyKxZTV9I9i6e0xSn2xEW8NRplY1HOKa/2B"
 +"VzvWW9G5").getBytes());
+
+    private static byte[] p10ReqWithAltNames = Base64.decode(
+        ("MIICtDCCAZwCAQAwNDELMAkGA1UEBhMCU0UxDDAKBgNVBAoTA1JQUzEXMBUGA1UE"
+		+"AxMOMTAuMjUyLjI1NS4yMzcwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIB"
+		+"AQC45+Dh1dO/qaZR2TLnWB44wmYXvBuZ5sGXotlLvuRR09DGlSyPrTG/OVg4xVZa"
+		+"AzNMpWCyk1OAl4qJkmzrnQa/Tq6Hv6Y8QrZNSAJooL+kHmFSD9h8tyM9nBkpb90l"
+		+"o+qbXeFmB3II0KJjGXiXZVSKwUsjYRSzf9hfVz4U7ZwwmH9vMFNwuOIsAR9O5CTr"
+		+"8ofsshze9bxJpKY6/iyaEhQDoNl9jyxsZ1NuyNme3w1yoeGP5OXYcSVVY9cW4ze8"
+		+"o5ZE4jTy1Q8U41OHiG3TevMvJ7l+/Ps+xyu3Qi68Lajeimemf118M0eqAY26Xiw2"
+		+"wS8CCbj6UmUjcem3XOZhSfkZAgMBAAGgOzA5BgkqhkiG9w0BCQ4xLDAqMCgGA1Ud"
+		+"EQQhMB+CF29ydDMta3J1Lm5ldC5wb2xpc2VuLnNlhwQK/P/tMA0GCSqGSIb3DQEB"
+		+"BQUAA4IBAQCzAPsZdMqhPwCGpnq/Eywm5KQ4zYLuP8dQVdgvo4Wca2w4QxxjPlVI"
+		+"X/yyXLhA1CpiKq4PtkpTBpJiByowj8g/7Q/pLY/EQcfYOrut7CMx1FzmwghZ2lUn"
+		+"DDhFw2hD7TcmoAZpr4neXYR4HbaFpBc39nlqDa4XGi8J7d9AU4iaQE53LC3WzIq1"
+		+"/3ZCXboQAoeLMoPCDvzAiXKDBApMMzrBwhgdsiOe5k1e6jlpURsbuhiKs+0FxtMp"
+		+"snKPO0WbwXFyFTSWoKRH5rHrpD6lybn7c0uPkaQzrLoIRMld4osqeaImfZuJztZy"
+		+"C0elzlLYWFbX6zHEqvsUAZy/8Khgyw5Q").getBytes());
+
+    private static byte[] p10ReqWithAltNames2 = Base64.decode(
+            ("MIIBMzCB3gIBADAzMREwDwYDVQQDDAhzY2VwdGVzdDERMA8GA1UECgwIUHJpbWVL"
+			+"ZXkxCzAJBgNVBAYTAlNFMFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAIMasNAoxA9N"
+			+"6UknbjigXz5tJWWydLoVSQFUxcJM8cR4Kfb2bRLh3RDqCVyJQ0XITFUnmIJFU9Z8"
+			+"1W+nw1Gx8b0CAwEAAaBGMBUGCSqGSIb3DQEJBzEIDAZmb28xMjMwLQYJKoZIhvcN"
+			+"AQkOMSAwHjAcBgNVHREEFTATggtmb28uYmFyLmNvbYcECgAAATANBgkqhkiG9w0B"
+			+"AQUFAANBADUO2tpAkxaeB/2zY9wsfcwE5hGvcuA0oJwXlcMq1wm32MJFV1G9JJQI"
+			+"Exz4OC1eT1LH/6i5SU8Op3VOKVLpTTo=").getBytes());
+    
 
     /**
      * Creates a new TestCertTools object.
@@ -834,4 +871,53 @@ public class TestCertTools extends TestCase {
       log.debug("<test18DNSpaceTrimming()");	  
   }
 
+  public void test19getAltNameStringFromExtension() throws Exception {
+	  PKCS10CertificationRequest p10 = new PKCS10CertificationRequest(p10ReqWithAltNames);
+	  CertificationRequestInfo info = p10.getCertificationRequestInfo();
+      ASN1Set set = info.getAttributes();
+      // The set of attributes contains a sequence of with type oid PKCSObjectIdentifiers.pkcs_9_at_extensionRequest
+      Enumeration en = set.getObjects();
+      boolean found = false;
+      while (en.hasMoreElements()) {
+    	  ASN1Sequence seq = ASN1Sequence.getInstance(en.nextElement());
+    	  DERObjectIdentifier oid = (DERObjectIdentifier)seq.getObjectAt(0);
+    	  if (oid.equals(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest)) {
+    		  // The object at position 1 is a SET of x509extensions
+    		  DERSet s = (DERSet)seq.getObjectAt(1);
+    		  X509Extensions exts = X509Extensions.getInstance(s.getObjectAt(0));
+    		  X509Extension ext = exts.getExtension(X509Extensions.SubjectAlternativeName);
+    		  if (ext != null) {
+        		  found = true;
+        		  String altNames = CertTools.getAltNameStringFromExtension(ext);
+        		  assertEquals("dNSName=ort3-kru.net.polisen.se, iPAddress=10.252.255.237", altNames);
+    		  }
+    	  }
+      }
+      assertTrue(found);
+      
+	  p10 = new PKCS10CertificationRequest(p10ReqWithAltNames2);
+	  info = p10.getCertificationRequestInfo();
+      set = info.getAttributes();
+      // The set of attributes contains a sequence of with type oid PKCSObjectIdentifiers.pkcs_9_at_extensionRequest
+      en = set.getObjects();
+      found = false;
+      while (en.hasMoreElements()) {
+    	  ASN1Sequence seq = ASN1Sequence.getInstance(en.nextElement());
+    	  DERObjectIdentifier oid = (DERObjectIdentifier)seq.getObjectAt(0);
+    	  if (oid.equals(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest)) {
+    		  // The object at position 1 is a SET of x509extensions
+    		  DERSet s = (DERSet)seq.getObjectAt(1);
+    		  X509Extensions exts = X509Extensions.getInstance(s.getObjectAt(0));
+    		  X509Extension ext = exts.getExtension(X509Extensions.SubjectAlternativeName);
+    		  if (ext != null) {
+        		  found = true;
+        		  String altNames = CertTools.getAltNameStringFromExtension(ext);
+        		  assertEquals("dNSName=foo.bar.com, iPAddress=10.0.0.1", altNames);
+    		  }
+    	  }
+      }
+      assertTrue(found);
+      
+  }
+  
 }

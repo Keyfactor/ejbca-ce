@@ -77,6 +77,7 @@ import org.bouncycastle.asn1.x509.ReasonFlags;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
+import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.x509.X509NameEntryConverter;
@@ -97,7 +98,7 @@ import org.ejbca.util.dn.DnComponents;
 /**
  * Tools to handle common certificate operations.
  *
- * @version $Id: CertTools.java,v 1.46 2007-09-19 12:42:22 anatom Exp $
+ * @version $Id: CertTools.java,v 1.47 2007-10-04 13:23:54 anatom Exp $
  */
 public class CertTools {
     private static Logger log = Logger.getLogger(CertTools.class);
@@ -1164,6 +1165,41 @@ public class CertTools {
         return seq;
     }
     
+    /** Gets an altName string from an X509Extension
+     * 
+     * @param ext X509Extension with AlternativeNames
+     * @return String as defined in method getSubjectAlternativeName
+     */
+	public static String getAltNameStringFromExtension(X509Extension ext) {
+		String altName = null;
+		//GeneralNames
+		ASN1OctetString octs = ext.getValue();
+		if (octs != null) {
+			ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
+			DERObject obj;
+			try {
+				obj = aIn.readObject();
+				GeneralNames gan = GeneralNames.getInstance(obj);
+				GeneralName[] gns = gan.getNames();
+				for (int i = 0; i < gns.length; i++) {
+					GeneralName gn = gns[i];
+					int tag = gn.getTagNo();
+					DEREncodable name = gn.getName();
+					String str = CertTools.getGeneralNameString(tag, name);
+					if (altName == null) {
+						altName = str;
+					} else {
+						altName += ", "+str;
+					}
+				}
+			} catch (IOException e) {
+				log.error("IOException parsing altNames: ", e);
+				return null;
+			}					     
+		}
+		return altName;
+	}
+    
 	/**
 	 * SubjectAltName ::= GeneralNames
 	 *
@@ -1192,7 +1228,7 @@ public class CertTools {
 	 * @return String containing altNames of form "rfc822Name=email, dNSName=hostname, uniformResourceIdentifier=uri, iPAddress=ip, upn=upn, directoryName=CN=testDirName|dir|name" or null if no altNames exist. Values in returned String is from CertTools constants. AltNames not supported are simply not shown in the resulting string.  
 	 * @throws java.lang.Exception
 	 */
-	public static String getSubjectAlternativeName(X509Certificate certificate) throws Exception {
+	public static String getSubjectAlternativeName(X509Certificate certificate) throws CertificateParsingException, IOException {
 		log.debug("Search for SubjectAltName");
 		if (certificate.getSubjectAlternativeNames() == null)
 			return null;
@@ -1415,7 +1451,9 @@ public class CertTools {
             break;
         case 6: ret = CertTools.URI+"=" + DERIA5String.getInstance(value).getString();
             break;
-        case 7: // SubjectAltName of type iPAddr not supported
+        case 7: 
+        	ASN1OctetString oct = ASN1OctetString.getInstance(value);
+            ret = CertTools.IPADDR+"=" + StringTools.ipOctetsToString(oct.getOctets());
             break;
         default: // SubjectAltName of unknown type
             break;
