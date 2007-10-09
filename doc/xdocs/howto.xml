@@ -78,7 +78,11 @@ is operated by UT-Battelle for the U.S. Department Of Energy.
   <li><a href="http://download.primekey.se/ejbca/smartcardlogon/EJBCA-SmartCardLogon-Guide-Windows.pdf">Windows configuration</a></li>
   <li><a href="http://download.primekey.se/ejbca/smartcardlogon/EJBCA-SmartCardLogon-Guide-PKI.pdf">PKI configuration</a></li>
   </ul>
+  </p>
+  <p>
+  The scripts and profiles can be fetched <a href="http://download.primekey.se/ejbca/smartcardlogon/ReleasePackage">here</a>.
   </p>  
+  
   </section>
   
   <section name="Migrating an OpenSSL based CA">
