@@ -10,6 +10,8 @@
     <note>
     Presentations from the first EJBCA conference in Paris, 31st of January 2007, are available
     <a href="http://download.primekey.se/ejbca/conference20070131/">here</a>.
+    <br/><br/>
+    New Windows <a href="howto.html#Microsoft smart card logon">Smart card logon guide</a> available.
     </note>
     <note>
     EJBCA 3.5.1 is now available for <a
@@ -42,7 +44,7 @@ You can use EJBCA to issue certificates for different purposes such as:
 <ul>
 <li>Strong authentication for users accessing your intranet/extranet/internet resources.</li>
 <li>Secure communication with SSL servers and SSL clients.</li>
-<li>Smart card based login to Windows and/or Linux.</li>
+<li><a href="howto.html#Microsoft smart card logon">Smart card logon</a> to Windows and/or Linux.</li>
 <li>Signing and enrypting email.</li>
 <li>VPN connections by issuing certificates to your VPN routers such as OpenVPN, Cisco, Juniper etc.</li>
 <li>Client VPN access with certificates in users VPN clients.</li>
