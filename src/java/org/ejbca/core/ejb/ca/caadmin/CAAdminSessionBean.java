@@ -113,7 +113,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.58 2007-08-18 20:00:53 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.59 2007-10-10 12:15:43 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -1000,6 +1000,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
     	}
 
     	// Check that CA doesn't already exists
+    	CADataLocal oldcadata = null;
     	try{
     		int caid = cainfo.getCAId();
     		if(caid >=0 && caid <= CAInfo.SPECIALCAIDBORDER){
@@ -1007,18 +1008,31 @@ public class CAAdminSessionBean extends BaseSessionBean {
     			getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,msg);
     			throw new CAExistsException(msg);
     		}
-    		cadatahome.findByPrimaryKey(new Integer(caid));
-    		String msg = intres.getLocalizedMessage("caadmin.errorcaexists", cainfo.getName());            	
-    		getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,msg);
-    		throw new CAExistsException(msg);
+    		oldcadata = cadatahome.findByPrimaryKey(new Integer(caid));
     	}catch(javax.ejb.FinderException fe) {}
 
-    	try{
-    		cadatahome.findByName(cainfo.getName());
-    		String msg = intres.getLocalizedMessage("caadmin.errorcaexists", cainfo.getName());            	
-    		getLogSession().log(admin, admin.getCaId(), LogEntry.MODULE_CA,  new java.util.Date(), null, null, LogEntry.EVENT_ERROR_CAEDITED,msg);
-    		throw new CAExistsException(msg);
-    	}catch(javax.ejb.FinderException fe) {}
+    	if (oldcadata == null) {
+        	try{
+        		oldcadata = cadatahome.findByName(cainfo.getName());
+        	}catch(javax.ejb.FinderException fe) {}    		
+    	}
+
+    	boolean processinternalca = false;
+    	if (oldcadata != null) {
+    		// If we find an already existing CA, there is a good chance that we should throw an exception
+    		// Saying that the CA already exists.
+    		// However, if we have the same DN, and give the same name, we simply assume that the admin actually wants
+    		// to treat an internal CA as an external CA, perhaps there is different HSMs connected for root CA and sub CA?
+    		log.debug("Old castatus="+oldcadata.getStatus());
+    		if ( (oldcadata.getStatus() == SecConst.CA_WAITING_CERTIFICATE_RESPONSE) && (oldcadata.getCaId().intValue() == cainfo.getCAId()) && (oldcadata.getName().equals(cainfo.getName())) ) {
+    			// Yes, we have all the same DN, CAName and the old CA is waiting for a certificate response
+    			processinternalca = true;
+    			log.debug("Processing an internal CA, as an external.");
+    		} else {
+        		String msg = intres.getLocalizedMessage("caadmin.errorcaexists", cainfo.getName());            	
+        		throw new CAExistsException(msg);    			
+    		}
+    	}
 
     	//get signing CA
     	if(cainfo.getSignedBy() > CAInfo.SPECIALCAIDBORDER || cainfo.getSignedBy() < 0){
@@ -1054,19 +1068,22 @@ public class CAAdminSessionBean extends BaseSessionBean {
     				certchain.add(cacertificate);
     				certchain.addAll(rootcachain);
 
-    				if(cainfo instanceof X509CAInfo){
-    					// Create X509CA
-    					ca = new X509CA((X509CAInfo) cainfo);
-    					ca.setCertificateChain(certchain);
-    					CATokenContainer token = new CATokenContainerImpl(new NullCATokenInfo());
-    					ca.setCAToken(token);
+    				if (!processinternalca) {
+    					// If this is an internal CA, we don't create it and set a NULL token, since the CA is already created
+        				if(cainfo instanceof X509CAInfo){
+        					// Create X509CA
+        					ca = new X509CA((X509CAInfo) cainfo);
+        					ca.setCertificateChain(certchain);
+        					CATokenContainer token = new CATokenContainerImpl(new NullCATokenInfo());
+        					ca.setCAToken(token);
+        				}
+
+        				// set status to active
+        				cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_EXTERNAL, ca);    					
     				}
 
-    				// set status to active
-    				cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_EXTERNAL, ca);
-
     				// Publish CA certificates.
-    			    getSignSession().publishCACertificate(admin, ca.getCertificateChain(), ca.getCRLPublishers());
+    			    getSignSession().publishCACertificate(admin, certchain, signca.getCRLPublishers());
 
     			}catch(CATokenOfflineException e){
     	    		String msg = intres.getLocalizedMessage("caadmin.errorprocess", cainfo.getName());            	
@@ -2187,8 +2204,10 @@ public class CAAdminSessionBean extends BaseSessionBean {
   	 	X509Certificate cert = (X509Certificate) iter.next();
   	    if(CertTools.isSelfSigned(cert))
   	      rootca = cert;
-  	    else
-		  cacertmap.put(cert.getIssuerDN().toString(),cert);
+  	    else {
+  	    	log.debug("Adding to cacertmap with index '"+cert.getIssuerDN().toString()+"'");
+  	    	cacertmap.put(cert.getIssuerDN().toString(),cert);
+  	    }
   	 }
 
   	 if(rootca == null)
@@ -2198,6 +2217,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
   	 X509Certificate currentcert = rootca;
   	 int i =0;
   	 while(certlist.size() != returnval.size() && i <= certlist.size()){
+  		 log.debug("Looking in cacertmap for '"+currentcert.getSubjectDN().toString()+"'");
   	 	X509Certificate nextcert = (X509Certificate) cacertmap.get(currentcert.getSubjectDN().toString());
   	 	if(nextcert == null)
 		  throw new CertPathValidatorException("Error building certificate path");

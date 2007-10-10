@@ -330,7 +330,7 @@ Subordinate CAs are created using the admin GUI, you can not use the
 cli for that.
 </p>
 </subsection> 
-<subsection name="Creating a SubCA signed by en external CA">
+<subsection name="Creating a SubCA signed by an external CA">
 <p>
 When creating a CA that is signed by an external CA, you actually create a PKCS10 certificate request
 that is sent to the external CA. When the external CA returns your CAs certificate, this is processed and
@@ -362,6 +362,15 @@ certificate request exactly as created by the subCA, no blank lines etc.
 When you have received the signed certificate back from the external CA, edit the CA that
 created the request and press 'Receive Certificate Response'. 
 The PEM file must have no blank lines etc.
+</p>
+<p>
+You can treat an internal CA, i.e. a CA risiding on the same EJBCA instance as another CA, as an external CA. 
+From the SubCA this works just like the normal case, but on the RootCA you must choose the exact same CA Name as
+the already existing internal CA when you choose to "Process Certificate Request".  
+<br/>
+This can be useful if you have an HSM setup where only one set of keys can be active at one time, for example using nCipher with
+two different, non-persistens, operator cards sets for the RootCA and the SubCA. Using the SubCA as an external CA you can still create
+the PKI but with only one CA activa at a time.
 </p>
 </subsection> 
 <subsection name="Converting an OpenSSL CA">
