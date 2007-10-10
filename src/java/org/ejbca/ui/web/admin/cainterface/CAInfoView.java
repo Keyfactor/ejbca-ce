@@ -25,6 +25,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.HardCATokenInfo;
 import org.ejbca.core.model.ca.catoken.ICAToken;
+import org.ejbca.core.model.ca.catoken.NullCATokenInfo;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.rainterface.RevokedInfoView;
 
@@ -32,10 +33,11 @@ import org.ejbca.ui.web.admin.rainterface.RevokedInfoView;
 /**
  * A class representing a view of a CA Information view..
  *
- * @version $Id: CAInfoView.java,v 1.6 2007-07-26 11:10:39 anatom Exp $
+ * @version $Id: CAInfoView.java,v 1.7 2007-10-10 12:00:02 anatom Exp $
  */
 public class CAInfoView implements java.io.Serializable, Cloneable {
-    // Public constants.
+
+	// Public constants.
 
    public static final int NAME                    = 0;  
    public static final int SUBJECTDN               = 1;   
@@ -115,11 +117,17 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
             case SecConst.CA_WAITING_CERTIFICATE_RESPONSE :
               cainfodata[STATUS]     = ejbcawebbean.getText("WAITINGFORCERTRESPONSE");
               break;              
+            case SecConst.CA_EXTERNAL :
+                cainfodata[STATUS]     = ejbcawebbean.getText("EXTERNALCA");
+                break;              
         } 
 
         String tokentext = ejbcawebbean.getText("SOFT");
         if(cainfo.getCATokenInfo() instanceof HardCATokenInfo){
         	tokentext = ejbcawebbean.getText("HARDTOKEN");
+        }
+        if(cainfo.getCATokenInfo() instanceof NullCATokenInfo){
+        	tokentext = ejbcawebbean.getText("EXTERNALCA");
         }
         switch(cainfo.getCATokenInfo().getCATokenStatus()) {
         case ICAToken.STATUS_ACTIVE :

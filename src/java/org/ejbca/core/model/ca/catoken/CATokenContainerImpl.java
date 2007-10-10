@@ -46,12 +46,13 @@ import org.ejbca.util.KeyTools;
  * HardCATokenContainer is a class managing the persistent storage of a CA token.
  * 
  *
- * @version $Id: CATokenContainerImpl.java,v 1.5 2007-08-15 16:04:21 anatom Exp $
+ * @version $Id: CATokenContainerImpl.java,v 1.6 2007-10-10 12:00:02 anatom Exp $
  */
 public class CATokenContainerImpl extends CATokenContainer {
 
 	/** Log4j instance */
-	private static final Logger log = Logger.getLogger(SoftCAToken.class);
+	private static final Logger log = Logger.getLogger(CATokenContainerImpl.class);
+	
 	/** Internal localization of logs and errors */
 	private static final InternalResources intres = InternalResources.getInstance();
 
@@ -103,11 +104,13 @@ public class CATokenContainerImpl extends CATokenContainer {
 			}
 			sinfo.setClassPath(classpath);
 			info = sinfo;
+		} else if (catoken instanceof NullCAToken) {
+			NullCATokenInfo ninfo = new NullCATokenInfo();
+			info = ninfo;
 		} else {
 			HardCATokenInfo hinfo = new HardCATokenInfo();
 			info = hinfo;
-		}
-		
+		}		
 		info.setClassPath(getClassPath());
 		info.setProperties(getPropertyData());
 		info.setSignatureAlgorithm(getSignatureAlgorithm());
@@ -146,6 +149,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 		}			
 
 		if (catokeninfo instanceof NullCATokenInfo) {
+			log.debug("CA Token is CATOKENTYPE_NULL");
 			if (data.get(CATOKENTYPE) == null) {
 		    	data.put(CATOKENTYPE, new Integer(CATokenInfo.CATOKENTYPE_NULL));
 				changed = true;				
@@ -153,6 +157,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 		}
 
 		if (catokeninfo instanceof HardCATokenInfo) {
+			log.debug("CA Token is CATOKENTYPE_HSM");
 			if (data.get(CATOKENTYPE) == null) {
 				data.put(CATOKENTYPE, new Integer(CATokenInfo.CATOKENTYPE_HSM));
 				changed = true;
@@ -160,6 +165,7 @@ public class CATokenContainerImpl extends CATokenContainer {
 		}
 
 		if (catokeninfo instanceof SoftCATokenInfo) {
+			log.debug("CA Token is CATOKENTYPE_P12");
 			if (data.get(CATOKENTYPE) == null) {
 				data.put(CATOKENTYPE, new Integer(CATokenInfo.CATOKENTYPE_P12));
 				changed = true;

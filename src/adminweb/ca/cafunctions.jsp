@@ -52,7 +52,7 @@
     }
   }
 
-  TreeMap canames = ejbcawebbean.getInformationMemory().getCANames();
+  TreeMap canames = ejbcawebbean.getInformationMemory().getAllCANames();
 
 %>
 <head>
