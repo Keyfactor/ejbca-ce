@@ -32,7 +32,7 @@ import org.ejbca.core.model.log.Admin;
 /**
  * A class that looks up the which CA:s and certificate profiles the administrator is authorized to view.
  * 
- * @version $Id: CAAuthorization.java,v 1.1 2006-01-17 20:28:08 anatom Exp $
+ * @version $Id: CAAuthorization.java,v 1.2 2007-10-10 11:28:38 anatom Exp $
  */
 public class CAAuthorization implements Serializable {
     
@@ -52,7 +52,7 @@ public class CAAuthorization implements Serializable {
     
     
     /**
-     * Methos returning a Collection of authorizaed CA ids (Integer).
+     * Method returning a Collection of authorized CA id's (Integer).
      *
      */
     public Collection getAuthorizedCAIds() {         
