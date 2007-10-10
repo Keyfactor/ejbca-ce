@@ -41,6 +41,8 @@
   if(editca){
     cainfo = cabean.getCAInfo(caid).getCAInfo();
     catokeninfo = cainfo.getCATokenInfo();
+    signbyexternal = cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA;
+    isexternal = cainfo.getStatus() == SecConst.CA_EXTERNAL;
 
     if(catokeninfo instanceof SoftCATokenInfo){
        catokentype = CATokenInfo.CATOKENTYPE_P12;
@@ -48,11 +50,15 @@
     if(catokeninfo instanceof HardCATokenInfo){
        catokentype = CATokenInfo.CATOKENTYPE_HSM;
     }
+    if(catokeninfo instanceof NullCATokenInfo){
+        catokentype = CATokenInfo.CATOKENTYPE_NULL;
+     }
        catokenpath = catokeninfo.getClassPath();
        AvailableCAToken availablecatoken = CATokenManager.instance().getAvailableCAToken(catokenpath); 
        if(availablecatoken==null)
          throw new Exception("CA Token with classpath "+catokenpath+" is not available.");
-       if(!availablecatoken.isUsed())
+       // External CAs use NullCAToken which is not used
+       if(!availablecatoken.isUsed() && !isexternal)
          throw new Exception("HardCAToken is not used, configuration error.");
       if(availablecatoken.isTranslateable()){
         catokentext =  ejbcawebbean.getText(availablecatoken.getName());
@@ -63,8 +69,6 @@
     
     revokable = cainfo.getStatus() != SecConst.CA_REVOKED  && cainfo.getStatus() != SecConst.CA_WAITING_CERTIFICATE_RESPONSE && !cadatahandler.isCARevoked(cainfo);
 
-    signbyexternal = cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA;
-    isexternal = cainfo.getStatus() == SecConst.CA_EXTERNAL;
     waitingresponse = cainfo.getStatus() == SecConst.CA_WAITING_CERTIFICATE_RESPONSE;
 
     x509cainfo = (X509CAInfo) cainfo;
@@ -404,8 +408,7 @@ function checkallfields(){
       </tr>
     </form>
 
-    <% if(!isexternal) {
-         if(editca){ %>
+    <% if(editca){ %>
         <tr id="Row<%=row++%2%>">
           <td width="50%"  align="right">          
             <%= ejbcawebbean.getText("CATOKENTYPE") %>
@@ -432,7 +435,6 @@ function checkallfields(){
       </tr>
     </form>
     <%   }
-       }
      }%>
   <form name="ca" method="post" action="<%=THIS_FILENAME %>" ENCTYPE="post">
     <input type="hidden" name='<%= HIDDEN_CATOKENTYPE %>' value='<%=catokentype %>'>
