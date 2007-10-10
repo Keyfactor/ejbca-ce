@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Vector;
 
 import javax.ejb.EJBException;
 
@@ -60,6 +59,7 @@ import org.ejbca.core.model.ca.catoken.CATokenContainer;
 import org.ejbca.core.model.ca.catoken.CATokenContainerImpl;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.CATokenManager;
+import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.catoken.NullCATokenInfo;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ra.UserDataVO;
@@ -72,7 +72,7 @@ import org.ejbca.util.CertTools;
 /**
  * CA is a base class that should be inherited by all CA types
  *
- * @version $Id: CA.java,v 1.21 2007-09-19 12:42:20 anatom Exp $
+ * @version $Id: CA.java,v 1.22 2007-10-10 13:01:33 anatom Exp $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -463,7 +463,13 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     public abstract CRL generateCRL(Collection certs, int crlnumber) throws Exception;
     
     public abstract byte[] createPKCS7(Certificate cert, boolean includeChain) throws SignRequestSignatureException;            
-  
+
+    /** Creates a PKCS#10 certificate request, that can be sent to an external Root CA
+     * 
+     * @param attributes PKCS10 attributes to be included in the request, a Collection of DEREncodable objects, ready to put in the request. Can be null.
+     * @return byte array with binary encoded PKCS#10 request
+     */
+    public abstract byte[] createRequest(Collection attributes) throws CATokenOfflineException;
         
     public byte[] encryptKeys(KeyPair keypair) throws Exception{
     	ByteArrayOutputStream baos = new ByteArrayOutputStream();

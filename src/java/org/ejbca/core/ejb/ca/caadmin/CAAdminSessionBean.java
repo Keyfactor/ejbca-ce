@@ -48,7 +48,6 @@ import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 
 import org.apache.commons.lang.StringUtils;
-import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.X509KeyUsage;
@@ -113,7 +112,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.59 2007-10-10 12:15:43 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.60 2007-10-10 13:01:39 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -800,7 +799,6 @@ public class CAAdminSessionBean extends BaseSessionBean {
                     
                     // generate PKCS10CertificateRequest
                     // TODO implement PKCS10 Certificate Request attributes.
-                    ASN1Set attributes = null;
                     
                     /* We don't use these uneccesary attributes
                      DERConstructedSequence kName = new DERConstructedSequence();
@@ -810,9 +808,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
                      kName.addObject(kSeq);
                      req.setAttributes(kName);
                      */
-                    
-                    PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA",
-                            CertTools.stringToBcX509Name(ca.getSubjectDN()), ca.getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), attributes, ca.getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), ca.getCAToken().getProvider());
+                    byte[] req = ca.createRequest(null);
                     
                     // create PKCS10RequestMessage
                     returnval = new PKCS10RequestMessage(req);

@@ -53,10 +53,13 @@ import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1Set;
+import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.Attribute;
@@ -97,6 +100,7 @@ import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
+import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.x509.X509V2CRLGenerator;
@@ -140,7 +144,7 @@ import org.ejbca.util.dn.DnComponents;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.70 2007-09-19 12:42:20 anatom Exp $
+ * @version $Id: X509CA.java,v 1.71 2007-10-10 13:01:33 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -349,7 +353,38 @@ public class X509CA extends CA implements Serializable {
         }   
     }    
     
-    
+    public byte[] createRequest(Collection attributes) throws CATokenOfflineException {
+    	ASN1Set attrset = null;
+    	if (attributes != null) {
+    		log.debug("Adding attributes in the request");
+    		Iterator iter = attributes.iterator();
+			ASN1EncodableVector vec = new ASN1EncodableVector();
+    		while (iter.hasNext()) {
+    			DEREncodable o = (DEREncodable)iter.next();
+    			vec.add(o);
+    			attrset = new DERSet(vec);
+    		}
+    	}
+        X509NameEntryConverter converter = null;
+        if (getUsePrintableStringSubjectDN()) {
+        	converter = new PrintableStringEntryConverter();
+        } else {
+        	converter = new X509DefaultEntryConverter();
+        }
+        Vector dnorder = CertTools.getX509FieldOrder(getUseLdapDNOrder());
+        X509Name x509dn = CertTools.stringToBcX509Name(getSubjectDN(), converter, dnorder);
+        PKCS10CertificationRequest req;
+		try {
+			req = new PKCS10CertificationRequest("SHA1WithRSA",
+					x509dn, getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), attrset, getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), getCAToken().getProvider());
+	        return req.getEncoded();
+		} catch (CATokenOfflineException e) {
+			throw e;
+		} catch (Exception e) {
+            throw new javax.ejb.EJBException(e);
+		} 
+    }
+
     public Certificate generateCertificate(UserDataVO subject, 
                                            PublicKey publicKey, 
                                            int keyusage, 
