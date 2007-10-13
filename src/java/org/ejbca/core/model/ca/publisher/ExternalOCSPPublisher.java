@@ -19,6 +19,8 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import javax.transaction.UserTransaction;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ServiceLocator;
@@ -37,7 +39,7 @@ import org.ejbca.util.JDBCUtil;
  * Publisher writing certificates to an external Database, used by external OCSP responder.
  * 
  * @author lars
- * @version $Id: ExternalOCSPPublisher.java,v 1.12 2006-12-13 10:34:08 anatom Exp $
+ * @version $Id: ExternalOCSPPublisher.java,v 1.13 2007-10-13 15:10:59 anatom Exp $
  *
  */
 public class ExternalOCSPPublisher implements ICustomPublisher {
@@ -259,6 +261,7 @@ public class ExternalOCSPPublisher implements ICustomPublisher {
         try {
         	JDBCUtil.execute("SELECT NOW();", new DoNothingPreparer(), dataSource);
         } catch (Exception e) {
+        	log.error("Connection test failed: ", e);
             final PublisherConnectionException pce = new PublisherConnectionException("Connection in init failed: "+e.getMessage());
             pce.initCause(e);
             throw pce;
