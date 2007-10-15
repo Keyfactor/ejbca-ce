@@ -24,18 +24,18 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
 
 
 /**
- * An class interpreting the langage properties files. I contains one method getText that returns
- * the presented text in the users prefered language.
+ * An class interpreting the language properties files. I contains one method getText that returns
+ * the presented text in the users preferred language.
  *
  * @author  Philip Vendil
- * @version $Id: WebLanguages.java,v 1.5 2007-01-24 08:45:02 anatom Exp $
+ * @version $Id: WebLanguages.java,v 1.6 2007-10-15 09:32:24 anatom Exp $
  */
 public class WebLanguages implements java.io.Serializable {
 	
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    /** Construtor used to load static content. An instance must be declared with this constructor before
+    /** Constructor used to load static content. An instance must be declared with this constructor before
      *  any WebLanguage object can be used. */
     /** Special constructor used by Ejbca web bean */
     private void init(ServletContext servletContext, GlobalConfiguration globalconfiguration) throws IOException {
@@ -48,7 +48,7 @@ public class WebLanguages implements java.io.Serializable {
             for(int i=0; i < availablelanguages.length;i++){
                 availablelanguages[i] =  availablelanguages[i].trim().toUpperCase();
             }
-            // Load availabe languages
+            // Load available languages
             languages = new LanguageProperties[availablelanguages.length];
             for(int i = 0; i < availablelanguages.length; i++){
                 languages[i] = new LanguageProperties();
@@ -91,11 +91,11 @@ public class WebLanguages implements java.io.Serializable {
         }        
       }catch(java.lang.NullPointerException e){}
       if(returnvalue == null)
-        returnvalue= "No text available";
+        returnvalue= "No text available (" + template + ")";
       return returnvalue;
     }
 
-    /* Returns a textstring containing the available languages */
+    /* Returns a text string containing the available languages */
     public String[] getAvailableLanguages(){
       return availablelanguages;
     }

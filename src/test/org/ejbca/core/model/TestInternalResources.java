@@ -23,7 +23,7 @@ public class TestInternalResources extends TestCase {
 		InternalResources intres = InternalResourcesTestClass.getInstance();
 		
 		String res = intres.getLocalizedMessage("raadmin.foo");
-		assertEquals("No text available", res);
+		assertEquals("No text available (raadmin.foo)", res);
 	}
 
 	public void testGetLocalizedMessageStringObject() {

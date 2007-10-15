@@ -33,7 +33,7 @@ import org.ejbca.core.model.ra.raadmin.GlobalConfiguration;
  *  
  * @author Philip Vendil 2006 sep 24
  *
- * @version $Id: InternalResources.java,v 1.7 2007-02-02 18:09:42 anatom Exp $
+ * @version $Id: InternalResources.java,v 1.8 2007-10-15 09:32:25 anatom Exp $
  */
 public class InternalResources implements Serializable {
 	
@@ -342,7 +342,7 @@ public class InternalResources implements Serializable {
     		retval = secondaryResource.getProperty(key);
     	}
     	if(retval == null){
-    		retval = "No text available";
+    		retval = "No text available (" + key + ")";
     	}
     	return retval.trim();
     }
