@@ -7,12 +7,12 @@ You need to drop your jdbc driver in ${appserver.home}/server/default/lib
 
 Customize at will as this is mainly for development.
 
-$Id: ocsp-ds.xml,v 1.3 2007-04-26 07:00:01 anatom Exp $
+$Id: ocsp-ds.xml,v 1.4 2007-10-15 09:15:50 anatom Exp $
 
  -->
 
 <datasources>
-   <local-tx-datasource>
+   <no-tx-datasource>
 
       <!-- The jndi name of the DataSource, it is prefixed with java:/ -->
       <!-- Datasources are not available outside the virtual machine -->
@@ -61,6 +61,6 @@ $Id: ocsp-ds.xml,v 1.3 2007-04-26 07:00:01 anatom Exp $
       <track-statements/>
       -->
 
-   </local-tx-datasource>
+   </no-tx-datasource>
 
 </datasources>
