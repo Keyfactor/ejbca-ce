@@ -466,7 +466,8 @@ function checkallfields(){
         <% if(editca){
               out.write(cainfo.getSubjectDN() + "<br>"); 
            }else{ %>
-        <input type="text" name="<%=TEXTFIELD_SUBJECTDN%>" size="40" <% if(processrequest) out.write(" value='" + processedsubjectdn + "'"); %> maxlength="255">
+        <% /* Maxlength for the CA subject DN is based on 250 chars MySQL String mapping minus the "CN=OCSPSignerCertificate," string that is added for OCSP. */ %>
+        <input type="text" name="<%=TEXTFIELD_SUBJECTDN%>" size="40" <% if(processrequest) out.write(" value='" + processedsubjectdn + "'"); %> maxlength="225">
         <% } %>
       </td>
     </tr>

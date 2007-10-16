@@ -72,7 +72,7 @@ import java.util.Date;
  * @jonas.jdbc-mapping
  *   jndi-name="${datasource.jndi-name}"
  *   
- * @version $Id: LogEntryDataBean.java,v 1.7 2006-11-10 09:29:11 anatom Exp $
+ * @version $Id: LogEntryDataBean.java,v 1.8 2007-10-16 13:57:12 jeklund Exp $
  */
 public abstract class LogEntryDataBean extends BaseEntityBean {
 
@@ -177,7 +177,10 @@ public abstract class LogEntryDataBean extends BaseEntityBean {
      */
     public abstract String getComment();
 
+    private static final int COMMENT_MAXLEN = 249;	// 250-255 chars depending on current mapping.
+    
     /**
+     *  @param comment should never be longer than the database column can hold.
      */
     public abstract void setComment(String comment);
 
@@ -211,10 +214,14 @@ public abstract class LogEntryDataBean extends BaseEntityBean {
         setUsername(StringTools.strip(username));
         setCertificateSNR(certificatesnr);
         setEvent(event);
+        if (comment.length() > COMMENT_MAXLEN) {
+        	log.warn("Too large comment for LogEntry was truncated. The full comment was: " + comment);
+        	comment = comment.substring(0, COMMENT_MAXLEN-3) + "...";
+        }
         setComment(comment);
         return null;
     }
-
+    
     /**
      */
     public void ejbPostCreate(Integer id, int admintype, String admindata, int caid, int module, Date time, String username, String certificatesnr, int event, String comment) {
