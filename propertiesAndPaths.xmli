@@ -257,7 +257,7 @@
     <property name="httpsserver.bindaddress.pubhttp" value="0.0.0.0" />
     <property name="httpsserver.bindaddress.pubhttps" value="0.0.0.0" />
     <property name="httpsserver.bindaddress.privhttps" value="0.0.0.0" />
-    <property name="web.availablelanguages" value="EN,FR,IT,ES,SE,ZH,DE" />
+    <property name="web.availablelanguages" value="EN,FR,IT,ES,SE,ZH,DE,PT" />
     <property name="web.contentencoding" value="ISO-8859-1" />
     <property name="intresources.preferredlanguage" value="EN" />
     <property name="intresources.secondarylanguage" value="SE" />
