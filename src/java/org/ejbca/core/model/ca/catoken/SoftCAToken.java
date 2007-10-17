@@ -30,7 +30,7 @@ import org.ejbca.util.Base64;
 /** Handles maintenance of the soft devices producing signatures and handling the private key
  *  and stored in database.
  * 
- * @version $Id: SoftCAToken.java,v 1.16 2007-08-12 16:54:03 anatom Exp $
+ * @version $Id: SoftCAToken.java,v 1.17 2007-10-17 13:14:58 anatom Exp $
  */
 public class SoftCAToken extends BaseCAToken {
 
@@ -122,8 +122,7 @@ public class SoftCAToken extends BaseCAToken {
     		setKeys(keystore, authenticationcode);
     	} catch (Exception e) {
     		String msg = intres.getLocalizedMessage("catoken.erroractivate", e.getMessage());
-            log.info(msg);
-    		log.info(e);
+            log.info(msg, e);
     		CATokenOfflineException oe = new CATokenOfflineException(e.getMessage());
     		oe.initCause(e);
     		throw oe;
