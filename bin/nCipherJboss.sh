@@ -39,11 +39,13 @@ echo CMD_START = $CMD_START
 
 case "$1" in
 start)
-    $CMD_START
+	shift
+    $CMD_START "$@"
     ;;
 stop)
     $CMD_STOP
     ;;
 *)
-    echo "usage: $0 (start|stop|help)"
+    echo "usage: $0 ([-np] start|stop|help)"
+    echo " -np   Run without pre-load"
 esac

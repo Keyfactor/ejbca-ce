@@ -31,11 +31,11 @@ set PATH=%PATH%;%JAVAPTH%
 echo CMD_START = %CMD_START%
 
 if "%1" == "start" (
-	%CMD_START%
+	%CMD_START% %2 %3 %4 %5 %6 %7 %8
 )
 
 if "%1" == "-np" (
-	%CMD_START%
+	%CMD_START% %3 %4 %5 %6 %7 %8 %9
 )
 
 if "%1" == "stop" (
@@ -43,5 +43,6 @@ if "%1" == "stop" (
 )
 
 if "%1" == "" (
-    echo "usage: %0% (start|stop|help)"
+    echo "usage: %0% ([-np] start|stop|help)"
+    echo " -np   Run without pre-load"
 )
