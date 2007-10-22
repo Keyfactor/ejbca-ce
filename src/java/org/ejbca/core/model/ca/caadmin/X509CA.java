@@ -56,12 +56,14 @@ import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERIA5String;
+import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.Attribute;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
@@ -144,7 +146,7 @@ import org.ejbca.util.dn.DnComponents;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.71 2007-10-10 13:01:33 anatom Exp $
+ * @version $Id: X509CA.java,v 1.72 2007-10-22 08:43:58 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -760,6 +762,11 @@ public class X509CA extends CA implements Serializable {
              }
          }
          
+         // OCSP nocheck extension (rfc 2560)
+         if(certProfile.getUseOcspNoCheck()) {
+        	 certgen.addExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nocheck, false, new DERNull());
+         }
+
          // Microsoft Template
          if (certProfile.getUseMicrosoftTemplate() == true) {
              String mstemplate = certProfile.getMicrosoftTemplate();             

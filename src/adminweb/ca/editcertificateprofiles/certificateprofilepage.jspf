@@ -570,6 +570,19 @@ function checkallfields(){
                        out.write(" value=\"" + certificateprofiledata.getCRLIssuer() + "\"");%>>
       </td>
     </tr>
+    <%-- OCSP NoCheck extension --%>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("OCSPNOCHECK") %>
+      </td>
+      <td width="50%">
+           <input type="checkbox" name="<%=CHECKBOX_USEOCSPNOCHECK %>" value="<%=CHECKBOX_VALUE %>" 
+           <% if(certificateprofiledata.getUseOcspNoCheck())
+                 out.write("CHECKED");
+           %>> 
+      </td>
+    </tr>
+    
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("OCSPSERVICELOCATOR") %> <br> <%= ejbcawebbean.getText("USECADEFINEDOCSPLOC") %> <br> <%= ejbcawebbean.getText("OCSPSERVICELOCATORURI") %>
