@@ -71,7 +71,7 @@ import org.ejbca.util.CertTools;
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
  * @author  Philip Vendil
- * @version $Id: CAInterfaceBean.java,v 1.5 2006-10-31 08:24:11 anatom Exp $
+ * @version $Id: CAInterfaceBean.java,v 1.6 2007-10-24 10:47:49 anatom Exp $
  */
 public class CAInterfaceBean implements java.io.Serializable {
 
@@ -370,7 +370,19 @@ public class CAInterfaceBean implements java.io.Serializable {
 	   return history;
    }
     
-    // Private methods
+   /**
+    *  Help functions used by edit certificate profile pages used to temporary
+    *  save a profile so things can be canceled later.
+    */
+   public CertificateProfile getTempCertificateProfile(){
+	   return this.tempCertProfile;
+   }
+
+   public void setTempCertificateProfile(CertificateProfile profile){
+	   this.tempCertProfile = profile;
+   }
+   
+   // Private methods
 
     // Private fields
     private ICertificateStoreSessionLocal      certificatesession;
@@ -390,5 +402,5 @@ public class CAInterfaceBean implements java.io.Serializable {
     private CAInfo                                      cainfo;
     transient private PKCS10CertificationRequest       request;
     private Certificate	                             processedcert;
-    
+    private CertificateProfile                 tempCertProfile = null;
 }
