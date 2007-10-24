@@ -74,6 +74,32 @@ function checkusedefaultsecrldisturifield(){
 
 }
 
+function checkusefreshestcrlfield(){
+  if(document.editcertificateprofile.<%=CHECKBOX_USEFRESHESTCRL %>.checked){
+    document.editcertificateprofile.<%= CHECKBOX_USECADEFINEDFRESHESTCRL %>.disabled = false;
+    document.editcertificateprofile.<%= CHECKBOX_USECADEFINEDFRESHESTCRL %>.checked = false;
+    document.editcertificateprofile.<%= TEXTFIELD_FRESHESTCRLURI %>.disabled = false;
+    document.editcertificateprofile.<%= TEXTFIELD_FRESHESTCRLURI %>.value = "";
+  }
+  else{
+  	document.editcertificateprofile.<%= CHECKBOX_USECADEFINEDFRESHESTCRL %>.disabled = true;
+    document.editcertificateprofile.<%= CHECKBOX_USECADEFINEDFRESHESTCRL %>.checked = false;
+    document.editcertificateprofile.<%= TEXTFIELD_FRESHESTCRLURI %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_FRESHESTCRLURI %>.value = "";
+  }
+}
+
+function checkusecadefinedfreshestcrlfield(){
+  if(document.editcertificateprofile.<%=CHECKBOX_USECADEFINEDFRESHESTCRL %>.checked){
+  	document.editcertificateprofile.<%= TEXTFIELD_FRESHESTCRLURI %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_FRESHESTCRLURI %>.value = "";
+  }
+  else{
+    document.editcertificateprofile.<%= TEXTFIELD_FRESHESTCRLURI %>.disabled = false;
+    document.editcertificateprofile.<%= TEXTFIELD_FRESHESTCRLURI %>.value = "";
+  }
+}
+
 function checkuseocspservicelocatorfield(){
   if(document.editcertificateprofile.<%=CHECKBOX_USEOCSPSERVICELOCATOR %>.checked){    
     document.editcertificateprofile.<%= CHECKBOX_USEDEFAULTOCSPSERVICELOCALTOR %>.disabled = false;
@@ -570,6 +596,36 @@ function checkallfields(){
                        out.write(" value=\"" + certificateprofiledata.getCRLIssuer() + "\"");%>>
       </td>
     </tr>
+
+    <%-- Freshest CRL extension --%>
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("USEFRESHESTCRL") %> <br>  <%= ejbcawebbean.getText("USECADEFINEDFRESHESTCRL") %> <br> <%= ejbcawebbean.getText("FRESHESTCRLURI") %>
+       </td>
+      <td width="50%">
+           <input type="checkbox" name="<%=CHECKBOX_USEFRESHESTCRL %>" onClick="checkusefreshestcrlfield()" value="<%=CHECKBOX_VALUE %>" 
+           <% if(certificateprofiledata.getUseFreshestCRL())
+                 out.write("CHECKED");
+           %>> <br> 
+          <input type="checkbox" name="<%=CHECKBOX_USECADEFINEDFRESHESTCRL %>" onClick="checkusecadefinedfreshestcrlfield()" value="<%=CHECKBOX_VALUE %>" 
+           <%
+               if(!certificateprofiledata.getUseFreshestCRL())
+                 out.write(" disabled "); 
+               else
+                 if(certificateprofiledata.getUseCADefinedFreshestCRL())
+                 out.write(" CHECKED ");
+           %>> <br> 
+           <input type="text" name="<%=TEXTFIELD_FRESHESTCRLURI%>" size="60" maxlength="255" 
+           <%       if(!certificateprofiledata.getUseFreshestCRL() || certificateprofiledata.getUseCADefinedFreshestCRL())
+                      out.write(" disabled "); 
+                    else 
+                      if(!certificateprofiledata.getFreshestCRLURI().equals(""))
+                       out.write(" value=\"" + certificateprofiledata.getFreshestCRLURI() + "\""); 
+                      else
+                       out.write("");%>>
+      </td>
+    </tr>
+    
     <%-- OCSP NoCheck extension --%>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 

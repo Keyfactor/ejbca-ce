@@ -767,7 +767,20 @@ function checkallfields(){
            <% } %> 
       </td>
     </tr>
-        <tr  id="Row<%=row++%2%>"> 
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("CADEFINEDFRESHESTCRL") %> <br> (<%= ejbcawebbean.getText("USEDTOOVERIDECERTPROFILE") %>)
+      </td>
+      <td width="50%">
+           <% if(isexternal){
+                out.write("" + x509cainfo.getCADefinedFreshestCRL());
+              }else{ %>
+         <input type="text" name="<%=TEXTFIELD_CADEFINEDFRESHESTCRL%>" size="80" maxlength="255"
+            <% if(editca && (x509cainfo.getCADefinedFreshestCRL() != null)) out.write(" value='" + x509cainfo.getCADefinedFreshestCRL()+ "'");%>>
+           <% } %>
+      </td>
+     </tr>
+     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
         <%= ejbcawebbean.getText("DEFAULTOCSPLOCATOR") %> <br> (<%= ejbcawebbean.getText("USEDTOOVERIDECERTPROFILE") %>)
       </td>
@@ -992,3 +1005,4 @@ function checkallfields(){
 	<% } %>
         <% } %>   
   </table>
+  

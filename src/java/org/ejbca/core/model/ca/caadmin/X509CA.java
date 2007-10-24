@@ -146,7 +146,7 @@ import org.ejbca.util.dn.DnComponents;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.72 2007-10-22 08:43:58 anatom Exp $
+ * @version $Id: X509CA.java,v 1.73 2007-10-24 10:36:13 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -171,6 +171,7 @@ public class X509CA extends CA implements Serializable {
     protected static final String DEFAULTCRLDISTPOINT            = "defaultcrldistpoint";
     protected static final String DEFAULTCRLISSUER               = "defaultcrlissuer";
     protected static final String DEFAULTOCSPSERVICELOCATOR      = "defaultocspservicelocator";
+    protected static final String CADEFINEDFRESHESTCRL           = "cadefinedfreshestcrl";
     protected static final String USEUTF8POLICYTEXT              = "useutf8policytext";
     protected static final String USEPRINTABLESTRINGSUBJECTDN    = "useprintablestringsubjectdn";
     protected static final String USELDAPDNORDER                 = "useldapdnorder";
@@ -214,7 +215,7 @@ public class X509CA extends CA implements Serializable {
         		  getValidity(), getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(),
         		  getCAToken(caId).getCATokenInfo(), getDescription(), getRevokationReason(), getRevokationDate(), getPolicyId(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(), getCRLPublishers(),
         		  getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(),
-        		  getUseCRLNumber(), getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultCRLIssuer(), getDefaultOCSPServiceLocator(), getFinishUser(), externalcaserviceinfos, 
+        		  getUseCRLNumber(), getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultCRLIssuer(), getDefaultOCSPServiceLocator(), getCADefinedFreshestCRL(), getFinishUser(), externalcaserviceinfos, 
         		  getUseUTF8PolicyText(), getApprovalSettings(), getNumOfRequiredApprovals(), getUsePrintableStringSubjectDN(), getUseLdapDNOrder());
         super.setCAInfo(info);
     }
@@ -262,6 +263,17 @@ public class X509CA extends CA implements Serializable {
     	}     
     }
     
+    public String  getCADefinedFreshestCRL(){
+        return (String) data.get(CADEFINEDFRESHESTCRL);
+    }
+    
+    public void setCADefinedFreshestCRL(String cadefinedfreshestcrl) {
+        if(cadefinedfreshestcrl == null){
+            data.put(CADEFINEDFRESHESTCRL, "");
+        }else{
+            data.put(CADEFINEDFRESHESTCRL, cadefinedfreshestcrl);
+        }     
+    }
     public String  getDefaultOCSPServiceLocator(){return (String) data.get(DEFAULTOCSPSERVICELOCATOR);}
     public void setDefaultOCSPServiceLocator(String defaultocsplocator) {
     	if(defaultocsplocator == null){
@@ -302,6 +314,7 @@ public class X509CA extends CA implements Serializable {
     	  setCRLNumberCritical(info.getCRLNumberCritical());
     	  setDefaultCRLDistPoint(info.getDefaultCRLDistPoint());
     	  setDefaultCRLIssuer(info.getDefaultCRLIssuer());
+          setCADefinedFreshestCRL(info.getCADefinedFreshestCRL());
     	  setDefaultOCSPServiceLocator(info.getDefaultOCSPServiceLocator());
     	  setUseUTF8PolicyText(info.getUseUTF8PolicyText());
           setUsePrintableStringSubjectDN(info.getUsePrintableStringSubjectDN());
@@ -698,7 +711,7 @@ public class X509CA extends CA implements Serializable {
                 while (tokenizer.hasMoreTokens()) {
                     // 6 is URI
                     String uri = tokenizer.nextToken();
-                    GeneralName gn = new GeneralName(6, new DERIA5String(uri));
+                    GeneralName gn = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(uri));
                     log.debug("Added CRL distpoint: "+uri);
                     ASN1EncodableVector vec = new ASN1EncodableVector();
                     vec.add(gn);
@@ -748,6 +761,32 @@ public class X509CA extends CA implements Serializable {
                     certProfile.getCRLDistributionPointCritical(), ext);
             }
          }
+         
+         // Freshest CRL Distribution point URI
+         if (certProfile.getUseFreshestCRL() == true) {
+             String freshestcrldistpoint = certProfile.getFreshestCRLURI();
+             if(certProfile.getUseCADefinedFreshestCRL() == true){
+                 freshestcrldistpoint = getCADefinedFreshestCRL();
+             }
+             // Multiple FCDPs are separated with the ';' sign 
+            StringTokenizer tokenizer = new StringTokenizer(freshestcrldistpoint, ";", false);
+            ArrayList distpoints = new ArrayList();
+            while (tokenizer.hasMoreTokens()) {
+                String uri = tokenizer.nextToken();
+                GeneralName gn = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(uri));
+                log.debug("Added freshest CRL distpoint: "+uri);
+                ASN1EncodableVector vec = new ASN1EncodableVector();
+                vec.add(gn);
+                GeneralNames gns = new GeneralNames(new DERSequence(vec));
+                DistributionPointName dpn = new DistributionPointName(0, gns);
+                distpoints.add(new DistributionPoint(dpn, null, null));
+            }
+            if (distpoints.size() > 0) {
+                CRLDistPoint ext = new CRLDistPoint((DistributionPoint[])distpoints.toArray(new DistributionPoint[0]));
+                certgen.addExtension(X509Extensions.FreshestCRL.getId(), false, ext);
+            }
+         }
+         
          // Authority Information Access (OCSP url)
          if (certProfile.getUseOCSPServiceLocator() == true) {
              String ocspUrl = certProfile.getOCSPServiceLocatorURI();

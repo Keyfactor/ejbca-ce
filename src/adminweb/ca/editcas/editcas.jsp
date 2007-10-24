@@ -76,6 +76,7 @@
   static final String TEXTFIELD_DEFAULTCRLDISTPOINT   = "textfielddefaultcrldistpoint";
   static final String TEXTFIELD_DEFAULTCRLISSUER      = "textfielddefaultcrlissuer";
   static final String TEXTFIELD_DEFAULTOCSPLOCATOR    = "textfielddefaultocsplocator";
+  static final String TEXTFIELD_CADEFINEDFRESHESTCRL  = "textfieldcadefinedfreshestcrl";
   static final String TEXTFIELD_KEYSPEC               = "textfieldkeyspec";
   static final String TEXTFIELD_IMPORTCA_PASSWORD	  = "textfieldimportcapassword";
   static final String TEXTFIELD_IMPORTCA_SIGKEYALIAS  = "textfieldimportcasigkeyalias";
@@ -432,6 +433,11 @@
              String defaultcrlissuer = request.getParameter(TEXTFIELD_DEFAULTCRLISSUER);
              String defaultocsplocator  = request.getParameter(TEXTFIELD_DEFAULTOCSPLOCATOR);
               
+             String cadefinedfreshestcrl = "";
+             if (request.getParameter(TEXTFIELD_CADEFINEDFRESHESTCRL) != null) {
+                 cadefinedfreshestcrl = request.getParameter(TEXTFIELD_CADEFINEDFRESHESTCRL);
+             }
+             
              boolean finishuser = false;
              value = request.getParameter(CHECKBOX_FINISHUSER);
              if(value != null)
@@ -533,7 +539,7 @@
                                                         crlnumbercritical, 
                                                         defaultcrldistpoint,
                                                         defaultcrlissuer,
-                                                        defaultocsplocator,
+                                                        defaultocsplocator, cadefinedfreshestcrl,
                                                         finishuser, extendedcaservices,
                                                         useutf8policytext,
                                                         approvalsettings,
@@ -591,7 +597,7 @@
                                                         crlnumbercritical, 
                                                         defaultcrldistpoint,
                                                         defaultcrlissuer,
-                                                        defaultocsplocator,
+                                                        defaultocsplocator, cadefinedfreshestcrl,
                                                         finishuser, extendedcaservices,
                                                         useutf8policytext,
                                                         approvalsettings,
@@ -706,6 +712,11 @@
              String defaultcrldistpoint = request.getParameter(TEXTFIELD_DEFAULTCRLDISTPOINT);
              String defaultcrlissuer = request.getParameter(TEXTFIELD_DEFAULTCRLISSUER);
              String defaultocsplocator  = request.getParameter(TEXTFIELD_DEFAULTOCSPLOCATOR);
+
+             String cadefinedfreshestcrl = "";
+             if (request.getParameter(TEXTFIELD_CADEFINEDFRESHESTCRL) != null) {
+			 	cadefinedfreshestcrl = request.getParameter(TEXTFIELD_CADEFINEDFRESHESTCRL);
+			 }
               
              boolean finishuser = false;
              value = request.getParameter(CHECKBOX_FINISHUSER);
@@ -812,7 +823,7 @@
                                                       crlnumbercritical, 
                                                       defaultcrldistpoint,
                                                       defaultcrlissuer,
-                                                      defaultocsplocator,
+                                                      defaultocsplocator, cadefinedfreshestcrl,
                                                       finishuser,extendedcaservices,
                                                       useutf8policytext,
                                                       approvalsettings,
@@ -1036,7 +1047,7 @@
                                                         authoritykeyidentifiercritical,
                                                         usecrlnumber, 
                                                         crlnumbercritical, 
-                                                        "","","",
+                                                        "","","", "", 
                                                         finishuser, 
                                                         new ArrayList(),
                                                         useutf8policytext,

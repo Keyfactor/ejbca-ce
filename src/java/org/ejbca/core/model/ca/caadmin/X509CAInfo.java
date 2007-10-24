@@ -28,7 +28,7 @@ import org.ejbca.util.StringTools;
 /**
  * Holds nonsensitive information about a X509CA.
  *
- * @version $Id: X509CAInfo.java,v 1.11 2007-08-18 20:00:53 anatom Exp $
+ * @version $Id: X509CAInfo.java,v 1.12 2007-10-24 10:36:14 anatom Exp $
  */
 public class X509CAInfo extends CAInfo{
    
@@ -40,6 +40,7 @@ public class X509CAInfo extends CAInfo{
   String defaultcrldistpoint;
   String defaultcrlissuer;
   String defaultocsplocator;
+  String cadefinedfreshestcrl;
   String subjectaltname;
   boolean useUTF8PolicyText;
   boolean usePrintableStringSubjectDN;
@@ -52,7 +53,7 @@ public class X509CAInfo extends CAInfo{
                     int validity, Date expiretime, int catype, int signedby, Collection certificatechain, 
                     CATokenInfo catokeninfo, String description, int revokationreason, Date revokationdate, String policyid, int crlperiod, int crlIssueInterval, int crlOverlapTime, Collection crlpublishers,
                     boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
-                    boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocspservicelocator, boolean finishuser,
+                    boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocspservicelocator, String cadefinedfreshestcrl, boolean finishuser,
                     Collection extendedcaserviceinfos, boolean useUTF8PolicyText, Collection approvalSettings, int numOfReqApprovals, boolean usePrintableStringSubjectDN, boolean useLdapDnOrder) {
         this.subjectdn = StringTools.strip(CertTools.stringToBCDNString(subjectdn));
         this.caid = this.subjectdn.hashCode();
@@ -94,6 +95,7 @@ public class X509CAInfo extends CAInfo{
         this.defaultcrldistpoint = defaultcrldistpoint;
         this.defaultcrlissuer = defaultcrlissuer;
         this.defaultocsplocator = defaultocspservicelocator;
+        this.cadefinedfreshestcrl = cadefinedfreshestcrl;
         this.finishuser = finishuser;                     
         this.subjectaltname = subjectaltname;
         this.certificateprofileid = certificateprofileid;
@@ -111,7 +113,7 @@ public class X509CAInfo extends CAInfo{
     public X509CAInfo(int caid, int validity, CATokenInfo catokeninfo, String description,
                       int crlperiod, int crlIssueInterval, int crlOverlapTime, Collection crlpublishers,
                       boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
-                      boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocspservicelocator, 
+                      boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocspservicelocator, String cadefinedfreshestcrl,
                       boolean finishuser, Collection extendedcaserviceinfos, 
                       boolean useUTF8PolicyText, Collection approvalSettings, int numOfReqApprovals, boolean usePrintableStringSubjectDN, boolean useLdapDnOrder) {        
         this.caid = caid;
@@ -129,6 +131,7 @@ public class X509CAInfo extends CAInfo{
         this.defaultcrldistpoint = defaultcrldistpoint;
         this.defaultcrlissuer = defaultcrlissuer;
         this.defaultocsplocator = defaultocspservicelocator;
+        this.cadefinedfreshestcrl = cadefinedfreshestcrl;
         this.finishuser = finishuser;
 		this.extendedcaserviceinfos = extendedcaserviceinfos; 
         this.useUTF8PolicyText = useUTF8PolicyText;
@@ -164,6 +167,8 @@ public class X509CAInfo extends CAInfo{
   
   public String getDefaultOCSPServiceLocator(){ return defaultocsplocator; }
   
+  public String getCADefinedFreshestCRL(){ return this.cadefinedfreshestcrl; }
+
   public String getSubjectAltName(){ return subjectaltname; }
   
   public boolean getUseUTF8PolicyText() { return useUTF8PolicyText; } 

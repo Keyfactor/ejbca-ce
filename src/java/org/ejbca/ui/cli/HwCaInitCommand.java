@@ -120,6 +120,7 @@ public class HwCaInitCommand extends BaseCaAdminCommand {
                                              "", // Default CRL Dist Point
                                              "", // Default CRL Issuer
                                              "", // Default OCSP Service Locator
+  		                                     "", // CA defined freshest CRL
                                              true, // Finish User
                                              new ArrayList(),
 			                                 false, // use default utf8 settings

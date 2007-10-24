@@ -47,7 +47,7 @@ import org.ejbca.util.CertTools;
 /**
  * Tests the ca data entity bean.
  *
- * @version $Id: TestCAs.java,v 1.24 2007-08-21 08:45:00 jeklund Exp $
+ * @version $Id: TestCAs.java,v 1.25 2007-10-24 10:36:09 anatom Exp $
  */
 public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -161,6 +161,7 @@ public class TestCAs extends TestCase {
                     null, // defaultcrldistpoint 
                     null, // defaultcrlissuer 
                     null, // defaultocsplocator
+                    null, // defaultfreshestcrl
                     true, // Finish User
                     extendedcaservices,
                     false, // use default utf8 settings
@@ -294,6 +295,7 @@ public class TestCAs extends TestCase {
                     null, // defaultcrldistpoint 
                     null, // defaultcrlissuer 
                     null, // defaultocsplocator
+                    null, // defaultfreshestcrl
                     true, // Finish User
                     extendedcaservices,
                     false, // use default utf8 settings
@@ -393,6 +395,7 @@ public class TestCAs extends TestCase {
                     null, // defaultcrldistpoint 
                     null, // defaultcrlissuer 
                     null, // defaultocsplocator
+                    null, // defaultfreshestcrl
                     true, // Finish User
                     extendedcaservices,
                     false, // use default utf8 settings
@@ -491,6 +494,7 @@ public class TestCAs extends TestCase {
                     null, // defaultcrldistpoint 
                     null, // defaultcrlissuer 
                     null, // defaultocsplocator
+                    null, // defaultfreshestcrl
                     true, // Finish User
                     extendedcaservices,
                     false, // use default utf8 settings
@@ -579,6 +583,7 @@ public class TestCAs extends TestCase {
             		null, // defaultcrldistpoint 
             		null, // defaultcrlissuer 
             		null, // defaultocsplocator
+            		null, // defaultfreshestcrl
             		true, // Finish User
             		extendedcaservices,
             		false, // use default utf8 settings
@@ -670,6 +675,7 @@ public class TestCAs extends TestCase {
             		null, // defaultcrldistpoint 
             		null, // defaultcrlissuer 
             		null, // defaultocsplocator
+            		null, // defaultfreshestcrl
             		true, // Finish User
             		extendedcaservices,
             		false, // use default utf8 settings

@@ -563,6 +563,7 @@ public class ProtocolOcspHttpTest extends TestCase {
                     null, // defaultcrldistpoint 
                     null, // defaultcrlissuer 
                     null, // defaultocsplocator
+                    null, // defaultfreshestcrl
                     true, // Finish User
                     extendedcaservices,
                     false, // use default utf8 settings

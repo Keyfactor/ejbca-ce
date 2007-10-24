@@ -42,7 +42,7 @@ import org.ejbca.util.StringTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.19 2007-08-18 20:00:53 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.20 2007-10-24 10:36:19 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
@@ -185,6 +185,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                                              "", // Default CRL Dist Point
                                              "", // Default CRL Issuer
                                              "", // Default OCSP Service Locator
+                                             "", // CA defined freshest CRL
                                              true, // Finish User
                                              extendedcaservices,
 			                                 false, // use default utf8 settings

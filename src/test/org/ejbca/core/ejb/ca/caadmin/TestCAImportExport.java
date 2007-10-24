@@ -190,7 +190,8 @@ public class TestCAImportExport extends TestCase  {
                 false, // CRL Number Critical
                 "", // Default CRL Dist Point
                 "", // Default CRL Issuer
-                "", // Default OCSP Service Locator                                               
+                "", // Default OCSP Service Locator  
+                null, // defaultfreshestcrl
                 true, // Finish User
                 new ArrayList(), //extendedcaservices
                 false, // use default utf8 settings

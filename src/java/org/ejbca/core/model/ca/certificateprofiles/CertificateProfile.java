@@ -35,7 +35,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.21 2007-10-22 08:43:56 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.22 2007-10-24 10:36:10 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
@@ -43,7 +43,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Default Values
-    public static final float LATEST_VERSION = (float) 21.0;
+    public static final float LATEST_VERSION = (float) 22.0;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -127,6 +127,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String CRLDISTRIBUTIONPOINTCRITICAL   = "crldistributionpointcritical";
     protected static final String CRLDISTRIBUTIONPOINTURI        = "crldistributionpointuri";
     protected static final String CRLISSUER                      = "crlissuer";
+    protected static final String USEFRESHESTCRL                 = "usefreshestcrl";
+    protected static final String USECADEFINEDFRESHESTCRL        = "usecadefinedfreshestcrl";
+    protected static final String FRESHESTCRLURI                 = "freshestcrluri";    
     protected static final String USECERTIFICATEPOLICIES         = "usecertificatepolicies";
     protected static final String CERTIFICATEPOLICIESCRITICAL    = "certificatepoliciescritical";
     protected static final String CERTIFICATEPOLICYID            = "certificatepolicyid";
@@ -207,6 +210,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
       setUseDefaultCRLDistributionPoint(false);
       setCRLDistributionPointCritical(false);
       setCRLDistributionPointURI("");
+      setUseFreshestCRL(false);
+      setUseCADefinedFreshestCRL(false);
+      setFreshestCRLURI("");
 
       setUseCertificatePolicies(false);
       setCertificatePoliciesCritical(false);
@@ -356,6 +362,44 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(CRLISSUER,crlissuer);
     }
 
+    public boolean getUseFreshestCRL() {
+        Object obj = data.get(USEFRESHESTCRL);
+        if(obj == null) {
+            return false;
+        } else {
+            return ((Boolean) obj).booleanValue();
+        }
+    }
+    
+    public void setUseFreshestCRL(boolean usefreshestcrl) {
+        data.put(USEFRESHESTCRL, Boolean.valueOf(usefreshestcrl));
+    }
+    
+    public boolean getUseCADefinedFreshestCRL(){
+        Object obj = data.get(USECADEFINEDFRESHESTCRL);
+        if(obj == null) {
+            return false;
+        } else {
+            return ((Boolean) obj).booleanValue();
+        }
+    }
+    
+    public void setUseCADefinedFreshestCRL(boolean usecadefinedfreshestcrl) {
+        data.put(USECADEFINEDFRESHESTCRL, Boolean.valueOf(usecadefinedfreshestcrl));
+    }
+    
+    public String getFreshestCRLURI() {
+        return ((String) data.get(FRESHESTCRLURI));
+    }
+    
+    public void setFreshestCRLURI(String freshestcrluri) {
+        if (freshestcrluri == null) {
+            data.put(FRESHESTCRLURI, "");
+        } else {
+            data.put(FRESHESTCRLURI, freshestcrluri);
+        }
+    }
+    
     public boolean getUseCertificatePolicies() { return ((Boolean) data.get(USECERTIFICATEPOLICIES)).booleanValue(); }
     public void  setUseCertificatePolicies(boolean usecertificatepolicies) { data.put(USECERTIFICATEPOLICIES, Boolean.valueOf(usecertificatepolicies));}
     public boolean getCertificatePoliciesCritical() { return ((Boolean) data.get(CERTIFICATEPOLICIESCRITICAL)).booleanValue(); }
@@ -946,6 +990,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             
             if(data.get(USEOCSPNOCHECK) == null){
                 setUseOcspNoCheck(false); // v21
+            }
+            if(data.get(USEFRESHESTCRL) == null){
+                setUseFreshestCRL(false); // v22
+                setUseCADefinedFreshestCRL(false);
+                setFreshestCRLURI(null);
             }
             
             data.put(VERSION, new Float(LATEST_VERSION));

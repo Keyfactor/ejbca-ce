@@ -34,6 +34,7 @@
   static final String TEXTFIELD_VALIDITY               = "textfieldvalidity";
   static final String TEXTFIELD_CRLDISTURI             = "textfieldcrldisturi";
   static final String TEXTFIELD_CRLISSUER              = "textfieldcrlissuer";
+  static final String TEXTFIELD_FRESHESTCRLURI         = "textfieldfreshestcrluri";
 
   static final String TEXTFIELD_CERTIFICATEPOLICYID    = "textfieldcertificatepolicyid";
   static final String TEXTFIELD_POLICYNOTICE_CPSURL    = "textfielpolicynoticedcpsurl";
@@ -65,6 +66,8 @@
   static final String CHECKBOX_USEDEFAULTCRLDISTRIBUTIONPOINT     = "checkboxusedefaultcrldistributionpoint";
   static final String CHECKBOX_CRLDISTRIBUTIONPOINTCRITICAL       = "checkboxcrldistributionpointcritical";
   static final String CHECKBOX_USECERTIFICATEPOLICIES             = "checkusecertificatepolicies";
+  static final String CHECKBOX_USEFRESHESTCRL                     = "checkboxusefreshestcrl";
+  static final String CHECKBOX_USECADEFINEDFRESHESTCRL            = "checkboxusecadefinedfreshestcrl";
   static final String CHECKBOX_CERTIFICATEPOLICIESCRITICAL        = "checkcertificatepoliciescritical";
   static final String CHECKBOX_ALLOWVALIDITYOVERRIDE              = "checkallowvalidityoverride";
   static final String CHECKBOX_ALLOWKEYUSAGEOVERRIDE              = "checkallowkeyusageoverride";
@@ -232,9 +235,12 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
        certprofile = request.getParameter(HIDDEN_CERTIFICATEPROFILENAME);
        if(certprofile != null){
          if(!certprofile.trim().equals("")){
-           if(request.getParameter(BUTTON_SAVE) != null){
-             CertificateProfile certificateprofiledata = cabean.getCertificateProfile(certprofile);
-             // Save changes.
+
+             CertificateProfile certprofiledata = cabean.getTempCertificateProfile();
+             if(certprofiledata == null) {
+                 certprofiledata = cabean.getCertificateProfile(certprofile);
+             }
+             CertificateProfile certificateprofiledata = (CertificateProfile) certprofiledata.clone();
        
              String value = request.getParameter(TEXTFIELD_VALIDITY);
              if(value != null){
@@ -541,7 +547,33 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
                  certificateprofiledata.setUseOCSPServiceLocator(false);                 
                  certificateprofiledata.setOCSPServiceLocatorURI("");
              }
-              
+             
+             /* Freshest CRL extension */
+             use = false;
+             value = request.getParameter(CHECKBOX_USEFRESHESTCRL);
+             if(value != null){
+                 use = value.equals(CHECKBOX_VALUE);
+                 certificateprofiledata.setUseFreshestCRL(use);
+
+                 value = request.getParameter(CHECKBOX_USECADEFINEDFRESHESTCRL);
+                 if(value != null){
+                   certificateprofiledata.setUseCADefinedFreshestCRL(value.equals(CHECKBOX_VALUE));
+                 }else{
+                   certificateprofiledata.setUseCADefinedFreshestCRL(false);
+                 }          
+                  
+                 value = request.getParameter(TEXTFIELD_FRESHESTCRLURI);
+                 if(value != null && !certificateprofiledata.getUseCADefinedFreshestCRL()){
+                   value=value.trim();
+                   certificateprofiledata.setFreshestCRLURI(value);
+                 } 
+             }
+             else{
+                 certificateprofiledata.setUseFreshestCRL(false);                 
+                 certificateprofiledata.setFreshestCRLURI("");
+             }
+             
+             /* MS Domain controller extension */
              use = false;
              value = request.getParameter(CHECKBOX_USEMSTEMPLATE);
              if(value != null){
@@ -678,7 +710,12 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
                   }
              }
              
-              cabean.changeCertificateProfile(certprofile,certificateprofiledata);
+           /*
+            * Save changes.
+            */
+           if(request.getParameter(BUTTON_SAVE) != null) {
+               cabean.changeCertificateProfile(certprofile, certificateprofiledata);
+               cabean.setTempCertificateProfile(null);
            }
            if(request.getParameter(BUTTON_CANCEL) != null){
               // Don't save changes.
