@@ -185,7 +185,7 @@
    <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top"> 
         <div align="right"> 
-          <%= ejbcawebbean.getText("USEROBJECTCLASS") %>:
+          <%= ejbcawebbean.getText("USEROBJECTCLASS") %>
         </div>
       </td>
       <td width="50%" valign="top"> 
@@ -196,7 +196,7 @@
    <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top"> 
         <div align="right"> 
-          <%= ejbcawebbean.getText("CAOBJECTCLASS") %>:
+          <%= ejbcawebbean.getText("CAOBJECTCLASS") %>
         </div>
       </td>
       <td width="50%" valign="top"> 
@@ -207,7 +207,7 @@
    <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top"> 
         <div align="right"> 
-          <%= ejbcawebbean.getText("USERCERTIFICATEATTR") %>:
+          <%= ejbcawebbean.getText("USERCERTIFICATEATTR") %>
         </div>
       </td>
       <td width="50%" valign="top"> 
@@ -218,7 +218,7 @@
    <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top"> 
         <div align="right"> 
-          <%= ejbcawebbean.getText("CACERTIFICATEATTR") %>:
+          <%= ejbcawebbean.getText("CACERTIFICATEATTR") %>
         </div>
       </td>
       <td width="50%" valign="top"> 
@@ -229,7 +229,7 @@
    <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top"> 
         <div align="right"> 
-          <%= ejbcawebbean.getText("CRLATTRIBUTE") %>:
+          <%= ejbcawebbean.getText("CRLATTRIBUTE") %>
         </div>
       </td>
       <td width="50%" valign="top"> 
@@ -240,7 +240,7 @@
    <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top"> 
         <div align="right"> 
-      <%= ejbcawebbean.getText("ARLATTRIBUTE") %>:
+      <%= ejbcawebbean.getText("ARLATTRIBUTE") %>
         </div>
       </td>
       <td width="50%" valign="top"> 
