@@ -35,7 +35,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  * Contains help methods used to parse a publisher jsp page requests.
  *
  * @author  Philip Vendil
- * @version $Id: EditPublisherJSPHelper.java,v 1.7 2006-12-21 15:10:41 anatom Exp $
+ * @version $Id: EditPublisherJSPHelper.java,v 1.8 2007-10-25 09:15:34 anatom Exp $
  */
 public class EditPublisherJSPHelper implements java.io.Serializable {
 
@@ -106,6 +106,7 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
     public static final String CHECKBOX_LDAPUSESSL             = "checkboxldapusessl";
     public static final String CHECKBOX_LDAPCREATENONEXISTING  = "checkboxldapcreatenonexisting";
     public static final String CHECKBOX_LDAPMODIFYEXISTING     = "checkboxldapmodifyexisting";
+    public static final String CHECKBOX_LDAP_CREATEINTERMEDIATENODES = "checkboxldapcreateintermediatenodes";
     public static final String CHECKBOX_LDAPADDMULTIPLECERTIFICATES= "checkboxaldapddmultiplecertificates";
     public static final String CHECKBOX_LDAP_REVOKE_REMOVECERTIFICATE = "checkboxldaprevokeremovecertificate";
     public static final String CHECKBOX_LDAP_REVOKE_REMOVEUSERONCERTREVOKE = "checkboxldaprevokeuseroncertrevoke";
@@ -337,6 +338,12 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                                     ldappublisher.setModifyExistingUsers(value.equals(CHECKBOX_VALUE));
                                 else
                                     ldappublisher.setModifyExistingUsers(false);
+
+                                value = request.getParameter(CHECKBOX_LDAP_CREATEINTERMEDIATENODES);
+                                if(value != null)
+                                    ldappublisher.setCreateIntermediateNodes(value.equals(CHECKBOX_VALUE));
+                                else
+                                    ldappublisher.setCreateIntermediateNodes(false);
 
                                 value = request.getParameter(CHECKBOX_LDAPADDMULTIPLECERTIFICATES);
                                 if(value != null)

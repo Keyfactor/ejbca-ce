@@ -49,7 +49,7 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.26 2007-09-12 14:22:47 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.27 2007-10-25 09:15:35 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
@@ -59,7 +59,7 @@ public class LdapPublisher extends BasePublisher {
 	
 	protected static byte[] fakecrl = null;
 	
-	public static final float LATEST_VERSION = 5;
+	public static final float LATEST_VERSION = 6;
 	
 	public static final int TYPE_LDAPPUBLISHER = 2;
 		
@@ -92,8 +92,9 @@ public class LdapPublisher extends BasePublisher {
     protected static final String USEFIELDINLDAPDN         = "usefieldsinldapdn";
     protected static final String ADDMULTIPLECERTIFICATES  = "addmultiplecertificates";
     protected static final String REMOVEREVOKED            = "removerevoked";    
-    protected static final String REMOVEUSERONCERTREVOKE  = "removeusersoncertrevoke";    
-    
+    protected static final String REMOVEUSERONCERTREVOKE   = "removeusersoncertrevoke";    
+    protected static final String CREATEINTERMEDIATENODES  = "createintermediatenodes";
+
     public LdapPublisher(){
     	super();
     	data.put(TYPE, new Integer(TYPE_LDAPPUBLISHER));
@@ -269,15 +270,29 @@ public class LdapPublisher extends BasePublisher {
     			String msg = intres.getLocalizedMessage("publisher.ldapmodify", "CERT", oldDn);
                 log.info(msg);  
             } else {
-                if(this.getCreateNonExisingUsers()){     
-                  if (oldEntry == null) {                  	
-                    newEntry = new LDAPEntry(dn, attributeSet);
-                    log.debug("Adding DN: "+dn);
-                    lc.add(newEntry);
-        			String msg = intres.getLocalizedMessage("publisher.ldapadd", "CERT", dn);
-                    log.info(msg);
-                  }
-                }  
+            	if(this.getCreateNonExisingUsers()){     
+            		if (oldEntry == null) {           
+            			// Check if the intermediate parent node is present, and if it is not
+            			// we can create it, of allowed to do so by the publisher configuration
+            			if(getCreateIntermediateNodes()) {
+            				final String parentDN = dn.substring(dn.indexOf(',') + 1);
+            				try {
+            					lc.read(parentDN);
+            				} catch(LDAPException e) {
+            					if(e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
+            						this.createIntermediateNodes(lc, dn);
+                        			String msg = intres.getLocalizedMessage("publisher.ldapaddedintermediate", "CERT", parentDN);
+                        			log.info(msg);
+            					}
+            				}
+            			}
+            			newEntry = new LDAPEntry(dn, attributeSet);
+            			log.debug("Adding DN: "+dn);
+            			lc.add(newEntry);
+            			String msg = intres.getLocalizedMessage("publisher.ldapadd", "CERT", dn);
+            			log.info(msg);
+            		}
+            	}  
             }
         } catch (LDAPException e) {
 			String msg = intres.getLocalizedMessage("publisher.errorldapstore", "certificate", attribute, objectclass, dn);
@@ -301,6 +316,58 @@ public class LdapPublisher extends BasePublisher {
 		
 	}
 	
+    /**
+     * Creates intermediate nodes to host an LDAP entry at <code>dn</code>.
+     * @param lc Active LDAP connection
+     * @param dn Distinguished name
+     * @throws PublisherException
+     */
+    private void createIntermediateNodes(LDAPConnection lc, String dn) throws PublisherException {
+        LDAPAttributeSet attrSet;
+        LDAPEntry entry;
+        String dnFragment, rdn, field, value;
+        int ix = dn.lastIndexOf(getBaseDN()) - 1;
+
+        while((ix = dn.lastIndexOf(',', ix - 1)) >= 0) {
+            dnFragment = dn.substring(ix + 1);
+            rdn = dnFragment.substring(0, dnFragment.indexOf(','));
+            field = rdn.substring(0, rdn.indexOf('='));
+            value = rdn.substring(rdn.indexOf('=') + 1);
+            try {
+                lc.read(dnFragment);
+            } catch(LDAPException e) {
+                if(e.getResultCode() == LDAPException.NO_SUCH_OBJECT) {
+                    attrSet = new LDAPAttributeSet();
+                    attrSet.add(getObjectClassAttribute(field));
+                    attrSet.add(new LDAPAttribute(field.toLowerCase(), value));
+                    entry = new LDAPEntry(dnFragment, attrSet);
+
+                    try {
+                        lc.add(entry);
+                        log.debug("Created node " + dnFragment);
+                    } catch(LDAPException e1) {
+            			String msg = intres.getLocalizedMessage("publisher.ldapaddedintermediate", dnFragment);
+            			log.error(msg, e1);
+                        throw new PublisherException(msg);            
+                    }
+                }
+            }
+        }
+    }
+
+    private LDAPAttribute getObjectClassAttribute(String field) {
+        final String lowCaseField = field.toLowerCase();
+        if(lowCaseField.equals("o")) {
+            return new LDAPAttribute("objectclass", new String[] { "top", "organization" });
+        } else if(lowCaseField.equals("ou")) {
+            return new LDAPAttribute("objectclass", new String[] { "top", "organizationalUnit" });
+        } else {
+			String msg = intres.getLocalizedMessage("publisher.ldapintermediatenotappropriate", field);
+			log.warn(msg);
+            return new LDAPAttribute("objectclass");
+        }
+    }
+    
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
 	 */    
@@ -848,7 +915,18 @@ public class LdapPublisher extends BasePublisher {
         return removeuser;
     }
 
-	
+    public void setCreateIntermediateNodes( boolean createnodes ){
+        data.put(CREATEINTERMEDIATENODES, Boolean.valueOf(createnodes));  
+    }
+    
+    public boolean getCreateIntermediateNodes(){
+        boolean createnodes = false; //-- default value
+        if ( data.get(CREATEINTERMEDIATENODES) != null ) {
+            createnodes = ((Boolean)data.get(CREATEINTERMEDIATENODES)).booleanValue();
+        }
+        return createnodes;
+    }
+
     // Private methods
     /**
      * Creates an LDAPAttributeSet.
@@ -1185,6 +1263,10 @@ public class LdapPublisher extends BasePublisher {
             if(data.get(REMOVEUSERONCERTREVOKE) == null) {
                 setRemoveUsersWhenCertRevoked(false);                
             }
+            if(data.get(CREATEINTERMEDIATENODES) == null) {
+            	setCreateIntermediateNodes(false); // v6
+            }
+            
             data.put(VERSION, new Float(LATEST_VERSION));
         }
         log.debug("<upgrade");
