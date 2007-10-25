@@ -1,0 +1,174 @@
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<style>
+BODY, P, DIV, H1, H2, H3, H4, H5, H6, ADDRESS, OL, UL, TITLE, TD, OPTION, SELECT {
+ font-family: Verdana;
+ 
+}
+
+BODY, P, DIV, ADDRESS, OL, UL, LI, TITLE, TD, OPTION, SELECT {  
+  font-size: 10.0pt;
+  margin-top:0pt;  
+  margin-bottom:0pt;  
+} 
+
+BODY, P {
+  margin-left:0pt; 
+  margin-right:0pt;
+}
+
+BODY {
+  line-height: normal;
+
+  margin: 6px;
+  padding: 0px;
+}
+
+h6 { font-size: 10pt }
+h5 { font-size: 11pt }
+h4 { font-size: 12pt }
+h3 { font-size: 13pt }
+h2 { font-size: 14pt }
+h1 { font-size: 16pt }
+
+blockquote {padding: 10px; border: 1px #DDDDDD dashed }
+
+a img {border: 0}
+
+#doc-contents {
+  background-color: #ffffff;
+}
+
+
+</style>
+
+
+
+
+</head>
+
+
+<body revision="dhc53qvt_34dfj95t:115">
+
+<font size=5><b>DB2 for EJBCA under Linux</b></font><br>
+<br>
+The purpose of this paper is a description of the installation of DB2 and its
+preparation to work with EJBCA. Besides the installation is graphic only so be
+sure to have some X11 or X11 libraries installed in your server. We work here
+with <b>DB2 Express C 9.1.2.</b><br>
+For the most part the DB2 installation is automatic so don't worry it's going to
+be quick.<br>
+<br>
+<h1>
+  1. DB2 installation
+</h1>
+<ol>
+  <li>
+    Download DB2 Express C 9.1.2 Linux on IBM website :
+    <a href=http://www-306.ibm.com/software/data/db2/express/download.htm id=ncmo title=http://www-306.ibm.com/software/data/db2/express/download.htm>http://www-306.ibm.com/software/data/db2/express/download.htm</a>
+    ;<br>
+    Warning : A free IBM profile is required.<br>
+  </li>
+  <li>
+    Unpack the tarball ;<br>
+  </li>
+  <li>
+    Launch as root <i>exp/disk1/db2setup</i>. Your web browser will be launched
+    ;<br>
+  </li>
+  <li>
+    Now just follow the instructions ;<br>
+  </li>
+  <li>
+    You have now a DB2 with adminstration system installed.
+  </li>
+</ol>
+<br>
+<h1>
+  2. DB2 configuration for EJBCA<br>
+</h1>
+As DB2 do not manage users, DB2 users have to be local's or ldap's. So first of
+all we have to create a DB2 called EJBCA.<br>
+<br>
+<ol>
+  <li>
+    Open a console as root ;
+  </li>
+  <li>
+    Launch <i>adduser ejbca</i> and follow the instructions ;
+  </li>
+  <li>
+    Login as <i>db2inst1</i> (<i> "su - db2inst1" )</i>;
+  </li>
+  <li>
+    Type <i>db2cc</i>, it will launch the administration control center of DB2 ;<br>
+    You can see all of your DB2 server here and first of all the local one.<br>
+  </li>
+  <li>
+    Choose your DB2 server and your instance <i>db2inst1</i> and the Databases
+    directory
+    (<a href=http://img231.imageshack.us/img231/8499/snapshot1yt1.png id=biy6 title=screenshot1>screenshot1</a>);<br>
+    <br>
+  </li>
+  <li>
+    Click on <i>Create New Database</i> ;
+  </li>
+  <li>
+    Type <i>EJBCA</i> in "Database name"
+    (<a href=http://img231.imageshack.us/img231/9127/snapshot2jz9.png id=a_h: title=screenshot2>screenshot2</a>),
+    then "Next", "Next", "Next", "Next", "Next" and "Finish" ;
+  </li>
+  <li>
+    The database will be created, just wait ;
+  </li>
+  <li>
+    Now choose <i>EJBCA</i> in "Databases" and after <i>Schemas </i>and click on
+    <i>Create New Schema</i>
+    (<a href=http://img231.imageshack.us/img231/8136/snapshot3up8.png id=t3ej title=screenshot3>screenshot3</a>);
+  </li>
+  <li>
+    Type <i>EJBCA</i> in "Schema name" and choose <i>EJBCA </i>to "Authorization
+    name", then click on "OK"
+    (<a href=http://img231.imageshack.us/img231/9907/snapshot4sh9.png id=i.g1 title=screenshot4>screenshot4</a>);
+  </li>
+  <li>
+    Now we have to create a table space to EJBCA, the better way is to create it
+    with the command editor (cf. EJBCA with DB2 installation).<br>
+    Select Tools-&gt;Command Editor and execute one by one the following
+    commands
+    (<a href=http://img231.imageshack.us/img231/6575/snapshot5wh0.png id=xzy- title=screenshot5>screenshot5</a>,<a href=http://img231.imageshack.us/img231/8648/snapshot6be6.png id=x.8_ title=screenshot>screenshot6</a>)
+    :<br>
+    <blockquote>
+      CREATE BUFFERPOOL "BP16K" SIZE 2500 <font color=#ff0000>PAGESIZE
+      16384</font> NOT EXTENDED STORAGE;<br>
+      <br>
+      CONNECT RESET;<br>
+      <br>
+      CONNECT TO EJBCA;<br>
+      <br>
+      CREATE REGULAR TABLESPACE EJBCADB_DATA_01 IN DATABASE PARTITION<br>
+      GROUP IBMDEFAULTGROUP <font color=#ff0000>PAGESIZE 16384</font> MANAGED BY
+      DATABASE USING<br>
+      (FILE '/home/db2inst1/db2inst1/EJBCA/ejbcadb_data_01.dbf'512000)
+      EXTENTSIZE 32<br>
+      PREFETCHSIZE 32 BUFFERPOOL BP16K OVERHEAD 7.500000<br>
+      TRANSFERRATE 0.060000 FILE SYSTEM CACHING DROPPED TABLE RECOVERY ON;<br>
+    </blockquote>
+  </li>
+  <li>
+    Warning : '512000' is not the size of the table space, 512000*16384 equal
+    7.9 Go is. So be careful when you create your table space and maybe change
+    this 512000 to a more accurate number. Don't worry you can change it if you
+    need more space for your database.<br>
+    To do that, just select the table space "EJBCA_DATA_01", click on "Alter
+    Tablespace", then click on "Containers", then select the only container and
+    click on "Change..." and now change the value of the container size
+    (<a href=http://img230.imageshack.us/img230/8379/snapshot7ve3.png id=t-vq title=screenshot7>screenshot7</a>).
+  </li>
+  <li>
+    So you have create the database for EJBCA, now you have to install EJBCA.<br>
+  </li>
+</ol></body>
+</html>

@@ -192,6 +192,11 @@ IBMs JDBC driver:
 - db2jcc.jar
 - db2jcc_license_c.jar
 
+How to install DB2 for Linux is explained in DB2_for_EJBCA_under_Linux.html.
+
+How to set up and install EJBCA and JBoss is described in DB2_with_EJBCA_installation.pdf
+
+Old reference text below (ignore this):
 In DB2 the name of constraints can not exceed 18 characters, when JBoss starts EJBCA a normal create table statement is:
   CREATE TABLE HARDTOKENISSUERDATA (id INTEGER NOT NULL, alias VARCHAR(254), adminGroupId INTEGER NOT NULL, data BLOB(2000), CONSTRAINT PK_HARDTOKENISSUERDATA PRIMARY KEY (id))
 which does not work, instead we want to use:
