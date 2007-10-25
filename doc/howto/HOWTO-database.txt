@@ -192,9 +192,9 @@ IBMs JDBC driver:
 - db2jcc.jar
 - db2jcc_license_c.jar
 
-How to install DB2 for Linux is explained in DB2_for_EJBCA_under_Linux.html.
+How to install DB2 for Linux is explained in DB2_for_EJBCA_under_Linux.odt.
 
-How to set up and install EJBCA and JBoss is described in DB2_with_EJBCA_installation.pdf
+How to set up and install EJBCA and JBoss is described in DB2_with_EJBCA_installation.odt
 
 Old reference text below (ignore this):
 In DB2 the name of constraints can not exceed 18 characters, when JBoss starts EJBCA a normal create table statement is:
