@@ -49,7 +49,7 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.27 2007-10-25 09:15:35 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.28 2007-10-25 10:31:28 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
@@ -355,6 +355,17 @@ public class LdapPublisher extends BasePublisher {
         }
     }
 
+    /**
+     * Returns an LDAPAttribute initialized with the LDAP object class
+     * definition that corresponds to a DN <code>field</code>.
+     * <p>The only allowed fields are </code>O</code> (organization) and
+     * <code>OU</code> (organizationalUnit).</p>
+     *
+     * @param field A DN field (case-insensitive). Only <code>O</code> and
+     * <code>OU</code> are allowed. 
+     * @return LDAPAttribute initialized with the LDAP object class definition
+     * that corresponds to a DN <code>field</code>.
+     */
     private LDAPAttribute getObjectClassAttribute(String field) {
         final String lowCaseField = field.toLowerCase();
         if(lowCaseField.equals("o")) {
