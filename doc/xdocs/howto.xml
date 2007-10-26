@@ -141,7 +141,9 @@ auto-enroll regenerate
   </p>
   <source>
 ERROR [PKCS10RequestMessage] No CN in DN: SN=12013150+unstructuredName=your.ciscobox.hosts.name
-ERROR [Log4jLogDevice] October 19, 2005 9:48:33 AM CEST, CAId : 0, CA, EVENT_ERROR_USERAUTHENTICATION, Administrator : PUBLICWEBUSER, IP Address : 192.168.134.1, User : 12013150, Certificate : No Certificate Involved, Comment : Got request for nonexisting user: 12013150
+ERROR [Log4jLogDevice] October 19, 2005 9:48:33 AM CEST, CAId : 0, CA, EVENT_ERROR_USERAUTHENTICATION, Administrator : \
+PUBLICWEBUSER, IP Address : 192.168.134.1, User : 12013150, Certificate : No Certificate Involved, Comment : \
+Got request for nonexisting user: 12013150
   </source>
   <p>
   So, you know you must add an entity using the serial number as username, the password you define in IOS, and serialNumber/unstructuredNamed as subject DN fields.
