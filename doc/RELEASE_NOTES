@@ -1,3 +1,19 @@
+EJBCA 3.5.2
+-----------
+This is a minor release, fixing some bugs and introducing some minor improvements.
+
+Notable changes are:
+- Support for Luna HSM was broken
+- Files for building debian package included
+- Portugeese translation of Admin-GUI
+- Optimized CRL generation for generating CRLs with more than 100.000 revoked certificate
+- Possible to use altNames in External RA SCEP service, and require a specific password 
+- and some other fixes... 
+
+Read the changelog for details.
+
+This is a plug-in upgrade from 3.5.x. See UPGRADE for the simple instructions.
+
 EJBCA 3.5.1
 -----------
 This is a minor fix release, fixing an installation issue with 3.5.0 and some other minor bugs.

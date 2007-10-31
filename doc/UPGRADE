@@ -1,4 +1,4 @@
-$Id: UPGRADE,v 1.41 2007-08-28 10:47:26 anatom Exp $
+$Id: UPGRADE,v 1.42 2007-10-31 12:10:00 anatom Exp $
 
 UPGRADE
 =======
@@ -18,6 +18,17 @@ If you use the patch file to upgrade use a command like:
 After this you must do:
 - ant clean
 - ant deploy
+
+From EJBCA 3.5.x to EJBCA 3.5.x
+-------------------------------
+See release notes for details between certain versions. 
+Normally upgrades within a major release are plug-in upgrades.
+
+Simply copy conf/*.properties from the earlier installation.
+Merge changes (if there are any) from *.properties.sample into your *.properties.
+Copy the directory 'p12' from the earlier installation and do 'ant deploy' with the new version.
+
+Also note the possibility to use 'ejbca-custom' directory in EJBCA 3.5.x, see User's Guide.
 
 From EJBCA 3.4.x to EJBCA 3.5.x
 -------------------------------
