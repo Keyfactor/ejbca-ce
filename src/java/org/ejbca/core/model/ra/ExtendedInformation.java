@@ -26,7 +26,7 @@ import org.ejbca.core.model.UpgradeableDataHashMap;
  * like a image, in an effort to minimize the need for database alterations
  *
  * @author  Philip Vendil
- * @version $Id: ExtendedInformation.java,v 1.13 2007-07-26 07:41:10 anatom Exp $
+ * @version $Id: ExtendedInformation.java,v 1.14 2007-10-31 14:00:36 anatom Exp $
  */
 public class ExtendedInformation extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(ExtendedInformation.class);
@@ -46,15 +46,19 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     
     public static final float LATEST_VERSION = 1;    
 
+    /** Different types of implementations of extended information, can be used to have different implementing classes of extended information */
     public static final int TYPE_BASIC = 0;
-    public static final int TYPE_SCEPRA = 1;
     
     public static final String TYPE = "type";
 
     // protected fields.
+    /** Used to store subject directory attributes, which are put in an extension in the certificate.
+     * SubjectDirectoryAttributes are standard attributes, see rfc3280 */
     protected static final String SUBJECTDIRATTRIBUTES = "subjectdirattributes";
-
+    /**  the revocation code identifier primarily used in the XKMS protocol to let the end user revoke his certificate
+     * see the XKMS specification */
     protected static final String XKMSREVOCATIONCODEIDENTIFIER = "revocationcodeidentifier";
+    /** Custom data can be used by various custom work-flows and other non-standard things to store information needed  */
     protected static final String CUSTOMDATA = "customdata_";
     
     
@@ -155,12 +159,12 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     /** Function required by XMLEncoder to do a proper serialization. */
     public Object getData() {return saveData();}
     
-    /** Implemtation of UpgradableDataHashMap function getLatestVersion */
+    /** Implementation of UpgradableDataHashMap function getLatestVersion */
     public float getLatestVersion(){
        return LATEST_VERSION;
     }
 
-    /** Implemtation of UpgradableDataHashMap function upgrade. */
+    /** Implementation of UpgradableDataHashMap function upgrade. */
 
     public void upgrade(){
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {

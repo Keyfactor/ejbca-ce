@@ -29,7 +29,7 @@ import org.ejbca.util.StringTools;
 /**
  * Holds admin data collected from UserData in the database. Strings are stored in Base64 encoded format to be safe for storing in database, xml etc.
  *
- * @version $Id: UserDataVO.java,v 1.9 2006-11-03 17:10:23 anatom Exp $
+ * @version $Id: UserDataVO.java,v 1.10 2007-10-31 14:00:36 anatom Exp $
  */
 public class UserDataVO implements Serializable {
 
@@ -247,10 +247,6 @@ public class UserDataVO implements Serializable {
                 
             	int type = ((Integer) data.get(ExtendedInformation.TYPE)).intValue();
             	switch(type){
-            	  case ExtendedInformation.TYPE_SCEPRA :
-            		returnval = (ExtendedInformation) UserDataBean.class.getClassLoader().loadClass(SCEPRAExtendedInformation.class.getName()).newInstance();            	
-              		returnval.loadData(data);
-              		break;
             	  case ExtendedInformation.TYPE_BASIC :
               		returnval = (ExtendedInformation) UserDataBean.class.getClassLoader().loadClass(ExtendedInformation.class.getName()).newInstance();            	
               		returnval.loadData(data);
