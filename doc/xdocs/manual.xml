@@ -3243,7 +3243,7 @@ The search done by ejbca will be equal to the search:<br></br>
 ldapsearch -x -b "dc=primekey,dc=se" "(uid=$USERNAME)"
 </p><p>
 $USERNAME is replaced by the EJBCA username of the user that has had a new certificate just generated.
-Other variables apart from $USERNAME is $CN, $O, $OU and $C where these values are taken from the certificate DN.
+Other variables apart from $USERNAME is $EMAIL, $CN, $O, $OU and $C where these values are taken from the certificate DN.
 </p><p>
 When a certificate is generated for say user "ldap" EJBCA will perform the search:<br></br>
 ldapsearch -x -b "dc=primekey,dc=se" "(uid=ldap)"
