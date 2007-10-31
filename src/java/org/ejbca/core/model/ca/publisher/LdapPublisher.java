@@ -49,7 +49,7 @@ import com.novell.ldap.LDAPModification;
 /**
  * LdapPublisher is a class handling a publishing to various v3 LDAP catalouges.  
  *
- * @version $Id: LdapPublisher.java,v 1.28 2007-10-25 10:31:28 anatom Exp $
+ * @version $Id: LdapPublisher.java,v 1.29 2007-10-31 09:40:04 anatom Exp $
  */
 public class LdapPublisher extends BasePublisher {
 	 	
@@ -170,7 +170,7 @@ public class LdapPublisher extends BasePublisher {
         String email = CertTools.getEMailAddress((X509Certificate)incert);
 
         // Check if the entry is already present, we will update it with the new certificate.
-        LDAPEntry oldEntry = searchOldEntity(username, ldapVersion, lc, dn);
+        LDAPEntry oldEntry = searchOldEntity(username, ldapVersion, lc, dn, email);
 
         // PART 2: Create LDAP entry
         LDAPEntry newEntry = null;
@@ -401,7 +401,7 @@ public class LdapPublisher extends BasePublisher {
         }
 
         // Check if the entry is already present, we will update it with the new certificate.
-        LDAPEntry oldEntry = searchOldEntity(null, ldapVersion, lc, dn);
+        LDAPEntry oldEntry = searchOldEntity(null, ldapVersion, lc, dn, null);
 
         LDAPEntry newEntry = null;
         ArrayList modSet = new ArrayList();
@@ -498,8 +498,11 @@ public class LdapPublisher extends BasePublisher {
             throw new PublisherException(msg);            
         }
 
+        // Extract the users email from the cert.
+        String email = CertTools.getEMailAddress((X509Certificate)cert);
+
         // Check if the entry is already present, we will update it with the new certificate.
-        LDAPEntry oldEntry = searchOldEntity(username, ldapVersion, lc, dn);
+        LDAPEntry oldEntry = searchOldEntity(username, ldapVersion, lc, dn, email);
         
         ArrayList modSet = new ArrayList();
                                 
@@ -578,7 +581,7 @@ public class LdapPublisher extends BasePublisher {
     /** SearchOldEntity is the only method differing between regular ldap and ldap search publishers.
      *  Aprat from how they find existing users, the publishing works the same.
      */
-    protected LDAPEntry searchOldEntity(String username, int ldapVersion, LDAPConnection lc, String dn) throws PublisherException {
+    protected LDAPEntry searchOldEntity(String username, int ldapVersion, LDAPConnection lc, String dn, String email) throws PublisherException {
         LDAPEntry oldEntry = null; // return value
         try {
             // connect to the server

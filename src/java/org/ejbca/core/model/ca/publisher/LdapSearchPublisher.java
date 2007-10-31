@@ -38,9 +38,9 @@ public class LdapSearchPublisher extends LdapPublisher {
 	
 
     /** SearchOldEntity is the only method differing between regular ldap and ldap search publishers.
-     *  Aprat from how they find existing users, the publishing works the same.
+     *  Apart from how they find existing users, the publishing works the same.
      */
-    protected LDAPEntry searchOldEntity(String username, int ldapVersion, LDAPConnection lc, String dn) throws PublisherException {
+    protected LDAPEntry searchOldEntity(String username, int ldapVersion, LDAPConnection lc, String dn, String email) throws PublisherException {
         LDAPEntry oldEntry = null; // return value
         int searchScope;
         String searchbasedn;
@@ -63,6 +63,10 @@ public class LdapSearchPublisher extends LdapPublisher {
 			if (username != null) {
 				Pattern USER = Pattern.compile("\\$USERNAME", Pattern.CASE_INSENSITIVE);
 				searchFilter = USER.matcher(searchFilter).replaceAll(username);
+			}
+			if (email != null) {
+				Pattern EMAIL = Pattern.compile("\\$EMAIL", Pattern.CASE_INSENSITIVE);
+				searchFilter = EMAIL.matcher(searchFilter).replaceAll(email);
 			}
 			if (CertTools.getPartFromDN(dn, "CN") != null) {
 				Pattern CN = Pattern.compile("\\$CN", Pattern.CASE_INSENSITIVE);
