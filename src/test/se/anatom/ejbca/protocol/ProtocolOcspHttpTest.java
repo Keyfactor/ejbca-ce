@@ -79,6 +79,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
+import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.core.model.ra.UserDataConstants;
@@ -539,7 +540,9 @@ public class ProtocolOcspHttpTest extends TestCase {
                     keySpec,
                     CATokenConstants.KEYALGORITHM_ECDSA));
 
-
+            ArrayList policies = new ArrayList(1);
+            policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
+            
             X509CAInfo cainfo = new X509CAInfo(dn,
                     dn, SecConst.CA_ACTIVE, new Date(),
                     "", SecConst.CERTPROFILE_FIXED_ROOTCA,
@@ -551,7 +554,7 @@ public class ProtocolOcspHttpTest extends TestCase {
                     catokeninfo,
                     "JUnit ECDSA CA",
                     -1, null,
-                    "2.5.29.32.0", // PolicyId
+                    policies, // PolicyId
                     24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime

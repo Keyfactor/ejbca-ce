@@ -14,14 +14,13 @@
 package org.ejbca.core.model.ca.certificateprofiles;
 
 import java.io.Serializable;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -35,7 +34,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.22 2007-10-24 10:36:10 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.23 2007-11-07 13:25:44 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
@@ -43,7 +42,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Default Values
-    public static final float LATEST_VERSION = (float) 22.0;
+    public static final float LATEST_VERSION = (float) 23.0;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -132,11 +131,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String FRESHESTCRLURI                 = "freshestcrluri";    
     protected static final String USECERTIFICATEPOLICIES         = "usecertificatepolicies";
     protected static final String CERTIFICATEPOLICIESCRITICAL    = "certificatepoliciescritical";
-    protected static final String CERTIFICATEPOLICYID            = "certificatepolicyid";
-    /** Policy Notice Url to CPS field alias in the data structure */
-    protected static final String POLICY_NOTICE_CPS_URL 		 = "policynoticecpsurl";    
-    /** Policy Notice User Notice field alias in the data structure */
-    protected static final String POLICY_NOTICE_UNOTICE_TEXT 	 = "policynoticeunoticetext";
+    /** Policy containng oid, User Notice and Cps Url */
+    protected static final String CERTIFICATE_POLICIES           = "certificatepolicies";
     protected static final String AVAILABLEBITLENGTHS            = "availablebitlengths";
     protected static final String KEYUSAGE                       = "keyusage";
     protected static final String MINIMUMAVAILABLEBITLENGTH      = "minimumavailablebitlength";
@@ -179,6 +175,13 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USESUBJECTDIRATTRIBUTES        = "usesubjectdirattributes";
     protected static final String USEDCERTIFICATEEXTENSIONS      = "usedcertificateextensions";
      
+    // Old values used to upgrade from v22 to v23
+    protected static final String CERTIFICATEPOLICYID            = "certificatepolicyid";
+    /** Policy Notice Url to CPS field alias in the data structure */
+    protected static final String POLICY_NOTICE_CPS_URL 		 = "policynoticecpsurl";    
+    /** Policy Notice User Notice field alias in the data structure */
+    protected static final String POLICY_NOTICE_UNOTICE_TEXT 	 = "policynoticeunoticetext";
+
     // Public Methods
 
     /**
@@ -216,9 +219,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
       setUseCertificatePolicies(false);
       setCertificatePoliciesCritical(false);
-      setCertificatePolicyId("2.5.29.32.0");
-      setCpsUrl("");
-      setUserNoticeText("");
+      ArrayList policies = new ArrayList();
+      setCertificatePolicies(policies);
 
       setType(TYPE_ENDENTITY);
 
@@ -404,38 +406,33 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void  setUseCertificatePolicies(boolean usecertificatepolicies) { data.put(USECERTIFICATEPOLICIES, Boolean.valueOf(usecertificatepolicies));}
     public boolean getCertificatePoliciesCritical() { return ((Boolean) data.get(CERTIFICATEPOLICIESCRITICAL)).booleanValue(); }
     public void  setCertificatePoliciesCritical(boolean certificatepoliciescritical) { data.put(CERTIFICATEPOLICIESCRITICAL, Boolean.valueOf(certificatepoliciescritical));}
-    public String getCertificatePolicyId() { return (String) data.get(CERTIFICATEPOLICYID); }
-    public void  setCertificatePolicyId(String policyid){
-      if(policyid == null)
-        data.put(CERTIFICATEPOLICYID,"");
-      else
-        data.put(CERTIFICATEPOLICYID,policyid);
+    public List getCertificatePolicies() {
+    	List l = (List)data.get(CERTIFICATE_POLICIES);
+    	if (l == null) {
+    		l = new ArrayList();
+    	}
+    	return l;
     }
-    public String getCpsUrl() {
-        return (String) data.get(POLICY_NOTICE_CPS_URL);
+
+    public void addCertificatePolicy(CertificatePolicy policy) {
+    	if (data.get(CERTIFICATE_POLICIES) == null) {
+    		setCertificatePolicies(new ArrayList());
+    	}
+    	((List) data.get(CERTIFICATE_POLICIES)).add(policy);
     }
-    public void setCpsUrl(String cpsUrl) {
-        try {
-            if (!StringUtils.isEmpty(cpsUrl)) {
-                // Test that it is a valid url
-                new URL(cpsUrl);  
-                data.put(POLICY_NOTICE_CPS_URL, cpsUrl);
-            } else {
-                data.put(POLICY_NOTICE_CPS_URL, "");                
-            }
-        } catch (MalformedURLException muex) {
-            log.error("CPS url has incorrect format.", muex);
-        }
+
+    public void setCertificatePolicies(List policies) {
+    	if (policies == null) {
+    		data.put(CERTIFICATE_POLICIES, new ArrayList(0));
+    	} else {
+    		data.put(CERTIFICATE_POLICIES, policies);
+    	}
     }
-    public String getUserNoticeText() {
-        return (String) data.get(POLICY_NOTICE_UNOTICE_TEXT);
-    }
-    public void setUserNoticeText(String userNoticeText) {
-        if(userNoticeText == null) {
-            data.put(POLICY_NOTICE_UNOTICE_TEXT, "");             
-        } else {
-            data.put(POLICY_NOTICE_UNOTICE_TEXT, userNoticeText);            
-        }
+
+    public void removeCertificatePolicy(CertificatePolicy policy) {
+    	if (data.get(CERTIFICATE_POLICIES) != null) {
+    		((List) data.get(CERTIFICATE_POLICIES)).remove(policy);
+    	}
     }
 
     public int getType(){ return ((Integer) data.get(TYPE)).intValue(); }
@@ -966,12 +963,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             	setUseDefaultOCSPServiceLocator(false);
             }
             
-            if (data.get(POLICY_NOTICE_UNOTICE_TEXT) == null) {
-                setUserNoticeText(null); // This actually isn't nessecary but for the principle we do it
-            }
-            if (data.get(POLICY_NOTICE_CPS_URL) == null) {
-                setCpsUrl(null); // This actually isn't nessecary but for the principle we do it
-            }
             if (data.get(USEQCCUSTOMSTRING) == null) {
             	setUseQCCustomString(false);
             	setQCCustomStringOid(null);
@@ -997,6 +988,31 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 setFreshestCRLURI(null);
             }
             
+            if (data.get(CERTIFICATE_POLICIES) == null) { // v23
+            	if (data.get(CERTIFICATEPOLICYID) != null) {
+            		String ids = (String)data.get(CERTIFICATEPOLICYID);
+            		String unotice = null;
+            		String cpsuri = null;
+                	if (data.get(POLICY_NOTICE_UNOTICE_TEXT) != null) {
+                		unotice = (String)data.get(POLICY_NOTICE_UNOTICE_TEXT);
+                	}
+                	if (data.get(POLICY_NOTICE_CPS_URL) != null) {
+                		cpsuri = (String)data.get(POLICY_NOTICE_CPS_URL);
+                	}
+                	// Only the first policy could have user notice and cpsuri in the old scheme
+                    StringTokenizer tokenizer = new StringTokenizer(ids, ";", false);
+                    if (tokenizer.hasMoreTokens()) {
+                    	String id = tokenizer.nextToken();
+                    	CertificatePolicy newpolicy = new CertificatePolicy(id, unotice, cpsuri);
+                    	addCertificatePolicy(newpolicy);
+                    }
+                    while (tokenizer.hasMoreTokens()) {
+                    	String id = tokenizer.nextToken();
+                    	CertificatePolicy newpolicy = new CertificatePolicy(id, null, null);
+                    	addCertificatePolicy(newpolicy);                    	
+                    }
+            	}
+            }
             data.put(VERSION, new Float(LATEST_VERSION));
         }
         log.debug("<upgrade");

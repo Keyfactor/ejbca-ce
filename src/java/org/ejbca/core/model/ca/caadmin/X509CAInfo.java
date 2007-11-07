@@ -19,6 +19,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.util.CertTools;
@@ -28,30 +29,30 @@ import org.ejbca.util.StringTools;
 /**
  * Holds nonsensitive information about a X509CA.
  *
- * @version $Id: X509CAInfo.java,v 1.12 2007-10-24 10:36:14 anatom Exp $
+ * @version $Id: X509CAInfo.java,v 1.13 2007-11-07 13:25:52 anatom Exp $
  */
 public class X509CAInfo extends CAInfo{
    
-  String policyid;
-  boolean useauthoritykeyidentifier;
-  boolean authoritykeyidentifiercritical;
-  boolean usecrlnumber;
-  boolean crlnumbercritical;
-  String defaultcrldistpoint;
-  String defaultcrlissuer;
-  String defaultocsplocator;
-  String cadefinedfreshestcrl;
-  String subjectaltname;
-  boolean useUTF8PolicyText;
-  boolean usePrintableStringSubjectDN;
-  boolean useLdapDNOrder;
+  private List policies;
+  private boolean useauthoritykeyidentifier;
+  private boolean authoritykeyidentifiercritical;
+  private boolean usecrlnumber;
+  private boolean crlnumbercritical;
+  private String defaultcrldistpoint;
+  private String defaultcrlissuer;
+  private String defaultocsplocator;
+  private String cadefinedfreshestcrl;
+  private String subjectaltname;
+  private boolean useUTF8PolicyText;
+  private boolean usePrintableStringSubjectDN;
+  private boolean useLdapDNOrder;
     
     /**
      * Constructor that should be used when creating CA and retreiving CA info.
      */
     public X509CAInfo(String subjectdn, String name, int status, Date updateTime, String subjectaltname, int certificateprofileid, 
                     int validity, Date expiretime, int catype, int signedby, Collection certificatechain, 
-                    CATokenInfo catokeninfo, String description, int revokationreason, Date revokationdate, String policyid, int crlperiod, int crlIssueInterval, int crlOverlapTime, Collection crlpublishers,
+                    CATokenInfo catokeninfo, String description, int revokationreason, Date revokationdate, List policies, int crlperiod, int crlIssueInterval, int crlOverlapTime, Collection crlpublishers,
                     boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
                     boolean usecrlnumber, boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocspservicelocator, String cadefinedfreshestcrl, boolean finishuser,
                     Collection extendedcaserviceinfos, boolean useUTF8PolicyText, Collection approvalSettings, int numOfReqApprovals, boolean usePrintableStringSubjectDN, boolean useLdapDnOrder) {
@@ -83,7 +84,7 @@ public class X509CAInfo extends CAInfo{
         this.description = description;
         this.revokationreason = revokationreason;
         this.revokationdate = revokationdate;
-        this.policyid = policyid;
+        this.policies = policies;
         this.crlperiod = crlperiod;
         this.crlIssueInterval = crlIssueInterval;
         this.crlOverlapTime = crlOverlapTime;
@@ -144,8 +145,9 @@ public class X509CAInfo extends CAInfo{
   
   public X509CAInfo(){}
     
-  public String getPolicyId(){ return policyid;}
- 
+  public List getPolicies() {
+	  return this.policies;
+  }
   public boolean getUseCRLNumber(){ return usecrlnumber;}
   public void setUseCRLNumber(boolean usecrlnumber){ this.usecrlnumber=usecrlnumber;}
   

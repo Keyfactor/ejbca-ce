@@ -1,8 +1,11 @@
 <%@ page import="org.ejbca.core.ejb.ca.store.CertificateDataBean"%>
 <%
-  CertificateProfile certificateprofiledata = cabean.getCertificateProfile(certprofile.trim());
+  CertificateProfile certprofiledata = cabean.getTempCertificateProfile();
+  if(certprofiledata == null) {
+    certprofiledata = cabean.getCertificateProfile(certprofile.trim());
+  }
+  CertificateProfile certificateprofiledata = (CertificateProfile) certprofiledata.clone();
 
- 
   CertificateExtensionFactory certExtFact = CertificateExtensionFactory.getInstance();
  
   String[] SUPERADMIN_TYPE_NAMES = {"ENDENTITY", "SUBCA", "ROOTCA"};
@@ -273,19 +276,20 @@ function checkusecertificatepoliciesfield(){
   if(document.editcertificateprofile.<%=CHECKBOX_USECERTIFICATEPOLICIES %>.checked){
     document.editcertificateprofile.<%= CHECKBOX_CERTIFICATEPOLICIESCRITICAL %>.disabled = false;
     document.editcertificateprofile.<%= TEXTFIELD_CERTIFICATEPOLICYID %>.disabled = false;
-	document.editcertificateprofile.<%= TEXTFIELD_POLICYNOTICE_CPSURL %>.disabled = false;
-	document.editcertificateprofile.<%= TEXTAREA_POLICYNOTICE_UNOTICE %>.disabled = false;
+    document.editcertificateprofile.<%= TEXTAREA_POLICYNOTICE_UNOTICE %>.disabled = false;
+    document.editcertificateprofile.<%= TEXTFIELD_POLICYNOTICE_CPSURL %>.disabled = false;
+    document.editcertificateprofile.<%= BUTTON_ADD_POLICY %>.disabled = false;
   }
   else{
     document.editcertificateprofile.<%= CHECKBOX_CERTIFICATEPOLICIESCRITICAL %>.disabled = true;
     document.editcertificateprofile.<%= CHECKBOX_CERTIFICATEPOLICIESCRITICAL %>.checked = false;
     document.editcertificateprofile.<%= TEXTFIELD_CERTIFICATEPOLICYID %>.disabled = true;
     document.editcertificateprofile.<%= TEXTFIELD_CERTIFICATEPOLICYID %>.value = "";
-	document.editcertificateprofile.<%= TEXTFIELD_POLICYNOTICE_CPSURL %>.disabled = true;
-	document.editcertificateprofile.<%= TEXTFIELD_POLICYNOTICE_CPSURL %>.value = "";	
-	document.editcertificateprofile.<%= TEXTAREA_POLICYNOTICE_UNOTICE %>.disabled = true;
-	document.editcertificateprofile.<%= TEXTAREA_POLICYNOTICE_UNOTICE %>.value = "";		
-  }
+    document.editcertificateprofile.<%= TEXTAREA_POLICYNOTICE_UNOTICE %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTAREA_POLICYNOTICE_UNOTICE %>.value = "";
+    document.editcertificateprofile.<%= TEXTFIELD_POLICYNOTICE_CPSURL %>.disabled = true;
+    document.editcertificateprofile.<%= TEXTFIELD_POLICYNOTICE_CPSURL %>.value = "";
+    document.editcertificateprofile.<%= BUTTON_ADD_POLICY %>.disabled = true;  }
 }
 
 function checkusepathlengtconstraintfield(){
@@ -665,22 +669,15 @@ function checkallfields(){
                        out.write(" value=\"" + globalconfiguration.getStandardOCSPServiceLocatorURI()+ "\"");%>>
       </td>
     </tr>
-    <tr  id="Row<%=row%2%>"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("CERTIFICATEPOLICIES") %>
+        <%= ejbcawebbean.getText("CERTIFICATEPOLICIES") %><br/><%= ejbcawebbean.getText("CERTIFICATEPOLICIESCRIT") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USECERTIFICATEPOLICIES %>" onClick="checkusecertificatepoliciesfield()" value="<%=CHECKBOX_VALUE %>" 
            <% if(certificateprofiledata.getUseCertificatePolicies())
                  out.write("CHECKED");
-           %>>
-      </td>
-    </tr>
-    <tr  id="Row<%=row%2%>"> 
-      <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("CERTIFICATEPOLICIESCRIT") %>
-      </td>
-      <td width="50%">
+           %>><br/>
           <input type="checkbox" name="<%=CHECKBOX_CERTIFICATEPOLICIESCRITICAL %>" value="<%=CHECKBOX_VALUE %>" 
            <%
                if(!certificateprofiledata.getUseCertificatePolicies())
@@ -691,42 +688,49 @@ function checkallfields(){
            %>> 
       </td>
     </tr>
-    <tr  id="Row<%=row%2%>"> 
-      <td width="50%"  align="right"> 
-      <%= ejbcawebbean.getText("CERTIFICATEPOLICYID") %>
+    <%-- List of already defined policies. --%>
+    <% List policies = certificateprofiledata.getCertificatePolicies();
+
+       if((policies != null) && (policies.size() > 0)) {
+           CertificatePolicy policy;
+           int i = 0;
+           for(Iterator it = certificateprofiledata.getCertificatePolicies().iterator(); it.hasNext(); i++) {
+               policy = (CertificatePolicy) it.next();
+           %>
+    <tr id="Row<%=row++%2%>">
+      <td width="50%" align="right">
+        <table border="0">
+          <tr>
+            <td valign="middle" align="center" width="35%"><input type="submit" name="<%= BUTTON_DELETE_POLICY + i %>" value="<%= ejbcawebbean.getText("DELETE") %>"/></td>
+            <td id="Row<%=(row-1)%2%>" align="right"><%= ejbcawebbean.getText("CERTIFICATEPOLICYID") %><br/><%= ejbcawebbean.getText("USERNOTICE") %><br/><%= ejbcawebbean.getText("CPSURL") %><br/></td>
+          </tr>
+        </table>
       </td>
       <td width="50%">
-           <input type="text" name="<%=TEXTFIELD_CERTIFICATEPOLICYID%>" size="60" maxlength="255" 
-           <%       if(!certificateprofiledata.getUseCertificatePolicies())
-                      out.write(" disabled "); 
-                    else 
-                      out.write(" value=\"" + certificateprofiledata.getCertificatePolicyId() + "\""); %>>
+        <input readonly type="text" name="<%= TEXTFIELD_CERTIFICATEPOLICYID + i %>" value="<%= policy.getPolicyID() %>" size="60" maxlength="255"/><br/>
+        <input readonly type="text" name="<%= TEXTAREA_POLICYNOTICE_UNOTICE + i %>" value="<% if(policy.getUserNotice() != null) { %><%= policy.getUserNotice() %><% } %>" size="60" maxlength="255"/><br/>
+        <input readonly type="text" name="<%= TEXTFIELD_POLICYNOTICE_CPSURL + i %>" value="<% if(policy.getCpsUri() != null) { %><%= policy.getCpsUri() %><% } %>" size="60" maxlength="255"/>
       </td>
     </tr>
-    <tr  id="Row<%=row%2%>"> 
-      <td width="50%"  align="right"> 
-      <%= ejbcawebbean.getText("CPSURL") %>
-      </td>
+        <% }
+       }
+    %>
+    <%-- Editable policy input form section --%>
+    <tr id="Row<%=row++%2%>">
+      <td width="50%" align="right">
+        <table border="0">
+          <tr>
+            <td valign="middle" align="center" width="35%"><input type="submit" name="<%= BUTTON_ADD_POLICY %>" value="<%= ejbcawebbean.getText("ADD") %>" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%>/></td>
+            <td id="Row<%=(row-1)%2%>" align="right"><%= ejbcawebbean.getText("CERTIFICATEPOLICYID") %><br/><%= ejbcawebbean.getText("USERNOTICE") %><br/><%= ejbcawebbean.getText("CPSURL") %></td>
+          </tr>
+        </table>
       <td width="50%">
-           <input type="text" name="<%=TEXTFIELD_POLICYNOTICE_CPSURL%>" size="60" maxlength="255" 
-           <%       if(!certificateprofiledata.getUseCertificatePolicies())
-                      out.write(" disabled "); 
-                    else 
-                      out.write(" value=\"" + certificateprofiledata.getCpsUrl() + "\""); %>>
+        <input type="text" name="<%=TEXTFIELD_CERTIFICATEPOLICYID%>" size="60" maxlength="255" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%>/><br/>
+        <input type="text" name="<%=TEXTAREA_POLICYNOTICE_UNOTICE%>" size="60" maxlength="255" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%>/><br/>
+        <input type="text" name="<%=TEXTFIELD_POLICYNOTICE_CPSURL%>" size="60" maxlength="255" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%>/>
       </td>
     </tr>
-    <tr  id="Row<%=row++%2%>"> 
-      <td width="50%"  align="right"> 
-      <%= ejbcawebbean.getText("USERNOTICE") %>
-      </td>
-      <td width="50%">
-           <input type="text" name="<%=TEXTAREA_POLICYNOTICE_UNOTICE%>" size="60" maxlength="255" 
-           <%       if(!certificateprofiledata.getUseCertificatePolicies())
-                      out.write(" disabled "); 
-                    else 
-                      out.write(" value=\"" + certificateprofiledata.getUserNoticeText() + "\""); %>>
-      </td>
-    </tr>
+    
     <tr  id="Row<%=row%2%>"> 
       <td width="50%"  align="right" > 
         <%= ejbcawebbean.getText("USEQUALIFIEDCERTSTATEMENT") %>
@@ -878,7 +882,7 @@ function checkallfields(){
 
       </td>
     </tr>     
-    <tr  id="Row<%=row%2%>"> 
+    <tr  id="Row<%=row++%2%>"> 
       <td width="50%" valign="top" align="right"><%= ejbcawebbean.getText("QCCUSTOMSTRINGTEXT") %> </td>
       <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCCUSTOMSTRINGTEXT %>" size="10" maxlength="255" 
            <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCCustomString())

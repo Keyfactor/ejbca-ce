@@ -34,6 +34,7 @@ import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.HardCATokenInfo;
 import org.ejbca.core.model.ca.catoken.ICAToken;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
+import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
 import org.ejbca.util.CertTools;
 import org.ejbca.util.FileTools;
 import org.ejbca.util.StringTools;
@@ -42,7 +43,7 @@ import org.ejbca.util.StringTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.20 2007-10-24 10:36:19 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.21 2007-11-07 13:25:57 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
@@ -71,7 +72,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
            msg += "\nkeytype is RSA or ECDSA.";
            msg += "\nkeyspec for RSA keys is size of RSA keys (1024, 2048, 4096).";
            msg += "\nkeyspec for ECDSA keys is name of curve or 'implicitlyCA', see docs.";
-           msg += "\npolicyId can be 'null' if no Certificate Policy extension should be present, or\nobjectID as '2.5.29.32.0'.";
+           msg += "\npolicyId can be 'null' if no Certificate Policy extension should be present, or\nobjectID as '2.5.29.32.0' or objectID and crlurl as \"2.5.29.32.0 http://foo.bar.com/mycps.txt\".";
            msg += "\nsignalgorithm is SHA1WithRSA or SHA1WithECDSA.";
            msg += "\ncatokenproperties is a file were you define key name, password and key alias for the HSM. Same as the Hard CA Token Properties in Admin gui";
            throw new IllegalAdminCommandException(msg);
@@ -87,8 +88,6 @@ public class CaInitCommand extends BaseCaAdminCommand {
             String keytype = args[6];
             int validity = Integer.parseInt(args[7]);
             String policyId = args[8];
-            if (policyId.equals("null"))
-              policyId = null;
             String signAlg = args[9];
             String catokenproperties = null;
             if (args.length > 10 && !"soft".equals(catokentype)) {
@@ -97,7 +96,21 @@ public class CaInitCommand extends BaseCaAdminCommand {
             	}
                 catokenproperties = new String(FileTools.readFiletoBuffer(args[10]));
             }
-              
+            ArrayList policies = new ArrayList(1);
+            if ( (policyId != null) && (policyId.toLowerCase().trim().equals("null")) ) {
+            	policyId = null;
+            } else {
+            	String[] array = policyId.split(" ");
+            	String id = array[0];
+            	String cpsurl;
+            	if(array.length > 1) {
+            		cpsurl = array[1];
+            	} else {
+            		cpsurl = "";
+            	}
+            	policies.add(new CertificatePolicy(id, null, cpsurl));
+            }
+                        
             getOutputStream().println("Initializing CA");            
             
             getOutputStream().println("Generating rootCA keystore:");
@@ -173,7 +186,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                                              catokeninfo,
                                              "Initial CA",
                                              -1, null,
-                                             policyId, // PolicyId
+                                             policies, // PolicyId
                                              24, // CRLPeriod
                                              0, // CRLIssueInterval
                                              10, // CRLOverlapTime

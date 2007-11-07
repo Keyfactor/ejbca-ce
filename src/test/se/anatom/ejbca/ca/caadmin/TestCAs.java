@@ -41,13 +41,14 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.model.ca.catoken.CATokenConstants;
 import org.ejbca.core.model.ca.catoken.CATokenInfo;
 import org.ejbca.core.model.ca.catoken.SoftCATokenInfo;
+import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
 import org.ejbca.core.model.log.Admin;
 import org.ejbca.util.CertTools;
 
 /**
  * Tests the ca data entity bean.
  *
- * @version $Id: TestCAs.java,v 1.25 2007-10-24 10:36:09 anatom Exp $
+ * @version $Id: TestCAs.java,v 1.26 2007-11-07 13:25:47 anatom Exp $
  */
 public class TestCAs extends TestCase {
     private static Logger log = Logger.getLogger(TestCAs.class);
@@ -271,7 +272,9 @@ public class TestCAs extends TestCase {
                     "prime192v1",
                     CATokenConstants.KEYALGORITHM_ECDSA));
 
-
+            ArrayList policies = new ArrayList(1);
+            policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
+            
             X509CAInfo cainfo = new X509CAInfo("CN=TESTECDSA",
                     "TESTECDSA", SecConst.CA_ACTIVE, new Date(),
                     "", SecConst.CERTPROFILE_FIXED_ROOTCA,
@@ -283,7 +286,7 @@ public class TestCAs extends TestCase {
                     catokeninfo,
                     "JUnit ECDSA CA",
                     -1, null,
-                    "2.5.29.32.0", // PolicyId
+                    policies, // PolicyId
                     24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
@@ -371,7 +374,9 @@ public class TestCAs extends TestCase {
                     "prime192v1",
                     CATokenConstants.KEYALGORITHM_ECDSA));
 
-
+            ArrayList policies = new ArrayList(1);
+            policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
+            
             X509CAInfo cainfo = new X509CAInfo("CN=TESTECDSAImplicitlyCA",
                     "TESTECDSAImplicitlyCA", SecConst.CA_ACTIVE, new Date(),
                     "", SecConst.CERTPROFILE_FIXED_ROOTCA,
@@ -383,7 +388,7 @@ public class TestCAs extends TestCase {
                     catokeninfo,
                     "JUnit ECDSA ImplicitlyCA CA",
                     -1, null,
-                    "2.5.29.32.0", // PolicyId
+                    policies, // PolicyId
                     24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime

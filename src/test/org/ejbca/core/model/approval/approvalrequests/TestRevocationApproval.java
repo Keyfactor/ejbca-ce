@@ -1,3 +1,15 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.core.model.approval.approvalrequests;
 
 import java.io.File;
@@ -201,7 +213,7 @@ public class TestRevocationApproval extends TestCase {
         approvalSettings.add(approvalRequirementType);
 		X509CAInfo cainfo = new X509CAInfo("CN="+nameOfCA, nameOfCA, SecConst.CA_ACTIVE, new Date(), "", SecConst.CERTPROFILE_FIXED_ROOTCA,
         		365, new Date(System.currentTimeMillis()+364*24*3600*1000), CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, null,
-        		catokeninfo, "Used for testing approvals", -1, null, "", 24, 0, 10, new ArrayList(), true,
+        		catokeninfo, "Used for testing approvals", -1, null, null, 24, 0, 10, new ArrayList(), true,
         		false, true, false, "", "", "", "", true, new ArrayList(), false, approvalSettings, 1, false, true);
 		int caID = cainfo.getCAId();
         try {

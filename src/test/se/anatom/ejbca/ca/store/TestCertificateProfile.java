@@ -14,6 +14,7 @@
 package se.anatom.ejbca.ca.store;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -23,6 +24,7 @@ import junit.framework.TestCase;
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionHome;
 import org.ejbca.core.ejb.ca.store.ICertificateStoreSessionRemote;
+import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException;
 import org.ejbca.core.model.ca.certificateprofiles.EndUserCertificateProfile;
@@ -33,7 +35,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
 /**
  * Tests the certificate profile entity bean.
  *
- * @version $Id: TestCertificateProfile.java,v 1.8 2006-12-02 11:18:32 anatom Exp $
+ * @version $Id: TestCertificateProfile.java,v 1.9 2007-11-07 13:26:00 anatom Exp $
  */
 public class TestCertificateProfile extends TestCase {
     private static Logger log = Logger.getLogger(TestCertificateProfile.class);
@@ -226,12 +228,31 @@ public class TestCertificateProfile extends TestCase {
     
     public void test08CertificateProfileValues() throws Exception {
         CertificateProfile ep = new EndUserCertificateProfile();
-        assertEquals("2.5.29.32.0", ep.getCertificatePolicyId());
+        List l = ep.getCertificatePolicies();
+        assertEquals(0, l.size());
+        ep.addCertificatePolicy(new CertificatePolicy(CertificatePolicy.ANY_POLICY_OID, null, null));
+        l = ep.getCertificatePolicies();
+        assertEquals(1, l.size());
+        CertificatePolicy pol = (CertificatePolicy)l.get(0);
+        assertEquals("2.5.29.32.0", pol.getPolicyID() );
         assertEquals(CertificateProfile.LATEST_VERSION, ep.getLatestVersion(),0);
         String qcId = ep.getQCSemanticsId();
         assertEquals("", qcId);
         CertificateProfile cp = new CertificateProfile();
-        assertEquals("2.5.29.32.0", cp.getCertificatePolicyId());
+        l = cp.getCertificatePolicies();
+        assertEquals(0, l.size());
+        cp.addCertificatePolicy(new CertificatePolicy(CertificatePolicy.ANY_POLICY_OID, null, null));
+        l = cp.getCertificatePolicies();
+        assertEquals(1, l.size());
+        pol = (CertificatePolicy)l.get(0);
+        assertEquals("2.5.29.32.0", pol.getPolicyID());
+        cp.addCertificatePolicy(new CertificatePolicy("1.1.1.1.1", null, null));
+        l = cp.getCertificatePolicies();
+        assertEquals(2, l.size());
+        pol = (CertificatePolicy)l.get(0);
+        assertEquals("2.5.29.32.0", pol.getPolicyID());
+        pol = (CertificatePolicy)l.get(1);
+        assertEquals("1.1.1.1.1", pol.getPolicyID());
         assertEquals(CertificateProfile.LATEST_VERSION, cp.getLatestVersion(),0);
         assertEquals("", cp.getQCSemanticsId());
         cp.setQCSemanticsId("1.1.1.2");

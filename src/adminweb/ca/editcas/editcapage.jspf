@@ -585,12 +585,13 @@ function checkallfields(){
         <% if(!editca) out.write("<br><i>" + ejbcawebbean.getText("LEAVEBLANKTOUSEDEFAULT") + "</i>");%>
       </td>
       <td width="50%">
-         <% if(editca) 
-              if(x509cainfo.getPolicyId() == null || x509cainfo.getPolicyId().trim().equals(""))
-                out.write(ejbcawebbean.getText("NONE")); 
-              else
-                out.write(x509cainfo.getPolicyId());                
-            else{  %>  
+         <% if(editca) {
+              if(x509cainfo.getPolicies() == null || (x509cainfo.getPolicies().size() == 0) || (((CertificatePolicy) x509cainfo.getPolicies().get(0)).getPolicyID() == null)) {
+                 out.write(ejbcawebbean.getText("NONE")); 
+              } else {
+                out.write(((CertificatePolicy) x509cainfo.getPolicies().get(0)).getPolicyID());
+              }
+            } else {  %>  
          <input type="text" name="<%=TEXTFIELD_POLICYID%>" size="40" maxlength="255">
          <% } %>   
       </td>

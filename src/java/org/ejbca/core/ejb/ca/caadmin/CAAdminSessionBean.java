@@ -112,7 +112,7 @@ import org.ejbca.util.KeyTools;
 /**
  * Administrates and manages CAs in EJBCA system.
  *
- * @version $Id: CAAdminSessionBean.java,v 1.61 2007-10-24 10:36:15 anatom Exp $
+ * @version $Id: CAAdminSessionBean.java,v 1.62 2007-11-07 13:25:56 anatom Exp $
  *
  * @ejb.bean description="Session bean handling core CA function,signing certificates"
  *   display-name="CAAdminSB"
@@ -340,12 +340,11 @@ public class CAAdminSessionBean extends BaseSessionBean {
 
             // getCertificateProfile
             CertificateProfile certprofile = getCertificateStoreSession().getCertificateProfile(admin,cainfo.getCertificateProfileId());
-            if(x509cainfo.getPolicyId() != null){
-              certprofile.setUseCertificatePolicies(true);
-              certprofile.setCertificatePolicyId(x509cainfo.getPolicyId());
-            }else{
-              if(certprofile.getUseCertificatePolicies())
-                x509ca.setPolicyId(certprofile.getCertificatePolicyId());
+            if((x509cainfo.getPolicies() != null) && (x509cainfo.getPolicies().size() > 0)) {
+            	certprofile.setUseCertificatePolicies(true);
+            	certprofile.setCertificatePolicies(x509cainfo.getPolicies());
+            } else if(certprofile.getUseCertificatePolicies()) {
+            	x509ca.setPolicies(certprofile.getCertificatePolicies());
             }
 
             if(cainfo.getSignedBy() == CAInfo.SELFSIGNED){
@@ -1581,7 +1580,7 @@ public class CAAdminSessionBean extends BaseSessionBean {
 		                                   catoken.getCATokenInfo(),
 		                                   description,
 		                                   -1, null, // revokationreason, revokationdate
-		                                   "", // PolicyId
+		                                   null, // PolicyId
 		                                   24, // CRLPeriod
 		                                   0, // CRLIssuePeriod
 		                                   10, // CRLOverlapTime

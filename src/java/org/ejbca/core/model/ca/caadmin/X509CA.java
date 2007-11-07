@@ -129,6 +129,7 @@ import org.ejbca.core.model.ca.catoken.CATokenOfflineException;
 import org.ejbca.core.model.ca.catoken.NullCATokenInfo;
 import org.ejbca.core.model.ca.certextensions.CertificateExtension;
 import org.ejbca.core.model.ca.certextensions.CertificateExtensionFactory;
+import org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy;
 import org.ejbca.core.model.ca.certificateprofiles.CertificateProfile;
 import org.ejbca.core.model.ca.crl.RevokedCertInfo;
 import org.ejbca.core.model.ra.ExtendedInformation;
@@ -146,7 +147,7 @@ import org.ejbca.util.dn.DnComponents;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.73 2007-10-24 10:36:13 anatom Exp $
+ * @version $Id: X509CA.java,v 1.74 2007-11-07 13:25:52 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -162,7 +163,7 @@ public class X509CA extends CA implements Serializable {
     
     
     // protected fields.
-    protected static final String POLICYID                       = "policyid";
+    protected static final String POLICIES                       = "policies";
     protected static final String SUBJECTALTNAME                 = "subjectaltname";
     protected static final String USEAUTHORITYKEYIDENTIFIER      = "useauthoritykeyidentifier";
     protected static final String AUTHORITYKEYIDENTIFIERCRITICAL = "authoritykeyidentifiercritical";
@@ -181,7 +182,7 @@ public class X509CA extends CA implements Serializable {
     public X509CA(X509CAInfo cainfo) {
       super(cainfo);  
       
-      data.put(POLICYID, cainfo.getPolicyId());
+      data.put(POLICIES, cainfo.getPolicies());
       data.put(SUBJECTALTNAME,  cainfo.getSubjectAltName());            
       setUseAuthorityKeyIdentifier(cainfo.getUseAuthorityKeyIdentifier());
       setAuthorityKeyIdentifierCritical(cainfo.getAuthorityKeyIdentifierCritical()); 
@@ -213,7 +214,7 @@ public class X509CA extends CA implements Serializable {
     	}
         CAInfo info = new X509CAInfo(subjectDN, name, status, updateTime, getSubjectAltName() ,getCertificateProfileId(),  
         		  getValidity(), getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(),
-        		  getCAToken(caId).getCATokenInfo(), getDescription(), getRevokationReason(), getRevokationDate(), getPolicyId(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(), getCRLPublishers(),
+        		  getCAToken(caId).getCATokenInfo(), getDescription(), getRevokationReason(), getRevokationDate(), getPolicies(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(), getCRLPublishers(),
         		  getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(),
         		  getUseCRLNumber(), getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultCRLIssuer(), getDefaultOCSPServiceLocator(), getCADefinedFreshestCRL(), getFinishUser(), externalcaserviceinfos, 
         		  getUseUTF8PolicyText(), getApprovalSettings(), getNumOfRequiredApprovals(), getUsePrintableStringSubjectDN(), getUseLdapDNOrder());
@@ -221,8 +222,12 @@ public class X509CA extends CA implements Serializable {
     }
 
     // Public Methods.
-    public String getPolicyId(){ return (String) data.get(POLICYID);}
-    public void setPolicyId(String policyid){ data.put(POLICYID, policyid);}
+    public List getPolicies() {
+    	return (List) data.get(POLICIES);
+    }
+    public void setPolicies(List policies) {
+    	data.put(POLICIES, policies);
+    }
     
     public String getSubjectAltName() { return (String) data.get(SUBJECTALTNAME);}
     
@@ -247,19 +252,19 @@ public class X509CA extends CA implements Serializable {
     public void setCRLNumberCritical(boolean crlnumbercritical) {data.put(CRLNUMBERCRITICAL, Boolean.valueOf(crlnumbercritical));}
     
     public String  getDefaultCRLDistPoint(){return (String) data.get(DEFAULTCRLDISTPOINT);}
-    public void setDefaultCRLDistPoint(String defailtcrldistpoint) {
-    	if(defailtcrldistpoint == null){
+    public void setDefaultCRLDistPoint(String defaultcrldistpoint) {
+    	if(defaultcrldistpoint == null){
     		data.put(DEFAULTCRLDISTPOINT, "");
     	}else{
-    		data.put(DEFAULTCRLDISTPOINT, defailtcrldistpoint);
+    		data.put(DEFAULTCRLDISTPOINT, defaultcrldistpoint);
     	}     
     }
     public String  getDefaultCRLIssuer(){return (String) data.get(DEFAULTCRLISSUER);}
-    public void setDefaultCRLIssuer(String defailtcrlissuer) {
-    	if(defailtcrlissuer == null){
+    public void setDefaultCRLIssuer(String defaultcrlissuer) {
+    	if(defaultcrlissuer == null){
     		data.put(DEFAULTCRLISSUER, "");
     	}else{
-    		data.put(DEFAULTCRLISSUER, defailtcrlissuer);
+    		data.put(DEFAULTCRLISSUER, defaultcrlissuer);
     	}     
     }
     
@@ -509,6 +514,7 @@ public class X509CA extends CA implements Serializable {
         	log.info(intres.getLocalizedMessage("signsession.limitingvalidity", lastDate.toString(), cacert.getNotAfter()));
             lastDate = cacert.getNotAfter();
         }            
+        
         X509V3CertificateGenerator certgen = new X509V3CertificateGenerator();
         // Serialnumber is random bits, where random generator is initialized by the
         // serno generator.
@@ -559,6 +565,10 @@ public class X509CA extends CA implements Serializable {
         }
         certgen.setPublicKey(publicKey);
 
+        //
+        // Extensions
+        //
+        
         // Basic constraints, all subcerts are NOT CAs
         if (certProfile.getUseBasicConstraints() == true) {
         	BasicConstraints bc = new BasicConstraints(false);
@@ -665,35 +675,27 @@ public class X509CA extends CA implements Serializable {
         }
         
         // Certificate Policies
-        if ( (certProfile.getUseCertificatePolicies() == true) && (StringUtils.isNotEmpty(certProfile.getCertificatePolicyId())) ) {
-            int displayencoding = DisplayText.CONTENT_TYPE_BMPSTRING;
-            if (getUseUTF8PolicyText()) {
-                displayencoding = DisplayText.CONTENT_TYPE_UTF8STRING;
-            }
-            String policyId = certProfile.getCertificatePolicyId();
-            String cpsurl = certProfile.getCpsUrl();
-            String usernotice = certProfile.getUserNoticeText();
-            ASN1EncodableVector policys = new ASN1EncodableVector();
-            if (StringUtils.isNotEmpty(policyId )) {
-                StringTokenizer tokenizer = new StringTokenizer(policyId, ";", false);
-                while (tokenizer.hasMoreTokens()) {
-                    String id = tokenizer.nextToken();
-                    if (log.isDebugEnabled()) {
-                        log.debug("Encoding user notice text with encoding: "+ displayencoding);                    	
-                    }
-                    PolicyInformation pi = getPolicyInformation(id, cpsurl, usernotice, displayencoding);
-                    // We only support a cpsurl and usernotice on the first policyid
-                    cpsurl = null;
-                    usernotice = null;
-                    if (pi != null) {
-                        policys.add(pi);                    	
-                    }
-                }
-                // Add the final extension
-                DERSequence seq = new DERSequence(policys);
-                certgen.addExtension(X509Extensions.CertificatePolicies.getId(),
-                        certProfile.getCertificatePoliciesCritical(), seq);
-            }
+        if (certProfile.getUseCertificatePolicies() == true) {
+        	int displayencoding = DisplayText.CONTENT_TYPE_BMPSTRING;
+        	if (getUseUTF8PolicyText()) {
+        		displayencoding = DisplayText.CONTENT_TYPE_UTF8STRING;
+        	}
+        	ASN1EncodableVector seq = new ASN1EncodableVector();
+        	// Iterate through policies and add oids and policy qualifiers if they exist
+        	CertificatePolicy policy;
+        	List policies = certProfile.getCertificatePolicies();
+        	for(Iterator it = policies.iterator(); it.hasNext(); ) {
+        		policy = (CertificatePolicy) it.next();
+    			PolicyInformation pi = getPolicyInformation(policy, displayencoding);
+    			if (pi != null) {
+    				seq.add(pi);
+    			}
+        	}
+        	if (seq.size() > 0) {
+            	certgen.addExtension(X509Extensions.CertificatePolicies.getId(),
+            			certProfile.getCertificatePoliciesCritical(),
+            			new DERSequence(seq));        		
+        	}
         }
 
          // CRL Distribution point URI
@@ -920,6 +922,10 @@ public class X509CA extends CA implements Serializable {
             	 certgen.addExtension(new DERObjectIdentifier(certExt.getOID()),certExt.isCriticalFlag(),certExt.getValue(subject, this, certProfile));        	         		 
         	 }
          }
+         
+         //
+         // End of extensions
+         //
          
          X509Certificate cert;
          try{
@@ -1248,40 +1254,44 @@ public class X509CA extends CA implements Serializable {
 	}
     
     /**
-     * Obtains the Policy Notice
+     * Obtains the Policy Information object
      * 
-     * @param policyOID,
-     *          OID of the policy
-     * @param cps,
-     *          url to cps document
-     * @param unotice,
-     *          user notice text
+     * @param policy,
+     *          CertificatePolicy with oid, user notice and cps uri
      * @param displayencoding,
      *          the encoding used for UserNotice text, DisplayText.CONTENT_TYPE_BMPSTRING, CONTENT_TYPE_UTF8STRING, CONTENT_TYPE_IA5STRING or CONTENT_TYPE_VISIBLESTRING 
      *          
-     * @return
+     * @return PolicyInformation
      */
-    private PolicyInformation getPolicyInformation(String policyOID, String cps, String unotice, int displayencoding) {
-        
-    	ASN1EncodableVector qualifiers = new ASN1EncodableVector();
-        if ((unotice != null) && !StringUtils.isEmpty(unotice.trim())) {
-            // Normally we would just use 'DisplayText(unotice)' here. IE has problems with UTF8 though, so lets stick with BMSSTRING to satisfy Bills sick needs.
-            UserNotice un = new UserNotice(null, new DisplayText(displayencoding, unotice));
-            PolicyQualifierInfo pqiUNOTICE = new PolicyQualifierInfo(PolicyQualifierId.id_qt_unotice, un);
-            qualifiers.add(pqiUNOTICE);
-        }
-        if ((cps != null) && !StringUtils.isEmpty(cps.trim())) {
-            PolicyQualifierInfo pqiCPS = new PolicyQualifierInfo(cps);
-            qualifiers.add(pqiCPS);
-        }
-        PolicyInformation policyInformation = null;
-        if ( StringUtils.isNotEmpty(policyOID) && (qualifiers.size() > 0) ) {
-            policyInformation = new PolicyInformation(new DERObjectIdentifier(policyOID), new DERSequence(qualifiers));            
-        } else {
-            policyInformation = new PolicyInformation(new DERObjectIdentifier(policyOID));
-        }
-        
-        return policyInformation;
-    }
+	private PolicyInformation getPolicyInformation(CertificatePolicy policy, int displayencoding) {
+
+		ASN1EncodableVector qualifiers = new ASN1EncodableVector();
+		String unotice = policy.getUserNotice();
+		if ((unotice != null) && !StringUtils.isEmpty(unotice.trim())) {
+			// Normally we would just use 'DisplayText(unotice)' here. IE has problems with UTF8 though, so lets stick with BMSSTRING to satisfy Bills sick needs.
+			UserNotice un = new UserNotice(null, new DisplayText(displayencoding, unotice));
+			PolicyQualifierInfo pqiUNOTICE = new PolicyQualifierInfo(PolicyQualifierId.id_qt_unotice, un);
+			qualifiers.add(pqiUNOTICE);
+		}
+		String cps = policy.getCpsUri();
+		if ((cps != null) && !StringUtils.isEmpty(cps.trim())) {
+			PolicyQualifierInfo pqiCPS = new PolicyQualifierInfo(cps);
+			qualifiers.add(pqiCPS);
+		}
+		PolicyInformation policyInformation = null;
+		// Default to ANY POLICY if policy is left empty
+		DERObjectIdentifier oid = new DERObjectIdentifier(CertificatePolicy.ANY_POLICY_OID);        			
+		if (StringUtils.isNotEmpty(policy.getPolicyID())) {
+			oid = new DERObjectIdentifier(policy.getPolicyID());
+		}
+
+		if (qualifiers.size() > 0) {
+			policyInformation = new PolicyInformation(oid, new DERSequence(qualifiers));            
+		} else {
+			policyInformation = new PolicyInformation(oid);
+		}
+
+		return policyInformation;
+	}
    
 }

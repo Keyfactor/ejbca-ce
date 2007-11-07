@@ -5,7 +5,7 @@
                org.ejbca.ui.web.admin.rainterface.RevokedInfoView, org.ejbca.ui.web.admin.configuration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.bouncycastle.jce.PKCS10CertificationRequest, org.ejbca.core.EjbcaException,
                org.ejbca.core.protocol.PKCS10RequestMessage, org.ejbca.core.model.ca.caadmin.CAExistsException, org.ejbca.core.model.ca.caadmin.CADoesntExistsException, org.ejbca.core.model.ca.catoken.CATokenOfflineException, org.ejbca.core.model.ca.catoken.CATokenAuthenticationFailedException,
                org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo,org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceInfo, org.ejbca.core.model.ca.catoken.CATokenManager, org.ejbca.core.model.ca.catoken.AvailableCAToken, org.ejbca.core.model.ca.catoken.HardCATokenInfo, org.ejbca.core.model.ca.catoken.CATokenConstants,
-               org.ejbca.util.dn.DNFieldExtractor,org.ejbca.util.dn.DnComponents,org.ejbca.core.model.ca.catoken.ICAToken,org.ejbca.core.model.ca.catoken.BaseCAToken, org.ejbca.core.model.ca.catoken.NullCAToken, org.ejbca.core.model.ca.catoken.NullCATokenInfo " %>
+               org.ejbca.util.dn.DNFieldExtractor,org.ejbca.util.dn.DnComponents,org.ejbca.core.model.ca.catoken.ICAToken,org.ejbca.core.model.ca.catoken.BaseCAToken, org.ejbca.core.model.ca.catoken.NullCAToken, org.ejbca.core.model.ca.catoken.NullCATokenInfo, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy " %>
 
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -359,6 +359,7 @@
              illegaldnoraltname = true;
          }
          int certprofileid = 0;
+         CertificateProfile certprof = null;
          if(request.getParameter(SELECT_CERTIFICATEPROFILE) != null)
            certprofileid = Integer.parseInt(request.getParameter(SELECT_CERTIFICATEPROFILE));
          int signedby = 0;
@@ -389,9 +390,21 @@
                 }
               }    
 
+              /* Process certificate policies. */
               String policyid = request.getParameter(TEXTFIELD_POLICYID);
-              if(policyid == null || policyid.trim().equals(""))
-                 policyid = null; 
+              ArrayList policies = new ArrayList();
+              certprof = cabean.getCertificateProfile(certprofileid);
+			  if (!(policyid == null || policyid.trim().equals(""))){
+            	  String[] str = policyid.split("\\s+");
+            		if (str.length > 1) {
+            			policies.add(new CertificatePolicy(str[0], null, str[1]));
+            		} else {
+            			policies.add(new CertificatePolicy((policyid.trim()),null,null));
+            		}
+              }
+              if ((certprof.getCertificatePolicies().size() > 0) && (certprof.getCertificatePolicies() != null)) {
+            	  policies.addAll(certprof.getCertificatePolicies());
+              }
 
               int crlperiod = Integer.parseInt(request.getParameter(TEXTFIELD_CRLPERIOD));
               int crlIssueInterval = 0;
@@ -532,7 +545,7 @@
                                                         certprofileid, validity, 
                                                         null, catype, signedby,
                                                         null, catoken, description, -1, null,
-                                                        policyid, crlperiod, crlIssueInterval, crlOverlapTime, crlpublishers, 
+                                                        policies, crlperiod, crlIssueInterval, crlOverlapTime, crlpublishers, 
                                                         useauthoritykeyidentifier, 
                                                         authoritykeyidentifiercritical,
                                                         usecrlnumber, 
@@ -590,7 +603,7 @@
                                                         certprofileid, validity,
                                                         null, catype, CAInfo.SIGNEDBYEXTERNALCA,
                                                         null, catoken, description, -1, null, 
-                                                        policyid, crlperiod, crlIssueInterval, crlOverlapTime, crlpublishers, 
+                                                        policies, crlperiod, crlIssueInterval, crlOverlapTime, crlpublishers, 
                                                         useauthoritykeyidentifier, 
                                                         authoritykeyidentifiercritical,
                                                         usecrlnumber, 
@@ -981,6 +994,7 @@
          }
          
          int certprofileid = 0;
+         CertificateProfile certprof = null;
          if(request.getParameter(SELECT_CERTIFICATEPROFILE) != null)
            certprofileid = Integer.parseInt(request.getParameter(SELECT_CERTIFICATEPROFILE));
          int signedby = 0;
@@ -1011,9 +1025,21 @@
                 }
               }
 
+              /* Process certificate policies. */
               String policyid = request.getParameter(TEXTFIELD_POLICYID);
-              if(policyid == null || policyid.trim().equals(""))
-                 policyid = null; 
+              ArrayList policies = new ArrayList();
+              certprof = cabean.getCertificateProfile(certprofileid);
+			  if (!(policyid == null || policyid.trim().equals(""))){
+            	  String[] str = policyid.split("\\s+");
+            		if (str.length > 1) {
+            			policies.add(new CertificatePolicy(str[0], null, str[1]));
+            		} else {
+            			policies.add(new CertificatePolicy((policyid.trim()),null,null));
+            		}
+              }
+              if ((certprof.getCertificatePolicies().size() > 0) && (certprof.getCertificatePolicies() != null)) {
+            	  policies.addAll(certprof.getCertificatePolicies());
+              }
 
               int crlperiod = 0;
               int crlIssueInterval = 0;
@@ -1042,7 +1068,7 @@
                                                         certprofileid, validity, 
                                                         null, catype, signedby,
                                                         null, null, description, -1, null,
-                                                        policyid, crlperiod, crlIssueInterval, crlOverlapTime, crlpublishers, 
+                                                        policies, crlperiod, crlIssueInterval, crlOverlapTime, crlpublishers, 
                                                         useauthoritykeyidentifier, 
                                                         authoritykeyidentifiercritical,
                                                         usecrlnumber, 

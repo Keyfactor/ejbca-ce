@@ -179,7 +179,7 @@ public class TestCAImportExport extends TestCase  {
                 catokeninfo,
                 "Used for testing CA import and export",
                 -1, null, // revokationreason, revokationdate
-                "", // PolicyId
+                new ArrayList(), // PolicyId
                 24, // CRLPeriod
                 0, // CRLIssuePeriod
                 10, // CRLOverlapTime

@@ -3,7 +3,7 @@
 <%@page errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.core.model.ra.raadmin.GlobalConfiguration, org.ejbca.core.model.SecConst, org.ejbca.core.model.authorization.AuthorizationDeniedException,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.ca.certificateprofiles.CertificateProfile, org.ejbca.ui.web.admin.cainterface.CertificateProfileDataHandler, 
                org.ejbca.core.model.ca.certificateprofiles.CertificateProfileExistsException, org.ejbca.ui.web.admin.rainterface.CertificateView, org.ejbca.util.dn.DNFieldExtractor, org.ejbca.util.dn.DnComponents, 
-               org.ejbca.core.model.ca.certextensions.CertificateExtensionFactory, org.ejbca.core.model.ca.certextensions.AvailableCertificateExtension"%>
+               org.ejbca.core.model.ca.certextensions.CertificateExtensionFactory, org.ejbca.core.model.ca.certextensions.AvailableCertificateExtension, org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy"%>
 
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -23,6 +23,9 @@
   static final String BUTTON_RENAME_CERTIFICATEPROFILES    = "buttonrenamecertificateprofile";
   static final String BUTTON_CLONE_CERTIFICATEPROFILES     = "buttonclonecertificateprofile";
 
+  static final String BUTTON_ADD_POLICY                    = "buttonaddpolicy";
+  static final String BUTTON_DELETE_POLICY                 = "buttondeletepolicy";
+
   static final String SELECT_CERTIFICATEPROFILES           = "selectcertificateprofile";
   static final String TEXTFIELD_CERTIFICATEPROFILESNAME    = "textfieldcertificateprofilename";
   static final String HIDDEN_CERTIFICATEPROFILENAME        = "hiddencertificateprofilename";
@@ -39,7 +42,7 @@
   static final String TEXTFIELD_CERTIFICATEPOLICYID    = "textfieldcertificatepolicyid";
   static final String TEXTFIELD_POLICYNOTICE_CPSURL    = "textfielpolicynoticedcpsurl";
   static final String TEXTAREA_POLICYNOTICE_UNOTICE    = "textareapolicynoticeunotice";
-	
+  
   static final String TEXTFIELD_OCSPSERVICELOCATOR     = "textfieldocspservicelocatoruri";
   static final String TEXTFIELD_CNPOSTFIX              = "textfieldcnpostfix";
   static final String TEXTFIELD_PATHLENGTHCONSTRAINT   = "textfieldpathlengthconstraint";
@@ -408,29 +411,21 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
 				 }
 
 				 value = request.getParameter(TEXTFIELD_CERTIFICATEPOLICYID);
-				 if(value != null){
-				   value = value.trim();
-				   certificateprofiledata.setCertificatePolicyId(value);
-				 }
-						
-					value = request.getParameter(TEXTFIELD_POLICYNOTICE_CPSURL);
-					if( value != null ){
-						value = value.trim();
-						certificateprofiledata.setCpsUrl(value);
-					}
-						
-					value = request.getParameter(TEXTAREA_POLICYNOTICE_UNOTICE);
-					if( value != null ){
-						value = value.trim();
-						certificateprofiledata.setUserNoticeText(value);
-					}
- 
-            } else{
+				 String userNotice = request.getParameter(TEXTAREA_POLICYNOTICE_UNOTICE);
+				 String cpsUri = request.getParameter(TEXTFIELD_POLICYNOTICE_CPSURL);
+                 if ( (value != null) && (value.trim().length() > 0) ) {
+                   if (userNotice != null) {
+                     userNotice = userNotice.trim();
+                   }
+                   if (cpsUri != null) {
+                     cpsUri = cpsUri.trim();
+                   }
+                   certificateprofiledata.addCertificatePolicy(new CertificatePolicy((value.trim()), userNotice, cpsUri));
+                 }
+             } else {
                  certificateprofiledata.setUseCertificatePolicies(false);
                  certificateprofiledata.setCertificatePoliciesCritical(false); 
-                 certificateprofiledata.setCertificatePolicyId("");
-                 certificateprofiledata.setCpsUrl("");
-                 certificateprofiledata.setUserNoticeText("");
+                 certificateprofiledata.setCertificatePolicies(null);
              } 
 
               String[] values = request.getParameterValues(SELECT_AVAILABLEBITLENGTHS); 
@@ -717,10 +712,52 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
                cabean.changeCertificateProfile(certprofile, certificateprofiledata);
                cabean.setTempCertificateProfile(null);
            }
+             /*
+             * Add policy.
+              */
+             if(request.getParameter(BUTTON_ADD_POLICY) != null) {
+  	             cabean.setTempCertificateProfile(certificateprofiledata);
+                 includefile = "certificateprofilepage.jspf";
+             }
+
+             /*
+              * Remove policy.
+              */
+             if(certificateprofiledata.getCertificatePolicies() != null) {
+                 for(int i = 0; i < certificateprofiledata.getCertificatePolicies().size(); i++) {
+                     value = request.getParameter(BUTTON_DELETE_POLICY + i);
+                     if(value != null) {
+                         String policyId = request.getParameter(TEXTFIELD_CERTIFICATEPOLICYID + i);
+                         if (policyId != null) {
+                           policyId = policyId.trim();
+                         }
+                         String userNotice = request.getParameter(TEXTAREA_POLICYNOTICE_UNOTICE + i);
+                         if (userNotice != null) {
+                           userNotice = userNotice.trim();
+                         }
+                         String cpsUri = request.getParameter(TEXTFIELD_POLICYNOTICE_CPSURL + i);
+                         if (cpsUri != null) {
+                           cpsUri = cpsUri.trim();
+                         }
+                         CertificatePolicy policy =
+                             new CertificatePolicy(policyId,    // policyID
+                                                   userNotice,  // policyQualifier UserNotice
+                                                   cpsUri);     // policyQualifier CPS URI
+                         certificateprofiledata.removeCertificatePolicy(policy);
+                                               
+                         cabean.setTempCertificateProfile(certificateprofiledata);
+                     }
+                 }         
+                 includefile = "certificateprofilepage.jspf";
+             }
+           
            if(request.getParameter(BUTTON_CANCEL) != null){
               // Don't save changes.
+              cabean.setTempCertificateProfile(null);
            }
-             includefile="certificateprofilespage.jspf";
+           if(includefile == null ) {
+                 includefile="certificateprofilespage.jspf";
+           }
          }
       }
     }
