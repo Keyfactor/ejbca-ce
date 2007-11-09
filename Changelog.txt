@@ -1,3 +1,35 @@
+3.5.2, 2007-11-09
+---
+New Feature
+    * [ECA-530] - Debian package for EJBCA-MySQL
+    * [ECA-599] - Add pt_PT l10n
+    
+Improvement
+    * [ECA-529] - Pass extra parameters to JBoss through nCipherJBoss.sh/cmd
+    * [ECA-580] - Optimize CRL generation for large CRLs (>100.000 revoked)
+    * [ECA-618] - External RA SCEP module should include ip and dns altNames from request
+    * [ECA-623] - Possible to use an internal CA as external
+    * [ECA-625] - Add the missing text label along with the message "Text not available"
+    * [ECA-626] - ExtRA, possible to require SCEP password
+    * [ECA-642] - In lunaHSM.sh warn i EJBCA_HOME is not set
+    
+Bug
+    * [ECA-541] - Null pointer exception when you enter wrong values or forget to enter values in "Hard CA token properties".
+    * [ECA-543] - It should be possible to run ejbca.sh from any directory in the file system.
+    * [ECA-590] - unconsistent labels in publisher (:)
+    * [ECA-605] - Wrong parameter name in ca republish
+    * [ECA-608] - Luna HSM support broken
+    * [ECA-609] - XKMS cli not working
+    * [ECA-612] - Can not run Glassfish off-line
+    * [ECA-614] - Ugly error when entering non hex encoded serial number in check status on public web
+    * [ECA-615] - Java exception when editing an external CA
+    * [ECA-616] - Can't fetch the certificate of external CA after signing it
+    * [ECA-620] - PKCS10 requests to external CA can not be PrintableString encoded
+    * [ECA-621] - Error creating a external OCSP-responder on JBoss 4.2.x
+    * [ECA-627] - Large comments and CA Subject DNs generates SQL exceptions.
+    * [ECA-629] - When you create a new soft CA and enter an "Authentication Code" you get null pointer exception.
+    * [ECA-646] - ExtRA CA service throws exception when RAIssuer is signed by external CA
+
 3.5.1, 2007-09-18
 ---
 Improvement

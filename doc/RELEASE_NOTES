@@ -8,7 +8,8 @@ Notable changes are:
 - Portugeese translation of Admin-GUI
 - Optimized CRL generation for generating CRLs with more than 100.000 revoked certificate
 - Possible to use altNames in External RA SCEP service, and require a specific password 
-- and some other fixes... 
+- Several bugfixes related to using external CAs
+- and other minor fixes... 
 
 Read the changelog for details.
 
