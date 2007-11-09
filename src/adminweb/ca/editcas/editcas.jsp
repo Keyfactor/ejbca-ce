@@ -397,7 +397,7 @@
 			  if (!(policyid == null || policyid.trim().equals(""))){
             	  String[] str = policyid.split("\\s+");
             		if (str.length > 1) {
-            			policies.add(new CertificatePolicy(str[0], null, str[1]));
+            			policies.add(new CertificatePolicy(str[0], CertificatePolicy.id_qt_cps, str[1]));
             		} else {
             			policies.add(new CertificatePolicy((policyid.trim()),null,null));
             		}
@@ -1032,7 +1032,7 @@
 			  if (!(policyid == null || policyid.trim().equals(""))){
             	  String[] str = policyid.split("\\s+");
             		if (str.length > 1) {
-            			policies.add(new CertificatePolicy(str[0], null, str[1]));
+            			policies.add(new CertificatePolicy(str[0], CertificatePolicy.id_qt_cps, str[1]));
             		} else {
             			policies.add(new CertificatePolicy((policyid.trim()),null,null));
             		}

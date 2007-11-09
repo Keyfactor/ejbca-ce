@@ -19,17 +19,23 @@ package org.ejbca.core.model.ca.certificateprofiles;
 import java.io.Serializable;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x509.PolicyQualifierId;
 
 
 /** Class encapsulating the CertificatePolicy X509 certificate extensions. See rfc3280.
+ * Contains an OID and optionally a policy qualifier. Several CertificatePolicy classes 
+ * can be created with the same oid, for different qualifiers
  * 
  * @author Nuno Ponte of MultiCert
- * @version $Id: CertificatePolicy.java,v 1.1 2007-11-07 13:25:45 anatom Exp $
+ * @version $Id: CertificatePolicy.java,v 1.2 2007-11-09 11:41:24 anatom Exp $
  */
 public class CertificatePolicy implements Serializable, Cloneable {
-    private static final long serialVersionUID = -6384137742329979248L;
+    private static final long serialVersionUID = -6384137742329979249L;
 
+    // Policy qualifier Ids are taken from BC classes
+    public static final String id_qt_cps = PolicyQualifierId.id_qt_cps.getId();
+    public static final String id_qt_unotice = PolicyQualifierId.id_qt_unotice.getId();
+    
     /**
      * The special <code>anyPolicy</code> policy OID.
      */
@@ -37,9 +43,9 @@ public class CertificatePolicy implements Serializable, Cloneable {
     
     private String policyID;
     /** CPS uri */
-    private String uri;
+    private String qualifierId;
     /** user notice text */
-    private String notice;
+    private String qualifier;
 
     public CertificatePolicy() {
         super();
@@ -51,10 +57,10 @@ public class CertificatePolicy implements Serializable, Cloneable {
      * @param notice user notice text
      * @param uri cps uri
      */
-    public CertificatePolicy(String policyID, String notice, String uri) {
+    public CertificatePolicy(String policyID, String qualifierId, String qualifier) {
         this.policyID = policyID;
-        this.notice = notice;
-        this.uri = uri;
+        this.qualifierId = qualifierId;
+        this.qualifier = qualifier;
     }
 
     /**
@@ -73,40 +79,40 @@ public class CertificatePolicy implements Serializable, Cloneable {
 
     
     /**
-     * @return the uri
+     * @return the qualifier string
      */
-    public String getCpsUri() {
-        return this.uri;
+    public String getQualifier() {
+        return this.qualifier;
     }
 
     
     /**
      * @param uri the uri to set
      */
-    public void setCpsUri(String uri) {
-        this.uri = uri;
+    public void setQualifier(String qualifier) {
+        this.qualifier = qualifier;
     }
 
     /**
-     * @return the usernotice
+     * @return the QualifierId
      */
-    public String getUserNotice() {
-        return this.notice;
+    public String getQualifierId() {
+        return this.qualifierId;
     }
 
     
     /**
-     * @param notice the usernotice to set
+     * @param qualifierId the QualifierId to set
      */
-    public void setUserNotice(String notice) {
-        this.notice = notice;
+    public void setQualifierId(String qualifierId) {
+        this.qualifierId = qualifierId;
     }
     
     /**
      * @see java.lang.Object#clone()
      */
     protected Object clone() {
-        return new CertificatePolicy(this.policyID, this.notice, this.uri);
+        return new CertificatePolicy(this.policyID, this.qualifierId, this.qualifier);
     }
 
     /**
@@ -117,10 +123,10 @@ public class CertificatePolicy implements Serializable, Cloneable {
 
         strBuffer.append("policyID=");
         strBuffer.append(this.policyID);
-        strBuffer.append(", userNotice=");
-        strBuffer.append(this.notice);
-        strBuffer.append(", cpsUri=");
-        strBuffer.append(this.uri);
+        strBuffer.append(", qualifierId=");
+        strBuffer.append(this.qualifierId);
+        strBuffer.append(", qualifier=");
+        strBuffer.append(this.qualifier);
         strBuffer.append(")");
 
         return strBuffer.toString();
@@ -143,19 +149,19 @@ public class CertificatePolicy implements Serializable, Cloneable {
         } else if (StringUtils.equals(policy.getPolicyID(), this.policyID)) {
         	policyeq = true;
         }
-        boolean unoticeeq = false;
-        if (StringUtils.isEmpty(policy.getUserNotice()) && StringUtils.isEmpty(this.notice)) {
-        	unoticeeq = true;
-        } else if (StringUtils.equals(policy.getUserNotice(), this.notice)) {
-        	unoticeeq = true;
+        boolean qualifierideq = false;
+        if (StringUtils.isEmpty(policy.getQualifierId()) && StringUtils.isEmpty(this.qualifierId)) {
+        	qualifierideq = true;
+        } else if (StringUtils.equals(policy.getQualifierId(), this.qualifierId)) {
+        	qualifierideq = true;
         }
-        boolean urieq = false;
-        if (StringUtils.isEmpty(policy.getCpsUri()) && StringUtils.isEmpty(this.uri)) {
-        	urieq = true;
-        } else if (StringUtils.equals(policy.getCpsUri(), this.uri)) {
-        	urieq = true;
+        boolean qualifier = false;
+        if (StringUtils.isEmpty(policy.getQualifier()) && StringUtils.isEmpty(this.qualifier)) {
+        	qualifier = true;
+        } else if (StringUtils.equals(policy.getQualifier(), this.qualifier)) {
+        	qualifier = true;
         }
-        return policyeq && unoticeeq && urieq; 
+        return policyeq && qualifierideq && qualifier; 
     }
 
     /**

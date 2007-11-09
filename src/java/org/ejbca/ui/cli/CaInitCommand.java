@@ -43,7 +43,7 @@ import org.ejbca.util.StringTools;
 /**
  * Inits the CA by creating the first CRL and publiching the CRL and CA certificate.
  *
- * @version $Id: CaInitCommand.java,v 1.21 2007-11-07 13:25:57 anatom Exp $
+ * @version $Id: CaInitCommand.java,v 1.22 2007-11-09 11:41:38 anatom Exp $
  */
 public class CaInitCommand extends BaseCaAdminCommand {
 
@@ -108,7 +108,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             	} else {
             		cpsurl = "";
             	}
-            	policies.add(new CertificatePolicy(id, null, cpsurl));
+            	policies.add(new CertificatePolicy(id, CertificatePolicy.id_qt_cps, cpsurl));
             }
                         
             getOutputStream().println("Initializing CA");            

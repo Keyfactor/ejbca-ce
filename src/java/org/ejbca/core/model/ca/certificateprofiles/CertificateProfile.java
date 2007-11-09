@@ -34,7 +34,7 @@ import org.ejbca.util.dn.DNFieldExtractor;
  * CertificateProfile is a basic class used to customize a certificate
  * configuration or be inherited by fixed certificate profiles.
  *
- * @version $Id: CertificateProfile.java,v 1.23 2007-11-07 13:25:44 anatom Exp $
+ * @version $Id: CertificateProfile.java,v 1.24 2007-11-09 11:41:23 anatom Exp $
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
@@ -1003,8 +1003,20 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                     StringTokenizer tokenizer = new StringTokenizer(ids, ";", false);
                     if (tokenizer.hasMoreTokens()) {
                     	String id = tokenizer.nextToken();
-                    	CertificatePolicy newpolicy = new CertificatePolicy(id, unotice, cpsuri);
-                    	addCertificatePolicy(newpolicy);
+                    	CertificatePolicy newpolicy = null;
+                    	if (StringUtils.isNotEmpty(unotice)) {
+                        	newpolicy = new CertificatePolicy(id, CertificatePolicy.id_qt_unotice, unotice);
+                        	addCertificatePolicy(newpolicy);
+                    	}
+                    	if (StringUtils.isNotEmpty(cpsuri)) {
+                        	newpolicy = new CertificatePolicy(id, CertificatePolicy.id_qt_cps, cpsuri);
+                        	addCertificatePolicy(newpolicy);                    		
+                    	} 
+                    	// If it was a lonely policy id
+                    	if (newpolicy == null) {
+                        	newpolicy = new CertificatePolicy(id, null, null);
+                        	addCertificatePolicy(newpolicy);                    		                    		                    		
+                    	}
                     }
                     while (tokenizer.hasMoreTokens()) {
                     	String id = tokenizer.nextToken();

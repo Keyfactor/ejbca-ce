@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -147,7 +148,7 @@ import org.ejbca.util.dn.DnComponents;
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the X509 standard. 
  *
- * @version $Id: X509CA.java,v 1.74 2007-11-07 13:25:52 anatom Exp $
+ * @version $Id: X509CA.java,v 1.75 2007-11-09 11:41:34 anatom Exp $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -676,20 +677,42 @@ public class X509CA extends CA implements Serializable {
         
         // Certificate Policies
         if (certProfile.getUseCertificatePolicies() == true) {
+        	// The UserNotice policy qualifier can have two different character encodings,
+        	// the correct one (UTF8) or the wrong one (BMP) used by IE < 7.
         	int displayencoding = DisplayText.CONTENT_TYPE_BMPSTRING;
         	if (getUseUTF8PolicyText()) {
         		displayencoding = DisplayText.CONTENT_TYPE_UTF8STRING;
         	}
-        	ASN1EncodableVector seq = new ASN1EncodableVector();
         	// Iterate through policies and add oids and policy qualifiers if they exist
-        	CertificatePolicy policy;
         	List policies = certProfile.getCertificatePolicies();
+        	Map policiesMap = new HashMap(); //<DERObjectIdentifier, ASN1EncodableVector>
+        	// Each Policy OID can be entered several times, with different qualifiers, 
+        	// because of this we make a map of oid and qualifiers, and we can add a new qualifier
+        	// in each round of this for loop
         	for(Iterator it = policies.iterator(); it.hasNext(); ) {
-        		policy = (CertificatePolicy) it.next();
-    			PolicyInformation pi = getPolicyInformation(policy, displayencoding);
-    			if (pi != null) {
-    				seq.add(pi);
+        		CertificatePolicy policy = (CertificatePolicy) it.next();
+        		DERObjectIdentifier oid = new DERObjectIdentifier(policy.getPolicyID());
+        		ASN1EncodableVector qualifiers;
+        		if(policiesMap.containsKey(oid)) {
+        			qualifiers = (ASN1EncodableVector) policiesMap.get(oid);
+        		} else {
+        			qualifiers = new ASN1EncodableVector();
+        		}
+    			PolicyQualifierInfo pqi = getPolicyQualifierInformation(policy, displayencoding);
+    			if (pqi != null) {
+    				qualifiers.add(pqi);
     			}
+    			policiesMap.put(oid, qualifiers);
+        	}
+        	ASN1EncodableVector seq = new ASN1EncodableVector();
+        	for(Iterator it = policiesMap.keySet().iterator(); it.hasNext(); ) {
+        		DERObjectIdentifier oid = (DERObjectIdentifier) it.next();
+        		ASN1EncodableVector qualifiers = (ASN1EncodableVector) policiesMap.get(oid);
+        		if(qualifiers.size() == 0) {
+        			seq.add(new PolicyInformation(oid, null));
+        		} else {
+        			seq.add(new PolicyInformation(oid, new DERSequence(qualifiers)));
+        		}
         	}
         	if (seq.size() > 0) {
             	certgen.addExtension(X509Extensions.CertificatePolicies.getId(),
@@ -1254,44 +1277,30 @@ public class X509CA extends CA implements Serializable {
 	}
     
     /**
-     * Obtains the Policy Information object
+     * Obtains the Policy Qualifier Information object
      * 
      * @param policy,
      *          CertificatePolicy with oid, user notice and cps uri
      * @param displayencoding,
      *          the encoding used for UserNotice text, DisplayText.CONTENT_TYPE_BMPSTRING, CONTENT_TYPE_UTF8STRING, CONTENT_TYPE_IA5STRING or CONTENT_TYPE_VISIBLESTRING 
      *          
-     * @return PolicyInformation
+     * @return PolicyQualifierInfo
      */
-	private PolicyInformation getPolicyInformation(CertificatePolicy policy, int displayencoding) {
-
-		ASN1EncodableVector qualifiers = new ASN1EncodableVector();
-		String unotice = policy.getUserNotice();
-		if ((unotice != null) && !StringUtils.isEmpty(unotice.trim())) {
-			// Normally we would just use 'DisplayText(unotice)' here. IE has problems with UTF8 though, so lets stick with BMSSTRING to satisfy Bills sick needs.
-			UserNotice un = new UserNotice(null, new DisplayText(displayencoding, unotice));
-			PolicyQualifierInfo pqiUNOTICE = new PolicyQualifierInfo(PolicyQualifierId.id_qt_unotice, un);
-			qualifiers.add(pqiUNOTICE);
+	private PolicyQualifierInfo getPolicyQualifierInformation(CertificatePolicy policy, int displayencoding) {
+		PolicyQualifierInfo pqi = null;
+		String qualifierId = policy.getQualifierId();
+		if ((qualifierId != null) && !StringUtils.isEmpty(qualifierId.trim())) {
+			String qualifier = policy.getQualifier();
+			if ( (qualifier != null) && !StringUtils.isEmpty(qualifier.trim()) ) {
+				if (qualifierId.equals(PolicyQualifierId.id_qt_cps.getId())) {
+					pqi = new PolicyQualifierInfo(qualifier);
+				} else if (qualifierId.equals(PolicyQualifierId.id_qt_unotice.getId())){
+					// Normally we would just use 'DisplayText(unotice)' here. IE has problems with UTF8 though, so lets stick with BMSSTRING to satisfy Bills sick needs.
+					UserNotice un = new UserNotice(null, new DisplayText(displayencoding, qualifier));
+					pqi = new PolicyQualifierInfo(PolicyQualifierId.id_qt_unotice, un);
+				}
+			}
 		}
-		String cps = policy.getCpsUri();
-		if ((cps != null) && !StringUtils.isEmpty(cps.trim())) {
-			PolicyQualifierInfo pqiCPS = new PolicyQualifierInfo(cps);
-			qualifiers.add(pqiCPS);
-		}
-		PolicyInformation policyInformation = null;
-		// Default to ANY POLICY if policy is left empty
-		DERObjectIdentifier oid = new DERObjectIdentifier(CertificatePolicy.ANY_POLICY_OID);        			
-		if (StringUtils.isNotEmpty(policy.getPolicyID())) {
-			oid = new DERObjectIdentifier(policy.getPolicyID());
-		}
-
-		if (qualifiers.size() > 0) {
-			policyInformation = new PolicyInformation(oid, new DERSequence(qualifiers));            
-		} else {
-			policyInformation = new PolicyInformation(oid);
-		}
-
-		return policyInformation;
-	}
-   
+		return pqi;
+	}   
 }

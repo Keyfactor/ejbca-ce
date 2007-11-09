@@ -414,13 +414,24 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
 				 String userNotice = request.getParameter(TEXTAREA_POLICYNOTICE_UNOTICE);
 				 String cpsUri = request.getParameter(TEXTFIELD_POLICYNOTICE_CPSURL);
                  if ( (value != null) && (value.trim().length() > 0) ) {
+                   boolean added = false;
                    if (userNotice != null) {
                      userNotice = userNotice.trim();
+                     if (userNotice.length() > 0) {
+                       certificateprofiledata.addCertificatePolicy(new CertificatePolicy(value.trim(), CertificatePolicy.id_qt_unotice, userNotice));
+                       added = true;
+                     }
                    }
                    if (cpsUri != null) {
                      cpsUri = cpsUri.trim();
+                     if (cpsUri.length() > 0) {
+                       certificateprofiledata.addCertificatePolicy(new CertificatePolicy(value.trim(), CertificatePolicy.id_qt_cps, cpsUri));
+                       added = true;
+                     }
                    }
-                   certificateprofiledata.addCertificatePolicy(new CertificatePolicy((value.trim()), userNotice, cpsUri));
+                   if (!added) {
+                     certificateprofiledata.addCertificatePolicy(new CertificatePolicy(value.trim(), null, null));
+                   }
                  }
              } else {
                  certificateprofiledata.setUseCertificatePolicies(false);
@@ -734,16 +745,21 @@ int[]    defaultavailablebitlengths = CertificateProfile.DEFAULTBITLENGTHS;
                          String userNotice = request.getParameter(TEXTAREA_POLICYNOTICE_UNOTICE + i);
                          if (userNotice != null) {
                            userNotice = userNotice.trim();
+                           CertificatePolicy policy =
+                             new CertificatePolicy(policyId,    // policyID
+                                                   CertificatePolicy.id_qt_unotice,  // policyQualifier UserNotice
+                                                   userNotice);     // user notice text
+                           certificateprofiledata.removeCertificatePolicy(policy);
                          }
                          String cpsUri = request.getParameter(TEXTFIELD_POLICYNOTICE_CPSURL + i);
                          if (cpsUri != null) {
                            cpsUri = cpsUri.trim();
-                         }
-                         CertificatePolicy policy =
+                           CertificatePolicy policy =
                              new CertificatePolicy(policyId,    // policyID
-                                                   userNotice,  // policyQualifier UserNotice
-                                                   cpsUri);     // policyQualifier CPS URI
-                         certificateprofiledata.removeCertificatePolicy(policy);
+                                                   CertificatePolicy.id_qt_cps,  // policyQualifier CPS URI
+                                                   cpsUri);     // cps uri
+                           certificateprofiledata.removeCertificatePolicy(policy);
+                         }
                                                
                          cabean.setTempCertificateProfile(certificateprofiledata);
                      }
