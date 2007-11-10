@@ -21,6 +21,7 @@ import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.BaseEntityBean;
+import org.ejbca.core.model.UpgradeableDataHashMap;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.util.Base64GetHashMap;
 import org.ejbca.util.Base64PutHashMap;
@@ -137,9 +138,15 @@ public abstract class ServiceDataBean extends BaseEntityBean {
             decoder.close();
             // Handle Base64 encoded string values
             HashMap data = new Base64GetHashMap(h);
-
+            
+            float oldversion = ((Float) data.get(UpgradeableDataHashMap.VERSION)).floatValue();
             serviceConfiguration = new ServiceConfiguration();
             serviceConfiguration.loadData(data);
+            // Check if we upgraded the version, in that case we need to save the upgraded value
+            if ( ((serviceConfiguration != null) && (Float.compare(oldversion, serviceConfiguration.getVersion()) != 0))) {
+            	setServiceConfiguration(serviceConfiguration);
+            }
+
         }
 
         return serviceConfiguration;
