@@ -33,7 +33,7 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
  * @author Philip Vendil
  *
  */
-public class CopyOfBaseNotifyingWorkerType extends WorkerType {
+public class BaseEmailNotifyingWorkerType extends WorkerType {
 
 	private Collection compatibleActionTypeNames = new ArrayList();
 	private Collection compatibleIntervalTypeNames = new ArrayList();	
@@ -60,7 +60,7 @@ public class CopyOfBaseNotifyingWorkerType extends WorkerType {
 	
 	
 	
-	public CopyOfBaseNotifyingWorkerType(String name, String jsp, String classpath){
+	public BaseEmailNotifyingWorkerType(String name, String jsp, String classpath){
 		super(jsp, name, true);
 		this.classpath = classpath;
 		

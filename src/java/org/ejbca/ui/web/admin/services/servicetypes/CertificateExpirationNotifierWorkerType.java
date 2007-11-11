@@ -18,9 +18,9 @@ package org.ejbca.ui.web.admin.services.servicetypes;
  * 
  * @author Philip Vendil
  *
- * @version $Id: CertificateExpirationNotifierWorkerType.java,v 1.3 2007-11-11 07:57:42 anatom Exp $
+ * @version $Id: CertificateExpirationNotifierWorkerType.java,v 1.4 2007-11-11 08:15:51 anatom Exp $
  */
-public class CertificateExpirationNotifierWorkerType extends BaseNotifyingWorkerType {
+public class CertificateExpirationNotifierWorkerType extends BaseEmailNotifyingWorkerType {
 
 	public static final String NAME = "CERTNOTIFICATIONWORKER";
 	

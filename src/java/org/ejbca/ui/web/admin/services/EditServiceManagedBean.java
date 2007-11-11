@@ -30,7 +30,7 @@ import org.ejbca.core.model.services.workers.UserPasswordExpireWorker;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.services.servicetypes.ActionType;
-import org.ejbca.ui.web.admin.services.servicetypes.BaseNotifyingWorkerType;
+import org.ejbca.ui.web.admin.services.servicetypes.BaseEmailNotifyingWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.CertificateExpirationNotifierWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomIntervalType;
@@ -46,7 +46,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
  * 
  * @author Philip Vendil 2006 sep 30
  *
- * @version $Id: EditServiceManagedBean.java,v 1.6 2007-11-11 07:56:25 anatom Exp $
+ * @version $Id: EditServiceManagedBean.java,v 1.7 2007-11-11 08:16:43 anatom Exp $
  */
 public class EditServiceManagedBean extends BaseManagedBean {
 	private static final Logger log = Logger.getLogger(EditServiceManagedBean.class);
@@ -162,7 +162,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
 	/**
 	 * Help method used to edit data in the notifying worker type.
 	 */
-	public BaseNotifyingWorkerType getNotifyingType(){
+	public BaseEmailNotifyingWorkerType getNotifyingType(){
 		String name = CertificateExpirationNotifierWorkerType.NAME;
 		try {
 			ServiceConfiguration conf = serviceConfigurationView.getServiceConfiguration(new ArrayList());		
@@ -174,7 +174,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		} catch (IOException e) {
 			log.error(e);
 		}
-		return (BaseNotifyingWorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(name);
+		return (BaseEmailNotifyingWorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(name);
 	}
 	
 	/**
